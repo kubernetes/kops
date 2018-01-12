@@ -80,41 +80,15 @@ func slurpTopics(it *TopicIterator) ([]*Topic, error) {
 	}
 }
 
-func TestTopicID(t *testing.T) {
-	const id = "id"
-	calls := []topicListCall{
-		{
-			topics: []string{"projects/projid/topics/t1", "projects/projid/topics/t2"},
-			outTok: "",
-		},
-	}
-	serv := &topicListService{calls: calls, t: t}
-	c := &Client{projectID: "projid", s: serv}
-	s := c.Topic(id)
-	if got, want := s.ID(), id; got != want {
-		t.Errorf("Token.ID() = %q; want %q", got, want)
-	}
-	want := []string{"t1", "t2"}
-	topics, err := slurpTopics(c.Topics(context.Background()))
-	if err != nil {
-		t.Errorf("error listing topics: %v", err)
-	}
-	for i, topic := range topics {
-		if got, want := topic.ID(), want[i]; got != want {
-			t.Errorf("Token.ID() = %q; want %q", got, want)
-		}
-	}
-}
-
 func TestListTopics(t *testing.T) {
 	calls := []topicListCall{
 		{
-			topics: []string{"projects/projid/topics/t1", "projects/projid/topics/t2"},
+			topics: []string{"t1", "t2"},
 			outTok: "a",
 		},
 		{
 			inTok:  "a",
-			topics: []string{"projects/projid/topics/t3"},
+			topics: []string{"t3"},
 			outTok: "b",
 		},
 		{
@@ -124,15 +98,11 @@ func TestListTopics(t *testing.T) {
 		},
 		{
 			inTok:  "c",
-			topics: []string{"projects/projid/topics/t4"},
+			topics: []string{"t4"},
 			outTok: "",
 		},
 	}
-	checkTopicListing(t, calls, []string{
-		"projects/projid/topics/t1",
-		"projects/projid/topics/t2",
-		"projects/projid/topics/t3",
-		"projects/projid/topics/t4"})
+	checkTopicListing(t, calls, []string{"t1", "t2", "t3", "t4"})
 }
 
 func TestListCompletelyEmptyTopics(t *testing.T) {
@@ -148,7 +118,7 @@ func TestListCompletelyEmptyTopics(t *testing.T) {
 func TestListFinalEmptyPage(t *testing.T) {
 	calls := []topicListCall{
 		{
-			topics: []string{"projects/projid/topics/t1", "projects/projid/topics/t2"},
+			topics: []string{"t1", "t2"},
 			outTok: "a",
 		},
 		{
@@ -157,9 +127,7 @@ func TestListFinalEmptyPage(t *testing.T) {
 			outTok: "",
 		},
 	}
-	checkTopicListing(t, calls, []string{
-		"projects/projid/topics/t1",
-		"projects/projid/topics/t2"})
+	checkTopicListing(t, calls, []string{"t1", "t2"})
 }
 
 func topicNames(topics []*Topic) []string {

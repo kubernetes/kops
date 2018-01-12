@@ -17,22 +17,20 @@ limitations under the License.
 package k8sapi
 
 import (
-	crypto_rand "crypto/rand"
-	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
 	"github.com/golang/glog"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/v1"
-	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"math/big"
 	"time"
 )
 
 type KubernetesKeystore struct {
-	client    k8s_clientset.Interface
+	client    kubernetes.Interface
 	namespace string
 
 	//mutex     sync.Mutex
@@ -42,7 +40,7 @@ type KubernetesKeystore struct {
 
 var _ fi.Keystore = &KubernetesKeystore{}
 
-func NewKubernetesKeystore(client k8s_clientset.Interface, namespace string) fi.Keystore {
+func NewKubernetesKeystore(client kubernetes.Interface, namespace string) fi.Keystore {
 	c := &KubernetesKeystore{
 		client:    client,
 		namespace: namespace,
@@ -79,9 +77,9 @@ func (c *KubernetesKeystore) issueCert(id string, serial *big.Int, privateKey *f
 }
 
 func (c *KubernetesKeystore) findSecret(id string) (*v1.Secret, error) {
-	secret, err := c.client.Core().Secrets(c.namespace).Get(id, meta_v1.GetOptions{})
+	secret, err := c.client.CoreV1().Secrets(c.namespace).Get(id, metav1.GetOptions{})
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("error reading secret %s/%s from kubernetes: %v", c.namespace, id, err)
@@ -107,22 +105,16 @@ func (c *KubernetesKeystore) FindKeypair(id string) (*fi.Certificate, *fi.Privat
 	return keypair.Certificate, keypair.PrivateKey, nil
 }
 
-func (c *KubernetesKeystore) CreateKeypair(id string, template *x509.Certificate) (*fi.Certificate, *fi.PrivateKey, error) {
+func (c *KubernetesKeystore) CreateKeypair(id string, template *x509.Certificate, privateKey *fi.PrivateKey) (*fi.Certificate, error) {
 	t := time.Now().UnixNano()
 	serial := fi.BuildPKISerial(t)
 
-	rsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error generating RSA private key: %v", err)
-	}
-
-	privateKey := &fi.PrivateKey{Key: rsaKey}
 	cert, err := c.issueCert(id, serial, privateKey, template)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return cert, privateKey, nil
+	return cert, nil
 }
 
 func (c *KubernetesKeystore) StoreKeypair(id string, cert *fi.Certificate, privateKey *fi.PrivateKey) error {
@@ -134,7 +126,7 @@ func (c *KubernetesKeystore) StoreKeypair(id string, cert *fi.Certificate, priva
 	}
 
 	secret, err := keypair.Encode()
-	createdSecret, err := c.client.Core().Secrets(c.namespace).Create(secret)
+	createdSecret, err := c.client.CoreV1().Secrets(c.namespace).Create(secret)
 	if err != nil {
 		return fmt.Errorf("error creating secret %s/%s: %v", secret.Namespace, secret.Name, err)
 	}

@@ -248,11 +248,6 @@ func (r *Root) Get(name string) (volume.Volume, error) {
 	return v, nil
 }
 
-// Scope returns the local volume scope
-func (r *Root) Scope() string {
-	return volume.LocalScope
-}
-
 func (r *Root) validateName(name string) error {
 	if !volumeNameRegex.MatchString(name) {
 		return validationError{fmt.Errorf("%q includes invalid characters for a local volume name, only %q are allowed", name, utils.RestrictedNameChars)}
@@ -263,7 +258,8 @@ func (r *Root) validateName(name string) error {
 // localVolume implements the Volume interface from the volume package and
 // represents the volumes created by Root.
 type localVolume struct {
-	m sync.Mutex
+	m         sync.Mutex
+	usedCount int
 	// unique name of the volume
 	name string
 	// path is the path on the host where the data lives
@@ -292,7 +288,7 @@ func (v *localVolume) Path() string {
 }
 
 // Mount implements the localVolume interface, returning the data location.
-func (v *localVolume) Mount(id string) (string, error) {
+func (v *localVolume) Mount() (string, error) {
 	v.m.Lock()
 	defer v.m.Unlock()
 	if v.opts != nil {
@@ -308,7 +304,7 @@ func (v *localVolume) Mount(id string) (string, error) {
 }
 
 // Umount is for satisfying the localVolume interface and does not do anything in this driver.
-func (v *localVolume) Unmount(id string) error {
+func (v *localVolume) Unmount() error {
 	v.m.Lock()
 	defer v.m.Unlock()
 	if v.opts != nil {
@@ -330,9 +326,5 @@ func validateOpts(opts map[string]string) error {
 			return validationError{fmt.Errorf("invalid option key: %q", opt)}
 		}
 	}
-	return nil
-}
-
-func (v *localVolume) Status() map[string]interface{} {
 	return nil
 }

@@ -47,9 +47,8 @@ func (c *MachineLearning) AddTagsRequest(input *AddTagsInput) (req *request.Requ
 		input = &AddTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -125,9 +124,8 @@ func (c *MachineLearning) CreateBatchPredictionRequest(input *CreateBatchPredict
 		input = &CreateBatchPredictionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateBatchPredictionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -210,9 +208,8 @@ func (c *MachineLearning) CreateDataSourceFromRDSRequest(input *CreateDataSource
 		input = &CreateDataSourceFromRDSInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateDataSourceFromRDSOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -295,9 +292,8 @@ func (c *MachineLearning) CreateDataSourceFromRedshiftRequest(input *CreateDataS
 		input = &CreateDataSourceFromRedshiftInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateDataSourceFromRedshiftOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -399,9 +395,8 @@ func (c *MachineLearning) CreateDataSourceFromS3Request(input *CreateDataSourceF
 		input = &CreateDataSourceFromS3Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateDataSourceFromS3Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -498,9 +493,8 @@ func (c *MachineLearning) CreateEvaluationRequest(input *CreateEvaluationInput) 
 		input = &CreateEvaluationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateEvaluationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -585,9 +579,8 @@ func (c *MachineLearning) CreateMLModelRequest(input *CreateMLModelInput) (req *
 		input = &CreateMLModelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateMLModelOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -673,9 +666,8 @@ func (c *MachineLearning) CreateRealtimeEndpointRequest(input *CreateRealtimeEnd
 		input = &CreateRealtimeEndpointInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateRealtimeEndpointOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -745,9 +737,8 @@ func (c *MachineLearning) DeleteBatchPredictionRequest(input *DeleteBatchPredict
 		input = &DeleteBatchPredictionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteBatchPredictionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -820,9 +811,8 @@ func (c *MachineLearning) DeleteDataSourceRequest(input *DeleteDataSourceInput) 
 		input = &DeleteDataSourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteDataSourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -895,9 +885,8 @@ func (c *MachineLearning) DeleteEvaluationRequest(input *DeleteEvaluationInput) 
 		input = &DeleteEvaluationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteEvaluationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -970,9 +959,8 @@ func (c *MachineLearning) DeleteMLModelRequest(input *DeleteMLModelInput) (req *
 		input = &DeleteMLModelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteMLModelOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1045,9 +1033,8 @@ func (c *MachineLearning) DeleteRealtimeEndpointRequest(input *DeleteRealtimeEnd
 		input = &DeleteRealtimeEndpointInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteRealtimeEndpointOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1115,9 +1102,8 @@ func (c *MachineLearning) DeleteTagsRequest(input *DeleteTagsInput) (req *reques
 		input = &DeleteTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1197,9 +1183,8 @@ func (c *MachineLearning) DescribeBatchPredictionsRequest(input *DescribeBatchPr
 		input = &DescribeBatchPredictionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeBatchPredictionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1296,9 +1281,8 @@ func (c *MachineLearning) DescribeDataSourcesRequest(input *DescribeDataSourcesI
 		input = &DescribeDataSourcesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeDataSourcesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1394,9 +1378,8 @@ func (c *MachineLearning) DescribeEvaluationsRequest(input *DescribeEvaluationsI
 		input = &DescribeEvaluationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeEvaluationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1493,9 +1476,8 @@ func (c *MachineLearning) DescribeMLModelsRequest(input *DescribeMLModelsInput) 
 		input = &DescribeMLModelsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeMLModelsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1585,9 +1567,8 @@ func (c *MachineLearning) DescribeTagsRequest(input *DescribeTagsInput) (req *re
 		input = &DescribeTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1655,9 +1636,8 @@ func (c *MachineLearning) GetBatchPredictionRequest(input *GetBatchPredictionInp
 		input = &GetBatchPredictionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetBatchPredictionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1726,9 +1706,8 @@ func (c *MachineLearning) GetDataSourceRequest(input *GetDataSourceInput) (req *
 		input = &GetDataSourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDataSourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1801,9 +1780,8 @@ func (c *MachineLearning) GetEvaluationRequest(input *GetEvaluationInput) (req *
 		input = &GetEvaluationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetEvaluationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1872,9 +1850,8 @@ func (c *MachineLearning) GetMLModelRequest(input *GetMLModelInput) (req *reques
 		input = &GetMLModelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetMLModelOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1945,9 +1922,8 @@ func (c *MachineLearning) PredictRequest(input *PredictInput) (req *request.Requ
 		input = &PredictInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PredictOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2025,9 +2001,8 @@ func (c *MachineLearning) UpdateBatchPredictionRequest(input *UpdateBatchPredict
 		input = &UpdateBatchPredictionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateBatchPredictionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2098,9 +2073,8 @@ func (c *MachineLearning) UpdateDataSourceRequest(input *UpdateDataSourceInput) 
 		input = &UpdateDataSourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateDataSourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2171,9 +2145,8 @@ func (c *MachineLearning) UpdateEvaluationRequest(input *UpdateEvaluationInput) 
 		input = &UpdateEvaluationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateEvaluationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2244,9 +2217,8 @@ func (c *MachineLearning) UpdateMLModelRequest(input *UpdateMLModelInput) (req *
 		input = &UpdateMLModelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateMLModelOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

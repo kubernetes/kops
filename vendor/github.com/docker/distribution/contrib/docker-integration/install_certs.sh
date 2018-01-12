@@ -2,7 +2,14 @@
 set -e
 
 hostname="localregistry"
-installdir="$1"
+authhostname="auth.$hostname"
+
+set_etc_hosts() {
+	hostentry=$1
+	IP=$(ifconfig eth0|grep "inet addr:"| cut -d: -f2 | awk '{ print $1}')
+	echo "$IP $hostentry" >> /etc/hosts
+	# TODO: Check if record already exists in /etc/hosts
+}
 
 install_ca() {
 	mkdir -p $1/$hostname:$2
@@ -23,28 +30,20 @@ install_test_certs() {
 	# For test remove CA
 	rm $1/${hostname}:5447/ca.crt
 	install_ca $1 5448
-	install_ca $1 5600
 }
 
-install_ca_file() {
-	mkdir -p $2
-	cp $1 $2/ca.crt
-}
+set_etc_hosts $hostname
+set_etc_hosts $authhostname
 
-append_ca_file() {
-	mkdir -p $2
-	cat $1 >> $2/ca.crt
-}
-
-install_test_certs $installdir
+install_test_certs /etc/docker/certs.d
+install_test_certs /root/.docker/tls
 
 # Malevolent server
-install_ca_file ./malevolent-certs/ca.pem $installdir/$hostname:6666
+mkdir -p /etc/docker/certs.d/$hostname:6666
+cp ./malevolent-certs/ca.pem /etc/docker/certs.d/$hostname:6666/ca.crt
 
 # Token server
-install_ca_file ./tokenserver/certs/ca.pem $installdir/$hostname:5554
-install_ca_file ./tokenserver/certs/ca.pem $installdir/$hostname:5555
-install_ca_file ./tokenserver/certs/ca.pem $installdir/$hostname:5557
-install_ca_file ./tokenserver/certs/ca.pem $installdir/$hostname:5558
-append_ca_file ./tokenserver/certs/ca.pem $installdir/$hostname:5600
-
+install_file ./tokenserver/certs/ca.pem $1 5555
+install_file ./tokenserver/certs/ca.pem $1 5554
+install_file ./tokenserver/certs/ca.pem $1 5557
+install_file ./tokenserver/certs/ca.pem $1 5558

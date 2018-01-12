@@ -5,10 +5,6 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/docker/engine-api/types"
-	"github.com/docker/engine-api/types/versions"
-	"github.com/gorilla/mux"
-	"google.golang.org/grpc"
 )
 
 // httpStatusError is an interface
@@ -28,11 +24,11 @@ type inputValidationError interface {
 	IsValidationError() bool
 }
 
-// GetHTTPErrorStatusCode retrieve status code from error message
-func GetHTTPErrorStatusCode(err error) int {
-	if err == nil {
-		logrus.WithFields(logrus.Fields{"error": err}).Error("unexpected HTTP error handling")
-		return http.StatusInternalServerError
+// WriteError decodes a specific docker error and sends it in the response.
+func WriteError(w http.ResponseWriter, err error) {
+	if err == nil || w == nil {
+		logrus.WithFields(logrus.Fields{"error": err, "writer": w}).Error("unexpected HTTP error handling")
+		return
 	}
 
 	var statusCode int
@@ -53,13 +49,11 @@ func GetHTTPErrorStatusCode(err error) int {
 			"not found":             http.StatusNotFound,
 			"no such":               http.StatusNotFound,
 			"bad parameter":         http.StatusBadRequest,
-			"no command":            http.StatusBadRequest,
 			"conflict":              http.StatusConflict,
 			"impossible":            http.StatusNotAcceptable,
 			"wrong login/password":  http.StatusUnauthorized,
 			"unauthorized":          http.StatusUnauthorized,
 			"hasn't been activated": http.StatusForbidden,
-			"this node":             http.StatusNotAcceptable,
 		} {
 			if strings.Contains(errStr, keyword) {
 				statusCode = status
@@ -72,22 +66,5 @@ func GetHTTPErrorStatusCode(err error) int {
 		statusCode = http.StatusInternalServerError
 	}
 
-	return statusCode
-}
-
-// MakeErrorHandler makes an HTTP handler that decodes a Docker error and
-// returns it in the response.
-func MakeErrorHandler(err error) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		statusCode := GetHTTPErrorStatusCode(err)
-		vars := mux.Vars(r)
-		if vars["version"] == "" || versions.GreaterThan(vars["version"], "1.23") {
-			response := &types.ErrorResponse{
-				Message: err.Error(),
-			}
-			WriteJSON(w, statusCode, response)
-		} else {
-			http.Error(w, grpc.ErrorDesc(err), statusCode)
-		}
-	}
+	http.Error(w, errMsg, statusCode)
 }

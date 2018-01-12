@@ -47,7 +47,7 @@ func (s *DockerSuite) TestDiffEnsureInitLayerFilesAreIgnored(c *check.C) {
 	}
 }
 
-func (s *DockerSuite) TestDiffEnsureDefaultDevs(c *check.C) {
+func (s *DockerSuite) TestDiffEnsureOnlyKmsgAndPtmx(c *check.C) {
 	testRequires(c, DaemonIsLinux)
 	out, _ := dockerCmd(c, "run", "-d", "busybox", "sleep", "0")
 
@@ -75,7 +75,7 @@ func (s *DockerSuite) TestDiffEnsureDefaultDevs(c *check.C) {
 	}
 
 	for _, line := range strings.Split(out, "\n") {
-		c.Assert(line == "" || expected[line], checker.True, check.Commentf(line))
+		c.Assert(line == "" || expected[line], checker.True)
 	}
 }
 
@@ -83,5 +83,5 @@ func (s *DockerSuite) TestDiffEnsureDefaultDevs(c *check.C) {
 func (s *DockerSuite) TestDiffEmptyArgClientError(c *check.C) {
 	out, _, err := dockerCmdWithError("diff", "")
 	c.Assert(err, checker.NotNil)
-	c.Assert(strings.TrimSpace(out), checker.Contains, "Container name cannot be empty")
+	c.Assert(strings.TrimSpace(out), checker.Equals, "Container name cannot be empty")
 }

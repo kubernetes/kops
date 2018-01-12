@@ -87,5 +87,21 @@ func FindDistribution(rootfs string) (Distribution, error) {
 		glog.Warningf("error reading /usr/lib/os-release: %v", err)
 	}
 
+	// ContainerOS uses /etc/os-release
+	{
+		osRelease, err := ioutil.ReadFile(path.Join(rootfs, "etc/os-release"))
+		if err == nil {
+			for _, line := range strings.Split(string(osRelease), "\n") {
+				line = strings.TrimSpace(line)
+				if line == "ID=cos" {
+					return DistributionContainerOS, nil
+				}
+			}
+			glog.Warningf("unhandled /etc/os-release info %q", string(osRelease))
+		} else if !os.IsNotExist(err) {
+			glog.Warningf("error reading /etc/os-release: %v", err)
+		}
+	}
+
 	return "", fmt.Errorf("cannot identify distro")
 }

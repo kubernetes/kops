@@ -48,9 +48,8 @@ func (c *IoTDataPlane) DeleteThingShadowRequest(input *DeleteThingShadowInput) (
 		input = &DeleteThingShadowInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteThingShadowOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -138,9 +137,8 @@ func (c *IoTDataPlane) GetThingShadowRequest(input *GetThingShadowInput) (req *r
 		input = &GetThingShadowInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetThingShadowOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -228,11 +226,10 @@ func (c *IoTDataPlane) PublishRequest(input *PublishInput) (req *request.Request
 		input = &PublishInput{}
 	}
 
+	output = &PublishOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &PublishOutput{}
-	req.Data = output
 	return
 }
 
@@ -308,9 +305,8 @@ func (c *IoTDataPlane) UpdateThingShadowRequest(input *UpdateThingShadowInput) (
 		input = &UpdateThingShadowInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateThingShadowOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

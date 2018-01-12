@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -104,10 +103,7 @@ func (s *DockerSuite) TestAttachTTYWithoutStdin(c *check.C) {
 			return
 		}
 
-		expected := "the input device is not a TTY"
-		if runtime.GOOS == "windows" {
-			expected += ".  If you are using mintty, try prefixing the command with 'winpty'"
-		}
+		expected := "cannot enable tty mode"
 		if out, _, err := runCommandWithOutput(cmd); err == nil {
 			done <- fmt.Errorf("attach should have failed")
 			return

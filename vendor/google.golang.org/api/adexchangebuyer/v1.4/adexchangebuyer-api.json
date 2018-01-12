@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/tKpytEjguJTF-o5VbDt6Z-bTBvE\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/EvKs3Hkvcx40X69CkSu-499XWyU\"",
  "discoveryVersion": "v1",
  "id": "adexchangebuyer:v1.4",
  "name": "adexchangebuyer",
  "canonicalName": "Ad Exchange Buyer",
  "version": "v1.4",
- "revision": "20160606",
+ "revision": "20161020",
  "title": "Ad Exchange Buyer API",
  "description": "Accesses your bidding-account information, submits creatives for validation, finds available direct deals, and retrieves performance reports.",
  "ownerDomain": "google.com",
@@ -90,7 +90,7 @@
       "properties": {
        "bidProtocol": {
         "type": "string",
-        "description": "The protocol that the bidder endpoint is using. By default, OpenRTB protocols use JSON, except PROTOCOL_OPENRTB_PROTOBUF. PROTOCOL_OPENRTB_PROTOBUF uses protobuf encoding over the latest OpenRTB protocol version, which is 2.3 right now. Allowed values:  \n- PROTOCOL_ADX \n- PROTOCOL_OPENRTB_2_2 \n- PROTOCOL_OPENRTB_2_3 \n- PROTOCOL_OPENRTB_PROTOBUF"
+        "description": "The protocol that the bidder endpoint is using. By default, OpenRTB protocols use JSON, except PROTOCOL_OPENRTB_PROTOBUF. PROTOCOL_OPENRTB_PROTOBUF uses protobuf encoding over the latest OpenRTB protocol version, which is 2.4 right now. Allowed values:  \n- PROTOCOL_ADX \n- PROTOCOL_OPENRTB_2_2 \n- PROTOCOL_OPENRTB_2_3 \n- PROTOCOL_OPENRTB_2_4 \n- PROTOCOL_OPENRTB_PROTOBUF"
        },
        "maximumQps": {
         "type": "integer",
@@ -501,6 +501,13 @@
      "type": "string",
      "description": "Top-level deals status. Read-only. This field should not be set in requests. If disapproved, an entry for auctionType=DIRECT_DEALS (or ALL) in servingRestrictions will also exist. Note that this may be nuanced with other contextual restrictions, in which case it may be preferable to read from servingRestrictions directly."
     },
+    "detectedDomains": {
+     "type": "array",
+     "description": "Detected domains for this creative. Read-only. This field should not be set in requests.",
+     "items": {
+      "type": "string"
+     }
+    },
     "filteringReasons": {
      "type": "object",
      "description": "The filtering reasons for the creative. Read-only. This field should not be set in requests.",
@@ -561,7 +568,7 @@
     },
     "nativeAd": {
      "type": "object",
-     "description": "If nativeAd is set, HTMLSnippet and videoURL should not be set.",
+     "description": "If nativeAd is set, HTMLSnippet and the videoURL outside of nativeAd should not be set. (The videoURL inside nativeAd can be set.)",
      "properties": {
       "advertiser": {
        "type": "string"
@@ -590,6 +597,10 @@
       "callToAction": {
        "type": "string",
        "description": "A label for the button that the user is supposed to click."
+      },
+      "clickLinkUrl": {
+       "type": "string",
+       "description": "The URL that the browser/SDK will load when the user clicks the ad."
       },
       "clickTrackingUrl": {
        "type": "string",
@@ -652,6 +663,10 @@
       "store": {
        "type": "string",
        "description": "The URL to the app store to purchase/download the promoted app."
+      },
+      "videoURL": {
+       "type": "string",
+       "description": "The URL of the XML VAST for a native ad. Note this is a separate field from resource.video_url."
       }
      }
     },
@@ -766,7 +781,7 @@
     },
     "videoURL": {
      "type": "string",
-     "description": "The url to fetch a video ad. If set, HTMLSnippet should not be set."
+     "description": "The URL to fetch a video ad. If set, HTMLSnippet and the nativeAd should not be set. Note, this is different from resource.native_ad.video_url above."
     },
     "width": {
      "type": "integer",
@@ -777,6 +792,41 @@
        "adexchangebuyer.creatives.insert"
       ]
      }
+    }
+   }
+  },
+  "CreativeDealIds": {
+   "id": "CreativeDealIds",
+   "type": "object",
+   "description": "The external deal ids associated with a creative.",
+   "properties": {
+    "dealStatuses": {
+     "type": "array",
+     "description": "A list of external deal ids and ARC approval status.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "arcStatus": {
+        "type": "string",
+        "description": "ARC approval status."
+       },
+       "dealId": {
+        "type": "string",
+        "description": "External deal ID.",
+        "format": "int64"
+       },
+       "webPropertyId": {
+        "type": "integer",
+        "description": "Publisher ID.",
+        "format": "int32"
+       }
+      }
+     }
+    },
+    "kind": {
+     "type": "string",
+     "description": "Resource type.",
+     "default": "adexchangebuyer#creativeDealIds"
     }
    }
   },
@@ -818,6 +868,9 @@
    "type": "object",
    "description": "Tracks which parties (if any) have paused a deal. The deal is considered paused if has_buyer_paused || has_seller_paused. Each of the has_buyer_paused or the has_seller_paused bits can be set independently.",
    "properties": {
+    "buyerPauseReason": {
+     "type": "string"
+    },
     "firstPausedBy": {
      "type": "string",
      "description": "If the deal is paused, records which party paused the deal first."
@@ -827,6 +880,9 @@
     },
     "hasSellerPaused": {
      "type": "boolean"
+    },
+    "sellerPauseReason": {
+     "type": "string"
     }
    }
   },
@@ -837,6 +893,10 @@
     "brandingType": {
      "type": "string",
      "description": "Visibilty of the URL in bid requests."
+    },
+    "crossListedExternalDealIdType": {
+     "type": "string",
+     "description": "Indicates that this ExternalDealId exists under at least two different AdxInventoryDeals. Currently, the only case that the same ExternalDealId will exist is programmatic cross sell case."
     },
     "description": {
      "type": "string",
@@ -862,6 +922,10 @@
     "nonGuaranteedFixedPriceTerms": {
      "$ref": "DealTermsNonGuaranteedFixedPriceTerms",
      "description": "The terms for non-guaranteed fixed price deals."
+    },
+    "rubiconNonGuaranteedTerms": {
+     "$ref": "DealTermsRubiconNonGuaranteedTerms",
+     "description": "The terms for rubicon non-guaranteed deals."
     },
     "sellerTimeZone": {
      "type": "string",
@@ -891,7 +955,12 @@
     },
     "guaranteedLooks": {
      "type": "string",
-     "description": "Count of guaranteed looks. Required for deal, optional for product.",
+     "description": "Count of guaranteed looks. Required for deal, optional for product. For CPD deals, buyer changes to guaranteed_looks will be ignored.",
+     "format": "int64"
+    },
+    "minimumDailyLooks": {
+     "type": "string",
+     "description": "Count of minimum daily looks for a CPD deal. For CPD deals, buyer should negotiate on this field instead of guaranteed_looks.",
      "format": "int64"
     }
    }
@@ -912,7 +981,7 @@
     },
     "originalContractedQuantity": {
      "type": "string",
-     "description": "The original contracted quantity (# impressions) for this deal. To ensure delivery, sometimes publisher will book the deal with a impression buffer, however clients are billed using the original contracted quantity.",
+     "description": "The original contracted quantity (# impressions) for this deal. To ensure delivery, sometimes the publisher will book the deal with a impression buffer, such that guaranteed_looks is greater than the contracted quantity. However clients are billed using the original contracted quantity.",
      "format": "int64"
     },
     "price": {
@@ -948,6 +1017,20 @@
      "items": {
       "$ref": "PricePerBuyer"
      }
+    }
+   }
+  },
+  "DealTermsRubiconNonGuaranteedTerms": {
+   "id": "DealTermsRubiconNonGuaranteedTerms",
+   "type": "object",
+   "properties": {
+    "priorityPrice": {
+     "$ref": "Price",
+     "description": "Optional price for Rubicon priority access in the auction."
+    },
+    "standardPrice": {
+     "$ref": "Price",
+     "description": "Optional price for Rubicon standard access in the auction."
     }
    }
   },
@@ -1139,7 +1222,7 @@
    "properties": {
     "notes": {
      "type": "array",
-     "description": "The list of matching notes.",
+     "description": "The list of matching notes. The notes for a proposal are ordered from oldest to newest. If the notes span multiple proposals, they will be grouped by proposal, with the notes for the most recently modified proposal appearing first.",
      "items": {
       "$ref": "MarketplaceNote"
      }
@@ -1196,7 +1279,7 @@
     },
     "dealId": {
      "type": "string",
-     "description": "A unique deal=id for the deal (readonly)."
+     "description": "A unique deal-id for the deal (readonly)."
     },
     "dealServingMetadata": {
      "$ref": "DealServingMetadata",
@@ -1223,6 +1306,10 @@
     "inventoryDescription": {
      "type": "string",
      "description": "Description for the deal terms. (updatable)"
+    },
+    "isRfpTemplate": {
+     "type": "boolean",
+     "description": "Indicates whether the current deal is a RFP template. RFP template is created by buyer and not based on seller created products."
     },
     "kind": {
      "type": "string",
@@ -1676,6 +1763,13 @@
       "format": "int64"
      }
     },
+    "userIdentifierDataRequired": {
+     "type": "array",
+     "description": "Requests containing the specified type of user data will match. Possible values are HOSTED_MATCH_DATA, which means the request is cookie-targetable and has a match in the buyer's hosted match table, and COOKIE_OR_IDFA, which means the request has either a targetable cookie or an iOS IDFA.",
+     "items": {
+      "type": "string"
+     }
+    },
     "userLists": {
      "type": "array",
      "description": "Requests containing any of these user list ids will match.",
@@ -1755,6 +1849,11 @@
     "currencyCode": {
      "type": "string",
      "description": "The currency code for the price."
+    },
+    "expectedCpmMicros": {
+     "type": "number",
+     "description": "In case of CPD deals, the expected CPM in micros.",
+     "format": "double"
     },
     "pricingType": {
      "type": "string",
@@ -1923,7 +2022,7 @@
     },
     "buyerContacts": {
      "type": "array",
-     "description": "Optional contact information fort the buyer. (seller-readonly)",
+     "description": "Optional contact information of the buyer. (seller-readonly)",
      "items": {
       "$ref": "ContactInformation"
      }
@@ -1932,9 +2031,16 @@
      "$ref": "PrivateData",
      "description": "Private data for buyer. (hidden from seller)."
     },
+    "dbmAdvertiserIds": {
+     "type": "array",
+     "description": "IDs of DBM advertisers permission to this proposal.",
+     "items": {
+      "type": "string"
+     }
+    },
     "hasBuyerSignedOff": {
      "type": "boolean",
-     "description": "When an proposal is in an accepted state, indicates whether the buyer has signed off Once both sides have signed off on a deal, the proposal can be finalized by the seller. (seller-readonly)"
+     "description": "When an proposal is in an accepted state, indicates whether the buyer has signed off. Once both sides have signed off on a deal, the proposal can be finalized by the seller. (seller-readonly)"
     },
     "hasSellerSignedOff": {
      "type": "boolean",
@@ -2008,7 +2114,7 @@
     },
     "sellerContacts": {
      "type": "array",
-     "description": "Optional contact information for the seller (buyer-readonly).",
+     "description": "Optional contact information of the seller (buyer-readonly).",
      "items": {
       "$ref": "ContactInformation"
      }
@@ -2355,6 +2461,11 @@
      "httpMethod": "PATCH",
      "description": "Updates an existing account. This method supports patch semantics.",
      "parameters": {
+      "confirmUnsafeAccountChange": {
+       "type": "boolean",
+       "description": "Confirmation for erasing bidder and cookie matching urls.",
+       "location": "query"
+      },
       "id": {
        "type": "integer",
        "description": "The account id",
@@ -2382,6 +2493,11 @@
      "httpMethod": "PUT",
      "description": "Updates an existing account.",
      "parameters": {
+      "confirmUnsafeAccountChange": {
+       "type": "boolean",
+       "description": "Confirmation for erasing bidder and cookie matching urls.",
+       "location": "query"
+      },
       "id": {
        "type": "integer",
        "description": "The account id",
@@ -2709,6 +2825,37 @@
       "https://www.googleapis.com/auth/adexchange.buyer"
      ]
     },
+    "listDeals": {
+     "id": "adexchangebuyer.creatives.listDeals",
+     "path": "creatives/{accountId}/{buyerCreativeId}/listDeals",
+     "httpMethod": "GET",
+     "description": "Lists the external deal ids associated with the creative.",
+     "parameters": {
+      "accountId": {
+       "type": "integer",
+       "description": "The id for the account that will serve this creative.",
+       "required": true,
+       "format": "int32",
+       "location": "path"
+      },
+      "buyerCreativeId": {
+       "type": "string",
+       "description": "The buyer-specific id for this creative.",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "accountId",
+      "buyerCreativeId"
+     ],
+     "response": {
+      "$ref": "CreativeDealIds"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/adexchange.buyer"
+     ]
+    },
     "removeDeal": {
      "id": "adexchangebuyer.creatives.removeDeal",
      "path": "creatives/{accountId}/{buyerCreativeId}/removeDeal/{dealId}",
@@ -2814,7 +2961,7 @@
       },
       "proposalId": {
        "type": "string",
-       "description": "The proposalId to get deals for. To search across proposals specify order_id = '-' as part of the URL.",
+       "description": "The proposalId to get deals for. To search across all proposals specify order_id = '-' as part of the URL.",
        "required": true,
        "location": "path"
       }
@@ -2891,9 +3038,14 @@
      "httpMethod": "GET",
      "description": "Get all the notes associated with a proposal",
      "parameters": {
+      "pqlQuery": {
+       "type": "string",
+       "description": "Query string to retrieve specific notes. To search the text contents of notes, please use syntax like \"WHERE note.note = \"foo\" or \"WHERE note.note LIKE \"%bar%\"",
+       "location": "query"
+      },
       "proposalId": {
        "type": "string",
-       "description": "The proposalId to get notes for.",
+       "description": "The proposalId to get notes for. To search across all proposals specify order_id = '-' as part of the URL.",
        "required": true,
        "location": "path"
       }
@@ -3285,16 +3437,18 @@
       },
       "updateAction": {
        "type": "string",
-       "description": "The proposed action to take on the proposal.",
+       "description": "The proposed action to take on the proposal. This field is required and it must be set when updating a proposal.",
        "required": true,
        "enum": [
         "accept",
         "cancel",
         "propose",
+        "proposeAndAccept",
         "unknownAction",
         "updateFinalized"
        ],
        "enumDescriptions": [
+        "",
         "",
         "",
         "",
@@ -3379,16 +3533,18 @@
       },
       "updateAction": {
        "type": "string",
-       "description": "The proposed action to take on the proposal.",
+       "description": "The proposed action to take on the proposal. This field is required and it must be set when updating a proposal.",
        "required": true,
        "enum": [
         "accept",
         "cancel",
         "propose",
+        "proposeAndAccept",
         "unknownAction",
         "updateFinalized"
        ],
        "enumDescriptions": [
+        "",
         "",
         "",
         "",

@@ -8,8 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/docker/docker-credential-helpers/client"
-	"github.com/docker/docker-credential-helpers/credentials"
 	"github.com/docker/engine-api/types"
 )
 
@@ -31,7 +29,7 @@ type mockCommand struct {
 }
 
 // Output returns responses from the remote credentials helper.
-// It mocks those responses based in the input in the mock.
+// It mocks those reponses based in the input in the mock.
 func (m *mockCommand) Output() ([]byte, error) {
 	in, err := ioutil.ReadAll(m.input)
 	if err != nil {
@@ -45,7 +43,7 @@ func (m *mockCommand) Output() ([]byte, error) {
 		case validServerAddress:
 			return nil, nil
 		default:
-			return []byte("program failed"), errCommandExited
+			return []byte("error erasing credentials"), errCommandExited
 		}
 	case "get":
 		switch inS {
@@ -54,21 +52,21 @@ func (m *mockCommand) Output() ([]byte, error) {
 		case validServerAddress2:
 			return []byte(`{"Username": "<token>", "Secret": "abcd1234"}`), nil
 		case missingCredsAddress:
-			return []byte(credentials.NewErrCredentialsNotFound().Error()), errCommandExited
+			return []byte(errCredentialsNotFound.Error()), errCommandExited
 		case invalidServerAddress:
-			return []byte("program failed"), errCommandExited
+			return []byte("error getting credentials"), errCommandExited
 		}
 	case "store":
-		var c credentials.Credentials
+		var c credentialsRequest
 		err := json.NewDecoder(strings.NewReader(inS)).Decode(&c)
 		if err != nil {
-			return []byte("program failed"), errCommandExited
+			return []byte("error storing credentials"), errCommandExited
 		}
 		switch c.ServerURL {
 		case validServerAddress:
 			return nil, nil
 		default:
-			return []byte("program failed"), errCommandExited
+			return []byte("error storing credentials"), errCommandExited
 		}
 	}
 
@@ -80,7 +78,7 @@ func (m *mockCommand) Input(in io.Reader) {
 	m.input = in
 }
 
-func mockCommandFn(args ...string) client.Program {
+func mockCommandFn(args ...string) command {
 	return &mockCommand{
 		arg: args[0],
 	}
@@ -91,8 +89,8 @@ func TestNativeStoreAddCredentials(t *testing.T) {
 	f.CredentialsStore = "mock"
 
 	s := &nativeStore{
-		programFunc: mockCommandFn,
-		fileStore:   NewFileStore(f),
+		commandFn: mockCommandFn,
+		fileStore: NewFileStore(f),
 	}
 	err := s.Store(types.AuthConfig{
 		Username:      "foo",
@@ -135,8 +133,8 @@ func TestNativeStoreAddInvalidCredentials(t *testing.T) {
 	f.CredentialsStore = "mock"
 
 	s := &nativeStore{
-		programFunc: mockCommandFn,
-		fileStore:   NewFileStore(f),
+		commandFn: mockCommandFn,
+		fileStore: NewFileStore(f),
 	}
 	err := s.Store(types.AuthConfig{
 		Username:      "foo",
@@ -149,8 +147,8 @@ func TestNativeStoreAddInvalidCredentials(t *testing.T) {
 		t.Fatal("expected error, got nil")
 	}
 
-	if !strings.Contains(err.Error(), "program failed") {
-		t.Fatalf("expected `program failed`, got %v", err)
+	if err.Error() != "error storing credentials" {
+		t.Fatalf("expected `error storing credentials`, got %v", err)
 	}
 
 	if len(f.AuthConfigs) != 0 {
@@ -167,8 +165,8 @@ func TestNativeStoreGet(t *testing.T) {
 	f.CredentialsStore = "mock"
 
 	s := &nativeStore{
-		programFunc: mockCommandFn,
-		fileStore:   NewFileStore(f),
+		commandFn: mockCommandFn,
+		fileStore: NewFileStore(f),
 	}
 	a, err := s.Get(validServerAddress)
 	if err != nil {
@@ -198,8 +196,8 @@ func TestNativeStoreGetIdentityToken(t *testing.T) {
 	f.CredentialsStore = "mock"
 
 	s := &nativeStore{
-		programFunc: mockCommandFn,
-		fileStore:   NewFileStore(f),
+		commandFn: mockCommandFn,
+		fileStore: NewFileStore(f),
 	}
 	a, err := s.Get(validServerAddress2)
 	if err != nil {
@@ -232,8 +230,8 @@ func TestNativeStoreGetAll(t *testing.T) {
 	f.CredentialsStore = "mock"
 
 	s := &nativeStore{
-		programFunc: mockCommandFn,
-		fileStore:   NewFileStore(f),
+		commandFn: mockCommandFn,
+		fileStore: NewFileStore(f),
 	}
 	as, err := s.GetAll()
 	if err != nil {
@@ -279,8 +277,8 @@ func TestNativeStoreGetMissingCredentials(t *testing.T) {
 	f.CredentialsStore = "mock"
 
 	s := &nativeStore{
-		programFunc: mockCommandFn,
-		fileStore:   NewFileStore(f),
+		commandFn: mockCommandFn,
+		fileStore: NewFileStore(f),
 	}
 	_, err := s.Get(missingCredsAddress)
 	if err != nil {
@@ -298,16 +296,16 @@ func TestNativeStoreGetInvalidAddress(t *testing.T) {
 	f.CredentialsStore = "mock"
 
 	s := &nativeStore{
-		programFunc: mockCommandFn,
-		fileStore:   NewFileStore(f),
+		commandFn: mockCommandFn,
+		fileStore: NewFileStore(f),
 	}
 	_, err := s.Get(invalidServerAddress)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
 
-	if !strings.Contains(err.Error(), "program failed") {
-		t.Fatalf("expected `program failed`, got %v", err)
+	if err.Error() != "error getting credentials" {
+		t.Fatalf("expected `error getting credentials`, got %v", err)
 	}
 }
 
@@ -320,8 +318,8 @@ func TestNativeStoreErase(t *testing.T) {
 	f.CredentialsStore = "mock"
 
 	s := &nativeStore{
-		programFunc: mockCommandFn,
-		fileStore:   NewFileStore(f),
+		commandFn: mockCommandFn,
+		fileStore: NewFileStore(f),
 	}
 	err := s.Erase(validServerAddress)
 	if err != nil {
@@ -342,15 +340,15 @@ func TestNativeStoreEraseInvalidAddress(t *testing.T) {
 	f.CredentialsStore = "mock"
 
 	s := &nativeStore{
-		programFunc: mockCommandFn,
-		fileStore:   NewFileStore(f),
+		commandFn: mockCommandFn,
+		fileStore: NewFileStore(f),
 	}
 	err := s.Erase(invalidServerAddress)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
 
-	if !strings.Contains(err.Error(), "program failed") {
-		t.Fatalf("expected `program failed`, got %v", err)
+	if err.Error() != "error erasing credentials" {
+		t.Fatalf("expected `error erasing credentials`, got %v", err)
 	}
 }

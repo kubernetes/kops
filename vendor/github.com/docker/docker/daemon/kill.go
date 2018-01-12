@@ -75,7 +75,7 @@ func (daemon *Daemon) killWithSignal(container *container.Container, sig int) er
 	}
 
 	// if the container is currently restarting we do not need to send the signal
-	// to the process. Telling the monitor that it should exit on its next event
+	// to the process.  Telling the monitor that it should exit on it's next event
 	// loop is enough
 	if container.Restarting {
 		return nil
@@ -86,7 +86,7 @@ func (daemon *Daemon) killWithSignal(container *container.Container, sig int) er
 		// if container or process not exists, ignore the error
 		if strings.Contains(err.Error(), "container not found") ||
 			strings.Contains(err.Error(), "no such process") {
-			logrus.Warnf("container kill failed because of 'container not found' or 'no such process': %s", err.Error())
+			logrus.Warnf("%s", err.Error())
 		} else {
 			return err
 		}
@@ -150,8 +150,4 @@ func (daemon *Daemon) killPossiblyDeadProcess(container *container.Container, si
 		return e
 	}
 	return err
-}
-
-func (daemon *Daemon) kill(c *container.Container, sig int) error {
-	return daemon.containerd.Signal(c.ID, sig)
 }

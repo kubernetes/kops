@@ -9,9 +9,8 @@ import (
 	"runtime"
 
 	"github.com/docker/docker/api"
-	cliflags "github.com/docker/docker/cli/flags"
+	"github.com/docker/docker/cli"
 	"github.com/docker/docker/cliconfig"
-	"github.com/docker/docker/cliconfig/configfile"
 	"github.com/docker/docker/cliconfig/credentials"
 	"github.com/docker/docker/dockerversion"
 	"github.com/docker/docker/opts"
@@ -28,7 +27,7 @@ type DockerCli struct {
 	init func() error
 
 	// configFile has the client configuration file
-	configFile *configfile.ConfigFile
+	configFile *cliconfig.ConfigFile
 	// in holds the input stream and closer (io.ReadCloser) for the client.
 	in io.ReadCloser
 	// out holds the output stream (io.Writer) for the client.
@@ -47,10 +46,8 @@ type DockerCli struct {
 	isTerminalOut bool
 	// client is the http client that performs all API operations
 	client client.APIClient
-	// state holds the terminal input state
-	inState *term.State
-	// outState holds the terminal output state
-	outState *term.State
+	// state holds the terminal state
+	state *term.State
 }
 
 // Initialize calls the init function that will setup the configuration for the client
@@ -62,41 +59,6 @@ func (cli *DockerCli) Initialize() error {
 	return cli.init()
 }
 
-// Client returns the APIClient
-func (cli *DockerCli) Client() client.APIClient {
-	return cli.client
-}
-
-// Out returns the writer used for stdout
-func (cli *DockerCli) Out() io.Writer {
-	return cli.out
-}
-
-// Err returns the writer used for stderr
-func (cli *DockerCli) Err() io.Writer {
-	return cli.err
-}
-
-// In returns the reader used for stdin
-func (cli *DockerCli) In() io.ReadCloser {
-	return cli.in
-}
-
-// ConfigFile returns the ConfigFile
-func (cli *DockerCli) ConfigFile() *configfile.ConfigFile {
-	return cli.configFile
-}
-
-// IsTerminalOut returns true if the clients stdin is a TTY
-func (cli *DockerCli) IsTerminalOut() bool {
-	return cli.isTerminalOut
-}
-
-// OutFd returns the fd for the stdout stream
-func (cli *DockerCli) OutFd() uintptr {
-	return cli.outFd
-}
-
 // CheckTtyInput checks if we are trying to attach to a container tty
 // from a non-tty client input stream, and if so, returns an error.
 func (cli *DockerCli) CheckTtyInput(attachStdin, ttyMode bool) error {
@@ -104,11 +66,7 @@ func (cli *DockerCli) CheckTtyInput(attachStdin, ttyMode bool) error {
 	// be a tty itself: redirecting or piping the client standard input is
 	// incompatible with `docker run -t`, `docker exec -t` or `docker attach`.
 	if ttyMode && attachStdin && !cli.isTerminalIn {
-		eText := "the input device is not a TTY"
-		if runtime.GOOS == "windows" {
-			return errors.New(eText + ".  If you are using mintty, try prefixing the command with 'winpty'")
-		}
-		return errors.New(eText)
+		return errors.New("cannot enable tty mode on non tty input")
 	}
 	return nil
 }
@@ -126,31 +84,19 @@ func (cli *DockerCli) ImagesFormat() string {
 }
 
 func (cli *DockerCli) setRawTerminal() error {
-	if os.Getenv("NORAW") == "" {
-		if cli.isTerminalIn {
-			state, err := term.SetRawTerminal(cli.inFd)
-			if err != nil {
-				return err
-			}
-			cli.inState = state
+	if cli.isTerminalIn && os.Getenv("NORAW") == "" {
+		state, err := term.SetRawTerminal(cli.inFd)
+		if err != nil {
+			return err
 		}
-		if cli.isTerminalOut {
-			state, err := term.SetRawTerminalOutput(cli.outFd)
-			if err != nil {
-				return err
-			}
-			cli.outState = state
-		}
+		cli.state = state
 	}
 	return nil
 }
 
 func (cli *DockerCli) restoreTerminal(in io.Closer) error {
-	if cli.inState != nil {
-		term.RestoreTerminal(cli.inFd, cli.inState)
-	}
-	if cli.outState != nil {
-		term.RestoreTerminal(cli.outFd, cli.outState)
+	if cli.state != nil {
+		term.RestoreTerminal(cli.inFd, cli.state)
 	}
 	// WARNING: DO NOT REMOVE THE OS CHECK !!!
 	// For some reason this Close call blocks on darwin..
@@ -166,7 +112,7 @@ func (cli *DockerCli) restoreTerminal(in io.Closer) error {
 // The key file, protocol (i.e. unix) and address are passed in as strings, along with the tls.Config. If the tls.Config
 // is set the client scheme will be set to https.
 // The client will be given a 32-second timeout (see https://github.com/docker/docker/pull/8035).
-func NewDockerCli(in io.ReadCloser, out, err io.Writer, clientFlags *cliflags.ClientFlags) *DockerCli {
+func NewDockerCli(in io.ReadCloser, out, err io.Writer, clientFlags *cli.ClientFlags) *DockerCli {
 	cli := &DockerCli{
 		in:      in,
 		out:     out,
@@ -176,13 +122,40 @@ func NewDockerCli(in io.ReadCloser, out, err io.Writer, clientFlags *cliflags.Cl
 
 	cli.init = func() error {
 		clientFlags.PostParse()
-		cli.configFile = LoadDefaultConfigFile(err)
+		configFile, e := cliconfig.Load(cliconfig.ConfigDir())
+		if e != nil {
+			fmt.Fprintf(cli.err, "WARNING: Error loading config file:%v\n", e)
+		}
+		if !configFile.ContainsAuth() {
+			credentials.DetectDefaultStore(configFile)
+		}
+		cli.configFile = configFile
 
-		client, err := NewAPIClientFromFlags(clientFlags, cli.configFile)
+		host, err := getServerHost(clientFlags.Common.Hosts, clientFlags.Common.TLSOptions)
 		if err != nil {
 			return err
 		}
 
+		customHeaders := cli.configFile.HTTPHeaders
+		if customHeaders == nil {
+			customHeaders = map[string]string{}
+		}
+		customHeaders["User-Agent"] = clientUserAgent()
+
+		verStr := api.DefaultVersion.String()
+		if tmpStr := os.Getenv("DOCKER_API_VERSION"); tmpStr != "" {
+			verStr = tmpStr
+		}
+
+		httpClient, err := newHTTPClient(host, clientFlags.Common.TLSOptions)
+		if err != nil {
+			return err
+		}
+
+		client, err := client.NewClient(host, verStr, httpClient, customHeaders)
+		if err != nil {
+			return err
+		}
 		cli.client = client
 
 		if cli.in != nil {
@@ -196,45 +169,6 @@ func NewDockerCli(in io.ReadCloser, out, err io.Writer, clientFlags *cliflags.Cl
 	}
 
 	return cli
-}
-
-// LoadDefaultConfigFile attempts to load the default config file and returns
-// an initialized ConfigFile struct if none is found.
-func LoadDefaultConfigFile(err io.Writer) *configfile.ConfigFile {
-	configFile, e := cliconfig.Load(cliconfig.ConfigDir())
-	if e != nil {
-		fmt.Fprintf(err, "WARNING: Error loading config file:%v\n", e)
-	}
-	if !configFile.ContainsAuth() {
-		credentials.DetectDefaultStore(configFile)
-	}
-	return configFile
-}
-
-// NewAPIClientFromFlags creates a new APIClient from command line flags
-func NewAPIClientFromFlags(clientFlags *cliflags.ClientFlags, configFile *configfile.ConfigFile) (client.APIClient, error) {
-	host, err := getServerHost(clientFlags.Common.Hosts, clientFlags.Common.TLSOptions)
-	if err != nil {
-		return &client.Client{}, err
-	}
-
-	customHeaders := configFile.HTTPHeaders
-	if customHeaders == nil {
-		customHeaders = map[string]string{}
-	}
-	customHeaders["User-Agent"] = clientUserAgent()
-
-	verStr := api.DefaultVersion
-	if tmpStr := os.Getenv("DOCKER_API_VERSION"); tmpStr != "" {
-		verStr = tmpStr
-	}
-
-	httpClient, err := newHTTPClient(host, clientFlags.Common.TLSOptions)
-	if err != nil {
-		return &client.Client{}, err
-	}
-
-	return client.NewClient(host, verStr, httpClient, customHeaders)
 }
 
 func getServerHost(hosts []string, tlsOptions *tlsconfig.Options) (host string, err error) {

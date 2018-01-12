@@ -18,25 +18,27 @@ package kops
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/util/validation/field"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const LabelClusterName = "kops.k8s.io/cluster"
 
+// Deprecated - use the new labels & taints node-role.kubernetes.io/master and node-role.kubernetes.io/node
+const TaintNoScheduleMaster15 = "dedicated=master:NoSchedule"
+
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {
-	v1.TypeMeta `json:",inline"`
-	ObjectMeta  api.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec InstanceGroupSpec `json:"spec,omitempty"`
 }
 
 type InstanceGroupList struct {
-	v1.TypeMeta `json:",inline"`
-	v1.ListMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
 
 	Items []InstanceGroup `json:"items"`
 }
@@ -89,6 +91,16 @@ type InstanceGroupSpec struct {
 
 	// NodeLabels indicates the kubernetes labels for nodes in this group
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
+
+	// Describes the tenancy of the instance group. Can be either default or dedicated.
+	// Currently only applies to AWS.
+	Tenancy string `json:"tenancy,omitempty"`
+
+	// Kubelet overrides kubelet config from the ClusterSpec
+	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
+
+	// Taints indicates the kubernetes taints for nodes in this group
+	Taints []string `json:"taints,omitempty"`
 }
 
 // PerformAssignmentsInstanceGroups populates InstanceGroups with default values
@@ -131,60 +143,4 @@ func (g *InstanceGroup) IsMaster() bool {
 		glog.Fatalf("Role not set in group %v", g)
 		return false
 	}
-}
-
-func (g *InstanceGroup) Validate() error {
-	if g.ObjectMeta.Name == "" {
-		return field.Required(field.NewPath("Name"), "")
-	}
-
-	if g.Spec.Role == "" {
-		return field.Required(field.NewPath("Role"), "Role must be set")
-	}
-
-	switch g.Spec.Role {
-	case InstanceGroupRoleMaster:
-	case InstanceGroupRoleNode:
-	case InstanceGroupRoleBastion:
-
-	default:
-		return field.Invalid(field.NewPath("Role"), g.Spec.Role, "Unknown role")
-	}
-
-	if g.IsMaster() {
-		if len(g.Spec.Subnets) == 0 {
-			return fmt.Errorf("Master InstanceGroup %s did not specify any Subnets", g.ObjectMeta.Name)
-		}
-	}
-
-	return nil
-}
-
-// CrossValidate performs validation of the instance group, including that it is consistent with the Cluster
-// It calls Validate, so all that validation is included.
-func (g *InstanceGroup) CrossValidate(cluster *Cluster, strict bool) error {
-	err := g.Validate()
-	if err != nil {
-		return err
-	}
-
-	// Check that instance groups are defined in valid zones
-	{
-		clusterSubnets := make(map[string]*ClusterSubnetSpec)
-		for i := range cluster.Spec.Subnets {
-			s := &cluster.Spec.Subnets[i]
-			if clusterSubnets[s.Name] != nil {
-				return fmt.Errorf("Subnets contained a duplicate value: %v", s.Name)
-			}
-			clusterSubnets[s.Name] = s
-		}
-
-		for _, z := range g.Spec.Subnets {
-			if clusterSubnets[z] == nil {
-				return fmt.Errorf("InstanceGroup %q is configured in %q, but this is not configured as a Subnet in the cluster", g.ObjectMeta.Name, z)
-			}
-		}
-	}
-
-	return nil
 }

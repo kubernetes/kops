@@ -23,7 +23,7 @@ import (
 // exportCmd represents the export command
 var exportCmd = &cobra.Command{
 	Use:   "export",
-	Short: "export clusters/kubecfg",
+	Short: "Exports a kubecfg for target cluster.",
 	Long:  `export clusters/kubecfg`,
 }
 

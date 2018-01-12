@@ -35,11 +35,7 @@ func (s *DockerSuite) TestImportBadURL(c *check.C) {
 	testRequires(c, DaemonIsLinux)
 	out, _, err := dockerCmdWithError("import", "http://nourl/bad")
 	c.Assert(err, checker.NotNil, check.Commentf("import was supposed to fail but didn't"))
-	// Depending on your system you can get either of these errors
-	if !strings.Contains(out, "dial tcp") &&
-		!strings.Contains(out, "Error processing tar file") {
-		c.Fatalf("expected an error msg but didn't get one.\nErr: %v\nOut: %v", err, out)
-	}
+	c.Assert(out, checker.Contains, "dial tcp", check.Commentf("expected an error msg but didn't get one"))
 }
 
 func (s *DockerSuite) TestImportFile(c *check.C) {

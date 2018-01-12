@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/opencontainers/runc/libcontainer"
 	"github.com/opencontainers/runc/libcontainer/utils"
 	"github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/urfave/cli"
@@ -17,7 +18,7 @@ import (
 var execCommand = cli.Command{
 	Name:  "exec",
 	Usage: "execute new process inside the container",
-	ArgsUsage: `<container-id> <container command>
+	ArgsUsage: `<container-id> <container command> [command options]
 
 Where "<container-id>" is the name for the instance of the container and
 "<container command>" is the command to be executed in the container.
@@ -79,8 +80,9 @@ following will output a list of processes running in the container:
 			Usage: "add a capability to the bounding set for the process",
 		},
 		cli.BoolFlag{
-			Name:  "no-subreaper",
-			Usage: "disable the use of the subreaper used to reap reparented processes",
+			Name:   "no-subreaper",
+			Usage:  "disable the use of the subreaper used to reap reparented processes",
+			Hidden: true,
 		},
 	},
 	Action: func(context *cli.Context) error {
@@ -93,12 +95,20 @@ following will output a list of processes running in the container:
 		}
 		return fmt.Errorf("exec failed: %v", err)
 	},
+	SkipArgReorder: true,
 }
 
 func execProcess(context *cli.Context) (int, error) {
 	container, err := getContainer(context)
 	if err != nil {
 		return -1, err
+	}
+	status, err := container.Status()
+	if err != nil {
+		return -1, err
+	}
+	if status == libcontainer.Stopped {
+		return -1, fmt.Errorf("cannot exec a container that has run and stopped")
 	}
 	path := context.String("process")
 	if path == "" && len(context.Args()) == 1 {
@@ -115,7 +125,7 @@ func execProcess(context *cli.Context) (int, error) {
 		return -1, err
 	}
 	r := &runner{
-		enableSubreaper: !context.Bool("no-subreaper"),
+		enableSubreaper: false,
 		shouldDestroy:   false,
 		container:       container,
 		console:         context.String("console"),

@@ -22,8 +22,8 @@ import (
 	"io"
 
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/runtime"
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kubernetes/pkg/runtime"
 )
 
 // GetCmd represents the get command
@@ -37,7 +37,7 @@ var getCmd = GetCmd{
 	cobraCommand: &cobra.Command{
 		Use:        "get",
 		SuggestFor: []string{"list"},
-		Short:      "list or get objects",
+		Short:      "List all instances of a resource.",
 		Long:       `list or get objects`,
 	},
 }

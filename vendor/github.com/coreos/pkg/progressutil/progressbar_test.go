@@ -54,7 +54,7 @@ func TestProgressOutOfBounds(t *testing.T) {
 		if err == nil {
 			currProgress := pb.GetCurrentProgress()
 			if currProgress != testcase.progress {
-				t.Errorf("no error was returned, but the progress wasn't updated. should be: %f, actual: %f", testcase.progress, currProgress)
+				t.Errorf("no error was returned, but the progress wasn't updated. should be: %d, actual: %d", testcase.progress, currProgress)
 			}
 		}
 	}
@@ -90,27 +90,22 @@ func TestDrawOne(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 		if done != testcase.shouldBeDone {
-			t.Errorf("unexpected done, expected=%t actual=%t", testcase.shouldBeDone, done)
+			t.Errorf("unexpected done, expected=%b actual=%b", testcase.shouldBeDone, done)
 		}
 
 		output := buf.String()
 
-		bar := renderExpectedBar(80, testcase.beforeText, testcase.progress, testcase.afterText)
+		progressBarSize := 80 - len(fmt.Sprintf("%s [] %s", testcase.beforeText, testcase.afterText))
+		currentProgress := int(testcase.progress * float64(progressBarSize))
 
-		expectedOutput := fmt.Sprintf("\033[1A%s\n", bar)
+		bar := fmt.Sprintf("[%s%s]",
+			strings.Repeat("=", currentProgress),
+			strings.Repeat(" ", progressBarSize-currentProgress))
+
+		expectedOutput := fmt.Sprintf("\033[1A%s %s %s\n", testcase.beforeText, bar, testcase.afterText)
 
 		if output != expectedOutput {
 			t.Errorf("unexpected output:\nexpected:\n\n%sactual:\n\n%s", expectedOutput, output)
 		}
 	}
-}
-
-func renderExpectedBar(numColumns int, before string, progress float64, after string) string {
-	progressBarSize := numColumns - len(fmt.Sprintf("%s [] %s", before, after))
-	currentProgress := int(progress * float64(progressBarSize))
-
-	bar := fmt.Sprintf("[%s%s]",
-		strings.Repeat("=", currentProgress),
-		strings.Repeat(" ", progressBarSize-currentProgress))
-	return fmt.Sprintf("%s %s %s", before, bar, after)
 }

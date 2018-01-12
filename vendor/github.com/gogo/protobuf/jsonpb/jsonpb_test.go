@@ -36,7 +36,6 @@ import (
 	"encoding/json"
 	"io"
 	"reflect"
-	"strings"
 	"testing"
 
 	pb "github.com/gogo/protobuf/jsonpb/jsonpb_test_proto"
@@ -298,18 +297,6 @@ var marshalingTests = []struct {
 		&pb.Widget{Color: pb.Widget_BLUE.Enum()}, colorPrettyJSON},
 	{"unknown enum value object", marshalerAllOptions,
 		&pb.Widget{Color: pb.Widget_Color(1000).Enum(), RColor: []pb.Widget_Color{pb.Widget_RED}}, colorListPrettyJSON},
-	{"repeated proto3 enum", Marshaler{},
-		&proto3pb.Message{RFunny: []proto3pb.Message_Humour{
-			proto3pb.Message_PUNS,
-			proto3pb.Message_SLAPSTICK,
-		}},
-		`{"rFunny":["PUNS","SLAPSTICK"]}`},
-	{"repeated proto3 enum as int", Marshaler{EnumsAsInts: true},
-		&proto3pb.Message{RFunny: []proto3pb.Message_Humour{
-			proto3pb.Message_PUNS,
-			proto3pb.Message_SLAPSTICK,
-		}},
-		`{"rFunny":[1,2]}`},
 	{"empty value", marshaler, &pb.Simple3{}, `{}`},
 	{"empty value emitted", Marshaler{EmitDefaults: true}, &pb.Simple3{}, `{"dub":0}`},
 	{"map<int64, int32>", marshaler, &pb.Mappy{Nummy: map[int64]int32{1: 2, 3: 4}}, `{"nummy":{"1":2,"3":4}}`},
@@ -324,13 +311,6 @@ var marshalingTests = []struct {
 	{"map<int64, string>", marshaler, &pb.Mappy{Buggy: map[int64]string{1234: "yup"}},
 		`{"buggy":{"1234":"yup"}}`},
 	{"map<bool, bool>", marshaler, &pb.Mappy{Booly: map[bool]bool{false: true}}, `{"booly":{"false":true}}`},
-	// TODO: This is broken.
-	//{"map<string, enum>", marshaler, &pb.Mappy{Enumy: map[string]pb.Numeral{"XIV": pb.Numeral_ROMAN}}, `{"enumy":{"XIV":"ROMAN"}`},
-	{"map<string, enum as int>", Marshaler{EnumsAsInts: true}, &pb.Mappy{Enumy: map[string]pb.Numeral{"XIV": pb.Numeral_ROMAN}}, `{"enumy":{"XIV":2}}`},
-	{"map<int32, bool>", marshaler, &pb.Mappy{S32Booly: map[int32]bool{1: true, 3: false, 10: true, 12: false}}, `{"s32booly":{"1":true,"3":false,"10":true,"12":false}}`},
-	{"map<int64, bool>", marshaler, &pb.Mappy{S64Booly: map[int64]bool{1: true, 3: false, 10: true, 12: false}}, `{"s64booly":{"1":true,"3":false,"10":true,"12":false}}`},
-	{"map<uint32, bool>", marshaler, &pb.Mappy{U32Booly: map[uint32]bool{1: true, 3: false, 10: true, 12: false}}, `{"u32booly":{"1":true,"3":false,"10":true,"12":false}}`},
-	{"map<uint64, bool>", marshaler, &pb.Mappy{U64Booly: map[uint64]bool{1: true, 3: false, 10: true, 12: false}}, `{"u64booly":{"1":true,"3":false,"10":true,"12":false}}`},
 	{"proto2 map<int64, string>", marshaler, &pb.Maps{MInt64Str: map[int64]string{213: "cat"}},
 		`{"mInt64Str":{"213":"cat"}}`},
 	{"proto2 map<bool, Object>", marshaler,
@@ -355,62 +335,40 @@ func TestMarshaling(t *testing.T) {
 }
 
 var unmarshalingTests = []struct {
-	desc        string
-	unmarshaler Unmarshaler
-	json        string
-	pb          proto.Message
+	desc string
+	json string
+	pb   proto.Message
 }{
-	{"simple flat object", Unmarshaler{}, simpleObjectJSON, simpleObject},
-	{"simple pretty object", Unmarshaler{}, simpleObjectPrettyJSON, simpleObject},
-	{"repeated fields flat object", Unmarshaler{}, repeatsObjectJSON, repeatsObject},
-	{"repeated fields pretty object", Unmarshaler{}, repeatsObjectPrettyJSON, repeatsObject},
-	{"nested message/enum flat object", Unmarshaler{}, complexObjectJSON, complexObject},
-	{"nested message/enum pretty object", Unmarshaler{}, complexObjectPrettyJSON, complexObject},
-	{"enum-string object", Unmarshaler{}, `{"color":"BLUE"}`, &pb.Widget{Color: pb.Widget_BLUE.Enum()}},
-	{"enum-value object", Unmarshaler{}, "{\n \"color\": 2\n}", &pb.Widget{Color: pb.Widget_BLUE.Enum()}},
-	{"unknown field with allowed option", Unmarshaler{AllowUnknownFields: true}, `{"unknown": "foo"}`, new(pb.Simple)},
-	{"proto3 enum string", Unmarshaler{}, `{"hilarity":"PUNS"}`, &proto3pb.Message{Hilarity: proto3pb.Message_PUNS}},
-	{"proto3 enum value", Unmarshaler{}, `{"hilarity":1}`, &proto3pb.Message{Hilarity: proto3pb.Message_PUNS}},
+	{"simple flat object", simpleObjectJSON, simpleObject},
+	{"simple pretty object", simpleObjectPrettyJSON, simpleObject},
+	{"repeated fields flat object", repeatsObjectJSON, repeatsObject},
+	{"repeated fields pretty object", repeatsObjectPrettyJSON, repeatsObject},
+	{"nested message/enum flat object", complexObjectJSON, complexObject},
+	{"nested message/enum pretty object", complexObjectPrettyJSON, complexObject},
+	{"enum-string object", `{"color":"BLUE"}`, &pb.Widget{Color: pb.Widget_BLUE.Enum()}},
+	{"enum-value object", "{\n \"color\": 2\n}", &pb.Widget{Color: pb.Widget_BLUE.Enum()}},
+	{"proto3 enum string", `{"hilarity":"PUNS"}`, &proto3pb.Message{Hilarity: proto3pb.Message_PUNS}},
+	{"proto3 enum value", `{"hilarity":1}`, &proto3pb.Message{Hilarity: proto3pb.Message_PUNS}},
 	{"unknown enum value object",
-		Unmarshaler{},
 		"{\n  \"color\": 1000,\n  \"r_color\": [\n    \"RED\"\n  ]\n}",
 		&pb.Widget{Color: pb.Widget_Color(1000).Enum(), RColor: []pb.Widget_Color{pb.Widget_RED}}},
-	{"repeated proto3 enum", Unmarshaler{}, `{"rFunny":["PUNS","SLAPSTICK"]}`,
-		&proto3pb.Message{RFunny: []proto3pb.Message_Humour{
-			proto3pb.Message_PUNS,
-			proto3pb.Message_SLAPSTICK,
-		}}},
-	{"repeated proto3 enum as int", Unmarshaler{}, `{"rFunny":[1,2]}`,
-		&proto3pb.Message{RFunny: []proto3pb.Message_Humour{
-			proto3pb.Message_PUNS,
-			proto3pb.Message_SLAPSTICK,
-		}}},
-	{"repeated proto3 enum as mix of strings and ints", Unmarshaler{}, `{"rFunny":["PUNS",2]}`,
-		&proto3pb.Message{RFunny: []proto3pb.Message_Humour{
-			proto3pb.Message_PUNS,
-			proto3pb.Message_SLAPSTICK,
-		}}},
-	{"unquoted int64 object", Unmarshaler{}, `{"oInt64":-314}`, &pb.Simple{OInt64: proto.Int64(-314)}},
-	{"unquoted uint64 object", Unmarshaler{}, `{"oUint64":123}`, &pb.Simple{OUint64: proto.Uint64(123)}},
-	{"map<int64, int32>", Unmarshaler{}, `{"nummy":{"1":2,"3":4}}`, &pb.Mappy{Nummy: map[int64]int32{1: 2, 3: 4}}},
-	{"map<string, string>", Unmarshaler{}, `{"strry":{"\"one\"":"two","three":"four"}}`, &pb.Mappy{Strry: map[string]string{`"one"`: "two", "three": "four"}}},
-	{"map<int32, Object>", Unmarshaler{}, `{"objjy":{"1":{"dub":1}}}`, &pb.Mappy{Objjy: map[int32]*pb.Simple3{1: {Dub: 1}}}},
-	// TODO: This is broken.
-	//{"map<string, enum>", Unmarshaler{}, `{"enumy":{"XIV":"ROMAN"}`, &pb.Mappy{Enumy: map[string]pb.Numeral{"XIV": pb.Numeral_ROMAN}}},
-	{"map<string, enum as int>", Unmarshaler{}, `{"enumy":{"XIV":2}}`, &pb.Mappy{Enumy: map[string]pb.Numeral{"XIV": pb.Numeral_ROMAN}}},
-	{"oneof", Unmarshaler{}, `{"salary":31000}`, &pb.MsgWithOneof{Union: &pb.MsgWithOneof_Salary{Salary: 31000}}},
-	{"oneof spec name", Unmarshaler{}, `{"country":"Australia"}`, &pb.MsgWithOneof{Union: &pb.MsgWithOneof_Country{Country: "Australia"}}},
-	{"oneof orig_name", Unmarshaler{}, `{"Country":"Australia"}`, &pb.MsgWithOneof{Union: &pb.MsgWithOneof_Country{Country: "Australia"}}},
-	{"orig_name input", Unmarshaler{}, `{"o_bool":true}`, &pb.Simple{OBool: proto.Bool(true)}},
-	{"camelName input", Unmarshaler{}, `{"oBool":true}`, &pb.Simple{OBool: proto.Bool(true)}},
+	{"unquoted int64 object", `{"oInt64":-314}`, &pb.Simple{OInt64: proto.Int64(-314)}},
+	{"unquoted uint64 object", `{"oUint64":123}`, &pb.Simple{OUint64: proto.Uint64(123)}},
+	{"map<int64, int32>", `{"nummy":{"1":2,"3":4}}`, &pb.Mappy{Nummy: map[int64]int32{1: 2, 3: 4}}},
+	{"map<string, string>", `{"strry":{"\"one\"":"two","three":"four"}}`, &pb.Mappy{Strry: map[string]string{`"one"`: "two", "three": "four"}}},
+	{"map<int32, Object>", `{"objjy":{"1":{"dub":1}}}`, &pb.Mappy{Objjy: map[int32]*pb.Simple3{1: {Dub: 1}}}},
+	{"oneof", `{"salary":31000}`, &pb.MsgWithOneof{Union: &pb.MsgWithOneof_Salary{Salary: 31000}}},
+	{"oneof spec name", `{"country":"Australia"}`, &pb.MsgWithOneof{Union: &pb.MsgWithOneof_Country{Country: "Australia"}}},
+	{"oneof orig_name", `{"Country":"Australia"}`, &pb.MsgWithOneof{Union: &pb.MsgWithOneof_Country{Country: "Australia"}}},
+	{"orig_name input", `{"o_bool":true}`, &pb.Simple{OBool: proto.Bool(true)}},
+	{"camelName input", `{"oBool":true}`, &pb.Simple{OBool: proto.Bool(true)}},
 }
 
 func TestUnmarshaling(t *testing.T) {
 	for _, tt := range unmarshalingTests {
 		// Make a new instance of the type of our expected object.
 		p := reflect.New(reflect.TypeOf(tt.pb).Elem()).Interface().(proto.Message)
-
-		err := tt.unmarshaler.Unmarshal(strings.NewReader(tt.json), p)
+		err := UnmarshalString(tt.json, p)
 		if err != nil {
 			t.Errorf("%s: %v", tt.desc, err)
 			continue
@@ -426,21 +384,18 @@ func TestUnmarshaling(t *testing.T) {
 }
 
 func TestUnmarshalNext(t *testing.T) {
-	// We only need to check against a few, not all of them.
-	tests := unmarshalingTests[:5]
-
 	// Create a buffer with many concatenated JSON objects.
 	var b bytes.Buffer
-	for _, tt := range tests {
+	for _, tt := range unmarshalingTests {
 		b.WriteString(tt.json)
 	}
 
 	dec := json.NewDecoder(&b)
-	for _, tt := range tests {
+	for _, tt := range unmarshalingTests {
 		// Make a new instance of the type of our expected object.
 		p := reflect.New(reflect.TypeOf(tt.pb).Elem()).Interface().(proto.Message)
 
-		err := tt.unmarshaler.UnmarshalNext(dec, p)
+		err := UnmarshalNext(dec, p)
 		if err != nil {
 			t.Errorf("%s: %v", tt.desc, err)
 			continue
@@ -455,7 +410,7 @@ func TestUnmarshalNext(t *testing.T) {
 	}
 
 	p := &pb.Simple{}
-	err := new(Unmarshaler).UnmarshalNext(dec, p)
+	err := UnmarshalNext(dec, p)
 	if err != io.EOF {
 		t.Errorf("eof: got %v, expected io.EOF", err)
 	}
@@ -468,7 +423,6 @@ var unmarshalingShouldError = []struct {
 }{
 	{"a value", "666", new(pb.Simple)},
 	{"gibberish", "{adskja123;l23=-=", new(pb.Simple)},
-	{"unknown field", `{"unknown": "foo"}`, new(pb.Simple)},
 	{"unknown enum name", `{"hilarity":"DAVE"}`, new(proto3pb.Message)},
 }
 

@@ -14,7 +14,7 @@ COVER=${COVER:-"-cover"}
 
 source ./build
 
-TESTABLE="cryptoutil flagutil timeutil netutil yamlutil httputil health multierror dlopen progressutil"
+TESTABLE="cryptoutil flagutil timeutil netutil yamlutil httputil health multierror dlopen"
 FORMATTABLE="$TESTABLE capnslog"
 
 # user has not provided PKG override

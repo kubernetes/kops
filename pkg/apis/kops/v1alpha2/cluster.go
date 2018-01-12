@@ -17,20 +17,19 @@ limitations under the License.
 package v1alpha2
 
 import (
-	"k8s.io/kubernetes/pkg/api/v1"
-	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type Cluster struct {
-	meta_v1.TypeMeta `json:",inline"`
-	ObjectMeta       v1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec ClusterSpec `json:"spec,omitempty"`
 }
 
 type ClusterList struct {
-	meta_v1.TypeMeta `json:",inline"`
-	meta_v1.ListMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
 
 	Items []Cluster `json:"items"`
 }
@@ -157,8 +156,26 @@ type ClusterSpec struct {
 	// API field controls how the API is exposed outside the cluster
 	API *AccessSpec `json:"api,omitempty"`
 
+	// Authorization field controls how the cluster is configured for authorization
+	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
+
 	// Tags for AWS resources
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
+}
+
+type AuthorizationSpec struct {
+	AlwaysAllow *AlwaysAllowAuthorizationSpec `json:"alwaysAllow,omitempty"`
+	RBAC        *RBACAuthorizationSpec        `json:"rbac,omitempty"`
+}
+
+func (s *AuthorizationSpec) IsEmpty() bool {
+	return s.RBAC == nil && s.AlwaysAllow == nil
+}
+
+type RBACAuthorizationSpec struct {
+}
+
+type AlwaysAllowAuthorizationSpec struct {
 }
 
 type AccessSpec struct {

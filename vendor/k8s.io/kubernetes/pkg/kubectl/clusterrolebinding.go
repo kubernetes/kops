@@ -21,8 +21,8 @@ import (
 
 	"strings"
 
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/apis/rbac"
-	"k8s.io/kubernetes/pkg/runtime"
 )
 
 // ClusterRoleBindingGeneratorV1 supports stable generation of a clusterRoleBinding.
@@ -77,7 +77,7 @@ func (s ClusterRoleBindingGeneratorV1) Generate(genericParams map[string]interfa
 			return nil, fmt.Errorf("expected []string, found :%v", fromFileStrings)
 		}
 		delegate.ServiceAccounts = fromLiteralArray
-		delete(genericParams, "serviceaccounts")
+		delete(genericParams, "serviceaccount")
 	}
 	params := map[string]string{}
 	for key, value := range genericParams {
@@ -100,7 +100,6 @@ func (s ClusterRoleBindingGeneratorV1) ParamNames() []GeneratorParam {
 		{"user", false},
 		{"group", false},
 		{"serviceaccount", false},
-		{"force", false},
 	}
 }
 
@@ -118,9 +117,16 @@ func (s ClusterRoleBindingGeneratorV1) StructuredGenerate() (runtime.Object, err
 	}
 	for _, user := range s.Users {
 		clusterRoleBinding.Subjects = append(clusterRoleBinding.Subjects, rbac.Subject{
-			Kind:       rbac.UserKind,
-			APIVersion: "rbac/v1alpha1",
-			Name:       user,
+			Kind:     rbac.UserKind,
+			APIGroup: rbac.GroupName,
+			Name:     user,
+		})
+	}
+	for _, group := range s.Groups {
+		clusterRoleBinding.Subjects = append(clusterRoleBinding.Subjects, rbac.Subject{
+			Kind:     rbac.GroupKind,
+			APIGroup: rbac.GroupName,
+			Name:     group,
 		})
 	}
 	for _, sa := range s.ServiceAccounts {
@@ -130,6 +136,7 @@ func (s ClusterRoleBindingGeneratorV1) StructuredGenerate() (runtime.Object, err
 		}
 		clusterRoleBinding.Subjects = append(clusterRoleBinding.Subjects, rbac.Subject{
 			Kind:      rbac.ServiceAccountKind,
+			APIGroup:  "",
 			Namespace: tokens[0],
 			Name:      tokens[1],
 		})

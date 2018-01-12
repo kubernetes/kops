@@ -48,9 +48,8 @@ func (c *DeviceFarm) CreateDevicePoolRequest(input *CreateDevicePoolInput) (req 
 		input = &CreateDevicePoolInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateDevicePoolOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -123,9 +122,8 @@ func (c *DeviceFarm) CreateProjectRequest(input *CreateProjectInput) (req *reque
 		input = &CreateProjectInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateProjectOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -198,9 +196,8 @@ func (c *DeviceFarm) CreateRemoteAccessSessionRequest(input *CreateRemoteAccessS
 		input = &CreateRemoteAccessSessionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateRemoteAccessSessionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -273,9 +270,8 @@ func (c *DeviceFarm) CreateUploadRequest(input *CreateUploadInput) (req *request
 		input = &CreateUploadInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateUploadOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -348,9 +344,8 @@ func (c *DeviceFarm) DeleteDevicePoolRequest(input *DeleteDevicePoolInput) (req 
 		input = &DeleteDevicePoolInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteDevicePoolOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -424,9 +419,8 @@ func (c *DeviceFarm) DeleteProjectRequest(input *DeleteProjectInput) (req *reque
 		input = &DeleteProjectInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteProjectOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -501,9 +495,8 @@ func (c *DeviceFarm) DeleteRemoteAccessSessionRequest(input *DeleteRemoteAccessS
 		input = &DeleteRemoteAccessSessionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteRemoteAccessSessionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -576,9 +569,8 @@ func (c *DeviceFarm) DeleteRunRequest(input *DeleteRunInput) (req *request.Reque
 		input = &DeleteRunInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteRunOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -653,9 +645,8 @@ func (c *DeviceFarm) DeleteUploadRequest(input *DeleteUploadInput) (req *request
 		input = &DeleteUploadInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteUploadOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -728,9 +719,8 @@ func (c *DeviceFarm) GetAccountSettingsRequest(input *GetAccountSettingsInput) (
 		input = &GetAccountSettingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetAccountSettingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -804,9 +794,8 @@ func (c *DeviceFarm) GetDeviceRequest(input *GetDeviceInput) (req *request.Reque
 		input = &GetDeviceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDeviceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -879,9 +868,8 @@ func (c *DeviceFarm) GetDevicePoolRequest(input *GetDevicePoolInput) (req *reque
 		input = &GetDevicePoolInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDevicePoolOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -954,9 +942,8 @@ func (c *DeviceFarm) GetDevicePoolCompatibilityRequest(input *GetDevicePoolCompa
 		input = &GetDevicePoolCompatibilityInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDevicePoolCompatibilityOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1029,9 +1016,8 @@ func (c *DeviceFarm) GetJobRequest(input *GetJobInput) (req *request.Request, ou
 		input = &GetJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1110,9 +1096,8 @@ func (c *DeviceFarm) GetOfferingStatusRequest(input *GetOfferingStatusInput) (re
 		input = &GetOfferingStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetOfferingStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1219,9 +1204,8 @@ func (c *DeviceFarm) GetProjectRequest(input *GetProjectInput) (req *request.Req
 		input = &GetProjectInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetProjectOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1294,9 +1278,8 @@ func (c *DeviceFarm) GetRemoteAccessSessionRequest(input *GetRemoteAccessSession
 		input = &GetRemoteAccessSessionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetRemoteAccessSessionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1369,9 +1352,8 @@ func (c *DeviceFarm) GetRunRequest(input *GetRunInput) (req *request.Request, ou
 		input = &GetRunInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetRunOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1444,9 +1426,8 @@ func (c *DeviceFarm) GetSuiteRequest(input *GetSuiteInput) (req *request.Request
 		input = &GetSuiteInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetSuiteOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1519,9 +1500,8 @@ func (c *DeviceFarm) GetTestRequest(input *GetTestInput) (req *request.Request, 
 		input = &GetTestInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetTestOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1594,9 +1574,8 @@ func (c *DeviceFarm) GetUploadRequest(input *GetUploadInput) (req *request.Reque
 		input = &GetUploadInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetUploadOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1669,9 +1648,8 @@ func (c *DeviceFarm) InstallToRemoteAccessSessionRequest(input *InstallToRemoteA
 		input = &InstallToRemoteAccessSessionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &InstallToRemoteAccessSessionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1752,9 +1730,8 @@ func (c *DeviceFarm) ListArtifactsRequest(input *ListArtifactsInput) (req *reque
 		input = &ListArtifactsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListArtifactsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1858,9 +1835,8 @@ func (c *DeviceFarm) ListDevicePoolsRequest(input *ListDevicePoolsInput) (req *r
 		input = &ListDevicePoolsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListDevicePoolsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1964,9 +1940,8 @@ func (c *DeviceFarm) ListDevicesRequest(input *ListDevicesInput) (req *request.R
 		input = &ListDevicesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListDevicesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2070,9 +2045,8 @@ func (c *DeviceFarm) ListJobsRequest(input *ListJobsInput) (req *request.Request
 		input = &ListJobsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListJobsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2176,9 +2150,8 @@ func (c *DeviceFarm) ListOfferingTransactionsRequest(input *ListOfferingTransact
 		input = &ListOfferingTransactionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListOfferingTransactionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2291,9 +2264,8 @@ func (c *DeviceFarm) ListOfferingsRequest(input *ListOfferingsInput) (req *reque
 		input = &ListOfferingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListOfferingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2406,9 +2378,8 @@ func (c *DeviceFarm) ListProjectsRequest(input *ListProjectsInput) (req *request
 		input = &ListProjectsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListProjectsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2506,9 +2477,8 @@ func (c *DeviceFarm) ListRemoteAccessSessionsRequest(input *ListRemoteAccessSess
 		input = &ListRemoteAccessSessionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListRemoteAccessSessionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2587,9 +2557,8 @@ func (c *DeviceFarm) ListRunsRequest(input *ListRunsInput) (req *request.Request
 		input = &ListRunsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListRunsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2693,9 +2662,8 @@ func (c *DeviceFarm) ListSamplesRequest(input *ListSamplesInput) (req *request.R
 		input = &ListSamplesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListSamplesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2799,9 +2767,8 @@ func (c *DeviceFarm) ListSuitesRequest(input *ListSuitesInput) (req *request.Req
 		input = &ListSuitesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListSuitesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2905,9 +2872,8 @@ func (c *DeviceFarm) ListTestsRequest(input *ListTestsInput) (req *request.Reque
 		input = &ListTestsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListTestsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3011,9 +2977,8 @@ func (c *DeviceFarm) ListUniqueProblemsRequest(input *ListUniqueProblemsInput) (
 		input = &ListUniqueProblemsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListUniqueProblemsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3117,9 +3082,8 @@ func (c *DeviceFarm) ListUploadsRequest(input *ListUploadsInput) (req *request.R
 		input = &ListUploadsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListUploadsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3217,9 +3181,8 @@ func (c *DeviceFarm) PurchaseOfferingRequest(input *PurchaseOfferingInput) (req 
 		input = &PurchaseOfferingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PurchaseOfferingOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3301,9 +3264,8 @@ func (c *DeviceFarm) RenewOfferingRequest(input *RenewOfferingInput) (req *reque
 		input = &RenewOfferingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RenewOfferingOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3384,9 +3346,8 @@ func (c *DeviceFarm) ScheduleRunRequest(input *ScheduleRunInput) (req *request.R
 		input = &ScheduleRunInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ScheduleRunOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3462,9 +3423,8 @@ func (c *DeviceFarm) StopRemoteAccessSessionRequest(input *StopRemoteAccessSessi
 		input = &StopRemoteAccessSessionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StopRemoteAccessSessionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3537,9 +3497,8 @@ func (c *DeviceFarm) StopRunRequest(input *StopRunInput) (req *request.Request, 
 		input = &StopRunInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StopRunOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3617,9 +3576,8 @@ func (c *DeviceFarm) UpdateDevicePoolRequest(input *UpdateDevicePoolInput) (req 
 		input = &UpdateDevicePoolInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateDevicePoolOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3694,9 +3652,8 @@ func (c *DeviceFarm) UpdateProjectRequest(input *UpdateProjectInput) (req *reque
 		input = &UpdateProjectInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateProjectOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

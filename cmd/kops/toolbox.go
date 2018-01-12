@@ -17,15 +17,16 @@ limitations under the License.
 package main
 
 import (
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 )
 
 func NewCmdToolbox(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "toolbox",
-		Short: "Misc infrequently used commands",
+		Short: "Misc infrequently used commands.",
 	}
 
 	cmd.AddCommand(NewCmdToolboxConvertImported(f, out))

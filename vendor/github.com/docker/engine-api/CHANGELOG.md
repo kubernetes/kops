@@ -125,7 +125,7 @@ Items starting with DEPRECATE are important deprecation notices. For more inform
 
 ### Types
 
-- Add warnings to the volume list response.
+- Add warnings to the volume list reponse.
 - Fix image build options:
 	* use 0 as default value for shmSize.
 

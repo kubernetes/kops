@@ -194,7 +194,7 @@ func (s *DockerSuite) TestLogsSince(c *check.C) {
 }
 
 func (s *DockerSuite) TestLogsSinceFutureFollow(c *check.C) {
-	// TODO Windows TP5 - Figure out why this test is so flakey. Disabled for now.
+	// TODO Windows: Flakey on TP4. Enable for next technical preview.
 	testRequires(c, DaemonIsLinux)
 	name := "testlogssincefuturefollow"
 	out, _ := dockerCmd(c, "run", "-d", "--name", name, "busybox", "/bin/sh", "-c", `for i in $(seq 1 5); do echo log$i; sleep 1; done`)
@@ -228,7 +228,7 @@ func (s *DockerSuite) TestLogsSinceFutureFollow(c *check.C) {
 
 // Regression test for #8832
 func (s *DockerSuite) TestLogsFollowSlowStdoutConsumer(c *check.C) {
-	// TODO Windows: Fix this test for TP5.
+	// TODO Windows: Consider enabling post-TP4. Too expensive to run on TP4
 	testRequires(c, DaemonIsLinux)
 	out, _ := dockerCmd(c, "run", "-d", "busybox", "/bin/sh", "-c", `usleep 600000;yes X | head -c 200000`)
 
@@ -306,17 +306,4 @@ func (s *DockerSuite) TestLogsCLIContainerNotFound(c *check.C) {
 	out, _, _ := dockerCmdWithError("logs", name)
 	message := fmt.Sprintf("Error: No such container: %s\n", name)
 	c.Assert(out, checker.Equals, message)
-}
-
-func (s *DockerSuite) TestLogsWithDetails(c *check.C) {
-	dockerCmd(c, "run", "--name=test", "--label", "foo=bar", "-e", "baz=qux", "--log-opt", "labels=foo", "--log-opt", "env=baz", "busybox", "echo", "hello")
-	out, _ := dockerCmd(c, "logs", "--details", "--timestamps", "test")
-
-	logFields := strings.Fields(strings.TrimSpace(out))
-	c.Assert(len(logFields), checker.Equals, 3, check.Commentf(out))
-
-	details := strings.Split(logFields[1], ",")
-	c.Assert(details, checker.HasLen, 2)
-	c.Assert(details[0], checker.Equals, "baz=qux")
-	c.Assert(details[1], checker.Equals, "foo=bar")
 }

@@ -3,12 +3,10 @@ package client
 import (
 	"bytes"
 	"crypto/tls"
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/docker/engine-api/client/transport"
-	"github.com/docker/engine-api/types"
 )
 
 type mockClient struct {
@@ -47,26 +45,6 @@ func (m mockClient) Do(req *http.Request) (*http.Response, error) {
 }
 
 func errorMock(statusCode int, message string) func(req *http.Request) (*http.Response, error) {
-	return func(req *http.Request) (*http.Response, error) {
-		header := http.Header{}
-		header.Set("Content-Type", "application/json")
-
-		body, err := json.Marshal(&types.ErrorResponse{
-			Message: message,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		return &http.Response{
-			StatusCode: statusCode,
-			Body:       ioutil.NopCloser(bytes.NewReader(body)),
-			Header:     header,
-		}, nil
-	}
-}
-
-func plainTextErrorMock(statusCode int, message string) func(req *http.Request) (*http.Response, error) {
 	return func(req *http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: statusCode,

@@ -1,7 +1,7 @@
 # Jenkins CI script for Windows to Linux CI.
 # Heavily modified by John Howard (@jhowardmsft) December 2015 to try to make it more reliable.
 set +xe
-SCRIPT_VER="Wed Apr 20 18:30:19 UTC 2016"
+SCRIPT_VER="Thu Feb 25 18:54:57 UTC 2016"
 
 # TODO to make (even) more resilient: 
 #  - Wait for daemon to be running before executing docker commands
@@ -103,16 +103,6 @@ if [ $ec -eq 0 ]; then
 	fi
 fi
 
-# Are we in split binary mode?
-if [ `grep DOCKER_CLIENTONLY Makefile | wc -l` -gt 0 ]; then
-    splitBinary=0
-	echo "INFO: Running in single binary mode"
-else
-    splitBinary=1
-	echo "INFO: Running in split binary mode"
-fi
-
-
 # Get the commit has and verify we have something
 if [ $ec -eq 0 ]; then
 	export COMMITHASH=$(git rev-parse --short HEAD)
@@ -129,29 +119,28 @@ fi
 # will cause CI to fail from Windows to Linux. Obviously it's not best practice to ever run as local system...
 if [ $ec -eq 0 ]; then
 	export TEMP=/c/CI/CI-$COMMITHASH
-	export TMP=$TEMP
+	export TMP=$TMP
 	/usr/bin/mkdir -p $TEMP  # Make sure Linux mkdir for -p
 fi
 
 # Tidy up time
 if [ $ec -eq 0 ]; then
 	echo INFO: Deleting pre-existing containers and images...
-    
 	# Force remove all containers based on a previously built image with this commit
 	! docker rm -f $(docker ps -aq --filter "ancestor=docker:$COMMITHASH") &>/dev/null
-    
+
 	# Force remove any container with this commithash as a name
 	! docker rm -f $(docker ps -aq --filter "name=docker-$COMMITHASH") &>/dev/null
 
+	# Force remove the image if it exists
+	! docker rmi -f "docker-$COMMITHASH" &>/dev/null
+	
 	# This SHOULD never happen, but just in case, also blow away any containers
-	# that might be around.
-	! if [ ! $(docker ps -aq | wc -l) -eq 0 ]; then
+	# that might be around. 
+	! if [ ! `docker ps -aq | wc -l` -eq 0 ]; then
 		echo WARN: There were some leftover containers. Cleaning them up.
 		! docker rm -f $(docker ps -aq)
 	fi
-	
-    # Force remove the image if it exists
-	! docker rmi -f "docker-$COMMITHASH" &>/dev/null
 fi
 
 # Provide the docker version for debugging purposes. If these fail, game over. 
@@ -181,26 +170,8 @@ fi
 # build the daemon image
 if [ $ec -eq 0 ]; then
 	echo "INFO: Running docker build on Linux host at $DOCKER_HOST"
-	if [ $splitBinary -eq 0 ]; then
-		set -x
-		docker build --rm --force-rm --build-arg APT_MIRROR=cdn-fastly.deb.debian.org -t "docker:$COMMITHASH" .
-    cat <<EOF | docker build --rm --force-rm -t "docker:$COMMITHASH" -
-FROM docker:$COMMITHASH
-RUN hack/make.sh binary
-RUN cp bundles/latest/binary/docker /bin/docker 
-CMD docker daemon -D -H tcp://0.0.0.0:$port_inner $daemon_extra_args
-EOF
-	else
-		set -x
-		docker build --rm --force-rm --build-arg APT_MIRROR=cdn-fastly.deb.debian.org -t "docker:$COMMITHASH" .
-    cat <<EOF | docker build --rm --force-rm -t "docker:$COMMITHASH" -
-FROM docker:$COMMITHASH
-RUN hack/make.sh binary
-RUN cp bundles/latest/binary-daemon/dockerd /bin/dockerd 
-CMD dockerd -D -H tcp://0.0.0.0:$port_inner $daemon_extra_args
-EOF
-
-	fi
+	set -x
+	docker build --rm --force-rm -t "docker:$COMMITHASH" .
 	ec=$?
 	set +x
 	if [ 0 -ne $ec ]; then
@@ -213,7 +184,7 @@ if [ $ec -eq 0 ]; then
 	echo "INFO: Starting build of a Linux daemon to test against, and starting it..."
 	set -x
 	# aufs in aufs is faster than vfs in aufs
-	docker run -d $run_extra_args -e DOCKER_GRAPHDRIVER=aufs --pid host --privileged --name "docker-$COMMITHASH" --net host "docker:$COMMITHASH"
+	docker run $run_extra_args -e DOCKER_GRAPHDRIVER=aufs --pid host --privileged -d --name "docker-$COMMITHASH" --net host "docker:$COMMITHASH" bash -c "echo 'INFO: Compiling' && date && hack/make.sh binary && echo 'INFO: Compile complete' && date && cp bundles/$(cat VERSION)/binary/docker /bin/docker && echo 'INFO: Starting daemon' && exec docker daemon -D -H tcp://0.0.0.0:$port_inner $daemon_extra_args"
 	ec=$?
 	set +x
 	if [ 0 -ne $ec ]; then
@@ -225,9 +196,8 @@ fi
 if [ $ec -eq 0 ]; then
 	echo "INFO: Starting local build of Windows binary..."
 	set -x
-	export TIMEOUT="120m"
+	export TIMEOUT="5m"
 	export DOCKER_HOST="tcp://$ip:$port_inner"
-    # This can be removed
 	export DOCKER_TEST_HOST="tcp://$ip:$port_inner"
 	unset DOCKER_CLIENTONLY
 	export DOCKER_REMOTE_DAEMON=1
@@ -242,11 +212,7 @@ fi
 # Make a local copy of the built binary and ensure that is first in our path
 if [ $ec -eq 0 ]; then
 	VERSION=$(< ./VERSION)
-	if [ $splitBinary -eq 0 ]; then
-		cp bundles/$VERSION/binary/docker.exe $TEMP
-	else
-		cp bundles/$VERSION/binary-client/docker.exe $TEMP
-	fi
+	cp bundles/$VERSION/binary/docker.exe $TEMP
 	ec=$?
 	if [ 0 -ne $ec ]; then
 		echo "ERROR: Failed to copy built binary to $TEMP"
@@ -255,20 +221,19 @@ if [ $ec -eq 0 ]; then
 fi
 
 # Run the integration tests
-if [ $ec -eq 0 ]; then	
+if [ $ec -eq 0 ]; then
 	echo "INFO: Running Integration tests..."
 	set -x
 	export DOCKER_TEST_TLS_VERIFY="$DOCKER_TLS_VERIFY"
 	export DOCKER_TEST_CERT_PATH="$DOCKER_CERT_PATH"
-	#export TESTFLAGS='-check.vv'
 	hack/make.sh test-integration-cli
 	ec=$?
 	set +x
 	if [ 0 -ne $ec ]; then
 		echo "ERROR: CLI test failed."
 		# Next line is useful, but very long winded if included
-		docker -H=$MAIN_DOCKER_HOST logs --tail 100 "docker-$COMMITHASH"
-    fi
+		# docker -H=$MAIN_DOCKER_HOST logs "docker-$COMMITHASH"
+	fi
 fi
 
 # Tidy up any temporary files from the CI run

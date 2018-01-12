@@ -50,11 +50,10 @@ func (c *CodeDeploy) AddTagsToOnPremisesInstancesRequest(input *AddTagsToOnPremi
 		input = &AddTagsToOnPremisesInstancesInput{}
 	}
 
+	output = &AddTagsToOnPremisesInstancesOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &AddTagsToOnPremisesInstancesOutput{}
-	req.Data = output
 	return
 }
 
@@ -134,9 +133,8 @@ func (c *CodeDeploy) BatchGetApplicationRevisionsRequest(input *BatchGetApplicat
 		input = &BatchGetApplicationRevisionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BatchGetApplicationRevisionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -215,9 +213,8 @@ func (c *CodeDeploy) BatchGetApplicationsRequest(input *BatchGetApplicationsInpu
 		input = &BatchGetApplicationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BatchGetApplicationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -290,15 +287,14 @@ func (c *CodeDeploy) BatchGetDeploymentGroupsRequest(input *BatchGetDeploymentGr
 		input = &BatchGetDeploymentGroupsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BatchGetDeploymentGroupsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
 // BatchGetDeploymentGroups API operation for AWS CodeDeploy.
 //
-// Get information about one or more deployment groups.
+// Gets information about one or more deployment groups.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -371,9 +367,8 @@ func (c *CodeDeploy) BatchGetDeploymentInstancesRequest(input *BatchGetDeploymen
 		input = &BatchGetDeploymentInstancesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BatchGetDeploymentInstancesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -453,9 +448,8 @@ func (c *CodeDeploy) BatchGetDeploymentsRequest(input *BatchGetDeploymentsInput)
 		input = &BatchGetDeploymentsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BatchGetDeploymentsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -525,9 +519,8 @@ func (c *CodeDeploy) BatchGetOnPremisesInstancesRequest(input *BatchGetOnPremise
 		input = &BatchGetOnPremisesInstancesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BatchGetOnPremisesInstancesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -597,9 +590,8 @@ func (c *CodeDeploy) CreateApplicationRequest(input *CreateApplicationInput) (re
 		input = &CreateApplicationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateApplicationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -673,9 +665,8 @@ func (c *CodeDeploy) CreateDeploymentRequest(input *CreateDeploymentInput) (req 
 		input = &CreateDeploymentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateDeploymentOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -782,9 +773,8 @@ func (c *CodeDeploy) CreateDeploymentConfigRequest(input *CreateDeploymentConfig
 		input = &CreateDeploymentConfigInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateDeploymentConfigOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -861,9 +851,8 @@ func (c *CodeDeploy) CreateDeploymentGroupRequest(input *CreateDeploymentGroupIn
 		input = &CreateDeploymentGroupInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateDeploymentGroupOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1000,11 +989,10 @@ func (c *CodeDeploy) DeleteApplicationRequest(input *DeleteApplicationInput) (re
 		input = &DeleteApplicationInput{}
 	}
 
+	output = &DeleteApplicationOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteApplicationOutput{}
-	req.Data = output
 	return
 }
 
@@ -1071,11 +1059,10 @@ func (c *CodeDeploy) DeleteDeploymentConfigRequest(input *DeleteDeploymentConfig
 		input = &DeleteDeploymentConfigInput{}
 	}
 
+	output = &DeleteDeploymentConfigOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteDeploymentConfigOutput{}
-	req.Data = output
 	return
 }
 
@@ -1151,9 +1138,8 @@ func (c *CodeDeploy) DeleteDeploymentGroupRequest(input *DeleteDeploymentGroupIn
 		input = &DeleteDeploymentGroupInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteDeploymentGroupOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1231,11 +1217,10 @@ func (c *CodeDeploy) DeregisterOnPremisesInstanceRequest(input *DeregisterOnPrem
 		input = &DeregisterOnPremisesInstanceInput{}
 	}
 
+	output = &DeregisterOnPremisesInstanceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeregisterOnPremisesInstanceOutput{}
-	req.Data = output
 	return
 }
 
@@ -1302,9 +1287,8 @@ func (c *CodeDeploy) GetApplicationRequest(input *GetApplicationInput) (req *req
 		input = &GetApplicationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetApplicationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1374,9 +1358,8 @@ func (c *CodeDeploy) GetApplicationRevisionRequest(input *GetApplicationRevision
 		input = &GetApplicationRevisionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetApplicationRevisionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1455,9 +1438,8 @@ func (c *CodeDeploy) GetDeploymentRequest(input *GetDeploymentInput) (req *reque
 		input = &GetDeploymentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDeploymentOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1527,9 +1509,8 @@ func (c *CodeDeploy) GetDeploymentConfigRequest(input *GetDeploymentConfigInput)
 		input = &GetDeploymentConfigInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDeploymentConfigOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1600,9 +1581,8 @@ func (c *CodeDeploy) GetDeploymentGroupRequest(input *GetDeploymentGroupInput) (
 		input = &GetDeploymentGroupInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDeploymentGroupOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1682,9 +1662,8 @@ func (c *CodeDeploy) GetDeploymentInstanceRequest(input *GetDeploymentInstanceIn
 		input = &GetDeploymentInstanceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDeploymentInstanceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1763,9 +1742,8 @@ func (c *CodeDeploy) GetOnPremisesInstanceRequest(input *GetOnPremisesInstanceIn
 		input = &GetOnPremisesInstanceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetOnPremisesInstanceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1841,9 +1819,8 @@ func (c *CodeDeploy) ListApplicationRevisionsRequest(input *ListApplicationRevis
 		input = &ListApplicationRevisionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListApplicationRevisionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1966,9 +1943,8 @@ func (c *CodeDeploy) ListApplicationsRequest(input *ListApplicationsInput) (req 
 		input = &ListApplicationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListApplicationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2063,9 +2039,8 @@ func (c *CodeDeploy) ListDeploymentConfigsRequest(input *ListDeploymentConfigsIn
 		input = &ListDeploymentConfigsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListDeploymentConfigsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2160,9 +2135,8 @@ func (c *CodeDeploy) ListDeploymentGroupsRequest(input *ListDeploymentGroupsInpu
 		input = &ListDeploymentGroupsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListDeploymentGroupsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2267,9 +2241,8 @@ func (c *CodeDeploy) ListDeploymentInstancesRequest(input *ListDeploymentInstanc
 		input = &ListDeploymentInstancesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListDeploymentInstancesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2380,9 +2353,8 @@ func (c *CodeDeploy) ListDeploymentsRequest(input *ListDeploymentsInput) (req *r
 		input = &ListDeploymentsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListDeploymentsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2497,9 +2469,8 @@ func (c *CodeDeploy) ListOnPremisesInstancesRequest(input *ListOnPremisesInstanc
 		input = &ListOnPremisesInstancesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListOnPremisesInstancesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2573,11 +2544,10 @@ func (c *CodeDeploy) RegisterApplicationRevisionRequest(input *RegisterApplicati
 		input = &RegisterApplicationRevisionInput{}
 	}
 
+	output = &RegisterApplicationRevisionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RegisterApplicationRevisionOutput{}
-	req.Data = output
 	return
 }
 
@@ -2656,17 +2626,19 @@ func (c *CodeDeploy) RegisterOnPremisesInstanceRequest(input *RegisterOnPremises
 		input = &RegisterOnPremisesInstanceInput{}
 	}
 
+	output = &RegisterOnPremisesInstanceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RegisterOnPremisesInstanceOutput{}
-	req.Data = output
 	return
 }
 
 // RegisterOnPremisesInstance API operation for AWS CodeDeploy.
 //
 // Registers an on-premises instance.
+//
+// Only one IAM ARN (an IAM session ARN or IAM user ARN) is supported in the
+// request. You cannot use both.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2678,6 +2650,14 @@ func (c *CodeDeploy) RegisterOnPremisesInstanceRequest(input *RegisterOnPremises
 // Returned Error Codes:
 //   * InstanceNameAlreadyRegisteredException
 //   The specified on-premises instance name is already registered.
+//
+//   * IamArnRequiredException
+//   No IAM ARN was included in the request. You must use an IAM session ARN or
+//   IAM user ARN in the request.
+//
+//   * IamSessionArnAlreadyRegisteredException
+//   The request included an IAM session ARN that has already been used to register
+//   a different instance.
 //
 //   * IamUserArnAlreadyRegisteredException
 //   The specified IAM user ARN is already registered with an on-premises instance.
@@ -2691,8 +2671,15 @@ func (c *CodeDeploy) RegisterOnPremisesInstanceRequest(input *RegisterOnPremises
 //   * InvalidInstanceNameException
 //   The specified on-premises instance name was specified in an invalid format.
 //
+//   * InvalidIamSessionArnException
+//   The IAM session ARN was specified in an invalid format.
+//
 //   * InvalidIamUserArnException
 //   The IAM user ARN was specified in an invalid format.
+//
+//   * MultipleIamArnsProvidedException
+//   Both an IAM user ARN and an IAM session ARN were included in the request.
+//   Use only one ARN type.
 //
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/codedeploy-2014-10-06/RegisterOnPremisesInstance
 func (c *CodeDeploy) RegisterOnPremisesInstance(input *RegisterOnPremisesInstanceInput) (*RegisterOnPremisesInstanceOutput, error) {
@@ -2739,11 +2726,10 @@ func (c *CodeDeploy) RemoveTagsFromOnPremisesInstancesRequest(input *RemoveTagsF
 		input = &RemoveTagsFromOnPremisesInstancesInput{}
 	}
 
+	output = &RemoveTagsFromOnPremisesInstancesOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RemoveTagsFromOnPremisesInstancesOutput{}
-	req.Data = output
 	return
 }
 
@@ -2823,9 +2809,8 @@ func (c *CodeDeploy) StopDeploymentRequest(input *StopDeploymentInput) (req *req
 		input = &StopDeploymentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StopDeploymentOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2898,11 +2883,10 @@ func (c *CodeDeploy) UpdateApplicationRequest(input *UpdateApplicationInput) (re
 		input = &UpdateApplicationInput{}
 	}
 
+	output = &UpdateApplicationOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateApplicationOutput{}
-	req.Data = output
 	return
 }
 
@@ -2976,9 +2960,8 @@ func (c *CodeDeploy) UpdateDeploymentGroupRequest(input *UpdateDeploymentGroupIn
 		input = &UpdateDeploymentGroupInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateDeploymentGroupOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3973,49 +3956,9 @@ type CreateDeploymentGroupInput struct {
 	// is used if a configuration isn't specified for the deployment or the deployment
 	// group.
 	//
-	// The predefined deployment configurations include the following:
-	//
-	//    * CodeDeployDefault.AllAtOnce attempts to deploy an application revision
-	//    to as many instances as possible at once. The status of the overall deployment
-	//    will be displayed as Succeeded if the application revision is deployed
-	//    to one or more of the instances. The status of the overall deployment
-	//    will be displayed as Failed if the application revision is not deployed
-	//    to any of the instances. Using an example of nine instances, CodeDeployDefault.AllAtOnce
-	//    will attempt to deploy to all nine instances at once. The overall deployment
-	//    will succeed if deployment to even a single instance is successful; it
-	//    will fail only if deployments to all nine instances fail.
-	//
-	//    * CodeDeployDefault.HalfAtATime deploys to up to half of the instances
-	//    at a time (with fractions rounded down). The overall deployment succeeds
-	//    if the application revision is deployed to at least half of the instances
-	//    (with fractions rounded up); otherwise, the deployment fails. In the example
-	//    of nine instances, it will deploy to up to four instances at a time. The
-	//    overall deployment succeeds if deployment to five or more instances succeed;
-	//    otherwise, the deployment fails. The deployment may be successfully deployed
-	//    to some instances even if the overall deployment fails.
-	//
-	//    * CodeDeployDefault.OneAtATime deploys the application revision to only
-	//    one instance at a time.
-	//
-	// For deployment groups that contain more than one instance:
-	//
-	// The overall deployment succeeds if the application revision is deployed to
-	//    all of the instances. The exception to this rule is if deployment to the
-	//    last instance fails, the overall deployment still succeeds. This is because
-	//    AWS CodeDeploy allows only one instance at a time to be taken offline
-	//    with the CodeDeployDefault.OneAtATime configuration.
-	//
-	// The overall deployment fails as soon as the application revision fails to
-	//    be deployed to any but the last instance. The deployment may be successfully
-	//    deployed to some instances even if the overall deployment fails.
-	//
-	// In an example using nine instances, it will deploy to one instance at a time.
-	//    The overall deployment succeeds if deployment to the first eight instances
-	//    is successful; the overall deployment fails if deployment to any of the
-	//    first eight instances fails.
-	//
-	// For deployment groups that contain only one instance, the overall deployment
-	//    is successful only if deployment to the single instance is successful
+	// For more information about the predefined deployment configurations in AWS
+	// CodeDeploy, see see Working with Deployment Groups in AWS CodeDeploy (http://docs.aws.amazon.com/codedeploy/latest/userguide/deployment-configurations.html)
+	// in the AWS CodeDeploy User Guide.
 	DeploymentConfigName *string `locationName:"deploymentConfigName" min:"1" type:"string"`
 
 	// The name of a new deployment group for the specified application.
@@ -5841,6 +5784,9 @@ type InstanceInfo struct {
 	// instance was deregistered.
 	DeregisterTime *time.Time `locationName:"deregisterTime" type:"timestamp" timestampFormat:"unix"`
 
+	// The ARN of the IAM session associated with the on-premises instance.
+	IamSessionArn *string `locationName:"iamSessionArn" type:"string"`
+
 	// The IAM user ARN associated with the on-premises instance.
 	IamUserArn *string `locationName:"iamUserArn" type:"string"`
 
@@ -5870,6 +5816,12 @@ func (s InstanceInfo) GoString() string {
 // SetDeregisterTime sets the DeregisterTime field's value.
 func (s *InstanceInfo) SetDeregisterTime(v time.Time) *InstanceInfo {
 	s.DeregisterTime = &v
+	return s
+}
+
+// SetIamSessionArn sets the IamSessionArn field's value.
+func (s *InstanceInfo) SetIamSessionArn(v string) *InstanceInfo {
+	s.IamSessionArn = &v
 	return s
 }
 
@@ -6903,10 +6855,11 @@ func (s RegisterApplicationRevisionOutput) GoString() string {
 type RegisterOnPremisesInstanceInput struct {
 	_ struct{} `type:"structure"`
 
+	// The ARN of the IAM session to associate with the on-premises instance.
+	IamSessionArn *string `locationName:"iamSessionArn" type:"string"`
+
 	// The ARN of the IAM user to associate with the on-premises instance.
-	//
-	// IamUserArn is a required field
-	IamUserArn *string `locationName:"iamUserArn" type:"string" required:"true"`
+	IamUserArn *string `locationName:"iamUserArn" type:"string"`
 
 	// The name of the on-premises instance to register.
 	//
@@ -6927,9 +6880,6 @@ func (s RegisterOnPremisesInstanceInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *RegisterOnPremisesInstanceInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "RegisterOnPremisesInstanceInput"}
-	if s.IamUserArn == nil {
-		invalidParams.Add(request.NewErrParamRequired("IamUserArn"))
-	}
 	if s.InstanceName == nil {
 		invalidParams.Add(request.NewErrParamRequired("InstanceName"))
 	}
@@ -6938,6 +6888,12 @@ func (s *RegisterOnPremisesInstanceInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetIamSessionArn sets the IamSessionArn field's value.
+func (s *RegisterOnPremisesInstanceInput) SetIamSessionArn(v string) *RegisterOnPremisesInstanceInput {
+	s.IamSessionArn = &v
+	return s
 }
 
 // SetIamUserArn sets the IamUserArn field's value.
@@ -7041,10 +6997,11 @@ func (s RemoveTagsFromOnPremisesInstancesOutput) GoString() string {
 type RevisionInfo struct {
 	_ struct{} `type:"structure"`
 
-	// Information about an application revision.
+	// Information about an application revision, including usage details and currently
+	// associated deployment groups.
 	GenericRevisionInfo *GenericRevisionInfo `locationName:"genericRevisionInfo" type:"structure"`
 
-	// Information about the location of an application revision.
+	// Information about the location and type of an application revision.
 	RevisionLocation *RevisionLocation `locationName:"revisionLocation" type:"structure"`
 }
 

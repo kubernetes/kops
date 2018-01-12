@@ -40,6 +40,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	pb "github.com/golang/protobuf/proto/testdata"
+	"golang.org/x/sync/errgroup"
 )
 
 func TestGetExtensionsWithMissingExtensions(t *testing.T) {
@@ -66,6 +67,10 @@ func TestGetExtensionsWithMissingExtensions(t *testing.T) {
 func TestExtensionDescsWithMissingExtensions(t *testing.T) {
 	msg := &pb.MyMessage{Count: proto.Int32(0)}
 	extdesc1 := pb.E_Ext_More
+	if descs, err := proto.ExtensionDescs(msg); len(descs) != 0 || err != nil {
+		t.Errorf("proto.ExtensionDescs: got %d descs, error %v; want 0, nil", len(descs), err)
+	}
+
 	ext1 := &pb.Ext{}
 	if err := proto.SetExtension(msg, extdesc1, ext1); err != nil {
 		t.Fatalf("Could not set ext1: %s", err)
@@ -500,5 +505,32 @@ func TestClearAllExtensions(t *testing.T) {
 	proto.ClearAllExtensions(m)
 	if proto.HasExtension(m, desc) {
 		t.Errorf("proto.HasExtension(%s): got true, want false", proto.MarshalTextString(m))
+	}
+}
+
+func TestMarshalRace(t *testing.T) {
+	// unregistered extension
+	desc := &proto.ExtensionDesc{
+		ExtendedType:  (*pb.MyMessage)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         101010100,
+		Name:          "emptyextension",
+		Tag:           "varint,0,opt",
+	}
+
+	m := &pb.MyMessage{Count: proto.Int32(4)}
+	if err := proto.SetExtension(m, desc, proto.Bool(true)); err != nil {
+		t.Errorf("proto.SetExtension(m, desc, true): got error %q, want nil", err)
+	}
+
+	var g errgroup.Group
+	for n := 3; n > 0; n-- {
+		g.Go(func() error {
+			_, err := proto.Marshal(m)
+			return err
+		})
+	}
+	if err := g.Wait(); err != nil {
+		t.Fatal(err)
 	}
 }

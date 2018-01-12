@@ -24,9 +24,10 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/pborman/uuid"
-	"k8s.io/kubernetes/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/types"
 	"k8s.io/kubernetes/pkg/util/exec"
 	"k8s.io/kubernetes/pkg/util/mount"
 	"k8s.io/kubernetes/pkg/util/strings"
@@ -117,6 +118,14 @@ func (plugin *quobytePlugin) RequiresRemount() bool {
 	return false
 }
 
+func (plugin *quobytePlugin) SupportsMountOption() bool {
+	return true
+}
+
+func (plugin *quobytePlugin) SupportsBulkVolumeVerification() bool {
+	return false
+}
+
 func (plugin *quobytePlugin) GetAccessModes() []v1.PersistentVolumeAccessMode {
 	return []v1.PersistentVolumeAccessMode{
 		v1.ReadWriteOnce,
@@ -168,8 +177,9 @@ func (plugin *quobytePlugin) newMounterInternal(spec *volume.Spec, pod *v1.Pod, 
 			volume:  source.Volume,
 			plugin:  plugin,
 		},
-		registry: source.Registry,
-		readOnly: readOnly,
+		registry:     source.Registry,
+		readOnly:     readOnly,
+		mountOptions: volume.MountOptionFromSpec(spec),
 	}, nil
 }
 
@@ -182,7 +192,7 @@ func (plugin *quobytePlugin) newUnmounterInternal(volName string, podUID types.U
 		&quobyte{
 			volName: volName,
 			mounter: mounter,
-			pod:     &v1.Pod{ObjectMeta: v1.ObjectMeta{UID: podUID}},
+			pod:     &v1.Pod{ObjectMeta: metav1.ObjectMeta{UID: podUID}},
 			plugin:  plugin,
 		},
 	}, nil
@@ -204,8 +214,9 @@ type quobyte struct {
 
 type quobyteMounter struct {
 	*quobyte
-	registry string
-	readOnly bool
+	registry     string
+	readOnly     bool
+	mountOptions []string
 }
 
 var _ volume.Mounter = &quobyteMounter{}
@@ -248,7 +259,8 @@ func (mounter *quobyteMounter) SetUpAt(dir string, fsGroup *int64) error {
 	}
 
 	//if a trailing slash is missing we add it here
-	if err := mounter.mounter.Mount(mounter.correctTraillingSlash(mounter.registry), dir, "quobyte", options); err != nil {
+	mountOptions := volume.JoinMountOptions(mounter.mountOptions, options)
+	if err := mounter.mounter.Mount(mounter.correctTraillingSlash(mounter.registry), dir, "quobyte", mountOptions); err != nil {
 		return fmt.Errorf("quobyte: mount failed: %v", err)
 	}
 

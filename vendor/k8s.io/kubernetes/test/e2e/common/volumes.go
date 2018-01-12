@@ -47,10 +47,10 @@ import (
 	"strings"
 	"time"
 
-	apierrs "k8s.io/kubernetes/pkg/api/errors"
+	apierrs "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/api/v1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/test/e2e/framework"
 
 	"github.com/golang/glog"
@@ -122,7 +122,7 @@ func startVolumeServer(f *framework.Framework, config VolumeTestConfig) *v1.Pod 
 			Kind:       "Pod",
 			APIVersion: "v1",
 		},
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: config.prefix + "-server",
 			Labels: map[string]string{
 				"role": config.prefix + "-server",
@@ -198,7 +198,7 @@ func testVolumeClient(f *framework.Framework, config VolumeTestConfig, volume v1
 			Kind:       "Pod",
 			APIVersion: "v1",
 		},
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: config.prefix + "-client",
 			Labels: map[string]string{
 				"role": config.prefix + "-client",
@@ -274,7 +274,7 @@ func injectHtml(client clientset.Interface, config VolumeTestConfig, volume v1.V
 			Kind:       "Pod",
 			APIVersion: "v1",
 		},
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: config.prefix + "-injector",
 			Labels: map[string]string{
 				"role": config.prefix + "-injector",
@@ -364,7 +364,7 @@ var _ = framework.KubeDescribe("GCP Volumes", func() {
 	////////////////////////////////////////////////////////////////////////
 
 	framework.KubeDescribe("NFSv4", func() {
-		It("should be mountable for NFSv4", func() {
+		It("should be mountable for NFSv4 [Volume]", func() {
 			config := VolumeTestConfig{
 				namespace:   namespace.Name,
 				prefix:      "nfs",
@@ -393,12 +393,42 @@ var _ = framework.KubeDescribe("GCP Volumes", func() {
 		})
 	})
 
+	framework.KubeDescribe("NFSv3", func() {
+		It("should be mountable for NFSv3 [Volume]", func() {
+			config := VolumeTestConfig{
+				namespace:   namespace.Name,
+				prefix:      "nfs",
+				serverImage: "gcr.io/google_containers/volume-nfs:0.8",
+				serverPorts: []int{2049},
+			}
+
+			defer func() {
+				if clean {
+					volumeTestCleanup(f, config)
+				}
+			}()
+			pod := startVolumeServer(f, config)
+			serverIP := pod.Status.PodIP
+			framework.Logf("NFS server IP address: %v", serverIP)
+
+			volume := v1.VolumeSource{
+				NFS: &v1.NFSVolumeSource{
+					Server:   serverIP,
+					Path:     "/exports",
+					ReadOnly: true,
+				},
+			}
+			// Must match content of test/images/volume-tester/nfs/index.html
+			testVolumeClient(f, config, volume, nil, "Hello from NFS!")
+		})
+	})
+
 	////////////////////////////////////////////////////////////////////////
 	// Gluster
 	////////////////////////////////////////////////////////////////////////
 
 	framework.KubeDescribe("GlusterFS", func() {
-		It("should be mountable", func() {
+		It("should be mountable [Volume]", func() {
 			config := VolumeTestConfig{
 				namespace:   namespace.Name,
 				prefix:      "gluster",
@@ -421,7 +451,7 @@ var _ = framework.KubeDescribe("GCP Volumes", func() {
 					Kind:       "Endpoints",
 					APIVersion: "v1",
 				},
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: config.prefix + "-server",
 				},
 				Subsets: []v1.EndpointSubset{
@@ -488,10 +518,10 @@ func isTestEnabled(c clientset.Interface) bool {
 	}
 
 	// For cluster e2e test, because nodeName is empty, retrieve the node objects from api server
-	// and check their images. Only run NFSv4 and GlusterFS if nodes are using GCI image for now.
+	// and check their images. Only run NFS and GlusterFS tests if nodes are using GCI image for now.
 	nodes := framework.GetReadySchedulableNodesOrDie(c)
 	for _, node := range nodes.Items {
-		if !strings.Contains(node.Status.NodeInfo.OSImage, "Google Container-VM") {
+		if !strings.Contains(node.Status.NodeInfo.OSImage, "Container-Optimized OS") {
 			return false
 		}
 	}

@@ -49,9 +49,8 @@ func (c *SWF) CountClosedWorkflowExecutionsRequest(input *CountClosedWorkflowExe
 		input = &CountClosedWorkflowExecutionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &WorkflowExecutionCount{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -141,9 +140,8 @@ func (c *SWF) CountOpenWorkflowExecutionsRequest(input *CountOpenWorkflowExecuti
 		input = &CountOpenWorkflowExecutionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &WorkflowExecutionCount{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -233,9 +231,8 @@ func (c *SWF) CountPendingActivityTasksRequest(input *CountPendingActivityTasksI
 		input = &CountPendingActivityTasksInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PendingTaskCount{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -323,9 +320,8 @@ func (c *SWF) CountPendingDecisionTasksRequest(input *CountPendingDecisionTasksI
 		input = &CountPendingDecisionTasksInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PendingTaskCount{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -413,11 +409,10 @@ func (c *SWF) DeprecateActivityTypeRequest(input *DeprecateActivityTypeInput) (r
 		input = &DeprecateActivityTypeInput{}
 	}
 
+	output = &DeprecateActivityTypeOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeprecateActivityTypeOutput{}
-	req.Data = output
 	return
 }
 
@@ -510,11 +505,10 @@ func (c *SWF) DeprecateDomainRequest(input *DeprecateDomainInput) (req *request.
 		input = &DeprecateDomainInput{}
 	}
 
+	output = &DeprecateDomainOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeprecateDomainOutput{}
-	req.Data = output
 	return
 }
 
@@ -607,11 +601,10 @@ func (c *SWF) DeprecateWorkflowTypeRequest(input *DeprecateWorkflowTypeInput) (r
 		input = &DeprecateWorkflowTypeInput{}
 	}
 
+	output = &DeprecateWorkflowTypeOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeprecateWorkflowTypeOutput{}
-	req.Data = output
 	return
 }
 
@@ -705,9 +698,8 @@ func (c *SWF) DescribeActivityTypeRequest(input *DescribeActivityTypeInput) (req
 		input = &DescribeActivityTypeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeActivityTypeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -796,9 +788,8 @@ func (c *SWF) DescribeDomainRequest(input *DescribeDomainInput) (req *request.Re
 		input = &DescribeDomainInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeDomainOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -883,9 +874,8 @@ func (c *SWF) DescribeWorkflowExecutionRequest(input *DescribeWorkflowExecutionI
 		input = &DescribeWorkflowExecutionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeWorkflowExecutionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -971,9 +961,8 @@ func (c *SWF) DescribeWorkflowTypeRequest(input *DescribeWorkflowTypeInput) (req
 		input = &DescribeWorkflowTypeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeWorkflowTypeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1068,9 +1057,8 @@ func (c *SWF) GetWorkflowExecutionHistoryRequest(input *GetWorkflowExecutionHist
 		input = &GetWorkflowExecutionHistoryInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetWorkflowExecutionHistoryOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1188,9 +1176,8 @@ func (c *SWF) ListActivityTypesRequest(input *ListActivityTypesInput) (req *requ
 		input = &ListActivityTypesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListActivityTypesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1309,9 +1296,8 @@ func (c *SWF) ListClosedWorkflowExecutionsRequest(input *ListClosedWorkflowExecu
 		input = &ListClosedWorkflowExecutionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &WorkflowExecutionInfos{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1434,9 +1420,8 @@ func (c *SWF) ListDomainsRequest(input *ListDomainsInput) (req *request.Request,
 		input = &ListDomainsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListDomainsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1550,9 +1535,8 @@ func (c *SWF) ListOpenWorkflowExecutionsRequest(input *ListOpenWorkflowExecution
 		input = &ListOpenWorkflowExecutionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &WorkflowExecutionInfos{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1675,9 +1659,8 @@ func (c *SWF) ListWorkflowTypesRequest(input *ListWorkflowTypesInput) (req *requ
 		input = &ListWorkflowTypesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListWorkflowTypesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1788,9 +1771,8 @@ func (c *SWF) PollForActivityTaskRequest(input *PollForActivityTaskInput) (req *
 		input = &PollForActivityTaskInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PollForActivityTaskOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1894,9 +1876,8 @@ func (c *SWF) PollForDecisionTaskRequest(input *PollForDecisionTaskInput) (req *
 		input = &PollForDecisionTaskInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PollForDecisionTaskOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2027,9 +2008,8 @@ func (c *SWF) RecordActivityTaskHeartbeatRequest(input *RecordActivityTaskHeartb
 		input = &RecordActivityTaskHeartbeatInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RecordActivityTaskHeartbeatOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2132,11 +2112,10 @@ func (c *SWF) RegisterActivityTypeRequest(input *RegisterActivityTypeInput) (req
 		input = &RegisterActivityTypeInput{}
 	}
 
+	output = &RegisterActivityTypeOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RegisterActivityTypeOutput{}
-	req.Data = output
 	return
 }
 
@@ -2238,11 +2217,10 @@ func (c *SWF) RegisterDomainRequest(input *RegisterDomainInput) (req *request.Re
 		input = &RegisterDomainInput{}
 	}
 
+	output = &RegisterDomainOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RegisterDomainOutput{}
-	req.Data = output
 	return
 }
 
@@ -2331,11 +2309,10 @@ func (c *SWF) RegisterWorkflowTypeRequest(input *RegisterWorkflowTypeInput) (req
 		input = &RegisterWorkflowTypeInput{}
 	}
 
+	output = &RegisterWorkflowTypeOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RegisterWorkflowTypeOutput{}
-	req.Data = output
 	return
 }
 
@@ -2440,11 +2417,10 @@ func (c *SWF) RequestCancelWorkflowExecutionRequest(input *RequestCancelWorkflow
 		input = &RequestCancelWorkflowExecutionInput{}
 	}
 
+	output = &RequestCancelWorkflowExecutionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RequestCancelWorkflowExecutionOutput{}
-	req.Data = output
 	return
 }
 
@@ -2535,11 +2511,10 @@ func (c *SWF) RespondActivityTaskCanceledRequest(input *RespondActivityTaskCance
 		input = &RespondActivityTaskCanceledInput{}
 	}
 
+	output = &RespondActivityTaskCanceledOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RespondActivityTaskCanceledOutput{}
-	req.Data = output
 	return
 }
 
@@ -2635,11 +2610,10 @@ func (c *SWF) RespondActivityTaskCompletedRequest(input *RespondActivityTaskComp
 		input = &RespondActivityTaskCompletedInput{}
 	}
 
+	output = &RespondActivityTaskCompletedOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RespondActivityTaskCompletedOutput{}
-	req.Data = output
 	return
 }
 
@@ -2734,11 +2708,10 @@ func (c *SWF) RespondActivityTaskFailedRequest(input *RespondActivityTaskFailedI
 		input = &RespondActivityTaskFailedInput{}
 	}
 
+	output = &RespondActivityTaskFailedOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RespondActivityTaskFailedOutput{}
-	req.Data = output
 	return
 }
 
@@ -2830,11 +2803,10 @@ func (c *SWF) RespondDecisionTaskCompletedRequest(input *RespondDecisionTaskComp
 		input = &RespondDecisionTaskCompletedInput{}
 	}
 
+	output = &RespondDecisionTaskCompletedOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RespondDecisionTaskCompletedOutput{}
-	req.Data = output
 	return
 }
 
@@ -2916,11 +2888,10 @@ func (c *SWF) SignalWorkflowExecutionRequest(input *SignalWorkflowExecutionInput
 		input = &SignalWorkflowExecutionInput{}
 	}
 
+	output = &SignalWorkflowExecutionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SignalWorkflowExecutionOutput{}
-	req.Data = output
 	return
 }
 
@@ -3009,9 +2980,8 @@ func (c *SWF) StartWorkflowExecutionRequest(input *StartWorkflowExecutionInput) 
 		input = &StartWorkflowExecutionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartWorkflowExecutionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3122,11 +3092,10 @@ func (c *SWF) TerminateWorkflowExecutionRequest(input *TerminateWorkflowExecutio
 		input = &TerminateWorkflowExecutionInput{}
 	}
 
+	output = &TerminateWorkflowExecutionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &TerminateWorkflowExecutionOutput{}
-	req.Data = output
 	return
 }
 

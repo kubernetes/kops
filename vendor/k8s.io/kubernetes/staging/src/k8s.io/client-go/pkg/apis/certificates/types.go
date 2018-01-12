@@ -16,10 +16,7 @@ limitations under the License.
 
 package certificates
 
-import (
-	"k8s.io/client-go/pkg/api"
-	metav1 "k8s.io/client-go/pkg/apis/meta/v1"
-)
+import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 // +genclient=true
 // +nonNamespaced=true
@@ -28,7 +25,7 @@ import (
 type CertificateSigningRequest struct {
 	metav1.TypeMeta
 	// +optional
-	api.ObjectMeta
+	metav1.ObjectMeta
 
 	// The certificate request itself and any additional information.
 	// +optional
@@ -40,21 +37,38 @@ type CertificateSigningRequest struct {
 }
 
 // This information is immutable after the request is created. Only the Request
-// and ExtraInfo fields can be set on creation, other fields are derived by
+// and Usages fields can be set on creation, other fields are derived by
 // Kubernetes and cannot be modified by users.
 type CertificateSigningRequestSpec struct {
 	// Base64-encoded PKCS#10 CSR data
 	Request []byte
 
-	// Information about the requesting user (if relevant)
-	// See user.Info interface for details
+	// usages specifies a set of usage contexts the key will be
+	// valid for.
+	// See: https://tools.ietf.org/html/rfc5280#section-4.2.1.3
+	//      https://tools.ietf.org/html/rfc5280#section-4.2.1.12
+	Usages []KeyUsage
+
+	// Information about the requesting user.
+	// See user.Info interface for details.
 	// +optional
 	Username string
+	// UID information about the requesting user.
+	// See user.Info interface for details.
 	// +optional
 	UID string
+	// Group information about the requesting user.
+	// See user.Info interface for details.
 	// +optional
 	Groups []string
+	// Extra information about the requesting user.
+	// See user.Info interface for details.
+	// +optional
+	Extra map[string]ExtraValue
 }
+
+// ExtraValue masks the value so protobuf can generate
+type ExtraValue []string
 
 type CertificateSigningRequestStatus struct {
 	// Conditions applied to the request, such as approval or denial.
@@ -96,3 +110,34 @@ type CertificateSigningRequestList struct {
 	// +optional
 	Items []CertificateSigningRequest
 }
+
+// KeyUsages specifies valid usage contexts for keys.
+// See: https://tools.ietf.org/html/rfc5280#section-4.2.1.3
+//      https://tools.ietf.org/html/rfc5280#section-4.2.1.12
+type KeyUsage string
+
+const (
+	UsageSigning            KeyUsage = "signing"
+	UsageDigitalSignature   KeyUsage = "digital signature"
+	UsageContentCommittment KeyUsage = "content committment"
+	UsageKeyEncipherment    KeyUsage = "key encipherment"
+	UsageKeyAgreement       KeyUsage = "key agreement"
+	UsageDataEncipherment   KeyUsage = "data encipherment"
+	UsageCertSign           KeyUsage = "cert sign"
+	UsageCRLSign            KeyUsage = "crl sign"
+	UsageEncipherOnly       KeyUsage = "encipher only"
+	UsageDecipherOnly       KeyUsage = "decipher only"
+	UsageAny                KeyUsage = "any"
+	UsageServerAuth         KeyUsage = "server auth"
+	UsageClientAuth         KeyUsage = "client auth"
+	UsageCodeSigning        KeyUsage = "code signing"
+	UsageEmailProtection    KeyUsage = "email protection"
+	UsageSMIME              KeyUsage = "s/mime"
+	UsageIPsecEndSystem     KeyUsage = "ipsec end system"
+	UsageIPsecTunnel        KeyUsage = "ipsec tunnel"
+	UsageIPsecUser          KeyUsage = "ipsec user"
+	UsageTimestamping       KeyUsage = "timestamping"
+	UsageOCSPSigning        KeyUsage = "ocsp signing"
+	UsageMicrosoftSGC       KeyUsage = "microsoft sgc"
+	UsageNetscapSGC         KeyUsage = "netscape sgc"
+)

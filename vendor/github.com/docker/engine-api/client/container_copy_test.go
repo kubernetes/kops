@@ -101,7 +101,7 @@ func TestCopyToContainerNotStatusOKError(t *testing.T) {
 	}
 	err := client.CopyToContainer(context.Background(), "container_id", "path/to/file", bytes.NewReader([]byte("")), types.CopyToContainerOptions{})
 	if err == nil || err.Error() != "unexpected status code from daemon: 204" {
-		t.Fatalf("expected an unexpected status code error, got %v", err)
+		t.Fatalf("expected a unexpected status code error, got %v", err)
 	}
 }
 
@@ -167,7 +167,7 @@ func TestCopyFromContainerNotStatusOKError(t *testing.T) {
 	}
 	_, _, err := client.CopyFromContainer(context.Background(), "container_id", "path/to/file")
 	if err == nil || err.Error() != "unexpected status code from daemon: 204" {
-		t.Fatalf("expected an unexpected status code error, got %v", err)
+		t.Fatalf("expected a unexpected status code error, got %v", err)
 	}
 }
 

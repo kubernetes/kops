@@ -42,7 +42,7 @@ func TestImagePullStatusUnauthorizedError(t *testing.T) {
 	}
 	_, err := client.ImagePull(context.Background(), "myimage", types.ImagePullOptions{})
 	if err == nil || err.Error() != "Error response from daemon: Unauthorized error" {
-		t.Fatalf("expected an Unauthorized Error, got %v", err)
+		t.Fatalf("expected a Unauthorized Error, got %v", err)
 	}
 }
 
@@ -72,7 +72,7 @@ func TestImagePullWithUnauthorizedErrorAndAnotherUnauthorizedError(t *testing.T)
 		PrivilegeFunc: privilegeFunc,
 	})
 	if err == nil || err.Error() != "Error response from daemon: Unauthorized error" {
-		t.Fatalf("expected an Unauthorized Error, got %v", err)
+		t.Fatalf("expected a Unauthorized Error, got %v", err)
 	}
 }
 

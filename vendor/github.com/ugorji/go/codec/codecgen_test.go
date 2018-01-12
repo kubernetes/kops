@@ -1,4 +1,4 @@
-//+build x,codecgen
+// +build x,codecgen
 
 package codec
 

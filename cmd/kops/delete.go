@@ -17,8 +17,9 @@ limitations under the License.
 package main
 
 import (
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 )
 
@@ -30,7 +31,7 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:        "delete",
-		Short:      "delete clusters",
+		Short:      "Delete clusters and other resources.",
 		Long:       `Delete clusters`,
 		SuggestFor: []string{"rm"},
 	}

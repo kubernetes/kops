@@ -19,4 +19,11 @@ set -o nounset
 set -o pipefail
 
 KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
-"${KUBE_ROOT}"/staging/copy.sh -v
+cd ${KUBE_ROOT}
+
+# Smoke test client-go examples
+echo "Smoke testing client-go examples"
+go install ./staging/src/k8s.io/client-go/examples/... 2>&1 | sed 's/^/  /'
+
+# Run update-staging-client.sh in dry-run mode, copy nothing into the staging dir, but fail on any diff
+hack/update-staging-client-go.sh -d -f "$@"

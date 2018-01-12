@@ -130,20 +130,20 @@ func createService() *storage.Service {
 		return nil
 	}
 	if bucket = os.Getenv(envBucket); bucket == "" {
-		log.Print("no project ID specified")
+		log.Print("no bucket specified")
 		return nil
 	}
 
 	ctx := context.Background()
 	ts, err := tokenSource(ctx, storage.DevstorageFullControlScope)
 	if err != nil {
-		log.Print("createService: %v", err)
+		log.Printf("tokenSource: %v", err)
 		return nil
 	}
 	client := oauth2.NewClient(ctx, ts)
 	s, err := storage.New(client)
 	if err != nil {
-		log.Print("unable to create service: %v", err)
+		log.Printf("unable to create service: %v", err)
 		return nil
 	}
 	return s
@@ -185,12 +185,14 @@ func TestContentType(t *testing.T) {
 	// The content type configured via googleapi.ContentType, if any, is always "text/html".
 	for _, tc := range []testCase{
 		// With content type specified in the object struct
-		{
-			objectContentType:    "text/plain",
-			useOptionContentType: true,
-			optionContentType:    "text/html",
-			wantContentType:      "text/html",
-		},
+		// Temporarily disable this test during rollout of strict Content-Type.
+		// TODO(djd): Re-enable once strict check is 100%.
+		// {
+		// 	objectContentType:    "text/plain",
+		// 	useOptionContentType: true,
+		// 	optionContentType:    "text/html",
+		// 	wantContentType:      "text/html",
+		// },
 		{
 			objectContentType:    "text/plain",
 			useOptionContentType: true,
@@ -200,7 +202,7 @@ func TestContentType(t *testing.T) {
 		{
 			objectContentType:    "text/plain",
 			useOptionContentType: false,
-			wantContentType:      "text/plain; charset=utf-8", // sniffed.
+			wantContentType:      "text/plain",
 		},
 
 		// Without content type specified in the object struct

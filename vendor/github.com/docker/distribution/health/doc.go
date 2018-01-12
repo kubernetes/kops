@@ -2,7 +2,7 @@
 // The health package works expvar style. By importing the package the debug
 // server is getting a "/debug/health" endpoint that returns the current
 // status of the application.
-// If there are no errors, "/debug/health" will return an HTTP 200 status,
+// If there are no errors, "/debug/health" will return a HTTP 200 status,
 // together with an empty JSON reply "{}". If there are any checks
 // with errors, the JSON reply will include all the failed checks, and the
 // response will be have an HTTP 503 status.

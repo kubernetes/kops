@@ -1,20 +1,20 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/gshze9dCV9O4SZHdwFLJm3oucPU\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/QGy4Wv90L7XHcKxA0VDj0fNkDc0\"",
  "discoveryVersion": "v1",
  "id": "admin:reports_v1",
  "name": "admin",
  "canonicalName": "reports",
  "version": "reports_v1",
- "revision": "20151106",
+ "revision": "20160704",
  "title": "Admin Reports API",
- "description": "Allows the administrators of Google Apps customers to fetch reports about the usage, collaboration, security and risk for their users.",
+ "description": "Fetches reports for the administrators of Google Apps customers about the usage, collaboration, security, and risk for their users.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "packagePath": "admin",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/admin-sdk/reports/",
  "protocol": "rest",
@@ -464,7 +464,7 @@
        "type": "string",
        "description": "Application name for which the events are to be retrieved.",
        "required": true,
-       "pattern": "(admin)|(calendar)|(drive)|(login)|(mobile)|(token)|(groups)",
+       "pattern": "(admin)|(calendar)|(drive)|(login)|(mobile)|(token)|(groups)|(saml)",
        "location": "path"
       },
       "customerId": {
@@ -543,7 +543,7 @@
        "type": "string",
        "description": "Application name for which the events are to be retrieved.",
        "required": true,
-       "pattern": "(admin)|(calendar)|(drive)|(login)|(mobile)|(token)|(groups)",
+       "pattern": "(admin)|(calendar)|(drive)|(login)|(mobile)|(token)|(groups)|(saml)",
        "location": "path"
       },
       "customerId": {

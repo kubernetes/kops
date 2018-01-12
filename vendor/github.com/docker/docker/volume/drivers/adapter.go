@@ -1,22 +1,14 @@
 package volumedrivers
 
 import (
-	"errors"
-	"strings"
+	"fmt"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/docker/docker/volume"
 )
 
-var (
-	errInvalidScope = errors.New("invalid scope")
-	errNoSuchVolume = errors.New("no such volume")
-)
-
 type volumeDriverAdapter struct {
-	name         string
-	capabilities *volume.Capability
-	proxy        *volumeDriverProxy
+	name  string
+	proxy *volumeDriverProxy
 }
 
 func (a *volumeDriverAdapter) Name() string {
@@ -64,7 +56,7 @@ func (a *volumeDriverAdapter) Get(name string) (volume.Volume, error) {
 
 	// plugin may have returned no volume and no error
 	if v == nil {
-		return nil, errNoSuchVolume
+		return nil, fmt.Errorf("no such volume")
 	}
 
 	return &volumeAdapter{
@@ -72,40 +64,7 @@ func (a *volumeDriverAdapter) Get(name string) (volume.Volume, error) {
 		name:       v.Name,
 		driverName: a.Name(),
 		eMount:     v.Mountpoint,
-		status:     v.Status,
 	}, nil
-}
-
-func (a *volumeDriverAdapter) Scope() string {
-	cap := a.getCapabilities()
-	return cap.Scope
-}
-
-func (a *volumeDriverAdapter) getCapabilities() volume.Capability {
-	if a.capabilities != nil {
-		return *a.capabilities
-	}
-	cap, err := a.proxy.Capabilities()
-	if err != nil {
-		// `GetCapabilities` is a not a required endpoint.
-		// On error assume it's a local-only driver
-		logrus.Warnf("Volume driver %s returned an error while trying to query its capabilities, using default capabilties: %v", a.name, err)
-		return volume.Capability{Scope: volume.LocalScope}
-	}
-
-	// don't spam the warn log below just because the plugin didn't provide a scope
-	if len(cap.Scope) == 0 {
-		cap.Scope = volume.LocalScope
-	}
-
-	cap.Scope = strings.ToLower(cap.Scope)
-	if cap.Scope != volume.LocalScope && cap.Scope != volume.GlobalScope {
-		logrus.Warnf("Volume driver %q returned an invalid scope: %q", a.Name(), cap.Scope)
-		cap.Scope = volume.LocalScope
-	}
-
-	a.capabilities = &cap
-	return cap
 }
 
 type volumeAdapter struct {
@@ -113,13 +72,11 @@ type volumeAdapter struct {
 	name       string
 	driverName string
 	eMount     string // ephemeral host volume path
-	status     map[string]interface{}
 }
 
 type proxyVolume struct {
 	Name       string
 	Mountpoint string
-	Status     map[string]interface{}
 }
 
 func (a *volumeAdapter) Name() string {
@@ -131,34 +88,19 @@ func (a *volumeAdapter) DriverName() string {
 }
 
 func (a *volumeAdapter) Path() string {
-	if len(a.eMount) == 0 {
-		a.eMount, _ = a.proxy.Path(a.name)
+	if len(a.eMount) > 0 {
+		return a.eMount
 	}
-	return a.eMount
+	m, _ := a.proxy.Path(a.name)
+	return m
 }
 
-func (a *volumeAdapter) CachedPath() string {
-	return a.eMount
-}
-
-func (a *volumeAdapter) Mount(id string) (string, error) {
+func (a *volumeAdapter) Mount() (string, error) {
 	var err error
-	a.eMount, err = a.proxy.Mount(a.name, id)
+	a.eMount, err = a.proxy.Mount(a.name)
 	return a.eMount, err
 }
 
-func (a *volumeAdapter) Unmount(id string) error {
-	err := a.proxy.Unmount(a.name, id)
-	if err == nil {
-		a.eMount = ""
-	}
-	return err
-}
-
-func (a *volumeAdapter) Status() map[string]interface{} {
-	out := make(map[string]interface{}, len(a.status))
-	for k, v := range a.status {
-		out[k] = v
-	}
-	return out
+func (a *volumeAdapter) Unmount() error {
+	return a.proxy.Unmount(a.name)
 }

@@ -48,9 +48,7 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion1
 
 type A struct {
 	Field1 *int64 `protobuf:"varint,2,opt,name=Field1,json=field1" json:"Field1,omitempty"`
@@ -1747,12 +1745,11 @@ func valueToGoStringUnrecognized(v interface{}, typ string) string {
 	pv := reflect.Indirect(rv).Interface()
 	return fmt.Sprintf("func(v %v) *%v { return &v } ( %#v )", typ, typ, pv)
 }
-func extensionToGoStringUnrecognized(m github_com_gogo_protobuf_proto.Message) string {
-	e := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(m)
+func extensionToGoStringUnrecognized(e map[int32]github_com_gogo_protobuf_proto.Extension) string {
 	if e == nil {
 		return "nil"
 	}
-	s := "proto.NewUnsafeXXX_InternalExtensions(map[int32]proto.Extension{"
+	s := "map[int32]proto.Extension{"
 	keys := make([]int, 0, len(e))
 	for k := range e {
 		keys = append(keys, int(k))
@@ -1762,7 +1759,7 @@ func extensionToGoStringUnrecognized(m github_com_gogo_protobuf_proto.Message) s
 	for _, k := range keys {
 		ss = append(ss, strconv.Itoa(k)+": "+e[int32(k)].GoString())
 	}
-	s += strings.Join(ss, ",") + "})"
+	s += strings.Join(ss, ",") + "}"
 	return s
 }
 func (m *A) Marshal() (data []byte, err error) {
@@ -4032,8 +4029,6 @@ var (
 	ErrInvalidLengthUnrecognized = fmt.Errorf("proto: negative length found during unmarshaling")
 	ErrIntOverflowUnrecognized   = fmt.Errorf("proto: integer overflow")
 )
-
-func init() { proto.RegisterFile("unrecognized.proto", fileDescriptorUnrecognized) }
 
 var fileDescriptorUnrecognized = []byte{
 	// 398 bytes of a gzipped FileDescriptorProto

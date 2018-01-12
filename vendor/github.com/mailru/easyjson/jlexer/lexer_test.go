@@ -1,7 +1,6 @@
 package jlexer
 
 import (
-	"bytes"
 	"reflect"
 	"testing"
 )
@@ -36,34 +35,6 @@ func TestString(t *testing.T) {
 			t.Errorf("[%d, %q] String() error: %v", i, test.toParse, err)
 		} else if err == nil && test.wantError {
 			t.Errorf("[%d, %q] String() ok; want error", i, test.toParse)
-		}
-	}
-}
-
-func TestBytes(t *testing.T) {
-	for i, test := range []struct {
-		toParse   string
-		want      string
-		wantError bool
-	}{
-		{toParse: `"c2ltcGxlIHN0cmluZw=="`, want: "simple string"},
-		{toParse: " \r\r\n\t  " + `"dGVzdA=="`, want: "test"},
-
-		{toParse: `5`, wantError: true},                     // not a JSON string
-		{toParse: `"foobar"`, wantError: true},              // not base64 encoded
-		{toParse: `"c2ltcGxlIHN0cmluZw="`, wantError: true}, // invalid base64 padding
-	} {
-		l := Lexer{Data: []byte(test.toParse)}
-
-		got := l.Bytes()
-		if bytes.Compare(got, []byte(test.want)) != 0 {
-			t.Errorf("[%d, %q] Bytes() = %v; want: %v", i, test.toParse, got, []byte(test.want))
-		}
-		err := l.Error()
-		if err != nil && !test.wantError {
-			t.Errorf("[%d, %q] Bytes() error: %v", i, test.toParse, err)
-		} else if err == nil && test.wantError {
-			t.Errorf("[%d, %q] Bytes() ok; want error", i, test.toParse)
 		}
 	}
 }
@@ -157,9 +128,6 @@ func TestSkipRecursive(t *testing.T) {
 		{toParse: `{"a\"}":1}, 4`, left: ", 4"},
 		{toParse: `{"a{":1}, 4`, left: ", 4"},
 		{toParse: `{"a\"{":1}, 4`, left: ", 4"},
-
-		// object with double slashes at the end of string
-		{toParse: `{"a":"hey\\"}, 4`, left: ", 4"},
 	} {
 		l := Lexer{Data: []byte(test.toParse)}
 

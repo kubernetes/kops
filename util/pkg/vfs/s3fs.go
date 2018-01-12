@@ -109,22 +109,33 @@ func (p *S3Path) WriteFile(data []byte) error {
 
 	glog.V(4).Infof("Writing file %q", p)
 
+	// We always use server-side-encryption; it doesn't really cost us anything
+	sse := "AES256"
+
 	request := &s3.PutObjectInput{}
 	request.Body = bytes.NewReader(data)
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)
-	request.ServerSideEncryption = aws.String("AES256")
+	request.ServerSideEncryption = aws.String(sse)
 
 	acl := os.Getenv("KOPS_STATE_S3_ACL")
+	acl = strings.TrimSpace(acl)
 	if acl != "" {
+		glog.Infof("Using KOPS_STATE_S3_ACL=%s", acl)
 		request.ACL = aws.String(acl)
 	}
 
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208
 
+	glog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q SSE=%q ACL=%q BodyLen=%d", p.bucket, p.key, sse, acl, len(data))
+
 	_, err = client.PutObject(request)
 	if err != nil {
-		return fmt.Errorf("error writing %s: %v", p, err)
+		if acl != "" {
+			return fmt.Errorf("error writing %s (with ACL=%q): %v", p, acl, err)
+		} else {
+			return fmt.Errorf("error writing %s: %v", p, err)
+		}
 	}
 
 	return nil

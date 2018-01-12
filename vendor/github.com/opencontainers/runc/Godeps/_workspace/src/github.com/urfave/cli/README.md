@@ -1,3 +1,6 @@
+cli
+===
+
 [![Build Status](https://travis-ci.org/urfave/cli.svg?branch=master)](https://travis-ci.org/urfave/cli)
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/rtgk5xufi932pb2v?svg=true)](https://ci.appveyor.com/project/urfave/cli)
 [![GoDoc](https://godoc.org/github.com/urfave/cli?status.svg)](https://godoc.org/github.com/urfave/cli)
@@ -6,9 +9,6 @@
 [![top level coverage](https://gocover.io/_badge/github.com/urfave/cli?0 "top level coverage")](http://gocover.io/github.com/urfave/cli) /
 [![altsrc coverage](https://gocover.io/_badge/github.com/urfave/cli/altsrc?0 "altsrc coverage")](http://gocover.io/github.com/urfave/cli/altsrc)
 
-
-# cli
-
 **Notice:** This is the library formerly known as
 `github.com/codegangsta/cli` -- Github will automatically redirect requests
 to this repository, but we recommend updating your references for clarity.
@@ -16,6 +16,37 @@ to this repository, but we recommend updating your references for clarity.
 cli is a simple, fast, and fun package for building command line apps in Go. The
 goal is to enable developers to write fast and distributable command line
 applications in an expressive way.
+
+<!-- toc -->
+
+- [Overview](#overview)
+- [Installation](#installation)
+  * [Supported platforms](#supported-platforms)
+  * [Using the `v2` branch](#using-the-v2-branch)
+  * [Pinning to the `v1` releases](#pinning-to-the-v1-releases)
+- [Getting Started](#getting-started)
+- [Examples](#examples)
+  * [Arguments](#arguments)
+  * [Flags](#flags)
+    + [Placeholder Values](#placeholder-values)
+    + [Alternate Names](#alternate-names)
+    + [Values from the Environment](#values-from-the-environment)
+    + [Values from alternate input sources (YAML, TOML, and others)](#values-from-alternate-input-sources-yaml-toml-and-others)
+  * [Subcommands](#subcommands)
+  * [Subcommands categories](#subcommands-categories)
+  * [Exit code](#exit-code)
+  * [Bash Completion](#bash-completion)
+    + [Enabling](#enabling)
+    + [Distribution](#distribution)
+    + [Customization](#customization)
+  * [Generated Help Text](#generated-help-text)
+    + [Customization](#customization-1)
+  * [Version Flag](#version-flag)
+    + [Customization](#customization-2)
+    + [Full API Example](#full-api-example)
+- [Contribution Guidelines](#contribution-guidelines)
+
+<!-- tocstop -->
 
 ## Overview
 
@@ -29,18 +60,16 @@ organized, and expressive!
 
 ## Installation
 
-Make sure you have a working Go environment.  Go version 1.1+ is required for
-core cli, whereas use of the [`./altsrc`](./altsrc) input extensions requires Go
-version 1.2+. [See the install
-instructions](http://golang.org/doc/install.html).
+Make sure you have a working Go environment.  Go version 1.2+ is supported.  [See
+the install instructions for Go](http://golang.org/doc/install.html).
 
 To install cli, simply run:
 ```
 $ go get github.com/urfave/cli
 ```
 
-Make sure your `PATH` includes to the `$GOPATH/bin` directory so your commands
-can be easily used:
+Make sure your `PATH` includes the `$GOPATH/bin` directory so your commands can
+be easily used:
 ```
 export PATH=$PATH:$GOPATH/bin
 ```
@@ -52,6 +81,8 @@ released version of Go on OS X and Windows.  For full details, see
 [`./.travis.yml`](./.travis.yml) and [`./appveyor.yml`](./appveyor.yml).
 
 ### Using the `v2` branch
+
+**Warning**: The `v2` branch is currently unreleased and considered unstable.
 
 There is currently a long-lived branch named `v2` that is intended to land as
 the new `master` branch once development there has settled down.  The current
@@ -73,11 +104,11 @@ import (
 ...
 ```
 
-### Pinning to the `v1` branch
+### Pinning to the `v1` releases
 
 Similarly to the section above describing use of the `v2` branch, if one wants
 to avoid any unexpected compatibility pains once `v2` becomes `master`, then
-pinning to the `v1` branch is an acceptable option, e.g.:
+pinning to `v1` is an acceptable option, e.g.:
 
 ```
 $ go get gopkg.in/urfave/cli.v1
@@ -90,6 +121,8 @@ import (
 )
 ...
 ```
+
+This will pull the latest tagged `v1` release (e.g. `v1.18.1` at the time of writing).
 
 ## Getting Started
 
@@ -211,7 +244,7 @@ COMMANDS:
     help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS
-    --version	Shows version information
+    --version Shows version information
 ```
 
 ### Arguments
@@ -482,10 +515,14 @@ func main() {
 }
 ```
 
-#### Values from alternate input sources (YAML and others)
+#### Values from alternate input sources (YAML, TOML, and others)
 
 There is a separate package altsrc that adds support for getting flag values
-from other input sources like YAML.
+from other file input sources.
+
+Currently supported input source formats:
+* YAML
+* TOML
 
 In order to get values for a flag from an alternate input source the following
 code would be added to wrap an existing cli.Flag like below:
@@ -507,9 +544,9 @@ the yaml input source for any flags that are defined on that command.  As a note
 the "load" flag used would also have to be defined on the command flags in order
 for this code snipped to work.
 
-Currently only YAML files are supported but developers can add support for other
-input sources by implementing the altsrc.InputSourceContext for their given
-sources.
+Currently only the aboved specified formats are supported but developers can
+add support for other input sources by implementing the
+altsrc.InputSourceContext for their given sources.
 
 Here is a more complete sample of a command using YAML support:
 
@@ -812,7 +849,7 @@ func main() {
 
 ### Generated Help Text
 
-The default help flag (`-h/--help`) is defined as `cli.HelpFlag` and is checked 
+The default help flag (`-h/--help`) is defined as `cli.HelpFlag` and is checked
 by the cli internals in order to print generated help text for the app, command,
 or subcommand, and break execution.
 
@@ -917,12 +954,12 @@ is checked by the cli internals in order to print the `App.Version` via
 
 #### Customization
 
-The default flag may be cusomized to something other than `-v/--version` by
+The default flag may be customized to something other than `-v/--version` by
 setting `cli.VersionFlag`, e.g.:
 
 <!-- {
   "args": ["&#45;&#45print-version"],
-  "output": "partay version v19\\.99\\.0"
+  "output": "partay version 19\\.99\\.0"
 } -->
 ``` go
 package main
@@ -941,7 +978,7 @@ func main() {
 
   app := cli.NewApp()
   app.Name = "partay"
-  app.Version = "v19.99.0"
+  app.Version = "19.99.0"
   app.Run(os.Args)
 }
 ```
@@ -950,7 +987,7 @@ Alternatively, the version printer at `cli.VersionPrinter` may be overridden, e.
 
 <!-- {
   "args": ["&#45;&#45version"],
-  "output": "version=v19\\.99\\.0 revision=fafafaf"
+  "output": "version=19\\.99\\.0 revision=fafafaf"
 } -->
 ``` go
 package main
@@ -973,18 +1010,18 @@ func main() {
 
   app := cli.NewApp()
   app.Name = "partay"
-  app.Version = "v19.99.0"
+  app.Version = "19.99.0"
   app.Run(os.Args)
 }
 ```
 
 #### Full API Example
 
-**NOTE**: This is a contrived (functioning) example meant strictly for API
+**Notice**: This is a contrived (functioning) example meant strictly for API
 demonstration purposes.  Use of one's imagination is encouraged.
 
 <!-- {
-	"output": "made it!\nPhew!"
+  "output": "made it!\nPhew!"
 } -->
 ``` go
 package main
@@ -1036,10 +1073,23 @@ func (w *hexWriter) Write(p []byte) (int, error) {
   return len(p), nil
 }
 
+type genericType struct{
+  s string
+}
+
+func (g *genericType) Set(value string) error {
+  g.s = value
+  return nil
+}
+
+func (g *genericType) String() string {
+  return g.s
+}
+
 func main() {
   app := cli.NewApp()
   app.Name = "kənˈtrīv"
-  app.Version = "v19.99.0"
+  app.Version = "19.99.0"
   app.Compiled = time.Now()
   app.Authors = []cli.Author{
     cli.Author{
@@ -1105,7 +1155,17 @@ func main() {
   app.Flags = []cli.Flag{
     cli.BoolFlag{Name: "fancy"},
     cli.BoolTFlag{Name: "fancier"},
+    cli.DurationFlag{Name: "howlong, H", Value: time.Second * 3},
+    cli.Float64Flag{Name: "howmuch"},
+    cli.GenericFlag{Name: "wat", Value: &genericType{}},
+    cli.Int64Flag{Name: "longdistance"},
+    cli.Int64SliceFlag{Name: "intervals"},
+    cli.IntFlag{Name: "distance"},
+    cli.IntSliceFlag{Name: "times"},
     cli.StringFlag{Name: "dance-move, d"},
+    cli.StringSliceFlag{Name: "names, N"},
+    cli.UintFlag{Name: "age"},
+    cli.Uint64Flag{Name: "bigage"},
   }
   app.EnableBashCompletion = true
   app.HideHelp = false
@@ -1182,10 +1242,14 @@ func main() {
     fmt.Printf("%#v\n", nc.Duration("howlong"))
     fmt.Printf("%#v\n", nc.Float64("hay"))
     fmt.Printf("%#v\n", nc.Generic("bloop"))
+    fmt.Printf("%#v\n", nc.Int64("bonk"))
+    fmt.Printf("%#v\n", nc.Int64Slice("burnks"))
     fmt.Printf("%#v\n", nc.Int("bips"))
     fmt.Printf("%#v\n", nc.IntSlice("blups"))
     fmt.Printf("%#v\n", nc.String("snurt"))
     fmt.Printf("%#v\n", nc.StringSlice("snurkles"))
+    fmt.Printf("%#v\n", nc.Uint("flub"))
+    fmt.Printf("%#v\n", nc.Uint64("florb"))
     fmt.Printf("%#v\n", nc.GlobalBool("global-nope"))
     fmt.Printf("%#v\n", nc.GlobalBoolT("global-nerp"))
     fmt.Printf("%#v\n", nc.GlobalDuration("global-howlong"))

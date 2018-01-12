@@ -18,12 +18,12 @@ func TestTransportNilTokenSource(t *testing.T) {
 	server := newMockServer(func(w http.ResponseWriter, r *http.Request) {})
 	defer server.Close()
 	client := &http.Client{Transport: tr}
-	res, err := client.Get(server.URL)
+	resp, err := client.Get(server.URL)
 	if err == nil {
-		t.Errorf("a nil Source was passed into the transport expected an error")
+		t.Errorf("got no errors, want an error with nil token source")
 	}
-	if res != nil {
-		t.Errorf("expected a nil response, got %v", res)
+	if resp != nil {
+		t.Errorf("Response = %v; want nil", resp)
 	}
 }
 
@@ -37,8 +37,8 @@ func TestTransportTokenSource(t *testing.T) {
 		Source: ts,
 	}
 	server := newMockServer(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Authorization") != "Bearer abc" {
-			t.Errorf("Transport doesn't set the Authorization header from the fetched token")
+		if got, want := r.Header.Get("Authorization"), "Bearer abc"; got != want {
+			t.Errorf("Authorization header = %q; want %q", got, want)
 		}
 	})
 	defer server.Close()
@@ -90,7 +90,7 @@ func TestTransportTokenSourceTypes(t *testing.T) {
 func TestTokenValidNoAccessToken(t *testing.T) {
 	token := &Token{}
 	if token.Valid() {
-		t.Errorf("Token should not be valid with no access token")
+		t.Errorf("got valid with no access token; want invalid")
 	}
 }
 
@@ -99,7 +99,7 @@ func TestExpiredWithExpiry(t *testing.T) {
 		Expiry: time.Now().Add(-5 * time.Hour),
 	}
 	if token.Valid() {
-		t.Errorf("Token should not be valid if it expired in the past")
+		t.Errorf("got valid with expired token; want invalid")
 	}
 }
 

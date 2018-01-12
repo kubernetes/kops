@@ -33,7 +33,8 @@ write_files:
       username=$OS_USERNAME
       password=$OS_PASSWORD
       region=$OS_REGION_NAME
-      tenant-id=$OS_TENANT_ID
+      tenant-name=$OS_TENANT_NAME
+      domain-name=$OS_USER_DOMAIN_NAME
       [LoadBalancer]
       lb-version=$LBAAS_VERSION
       subnet-id=$SUBNET_ID
@@ -57,7 +58,7 @@ write_files:
       enable_dns_horizontal_autoscaler: "false"
       federations_domain_map: ''
       instance_prefix: kubernetes
-      admission_control: NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,DefaultStorageClass,ResourceQuota
+      admission_control: NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,DefaultStorageClass,ResourceQuota,DefaultTolerationSeconds
       enable_cpu_cfs_quota: "true"
       network_provider: none
       cluster_cidr: "$cluster_cidr"

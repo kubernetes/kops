@@ -19,14 +19,12 @@ import (
 )
 
 // Reader reads a Cloud Storage object.
-// It implements io.Reader.
 type Reader struct {
 	body         io.ReadCloser
 	remain, size int64
 	contentType  string
 }
 
-// Close closes the Reader. It must be called when done reading.
 func (r *Reader) Close() error {
 	return r.body.Close()
 }

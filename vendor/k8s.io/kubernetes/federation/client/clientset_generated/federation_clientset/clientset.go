@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,45 +17,49 @@ limitations under the License.
 package federation_clientset
 
 import (
-	"github.com/golang/glog"
-	v1batch "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/batch/v1"
-	v1core "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/core/v1"
-	v1beta1extensions "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/extensions/v1beta1"
-	v1beta1federation "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/federation/v1beta1"
-	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	discovery "k8s.io/kubernetes/pkg/client/typed/discovery"
-	"k8s.io/kubernetes/pkg/util/flowcontrol"
-	_ "k8s.io/kubernetes/plugin/pkg/client/auth"
+	glog "github.com/golang/glog"
+	discovery "k8s.io/client-go/discovery"
+	rest "k8s.io/client-go/rest"
+	flowcontrol "k8s.io/client-go/util/flowcontrol"
+	autoscalingv1 "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/autoscaling/v1"
+	batchv1 "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/batch/v1"
+	corev1 "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/core/v1"
+	extensionsv1beta1 "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/extensions/v1beta1"
+	federationv1beta1 "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/federation/v1beta1"
 )
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	CoreV1() v1core.CoreV1Interface
+	CoreV1() corev1.CoreV1Interface
 	// Deprecated: please explicitly pick a version if possible.
-	Core() v1core.CoreV1Interface
-	BatchV1() v1batch.BatchV1Interface
+	Core() corev1.CoreV1Interface
+	AutoscalingV1() autoscalingv1.AutoscalingV1Interface
 	// Deprecated: please explicitly pick a version if possible.
-	Batch() v1batch.BatchV1Interface
-	ExtensionsV1beta1() v1beta1extensions.ExtensionsV1beta1Interface
+	Autoscaling() autoscalingv1.AutoscalingV1Interface
+	BatchV1() batchv1.BatchV1Interface
 	// Deprecated: please explicitly pick a version if possible.
-	Extensions() v1beta1extensions.ExtensionsV1beta1Interface
-	FederationV1beta1() v1beta1federation.FederationV1beta1Interface
+	Batch() batchv1.BatchV1Interface
+	ExtensionsV1beta1() extensionsv1beta1.ExtensionsV1beta1Interface
 	// Deprecated: please explicitly pick a version if possible.
-	Federation() v1beta1federation.FederationV1beta1Interface
+	Extensions() extensionsv1beta1.ExtensionsV1beta1Interface
+	FederationV1beta1() federationv1beta1.FederationV1beta1Interface
+	// Deprecated: please explicitly pick a version if possible.
+	Federation() federationv1beta1.FederationV1beta1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	*v1core.CoreV1Client
-	*v1batch.BatchV1Client
-	*v1beta1extensions.ExtensionsV1beta1Client
-	*v1beta1federation.FederationV1beta1Client
+	*corev1.CoreV1Client
+	*autoscalingv1.AutoscalingV1Client
+	*batchv1.BatchV1Client
+	*extensionsv1beta1.ExtensionsV1beta1Client
+	*federationv1beta1.FederationV1beta1Client
 }
 
 // CoreV1 retrieves the CoreV1Client
-func (c *Clientset) CoreV1() v1core.CoreV1Interface {
+func (c *Clientset) CoreV1() corev1.CoreV1Interface {
 	if c == nil {
 		return nil
 	}
@@ -64,15 +68,32 @@ func (c *Clientset) CoreV1() v1core.CoreV1Interface {
 
 // Deprecated: Core retrieves the default version of CoreClient.
 // Please explicitly pick a version.
-func (c *Clientset) Core() v1core.CoreV1Interface {
+func (c *Clientset) Core() corev1.CoreV1Interface {
 	if c == nil {
 		return nil
 	}
 	return c.CoreV1Client
 }
 
+// AutoscalingV1 retrieves the AutoscalingV1Client
+func (c *Clientset) AutoscalingV1() autoscalingv1.AutoscalingV1Interface {
+	if c == nil {
+		return nil
+	}
+	return c.AutoscalingV1Client
+}
+
+// Deprecated: Autoscaling retrieves the default version of AutoscalingClient.
+// Please explicitly pick a version.
+func (c *Clientset) Autoscaling() autoscalingv1.AutoscalingV1Interface {
+	if c == nil {
+		return nil
+	}
+	return c.AutoscalingV1Client
+}
+
 // BatchV1 retrieves the BatchV1Client
-func (c *Clientset) BatchV1() v1batch.BatchV1Interface {
+func (c *Clientset) BatchV1() batchv1.BatchV1Interface {
 	if c == nil {
 		return nil
 	}
@@ -81,7 +102,7 @@ func (c *Clientset) BatchV1() v1batch.BatchV1Interface {
 
 // Deprecated: Batch retrieves the default version of BatchClient.
 // Please explicitly pick a version.
-func (c *Clientset) Batch() v1batch.BatchV1Interface {
+func (c *Clientset) Batch() batchv1.BatchV1Interface {
 	if c == nil {
 		return nil
 	}
@@ -89,7 +110,7 @@ func (c *Clientset) Batch() v1batch.BatchV1Interface {
 }
 
 // ExtensionsV1beta1 retrieves the ExtensionsV1beta1Client
-func (c *Clientset) ExtensionsV1beta1() v1beta1extensions.ExtensionsV1beta1Interface {
+func (c *Clientset) ExtensionsV1beta1() extensionsv1beta1.ExtensionsV1beta1Interface {
 	if c == nil {
 		return nil
 	}
@@ -98,7 +119,7 @@ func (c *Clientset) ExtensionsV1beta1() v1beta1extensions.ExtensionsV1beta1Inter
 
 // Deprecated: Extensions retrieves the default version of ExtensionsClient.
 // Please explicitly pick a version.
-func (c *Clientset) Extensions() v1beta1extensions.ExtensionsV1beta1Interface {
+func (c *Clientset) Extensions() extensionsv1beta1.ExtensionsV1beta1Interface {
 	if c == nil {
 		return nil
 	}
@@ -106,7 +127,7 @@ func (c *Clientset) Extensions() v1beta1extensions.ExtensionsV1beta1Interface {
 }
 
 // FederationV1beta1 retrieves the FederationV1beta1Client
-func (c *Clientset) FederationV1beta1() v1beta1federation.FederationV1beta1Interface {
+func (c *Clientset) FederationV1beta1() federationv1beta1.FederationV1beta1Interface {
 	if c == nil {
 		return nil
 	}
@@ -115,7 +136,7 @@ func (c *Clientset) FederationV1beta1() v1beta1federation.FederationV1beta1Inter
 
 // Deprecated: Federation retrieves the default version of FederationClient.
 // Please explicitly pick a version.
-func (c *Clientset) Federation() v1beta1federation.FederationV1beta1Interface {
+func (c *Clientset) Federation() federationv1beta1.FederationV1beta1Interface {
 	if c == nil {
 		return nil
 	}
@@ -124,30 +145,37 @@ func (c *Clientset) Federation() v1beta1federation.FederationV1beta1Interface {
 
 // Discovery retrieves the DiscoveryClient
 func (c *Clientset) Discovery() discovery.DiscoveryInterface {
+	if c == nil {
+		return nil
+	}
 	return c.DiscoveryClient
 }
 
 // NewForConfig creates a new Clientset for the given config.
-func NewForConfig(c *restclient.Config) (*Clientset, error) {
+func NewForConfig(c *rest.Config) (*Clientset, error) {
 	configShallowCopy := *c
 	if configShallowCopy.RateLimiter == nil && configShallowCopy.QPS > 0 {
 		configShallowCopy.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(configShallowCopy.QPS, configShallowCopy.Burst)
 	}
 	var cs Clientset
 	var err error
-	cs.CoreV1Client, err = v1core.NewForConfig(&configShallowCopy)
+	cs.CoreV1Client, err = corev1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
-	cs.BatchV1Client, err = v1batch.NewForConfig(&configShallowCopy)
+	cs.AutoscalingV1Client, err = autoscalingv1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
-	cs.ExtensionsV1beta1Client, err = v1beta1extensions.NewForConfig(&configShallowCopy)
+	cs.BatchV1Client, err = batchv1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
-	cs.FederationV1beta1Client, err = v1beta1federation.NewForConfig(&configShallowCopy)
+	cs.ExtensionsV1beta1Client, err = extensionsv1beta1.NewForConfig(&configShallowCopy)
+	if err != nil {
+		return nil, err
+	}
+	cs.FederationV1beta1Client, err = federationv1beta1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -162,24 +190,26 @@ func NewForConfig(c *restclient.Config) (*Clientset, error) {
 
 // NewForConfigOrDie creates a new Clientset for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *restclient.Config) *Clientset {
+func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
-	cs.CoreV1Client = v1core.NewForConfigOrDie(c)
-	cs.BatchV1Client = v1batch.NewForConfigOrDie(c)
-	cs.ExtensionsV1beta1Client = v1beta1extensions.NewForConfigOrDie(c)
-	cs.FederationV1beta1Client = v1beta1federation.NewForConfigOrDie(c)
+	cs.CoreV1Client = corev1.NewForConfigOrDie(c)
+	cs.AutoscalingV1Client = autoscalingv1.NewForConfigOrDie(c)
+	cs.BatchV1Client = batchv1.NewForConfigOrDie(c)
+	cs.ExtensionsV1beta1Client = extensionsv1beta1.NewForConfigOrDie(c)
+	cs.FederationV1beta1Client = federationv1beta1.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
 }
 
 // New creates a new Clientset for the given RESTClient.
-func New(c restclient.Interface) *Clientset {
+func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.CoreV1Client = v1core.New(c)
-	cs.BatchV1Client = v1batch.New(c)
-	cs.ExtensionsV1beta1Client = v1beta1extensions.New(c)
-	cs.FederationV1beta1Client = v1beta1federation.New(c)
+	cs.CoreV1Client = corev1.New(c)
+	cs.AutoscalingV1Client = autoscalingv1.New(c)
+	cs.BatchV1Client = batchv1.New(c)
+	cs.ExtensionsV1beta1Client = extensionsv1beta1.New(c)
+	cs.FederationV1beta1Client = federationv1beta1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

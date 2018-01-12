@@ -117,19 +117,3 @@ base="hello-world"
 	run docker_t push $image
 	[ "$status" -ne 0 ]
 }
-
-@test "Test oauth with v1 search" {
-	version_check docker "$GOLEM_DIND_VERSION" "1.12.0"
-
-	run docker_t search localregistry:5600/testsearch
-	[ "$status" -ne 0 ]
-
-	login_oauth localregistry:5600
-
-	run docker_t search localregistry:5600/testsearch
-	echo $output
-	[ "$status" -eq 0 ]
-
-	echo $output | grep "testsearch-1"
-	echo $output | grep "testsearch-2"
-}

@@ -28,7 +28,7 @@ type DescribeCmd struct {
 var describeCmd = DescribeCmd{
 	cobraCommand: &cobra.Command{
 		Use:   "describe",
-		Short: "describe objects",
+		Short: "Get additional information about cloud resources.",
 	},
 }
 

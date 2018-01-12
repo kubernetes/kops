@@ -40,11 +40,7 @@ type fallbackError struct {
 
 // Error renders the FallbackError as a string.
 func (f fallbackError) Error() string {
-	return f.Cause().Error()
-}
-
-func (f fallbackError) Cause() error {
-	return f.err
+	return f.err.Error()
 }
 
 // shouldV2Fallback returns true if this error is a reason to fall back to v1.
@@ -93,7 +89,7 @@ func retryOnError(err error) error {
 		}
 	case errcode.Error:
 		switch v.Code {
-		case errcode.ErrorCodeUnauthorized, errcode.ErrorCodeUnsupported, errcode.ErrorCodeDenied, errcode.ErrorCodeTooManyRequests, v2.ErrorCodeNameUnknown:
+		case errcode.ErrorCodeUnauthorized, errcode.ErrorCodeUnsupported, errcode.ErrorCodeDenied:
 			return xfer.DoNotRetry{Err: err}
 		}
 	case *url.Error:

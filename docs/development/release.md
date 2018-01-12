@@ -13,8 +13,11 @@ The kops project is released on an as-needed basis. The process is as follows:
 We maintain a `release-1.4` branch for kops 1.4.X, `release-1.5` for kops 1.5.X
 etc.
 
-We create new branches from master as a new kops version is released (or in
-preparation for the release).
+`master` is where development happens.  We create new branches from master as a
+new kops version is released, or in preparation for a new release.  As we are
+preparing for a new kubernetes release, we will try to advance the master branch
+to focus on the new functionality, and start cherry-picking back more selectively
+to the release branches only as needed.
 
 Generally we don't encourage users to run older kops versions, or older
 branches, because newer versions of kops should remain compatible with older
@@ -22,6 +25,10 @@ versions of Kubernetes.
 
 Releases should be done from the `release-1.X` branch.  The tags should be made
 on the release branches.
+
+We do currently maintain a `release` branch which should point to the same tag as
+the current `release-1.X` tag.
+
 
 ## Update versions
 
@@ -41,7 +48,7 @@ make ci
 ## Push new dns-controller image if needed
 
 ```
-make dns-controller-push DNS_CONTROLLER_TAG=1.5.1 DOCKER_REGISTRY=kope
+make dns-controller-push DOCKER_REGISTRY=kope
 ```
 
 ## Upload new version
@@ -56,8 +63,7 @@ make upload S3_BUCKET=s3://kubeupv2
 Make sure you are on the release branch `git checkout release-1.X`
 
 ```
-export TAG=1.5.0-alpha4
-git tag ${TAG}
+make release-tag
 git push --tags
 ```
 
@@ -70,10 +76,10 @@ versions to that.
 
 ## Upload to github
 
-Manually create a release on github & upload, but soon we'll publish shipbot which automates this...
+Use [shipbot](https://github.com/kopeio/shipbot) to upload the release:
 
 ```
-bazel run //cmd/shipbot -- -tag ${TAG}
+make release-github
 ```
 
 

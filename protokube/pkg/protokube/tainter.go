@@ -20,9 +20,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/labels"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/pkg/api/v1"
 )
 
 type nodePatch struct {
@@ -38,20 +39,25 @@ type nodePatchSpec struct {
 	Unschedulable *bool `json:"unschedulable,omitempty"`
 }
 
-// ApplyMasterTaints finds masters that have not yet been tainted, and applies the master taint
-// Once the kubelet support --taints (like --labels) this can probably go away entirely.
-// It also sets the unschedulable flag to false, so pods (with a toleration) can target the node
+// TaintsAnnotationKey represents the key of taints data (json serialized)
+// in the Annotations of a Node.
+// Note that this is for k8s <= 1.5 only
+const TaintsAnnotationKey string = "scheduler.alpha.kubernetes.io/taints"
+
+// ApplyMasterTaints finds masters that have not yet been tainted, and applies the master taint.
+// Once all supported kubelet versions accept the --register-with-taints flag introduced in 1.6.0, this can probably
+// go away entirely. It also sets the unschedulable flag to false, so pods (with a toleration) can target the node
 func ApplyMasterTaints(kubeContext *KubernetesContext) error {
 	client, err := kubeContext.KubernetesClient()
 	if err != nil {
 		return err
 	}
 
-	options := v1.ListOptions{
+	options := metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(labels.Set{"kubernetes.io/role": "master"}).String(),
 	}
 	glog.V(2).Infof("Querying k8s for nodes with selector %q", options.LabelSelector)
-	nodes, err := client.Core().Nodes().List(options)
+	nodes, err := client.CoreV1().Nodes().List(options)
 	if err != nil {
 		return fmt.Errorf("error querying nodes: %v", err)
 	}
@@ -65,16 +71,16 @@ func ApplyMasterTaints(kubeContext *KubernetesContext) error {
 	for i := range nodes.Items {
 		node := &nodes.Items[i]
 
-		nodeTaintJSON := node.Annotations[v1.TaintsAnnotationKey]
+		nodeTaintJSON := node.Annotations[TaintsAnnotationKey]
 		if nodeTaintJSON != "" {
 			if nodeTaintJSON != string(taintJSON) {
-				glog.Infof("Node %q had unexpected taint: %v", node.Name, nodeTaintJSON)
+				glog.Infof("Node %q is registered with taint: %v", node.Name, nodeTaintJSON)
 			}
 			continue
 		}
 
 		nodePatchMetadata := &nodePatchMetadata{
-			Annotations: map[string]string{v1.TaintsAnnotationKey: string(taintJSON)},
+			Annotations: map[string]string{TaintsAnnotationKey: string(taintJSON)},
 		}
 		unschedulable := false
 		nodePatchSpec := &nodePatchSpec{
@@ -91,7 +97,7 @@ func ApplyMasterTaints(kubeContext *KubernetesContext) error {
 
 		glog.V(2).Infof("sending patch for node %q: %q", node.Name, string(nodePatchJson))
 
-		_, err = client.Nodes().Patch(node.Name, api.StrategicMergePatchType, nodePatchJson)
+		_, err = client.CoreV1().Nodes().Patch(node.Name, types.StrategicMergePatchType, nodePatchJson)
 		if err != nil {
 			// TODO: Should we keep going?
 			return fmt.Errorf("error applying patch to node: %v", err)

@@ -87,7 +87,6 @@ func hasObjectMeta(t *types.Type) bool {
 func (g *genFakeForType) GenerateType(c *generator.Context, t *types.Type, w io.Writer) error {
 	sw := generator.NewSnippetWriter(w, c, "$", "$")
 	pkg := filepath.Base(t.Name.Package)
-	const pkgTestingCore = "k8s.io/kubernetes/pkg/client/testing/core"
 	namespaced := !extractBoolTagOrDie("nonNamespaced", t.SecondClosestCommentLines)
 	canonicalGroup := g.group
 	if canonicalGroup == "core" {
@@ -105,6 +104,7 @@ func (g *genFakeForType) GenerateType(c *generator.Context, t *types.Type, w io.
 		groupName = override[0]
 	}
 
+	const pkgClientGoTesting = "k8s.io/client-go/testing"
 	m := map[string]interface{}{
 		"type":                 t,
 		"package":              pkg,
@@ -115,42 +115,36 @@ func (g *genFakeForType) GenerateType(c *generator.Context, t *types.Type, w io.
 		"group":                canonicalGroup,
 		"groupName":            groupName,
 		"version":              g.version,
-		"watchInterface":       c.Universe.Type(types.Name{Package: "k8s.io/kubernetes/pkg/watch", Name: "Interface"}),
-		"GroupVersionResource": c.Universe.Type(types.Name{Package: "k8s.io/kubernetes/pkg/runtime/schema", Name: "GroupVersionResource"}),
-		"PatchType":            c.Universe.Type(types.Name{Package: "k8s.io/kubernetes/pkg/api", Name: "PatchType"}),
-		"Everything":           c.Universe.Function(types.Name{Package: "k8s.io/kubernetes/pkg/labels", Name: "Everything"}),
+		"DeleteOptions":        c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "DeleteOptions"}),
+		"ListOptions":          c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "ListOptions"}),
+		"GetOptions":           c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "GetOptions"}),
+		"Everything":           c.Universe.Function(types.Name{Package: "k8s.io/apimachinery/pkg/labels", Name: "Everything"}),
+		"GroupVersionResource": c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/runtime/schema", Name: "GroupVersionResource"}),
+		"PatchType":            c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/types", Name: "PatchType"}),
+		"watchInterface":       c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/watch", Name: "Interface"}),
 
-		"NewRootListAction":              c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewRootListAction"}),
-		"NewListAction":                  c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewListAction"}),
-		"NewRootGetAction":               c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewRootGetAction"}),
-		"NewGetAction":                   c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewGetAction"}),
-		"NewRootDeleteAction":            c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewRootDeleteAction"}),
-		"NewDeleteAction":                c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewDeleteAction"}),
-		"NewRootDeleteCollectionAction":  c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewRootDeleteCollectionAction"}),
-		"NewDeleteCollectionAction":      c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewDeleteCollectionAction"}),
-		"NewRootUpdateAction":            c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewRootUpdateAction"}),
-		"NewUpdateAction":                c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewUpdateAction"}),
-		"NewRootCreateAction":            c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewRootCreateAction"}),
-		"NewCreateAction":                c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewCreateAction"}),
-		"NewRootWatchAction":             c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewRootWatchAction"}),
-		"NewWatchAction":                 c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewWatchAction"}),
-		"NewUpdateSubresourceAction":     c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewUpdateSubresourceAction"}),
-		"NewRootUpdateSubresourceAction": c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewRootUpdateSubresourceAction"}),
-		"NewRootPatchAction":             c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewRootPatchAction"}),
-		"NewPatchAction":                 c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewPatchAction"}),
-		"NewRootPatchSubresourceAction":  c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewRootPatchSubresourceAction"}),
-		"NewPatchSubresourceAction":      c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "NewPatchSubresourceAction"}),
-		"ExtractFromListOptions":         c.Universe.Function(types.Name{Package: pkgTestingCore, Name: "ExtractFromListOptions"}),
+		"NewRootListAction":              c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewRootListAction"}),
+		"NewListAction":                  c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewListAction"}),
+		"NewRootGetAction":               c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewRootGetAction"}),
+		"NewGetAction":                   c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewGetAction"}),
+		"NewRootDeleteAction":            c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewRootDeleteAction"}),
+		"NewDeleteAction":                c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewDeleteAction"}),
+		"NewRootDeleteCollectionAction":  c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewRootDeleteCollectionAction"}),
+		"NewDeleteCollectionAction":      c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewDeleteCollectionAction"}),
+		"NewRootUpdateAction":            c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewRootUpdateAction"}),
+		"NewUpdateAction":                c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewUpdateAction"}),
+		"NewRootCreateAction":            c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewRootCreateAction"}),
+		"NewCreateAction":                c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewCreateAction"}),
+		"NewRootWatchAction":             c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewRootWatchAction"}),
+		"NewWatchAction":                 c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewWatchAction"}),
+		"NewUpdateSubresourceAction":     c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewUpdateSubresourceAction"}),
+		"NewRootUpdateSubresourceAction": c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewRootUpdateSubresourceAction"}),
+		"NewRootPatchAction":             c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewRootPatchAction"}),
+		"NewPatchAction":                 c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewPatchAction"}),
+		"NewRootPatchSubresourceAction":  c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewRootPatchSubresourceAction"}),
+		"NewPatchSubresourceAction":      c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "NewPatchSubresourceAction"}),
+		"ExtractFromListOptions":         c.Universe.Function(types.Name{Package: pkgClientGoTesting, Name: "ExtractFromListOptions"}),
 	}
-
-	if g.version == "" {
-		m["DeleteOptions"] = c.Universe.Type(types.Name{Package: "k8s.io/kubernetes/pkg/api", Name: "DeleteOptions"})
-		m["ListOptions"] = c.Universe.Type(types.Name{Package: "k8s.io/kubernetes/pkg/api", Name: "ListOptions"})
-	} else {
-		m["DeleteOptions"] = c.Universe.Type(types.Name{Package: "k8s.io/kubernetes/pkg/api/v1", Name: "DeleteOptions"})
-		m["ListOptions"] = c.Universe.Type(types.Name{Package: "k8s.io/kubernetes/pkg/api/v1", Name: "ListOptions"})
-	}
-	m["GetOptions"] = c.Universe.Type(types.Name{Package: "k8s.io/kubernetes/pkg/apis/meta/v1", Name: "GetOptions"})
 
 	noMethods := extractBoolTagOrDie("noMethods", t.SecondClosestCommentLines) == true
 

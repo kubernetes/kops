@@ -7,6 +7,7 @@ package uritemplates
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"testing"
 )
 
@@ -15,7 +16,7 @@ func ExampleExpand() {
 		"user": "golang",
 		"repo": "go",
 	}
-	expanded, err := Expand("https://api.github.com/repos{/user,repo}", values)
+	expanded, _, err := Expand("https://api.github.com/repos{/user,repo}", values)
 	if err != nil {
 		log.Fatalf("Error expanding template: %v", err)
 	}
@@ -50,7 +51,7 @@ func TestExpand(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		exp, err := Expand(tt.tmpl, tt.values)
+		exp, _, err := Expand(tt.tmpl, tt.values)
 		if err != nil {
 			t.Errorf("Expand(%q, %v) error: %v", tt.tmpl, tt.values, err)
 			continue
@@ -208,13 +209,72 @@ func TestExpandRFCLevels(t *testing.T) {
 		{tmpl: "{&var:3}", want: "&var=val"},
 	}
 	for _, tt := range testCases {
-		exp, err := Expand(tt.tmpl, values)
+		esc, unesc, err := Expand(tt.tmpl, values)
 		if err != nil {
 			t.Errorf("Expand(%q) error: %v", tt.tmpl, err)
 			continue
 		}
-		if exp != tt.want {
-			t.Errorf("Expand(%q)\ngot  %q\nwant %q", tt.tmpl, exp, tt.want)
+		if esc != tt.want {
+			t.Errorf("Expand(%q)\ngot  %q\nwant %q", tt.tmpl, esc, tt.want)
+		}
+		// Check that the escaped form is equivalent to unescaped.
+		urlUnesc, err := url.QueryUnescape(esc)
+		if err != nil {
+			t.Errorf("Expand(%q) gave invalid escaping %q: %v", tt.tmpl, esc, err)
+			continue
+		}
+		if urlUnesc != unesc {
+			t.Errorf("Expand(%q) gave inconsistent escaped/unescaped\nunescaped %q\nescaped   %q\nwhich is  %q", tt.tmpl, unesc, esc, urlUnesc)
+		}
+	}
+}
+
+func TestExpandUnescaped(t *testing.T) {
+	testCases := []struct {
+		tmpl, wantEsc, wantUnesc string
+		values                   map[string]string
+	}{
+		{
+			tmpl: "/foo/{bucket}/bar",
+			values: map[string]string{
+				"bucket": "simple",
+			},
+			wantEsc:   "/foo/simple/bar",
+			wantUnesc: "/foo/simple/bar",
+		},
+		{
+			tmpl: "/foo/{bucket}/bar",
+			values: map[string]string{
+				"bucket": "path/with/slash",
+			},
+			wantEsc:   "/foo/path%2Fwith%2Fslash/bar",
+			wantUnesc: "/foo/path/with/slash/bar",
+		},
+		{
+			tmpl: "/foo/{+bucket}/bar",
+			values: map[string]string{
+				"bucket": "path/with/slash",
+			},
+			wantEsc:   "/foo/path/with/slash/bar",
+			wantUnesc: "/foo/path/with/slash/bar",
+		},
+		{
+			tmpl: "/foo/{bucket}/bar",
+			values: map[string]string{
+				"bucket": "double%2Fescaped",
+			},
+			wantEsc:   "/foo/double%252Fescaped/bar",
+			wantUnesc: "/foo/double%2Fescaped/bar",
+		},
+	}
+	for _, tt := range testCases {
+		esc, unesc, err := Expand(tt.tmpl, tt.values)
+		if err != nil {
+			t.Errorf("Expand(%q) error: %v", tt.tmpl, err)
+			continue
+		}
+		if esc != tt.wantEsc || unesc != tt.wantUnesc {
+			t.Errorf("Expand(%q)\ngot  esc=%q, unesc=%q\nwant esc=%q, unesc=%q", tt.tmpl, esc, unesc, tt.wantEsc, tt.wantUnesc)
 		}
 	}
 }

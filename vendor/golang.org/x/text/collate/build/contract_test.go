@@ -8,8 +8,6 @@ import (
 	"bytes"
 	"sort"
 	"testing"
-
-	"golang.org/x/text/internal/colltab"
 )
 
 var largetosmall = []stridx{
@@ -80,7 +78,7 @@ func TestGenIdxSort(t *testing.T) {
 	}
 }
 
-var entrySortTests = []colltab.ContractTrieSet{
+var entrySortTests = []contractTrieSet{
 	{
 		{10, 0, 1, 3},
 		{99, 0, 1, 0},
@@ -93,7 +91,7 @@ func TestEntrySort(t *testing.T) {
 	for i, et := range entrySortTests {
 		sort.Sort(entrySort(et))
 		for j, fe := range et {
-			if j != int(fe.I) {
+			if j != int(fe.i) {
 				t.Errorf("%dth sort failed %v", i, et)
 				break
 			}
@@ -104,7 +102,7 @@ func TestEntrySort(t *testing.T) {
 type GenStateTest struct {
 	in            []stridx
 	firstBlockLen int
-	out           colltab.ContractTrieSet
+	out           contractTrieSet
 }
 
 var genStateTests = []GenStateTest{
@@ -112,7 +110,7 @@ var genStateTests = []GenStateTest{
 		{"abc", 1},
 	},
 		1,
-		colltab.ContractTrieSet{
+		contractTrieSet{
 			{'a', 0, 1, noIndex},
 			{'b', 0, 1, noIndex},
 			{'c', 'c', final, 1},
@@ -124,7 +122,7 @@ var genStateTests = []GenStateTest{
 		{"abe", 3},
 	},
 		1,
-		colltab.ContractTrieSet{
+		contractTrieSet{
 			{'a', 0, 1, noIndex},
 			{'b', 0, 1, noIndex},
 			{'c', 'e', final, 1},
@@ -136,7 +134,7 @@ var genStateTests = []GenStateTest{
 		{"a", 3},
 	},
 		1,
-		colltab.ContractTrieSet{
+		contractTrieSet{
 			{'a', 0, 1, 3},
 			{'b', 0, 1, 2},
 			{'c', 'c', final, 1},
@@ -151,7 +149,7 @@ var genStateTests = []GenStateTest{
 		{"b", 6},
 	},
 		2,
-		colltab.ContractTrieSet{
+		contractTrieSet{
 			{'b', 'b', final, 6},
 			{'a', 0, 2, 5},
 			{'c', 'c', final, 4},
@@ -169,7 +167,7 @@ var genStateTests = []GenStateTest{
 		{"bcdf", 3},
 	},
 		2,
-		colltab.ContractTrieSet{
+		contractTrieSet{
 			{'b', 3, 1, noIndex},
 			{'a', 0, 1, noIndex},
 			{'b', 0, 1, 6},
@@ -190,8 +188,8 @@ func TestGenStates(t *testing.T) {
 		}
 		// ensure input is well-formed
 		sort.Sort(genidxSort(si))
-		ct := colltab.ContractTrieSet{}
-		n, _ := genStates(&ct, si)
+		ct := contractTrieSet{}
+		n, _ := ct.genStates(si)
 		if nn := tt.firstBlockLen; nn != n {
 			t.Errorf("%d: block len %v; want %v", i, n, nn)
 		}
@@ -201,17 +199,17 @@ func TestGenStates(t *testing.T) {
 		}
 		for j, fe := range tt.out {
 			const msg = "%d:%d: value %s=%v; want %v"
-			if fe.L != ct[j].L {
-				t.Errorf(msg, i, j, "l", ct[j].L, fe.L)
+			if fe.l != ct[j].l {
+				t.Errorf(msg, i, j, "l", ct[j].l, fe.l)
 			}
-			if fe.H != ct[j].H {
-				t.Errorf(msg, i, j, "h", ct[j].H, fe.H)
+			if fe.h != ct[j].h {
+				t.Errorf(msg, i, j, "h", ct[j].h, fe.h)
 			}
-			if fe.N != ct[j].N {
-				t.Errorf(msg, i, j, "n", ct[j].N, fe.N)
+			if fe.n != ct[j].n {
+				t.Errorf(msg, i, j, "n", ct[j].n, fe.n)
 			}
-			if fe.I != ct[j].I {
-				t.Errorf(msg, i, j, "i", ct[j].I, fe.I)
+			if fe.i != ct[j].i {
+				t.Errorf(msg, i, j, "i", ct[j].i, fe.i)
 			}
 		}
 	}
@@ -223,13 +221,13 @@ func TestLookupContraction(t *testing.T) {
 		for _, e := range tt.in {
 			input = append(input, e.str)
 		}
-		cts := colltab.ContractTrieSet{}
-		h, _ := appendTrie(&cts, input)
+		cts := contractTrieSet{}
+		h, _ := cts.appendTrie(input)
 		for j, si := range tt.in {
 			str := si.str
 			for _, s := range []string{str, str + "X"} {
 				msg := "%d:%d: %s(%s) %v; want %v"
-				idx, sn := lookup(&cts, h, []byte(s))
+				idx, sn := cts.lookup(h, []byte(s))
 				if idx != si.index {
 					t.Errorf(msg, i, j, "index", s, idx, si.index)
 				}
@@ -242,9 +240,9 @@ func TestLookupContraction(t *testing.T) {
 }
 
 func TestPrintContractionTrieSet(t *testing.T) {
-	testdata := colltab.ContractTrieSet(genStateTests[4].out)
+	testdata := contractTrieSet(genStateTests[4].out)
 	buf := &bytes.Buffer{}
-	print(&testdata, buf, "test")
+	testdata.print(buf, "test")
 	if contractTrieOutput != buf.String() {
 		t.Errorf("output differs; found\n%s", buf.String())
 		println(string(buf.Bytes()))
@@ -252,7 +250,7 @@ func TestPrintContractionTrieSet(t *testing.T) {
 }
 
 const contractTrieOutput = `// testCTEntries: 8 entries, 32 bytes
-var testCTEntries = [8]struct{L,H,N,I uint8}{
+var testCTEntries = [8]struct{l,h,n,i uint8}{
 	{0x62, 0x3, 1, 255},
 	{0x61, 0x0, 1, 255},
 	{0x62, 0x0, 1, 6},
@@ -262,5 +260,5 @@ var testCTEntries = [8]struct{L,H,N,I uint8}{
 	{0x64, 0x0, 1, 5},
 	{0x65, 0x66, 0, 2},
 }
-var testContractTrieSet = colltab.ContractTrieSet( testCTEntries[:] )
+var testContractTrieSet = contractTrieSet( testCTEntries[:] )
 `

@@ -40,7 +40,7 @@ type service interface {
 	createTable(ctx context.Context, conf *createTableConf) error
 	getTableMetadata(ctx context.Context, projectID, datasetID, tableID string) (*TableMetadata, error)
 	deleteTable(ctx context.Context, projectID, datasetID, tableID string) error
-	listTables(ctx context.Context, projectID, datasetID string, pageSize int, pageToken string) ([]*Table, string, error)
+	listTables(ctx context.Context, projectID, datasetID, pageToken string) ([]*Table, string, error)
 	patchTable(ctx context.Context, projectID, datasetID, tableID string, conf *patchTableConf) (*TableMetadata, error)
 
 	// Table data
@@ -56,7 +56,6 @@ type service interface {
 	// incomplete, an errIncompleteJob is returned. readQuery may be called
 	// repeatedly to poll for job completion.
 	readQuery(ctx context.Context, conf *readQueryConf, pageToken string) (*readDataResult, error)
-	listDatasets(ctx context.Context, projectID string, maxResults int, pageToken string, all bool, filter string) ([]*Dataset, string, error)
 }
 
 type bigqueryService struct {
@@ -345,15 +344,12 @@ func jobStatusFromProto(status *bq.JobStatus) (*JobStatus, error) {
 }
 
 // listTables returns a subset of tables that belong to a dataset, and a token for fetching the next subset.
-func (s *bigqueryService) listTables(ctx context.Context, projectID, datasetID string, pageSize int, pageToken string) ([]*Table, string, error) {
+func (s *bigqueryService) listTables(ctx context.Context, projectID, datasetID, pageToken string) ([]*Table, string, error) {
 	var tables []*Table
-	req := s.s.Tables.List(projectID, datasetID).
+	res, err := s.s.Tables.List(projectID, datasetID).
 		PageToken(pageToken).
-		Context(ctx)
-	if pageSize > 0 {
-		req.MaxResults(int64(pageSize))
-	}
-	res, err := req.Do()
+		Context(ctx).
+		Do()
 	if err != nil {
 		return nil, "", err
 	}
@@ -368,7 +364,6 @@ type createTableConf struct {
 	expiration                    time.Time
 	viewQuery                     string
 	schema                        *bq.TableSchema
-	useStandardSQL                bool
 }
 
 // createTable creates a table in the BigQuery service.
@@ -391,10 +386,6 @@ func (s *bigqueryService) createTable(ctx context.Context, conf *createTableConf
 	if conf.viewQuery != "" {
 		table.View = &bq.ViewDefinition{
 			Query: conf.viewQuery,
-		}
-		if conf.useStandardSQL {
-			table.View.UseLegacySql = false
-			table.ForceSendFields = append(table.ForceSendFields, "UseLegacySql")
 		}
 	}
 	if conf.schema != nil {
@@ -490,34 +481,4 @@ func (s *bigqueryService) insertDataset(ctx context.Context, datasetID, projectI
 	}
 	_, err := s.s.Datasets.Insert(projectID, ds).Context(ctx).Do()
 	return err
-}
-
-func (s *bigqueryService) listDatasets(ctx context.Context, projectID string, maxResults int, pageToken string, all bool, filter string) ([]*Dataset, string, error) {
-	req := s.s.Datasets.List(projectID).
-		Context(ctx).
-		PageToken(pageToken).
-		All(all)
-	if maxResults > 0 {
-		req.MaxResults(int64(maxResults))
-	}
-	if filter != "" {
-		req.Filter(filter)
-	}
-	res, err := req.Do()
-	if err != nil {
-		return nil, "", err
-	}
-	var datasets []*Dataset
-	for _, d := range res.Datasets {
-		datasets = append(datasets, s.convertListedDataset(d))
-	}
-	return datasets, res.NextPageToken, nil
-}
-
-func (s *bigqueryService) convertListedDataset(d *bq.DatasetListDatasets) *Dataset {
-	return &Dataset{
-		projectID: d.DatasetReference.ProjectId,
-		id:        d.DatasetReference.DatasetId,
-		service:   s,
-	}
 }

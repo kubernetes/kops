@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api/server/httputils"
@@ -14,7 +13,7 @@ import (
 )
 
 // DebugRequestMiddleware dumps the request to logger
-func DebugRequestMiddleware(handler func(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) error) func(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
+func DebugRequestMiddleware(handler httputils.APIFunc) httputils.APIFunc {
 	return func(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
 		logrus.Debugf("Calling %s %s", r.Method, r.RequestURI)
 
@@ -41,7 +40,9 @@ func DebugRequestMiddleware(handler func(ctx context.Context, w http.ResponseWri
 
 		var postForm map[string]interface{}
 		if err := json.Unmarshal(b, &postForm); err == nil {
-			maskSecretKeys(postForm)
+			if _, exists := postForm["password"]; exists {
+				postForm["password"] = "*****"
+			}
 			formStr, errMarshal := json.Marshal(postForm)
 			if errMarshal == nil {
 				logrus.Debugf("form data: %s", string(formStr))
@@ -51,26 +52,5 @@ func DebugRequestMiddleware(handler func(ctx context.Context, w http.ResponseWri
 		}
 
 		return handler(ctx, w, r, vars)
-	}
-}
-
-func maskSecretKeys(inp interface{}) {
-	if arr, ok := inp.([]interface{}); ok {
-		for _, f := range arr {
-			maskSecretKeys(f)
-		}
-		return
-	}
-	if form, ok := inp.(map[string]interface{}); ok {
-	loop0:
-		for k, v := range form {
-			for _, m := range []string{"password", "secret"} {
-				if strings.EqualFold(m, k) {
-					form[k] = "*****"
-					continue loop0
-				}
-			}
-			maskSecretKeys(v)
-		}
 	}
 }

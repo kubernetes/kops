@@ -29,8 +29,8 @@ func TestFormatNew(t *testing.T) {
 			"\t.+/github.com/pkg/errors/format_test.go:25",
 	}}
 
-	for _, tt := range tests {
-		testFormatRegexp(t, tt.error, tt.format, tt.want)
+	for i, tt := range tests {
+		testFormatRegexp(t, i, tt.error, tt.format, tt.want)
 	}
 }
 
@@ -55,8 +55,8 @@ func TestFormatErrorf(t *testing.T) {
 			"\t.+/github.com/pkg/errors/format_test.go:51",
 	}}
 
-	for _, tt := range tests {
-		testFormatRegexp(t, tt.error, tt.format, tt.want)
+	for i, tt := range tests {
+		testFormatRegexp(t, i, tt.error, tt.format, tt.want)
 	}
 }
 
@@ -84,13 +84,31 @@ func TestFormatWrap(t *testing.T) {
 		"%s",
 		"error: EOF",
 	}, {
+		Wrap(io.EOF, "error"),
+		"%v",
+		"error: EOF",
+	}, {
+		Wrap(io.EOF, "error"),
+		"%+v",
+		"EOF\n" +
+			"error\n" +
+			"github.com/pkg/errors.TestFormatWrap\n" +
+			"\t.+/github.com/pkg/errors/format_test.go:91",
+	}, {
+		Wrap(Wrap(io.EOF, "error1"), "error2"),
+		"%+v",
+		"EOF\n" +
+			"error1\n" +
+			"github.com/pkg/errors.TestFormatWrap\n" +
+			"\t.+/github.com/pkg/errors/format_test.go:98\n",
+	}, {
 		Wrap(New("error with space"), "context"),
 		"%q",
 		`"context: error with space"`,
 	}}
 
-	for _, tt := range tests {
-		testFormatRegexp(t, tt.error, tt.format, tt.want)
+	for i, tt := range tests {
+		testFormatRegexp(t, i, tt.error, tt.format, tt.want)
 	}
 }
 
@@ -100,20 +118,24 @@ func TestFormatWrapf(t *testing.T) {
 		format string
 		want   string
 	}{{
+		Wrapf(io.EOF, "error%d", 2),
+		"%s",
+		"error2: EOF",
+	}, {
+		Wrapf(io.EOF, "error%d", 2),
+		"%v",
+		"error2: EOF",
+	}, {
+		Wrapf(io.EOF, "error%d", 2),
+		"%+v",
+		"EOF\n" +
+			"error2\n" +
+			"github.com/pkg/errors.TestFormatWrapf\n" +
+			"\t.+/github.com/pkg/errors/format_test.go:129",
+	}, {
 		Wrapf(New("error"), "error%d", 2),
 		"%s",
 		"error2: error",
-	}, {
-		Wrap(io.EOF, "error"),
-		"%v",
-		"error: EOF",
-	}, {
-		Wrap(io.EOF, "error"),
-		"%+v",
-		"EOF\n" +
-			"error\n" +
-			"github.com/pkg/errors.TestFormatWrapf\n" +
-			"\t.+/github.com/pkg/errors/format_test.go:111",
 	}, {
 		Wrapf(New("error"), "error%d", 2),
 		"%v",
@@ -123,22 +145,15 @@ func TestFormatWrapf(t *testing.T) {
 		"%+v",
 		"error\n" +
 			"github.com/pkg/errors.TestFormatWrapf\n" +
-			"\t.+/github.com/pkg/errors/format_test.go:122",
-	}, {
-		Wrap(Wrap(io.EOF, "error1"), "error2"),
-		"%+v",
-		"EOF\n" +
-			"error1\n" +
-			"github.com/pkg/errors.TestFormatWrapf\n" +
-			"\t.+/github.com/pkg/errors/format_test.go:128\n",
+			"\t.+/github.com/pkg/errors/format_test.go:144",
 	}}
 
-	for _, tt := range tests {
-		testFormatRegexp(t, tt.error, tt.format, tt.want)
+	for i, tt := range tests {
+		testFormatRegexp(t, i, tt.error, tt.format, tt.want)
 	}
 }
 
-func testFormatRegexp(t *testing.T, arg interface{}, format, want string) {
+func testFormatRegexp(t *testing.T, n int, arg interface{}, format, want string) {
 	got := fmt.Sprintf(format, arg)
 	lines := strings.SplitN(got, "\n", -1)
 	for i, w := range strings.SplitN(want, "\n", -1) {
@@ -147,7 +162,7 @@ func testFormatRegexp(t *testing.T, arg interface{}, format, want string) {
 			t.Fatal(err)
 		}
 		if !match {
-			t.Errorf("fmt.Sprintf(%q, err): got: %q, want: %q", format, got, want)
+			t.Errorf("test %d: line %d: fmt.Sprintf(%q, err): got: %q, want: %q", n+1, i+1, format, got, want)
 		}
 	}
 }

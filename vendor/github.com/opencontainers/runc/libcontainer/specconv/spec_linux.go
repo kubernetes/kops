@@ -12,7 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/opencontainers/runc/libcontainer/cgroups"
 	"github.com/opencontainers/runc/libcontainer/configs"
 	"github.com/opencontainers/runc/libcontainer/seccomp"
 	libcontainerUtils "github.com/opencontainers/runc/libcontainer/utils"
@@ -253,16 +252,13 @@ func createLibcontainerMount(cwd string, m specs.Mount) *configs.Mount {
 }
 
 func createCgroupConfig(name string, useSystemdCgroup bool, spec *specs.Spec) (*configs.Cgroup, error) {
-	var (
-		err          error
-		myCgroupPath string
-	)
+	var myCgroupPath string
 
 	c := &configs.Cgroup{
 		Resources: &configs.Resources{},
 	}
 
-	if spec.Linux.CgroupsPath != nil {
+	if spec.Linux != nil && spec.Linux.CgroupsPath != nil {
 		myCgroupPath = libcontainerUtils.CleanPath(*spec.Linux.CgroupsPath)
 		if useSystemdCgroup {
 			myCgroupPath = *spec.Linux.CgroupsPath
@@ -287,16 +283,15 @@ func createCgroupConfig(name string, useSystemdCgroup bool, spec *specs.Spec) (*
 		}
 	} else {
 		if myCgroupPath == "" {
-			myCgroupPath, err = cgroups.GetThisCgroupDir("devices")
-			if err != nil {
-				return nil, err
-			}
-			myCgroupPath = filepath.Join(myCgroupPath, name)
+			c.Name = name
 		}
 		c.Path = myCgroupPath
 	}
 
 	c.Resources.AllowedDevices = allowedDevices
+	if spec.Linux == nil {
+		return c, nil
+	}
 	r := spec.Linux.Resources
 	if r == nil {
 		return c, nil
@@ -403,25 +398,41 @@ func createCgroupConfig(name string, useSystemdCgroup bool, spec *specs.Spec) (*
 		}
 		if r.BlockIO.ThrottleReadBpsDevice != nil {
 			for _, td := range r.BlockIO.ThrottleReadBpsDevice {
-				throttleDevice := configs.NewThrottleDevice(td.Major, td.Minor, *td.Rate)
+				var rate uint64
+				if td.Rate != nil {
+					rate = *td.Rate
+				}
+				throttleDevice := configs.NewThrottleDevice(td.Major, td.Minor, rate)
 				c.Resources.BlkioThrottleReadBpsDevice = append(c.Resources.BlkioThrottleReadBpsDevice, throttleDevice)
 			}
 		}
 		if r.BlockIO.ThrottleWriteBpsDevice != nil {
 			for _, td := range r.BlockIO.ThrottleWriteBpsDevice {
-				throttleDevice := configs.NewThrottleDevice(td.Major, td.Minor, *td.Rate)
+				var rate uint64
+				if td.Rate != nil {
+					rate = *td.Rate
+				}
+				throttleDevice := configs.NewThrottleDevice(td.Major, td.Minor, rate)
 				c.Resources.BlkioThrottleWriteBpsDevice = append(c.Resources.BlkioThrottleWriteBpsDevice, throttleDevice)
 			}
 		}
 		if r.BlockIO.ThrottleReadIOPSDevice != nil {
 			for _, td := range r.BlockIO.ThrottleReadIOPSDevice {
-				throttleDevice := configs.NewThrottleDevice(td.Major, td.Minor, *td.Rate)
+				var rate uint64
+				if td.Rate != nil {
+					rate = *td.Rate
+				}
+				throttleDevice := configs.NewThrottleDevice(td.Major, td.Minor, rate)
 				c.Resources.BlkioThrottleReadIOPSDevice = append(c.Resources.BlkioThrottleReadIOPSDevice, throttleDevice)
 			}
 		}
 		if r.BlockIO.ThrottleWriteIOPSDevice != nil {
 			for _, td := range r.BlockIO.ThrottleWriteIOPSDevice {
-				throttleDevice := configs.NewThrottleDevice(td.Major, td.Minor, *td.Rate)
+				var rate uint64
+				if td.Rate != nil {
+					rate = *td.Rate
+				}
+				throttleDevice := configs.NewThrottleDevice(td.Major, td.Minor, rate)
 				c.Resources.BlkioThrottleWriteIOPSDevice = append(c.Resources.BlkioThrottleWriteIOPSDevice, throttleDevice)
 			}
 		}
@@ -617,18 +628,15 @@ func parseMountOptions(options []string) (int, []int, string) {
 		"suid":          {true, syscall.MS_NOSUID},
 		"sync":          {false, syscall.MS_SYNCHRONOUS},
 	}
-	propagationFlags := map[string]struct {
-		clear bool
-		flag  int
-	}{
-		"private":     {false, syscall.MS_PRIVATE},
-		"shared":      {false, syscall.MS_SHARED},
-		"slave":       {false, syscall.MS_SLAVE},
-		"unbindable":  {false, syscall.MS_UNBINDABLE},
-		"rprivate":    {false, syscall.MS_PRIVATE | syscall.MS_REC},
-		"rshared":     {false, syscall.MS_SHARED | syscall.MS_REC},
-		"rslave":      {false, syscall.MS_SLAVE | syscall.MS_REC},
-		"runbindable": {false, syscall.MS_UNBINDABLE | syscall.MS_REC},
+	propagationFlags := map[string]int{
+		"private":     syscall.MS_PRIVATE,
+		"shared":      syscall.MS_SHARED,
+		"slave":       syscall.MS_SLAVE,
+		"unbindable":  syscall.MS_UNBINDABLE,
+		"rprivate":    syscall.MS_PRIVATE | syscall.MS_REC,
+		"rshared":     syscall.MS_SHARED | syscall.MS_REC,
+		"rslave":      syscall.MS_SLAVE | syscall.MS_REC,
+		"runbindable": syscall.MS_UNBINDABLE | syscall.MS_REC,
 	}
 	for _, o := range options {
 		// If the option does not exist in the flags table or the flag
@@ -640,8 +648,8 @@ func parseMountOptions(options []string) (int, []int, string) {
 			} else {
 				flag |= f.flag
 			}
-		} else if f, exists := propagationFlags[o]; exists && f.flag != 0 {
-			pgflag = append(pgflag, f.flag)
+		} else if f, exists := propagationFlags[o]; exists && f != 0 {
+			pgflag = append(pgflag, f)
 		} else {
 			data = append(data, o)
 		}

@@ -20,16 +20,14 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/golang/glog"
-	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func decoder() runtime.Decoder {
 	// TODO: Cache?
 	// Codecs provides access to encoding and decoding for the scheme
-	codecs := k8sapi.Codecs
-	codec := codecs.UniversalDecoder(SchemeGroupVersion)
+	codec := Codecs.UniversalDecoder(SchemeGroupVersion)
 	return codec
 }
 
@@ -38,12 +36,12 @@ func encoder(version string) runtime.Encoder {
 	//yaml := json.NewYAMLSerializer(json.DefaultMetaFactory, k8sapi.Scheme, k8sapi.Scheme)
 
 	// TODO: Cache?
-	yaml, ok := runtime.SerializerInfoForMediaType(k8sapi.Codecs.SupportedMediaTypes(), "application/yaml")
+	yaml, ok := runtime.SerializerInfoForMediaType(Codecs.SupportedMediaTypes(), "application/yaml")
 	if !ok {
 		glog.Fatalf("no YAML serializer registered")
 	}
 	gv := schema.GroupVersion{Group: GroupName, Version: version}
-	return k8sapi.Codecs.EncoderForVersion(yaml.Serializer, gv)
+	return Codecs.EncoderForVersion(yaml.Serializer, gv)
 }
 
 func preferredAPIVersion() string {

@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
 
-// This is Amazon Rekognition API guide.
+// This is the Amazon Rekognition API reference.
 // The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type Rekognition struct {

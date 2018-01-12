@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"path"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -71,24 +70,6 @@ func linkUnit(target string, conn *Conn, t *testing.T) {
 	}
 }
 
-func getUnitStatus(units []UnitStatus, name string) *UnitStatus {
-	for _, u := range units {
-		if u.Name == name {
-			return &u
-		}
-	}
-	return nil
-}
-
-func getUnitFile(units []UnitFile, name string) *UnitFile {
-	for _, u := range units {
-		if path.Base(u.Path) == name {
-			return &u
-		}
-	}
-	return nil
-}
-
 // Ensure that basic unit starting and stopping works.
 func TestStartStopUnit(t *testing.T) {
 	target := "start-stop.service"
@@ -111,11 +92,18 @@ func TestStartStopUnit(t *testing.T) {
 
 	units, err := conn.ListUnits()
 
-	unit := getUnitStatus(units, target)
+	var unit *UnitStatus
+	for _, u := range units {
+		if u.Name == target {
+			unit = &u
+		}
+	}
 
 	if unit == nil {
 		t.Fatalf("Test unit not found in list")
-	} else if unit.ActiveState != "active" {
+	}
+
+	if unit.ActiveState != "active" {
 		t.Fatalf("Test unit not active")
 	}
 
@@ -130,166 +118,15 @@ func TestStartStopUnit(t *testing.T) {
 
 	units, err = conn.ListUnits()
 
-	unit = getUnitStatus(units, target)
+	unit = nil
+	for _, u := range units {
+		if u.Name == target {
+			unit = &u
+		}
+	}
 
 	if unit != nil {
 		t.Fatalf("Test unit found in list, should be stopped")
-	}
-}
-
-// Ensure that ListUnitsByNames works.
-func TestListUnitsByNames(t *testing.T) {
-	target1 := "systemd-journald.service"
-	target2 := "unexisting.service"
-
-	conn := setupConn(t)
-
-	units, err := conn.ListUnitsByNames([]string{target1, target2})
-
-	if err != nil {
-		t.Skip(err)
-	}
-
-	unit := getUnitStatus(units, target1)
-
-	if unit == nil {
-		t.Fatalf("%s unit not found in list", target1)
-	} else if unit.ActiveState != "active" {
-		t.Fatalf("%s unit should be active but it is %s", target1, unit.ActiveState)
-	}
-
-	unit = getUnitStatus(units, target2)
-
-	if unit == nil {
-		t.Fatalf("Unexisting test unit not found in list")
-	} else if unit.ActiveState != "inactive" {
-		t.Fatalf("Test unit should be inactive")
-	}
-}
-
-// Ensure that ListUnitsByPatterns works.
-func TestListUnitsByPatterns(t *testing.T) {
-	target1 := "systemd-journald.service"
-	target2 := "unexisting.service"
-
-	conn := setupConn(t)
-
-	units, err := conn.ListUnitsByPatterns([]string{}, []string{"systemd-journald*", target2})
-
-	if err != nil {
-		t.Skip(err)
-	}
-
-	unit := getUnitStatus(units, target1)
-
-	if unit == nil {
-		t.Fatalf("%s unit not found in list", target1)
-	} else if unit.ActiveState != "active" {
-		t.Fatalf("Test unit should be active")
-	}
-
-	unit = getUnitStatus(units, target2)
-
-	if unit != nil {
-		t.Fatalf("Unexisting test unit found in list")
-	}
-}
-
-// Ensure that ListUnitsFiltered works.
-func TestListUnitsFiltered(t *testing.T) {
-	target := "systemd-journald.service"
-
-	conn := setupConn(t)
-
-	units, err := conn.ListUnitsFiltered([]string{"active"})
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	unit := getUnitStatus(units, target)
-
-	if unit == nil {
-		t.Fatalf("%s unit not found in list", target)
-	} else if unit.ActiveState != "active" {
-		t.Fatalf("Test unit should be active")
-	}
-
-	units, err = conn.ListUnitsFiltered([]string{"inactive"})
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	unit = getUnitStatus(units, target)
-
-	if unit != nil {
-		t.Fatalf("Inactive unit should not be found in list")
-	}
-}
-
-// Ensure that ListUnitFilesByPatterns works.
-func TestListUnitFilesByPatterns(t *testing.T) {
-	target1 := "systemd-journald.service"
-	target2 := "exit.target"
-
-	conn := setupConn(t)
-
-	units, err := conn.ListUnitFilesByPatterns([]string{"static"}, []string{"systemd-journald*", target2})
-
-	if err != nil {
-		t.Skip(err)
-	}
-
-	unit := getUnitFile(units, target1)
-
-	if unit == nil {
-		t.Fatalf("%s unit not found in list", target1)
-	} else if unit.Type != "static" {
-		t.Fatalf("Test unit file should be static")
-	}
-
-	units, err = conn.ListUnitFilesByPatterns([]string{"disabled"}, []string{"systemd-journald*", target2})
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	unit = getUnitFile(units, target2)
-
-	if unit == nil {
-		t.Fatalf("%s unit not found in list", target2)
-	} else if unit.Type != "disabled" {
-		t.Fatalf("%s unit file should be disabled", target2)
-	}
-}
-
-func TestListUnitFiles(t *testing.T) {
-	target1 := "systemd-journald.service"
-	target2 := "exit.target"
-
-	conn := setupConn(t)
-
-	units, err := conn.ListUnitFiles()
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	unit := getUnitFile(units, target1)
-
-	if unit == nil {
-		t.Fatalf("%s unit not found in list", target1)
-	} else if unit.Type != "static" {
-		t.Fatalf("Test unit file should be static")
-	}
-
-	unit = getUnitFile(units, target2)
-
-	if unit == nil {
-		t.Fatalf("%s unit not found in list", target2)
-	} else if unit.Type != "disabled" {
-		t.Fatalf("%s unit file should be disabled", target2)
 	}
 }
 
@@ -309,7 +146,7 @@ func TestEnableDisableUnit(t *testing.T) {
 	}
 
 	if install != false {
-		t.Log("Install was true")
+		t.Fatal("Install was true")
 	}
 
 	if len(changes) < 1 {
@@ -321,7 +158,7 @@ func TestEnableDisableUnit(t *testing.T) {
 	}
 
 	// 2. Disable the unit
-	dChanges, err := conn.DisableUnitFiles([]string{target}, true)
+	dChanges, err := conn.DisableUnitFiles([]string{abs}, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -349,19 +186,27 @@ func TestGetUnitProperties(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	desc, _ := info["Description"].(string)
+	names := info["Wants"].([]string)
 
-	prop, err := conn.GetUnitProperty(unit, "Description")
+	if len(names) < 1 {
+		t.Fatal("/ is unwanted")
+	}
+
+	if names[0] != "system.slice" {
+		t.Fatal("unexpected wants for /")
+	}
+
+	prop, err := conn.GetUnitProperty(unit, "Wants")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if prop.Name != "Description" {
+	if prop.Name != "Wants" {
 		t.Fatal("unexpected property name")
 	}
 
-	val := prop.Value.Value().(string)
-	if !reflect.DeepEqual(val, desc) {
+	val := prop.Value.Value().([]string)
+	if !reflect.DeepEqual(val, names) {
 		t.Fatal("unexpected property value")
 	}
 }
@@ -401,18 +246,19 @@ func TestGetServiceProperty(t *testing.T) {
 		t.Fatal("unexpected property name")
 	}
 
-	if _, ok := prop.Value.Value().(string); !ok {
-		t.Fatal("invalid property value")
+	value := prop.Value.Value().(string)
+	if value != "notify" {
+		t.Fatal("unexpected property value")
 	}
 }
 
-// TestSetUnitProperties changes a cgroup setting on the `-.mount`
+// TestSetUnitProperties changes a cgroup setting on the `tmp.mount`
 // which should exist on all systemd systems and ensures that the
 // property was set.
 func TestSetUnitProperties(t *testing.T) {
 	conn := setupConn(t)
 
-	unit := "-.mount"
+	unit := "tmp.mount"
 
 	if err := conn.SetUnitProperties(unit, true, Property{"CPUShares", dbus.MakeVariant(uint64(1023))}); err != nil {
 		t.Fatal(err)
@@ -423,7 +269,7 @@ func TestSetUnitProperties(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	value, _ := info["CPUShares"].(uint64)
+	value := info["CPUShares"].(uint64)
 	if value != 1023 {
 		t.Fatal("CPUShares of unit is not 1023:", value)
 	}
@@ -452,11 +298,18 @@ func TestStartStopTransientUnit(t *testing.T) {
 
 	units, err := conn.ListUnits()
 
-	unit := getUnitStatus(units, target)
+	var unit *UnitStatus
+	for _, u := range units {
+		if u.Name == target {
+			unit = &u
+		}
+	}
 
 	if unit == nil {
 		t.Fatalf("Test unit not found in list")
-	} else if unit.ActiveState != "active" {
+	}
+
+	if unit.ActiveState != "active" {
 		t.Fatalf("Test unit not active")
 	}
 
@@ -471,7 +324,12 @@ func TestStartStopTransientUnit(t *testing.T) {
 
 	units, err = conn.ListUnits()
 
-	unit = getUnitStatus(units, target)
+	unit = nil
+	for _, u := range units {
+		if u.Name == target {
+			unit = &u
+		}
+	}
 
 	if unit != nil {
 		t.Fatalf("Test unit found in list, should be stopped")

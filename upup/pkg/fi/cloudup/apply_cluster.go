@@ -24,11 +24,13 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
@@ -43,10 +45,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
-	"k8s.io/kops/upup/pkg/fi/nodeup"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
 const DefaultMaxTaskDuration = 10 * time.Minute
@@ -101,7 +101,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	if c.InstanceGroups == nil {
-		list, err := c.Clientset.InstanceGroups(c.Cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
+		list, err := c.Clientset.InstanceGroups(c.Cluster.ObjectMeta.Name).List(metav1.ListOptions{})
 		if err != nil {
 			return err
 		}
@@ -290,13 +290,13 @@ func (c *ApplyClusterCmd) Run() error {
 			}
 
 			l.AddTypes(map[string]interface{}{
-				"persistentDisk":       &gcetasks.PersistentDisk{},
-				"instance":             &gcetasks.Instance{},
-				"instanceTemplate":     &gcetasks.InstanceTemplate{},
-				"network":              &gcetasks.Network{},
-				"managedInstanceGroup": &gcetasks.ManagedInstanceGroup{},
-				"firewallRule":         &gcetasks.FirewallRule{},
-				"ipAddress":            &gcetasks.IPAddress{},
+				"Disk":                 &gcetasks.Disk{},
+				"Instance":             &gcetasks.Instance{},
+				"InstanceTemplate":     &gcetasks.InstanceTemplate{},
+				"Network":              &gcetasks.Network{},
+				"InstanceGroupManager": &gcetasks.InstanceGroupManager{},
+				"FirewallRule":         &gcetasks.FirewallRule{},
+				"Address":              &gcetasks.Address{},
 			})
 		}
 
@@ -405,15 +405,20 @@ func (c *ApplyClusterCmd) Run() error {
 
 			switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
 			case fi.CloudProviderAWS:
+				awsModelContext := &awsmodel.AWSModelContext{
+					KopsModelContext: modelContext,
+				}
+
 				l.Builders = append(l.Builders,
-					&model.APILoadBalancerBuilder{KopsModelContext: modelContext},
+					&model.PKIModelBuilder{KopsModelContext: modelContext},
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
+
+					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext},
 					&model.BastionModelBuilder{KopsModelContext: modelContext},
 					&model.DNSModelBuilder{KopsModelContext: modelContext},
 					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext},
 					&model.FirewallModelBuilder{KopsModelContext: modelContext},
 					&model.IAMModelBuilder{KopsModelContext: modelContext},
-					&model.PKIModelBuilder{KopsModelContext: modelContext},
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
 					&model.NetworkModelBuilder{KopsModelContext: modelContext},
 					&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
 				)
@@ -424,14 +429,15 @@ func (c *ApplyClusterCmd) Run() error {
 				}
 
 				l.Builders = append(l.Builders,
-					//&model.APILoadBalancerBuilder{KopsModelContext: modelContext},
+					&model.PKIModelBuilder{KopsModelContext: modelContext},
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
+
+					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext},
 					//&model.BastionModelBuilder{KopsModelContext: modelContext},
 					//&model.DNSModelBuilder{KopsModelContext: modelContext},
 					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext},
 					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext},
 					//&model.IAMModelBuilder{KopsModelContext: modelContext},
-					&model.PKIModelBuilder{KopsModelContext: modelContext},
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
 					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext},
 					//&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
 				)

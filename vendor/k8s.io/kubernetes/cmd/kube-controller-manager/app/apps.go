@@ -21,19 +21,19 @@ limitations under the License.
 package app
 
 import (
-	petset "k8s.io/kubernetes/pkg/controller/petset"
-	"k8s.io/kubernetes/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/kubernetes/pkg/controller/statefulset"
 )
 
 func startStatefulSetController(ctx ControllerContext) (bool, error) {
 	if !ctx.AvailableResources[schema.GroupVersionResource{Group: "apps", Version: "v1beta1", Resource: "statefulsets"}] {
 		return false, nil
 	}
-	resyncPeriod := ResyncPeriod(&ctx.Options)()
-	go petset.NewStatefulSetController(
-		ctx.InformerFactory.Pods().Informer(),
+	go statefulset.NewStatefulSetController(
+		ctx.InformerFactory.Core().V1().Pods(),
+		ctx.InformerFactory.Apps().V1beta1().StatefulSets(),
+		ctx.InformerFactory.Core().V1().PersistentVolumeClaims(),
 		ctx.ClientBuilder.ClientOrDie("statefulset-controller"),
-		resyncPeriod,
 	).Run(1, ctx.Stop)
 	return true, nil
 }

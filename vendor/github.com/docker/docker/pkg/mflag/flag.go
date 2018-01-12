@@ -9,7 +9,7 @@
 //	Define flags using flag.String(), Bool(), Int(), etc.
 //
 //	This declares an integer flag, -f or --flagname, stored in the pointer ip, with type *int.
-//		import flag "github.com/docker/docker/pkg/mflag"
+//		import "flag /github.com/docker/docker/pkg/mflag"
 //		var ip = flag.Int([]string{"f", "-flagname"}, 1234, "help message for flagname")
 //	If you like, you can bind the flag to a variable using the Var() functions.
 //		var flagvar int
@@ -24,7 +24,7 @@
 //
 //	You can also add "deprecated" flags, they are still usable, but are not shown
 //	in the usage and will display a warning when you try to use them. `#` before
-//	an option means this option is deprecated, if there is a following option
+//	an option means this option is deprecated, if there is an following option
 //	without `#` ahead, then that's the replacement, if not, it will just be removed:
 //		var ip = flag.Int([]string{"#f", "#flagname", "-flagname"}, 1234, "help message for flagname")
 //	this will display: `Warning: '-f' is deprecated, it will be replaced by '--flagname' soon. See usage.` or
@@ -33,7 +33,7 @@
 //	will display: `Warning: '-flagname' is deprecated, it will be removed soon. See usage.`
 //	so you can only use `-f`.
 //
-//	You can also group one letter flags, if you declare
+//	You can also group one letter flags, bif you declare
 //		var v = flag.Bool([]string{"v", "-verbose"}, false, "help message for verbose")
 //		var s = flag.Bool([]string{"s", "-slow"}, false, "help message for slow")
 //	you will be able to use the -vs or -sv
@@ -1236,7 +1236,7 @@ func (v mergeVal) Name() string {
 	return v.key
 }
 
-// Merge is a helper function that merges n FlagSets into a single dest FlagSet
+// Merge is an helper function that merges n FlagSets into a single dest FlagSet
 // In case of name collision between the flagsets it will apply
 // the destination FlagSet's errorHandling behavior.
 func Merge(dest *FlagSet, flagsets ...*FlagSet) error {

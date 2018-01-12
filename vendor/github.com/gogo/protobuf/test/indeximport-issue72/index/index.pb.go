@@ -29,9 +29,7 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion1
 
 type IndexQuery struct {
 	Key              *string `protobuf:"bytes,1,opt,name=Key,json=key" json:"Key,omitempty"`
@@ -502,8 +500,6 @@ var (
 	ErrInvalidLengthIndex = fmt.Errorf("proto: negative length found during unmarshaling")
 	ErrIntOverflowIndex   = fmt.Errorf("proto: integer overflow")
 )
-
-func init() { proto.RegisterFile("index.proto", fileDescriptorIndex) }
 
 var fileDescriptorIndex = []byte{
 	// 139 bytes of a gzipped FileDescriptorProto

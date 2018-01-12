@@ -3,16 +3,12 @@ package events
 const (
 	// ContainerEventType is the event type that containers generate
 	ContainerEventType = "container"
-	// DaemonEventType is the event type that daemon generate
-	DaemonEventType = "daemon"
 	// ImageEventType is the event type that images generate
 	ImageEventType = "image"
-	// NetworkEventType is the event type that networks generate
-	NetworkEventType = "network"
-	// PluginEventType is the event type that plugins generate
-	PluginEventType = "plugin"
 	// VolumeEventType is the event type that volumes generate
 	VolumeEventType = "volume"
+	// NetworkEventType is the event type that networks generate
+	NetworkEventType = "network"
 )
 
 // Actor describes something that generates events,

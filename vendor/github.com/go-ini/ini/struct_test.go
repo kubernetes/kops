@@ -15,8 +15,6 @@
 package ini
 
 import (
-	"bytes"
-	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -25,15 +23,10 @@ import (
 )
 
 type testNested struct {
-	Cities      []string `delim:"|"`
-	Visits      []time.Time
-	Years       []int
-	Numbers     []int64
-	Ages        []uint
-	Populations []uint64
-	Coordinates []float64
-	Note        string
-	Unused      int `ini:"-"`
+	Cities []string `delim:"|"`
+	Visits []time.Time
+	Note   string
+	Unused int `ini:"-"`
 }
 
 type testEmbeded struct {
@@ -65,11 +58,6 @@ Unsigned = 3
 [Others]
 Cities = HangZhou|Boston
 Visits = 1993-10-07T20:17:05Z, 1993-10-07T20:17:05Z
-Years = 1993,1994
-Numbers = 10010,10086
-Ages = 18,19
-Populations = 12345678,98765432
-Coordinates = 192.168,10.11
 Note = Hello world!
 
 [grade]
@@ -142,11 +130,6 @@ func Test_Struct(t *testing.T) {
 
 			So(strings.Join(ts.Others.Cities, ","), ShouldEqual, "HangZhou,Boston")
 			So(ts.Others.Visits[0].String(), ShouldEqual, t.String())
-			So(fmt.Sprint(ts.Others.Years), ShouldEqual, "[1993 1994]")
-			So(fmt.Sprint(ts.Others.Numbers), ShouldEqual, "[10010 10086]")
-			So(fmt.Sprint(ts.Others.Ages), ShouldEqual, "[18 19]")
-			So(fmt.Sprint(ts.Others.Populations), ShouldEqual, "[12345678 98765432]")
-			So(fmt.Sprint(ts.Others.Coordinates), ShouldEqual, "[192.168 10.11]")
 			So(ts.Others.Note, ShouldEqual, "Hello world!")
 			So(ts.testEmbeded.GPA, ShouldEqual, 2.8)
 		})
@@ -208,63 +191,27 @@ func Test_Struct(t *testing.T) {
 
 	Convey("Reflect from struct", t, func() {
 		type Embeded struct {
-			Dates       []time.Time `delim:"|"`
-			Places      []string
-			Years       []int
-			Numbers     []int64
-			Ages        []uint
-			Populations []uint64
-			Coordinates []float64
-			None        []int
+			Dates  []time.Time `delim:"|"`
+			Places []string
+			None   []int
 		}
 		type Author struct {
 			Name      string `ini:"NAME"`
 			Male      bool
 			Age       int
-			Height    uint
 			GPA       float64
-			Date      time.Time
 			NeverMind string `ini:"-"`
 			*Embeded  `ini:"infos"`
 		}
-
-		t, err := time.Parse(time.RFC3339, "1993-10-07T20:17:05Z")
-		So(err, ShouldBeNil)
-		a := &Author{"Unknwon", true, 21, 100, 2.8, t, "",
+		a := &Author{"Unknwon", true, 21, 2.8, "",
 			&Embeded{
-				[]time.Time{t, t},
+				[]time.Time{time.Now(), time.Now()},
 				[]string{"HangZhou", "Boston"},
-				[]int{1993, 1994},
-				[]int64{10010, 10086},
-				[]uint{18, 19},
-				[]uint64{12345678, 98765432},
-				[]float64{192.168, 10.11},
 				[]int{},
 			}}
 		cfg := Empty()
 		So(ReflectFrom(cfg, a), ShouldBeNil)
-
-		var buf bytes.Buffer
-		_, err = cfg.WriteTo(&buf)
-		So(err, ShouldBeNil)
-		So(buf.String(), ShouldEqual, `NAME   = Unknwon
-Male   = true
-Age    = 21
-Height = 100
-GPA    = 2.8
-Date   = 1993-10-07T20:17:05Z
-
-[infos]
-Dates       = 1993-10-07T20:17:05Z|1993-10-07T20:17:05Z
-Places      = HangZhou,Boston
-Years       = 1993,1994
-Numbers     = 10010,10086
-Ages        = 18,19
-Populations = 12345678,98765432
-Coordinates = 192.168,10.11
-None        = 
-
-`)
+		cfg.SaveTo("testdata/conf_reflect.ini")
 
 		Convey("Reflect from non-point struct", func() {
 			So(ReflectFrom(cfg, Author{}), ShouldNotBeNil)

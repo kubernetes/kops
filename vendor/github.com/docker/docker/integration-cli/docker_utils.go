@@ -34,39 +34,58 @@ import (
 )
 
 func init() {
-	cmd := exec.Command(dockerBinary, "images", "-f", "dangling=false", "--format", "{{.Repository}}:{{.Tag}}")
+	cmd := exec.Command(dockerBinary, "images")
 	cmd.Env = appendBaseEnv(true)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		panic(fmt.Errorf("err=%v\nout=%s\n", err, out))
 	}
-	images := strings.Split(strings.TrimSpace(string(out)), "\n")
-	for _, img := range images {
-		protectedImages[img] = struct{}{}
+	lines := strings.Split(string(out), "\n")[1:]
+	for _, l := range lines {
+		if l == "" {
+			continue
+		}
+		fields := strings.Fields(l)
+		imgTag := fields[0] + ":" + fields[1]
+		// just for case if we have dangling images in tested daemon
+		if imgTag != "<none>:<none>" {
+			protectedImages[imgTag] = struct{}{}
+		}
 	}
 
-	res, body, err := sockRequestRaw("GET", "/info", nil, "application/json")
-	if err != nil {
-		panic(fmt.Errorf("Init failed to get /info: %v", err))
+	// Obtain the daemon platform so that it can be used by tests to make
+	// intelligent decisions about how to configure themselves, and validate
+	// that the target platform is valid.
+	res, _, err := sockRequestRaw("GET", "/version", nil, "application/json")
+	if err != nil || res == nil || (res != nil && res.StatusCode != http.StatusOK) {
+		panic(fmt.Errorf("Init failed to get version: %v. Res=%v", err.Error(), res))
 	}
-	defer body.Close()
-	if res.StatusCode != http.StatusOK {
-		panic(fmt.Errorf("Init failed to get /info. Res=%v", res))
-	}
-
 	svrHeader, _ := httputils.ParseServerHeader(res.Header.Get("Server"))
 	daemonPlatform = svrHeader.OS
 	if daemonPlatform != "linux" && daemonPlatform != "windows" {
 		panic("Cannot run tests against platform: " + daemonPlatform)
 	}
 
-	// Now we know the daemon platform, can set paths used by tests.
-	var info types.Info
-	err = json.NewDecoder(body).Decode(&info)
-	if err != nil {
-		panic(fmt.Errorf("Init failed to unmarshal docker info: %v", err))
+	// On Windows, extract out the version as we need to make selective
+	// decisions during integration testing as and when features are implemented.
+	if daemonPlatform == "windows" {
+		if body, err := ioutil.ReadAll(res.Body); err == nil {
+			var server types.Version
+			if err := json.Unmarshal(body, &server); err == nil {
+				// eg in "10.0 10550 (10550.1000.amd64fre.branch.date-time)" we want 10550
+				windowsDaemonKV, _ = strconv.Atoi(strings.Split(server.KernelVersion, " ")[1])
+			}
+		}
 	}
 
+	// Now we know the daemon platform, can set paths used by tests.
+	_, body, err := sockRequest("GET", "/info", nil)
+	if err != nil {
+		panic(err)
+	}
+
+	var info types.Info
+	err = json.Unmarshal(body, &info)
 	daemonStorageDriver = info.Driver
 	dockerBasePath = info.DockerRootDir
 	volumesConfigPath = filepath.Join(dockerBasePath, "volumes")
@@ -76,10 +95,6 @@ func init() {
 	if daemonPlatform == "windows" {
 		volumesConfigPath = strings.Replace(volumesConfigPath, `/`, `\`, -1)
 		containerStoragePath = strings.Replace(containerStoragePath, `/`, `\`, -1)
-		// On Windows, extract out the version as we need to make selective
-		// decisions during integration testing as and when features are implemented.
-		// eg in "10.0 10550 (10550.1000.amd64fre.branch.date-time)" we want 10550
-		windowsDaemonKV, _ = strconv.Atoi(strings.Split(info.KernelVersion, " ")[1])
 	} else {
 		volumesConfigPath = strings.Replace(volumesConfigPath, `\`, `/`, -1)
 		containerStoragePath = strings.Replace(containerStoragePath, `\`, `/`, -1)
@@ -124,10 +139,8 @@ func getTLSConfig() (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
-func sockConn(timeout time.Duration, daemon string) (net.Conn, error) {
-	if daemon == "" {
-		daemon = daemonHost()
-	}
+func sockConn(timeout time.Duration) (net.Conn, error) {
+	daemon := daemonHost()
 	daemonURL, err := url.Parse(daemon)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse url %q: %v", daemon, err)
@@ -170,11 +183,7 @@ func sockRequest(method, endpoint string, data interface{}) (int, []byte, error)
 }
 
 func sockRequestRaw(method, endpoint string, data io.Reader, ct string) (*http.Response, io.ReadCloser, error) {
-	return sockRequestRawToDaemon(method, endpoint, data, ct, "")
-}
-
-func sockRequestRawToDaemon(method, endpoint string, data io.Reader, ct, daemon string) (*http.Response, io.ReadCloser, error) {
-	req, client, err := newRequestClient(method, endpoint, data, ct, daemon)
+	req, client, err := newRequestClient(method, endpoint, data, ct)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -193,7 +202,7 @@ func sockRequestRawToDaemon(method, endpoint string, data io.Reader, ct, daemon 
 }
 
 func sockRequestHijack(method, endpoint string, data io.Reader, ct string) (net.Conn, *bufio.Reader, error) {
-	req, client, err := newRequestClient(method, endpoint, data, ct, "")
+	req, client, err := newRequestClient(method, endpoint, data, ct)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -203,8 +212,8 @@ func sockRequestHijack(method, endpoint string, data io.Reader, ct string) (net.
 	return conn, br, nil
 }
 
-func newRequestClient(method, endpoint string, data io.Reader, ct, daemon string) (*http.Request, *httputil.ClientConn, error) {
-	c, err := sockConn(time.Duration(10*time.Second), daemon)
+func newRequestClient(method, endpoint string, data io.Reader, ct string) (*http.Request, *httputil.ClientConn, error) {
+	c, err := sockConn(time.Duration(10 * time.Second))
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not dial docker daemon: %v", err)
 	}
@@ -273,10 +282,6 @@ func deleteAllNetworks() error {
 	var errors []string
 	for _, n := range networks {
 		if n.Name == "bridge" || n.Name == "none" || n.Name == "host" {
-			continue
-		}
-		if daemonPlatform == "windows" && strings.ToLower(n.Name) == "nat" {
-			// nat is a pre-defined network on Windows and cannot be removed
 			continue
 		}
 		status, b, err := sockRequest("DELETE", "/networks/"+n.Name, nil)
@@ -404,7 +409,7 @@ func unpauseContainer(container string) error {
 		err = fmt.Errorf("failed to unpause container")
 	}
 
-	return err
+	return nil
 }
 
 func unpauseAllContainers() error {
@@ -464,11 +469,7 @@ func dockerCmdWithError(args ...string) (string, int, error) {
 	if err := validateArgs(args...); err != nil {
 		return "", 0, err
 	}
-	out, code, err := integration.DockerCmdWithError(dockerBinary, args...)
-	if err != nil {
-		err = fmt.Errorf("%v: %s", err, out)
-	}
-	return out, code, err
+	return integration.DockerCmdWithError(dockerBinary, args...)
 }
 
 func dockerCmdWithStdoutStderr(c *check.C, args ...string) (string, string, int) {
@@ -936,15 +937,7 @@ func getContainerState(c *check.C, id string) (int, bool, error) {
 }
 
 func buildImageCmd(name, dockerfile string, useCache bool, buildFlags ...string) *exec.Cmd {
-	return buildImageCmdWithHost(name, dockerfile, "", useCache, buildFlags...)
-}
-
-func buildImageCmdWithHost(name, dockerfile, host string, useCache bool, buildFlags ...string) *exec.Cmd {
-	args := []string{}
-	if host != "" {
-		args = append(args, "--host", host)
-	}
-	args = append(args, "build", "-t", name)
+	args := []string{"build", "-t", name}
 	if !useCache {
 		args = append(args, "--no-cache")
 	}
@@ -1260,16 +1253,6 @@ func daemonTime(c *check.C) time.Time {
 	return dt
 }
 
-// daemonUnixTime returns the current time on the daemon host with nanoseconds precision.
-// It return the time formatted how the client sends timestamps to the server.
-func daemonUnixTime(c *check.C) string {
-	return parseEventTime(daemonTime(c))
-}
-
-func parseEventTime(t time.Time) string {
-	return fmt.Sprintf("%d.%09d", t.Unix(), int64(t.Nanosecond()))
-}
-
 func setupRegistry(c *check.C, schema1 bool, auth, tokenURL string) *testRegistryV2 {
 	reg, err := newTestRegistryV2(c, schema1, auth, tokenURL)
 	c.Assert(err, check.IsNil)
@@ -1304,9 +1287,6 @@ func appendBaseEnv(isTLS bool, env ...string) []string {
 		// windows: requires preserving SystemRoot, otherwise dial tcp fails
 		// with "GetAddrInfoW: A non-recoverable error occurred during a database lookup."
 		"SystemRoot",
-
-		// testing help text requires the $PATH to dockerd is set
-		"PATH",
 	}
 	if isTLS {
 		preserveList = append(preserveList, "DOCKER_TLS_VERIFY", "DOCKER_CERT_PATH")
@@ -1512,58 +1492,4 @@ func waitForGoroutines(expected int) error {
 			time.Sleep(200 * time.Millisecond)
 		}
 	}
-}
-
-// getErrorMessage returns the error message from an error API response
-func getErrorMessage(c *check.C, body []byte) string {
-	var resp types.ErrorResponse
-	c.Assert(json.Unmarshal(body, &resp), check.IsNil)
-	return strings.TrimSpace(resp.Message)
-}
-
-func waitAndAssert(c *check.C, timeout time.Duration, f checkF, checker check.Checker, args ...interface{}) {
-	after := time.After(timeout)
-	for {
-		v, comment := f(c)
-		assert, _ := checker.Check(append([]interface{}{v}, args...), checker.Info().Params)
-		select {
-		case <-after:
-			assert = true
-		default:
-		}
-		if assert {
-			if comment != nil {
-				args = append(args, comment)
-			}
-			c.Assert(v, checker, args...)
-			return
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
-}
-
-type checkF func(*check.C) (interface{}, check.CommentInterface)
-type reducer func(...interface{}) interface{}
-
-func reducedCheck(r reducer, funcs ...checkF) checkF {
-	return func(c *check.C) (interface{}, check.CommentInterface) {
-		var values []interface{}
-		var comments []string
-		for _, f := range funcs {
-			v, comment := f(c)
-			values = append(values, v)
-			if comment != nil {
-				comments = append(comments, comment.CheckCommentString())
-			}
-		}
-		return r(values...), check.Commentf("%v", strings.Join(comments, ", "))
-	}
-}
-
-func sumAsIntegers(vals ...interface{}) interface{} {
-	var s int
-	for _, v := range vals {
-		s += v.(int)
-	}
-	return s
 }

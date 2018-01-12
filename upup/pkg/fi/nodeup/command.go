@@ -26,10 +26,13 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -37,14 +40,13 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 // We should probably retry for a long time - there is not really any great fallback
 const MaxTaskDuration = 365 * 24 * time.Hour
 
 type NodeUpCommand struct {
-	config         *NodeUpConfig
+	config         *nodeup.NodeUpConfig
 	cluster        *api.Cluster
 	instanceGroup  *api.InstanceGroup
 	ConfigLocation string
@@ -194,7 +196,13 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("error initializing: %v", err)
 	}
 
+	k8sVersion, err := util.ParseKubernetesVersion(c.cluster.Spec.KubernetesVersion)
+	if err != nil || k8sVersion == nil {
+		return fmt.Errorf("unable to parse KubernetesVersion %q", c.cluster.Spec.KubernetesVersion)
+	}
+
 	modelContext := &model.NodeupModelContext{
+		NodeupConfig:  c.config,
 		Cluster:       c.cluster,
 		Distribution:  distribution,
 		Architecture:  model.ArchitectureAmd64,
@@ -204,18 +212,28 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		Assets:        assets,
 		KeyStore:      tf.keyStore,
 		SecretStore:   tf.secretStore,
+
+		KubernetesVersion: *k8sVersion,
 	}
 
 	loader := NewLoader(c.config, c.cluster, assets, nodeTags)
+	loader.Builders = append(loader.Builders, &model.DirectoryBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.ProtokubeBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.CloudConfigBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeletBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubectlBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.EtcdBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.LogrotateBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.PackagesBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.SecretBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.FirewallBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.NetworkBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.SysctlBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeAPIServerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeControllerManagerBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.KubeSchedulerBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.KubeProxyBuilder{NodeupModelContext: modelContext})
 
 	tf.populate(loader.TemplateFunctions)
 

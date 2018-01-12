@@ -96,6 +96,7 @@ message MsgWithOneof {
     string title = 1;
     int64 salary = 2;
     string Country = 3;
+    string home_address = 4;
   }
 }
 

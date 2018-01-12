@@ -19,6 +19,7 @@ package fs
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -44,24 +45,24 @@ const (
 	LabelRktImages    = "rkt-images"
 )
 
-// The maximum number of `du` tasks that can be running at once.
-const maxConsecutiveDus = 20
+// The maximum number of `du` and `find` tasks that can be running at once.
+const maxConcurrentOps = 20
 
-// A pool for restricting the number of consecutive `du` tasks running.
-var duPool = make(chan struct{}, maxConsecutiveDus)
+// A pool for restricting the number of consecutive `du` and `find` tasks running.
+var pool = make(chan struct{}, maxConcurrentOps)
 
 func init() {
-	for i := 0; i < maxConsecutiveDus; i++ {
-		releaseDuToken()
+	for i := 0; i < maxConcurrentOps; i++ {
+		releaseToken()
 	}
 }
 
-func claimDuToken() {
-	<-duPool
+func claimToken() {
+	<-pool
 }
 
-func releaseDuToken() {
-	duPool <- struct{}{}
+func releaseToken() {
+	pool <- struct{}{}
 }
 
 type partition struct {
@@ -322,7 +323,10 @@ func (self *RealFsInfo) GetFsInfoForPath(mountSet map[string]struct{}) ([]Fs, er
 				fs.Capacity, fs.Free, fs.Available, err = getZfstats(device)
 				fs.Type = ZFS
 			default:
-				fs.Capacity, fs.Free, fs.Available, fs.Inodes, fs.InodesFree, err = getVfsStats(partition.mountpoint)
+				var inodes, inodesFree uint64
+				fs.Capacity, fs.Free, fs.Available, inodes, inodesFree, err = getVfsStats(partition.mountpoint)
+				fs.Inodes = &inodes
+				fs.InodesFree = &inodesFree
 				fs.Type = VFS
 			}
 			if err != nil {
@@ -342,7 +346,7 @@ func (self *RealFsInfo) GetFsInfoForPath(mountSet map[string]struct{}) ([]Fs, er
 	return filesystems, nil
 }
 
-var partitionRegex = regexp.MustCompile(`^(?:(?:s|xv)d[a-z]+\d*|dm-\d+)$`)
+var partitionRegex = regexp.MustCompile(`^(?:(?:s|v|xv)d[a-z]+\d*|dm-\d+)$`)
 
 func getDiskStatsMap(diskStatsFile string) (map[string]DiskStats, error) {
 	diskStatsMap := make(map[string]DiskStats)
@@ -425,12 +429,12 @@ func (self *RealFsInfo) GetDirFsDevice(dir string) (*DeviceInfo, error) {
 	return nil, fmt.Errorf("could not find device with major: %d, minor: %d in cached partitions map", major, minor)
 }
 
-func (self *RealFsInfo) GetDirUsage(dir string, timeout time.Duration) (uint64, error) {
+func (self *RealFsInfo) GetDirDiskUsage(dir string, timeout time.Duration) (uint64, error) {
 	if dir == "" {
 		return 0, fmt.Errorf("invalid directory")
 	}
-	claimDuToken()
-	defer releaseDuToken()
+	claimToken()
+	defer releaseToken()
 	cmd := exec.Command("nice", "-n", "19", "du", "-s", dir)
 	stdoutp, err := cmd.StdoutPipe()
 	if err != nil {
@@ -444,26 +448,50 @@ func (self *RealFsInfo) GetDirUsage(dir string, timeout time.Duration) (uint64, 
 	if err := cmd.Start(); err != nil {
 		return 0, fmt.Errorf("failed to exec du - %v", err)
 	}
-	stdoutb, souterr := ioutil.ReadAll(stdoutp)
-	stderrb, _ := ioutil.ReadAll(stderrp)
 	timer := time.AfterFunc(timeout, func() {
 		glog.Infof("killing cmd %v due to timeout(%s)", cmd.Args, timeout.String())
 		cmd.Process.Kill()
 	})
+	stdoutb, souterr := ioutil.ReadAll(stdoutp)
+	if souterr != nil {
+		glog.Errorf("failed to read from stdout for cmd %v - %v", cmd.Args, souterr)
+	}
+	stderrb, _ := ioutil.ReadAll(stderrp)
 	err = cmd.Wait()
 	timer.Stop()
 	if err != nil {
 		return 0, fmt.Errorf("du command failed on %s with output stdout: %s, stderr: %s - %v", dir, string(stdoutb), string(stderrb), err)
 	}
 	stdout := string(stdoutb)
-	if souterr != nil {
-		glog.Errorf("failed to read from stdout for cmd %v - %v", cmd.Args, souterr)
-	}
 	usageInKb, err := strconv.ParseUint(strings.Fields(stdout)[0], 10, 64)
 	if err != nil {
 		return 0, fmt.Errorf("cannot parse 'du' output %s - %s", stdout, err)
 	}
 	return usageInKb * 1024, nil
+}
+
+func (self *RealFsInfo) GetDirInodeUsage(dir string, timeout time.Duration) (uint64, error) {
+	if dir == "" {
+		return 0, fmt.Errorf("invalid directory")
+	}
+	var counter byteCounter
+	var stderr bytes.Buffer
+	claimToken()
+	defer releaseToken()
+	findCmd := exec.Command("find", dir, "-xdev", "-printf", ".")
+	findCmd.Stdout, findCmd.Stderr = &counter, &stderr
+	if err := findCmd.Start(); err != nil {
+		return 0, fmt.Errorf("failed to exec cmd %v - %v; stderr: %v", findCmd.Args, err, stderr.String())
+	}
+	timer := time.AfterFunc(timeout, func() {
+		glog.Infof("killing cmd %v due to timeout(%s)", findCmd.Args, timeout.String())
+		findCmd.Process.Kill()
+	})
+	if err := findCmd.Wait(); err != nil {
+		return 0, fmt.Errorf("cmd %v failed. stderr: %s; err: %v", findCmd.Args, stderr.String(), err)
+	}
+	timer.Stop()
+	return counter.bytesWritten, nil
 }
 
 func getVfsStats(path string) (total uint64, free uint64, avail uint64, inodes uint64, inodesFree uint64, err error) {
@@ -574,4 +602,12 @@ func getZfstats(poolName string) (uint64, uint64, uint64, error) {
 	total := dataset.Used + dataset.Avail + dataset.Usedbydataset
 
 	return total, dataset.Avail, dataset.Avail, nil
+}
+
+// Simple io.Writer implementation that counts how many bytes were written.
+type byteCounter struct{ bytesWritten uint64 }
+
+func (b *byteCounter) Write(p []byte) (int, error) {
+	b.bytesWritten += uint64(len(p))
+	return len(p), nil
 }

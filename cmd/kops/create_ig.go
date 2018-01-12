@@ -23,6 +23,7 @@ import (
 	"io"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 	"os"
@@ -31,7 +32,8 @@ import (
 )
 
 type CreateInstanceGroupOptions struct {
-	Role string
+	Role    string
+	Subnets []string
 }
 
 func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
@@ -59,6 +61,7 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&options.Role, "role", options.Role, "Type of instance group to create ("+strings.Join(allRoles, ",")+")")
+	cmd.Flags().StringSliceVar(&options.Subnets, "subnet", options.Subnets, "Subnets in which to create instance group")
 
 	return cmd
 }
@@ -73,6 +76,9 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 	groupName := args[0]
 
 	cluster, err := rootCommand.Cluster()
+	if err != nil {
+		return err
+	}
 
 	clientset, err := rootCommand.Clientset()
 	if err != nil {
@@ -102,6 +108,11 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return fmt.Errorf("unknown role %q", options.Role)
 	}
 	ig.Spec.Role = role
+
+	if len(options.Subnets) == 0 {
+		return fmt.Errorf("cannot create instance group without subnets; specify --subnet flag(s)")
+	}
+	ig.Spec.Subnets = options.Subnets
 
 	ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig, channel)
 	if err != nil {
@@ -138,7 +149,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return fmt.Errorf("unexpected object type: %T", obj)
 	}
 
-	err = group.Validate()
+	err = validation.ValidateInstanceGroup(group)
 	if err != nil {
 		return err
 	}

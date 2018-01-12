@@ -27,17 +27,7 @@ func Do(ctx context.Context, client *http.Client, req *http.Request) (*http.Resp
 	if client == nil {
 		client = http.DefaultClient
 	}
-	resp, err := client.Do(req.WithContext(ctx))
-	// If we got an error, and the context has been canceled,
-	// the context's error is probably more useful.
-	if err != nil {
-		select {
-		case <-ctx.Done():
-			err = ctx.Err()
-		default:
-		}
-	}
-	return resp, err
+	return client.Do(req.WithContext(ctx))
 }
 
 // Get issues a GET request via the Do function.

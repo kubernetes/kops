@@ -18,7 +18,8 @@ package search // import "golang.org/x/text/search"
 import (
 	"strings"
 
-	"golang.org/x/text/internal/colltab"
+	"golang.org/x/text/collate/colltab"
+	newcolltab "golang.org/x/text/internal/colltab"
 	"golang.org/x/text/language"
 )
 
@@ -75,7 +76,7 @@ func init() {
 // New returns a new Matcher for the given language and options.
 func New(t language.Tag, opts ...Option) *Matcher {
 	m := &Matcher{
-		w: getTable(locales[colltab.MatchLang(t, tags)]),
+		w: colltab.Init(locales[newcolltab.MatchLang(t, tags)]),
 	}
 	for _, f := range opts {
 		f(m)
@@ -135,7 +136,7 @@ func (m *Matcher) EqualString(a, b string) bool {
 // Compile compiles and returns a pattern that can be used for faster searching.
 func (m *Matcher) Compile(b []byte) *Pattern {
 	p := &Pattern{m: m}
-	iter := colltab.Iter{Weighter: m.w}
+	iter := newcolltab.Iter{Weighter: m.w}
 	for iter.SetInput(b); iter.Next(); {
 	}
 	p.ce = iter.Elems
@@ -147,7 +148,7 @@ func (m *Matcher) Compile(b []byte) *Pattern {
 // searching.
 func (m *Matcher) CompileString(s string) *Pattern {
 	p := &Pattern{m: m}
-	iter := colltab.Iter{Weighter: m.w}
+	iter := newcolltab.Iter{Weighter: m.w}
 	for iter.SetInputString(s); iter.Next(); {
 	}
 	p.ce = iter.Elems
@@ -173,7 +174,7 @@ func (p *Pattern) Index(b []byte, opts ...IndexOption) (start, end int) {
 	// and small enough to not cause too much overhead initializing.
 	var buf [8]colltab.Elem
 
-	it := &colltab.Iter{
+	it := &newcolltab.Iter{
 		Weighter: p.m.w,
 		Elems:    buf[:0],
 	}
@@ -203,7 +204,7 @@ func (p *Pattern) IndexString(s string, opts ...IndexOption) (start, end int) {
 	// and small enough to not cause too much overhead initializing.
 	var buf [8]colltab.Elem
 
-	it := &colltab.Iter{
+	it := &newcolltab.Iter{
 		Weighter: p.m.w,
 		Elems:    buf[:0],
 	}

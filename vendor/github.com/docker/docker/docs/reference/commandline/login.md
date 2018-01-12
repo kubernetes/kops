@@ -10,17 +10,14 @@ parent = "smn_cli"
 
 # login
 
-```markdown
-Usage:  docker login [OPTIONS] [SERVER]
+    Usage: docker login [OPTIONS] [SERVER]
 
-Log in to a Docker registry.
-If no server is specified, the default is defined by the daemon.
+    Log in to a Docker registry server, if no server is
+	specified "https://index.docker.io/v1/" is the default.
 
-Options:
-      --help              Print usage
-  -p, --password string   Password
-  -u, --username string   Username
-```
+      --help               Print usage
+      -p, --password=""    Password
+      -u, --username=""    Username
 
 If you want to login to a self-hosted registry you can specify this by
 adding the server name.

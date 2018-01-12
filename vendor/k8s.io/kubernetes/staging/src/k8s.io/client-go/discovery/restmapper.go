@@ -20,10 +20,10 @@ import (
 	"fmt"
 	"sync"
 
-	"k8s.io/client-go/pkg/api/errors"
-	"k8s.io/client-go/pkg/api/meta"
-	metav1 "k8s.io/client-go/pkg/apis/meta/v1"
-	"k8s.io/client-go/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/golang/glog"
 )
@@ -43,8 +43,9 @@ func NewRESTMapper(groupResources []*APIGroupResources, versionInterfaces meta.V
 	unionMapper := meta.MultiRESTMapper{}
 
 	var groupPriority []string
-	var resourcePriority []schema.GroupVersionResource
-	var kindPriority []schema.GroupVersionKind
+	// /v1 is special.  It should always come first
+	resourcePriority := []schema.GroupVersionResource{{Group: "", Version: "v1", Resource: meta.AnyResource}}
+	kindPriority := []schema.GroupVersionKind{{Group: "", Version: "v1", Kind: meta.AnyKind}}
 
 	for _, group := range groupResources {
 		groupPriority = append(groupPriority, group.Group.Name)

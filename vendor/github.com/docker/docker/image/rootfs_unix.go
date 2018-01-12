@@ -16,3 +16,8 @@ type RootFS struct {
 func (r *RootFS) ChainID() layer.ChainID {
 	return layer.CreateChainID(r.DiffIDs)
 }
+
+// NewRootFS returns empty RootFS struct
+func NewRootFS() *RootFS {
+	return &RootFS{Type: "layers"}
+}

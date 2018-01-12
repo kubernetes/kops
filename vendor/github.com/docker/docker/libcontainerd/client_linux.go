@@ -8,13 +8,12 @@ import (
 	"strings"
 	"sync"
 	"syscall"
-	"time"
 
 	"github.com/Sirupsen/logrus"
 	containerd "github.com/docker/containerd/api/grpc/types"
 	"github.com/docker/docker/pkg/idtools"
 	"github.com/docker/docker/pkg/mount"
-	specs "github.com/opencontainers/specs/specs-go"
+	"github.com/opencontainers/specs/specs-go"
 	"golang.org/x/net/context"
 )
 
@@ -25,10 +24,9 @@ type client struct {
 	remote        *remote
 	q             queue
 	exitNotifiers map[string]*exitNotifier
-	liveRestore   bool
 }
 
-func (clnt *client) AddProcess(ctx context.Context, containerID, processFriendlyName string, specp Process) error {
+func (clnt *client) AddProcess(containerID, processFriendlyName string, specp Process) error {
 	clnt.lock(containerID)
 	defer clnt.unlock(containerID)
 	container, err := clnt.getContainer(containerID)
@@ -89,7 +87,7 @@ func (clnt *client) AddProcess(ctx context.Context, containerID, processFriendly
 		return err
 	}
 
-	if _, err := clnt.remote.apiClient.AddProcess(ctx, r); err != nil {
+	if _, err := clnt.remote.apiClient.AddProcess(context.Background(), r); err != nil {
 		p.closeFifos(iopipe)
 		return err
 	}
@@ -140,7 +138,7 @@ func (clnt *client) Create(containerID string, spec Spec, options ...CreateOptio
 			ctr.restartManager.Cancel()
 			ctr.clean()
 		} else {
-			return fmt.Errorf("Container %s is already active", containerID)
+			return fmt.Errorf("Container %s is aleady active", containerID)
 		}
 	}
 
@@ -187,17 +185,6 @@ func (clnt *client) Signal(containerID string, sig int) error {
 	_, err := clnt.remote.apiClient.Signal(context.Background(), &containerd.SignalRequest{
 		Id:     containerID,
 		Pid:    InitFriendlyName,
-		Signal: uint32(sig),
-	})
-	return err
-}
-
-func (clnt *client) SignalProcess(containerID string, pid string, sig int) error {
-	clnt.lock(containerID)
-	defer clnt.unlock(containerID)
-	_, err := clnt.remote.apiClient.Signal(context.Background(), &containerd.SignalRequest{
-		Id:     containerID,
-		Pid:    pid,
 		Signal: uint32(sig),
 	})
 	return err
@@ -266,7 +253,7 @@ func (clnt *client) Stats(containerID string) (*Stats, error) {
 }
 
 // Take care of the old 1.11.0 behavior in case the version upgrade
-// happened without a clean daemon shutdown
+// happenned without a clean daemon shutdown
 func (clnt *client) cleanupOldRootfs(containerID string) {
 	// Unmount and delete the bundle folder
 	if mts, err := mount.GetMounts(); err == nil {
@@ -281,15 +268,20 @@ func (clnt *client) cleanupOldRootfs(containerID string) {
 	}
 }
 
-func (clnt *client) setExited(containerID string, exitCode uint32) error {
+func (clnt *client) setExited(containerID string) error {
 	clnt.lock(containerID)
 	defer clnt.unlock(containerID)
 
+	var exitCode uint32
+	if event, ok := clnt.remote.pastEvents[containerID]; ok {
+		exitCode = event.Status
+		delete(clnt.remote.pastEvents, containerID)
+	}
+
 	err := clnt.backend.StateChanged(containerID, StateInfo{
-		CommonStateInfo: CommonStateInfo{
-			State:    StateExit,
-			ExitCode: exitCode,
-		}})
+		State:    StateExit,
+		ExitCode: exitCode,
+	})
 
 	clnt.cleanupOldRootfs(containerID)
 
@@ -343,7 +335,7 @@ func (clnt *client) newContainer(dir string, options ...CreateOption) *container
 	}
 	for _, option := range options {
 		if err := option.Apply(container); err != nil {
-			logrus.Errorf("libcontainerd: newContainer(): %v", err)
+			logrus.Error(err)
 		}
 	}
 	return container
@@ -385,188 +377,6 @@ func (clnt *client) getOrCreateExitNotifier(containerID string) *exitNotifier {
 		clnt.exitNotifiers[containerID] = w
 	}
 	return w
-}
-
-func (clnt *client) restore(cont *containerd.Container, lastEvent *containerd.Event, options ...CreateOption) (err error) {
-	clnt.lock(cont.Id)
-	defer clnt.unlock(cont.Id)
-
-	logrus.Debugf("libcontainerd: restore container %s state %s", cont.Id, cont.Status)
-
-	containerID := cont.Id
-	if _, err := clnt.getContainer(containerID); err == nil {
-		return fmt.Errorf("container %s is already active", containerID)
-	}
-
-	defer func() {
-		if err != nil {
-			clnt.deleteContainer(cont.Id)
-		}
-	}()
-
-	container := clnt.newContainer(cont.BundlePath, options...)
-	container.systemPid = systemPid(cont)
-
-	var terminal bool
-	for _, p := range cont.Processes {
-		if p.Pid == InitFriendlyName {
-			terminal = p.Terminal
-		}
-	}
-
-	iopipe, err := container.openFifos(terminal)
-	if err != nil {
-		return err
-	}
-
-	if err := clnt.backend.AttachStreams(containerID, *iopipe); err != nil {
-		return err
-	}
-
-	clnt.appendContainer(container)
-
-	err = clnt.backend.StateChanged(containerID, StateInfo{
-		CommonStateInfo: CommonStateInfo{
-			State: StateRestore,
-			Pid:   container.systemPid,
-		}})
-
-	if err != nil {
-		return err
-	}
-
-	if lastEvent != nil {
-		// This should only be a pause or resume event
-		if lastEvent.Type == StatePause || lastEvent.Type == StateResume {
-			return clnt.backend.StateChanged(containerID, StateInfo{
-				CommonStateInfo: CommonStateInfo{
-					State: lastEvent.Type,
-					Pid:   container.systemPid,
-				}})
-		}
-
-		logrus.Warnf("libcontainerd: unexpected backlog event: %#v", lastEvent)
-	}
-
-	return nil
-}
-
-func (clnt *client) getContainerLastEvent(containerID string) (*containerd.Event, error) {
-	er := &containerd.EventsRequest{
-		Timestamp:  clnt.remote.restoreFromTimestamp,
-		StoredOnly: true,
-		Id:         containerID,
-	}
-	events, err := clnt.remote.apiClient.Events(context.Background(), er)
-	if err != nil {
-		logrus.Errorf("libcontainerd: failed to get container events stream for %s: %q", er.Id, err)
-		return nil, err
-	}
-
-	var ev *containerd.Event
-	for {
-		e, err := events.Recv()
-		if err != nil {
-			if err.Error() == "EOF" {
-				break
-			}
-			logrus.Errorf("libcontainerd: failed to get container event for %s: %q", containerID, err)
-			return nil, err
-		}
-
-		logrus.Debugf("libcontainerd: received past event %#v", e)
-
-		switch e.Type {
-		case StateExit, StatePause, StateResume:
-			ev = e
-		}
-	}
-
-	return ev, nil
-}
-
-func (clnt *client) Restore(containerID string, options ...CreateOption) error {
-	// Synchronize with live events
-	clnt.remote.Lock()
-	defer clnt.remote.Unlock()
-	// Check that containerd still knows this container.
-	//
-	// In the unlikely event that Restore for this container process
-	// the its past event before the main loop, the event will be
-	// processed twice. However, this is not an issue as all those
-	// events will do is change the state of the container to be
-	// exactly the same.
-	cont, err := clnt.getContainerdContainer(containerID)
-	// Get its last event
-	ev, eerr := clnt.getContainerLastEvent(containerID)
-	if err != nil || cont.Status == "Stopped" {
-		if err != nil && !strings.Contains(err.Error(), "container not found") {
-			// Legitimate error
-			return err
-		}
-
-		// If ev is nil, then we already consumed all the event of the
-		// container, included the "exit" one.
-		// Thus we return to avoid overriding the Exit Code.
-		if ev == nil {
-			logrus.Warnf("libcontainerd: restore was called on a fully synced container (%s)", containerID)
-			return nil
-		}
-
-		// get the exit status for this container
-		ec := uint32(0)
-		if eerr == nil && ev.Type == StateExit {
-			ec = ev.Status
-		}
-		clnt.setExited(containerID, ec)
-
-		return nil
-	}
-
-	// container is still alive
-	if clnt.liveRestore {
-		if err := clnt.restore(cont, ev, options...); err != nil {
-			logrus.Errorf("libcontainerd: error restoring %s: %v", containerID, err)
-		}
-		return nil
-	}
-
-	// Kill the container if liveRestore == false
-	w := clnt.getOrCreateExitNotifier(containerID)
-	clnt.lock(cont.Id)
-	container := clnt.newContainer(cont.BundlePath)
-	container.systemPid = systemPid(cont)
-	clnt.appendContainer(container)
-	clnt.unlock(cont.Id)
-
-	container.discardFifos()
-
-	if err := clnt.Signal(containerID, int(syscall.SIGTERM)); err != nil {
-		logrus.Errorf("libcontainerd: error sending sigterm to %v: %v", containerID, err)
-	}
-	// Let the main loop handle the exit event
-	clnt.remote.Unlock()
-	select {
-	case <-time.After(10 * time.Second):
-		if err := clnt.Signal(containerID, int(syscall.SIGKILL)); err != nil {
-			logrus.Errorf("libcontainerd: error sending sigkill to %v: %v", containerID, err)
-		}
-		select {
-		case <-time.After(2 * time.Second):
-		case <-w.wait():
-			// relock because of the defer
-			clnt.remote.Lock()
-			return nil
-		}
-	case <-w.wait():
-		// relock because of the defer
-		clnt.remote.Lock()
-		return nil
-	}
-
-	clnt.deleteContainer(containerID)
-
-	return clnt.setExited(containerID, uint32(255))
 }
 
 type exitNotifier struct {

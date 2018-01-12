@@ -1,19 +1,19 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/UUFfqPW5Viffl9wMWtQNrKHUs5E\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/rHWbtxT3gC8DAqrI4kJjmo2JS7Q\"",
  "discoveryVersion": "v1",
  "id": "consumersurveys:v2",
  "name": "consumersurveys",
  "canonicalName": "Consumer Surveys",
  "version": "v2",
- "revision": "20160602",
+ "revision": "20161101",
  "title": "Consumer Surveys API",
  "description": "Creates and conducts surveys, lists the surveys that an authenticated user owns, and retrieves survey results and information about specified surveys.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "protocol": "rest",
  "baseUrl": "https://www.googleapis.com/consumersurveys/v2/",
@@ -101,31 +101,24 @@
   "MobileAppPanel": {
    "id": "MobileAppPanel",
    "type": "object",
-   "description": "Representation of an individual pre-defined panel object defining a targeted audience of opinion rewards mobile app users.",
    "properties": {
     "country": {
-     "type": "string",
-     "description": "Country code for the country of the users that the panel contains. Uses standard ISO 3166-1 2-character language codes. For instance, 'US' for the United States, and 'GB' for the United Kingdom. Any survey created targeting this panel must also target the corresponding country."
+     "type": "string"
     },
     "isPublicPanel": {
-     "type": "boolean",
-     "description": "Whether or not the panel is accessible to all API users."
+     "type": "boolean"
     },
     "language": {
-     "type": "string",
-     "description": "Language code that the panel can target. For instance, 'en-US'. Uses standard BCP47 language codes. See specification. Any survey created targeting this panel must also target the corresponding language."
+     "type": "string"
     },
     "mobileAppPanelId": {
-     "type": "string",
-     "description": "Unique panel ID string. This corresponds to the mobile_app_panel_id used in Survey Insert requests."
+     "type": "string"
     },
     "name": {
-     "type": "string",
-     "description": "Human readable name of the audience panel."
+     "type": "string"
     },
     "owners": {
      "type": "array",
-     "description": "List of email addresses for users who can target members of this panel. Must contain at least the address of the user making the API call for panels that are not public. This field will be empty for public panels.",
      "items": {
       "type": "string"
      }
@@ -200,64 +193,46 @@
   "Survey": {
    "id": "Survey",
    "type": "object",
-   "description": "Representation of an individual survey object.",
    "properties": {
     "audience": {
-     "$ref": "SurveyAudience",
-     "description": "Targeting-criteria message containing demographic information"
+     "$ref": "SurveyAudience"
     },
     "cost": {
-     "$ref": "SurveyCost",
-     "description": "Cost to run the survey and collect the necessary number of responses."
+     "$ref": "SurveyCost"
     },
     "customerData": {
      "type": "string",
-     "description": "Additional information to store on behalf of the API consumer and associate with this question. This binary blob is treated as opaque. This field is limited to 64K bytes.",
      "format": "byte"
     },
     "description": {
-     "type": "string",
-     "description": "Text description of the survey."
+     "type": "string"
     },
     "owners": {
      "type": "array",
-     "description": "List of email addresses for survey owners. Must contain at least the address of the user making the API call.",
      "items": {
       "type": "string"
-     },
-     "annotations": {
-      "required": [
-       "consumersurveys.surveys.insert"
-      ]
      }
     },
     "questions": {
      "type": "array",
-     "description": "List of questions defining the survey.",
      "items": {
       "$ref": "SurveyQuestion"
-     },
-     "annotations": {
-      "required": [
-       "consumersurveys.surveys.insert"
-      ]
      }
     },
+    "rejectionReason": {
+     "$ref": "SurveyRejection"
+    },
     "state": {
-     "type": "string",
-     "description": "State that the survey is in."
+     "type": "string"
     },
     "surveyUrlId": {
-     "type": "string",
-     "description": "Unique survey ID, that is viewable in the URL of the Survey Creator UI"
+     "type": "string"
     },
     "title": {
-     "type": "string",
-     "description": "Optional name that will be given to the survey."
+     "type": "string"
     },
     "wantedResponseCount": {
      "type": "integer",
-     "description": "Number of responses desired for the survey.",
      "format": "int32"
     }
    }
@@ -265,76 +240,53 @@
   "SurveyAudience": {
    "id": "SurveyAudience",
    "type": "object",
-   "description": "Specifications for the target audience of a survey run through the API.",
    "properties": {
     "ages": {
      "type": "array",
-     "description": "Optional list of age buckets to target. Supported age buckets are: ['18-24', '25-34', '35-44', '45-54', '55-64', '65+']",
      "items": {
       "type": "string"
      }
     },
     "country": {
-     "type": "string",
-     "description": "Required country code that surveys should be targeted to. Accepts standard ISO 3166-1 2 character language codes. For instance, 'US' for the United States, and 'GB' for the United Kingdom.",
-     "annotations": {
-      "required": [
-       "consumersurveys.surveys.insert"
-      ]
-     }
+     "type": "string"
     },
     "countrySubdivision": {
-     "type": "string",
-     "description": "Country subdivision (states/provinces/etc) that surveys should be targeted to. For all countries except GB, ISO-3166-2 subdivision code is required (eg. 'US-OH' for Ohio, United States). For GB, NUTS 1 statistical region codes for the United Kingdom is required (eg. 'UK-UKC' for North East England)."
+     "type": "string"
     },
     "gender": {
-     "type": "string",
-     "description": "Optional gender to target."
+     "type": "string"
     },
     "languages": {
      "type": "array",
-     "description": "Language code that surveys should be targeted to. For instance, 'en-US'. Surveys may target bilingual users by specifying a list of language codes (for example, 'de' and 'en-US'). In that case, all languages will be used for targeting users but the survey content (which is displayed) must match the first language listed. Accepts standard BCP47 language codes. See specification.",
      "items": {
       "type": "string"
-     },
-     "annotations": {
-      "required": [
-       "consumersurveys.surveys.insert"
-      ]
      }
     },
     "mobileAppPanelId": {
-     "type": "string",
-     "description": "Key for predefined panel that causes survey to be sent to a predefined set of Opinion Rewards App users. You must set PopulationSource to ANDROID_APP_PANEL to use this field."
+     "type": "string"
     },
     "populationSource": {
-     "type": "string",
-     "description": "Online population source where the respondents are sampled from."
+     "type": "string"
     }
    }
   },
   "SurveyCost": {
    "id": "SurveyCost",
    "type": "object",
-   "description": "Message defining the cost to run a given survey through API.",
    "properties": {
     "costPerResponseNanos": {
      "type": "string",
-     "description": "Cost per survey response in nano units of the given currency. To get the total cost for a survey, multiply this value by wanted_response_count.",
      "format": "int64"
     },
     "currencyCode": {
-     "type": "string",
-     "description": "Currency code that the cost is given in."
+     "type": "string"
     },
     "maxCostPerResponseNanos": {
      "type": "string",
-     "description": "Threshold to start a survey automatically if the quoted price is at most this value. When a survey has a Screener (threshold) question, it must go through an incidence pricing test to determine the final cost per response. Typically you will have to make a followup call to start the survey giving the final computed cost per response. If the survey has no threshold_answers, setting this property will return an error. By specifying this property, you indicate the max price per response you are willing to pay in advance of the incidence test. If the price turns out to be lower than the specified value, the survey will begin immediately and you will be charged at the rate determined by the incidence pricing test. If the price turns out to be greater than the specified value the survey will not be started and you will instead be notified what price was determined by the incidence test. At that point, you must raise the value of this property to be greater than or equal to that cost before attempting to start the survey again. This will immediately start the survey as long the incidence test was run within the last 21 days.",
      "format": "int64"
     },
     "nanos": {
      "type": "string",
-     "description": "Cost of survey in nano units of the given currency. DEPRECATED in favor of cost_per_response_nanos",
      "format": "int64"
     }
    }
@@ -342,26 +294,21 @@
   "SurveyQuestion": {
    "id": "SurveyQuestion",
    "type": "object",
-   "description": "Message defining the question specifications.",
    "properties": {
     "answerOrder": {
-     "type": "string",
-     "description": "The randomization option for multiple choice and multi-select questions. If not specified, this option defaults to randomize."
+     "type": "string"
     },
     "answers": {
      "type": "array",
-     "description": "Required list of answer options for a question.",
      "items": {
       "type": "string"
      }
     },
     "hasOther": {
-     "type": "boolean",
-     "description": "Option to allow open-ended text box for Single Answer and Multiple Answer question types. This can be used with SINGLE_ANSWER, SINGLE_ANSWER_WITH_IMAGE, MULTIPLE_ANSWERS, and MULTIPLE_ANSWERS_WITH_IMAGE question types."
+     "type": "boolean"
     },
     "highValueLabel": {
-     "type": "string",
-     "description": "For rating questions, the text for the higher end of the scale, such as 'Best'. For numeric questions, a string representing a floating-point that is the maximum allowed number for a response."
+     "type": "string"
     },
     "images": {
      "type": "array",
@@ -370,102 +317,99 @@
      }
     },
     "lastAnswerPositionPinned": {
-     "type": "boolean",
-     "description": "Currently only support pinning an answer option to the last position."
+     "type": "boolean"
     },
     "lowValueLabel": {
-     "type": "string",
-     "description": "For rating questions, the text for the lower end of the scale, such as 'Worst'. For numeric questions, a string representing a floating-point that is the minimum allowed number for a response."
+     "type": "string"
     },
     "mustPickSuggestion": {
-     "type": "boolean",
-     "description": "Option to force the user to pick one of the open text suggestions. This requires that suggestions are provided for this question."
+     "type": "boolean"
     },
     "numStars": {
-     "type": "string",
-     "description": "Number of stars to use for ratings questions."
+     "type": "string"
     },
     "openTextPlaceholder": {
-     "type": "string",
-     "description": "Placeholder text for an open text question."
+     "type": "string"
     },
     "openTextSuggestions": {
      "type": "array",
-     "description": "A list of suggested answers for open text question auto-complete. This is only valid if single_line_response is true.",
      "items": {
       "type": "string"
      }
     },
     "question": {
-     "type": "string",
-     "description": "Required question text shown to the respondent."
+     "type": "string"
     },
     "sentimentText": {
-     "type": "string",
-     "description": "Used by the Rating Scale with Text question type. This text goes along with the question field that is presented to the respondent, and is the actual text that the respondent is asked to rate."
+     "type": "string"
     },
     "singleLineResponse": {
-     "type": "boolean",
-     "description": "Option to allow multiple line open text responses instead of a single line response. Note that we don't show auto-complete suggestions with multiple line responses."
+     "type": "boolean"
     },
     "thresholdAnswers": {
      "type": "array",
-     "description": "The threshold/screener answer options, which will screen a user into the rest of the survey. These will be a subset of the answer option strings.",
      "items": {
       "type": "string"
      }
     },
     "type": {
-     "type": "string",
-     "description": "Required field defining the question type. For details about configuring different type of questions, consult the question configuration guide.",
-     "annotations": {
-      "required": [
-       "consumersurveys.surveys.insert"
-      ]
-     }
+     "type": "string"
     },
     "unitOfMeasurementLabel": {
-     "type": "string",
-     "description": "Optional unit of measurement for display (for example: hours, people, miles)."
+     "type": "string"
     },
     "videoId": {
-     "type": "string",
-     "description": "The YouTube video ID to be show in video questions."
+     "type": "string"
     }
    }
   },
   "SurveyQuestionImage": {
    "id": "SurveyQuestionImage",
    "type": "object",
-   "description": "Container object for image data and alt_text.",
    "properties": {
     "altText": {
-     "type": "string",
-     "description": "The alt text property used in image tags is required for all images."
+     "type": "string"
     },
     "data": {
      "type": "string",
-     "description": "Inline jpeg, gif, tiff, bmp, or png image raw bytes for an image question types.",
      "format": "byte"
     },
     "url": {
-     "type": "string",
-     "description": "The read-only URL for the hosted images."
+     "type": "string"
+    }
+   }
+  },
+  "SurveyRejection": {
+   "id": "SurveyRejection",
+   "type": "object",
+   "properties": {
+    "explanation": {
+     "type": "string"
+    },
+    "type": {
+     "type": "string"
     }
    }
   },
   "SurveyResults": {
    "id": "SurveyResults",
    "type": "object",
-   "description": "Reference to the current results for a given survey.",
    "properties": {
     "status": {
-     "type": "string",
-     "description": "Human readable string describing the status of the request."
+     "type": "string"
     },
     "surveyUrlId": {
+     "type": "string"
+    }
+   }
+  },
+  "SurveysDeleteResponse": {
+   "id": "SurveysDeleteResponse",
+   "type": "object",
+   "properties": {
+    "requestId": {
      "type": "string",
-     "description": "External survey ID as viewable by survey owners in the editor view."
+     "description": "Unique request ID used for logging and debugging. Please include in any error reporting or troubleshooting requests."
     }
    }
   },
@@ -637,7 +581,7 @@
      "id": "consumersurveys.results.get",
      "path": "surveys/{surveyUrlId}/results",
      "httpMethod": "GET",
-     "description": "Retrieves any survey results that have been produced so far. Results are formatted as an Excel file.",
+     "description": "Retrieves any survey results that have been produced so far. Results are formatted as an Excel file. You must add \"?alt=media\" to the URL as an argument to get results.",
      "parameters": {
       "surveyUrlId": {
        "type": "string",
@@ -666,6 +610,30 @@
   },
   "surveys": {
    "methods": {
+    "delete": {
+     "id": "consumersurveys.surveys.delete",
+     "path": "surveys/{surveyUrlId}",
+     "httpMethod": "DELETE",
+     "description": "Removes a survey from view in all user GET requests.",
+     "parameters": {
+      "surveyUrlId": {
+       "type": "string",
+       "description": "External URL ID for the survey.",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "surveyUrlId"
+     ],
+     "response": {
+      "$ref": "SurveysDeleteResponse"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/consumersurveys",
+      "https://www.googleapis.com/auth/userinfo.email"
+     ]
+    },
     "get": {
      "id": "consumersurveys.surveys.get",
      "path": "surveys/{surveyUrlId}",

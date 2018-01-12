@@ -23,9 +23,9 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/tables"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
 type GetInstanceGroupsCmd struct {
@@ -63,7 +63,7 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(clusterName).List(k8sapi.ListOptions{})
+	list, err := clientset.InstanceGroups(clusterName).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

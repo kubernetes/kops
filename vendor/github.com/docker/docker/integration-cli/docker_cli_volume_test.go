@@ -25,7 +25,7 @@ func (s *DockerSuite) TestVolumeCliCreateOptionConflict(c *check.C) {
 	c.Assert(err, check.NotNil, check.Commentf("volume create exception name already in use with another driver"))
 	c.Assert(out, checker.Contains, "A volume named test already exists")
 
-	out, _ = dockerCmd(c, "volume", "inspect", "--format={{ .Driver }}", "test")
+	out, _ = dockerCmd(c, "volume", "inspect", "--format='{{ .Driver }}'", "test")
 	_, _, err = dockerCmdWithError("volume", "create", "--name", "test", "--driver", strings.TrimSpace(out))
 	c.Assert(err, check.IsNil)
 }
@@ -39,11 +39,11 @@ func (s *DockerSuite) TestVolumeCliInspect(c *check.C) {
 
 	out, _ := dockerCmd(c, "volume", "create")
 	name := strings.TrimSpace(out)
-	out, _ = dockerCmd(c, "volume", "inspect", "--format={{ .Name }}", name)
+	out, _ = dockerCmd(c, "volume", "inspect", "--format='{{ .Name }}'", name)
 	c.Assert(strings.TrimSpace(out), check.Equals, name)
 
 	dockerCmd(c, "volume", "create", "--name", "test")
-	out, _ = dockerCmd(c, "volume", "inspect", "--format={{ .Name }}", "test")
+	out, _ = dockerCmd(c, "volume", "inspect", "--format='{{ .Name }}'", "test")
 	c.Assert(strings.TrimSpace(out), check.Equals, "test")
 }
 
@@ -138,24 +138,6 @@ func (s *DockerSuite) TestVolumeCliLsFilterDangling(c *check.C) {
 	c.Assert(out, check.Not(checker.Contains), "testnotinuse1\n", check.Commentf("expected volume 'testnotinuse1' in output"))
 	c.Assert(out, checker.Contains, "testisinuse1\n", check.Commentf("expected volume 'testisinuse1' in output"))
 	c.Assert(out, checker.Contains, "testisinuse2\n", check.Commentf("expected volume 'testisinuse2' in output"))
-
-	out, _ = dockerCmd(c, "volume", "ls", "--filter", "name=testisin")
-	c.Assert(out, check.Not(checker.Contains), "testnotinuse1\n", check.Commentf("expected volume 'testnotinuse1' in output"))
-	c.Assert(out, checker.Contains, "testisinuse1\n", check.Commentf("execpeted volume 'testisinuse1' in output"))
-	c.Assert(out, checker.Contains, "testisinuse2\n", check.Commentf("expected volume 'testisinuse2' in output"))
-
-	out, _ = dockerCmd(c, "volume", "ls", "--filter", "driver=invalidDriver")
-	outArr := strings.Split(strings.TrimSpace(out), "\n")
-	c.Assert(len(outArr), check.Equals, 1, check.Commentf("%s\n", out))
-
-	out, _ = dockerCmd(c, "volume", "ls", "--filter", "driver=local")
-	outArr = strings.Split(strings.TrimSpace(out), "\n")
-	c.Assert(len(outArr), check.Equals, 4, check.Commentf("\n%s", out))
-
-	out, _ = dockerCmd(c, "volume", "ls", "--filter", "driver=loc")
-	outArr = strings.Split(strings.TrimSpace(out), "\n")
-	c.Assert(len(outArr), check.Equals, 4, check.Commentf("\n%s", out))
-
 }
 
 func (s *DockerSuite) TestVolumeCliLsErrorWithInvalidFilterName(c *check.C) {
@@ -212,7 +194,7 @@ func (s *DockerSuite) TestVolumeCliRm(c *check.C) {
 func (s *DockerSuite) TestVolumeCliNoArgs(c *check.C) {
 	out, _ := dockerCmd(c, "volume")
 	// no args should produce the cmd usage output
-	usage := "Usage:	docker volume COMMAND"
+	usage := "Usage:	docker volume [OPTIONS] [COMMAND]"
 	c.Assert(out, checker.Contains, usage)
 
 	// invalid arg should error and show the command usage on stderr
@@ -224,7 +206,7 @@ func (s *DockerSuite) TestVolumeCliNoArgs(c *check.C) {
 	_, stderr, _, err = runCommandWithStdoutStderr(exec.Command(dockerBinary, "volume", "--no-such-flag"))
 	c.Assert(err, check.NotNil, check.Commentf(stderr))
 	c.Assert(stderr, checker.Contains, usage)
-	c.Assert(stderr, checker.Contains, "unknown flag: --no-such-flag")
+	c.Assert(stderr, checker.Contains, "flag provided but not defined: --no-such-flag")
 }
 
 func (s *DockerSuite) TestVolumeCliInspectTmplError(c *check.C) {
@@ -268,7 +250,7 @@ func (s *DockerSuite) TestVolumeCliCreateLabel(c *check.C) {
 	out, _, err := dockerCmdWithError("volume", "create", "--label", testLabel+"="+testValue, "--name", testVol)
 	c.Assert(err, check.IsNil)
 
-	out, _ = dockerCmd(c, "volume", "inspect", "--format={{ .Labels."+testLabel+" }}", testVol)
+	out, _ = dockerCmd(c, "volume", "inspect", "--format='{{ .Labels."+testLabel+" }}'", testVol)
 	c.Assert(strings.TrimSpace(out), check.Equals, testValue)
 }
 
@@ -295,7 +277,7 @@ func (s *DockerSuite) TestVolumeCliCreateLabelMultiple(c *check.C) {
 	c.Assert(err, check.IsNil)
 
 	for k, v := range testLabels {
-		out, _ = dockerCmd(c, "volume", "inspect", "--format={{ .Labels."+k+" }}", testVol)
+		out, _ = dockerCmd(c, "volume", "inspect", "--format='{{ .Labels."+k+" }}'", testVol)
 		c.Assert(strings.TrimSpace(out), check.Equals, v)
 	}
 }

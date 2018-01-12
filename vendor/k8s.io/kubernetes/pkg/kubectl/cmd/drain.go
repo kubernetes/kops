@@ -28,25 +28,26 @@ import (
 	"github.com/jonboulle/clockwork"
 	"github.com/spf13/cobra"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/kubernetes/pkg/api"
-	apierrors "k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/meta"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/apis/policy"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/kubectl"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 	"k8s.io/kubernetes/pkg/kubelet/types"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/util/wait"
+	"k8s.io/kubernetes/pkg/util/i18n"
 )
 
 type DrainOptions struct {
-	client             *internalclientset.Clientset
+	client             internalclientset.Interface
 	restClient         *restclient.RESTClient
 	Factory            cmdutil.Factory
 	Force              bool
@@ -99,7 +100,7 @@ func NewCmdCordon(f cmdutil.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "cordon NODE",
-		Short:   "Mark node as unschedulable",
+		Short:   i18n.T("Mark node as unschedulable"),
 		Long:    cordon_long,
 		Example: cordon_example,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -124,7 +125,7 @@ func NewCmdUncordon(f cmdutil.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "uncordon NODE",
-		Short:   "Mark node as schedulable",
+		Short:   i18n.T("Mark node as schedulable"),
 		Long:    uncordon_long,
 		Example: uncordon_example,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -140,7 +141,7 @@ var (
 		Drain node in preparation for maintenance.
 
 		The given node will be marked unschedulable to prevent new pods from arriving.
-		'drain' evicts the pods if the APIServer supports eviciton
+		'drain' evicts the pods if the APIServer supports eviction
 		(http://kubernetes.io/docs/admin/disruptions/). Otherwise, it will use normal DELETE
 		to delete the pods.
 		The 'drain' evicts or deletes all pods except mirror pods (which cannot be deleted through
@@ -150,7 +151,8 @@ var (
 		DaemonSet controller, which ignores unschedulable markings.  If there are any
 		pods that are neither mirror pods nor managed by ReplicationController,
 		ReplicaSet, DaemonSet, StatefulSet or Job, then drain will not delete any pods unless you
-		use --force.
+		use --force.  --force will also allow deletion to proceed if the managing resource of one
+		or more pods is missing.
 
 		'drain' waits for graceful termination. You should not operate on the machine until
 		the command completes.
@@ -173,7 +175,7 @@ func NewCmdDrain(f cmdutil.Factory, out, errOut io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "drain NODE",
-		Short:   "Drain node in preparation for maintenance",
+		Short:   i18n.T("Drain node in preparation for maintenance"),
 		Long:    drain_long,
 		Example: drain_example,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -308,6 +310,10 @@ func (o *DrainOptions) unreplicatedFilter(pod api.Pod) (bool, *warning, *fatal) 
 
 	sr, err := o.getPodCreator(pod)
 	if err != nil {
+		// if we're forcing, remove orphaned pods with a warning
+		if apierrors.IsNotFound(err) && o.Force {
+			return true, &warning{err.Error()}, nil
+		}
 		return false, nil, &fatal{err.Error()}
 	}
 	if sr != nil {
@@ -320,11 +326,19 @@ func (o *DrainOptions) unreplicatedFilter(pod api.Pod) (bool, *warning, *fatal) 
 }
 
 func (o *DrainOptions) daemonsetFilter(pod api.Pod) (bool, *warning, *fatal) {
-	// Note that we return false in all cases where the pod is DaemonSet managed,
+	// Note that we return false in cases where the pod is DaemonSet managed,
 	// regardless of flags.  We never delete them, the only question is whether
 	// their presence constitutes an error.
+	//
+	// The exception is for pods that are orphaned (the referencing
+	// management resource - including DaemonSet - is not found).
+	// Such pods will be deleted if --force is used.
 	sr, err := o.getPodCreator(pod)
 	if err != nil {
+		// if we're forcing, remove orphaned pods with a warning
+		if apierrors.IsNotFound(err) && o.Force {
+			return true, &warning{err.Error()}, nil
+		}
 		return false, nil, &fatal{err.Error()}
 	}
 	if sr == nil || sr.Reference.Kind != "DaemonSet" {
@@ -381,8 +395,8 @@ func (ps podStatuses) Message() string {
 // getPodsForDeletion returns all the pods we're going to delete.  If there are
 // any pods preventing us from deleting, we return that list in an error.
 func (o *DrainOptions) getPodsForDeletion() (pods []api.Pod, err error) {
-	podList, err := o.client.Core().Pods(api.NamespaceAll).List(api.ListOptions{
-		FieldSelector: fields.SelectorFromSet(fields.Set{"spec.nodeName": o.nodeInfo.Name})})
+	podList, err := o.client.Core().Pods(metav1.NamespaceAll).List(metav1.ListOptions{
+		FieldSelector: fields.SelectorFromSet(fields.Set{"spec.nodeName": o.nodeInfo.Name}).String()})
 	if err != nil {
 		return pods, err
 	}
@@ -418,7 +432,7 @@ func (o *DrainOptions) getPodsForDeletion() (pods []api.Pod, err error) {
 }
 
 func (o *DrainOptions) deletePod(pod api.Pod) error {
-	deleteOptions := &api.DeleteOptions{}
+	deleteOptions := &metav1.DeleteOptions{}
 	if o.GracePeriodSeconds >= 0 {
 		gracePeriodSeconds := int64(o.GracePeriodSeconds)
 		deleteOptions.GracePeriodSeconds = &gracePeriodSeconds
@@ -427,7 +441,7 @@ func (o *DrainOptions) deletePod(pod api.Pod) error {
 }
 
 func (o *DrainOptions) evictPod(pod api.Pod, policyGroupVersion string) error {
-	deleteOptions := &api.DeleteOptions{}
+	deleteOptions := &metav1.DeleteOptions{}
 	if o.GracePeriodSeconds >= 0 {
 		gracePeriodSeconds := int64(o.GracePeriodSeconds)
 		deleteOptions.GracePeriodSeconds = &gracePeriodSeconds
@@ -437,7 +451,7 @@ func (o *DrainOptions) evictPod(pod api.Pod, policyGroupVersion string) error {
 			APIVersion: policyGroupVersion,
 			Kind:       EvictionKind,
 		},
-		ObjectMeta: api.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      pod.Name,
 			Namespace: pod.Namespace,
 		},
@@ -569,7 +583,7 @@ func (o *DrainOptions) waitForDelete(pods []api.Pod, interval, timeout time.Dura
 
 // SupportEviction uses Discovery API to find out if the server support eviction subresource
 // If support, it will return its groupVersion; Otherwise, it will return ""
-func SupportEviction(clientset *internalclientset.Clientset) (string, error) {
+func SupportEviction(clientset internalclientset.Interface) (string, error) {
 	discoveryClient := clientset.Discovery()
 	groupList, err := discoveryClient.ServerGroups()
 	if err != nil {

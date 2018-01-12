@@ -17,7 +17,6 @@ package pubsub
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"golang.org/x/net/context"
@@ -38,26 +37,16 @@ type Subscription struct {
 }
 
 // Subscription creates a reference to a subscription.
-func (c *Client) Subscription(id string) *Subscription {
+func (c *Client) Subscription(name string) *Subscription {
 	return &Subscription{
 		s:    c.s,
-		name: fmt.Sprintf("projects/%s/subscriptions/%s", c.projectID, id),
+		name: fmt.Sprintf("projects/%s/subscriptions/%s", c.projectID, name),
 	}
 }
 
-// String returns the globally unique printable name of the subscription.
-func (s *Subscription) String() string {
+// Name returns the globally unique name for the subscription.
+func (s *Subscription) Name() string {
 	return s.name
-}
-
-// ID returns the unique identifier of the subscription within its project.
-func (s *Subscription) ID() string {
-	slash := strings.LastIndex(s.name, "/")
-	if slash == -1 {
-		// name is not a fully-qualified name.
-		panic("bad subscription name")
-	}
-	return s.name[slash+1:]
 }
 
 // Subscriptions returns an iterator which returns all of the subscriptions for the client's project.
@@ -85,6 +74,7 @@ func (subs *SubscriptionIterator) Next() (*Subscription, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &Subscription{s: subs.s, name: subName}, nil
 }
 
@@ -102,10 +92,11 @@ type SubscriptionConfig struct {
 	Topic      *Topic
 	PushConfig PushConfig
 
-	// The default maximum time after a subscriber receives a message before
-	// the subscriber should acknowledge the message. Note: messages which are
-	// obtained via a MessageIterator need not be acknowledged within this
-	// deadline, as the deadline will be automatically extended.
+	// The default maximum time after a subscriber receives a message
+	// before the subscriber should acknowledge the message.  Note:
+	// messages which are obtained via an Iterator need not be acknowledged
+	// within this deadline, as the deadline will be automatically
+	// extended.
 	AckDeadline time.Duration
 }
 
@@ -132,7 +123,7 @@ func (s *Subscription) Config(ctx context.Context) (*SubscriptionConfig, error) 
 	return conf, nil
 }
 
-// Pull returns a MessageIterator that can be used to fetch Messages. The MessageIterator
+// Pull returns an Iterator that can be used to fetch Messages. The Iterator
 // will automatically extend the ack deadline of all fetched Messages, for the
 // period specified by DefaultMaxExtension. This may be overridden by supplying
 // a MaxExtension pull option.
@@ -140,15 +131,15 @@ func (s *Subscription) Config(ctx context.Context) (*SubscriptionConfig, error) 
 // If ctx is cancelled or exceeds its deadline, outstanding acks or deadline
 // extensions will fail.
 //
-// The caller must call Stop on the MessageIterator once finished with it.
-func (s *Subscription) Pull(ctx context.Context, opts ...PullOption) (*MessageIterator, error) {
+// The caller must call Stop on the Iterator once finished with it.
+func (s *Subscription) Pull(ctx context.Context, opts ...PullOption) (*Iterator, error) {
 	config, err := s.Config(ctx)
 	if err != nil {
 		return nil, err
 	}
 	po := processPullOptions(opts)
 	po.ackDeadline = config.AckDeadline
-	return newMessageIterator(ctx, s.s, s.name, po), nil
+	return newIterator(ctx, s.s, s.name, po), nil
 }
 
 // ModifyPushConfig updates the endpoint URL and other attributes of a push subscription.
@@ -171,7 +162,7 @@ type pullOptions struct {
 	maxExtension time.Duration
 
 	// maxPrefetch is the maximum number of Messages to have in flight, to
-	// be returned by MessageIterator.Next.
+	// be returned by Iterator.Next.
 	maxPrefetch int
 
 	// ackDeadline is the default ack deadline for the subscription.  Not
@@ -203,7 +194,7 @@ func (max maxPrefetch) setOptions(o *pullOptions) {
 // MaxPrefetch returns a PullOption that limits Message prefetching.
 //
 // For performance reasons, the pubsub library may prefetch a pool of Messages
-// to be returned serially from MessageIterator.Next. MaxPrefetch is used to limit the
+// to be returned serially from Iterator.Next. MaxPrefetch is used to limit the
 // the size of this pool.
 //
 // If num is less than 1, it will be treated as if it were 1.
@@ -222,7 +213,7 @@ func (max maxExtension) setOptions(o *pullOptions) {
 // MaxExtension returns a PullOption that limits how long acks deadlines are
 // extended for.
 //
-// A MessageIterator will automatically extend the ack deadline of all fetched
+// An Iterator will automatically extend the ack deadline of all fetched
 // Messages for the duration specified. Automatic deadline extension may be
 // disabled by specifying a duration of 0.
 func MaxExtension(duration time.Duration) PullOption {
@@ -244,14 +235,13 @@ func MaxExtension(duration time.Duration) PullOption {
 // the subscriber should acknowledge the message. It must be between 10 and 600
 // seconds (inclusive), and is rounded down to the nearest second. If the
 // provided ackDeadline is 0, then the default value of 10 seconds is used.
-// Note: messages which are obtained via a MessageIterator need not be
-// acknowledged within this deadline, as the deadline will be automatically
-// extended.
+// Note: messages which are obtained via an Iterator need not be acknowledged
+// within this deadline, as the deadline will be automatically extended.
 //
 // pushConfig may be set to configure this subscription for push delivery.
 //
 // If the subscription already exists an error will be returned.
-func (c *Client) CreateSubscription(ctx context.Context, id string, topic *Topic, ackDeadline time.Duration, pushConfig *PushConfig) (*Subscription, error) {
+func (c *Client) CreateSubscription(ctx context.Context, name string, topic *Topic, ackDeadline time.Duration, pushConfig *PushConfig) (*Subscription, error) {
 	if ackDeadline == 0 {
 		ackDeadline = 10 * time.Second
 	}
@@ -259,7 +249,7 @@ func (c *Client) CreateSubscription(ctx context.Context, id string, topic *Topic
 		return nil, fmt.Errorf("ack deadline must be between 10 and 600 seconds; got: %v", d)
 	}
 
-	sub := c.Subscription(id)
-	err := c.s.createSubscription(ctx, topic.name, sub.name, ackDeadline, pushConfig)
+	sub := c.Subscription(name)
+	err := c.s.createSubscription(ctx, topic.Name(), sub.Name(), ackDeadline, pushConfig)
 	return sub, err
 }

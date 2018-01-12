@@ -16,7 +16,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/distribution/registry/client/transport"
-	"github.com/docker/go-connections/sockets"
 	"github.com/docker/go-connections/tlsconfig"
 )
 
@@ -114,7 +113,7 @@ func DockerHeaders(userAgent string, metaHeaders http.Header) []transport.Reques
 	return modifiers
 }
 
-// HTTPClient returns an HTTP client structure which uses the given transport
+// HTTPClient returns a HTTP client structure which uses the given transport
 // and contains the necessary headers for redirected requests
 func HTTPClient(transport http.RoundTripper) *http.Client {
 	return &http.Client{
@@ -166,25 +165,16 @@ func NewTransport(tlsConfig *tls.Config) *http.Transport {
 		var cfg = tlsconfig.ServerDefault
 		tlsConfig = &cfg
 	}
-
-	direct := &net.Dialer{
-		Timeout:   30 * time.Second,
-		KeepAlive: 30 * time.Second,
-		DualStack: true,
-	}
-
-	base := &http.Transport{
-		Proxy:               http.ProxyFromEnvironment,
-		Dial:                direct.Dial,
+	return &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		Dial: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).Dial,
 		TLSHandshakeTimeout: 10 * time.Second,
 		TLSClientConfig:     tlsConfig,
 		// TODO(dmcgowan): Call close idle connections when complete and use keep alive
 		DisableKeepAlives: true,
 	}
-
-	proxyDialer, err := sockets.DialerFromEnvironment(direct)
-	if err == nil {
-		base.Dial = proxyDialer.Dial
-	}
-	return base
 }

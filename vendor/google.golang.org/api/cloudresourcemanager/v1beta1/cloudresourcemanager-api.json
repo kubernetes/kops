@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/232vNH0y0gf7PFZjf9ayIsMOF0M\"",
+ "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/LEsmfjb1rYEGIEL137RcSgOD86w\"",
  "discoveryVersion": "v1",
  "id": "cloudresourcemanager:v1beta1",
  "name": "cloudresourcemanager",
  "canonicalName": "Cloud Resource Manager",
  "version": "v1beta1",
- "revision": "20160617",
+ "revision": "20160927",
  "title": "Google Cloud Resource Manager API",
  "description": "The Google Cloud Resource Manager API provides methods for creating, reading, and updating project metadata.",
  "ownerDomain": "google.com",
@@ -297,7 +297,7 @@
    "properties": {
     "permissions": {
      "type": "array",
-     "description": "The set of permissions to check for the `resource`. Permissions with wildcards (such as '*' or 'storage.*') are not allowed. For more information see IAM Overview.",
+     "description": "The set of permissions to check for the `resource`. Permissions with wildcards (such as '*' or 'storage.*') are not allowed. For more information see [IAM Overview](https://cloud.google.com/iam/docs/overview#permissions).",
      "items": {
       "type": "string"
      }
@@ -351,7 +351,7 @@
     },
     "displayName": {
      "type": "string",
-     "description": "A friendly string to be used to refer to the Organization in the UI. This field is required."
+     "description": "A friendly string to be used to refer to the Organization in the UI. Assigned by the server, set to the firm name of the Google For Work customer that owns this organization. @OutputOnly"
     },
     "owner": {
      "$ref": "OrganizationOwner",
@@ -382,6 +382,75 @@
      "description": "The Google for Work customer id used in the Directory API."
     }
    }
+  },
+  "ProjectCreationStatus": {
+   "id": "ProjectCreationStatus",
+   "type": "object",
+   "description": "A status object which is used as the `metadata` field for the Operation returned by CreateProject. It provides insight for when significant phases of Project creation have completed.",
+   "properties": {
+    "createTime": {
+     "type": "string",
+     "description": "Creation time of the project creation workflow."
+    },
+    "gettable": {
+     "type": "boolean",
+     "description": "True if the project can be retrieved using GetProject. No other operations on the project are guaranteed to work until the project creation is complete."
+    },
+    "ready": {
+     "type": "boolean",
+     "description": "True if the project creation process is complete."
+    }
+   }
+  },
+  "FolderOperation": {
+   "id": "FolderOperation",
+   "type": "object",
+   "description": "Metadata describing a long running folder operation",
+   "properties": {
+    "displayName": {
+     "type": "string",
+     "description": "The display name of the folder."
+    },
+    "operationType": {
+     "type": "string",
+     "description": "The type of this operation.",
+     "enum": [
+      "OPERATION_TYPE_UNSPECIFIED",
+      "CREATE",
+      "MOVE"
+     ]
+    },
+    "sourceParent": {
+     "type": "string",
+     "description": "The resource name of the folder's parent. Only applicable when the operation_type is MOVE."
+    },
+    "destinationParent": {
+     "type": "string",
+     "description": "The resource name of the folder or organization we are either creating the folder under or moving the folder to."
+    }
+   }
+  },
+  "FolderOperationError": {
+   "id": "FolderOperationError",
+   "type": "object",
+   "description": "A classification of the Folder Operation error.",
+   "properties": {
+    "errorMessageId": {
+     "type": "string",
+     "description": "The type of operation error experienced.",
+     "enum": [
+      "ERROR_TYPE_UNSPECIFIED",
+      "FOLDER_HEIGHT_VIOLATION",
+      "MAX_CHILD_FOLDERS_VIOLATION",
+      "FOLDER_NAME_UNIQUENESS_VIOLATION",
+      "RESOURCE_DELETED",
+      "PARENT_DELETED",
+      "CYCLE_INTRODUCED_ERROR",
+      "FOLDER_ALREADY_BEING_MOVED",
+      "FOLDER_TO_DELETE_NON_EMPTY"
+     ]
+    }
+   }
   }
  },
  "resources": {
@@ -392,6 +461,13 @@
      "path": "v1beta1/projects",
      "httpMethod": "POST",
      "description": "Creates a Project resource. Initially, the Project resource is owned by its creator exclusively. The creator can later grant permission to others to read or update the Project. Several APIs are activated automatically for the Project, including Google Cloud Storage.",
+     "parameters": {
+      "useLegacyStack": {
+       "type": "boolean",
+       "description": "A safety hatch to opt out of the new reliable project creation process.",
+       "location": "query"
+      }
+     },
      "request": {
       "$ref": "Project"
      },
@@ -567,7 +643,7 @@
      "parameters": {
       "resource": {
        "type": "string",
-       "description": "REQUIRED: The resource for which the policy is being requested. `resource` is usually specified as a path, such as `projects/*project*/zones/*zone*/disks/*disk*`. The format for the path specified in this value is resource specific and is specified in the `getIamPolicy` documentation.",
+       "description": "REQUIRED: The resource for which the policy is being requested. `resource` is usually specified as a path. For example, a Project resource is specified as `projects/{project}`.",
        "required": true,
        "location": "path"
       }
@@ -590,11 +666,11 @@
      "id": "cloudresourcemanager.projects.setIamPolicy",
      "path": "v1beta1/projects/{resource}:setIamPolicy",
      "httpMethod": "POST",
-     "description": "Sets the IAM access control policy for the specified Project. Replaces any existing policy. The following constraints apply when using `setIamPolicy()`: + Project does not support `allUsers` and `allAuthenticatedUsers` as `members` in a `Binding` of a `Policy`. + The owner role can be granted only to `user` and `serviceAccount`. + Service accounts can be made owners of a project directly without any restrictions. However, to be added as an owner, a user must be invited via Cloud Platform console and must accept the invitation. + A user cannot be granted the owner role using `setIamPolicy()`. The user must be granted the owner role using the Cloud Platform Console and must explicitly accept the invitation. + Invitations to grant the owner role cannot be sent using `setIamPolicy()`; they must be sent only using the Cloud Platform Console. + Membership changes that leave the project without any owners that have accepted the Terms of Service (ToS) will be rejected. + Members cannot be added to more than one role in the same policy. + There must be at least one owner who has accepted the Terms of Service (ToS) agreement in the policy. Calling `setIamPolicy()` to to remove the last ToS-accepted owner from the policy will fail. This restriction also applies to legacy projects that no longer have owners who have accepted the ToS. Edits to IAM policies will be rejected until the lack of a ToS-accepting owner is rectified. + Calling this method requires enabling the App Engine Admin API. Note: Removing service accounts from policies or changing their roles can render services completely inoperable. It is important to understand how the service account is being used before removing or updating its roles.",
+     "description": "Sets the IAM access control policy for the specified Project. Replaces any existing policy. The following constraints apply when using `setIamPolicy()`: + Project does not support `allUsers` and `allAuthenticatedUsers` as `members` in a `Binding` of a `Policy`. + The owner role can be granted only to `user` and `serviceAccount`. + Service accounts can be made owners of a project directly without any restrictions. However, to be added as an owner, a user must be invited via Cloud Platform console and must accept the invitation. + A user cannot be granted the owner role using `setIamPolicy()`. The user must be granted the owner role using the Cloud Platform Console and must explicitly accept the invitation. + Invitations to grant the owner role cannot be sent using `setIamPolicy()`; they must be sent only using the Cloud Platform Console. + Membership changes that leave the project without any owners that have accepted the Terms of Service (ToS) will be rejected. + There must be at least one owner who has accepted the Terms of Service (ToS) agreement in the policy. Calling `setIamPolicy()` to to remove the last ToS-accepted owner from the policy will fail. This restriction also applies to legacy projects that no longer have owners who have accepted the ToS. Edits to IAM policies will be rejected until the lack of a ToS-accepting owner is rectified. + Calling this method requires enabling the App Engine Admin API. Note: Removing service accounts from policies or changing their roles can render services completely inoperable. It is important to understand how the service account is being used before removing or updating its roles.",
      "parameters": {
       "resource": {
        "type": "string",
-       "description": "REQUIRED: The resource for which the policy is being specified. `resource` is usually specified as a path, such as `projects/*project*/zones/*zone*/disks/*disk*`. The format for the path specified in this value is resource specific and is specified in the `setIamPolicy` documentation.",
+       "description": "REQUIRED: The resource for which the policy is being specified. `resource` is usually specified as a path. For example, a Project resource is specified as `projects/{project}`.",
        "required": true,
        "location": "path"
       }
@@ -620,7 +696,7 @@
      "parameters": {
       "resource": {
        "type": "string",
-       "description": "REQUIRED: The resource for which the policy detail is being requested. `resource` is usually specified as a path, such as `projects/*project*/zones/*zone*/disks/*disk*`. The format for the path specified in this value is resource specific and is specified in the `testIamPermissions` documentation.",
+       "description": "REQUIRED: The resource for which the policy detail is being requested. `resource` is usually specified as a path. For example, a Project resource is specified as `projects/{project}`.",
        "required": true,
        "location": "path"
       }
@@ -682,7 +758,7 @@
      "parameters": {
       "name": {
        "type": "string",
-       "description": "The resource name of the Organization to fetch. Its format is \"organizations/[organization_id]\". For example, \"organizations/1234\".",
+       "description": "The resource name of the Organization to fetch, e.g. \"organizations/1234\".",
        "required": true,
        "pattern": "^organizations/[^/]*$",
        "location": "path"
@@ -735,11 +811,11 @@
      "id": "cloudresourcemanager.organizations.setIamPolicy",
      "path": "v1beta1/{+resource}:setIamPolicy",
      "httpMethod": "POST",
-     "description": "Sets the access control policy on an Organization resource. Replaces any existing policy. The `resource` field should be the organization's resource name, e.g. \"organizations/123\". For backward compatibility, the resource provided may also be the organization_id. This will not be supported in v1.",
+     "description": "Sets the access control policy on an Organization resource. Replaces any existing policy. The `resource` field should be the organization's resource name, e.g. \"organizations/123\".",
      "parameters": {
       "resource": {
        "type": "string",
-       "description": "REQUIRED: The resource for which the policy is being specified. `resource` is usually specified as a path, such as `projects/*project*/zones/*zone*/disks/*disk*`. The format for the path specified in this value is resource specific and is specified in the `setIamPolicy` documentation.",
+       "description": "REQUIRED: The resource for which the policy is being specified. `resource` is usually specified as a path. For example, a Project resource is specified as `projects/{project}`.",
        "required": true,
        "pattern": "^organizations/[^/]*$",
        "location": "path"
@@ -762,11 +838,11 @@
      "id": "cloudresourcemanager.organizations.getIamPolicy",
      "path": "v1beta1/{+resource}:getIamPolicy",
      "httpMethod": "POST",
-     "description": "Gets the access control policy for an Organization resource. May be empty if no such policy or resource exists. The `resource` field should be the organization's resource name, e.g. \"organizations/123\". For backward compatibility, the resource provided may also be the organization_id. This will not be supported in v1.",
+     "description": "Gets the access control policy for an Organization resource. May be empty if no such policy or resource exists. The `resource` field should be the organization's resource name, e.g. \"organizations/123\".",
      "parameters": {
       "resource": {
        "type": "string",
-       "description": "REQUIRED: The resource for which the policy is being requested. `resource` is usually specified as a path, such as `projects/*project*/zones/*zone*/disks/*disk*`. The format for the path specified in this value is resource specific and is specified in the `getIamPolicy` documentation.",
+       "description": "REQUIRED: The resource for which the policy is being requested. `resource` is usually specified as a path. For example, a Project resource is specified as `projects/{project}`.",
        "required": true,
        "pattern": "^organizations/[^/]*$",
        "location": "path"
@@ -790,11 +866,11 @@
      "id": "cloudresourcemanager.organizations.testIamPermissions",
      "path": "v1beta1/{+resource}:testIamPermissions",
      "httpMethod": "POST",
-     "description": "Returns permissions that a caller has on the specified Organization. The `resource` field should be the organization's resource name, e.g. \"organizations/123\". For backward compatibility, the resource provided may also be the organization_id. This will not be supported in v1.",
+     "description": "Returns permissions that a caller has on the specified Organization. The `resource` field should be the organization's resource name, e.g. \"organizations/123\".",
      "parameters": {
       "resource": {
        "type": "string",
-       "description": "REQUIRED: The resource for which the policy detail is being requested. `resource` is usually specified as a path, such as `projects/*project*/zones/*zone*/disks/*disk*`. The format for the path specified in this value is resource specific and is specified in the `testIamPermissions` documentation.",
+       "description": "REQUIRED: The resource for which the policy detail is being requested. `resource` is usually specified as a path. For example, a Project resource is specified as `projects/{project}`.",
        "required": true,
        "pattern": "^organizations/[^/]*$",
        "location": "path"

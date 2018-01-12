@@ -53,7 +53,7 @@ func New(client *http.Client) (*Service, error) {
 	s.Lineitems = NewLineitemsService(s)
 	s.Queries = NewQueriesService(s)
 	s.Reports = NewReportsService(s)
-	s.Rubicon = NewRubiconService(s)
+	s.Sdf = NewSdfService(s)
 	return s, nil
 }
 
@@ -68,7 +68,7 @@ type Service struct {
 
 	Reports *ReportsService
 
-	Rubicon *RubiconService
+	Sdf *SdfService
 }
 
 func (s *Service) userAgent() string {
@@ -105,12 +105,12 @@ type ReportsService struct {
 	s *Service
 }
 
-func NewRubiconService(s *Service) *RubiconService {
-	rs := &RubiconService{s: s}
+func NewSdfService(s *Service) *SdfService {
+	rs := &SdfService{s: s}
 	return rs
 }
 
-type RubiconService struct {
+type SdfService struct {
 	s *Service
 }
 
@@ -150,12 +150,20 @@ type DownloadLineItemsRequest struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "FileSpec") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *DownloadLineItemsRequest) MarshalJSON() ([]byte, error) {
 	type noMethod DownloadLineItemsRequest
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // DownloadLineItemsResponse: Download line items response.
@@ -176,12 +184,115 @@ type DownloadLineItemsResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "LineItems") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *DownloadLineItemsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod DownloadLineItemsResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// DownloadRequest: Request to fetch stored insertion orders, line
+// items, TrueView ad groups and ads.
+type DownloadRequest struct {
+	// FileTypes: File types that will be returned.
+	//
+	// Possible values:
+	//   "AD"
+	//   "AD_GROUP"
+	//   "INSERTION_ORDER"
+	//   "LINE_ITEM"
+	FileTypes []string `json:"fileTypes,omitempty"`
+
+	// FilterIds: The IDs of the specified filter type. This is used to
+	// filter entities to fetch. At least one ID must be specified. Only one
+	// ID is allowed for the ADVERTISER_ID filter type. For
+	// INSERTION_ORDER_ID or LINE_ITEM_ID filter types all IDs must be from
+	// the same Advertiser.
+	FilterIds googleapi.Int64s `json:"filterIds,omitempty"`
+
+	// FilterType: Filter type used to filter line items to fetch.
+	//
+	// Possible values:
+	//   "ADVERTISER_ID"
+	//   "INSERTION_ORDER_ID"
+	//   "LINE_ITEM_ID"
+	FilterType string `json:"filterType,omitempty"`
+
+	// Version: SDF Version (column names, types, order) in which the
+	// entities will be returned. Default to 3.
+	Version string `json:"version,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "FileTypes") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "FileTypes") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DownloadRequest) MarshalJSON() ([]byte, error) {
+	type noMethod DownloadRequest
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// DownloadResponse: Download response.
+type DownloadResponse struct {
+	// AdGroups: Retrieved ad groups in SDF format.
+	AdGroups string `json:"adGroups,omitempty"`
+
+	// Ads: Retrieved ads in SDF format.
+	Ads string `json:"ads,omitempty"`
+
+	// InsertionOrders: Retrieved insertion orders in SDF format.
+	InsertionOrders string `json:"insertionOrders,omitempty"`
+
+	// LineItems: Retrieved line items in SDF format.
+	LineItems string `json:"lineItems,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "AdGroups") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AdGroups") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DownloadResponse) MarshalJSON() ([]byte, error) {
+	type noMethod DownloadResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // FilterPair: Filter used to match traffic data in your report.
@@ -226,6 +337,7 @@ type FilterPair struct {
 	//   "FILTER_LINE_ITEM_DAILY_FREQUENCY"
 	//   "FILTER_LINE_ITEM_LIFETIME_FREQUENCY"
 	//   "FILTER_LINE_ITEM_TYPE"
+	//   "FILTER_MEDIA_PLAN"
 	//   "FILTER_MOBILE_DEVICE_MAKE"
 	//   "FILTER_MOBILE_DEVICE_MAKE_MODEL"
 	//   "FILTER_MOBILE_DEVICE_TYPE"
@@ -236,6 +348,7 @@ type FilterPair struct {
 	//   "FILTER_NIELSEN_COUNTRY_CODE"
 	//   "FILTER_NIELSEN_DEVICE_ID"
 	//   "FILTER_NIELSEN_GENDER"
+	//   "FILTER_NOT_SUPPORTED"
 	//   "FILTER_ORDER_ID"
 	//   "FILTER_OS"
 	//   "FILTER_PAGE_CATEGORY"
@@ -254,8 +367,11 @@ type FilterPair struct {
 	//   "FILTER_TRUEVIEW_AD_GROUP_ID"
 	//   "FILTER_TRUEVIEW_AGE"
 	//   "FILTER_TRUEVIEW_CATEGORY"
+	//   "FILTER_TRUEVIEW_CITY"
 	//   "FILTER_TRUEVIEW_CONVERSION_TYPE"
+	//   "FILTER_TRUEVIEW_COUNTRY"
 	//   "FILTER_TRUEVIEW_CUSTOM_AFFINITY"
+	//   "FILTER_TRUEVIEW_DMA"
 	//   "FILTER_TRUEVIEW_GENDER"
 	//   "FILTER_TRUEVIEW_IAR_AGE"
 	//   "FILTER_TRUEVIEW_IAR_CATEGORY"
@@ -268,12 +384,17 @@ type FilterPair struct {
 	//   "FILTER_TRUEVIEW_IAR_REGION"
 	//   "FILTER_TRUEVIEW_IAR_REMARKETING_LIST"
 	//   "FILTER_TRUEVIEW_IAR_TIME_OF_DAY"
+	//   "FILTER_TRUEVIEW_IAR_YOUTUBE_CHANNEL"
+	//   "FILTER_TRUEVIEW_IAR_YOUTUBE_VIDEO"
 	//   "FILTER_TRUEVIEW_IAR_ZIPCODE"
 	//   "FILTER_TRUEVIEW_INTEREST"
 	//   "FILTER_TRUEVIEW_KEYWORD"
 	//   "FILTER_TRUEVIEW_PARENTAL_STATUS"
 	//   "FILTER_TRUEVIEW_PLACEMENT"
+	//   "FILTER_TRUEVIEW_REGION"
 	//   "FILTER_TRUEVIEW_REMARKETING_LIST"
+	//   "FILTER_TRUEVIEW_URL"
+	//   "FILTER_TRUEVIEW_ZIPCODE"
 	//   "FILTER_UNKNOWN"
 	//   "FILTER_USER_LIST"
 	//   "FILTER_USER_LIST_FIRST_PARTY"
@@ -306,12 +427,20 @@ type FilterPair struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Type") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *FilterPair) MarshalJSON() ([]byte, error) {
 	type noMethod FilterPair
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ListQueriesResponse: List queries response.
@@ -334,12 +463,20 @@ type ListQueriesResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Kind") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListQueriesResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListQueriesResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ListReportsResponse: List reports response.
@@ -362,77 +499,20 @@ type ListReportsResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Kind") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListReportsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListReportsResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
-}
-
-// Note: Publisher comment from Rubicon.
-type Note struct {
-	// Id: Note id.
-	Id int64 `json:"id,omitempty,string"`
-
-	// Message: Message from publisher.
-	Message string `json:"message,omitempty"`
-
-	// Source: Equals "publisher" for notification from Rubicon.
-	Source string `json:"source,omitempty"`
-
-	// Timestamp: Time when the note was added, e.g.
-	// "2015-12-16T17:25:35.000-08:00".
-	Timestamp string `json:"timestamp,omitempty"`
-
-	// Username: Publisher user name.
-	Username string `json:"username,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Id") to
-	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-}
-
-func (s *Note) MarshalJSON() ([]byte, error) {
-	type noMethod Note
-	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
-}
-
-// NotifyProposalChangeRequest: NotifyProposalChange request.
-type NotifyProposalChangeRequest struct {
-	// Action: Action taken by publisher. One of: Accept, Decline, Append
-	Action string `json:"action,omitempty"`
-
-	// Href: URL to access proposal detail.
-	Href string `json:"href,omitempty"`
-
-	// Id: Below are contents of notification from Rubicon. Proposal id.
-	Id int64 `json:"id,omitempty,string"`
-
-	// Notes: Notes from publisher
-	Notes []*Note `json:"notes,omitempty"`
-
-	// Token: Deal token, available when proposal is accepted by publisher.
-	Token string `json:"token,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Action") to
-	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-}
-
-func (s *NotifyProposalChangeRequest) MarshalJSON() ([]byte, error) {
-	type noMethod NotifyProposalChangeRequest
-	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Parameters: Parameters of a query or report.
@@ -480,6 +560,7 @@ type Parameters struct {
 	//   "FILTER_LINE_ITEM_DAILY_FREQUENCY"
 	//   "FILTER_LINE_ITEM_LIFETIME_FREQUENCY"
 	//   "FILTER_LINE_ITEM_TYPE"
+	//   "FILTER_MEDIA_PLAN"
 	//   "FILTER_MOBILE_DEVICE_MAKE"
 	//   "FILTER_MOBILE_DEVICE_MAKE_MODEL"
 	//   "FILTER_MOBILE_DEVICE_TYPE"
@@ -490,6 +571,7 @@ type Parameters struct {
 	//   "FILTER_NIELSEN_COUNTRY_CODE"
 	//   "FILTER_NIELSEN_DEVICE_ID"
 	//   "FILTER_NIELSEN_GENDER"
+	//   "FILTER_NOT_SUPPORTED"
 	//   "FILTER_ORDER_ID"
 	//   "FILTER_OS"
 	//   "FILTER_PAGE_CATEGORY"
@@ -508,8 +590,11 @@ type Parameters struct {
 	//   "FILTER_TRUEVIEW_AD_GROUP_ID"
 	//   "FILTER_TRUEVIEW_AGE"
 	//   "FILTER_TRUEVIEW_CATEGORY"
+	//   "FILTER_TRUEVIEW_CITY"
 	//   "FILTER_TRUEVIEW_CONVERSION_TYPE"
+	//   "FILTER_TRUEVIEW_COUNTRY"
 	//   "FILTER_TRUEVIEW_CUSTOM_AFFINITY"
+	//   "FILTER_TRUEVIEW_DMA"
 	//   "FILTER_TRUEVIEW_GENDER"
 	//   "FILTER_TRUEVIEW_IAR_AGE"
 	//   "FILTER_TRUEVIEW_IAR_CATEGORY"
@@ -522,12 +607,17 @@ type Parameters struct {
 	//   "FILTER_TRUEVIEW_IAR_REGION"
 	//   "FILTER_TRUEVIEW_IAR_REMARKETING_LIST"
 	//   "FILTER_TRUEVIEW_IAR_TIME_OF_DAY"
+	//   "FILTER_TRUEVIEW_IAR_YOUTUBE_CHANNEL"
+	//   "FILTER_TRUEVIEW_IAR_YOUTUBE_VIDEO"
 	//   "FILTER_TRUEVIEW_IAR_ZIPCODE"
 	//   "FILTER_TRUEVIEW_INTEREST"
 	//   "FILTER_TRUEVIEW_KEYWORD"
 	//   "FILTER_TRUEVIEW_PARENTAL_STATUS"
 	//   "FILTER_TRUEVIEW_PLACEMENT"
+	//   "FILTER_TRUEVIEW_REGION"
 	//   "FILTER_TRUEVIEW_REMARKETING_LIST"
+	//   "FILTER_TRUEVIEW_URL"
+	//   "FILTER_TRUEVIEW_ZIPCODE"
 	//   "FILTER_UNKNOWN"
 	//   "FILTER_USER_LIST"
 	//   "FILTER_USER_LIST_FIRST_PARTY"
@@ -556,6 +646,17 @@ type Parameters struct {
 	// Metrics: Metrics to include as columns in your report.
 	//
 	// Possible values:
+	//   "METRIC_ACTIVE_VIEW_AVERAGE_VIEWABLE_TIME"
+	//   "METRIC_ACTIVE_VIEW_DISTRIBUTION_UNMEASURABLE"
+	//   "METRIC_ACTIVE_VIEW_DISTRIBUTION_UNVIEWABLE"
+	//   "METRIC_ACTIVE_VIEW_DISTRIBUTION_VIEWABLE"
+	//   "METRIC_ACTIVE_VIEW_ELIGIBLE_IMPRESSIONS"
+	//   "METRIC_ACTIVE_VIEW_MEASURABLE_IMPRESSIONS"
+	//   "METRIC_ACTIVE_VIEW_PCT_MEASURABLE_IMPRESSIONS"
+	//   "METRIC_ACTIVE_VIEW_PCT_VIEWABLE_IMPRESSIONS"
+	//   "METRIC_ACTIVE_VIEW_UNMEASURABLE_IMPRESSIONS"
+	//   "METRIC_ACTIVE_VIEW_UNVIEWABLE_IMPRESSIONS"
+	//   "METRIC_ACTIVE_VIEW_VIEWABLE_IMPRESSIONS"
 	//   "METRIC_BID_REQUESTS"
 	//   "METRIC_BILLABLE_COST_ADVERTISER"
 	//   "METRIC_BILLABLE_COST_PARTNER"
@@ -724,6 +825,7 @@ type Parameters struct {
 	//   "METRIC_PROFIT_VIEWABLE_ECPM_ADVERTISER"
 	//   "METRIC_PROFIT_VIEWABLE_ECPM_PARTNER"
 	//   "METRIC_PROFIT_VIEWABLE_ECPM_USD"
+	//   "METRIC_REACH_COOKIE_REACH"
 	//   "METRIC_REVENUE_ADVERTISER"
 	//   "METRIC_REVENUE_ECPAPC_ADVERTISER"
 	//   "METRIC_REVENUE_ECPAPC_PARTNER"
@@ -785,6 +887,9 @@ type Parameters struct {
 	//   "METRIC_TOTAL_MEDIA_COST_VIEWABLE_ECPM_ADVERTISER"
 	//   "METRIC_TOTAL_MEDIA_COST_VIEWABLE_ECPM_PARTNER"
 	//   "METRIC_TOTAL_MEDIA_COST_VIEWABLE_ECPM_USD"
+	//   "METRIC_TRUEVIEW_AVERAGE_CPE_ADVERTISER"
+	//   "METRIC_TRUEVIEW_AVERAGE_CPE_PARTNER"
+	//   "METRIC_TRUEVIEW_AVERAGE_CPE_USD"
 	//   "METRIC_TRUEVIEW_CONVERSION_COST_MANY_PER_VIEW_ADVERTISER"
 	//   "METRIC_TRUEVIEW_CONVERSION_COST_MANY_PER_VIEW_PARTNER"
 	//   "METRIC_TRUEVIEW_CONVERSION_COST_MANY_PER_VIEW_USD"
@@ -810,6 +915,8 @@ type Parameters struct {
 	//   "METRIC_TRUEVIEW_EARNED_SHARES"
 	//   "METRIC_TRUEVIEW_EARNED_SUBSCRIBERS"
 	//   "METRIC_TRUEVIEW_EARNED_VIEWS"
+	//   "METRIC_TRUEVIEW_ENGAGEMENTS"
+	//   "METRIC_TRUEVIEW_ENGAGEMENT_RATE"
 	//   "METRIC_TRUEVIEW_IMPRESSION_SHARE"
 	//   "METRIC_TRUEVIEW_LOST_IS_BUDGET"
 	//   "METRIC_TRUEVIEW_LOST_IS_RANK"
@@ -872,12 +979,20 @@ type Parameters struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Filters") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Parameters) MarshalJSON() ([]byte, error) {
 	type noMethod Parameters
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Query: Represents a query.
@@ -923,12 +1038,20 @@ type Query struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Kind") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Query) MarshalJSON() ([]byte, error) {
 	type noMethod Query
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // QueryMetadata: Query metadata.
@@ -1013,12 +1136,20 @@ type QueryMetadata struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DataRange") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *QueryMetadata) MarshalJSON() ([]byte, error) {
 	type noMethod QueryMetadata
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // QuerySchedule: Information on how frequently and when to run a query.
@@ -1053,12 +1184,20 @@ type QuerySchedule struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EndTimeMs") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *QuerySchedule) MarshalJSON() ([]byte, error) {
 	type noMethod QuerySchedule
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Report: Represents a report.
@@ -1079,12 +1218,20 @@ type Report struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Key") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Report) MarshalJSON() ([]byte, error) {
 	type noMethod Report
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ReportFailure: An explanation of a report failure.
@@ -1119,12 +1266,20 @@ type ReportFailure struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ErrorCode") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ReportFailure) MarshalJSON() ([]byte, error) {
 	type noMethod ReportFailure
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ReportKey: Key used to identify a report.
@@ -1142,12 +1297,20 @@ type ReportKey struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "QueryId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ReportKey) MarshalJSON() ([]byte, error) {
 	type noMethod ReportKey
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ReportMetadata: Report metadata.
@@ -1175,12 +1338,21 @@ type ReportMetadata struct {
 	// field is empty or not. This may be used to include empty fields in
 	// Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "GoogleCloudStoragePath")
+	// to include in API requests with the JSON null value. By default,
+	// fields with empty values are omitted from API requests. However, any
+	// field with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ReportMetadata) MarshalJSON() ([]byte, error) {
 	type noMethod ReportMetadata
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ReportStatus: Report status.
@@ -1215,12 +1387,20 @@ type ReportStatus struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Failure") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ReportStatus) MarshalJSON() ([]byte, error) {
 	type noMethod ReportStatus
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // RowStatus: Represents the upload status of a row in the request.
@@ -1250,12 +1430,20 @@ type RowStatus struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Changed") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *RowStatus) MarshalJSON() ([]byte, error) {
 	type noMethod RowStatus
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // RunQueryRequest: Request to run a stored query to generate a report.
@@ -1305,12 +1493,20 @@ type RunQueryRequest struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DataRange") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *RunQueryRequest) MarshalJSON() ([]byte, error) {
 	type noMethod RunQueryRequest
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // UploadLineItemsRequest: Request to upload line items.
@@ -1336,12 +1532,20 @@ type UploadLineItemsRequest struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DryRun") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *UploadLineItemsRequest) MarshalJSON() ([]byte, error) {
 	type noMethod UploadLineItemsRequest
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // UploadLineItemsResponse: Upload line items response.
@@ -1360,12 +1564,20 @@ type UploadLineItemsResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "UploadStatus") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *UploadLineItemsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod UploadLineItemsResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // UploadStatus: Represents the status of upload.
@@ -1383,12 +1595,20 @@ type UploadStatus struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Errors") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *UploadStatus) MarshalJSON() ([]byte, error) {
 	type noMethod UploadStatus
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "doubleclickbidmanager.lineitems.downloadlineitems":
@@ -1398,6 +1618,7 @@ type LineitemsDownloadlineitemsCall struct {
 	downloadlineitemsrequest *DownloadLineItemsRequest
 	urlParams_               gensupport.URLParams
 	ctx_                     context.Context
+	header_                  http.Header
 }
 
 // Downloadlineitems: Retrieves line items in CSV format.
@@ -1423,8 +1644,20 @@ func (c *LineitemsDownloadlineitemsCall) Context(ctx context.Context) *Lineitems
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LineitemsDownloadlineitemsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *LineitemsDownloadlineitemsCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.downloadlineitemsrequest)
@@ -1437,11 +1670,7 @@ func (c *LineitemsDownloadlineitemsCall) doRequest(alt string) (*http.Response, 
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "doubleclickbidmanager.lineitems.downloadlineitems" call.
@@ -1503,6 +1732,7 @@ type LineitemsUploadlineitemsCall struct {
 	uploadlineitemsrequest *UploadLineItemsRequest
 	urlParams_             gensupport.URLParams
 	ctx_                   context.Context
+	header_                http.Header
 }
 
 // Uploadlineitems: Uploads line items in CSV format.
@@ -1528,8 +1758,20 @@ func (c *LineitemsUploadlineitemsCall) Context(ctx context.Context) *LineitemsUp
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LineitemsUploadlineitemsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *LineitemsUploadlineitemsCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.uploadlineitemsrequest)
@@ -1542,11 +1784,7 @@ func (c *LineitemsUploadlineitemsCall) doRequest(alt string) (*http.Response, er
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "doubleclickbidmanager.lineitems.uploadlineitems" call.
@@ -1608,6 +1846,7 @@ type QueriesCreatequeryCall struct {
 	query      *Query
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Createquery: Creates a query.
@@ -1633,8 +1872,20 @@ func (c *QueriesCreatequeryCall) Context(ctx context.Context) *QueriesCreatequer
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *QueriesCreatequeryCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *QueriesCreatequeryCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.query)
@@ -1647,11 +1898,7 @@ func (c *QueriesCreatequeryCall) doRequest(alt string) (*http.Response, error) {
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "doubleclickbidmanager.queries.createquery" call.
@@ -1713,6 +1960,7 @@ type QueriesDeletequeryCall struct {
 	queryId    int64
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Deletequery: Deletes a stored query as well as the associated stored
@@ -1739,8 +1987,20 @@ func (c *QueriesDeletequeryCall) Context(ctx context.Context) *QueriesDeletequer
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *QueriesDeletequeryCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *QueriesDeletequeryCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -1751,10 +2011,7 @@ func (c *QueriesDeletequeryCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"queryId": strconv.FormatInt(c.queryId, 10),
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "doubleclickbidmanager.queries.deletequery" call.
@@ -1798,6 +2055,7 @@ type QueriesGetqueryCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Getquery: Retrieves a stored query.
@@ -1833,8 +2091,20 @@ func (c *QueriesGetqueryCall) Context(ctx context.Context) *QueriesGetqueryCall 
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *QueriesGetqueryCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *QueriesGetqueryCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1848,10 +2118,7 @@ func (c *QueriesGetqueryCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"queryId": strconv.FormatInt(c.queryId, 10),
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "doubleclickbidmanager.queries.getquery" call.
@@ -1922,6 +2189,7 @@ type QueriesListqueriesCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Listqueries: Retrieves stored queries.
@@ -1956,8 +2224,20 @@ func (c *QueriesListqueriesCall) Context(ctx context.Context) *QueriesListquerie
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *QueriesListqueriesCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *QueriesListqueriesCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1968,11 +2248,7 @@ func (c *QueriesListqueriesCall) doRequest(alt string) (*http.Response, error) {
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "doubleclickbidmanager.queries.listqueries" call.
@@ -2032,6 +2308,7 @@ type QueriesRunqueryCall struct {
 	runqueryrequest *RunQueryRequest
 	urlParams_      gensupport.URLParams
 	ctx_            context.Context
+	header_         http.Header
 }
 
 // Runquery: Runs a stored query to generate a report.
@@ -2058,8 +2335,20 @@ func (c *QueriesRunqueryCall) Context(ctx context.Context) *QueriesRunqueryCall 
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *QueriesRunqueryCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *QueriesRunqueryCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.runqueryrequest)
@@ -2075,10 +2364,7 @@ func (c *QueriesRunqueryCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"queryId": strconv.FormatInt(c.queryId, 10),
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "doubleclickbidmanager.queries.runquery" call.
@@ -2125,6 +2411,7 @@ type ReportsListreportsCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Listreports: Retrieves stored reports.
@@ -2160,8 +2447,20 @@ func (c *ReportsListreportsCall) Context(ctx context.Context) *ReportsListreport
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ReportsListreportsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ReportsListreportsCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -2175,10 +2474,7 @@ func (c *ReportsListreportsCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"queryId": strconv.FormatInt(c.queryId, 10),
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "doubleclickbidmanager.reports.listreports" call.
@@ -2242,27 +2538,27 @@ func (c *ReportsListreportsCall) Do(opts ...googleapi.CallOption) (*ListReportsR
 
 }
 
-// method id "doubleclickbidmanager.rubicon.notifyproposalchange":
+// method id "doubleclickbidmanager.sdf.download":
 
-type RubiconNotifyproposalchangeCall struct {
-	s                           *Service
-	notifyproposalchangerequest *NotifyProposalChangeRequest
-	urlParams_                  gensupport.URLParams
-	ctx_                        context.Context
+type SdfDownloadCall struct {
+	s               *Service
+	downloadrequest *DownloadRequest
+	urlParams_      gensupport.URLParams
+	ctx_            context.Context
+	header_         http.Header
 }
 
-// Notifyproposalchange: Update proposal upon actions of Rubicon
-// publisher.
-func (r *RubiconService) Notifyproposalchange(notifyproposalchangerequest *NotifyProposalChangeRequest) *RubiconNotifyproposalchangeCall {
-	c := &RubiconNotifyproposalchangeCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.notifyproposalchangerequest = notifyproposalchangerequest
+// Download: Retrieves entities in SDF format.
+func (r *SdfService) Download(downloadrequest *DownloadRequest) *SdfDownloadCall {
+	c := &SdfDownloadCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.downloadrequest = downloadrequest
 	return c
 }
 
 // Fields allows partial responses to be retrieved. See
 // https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
-func (c *RubiconNotifyproposalchangeCall) Fields(s ...googleapi.Field) *RubiconNotifyproposalchangeCall {
+func (c *SdfDownloadCall) Fields(s ...googleapi.Field) *SdfDownloadCall {
 	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
@@ -2270,51 +2566,87 @@ func (c *RubiconNotifyproposalchangeCall) Fields(s ...googleapi.Field) *RubiconN
 // Context sets the context to be used in this call's Do method. Any
 // pending HTTP request will be aborted if the provided context is
 // canceled.
-func (c *RubiconNotifyproposalchangeCall) Context(ctx context.Context) *RubiconNotifyproposalchangeCall {
+func (c *SdfDownloadCall) Context(ctx context.Context) *SdfDownloadCall {
 	c.ctx_ = ctx
 	return c
 }
 
-func (c *RubiconNotifyproposalchangeCall) doRequest(alt string) (*http.Response, error) {
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *SdfDownloadCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *SdfDownloadCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.notifyproposalchangerequest)
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.downloadrequest)
 	if err != nil {
 		return nil, err
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
-	urls := googleapi.ResolveRelative(c.s.BasePath, "rubicon/notifyproposalchange")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "sdf/download")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
-// Do executes the "doubleclickbidmanager.rubicon.notifyproposalchange" call.
-func (c *RubiconNotifyproposalchangeCall) Do(opts ...googleapi.CallOption) error {
+// Do executes the "doubleclickbidmanager.sdf.download" call.
+// Exactly one of *DownloadResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *DownloadResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *SdfDownloadCall) Do(opts ...googleapi.CallOption) (*DownloadResponse, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	ret := &DownloadResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
 	// {
-	//   "description": "Update proposal upon actions of Rubicon publisher.",
+	//   "description": "Retrieves entities in SDF format.",
 	//   "httpMethod": "POST",
-	//   "id": "doubleclickbidmanager.rubicon.notifyproposalchange",
-	//   "path": "rubicon/notifyproposalchange",
+	//   "id": "doubleclickbidmanager.sdf.download",
+	//   "path": "sdf/download",
 	//   "request": {
-	//     "$ref": "NotifyProposalChangeRequest"
+	//     "$ref": "DownloadRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "DownloadResponse"
 	//   }
 	// }
 

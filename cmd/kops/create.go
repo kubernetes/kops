@@ -21,18 +21,18 @@ import (
 	"io"
 
 	"bytes"
+
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/vfs"
-	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/errors"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
-	"k8s.io/kubernetes/pkg/runtime/schema"
 )
 
 type CreateOptions struct {
@@ -44,7 +44,7 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "create -f FILENAME",
-		Short: "Create a resource by filename or stdin",
+		Short: "Create a resource by filename or stdin.",
 		Run: func(cmd *cobra.Command, args []string) {
 			if cmdutil.IsFilenameEmpty(options.Filenames) {
 				cmd.Help()
@@ -80,10 +80,14 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 	}
 
 	// Codecs provides access to encoding and decoding for the scheme
-	codecs := k8sapi.Codecs //serializer.NewCodecFactory(scheme)
+	codecs := kopsapi.Codecs //serializer.NewCodecFactory(scheme)
 
 	codec := codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
 
+	var clusterName = ""
+	//var cSpec = false
+	var sb bytes.Buffer
+	fmt.Fprintf(&sb, "\n")
 	for _, f := range c.Filenames {
 		contents, err := vfs.Context.ReadFile(f)
 		if err != nil {
@@ -91,7 +95,6 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 		}
 
 		sections := bytes.Split(contents, []byte("\n---\n"))
-
 		for _, section := range sections {
 			defaults := &schema.GroupVersionKind{
 				Group:   v1alpha1.SchemeGroupVersion.Group,
@@ -106,11 +109,12 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 			case *kopsapi.Federation:
 				_, err = clientset.Federations().Create(v)
 				if err != nil {
-					if errors.IsAlreadyExists(err) {
+					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("federation %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating federation: %v", err)
 				}
+				fmt.Fprintf(&sb, "Created federation/%q\n", v.ObjectMeta.Name)
 
 			case *kopsapi.Cluster:
 				// Adding a PerformAssignments() call here as the user might be trying to use
@@ -121,32 +125,49 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				}
 				_, err = clientset.Clusters().Create(v)
 				if err != nil {
-					if errors.IsAlreadyExists(err) {
+					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating cluster: %v", err)
+				} else {
+					fmt.Fprintf(&sb, "Created cluster/%s\n", v.ObjectMeta.Name)
+					//cSpec = true
 				}
 
 			case *kopsapi.InstanceGroup:
-				clusterName := v.ObjectMeta.Labels[kopsapi.LabelClusterName]
+				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
 				if clusterName == "" {
 					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
 				}
 				_, err = clientset.InstanceGroups(clusterName).Create(v)
 				if err != nil {
-					if errors.IsAlreadyExists(err) {
+					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("instanceGroup %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating instanceGroup: %v", err)
+				} else {
+					fmt.Fprintf(&sb, "Created instancegroup/%s\n", v.ObjectMeta.Name)
 				}
 
 			default:
 				glog.V(2).Infof("Type of object was %T", v)
-				return fmt.Errorf("Unhandled kind %q in %q", gvk, f)
+				return fmt.Errorf("Unhandled kind %q in %s", gvk, f)
 			}
 		}
 
 	}
-
+	{
+		// If there is a value in this sb, this should mean that we have something to deploy
+		// so let's advise the user how to engage the cloud provider and deploy
+		if sb.String() != "" {
+			fmt.Fprintf(&sb, "\n")
+			fmt.Fprintf(&sb, "To deploy these resources, run: kops update cluster %s --yes\n", clusterName)
+			fmt.Fprintf(&sb, "\n")
+		}
+		_, err := out.Write(sb.Bytes())
+		if err != nil {
+			return fmt.Errorf("error writing to output: %v", err)
+		}
+	}
 	return nil
 }

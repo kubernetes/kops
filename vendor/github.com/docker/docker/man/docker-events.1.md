@@ -18,19 +18,11 @@ information and real-time information.
 
 Docker containers will report the following events:
 
-    attach, commit, copy, create, destroy, detach, die, exec_create, exec_detach, exec_start, export, kill, oom, pause, rename, resize, restart, start, stop, top, unpause, update
+    attach, commit, copy, create, destroy, die, exec_create, exec_start, export, kill, oom, pause, rename, resize, restart, start, stop, top, unpause
 
-Docker images report the following events:
+and Docker images will report:
 
-    delete, import, load, pull, push, save, tag, untag
-
-Docker volumes report the following events:
-
-    create, mount, unmount, destroy
-
-Docker networks report the following events:
-
-    create, connect, disconnect, destroy
+    delete, import, pull, push, tag, untag
 
 # OPTIONS
 **--help**
@@ -47,7 +39,7 @@ Docker networks report the following events:
 
 The `--since` and `--until` parameters can be Unix timestamps, date formatted
 timestamps, or Go duration strings (e.g. `10m`, `1h30m`) computed
-relative to the client machine's time. If you do not provide the `--since` option,
+relative to the client machine’s time. If you do not provide the `--since` option,
 the command returns only new and/or live events.  Supported formats for date
 formatted time stamps include RFC3339Nano, RFC3339, `2006-01-02T15:04:05`,
 `2006-01-02T15:04:05.999999999`, `2006-01-02Z07:00`, and `2006-01-02`. The local

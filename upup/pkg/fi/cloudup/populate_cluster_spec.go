@@ -26,6 +26,7 @@ import (
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
@@ -256,9 +257,19 @@ func (c *populateClusterSpec) run() error {
 
 	tf.AddTo(templateFunctions)
 
-	optionsContext := &components.OptionsContext{
-		ClusterName: cluster.ObjectMeta.Name,
+	if cluster.Spec.KubernetesVersion == "" {
+		return fmt.Errorf("KubernetesVersion is required")
 	}
+	sv, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return fmt.Errorf("unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
+	}
+
+	optionsContext := &components.OptionsContext{
+		ClusterName:       cluster.ObjectMeta.Name,
+		KubernetesVersion: *sv,
+	}
+
 	var fileModels []string
 	var codeModels []loader.OptionsBuilder
 	for _, m := range c.Models {
@@ -267,12 +278,14 @@ func (c *populateClusterSpec) run() error {
 			// Note: DefaultOptionsBuilder comes first
 			codeModels = append(codeModels, &components.DefaultsOptionsBuilder{Context: optionsContext})
 
-			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.DockerOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.NetworkingOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeDnsOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeletOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeControllerManagerOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.KubeSchedulerOptionsBuilder{OptionsContext: optionsContext})
+			codeModels = append(codeModels, &components.KubeProxyOptionsBuilder{Context: optionsContext})
 			fileModels = append(fileModels, m)
 
 		default:

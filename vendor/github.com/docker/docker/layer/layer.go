@@ -14,7 +14,6 @@ import (
 	"io"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/docker/distribution"
 	"github.com/docker/distribution/digest"
 	"github.com/docker/docker/pkg/archive"
 )
@@ -51,7 +50,7 @@ var (
 	// greater than the 125 max.
 	ErrMaxDepthExceeded = errors.New("max depth exceeded")
 
-	// ErrNotSupported is used when the action is not supported
+	// ErrNotSupported is used when the action is not supppoted
 	// on the current platform
 	ErrNotSupported = errors.New("not support on this platform")
 )
@@ -172,20 +171,15 @@ type Store interface {
 	Get(ChainID) (Layer, error)
 	Release(Layer) ([]Metadata, error)
 
-	CreateRWLayer(id string, parent ChainID, mountLabel string, initFunc MountInit, storageOpt map[string]string) (RWLayer, error)
+	CreateRWLayer(id string, parent ChainID, mountLabel string, initFunc MountInit) (RWLayer, error)
 	GetRWLayer(id string) (RWLayer, error)
 	GetMountID(id string) (string, error)
+	ReinitRWLayer(l RWLayer) error
 	ReleaseRWLayer(RWLayer) ([]Metadata, error)
 
 	Cleanup() error
 	DriverStatus() [][2]string
 	DriverName() string
-}
-
-// DescribableStore represents a layer store capable of storing
-// descriptors for layers.
-type DescribableStore interface {
-	RegisterWithDescriptor(io.Reader, ChainID, distribution.Descriptor) (Layer, error)
 }
 
 // MetadataTransaction represents functions for setting layer metadata
@@ -195,7 +189,6 @@ type MetadataTransaction interface {
 	SetParent(parent ChainID) error
 	SetDiffID(DiffID) error
 	SetCacheID(string) error
-	SetDescriptor(distribution.Descriptor) error
 	TarSplitWriter(compressInput bool) (io.WriteCloser, error)
 
 	Commit(ChainID) error
@@ -215,7 +208,6 @@ type MetadataStore interface {
 	GetParent(ChainID) (ChainID, error)
 	GetDiffID(ChainID) (DiffID, error)
 	GetCacheID(ChainID) (string, error)
-	GetDescriptor(ChainID) (distribution.Descriptor, error)
 	TarSplitReader(ChainID) (io.ReadCloser, error)
 
 	SetMountID(string, string) error

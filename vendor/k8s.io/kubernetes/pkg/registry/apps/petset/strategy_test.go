@@ -19,13 +19,15 @@ package petset
 import (
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	genericapirequest "k8s.io/apiserver/pkg/endpoints/request"
+	"k8s.io/apiserver/pkg/registry/rest"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/apps"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 )
 
 func TestStatefulSetStrategy(t *testing.T) {
-	ctx := api.NewDefaultContext()
+	ctx := genericapirequest.NewDefaultContext()
 	if !Strategy.NamespaceScoped() {
 		t.Errorf("StatefulSet must be namespace scoped")
 	}
@@ -36,7 +38,7 @@ func TestStatefulSetStrategy(t *testing.T) {
 	validSelector := map[string]string{"a": "b"}
 	validPodTemplate := api.PodTemplate{
 		Template: api.PodTemplateSpec{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Labels: validSelector,
 			},
 			Spec: api.PodSpec{
@@ -47,7 +49,7 @@ func TestStatefulSetStrategy(t *testing.T) {
 		},
 	}
 	ps := &apps.StatefulSet{
-		ObjectMeta: api.ObjectMeta{Name: "abc", Namespace: api.NamespaceDefault},
+		ObjectMeta: metav1.ObjectMeta{Name: "abc", Namespace: metav1.NamespaceDefault},
 		Spec: apps.StatefulSetSpec{
 			Selector: &metav1.LabelSelector{MatchLabels: validSelector},
 			Template: validPodTemplate.Template,
@@ -61,12 +63,12 @@ func TestStatefulSetStrategy(t *testing.T) {
 	}
 	errs := Strategy.Validate(ctx, ps)
 	if len(errs) != 0 {
-		t.Errorf("Unexpected error validating %v", errs)
+		t.Errorf("unexpected error validating %v", errs)
 	}
 
 	// Just Spec.Replicas is allowed to change
 	validPs := &apps.StatefulSet{
-		ObjectMeta: api.ObjectMeta{Name: ps.Name, Namespace: ps.Namespace, ResourceVersion: "1", Generation: 1},
+		ObjectMeta: metav1.ObjectMeta{Name: ps.Name, Namespace: ps.Namespace, ResourceVersion: "1", Generation: 1},
 		Spec: apps.StatefulSetSpec{
 			Selector: ps.Spec.Selector,
 			Template: validPodTemplate.Template,
@@ -76,19 +78,26 @@ func TestStatefulSetStrategy(t *testing.T) {
 	Strategy.PrepareForUpdate(ctx, validPs, ps)
 	errs = Strategy.ValidateUpdate(ctx, validPs, ps)
 	if len(errs) != 0 {
-		t.Errorf("Updating spec.Replicas is allowed on a statefulset: %v", errs)
+		t.Errorf("updating spec.Replicas is allowed on a statefulset: %v", errs)
 	}
 
 	validPs.Spec.Selector = &metav1.LabelSelector{MatchLabels: map[string]string{"a": "bar"}}
 	Strategy.PrepareForUpdate(ctx, validPs, ps)
 	errs = Strategy.ValidateUpdate(ctx, validPs, ps)
 	if len(errs) == 0 {
-		t.Errorf("Expected a validation error since updates are disallowed on statefulsets.")
+		t.Errorf("expected a validation error since updates are disallowed on statefulsets.")
+	}
+
+	// Make sure we correctly implement the interface.
+	// Otherwise a typo could silently change the default.
+	var gcds rest.GarbageCollectionDeleteStrategy = Strategy
+	if got, want := gcds.DefaultGarbageCollectionPolicy(), rest.OrphanDependents; got != want {
+		t.Errorf("DefaultGarbageCollectionPolicy() = %#v, want %#v", got, want)
 	}
 }
 
 func TestStatefulSetStatusStrategy(t *testing.T) {
-	ctx := api.NewDefaultContext()
+	ctx := genericapirequest.NewDefaultContext()
 	if !StatusStrategy.NamespaceScoped() {
 		t.Errorf("StatefulSet must be namespace scoped")
 	}
@@ -98,7 +107,7 @@ func TestStatefulSetStatusStrategy(t *testing.T) {
 	validSelector := map[string]string{"a": "b"}
 	validPodTemplate := api.PodTemplate{
 		Template: api.PodTemplateSpec{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Labels: validSelector,
 			},
 			Spec: api.PodSpec{
@@ -109,7 +118,7 @@ func TestStatefulSetStatusStrategy(t *testing.T) {
 		},
 	}
 	oldPS := &apps.StatefulSet{
-		ObjectMeta: api.ObjectMeta{Name: "abc", Namespace: api.NamespaceDefault, ResourceVersion: "10"},
+		ObjectMeta: metav1.ObjectMeta{Name: "abc", Namespace: metav1.NamespaceDefault, ResourceVersion: "10"},
 		Spec: apps.StatefulSetSpec{
 			Replicas: 3,
 			Selector: &metav1.LabelSelector{MatchLabels: validSelector},
@@ -120,7 +129,7 @@ func TestStatefulSetStatusStrategy(t *testing.T) {
 		},
 	}
 	newPS := &apps.StatefulSet{
-		ObjectMeta: api.ObjectMeta{Name: "abc", Namespace: api.NamespaceDefault, ResourceVersion: "9"},
+		ObjectMeta: metav1.ObjectMeta{Name: "abc", Namespace: metav1.NamespaceDefault, ResourceVersion: "9"},
 		Spec: apps.StatefulSetSpec{
 			Replicas: 1,
 			Selector: &metav1.LabelSelector{MatchLabels: validSelector},
@@ -139,6 +148,6 @@ func TestStatefulSetStatusStrategy(t *testing.T) {
 	}
 	errs := StatusStrategy.ValidateUpdate(ctx, newPS, oldPS)
 	if len(errs) != 0 {
-		t.Errorf("Unexpected error %v", errs)
+		t.Errorf("unexpected error %v", errs)
 	}
 }

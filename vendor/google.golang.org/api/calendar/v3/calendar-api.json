@@ -1,11 +1,11 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"jQLIOHBVnDZie4rQHGH1WJF-INE/RlnIv2SWp5bp3g5LStifBhcKFP4\"",
+ "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/VWub4J15NN4SkSidNp3dhsb_pzo\"",
  "discoveryVersion": "v1",
  "id": "calendar:v3",
  "name": "calendar",
  "version": "v3",
- "revision": "20160417",
+ "revision": "20160927",
  "title": "Calendar API",
  "description": "Manipulates events and other calendar data.",
  "ownerDomain": "google.com",
@@ -2129,6 +2129,7 @@
       "maxResults": {
        "type": "integer",
        "description": "Maximum number of events returned on one result page. By default the value is 250 events. The page size can never be larger than 2500 events. Optional.",
+       "default": "250",
        "format": "int32",
        "minimum": "1",
        "location": "query"
@@ -2443,6 +2444,7 @@
       "maxResults": {
        "type": "integer",
        "description": "Maximum number of events returned on one result page. By default the value is 250 events. The page size can never be larger than 2500 events. Optional.",
+       "default": "250",
        "format": "int32",
        "minimum": "1",
        "location": "query"

@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -183,7 +184,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 		}
 	}
 
-	b := kutil.NewKubeconfigBuilder()
+	b := kubeconfig.NewKubeconfigBuilder()
 	b.Context = clusterName
 	err = b.DeleteKubeConfig()
 	if err != nil {

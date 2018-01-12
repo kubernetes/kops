@@ -19,11 +19,7 @@ func (*wireFormat) parseRouteMessage(_ RIBType, b []byte) (Message, error) {
 		Index:   int(nativeEndian.Uint16(b[6:8])),
 		raw:     b[:l],
 	}
-	ll := int(nativeEndian.Uint16(b[4:6]))
-	if len(b) < ll {
-		return nil, errInvalidMessage
-	}
-	as, err := parseAddrs(uint(nativeEndian.Uint32(b[12:16])), parseKernelInetAddr, b[ll:])
+	as, err := parseAddrs(uint(nativeEndian.Uint32(b[12:16])), parseKernelInetAddr, b[int(nativeEndian.Uint16(b[4:6])):])
 	if err != nil {
 		return nil, err
 	}

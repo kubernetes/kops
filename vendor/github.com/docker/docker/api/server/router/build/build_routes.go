@@ -13,13 +13,12 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api/server/httputils"
-	"github.com/docker/docker/api/types/backend"
+	"github.com/docker/docker/builder"
 	"github.com/docker/docker/pkg/ioutils"
 	"github.com/docker/docker/pkg/progress"
 	"github.com/docker/docker/pkg/streamformatter"
 	"github.com/docker/engine-api/types"
 	"github.com/docker/engine-api/types/container"
-	"github.com/docker/engine-api/types/versions"
 	"github.com/docker/go-units"
 	"golang.org/x/net/context"
 )
@@ -27,14 +26,14 @@ import (
 func newImageBuildOptions(ctx context.Context, r *http.Request) (*types.ImageBuildOptions, error) {
 	version := httputils.VersionFromContext(ctx)
 	options := &types.ImageBuildOptions{}
-	if httputils.BoolValue(r, "forcerm") && versions.GreaterThanOrEqualTo(version, "1.12") {
+	if httputils.BoolValue(r, "forcerm") && version.GreaterThanOrEqualTo("1.12") {
 		options.Remove = true
-	} else if r.FormValue("rm") == "" && versions.GreaterThanOrEqualTo(version, "1.12") {
+	} else if r.FormValue("rm") == "" && version.GreaterThanOrEqualTo("1.12") {
 		options.Remove = true
 	} else {
 		options.Remove = httputils.BoolValue(r, "rm")
 	}
-	if httputils.BoolValue(r, "pull") && versions.GreaterThanOrEqualTo(version, "1.16") {
+	if httputils.BoolValue(r, "pull") && version.GreaterThanOrEqualTo("1.16") {
 		options.PullParent = true
 	}
 
@@ -149,7 +148,6 @@ func (br *buildRouter) postBuild(ctx context.Context, w http.ResponseWriter, r *
 	if err != nil {
 		return errf(err)
 	}
-	buildOptions.AuthConfigs = authConfigs
 
 	remoteURL := r.FormValue("remote")
 
@@ -163,7 +161,27 @@ func (br *buildRouter) postBuild(ctx context.Context, w http.ResponseWriter, r *
 		return progress.NewProgressReader(in, progressOutput, r.ContentLength, "Downloading context", remoteURL)
 	}
 
-	var out io.Writer = output
+	var (
+		context        builder.ModifiableContext
+		dockerfileName string
+		out            io.Writer
+	)
+	context, dockerfileName, err = builder.DetectContextFromRemoteURL(r.Body, remoteURL, createProgressReader)
+	if err != nil {
+		return errf(err)
+	}
+	defer func() {
+		if err := context.Close(); err != nil {
+			logrus.Debugf("[BUILDER] failed to remove temporary context: %v", err)
+		}
+	}()
+	if len(dockerfileName) > 0 {
+		buildOptions.Dockerfile = dockerfileName
+	}
+
+	buildOptions.AuthConfigs = authConfigs
+
+	out = output
 	if buildOptions.SuppressOutput {
 		out = notVerboseBuffer
 	}
@@ -171,14 +189,15 @@ func (br *buildRouter) postBuild(ctx context.Context, w http.ResponseWriter, r *
 	stdout := &streamformatter.StdoutFormatter{Writer: out, StreamFormatter: sf}
 	stderr := &streamformatter.StderrFormatter{Writer: out, StreamFormatter: sf}
 
-	pg := backend.ProgressWriter{
-		Output:             out,
-		StdoutFormatter:    stdout,
-		StderrFormatter:    stderr,
-		ProgressReaderFunc: createProgressReader,
+	closeNotifier := make(<-chan bool)
+	if notifier, ok := w.(http.CloseNotifier); ok {
+		closeNotifier = notifier.CloseNotify()
 	}
 
-	imgID, err := br.backend.BuildFromContext(ctx, r.Body, remoteURL, buildOptions, pg)
+	imgID, err := br.backend.Build(ctx, buildOptions,
+		builder.DockerIgnoreContext{ModifiableContext: context},
+		stdout, stderr, out,
+		closeNotifier)
 	if err != nil {
 		return errf(err)
 	}

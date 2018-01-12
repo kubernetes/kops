@@ -185,10 +185,11 @@ func TestContainerStatsFromV1(t *testing.T) {
 		Filesystem: &FilesystemStats{
 			TotalUsageBytes: &v1Stats.Filesystem[0].Usage,
 			BaseUsageBytes:  &v1Stats.Filesystem[0].BaseUsage,
+			InodeUsage:      &v1Stats.Filesystem[0].Inodes,
 		},
 	}
 
-	v2Stats := ContainerStatsFromV1(&v1Spec, []*v1.ContainerStats{&v1Stats})
+	v2Stats := ContainerStatsFromV1("test", &v1Spec, []*v1.ContainerStats{&v1Stats})
 	actualV2Stats := *v2Stats[0]
 
 	if !reflect.DeepEqual(expectedV2Stats, actualV2Stats) {

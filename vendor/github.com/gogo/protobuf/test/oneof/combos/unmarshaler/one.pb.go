@@ -44,9 +44,7 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion1
 
 type Subby struct {
 	Sub              *string `protobuf:"bytes,1,opt,name=sub" json:"sub,omitempty"`
@@ -3407,12 +3405,11 @@ func valueToGoStringOne(v interface{}, typ string) string {
 	pv := reflect.Indirect(rv).Interface()
 	return fmt.Sprintf("func(v %v) *%v { return &v } ( %#v )", typ, typ, pv)
 }
-func extensionToGoStringOne(m github_com_gogo_protobuf_proto.Message) string {
-	e := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(m)
+func extensionToGoStringOne(e map[int32]github_com_gogo_protobuf_proto.Extension) string {
 	if e == nil {
 		return "nil"
 	}
-	s := "proto.NewUnsafeXXX_InternalExtensions(map[int32]proto.Extension{"
+	s := "map[int32]proto.Extension{"
 	keys := make([]int, 0, len(e))
 	for k := range e {
 		keys = append(keys, int(k))
@@ -3422,7 +3419,7 @@ func extensionToGoStringOne(m github_com_gogo_protobuf_proto.Message) string {
 	for _, k := range keys {
 		ss = append(ss, strconv.Itoa(k)+": "+e[int32(k)].GoString())
 	}
-	s += strings.Join(ss, ",") + "})"
+	s += strings.Join(ss, ",") + "}"
 	return s
 }
 func NewPopulatedSubby(r randyOne, easy bool) *Subby {
@@ -5237,8 +5234,6 @@ var (
 	ErrInvalidLengthOne = fmt.Errorf("proto: negative length found during unmarshaling")
 	ErrIntOverflowOne   = fmt.Errorf("proto: integer overflow")
 )
-
-func init() { proto.RegisterFile("combos/unmarshaler/one.proto", fileDescriptorOne) }
 
 var fileDescriptorOne = []byte{
 	// 578 bytes of a gzipped FileDescriptorProto

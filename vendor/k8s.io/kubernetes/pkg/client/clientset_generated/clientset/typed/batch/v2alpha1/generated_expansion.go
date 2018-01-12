@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,5 +17,3 @@ limitations under the License.
 package v2alpha1
 
 type CronJobExpansion interface{}
-
-type JobExpansion interface{}

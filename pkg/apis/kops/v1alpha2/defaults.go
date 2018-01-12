@@ -18,7 +18,7 @@ package v1alpha2
 
 import (
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func addDefaultingFuncs(scheme *runtime.Scheme) error {
@@ -68,5 +68,13 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 
 	if obj.API.LoadBalancer != nil && obj.API.LoadBalancer.Type == "" {
 		obj.API.LoadBalancer.Type = LoadBalancerTypePublic
+	}
+
+	if obj.Authorization == nil {
+		obj.Authorization = &AuthorizationSpec{}
+	}
+	if obj.Authorization.IsEmpty() {
+		// Before the Authorization field was introduced, the behaviour was alwaysAllow
+		obj.Authorization.AlwaysAllow = &AlwaysAllowAuthorizationSpec{}
 	}
 }

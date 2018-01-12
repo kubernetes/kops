@@ -49,9 +49,8 @@ func (c *ServiceCatalog) AcceptPortfolioShareRequest(input *AcceptPortfolioShare
 		input = &AcceptPortfolioShareInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AcceptPortfolioShareOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -122,9 +121,8 @@ func (c *ServiceCatalog) AssociatePrincipalWithPortfolioRequest(input *Associate
 		input = &AssociatePrincipalWithPortfolioInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AssociatePrincipalWithPortfolioOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -195,9 +193,8 @@ func (c *ServiceCatalog) AssociateProductWithPortfolioRequest(input *AssociatePr
 		input = &AssociateProductWithPortfolioInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AssociateProductWithPortfolioOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -268,9 +265,8 @@ func (c *ServiceCatalog) CreateConstraintRequest(input *CreateConstraintInput) (
 		input = &CreateConstraintInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateConstraintOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -344,9 +340,8 @@ func (c *ServiceCatalog) CreatePortfolioRequest(input *CreatePortfolioInput) (re
 		input = &CreatePortfolioInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreatePortfolioOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -414,9 +409,8 @@ func (c *ServiceCatalog) CreatePortfolioShareRequest(input *CreatePortfolioShare
 		input = &CreatePortfolioShareInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreatePortfolioShareOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -487,9 +481,8 @@ func (c *ServiceCatalog) CreateProductRequest(input *CreateProductInput) (req *r
 		input = &CreateProductInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateProductOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -557,9 +550,8 @@ func (c *ServiceCatalog) CreateProvisioningArtifactRequest(input *CreateProvisio
 		input = &CreateProvisioningArtifactInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateProvisioningArtifactOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -631,9 +623,8 @@ func (c *ServiceCatalog) DeleteConstraintRequest(input *DeleteConstraintInput) (
 		input = &DeleteConstraintInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteConstraintOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -700,9 +691,8 @@ func (c *ServiceCatalog) DeletePortfolioRequest(input *DeletePortfolioInput) (re
 		input = &DeletePortfolioInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeletePortfolioOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -775,9 +765,8 @@ func (c *ServiceCatalog) DeletePortfolioShareRequest(input *DeletePortfolioShare
 		input = &DeletePortfolioShareInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeletePortfolioShareOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -841,9 +830,8 @@ func (c *ServiceCatalog) DeleteProductRequest(input *DeleteProductInput) (req *r
 		input = &DeleteProductInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteProductOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -915,9 +903,8 @@ func (c *ServiceCatalog) DeleteProvisioningArtifactRequest(input *DeleteProvisio
 		input = &DeleteProvisioningArtifactInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteProvisioningArtifactOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -991,9 +978,8 @@ func (c *ServiceCatalog) DescribeConstraintRequest(input *DescribeConstraintInpu
 		input = &DescribeConstraintInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeConstraintOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1057,9 +1043,8 @@ func (c *ServiceCatalog) DescribePortfolioRequest(input *DescribePortfolioInput)
 		input = &DescribePortfolioInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribePortfolioOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1124,9 +1109,8 @@ func (c *ServiceCatalog) DescribeProductRequest(input *DescribeProductInput) (re
 		input = &DescribeProductInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeProductOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1196,9 +1180,8 @@ func (c *ServiceCatalog) DescribeProductAsAdminRequest(input *DescribeProductAsA
 		input = &DescribeProductAsAdminInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeProductAsAdminOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1262,9 +1245,8 @@ func (c *ServiceCatalog) DescribeProductViewRequest(input *DescribeProductViewIn
 		input = &DescribeProductViewInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeProductViewOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1334,9 +1316,8 @@ func (c *ServiceCatalog) DescribeProvisioningArtifactRequest(input *DescribeProv
 		input = &DescribeProvisioningArtifactInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeProvisioningArtifactOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1400,9 +1381,8 @@ func (c *ServiceCatalog) DescribeProvisioningParametersRequest(input *DescribePr
 		input = &DescribeProvisioningParametersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeProvisioningParametersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1472,9 +1452,8 @@ func (c *ServiceCatalog) DescribeRecordRequest(input *DescribeRecordInput) (req 
 		input = &DescribeRecordInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeRecordOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1540,9 +1519,8 @@ func (c *ServiceCatalog) DisassociatePrincipalFromPortfolioRequest(input *Disass
 		input = &DisassociatePrincipalFromPortfolioInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DisassociatePrincipalFromPortfolioOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1609,9 +1587,8 @@ func (c *ServiceCatalog) DisassociateProductFromPortfolioRequest(input *Disassoc
 		input = &DisassociateProductFromPortfolioInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DisassociateProductFromPortfolioOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1678,9 +1655,8 @@ func (c *ServiceCatalog) ListAcceptedPortfolioSharesRequest(input *ListAcceptedP
 		input = &ListAcceptedPortfolioSharesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListAcceptedPortfolioSharesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1744,9 +1720,8 @@ func (c *ServiceCatalog) ListConstraintsForPortfolioRequest(input *ListConstrain
 		input = &ListConstraintsForPortfolioInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListConstraintsForPortfolioOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1814,9 +1789,8 @@ func (c *ServiceCatalog) ListLaunchPathsRequest(input *ListLaunchPathsInput) (re
 		input = &ListLaunchPathsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListLaunchPathsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1885,9 +1859,8 @@ func (c *ServiceCatalog) ListPortfolioAccessRequest(input *ListPortfolioAccessIn
 		input = &ListPortfolioAccessInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPortfolioAccessOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1952,9 +1925,8 @@ func (c *ServiceCatalog) ListPortfoliosRequest(input *ListPortfoliosInput) (req 
 		input = &ListPortfoliosInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPortfoliosOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2018,9 +1990,8 @@ func (c *ServiceCatalog) ListPortfoliosForProductRequest(input *ListPortfoliosFo
 		input = &ListPortfoliosForProductInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPortfoliosForProductOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2087,9 +2058,8 @@ func (c *ServiceCatalog) ListPrincipalsForPortfolioRequest(input *ListPrincipals
 		input = &ListPrincipalsForPortfolioInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPrincipalsForPortfolioOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2156,9 +2126,8 @@ func (c *ServiceCatalog) ListProvisioningArtifactsRequest(input *ListProvisionin
 		input = &ListProvisioningArtifactsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListProvisioningArtifactsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2225,9 +2194,8 @@ func (c *ServiceCatalog) ListRecordHistoryRequest(input *ListRecordHistoryInput)
 		input = &ListRecordHistoryInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListRecordHistoryOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2292,9 +2260,8 @@ func (c *ServiceCatalog) ProvisionProductRequest(input *ProvisionProductInput) (
 		input = &ProvisionProductInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ProvisionProductOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2369,9 +2336,8 @@ func (c *ServiceCatalog) RejectPortfolioShareRequest(input *RejectPortfolioShare
 		input = &RejectPortfolioShareInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RejectPortfolioShareOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2435,9 +2401,8 @@ func (c *ServiceCatalog) ScanProvisionedProductsRequest(input *ScanProvisionedPr
 		input = &ScanProvisionedProductsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ScanProvisionedProductsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2502,9 +2467,8 @@ func (c *ServiceCatalog) SearchProductsRequest(input *SearchProductsInput) (req 
 		input = &SearchProductsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SearchProductsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2572,9 +2536,8 @@ func (c *ServiceCatalog) SearchProductsAsAdminRequest(input *SearchProductsAsAdm
 		input = &SearchProductsAsAdminInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SearchProductsAsAdminOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2644,9 +2607,8 @@ func (c *ServiceCatalog) TerminateProvisionedProductRequest(input *TerminateProv
 		input = &TerminateProvisionedProductInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &TerminateProvisionedProductOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2717,9 +2679,8 @@ func (c *ServiceCatalog) UpdateConstraintRequest(input *UpdateConstraintInput) (
 		input = &UpdateConstraintInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateConstraintOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2786,9 +2747,8 @@ func (c *ServiceCatalog) UpdatePortfolioRequest(input *UpdatePortfolioInput) (re
 		input = &UpdatePortfolioInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdatePortfolioOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2860,9 +2820,8 @@ func (c *ServiceCatalog) UpdateProductRequest(input *UpdateProductInput) (req *r
 		input = &UpdateProductInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateProductOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2929,9 +2888,8 @@ func (c *ServiceCatalog) UpdateProvisionedProductRequest(input *UpdateProvisione
 		input = &UpdateProvisionedProductInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateProvisionedProductOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3004,9 +2962,8 @@ func (c *ServiceCatalog) UpdateProvisioningArtifactRequest(input *UpdateProvisio
 		input = &UpdateProvisioningArtifactInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateProvisioningArtifactOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

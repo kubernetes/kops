@@ -1,4 +1,4 @@
-// Package monitoring provides access to the Google Monitoring API.
+// Package monitoring provides access to the Stackdriver Monitoring API.
 //
 // See https://cloud.google.com/monitoring/api/
 //
@@ -168,25 +168,24 @@ type ProjectsTimeSeriesService struct {
 }
 
 // BucketOptions: A Distribution may optionally contain a histogram of
-// the values in the population. The histogram is given in
-// `bucket_counts` as counts of values that fall into one of a sequence
-// of non-overlapping buckets. The sequence of buckets is described by
-// `bucket_options`. A bucket specifies an inclusive lower bound and
+// the values in the population. The histogram is given in bucket_counts
+// as counts of values that fall into one of a sequence of
+// non-overlapping buckets. The sequence of buckets is described by
+// bucket_options.A bucket specifies an inclusive lower bound and
 // exclusive upper bound for the values that are counted for that
 // bucket. The upper bound of a bucket is strictly greater than the
-// lower bound. The sequence of N buckets for a Distribution consists of
+// lower bound.The sequence of N buckets for a Distribution consists of
 // an underflow bucket (number 0), zero or more finite buckets (number 1
 // through N - 2) and an overflow bucket (number N - 1). The buckets are
-// contiguous: the lower bound of bucket i (i > 0) is the same as the
+// contiguous: the lower bound of bucket i (i &gt; 0) is the same as the
 // upper bound of bucket i - 1. The buckets span the whole range of
 // finite values: lower bound of the underflow bucket is -infinity and
 // the upper bound of the overflow bucket is +infinity. The finite
-// buckets are so-called because both bounds are finite. `BucketOptions`
+// buckets are so-called because both bounds are finite.BucketOptions
 // describes bucket boundaries in one of three ways. Two describe the
 // boundaries by giving parameters for a formula to generate boundaries
-// and one gives the bucket boundaries explicitly. If
-// `bucket_boundaries` is not given, then no `bucket_counts` may be
-// given.
+// and one gives the bucket boundaries explicitly.If bucket_options is
+// not given, then no bucket_counts may be given.
 type BucketOptions struct {
 	// ExplicitBuckets: The explicit buckets.
 	ExplicitBuckets *Explicit `json:"explicitBuckets,omitempty"`
@@ -204,41 +203,53 @@ type BucketOptions struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ExplicitBuckets") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *BucketOptions) MarshalJSON() ([]byte, error) {
 	type noMethod BucketOptions
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // CollectdPayload: A collection of data points sent from a
-// `collectd`-based plugin. See the `collectd` documentation for more
+// collectd-based plugin. See the collectd documentation for more
 // information.
 type CollectdPayload struct {
 	// EndTime: The end time of the interval.
 	EndTime string `json:"endTime,omitempty"`
 
-	// Metadata: The measurement metadata. Example: "process_id" -> 12345`
+	// Metadata: The measurement metadata. Example: &quot;process_id&quot;
+	// -&gt; 12345
 	Metadata map[string]TypedValue `json:"metadata,omitempty"`
 
-	// Plugin: The name of the plugin. Example: "disk".
+	// Plugin: The name of the plugin. Example: &quot;disk&quot;.
 	Plugin string `json:"plugin,omitempty"`
 
-	// PluginInstance: The instance name of the plugin Example: "hdcl".
+	// PluginInstance: The instance name of the plugin Example:
+	// &quot;hdcl&quot;.
 	PluginInstance string `json:"pluginInstance,omitempty"`
 
 	// StartTime: The start time of the interval.
 	StartTime string `json:"startTime,omitempty"`
 
-	// Type: The measurement type. Example: "memory".
+	// Type: The measurement type. Example: &quot;memory&quot;.
 	Type string `json:"type,omitempty"`
 
-	// TypeInstance: The measurement type instance. Example: "used".
+	// TypeInstance: The measurement type instance. Example:
+	// &quot;used&quot;.
 	TypeInstance string `json:"typeInstance,omitempty"`
 
 	// Values: The measured values during this time interval. Each value
-	// must have a different `dataSourceName`.
+	// must have a different dataSourceName.
 	Values []*CollectdValue `json:"values,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "EndTime") to
@@ -248,29 +259,43 @@ type CollectdPayload struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EndTime") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *CollectdPayload) MarshalJSON() ([]byte, error) {
 	type noMethod CollectdPayload
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// CollectdValue: A single data point from a `collectd`-based plugin.
+// CollectdValue: A single data point from a collectd-based plugin.
 type CollectdValue struct {
-	// DataSourceName: The data source for the `collectd` value. For example
-	// there are two data sources for network measurements: "rx" and
-	// "tx".
+	// DataSourceName: The data source for the collectd value. For example
+	// there are two data sources for network measurements: &quot;rx&quot;
+	// and &quot;tx&quot;.
 	DataSourceName string `json:"dataSourceName,omitempty"`
 
 	// DataSourceType: The type of measurement.
 	//
 	// Possible values:
-	//   "UNSPECIFIED_DATA_SOURCE_TYPE"
-	//   "GAUGE"
-	//   "COUNTER"
-	//   "DERIVE"
-	//   "ABSOLUTE"
+	//   "UNSPECIFIED_DATA_SOURCE_TYPE" - An unspecified data source type.
+	// This corresponds to
+	// google.api.MetricDescriptor.MetricKind.METRIC_KIND_UNSPECIFIED.
+	//   "GAUGE" - An instantaneous measurement of a varying quantity. This
+	// corresponds to google.api.MetricDescriptor.MetricKind.GAUGE.
+	//   "COUNTER" - A cumulative value over time. This corresponds to
+	// google.api.MetricDescriptor.MetricKind.CUMULATIVE.
+	//   "DERIVE" - A rate of change of the measurement.
+	//   "ABSOLUTE" - An amount of change since the last measurement
+	// interval. This corresponds to
+	// google.api.MetricDescriptor.MetricKind.DELTA.
 	DataSourceType string `json:"dataSourceType,omitempty"`
 
 	// Value: The measurement value.
@@ -283,25 +308,34 @@ type CollectdValue struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DataSourceName") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *CollectdValue) MarshalJSON() ([]byte, error) {
 	type noMethod CollectdValue
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// CreateCollectdTimeSeriesRequest: The `CreateCollectdTimeSeries`
+// CreateCollectdTimeSeriesRequest: The CreateCollectdTimeSeries
 // request.
 type CreateCollectdTimeSeriesRequest struct {
-	// CollectdPayloads: The `collectd` payloads representing the time
-	// series data. You must not include more than a single point for each
-	// time series, so no two payloads can have the same values for all of
-	// the fields `plugin`, `plugin_instance`, `type`, and `type_instance`.
+	// CollectdPayloads: The collectd payloads representing the time series
+	// data. You must not include more than a single point for each time
+	// series, so no two payloads can have the same values for all of the
+	// fields plugin, plugin_instance, type, and type_instance.
 	CollectdPayloads []*CollectdPayload `json:"collectdPayloads,omitempty"`
 
-	// CollectdVersion: The version of `collectd` that collected the data.
-	// Example: "5.3.0-192.el6".
+	// CollectdVersion: The version of collectd that collected the data.
+	// Example: &quot;5.3.0-192.el6&quot;.
 	CollectdVersion string `json:"collectdVersion,omitempty"`
 
 	// Resource: The monitored resource associated with the time series.
@@ -314,20 +348,29 @@ type CreateCollectdTimeSeriesRequest struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CollectdPayloads") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *CreateCollectdTimeSeriesRequest) MarshalJSON() ([]byte, error) {
 	type noMethod CreateCollectdTimeSeriesRequest
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// CreateTimeSeriesRequest: The `CreateTimeSeries` request.
+// CreateTimeSeriesRequest: The CreateTimeSeries request.
 type CreateTimeSeriesRequest struct {
 	// TimeSeries: The new data to be added to a list of time series. Adds
 	// at most one data point to each of several time series. The new data
 	// point must be more recent than any other point in its time series.
-	// Each `TimeSeries` value must fully specify a unique time series by
+	// Each TimeSeries value must fully specify a unique time series by
 	// supplying all label values for the metric and the monitored resource.
 	TimeSeries []*TimeSeries `json:"timeSeries,omitempty"`
 
@@ -338,37 +381,45 @@ type CreateTimeSeriesRequest struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "TimeSeries") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *CreateTimeSeriesRequest) MarshalJSON() ([]byte, error) {
 	type noMethod CreateTimeSeriesRequest
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Distribution: Distribution contains summary statistics for a
 // population of values and, optionally, a histogram representing the
 // distribution of those values across a specified set of histogram
-// buckets. The summary statistics are the count, mean, sum of the
+// buckets.The summary statistics are the count, mean, sum of the
 // squared deviation from the mean, the minimum, and the maximum of the
-// set of population of values. The histogram is based on a sequence of
+// set of population of values.The histogram is based on a sequence of
 // buckets and gives a count of values that fall into each bucket. The
 // boundaries of the buckets are given either explicitly or by
 // specifying parameters for a method of computing them (buckets of
-// fixed width or buckets of exponentially increasing width). Although
-// it is not forbidden, it is generally a bad idea to include non-finite
+// fixed width or buckets of exponentially increasing width).Although it
+// is not forbidden, it is generally a bad idea to include non-finite
 // values (infinities or NaNs) in the population of values, as this will
-// render the `mean` and `sum_of_squared_deviation` fields meaningless.
+// render the mean and sum_of_squared_deviation fields meaningless.
 type Distribution struct {
-	// BucketCounts: If `bucket_options` is given, then the sum of the
-	// values in `bucket_counts` must equal the value in `count`. If
-	// `bucket_options` is not given, no `bucket_counts` fields may be
-	// given. Bucket counts are given in order under the numbering scheme
-	// described above (the underflow bucket has number 0; the finite
-	// buckets, if any, have numbers 1 through N-2; the overflow bucket has
-	// number N-1). The size of `bucket_counts` must be no greater than N as
-	// defined in `bucket_options`. Any suffix of trailing zero bucket_count
-	// fields may be omitted.
+	// BucketCounts: If bucket_options is given, then the sum of the values
+	// in bucket_counts must equal the value in count. If bucket_options is
+	// not given, no bucket_counts fields may be given.Bucket counts are
+	// given in order under the numbering scheme described above (the
+	// underflow bucket has number 0; the finite buckets, if any, have
+	// numbers 1 through N-2; the overflow bucket has number N-1).The size
+	// of bucket_counts must be no greater than N as defined in
+	// bucket_options.Any suffix of trailing zero bucket_count fields may be
+	// omitted.
 	BucketCounts googleapi.Int64s `json:"bucketCounts,omitempty"`
 
 	// BucketOptions: Defines the histogram bucket boundaries.
@@ -377,20 +428,22 @@ type Distribution struct {
 	// Count: The number of values in the population. Must be non-negative.
 	Count int64 `json:"count,omitempty,string"`
 
-	// Mean: The arithmetic mean of the values in the population. If `count`
+	// Mean: The arithmetic mean of the values in the population. If count
 	// is zero then this field must be zero.
 	Mean float64 `json:"mean,omitempty"`
 
 	// Range: If specified, contains the range of the population values. The
-	// field must not be present if the `count` is zero.
+	// field must not be present if the count is zero. This field is
+	// presently ignored by the Stackdriver Monitoring API v3.
 	Range *Range `json:"range,omitempty"`
 
 	// SumOfSquaredDeviation: The sum of squared deviations from the mean of
-	// the values in the population. For values x_i this is:
-	// Sum[i=1..n]((x_i - mean)^2) Knuth, "The Art of Computer Programming",
-	// Vol. 2, page 323, 3rd edition describes Welford's method for
-	// accumulating this sum in one pass. If `count` is zero then this field
-	// must be zero.
+	// the values in the population. For values x_i this
+	// is:
+	// Sum[i=1..n]((x_i - mean)^2)
+	// Knuth, "The Art of Computer Programming", Vol. 2, page 323, 3rd
+	// edition describes Welford's method for accumulating this sum in one
+	// pass.If count is zero then this field must be zero.
 	SumOfSquaredDeviation float64 `json:"sumOfSquaredDeviation,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "BucketCounts") to
@@ -400,33 +453,43 @@ type Distribution struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BucketCounts") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Distribution) MarshalJSON() ([]byte, error) {
 	type noMethod Distribution
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Empty: A generic empty message that you can re-use to avoid defining
 // duplicated empty messages in your APIs. A typical example is to use
 // it as the request or the response type of an API method. For
-// instance: service Foo { rpc Bar(google.protobuf.Empty) returns
-// (google.protobuf.Empty); } The JSON representation for `Empty` is
-// empty JSON object `{}`.
+// instance:
+// service Foo {
+//   rpc Bar(google.protobuf.Empty) returns
+// (google.protobuf.Empty);
+// }
+// The JSON representation for Empty is empty JSON object {}.
 type Empty struct {
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
 	googleapi.ServerResponse `json:"-"`
 }
 
-// Explicit: A set of buckets with arbitrary widths. Defines
-// `size(bounds) + 1` (= N) buckets with these boundaries for bucket i:
-// Upper bound (0 <= i < N-1): bounds[i] Lower bound (1 <= i < N);
-// bounds[i - 1] There must be at least one element in `bounds`. If
-// `bounds` has only one element, there are no finite buckets, and that
-// single element is the common boundary of the overflow and underflow
-// buckets.
+// Explicit: A set of buckets with arbitrary widths.Defines size(bounds)
+// + 1 (= N) buckets with these boundaries for bucket i:Upper bound (0
+// &lt;= i &lt; N-1): boundsi  Lower bound (1 &lt;= i &lt; N); boundsi -
+// 1There must be at least one element in bounds. If bounds has only one
+// element, there are no finite buckets, and that single element is the
+// common boundary of the overflow and underflow buckets.
 type Explicit struct {
 	// Bounds: The values must be monotonically increasing.
 	Bounds []float64 `json:"bounds,omitempty"`
@@ -438,28 +501,37 @@ type Explicit struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Bounds") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Explicit) MarshalJSON() ([]byte, error) {
 	type noMethod Explicit
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Exponential: Specify a sequence of buckets that have a width that is
 // proportional to the value of the lower bound. Each bucket represents
-// a constant relative uncertainty on a specific value in the bucket.
-// Defines `num_finite_buckets + 2` (= N) buckets with these boundaries
-// for bucket i: Upper bound (0 <= i < N-1): scale * (growth_factor ^
-// i). Lower bound (1 <= i < N): scale * (growth_factor ^ (i - 1)).
+// a constant relative uncertainty on a specific value in the
+// bucket.Defines num_finite_buckets + 2 (= N) buckets with these
+// boundaries for bucket i:Upper bound (0 &lt;= i &lt; N-1): scale *
+// (growth_factor ^ i).  Lower bound (1 &lt;= i &lt; N): scale *
+// (growth_factor ^ (i - 1)).
 type Exponential struct {
-	// GrowthFactor: Must be greater than 1
+	// GrowthFactor: Must be greater than 1.
 	GrowthFactor float64 `json:"growthFactor,omitempty"`
 
-	// NumFiniteBuckets: must be greater than 0
+	// NumFiniteBuckets: Must be greater than 0.
 	NumFiniteBuckets int64 `json:"numFiniteBuckets,omitempty"`
 
-	// Scale: Must be greater than 0
+	// Scale: Must be greater than 0.
 	Scale float64 `json:"scale,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "GrowthFactor") to
@@ -469,12 +541,20 @@ type Exponential struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "GrowthFactor") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Exponential) MarshalJSON() ([]byte, error) {
 	type noMethod Exponential
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Field: A single field of a message type.
@@ -482,10 +562,10 @@ type Field struct {
 	// Cardinality: The field cardinality.
 	//
 	// Possible values:
-	//   "CARDINALITY_UNKNOWN"
-	//   "CARDINALITY_OPTIONAL"
-	//   "CARDINALITY_REQUIRED"
-	//   "CARDINALITY_REPEATED"
+	//   "CARDINALITY_UNKNOWN" - For fields with unknown cardinality.
+	//   "CARDINALITY_OPTIONAL" - For optional fields.
+	//   "CARDINALITY_REQUIRED" - For required fields. Proto2 syntax only.
+	//   "CARDINALITY_REPEATED" - For repeated fields.
 	Cardinality string `json:"cardinality,omitempty"`
 
 	// DefaultValue: The string value of the default value of this field.
@@ -498,25 +578,26 @@ type Field struct {
 	// Kind: The field type.
 	//
 	// Possible values:
-	//   "TYPE_UNKNOWN"
-	//   "TYPE_DOUBLE"
-	//   "TYPE_FLOAT"
-	//   "TYPE_INT64"
-	//   "TYPE_UINT64"
-	//   "TYPE_INT32"
-	//   "TYPE_FIXED64"
-	//   "TYPE_FIXED32"
-	//   "TYPE_BOOL"
-	//   "TYPE_STRING"
-	//   "TYPE_GROUP"
-	//   "TYPE_MESSAGE"
-	//   "TYPE_BYTES"
-	//   "TYPE_UINT32"
-	//   "TYPE_ENUM"
-	//   "TYPE_SFIXED32"
-	//   "TYPE_SFIXED64"
-	//   "TYPE_SINT32"
-	//   "TYPE_SINT64"
+	//   "TYPE_UNKNOWN" - Field type unknown.
+	//   "TYPE_DOUBLE" - Field type double.
+	//   "TYPE_FLOAT" - Field type float.
+	//   "TYPE_INT64" - Field type int64.
+	//   "TYPE_UINT64" - Field type uint64.
+	//   "TYPE_INT32" - Field type int32.
+	//   "TYPE_FIXED64" - Field type fixed64.
+	//   "TYPE_FIXED32" - Field type fixed32.
+	//   "TYPE_BOOL" - Field type bool.
+	//   "TYPE_STRING" - Field type string.
+	//   "TYPE_GROUP" - Field type group. Proto2 syntax only, and
+	// deprecated.
+	//   "TYPE_MESSAGE" - Field type message.
+	//   "TYPE_BYTES" - Field type bytes.
+	//   "TYPE_UINT32" - Field type uint32.
+	//   "TYPE_ENUM" - Field type enum.
+	//   "TYPE_SFIXED32" - Field type sfixed32.
+	//   "TYPE_SFIXED64" - Field type sfixed64.
+	//   "TYPE_SINT32" - Field type sint32.
+	//   "TYPE_SINT64" - Field type sint64.
 	Kind string `json:"kind,omitempty"`
 
 	// Name: The field name.
@@ -525,7 +606,7 @@ type Field struct {
 	// Number: The field number.
 	Number int64 `json:"number,omitempty"`
 
-	// OneofIndex: The index of the field type in `Type.oneofs`, for message
+	// OneofIndex: The index of the field type in Type.oneofs, for message
 	// or enumeration types. The first type has index 1; zero means the type
 	// is not in the list.
 	OneofIndex int64 `json:"oneofIndex,omitempty"`
@@ -538,7 +619,7 @@ type Field struct {
 
 	// TypeUrl: The field type URL, without the scheme, for message or
 	// enumeration types. Example:
-	// "type.googleapis.com/google.protobuf.Timestamp".
+	// &quot;type.googleapis.com/google.protobuf.Timestamp&quot;.
 	TypeUrl string `json:"typeUrl,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Cardinality") to
@@ -548,12 +629,20 @@ type Field struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Cardinality") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Field) MarshalJSON() ([]byte, error) {
 	type noMethod Field
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Group: The description of a dynamic collection of monitored
@@ -561,24 +650,25 @@ func (s *Field) MarshalJSON() ([]byte, error) {
 // resources and their associated metadata. If a group's filter matches
 // an available monitored resource, then that resource is a member of
 // that group. Groups can contain any number of monitored resources, and
-// each monitored resource can be a member of any number of groups.
-// Groups can be nested in parent-child hierarchies. The `parentName`
-// field identifies an optional parent for each group. If a group has a
-// parent, then the only monitored resources available to be matched by
-// the group's filter are the resources contained in the parent group.
-// In other words, a group contains the monitored resources that match
-// its filter and the filters of all the group's ancestors. A group
-// without a parent can contain any monitored resource. For example,
-// consider an infrastructure running a set of instances with two
-// user-defined tags: "environment" and "role". A parent group has a
-// filter, `environment="production". A child of that parent group has
-// a filter, `role="transcoder". The parent group contains all
+// each monitored resource can be a member of any number of
+// groups.Groups can be nested in parent-child hierarchies. The
+// parentName field identifies an optional parent for each group. If a
+// group has a parent, then the only monitored resources available to be
+// matched by the group's filter are the resources contained in the
+// parent group. In other words, a group contains the monitored
+// resources that match its filter and the filters of all the group's
+// ancestors. A group without a parent can contain any monitored
+// resource.For example, consider an infrastructure running a set of
+// instances with two user-defined tags: &quot;environment&quot; and
+// &quot;role&quot;. A parent group has a filter,
+// environment=&quot;production&quot;. A child of that parent group has
+// a filter, role=&quot;transcoder&quot;. The parent group contains all
 // instances in the production environment, regardless of their roles.
-// The child group contains instances that have the transcoder role
-// *and* are in the production environment. The monitored resources
-// contained in a group can change at any moment, depending on what
-// resources exist and what filters are associated with the group and
-// its ancestors.
+// The child group contains instances that have the transcoder role and
+// are in the production environment.The monitored resources contained
+// in a group can change at any moment, depending on what resources
+// exist and what filters are associated with the group and its
+// ancestors.
 type Group struct {
 	// DisplayName: A user-assigned name for this group, used only for
 	// display purposes.
@@ -593,16 +683,16 @@ type Group struct {
 	// are clusters.
 	IsCluster bool `json:"isCluster,omitempty"`
 
-	// Name: The name of this group. The format is
-	// "projects/{project_id_or_number}/groups/{group_id}". When creating
-	// a group, this field is ignored and a new name is created consisting
-	// of the project specified in the call to `CreateGroup` and a unique
-	// `{group_id}` that is generated automatically. @OutputOnly
+	// Name: Output only. The name of this group. The format is
+	// &quot;projects/{project_id_or_number}/groups/{group_id}&quot;. When
+	// creating a group, this field is ignored and a new name is created
+	// consisting of the project specified in the call to CreateGroup and a
+	// unique {group_id} that is generated automatically.
 	Name string `json:"name,omitempty"`
 
 	// ParentName: The name of the group's parent, if it has one. The format
-	// is "projects/{project_id_or_number}/groups/{group_id}". For groups
-	// with no parent, `parentName` is the empty string, "".
+	// is &quot;projects/{project_id_or_number}/groups/{group_id}&quot;. For
+	// groups with no parent, parentName is the empty string, &quot;&quot;.
 	ParentName string `json:"parentName,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -616,12 +706,20 @@ type Group struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DisplayName") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Group) MarshalJSON() ([]byte, error) {
 	type noMethod Group
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // LabelDescriptor: A description of a label.
@@ -635,9 +733,9 @@ type LabelDescriptor struct {
 	// ValueType: The type of data that can be assigned to the label.
 	//
 	// Possible values:
-	//   "STRING"
-	//   "BOOL"
-	//   "INT64"
+	//   "STRING" - A variable-length string. This is the default.
+	//   "BOOL" - Boolean; true or false.
+	//   "INT64" - A 64-bit signed integer.
 	ValueType string `json:"valueType,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Description") to
@@ -647,20 +745,28 @@ type LabelDescriptor struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *LabelDescriptor) MarshalJSON() ([]byte, error) {
 	type noMethod LabelDescriptor
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Linear: Specify a sequence of buckets that all have the same width
 // (except overflow and underflow). Each bucket represents a constant
-// absolute uncertainty on the specific value in the bucket. Defines
-// `num_finite_buckets + 2` (= N) buckets with these boundaries for
-// bucket `i`: Upper bound (0 <= i < N-1): offset + (width * i). Lower
-// bound (1 <= i < N): offset + (width * (i - 1)).
+// absolute uncertainty on the specific value in the bucket.Defines
+// num_finite_buckets + 2 (= N) buckets with these boundaries for bucket
+// i:Upper bound (0 &lt;= i &lt; N-1): offset + (width * i).  Lower
+// bound (1 &lt;= i &lt; N): offset + (width * (i - 1)).
 type Linear struct {
 	// NumFiniteBuckets: Must be greater than 0.
 	NumFiniteBuckets int64 `json:"numFiniteBuckets,omitempty"`
@@ -678,23 +784,31 @@ type Linear struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NumFiniteBuckets") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Linear) MarshalJSON() ([]byte, error) {
 	type noMethod Linear
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// ListGroupMembersResponse: The `ListGroupMembers` response.
+// ListGroupMembersResponse: The ListGroupMembers response.
 type ListGroupMembersResponse struct {
 	// Members: A set of monitored resources in the group.
 	Members []*MonitoredResource `json:"members,omitempty"`
 
 	// NextPageToken: If there are more results than have been returned,
 	// then this field is set to a non-empty value. To see the additional
-	// results, use that value as `pageToken` in the next call to this
-	// method.
+	// results, use that value as pageToken in the next call to this method.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// TotalSize: The total number of elements matching this request.
@@ -711,23 +825,30 @@ type ListGroupMembersResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Members") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListGroupMembersResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListGroupMembersResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// ListGroupsResponse: The `ListGroups` response.
+// ListGroupsResponse: The ListGroups response.
 type ListGroupsResponse struct {
 	// Group: The groups that match the specified filters.
 	Group []*Group `json:"group,omitempty"`
 
 	// NextPageToken: If there are more results than have been returned,
 	// then this field is set to a non-empty value. To see the additional
-	// results, use that value as `pageToken` in the next call to this
-	// method.
+	// results, use that value as pageToken in the next call to this method.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -741,24 +862,31 @@ type ListGroupsResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Group") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListGroupsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListGroupsResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// ListMetricDescriptorsResponse: The `ListMetricDescriptors` response.
+// ListMetricDescriptorsResponse: The ListMetricDescriptors response.
 type ListMetricDescriptorsResponse struct {
 	// MetricDescriptors: The metric descriptors that are available to the
-	// project and that match the value of `filter`, if present.
+	// project and that match the value of filter, if present.
 	MetricDescriptors []*MetricDescriptor `json:"metricDescriptors,omitempty"`
 
 	// NextPageToken: If there are more results than have been returned,
 	// then this field is set to a non-empty value. To see the additional
-	// results, use that value as `pageToken` in the next call to this
-	// method.
+	// results, use that value as pageToken in the next call to this method.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -772,25 +900,33 @@ type ListMetricDescriptorsResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "MetricDescriptors") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListMetricDescriptorsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListMetricDescriptorsResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ListMonitoredResourceDescriptorsResponse: The
-// `ListMonitoredResourcDescriptors` response.
+// ListMonitoredResourcDescriptors response.
 type ListMonitoredResourceDescriptorsResponse struct {
 	// NextPageToken: If there are more results than have been returned,
 	// then this field is set to a non-empty value. To see the additional
-	// results, use that value as `pageToken` in the next call to this
-	// method.
+	// results, use that value as pageToken in the next call to this method.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// ResourceDescriptors: The monitored resource descriptors that are
-	// available to this project and that match `filter`, if present.
+	// available to this project and that match filter, if present.
 	ResourceDescriptors []*MonitoredResourceDescriptor `json:"resourceDescriptors,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -804,20 +940,27 @@ type ListMonitoredResourceDescriptorsResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListMonitoredResourceDescriptorsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListMonitoredResourceDescriptorsResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// ListTimeSeriesResponse: The `ListTimeSeries` response.
+// ListTimeSeriesResponse: The ListTimeSeries response.
 type ListTimeSeriesResponse struct {
 	// NextPageToken: If there are more results than have been returned,
 	// then this field is set to a non-empty value. To see the additional
-	// results, use that value as `pageToken` in the next call to this
-	// method.
+	// results, use that value as pageToken in the next call to this method.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// TimeSeries: One or more time series that match the filter included in
@@ -835,24 +978,31 @@ type ListTimeSeriesResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListTimeSeriesResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListTimeSeriesResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// Metric: A specific metric identified by specifying values for all of
-// the labels of a `MetricDescriptor`.
+// Metric: A specific metric, identified by specifying values for all of
+// the labels of a MetricDescriptor.
 type Metric struct {
-	// Labels: The set of labels that uniquely identify a metric. To specify
-	// a metric, all labels enumerated in the `MetricDescriptor` must be
-	// assigned values.
+	// Labels: The set of label values that uniquely identify this metric.
+	// All labels listed in the MetricDescriptor must be assigned values.
 	Labels map[string]string `json:"labels,omitempty"`
 
 	// Type: An existing metric type, see google.api.MetricDescriptor. For
-	// example, `compute.googleapis.com/instance/cpu/usage_time`.
+	// example, custom.googleapis.com/invoice/paid/amount.
 	Type string `json:"type,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Labels") to
@@ -862,15 +1012,25 @@ type Metric struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Labels") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Metric) MarshalJSON() ([]byte, error) {
 	type noMethod Metric
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// MetricDescriptor: Defines a metric type and its schema.
+// MetricDescriptor: Defines a metric type and its schema. Once a metric
+// descriptor is created, deleting or altering it stops data collection
+// and makes the metric type's existing data unusable.
 type MetricDescriptor struct {
 	// Description: A detailed description of the metric, which can be used
 	// in documentation.
@@ -883,74 +1043,114 @@ type MetricDescriptor struct {
 
 	// Labels: The set of labels that can be used to describe a specific
 	// instance of this metric type. For example, the
-	// `compute.googleapis.com/instance/network/received_bytes_count` metric
-	// type has a label, `loadbalanced`, that specifies whether the traffic
-	// was received through a load balanced IP address.
+	// appengine.googleapis.com/http/server/response_latencies metric type
+	// has a label for the HTTP response code, response_code, so you can
+	// look at latencies for successful responses or just for responses that
+	// failed.
 	Labels []*LabelDescriptor `json:"labels,omitempty"`
 
 	// MetricKind: Whether the metric records instantaneous values, changes
-	// to a value, etc.
+	// to a value, etc. Some combinations of metric_kind and value_type
+	// might not be supported.
 	//
 	// Possible values:
-	//   "METRIC_KIND_UNSPECIFIED"
-	//   "GAUGE"
-	//   "DELTA"
-	//   "CUMULATIVE"
+	//   "METRIC_KIND_UNSPECIFIED" - Do not use this default value.
+	//   "GAUGE" - An instantaneous measurement of a value.
+	//   "DELTA" - The change in a value during a time interval.
+	//   "CUMULATIVE" - A value accumulated over a time interval. Cumulative
+	// measurements in a time series should have the same start time and
+	// increasing end times, until an event resets the cumulative value to
+	// zero and sets a new start time for the following points.
 	MetricKind string `json:"metricKind,omitempty"`
 
-	// Name: Resource name. The format of the name may vary between
-	// different implementations. For examples:
-	// projects/{project_id}/metricDescriptors/{type=**}
-	// metricDescriptors/{type=**}
+	// Name: The resource name of the metric descriptor. Depending on the
+	// implementation, the name typically includes: (1) the parent resource
+	// name that defines the scope of the metric type or of its data; and
+	// (2) the metric's URL-encoded type, which also appears in the type
+	// field of this descriptor. For example, following is the resource name
+	// of a custom metric within the GCP project
+	// 123456789:
+	// &quot;projects/123456789/metricDescriptors/custom.googleapi
+	// s.com%2Finvoice%2Fpaid%2Famount&quot;
+	//
 	Name string `json:"name,omitempty"`
 
-	// Type: The metric type including a DNS name prefix, for example
-	// "compute.googleapis.com/instance/cpu/utilization". Metric types
-	// should use a natural hierarchical grouping such as the following:
-	// compute.googleapis.com/instance/cpu/utilization
-	// compute.googleapis.com/instance/disk/read_ops_count
-	// compute.googleapis.com/instance/network/received_bytes_count Note
-	// that if the metric type changes, the monitoring data will be
-	// discontinued, and anything depends on it will break, such as
-	// monitoring dashboards, alerting rules and quota limits. Therefore,
-	// once a metric has been published, its type should be immutable.
+	// Type: The metric type, including its DNS name prefix. The type is not
+	// URL-encoded. All user-defined metric types have the DNS name
+	// custom.googleapis.com. Metric types should use a natural hierarchical
+	// grouping. For
+	// example:
+	// &quot;custom.googleapis.com/invoice/paid/amount&quot;
+	// &quot;a
+	// ppengine.googleapis.com/http/server/response_latencies&quot;
+	//
 	Type string `json:"type,omitempty"`
 
 	// Unit: The unit in which the metric value is reported. It is only
-	// applicable if the `value_type` is `INT64`, `DOUBLE`, or
-	// `DISTRIBUTION`. The supported units are a subset of [The Unified Code
-	// for Units of Measure](http://unitsofmeasure.org/ucum.html) standard:
-	// **Basic units (UNIT)** * `bit` bit * `By` byte * `s` second * `min`
-	// minute * `h` hour * `d` day **Prefixes (PREFIX)** * `k` kilo (10**3)
-	// * `M` mega (10**6) * `G` giga (10**9) * `T` tera (10**12) * `P` peta
-	// (10**15) * `E` exa (10**18) * `Z` zetta (10**21) * `Y` yotta (10**24)
-	// * `m` milli (10**-3) * `u` micro (10**-6) * `n` nano (10**-9) * `p`
-	// pico (10**-12) * `f` femto (10**-15) * `a` atto (10**-18) * `z` zepto
-	// (10**-21) * `y` yocto (10**-24) * `Ki` kibi (2**10) * `Mi` mebi
-	// (2**20) * `Gi` gibi (2**30) * `Ti` tebi (2**40) **Grammar** The
-	// grammar includes the dimensionless unit `1`, such as `1/s`. The
-	// grammar also includes these connectors: * `/` division (as an infix
-	// operator, e.g. `1/s`). * `.` multiplication (as an infix operator,
-	// e.g. `GBy.d`) The grammar for a unit is as follows: Expression =
-	// Component { "." Component } { "/" Component } ; Component = [ PREFIX
-	// ] UNIT [ Annotation ] | Annotation | "1" ; Annotation = "{" NAME "}"
-	// ; Notes: * `Annotation` is just a comment if it follows a `UNIT` and
-	// is equivalent to `1` if it is used alone. For examples, `{requests}/s
-	// == 1/s`, `By{transmitted}/s == By/s`. * `NAME` is a sequence of
-	// non-blank printable ASCII characters not containing '{' or '}'.
+	// applicable if the value_type is INT64, DOUBLE, or DISTRIBUTION. The
+	// supported units are a subset of The Unified Code for Units of Measure
+	// (http://unitsofmeasure.org/ucum.html) standard:Basic units (UNIT)
+	// bit bit
+	// By byte
+	// s second
+	// min minute
+	// h hour
+	// d dayPrefixes (PREFIX)
+	// k kilo (10**3)
+	// M mega (10**6)
+	// G giga (10**9)
+	// T tera (10**12)
+	// P peta (10**15)
+	// E exa (10**18)
+	// Z zetta (10**21)
+	// Y yotta (10**24)
+	// m milli (10**-3)
+	// u micro (10**-6)
+	// n nano (10**-9)
+	// p pico (10**-12)
+	// f femto (10**-15)
+	// a atto (10**-18)
+	// z zepto (10**-21)
+	// y yocto (10**-24)
+	// Ki kibi (2**10)
+	// Mi mebi (2**20)
+	// Gi gibi (2**30)
+	// Ti tebi (2**40)GrammarThe grammar includes the dimensionless unit 1,
+	// such as 1/s.The grammar also includes these connectors:
+	// / division (as an infix operator, e.g. 1/s).
+	// . multiplication (as an infix operator, e.g. GBy.d)The grammar for a
+	// unit is as follows:
+	// Expression = Component { &quot;.&quot; Component } { &quot;/&quot;
+	// Component } ;
+	//
+	// Component = [ PREFIX ] UNIT [ Annotation ]
+	//           | Annotation
+	//           | &quot;1&quot;
+	//           ;
+	//
+	// Annotation = &quot;{&quot; NAME &quot;}&quot; ;
+	// Notes:
+	// Annotation is just a comment if it follows a UNIT and is  equivalent
+	// to 1 if it is used alone. For examples,  {requests}/s == 1/s,
+	// By{transmitted}/s == By/s.
+	// NAME is a sequence of non-blank printable ASCII characters not
+	// containing '{' or '}'.
 	Unit string `json:"unit,omitempty"`
 
 	// ValueType: Whether the measurement is an integer, a floating-point
-	// number, etc.
+	// number, etc. Some combinations of metric_kind and value_type might
+	// not be supported.
 	//
 	// Possible values:
-	//   "VALUE_TYPE_UNSPECIFIED"
-	//   "BOOL"
-	//   "INT64"
-	//   "DOUBLE"
-	//   "STRING"
-	//   "DISTRIBUTION"
-	//   "MONEY"
+	//   "VALUE_TYPE_UNSPECIFIED" - Do not use this default value.
+	//   "BOOL" - The value is a boolean. This value type can be used only
+	// if the metric kind is GAUGE.
+	//   "INT64" - The value is a signed 64-bit integer.
+	//   "DOUBLE" - The value is a double precision floating point number.
+	//   "STRING" - The value is a text string. This value type can be used
+	// only if the metric kind is GAUGE.
+	//   "DISTRIBUTION" - The value is a Distribution.
+	//   "MONEY" - The value is money.
 	ValueType string `json:"valueType,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -964,34 +1164,47 @@ type MetricDescriptor struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *MetricDescriptor) MarshalJSON() ([]byte, error) {
 	type noMethod MetricDescriptor
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // MonitoredResource: An object representing a resource that can be used
 // for monitoring, logging, billing, or other purposes. Examples include
 // virtual machine instances, databases, and storage devices such as
-// disks. The `type` field identifies a MonitoredResourceDescriptor
-// object that describes the resource's schema. Information in the
-// `labels` field identifies the actual resource and its attributes
-// according to the schema. For example, a particular Compute Engine VM
-// instance could be represented by the following object, because the
-// MonitoredResourceDescriptor for "gce_instance" has labels
-// "instance_id" and "zone": { "type": "gce_instance", "labels": {
-// "instance_id": "my-instance", "zone": "us-central1-a" }}
+// disks. The type field identifies a MonitoredResourceDescriptor object
+// that describes the resource's schema. Information in the labels field
+// identifies the actual resource and its attributes according to the
+// schema. For example, a particular Compute Engine VM instance could be
+// represented by the following object, because the
+// MonitoredResourceDescriptor for &quot;gce_instance&quot; has labels
+// &quot;instance_id&quot; and &quot;zone&quot;:
+// { &quot;type&quot;: &quot;gce_instance&quot;,
+//   &quot;labels&quot;: { &quot;instance_id&quot;:
+// &quot;12345678901234&quot;,
+//               &quot;zone&quot;: &quot;us-central1-a&quot; }}
+//
 type MonitoredResource struct {
 	// Labels: Required. Values for all of the labels listed in the
 	// associated monitored resource descriptor. For example, Cloud SQL
-	// databases use the labels "database_id" and "zone".
+	// databases use the labels &quot;database_id&quot; and
+	// &quot;zone&quot;.
 	Labels map[string]string `json:"labels,omitempty"`
 
 	// Type: Required. The monitored resource type. This field must match
-	// the `type` field of a MonitoredResourceDescriptor object. For
-	// example, the type of a Cloud SQL database is "cloudsql_database".
+	// the type field of a MonitoredResourceDescriptor object. For example,
+	// the type of a Cloud SQL database is &quot;cloudsql_database&quot;.
 	Type string `json:"type,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Labels") to
@@ -1001,49 +1214,60 @@ type MonitoredResource struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Labels") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *MonitoredResource) MarshalJSON() ([]byte, error) {
 	type noMethod MonitoredResource
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // MonitoredResourceDescriptor: An object that describes the schema of a
 // MonitoredResource object using a type name and a set of labels. For
 // example, the monitored resource descriptor for Google Compute Engine
-// VM instances has a type of "gce_instance" and specifies the use of
-// the labels "instance_id" and "zone" to identify particular VM
-// instances. Different APIs can support different monitored resource
-// types. APIs generally provide a `list` method that returns the
-// monitored resource descriptors used by the API.
+// VM instances has a type of &quot;gce_instance&quot; and specifies the
+// use of the labels &quot;instance_id&quot; and &quot;zone&quot; to
+// identify particular VM instances.Different APIs can support different
+// monitored resource types. APIs generally provide a list method that
+// returns the monitored resource descriptors used by the API.
 type MonitoredResourceDescriptor struct {
 	// Description: Optional. A detailed description of the monitored
 	// resource type that might be used in documentation.
 	Description string `json:"description,omitempty"`
 
 	// DisplayName: Optional. A concise name for the monitored resource type
-	// that might be displayed in user interfaces. For example, "Google
-	// Cloud SQL Database".
+	// that might be displayed in user interfaces. It should be a Title
+	// Cased Noun Phrase, without any article or other determiners. For
+	// example, &quot;Google Cloud SQL Database&quot;.
 	DisplayName string `json:"displayName,omitempty"`
 
 	// Labels: Required. A set of labels used to describe instances of this
 	// monitored resource type. For example, an individual Google Cloud SQL
-	// database is identified by values for the labels "database_id" and
-	// "zone".
+	// database is identified by values for the labels
+	// &quot;database_id&quot; and &quot;zone&quot;.
 	Labels []*LabelDescriptor `json:"labels,omitempty"`
 
 	// Name: Optional. The resource name of the monitored resource
 	// descriptor:
-	// "projects/{project_id}/monitoredResourceDescriptors/{type}" where
-	// {type} is the value of the `type` field in this object and
+	// &quot;projects/{project_id}/monitoredResourceDescriptors/{type}&quot;
+	// where {type} is the value of the type field in this object and
 	// {project_id} is a project ID that provides API-specific context for
 	// accessing the type. APIs that do not use project information can use
-	// the resource name format "monitoredResourceDescriptors/{type}".
+	// the resource name format
+	// &quot;monitoredResourceDescriptors/{type}&quot;.
 	Name string `json:"name,omitempty"`
 
 	// Type: Required. The monitored resource type. For example, the type
-	// "cloudsql_database" represents databases in Google Cloud SQL.
+	// &quot;cloudsql_database&quot; represents databases in Google Cloud
+	// SQL. The maximum length of this value is 256 characters.
 	Type string `json:"type,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -1057,22 +1281,31 @@ type MonitoredResourceDescriptor struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *MonitoredResourceDescriptor) MarshalJSON() ([]byte, error) {
 	type noMethod MonitoredResourceDescriptor
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Option: A protocol buffer option, which can be attached to a message,
 // field, enumeration, etc.
 type Option struct {
-	// Name: The option's name. For example, "java_package".
+	// Name: The option's name. For example, &quot;java_package&quot;.
 	Name string `json:"name,omitempty"`
 
-	// Value: The option's value. For example, "com.google.protobuf".
-	Value OptionValue `json:"value,omitempty"`
+	// Value: The option's value. For example,
+	// &quot;com.google.protobuf&quot;.
+	Value googleapi.RawMessage `json:"value,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Name") to
 	// unconditionally include in API requests. By default, fields with
@@ -1081,19 +1314,33 @@ type Option struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Name") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Option) MarshalJSON() ([]byte, error) {
 	type noMethod Option
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
-
-type OptionValue interface{}
 
 // Point: A single data point in a time series.
 type Point struct {
-	// Interval: The time interval to which the value applies.
+	// Interval: The time interval to which the data point applies. For
+	// GAUGE metrics, only the end time of the interval is used. For DELTA
+	// metrics, the start and end time should specify a non-zero interval,
+	// with subsequent points specifying contiguous and non-overlapping
+	// intervals. For CUMULATIVE metrics, the start and end time should
+	// specify a non-zero interval, with subsequent points specifying the
+	// same start time and increasing end times, until an event resets the
+	// cumulative value to zero and sets a new start time for the following
+	// points.
 	Interval *TimeInterval `json:"interval,omitempty"`
 
 	// Value: The value of the data point.
@@ -1106,12 +1353,20 @@ type Point struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Interval") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Point) MarshalJSON() ([]byte, error) {
 	type noMethod Point
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Range: The range of the population values.
@@ -1129,20 +1384,28 @@ type Range struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Max") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Range) MarshalJSON() ([]byte, error) {
 	type noMethod Range
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// SourceContext: `SourceContext` represents information about the
-// source of a protobuf element, like the file in which it is defined.
+// SourceContext: SourceContext represents information about the source
+// of a protobuf element, like the file in which it is defined.
 type SourceContext struct {
 	// FileName: The path-qualified name of the .proto file that contained
 	// the associated protobuf element. For example:
-	// "google/protobuf/source.proto".
+	// &quot;google/protobuf/source_context.proto&quot;.
 	FileName string `json:"fileName,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "FileName") to
@@ -1152,26 +1415,32 @@ type SourceContext struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "FileName") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *SourceContext) MarshalJSON() ([]byte, error) {
 	type noMethod SourceContext
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// TimeInterval: A time interval extending from after `startTime`
-// through `endTime`. If `startTime` is omitted, the interval is the
-// single point in time, `endTime`.
+// TimeInterval: A time interval extending just after a start time
+// through an end time. If the start time is the same as the end time,
+// then the interval represents a single point in time.
 type TimeInterval struct {
-	// EndTime: Required. The end of the interval. The interval includes
-	// this time.
+	// EndTime: Required. The end of the time interval.
 	EndTime string `json:"endTime,omitempty"`
 
-	// StartTime: If this value is omitted, the interval is a point in time,
-	// `endTime`. If `startTime` is present, it must be earlier than (less
-	// than) `endTime`. The interval begins after `startTime`—it does not
-	// include `startTime`.
+	// StartTime: Optional. The beginning of the time interval. The default
+	// value for the start time is the end time. The start time must not be
+	// later than the end time.
 	StartTime string `json:"startTime,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "EndTime") to
@@ -1181,58 +1450,81 @@ type TimeInterval struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EndTime") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *TimeInterval) MarshalJSON() ([]byte, error) {
 	type noMethod TimeInterval
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // TimeSeries: A collection of data points that describes the
-// time-varying nature of a metric. A time series is identified by a
+// time-varying values of a metric. A time series is identified by a
 // combination of a fully-specified monitored resource and a
-// fully-specified metric.
+// fully-specified metric. This type is used for both listing and
+// creating time series.
 type TimeSeries struct {
-	// Metric: The fully-specified metric used to identify the time series.
+	// Metric: The associated metric. A fully-specified metric used to
+	// identify the time series.
 	Metric *Metric `json:"metric,omitempty"`
 
-	// MetricKind: The metric kind of the time series. This can be different
-	// than the metric kind specified in [google.api.MetricDescriptor]
-	// because of alignment and reduction operations on the data. This field
-	// is ignored when writing data; the value specified in the descriptor
-	// is used instead. @OutputOnly
+	// MetricKind: The metric kind of the time series. When listing time
+	// series, this metric kind might be different from the metric kind of
+	// the associated metric if this time series is an alignment or
+	// reduction of other time series.When creating a time series, this
+	// field is optional. If present, it must be the same as the metric kind
+	// of the associated metric. If the associated metric's descriptor must
+	// be auto-created, then this field specifies the metric kind of the new
+	// descriptor and must be either GAUGE (the default) or CUMULATIVE.
 	//
 	// Possible values:
-	//   "METRIC_KIND_UNSPECIFIED"
-	//   "GAUGE"
-	//   "DELTA"
-	//   "CUMULATIVE"
+	//   "METRIC_KIND_UNSPECIFIED" - Do not use this default value.
+	//   "GAUGE" - An instantaneous measurement of a value.
+	//   "DELTA" - The change in a value during a time interval.
+	//   "CUMULATIVE" - A value accumulated over a time interval. Cumulative
+	// measurements in a time series should have the same start time and
+	// increasing end times, until an event resets the cumulative value to
+	// zero and sets a new start time for the following points.
 	MetricKind string `json:"metricKind,omitempty"`
 
-	// Points: The data points of this time series. When used as output,
-	// points will be sorted by decreasing time order. When used as input,
-	// points could be written in any orders.
+	// Points: The data points of this time series. When listing time
+	// series, the order of the points is specified by the list method.When
+	// creating a time series, this field must contain exactly one point and
+	// the point's type must be the same as the value type of the associated
+	// metric. If the associated metric's descriptor must be auto-created,
+	// then the value type of the descriptor is determined by the point's
+	// type, which must be BOOL, INT64, DOUBLE, or DISTRIBUTION.
 	Points []*Point `json:"points,omitempty"`
 
-	// Resource: The fully-specified monitored resource used to identify the
-	// time series.
+	// Resource: The associated resource. A fully-specified monitored
+	// resource used to identify the time series.
 	Resource *MonitoredResource `json:"resource,omitempty"`
 
-	// ValueType: The value type of the time series. This can be different
-	// than the value type specified in [google.api.MetricDescriptor]
-	// because of alignment and reduction operations on the data. This field
-	// is ignored when writing data; the value specified in the descriptor
-	// is used instead. @OutputOnly
+	// ValueType: The value type of the time series. When listing time
+	// series, this value type might be different from the value type of the
+	// associated metric if this time series is an alignment or reduction of
+	// other time series.When creating a time series, this field is
+	// optional. If present, it must be the same as the type of the data in
+	// the points field.
 	//
 	// Possible values:
-	//   "VALUE_TYPE_UNSPECIFIED"
-	//   "BOOL"
-	//   "INT64"
-	//   "DOUBLE"
-	//   "STRING"
-	//   "DISTRIBUTION"
-	//   "MONEY"
+	//   "VALUE_TYPE_UNSPECIFIED" - Do not use this default value.
+	//   "BOOL" - The value is a boolean. This value type can be used only
+	// if the metric kind is GAUGE.
+	//   "INT64" - The value is a signed 64-bit integer.
+	//   "DOUBLE" - The value is a double precision floating point number.
+	//   "STRING" - The value is a text string. This value type can be used
+	// only if the metric kind is GAUGE.
+	//   "DISTRIBUTION" - The value is a Distribution.
+	//   "MONEY" - The value is money.
 	ValueType string `json:"valueType,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Metric") to
@@ -1242,12 +1534,20 @@ type TimeSeries struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Metric") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *TimeSeries) MarshalJSON() ([]byte, error) {
 	type noMethod TimeSeries
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Type: A protocol buffer message type.
@@ -1258,7 +1558,7 @@ type Type struct {
 	// Name: The fully qualified message name.
 	Name string `json:"name,omitempty"`
 
-	// Oneofs: The list of types appearing in `oneof` definitions in this
+	// Oneofs: The list of types appearing in oneof definitions in this
 	// type.
 	Oneofs []string `json:"oneofs,omitempty"`
 
@@ -1271,8 +1571,8 @@ type Type struct {
 	// Syntax: The source syntax.
 	//
 	// Possible values:
-	//   "SYNTAX_PROTO2"
-	//   "SYNTAX_PROTO3"
+	//   "SYNTAX_PROTO2" - Syntax proto2.
+	//   "SYNTAX_PROTO3" - Syntax proto3.
 	Syntax string `json:"syntax,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Fields") to
@@ -1282,28 +1582,37 @@ type Type struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Fields") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Type) MarshalJSON() ([]byte, error) {
 	type noMethod Type
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // TypedValue: A single strongly-typed value.
 type TypedValue struct {
-	// BoolValue: A Boolean value: `true` or `false`.
+	// BoolValue: A Boolean value: true or false.
 	BoolValue *bool `json:"boolValue,omitempty"`
 
 	// DistributionValue: A distribution value.
 	DistributionValue *Distribution `json:"distributionValue,omitempty"`
 
 	// DoubleValue: A 64-bit double-precision floating-point number. Its
-	// magnitude is approximately ±10±300 and it has 16 significant digits
-	// of precision.
+	// magnitude is approximately &plusmn;10<sup>&plusmn;300</sup> and it
+	// has 16 significant digits of precision.
 	DoubleValue *float64 `json:"doubleValue,omitempty"`
 
-	// Int64Value: A 64-bit integer. Its range is approximately ±9.2x1018.
+	// Int64Value: A 64-bit integer. Its range is approximately
+	// &plusmn;9.2x10<sup>18</sup>.
 	Int64Value *int64 `json:"int64Value,omitempty,string"`
 
 	// StringValue: A variable-length string value.
@@ -1316,12 +1625,20 @@ type TypedValue struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BoolValue") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *TypedValue) MarshalJSON() ([]byte, error) {
 	type noMethod TypedValue
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "monitoring.projects.collectdTimeSeries.create":
@@ -1332,12 +1649,13 @@ type ProjectsCollectdTimeSeriesCreateCall struct {
 	createcollectdtimeseriesrequest *CreateCollectdTimeSeriesRequest
 	urlParams_                      gensupport.URLParams
 	ctx_                            context.Context
+	header_                         http.Header
 }
 
-// Create: Creates a new time series with the given data points. This
-// method is only for use in `collectd`-related code, including the
-// Google Monitoring Agent. See
-// [google.monitoring.v3.MetricService.CreateTimeSeries] instead.
+// Create: Stackdriver Monitoring Agent only: Creates a new time
+// series.<aside class="caution">This method is only for use by the
+// Stackdriver Monitoring Agent. Use projects.timeSeries.create
+// instead.</aside>
 func (r *ProjectsCollectdTimeSeriesService) Create(name string, createcollectdtimeseriesrequest *CreateCollectdTimeSeriesRequest) *ProjectsCollectdTimeSeriesCreateCall {
 	c := &ProjectsCollectdTimeSeriesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -1361,8 +1679,20 @@ func (c *ProjectsCollectdTimeSeriesCreateCall) Context(ctx context.Context) *Pro
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsCollectdTimeSeriesCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsCollectdTimeSeriesCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.createcollectdtimeseriesrequest)
@@ -1378,10 +1708,7 @@ func (c *ProjectsCollectdTimeSeriesCreateCall) doRequest(alt string) (*http.Resp
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "monitoring.projects.collectdTimeSeries.create" call.
@@ -1422,7 +1749,8 @@ func (c *ProjectsCollectdTimeSeriesCreateCall) Do(opts ...googleapi.CallOption) 
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new time series with the given data points. This method is only for use in `collectd`-related code, including the Google Monitoring Agent. See [google.monitoring.v3.MetricService.CreateTimeSeries] instead.",
+	//   "description": "Stackdriver Monitoring Agent only: Creates a new time series.\u003caside class=\"caution\"\u003eThis method is only for use by the Stackdriver Monitoring Agent. Use projects.timeSeries.create instead.\u003c/aside\u003e",
+	//   "flatPath": "v3/projects/{projectsId}/collectdTimeSeries",
 	//   "httpMethod": "POST",
 	//   "id": "monitoring.projects.collectdTimeSeries.create",
 	//   "parameterOrder": [
@@ -1430,9 +1758,9 @@ func (c *ProjectsCollectdTimeSeriesCreateCall) Do(opts ...googleapi.CallOption) 
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The project in which to create the time series. The format is `\"projects/PROJECT_ID_OR_NUMBER\"`.",
+	//       "description": "The project in which to create the time series. The format is \u0026quot;projects/PROJECT_ID_OR_NUMBER\u0026quot;.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*$",
+	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -1461,6 +1789,7 @@ type ProjectsGroupsCreateCall struct {
 	group      *Group
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Create: Creates a new group.
@@ -1494,8 +1823,20 @@ func (c *ProjectsGroupsCreateCall) Context(ctx context.Context) *ProjectsGroupsC
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsGroupsCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsGroupsCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.group)
@@ -1511,10 +1852,7 @@ func (c *ProjectsGroupsCreateCall) doRequest(alt string) (*http.Response, error)
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "monitoring.projects.groups.create" call.
@@ -1556,6 +1894,7 @@ func (c *ProjectsGroupsCreateCall) Do(opts ...googleapi.CallOption) (*Group, err
 	return ret, nil
 	// {
 	//   "description": "Creates a new group.",
+	//   "flatPath": "v3/projects/{projectsId}/groups",
 	//   "httpMethod": "POST",
 	//   "id": "monitoring.projects.groups.create",
 	//   "parameterOrder": [
@@ -1563,9 +1902,9 @@ func (c *ProjectsGroupsCreateCall) Do(opts ...googleapi.CallOption) (*Group, err
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The project in which to create the group. The format is `\"projects/{project_id_or_number}\"`.",
+	//       "description": "The project in which to create the group. The format is \u0026quot;projects/{project_id_or_number}\u0026quot;.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*$",
+	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -1597,6 +1936,7 @@ type ProjectsGroupsDeleteCall struct {
 	name       string
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Delete: Deletes an existing group.
@@ -1622,8 +1962,20 @@ func (c *ProjectsGroupsDeleteCall) Context(ctx context.Context) *ProjectsGroupsD
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsGroupsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsGroupsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -1634,10 +1986,7 @@ func (c *ProjectsGroupsDeleteCall) doRequest(alt string) (*http.Response, error)
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "monitoring.projects.groups.delete" call.
@@ -1679,6 +2028,7 @@ func (c *ProjectsGroupsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, err
 	return ret, nil
 	// {
 	//   "description": "Deletes an existing group.",
+	//   "flatPath": "v3/projects/{projectsId}/groups/{groupsId}",
 	//   "httpMethod": "DELETE",
 	//   "id": "monitoring.projects.groups.delete",
 	//   "parameterOrder": [
@@ -1686,9 +2036,9 @@ func (c *ProjectsGroupsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, err
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The group to delete. The format is `\"projects/{project_id_or_number}/groups/{group_id}\"`.",
+	//       "description": "The group to delete. The format is \u0026quot;projects/{project_id_or_number}/groups/{group_id}\u0026quot;.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/groups/[^/]*$",
+	//       "pattern": "^projects/[^/]+/groups/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -1713,6 +2063,7 @@ type ProjectsGroupsGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Gets a single group.
@@ -1748,8 +2099,20 @@ func (c *ProjectsGroupsGetCall) Context(ctx context.Context) *ProjectsGroupsGetC
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsGroupsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsGroupsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1763,10 +2126,7 @@ func (c *ProjectsGroupsGetCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "monitoring.projects.groups.get" call.
@@ -1808,6 +2168,7 @@ func (c *ProjectsGroupsGetCall) Do(opts ...googleapi.CallOption) (*Group, error)
 	return ret, nil
 	// {
 	//   "description": "Gets a single group.",
+	//   "flatPath": "v3/projects/{projectsId}/groups/{groupsId}",
 	//   "httpMethod": "GET",
 	//   "id": "monitoring.projects.groups.get",
 	//   "parameterOrder": [
@@ -1815,9 +2176,9 @@ func (c *ProjectsGroupsGetCall) Do(opts ...googleapi.CallOption) (*Group, error)
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The group to retrieve. The format is `\"projects/{project_id_or_number}/groups/{group_id}\"`.",
+	//       "description": "The group to retrieve. The format is \u0026quot;projects/{project_id_or_number}/groups/{group_id}\u0026quot;.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/groups/[^/]*$",
+	//       "pattern": "^projects/[^/]+/groups/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -1843,6 +2204,7 @@ type ProjectsGroupsListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Lists the existing groups.
@@ -1853,7 +2215,8 @@ func (r *ProjectsGroupsService) List(name string) *ProjectsGroupsListCall {
 }
 
 // AncestorsOfGroup sets the optional parameter "ancestorsOfGroup": A
-// group name: "projects/{project_id_or_number}/groups/{group_id}".
+// group name:
+// &quot;projects/{project_id_or_number}/groups/{group_id}&quot;.
 // Returns groups that are ancestors of the specified group. The groups
 // are returned in order, starting with the immediate parent and ending
 // with the most distant ancestor. If the specified group has no
@@ -1864,18 +2227,20 @@ func (c *ProjectsGroupsListCall) AncestorsOfGroup(ancestorsOfGroup string) *Proj
 }
 
 // ChildrenOfGroup sets the optional parameter "childrenOfGroup": A
-// group name: "projects/{project_id_or_number}/groups/{group_id}".
-// Returns groups whose `parentName` field contains the group name. If
-// no groups have this parent, the results are empty.
+// group name:
+// &quot;projects/{project_id_or_number}/groups/{group_id}&quot;.
+// Returns groups whose parentName field contains the group name. If no
+// groups have this parent, the results are empty.
 func (c *ProjectsGroupsListCall) ChildrenOfGroup(childrenOfGroup string) *ProjectsGroupsListCall {
 	c.urlParams_.Set("childrenOfGroup", childrenOfGroup)
 	return c
 }
 
 // DescendantsOfGroup sets the optional parameter "descendantsOfGroup":
-// A group name: "projects/{project_id_or_number}/groups/{group_id}".
+// A group name:
+// &quot;projects/{project_id_or_number}/groups/{group_id}&quot;.
 // Returns the descendants of the specified group. This is a superset of
-// the results returned by the `childrenOfGroup` filter, and includes
+// the results returned by the childrenOfGroup filter, and includes
 // children-of-children, and so forth.
 func (c *ProjectsGroupsListCall) DescendantsOfGroup(descendantsOfGroup string) *ProjectsGroupsListCall {
 	c.urlParams_.Set("descendantsOfGroup", descendantsOfGroup)
@@ -1890,8 +2255,8 @@ func (c *ProjectsGroupsListCall) PageSize(pageSize int64) *ProjectsGroupsListCal
 }
 
 // PageToken sets the optional parameter "pageToken": If this field is
-// not empty then it must contain the `nextPageToken` value returned by
-// a previous call to this method. Using this field causes the method to
+// not empty then it must contain the nextPageToken value returned by a
+// previous call to this method. Using this field causes the method to
 // return additional results from the previous method call.
 func (c *ProjectsGroupsListCall) PageToken(pageToken string) *ProjectsGroupsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
@@ -1924,8 +2289,20 @@ func (c *ProjectsGroupsListCall) Context(ctx context.Context) *ProjectsGroupsLis
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsGroupsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsGroupsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1939,10 +2316,7 @@ func (c *ProjectsGroupsListCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "monitoring.projects.groups.list" call.
@@ -1984,6 +2358,7 @@ func (c *ProjectsGroupsListCall) Do(opts ...googleapi.CallOption) (*ListGroupsRe
 	return ret, nil
 	// {
 	//   "description": "Lists the existing groups.",
+	//   "flatPath": "v3/projects/{projectsId}/groups",
 	//   "httpMethod": "GET",
 	//   "id": "monitoring.projects.groups.list",
 	//   "parameterOrder": [
@@ -1991,24 +2366,24 @@ func (c *ProjectsGroupsListCall) Do(opts ...googleapi.CallOption) (*ListGroupsRe
 	//   ],
 	//   "parameters": {
 	//     "ancestorsOfGroup": {
-	//       "description": "A group name: `\"projects/{project_id_or_number}/groups/{group_id}\"`. Returns groups that are ancestors of the specified group. The groups are returned in order, starting with the immediate parent and ending with the most distant ancestor. If the specified group has no immediate parent, the results are empty.",
+	//       "description": "A group name: \u0026quot;projects/{project_id_or_number}/groups/{group_id}\u0026quot;. Returns groups that are ancestors of the specified group. The groups are returned in order, starting with the immediate parent and ending with the most distant ancestor. If the specified group has no immediate parent, the results are empty.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "childrenOfGroup": {
-	//       "description": "A group name: `\"projects/{project_id_or_number}/groups/{group_id}\"`. Returns groups whose `parentName` field contains the group name. If no groups have this parent, the results are empty.",
+	//       "description": "A group name: \u0026quot;projects/{project_id_or_number}/groups/{group_id}\u0026quot;. Returns groups whose parentName field contains the group name. If no groups have this parent, the results are empty.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "descendantsOfGroup": {
-	//       "description": "A group name: `\"projects/{project_id_or_number}/groups/{group_id}\"`. Returns the descendants of the specified group. This is a superset of the results returned by the `childrenOfGroup` filter, and includes children-of-children, and so forth.",
+	//       "description": "A group name: \u0026quot;projects/{project_id_or_number}/groups/{group_id}\u0026quot;. Returns the descendants of the specified group. This is a superset of the results returned by the childrenOfGroup filter, and includes children-of-children, and so forth.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "name": {
-	//       "description": "The project whose groups are to be listed. The format is `\"projects/{project_id_or_number}\"`.",
+	//       "description": "The project whose groups are to be listed. The format is \u0026quot;projects/{project_id_or_number}\u0026quot;.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*$",
+	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -2019,7 +2394,7 @@ func (c *ProjectsGroupsListCall) Do(opts ...googleapi.CallOption) (*ListGroupsRe
 	//       "type": "integer"
 	//     },
 	//     "pageToken": {
-	//       "description": "If this field is not empty then it must contain the `nextPageToken` value returned by a previous call to this method. Using this field causes the method to return additional results from the previous method call.",
+	//       "description": "If this field is not empty then it must contain the nextPageToken value returned by a previous call to this method. Using this field causes the method to return additional results from the previous method call.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -2066,10 +2441,11 @@ type ProjectsGroupsUpdateCall struct {
 	group      *Group
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Update: Updates an existing group. You can change any group
-// attributes except `name`.
+// attributes except name.
 func (r *ProjectsGroupsService) Update(name string, group *Group) *ProjectsGroupsUpdateCall {
 	c := &ProjectsGroupsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -2100,8 +2476,20 @@ func (c *ProjectsGroupsUpdateCall) Context(ctx context.Context) *ProjectsGroupsU
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsGroupsUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsGroupsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.group)
@@ -2117,10 +2505,7 @@ func (c *ProjectsGroupsUpdateCall) doRequest(alt string) (*http.Response, error)
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "monitoring.projects.groups.update" call.
@@ -2161,7 +2546,8 @@ func (c *ProjectsGroupsUpdateCall) Do(opts ...googleapi.CallOption) (*Group, err
 	}
 	return ret, nil
 	// {
-	//   "description": "Updates an existing group. You can change any group attributes except `name`.",
+	//   "description": "Updates an existing group. You can change any group attributes except name.",
+	//   "flatPath": "v3/projects/{projectsId}/groups/{groupsId}",
 	//   "httpMethod": "PUT",
 	//   "id": "monitoring.projects.groups.update",
 	//   "parameterOrder": [
@@ -2169,9 +2555,9 @@ func (c *ProjectsGroupsUpdateCall) Do(opts ...googleapi.CallOption) (*Group, err
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The name of this group. The format is `\"projects/{project_id_or_number}/groups/{group_id}\"`. When creating a group, this field is ignored and a new name is created consisting of the project specified in the call to `CreateGroup` and a unique `{group_id}` that is generated automatically. @OutputOnly",
+	//       "description": "Output only. The name of this group. The format is \u0026quot;projects/{project_id_or_number}/groups/{group_id}\u0026quot;. When creating a group, this field is ignored and a new name is created consisting of the project specified in the call to CreateGroup and a unique {group_id} that is generated automatically.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/groups/[^/]*$",
+	//       "pattern": "^projects/[^/]+/groups/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -2204,6 +2590,7 @@ type ProjectsGroupsMembersListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Lists the monitored resources that are members of a group.
@@ -2213,29 +2600,29 @@ func (r *ProjectsGroupsMembersService) List(name string) *ProjectsGroupsMembersL
 	return c
 }
 
-// Filter sets the optional parameter "filter": An optional [list
-// filter](/monitoring/api/learn_more#filtering) describing the members
-// to be returned. The filter may reference the type, labels, and
-// metadata of monitored resources that comprise the group. For example,
-// to return only resources representing Compute Engine VM instances,
-// use this filter: resource.type = "gce_instance"
+// Filter sets the optional parameter "filter": An optional list filter
+// (/monitoring/api/learn_more#filtering) describing the members to be
+// returned. The filter may reference the type, labels, and metadata of
+// monitored resources that comprise the group. For example, to return
+// only resources representing Compute Engine VM instances, use this
+// filter:
+// resource.type = &quot;gce_instance&quot;
 func (c *ProjectsGroupsMembersListCall) Filter(filter string) *ProjectsGroupsMembersListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
 // IntervalEndTime sets the optional parameter "interval.endTime":
-// Required. The end of the interval. The interval includes this time.
+// Required. The end of the time interval.
 func (c *ProjectsGroupsMembersListCall) IntervalEndTime(intervalEndTime string) *ProjectsGroupsMembersListCall {
 	c.urlParams_.Set("interval.endTime", intervalEndTime)
 	return c
 }
 
 // IntervalStartTime sets the optional parameter "interval.startTime":
-// If this value is omitted, the interval is a point in time, `endTime`.
-// If `startTime` is present, it must be earlier than (less than)
-// `endTime`. The interval begins after `startTime`—it does not
-// include `startTime`.
+// The beginning of the time interval. The default value for the start
+// time is the end time. The start time must not be later than the end
+// time.
 func (c *ProjectsGroupsMembersListCall) IntervalStartTime(intervalStartTime string) *ProjectsGroupsMembersListCall {
 	c.urlParams_.Set("interval.startTime", intervalStartTime)
 	return c
@@ -2249,8 +2636,8 @@ func (c *ProjectsGroupsMembersListCall) PageSize(pageSize int64) *ProjectsGroups
 }
 
 // PageToken sets the optional parameter "pageToken": If this field is
-// not empty then it must contain the `nextPageToken` value returned by
-// a previous call to this method. Using this field causes the method to
+// not empty then it must contain the nextPageToken value returned by a
+// previous call to this method. Using this field causes the method to
 // return additional results from the previous method call.
 func (c *ProjectsGroupsMembersListCall) PageToken(pageToken string) *ProjectsGroupsMembersListCall {
 	c.urlParams_.Set("pageToken", pageToken)
@@ -2283,8 +2670,20 @@ func (c *ProjectsGroupsMembersListCall) Context(ctx context.Context) *ProjectsGr
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsGroupsMembersListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsGroupsMembersListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -2298,10 +2697,7 @@ func (c *ProjectsGroupsMembersListCall) doRequest(alt string) (*http.Response, e
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "monitoring.projects.groups.members.list" call.
@@ -2343,6 +2739,7 @@ func (c *ProjectsGroupsMembersListCall) Do(opts ...googleapi.CallOption) (*ListG
 	return ret, nil
 	// {
 	//   "description": "Lists the monitored resources that are members of a group.",
+	//   "flatPath": "v3/projects/{projectsId}/groups/{groupsId}/members",
 	//   "httpMethod": "GET",
 	//   "id": "monitoring.projects.groups.members.list",
 	//   "parameterOrder": [
@@ -2350,24 +2747,26 @@ func (c *ProjectsGroupsMembersListCall) Do(opts ...googleapi.CallOption) (*ListG
 	//   ],
 	//   "parameters": {
 	//     "filter": {
-	//       "description": "An optional [list filter](/monitoring/api/learn_more#filtering) describing the members to be returned. The filter may reference the type, labels, and metadata of monitored resources that comprise the group. For example, to return only resources representing Compute Engine VM instances, use this filter: resource.type = \"gce_instance\"",
+	//       "description": "An optional list filter (/monitoring/api/learn_more#filtering) describing the members to be returned. The filter may reference the type, labels, and metadata of monitored resources that comprise the group. For example, to return only resources representing Compute Engine VM instances, use this filter:\nresource.type = \u0026quot;gce_instance\u0026quot;\n",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "interval.endTime": {
-	//       "description": "Required. The end of the interval. The interval includes this time.",
+	//       "description": "Required. The end of the time interval.",
+	//       "format": "google-datetime",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "interval.startTime": {
-	//       "description": "If this value is omitted, the interval is a point in time, `endTime`. If `startTime` is present, it must be earlier than (less than) `endTime`. The interval begins after `startTime`—it does not include `startTime`.",
+	//       "description": "Optional. The beginning of the time interval. The default value for the start time is the end time. The start time must not be later than the end time.",
+	//       "format": "google-datetime",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "name": {
-	//       "description": "The group whose members are listed. The format is `\"projects/{project_id_or_number}/groups/{group_id}\"`.",
+	//       "description": "The group whose members are listed. The format is \u0026quot;projects/{project_id_or_number}/groups/{group_id}\u0026quot;.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/groups/[^/]*$",
+	//       "pattern": "^projects/[^/]+/groups/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -2378,7 +2777,7 @@ func (c *ProjectsGroupsMembersListCall) Do(opts ...googleapi.CallOption) (*ListG
 	//       "type": "integer"
 	//     },
 	//     "pageToken": {
-	//       "description": "If this field is not empty then it must contain the `nextPageToken` value returned by a previous call to this method. Using this field causes the method to return additional results from the previous method call.",
+	//       "description": "If this field is not empty then it must contain the nextPageToken value returned by a previous call to this method. Using this field causes the method to return additional results from the previous method call.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -2425,10 +2824,11 @@ type ProjectsMetricDescriptorsCreateCall struct {
 	metricdescriptor *MetricDescriptor
 	urlParams_       gensupport.URLParams
 	ctx_             context.Context
+	header_          http.Header
 }
 
 // Create: Creates a new metric descriptor. User-created metric
-// descriptors define [custom metrics](/monitoring/custom-metrics).
+// descriptors define custom metrics (/monitoring/custom-metrics).
 func (r *ProjectsMetricDescriptorsService) Create(name string, metricdescriptor *MetricDescriptor) *ProjectsMetricDescriptorsCreateCall {
 	c := &ProjectsMetricDescriptorsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -2452,8 +2852,20 @@ func (c *ProjectsMetricDescriptorsCreateCall) Context(ctx context.Context) *Proj
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsMetricDescriptorsCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsMetricDescriptorsCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.metricdescriptor)
@@ -2469,10 +2881,7 @@ func (c *ProjectsMetricDescriptorsCreateCall) doRequest(alt string) (*http.Respo
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "monitoring.projects.metricDescriptors.create" call.
@@ -2513,7 +2922,8 @@ func (c *ProjectsMetricDescriptorsCreateCall) Do(opts ...googleapi.CallOption) (
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new metric descriptor. User-created metric descriptors define [custom metrics](/monitoring/custom-metrics).",
+	//   "description": "Creates a new metric descriptor. User-created metric descriptors define custom metrics (/monitoring/custom-metrics).",
+	//   "flatPath": "v3/projects/{projectsId}/metricDescriptors",
 	//   "httpMethod": "POST",
 	//   "id": "monitoring.projects.metricDescriptors.create",
 	//   "parameterOrder": [
@@ -2521,9 +2931,9 @@ func (c *ProjectsMetricDescriptorsCreateCall) Do(opts ...googleapi.CallOption) (
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The project on which to execute the request. The format is `\"projects/{project_id_or_number}\"`.",
+	//       "description": "The project on which to execute the request. The format is \u0026quot;projects/{project_id_or_number}\u0026quot;.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*$",
+	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -2551,10 +2961,11 @@ type ProjectsMetricDescriptorsDeleteCall struct {
 	name       string
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
-// Delete: Deletes a metric descriptor. Only user-created [custom
-// metrics](/monitoring/custom-metrics) can be deleted.
+// Delete: Deletes a metric descriptor. Only user-created custom metrics
+// (/monitoring/custom-metrics) can be deleted.
 func (r *ProjectsMetricDescriptorsService) Delete(name string) *ProjectsMetricDescriptorsDeleteCall {
 	c := &ProjectsMetricDescriptorsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -2577,8 +2988,20 @@ func (c *ProjectsMetricDescriptorsDeleteCall) Context(ctx context.Context) *Proj
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsMetricDescriptorsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsMetricDescriptorsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -2589,10 +3012,7 @@ func (c *ProjectsMetricDescriptorsDeleteCall) doRequest(alt string) (*http.Respo
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "monitoring.projects.metricDescriptors.delete" call.
@@ -2633,7 +3053,8 @@ func (c *ProjectsMetricDescriptorsDeleteCall) Do(opts ...googleapi.CallOption) (
 	}
 	return ret, nil
 	// {
-	//   "description": "Deletes a metric descriptor. Only user-created [custom metrics](/monitoring/custom-metrics) can be deleted.",
+	//   "description": "Deletes a metric descriptor. Only user-created custom metrics (/monitoring/custom-metrics) can be deleted.",
+	//   "flatPath": "v3/projects/{projectsId}/metricDescriptors/{metricDescriptorsId}",
 	//   "httpMethod": "DELETE",
 	//   "id": "monitoring.projects.metricDescriptors.delete",
 	//   "parameterOrder": [
@@ -2641,9 +3062,9 @@ func (c *ProjectsMetricDescriptorsDeleteCall) Do(opts ...googleapi.CallOption) (
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The metric descriptor on which to execute the request. The format is `\"projects/{project_id_or_number}/metricDescriptors/{metric_id}\"`. An example of `{metric_id}` is: `\"custom.googleapis.com/my_test_metric\"`.",
+	//       "description": "The metric descriptor on which to execute the request. The format is \u0026quot;projects/{project_id_or_number}/metricDescriptors/{metric_id}\u0026quot;. An example of {metric_id} is: \u0026quot;custom.googleapis.com/my_test_metric\u0026quot;.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/metricDescriptors/.*$",
+	//       "pattern": "^projects/[^/]+/metricDescriptors/.+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -2668,6 +3089,7 @@ type ProjectsMetricDescriptorsGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Gets a single metric descriptor. This method does not require a
@@ -2704,8 +3126,20 @@ func (c *ProjectsMetricDescriptorsGetCall) Context(ctx context.Context) *Project
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsMetricDescriptorsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsMetricDescriptorsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -2719,10 +3153,7 @@ func (c *ProjectsMetricDescriptorsGetCall) doRequest(alt string) (*http.Response
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "monitoring.projects.metricDescriptors.get" call.
@@ -2764,6 +3195,7 @@ func (c *ProjectsMetricDescriptorsGetCall) Do(opts ...googleapi.CallOption) (*Me
 	return ret, nil
 	// {
 	//   "description": "Gets a single metric descriptor. This method does not require a Stackdriver account.",
+	//   "flatPath": "v3/projects/{projectsId}/metricDescriptors/{metricDescriptorsId}",
 	//   "httpMethod": "GET",
 	//   "id": "monitoring.projects.metricDescriptors.get",
 	//   "parameterOrder": [
@@ -2771,9 +3203,9 @@ func (c *ProjectsMetricDescriptorsGetCall) Do(opts ...googleapi.CallOption) (*Me
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The metric descriptor on which to execute the request. The format is `\"projects/{project_id_or_number}/metricDescriptors/{metric_id}\"`. An example value of `{metric_id}` is `\"compute.googleapis.com/instance/disk/read_bytes_count\"`.",
+	//       "description": "The metric descriptor on which to execute the request. The format is \u0026quot;projects/{project_id_or_number}/metricDescriptors/{metric_id}\u0026quot;. An example value of {metric_id} is \u0026quot;compute.googleapis.com/instance/disk/read_bytes_count\u0026quot;.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/metricDescriptors/.*$",
+	//       "pattern": "^projects/[^/]+/metricDescriptors/.+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -2800,6 +3232,7 @@ type ProjectsMetricDescriptorsListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Lists metric descriptors that match a filter. This method does
@@ -2812,10 +3245,11 @@ func (r *ProjectsMetricDescriptorsService) List(name string) *ProjectsMetricDesc
 
 // Filter sets the optional parameter "filter": If this field is empty,
 // all custom and system-defined metric descriptors are returned.
-// Otherwise, the [filter](/monitoring/api/v3/filters) specifies which
+// Otherwise, the filter (/monitoring/api/v3/filters) specifies which
 // metric descriptors are to be returned. For example, the following
-// filter matches all [custom metrics](/monitoring/custom-metrics):
-// metric.type = starts_with("custom.googleapis.com/")
+// filter matches all custom metrics
+// (/monitoring/custom-metrics):
+// metric.type = starts_with(&quot;custom.googleapis.com/&quot;)
 func (c *ProjectsMetricDescriptorsListCall) Filter(filter string) *ProjectsMetricDescriptorsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -2829,8 +3263,8 @@ func (c *ProjectsMetricDescriptorsListCall) PageSize(pageSize int64) *ProjectsMe
 }
 
 // PageToken sets the optional parameter "pageToken": If this field is
-// not empty then it must contain the `nextPageToken` value returned by
-// a previous call to this method. Using this field causes the method to
+// not empty then it must contain the nextPageToken value returned by a
+// previous call to this method. Using this field causes the method to
 // return additional results from the previous method call.
 func (c *ProjectsMetricDescriptorsListCall) PageToken(pageToken string) *ProjectsMetricDescriptorsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
@@ -2863,8 +3297,20 @@ func (c *ProjectsMetricDescriptorsListCall) Context(ctx context.Context) *Projec
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsMetricDescriptorsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsMetricDescriptorsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -2878,10 +3324,7 @@ func (c *ProjectsMetricDescriptorsListCall) doRequest(alt string) (*http.Respons
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "monitoring.projects.metricDescriptors.list" call.
@@ -2923,6 +3366,7 @@ func (c *ProjectsMetricDescriptorsListCall) Do(opts ...googleapi.CallOption) (*L
 	return ret, nil
 	// {
 	//   "description": "Lists metric descriptors that match a filter. This method does not require a Stackdriver account.",
+	//   "flatPath": "v3/projects/{projectsId}/metricDescriptors",
 	//   "httpMethod": "GET",
 	//   "id": "monitoring.projects.metricDescriptors.list",
 	//   "parameterOrder": [
@@ -2930,14 +3374,14 @@ func (c *ProjectsMetricDescriptorsListCall) Do(opts ...googleapi.CallOption) (*L
 	//   ],
 	//   "parameters": {
 	//     "filter": {
-	//       "description": "If this field is empty, all custom and system-defined metric descriptors are returned. Otherwise, the [filter](/monitoring/api/v3/filters) specifies which metric descriptors are to be returned. For example, the following filter matches all [custom metrics](/monitoring/custom-metrics): metric.type = starts_with(\"custom.googleapis.com/\")",
+	//       "description": "If this field is empty, all custom and system-defined metric descriptors are returned. Otherwise, the filter (/monitoring/api/v3/filters) specifies which metric descriptors are to be returned. For example, the following filter matches all custom metrics (/monitoring/custom-metrics):\nmetric.type = starts_with(\u0026quot;custom.googleapis.com/\u0026quot;)\n",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "name": {
-	//       "description": "The project on which to execute the request. The format is `\"projects/{project_id_or_number}\"`.",
+	//       "description": "The project on which to execute the request. The format is \u0026quot;projects/{project_id_or_number}\u0026quot;.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*$",
+	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -2948,7 +3392,7 @@ func (c *ProjectsMetricDescriptorsListCall) Do(opts ...googleapi.CallOption) (*L
 	//       "type": "integer"
 	//     },
 	//     "pageToken": {
-	//       "description": "If this field is not empty then it must contain the `nextPageToken` value returned by a previous call to this method. Using this field causes the method to return additional results from the previous method call.",
+	//       "description": "If this field is not empty then it must contain the nextPageToken value returned by a previous call to this method. Using this field causes the method to return additional results from the previous method call.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -2996,6 +3440,7 @@ type ProjectsMonitoredResourceDescriptorsGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Gets a single monitored resource descriptor. This method does
@@ -3032,8 +3477,20 @@ func (c *ProjectsMonitoredResourceDescriptorsGetCall) Context(ctx context.Contex
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsMonitoredResourceDescriptorsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsMonitoredResourceDescriptorsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -3047,10 +3504,7 @@ func (c *ProjectsMonitoredResourceDescriptorsGetCall) doRequest(alt string) (*ht
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "monitoring.projects.monitoredResourceDescriptors.get" call.
@@ -3092,6 +3546,7 @@ func (c *ProjectsMonitoredResourceDescriptorsGetCall) Do(opts ...googleapi.CallO
 	return ret, nil
 	// {
 	//   "description": "Gets a single monitored resource descriptor. This method does not require a Stackdriver account.",
+	//   "flatPath": "v3/projects/{projectsId}/monitoredResourceDescriptors/{monitoredResourceDescriptorsId}",
 	//   "httpMethod": "GET",
 	//   "id": "monitoring.projects.monitoredResourceDescriptors.get",
 	//   "parameterOrder": [
@@ -3099,9 +3554,9 @@ func (c *ProjectsMonitoredResourceDescriptorsGetCall) Do(opts ...googleapi.CallO
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The monitored resource descriptor to get. The format is `\"projects/{project_id_or_number}/monitoredResourceDescriptors/{resource_type}\"`. The `{resource_type}` is a predefined type, such as `cloudsql_database`.",
+	//       "description": "The monitored resource descriptor to get. The format is \u0026quot;projects/{project_id_or_number}/monitoredResourceDescriptors/{resource_type}\u0026quot;. The {resource_type} is a predefined type, such as cloudsql_database.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/monitoredResourceDescriptors/[^/]*$",
+	//       "pattern": "^projects/[^/]+/monitoredResourceDescriptors/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -3128,6 +3583,7 @@ type ProjectsMonitoredResourceDescriptorsListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Lists monitored resource descriptors that match a filter. This
@@ -3138,12 +3594,12 @@ func (r *ProjectsMonitoredResourceDescriptorsService) List(name string) *Project
 	return c
 }
 
-// Filter sets the optional parameter "filter": An optional
-// [filter](/monitoring/api/v3/filters) describing the descriptors to be
+// Filter sets the optional parameter "filter": An optional filter
+// (/monitoring/api/v3/filters) describing the descriptors to be
 // returned. The filter can reference the descriptor's type and labels.
 // For example, the following filter returns only Google Compute Engine
-// descriptors that have an `id` label: resource.type =
-// starts_with("gce_") AND resource.label:id
+// descriptors that have an id label:
+// resource.type = starts_with(&quot;gce_&quot;) AND resource.label:id
 func (c *ProjectsMonitoredResourceDescriptorsListCall) Filter(filter string) *ProjectsMonitoredResourceDescriptorsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -3157,8 +3613,8 @@ func (c *ProjectsMonitoredResourceDescriptorsListCall) PageSize(pageSize int64) 
 }
 
 // PageToken sets the optional parameter "pageToken": If this field is
-// not empty then it must contain the `nextPageToken` value returned by
-// a previous call to this method. Using this field causes the method to
+// not empty then it must contain the nextPageToken value returned by a
+// previous call to this method. Using this field causes the method to
 // return additional results from the previous method call.
 func (c *ProjectsMonitoredResourceDescriptorsListCall) PageToken(pageToken string) *ProjectsMonitoredResourceDescriptorsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
@@ -3191,8 +3647,20 @@ func (c *ProjectsMonitoredResourceDescriptorsListCall) Context(ctx context.Conte
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsMonitoredResourceDescriptorsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsMonitoredResourceDescriptorsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -3206,10 +3674,7 @@ func (c *ProjectsMonitoredResourceDescriptorsListCall) doRequest(alt string) (*h
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "monitoring.projects.monitoredResourceDescriptors.list" call.
@@ -3253,6 +3718,7 @@ func (c *ProjectsMonitoredResourceDescriptorsListCall) Do(opts ...googleapi.Call
 	return ret, nil
 	// {
 	//   "description": "Lists monitored resource descriptors that match a filter. This method does not require a Stackdriver account.",
+	//   "flatPath": "v3/projects/{projectsId}/monitoredResourceDescriptors",
 	//   "httpMethod": "GET",
 	//   "id": "monitoring.projects.monitoredResourceDescriptors.list",
 	//   "parameterOrder": [
@@ -3260,14 +3726,14 @@ func (c *ProjectsMonitoredResourceDescriptorsListCall) Do(opts ...googleapi.Call
 	//   ],
 	//   "parameters": {
 	//     "filter": {
-	//       "description": "An optional [filter](/monitoring/api/v3/filters) describing the descriptors to be returned. The filter can reference the descriptor's type and labels. For example, the following filter returns only Google Compute Engine descriptors that have an `id` label: resource.type = starts_with(\"gce_\") AND resource.label:id",
+	//       "description": "An optional filter (/monitoring/api/v3/filters) describing the descriptors to be returned. The filter can reference the descriptor's type and labels. For example, the following filter returns only Google Compute Engine descriptors that have an id label:\nresource.type = starts_with(\u0026quot;gce_\u0026quot;) AND resource.label:id\n",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "name": {
-	//       "description": "The project on which to execute the request. The format is `\"projects/{project_id_or_number}\"`.",
+	//       "description": "The project on which to execute the request. The format is \u0026quot;projects/{project_id_or_number}\u0026quot;.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*$",
+	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -3278,7 +3744,7 @@ func (c *ProjectsMonitoredResourceDescriptorsListCall) Do(opts ...googleapi.Call
 	//       "type": "integer"
 	//     },
 	//     "pageToken": {
-	//       "description": "If this field is not empty then it must contain the `nextPageToken` value returned by a previous call to this method. Using this field causes the method to return additional results from the previous method call.",
+	//       "description": "If this field is not empty then it must contain the nextPageToken value returned by a previous call to this method. Using this field causes the method to return additional results from the previous method call.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -3326,6 +3792,7 @@ type ProjectsTimeSeriesCreateCall struct {
 	createtimeseriesrequest *CreateTimeSeriesRequest
 	urlParams_              gensupport.URLParams
 	ctx_                    context.Context
+	header_                 http.Header
 }
 
 // Create: Creates or adds data to one or more time series. The response
@@ -3355,8 +3822,20 @@ func (c *ProjectsTimeSeriesCreateCall) Context(ctx context.Context) *ProjectsTim
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsTimeSeriesCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsTimeSeriesCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.createtimeseriesrequest)
@@ -3372,10 +3851,7 @@ func (c *ProjectsTimeSeriesCreateCall) doRequest(alt string) (*http.Response, er
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "monitoring.projects.timeSeries.create" call.
@@ -3417,6 +3893,7 @@ func (c *ProjectsTimeSeriesCreateCall) Do(opts ...googleapi.CallOption) (*Empty,
 	return ret, nil
 	// {
 	//   "description": "Creates or adds data to one or more time series. The response is empty if all time series in the request were written. If any time series could not be written, a corresponding failure message is included in the error response.",
+	//   "flatPath": "v3/projects/{projectsId}/timeSeries",
 	//   "httpMethod": "POST",
 	//   "id": "monitoring.projects.timeSeries.create",
 	//   "parameterOrder": [
@@ -3424,9 +3901,9 @@ func (c *ProjectsTimeSeriesCreateCall) Do(opts ...googleapi.CallOption) (*Empty,
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The project on which to execute the request. The format is `\"projects/{project_id_or_number}\"`.",
+	//       "description": "The project on which to execute the request. The format is \u0026quot;projects/{project_id_or_number}\u0026quot;.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*$",
+	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -3455,6 +3932,7 @@ type ProjectsTimeSeriesListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Lists time series that match a filter. This method does not
@@ -3466,14 +3944,14 @@ func (r *ProjectsTimeSeriesService) List(name string) *ProjectsTimeSeriesListCal
 }
 
 // AggregationAlignmentPeriod sets the optional parameter
-// "aggregation.alignmentPeriod": The alignment period for per-[time
-// series](TimeSeries) alignment. If present, `alignmentPeriod` must be
-// at least 60 seconds. After per-time series alignment, each time
-// series will contain data points only on the period boundaries. If
-// `perSeriesAligner` is not specified or equals `ALIGN_NONE`, then this
-// field is ignored. If `perSeriesAligner` is specified and does not
-// equal `ALIGN_NONE`, then this field must be defined; otherwise an
-// error is returned.
+// "aggregation.alignmentPeriod": The alignment period for per-time
+// series alignment. If present, alignmentPeriod must be at least 60
+// seconds. After per-time series alignment, each time series will
+// contain data points only on the period boundaries. If
+// perSeriesAligner is not specified or equals ALIGN_NONE, then this
+// field is ignored. If perSeriesAligner is specified and does not equal
+// ALIGN_NONE, then this field must be defined; otherwise an error is
+// returned.
 func (c *ProjectsTimeSeriesListCall) AggregationAlignmentPeriod(aggregationAlignmentPeriod string) *ProjectsTimeSeriesListCall {
 	c.urlParams_.Set("aggregation.alignmentPeriod", aggregationAlignmentPeriod)
 	return c
@@ -3484,11 +3962,11 @@ func (c *ProjectsTimeSeriesListCall) AggregationAlignmentPeriod(aggregationAlign
 // time series. Not all reducer functions may be applied to all time
 // series, depending on the metric type and the value type of the
 // original time series. Reduction may change the metric type of value
-// type of the time series. Time series data must be aligned in order to
-// perform cross-time series reduction. If `crossSeriesReducer` is
-// specified, then `perSeriesAligner` must be specified and not equal
-// `ALIGN_NONE` and `alignmentPeriod` must be specified; otherwise, an
-// error is returned.
+// type of the time series.Time series data must be aligned in order to
+// perform cross-time series reduction. If crossSeriesReducer is
+// specified, then perSeriesAligner must be specified and not equal
+// ALIGN_NONE and alignmentPeriod must be specified; otherwise, an error
+// is returned.
 //
 // Possible values:
 //   "REDUCE_NONE"
@@ -3511,16 +3989,15 @@ func (c *ProjectsTimeSeriesListCall) AggregationCrossSeriesReducer(aggregationCr
 
 // AggregationGroupByFields sets the optional parameter
 // "aggregation.groupByFields": The set of fields to preserve when
-// `crossSeriesReducer` is specified. The `groupByFields` determine how
-// the time series are partitioned into subsets prior to applying the
+// crossSeriesReducer is specified. The groupByFields determine how the
+// time series are partitioned into subsets prior to applying the
 // aggregation function. Each subset contains time series that have the
 // same value for each of the grouping fields. Each individual time
-// series is a member of exactly one subset. The `crossSeriesReducer` is
+// series is a member of exactly one subset. The crossSeriesReducer is
 // applied to each subset of time series. Fields not specified in
-// `groupByFields` are aggregated away. If `groupByFields` is not
-// specified, the time series are aggregated into a single output time
-// series. If `crossSeriesReducer` is not defined, this field is
-// ignored.
+// groupByFields are aggregated away. If groupByFields is not specified,
+// the time series are aggregated into a single output time series. If
+// crossSeriesReducer is not defined, this field is ignored.
 func (c *ProjectsTimeSeriesListCall) AggregationGroupByFields(aggregationGroupByFields ...string) *ProjectsTimeSeriesListCall {
 	c.urlParams_.SetMulti("aggregation.groupByFields", append([]string{}, aggregationGroupByFields...))
 	return c
@@ -3531,11 +4008,11 @@ func (c *ProjectsTimeSeriesListCall) AggregationGroupByFields(aggregationGroupBy
 // individual time series. Not all alignment functions may be applied to
 // all time series, depending on the metric type and value type of the
 // original time series. Alignment may change the metric type or the
-// value type of the time series. Time series data must be aligned in
-// order to perform cross-time series reduction. If `crossSeriesReducer`
-// is specified, then `perSeriesAligner` must be specified and not equal
-// `ALIGN_NONE` and `alignmentPeriod` must be specified; otherwise, an
-// error is returned.
+// value type of the time series.Time series data must be aligned in
+// order to perform cross-time series reduction. If crossSeriesReducer
+// is specified, then perSeriesAligner must be specified and not equal
+// ALIGN_NONE and alignmentPeriod must be specified; otherwise, an error
+// is returned.
 //
 // Possible values:
 //   "ALIGN_NONE"
@@ -3551,35 +4028,39 @@ func (c *ProjectsTimeSeriesListCall) AggregationGroupByFields(aggregationGroupBy
 //   "ALIGN_STDDEV"
 //   "ALIGN_COUNT_TRUE"
 //   "ALIGN_FRACTION_TRUE"
+//   "ALIGN_PERCENTILE_99"
+//   "ALIGN_PERCENTILE_95"
+//   "ALIGN_PERCENTILE_50"
+//   "ALIGN_PERCENTILE_05"
 func (c *ProjectsTimeSeriesListCall) AggregationPerSeriesAligner(aggregationPerSeriesAligner string) *ProjectsTimeSeriesListCall {
 	c.urlParams_.Set("aggregation.perSeriesAligner", aggregationPerSeriesAligner)
 	return c
 }
 
-// Filter sets the optional parameter "filter": A [monitoring
-// filter](/monitoring/api/v3/filters) that specifies which time series
-// should be returned. The filter must specify a single metric type, and
-// can additionally specify metric labels and other information. For
-// example: metric.type =
-// "compute.googleapis.com/instance/cpu/usage_time" AND
-// metric.label.instance_name = "my-instance-name"
+// Filter sets the optional parameter "filter": A monitoring filter
+// (/monitoring/api/v3/filters) that specifies which time series should
+// be returned. The filter must specify a single metric type, and can
+// additionally specify metric labels and other information. For
+// example:
+// metric.type =
+// &quot;compute.googleapis.com/instance/cpu/usage_time&quot; AND
+//     metric.label.instance_name = &quot;my-instance-name&quot;
 func (c *ProjectsTimeSeriesListCall) Filter(filter string) *ProjectsTimeSeriesListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
 }
 
 // IntervalEndTime sets the optional parameter "interval.endTime":
-// Required. The end of the interval. The interval includes this time.
+// Required. The end of the time interval.
 func (c *ProjectsTimeSeriesListCall) IntervalEndTime(intervalEndTime string) *ProjectsTimeSeriesListCall {
 	c.urlParams_.Set("interval.endTime", intervalEndTime)
 	return c
 }
 
 // IntervalStartTime sets the optional parameter "interval.startTime":
-// If this value is omitted, the interval is a point in time, `endTime`.
-// If `startTime` is present, it must be earlier than (less than)
-// `endTime`. The interval begins after `startTime`—it does not
-// include `startTime`.
+// The beginning of the time interval. The default value for the start
+// time is the end time. The start time must not be later than the end
+// time.
 func (c *ProjectsTimeSeriesListCall) IntervalStartTime(intervalStartTime string) *ProjectsTimeSeriesListCall {
 	c.urlParams_.Set("interval.startTime", intervalStartTime)
 	return c
@@ -3594,18 +4075,18 @@ func (c *ProjectsTimeSeriesListCall) OrderBy(orderBy string) *ProjectsTimeSeries
 }
 
 // PageSize sets the optional parameter "pageSize": A positive number
-// that is the maximum number of results to return. When `view` field
-// sets to `FULL`, it limits the number of `Points` server will return;
-// if `view` field is `HEADERS`, it limits the number of `TimeSeries`
-// server will return.
+// that is the maximum number of results to return. When view field sets
+// to FULL, it limits the number of Points server will return; if view
+// field is HEADERS, it limits the number of TimeSeries server will
+// return.
 func (c *ProjectsTimeSeriesListCall) PageSize(pageSize int64) *ProjectsTimeSeriesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": If this field is
-// not empty then it must contain the `nextPageToken` value returned by
-// a previous call to this method. Using this field causes the method to
+// not empty then it must contain the nextPageToken value returned by a
+// previous call to this method. Using this field causes the method to
 // return additional results from the previous method call.
 func (c *ProjectsTimeSeriesListCall) PageToken(pageToken string) *ProjectsTimeSeriesListCall {
 	c.urlParams_.Set("pageToken", pageToken)
@@ -3649,8 +4130,20 @@ func (c *ProjectsTimeSeriesListCall) Context(ctx context.Context) *ProjectsTimeS
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsTimeSeriesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsTimeSeriesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -3664,10 +4157,7 @@ func (c *ProjectsTimeSeriesListCall) doRequest(alt string) (*http.Response, erro
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "monitoring.projects.timeSeries.list" call.
@@ -3709,6 +4199,7 @@ func (c *ProjectsTimeSeriesListCall) Do(opts ...googleapi.CallOption) (*ListTime
 	return ret, nil
 	// {
 	//   "description": "Lists time series that match a filter. This method does not require a Stackdriver account.",
+	//   "flatPath": "v3/projects/{projectsId}/timeSeries",
 	//   "httpMethod": "GET",
 	//   "id": "monitoring.projects.timeSeries.list",
 	//   "parameterOrder": [
@@ -3716,12 +4207,13 @@ func (c *ProjectsTimeSeriesListCall) Do(opts ...googleapi.CallOption) (*ListTime
 	//   ],
 	//   "parameters": {
 	//     "aggregation.alignmentPeriod": {
-	//       "description": "The alignment period for per-[time series](TimeSeries) alignment. If present, `alignmentPeriod` must be at least 60 seconds. After per-time series alignment, each time series will contain data points only on the period boundaries. If `perSeriesAligner` is not specified or equals `ALIGN_NONE`, then this field is ignored. If `perSeriesAligner` is specified and does not equal `ALIGN_NONE`, then this field must be defined; otherwise an error is returned.",
+	//       "description": "The alignment period for per-time series alignment. If present, alignmentPeriod must be at least 60 seconds. After per-time series alignment, each time series will contain data points only on the period boundaries. If perSeriesAligner is not specified or equals ALIGN_NONE, then this field is ignored. If perSeriesAligner is specified and does not equal ALIGN_NONE, then this field must be defined; otherwise an error is returned.",
+	//       "format": "google-duration",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "aggregation.crossSeriesReducer": {
-	//       "description": "The approach to be used to combine time series. Not all reducer functions may be applied to all time series, depending on the metric type and the value type of the original time series. Reduction may change the metric type of value type of the time series. Time series data must be aligned in order to perform cross-time series reduction. If `crossSeriesReducer` is specified, then `perSeriesAligner` must be specified and not equal `ALIGN_NONE` and `alignmentPeriod` must be specified; otherwise, an error is returned.",
+	//       "description": "The approach to be used to combine time series. Not all reducer functions may be applied to all time series, depending on the metric type and the value type of the original time series. Reduction may change the metric type of value type of the time series.Time series data must be aligned in order to perform cross-time series reduction. If crossSeriesReducer is specified, then perSeriesAligner must be specified and not equal ALIGN_NONE and alignmentPeriod must be specified; otherwise, an error is returned.",
 	//       "enum": [
 	//         "REDUCE_NONE",
 	//         "REDUCE_MEAN",
@@ -3741,13 +4233,13 @@ func (c *ProjectsTimeSeriesListCall) Do(opts ...googleapi.CallOption) (*ListTime
 	//       "type": "string"
 	//     },
 	//     "aggregation.groupByFields": {
-	//       "description": "The set of fields to preserve when `crossSeriesReducer` is specified. The `groupByFields` determine how the time series are partitioned into subsets prior to applying the aggregation function. Each subset contains time series that have the same value for each of the grouping fields. Each individual time series is a member of exactly one subset. The `crossSeriesReducer` is applied to each subset of time series. Fields not specified in `groupByFields` are aggregated away. If `groupByFields` is not specified, the time series are aggregated into a single output time series. If `crossSeriesReducer` is not defined, this field is ignored.",
+	//       "description": "The set of fields to preserve when crossSeriesReducer is specified. The groupByFields determine how the time series are partitioned into subsets prior to applying the aggregation function. Each subset contains time series that have the same value for each of the grouping fields. Each individual time series is a member of exactly one subset. The crossSeriesReducer is applied to each subset of time series. Fields not specified in groupByFields are aggregated away. If groupByFields is not specified, the time series are aggregated into a single output time series. If crossSeriesReducer is not defined, this field is ignored.",
 	//       "location": "query",
 	//       "repeated": true,
 	//       "type": "string"
 	//     },
 	//     "aggregation.perSeriesAligner": {
-	//       "description": "The approach to be used to align individual time series. Not all alignment functions may be applied to all time series, depending on the metric type and value type of the original time series. Alignment may change the metric type or the value type of the time series. Time series data must be aligned in order to perform cross-time series reduction. If `crossSeriesReducer` is specified, then `perSeriesAligner` must be specified and not equal `ALIGN_NONE` and `alignmentPeriod` must be specified; otherwise, an error is returned.",
+	//       "description": "The approach to be used to align individual time series. Not all alignment functions may be applied to all time series, depending on the metric type and value type of the original time series. Alignment may change the metric type or the value type of the time series.Time series data must be aligned in order to perform cross-time series reduction. If crossSeriesReducer is specified, then perSeriesAligner must be specified and not equal ALIGN_NONE and alignmentPeriod must be specified; otherwise, an error is returned.",
 	//       "enum": [
 	//         "ALIGN_NONE",
 	//         "ALIGN_DELTA",
@@ -3761,30 +4253,36 @@ func (c *ProjectsTimeSeriesListCall) Do(opts ...googleapi.CallOption) (*ListTime
 	//         "ALIGN_SUM",
 	//         "ALIGN_STDDEV",
 	//         "ALIGN_COUNT_TRUE",
-	//         "ALIGN_FRACTION_TRUE"
+	//         "ALIGN_FRACTION_TRUE",
+	//         "ALIGN_PERCENTILE_99",
+	//         "ALIGN_PERCENTILE_95",
+	//         "ALIGN_PERCENTILE_50",
+	//         "ALIGN_PERCENTILE_05"
 	//       ],
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "filter": {
-	//       "description": "A [monitoring filter](/monitoring/api/v3/filters) that specifies which time series should be returned. The filter must specify a single metric type, and can additionally specify metric labels and other information. For example: metric.type = \"compute.googleapis.com/instance/cpu/usage_time\" AND metric.label.instance_name = \"my-instance-name\"",
+	//       "description": "A monitoring filter (/monitoring/api/v3/filters) that specifies which time series should be returned. The filter must specify a single metric type, and can additionally specify metric labels and other information. For example:\nmetric.type = \u0026quot;compute.googleapis.com/instance/cpu/usage_time\u0026quot; AND\n    metric.label.instance_name = \u0026quot;my-instance-name\u0026quot;\n",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "interval.endTime": {
-	//       "description": "Required. The end of the interval. The interval includes this time.",
+	//       "description": "Required. The end of the time interval.",
+	//       "format": "google-datetime",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "interval.startTime": {
-	//       "description": "If this value is omitted, the interval is a point in time, `endTime`. If `startTime` is present, it must be earlier than (less than) `endTime`. The interval begins after `startTime`—it does not include `startTime`.",
+	//       "description": "Optional. The beginning of the time interval. The default value for the start time is the end time. The start time must not be later than the end time.",
+	//       "format": "google-datetime",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "name": {
 	//       "description": "The project on which to execute the request. The format is \"projects/{project_id_or_number}\".",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*$",
+	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -3794,13 +4292,13 @@ func (c *ProjectsTimeSeriesListCall) Do(opts ...googleapi.CallOption) (*ListTime
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "A positive number that is the maximum number of results to return. When `view` field sets to `FULL`, it limits the number of `Points` server will return; if `view` field is `HEADERS`, it limits the number of `TimeSeries` server will return.",
+	//       "description": "A positive number that is the maximum number of results to return. When view field sets to FULL, it limits the number of Points server will return; if view field is HEADERS, it limits the number of TimeSeries server will return.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
 	//     },
 	//     "pageToken": {
-	//       "description": "If this field is not empty then it must contain the `nextPageToken` value returned by a previous call to this method. Using this field causes the method to return additional results from the previous method call.",
+	//       "description": "If this field is not empty then it must contain the nextPageToken value returned by a previous call to this method. Using this field causes the method to return additional results from the previous method call.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },

@@ -1,18 +1,18 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/chZbfEJA0-TN8tTaZIdtXJErZX4\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/FyUD9D0inmca5JWfAKYW1_Iol18\"",
  "discoveryVersion": "v1",
  "id": "licensing:v1",
  "name": "licensing",
  "version": "v1",
- "revision": "20140122",
+ "revision": "20150901",
  "title": "Enterprise License Manager API",
  "description": "Licensing API to view and manage license for your domain.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/google-apps/licensing/",
  "protocol": "rest",

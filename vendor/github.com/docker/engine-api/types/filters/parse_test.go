@@ -318,29 +318,6 @@ func TestExactMatch(t *testing.T) {
 	}
 }
 
-func TestOnlyOneExactMatch(t *testing.T) {
-	f := NewArgs()
-
-	if !f.UniqueExactMatch("status", "running") {
-		t.Fatalf("Expected to match `running` when there are no filters, got false")
-	}
-
-	f.Add("status", "running")
-
-	if !f.UniqueExactMatch("status", "running") {
-		t.Fatalf("Expected to match `running` with one of the filters, got false")
-	}
-
-	if f.UniqueExactMatch("status", "paused") {
-		t.Fatalf("Expected to not match `paused` with one of the filters, got true")
-	}
-
-	f.Add("status", "pause")
-	if f.UniqueExactMatch("status", "running") {
-		t.Fatalf("Expected to not match only `running` with two filters, got true")
-	}
-}
-
 func TestInclude(t *testing.T) {
 	f := NewArgs()
 	if f.Include("status") {

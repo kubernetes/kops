@@ -607,22 +607,15 @@ func (c *VFSCAStore) PrivateKey(id string) (*PrivateKey, error) {
 
 }
 
-func (c *VFSCAStore) CreateKeypair(id string, template *x509.Certificate) (*Certificate, *PrivateKey, error) {
+func (c *VFSCAStore) CreateKeypair(id string, template *x509.Certificate, privateKey *PrivateKey) (*Certificate, error) {
 	serial := c.buildSerial()
-
-	rsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error generating RSA private key: %v", err)
-	}
-
-	privateKey := &PrivateKey{Key: rsaKey}
 
 	cert, err := c.IssueCert(id, serial, privateKey, template)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return cert, privateKey, nil
+	return cert, nil
 }
 
 func (c *VFSCAStore) storePrivateKey(privateKey *PrivateKey, p vfs.Path) error {

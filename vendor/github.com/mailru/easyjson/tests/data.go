@@ -296,10 +296,10 @@ var structsString = "{" +
 	`"SubNil":null,` +
 
 	`"SubSlice":[{"Value":"s1","Value2":""},{"Value":"s2","Value2":""}],` +
-	`"SubSliceNil":null,` +
+	`"SubSliceNil":[],` +
 
 	`"SubPtrSlice":[{"Value":"p1","Value2":""},{"Value":"p2","Value2":""}],` +
-	`"SubPtrSliceNil":null,` +
+	`"SubPtrSliceNil":[],` +
 
 	`"SubA1":{"Value":"test3","Value2":"v3"},` +
 	`"SubA2":{"Value":"test4","Value2":"v4"},` +
@@ -418,33 +418,6 @@ var excludedFieldValue = ExcludedField{
 }
 var excludedFieldString = `{"process":true}`
 
-type Slices struct {
-	ByteSlice      []byte
-	EmptyByteSlice []byte
-	NilByteSlice   []byte
-	IntSlice       []int
-	EmptyIntSlice  []int
-	NilIntSlice    []int
-}
-
-var sliceValue = Slices{
-	ByteSlice:      []byte("abc"),
-	EmptyByteSlice: []byte{},
-	NilByteSlice:   []byte(nil),
-	IntSlice:       []int{1, 2, 3, 4, 5},
-	EmptyIntSlice:  []int{},
-	NilIntSlice:    []int(nil),
-}
-
-var sliceString = `{` +
-	`"ByteSlice":"YWJj",` +
-	`"EmptyByteSlice":"",` +
-	`"NilByteSlice":null,` +
-	`"IntSlice":[1,2,3,4,5],` +
-	`"EmptyIntSlice":[],` +
-	`"NilIntSlice":null` +
-	`}`
-
 type Str string
 
 type Maps struct {
@@ -475,7 +448,6 @@ type NamedMap map[Str]Str
 type DeepNest struct {
 	SliceMap         map[Str][]Str
 	SliceMap1        map[Str][]Str
-	SliceMap2        map[Str][]Str
 	NamedSliceMap    map[Str]NamedSlice
 	NamedMapMap      map[Str]NamedMap
 	MapSlice         []map[Str]Str
@@ -492,10 +464,7 @@ var deepNestValue = DeepNest{
 		},
 	},
 	SliceMap1: map[Str][]Str{
-		"testSliceMap1": []Str(nil),
-	},
-	SliceMap2: map[Str][]Str{
-		"testSliceMap2": []Str{},
+		"testSliceMap1": nil,
 	},
 	NamedSliceMap: map[Str]NamedSlice{
 		"testNamedSliceMap": NamedSlice{
@@ -541,10 +510,7 @@ var deepNestString = `{` +
 	`"testSliceMap":["0","1"]` +
 	`},` +
 	`"SliceMap1":{` +
-	`"testSliceMap1":null` +
-	`},` +
-	`"SliceMap2":{` +
-	`"testSliceMap2":[]` +
+	`"testSliceMap1":[]` +
 	`},` +
 	`"NamedSliceMap":{` +
 	`"testNamedSliceMap":["2","3"]` +

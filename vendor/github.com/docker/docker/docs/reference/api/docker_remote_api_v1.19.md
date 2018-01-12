@@ -15,7 +15,7 @@ weight = 2
 
  - The Remote API has replaced `rcli`.
  - The daemon listens on `unix:///var/run/docker.sock` but you can
-   [Bind Docker to another host/port or a Unix socket](../commandline/dockerd.md#bind-docker-to-another-host-port-or-a-unix-socket).
+   [Bind Docker to another host/port or a Unix socket](../../quickstart.md#bind-docker-to-another-host-port-or-a-unix-socket).
  - The API tends to be REST. However, for some complex commands, like `attach`
    or `pull`, the HTTP connection is hijacked to transport `stdout`,
    `stdin` and `stderr`.
@@ -176,7 +176,6 @@ Create a container
              "CpusetMems": "0,1",
              "BlkioWeight": 300,
              "OomKillDisable": false,
-             "PidMode": "",
              "PortBindings": { "22/tcp": [{ "HostPort": "11022" }] },
              "PublishAllPorts": false,
              "Privileged": false,
@@ -214,6 +213,18 @@ Json Parameters:
 -   **Domainname** - A string value containing the domain name to use
       for the container.
 -   **User** - A string value specifying the user inside the container.
+-   **Memory** - Memory limit in bytes.
+-   **MemorySwap** - Total memory limit (memory + swap); set `-1` to enable unlimited swap.
+      You must use this with `memory` and make the swap value larger than `memory`.
+-   **CpuShares** - An integer value containing the container's CPU Shares
+      (ie. the relative weight vs other containers).
+-   **CpuPeriod** - The length of a CPU period in microseconds.
+-   **CpuQuota** - Microseconds of CPU time that the container can get in a CPU period.
+-   **Cpuset** - Deprecated please don't use. Use `CpusetCpus` instead.
+-   **CpusetCpus** - String value containing the `cgroups CpusetCpus` to use.
+-   **CpusetMems** - Memory nodes (MEMs) in which to allow execution (0-3, 0,1). Only effective on NUMA systems.
+-   **BlkioWeight** - Block IO weight (relative weight) accepts a weight value between 10 and 1000.
+-   **OomKillDisable** - Boolean value, whether to disable OOM Killer for the container or not.
 -   **AttachStdin** - Boolean value, attaches to `stdin`.
 -   **AttachStdout** - Boolean value, attaches to `stdout`.
 -   **AttachStderr** - Boolean value, attaches to `stderr`.
@@ -243,20 +254,6 @@ Json Parameters:
           in the form of `container_name:alias`.
     -   **LxcConf** - LXC specific configurations. These configurations only
           work when using the `lxc` execution driver.
-    -   **Memory** - Memory limit in bytes.
-    -   **MemorySwap** - Total memory limit (memory + swap); set `-1` to enable unlimited swap.
-          You must use this with `memory` and make the swap value larger than `memory`.
-    -   **CpuShares** - An integer value containing the container's CPU Shares
-          (ie. the relative weight vs other containers).
-    -   **CpuPeriod** - The length of a CPU period in microseconds.
-    -   **CpuQuota** - Microseconds of CPU time that the container can get in a CPU period.
-    -   **CpusetCpus** - String value containing the `cgroups CpusetCpus` to use.
-    -   **CpusetMems** - Memory nodes (MEMs) in which to allow execution (0-3, 0,1). Only effective on NUMA systems.
-    -   **BlkioWeight** - Block IO weight (relative weight) accepts a weight value between 10 and 1000.
-    -   **OomKillDisable** - Boolean value, whether to disable OOM Killer for the container or not.
-    -   **PidMode** - Set the PID (Process) Namespace mode for the container;
-          `"container:<name|id>"`: joins another container's PID namespace
-          `"host"`: use the host's PID namespace inside the container
     -   **PortBindings** - A map of exposed container ports and the host port they
           should map to. A JSON object in the form
           `{ <port>/<protocol>: [{ "HostPort": "<port>" }] }`
@@ -307,10 +304,8 @@ Query Parameters:
 Status Codes:
 
 -   **201** – no error
--   **400** – bad parameter
 -   **404** – no such container
 -   **406** – impossible to attach (container not running)
--   **409** – conflict
 -   **500** – server error
 
 ### Inspect a container
@@ -393,7 +388,6 @@ Return low-level information on the container `id`
 			"MemorySwap": 0,
 			"OomKillDisable": false,
 			"NetworkMode": "bridge",
-			"PidMode": "",
 			"PortBindings": {},
 			"Privileged": false,
 			"ReadonlyRootfs": false,
@@ -1082,7 +1076,6 @@ Status Codes:
 -   **204** – no error
 -   **400** – bad parameter
 -   **404** – no such container
--   **409** – conflict
 -   **500** – server error
 
 ### Copy files or folders from a container
@@ -1237,7 +1230,7 @@ the path to the alternate build instructions file to use.
 
 The archive may include any number of other files,
 which are accessible in the build context (See the [*ADD build
-command*](../../reference/builder.md#add)).
+command*](../../reference/builder.md#dockerbuilder)).
 
 The build is canceled if the client drops the connection by quitting
 or being killed.
@@ -1308,6 +1301,7 @@ Query Parameters:
         can be retrieved or `-` to read the image from the request body.
 -   **repo** – Repository name.
 -   **tag** – Tag.
+-   **registry** – The registry to pull from.
 
     Request Headers:
 

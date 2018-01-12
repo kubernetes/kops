@@ -3,8 +3,6 @@
 title = "Swift storage driver"
 description = "Explains how to use the OpenStack swift storage driver"
 keywords = ["registry, service, driver, images, storage,  swift"]
-[menu.main]
-parent="smn_storagedrivers"
 +++
 <![end-metadata]-->
 
@@ -187,28 +185,159 @@ An implementation of the `storagedriver.StorageDriver` interface that uses [Open
       The access key to generate temporary URLs. It is used by HP Cloud Object Storage in addition to the `secretkey` parameter.
     </td>
   </tr>
-  <tr>
+</table>
+
+
+<table>
+<tr>
+  <td>
+  <code>authurl</code>
+  </td>
+  <td>
+    <p>URL for obtaining an auth token.</p>
+  </td>
+</tr>
+<tr>
+  <td>
+  <code>username</code>
+  </td>
+  <td>
+  <p>
+  Your OpenStack user name.</p>
+  </p>
+  </td>
+</tr>
+<tr>
+  <td>
+  <code>password</code>
+  <p>
+  </td>
+  <td>
+  <p>
+  Your OpenStack password.
+  </p>
+  </td>
+</tr>
+<tr>
+  <td>
+  <code>container</code>
+  </td>
+  <td>
+  <p>
+	The name of your Swift container where you wish to store the registry's data. The driver creates the named container during its initialization.
+  </p>
+  </td>
+</tr>
+<tr>
+  <td>
+  <code>tenant</code>
+  </td>
+  <td>
+  <p>
+  Optionally, your OpenStack tenant name. You can either use <code>tenant</code> or <code>tenantid</code>.
+  </p>
+  </td>
+</tr>
+<tr>
     <td>
-      <code>authversion</code>
+    <code>tenantid</code>
     </td>
     <td>
-      no
+    <p>
+    Optionally, your OpenStack tenant id. You can either use <code>tenant</code> or <code>tenantid</code>.
+    </p>
+    </td>
+</tr>
+<tr>
+    <td>
+    <code>domain</code>
     </td>
     <td>
-      Specify the OpenStack Auth's version,for example <code>3</code>. By default the driver will autodetect the auth's version from the AuthURL.
+    <p>
+    Optionally, your OpenStack domain name for Identity v3 API. You can either use <code>domain</code> or <code>domainid</code>.
+    </p>
     </td>
-  </tr>
-  <tr>
+</tr>
+<tr>
     <td>
-      <code>endpointtype</code>
+    <code>domainid</code>
     </td>
     <td>
-      no
+    <p>
+    Optionally, your OpenStack domain id for Identity v3 API. You can either use <code>domain</code> or <code>domainid</code>.
+    </p>
+    </td>
+</tr>
+<tr>
+    <td>
+    <code>trustid</code>
     </td>
     <td>
-      The endpoint type used when connecting to swift. Possible values are `public`, `internal` and `admin`. Default is `public`.
+    <p>
+    Optionally, your OpenStack trust id for Identity v3 API.
+    </p>
     </td>
-  </tr>
+</tr>
+<tr>
+    <td>
+    <code>insecureskipverify</code>
+    </td>
+    <td>
+    <p>
+    Optionally, set <code>insecureskipverify</code> to true to skip TLS verification for your OpenStack provider. The driver uses false by default.
+    </p>
+    </td>
+</tr>
+<tr>
+    <td>
+    <code>region</code>
+    </td>
+    <td>
+    <p>
+    Optionally, specify the OpenStack region name in which you would like to store objects (for example <code>fr</code>).
+    </p>
+    </td>
+</tr>
+<tr>
+    <td>
+    <code>chunksize</code>
+    </td>
+    <td>
+    <p>
+    Optionally, specify the segment size for Dynamic Large Objects uploads (performed by WriteStream) to Swift. The default is 5 MB. You might experience better performance for larger chunk sizes depending on the speed of your connection to Swift.
+    </p>
+    </td>
+</tr>
+<tr>
+    <td>
+    <code>prefix</code>
+    </td>
+    <td>
+    <p>
+    Optionally, supply a prefix that will be applied to all Swift keys to allow you to segment data in your container if necessary. Defaults to the empty string which is the container's root.</p>
+    </p>
+    </td>
+</tr>
+<tr>
+    <td>
+    <code>secretkey</code>
+    </td>
+    <td>
+    <p>
+    Optionally, the secret key used to generate temporary URLs.</p>
+    </p>
+    </td>
+</tr>
+<tr>
+    <td>
+    <code>accesskey</code>
+    </td>
+    <td>
+    <p>
+    Optionally, the access key to generate temporary URLs. It is used by HP Cloud Object Storage in addition to the `secretkey` parameter.</p>
+    </p>
+    </td>
+</tr>
 </table>
 
 The features supported by the Swift server are queried by requesting the `/info` URL on the server. In case the administrator

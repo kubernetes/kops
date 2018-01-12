@@ -9,16 +9,7 @@ import (
 
 // Size walks a directory tree and returns its total size in bytes.
 func Size(dir string) (size int64, err error) {
-	err = filepath.Walk(dir, func(d string, fileInfo os.FileInfo, err error) error {
-		if err != nil {
-			// if dir does not exist, Size() returns the error.
-			// if dir/x disappeared while walking, Size() ignores dir/x.
-			if os.IsNotExist(err) && d != dir {
-				return nil
-			}
-			return err
-		}
-
+	err = filepath.Walk(dir, func(d string, fileInfo os.FileInfo, e error) error {
 		// Ignore directory sizes
 		if fileInfo == nil {
 			return nil

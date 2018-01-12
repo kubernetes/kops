@@ -19,12 +19,15 @@ package rbac
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 
+	"bytes"
+
+	"k8s.io/apiserver/pkg/authentication/user"
+	"k8s.io/apiserver/pkg/authorization/authorizer"
 	"k8s.io/kubernetes/pkg/apis/rbac"
-	"k8s.io/kubernetes/pkg/apis/rbac/validation"
-	"k8s.io/kubernetes/pkg/auth/authorizer"
-	"k8s.io/kubernetes/pkg/auth/user"
+	rbacregistryvalidation "k8s.io/kubernetes/pkg/registry/rbac/validation"
 )
 
 type RequestToRuleMapper interface {
@@ -45,15 +48,55 @@ func (r *RBACAuthorizer) Authorize(requestAttributes authorizer.Attributes) (boo
 		return true, "", nil
 	}
 
-	glog.V(2).Infof("RBAC DENY: user %q groups %v cannot %q on \"%v.%v/%v\"", requestAttributes.GetUser().GetName(), requestAttributes.GetUser().GetGroups(),
-		requestAttributes.GetVerb(), requestAttributes.GetResource(), requestAttributes.GetAPIGroup(), requestAttributes.GetSubresource())
+	// Build a detailed log of the denial.
+	// Make the whole block conditional so we don't do a lot of string-building we won't use.
+	if glog.V(2) {
+		var operation string
+		if requestAttributes.IsResourceRequest() {
+			b := &bytes.Buffer{}
+			b.WriteString(`"`)
+			b.WriteString(requestAttributes.GetVerb())
+			b.WriteString(`" resource "`)
+			b.WriteString(requestAttributes.GetResource())
+			if len(requestAttributes.GetAPIGroup()) > 0 {
+				b.WriteString(`.`)
+				b.WriteString(requestAttributes.GetAPIGroup())
+			}
+			if len(requestAttributes.GetSubresource()) > 0 {
+				b.WriteString(`/`)
+				b.WriteString(requestAttributes.GetSubresource())
+			}
+			b.WriteString(`"`)
+			if len(requestAttributes.GetName()) > 0 {
+				b.WriteString(` named "`)
+				b.WriteString(requestAttributes.GetName())
+				b.WriteString(`"`)
+			}
+			operation = b.String()
+		} else {
+			operation = fmt.Sprintf("%q nonResourceURL %q", requestAttributes.GetVerb(), requestAttributes.GetPath())
+		}
 
-	return false, fmt.Sprintf("%v", ruleResolutionError), nil
+		var scope string
+		if ns := requestAttributes.GetNamespace(); len(ns) > 0 {
+			scope = fmt.Sprintf("in namespace %q", ns)
+		} else {
+			scope = "cluster-wide"
+		}
+
+		glog.Infof("RBAC DENY: user %q groups %v cannot %s %s", requestAttributes.GetUser().GetName(), requestAttributes.GetUser().GetGroups(), operation, scope)
+	}
+
+	reason := ""
+	if ruleResolutionError != nil {
+		reason = fmt.Sprintf("%v", ruleResolutionError)
+	}
+	return false, reason, nil
 }
 
-func New(roles validation.RoleGetter, roleBindings validation.RoleBindingLister, clusterRoles validation.ClusterRoleGetter, clusterRoleBindings validation.ClusterRoleBindingLister) *RBACAuthorizer {
+func New(roles rbacregistryvalidation.RoleGetter, roleBindings rbacregistryvalidation.RoleBindingLister, clusterRoles rbacregistryvalidation.ClusterRoleGetter, clusterRoleBindings rbacregistryvalidation.ClusterRoleBindingLister) *RBACAuthorizer {
 	authorizer := &RBACAuthorizer{
-		authorizationRuleResolver: validation.NewDefaultRuleResolver(
+		authorizationRuleResolver: rbacregistryvalidation.NewDefaultRuleResolver(
 			roles, roleBindings, clusterRoles, clusterRoleBindings,
 		),
 	}

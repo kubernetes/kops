@@ -1,11 +1,11 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/CqYvNpV2Som-B9o1jdwhrzhRs18\"",
+ "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/mk_oLjlaBwJ1BcBJ5yykCFb6u3w\"",
  "discoveryVersion": "v1",
  "id": "classroom:v1",
  "name": "classroom",
  "version": "v1",
- "revision": "20160517",
+ "revision": "20161006",
  "title": "Google Classroom API",
  "description": "Manages classes, rosters, and invitations in Google Classroom.",
  "ownerDomain": "google.com",
@@ -224,6 +224,10 @@
      "items": {
       "$ref": "CourseMaterialSet"
      }
+    },
+    "guardiansEnabled": {
+     "type": "boolean",
+     "description": "Whether or not guardian notifications are enabled for this course. Read-only."
     }
    }
   },
@@ -427,49 +431,94 @@
     }
    }
   },
-  "Invitation": {
-   "id": "Invitation",
+  "ListGuardianInvitationsResponse": {
+   "id": "ListGuardianInvitationsResponse",
    "type": "object",
-   "description": "An invitation to join a course.",
+   "description": "Response when listing guardian invitations.",
    "properties": {
-    "id": {
-     "type": "string",
-     "description": "Identifier assigned by Classroom. Read-only."
-    },
-    "userId": {
-     "type": "string",
-     "description": "Identifier of the invited user. When specified as a parameter of a request, this identifier can be set to one of the following: * the numeric identifier for the user * the email address of the user * the string literal `\"me\"`, indicating the requesting user"
-    },
-    "courseId": {
-     "type": "string",
-     "description": "Identifier of the course to invite the user to."
-    },
-    "role": {
-     "type": "string",
-     "description": "Role to invite the user to have. Must not be `COURSE_ROLE_UNSPECIFIED`.",
-     "enum": [
-      "COURSE_ROLE_UNSPECIFIED",
-      "STUDENT",
-      "TEACHER"
-     ]
-    }
-   }
-  },
-  "ListInvitationsResponse": {
-   "id": "ListInvitationsResponse",
-   "type": "object",
-   "description": "Response when listing invitations.",
-   "properties": {
-    "invitations": {
+    "guardianInvitations": {
      "type": "array",
-     "description": "Invitations that match the list request.",
+     "description": "Guardian invitations that matched the list request.",
      "items": {
-      "$ref": "Invitation"
+      "$ref": "GuardianInvitation"
      }
     },
     "nextPageToken": {
      "type": "string",
      "description": "Token identifying the next page of results to return. If empty, no further results are available."
+    }
+   }
+  },
+  "GuardianInvitation": {
+   "id": "GuardianInvitation",
+   "type": "object",
+   "description": "An invitation to become the guardian of a specified user, sent to a specified email address.",
+   "properties": {
+    "studentId": {
+     "type": "string",
+     "description": "ID of the student (in standard format)"
+    },
+    "invitationId": {
+     "type": "string",
+     "description": "Unique identifier for this invitation. Read-only."
+    },
+    "invitedEmailAddress": {
+     "type": "string",
+     "description": "Email address that the invitation was sent to. This field is only visible to domain administrators."
+    },
+    "state": {
+     "type": "string",
+     "description": "The state that this invitation is in.",
+     "enum": [
+      "GUARDIAN_INVITATION_STATE_UNSPECIFIED",
+      "PENDING",
+      "COMPLETE"
+     ]
+    },
+    "creationTime": {
+     "type": "string",
+     "description": "The time that this invitation was created. Read-only."
+    }
+   }
+  },
+  "ListGuardiansResponse": {
+   "id": "ListGuardiansResponse",
+   "type": "object",
+   "description": "Response when listing guardians.",
+   "properties": {
+    "guardians": {
+     "type": "array",
+     "description": "Guardians on this page of results that met the criteria specified in the request.",
+     "items": {
+      "$ref": "Guardian"
+     }
+    },
+    "nextPageToken": {
+     "type": "string",
+     "description": "Token identifying the next page of results to return. If empty, no further results are available."
+    }
+   }
+  },
+  "Guardian": {
+   "id": "Guardian",
+   "type": "object",
+   "description": "Association between a student and a guardian of that student. The guardian may receive information about the student's course work.",
+   "properties": {
+    "studentId": {
+     "type": "string",
+     "description": "Identifier for the student to whom the guardian relationship applies."
+    },
+    "guardianId": {
+     "type": "string",
+     "description": "Identifier for the guardian."
+    },
+    "guardianProfile": {
+     "$ref": "UserProfile",
+     "description": "User profile for the guardian."
+    },
+    "invitedEmailAddress": {
+     "type": "string",
+     "description": "The email address to which the initial guardian invitation was sent. This field is only visible to domain administrators."
     }
    }
   },
@@ -615,6 +664,52 @@
     }
    }
   },
+  "Invitation": {
+   "id": "Invitation",
+   "type": "object",
+   "description": "An invitation to join a course.",
+   "properties": {
+    "id": {
+     "type": "string",
+     "description": "Identifier assigned by Classroom. Read-only."
+    },
+    "userId": {
+     "type": "string",
+     "description": "Identifier of the invited user. When specified as a parameter of a request, this identifier can be set to one of the following: * the numeric identifier for the user * the email address of the user * the string literal `\"me\"`, indicating the requesting user"
+    },
+    "courseId": {
+     "type": "string",
+     "description": "Identifier of the course to invite the user to."
+    },
+    "role": {
+     "type": "string",
+     "description": "Role to invite the user to have. Must not be `COURSE_ROLE_UNSPECIFIED`.",
+     "enum": [
+      "COURSE_ROLE_UNSPECIFIED",
+      "STUDENT",
+      "TEACHER"
+     ]
+    }
+   }
+  },
+  "ListInvitationsResponse": {
+   "id": "ListInvitationsResponse",
+   "type": "object",
+   "description": "Response when listing invitations.",
+   "properties": {
+    "invitations": {
+     "type": "array",
+     "description": "Invitations that match the list request.",
+     "items": {
+      "$ref": "Invitation"
+     }
+    },
+    "nextPageToken": {
+     "type": "string",
+     "description": "Token identifying the next page of results to return. If empty, no further results are available."
+    }
+   }
+  },
   "CourseWork": {
    "id": "CourseWork",
    "type": "object",
@@ -638,14 +733,14 @@
     },
     "materials": {
      "type": "array",
-     "description": "Additional materials.",
+     "description": "Additional materials. CourseWork must have no more than 20 material items.",
      "items": {
       "$ref": "Material"
      }
     },
     "state": {
      "type": "string",
-     "description": "Status of this course work.. If unspecified, the default state is `DRAFT`.",
+     "description": "Status of this course work. If unspecified, the default state is `DRAFT`.",
      "enum": [
       "COURSE_WORK_STATE_UNSPECIFIED",
       "PUBLISHED",
@@ -675,7 +770,7 @@
     },
     "maxPoints": {
      "type": "number",
-     "description": "Maximum grade for this course work. If zero or unspecified, this assignment is considered ungraded. This must be an integer value.",
+     "description": "Maximum grade for this course work. If zero or unspecified, this assignment is considered ungraded. This must be a non-negative integer value.",
      "format": "double"
     },
     "workType": {
@@ -870,7 +965,7 @@
     },
     "creationTime": {
      "type": "string",
-     "description": "Creation time of this submission.. This may be unset if the student has not accessed this item. Read-only."
+     "description": "Creation time of this submission. This may be unset if the student has not accessed this item. Read-only."
     },
     "updateTime": {
      "type": "string",
@@ -894,12 +989,12 @@
     },
     "draftGrade": {
      "type": "number",
-     "description": "Optional pending grade. If unset, no grade was set. This must be an integer value. This is only visible to and modifiable by course teachers.",
+     "description": "Optional pending grade. If unset, no grade was set. This must be a non-negative integer value. This is only visible to and modifiable by course teachers.",
      "format": "double"
     },
     "assignedGrade": {
      "type": "number",
-     "description": "Optional grade. If unset, no grade was set. This must be an integer value. This may be modified only by course teachers.",
+     "description": "Optional grade. If unset, no grade was set. This must be a non-negative integer value. This may be modified only by course teachers.",
      "format": "double"
     },
     "alternateLink": {
@@ -930,7 +1025,7 @@
     },
     "multipleChoiceSubmission": {
      "$ref": "MultipleChoiceSubmission",
-     "description": "Submission content when course_work_type is MUTIPLE_CHOICE_QUESTION."
+     "description": "Submission content when course_work_type is MULTIPLE_CHOICE_QUESTION."
     }
    }
   },
@@ -1033,7 +1128,7 @@
    "properties": {
     "addAttachments": {
      "type": "array",
-     "description": "Attachments to add. This may only contain link attachments.",
+     "description": "Attachments to add. A student submission may not have more than 20 attachments. This may only contain link attachments.",
      "items": {
       "$ref": "Attachment"
      }
@@ -1177,6 +1272,19 @@
       "teacherId": {
        "type": "string",
        "description": "Restricts returned courses to those having a teacher with the specified identifier. The identifier can be one of the following: * the numeric identifier for the user * the email address of the user * the string literal `\"me\"`, indicating the requesting user",
+       "location": "query"
+      },
+      "courseStates": {
+       "type": "string",
+       "description": "Restricts returned courses to those in one of the specified states",
+       "enum": [
+        "COURSE_STATE_UNSPECIFIED",
+        "ACTIVE",
+        "ARCHIVED",
+        "PROVISIONED",
+        "DECLINED"
+       ],
+       "repeated": true,
        "location": "query"
       },
       "pageSize": {
@@ -1788,7 +1896,7 @@
           },
           "courseWorkId": {
            "type": "string",
-           "description": "Identifer of the student work to request. If `user_id` is specified, this may be set to the string literal `\"-\"` to request student work for all course work in the specified course.",
+           "description": "Identifer of the student work to request. This may be set to the string literal `\"-\"` to request student work for all course work in the specified course.",
            "required": true,
            "location": "path"
           },
@@ -2016,6 +2124,268 @@
     }
    }
   },
+  "userProfiles": {
+   "methods": {
+    "get": {
+     "id": "classroom.userProfiles.get",
+     "path": "v1/userProfiles/{userId}",
+     "httpMethod": "GET",
+     "description": "Returns a user profile. This method returns the following error codes: * `PERMISSION_DENIED` if the requesting user is not permitted to access this user profile or if no profile exists with the requested ID or for access errors.",
+     "parameters": {
+      "userId": {
+       "type": "string",
+       "description": "Identifier of the profile to return. The identifier can be one of the following: * the numeric identifier for the user * the email address of the user * the string literal `\"me\"`, indicating the requesting user",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "userId"
+     ],
+     "response": {
+      "$ref": "UserProfile"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/classroom.profile.emails",
+      "https://www.googleapis.com/auth/classroom.profile.photos",
+      "https://www.googleapis.com/auth/classroom.rosters",
+      "https://www.googleapis.com/auth/classroom.rosters.readonly"
+     ]
+    }
+   },
+   "resources": {
+    "guardianInvitations": {
+     "methods": {
+      "list": {
+       "id": "classroom.userProfiles.guardianInvitations.list",
+       "path": "v1/userProfiles/{studentId}/guardianInvitations",
+       "httpMethod": "GET",
+       "description": "Returns a list of guardian invitations that the requesting user is permitted to view, filtered by the parameters provided. This method returns the following error codes: * `PERMISSION_DENIED` if a `student_id` is specified, and the requesting user is not permitted to view guardian invitations for that student, if `\"-\"` is specified as the `student_id` and the user is not a domain administrator, if guardians are not enabled for the domain in question, or for other access errors. * `INVALID_ARGUMENT` if a `student_id` is specified, but its format cannot be recognized (it is not an email address, nor a `student_id` from the API, nor the literal string `me`). May also be returned if an invalid `page_token` or `state` is provided. * `NOT_FOUND` if a `student_id` is specified, and its format can be recognized, but Classroom has no record of that student.",
+       "parameters": {
+        "studentId": {
+         "type": "string",
+         "description": "The ID of the student whose guardian invitations are to be returned. The identifier can be one of the following: * the numeric identifier for the user * the email address of the user * the string literal `\"me\"`, indicating the requesting user * the string literal `\"-\"`, indicating that results should be returned for all students that the requesting user is permitted to view guardian invitations.",
+         "required": true,
+         "location": "path"
+        },
+        "invitedEmailAddress": {
+         "type": "string",
+         "description": "If specified, only results with the specified `invited_email_address` will be returned.",
+         "location": "query"
+        },
+        "states": {
+         "type": "string",
+         "description": "If specified, only results with the specified `state` values will be returned. Otherwise, results with a `state` of `PENDING` will be returned.",
+         "enum": [
+          "GUARDIAN_INVITATION_STATE_UNSPECIFIED",
+          "PENDING",
+          "COMPLETE"
+         ],
+         "repeated": true,
+         "location": "query"
+        },
+        "pageToken": {
+         "type": "string",
+         "description": "nextPageToken value returned from a previous list call, indicating that the subsequent page of results should be returned. The list request must be otherwise identical to the one that resulted in this token.",
+         "location": "query"
+        },
+        "pageSize": {
+         "type": "integer",
+         "description": "Maximum number of items to return. Zero or unspecified indicates that the server may assign a maximum. The server may return fewer than the specified number of results.",
+         "format": "int32",
+         "location": "query"
+        }
+       },
+       "parameterOrder": [
+        "studentId"
+       ],
+       "response": {
+        "$ref": "ListGuardianInvitationsResponse"
+       }
+      },
+      "get": {
+       "id": "classroom.userProfiles.guardianInvitations.get",
+       "path": "v1/userProfiles/{studentId}/guardianInvitations/{invitationId}",
+       "httpMethod": "GET",
+       "description": "Returns a specific guardian invitation. This method returns the following error codes: * `PERMISSION_DENIED` if the requesting user is not permitted to view guardian invitations for the student identified by the `student_id`, if guardians are not enabled for the domain in question, or for other access errors. * `INVALID_ARGUMENT` if a `student_id` is specified, but its format cannot be recognized (it is not an email address, nor a `student_id` from the API, nor the literal string `me`). * `NOT_FOUND` if Classroom cannot find any record of the given student or `invitation_id`. May also be returned if the student exists, but the requesting user does not have access to see that student.",
+       "parameters": {
+        "studentId": {
+         "type": "string",
+         "description": "The ID of the student whose guardian invitation is being requested.",
+         "required": true,
+         "location": "path"
+        },
+        "invitationId": {
+         "type": "string",
+         "description": "The `id` field of the `GuardianInvitation` being requested.",
+         "required": true,
+         "location": "path"
+        }
+       },
+       "parameterOrder": [
+        "studentId",
+        "invitationId"
+       ],
+       "response": {
+        "$ref": "GuardianInvitation"
+       }
+      },
+      "create": {
+       "id": "classroom.userProfiles.guardianInvitations.create",
+       "path": "v1/userProfiles/{studentId}/guardianInvitations",
+       "httpMethod": "POST",
+       "description": "Creates a guardian invitation, and sends an email to the guardian asking them to confirm that they are the student's guardian. Once the guardian accepts the invitation, their `state` will change to `COMPLETED` and they will start receiving guardian notifications. A `Guardian` resource will also be created to represent the active guardian. The request object must have the `student_id` and `invited_email_address` fields set. Failing to set these fields, or setting any other fields in the request, will result in an error. This method returns the following error codes: * `PERMISSION_DENIED` if the current user does not have permission to manage guardians, if the guardian in question has already rejected too many requests for that student, if guardians are not enabled for the domain in question, or for other access errors. * `RESOURCE_EXHAUSTED` if the student or guardian has exceeded the guardian link limit. * `INVALID_ARGUMENT` if the guardian email address is not valid (for example, if it is too long), or if the format of the student ID provided cannot be recognized (it is not an email address, nor a `user_id` from this API). This error will also be returned if read-only fields are set, or if the `state` field is set to to a value other than `PENDING`. * `NOT_FOUND` if the student ID provided is a valid student ID, but Classroom has no record of that student. * `ALREADY_EXISTS` if there is already a pending guardian invitation for the student and `invited_email_address` provided, or if the provided `invited_email_address` matches the Google account of an existing `Guardian` for this user.",
+       "parameters": {
+        "studentId": {
+         "type": "string",
+         "description": "ID of the student (in standard format)",
+         "required": true,
+         "location": "path"
+        }
+       },
+       "parameterOrder": [
+        "studentId"
+       ],
+       "request": {
+        "$ref": "GuardianInvitation"
+       },
+       "response": {
+        "$ref": "GuardianInvitation"
+       }
+      },
+      "patch": {
+       "id": "classroom.userProfiles.guardianInvitations.patch",
+       "path": "v1/userProfiles/{studentId}/guardianInvitations/{invitationId}",
+       "httpMethod": "PATCH",
+       "description": "Modifies a guardian invitation. Currently, the only valid modification is to change the `state` from `PENDING` to `COMPLETE`. This has the effect of withdrawing the invitation. This method returns the following error codes: * `PERMISSION_DENIED` if the current user does not have permission to manage guardians, if guardians are not enabled for the domain in question or for other access errors. * `FAILED_PRECONDITION` if the guardian link is not in the `PENDING` state. * `INVALID_ARGUMENT` if the format of the student ID provided cannot be recognized (it is not an email address, nor a `user_id` from this API), or if the passed `GuardianInvitation` has a `state` other than `COMPLETE`, or if it modifies fields other than `state`. * `NOT_FOUND` if the student ID provided is a valid student ID, but Classroom has no record of that student, or if the `id` field does not refer to a guardian invitation known to Classroom.",
+       "parameters": {
+        "studentId": {
+         "type": "string",
+         "description": "The ID of the student whose guardian invitation is to be modified.",
+         "required": true,
+         "location": "path"
+        },
+        "invitationId": {
+         "type": "string",
+         "description": "The `id` field of the `GuardianInvitation` to be modified.",
+         "required": true,
+         "location": "path"
+        },
+        "updateMask": {
+         "type": "string",
+         "description": "Mask that identifies which fields on the course to update. This field is required to do an update. The update will fail if invalid fields are specified. The following fields are valid: * `state` When set in a query parameter, this field should be specified as `updateMask=,,...`",
+         "location": "query"
+        }
+       },
+       "parameterOrder": [
+        "studentId",
+        "invitationId"
+       ],
+       "request": {
+        "$ref": "GuardianInvitation"
+       },
+       "response": {
+        "$ref": "GuardianInvitation"
+       }
+      }
+     }
+    },
+    "guardians": {
+     "methods": {
+      "list": {
+       "id": "classroom.userProfiles.guardians.list",
+       "path": "v1/userProfiles/{studentId}/guardians",
+       "httpMethod": "GET",
+       "description": "Returns a list of guardians that the requesting user is permitted to view, restricted to those that match the request. To list guardians for any student that the requesting user may view guardians for, use the literal character `-` for the student ID. This method returns the following error codes: * `PERMISSION_DENIED` if a `student_id` is specified, and the requesting user is not permitted to view guardian information for that student, if `\"-\"` is specified as the `student_id` and the user is not a domain administrator, if guardians are not enabled for the domain in question, if the `invited_email_address` filter is set by a user who is not a domain administrator, or for other access errors. * `INVALID_ARGUMENT` if a `student_id` is specified, but its format cannot be recognized (it is not an email address, nor a `student_id` from the API, nor the literal string `me`). May also be returned if an invalid `page_token` is provided. * `NOT_FOUND` if a `student_id` is specified, and its format can be recognized, but Classroom has no record of that student.",
+       "parameters": {
+        "studentId": {
+         "type": "string",
+         "description": "Filter results by the student who the guardian is linked to. The identifier can be one of the following: * the numeric identifier for the user * the email address of the user * the string literal `\"me\"`, indicating the requesting user * the string literal `\"-\"`, indicating that results should be returned for all students that the requesting user has access to view.",
+         "required": true,
+         "location": "path"
+        },
+        "invitedEmailAddress": {
+         "type": "string",
+         "description": "Filter results by the email address that the original invitation was sent to, resulting in this guardian link. This filter can only be used by domain administrators.",
+         "location": "query"
+        },
+        "pageToken": {
+         "type": "string",
+         "description": "nextPageToken value returned from a previous list call, indicating that the subsequent page of results should be returned. The list request must be otherwise identical to the one that resulted in this token.",
+         "location": "query"
+        },
+        "pageSize": {
+         "type": "integer",
+         "description": "Maximum number of items to return. Zero or unspecified indicates that the server may assign a maximum. The server may return fewer than the specified number of results.",
+         "format": "int32",
+         "location": "query"
+        }
+       },
+       "parameterOrder": [
+        "studentId"
+       ],
+       "response": {
+        "$ref": "ListGuardiansResponse"
+       }
+      },
+      "get": {
+       "id": "classroom.userProfiles.guardians.get",
+       "path": "v1/userProfiles/{studentId}/guardians/{guardianId}",
+       "httpMethod": "GET",
+       "description": "Returns a specific guardian. This method returns the following error codes: * `PERMISSION_DENIED` if the requesting user is not permitted to view guardian information for the student identified by the `student_id`, if guardians are not enabled for the domain in question, or for other access errors. * `INVALID_ARGUMENT` if a `student_id` is specified, but its format cannot be recognized (it is not an email address, nor a `student_id` from the API, nor the literal string `me`). * `NOT_FOUND` if Classroom cannot find any record of the given student or `guardian_id`, or if the guardian has been disabled.",
+       "parameters": {
+        "studentId": {
+         "type": "string",
+         "description": "The student whose guardian is being requested. One of the following: * the numeric identifier for the user * the email address of the user * the string literal `\"me\"`, indicating the requesting user",
+         "required": true,
+         "location": "path"
+        },
+        "guardianId": {
+         "type": "string",
+         "description": "The `id` field from a `Guardian`.",
+         "required": true,
+         "location": "path"
+        }
+       },
+       "parameterOrder": [
+        "studentId",
+        "guardianId"
+       ],
+       "response": {
+        "$ref": "Guardian"
+       }
+      },
+      "delete": {
+       "id": "classroom.userProfiles.guardians.delete",
+       "path": "v1/userProfiles/{studentId}/guardians/{guardianId}",
+       "httpMethod": "DELETE",
+       "description": "Deletes a guardian. The guardian will no longer receive guardian notifications and the guardian will no longer be accessible via the API. This method returns the following error codes: * `PERMISSION_DENIED` if the requesting user is not permitted to manage guardians for the student identified by the `student_id`, if guardians are not enabled for the domain in question, or for other access errors. * `INVALID_ARGUMENT` if a `student_id` is specified, but its format cannot be recognized (it is not an email address, nor a `student_id` from the API). * `NOT_FOUND` if Classroom cannot find any record of the given `student_id` or `guardian_id`, or if the guardian has already been disabled.",
+       "parameters": {
+        "studentId": {
+         "type": "string",
+         "description": "The student whose guardian is to be deleted. One of the following: * the numeric identifier for the user * the email address of the user * the string literal `\"me\"`, indicating the requesting user",
+         "required": true,
+         "location": "path"
+        },
+        "guardianId": {
+         "type": "string",
+         "description": "The `id` field from a `Guardian`.",
+         "required": true,
+         "location": "path"
+        }
+       },
+       "parameterOrder": [
+        "studentId",
+        "guardianId"
+       ],
+       "response": {
+        "$ref": "Empty"
+       }
+      }
+     }
+    }
+   }
+  },
   "invitations": {
    "methods": {
     "create": {
@@ -2137,36 +2507,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/classroom.rosters"
-     ]
-    }
-   }
-  },
-  "userProfiles": {
-   "methods": {
-    "get": {
-     "id": "classroom.userProfiles.get",
-     "path": "v1/userProfiles/{userId}",
-     "httpMethod": "GET",
-     "description": "Returns a user profile. This method returns the following error codes: * `PERMISSION_DENIED` if the requesting user is not permitted to access this user profile or if no profile exists with the requested ID or for access errors.",
-     "parameters": {
-      "userId": {
-       "type": "string",
-       "description": "Identifier of the profile to return. The identifier can be one of the following: * the numeric identifier for the user * the email address of the user * the string literal `\"me\"`, indicating the requesting user",
-       "required": true,
-       "location": "path"
-      }
-     },
-     "parameterOrder": [
-      "userId"
-     ],
-     "response": {
-      "$ref": "UserProfile"
-     },
-     "scopes": [
-      "https://www.googleapis.com/auth/classroom.profile.emails",
-      "https://www.googleapis.com/auth/classroom.profile.photos",
-      "https://www.googleapis.com/auth/classroom.rosters",
-      "https://www.googleapis.com/auth/classroom.rosters.readonly"
      ]
     }
    }

@@ -26,6 +26,7 @@ import (
 	"io"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 )
 
@@ -115,7 +116,7 @@ func RunEditFederation(f *util.Factory, cmd *cobra.Command, args []string, out i
 		return fmt.Errorf("object was not of expected type: %T", newObj)
 	}
 
-	err = newFed.Validate()
+	err = validation.ValidateFederation(newFed)
 	if err != nil {
 		return err
 	}

@@ -239,11 +239,12 @@ type UnitStatus struct {
 	JobPath     dbus.ObjectPath // The job object path
 }
 
-type storeFunc func(retvalues ...interface{}) error
-
-func (c *Conn) listUnitsInternal(f storeFunc) ([]UnitStatus, error) {
+// ListUnits returns an array with all currently loaded units. Note that
+// units may be known by multiple names at the same time, and hence there might
+// be more unit names loaded than actual units behind them.
+func (c *Conn) ListUnits() ([]UnitStatus, error) {
 	result := make([][]interface{}, 0)
-	err := f(&result)
+	err := c.sysobj.Call("org.freedesktop.systemd1.Manager.ListUnits", 0).Store(&result)
 	if err != nil {
 		return nil, err
 	}
@@ -267,43 +268,15 @@ func (c *Conn) listUnitsInternal(f storeFunc) ([]UnitStatus, error) {
 	return status, nil
 }
 
-// ListUnits returns an array with all currently loaded units. Note that
-// units may be known by multiple names at the same time, and hence there might
-// be more unit names loaded than actual units behind them.
-func (c *Conn) ListUnits() ([]UnitStatus, error) {
-	return c.listUnitsInternal(c.sysobj.Call("org.freedesktop.systemd1.Manager.ListUnits", 0).Store)
-}
-
-// ListUnitsFiltered returns an array with units filtered by state.
-// It takes a list of units' statuses to filter.
-func (c *Conn) ListUnitsFiltered(states []string) ([]UnitStatus, error) {
-	return c.listUnitsInternal(c.sysobj.Call("org.freedesktop.systemd1.Manager.ListUnitsFiltered", 0, states).Store)
-}
-
-// ListUnitsByPatterns returns an array with units.
-// It takes a list of units' statuses and names to filter.
-// Note that units may be known by multiple names at the same time,
-// and hence there might be more unit names loaded than actual units behind them.
-func (c *Conn) ListUnitsByPatterns(states []string, patterns []string) ([]UnitStatus, error) {
-	return c.listUnitsInternal(c.sysobj.Call("org.freedesktop.systemd1.Manager.ListUnitsByPatterns", 0, states, patterns).Store)
-}
-
-// ListUnitsByNames returns an array with units. It takes a list of units'
-// names and returns an UnitStatus array. Comparing to ListUnitsByPatterns
-// method, this method returns statuses even for inactive or non-existing
-// units. Input array should contain exact unit names, but not patterns.
-func (c *Conn) ListUnitsByNames(units []string) ([]UnitStatus, error) {
-	return c.listUnitsInternal(c.sysobj.Call("org.freedesktop.systemd1.Manager.ListUnitsByNames", 0, units).Store)
-}
-
 type UnitFile struct {
 	Path string
 	Type string
 }
 
-func (c *Conn) listUnitFilesInternal(f storeFunc) ([]UnitFile, error) {
+// ListUnitFiles returns an array of all available units on disk.
+func (c *Conn) ListUnitFiles() ([]UnitFile, error) {
 	result := make([][]interface{}, 0)
-	err := f(&result)
+	err := c.sysobj.Call("org.freedesktop.systemd1.Manager.ListUnitFiles", 0).Store(&result)
 	if err != nil {
 		return nil, err
 	}
@@ -325,16 +298,6 @@ func (c *Conn) listUnitFilesInternal(f storeFunc) ([]UnitFile, error) {
 	}
 
 	return files, nil
-}
-
-// ListUnitFiles returns an array of all available units on disk.
-func (c *Conn) ListUnitFiles() ([]UnitFile, error) {
-	return c.listUnitFilesInternal(c.sysobj.Call("org.freedesktop.systemd1.Manager.ListUnitFiles", 0).Store)
-}
-
-// ListUnitFilesByPatterns returns an array of all available units on disk matched the patterns.
-func (c *Conn) ListUnitFilesByPatterns(states []string, patterns []string) ([]UnitFile, error) {
-	return c.listUnitFilesInternal(c.sysobj.Call("org.freedesktop.systemd1.Manager.ListUnitFilesByPatterns", 0, states, patterns).Store)
 }
 
 type LinkUnitFileChange EnableUnitFileChange

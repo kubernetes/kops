@@ -27,7 +27,6 @@ func decodeLogLine(dec *json.Decoder, l *jsonlog.JSONLog) (*logger.Message, erro
 		Source:    l.Stream,
 		Timestamp: l.Created,
 		Line:      []byte(l.Log),
-		Attrs:     l.Attrs,
 	}
 	return msg, nil
 }
@@ -77,9 +76,6 @@ func (l *JSONFileLogger) readLogs(logWatcher *logger.LogWatcher, config logger.R
 	}
 
 	if !config.Follow {
-		if err := latestFile.Close(); err != nil {
-			logrus.Errorf("Error closing file: %v", err)
-		}
 		return
 	}
 

@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -58,6 +59,37 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
+	// Add kubeconfig
+	{
+		kubeconfig, err := b.buildPKIKubeconfig("kubecfg")
+		if err != nil {
+			return err
+		}
+
+		t := &nodetasks.File{
+			Path:     "/var/lib/kubectl/kubeconfig",
+			Contents: fi.NewStringResource(kubeconfig),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0400"),
+		}
+		c.AddTask(t)
+
+		switch b.Distribution {
+		case distros.DistributionJessie:
+			c.AddTask(&nodetasks.File{
+				Path:     "/home/admin/.kube/config",
+				Contents: fi.NewStringResource(kubeconfig),
+				Type:     nodetasks.FileType_File,
+				Mode:     s("0400"),
+				Owner:    s("admin"),
+				Group:    s("admin"),
+			})
+
+		default:
+			glog.Warningf("Unknown distro; won't write kubeconfig to homedir %s", b.Distribution)
+		}
+	}
+
 	return nil
 }
 
@@ -65,6 +97,9 @@ func (b *KubectlBuilder) kubectlPath() string {
 	kubeletCommand := "/usr/local/bin/kubectl"
 	if b.Distribution == distros.DistributionCoreOS {
 		kubeletCommand = "/opt/bin/kubectl"
+	}
+	if b.Distribution == distros.DistributionContainerOS {
+		kubeletCommand = "/home/kubernetes/bin/kubectl"
 	}
 	return kubeletCommand
 }

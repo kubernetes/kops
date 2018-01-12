@@ -53,7 +53,7 @@ func TestParseJWT(t *testing.T) {
 	}
 }
 
-func TestNewJWTHeaderTyp(t *testing.T) {
+func TestNewJWTHeaderType(t *testing.T) {
 	jwt, err := NewJWT(JOSEHeader{}, Claims{})
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)

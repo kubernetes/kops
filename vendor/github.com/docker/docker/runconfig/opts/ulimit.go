@@ -50,8 +50,3 @@ func (o *UlimitOpt) GetList() []*units.Ulimit {
 
 	return ulimits
 }
-
-// Type returns the option type
-func (o *UlimitOpt) Type() string {
-	return "ulimit"
-}

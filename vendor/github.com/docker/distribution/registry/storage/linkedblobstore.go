@@ -35,7 +35,7 @@ type linkedBlobStore struct {
 	// control the repository blob link set to which the blob store
 	// dispatches. This is required because manifest and layer blobs have not
 	// yet been fully merged. At some point, this functionality should be
-	// removed the blob links folder should be merged. The first entry is
+	// removed an the blob links folder should be merged. The first entry is
 	// treated as the "canonical" link location and will be used for writes.
 	linkPathFns []linkPathFunc
 
@@ -101,6 +101,15 @@ func (lbs *linkedBlobStore) Put(ctx context.Context, mediaType string, p []byte)
 	return desc, lbs.linkBlob(ctx, desc)
 }
 
+// createOptions is a collection of blob creation modifiers relevant to general
+// blob storage intended to be configured by the BlobCreateOption.Apply method.
+type createOptions struct {
+	Mount struct {
+		ShouldMount bool
+		From        reference.Canonical
+	}
+}
+
 type optionFunc func(interface{}) error
 
 func (f optionFunc) Apply(v interface{}) error {
@@ -111,7 +120,7 @@ func (f optionFunc) Apply(v interface{}) error {
 // mounted from the given canonical reference.
 func WithMountFrom(ref reference.Canonical) distribution.BlobCreateOption {
 	return optionFunc(func(v interface{}) error {
-		opts, ok := v.(*distribution.CreateOptions)
+		opts, ok := v.(*createOptions)
 		if !ok {
 			return fmt.Errorf("unexpected options type: %T", v)
 		}
@@ -127,7 +136,7 @@ func WithMountFrom(ref reference.Canonical) distribution.BlobCreateOption {
 func (lbs *linkedBlobStore) Create(ctx context.Context, options ...distribution.BlobCreateOption) (distribution.BlobWriter, error) {
 	context.GetLogger(ctx).Debug("(*linkedBlobStore).Writer")
 
-	var opts distribution.CreateOptions
+	var opts createOptions
 
 	for _, option := range options {
 		err := option.Apply(&opts)

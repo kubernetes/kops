@@ -30,9 +30,7 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion1
 
 type TheTestEnum int32
 
@@ -565,8 +563,6 @@ func encodeVarintPopulateEnumstringer(data []byte, v uint64) []byte {
 	data = append(data, uint8(v))
 	return data
 }
-
-func init() { proto.RegisterFile("enumstringer.proto", fileDescriptorEnumstringer) }
 
 var fileDescriptorEnumstringer = []byte{
 	// 206 bytes of a gzipped FileDescriptorProto

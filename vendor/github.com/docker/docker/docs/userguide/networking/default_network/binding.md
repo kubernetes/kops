@@ -23,7 +23,6 @@ when it starts:
 
 ```
 $ sudo iptables -t nat -L -n
-
 ...
 Chain POSTROUTING (policy ACCEPT)
 target     prot opt source               destination
@@ -57,7 +56,6 @@ network stack by examining your NAT tables.
 # is finished setting up a -P forward:
 
 $ iptables -t nat -L -n
-
 ...
 Chain DOCKER (2 references)
 target     prot opt source               destination

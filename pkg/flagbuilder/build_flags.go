@@ -23,8 +23,8 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 )
 
 // BuildFlags builds flag arguments based on "flag" tags on the structure
@@ -46,7 +46,24 @@ func BuildFlags(options interface{}) (string, error) {
 			glog.V(4).Infof("skipping field with %q flag tag: %s", tag, path)
 			return utils.SkipReflection
 		}
-		flagName := tag
+
+		// If we specify the repeat option, we will repeat the flag rather than joining it with commas
+		repeatFlag := false
+
+		tokens := strings.Split(tag, ",")
+		if len(tokens) > 1 {
+			for i, t := range tokens {
+				if i == 0 {
+					continue
+				}
+				if t == "repeat" {
+					repeatFlag = true
+				} else {
+					return fmt.Errorf("cannot parse flag spec: %q", tag)
+				}
+			}
+		}
+		flagName := tokens[0]
 
 		// If the "unset" value is not empty string, by setting this tag we avoid passing spurious flag values
 		flagEmpty := field.Tag.Get("flag-empty")
@@ -89,8 +106,15 @@ func BuildFlags(options interface{}) (string, error) {
 			// We handle a []string like --admission-control=v1,v2 etc
 			if stringSlice, ok := val.Interface().([]string); ok {
 				if len(stringSlice) != 0 {
-					flag := fmt.Sprintf("--%s=%s", flagName, strings.Join(stringSlice, ","))
-					flags = append(flags, flag)
+					if repeatFlag {
+						for _, v := range stringSlice {
+							flag := fmt.Sprintf("--%s=%s", flagName, v)
+							flags = append(flags, flag)
+						}
+					} else {
+						flag := fmt.Sprintf("--%s=%s", flagName, strings.Join(stringSlice, ","))
+						flags = append(flags, flag)
+					}
 				}
 				return utils.SkipReflection
 			} else {

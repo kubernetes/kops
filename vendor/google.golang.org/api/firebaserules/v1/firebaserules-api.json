@@ -41,7 +41,7 @@
                 "name": {
                   "description": "Resource name for Project which owns this `Ruleset`.\n\nFormat: `projects/{project_id}`",
                   "required": true,
-                  "pattern": "^projects/[^/]*$",
+                  "pattern": "^projects/[^/]+$",
                   "location": "path",
                   "type": "string"
                 }
@@ -67,7 +67,7 @@
                 "name": {
                   "description": "Resource name for the ruleset to get.\n\nFormat: `projects/{project_id}/rulesets/{ruleset_id}`",
                   "required": true,
-                  "pattern": "^projects/[^/]*/rulesets/[^/]*$",
+                  "pattern": "^projects/[^/]+/rulesets/[^/]+$",
                   "location": "path",
                   "type": "string"
                 }
@@ -100,7 +100,7 @@
                 "name": {
                   "description": "Resource name for the project.\n\nFormat: `projects/{project_id}`",
                   "required": true,
-                  "pattern": "^projects/[^/]*$",
+                  "pattern": "^projects/[^/]+$",
                   "location": "path",
                   "type": "string"
                 },
@@ -132,7 +132,7 @@
                 "name": {
                   "description": "Resource name for the ruleset to delete.\n\nFormat: `projects/{project_id}/rulesets/{ruleset_id}`",
                   "required": true,
-                  "pattern": "^projects/[^/]*/rulesets/[^/]*$",
+                  "pattern": "^projects/[^/]+/rulesets/[^/]+$",
                   "location": "path",
                   "type": "string"
                 }
@@ -163,9 +163,9 @@
               "httpMethod": "PUT",
               "parameters": {
                 "name": {
-                  "description": "Resource name for the `Release`.\n\n`Release` names may be structured `app1/prod/v2` or flat `app1_prod_v2`\nwhich affords developers a great deal of flexibility in mapping the name\nto the style that best fits their existing development practices. For\nexample, a name could refer to an environment, an app, a version, or some\ncombination of three.\n\nIn the table below, for the project name `projects/foo`, the following\nrelative release paths show how flat and structured names might be chosen\nto match a desired development / deployment strategy.\n\nUse Case     | Flat Name           | Structured Name\n-------------|---------------------|----------------\nEnvironments | releases/qa         | releases/qa\nApps         | releases/app1_qa    | releases/app1/qa\nVersions     | releases/app1_v2_qa | releases/app1/v2/qa\n\nThe delimiter between the release name path elements can be almost anything\nand it should work equally well with the release name list filter, but in\nmany ways the structured paths provide a clearer picture of the\nrelationship between `Release` instances.\n\nFormat: `projects/{project_id}/releases/{release_id}`\n",
+                  "description": "Resource name for the `Release`.\n\n`Release` names may be structured `app1/prod/v2` or flat `app1_prod_v2`\nwhich affords developers a great deal of flexibility in mapping the name\nto the style that best fits their existing development practices. For\nexample, a name could refer to an environment, an app, a version, or some\ncombination of three.\n\nIn the table below, for the project name `projects/foo`, the following\nrelative release paths show how flat and structured names might be chosen\nto match a desired development / deployment strategy.\n\nUse Case     | Flat Name           | Structured Name\n-------------|---------------------|----------------\nEnvironments | releases/qa         | releases/qa\nApps         | releases/app1_qa    | releases/app1/qa\nVersions     | releases/app1_v2_qa | releases/app1/v2/qa\n\nThe delimiter between the release name path elements can be almost anything\nand it should work equally well with the release name list filter, but in\nmany ways the structured paths provide a clearer picture of the\nrelationship between `Release` instances.\n\nFormat: `projects/{project_id}/releases/{release_id}`",
                   "required": true,
-                  "pattern": "^projects/[^/]*/releases/.*$",
+                  "pattern": "^projects/[^/]+/releases/.+$",
                   "location": "path",
                   "type": "string"
                 }
@@ -194,7 +194,7 @@
                 "name": {
                   "description": "Resource name for the project which owns this `Release`.\n\nFormat: `projects/{project_id}`",
                   "required": true,
-                  "pattern": "^projects/[^/]*$",
+                  "pattern": "^projects/[^/]+$",
                   "location": "path",
                   "type": "string"
                 }
@@ -213,14 +213,14 @@
               "parameterOrder": [
                 "name"
               ],
-              "description": "Get a `Release` by name.\n",
+              "description": "Get a `Release` by name.",
               "flatPath": "v1/projects/{projectsId}/releases/{releasesId}",
               "httpMethod": "GET",
               "parameters": {
                 "name": {
                   "description": "Resource name of the `Release`.\n\n\nFormat: `projects/{project_id}/releases/{release_id}`",
                   "required": true,
-                  "pattern": "^projects/[^/]*/releases/.*$",
+                  "pattern": "^projects/[^/]+/releases/.+$",
                   "location": "path",
                   "type": "string"
                 }
@@ -258,7 +258,7 @@
                 "name": {
                   "description": "Resource name for the project.\n\nFormat: `projects/{project_id}`",
                   "required": true,
-                  "pattern": "^projects/[^/]*$",
+                  "pattern": "^projects/[^/]+$",
                   "location": "path",
                   "type": "string"
                 },
@@ -290,7 +290,7 @@
                 "name": {
                   "description": "Resource name for the `Release` to delete.\n\nFormat: `projects/{project_id}/releases/{release_id}`",
                   "required": true,
-                  "pattern": "^projects/[^/]*/releases/.*$",
+                  "pattern": "^projects/[^/]+/releases/.+$",
                   "location": "path",
                   "type": "string"
                 }
@@ -323,7 +323,7 @@
             "name": {
               "description": "Name of the project.\n\nFormat: `projects/{project_id}`",
               "required": true,
-              "pattern": "^projects/.*$",
+              "pattern": "^projects/.+$",
               "location": "path",
               "type": "string"
             }
@@ -354,7 +354,7 @@
           "format": "google-datetime"
         },
         "name": {
-          "description": "Resource name for the `Release`.\n\n`Release` names may be structured `app1/prod/v2` or flat `app1_prod_v2`\nwhich affords developers a great deal of flexibility in mapping the name\nto the style that best fits their existing development practices. For\nexample, a name could refer to an environment, an app, a version, or some\ncombination of three.\n\nIn the table below, for the project name `projects/foo`, the following\nrelative release paths show how flat and structured names might be chosen\nto match a desired development / deployment strategy.\n\nUse Case     | Flat Name           | Structured Name\n-------------|---------------------|----------------\nEnvironments | releases/qa         | releases/qa\nApps         | releases/app1_qa    | releases/app1/qa\nVersions     | releases/app1_v2_qa | releases/app1/v2/qa\n\nThe delimiter between the release name path elements can be almost anything\nand it should work equally well with the release name list filter, but in\nmany ways the structured paths provide a clearer picture of the\nrelationship between `Release` instances.\n\nFormat: `projects/{project_id}/releases/{release_id}`\n",
+          "description": "Resource name for the `Release`.\n\n`Release` names may be structured `app1/prod/v2` or flat `app1_prod_v2`\nwhich affords developers a great deal of flexibility in mapping the name\nto the style that best fits their existing development practices. For\nexample, a name could refer to an environment, an app, a version, or some\ncombination of three.\n\nIn the table below, for the project name `projects/foo`, the following\nrelative release paths show how flat and structured names might be chosen\nto match a desired development / deployment strategy.\n\nUse Case     | Flat Name           | Structured Name\n-------------|---------------------|----------------\nEnvironments | releases/qa         | releases/qa\nApps         | releases/app1_qa    | releases/app1/qa\nVersions     | releases/app1_v2_qa | releases/app1/v2/qa\n\nThe delimiter between the release name path elements can be almost anything\nand it should work equally well with the release name list filter, but in\nmany ways the structured paths provide a clearer picture of the\nrelationship between `Release` instances.\n\nFormat: `projects/{project_id}/releases/{release_id}`",
           "type": "string"
         },
         "rulesetName": {
@@ -538,7 +538,7 @@
       "id": "Issue"
     }
   },
-  "revision": "20160621",
+  "revision": "20161021",
   "basePath": "",
   "icons": {
     "x32": "http://www.google.com/images/icons/product/search-32.gif",
@@ -637,7 +637,7 @@
       "location": "query"
     }
   },
-  "documentationLink": "https://firebase.google.com/docs/storage/security/start",
+  "documentationLink": "https://firebase.google.com/docs/storage/security",
   "ownerDomain": "google.com",
   "batchPath": "batch",
   "servicePath": "",

@@ -72,42 +72,30 @@ By default, each API will use [Google Application Default Credentials][default-c
 for authorization credentials used in calling the API endpoints. This will allow your
 application to run in many environments without requiring explicit configuration.
 
-To authorize using a
-[JSON key file](https://cloud.google.com/iam/docs/managing-service-account-keys),
-pass
-[`option.WithServiceAccountFile`](https://godoc.org/google.golang.org/api/option#WithServiceAccountFile)
-to the `NewClient` function of the desired package. For example:
-
-```go
-client, err := storage.NewClient(ctx, option.WithServiceAccountFile("path/to/keyfile.json"))
-```
-
-You can exert more control over authorization by using the
+Manually-configured authorization can be achieved using the
 [`golang.org/x/oauth2`](https://godoc.org/golang.org/x/oauth2) package to
-create an `oauth2.TokenSource`. Then pass
+create an `oauth2.TokenSource`. This token source can be passed to the `NewClient`
+function for the relevant API using a
 [`option.WithTokenSource`](https://godoc.org/google.golang.org/api/option#WithTokenSource)
-to the `NewClient` function:
-```go
-tokenSource := ...
-client, err := storage.NewClient(ctx, option.WithTokenSource(tokenSource))
-```
+option.
 
-## Cloud Datastore [![GoDoc](https://godoc.org/cloud.google.com/go/datastore?status.svg)](https://godoc.org/cloud.google.com/go/datastore)
+## Google Cloud Datastore [![GoDoc](https://godoc.org/cloud.google.com/go/datastore?status.svg)](https://godoc.org/cloud.google.com/go/datastore)
 
-- [About Cloud Datastore][cloud-datastore]
-- [Activating the API for your project][cloud-datastore-activation]
-- [API documentation][cloud-datastore-docs]
-- [Go client documentation](https://godoc.org/cloud.google.com/go/datastore)
-- [Complete sample program](https://github.com/GoogleCloudPlatform/golang-samples/tree/master/datastore/tasks)
+[Google Cloud Datastore][cloud-datastore] ([docs][cloud-datastore-docs]) is a fully-
+managed, schemaless database for storing non-relational data. Cloud Datastore
+automatically scales with your users and supports ACID transactions, high availability
+of reads and writes, strong consistency for reads and ancestor queries, and eventual
+consistency for all other queries.
 
-### Preview
+Follow the [activation instructions][cloud-datastore-activation] to use the Google
+Cloud Datastore API with your project.
 
 First create a `datastore.Client` to use throughout your application:
 
 ```go
 client, err := datastore.NewClient(ctx, "my-project-id")
 if err != nil {
-	log.Fatal(err)
+	log.Fatalln(err)
 }
 ```
 
@@ -132,14 +120,13 @@ if _, err := client.PutMulti(ctx, keys, posts); err != nil {
 }
 ```
 
-## Cloud Storage [![GoDoc](https://godoc.org/cloud.google.com/go/storage?status.svg)](https://godoc.org/cloud.google.com/go/storage)
+## Google Cloud Storage [![GoDoc](https://godoc.org/cloud.google.com/go/storage?status.svg)](https://godoc.org/cloud.google.com/go/storage)
 
-- [About Cloud Storage][cloud-storage]
-- [API documentation][cloud-storage-docs]
-- [Go client documentation](https://godoc.org/cloud.google.com/go/storage)
-- [Complete sample programs](https://github.com/GoogleCloudPlatform/golang-samples/tree/master/storage)
+[Google Cloud Storage][cloud-storage] ([docs][cloud-storage-docs]) allows you to store
+data on Google infrastructure with very high reliability, performance and availability,
+and can be used to distribute large data objects to users via direct download.
 
-### Preview
+https://godoc.org/cloud.google.com/go/storage
 
 First create a `storage.Client` to use throughout your application:
 
@@ -163,14 +150,12 @@ if err != nil {
 }
 ```
 
-## Cloud Pub/Sub [![GoDoc](https://godoc.org/cloud.google.com/go/pubsub?status.svg)](https://godoc.org/cloud.google.com/go/pubsub)
+## Google Cloud Pub/Sub [![GoDoc](https://godoc.org/cloud.google.com/go/pubsub?status.svg)](https://godoc.org/cloud.google.com/go/pubsub)
 
-- [About Cloud Pubsub][cloud-pubsub]
-- [API documentation][cloud-pubsub-docs]
-- [Go client documentation](https://godoc.org/cloud.google.com/go/pubsub)
-- [Complete sample programs](https://github.com/GoogleCloudPlatform/golang-samples/tree/master/pubsub)
-
-### Preview
+[Google Cloud Pub/Sub][cloud-pubsub] ([docs][cloud-pubsub-docs]) allows you to connect
+your services with reliable, many-to-many, asynchronous messaging hosted on Google's
+infrastructure. Cloud Pub/Sub automatically scales as you need it and provides a foundation
+for building your own robust, global services.
 
 First create a `pubsub.Client` to use throughout your application:
 
@@ -213,21 +198,6 @@ for i := 0; i < N; i++ {
 }
 ```
 
-## Cloud BigQuery [![GoDoc](https://godoc.org/cloud.google.com/go/bigquery?status.svg)](https://godoc.org/cloud.google.com/go/bigquery)
-
-- [About Cloud BigQuery][cloud-bigquery]
-- [API documentation][cloud-bigquery-docs]
-- [Go client documentation][cloud-bigquery-ref]
-- [Complete sample programs](https://github.com/GoogleCloudPlatform/golang-samples/tree/master/bigquery)
-
-## Stackdriver Logging [![GoDoc](https://godoc.org/cloud.google.com/go/bigquery?status.svg)](https://godoc.org/cloud.google.com/go/logging)
-
-- [About Stackdriver Logging][cloud-logging]
-- [API documentation][cloud-logging-docs]
-- [Go client documentation][cloud-logging-ref]
-- [Complete sample programs](https://github.com/GoogleCloudPlatform/golang-samples/tree/master/logging)
-
-
 ## Contributing
 
 Contributions are welcome. Please, see the
@@ -251,18 +221,16 @@ for more information.
 
 [cloud-storage]: https://cloud.google.com/storage/
 [cloud-storage-ref]: https://godoc.org/cloud.google.com/go/storage
-[cloud-storage-docs]: https://cloud.google.com/storage/docs
+[cloud-storage-docs]: https://cloud.google.com/storage/docs/overview
 [cloud-storage-create-bucket]: https://cloud.google.com/storage/docs/cloud-console#_creatingbuckets
 
 [cloud-bigtable]: https://cloud.google.com/bigtable/
 [cloud-bigtable-ref]: https://godoc.org/cloud.google.com/go/bigtable
 
 [cloud-bigquery]: https://cloud.google.com/bigquery/
-[cloud-bigquery-docs]: https://cloud.google.com/bigquery/docs
 [cloud-bigquery-ref]: https://godoc.org/cloud.google.com/go/bigquery
 
 [cloud-logging]: https://cloud.google.com/logging/
-[cloud-logging-docs]: https://cloud.google.com/logging/docs
 [cloud-logging-ref]: https://godoc.org/cloud.google.com/go/logging
 
 [cloud-vision]: https://cloud.google.com/vision/

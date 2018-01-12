@@ -49,9 +49,8 @@ func (c *Snowball) CancelClusterRequest(input *CancelClusterInput) (req *request
 		input = &CancelClusterInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CancelClusterOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -126,9 +125,8 @@ func (c *Snowball) CancelJobRequest(input *CancelJobInput) (req *request.Request
 		input = &CancelJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CancelJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -204,9 +202,8 @@ func (c *Snowball) CreateAddressRequest(input *CreateAddressInput) (req *request
 		input = &CreateAddressInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateAddressOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -280,9 +277,8 @@ func (c *Snowball) CreateClusterRequest(input *CreateClusterInput) (req *request
 		input = &CreateClusterInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateClusterOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -358,9 +354,8 @@ func (c *Snowball) CreateJobRequest(input *CreateJobInput) (req *request.Request
 		input = &CreateJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -444,9 +439,8 @@ func (c *Snowball) DescribeAddressRequest(input *DescribeAddressInput) (req *req
 		input = &DescribeAddressInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAddressOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -518,9 +512,8 @@ func (c *Snowball) DescribeAddressesRequest(input *DescribeAddressesInput) (req 
 		input = &DescribeAddressesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAddressesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -612,9 +605,8 @@ func (c *Snowball) DescribeClusterRequest(input *DescribeClusterInput) (req *req
 		input = &DescribeClusterInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeClusterOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -680,9 +672,8 @@ func (c *Snowball) DescribeJobRequest(input *DescribeJobInput) (req *request.Req
 		input = &DescribeJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -748,9 +739,8 @@ func (c *Snowball) GetJobManifestRequest(input *GetJobManifestInput) (req *reque
 		input = &GetJobManifestInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetJobManifestOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -836,9 +826,8 @@ func (c *Snowball) GetJobUnlockCodeRequest(input *GetJobUnlockCodeInput) (req *r
 		input = &GetJobUnlockCodeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetJobUnlockCodeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -919,9 +908,8 @@ func (c *Snowball) GetSnowballUsageRequest(input *GetSnowballUsageInput) (req *r
 		input = &GetSnowballUsageInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetSnowballUsageOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -984,9 +972,8 @@ func (c *Snowball) ListClusterJobsRequest(input *ListClusterJobsInput) (req *req
 		input = &ListClusterJobsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListClusterJobsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1053,9 +1040,8 @@ func (c *Snowball) ListClustersRequest(input *ListClustersInput) (req *request.R
 		input = &ListClustersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListClustersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1122,9 +1108,8 @@ func (c *Snowball) ListJobsRequest(input *ListJobsInput) (req *request.Request, 
 		input = &ListJobsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListJobsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1212,9 +1197,8 @@ func (c *Snowball) UpdateClusterRequest(input *UpdateClusterInput) (req *request
 		input = &UpdateClusterInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateClusterOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1295,9 +1279,8 @@ func (c *Snowball) UpdateJobRequest(input *UpdateJobInput) (req *request.Request
 		input = &UpdateJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

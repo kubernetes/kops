@@ -44,9 +44,7 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion1
 
 type Castaway struct {
 	Int32Ptr         *int32                                                                                                      `protobuf:"varint,1,opt,name=Int32Ptr,json=int32Ptr,casttype=int32" json:"Int32Ptr,omitempty"`
@@ -919,12 +917,11 @@ func valueToGoStringCasttype(v interface{}, typ string) string {
 	pv := reflect.Indirect(rv).Interface()
 	return fmt.Sprintf("func(v %v) *%v { return &v } ( %#v )", typ, typ, pv)
 }
-func extensionToGoStringCasttype(m github_com_gogo_protobuf_proto.Message) string {
-	e := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(m)
+func extensionToGoStringCasttype(e map[int32]github_com_gogo_protobuf_proto.Extension) string {
 	if e == nil {
 		return "nil"
 	}
-	s := "proto.NewUnsafeXXX_InternalExtensions(map[int32]proto.Extension{"
+	s := "map[int32]proto.Extension{"
 	keys := make([]int, 0, len(e))
 	for k := range e {
 		keys = append(keys, int(k))
@@ -934,7 +931,7 @@ func extensionToGoStringCasttype(m github_com_gogo_protobuf_proto.Message) strin
 	for _, k := range keys {
 		ss = append(ss, strconv.Itoa(k)+": "+e[int32(k)].GoString())
 	}
-	s += strings.Join(ss, ",") + "})"
+	s += strings.Join(ss, ",") + "}"
 	return s
 }
 func NewPopulatedCastaway(r randyCasttype, easy bool) *Castaway {
@@ -2373,8 +2370,6 @@ var (
 	ErrInvalidLengthCasttypeUnsafe = fmt.Errorf("proto: negative length found during unmarshaling")
 	ErrIntOverflowCasttypeUnsafe   = fmt.Errorf("proto: integer overflow")
 )
-
-func init() { proto.RegisterFile("combos/unsafeboth/casttype.proto", fileDescriptorCasttype) }
 
 var fileDescriptorCasttype = []byte{
 	// 672 bytes of a gzipped FileDescriptorProto

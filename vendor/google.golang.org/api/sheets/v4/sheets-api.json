@@ -26,32 +26,22 @@
       "resources": {
         "values": {
           "methods": {
-            "update": {
-              "id": "sheets.spreadsheets.values.update",
+            "clear": {
+              "id": "sheets.spreadsheets.values.clear",
               "response": {
-                "$ref": "UpdateValuesResponse"
+                "$ref": "ClearValuesResponse"
               },
               "parameterOrder": [
                 "spreadsheetId",
                 "range"
               ],
-              "description": "Sets values in a range of a spreadsheet.\nThe caller must specify the spreadsheet ID, range, and\na valueInputOption.",
+              "description": "Clears values from a spreadsheet.\nThe caller must specify the spreadsheet ID and range.\nOnly values are cleared -- all other properties of the cell (such as\nformatting, data validation, etc..) are kept.",
               "request": {
-                "$ref": "ValueRange"
+                "$ref": "ClearValuesRequest"
               },
-              "flatPath": "v4/spreadsheets/{spreadsheetId}/values/{range}",
-              "httpMethod": "PUT",
+              "flatPath": "v4/spreadsheets/{spreadsheetId}/values/{range}:clear",
+              "httpMethod": "POST",
               "parameters": {
-                "valueInputOption": {
-                  "description": "How the input data should be interpreted.",
-                  "enum": [
-                    "INPUT_VALUE_OPTION_UNSPECIFIED",
-                    "RAW",
-                    "USER_ENTERED"
-                  ],
-                  "location": "query",
-                  "type": "string"
-                },
                 "spreadsheetId": {
                   "description": "The ID of the spreadsheet to update.",
                   "required": true,
@@ -59,79 +49,16 @@
                   "type": "string"
                 },
                 "range": {
-                  "description": "The A1 notation of the values to update.",
+                  "description": "The A1 notation of the values to clear.",
                   "required": true,
                   "location": "path",
                   "type": "string"
                 }
               },
-              "path": "v4/spreadsheets/{spreadsheetId}/values/{range}",
+              "path": "v4/spreadsheets/{spreadsheetId}/values/{range}:clear",
               "scopes": [
                 "https://www.googleapis.com/auth/drive",
                 "https://www.googleapis.com/auth/spreadsheets"
-              ]
-            },
-            "get": {
-              "id": "sheets.spreadsheets.values.get",
-              "response": {
-                "$ref": "ValueRange"
-              },
-              "parameterOrder": [
-                "spreadsheetId",
-                "range"
-              ],
-              "description": "Returns a range of values from a spreadsheet.\nThe caller must specify the spreadsheet ID and a range.",
-              "flatPath": "v4/spreadsheets/{spreadsheetId}/values/{range}",
-              "httpMethod": "GET",
-              "parameters": {
-                "spreadsheetId": {
-                  "description": "The ID of the spreadsheet to retrieve data from.",
-                  "required": true,
-                  "location": "path",
-                  "type": "string"
-                },
-                "valueRenderOption": {
-                  "description": "How values should be represented in the output.",
-                  "enum": [
-                    "FORMATTED_VALUE",
-                    "UNFORMATTED_VALUE",
-                    "FORMULA"
-                  ],
-                  "location": "query",
-                  "type": "string"
-                },
-                "dateTimeRenderOption": {
-                  "description": "How dates, times, and durations should be represented in the output.\nThis is ignored if value_render_option is\nFORMATTED_VALUE.",
-                  "enum": [
-                    "SERIAL_NUMBER",
-                    "FORMATTED_STRING"
-                  ],
-                  "location": "query",
-                  "type": "string"
-                },
-                "range": {
-                  "description": "The A1 notation of the values to retrieve.",
-                  "required": true,
-                  "location": "path",
-                  "type": "string"
-                },
-                "majorDimension": {
-                  "description": "The major dimension that results should use.\n\nFor example, if the spreadsheet data is: `A1=1,B1=2,A2=3,B2=4`,\nthen requesting `range=A1:B2,majorDimension=ROWS` will return\n`[[1,2],[3,4]]`,\nwhereas requesting `range=A1:B2,majorDimension=COLUMNS` will return\n`[[1,3],[2,4]]`.",
-                  "enum": [
-                    "DIMENSION_UNSPECIFIED",
-                    "ROWS",
-                    "COLUMNS"
-                  ],
-                  "location": "query",
-                  "type": "string"
-                }
-              },
-              "path": "v4/spreadsheets/{spreadsheetId}/values/{range}",
-              "scopes": [
-                "https://www.googleapis.com/auth/drive",
-                "https://www.googleapis.com/auth/drive.readonly",
-                "https://www.googleapis.com/auth/spreadsheets",
-                "https://www.googleapis.com/auth/spreadsheets.readonly"
               ]
             },
             "batchGet": {
@@ -159,7 +86,7 @@
                   "type": "string"
                 },
                 "valueRenderOption": {
-                  "description": "How values should be represented in the output.",
+                  "description": "How values should be represented in the output.\nThe default render option is ValueRenderOption.FORMATTED_VALUE.",
                   "enum": [
                     "FORMATTED_VALUE",
                     "UNFORMATTED_VALUE",
@@ -169,7 +96,7 @@
                   "type": "string"
                 },
                 "dateTimeRenderOption": {
-                  "description": "How dates, times, and durations should be represented in the output.\nThis is ignored if value_render_option is\nFORMATTED_VALUE.",
+                  "description": "How dates, times, and durations should be represented in the output.\nThis is ignored if value_render_option is\nFORMATTED_VALUE.\nThe default dateTime render option is [DateTimeRenderOption.SERIAL_NUMBER].",
                   "enum": [
                     "SERIAL_NUMBER",
                     "FORMATTED_STRING"
@@ -219,6 +146,244 @@
                 }
               },
               "path": "v4/spreadsheets/{spreadsheetId}/values:batchUpdate",
+              "scopes": [
+                "https://www.googleapis.com/auth/drive",
+                "https://www.googleapis.com/auth/spreadsheets"
+              ]
+            },
+            "get": {
+              "id": "sheets.spreadsheets.values.get",
+              "response": {
+                "$ref": "ValueRange"
+              },
+              "parameterOrder": [
+                "spreadsheetId",
+                "range"
+              ],
+              "description": "Returns a range of values from a spreadsheet.\nThe caller must specify the spreadsheet ID and a range.",
+              "flatPath": "v4/spreadsheets/{spreadsheetId}/values/{range}",
+              "httpMethod": "GET",
+              "parameters": {
+                "spreadsheetId": {
+                  "description": "The ID of the spreadsheet to retrieve data from.",
+                  "required": true,
+                  "location": "path",
+                  "type": "string"
+                },
+                "valueRenderOption": {
+                  "description": "How values should be represented in the output.\nThe default render option is ValueRenderOption.FORMATTED_VALUE.",
+                  "enum": [
+                    "FORMATTED_VALUE",
+                    "UNFORMATTED_VALUE",
+                    "FORMULA"
+                  ],
+                  "location": "query",
+                  "type": "string"
+                },
+                "dateTimeRenderOption": {
+                  "description": "How dates, times, and durations should be represented in the output.\nThis is ignored if value_render_option is\nFORMATTED_VALUE.\nThe default dateTime render option is [DateTimeRenderOption.SERIAL_NUMBER].",
+                  "enum": [
+                    "SERIAL_NUMBER",
+                    "FORMATTED_STRING"
+                  ],
+                  "location": "query",
+                  "type": "string"
+                },
+                "range": {
+                  "description": "The A1 notation of the values to retrieve.",
+                  "required": true,
+                  "location": "path",
+                  "type": "string"
+                },
+                "majorDimension": {
+                  "description": "The major dimension that results should use.\n\nFor example, if the spreadsheet data is: `A1=1,B1=2,A2=3,B2=4`,\nthen requesting `range=A1:B2,majorDimension=ROWS` will return\n`[[1,2],[3,4]]`,\nwhereas requesting `range=A1:B2,majorDimension=COLUMNS` will return\n`[[1,3],[2,4]]`.",
+                  "enum": [
+                    "DIMENSION_UNSPECIFIED",
+                    "ROWS",
+                    "COLUMNS"
+                  ],
+                  "location": "query",
+                  "type": "string"
+                }
+              },
+              "path": "v4/spreadsheets/{spreadsheetId}/values/{range}",
+              "scopes": [
+                "https://www.googleapis.com/auth/drive",
+                "https://www.googleapis.com/auth/drive.readonly",
+                "https://www.googleapis.com/auth/spreadsheets",
+                "https://www.googleapis.com/auth/spreadsheets.readonly"
+              ]
+            },
+            "append": {
+              "id": "sheets.spreadsheets.values.append",
+              "response": {
+                "$ref": "AppendValuesResponse"
+              },
+              "parameterOrder": [
+                "spreadsheetId",
+                "range"
+              ],
+              "description": "Appends values to a spreadsheet. The input range is used to search for\nexisting data and find a \"table\" within that range. Values will be\nappended to the next row of the table, starting with the first column of\nthe table. See the\n[guide](/sheets/guides/values#appending_values)\nand\n[sample code](/sheets/samples/writing#append_values)\nfor specific details of how tables are detected and data is appended.\n\nThe caller must specify the spreadsheet ID, range, and\na valueInputOption.  The `valueInputOption` only\ncontrols how the input data will be added to the sheet (column-wise or\nrow-wise), it does not influence what cell the data starts being written\nto.",
+              "request": {
+                "$ref": "ValueRange"
+              },
+              "flatPath": "v4/spreadsheets/{spreadsheetId}/values/{range}:append",
+              "httpMethod": "POST",
+              "parameters": {
+                "responseValueRenderOption": {
+                  "description": "Determines how values in the response should be rendered.\nThe default render option is ValueRenderOption.FORMATTED_VALUE.",
+                  "enum": [
+                    "FORMATTED_VALUE",
+                    "UNFORMATTED_VALUE",
+                    "FORMULA"
+                  ],
+                  "location": "query",
+                  "type": "string"
+                },
+                "valueInputOption": {
+                  "description": "How the input data should be interpreted.",
+                  "enum": [
+                    "INPUT_VALUE_OPTION_UNSPECIFIED",
+                    "RAW",
+                    "USER_ENTERED"
+                  ],
+                  "location": "query",
+                  "type": "string"
+                },
+                "responseDateTimeRenderOption": {
+                  "description": "Determines how dates, times, and durations in the response should be\nrendered. This is ignored if response_value_render_option is\nFORMATTED_VALUE.\nThe default dateTime render option is [DateTimeRenderOption.SERIAL_NUMBER].",
+                  "enum": [
+                    "SERIAL_NUMBER",
+                    "FORMATTED_STRING"
+                  ],
+                  "location": "query",
+                  "type": "string"
+                },
+                "includeValuesInResponse": {
+                  "description": "Determines if the update response should include the values\nof the cells that were appended. By default, responses\ndo not include the updated values.",
+                  "location": "query",
+                  "type": "boolean"
+                },
+                "spreadsheetId": {
+                  "description": "The ID of the spreadsheet to update.",
+                  "required": true,
+                  "location": "path",
+                  "type": "string"
+                },
+                "range": {
+                  "description": "The A1 notation of a range to search for a logical table of data.\nValues will be appended after the last row of the table.",
+                  "required": true,
+                  "location": "path",
+                  "type": "string"
+                },
+                "insertDataOption": {
+                  "description": "How the input data should be inserted.",
+                  "enum": [
+                    "OVERWRITE",
+                    "INSERT_ROWS"
+                  ],
+                  "location": "query",
+                  "type": "string"
+                }
+              },
+              "path": "v4/spreadsheets/{spreadsheetId}/values/{range}:append",
+              "scopes": [
+                "https://www.googleapis.com/auth/drive",
+                "https://www.googleapis.com/auth/spreadsheets"
+              ]
+            },
+            "update": {
+              "id": "sheets.spreadsheets.values.update",
+              "response": {
+                "$ref": "UpdateValuesResponse"
+              },
+              "parameterOrder": [
+                "spreadsheetId",
+                "range"
+              ],
+              "description": "Sets values in a range of a spreadsheet.\nThe caller must specify the spreadsheet ID, range, and\na valueInputOption.",
+              "request": {
+                "$ref": "ValueRange"
+              },
+              "flatPath": "v4/spreadsheets/{spreadsheetId}/values/{range}",
+              "httpMethod": "PUT",
+              "parameters": {
+                "responseValueRenderOption": {
+                  "description": "Determines how values in the response should be rendered.\nThe default render option is ValueRenderOption.FORMATTED_VALUE.",
+                  "enum": [
+                    "FORMATTED_VALUE",
+                    "UNFORMATTED_VALUE",
+                    "FORMULA"
+                  ],
+                  "location": "query",
+                  "type": "string"
+                },
+                "valueInputOption": {
+                  "description": "How the input data should be interpreted.",
+                  "enum": [
+                    "INPUT_VALUE_OPTION_UNSPECIFIED",
+                    "RAW",
+                    "USER_ENTERED"
+                  ],
+                  "location": "query",
+                  "type": "string"
+                },
+                "responseDateTimeRenderOption": {
+                  "description": "Determines how dates, times, and durations in the response should be\nrendered. This is ignored if response_value_render_option is\nFORMATTED_VALUE.\nThe default dateTime render option is [DateTimeRenderOption.SERIAL_NUMBER].",
+                  "enum": [
+                    "SERIAL_NUMBER",
+                    "FORMATTED_STRING"
+                  ],
+                  "location": "query",
+                  "type": "string"
+                },
+                "includeValuesInResponse": {
+                  "description": "Determines if the update response should include the values\nof the cells that were updated. By default, responses\ndo not include the updated values.\nIf the range to write was larger than than the range actually written,\nthe response will include all values in the requested range (excluding\ntrailing empty rows and columns).",
+                  "location": "query",
+                  "type": "boolean"
+                },
+                "spreadsheetId": {
+                  "description": "The ID of the spreadsheet to update.",
+                  "required": true,
+                  "location": "path",
+                  "type": "string"
+                },
+                "range": {
+                  "description": "The A1 notation of the values to update.",
+                  "required": true,
+                  "location": "path",
+                  "type": "string"
+                }
+              },
+              "path": "v4/spreadsheets/{spreadsheetId}/values/{range}",
+              "scopes": [
+                "https://www.googleapis.com/auth/drive",
+                "https://www.googleapis.com/auth/spreadsheets"
+              ]
+            },
+            "batchClear": {
+              "id": "sheets.spreadsheets.values.batchClear",
+              "response": {
+                "$ref": "BatchClearValuesResponse"
+              },
+              "parameterOrder": [
+                "spreadsheetId"
+              ],
+              "description": "Clears one or more ranges of values from a spreadsheet.\nThe caller must specify the spreadsheet ID and one or more ranges.\nOnly values are cleared -- all other properties of the cell (such as\nformatting, data validation, etc..) are kept.",
+              "request": {
+                "$ref": "BatchClearValuesRequest"
+              },
+              "flatPath": "v4/spreadsheets/{spreadsheetId}/values:batchClear",
+              "httpMethod": "POST",
+              "parameters": {
+                "spreadsheetId": {
+                  "description": "The ID of the spreadsheet to update.",
+                  "required": true,
+                  "location": "path",
+                  "type": "string"
+                }
+              },
+              "path": "v4/spreadsheets/{spreadsheetId}/values:batchClear",
               "scopes": [
                 "https://www.googleapis.com/auth/drive",
                 "https://www.googleapis.com/auth/spreadsheets"
@@ -373,7 +538,7 @@
       "type": "object",
       "properties": {
         "protectedRange": {
-          "description": "The protected range to update with the new properties. If a nonzero\nprotectedRangeId is\nspecified, the protected range will use that ID. (It is an error to\nspecify the ID of a protected range that already exists.)",
+          "description": "The protected range to update with the new properties.",
           "$ref": "ProtectedRange"
         },
         "fields": {
@@ -472,6 +637,21 @@
         }
       },
       "id": "UpdateEmbeddedObjectPositionResponse"
+    },
+    "ClearValuesResponse": {
+      "description": "The response when clearing a range of values in a spreadsheet.",
+      "type": "object",
+      "properties": {
+        "spreadsheetId": {
+          "description": "The spreadsheet the updates were applied to.",
+          "type": "string"
+        },
+        "clearedRange": {
+          "description": "The range (in A1 notation) that was cleared.\n(If the request was for an unbounded range or a ranger larger\n than the bounds of the sheet, this will be the actual range\n that was cleared, bounded to the sheet's limits.)",
+          "type": "string"
+        }
+      },
+      "id": "ClearValuesResponse"
     },
     "UpdateConditionalFormatRuleRequest": {
       "description": "Updates a conditional format rule at the given index,\nor moves a conditional format rule to another index.",
@@ -643,14 +823,23 @@
       "description": "The response when updating a range of values in a spreadsheet.",
       "type": "object",
       "properties": {
-        "updatedRange": {
-          "description": "The range (in A1 notation) that updates were applied to.",
-          "type": "string"
-        },
         "updatedColumns": {
           "description": "The number of columns where at least one cell in the column was updated.",
           "type": "integer",
           "format": "int32"
+        },
+        "updatedCells": {
+          "description": "The number of cells updated.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "updatedData": {
+          "description": "The values of the cells after updates were applied.\nThis is only included if the request's `includeValuesInResponse` field\nwas `true`.",
+          "$ref": "ValueRange"
+        },
+        "updatedRange": {
+          "description": "The range (in A1 notation) that updates were applied to.",
+          "type": "string"
         },
         "spreadsheetId": {
           "description": "The spreadsheet the updates were applied to.",
@@ -658,11 +847,6 @@
         },
         "updatedRows": {
           "description": "The number of rows where at least one cell in the row was updated.",
-          "type": "integer",
-          "format": "int32"
-        },
-        "updatedCells": {
-          "description": "The number of cells updated.",
           "type": "integer",
           "format": "int32"
         }
@@ -871,23 +1055,23 @@
             "The cell's value must not be between the two condition values.\nSupported by data validation, conditional formatting and filters.\nRequires exactly two ConditionValues.",
             "The cell's value must contain the condition's value.\nSupported by data validation, conditional formatting and filters.\nRequires a single ConditionValue.",
             "The cell's value must not contain the condition's value.\nSupported by data validation, conditional formatting and filters.\nRequires a single ConditionValue.",
-            "The cell's value must start with the condition's value.\nSupported by data validation, conditional formatting and filters.\nRequires a single ConditionValue.",
-            "The cell's value must end with the condition's value.\nSupported by data validation, conditional formatting and filters.\nRequires a single ConditionValue.",
+            "The cell's value must start with the condition's value.\nSupported by conditional formatting and filters.\nRequires a single ConditionValue.",
+            "The cell's value must end with the condition's value.\nSupported by conditional formatting and filters.\nRequires a single ConditionValue.",
             "The cell's value must be exactly the condition's value.\nSupported by data validation, conditional formatting and filters.\nRequires a single ConditionValue.",
             "The cell's value must be a valid email address.\nSupported by data validation.\nRequires no ConditionValues.",
             "The cell's value must be a valid URL.\nSupported by data validation.\nRequires no ConditionValues.",
             "The cell's value must be the same date as the condition's value.\nSupported by data validation, conditional formatting and filters.\nRequires a single ConditionValue.",
             "The cell's value must be before the date of the condition's value.\nSupported by data validation, conditional formatting and filters.\nRequires a single ConditionValue\nthat may be a relative date.",
             "The cell's value must be after the date of the condition's value.\nSupported by data validation, conditional formatting and filters.\nRequires a single ConditionValue\nthat may be a relative date.",
-            "The cell's value must be on or before the date of the condition's value.\nSupported by data validation, conditional formatting and filters.\nRequires a single ConditionValue\nthat may be a relative date.",
-            "The cell's value must be on or after the date of the condition's value.\nSupported by data validation, conditional formatting and filters.\nRequires a single ConditionValue\nthat may be a relative date.",
+            "The cell's value must be on or before the date of the condition's value.\nSupported by data validation.\nRequires a single ConditionValue\nthat may be a relative date.",
+            "The cell's value must be on or after the date of the condition's value.\nSupported by data validation.\nRequires a single ConditionValue\nthat may be a relative date.",
             "The cell's value must be between the dates of the two condition values.\nSupported by data validation.\nRequires exactly two ConditionValues.",
             "The cell's value must be outside the dates of the two condition values.\nSupported by data validation.\nRequires exactly two ConditionValues.",
             "The cell's value must be a date.\nSupported by data validation.\nRequires no ConditionValues.",
             "The cell's value must be listed in the grid in condition value's range.\nSupported by data validation.\nRequires a single ConditionValue,\nand the value must be a valid range in A1 notation.",
             "The cell's value must in the list of condition values.\nSupported by data validation.\nSupports any number of condition values,\none per item in the list.\nFormulas are not supported in the values.",
-            "The cell's value must be empty.\nSupported by data validation, conditional formatting and filters.\nRequires no ConditionValues.",
-            "The cell's value must not be empty.\nSupported by data validation, conditional formatting and filters.\nRequires no ConditionValues.",
+            "The cell's value must be empty.\nSupported by conditional formatting and filters.\nRequires no ConditionValues.",
+            "The cell's value must not be empty.\nSupported by conditional formatting and filters.\nRequires no ConditionValues.",
             "The condition's formula must evaluate to true.\nSupported by data validation, conditional formatting and filters.\nRequires a single ConditionValue."
           ],
           "type": "string"
@@ -990,6 +1174,10 @@
           "description": "A reply from deleting a conditional format rule.",
           "$ref": "DeleteConditionalFormatRuleResponse"
         },
+        "addBanding": {
+          "description": "A reply from adding a banded range.",
+          "$ref": "AddBandingResponse"
+        },
         "duplicateSheet": {
           "description": "A reply from duplicating a sheet.",
           "$ref": "DuplicateSheetResponse"
@@ -1076,6 +1264,17 @@
         }
       },
       "id": "SortRangeRequest"
+    },
+    "AddBandingResponse": {
+      "description": "The result of adding a banded range.",
+      "type": "object",
+      "properties": {
+        "bandedRange": {
+          "description": "The banded range that was added.",
+          "$ref": "BandedRange"
+        }
+      },
+      "id": "AddBandingResponse"
     },
     "TextFormatRun": {
       "description": "A run of a text format. The format of this run continues until the start\nindex of the next run.\nWhen updating, all fields must be set.",
@@ -1291,6 +1490,36 @@
           "items": {
             "$ref": "ValueRange"
           }
+        },
+        "responseValueRenderOption": {
+          "description": "Determines how values in the response should be rendered.\nThe default render option is ValueRenderOption.FORMATTED_VALUE.",
+          "enum": [
+            "FORMATTED_VALUE",
+            "UNFORMATTED_VALUE",
+            "FORMULA"
+          ],
+          "enumDescriptions": [
+            "Values will be calculated & formatted in the reply according to the\ncell's formatting.  Formatting is based on the spreadsheet's locale,\nnot the requesting user's locale.\nFor example, if `A1` is `1.23` and `A2` is `=A1` and formatted as currency,\nthen `A2` would return `\"$1.23\"`.",
+            "Values will be calculated, but not formatted in the reply.\nFor example, if `A1` is `1.23` and `A2` is `=A1` and formatted as currency,\nthen `A2` would return the number `1.23`.",
+            "Values will not be calculated.  The reply will include the formulas.\nFor example, if `A1` is `1.23` and `A2` is `=A1` and formatted as currency,\nthen A2 would return `\"=A1\"`."
+          ],
+          "type": "string"
+        },
+        "responseDateTimeRenderOption": {
+          "description": "Determines how dates, times, and durations in the response should be\nrendered. This is ignored if response_value_render_option is\nFORMATTED_VALUE.\nThe default dateTime render option is [DateTimeRenderOption.SERIAL_NUMBER].",
+          "enum": [
+            "SERIAL_NUMBER",
+            "FORMATTED_STRING"
+          ],
+          "enumDescriptions": [
+            "Instructs date, time, datetime, and duration fields to be output\nas doubles in \"serial number\" format, as popularized by Lotus 1-2-3.\nDays are counted from December 31st 1899 and are incremented by 1,\nand times are fractions of a day.  For example, January 1st 1900 at noon\nwould be 1.5, 1 because it's 1 day offset from December 31st 1899,\nand .5 because noon is half a day.  February 1st 1900 at 3pm would\nbe 32.625. This correctly treats the year 1900 as not a leap year.",
+            "Instructs date, time, datetime, and duration fields to be output\nas strings in their given number format (which is dependent\non the spreadsheet locale)."
+          ],
+          "type": "string"
+        },
+        "includeValuesInResponse": {
+          "description": "Determines if the update response should include the values\nof the cells that were updated. By default, responses\ndo not include the updated values. The `updatedData` field within\neach of the BatchUpdateValuesResponse.responses will contain\nthe updated values. If the range to write was larger than than the range\nactually written, the response will include all values in the requested\nrange (excluding trailing empty rows and columns).",
+          "type": "boolean"
         }
       },
       "id": "BatchUpdateValuesRequest"
@@ -1306,6 +1535,24 @@
         }
       },
       "id": "ClearBasicFilterRequest"
+    },
+    "BatchClearValuesResponse": {
+      "description": "The response when updating a range of values in a spreadsheet.",
+      "type": "object",
+      "properties": {
+        "spreadsheetId": {
+          "description": "The spreadsheet the updates were applied to.",
+          "type": "string"
+        },
+        "clearedRanges": {
+          "description": "The ranges that were cleared, in A1 notation.\n(If the requests were for an unbounded range or a ranger larger\n than the bounds of the sheet, this will be the actual ranges\n that were cleared, bounded to the sheet's limits.)",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "id": "BatchClearValuesResponse"
     },
     "ConditionalFormatRule": {
       "description": "A rule describing a conditional format.",
@@ -1453,7 +1700,7 @@
       "type": "object",
       "properties": {
         "properties": {
-          "description": "The properties the new sheet should have.\nAll properties are optional.\nIf a sheetId\nis specified, the sheet will use that ID.\n(It is an error to specify the ID of a sheet that already exists.)",
+          "description": "The properties the new sheet should have.\nAll properties are optional.\nThe sheetId field is optional; if one is not\nset, an id will be randomly generated. (It is an error to specify the ID\nof a sheet that already exists.)",
           "$ref": "SheetProperties"
         }
       },
@@ -1464,7 +1711,7 @@
       "type": "object",
       "properties": {
         "protectedRange": {
-          "description": "The protected range to be added.",
+          "description": "The protected range to be added. The\nprotectedRangeId field is optional; if\none is not set, an id will be randomly generated. (It is an error to\nspecify the ID of a range that already exists.)",
           "$ref": "ProtectedRange"
         }
       },
@@ -1485,7 +1732,7 @@
           }
         },
         "range": {
-          "description": "The range the values cover, in A1 notation.\nFor output, this range indicates the entire requested range,\neven though the values will exclude trailing rows and columns.",
+          "description": "The range the values cover, in A1 notation.\nFor output, this range indicates the entire requested range,\neven though the values will exclude trailing rows and columns.\nWhen appending values, this field represents the range to search for a\ntable, after which values will be appended.",
           "type": "string"
         },
         "majorDimension": {
@@ -1536,6 +1783,25 @@
         }
       },
       "id": "FindReplaceResponse"
+    },
+    "AppendValuesResponse": {
+      "description": "The response when updating a range of values in a spreadsheet.",
+      "type": "object",
+      "properties": {
+        "spreadsheetId": {
+          "description": "The spreadsheet the updates were applied to.",
+          "type": "string"
+        },
+        "tableRange": {
+          "description": "The range (in A1 notation) of the table that values are being appended to\n(before the values were appended).\nEmpty if no table was found.",
+          "type": "string"
+        },
+        "updates": {
+          "description": "Information about the updates that were applied.",
+          "$ref": "UpdateValuesResponse"
+        }
+      },
+      "id": "AppendValuesResponse"
     },
     "CellFormat": {
       "description": "The format of a cell.",
@@ -1838,12 +2104,27 @@
       "description": "The request for updating any aspect of a spreadsheet.",
       "type": "object",
       "properties": {
+        "includeSpreadsheetInResponse": {
+          "description": "Determines if the update response should include the spreadsheet\nresource.",
+          "type": "boolean"
+        },
         "requests": {
           "description": "A list of updates to apply to the spreadsheet.",
           "type": "array",
           "items": {
             "$ref": "Request"
           }
+        },
+        "responseRanges": {
+          "description": "Limits the ranges included in the response spreadsheet.\nMeaningful only if include_spreadsheet_response is 'true'.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "responseIncludeGridData": {
+          "description": "True if grid data should be returned. Meaningful only if\nif include_spreadsheet_response is 'true'.\nThis parameter is ignored if a field mask was set in the request.",
+          "type": "boolean"
         }
       },
       "id": "BatchUpdateSpreadsheetRequest"
@@ -1898,6 +2179,12 @@
         }
       },
       "id": "SheetProperties"
+    },
+    "ClearValuesRequest": {
+      "description": "The request for clearing a range of values in a spreadsheet.",
+      "type": "object",
+      "properties": {},
+      "id": "ClearValuesRequest"
     },
     "ProtectedRange": {
       "description": "A protected range.",
@@ -2190,7 +2477,7 @@
       "type": "object",
       "properties": {
         "pattern": {
-          "description": "Pattern string used for formatting.  If not set, a default pattern based on\nthe user's locale will be used if necessary for the given type.",
+          "description": "Pattern string used for formatting.  If not set, a default pattern based on\nthe user's locale will be used if necessary for the given type.\nSee the [Date and Number Formats guide](/sheets/guides/formats) for more\ninformation about the supported patterns.",
           "type": "string"
         },
         "type": {
@@ -2221,6 +2508,20 @@
         }
       },
       "id": "NumberFormat"
+    },
+    "BatchClearValuesRequest": {
+      "description": "The request for clearing more than one range of values in a spreadsheet.",
+      "type": "object",
+      "properties": {
+        "ranges": {
+          "description": "The ranges to clear, in A1 notation.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "id": "BatchClearValuesRequest"
     },
     "UpdateDimensionPropertiesRequest": {
       "description": "Updates properties of dimensions within the specified range.",
@@ -2392,6 +2693,18 @@
       },
       "id": "PivotValue"
     },
+    "DeleteBandingRequest": {
+      "description": "Removes the banded range with the given ID from the spreadsheet.",
+      "type": "object",
+      "properties": {
+        "bandedRangeId": {
+          "description": "The ID of the banded range to delete.",
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "id": "DeleteBandingRequest"
+    },
     "BasicFilter": {
       "description": "The default filter associated with a sheet.",
       "type": "object",
@@ -2476,6 +2789,8 @@
             "DOTTED",
             "DASHED",
             "SOLID",
+            "SOLID_MEDIUM",
+            "SOLID_THICK",
             "NONE",
             "DOUBLE"
           ],
@@ -2483,14 +2798,16 @@
             "The style is not specified. Do not use this.",
             "The border is dotted.",
             "The border is dashed.",
-            "The border is a solid line.",
+            "The border is a thin solid line.",
+            "The border is a medium solid line.",
+            "The border is a thick solid line.",
             "No border.\nUsed only when updating a border in order to erase it.",
             "The border is two solid lines."
           ],
           "type": "string"
         },
         "width": {
-          "description": "The width of the border, in pixels.\nBorder widths must be between 0 and 3 pixels, inclusive.",
+          "description": "The width of the border, in pixels.\nDeprecated; the width is determined by the \"style\" field.",
           "type": "integer",
           "format": "int32"
         },
@@ -2506,7 +2823,7 @@
       "type": "object",
       "properties": {
         "namedRange": {
-          "description": "The named range to add. If a non-empty\nnamedRangeId is specified, the named range\nwill use that ID. (It is an error to specify the ID of a named\nrange that already exists.)",
+          "description": "The named range to add. The namedRangeId\nfield is optional; if one is not set, an id will be randomly generated. (It\nis an error to specify the ID of a range that already exists.)",
           "$ref": "NamedRange"
         }
       },
@@ -2522,6 +2839,17 @@
         }
       },
       "id": "AddChartResponse"
+    },
+    "AddBandingRequest": {
+      "description": "Adds a new banded range to the spreadsheet.",
+      "type": "object",
+      "properties": {
+        "bandedRange": {
+          "description": "The banded range to add. The bandedRangeId\nfield is optional; if one is not set, an id will be randomly generated. (It\nis an error to specify the ID of a range that already exists.)",
+          "$ref": "BandedRange"
+        }
+      },
+      "id": "AddBandingRequest"
     },
     "AppendCellsRequest": {
       "description": "Adds new cells after the last row with data in a sheet,\ninserting new rows into the sheet if necessary.",
@@ -2724,17 +3052,6 @@
       },
       "id": "NamedRange"
     },
-    "SetBasicFilterRequest": {
-      "description": "Sets the basic filter associated with a sheet.",
-      "type": "object",
-      "properties": {
-        "filter": {
-          "description": "The filter to set.",
-          "$ref": "BasicFilter"
-        }
-      },
-      "id": "SetBasicFilterRequest"
-    },
     "UpdateEmbeddedObjectPositionRequest": {
       "description": "Update an embedded object's position (such as a moving or resizing a\nchart or image).",
       "type": "object",
@@ -2755,6 +3072,17 @@
         }
       },
       "id": "UpdateEmbeddedObjectPositionRequest"
+    },
+    "SetBasicFilterRequest": {
+      "description": "Sets the basic filter associated with a sheet.",
+      "type": "object",
+      "properties": {
+        "filter": {
+          "description": "The filter to set.",
+          "$ref": "BasicFilter"
+        }
+      },
+      "id": "SetBasicFilterRequest"
     },
     "AutoResizeDimensionsRequest": {
       "description": "Automatically resizes one or more dimensions based on the contents\nof the cells in that dimension.",
@@ -2777,6 +3105,29 @@
         }
       },
       "id": "DuplicateFilterViewResponse"
+    },
+    "BandingProperties": {
+      "description": "Properties referring a single dimension (either row or column). If both\nBandedRange.row_properties and BandedRange.column_properties are\nset, the fill colors are applied to cells according to the following rules:\n\n* header_color and footer_color take priority over band colors.\n* first_band_color takes priority over second_band_color.\n* row_properties takes priority over column_properties.\n\nFor example, the first row color takes priority over the first column\ncolor, but the first column color takes priority over the second row color.\nSimilarly, the row header takes priority over the column header in the\ntop left cell, but the column header takes priority over the first row\ncolor if the row header is not set.",
+      "type": "object",
+      "properties": {
+        "footerColor": {
+          "description": "The color of the last row or column. If this field is not set, the last\nrow or column will be filled with either first_row_color or\nsecond_row_color, depending on the color of the previous row or\ncolumn.",
+          "$ref": "Color"
+        },
+        "headerColor": {
+          "description": "The color of the first row or column. If this field is set, the first\nrow or column will be filled with this color and the colors will\nalternate between first_band_color and [second_band_color[] starting\nfrom the second row or column. Otherwise, the first row or column will be\nfilled with first_band_color and the colors will proceed to alternate\nas they normally would.",
+          "$ref": "Color"
+        },
+        "secondBandColor": {
+          "description": "The second color that is alternating. (Required)",
+          "$ref": "Color"
+        },
+        "firstBandColor": {
+          "description": "The first color that is alternating. (Required)",
+          "$ref": "Color"
+        }
+      },
+      "id": "BandingProperties"
     },
     "PivotGroup": {
       "description": "A single grouping (either row or column) in a pivot table.",
@@ -2863,6 +3214,22 @@
       },
       "id": "DeleteSheetRequest"
     },
+    "UpdateBandingRequest": {
+      "description": "Updates properties of the supplied banded range.",
+      "type": "object",
+      "properties": {
+        "bandedRange": {
+          "description": "The banded range to update with the new properties.",
+          "$ref": "BandedRange"
+        },
+        "fields": {
+          "description": "The fields that should be updated.  At least one field must be specified.\nThe root `bandedRange` is implied and should not be specified.\nA single `\"*\"` can be used as short-hand for listing every field.",
+          "type": "string",
+          "format": "google-fieldmask"
+        }
+      },
+      "id": "UpdateBandingRequest"
+    },
     "ChartData": {
       "description": "The data included in a domain or series.",
       "type": "object",
@@ -2926,6 +3293,13 @@
           "type": "array",
           "items": {
             "$ref": "GridData"
+          }
+        },
+        "bandedRanges": {
+          "description": "The banded (i.e. alternating colors) ranges on this sheet.",
+          "type": "array",
+          "items": {
+            "$ref": "BandedRange"
           }
         }
       },
@@ -3042,6 +3416,10 @@
         "spreadsheetId": {
           "description": "The spreadsheet the updates were applied to.",
           "type": "string"
+        },
+        "updatedSpreadsheet": {
+          "description": "The spreadsheet after updates were applied. This is only set if\n[BatchUpdateSpreadsheetRequest.include_spreadsheet_in_response] is `true`.",
+          "$ref": "Spreadsheet"
         },
         "replies": {
           "description": "The reply of the updates.  This maps 1:1 with the updates, although\nreplies to some requests may be empty.",
@@ -3272,7 +3650,7 @@
       "type": "object",
       "properties": {
         "filter": {
-          "description": "The filter to add.",
+          "description": "The filter to add. The filterViewId\nfield is optional; if one is not set, an id will be randomly generated. (It\nis an error to specify the ID of a filter that already exists.)",
           "$ref": "FilterView"
         }
       },
@@ -3325,7 +3703,7 @@
       "type": "object",
       "properties": {
         "chart": {
-          "description": "The chart that should be added to the spreadsheet, including the position\nwhere it should be placed.",
+          "description": "The chart that should be added to the spreadsheet, including the position\nwhere it should be placed. The chartId\nfield is optional; if one is not set, an id will be randomly generated. (It\nis an error to specify the ID of a chart that already exists.)",
           "$ref": "EmbeddedChart"
         }
       },
@@ -3450,6 +3828,10 @@
           "description": "Merges cells together.",
           "$ref": "MergeCellsRequest"
         },
+        "updateBanding": {
+          "description": "Updates a banded range",
+          "$ref": "UpdateBandingRequest"
+        },
         "addChart": {
           "description": "Adds a chart.",
           "$ref": "AddChartRequest"
@@ -3457,6 +3839,14 @@
         "deleteConditionalFormatRule": {
           "description": "Deletes an existing conditional format rule.",
           "$ref": "DeleteConditionalFormatRuleRequest"
+        },
+        "addBanding": {
+          "description": "Adds a new banded range",
+          "$ref": "AddBandingRequest"
+        },
+        "deleteBanding": {
+          "description": "Removes a banded range",
+          "$ref": "DeleteBandingRequest"
         },
         "updateChartSpec": {
           "description": "Updates a chart's specifications.",
@@ -3574,6 +3964,30 @@
       },
       "id": "DeleteEmbeddedObjectRequest"
     },
+    "BandedRange": {
+      "description": "A banded (alternating colors) range in a sheet.",
+      "type": "object",
+      "properties": {
+        "bandedRangeId": {
+          "description": "The id of the banded range.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "rowProperties": {
+          "description": "Properties for row bands. These properties will be applied on a row-by-row\nbasis throughout all the rows in the range. At least one of\nrow_properties or column_properties must be specified.",
+          "$ref": "BandingProperties"
+        },
+        "columnProperties": {
+          "description": "Properties for column bands. These properties will be applied on a column-\nby-column basis throughout all the columns in the range. At least one of\nrow_properties or column_properties must be specified.",
+          "$ref": "BandingProperties"
+        },
+        "range": {
+          "description": "The range over which these properties are applied.",
+          "$ref": "GridRange"
+        }
+      },
+      "id": "BandedRange"
+    },
     "DeleteConditionalFormatRuleResponse": {
       "description": "The result of deleting a conditional format rule.",
       "type": "object",
@@ -3586,7 +4000,7 @@
       "id": "DeleteConditionalFormatRuleResponse"
     }
   },
-  "revision": "20160519",
+  "revision": "20161115",
   "basePath": "",
   "icons": {
     "x32": "http://www.google.com/images/icons/product/search-32.gif",

@@ -12,7 +12,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/docker/pkg/chrootarchive"
-	"github.com/docker/docker/pkg/stringid"
 	"github.com/docker/docker/pkg/symlink"
 	"github.com/docker/docker/pkg/system"
 	"github.com/docker/docker/utils"
@@ -118,9 +117,7 @@ func (container *Container) NetworkMounts() []Mount {
 		if _, err := os.Stat(container.ResolvConfPath); err != nil {
 			logrus.Warnf("ResolvConfPath set to %q, but can't stat this filename (err = %v); skipping", container.ResolvConfPath, err)
 		} else {
-			if !container.HasMountFor("/etc/resolv.conf") {
-				label.Relabel(container.ResolvConfPath, container.MountLabel, shared)
-			}
+			label.Relabel(container.ResolvConfPath, container.MountLabel, shared)
 			writable := !container.HostConfig.ReadonlyRootfs
 			if m, exists := container.MountPoints["/etc/resolv.conf"]; exists {
 				writable = m.RW
@@ -137,9 +134,7 @@ func (container *Container) NetworkMounts() []Mount {
 		if _, err := os.Stat(container.HostnamePath); err != nil {
 			logrus.Warnf("HostnamePath set to %q, but can't stat this filename (err = %v); skipping", container.HostnamePath, err)
 		} else {
-			if !container.HasMountFor("/etc/hostname") {
-				label.Relabel(container.HostnamePath, container.MountLabel, shared)
-			}
+			label.Relabel(container.HostnamePath, container.MountLabel, shared)
 			writable := !container.HostConfig.ReadonlyRootfs
 			if m, exists := container.MountPoints["/etc/hostname"]; exists {
 				writable = m.RW
@@ -156,9 +151,7 @@ func (container *Container) NetworkMounts() []Mount {
 		if _, err := os.Stat(container.HostsPath); err != nil {
 			logrus.Warnf("HostsPath set to %q, but can't stat this filename (err = %v); skipping", container.HostsPath, err)
 		} else {
-			if !container.HasMountFor("/etc/hosts") {
-				label.Relabel(container.HostsPath, container.MountLabel, shared)
-			}
+			label.Relabel(container.HostsPath, container.MountLabel, shared)
 			writable := !container.HostConfig.ReadonlyRootfs
 			if m, exists := container.MountPoints["/etc/hosts"]; exists {
 				writable = m.RW
@@ -188,17 +181,11 @@ func (container *Container) CopyImagePathContent(v volume.Volume, destination st
 		return err
 	}
 
-	id := stringid.GenerateNonCryptoID()
-	path, err := v.Mount(id)
+	path, err := v.Mount()
 	if err != nil {
 		return err
 	}
-
-	defer func() {
-		if err := v.Unmount(id); err != nil {
-			logrus.Warnf("error while unmounting volume %s: %v", v.Name(), err)
-		}
-	}()
+	defer v.Unmount()
 	return copyExistingContents(rootfs, path)
 }
 
@@ -227,7 +214,7 @@ func (container *Container) UnmountIpcMounts(unmount func(pth string) error) {
 			logrus.Error(err)
 			warnings = append(warnings, err.Error())
 		} else if shmPath != "" {
-			if err := unmount(shmPath); err != nil && !os.IsNotExist(err) {
+			if err := unmount(shmPath); err != nil {
 				warnings = append(warnings, fmt.Sprintf("failed to umount %s: %v", shmPath, err))
 			}
 
@@ -341,10 +328,9 @@ func (container *Container) UnmountVolumes(forceSyscall bool, volumeEventLog fun
 		}
 
 		if volumeMount.Volume != nil {
-			if err := volumeMount.Volume.Unmount(volumeMount.ID); err != nil {
+			if err := volumeMount.Volume.Unmount(); err != nil {
 				return err
 			}
-			volumeMount.ID = ""
 
 			attributes := map[string]string{
 				"driver":    volumeMount.Volume.DriverName(),

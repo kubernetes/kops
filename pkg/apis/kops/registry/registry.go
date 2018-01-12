@@ -18,11 +18,11 @@ package registry
 
 import (
 	"fmt"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/util/validation/field"
 	"strings"
 )
 

@@ -234,11 +234,7 @@ func parseAddrs(attrs uint, fn func(int, []byte) (int, Addr, error), b []byte) (
 					return nil, err
 				}
 				as[i] = a
-				l := roundup(int(b[0]))
-				if len(b) < l {
-					return nil, errMessageTooShort
-				}
-				b = b[l:]
+				b = b[roundup(int(b[0])):]
 			case sysAF_INET, sysAF_INET6:
 				af = int(b[1])
 				a, err := parseInetAddr(af, b)
@@ -246,11 +242,7 @@ func parseAddrs(attrs uint, fn func(int, []byte) (int, Addr, error), b []byte) (
 					return nil, err
 				}
 				as[i] = a
-				l := roundup(int(b[0]))
-				if len(b) < l {
-					return nil, errMessageTooShort
-				}
-				b = b[l:]
+				b = b[roundup(int(b[0])):]
 			default:
 				l, a, err := fn(af, b)
 				if err != nil {
@@ -270,11 +262,7 @@ func parseAddrs(attrs uint, fn func(int, []byte) (int, Addr, error), b []byte) (
 				return nil, err
 			}
 			as[i] = a
-			l := roundup(int(b[0]))
-			if len(b) < l {
-				return nil, errMessageTooShort
-			}
-			b = b[l:]
+			b = b[roundup(int(b[0])):]
 		}
 	}
 	return as[:], nil

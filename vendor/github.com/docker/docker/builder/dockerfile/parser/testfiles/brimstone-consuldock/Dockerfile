@@ -1,4 +1,3 @@
-#escape=\
 FROM brimstone/ubuntu:14.04
 
 MAINTAINER brimstone@the.narro.ws

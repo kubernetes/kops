@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/kubernetes/test/integration/framework"
 	testutils "k8s.io/kubernetes/test/utils"
 
@@ -56,7 +57,7 @@ func BenchmarkScheduling1000Nodes1000Pods(b *testing.B) {
 func benchmarkScheduling(numNodes, numScheduledPods int, b *testing.B) {
 	schedulerConfigFactory, finalFunc := mustSetupScheduler()
 	defer finalFunc()
-	c := schedulerConfigFactory.Client
+	c := schedulerConfigFactory.GetClient()
 
 	nodePreparer := framework.NewIntegrationTestNodePreparer(
 		c,
@@ -74,7 +75,10 @@ func benchmarkScheduling(numNodes, numScheduledPods int, b *testing.B) {
 	podCreator.CreatePods()
 
 	for {
-		scheduled := schedulerConfigFactory.ScheduledPodLister.Indexer.List()
+		scheduled, err := schedulerConfigFactory.GetScheduledPodLister().List(labels.Everything())
+		if err != nil {
+			glog.Fatalf("%v", err)
+		}
 		if len(scheduled) >= numScheduledPods {
 			break
 		}
@@ -89,7 +93,10 @@ func benchmarkScheduling(numNodes, numScheduledPods int, b *testing.B) {
 	for {
 		// This can potentially affect performance of scheduler, since List() is done under mutex.
 		// TODO: Setup watch on apiserver and wait until all pods scheduled.
-		scheduled := schedulerConfigFactory.ScheduledPodLister.Indexer.List()
+		scheduled, err := schedulerConfigFactory.GetScheduledPodLister().List(labels.Everything())
+		if err != nil {
+			glog.Fatalf("%v", err)
+		}
 		if len(scheduled) >= numScheduledPods+b.N {
 			break
 		}

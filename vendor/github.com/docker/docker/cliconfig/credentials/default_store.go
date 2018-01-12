@@ -3,12 +3,12 @@ package credentials
 import (
 	"os/exec"
 
-	"github.com/docker/docker/cliconfig/configfile"
+	"github.com/docker/docker/cliconfig"
 )
 
 // DetectDefaultStore sets the default credentials store
 // if the host includes the default store helper program.
-func DetectDefaultStore(c *configfile.ConfigFile) {
+func DetectDefaultStore(c *cliconfig.ConfigFile) {
 	if c.CredentialsStore != "" {
 		// user defined
 		return

@@ -22,13 +22,13 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"io"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/edit"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 	util_editor "k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 	"os"
 	"path/filepath"
@@ -81,7 +81,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(oldCluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
+	list, err := clientset.InstanceGroups(oldCluster.ObjectMeta.Name).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

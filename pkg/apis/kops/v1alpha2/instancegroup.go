@@ -17,21 +17,20 @@ limitations under the License.
 package v1alpha2
 
 import (
-	"k8s.io/kubernetes/pkg/api/v1"
-	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {
-	meta_v1.TypeMeta `json:",inline"`
-	ObjectMeta       v1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec InstanceGroupSpec `json:"spec,omitempty"`
 }
 
 type InstanceGroupList struct {
-	meta_v1.TypeMeta `json:",inline"`
-	meta_v1.ListMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
 
 	Items []InstanceGroup `json:"items"`
 }
@@ -84,4 +83,14 @@ type InstanceGroupSpec struct {
 
 	// NodeLabels indicates the kubernetes labels for nodes in this group
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
+
+	// Describes the tenancy of the instance group. Can be either default or dedicated.
+	// Currently only applies to AWS.
+	Tenancy string `json:"tenancy,omitempty"`
+
+	// Kubelet overrides kubelet config from the ClusterSpec
+	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
+
+	// Taints indicates the kubernetes taints for nodes in this group
+	Taints []string `json:"taints,omitempty"`
 }

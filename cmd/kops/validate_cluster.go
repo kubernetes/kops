@@ -24,14 +24,15 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	apiutil "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/util/pkg/tables"
-	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/v1"
-	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 )
 
 type ValidateClusterOptions struct {
@@ -73,7 +74,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return err
 	}
 
-	list, err := clientSet.InstanceGroups(cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
+	list, err := clientSet.InstanceGroups(cluster.ObjectMeta.Name).List(metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("cannot get InstanceGroups for %q: %v", cluster.ObjectMeta.Name, err)
 	}
@@ -99,7 +100,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return fmt.Errorf("Cannot load kubecfg settings for %q: %v\n", contextName, err)
 	}
 
-	k8sClient, err := k8s_clientset.NewForConfig(config)
+	k8sClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return fmt.Errorf("Cannot build kube api client for %q: %v\n", contextName, err)
 	}
@@ -151,9 +152,9 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	nodeTable.AddColumn("ROLE", func(n v1.Node) string {
 		// TODO: Maybe print the instance group role instead?
 		// TODO: Maybe include the instance group name?
-		role := "node"
-		if val, ok := n.ObjectMeta.Labels[api.RoleLabelName]; ok {
-			role = val
+		role := apiutil.GetNodeRole(&n)
+		if role == "" {
+			role = "node"
 		}
 		return role
 	})

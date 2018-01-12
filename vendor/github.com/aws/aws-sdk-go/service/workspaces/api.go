@@ -49,9 +49,8 @@ func (c *WorkSpaces) CreateTagsRequest(input *CreateTagsInput) (req *request.Req
 		input = &CreateTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -121,9 +120,8 @@ func (c *WorkSpaces) CreateWorkspacesRequest(input *CreateWorkspacesInput) (req 
 		input = &CreateWorkspacesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateWorkspacesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -192,9 +190,8 @@ func (c *WorkSpaces) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Req
 		input = &DeleteTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -261,9 +258,8 @@ func (c *WorkSpaces) DescribeTagsRequest(input *DescribeTagsInput) (req *request
 		input = &DescribeTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -333,9 +329,8 @@ func (c *WorkSpaces) DescribeWorkspaceBundlesRequest(input *DescribeWorkspaceBun
 		input = &DescribeWorkspaceBundlesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeWorkspaceBundlesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -439,9 +434,8 @@ func (c *WorkSpaces) DescribeWorkspaceDirectoriesRequest(input *DescribeWorkspac
 		input = &DescribeWorkspaceDirectoriesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeWorkspaceDirectoriesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -543,9 +537,8 @@ func (c *WorkSpaces) DescribeWorkspacesRequest(input *DescribeWorkspacesInput) (
 		input = &DescribeWorkspacesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeWorkspacesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -645,9 +638,8 @@ func (c *WorkSpaces) DescribeWorkspacesConnectionStatusRequest(input *DescribeWo
 		input = &DescribeWorkspacesConnectionStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeWorkspacesConnectionStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -711,9 +703,8 @@ func (c *WorkSpaces) ModifyWorkspacePropertiesRequest(input *ModifyWorkspaceProp
 		input = &ModifyWorkspacePropertiesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ModifyWorkspacePropertiesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -798,9 +789,8 @@ func (c *WorkSpaces) RebootWorkspacesRequest(input *RebootWorkspacesInput) (req 
 		input = &RebootWorkspacesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RebootWorkspacesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -864,9 +854,8 @@ func (c *WorkSpaces) RebuildWorkspacesRequest(input *RebuildWorkspacesInput) (re
 		input = &RebuildWorkspacesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RebuildWorkspacesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -943,9 +932,8 @@ func (c *WorkSpaces) StartWorkspacesRequest(input *StartWorkspacesInput) (req *r
 		input = &StartWorkspacesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartWorkspacesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1005,9 +993,8 @@ func (c *WorkSpaces) StopWorkspacesRequest(input *StopWorkspacesInput) (req *req
 		input = &StopWorkspacesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StopWorkspacesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1068,9 +1055,8 @@ func (c *WorkSpaces) TerminateWorkspacesRequest(input *TerminateWorkspacesInput)
 		input = &TerminateWorkspacesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &TerminateWorkspacesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

@@ -94,12 +94,8 @@ func TestJSONFormatProgress(t *testing.T) {
 
 	// Compare the progress strings before the timeLeftBox
 	expectedProgress := "[=========================>                         ]     15 B/30 B"
-	// if terminal column is <= 110, expectedProgressShort is expected.
-	expectedProgressShort := "    15 B/30 B"
-	if !(strings.HasPrefix(msg.ProgressMessage, expectedProgress) ||
-		strings.HasPrefix(msg.ProgressMessage, expectedProgressShort)) {
-		t.Fatalf("ProgressMessage without the timeLeftBox must be %s or %s, got: %s",
-			expectedProgress, expectedProgressShort, msg.ProgressMessage)
+	if !strings.HasPrefix(msg.ProgressMessage, expectedProgress) {
+		t.Fatalf("ProgressMessage without the timeLeftBox must be %s, got: %s", expectedProgress, msg.ProgressMessage)
 	}
 
 	if !reflect.DeepEqual(msg.Progress, progress) {

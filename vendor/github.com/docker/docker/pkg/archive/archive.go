@@ -33,8 +33,6 @@ type (
 	Reader io.Reader
 	// Compression is the state represents if compressed or not.
 	Compression int
-	// WhiteoutFormat is the format of whiteouts unpacked
-	WhiteoutFormat int
 	// TarChownOptions wraps the chown options UID and GID.
 	TarChownOptions struct {
 		UID, GID int
@@ -49,10 +47,6 @@ type (
 		GIDMaps          []idtools.IDMap
 		ChownOpts        *TarChownOptions
 		IncludeSourceDir bool
-		// WhiteoutFormat is the expected on disk format for whiteout files.
-		// This format will be converted to the standard format on pack
-		// and from the standard format on unpack.
-		WhiteoutFormat WhiteoutFormat
 		// When unpacking, specifies whether overwriting a directory with a
 		// non-directory is allowed and vice versa.
 		NoOverwriteDirNonDir bool
@@ -99,14 +93,6 @@ const (
 	Xz
 )
 
-const (
-	// AUFSWhiteoutFormat is the default format for whiteouts
-	AUFSWhiteoutFormat WhiteoutFormat = iota
-	// OverlayWhiteoutFormat formats whiteout according to the overlay
-	// standard.
-	OverlayWhiteoutFormat
-)
-
 // IsArchive checks for the magic bytes of a tar or any supported compression
 // algorithm.
 func IsArchive(header []byte) bool {
@@ -144,7 +130,7 @@ func DetectCompression(source []byte) Compression {
 		Xz:    {0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00},
 	} {
 		if len(source) < len(m) {
-			logrus.Debug("Len too short")
+			logrus.Debugf("Len too short")
 			continue
 		}
 		if bytes.Compare(m, source[:len(m)]) == 0 {
@@ -160,7 +146,7 @@ func xzDecompress(archive io.Reader) (io.ReadCloser, <-chan struct{}, error) {
 	return cmdStream(exec.Command(args[0], args[1:]...), archive)
 }
 
-// DecompressStream decompresses the archive and returns a ReaderCloser with the decompressed archive.
+// DecompressStream decompress the archive and returns a ReaderCloser with the decompressed archive.
 func DecompressStream(archive io.Reader) (io.ReadCloser, error) {
 	p := pools.BufioReader32KPool
 	buf := p.Get(archive)
@@ -206,8 +192,8 @@ func DecompressStream(archive io.Reader) (io.ReadCloser, error) {
 	}
 }
 
-// CompressStream compresseses the dest with specified compression algorithm.
-func CompressStream(dest io.Writer, compression Compression) (io.WriteCloser, error) {
+// CompressStream compresses the dest with specified compression algorithm.
+func CompressStream(dest io.WriteCloser, compression Compression) (io.WriteCloser, error) {
 	p := pools.BufioWriter32KPool
 	buf := p.Get(dest)
 	switch compression {
@@ -242,11 +228,6 @@ func (compression *Compression) Extension() string {
 	return ""
 }
 
-type tarWhiteoutConverter interface {
-	ConvertWrite(*tar.Header, string, os.FileInfo) error
-	ConvertRead(*tar.Header, string) (bool, error)
-}
-
 type tarAppender struct {
 	TarWriter *tar.Writer
 	Buffer    *bufio.Writer
@@ -255,12 +236,6 @@ type tarAppender struct {
 	SeenFiles map[uint64]string
 	UIDMaps   []idtools.IDMap
 	GIDMaps   []idtools.IDMap
-
-	// For packing and unpacking whiteout files in the
-	// non standard format. The whiteout files defined
-	// by the AUFS standard are used as the tar whiteout
-	// standard.
-	WhiteoutConverter tarWhiteoutConverter
 }
 
 // canonicalTarName provides a platform-independent and consistent posix-style
@@ -278,7 +253,6 @@ func canonicalTarName(name string, isDir bool) (string, error) {
 	return name, nil
 }
 
-// addTarFile adds to the tar archive a file from `path` as `name`
 func (ta *tarAppender) addTarFile(path, name string) error {
 	fi, err := os.Lstat(path)
 	if err != nil {
@@ -349,17 +323,11 @@ func (ta *tarAppender) addTarFile(path, name string) error {
 		hdr.Gid = xGID
 	}
 
-	if ta.WhiteoutConverter != nil {
-		if err := ta.WhiteoutConverter.ConvertWrite(hdr, path, fi); err != nil {
-			return err
-		}
-	}
-
 	if err := ta.TarWriter.WriteHeader(hdr); err != nil {
 		return err
 	}
 
-	if hdr.Typeflag == tar.TypeReg && hdr.Size > 0 {
+	if hdr.Typeflag == tar.TypeReg {
 		file, err := os.Open(path)
 		if err != nil {
 			return err
@@ -440,7 +408,7 @@ func createTarFile(path, extractDir string, hdr *tar.Header, reader io.Reader, L
 		}
 
 	case tar.TypeXGlobalHeader:
-		logrus.Debug("PAX Global Extended Headers found and ignored")
+		logrus.Debugf("PAX Global Extended Headers found and ignored")
 		return nil
 
 	default:
@@ -457,26 +425,10 @@ func createTarFile(path, extractDir string, hdr *tar.Header, reader io.Reader, L
 		}
 	}
 
-	var errors []string
 	for key, value := range hdr.Xattrs {
 		if err := system.Lsetxattr(path, key, []byte(value), 0); err != nil {
-			if err == syscall.ENOTSUP {
-				// We ignore errors here because not all graphdrivers support
-				// xattrs *cough* old versions of AUFS *cough*. However only
-				// ENOTSUP should be emitted in that case, otherwise we still
-				// bail.
-				errors = append(errors, err.Error())
-				continue
-			}
 			return err
 		}
-
-	}
-
-	if len(errors) > 0 {
-		logrus.WithFields(logrus.Fields{
-			"errors": errors,
-		}).Warn("ignored xattrs in archive: underlying filesystem doesn't support them")
 	}
 
 	// There is no LChmod, so ignore mode for symlink. Also, this
@@ -540,12 +492,11 @@ func TarWithOptions(srcPath string, options *TarOptions) (io.ReadCloser, error) 
 
 	go func() {
 		ta := &tarAppender{
-			TarWriter:         tar.NewWriter(compressWriter),
-			Buffer:            pools.BufioWriter32KPool.Get(nil),
-			SeenFiles:         make(map[uint64]string),
-			UIDMaps:           options.UIDMaps,
-			GIDMaps:           options.GIDMaps,
-			WhiteoutConverter: getWhiteoutConverter(options.WhiteoutFormat),
+			TarWriter: tar.NewWriter(compressWriter),
+			Buffer:    pools.BufioWriter32KPool.Get(nil),
+			SeenFiles: make(map[uint64]string),
+			UIDMaps:   options.UIDMaps,
+			GIDMaps:   options.GIDMaps,
 		}
 
 		defer func() {
@@ -683,7 +634,7 @@ func TarWithOptions(srcPath string, options *TarOptions) (io.ReadCloser, error) 
 
 				if err := ta.addTarFile(filePath, relFilePath); err != nil {
 					logrus.Errorf("Can't add file %s to tar: %s", filePath, err)
-					// if pipe is broken, stop writing tar stream to it
+					// if pipe is broken, stop writting tar stream to it
 					if err == io.ErrClosedPipe {
 						return err
 					}
@@ -707,7 +658,6 @@ func Unpack(decompressedArchive io.Reader, dest string, options *TarOptions) err
 	if err != nil {
 		return err
 	}
-	whiteoutConverter := getWhiteoutConverter(options.WhiteoutFormat)
 
 	// Iterate through the files in the archive.
 loop:
@@ -805,16 +755,6 @@ loop:
 				return err
 			}
 			hdr.Gid = xGID
-		}
-
-		if whiteoutConverter != nil {
-			writeFile, err := whiteoutConverter.ConvertRead(hdr, path)
-			if err != nil {
-				return err
-			}
-			if !writeFile {
-				continue
-			}
 		}
 
 		if err := createTarFile(path, dest, hdr, trBuf, !options.NoLchown, options.ChownOpts); err != nil {

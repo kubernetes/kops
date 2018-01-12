@@ -150,17 +150,6 @@ func TestQuery(t *testing.T) {
 			options: []Option{MaxBytesBilled(-1)},
 			want:    defaultQueryJob(),
 		},
-		{
-			dst:     defaultTable(nil),
-			src:     defaultQuery,
-			options: []Option{QueryUseStandardSQL()},
-			want: func() *bq.Job {
-				j := defaultQueryJob()
-				j.Configuration.Query.UseLegacySql = false
-				j.Configuration.Query.ForceSendFields = []string{"UseLegacySql"}
-				return j
-			}(),
-		},
 	}
 
 	for _, tc := range testCases {

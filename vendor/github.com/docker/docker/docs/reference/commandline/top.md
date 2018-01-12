@@ -10,11 +10,8 @@ parent = "smn_cli"
 
 # top
 
-```markdown
-Usage:  docker top CONTAINER [ps OPTIONS]
+    Usage: docker top [OPTIONS] CONTAINER [ps OPTIONS]
 
-Display the running processes of a container
+    Display the running processes of a container
 
-Options:
-      --help   Print usage
-```
+      --help          Print usage

@@ -118,6 +118,23 @@ spec:
 
 Will result in the flag `--runtime-config=batch/v2alpha1=true,apps/v1alpha1=true`. Note that `kube-apiserver` accepts `true` as a value for switch-like flags.
 
+### kubelet
+
+This block contains configurations for `kubelet`.  See https://kubernetes.io/docs/admin/kubelet/
+
+####  Feature Gates
+
+```yaml
+spec:
+  kubelet:
+    featureGates:
+      ExperimentalCriticalPodAnnotation: "true"
+      AllowExtTrafficLocalEndpoints: "false"
+```
+
+Will result in the flag `--feature-gates=ExperimentalCriticalPodAnnotation=true,AllowExtTrafficLocalEndpoints=false`
+
+
 ### networkID
 
 On AWS, this is the id of the VPC the cluster is created in. If creating a cluster from scratch, this field doesn't need to be specified at create time; `kops` will create a `VPC` for you.

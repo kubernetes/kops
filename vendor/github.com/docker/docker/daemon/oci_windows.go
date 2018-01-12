@@ -1,14 +1,11 @@
 package daemon
 
 import (
-	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
+	"strings"
 	"syscall"
 
 	"github.com/docker/docker/container"
-	"github.com/docker/docker/image"
 	"github.com/docker/docker/layer"
 	"github.com/docker/docker/libcontainerd"
 	"github.com/docker/docker/libcontainerd/windowsoci"
@@ -34,8 +31,6 @@ func (daemon *Daemon) createSpec(c *container.Container) (*libcontainerd.Spec, e
 		return nil, fmt.Errorf("Failed to graph.Get on ImageID %s - %s", c.ImageID, err)
 	}
 
-	s.Platform.OSVersion = img.OSVersion
-
 	// In base spec
 	s.Hostname = c.FullHostname()
 
@@ -52,22 +47,29 @@ func (daemon *Daemon) createSpec(c *container.Container) (*libcontainerd.Spec, e
 		})
 	}
 
+	// Are we going to run as a Hyper-V container?
+	hv := false
+	if c.HostConfig.Isolation.IsDefault() {
+		// Container is set to use the default, so take the default from the daemon configuration
+		hv = daemon.defaultIsolation.IsHyperV()
+	} else {
+		// Container is requesting an isolation mode. Honour it.
+		hv = c.HostConfig.Isolation.IsHyperV()
+	}
+	if hv {
+		// TODO We don't yet have the ImagePath hooked up. But set to
+		// something non-nil to pickup in libcontainerd.
+		s.Windows.HvRuntime = &windowsoci.HvRuntime{}
+	}
+
 	// In s.Process
-	s.Process.Args = append([]string{c.Path}, c.Args...)
-	if !c.Config.ArgsEscaped {
-		s.Process.Args = escapeArgs(s.Process.Args)
+	if c.Config.ArgsEscaped {
+		s.Process.Args = append([]string{c.Path}, c.Args...)
+	} else {
+		// TODO (jstarks): escape the entrypoint too once the tests are fixed to not rely on this behavior
+		s.Process.Args = append([]string{c.Path}, escapeArgs(c.Args)...)
 	}
 	s.Process.Cwd = c.Config.WorkingDir
-	if len(s.Process.Cwd) == 0 {
-		// We default to C:\ to workaround the oddity of the case that the
-		// default directory for cmd running as LocalSystem (or
-		// ContainerAdministrator) is c:\windows\system32. Hence docker run
-		// <image> cmd will by default end in c:\windows\system32, rather
-		// than 'root' (/) on Linux. The oddity is that if you have a dockerfile
-		// which has no WORKDIR and has a COPY file ., . will be interpreted
-		// as c:\. Hence, setting it to default of c:\ makes for consistency.
-		s.Process.Cwd = `C:\`
-	}
 	s.Process.Env = c.CreateDaemonEnvironment(linkedEnv)
 	s.Process.InitialConsoleSize = c.HostConfig.ConsoleSize
 	s.Process.Terminal = c.Config.Tty
@@ -89,15 +91,9 @@ func (daemon *Daemon) createSpec(c *container.Container) (*libcontainerd.Spec, e
 
 	// s.Windows.LayerPaths
 	var layerPaths []string
-	if img.RootFS != nil && (img.RootFS.Type == image.TypeLayers || img.RootFS.Type == image.TypeLayersWithBase) {
-		// Get the layer path for each layer.
-		start := 1
-		if img.RootFS.Type == image.TypeLayersWithBase {
-			// Include an empty slice to get the base layer ID.
-			start = 0
-		}
+	if img.RootFS != nil && img.RootFS.Type == "layers+base" {
 		max := len(img.RootFS.DiffIDs)
-		for i := start; i <= max; i++ {
+		for i := 0; i <= max; i++ {
 			img.RootFS.DiffIDs = img.RootFS.DiffIDs[:i]
 			path, err := layer.GetLayerPath(daemon.layerStore, img.RootFS.ChainID())
 			if err != nil {
@@ -109,37 +105,7 @@ func (daemon *Daemon) createSpec(c *container.Container) (*libcontainerd.Spec, e
 	}
 	s.Windows.LayerPaths = layerPaths
 
-	// Are we going to run as a Hyper-V container?
-	hv := false
-	if c.HostConfig.Isolation.IsDefault() {
-		// Container is set to use the default, so take the default from the daemon configuration
-		hv = daemon.defaultIsolation.IsHyperV()
-	} else {
-		// Container is requesting an isolation mode. Honour it.
-		hv = c.HostConfig.Isolation.IsHyperV()
-	}
-	if hv {
-		hvr := &windowsoci.HvRuntime{}
-		if img.RootFS != nil && img.RootFS.Type == image.TypeLayers {
-			// For TP5, the utility VM is part of the base layer.
-			// TODO-jstarks: Add support for separate utility VM images
-			// once it is decided how they can be stored.
-			uvmpath := filepath.Join(layerPaths[len(layerPaths)-1], "UtilityVM")
-			_, err = os.Stat(uvmpath)
-			if err != nil {
-				if os.IsNotExist(err) {
-					err = errors.New("container image does not contain a utility VM")
-				}
-				return nil, err
-			}
-
-			hvr.ImagePath = uvmpath
-		}
-
-		s.Windows.HvRuntime = hvr
-	}
-
-	// In s.Windows.Networking
+	// In s.Windows.Networking (TP5+ libnetwork way of doing things)
 	// Connect all the libnetwork allocated networks to the container
 	var epList []string
 	if c.NetworkSettings != nil {
@@ -167,25 +133,46 @@ func (daemon *Daemon) createSpec(c *container.Container) (*libcontainerd.Spec, e
 		EndpointList: epList,
 	}
 
+	// In s.Windows.Networking (TP4 back compat)
+	// TODO Windows: Post TP4 - Remove this along with definitions from spec
+	// and changes to libcontainerd to not read these fields.
+	if daemon.netController == nil {
+		parts := strings.SplitN(string(c.HostConfig.NetworkMode), ":", 2)
+		switch parts[0] {
+		case "none":
+		case "default", "": // empty string to support existing containers
+			if !c.Config.NetworkDisabled {
+				s.Windows.Networking = &windowsoci.Networking{
+					MacAddress:   c.Config.MacAddress,
+					Bridge:       daemon.configStore.bridgeConfig.Iface,
+					PortBindings: c.HostConfig.PortBindings,
+				}
+			}
+		default:
+			return nil, fmt.Errorf("invalid network mode: %s", c.HostConfig.NetworkMode)
+		}
+	}
+
 	// In s.Windows.Resources
 	// @darrenstahlmsft implement these resources
 	cpuShares := uint64(c.HostConfig.CPUShares)
 	s.Windows.Resources = &windowsoci.Resources{
 		CPU: &windowsoci.CPU{
-			Percent: &c.HostConfig.CPUPercent,
-			Shares:  &cpuShares,
+			//TODO Count: ...,
+			//TODO Percent: ...,
+			Shares: &cpuShares,
 		},
 		Memory: &windowsoci.Memory{
-			Limit: &c.HostConfig.Memory,
-			//TODO Reservation: ...,
+		//TODO Limit: ...,
+		//TODO Reservation: ...,
 		},
 		Network: &windowsoci.Network{
 		//TODO Bandwidth: ...,
 		},
 		Storage: &windowsoci.Storage{
-			Bps:  &c.HostConfig.IOMaximumBandwidth,
-			Iops: &c.HostConfig.IOMaximumIOps,
-			//TODO SandboxSize: ...,
+		//TODO Bps: ...,
+		//TODO Iops: ...,
+		//TODO SandboxSize: ...,
 		},
 	}
 	return (*libcontainerd.Spec)(&s), nil

@@ -11,8 +11,6 @@ go-md2man 1 "January 2015" go-md2man "User Manual"
   go-md2man converts standard markdown formatted documents into manpages. It is
   written purely in Go so as to reduce dependencies on 3rd party libs.
 
-  By default, the input is stdin and the output is stdout.
-
 # Example
   Convert the markdown file "go-md2man.1.md" into a manpage.
 

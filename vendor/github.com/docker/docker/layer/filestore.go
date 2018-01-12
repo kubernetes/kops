@@ -2,7 +2,6 @@ package layer
 
 import (
 	"compress/gzip"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -14,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/docker/distribution"
 	"github.com/docker/distribution/digest"
 	"github.com/docker/docker/pkg/ioutils"
 )
@@ -98,14 +96,6 @@ func (fm *fileMetadataTransaction) SetDiffID(diff DiffID) error {
 
 func (fm *fileMetadataTransaction) SetCacheID(cacheID string) error {
 	return ioutil.WriteFile(filepath.Join(fm.root, "cache-id"), []byte(cacheID), 0644)
-}
-
-func (fm *fileMetadataTransaction) SetDescriptor(ref distribution.Descriptor) error {
-	jsonRef, err := json.Marshal(ref)
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(filepath.Join(fm.root, "descriptor.json"), jsonRef, 0644)
 }
 
 func (fm *fileMetadataTransaction) TarSplitWriter(compressInput bool) (io.WriteCloser, error) {
@@ -199,24 +189,6 @@ func (fms *fileMetadataStore) GetCacheID(layer ChainID) (string, error) {
 	}
 
 	return content, nil
-}
-
-func (fms *fileMetadataStore) GetDescriptor(layer ChainID) (distribution.Descriptor, error) {
-	content, err := ioutil.ReadFile(fms.getLayerFilename(layer, "descriptor.json"))
-	if err != nil {
-		if os.IsNotExist(err) {
-			// only return empty descriptor to represent what is stored
-			return distribution.Descriptor{}, nil
-		}
-		return distribution.Descriptor{}, err
-	}
-
-	var ref distribution.Descriptor
-	err = json.Unmarshal(content, &ref)
-	if err != nil {
-		return distribution.Descriptor{}, err
-	}
-	return ref, err
 }
 
 func (fms *fileMetadataStore) TarSplitReader(layer ChainID) (io.ReadCloser, error) {

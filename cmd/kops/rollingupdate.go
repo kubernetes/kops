@@ -17,15 +17,16 @@ limitations under the License.
 package main
 
 import (
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 )
 
 func NewCmdRollingUpdate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "rolling-update",
-		Short: "rolling update clusters",
+		Short: "Initiate rolling updates on clusters.",
 		Long:  `rolling update clusters`,
 	}
 

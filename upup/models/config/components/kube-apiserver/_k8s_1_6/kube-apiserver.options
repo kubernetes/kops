@@ -1,0 +1,12 @@
+KubeAPIServer:
+  # If we include ResourceQuota, we should keep it at the end of the list to prevent incrementing quota usage prematurely.
+  AdmissionControl:
+  - NamespaceLifecycle
+  - LimitRanger
+  - ServiceAccount
+  - PersistentVolumeLabel
+  - DefaultStorageClass
+  - DefaultTolerationSeconds
+  - ResourceQuota
+  # Stick with the pre-1.5 anonymous authentication modes
+  AnonymousAuth: false

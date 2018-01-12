@@ -3,44 +3,40 @@ package command
 
 // Define constants for the command strings
 const (
-	Add         = "add"
-	Arg         = "arg"
-	Cmd         = "cmd"
-	Copy        = "copy"
-	Entrypoint  = "entrypoint"
-	Env         = "env"
-	Expose      = "expose"
-	From        = "from"
-	Healthcheck = "healthcheck"
-	Label       = "label"
-	Maintainer  = "maintainer"
-	Onbuild     = "onbuild"
-	Run         = "run"
-	Shell       = "shell"
-	StopSignal  = "stopsignal"
-	User        = "user"
-	Volume      = "volume"
-	Workdir     = "workdir"
+	Env        = "env"
+	Label      = "label"
+	Maintainer = "maintainer"
+	Add        = "add"
+	Copy       = "copy"
+	From       = "from"
+	Onbuild    = "onbuild"
+	Workdir    = "workdir"
+	Run        = "run"
+	Cmd        = "cmd"
+	Entrypoint = "entrypoint"
+	Expose     = "expose"
+	Volume     = "volume"
+	User       = "user"
+	StopSignal = "stopsignal"
+	Arg        = "arg"
 )
 
 // Commands is list of all Dockerfile commands
 var Commands = map[string]struct{}{
-	Add:         {},
-	Arg:         {},
-	Cmd:         {},
-	Copy:        {},
-	Entrypoint:  {},
-	Env:         {},
-	Expose:      {},
-	From:        {},
-	Healthcheck: {},
-	Label:       {},
-	Maintainer:  {},
-	Onbuild:     {},
-	Run:         {},
-	Shell:       {},
-	StopSignal:  {},
-	User:        {},
-	Volume:      {},
-	Workdir:     {},
+	Env:        {},
+	Label:      {},
+	Maintainer: {},
+	Add:        {},
+	Copy:       {},
+	From:       {},
+	Onbuild:    {},
+	Workdir:    {},
+	Run:        {},
+	Cmd:        {},
+	Entrypoint: {},
+	Expose:     {},
+	Volume:     {},
+	User:       {},
+	StopSignal: {},
+	Arg:        {},
 }

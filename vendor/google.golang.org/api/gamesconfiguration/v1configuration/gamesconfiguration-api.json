@@ -1,19 +1,19 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/2gN0bYpllkEYzozoMfjJq142ov0\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/pBJODW-swwg6bg3cFbiw2wyn5rE\"",
  "discoveryVersion": "v1",
  "id": "gamesConfiguration:v1configuration",
  "name": "gamesConfiguration",
  "canonicalName": "Games Configuration",
  "version": "v1configuration",
- "revision": "20150406",
+ "revision": "20161103",
  "title": "Google Play Game Services Publishing API",
  "description": "The Publishing API for Google Play Game Services.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/games/services",
  "protocol": "rest",

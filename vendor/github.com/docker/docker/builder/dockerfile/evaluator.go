@@ -21,6 +21,7 @@ package dockerfile
 
 import (
 	"fmt"
+	"runtime"
 	"strings"
 
 	"github.com/docker/docker/builder/dockerfile/command"
@@ -58,24 +59,22 @@ var evaluateTable map[string]func(*Builder, []string, map[string]bool, string) e
 
 func init() {
 	evaluateTable = map[string]func(*Builder, []string, map[string]bool, string) error{
-		command.Add:         add,
-		command.Arg:         arg,
-		command.Cmd:         cmd,
-		command.Copy:        dispatchCopy, // copy() is a go builtin
-		command.Entrypoint:  entrypoint,
-		command.Env:         env,
-		command.Expose:      expose,
-		command.From:        from,
-		command.Healthcheck: healthcheck,
-		command.Label:       label,
-		command.Maintainer:  maintainer,
-		command.Onbuild:     onbuild,
-		command.Run:         run,
-		command.Shell:       shell,
-		command.StopSignal:  stopSignal,
-		command.User:        user,
-		command.Volume:      volume,
-		command.Workdir:     workdir,
+		command.Env:        env,
+		command.Label:      label,
+		command.Maintainer: maintainer,
+		command.Add:        add,
+		command.Copy:       dispatchCopy, // copy() is a go builtin
+		command.From:       from,
+		command.Onbuild:    onbuild,
+		command.Workdir:    workdir,
+		command.Run:        run,
+		command.Cmd:        cmd,
+		command.Entrypoint: entrypoint,
+		command.Expose:     expose,
+		command.Volume:     volume,
+		command.User:       user,
+		command.StopSignal: stopSignal,
+		command.Arg:        arg,
 	}
 }
 
@@ -200,4 +199,17 @@ func (b *Builder) dispatch(stepN int, ast *parser.Node) error {
 	}
 
 	return fmt.Errorf("Unknown instruction: %s", upperCasedCmd)
+}
+
+// platformSupports is a short-term function to give users a quality error
+// message if a Dockerfile uses a command not supported on the platform.
+func platformSupports(command string) error {
+	if runtime.GOOS != "windows" {
+		return nil
+	}
+	switch command {
+	case "expose", "user", "stopsignal", "arg":
+		return fmt.Errorf("The daemon on this platform does not support the command '%s'", command)
+	}
+	return nil
 }

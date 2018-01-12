@@ -82,8 +82,3 @@ func (opt *WeightdeviceOpt) GetList() []*blkiodev.WeightDevice {
 
 	return weightdevice
 }
-
-// Type returns the option type
-func (opt *WeightdeviceOpt) Type() string {
-	return "weighted-device"
-}

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"testing"
 
-	"golang.org/x/text/internal/colltab"
+	"golang.org/x/text/collate/colltab"
 )
 
 type entryTest struct {

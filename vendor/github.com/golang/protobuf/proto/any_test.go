@@ -239,7 +239,7 @@ func TestUnmarshalGolden(t *testing.T) {
 	}
 }
 
-func TestMarsahlUnknownAny(t *testing.T) {
+func TestMarshalUnknownAny(t *testing.T) {
 	m := &pb.Message{
 		Anything: &anypb.Any{
 			TypeUrl: "foo",
@@ -260,13 +260,41 @@ func TestMarsahlUnknownAny(t *testing.T) {
 func TestAmbiguousAny(t *testing.T) {
 	pb := &anypb.Any{}
 	err := proto.UnmarshalText(`
-	[type.googleapis.com/proto3_proto.Nested]: <
-	  bunny: "Monty"
-	>
 	type_url: "ttt/proto3_proto.Nested"
+	value: "\n\x05Monty"
 	`, pb)
 	t.Logf("result: %v (error: %v)", expandedMarshaler.Text(pb), err)
 	if err != nil {
 		t.Errorf("failed to parse ambiguous Any message: %v", err)
+	}
+}
+
+func TestUnmarshalOverwriteAny(t *testing.T) {
+	pb := &anypb.Any{}
+	err := proto.UnmarshalText(`
+  [type.googleapis.com/a/path/proto3_proto.Nested]: <
+    bunny: "Monty"
+  >
+  [type.googleapis.com/a/path/proto3_proto.Nested]: <
+    bunny: "Rabbit of Caerbannog"
+  >
+	`, pb)
+	want := `line 7: Any message unpacked multiple times, or "type_url" already set`
+	if err.Error() != want {
+		t.Errorf("incorrect error.\nHave: %v\nWant: %v", err.Error(), want)
+	}
+}
+
+func TestUnmarshalAnyMixAndMatch(t *testing.T) {
+	pb := &anypb.Any{}
+	err := proto.UnmarshalText(`
+	value: "\n\x05Monty"
+  [type.googleapis.com/a/path/proto3_proto.Nested]: <
+    bunny: "Rabbit of Caerbannog"
+  >
+	`, pb)
+	want := `line 5: Any message unpacked multiple times, or "value" already set`
+	if err.Error() != want {
+		t.Errorf("incorrect error.\nHave: %v\nWant: %v", err.Error(), want)
 	}
 }

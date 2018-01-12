@@ -54,9 +54,8 @@ func (c *Health) DescribeAffectedEntitiesRequest(input *DescribeAffectedEntities
 		input = &DescribeAffectedEntitiesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAffectedEntitiesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -156,9 +155,8 @@ func (c *Health) DescribeEntityAggregatesRequest(input *DescribeEntityAggregates
 		input = &DescribeEntityAggregatesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeEntityAggregatesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -225,9 +223,8 @@ func (c *Health) DescribeEventAggregatesRequest(input *DescribeEventAggregatesIn
 		input = &DescribeEventAggregatesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeEventAggregatesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -318,9 +315,8 @@ func (c *Health) DescribeEventDetailsRequest(input *DescribeEventDetailsInput) (
 		input = &DescribeEventDetailsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeEventDetailsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -397,9 +393,8 @@ func (c *Health) DescribeEventTypesRequest(input *DescribeEventTypesInput) (req 
 		input = &DescribeEventTypesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeEventTypesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -498,9 +493,8 @@ func (c *Health) DescribeEventsRequest(input *DescribeEventsInput) (req *request
 		input = &DescribeEventsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeEventsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

@@ -53,12 +53,12 @@ time docker pull distribution/golem-runner:0.1-bats
 
 time docker pull docker:1.9.1-dind
 time docker pull docker:1.10.3-dind
-time docker pull docker:1.11.1-dind
+time docker pull dockerswarm/dind:1.11.0-rc2
 
 golem -cache $cachedir \
 	-i "golem-distribution:latest,$distimage,$distversion" \
 	-i "golem-dind:latest,docker:1.9.1-dind,1.9.1" \
 	-i "golem-dind:latest,docker:1.10.3-dind,1.10.3" \
-	-i "golem-dind:latest,docker:1.11.1-dind,1.11.1" \
+	-i "golem-dind:latest,dockerswarm/dind:1.11.0-rc2,1.11.0" \
 	$DIR
 

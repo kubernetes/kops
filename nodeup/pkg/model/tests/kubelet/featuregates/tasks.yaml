@@ -1,0 +1,4 @@
+contents: |
+  DAEMON_ARGS="--allow-privileged=true --api-servers=https://api.internal.minimal.example.com --babysit-daemons=true --cgroup-root=docker --cloud-provider=aws --cluster-dns=100.64.0.10 --cluster-domain=cluster.local --enable-debugging-handlers=true --eviction-hard=memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5% --feature-gates=ExperimentalCriticalPodAnnotation=true --hostname-override=@aws --network-plugin=cni --node-labels=kubernetes.io/role=node --non-masquerade-cidr=100.64.0.0/10 --pod-manifest-path=/etc/kubernetes/manifests --v=2 --network-plugin-dir=/opt/cni/bin/"
+path: /etc/sysconfig/kubelet
+type: file

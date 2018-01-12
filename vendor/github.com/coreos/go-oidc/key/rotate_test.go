@@ -92,7 +92,7 @@ func TestRotate(t *testing.T) {
 		if tt.start != nil {
 			err := repo.Set(tt.start)
 			if err != nil {
-				log.Fatalf("case %d: unexpected error: %v", i, err)
+				t.Fatalf("case %d: unexpected error: %v", i, err)
 			}
 		}
 
@@ -242,7 +242,7 @@ func TestNextRotation(t *testing.T) {
 			}
 			err := kRepo.Set(pks)
 			if err != nil {
-				log.Fatalf("case %d: unexpected error: %v", i, err)
+				t.Fatalf("case %d: unexpected error: %v", i, err)
 			}
 
 		}
@@ -300,7 +300,7 @@ func TestHealthy(t *testing.T) {
 			}
 			err := kRepo.Set(pks)
 			if err != nil {
-				log.Fatalf("case %d: unexpected error: %v", i, err)
+				t.Fatalf("case %d: unexpected error: %v", i, err)
 			}
 
 		}

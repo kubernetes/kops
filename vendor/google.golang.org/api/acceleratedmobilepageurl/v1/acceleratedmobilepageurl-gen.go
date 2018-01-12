@@ -84,8 +84,8 @@ type AmpUrl struct {
 	AmpUrl string `json:"ampUrl,omitempty"`
 
 	// CdnAmpUrl: The [AMP Cache
-	// URL](/amp/cache/overview#amp-cache-url-format) pointing to the cached
-	// document in the Google AMP Cache.
+	// URL](/amp/cache/overview#amp-cache-url-format) pointing to
+	// the cached document in the Google AMP Cache.
 	CdnAmpUrl string `json:"cdnAmpUrl,omitempty"`
 
 	// OriginalUrl: The original non-AMP URL.
@@ -98,12 +98,20 @@ type AmpUrl struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AmpUrl") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *AmpUrl) MarshalJSON() ([]byte, error) {
 	type noMethod AmpUrl
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // AmpUrlError: AMP URL Error resource for a requested URL that couldn't
@@ -113,23 +121,25 @@ type AmpUrlError struct {
 	//
 	// Possible values:
 	//   "ERROR_CODE_UNSPECIFIED" - Not specified error.
-	//   "INPUT_URL_NOT_FOUND" - Indicates the requested URL is not found
-	// for some reason -- for example,
-	// we receive an HTTP error code 404 when it is crawled.
-	//   "NO_AMP_URL" - Indicates no AMP URL has been found in the HTML of
-	// the requested URL.
+	//   "INPUT_URL_NOT_FOUND" - Indicates the requested URL is not found in
+	// the index, possibly because
+	// it's unable to be found, not able to be accessed by Googlebot, or
+	// some
+	// other error.
+	//   "NO_AMP_URL" - Indicates no AMP URL has been found that corresponds
+	// to the requested
+	// URL.
 	//   "APPLICATION_ERROR" - Indicates some kind of application error
 	// occurred at the server.
 	// Client advised to retry.
-	//   "URL_IS_VALID_AMP" - Indicates the requested URL is a valid AMP
-	// URL.
-	// DEPRECATED: API no longer returns URL_IS_INVALID_AMP error code and
-	// will
-	// be removed in API version 2. Instead of returning error, the
-	// requested
-	// URL is returned as an AMP URL in AmpUrl response.
-	//   "URL_IS_INVALID_AMP" - Indicates that the requested URL is an
-	// invalid AMP URL.
+	//   "URL_IS_VALID_AMP" - DEPRECATED: Indicates the requested URL is a
+	// valid AMP URL.  This is a
+	// non-error state, should not be relied upon as a sign of success
+	// or
+	// failure.  It will be removed in future versions of the API.
+	//   "URL_IS_INVALID_AMP" - Indicates that an AMP URL has been found
+	// that corresponds to the request
+	// URL, but it is not valid AMP HTML.
 	ErrorCode string `json:"errorCode,omitempty"`
 
 	// ErrorMessage: An optional descriptive error message.
@@ -145,12 +155,20 @@ type AmpUrlError struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ErrorCode") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *AmpUrlError) MarshalJSON() ([]byte, error) {
 	type noMethod AmpUrlError
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // BatchGetAmpUrlsRequest: AMP URL request for a batch of URLs.
@@ -177,7 +195,7 @@ type BatchGetAmpUrlsRequest struct {
 	LookupStrategy string `json:"lookupStrategy,omitempty"`
 
 	// Urls: List of URLs to look up for the paired AMP URLs.
-	// The URLs are case-sensitive. Up to 10 URLs per lookup
+	// The URLs are case-sensitive. Up to 50 URLs per lookup
 	// (see [Usage Limits](/amp/cache/reference/limits)).
 	Urls []string `json:"urls,omitempty"`
 
@@ -188,12 +206,21 @@ type BatchGetAmpUrlsRequest struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "LookupStrategy") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *BatchGetAmpUrlsRequest) MarshalJSON() ([]byte, error) {
 	type noMethod BatchGetAmpUrlsRequest
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // BatchGetAmpUrlsResponse: Batch AMP URL response.
@@ -220,12 +247,20 @@ type BatchGetAmpUrlsResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AmpUrls") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *BatchGetAmpUrlsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod BatchGetAmpUrlsResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "acceleratedmobilepageurl.ampUrls.batchGet":
@@ -235,6 +270,7 @@ type AmpUrlsBatchGetCall struct {
 	batchgetampurlsrequest *BatchGetAmpUrlsRequest
 	urlParams_             gensupport.URLParams
 	ctx_                   context.Context
+	header_                http.Header
 }
 
 // BatchGet: Returns AMP URL(s) and equivalent
@@ -261,8 +297,20 @@ func (c *AmpUrlsBatchGetCall) Context(ctx context.Context) *AmpUrlsBatchGetCall 
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *AmpUrlsBatchGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *AmpUrlsBatchGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.batchgetampurlsrequest)
@@ -275,11 +323,7 @@ func (c *AmpUrlsBatchGetCall) doRequest(alt string) (*http.Response, error) {
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "acceleratedmobilepageurl.ampUrls.batchGet" call.

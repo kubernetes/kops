@@ -2,10 +2,7 @@
 
 package volumedrivers
 
-import (
-	"errors"
-	"github.com/docker/docker/volume"
-)
+import "errors"
 
 type client interface {
 	Call(string, interface{}, interface{}) error
@@ -17,14 +14,14 @@ type volumeDriverProxy struct {
 
 type volumeDriverProxyCreateRequest struct {
 	Name string
-	Opts map[string]string
+	Opts opts
 }
 
 type volumeDriverProxyCreateResponse struct {
 	Err string
 }
 
-func (pp *volumeDriverProxy) Create(name string, opts map[string]string) (err error) {
+func (pp *volumeDriverProxy) Create(name string, opts opts) (err error) {
 	var (
 		req volumeDriverProxyCreateRequest
 		ret volumeDriverProxyCreateResponse
@@ -100,7 +97,6 @@ func (pp *volumeDriverProxy) Path(name string) (mountpoint string, err error) {
 
 type volumeDriverProxyMountRequest struct {
 	Name string
-	ID   string
 }
 
 type volumeDriverProxyMountResponse struct {
@@ -108,14 +104,13 @@ type volumeDriverProxyMountResponse struct {
 	Err        string
 }
 
-func (pp *volumeDriverProxy) Mount(name string, id string) (mountpoint string, err error) {
+func (pp *volumeDriverProxy) Mount(name string) (mountpoint string, err error) {
 	var (
 		req volumeDriverProxyMountRequest
 		ret volumeDriverProxyMountResponse
 	)
 
 	req.Name = name
-	req.ID = id
 	if err = pp.Call("VolumeDriver.Mount", req, &ret); err != nil {
 		return
 	}
@@ -131,21 +126,19 @@ func (pp *volumeDriverProxy) Mount(name string, id string) (mountpoint string, e
 
 type volumeDriverProxyUnmountRequest struct {
 	Name string
-	ID   string
 }
 
 type volumeDriverProxyUnmountResponse struct {
 	Err string
 }
 
-func (pp *volumeDriverProxy) Unmount(name string, id string) (err error) {
+func (pp *volumeDriverProxy) Unmount(name string) (err error) {
 	var (
 		req volumeDriverProxyUnmountRequest
 		ret volumeDriverProxyUnmountResponse
 	)
 
 	req.Name = name
-	req.ID = id
 	if err = pp.Call("VolumeDriver.Unmount", req, &ret); err != nil {
 		return
 	}
@@ -161,11 +154,11 @@ type volumeDriverProxyListRequest struct {
 }
 
 type volumeDriverProxyListResponse struct {
-	Volumes []*proxyVolume
+	Volumes list
 	Err     string
 }
 
-func (pp *volumeDriverProxy) List() (volumes []*proxyVolume, err error) {
+func (pp *volumeDriverProxy) List() (volumes list, err error) {
 	var (
 		req volumeDriverProxyListRequest
 		ret volumeDriverProxyListResponse
@@ -205,33 +198,6 @@ func (pp *volumeDriverProxy) Get(name string) (volume *proxyVolume, err error) {
 	}
 
 	volume = ret.Volume
-
-	if ret.Err != "" {
-		err = errors.New(ret.Err)
-	}
-
-	return
-}
-
-type volumeDriverProxyCapabilitiesRequest struct {
-}
-
-type volumeDriverProxyCapabilitiesResponse struct {
-	Capabilities volume.Capability
-	Err          string
-}
-
-func (pp *volumeDriverProxy) Capabilities() (capabilities volume.Capability, err error) {
-	var (
-		req volumeDriverProxyCapabilitiesRequest
-		ret volumeDriverProxyCapabilitiesResponse
-	)
-
-	if err = pp.Call("VolumeDriver.Capabilities", req, &ret); err != nil {
-		return
-	}
-
-	capabilities = ret.Capabilities
 
 	if ret.Err != "" {
 		err = errors.New(ret.Err)

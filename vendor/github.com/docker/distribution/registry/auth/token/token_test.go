@@ -91,7 +91,7 @@ func makeTrustedKeyMap(rootKeys []libtrust.PrivateKey) map[string]libtrust.Publi
 	return trustedKeys
 }
 
-func makeTestToken(issuer, audience string, access []*ResourceActions, rootKey libtrust.PrivateKey, depth int, now time.Time, exp time.Time) (*Token, error) {
+func makeTestToken(issuer, audience string, access []*ResourceActions, rootKey libtrust.PrivateKey, depth int) (*Token, error) {
 	signingKey, err := makeSigningKeyWithChain(rootKey, depth)
 	if err != nil {
 		return nil, fmt.Errorf("unable to make signing key with chain: %s", err)
@@ -109,6 +109,8 @@ func makeTestToken(issuer, audience string, access []*ResourceActions, rootKey l
 		RawJWK:     &rawJWK,
 	}
 
+	now := time.Now()
+
 	randomBytes := make([]byte, 15)
 	if _, err = rand.Read(randomBytes); err != nil {
 		return nil, fmt.Errorf("unable to read random bytes for jwt id: %s", err)
@@ -118,7 +120,7 @@ func makeTestToken(issuer, audience string, access []*ResourceActions, rootKey l
 		Issuer:     issuer,
 		Subject:    "foo",
 		Audience:   audience,
-		Expiration: exp.Unix(),
+		Expiration: now.Add(5 * time.Minute).Unix(),
 		NotBefore:  now.Unix(),
 		IssuedAt:   now.Unix(),
 		JWTID:      base64.URLEncoding.EncodeToString(randomBytes),
@@ -186,7 +188,7 @@ func TestTokenVerify(t *testing.T) {
 	tokens := make([]*Token, 0, numTokens)
 
 	for i := 0; i < numTokens; i++ {
-		token, err := makeTestToken(issuer, audience, access, rootKeys[i], i, time.Now(), time.Now().Add(5*time.Minute))
+		token, err := makeTestToken(issuer, audience, access, rootKeys[i], i)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -204,78 +206,6 @@ func TestTokenVerify(t *testing.T) {
 		if err := token.Verify(verifyOps); err != nil {
 			t.Fatal(err)
 		}
-	}
-}
-
-// This tests that we don't fail tokens with nbf within
-// the defined leeway in seconds
-func TestLeeway(t *testing.T) {
-	var (
-		issuer   = "test-issuer"
-		audience = "test-audience"
-		access   = []*ResourceActions{
-			{
-				Type:    "repository",
-				Name:    "foo/bar",
-				Actions: []string{"pull", "push"},
-			},
-		}
-	)
-
-	rootKeys, err := makeRootKeys(1)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	trustedKeys := makeTrustedKeyMap(rootKeys)
-
-	verifyOps := VerifyOptions{
-		TrustedIssuers:    []string{issuer},
-		AcceptedAudiences: []string{audience},
-		Roots:             nil,
-		TrustedKeys:       trustedKeys,
-	}
-
-	// nbf verification should pass within leeway
-	futureNow := time.Now().Add(time.Duration(5) * time.Second)
-	token, err := makeTestToken(issuer, audience, access, rootKeys[0], 0, futureNow, futureNow.Add(5*time.Minute))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if err := token.Verify(verifyOps); err != nil {
-		t.Fatal(err)
-	}
-
-	// nbf verification should fail with a skew larger than leeway
-	futureNow = time.Now().Add(time.Duration(61) * time.Second)
-	token, err = makeTestToken(issuer, audience, access, rootKeys[0], 0, futureNow, futureNow.Add(5*time.Minute))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if err = token.Verify(verifyOps); err == nil {
-		t.Fatal("Verification should fail for token with nbf in the future outside leeway")
-	}
-
-	// exp verification should pass within leeway
-	token, err = makeTestToken(issuer, audience, access, rootKeys[0], 0, time.Now(), time.Now().Add(-59*time.Second))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if err = token.Verify(verifyOps); err != nil {
-		t.Fatal(err)
-	}
-
-	// exp verification should fail with a skew larger than leeway
-	token, err = makeTestToken(issuer, audience, access, rootKeys[0], 0, time.Now(), time.Now().Add(-60*time.Second))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if err = token.Verify(verifyOps); err == nil {
-		t.Fatal("Verification should fail for token with exp in the future outside leeway")
 	}
 }
 
@@ -377,7 +307,7 @@ func TestAccessController(t *testing.T) {
 			Name:    testAccess.Name,
 			Actions: []string{testAccess.Action},
 		}},
-		rootKeys[1], 1, time.Now(), time.Now().Add(5*time.Minute), // Everything is valid except the key which signed it.
+		rootKeys[1], 1, // Everything is valid except the key which signed it.
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -403,7 +333,7 @@ func TestAccessController(t *testing.T) {
 	token, err = makeTestToken(
 		issuer, service,
 		[]*ResourceActions{}, // No access specified.
-		rootKeys[0], 1, time.Now(), time.Now().Add(5*time.Minute),
+		rootKeys[0], 1,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -433,7 +363,7 @@ func TestAccessController(t *testing.T) {
 			Name:    testAccess.Name,
 			Actions: []string{testAccess.Action},
 		}},
-		rootKeys[0], 1, time.Now(), time.Now().Add(5*time.Minute),
+		rootKeys[0], 1,
 	)
 	if err != nil {
 		t.Fatal(err)

@@ -25,23 +25,23 @@ import (
 	"sync"
 	"time"
 
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/sets"
+	utiluuid "k8s.io/apimachinery/pkg/util/uuid"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/workqueue"
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/resource"
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/extensions"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/client/cache"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
-	"k8s.io/kubernetes/pkg/util/sets"
-	utiluuid "k8s.io/kubernetes/pkg/util/uuid"
-	"k8s.io/kubernetes/pkg/util/workqueue"
-	"k8s.io/kubernetes/pkg/watch"
 	"k8s.io/kubernetes/test/e2e/framework"
 	testutils "k8s.io/kubernetes/test/utils"
 
@@ -143,8 +143,13 @@ func density30AddonResourceVerifier(numNodes int) map[string]framework.ResourceC
 		MemoryConstraint: 100 * (1024 * 1024),
 	}
 	constraints["kube-proxy"] = framework.ResourceConstraint{
-		CPUConstraint:    0.15,
-		MemoryConstraint: 30 * (1024 * 1024),
+		CPUConstraint: 0.15,
+		// When we are running purely density test, 30MB seems to be enough.
+		// However, we are usually running Density together with Load test.
+		// Thus, if Density is running after Load (which is creating and
+		// propagating a bunch of services), kubeproxy is using much more
+		// memory and not releasing it afterwards.
+		MemoryConstraint: 60 * (1024 * 1024),
 	}
 	constraints["l7-lb-controller"] = framework.ResourceConstraint{
 		CPUConstraint:    0.15,
@@ -171,7 +176,7 @@ func density30AddonResourceVerifier(numNodes int) map[string]framework.ResourceC
 
 func logPodStartupStatus(c clientset.Interface, expectedPods int, observedLabels map[string]string, period time.Duration, stopCh chan struct{}) {
 	label := labels.SelectorFromSet(labels.Set(observedLabels))
-	podStore := testutils.NewPodStore(c, v1.NamespaceAll, label, fields.Everything())
+	podStore := testutils.NewPodStore(c, metav1.NamespaceAll, label, fields.Everything())
 	defer podStore.Stop()
 	ticker := time.NewTicker(period)
 	defer ticker.Stop()
@@ -228,12 +233,12 @@ func runDensityTest(dtc DensityTestConfig) time.Duration {
 
 	// Print some data about Pod to Node allocation
 	By("Printing Pod to Node allocation data")
-	podList, err := dtc.ClientSet.Core().Pods(v1.NamespaceAll).List(v1.ListOptions{})
+	podList, err := dtc.ClientSet.Core().Pods(metav1.NamespaceAll).List(metav1.ListOptions{})
 	framework.ExpectNoError(err)
 	pausePodAllocation := make(map[string]int)
 	systemPodAllocation := make(map[string][]string)
 	for _, pod := range podList.Items {
-		if pod.Namespace == api.NamespaceSystem {
+		if pod.Namespace == metav1.NamespaceSystem {
 			systemPodAllocation[pod.Spec.NodeName] = append(systemPodAllocation[pod.Spec.NodeName], pod.Name)
 		} else {
 			pausePodAllocation[pod.Spec.NodeName]++
@@ -334,9 +339,13 @@ var _ = framework.KubeDescribe("Density", func() {
 		}
 	})
 
+	options := framework.FrameworkOptions{
+		ClientQPS:   50.0,
+		ClientBurst: 100,
+	}
 	// Explicitly put here, to delete namespace at the end of the test
 	// (after measuring latency metrics, etc.).
-	f := framework.NewDefaultFramework("density")
+	f := framework.NewFramework("density", options, nil)
 	f.NamespaceDeletionTimeout = time.Hour
 
 	BeforeEach(func() {
@@ -395,20 +404,33 @@ var _ = framework.KubeDescribe("Density", func() {
 		{podsPerNode: 50, runLatencyTest: false, kind: api.Kind("ReplicationController")},
 		{podsPerNode: 95, runLatencyTest: true, kind: api.Kind("ReplicationController")},
 		{podsPerNode: 100, runLatencyTest: false, kind: api.Kind("ReplicationController")},
+		// Tests for other resource types:
+		{podsPerNode: 30, runLatencyTest: true, kind: extensions.Kind("Deployment")},
+		{podsPerNode: 30, runLatencyTest: true, kind: batch.Kind("Job")},
+		// Test scheduling when daemons are preset
+		{podsPerNode: 30, runLatencyTest: true, kind: api.Kind("ReplicationController"), daemonsPerNode: 2},
+		// Test with secrets
+		{podsPerNode: 30, runLatencyTest: true, kind: extensions.Kind("Deployment"), secretsPerPod: 2},
 	}
 
 	for _, testArg := range densityTests {
 		feature := "ManualPerformance"
 		switch testArg.podsPerNode {
 		case 30:
-			if testArg.kind == api.Kind("ReplicationController") {
+			if testArg.kind == api.Kind("ReplicationController") && testArg.daemonsPerNode == 0 && testArg.secretsPerPod == 0 {
 				feature = "Performance"
 			}
 		case 95:
 			feature = "HighDensityPerformance"
 		}
 
-		name := fmt.Sprintf("[Feature:%s] should allow starting %d pods per node using %v with %v secrets", feature, testArg.podsPerNode, testArg.kind, testArg.secretsPerPod)
+		name := fmt.Sprintf("[Feature:%s] should allow starting %d pods per node using %v with %v secrets and %v daemons",
+			feature,
+			testArg.podsPerNode,
+			testArg.kind,
+			testArg.secretsPerPod,
+			testArg.daemonsPerNode,
+		)
 		itArg := testArg
 		It(name, func() {
 			nodePreparer := framework.NewE2ETestNodePreparer(
@@ -552,12 +574,12 @@ var _ = framework.KubeDescribe("Density", func() {
 					nsName := namespaces[i].Name
 					latencyPodsStore, controller := cache.NewInformer(
 						&cache.ListWatch{
-							ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
+							ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
 								options.LabelSelector = labels.SelectorFromSet(labels.Set{"type": additionalPodsPrefix}).String()
 								obj, err := c.Core().Pods(nsName).List(options)
 								return runtime.Object(obj), err
 							},
-							WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
+							WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 								options.LabelSelector = labels.SelectorFromSet(labels.Set{"type": additionalPodsPrefix}).String()
 								return c.Core().Pods(nsName).Watch(options)
 							},
@@ -642,7 +664,7 @@ var _ = framework.KubeDescribe("Density", func() {
 						"involvedObject.namespace": nsName,
 						"source":                   v1.DefaultSchedulerName,
 					}.AsSelector().String()
-					options := v1.ListOptions{FieldSelector: selector}
+					options := metav1.ListOptions{FieldSelector: selector}
 					schedEvents, err := c.Core().Events(nsName).List(options)
 					framework.ExpectNoError(err)
 					for k := range createTimes {
@@ -714,7 +736,7 @@ var _ = framework.KubeDescribe("Density", func() {
 					name := additionalPodsPrefix + "-" + strconv.Itoa(i+1)
 					framework.ExpectNoError(framework.DeleteRCAndWaitForGC(c, rcNameToNsMap[name], name))
 				}
-				workqueue.Parallelize(16, nodeCount, deleteRC)
+				workqueue.Parallelize(25, nodeCount, deleteRC)
 			}
 
 			cleanupDensityTest(dConfig)
@@ -772,7 +794,7 @@ func createRunningPodFromRC(wg *sync.WaitGroup, c clientset.Interface, name, ns,
 		"name": name,
 	}
 	rc := &v1.ReplicationController{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:   name,
 			Labels: labels,
 		},
@@ -780,7 +802,7 @@ func createRunningPodFromRC(wg *sync.WaitGroup, c clientset.Interface, name, ns,
 			Replicas: func(i int) *int32 { x := int32(i); return &x }(1),
 			Selector: labels,
 			Template: &v1.PodTemplateSpec{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Labels: labels,
 				},
 				Spec: v1.PodSpec{

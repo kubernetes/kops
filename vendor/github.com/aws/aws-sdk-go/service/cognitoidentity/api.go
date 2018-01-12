@@ -51,9 +51,8 @@ func (c *CognitoIdentity) CreateIdentityPoolRequest(input *CreateIdentityPoolInp
 		input = &CreateIdentityPoolInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &IdentityPool{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -147,9 +146,8 @@ func (c *CognitoIdentity) DeleteIdentitiesRequest(input *DeleteIdentitiesInput) 
 		input = &DeleteIdentitiesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteIdentitiesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -222,11 +220,10 @@ func (c *CognitoIdentity) DeleteIdentityPoolRequest(input *DeleteIdentityPoolInp
 		input = &DeleteIdentityPoolInput{}
 	}
 
+	output = &DeleteIdentityPoolOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteIdentityPoolOutput{}
-	req.Data = output
 	return
 }
 
@@ -306,9 +303,8 @@ func (c *CognitoIdentity) DescribeIdentityRequest(input *DescribeIdentityInput) 
 		input = &DescribeIdentityInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &IdentityDescription{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -388,9 +384,8 @@ func (c *CognitoIdentity) DescribeIdentityPoolRequest(input *DescribeIdentityPoo
 		input = &DescribeIdentityPoolInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &IdentityPool{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -470,9 +465,8 @@ func (c *CognitoIdentity) GetCredentialsForIdentityRequest(input *GetCredentials
 		input = &GetCredentialsForIdentityInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetCredentialsForIdentityOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -566,9 +560,8 @@ func (c *CognitoIdentity) GetIdRequest(input *GetIdInput) (req *request.Request,
 		input = &GetIdInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetIdOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -659,9 +652,8 @@ func (c *CognitoIdentity) GetIdentityPoolRolesRequest(input *GetIdentityPoolRole
 		input = &GetIdentityPoolRolesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetIdentityPoolRolesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -744,9 +736,8 @@ func (c *CognitoIdentity) GetOpenIdTokenRequest(input *GetOpenIdTokenInput) (req
 		input = &GetOpenIdTokenInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetOpenIdTokenOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -837,9 +828,8 @@ func (c *CognitoIdentity) GetOpenIdTokenForDeveloperIdentityRequest(input *GetOp
 		input = &GetOpenIdTokenForDeveloperIdentityInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetOpenIdTokenForDeveloperIdentityOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -939,9 +929,8 @@ func (c *CognitoIdentity) ListIdentitiesRequest(input *ListIdentitiesInput) (req
 		input = &ListIdentitiesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListIdentitiesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1020,9 +1009,8 @@ func (c *CognitoIdentity) ListIdentityPoolsRequest(input *ListIdentityPoolsInput
 		input = &ListIdentityPoolsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListIdentityPoolsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1097,9 +1085,8 @@ func (c *CognitoIdentity) LookupDeveloperIdentityRequest(input *LookupDeveloperI
 		input = &LookupDeveloperIdentityInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &LookupDeveloperIdentityOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1189,9 +1176,8 @@ func (c *CognitoIdentity) MergeDeveloperIdentitiesRequest(input *MergeDeveloperI
 		input = &MergeDeveloperIdentitiesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &MergeDeveloperIdentitiesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1280,11 +1266,10 @@ func (c *CognitoIdentity) SetIdentityPoolRolesRequest(input *SetIdentityPoolRole
 		input = &SetIdentityPoolRolesInput{}
 	}
 
+	output = &SetIdentityPoolRolesOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SetIdentityPoolRolesOutput{}
-	req.Data = output
 	return
 }
 
@@ -1371,11 +1356,10 @@ func (c *CognitoIdentity) UnlinkDeveloperIdentityRequest(input *UnlinkDeveloperI
 		input = &UnlinkDeveloperIdentityInput{}
 	}
 
+	output = &UnlinkDeveloperIdentityOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UnlinkDeveloperIdentityOutput{}
-	req.Data = output
 	return
 }
 
@@ -1461,11 +1445,10 @@ func (c *CognitoIdentity) UnlinkIdentityRequest(input *UnlinkIdentityInput) (req
 		input = &UnlinkIdentityInput{}
 	}
 
+	output = &UnlinkIdentityOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UnlinkIdentityOutput{}
-	req.Data = output
 	return
 }
 
@@ -1554,9 +1537,8 @@ func (c *CognitoIdentity) UpdateIdentityPoolRequest(input *IdentityPool) (req *r
 		input = &IdentityPool{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &IdentityPool{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

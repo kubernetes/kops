@@ -32,14 +32,31 @@ func (b *GCEModelContext) LinkToNetwork() *gcetasks.Network {
 	return &gcetasks.Network{Name: s("default")}
 }
 
-// SafeClusterName returns the cluster name escaped for the given cloud
+// SafeObjectName returns the object name and cluster name escaped for GCE
 func (c *GCEModelContext) SafeObjectName(name string) string {
-	gceName := name + "-" + c.Cluster.ObjectMeta.Name
-
-	// TODO: If the cluster name > some max size (32?) we should curtail it
-	return gce.SafeClusterName(gceName)
+	return gce.SafeObjectName(name, c.Cluster.ObjectMeta.Name)
 }
 
 func (c *GCEModelContext) GCETagForRole(role kops.InstanceGroupRole) string {
 	return components.GCETagForRole(c.Cluster.ObjectMeta.Name, role)
+}
+
+func (c *GCEModelContext) LinkToTargetPool(id string) *gcetasks.TargetPool {
+	return &gcetasks.TargetPool{Name: s(c.NameForTargetPool(id))}
+}
+
+func (c *GCEModelContext) NameForTargetPool(id string) string {
+	return c.SafeObjectName(id)
+}
+
+func (c *GCEModelContext) NameForForwardingRule(id string) string {
+	return c.SafeObjectName(id)
+}
+
+func (c *GCEModelContext) NameForIPAddress(id string) string {
+	return c.SafeObjectName(id)
+}
+
+func (c *GCEModelContext) NameForFirewallRule(id string) string {
+	return c.SafeObjectName(id)
 }

@@ -27,12 +27,13 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/record"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/record"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/kubelet/events"
 	"k8s.io/kubernetes/pkg/kubelet/network"
-	"k8s.io/kubernetes/pkg/kubelet/network/mock_network"
+	nettest "k8s.io/kubernetes/pkg/kubelet/network/testing"
 	"k8s.io/kubernetes/pkg/security/apparmor"
 	utilstrings "k8s.io/kubernetes/pkg/util/strings"
 )
@@ -88,8 +89,7 @@ func TestGetSecurityOpts(t *testing.T) {
 	for i, test := range tests {
 		securityOpts, err := dm.getSecurityOpts(test.pod, containerName)
 		assert.NoError(t, err, "TestCase[%d]: %s", i, test.msg)
-		opts, err := dm.fmtDockerOpts(securityOpts)
-		assert.NoError(t, err, "TestCase[%d]: %s", i, test.msg)
+		opts := FmtDockerOpts(securityOpts, '=')
 		assert.Len(t, opts, len(test.expectedOpts), "TestCase[%d]: %s", i, test.msg)
 		for _, opt := range test.expectedOpts {
 			assert.Contains(t, opts, opt, "TestCase[%d]: %s", i, test.msg)
@@ -118,13 +118,7 @@ func TestSeccompIsUnconfinedByDefaultWithDockerV110(t *testing.T) {
 		"create", "start", "inspect_container",
 	})
 
-	fakeDocker.Lock()
-	if len(fakeDocker.Created) != 2 ||
-		!matchString(t, "/k8s_POD\\.[a-f0-9]+_foo_new_", fakeDocker.Created[0]) ||
-		!matchString(t, "/k8s_bar\\.[a-f0-9]+_foo_new_", fakeDocker.Created[1]) {
-		t.Errorf("unexpected containers created %v", fakeDocker.Created)
-	}
-	fakeDocker.Unlock()
+	assert.NoError(t, fakeDocker.AssertCreatedByNameWithOrder([]string{"POD", "bar"}))
 
 	newContainer, err := fakeDocker.InspectContainer(fakeDocker.Created[1])
 	if err != nil {
@@ -157,13 +151,7 @@ func TestUnconfinedSeccompProfileWithDockerV110(t *testing.T) {
 		"create", "start", "inspect_container",
 	})
 
-	fakeDocker.Lock()
-	if len(fakeDocker.Created) != 2 ||
-		!matchString(t, "/k8s_POD\\.[a-f0-9]+_foo4_new_", fakeDocker.Created[0]) ||
-		!matchString(t, "/k8s_bar4\\.[a-f0-9]+_foo4_new_", fakeDocker.Created[1]) {
-		t.Errorf("unexpected containers created %v", fakeDocker.Created)
-	}
-	fakeDocker.Unlock()
+	assert.NoError(t, fakeDocker.AssertCreatedByNameWithOrder([]string{"POD", "bar4"}))
 
 	newContainer, err := fakeDocker.InspectContainer(fakeDocker.Created[1])
 	if err != nil {
@@ -192,13 +180,7 @@ func TestDefaultSeccompProfileWithDockerV110(t *testing.T) {
 		"create", "start", "inspect_container",
 	})
 
-	fakeDocker.Lock()
-	if len(fakeDocker.Created) != 2 ||
-		!matchString(t, "/k8s_POD\\.[a-f0-9]+_foo1_new_", fakeDocker.Created[0]) ||
-		!matchString(t, "/k8s_bar1\\.[a-f0-9]+_foo1_new_", fakeDocker.Created[1]) {
-		t.Errorf("unexpected containers created %v", fakeDocker.Created)
-	}
-	fakeDocker.Unlock()
+	assert.NoError(t, fakeDocker.AssertCreatedByNameWithOrder([]string{"POD", "bar1"}))
 
 	newContainer, err := fakeDocker.InspectContainer(fakeDocker.Created[1])
 	if err != nil {
@@ -228,13 +210,7 @@ func TestSeccompContainerAnnotationTrumpsPod(t *testing.T) {
 		"create", "start", "inspect_container",
 	})
 
-	fakeDocker.Lock()
-	if len(fakeDocker.Created) != 2 ||
-		!matchString(t, "/k8s_POD\\.[a-f0-9]+_foo2_new_", fakeDocker.Created[0]) ||
-		!matchString(t, "/k8s_bar2\\.[a-f0-9]+_foo2_new_", fakeDocker.Created[1]) {
-		t.Errorf("unexpected containers created %v", fakeDocker.Created)
-	}
-	fakeDocker.Unlock()
+	assert.NoError(t, fakeDocker.AssertCreatedByNameWithOrder([]string{"POD", "bar2"}))
 
 	newContainer, err := fakeDocker.InspectContainer(fakeDocker.Created[1])
 	if err != nil {
@@ -260,13 +236,7 @@ func TestSecurityOptsAreNilWithDockerV19(t *testing.T) {
 		"create", "start", "inspect_container",
 	})
 
-	fakeDocker.Lock()
-	if len(fakeDocker.Created) != 2 ||
-		!matchString(t, "/k8s_POD\\.[a-f0-9]+_foo_new_", fakeDocker.Created[0]) ||
-		!matchString(t, "/k8s_bar\\.[a-f0-9]+_foo_new_", fakeDocker.Created[1]) {
-		t.Errorf("unexpected containers created %v", fakeDocker.Created)
-	}
-	fakeDocker.Unlock()
+	assert.NoError(t, fakeDocker.AssertCreatedByNameWithOrder([]string{"POD", "bar"}))
 
 	newContainer, err := fakeDocker.InspectContainer(fakeDocker.Created[1])
 	if err != nil {
@@ -282,7 +252,7 @@ func TestCreateAppArmorContanier(t *testing.T) {
 	dm.recorder = recorder
 
 	pod := &v1.Pod{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			UID:       "12345678",
 			Name:      "foo",
 			Namespace: "new",
@@ -306,13 +276,7 @@ func TestCreateAppArmorContanier(t *testing.T) {
 		"create", "start", "inspect_container",
 	})
 
-	fakeDocker.Lock()
-	if len(fakeDocker.Created) != 2 ||
-		!matchString(t, "/k8s_POD\\.[a-f0-9]+_foo_new_", fakeDocker.Created[0]) ||
-		!matchString(t, "/k8s_test\\.[a-f0-9]+_foo_new_", fakeDocker.Created[1]) {
-		t.Errorf("unexpected containers created %v", fakeDocker.Created)
-	}
-	fakeDocker.Unlock()
+	assert.NoError(t, fakeDocker.AssertCreatedByNameWithOrder([]string{"POD", "test"}))
 
 	// Verify security opts.
 	newContainer, err := fakeDocker.InspectContainer(fakeDocker.Created[1])
@@ -384,13 +348,7 @@ func TestSeccompLocalhostProfileIsLoaded(t *testing.T) {
 			"create", "start", "inspect_container",
 		})
 
-		fakeDocker.Lock()
-		if len(fakeDocker.Created) != 2 ||
-			!matchString(t, "/k8s_POD\\.[a-f0-9]+_foo2_new_", fakeDocker.Created[0]) ||
-			!matchString(t, "/k8s_bar2\\.[a-f0-9]+_foo2_new_", fakeDocker.Created[1]) {
-			t.Errorf("unexpected containers created %v", fakeDocker.Created)
-		}
-		fakeDocker.Unlock()
+		assert.NoError(t, fakeDocker.AssertCreatedByNameWithOrder([]string{"POD", "bar2"}))
 
 		newContainer, err := fakeDocker.InspectContainer(fakeDocker.Created[1])
 		if err != nil {
@@ -417,7 +375,7 @@ func TestGetPodStatusFromNetworkPlugin(t *testing.T) {
 	}{
 		{
 			pod: &v1.Pod{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					UID:       "12345678",
 					Name:      "foo",
 					Namespace: "new",
@@ -435,7 +393,7 @@ func TestGetPodStatusFromNetworkPlugin(t *testing.T) {
 		},
 		{
 			pod: &v1.Pod{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					UID:       "12345678",
 					Name:      "foo",
 					Namespace: "new",
@@ -455,8 +413,9 @@ func TestGetPodStatusFromNetworkPlugin(t *testing.T) {
 	for _, test := range cases {
 		dm, fakeDocker := newTestDockerManager()
 		ctrl := gomock.NewController(t)
-		fnp := mock_network.NewMockNetworkPlugin(ctrl)
-		dm.networkPlugin = fnp
+		defer ctrl.Finish()
+		fnp := nettest.NewMockNetworkPlugin(ctrl)
+		dm.network = network.NewPluginManager(fnp)
 
 		fakeDocker.SetFakeRunningContainers([]*FakeContainer{
 			{

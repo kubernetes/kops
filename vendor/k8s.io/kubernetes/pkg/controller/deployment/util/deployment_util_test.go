@@ -18,20 +18,26 @@ package util
 
 import (
 	"fmt"
+	"math/rand"
 	"reflect"
+	"sort"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	core "k8s.io/client-go/testing"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
 	extensions "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
-	"k8s.io/kubernetes/pkg/client/testing/core"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/util/intstr"
+	"k8s.io/kubernetes/pkg/controller"
 )
 
 func addListRSReactor(fakeClient *fake.Clientset, obj runtime.Object) *fake.Clientset {
@@ -99,11 +105,23 @@ func newPod(now time.Time, ready bool, beforeSec int) v1.Pod {
 	}
 }
 
+func newRSControllerRef(rs *extensions.ReplicaSet) *metav1.OwnerReference {
+	isController := true
+	return &metav1.OwnerReference{
+		APIVersion: "extensions/v1beta1",
+		Kind:       "ReplicaSet",
+		Name:       rs.GetName(),
+		UID:        rs.GetUID(),
+		Controller: &isController,
+	}
+}
+
 // generatePodFromRS creates a pod, with the input ReplicaSet's selector and its template
 func generatePodFromRS(rs extensions.ReplicaSet) v1.Pod {
 	return v1.Pod{
-		ObjectMeta: v1.ObjectMeta{
-			Labels: rs.Labels,
+		ObjectMeta: metav1.ObjectMeta{
+			Labels:          rs.Labels,
+			OwnerReferences: []metav1.OwnerReference{*newRSControllerRef(&rs)},
 		},
 		Spec: rs.Spec.Template.Spec,
 	}
@@ -111,7 +129,7 @@ func generatePodFromRS(rs extensions.ReplicaSet) v1.Pod {
 
 func generatePod(labels map[string]string, image string) v1.Pod {
 	return v1.Pod{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Labels: labels,
 		},
 		Spec: v1.PodSpec{
@@ -129,7 +147,7 @@ func generatePod(labels map[string]string, image string) v1.Pod {
 
 func generateRSWithLabel(labels map[string]string, image string) extensions.ReplicaSet {
 	return extensions.ReplicaSet{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:   v1.SimpleNameGenerator.GenerateName("replicaset"),
 			Labels: labels,
 		},
@@ -137,7 +155,7 @@ func generateRSWithLabel(labels map[string]string, image string) extensions.Repl
 			Replicas: func(i int32) *int32 { return &i }(1),
 			Selector: &metav1.LabelSelector{MatchLabels: labels},
 			Template: v1.PodTemplateSpec{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Labels: labels,
 				},
 				Spec: v1.PodSpec{
@@ -155,13 +173,26 @@ func generateRSWithLabel(labels map[string]string, image string) extensions.Repl
 	}
 }
 
+func newDControllerRef(d *extensions.Deployment) *metav1.OwnerReference {
+	isController := true
+	return &metav1.OwnerReference{
+		APIVersion: "extensions/v1beta1",
+		Kind:       "Deployment",
+		Name:       d.GetName(),
+		UID:        d.GetUID(),
+		Controller: &isController,
+	}
+}
+
 // generateRS creates a replica set, with the input deployment's template as its template
 func generateRS(deployment extensions.Deployment) extensions.ReplicaSet {
 	template := GetNewReplicaSetTemplate(&deployment)
 	return extensions.ReplicaSet{
-		ObjectMeta: v1.ObjectMeta{
-			Name:   v1.SimpleNameGenerator.GenerateName("replicaset"),
-			Labels: template.Labels,
+		ObjectMeta: metav1.ObjectMeta{
+			UID:             randomUID(),
+			Name:            v1.SimpleNameGenerator.GenerateName("replicaset"),
+			Labels:          template.Labels,
+			OwnerReferences: []metav1.OwnerReference{*newDControllerRef(&deployment)},
 		},
 		Spec: extensions.ReplicaSetSpec{
 			Replicas: func() *int32 { i := int32(0); return &i }(),
@@ -171,19 +202,24 @@ func generateRS(deployment extensions.Deployment) extensions.ReplicaSet {
 	}
 }
 
+func randomUID() types.UID {
+	return types.UID(strconv.FormatInt(rand.Int63(), 10))
+}
+
 // generateDeployment creates a deployment, with the input image as its template
 func generateDeployment(image string) extensions.Deployment {
 	podLabels := map[string]string{"name": image}
 	terminationSec := int64(30)
 	return extensions.Deployment{
-		ObjectMeta: v1.ObjectMeta{
-			Name: image,
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        image,
+			Annotations: make(map[string]string),
 		},
 		Spec: extensions.DeploymentSpec{
 			Replicas: func(i int32) *int32 { return &i }(1),
 			Selector: &metav1.LabelSelector{MatchLabels: podLabels},
 			Template: v1.PodTemplateSpec{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Labels: podLabels,
 				},
 				Spec: v1.PodSpec{
@@ -255,7 +291,7 @@ func TestGetNewRC(t *testing.T) {
 		if err != nil {
 			t.Errorf("In test case %s, got unexpected error %v", test.test, err)
 		}
-		if !api.Semantic.DeepEqual(rs, test.expected) {
+		if !apiequality.Semantic.DeepEqual(rs, test.expected) {
 			t.Errorf("In test case %s, expected %#v, got %#v", test.test, test.expected, rs)
 		}
 	}
@@ -279,7 +315,8 @@ func TestGetOldRCs(t *testing.T) {
 	oldRS2.Status.FullyLabeledReplicas = *(oldRS2.Spec.Replicas)
 	oldPod2 := generatePodFromRS(oldRS2)
 
-	// create 1 ReplicaSet that existed before the deployment, with the same labels as the deployment
+	// create 1 ReplicaSet that existed before the deployment,
+	// with the same labels as the deployment, but no ControllerRef.
 	existedPod := generatePod(newDeployment.Spec.Template.Labels, "foo")
 	existedRS := generateRSWithLabel(newDeployment.Spec.Template.Labels, "foo")
 	existedRS.Status.FullyLabeledReplicas = *(existedRS.Spec.Replicas)
@@ -333,7 +370,7 @@ func TestGetOldRCs(t *testing.T) {
 					},
 				},
 			},
-			[]*extensions.ReplicaSet{&oldRS, &oldRS2, &existedRS},
+			[]*extensions.ReplicaSet{&oldRS, &oldRS2},
 		},
 	}
 
@@ -363,7 +400,7 @@ func TestGetOldRCs(t *testing.T) {
 
 func generatePodTemplateSpec(name, nodeName string, annotations, labels map[string]string) v1.PodTemplateSpec {
 	return v1.PodTemplateSpec{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:        name,
 			Annotations: annotations,
 			Labels:      labels,
@@ -446,11 +483,7 @@ func TestEqualIgnoreHash(t *testing.T) {
 				reverseString = " (reverse order)"
 			}
 			// Run
-			equal, err := equalIgnoreHash(*t1, *t2)
-			// Check
-			if err != nil {
-				t.Errorf("In test case %q%s, expected no error, returned %v", test.test, reverseString, err)
-			}
+			equal := EqualIgnoreHash(*t1, *t2)
 			if equal != test.expected {
 				t.Errorf("In test case %q%s, expected %v", test.test, reverseString, test.expected)
 			}
@@ -468,9 +501,18 @@ func TestEqualIgnoreHash(t *testing.T) {
 }
 
 func TestFindNewReplicaSet(t *testing.T) {
+	now := metav1.Now()
+	later := metav1.Time{Time: now.Add(time.Minute)}
+
 	deployment := generateDeployment("nginx")
 	newRS := generateRS(deployment)
-	newRS.Labels[extensions.DefaultDeploymentUniqueLabelKey] = "different-hash"
+	newRS.Labels[extensions.DefaultDeploymentUniqueLabelKey] = "hash"
+	newRS.CreationTimestamp = later
+
+	newRSDup := generateRS(deployment)
+	newRSDup.Labels[extensions.DefaultDeploymentUniqueLabelKey] = "different-hash"
+	newRSDup.CreationTimestamp = now
+
 	oldDeployment := generateDeployment("nginx")
 	oldDeployment.Spec.Template.Spec.Containers[0].Name = "nginx-old-1"
 	oldRS := generateRS(oldDeployment)
@@ -483,10 +525,16 @@ func TestFindNewReplicaSet(t *testing.T) {
 		expected   *extensions.ReplicaSet
 	}{
 		{
-			test:       "Get new ReplicaSet with the same spec but different pod-template-hash value",
+			test:       "Get new ReplicaSet with the same template as Deployment spec but different pod-template-hash value",
 			deployment: deployment,
 			rsList:     []*extensions.ReplicaSet{&newRS, &oldRS},
 			expected:   &newRS,
+		},
+		{
+			test:       "Get the oldest new ReplicaSet when there are more than one ReplicaSet with the same template",
+			deployment: deployment,
+			rsList:     []*extensions.ReplicaSet{&newRS, &oldRS, &newRSDup},
+			expected:   &newRSDup,
 		},
 		{
 			test:       "Get nil new ReplicaSet",
@@ -504,13 +552,25 @@ func TestFindNewReplicaSet(t *testing.T) {
 }
 
 func TestFindOldReplicaSets(t *testing.T) {
+	now := metav1.Now()
+	later := metav1.Time{Time: now.Add(time.Minute)}
+	before := metav1.Time{Time: now.Add(-time.Minute)}
+
 	deployment := generateDeployment("nginx")
 	newRS := generateRS(deployment)
-	newRS.Labels[extensions.DefaultDeploymentUniqueLabelKey] = "different-hash"
+	newRS.Labels[extensions.DefaultDeploymentUniqueLabelKey] = "hash"
+	newRS.CreationTimestamp = later
+
+	newRSDup := generateRS(deployment)
+	newRSDup.Labels[extensions.DefaultDeploymentUniqueLabelKey] = "different-hash"
+	newRSDup.CreationTimestamp = now
+
 	oldDeployment := generateDeployment("nginx")
 	oldDeployment.Spec.Template.Spec.Containers[0].Name = "nginx-old-1"
 	oldRS := generateRS(oldDeployment)
 	oldRS.Status.FullyLabeledReplicas = *(oldRS.Spec.Replicas)
+	oldRS.CreationTimestamp = before
+
 	newPod := generatePodFromRS(newRS)
 	oldPod := generatePodFromRS(oldRS)
 
@@ -545,6 +605,18 @@ func TestFindOldReplicaSets(t *testing.T) {
 			expected: []*extensions.ReplicaSet{&oldRS},
 		},
 		{
+			test:       "Get old ReplicaSets with two new ReplicaSets, only the oldest new ReplicaSet is seen as new ReplicaSet",
+			deployment: deployment,
+			rsList:     []*extensions.ReplicaSet{&oldRS, &newRS, &newRSDup},
+			podList: &v1.PodList{
+				Items: []v1.Pod{
+					newPod,
+					oldPod,
+				},
+			},
+			expected: []*extensions.ReplicaSet{&oldRS, &newRS},
+		},
+		{
 			test:       "Get empty old ReplicaSets",
 			deployment: deployment,
 			rsList:     []*extensions.ReplicaSet{&newRS},
@@ -558,7 +630,10 @@ func TestFindOldReplicaSets(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if old, _, err := FindOldReplicaSets(&test.deployment, test.rsList, test.podList); !reflect.DeepEqual(old, test.expected) || err != nil {
+		old, _, err := FindOldReplicaSets(&test.deployment, test.rsList, test.podList)
+		sort.Sort(controller.ReplicaSetsByCreationTimestamp(old))
+		sort.Sort(controller.ReplicaSetsByCreationTimestamp(test.expected))
+		if !reflect.DeepEqual(old, test.expected) || err != nil {
 			t.Errorf("In test case %q, expected %#v, got %#v: %v", test.test, test.expected, old, err)
 		}
 	}
@@ -625,7 +700,6 @@ func TestGetReplicaCountForReplicaSets(t *testing.T) {
 }
 
 func TestResolveFenceposts(t *testing.T) {
-
 	tests := []struct {
 		maxSurge          string
 		maxUnavailable    string
@@ -896,14 +970,14 @@ func TestRemoveCondition(t *testing.T) {
 }
 
 func TestDeploymentComplete(t *testing.T) {
-	deployment := func(desired, current, updated, available, maxUnavailable int32) *extensions.Deployment {
+	deployment := func(desired, current, updated, available, maxUnavailable, maxSurge int32) *extensions.Deployment {
 		return &extensions.Deployment{
 			Spec: extensions.DeploymentSpec{
 				Replicas: &desired,
 				Strategy: extensions.DeploymentStrategy{
 					RollingUpdate: &extensions.RollingUpdateDeployment{
 						MaxUnavailable: func(i int) *intstr.IntOrString { x := intstr.FromInt(i); return &x }(int(maxUnavailable)),
-						MaxSurge:       func() *intstr.IntOrString { x := intstr.FromInt(0); return &x }(),
+						MaxSurge:       func(i int) *intstr.IntOrString { x := intstr.FromInt(i); return &x }(int(maxSurge)),
 					},
 					Type: extensions.RollingUpdateDeploymentStrategyType,
 				},
@@ -926,25 +1000,33 @@ func TestDeploymentComplete(t *testing.T) {
 		{
 			name: "complete",
 
-			d:        deployment(5, 5, 5, 4, 1),
+			d:        deployment(5, 5, 5, 4, 1, 0),
 			expected: true,
 		},
 		{
 			name: "not complete",
 
-			d:        deployment(5, 5, 5, 3, 1),
+			d:        deployment(5, 5, 5, 3, 1, 0),
 			expected: false,
 		},
 		{
 			name: "complete #2",
 
-			d:        deployment(5, 5, 5, 5, 0),
+			d:        deployment(5, 5, 5, 5, 0, 0),
 			expected: true,
 		},
 		{
 			name: "not complete #2",
 
-			d:        deployment(5, 5, 4, 5, 0),
+			d:        deployment(5, 5, 4, 5, 0, 0),
+			expected: false,
+		},
+		{
+			name: "not complete #3",
+
+			// old replica set: spec.replicas=1, status.replicas=1, status.availableReplicas=1
+			// new replica set: spec.replicas=1, status.replicas=1, status.availableReplicas=0
+			d:        deployment(1, 2, 1, 1, 0, 1),
 			expected: false,
 		},
 	}

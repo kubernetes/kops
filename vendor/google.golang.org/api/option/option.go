@@ -26,6 +26,21 @@ func (w withTokenSource) Apply(o *internal.DialSettings) {
 	o.TokenSource = w.ts
 }
 
+// WithServiceAccountFile returns a ClientOption that uses a Google service
+// account credentials file to authenticate.
+// Use WithTokenSource with a token source created from
+// golang.org/x/oauth2/google.JWTConfigFromJSON
+// if reading the file from disk is not an option.
+func WithServiceAccountFile(filename string) ClientOption {
+	return withServiceAccountFile(filename)
+}
+
+type withServiceAccountFile string
+
+func (w withServiceAccountFile) Apply(o *internal.DialSettings) {
+	o.ServiceAccountJSONFilename = string(w)
+}
+
 // WithEndpoint returns a ClientOption that overrides the default endpoint
 // to be used for a service.
 func WithEndpoint(url string) ClientOption {
@@ -115,3 +130,13 @@ func (w withGRPCConnectionPool) Apply(o *internal.DialSettings) {
 	balancer := grpc.RoundRobin(internal.NewPoolResolver(int(w), o))
 	o.GRPCDialOpts = append(o.GRPCDialOpts, grpc.WithBalancer(balancer))
 }
+
+// WithAPIKey returns a ClientOption that specifies an API key to be used
+// as the basis for authentication.
+func WithAPIKey(apiKey string) ClientOption {
+	return withAPIKey(apiKey)
+}
+
+type withAPIKey string
+
+func (w withAPIKey) Apply(o *internal.DialSettings) { o.APIKey = string(w) }

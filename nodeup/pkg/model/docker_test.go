@@ -29,11 +29,62 @@ import (
 
 	// Register our APIs
 	_ "k8s.io/kops/pkg/apis/kops/install"
+	"k8s.io/kops/pkg/flagbuilder"
 )
 
-func TestDockerBuilder(t *testing.T) {
+func TestDockerBuilder_Simple(t *testing.T) {
 	runDockerBuilderTest(t, "simple")
+}
+
+func TestDockerBuilder_1_12_1(t *testing.T) {
 	runDockerBuilderTest(t, "docker_1.12.1")
+}
+
+func TestDockerBuilder_LogFlags(t *testing.T) {
+	runDockerBuilderTest(t, "logflags")
+}
+
+func TestDockerBuilder_BuildFlags(t *testing.T) {
+	grid := []struct {
+		config   kops.DockerConfig
+		expected string
+	}{
+		{
+			kops.DockerConfig{},
+			"",
+		},
+		{
+			kops.DockerConfig{
+				LogDriver: "json-file",
+			},
+			"--log-driver=json-file",
+		},
+		{
+			kops.DockerConfig{
+				LogDriver: "json-file",
+				LogOpt:    []string{"max-size=10m"},
+			},
+			"--log-driver=json-file --log-opt=max-size=10m",
+		},
+		{
+			kops.DockerConfig{
+				LogDriver: "json-file",
+				LogOpt:    []string{"max-size=10m", "max-file=5"},
+			},
+			"--log-driver=json-file --log-opt=max-file=5 --log-opt=max-size=10m",
+		},
+	}
+
+	for _, g := range grid {
+		actual, err := flagbuilder.BuildFlags(&g.config)
+		if err != nil {
+			t.Errorf("error building flags for %v: %v", g.config, err)
+			continue
+		}
+		if actual != g.expected {
+			t.Errorf("flags did not match.  actual=%q expected=%q", actual, g.expected)
+		}
+	}
 }
 
 func runDockerBuilderTest(t *testing.T, key string) {
@@ -85,13 +136,16 @@ func runDockerBuilderTest(t *testing.T, key string) {
 	actualTasksYaml := strings.Join(yamls, "\n---\n")
 
 	tasksYamlPath := path.Join(basedir, "tasks.yaml")
-	expectedTasksYaml, err := ioutil.ReadFile(tasksYamlPath)
+	expectedTasksYamlBytes, err := ioutil.ReadFile(tasksYamlPath)
 	if err != nil {
 		t.Fatalf("error reading file %q: %v", tasksYamlPath, err)
 	}
 
-	if strings.TrimSpace(string(expectedTasksYaml)) != strings.TrimSpace(actualTasksYaml) {
-		diffString := diff.FormatDiff(string(expectedTasksYaml), actualTasksYaml)
+	actualTasksYaml = strings.TrimSpace(actualTasksYaml)
+	expectedTasksYaml := strings.TrimSpace(string(expectedTasksYamlBytes))
+
+	if expectedTasksYaml != actualTasksYaml {
+		diffString := diff.FormatDiff(expectedTasksYaml, actualTasksYaml)
 		t.Logf("diff:\n%s\n", diffString)
 
 		t.Fatalf("tasks differed from expected for test %q", key)

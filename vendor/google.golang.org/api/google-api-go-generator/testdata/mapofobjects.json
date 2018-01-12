@@ -20,8 +20,13 @@
      "type": "object",
      "description": "The entity's properties.",
      "additionalProperties": {
-      "$ref": "Property",
-      "description": "The name of the property. Properties with names matching regex \"__.*__\" are reserved. A reserved property name is forbidden in certain documented contexts. The name cannot be \"\"."
+      "type": "object",
+      "properties": {
+       "name": {
+        "type": "string",
+        "description": "The name of the property. Properties with names matching regex \"__.*__\" are reserved. A reserved property name is forbidden in certain documented contexts. The name cannot be \"\"."
+       }
+      }
      }
     }
    }

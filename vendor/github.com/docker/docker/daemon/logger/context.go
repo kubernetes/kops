@@ -20,7 +20,6 @@ type Context struct {
 	ContainerEnv        []string
 	ContainerLabels     map[string]string
 	LogPath             string
-	DaemonName          string
 }
 
 // ExtraAttributes returns the user-defined extra attributes (labels,

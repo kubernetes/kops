@@ -107,7 +107,7 @@ func New(cfg Config) (Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	u.Path = strings.TrimRight(u.Path, "/") + apiPrefix
+	u.Path = apiPrefix
 
 	return &httpClient{
 		endpoint:  u,

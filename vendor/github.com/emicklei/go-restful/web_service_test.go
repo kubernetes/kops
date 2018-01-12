@@ -44,6 +44,8 @@ func TestCapturePanic(t *testing.T) {
 	httpRequest, _ := http.NewRequest("GET", "http://here.com/fire", nil)
 	httpRequest.Header.Set("Accept", "*/*")
 	httpWriter := httptest.NewRecorder()
+	// override the default here
+	DefaultContainer.DoNotRecover(false)
 	DefaultContainer.dispatch(httpWriter, httpRequest)
 	if 500 != httpWriter.Code {
 		t.Error("500 expected on fire")

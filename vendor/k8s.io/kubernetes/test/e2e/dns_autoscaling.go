@@ -23,13 +23,12 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kubernetes/pkg/api/v1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/util/wait"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/test/e2e/framework"
 
 	. "github.com/onsi/ginkgo"
@@ -48,23 +47,16 @@ var _ = framework.KubeDescribe("DNS horizontal autoscaling", func() {
 	var c clientset.Interface
 	var previousParams map[string]string
 	var originDNSReplicasCount int
-
-	DNSParams_1 := DNSParamsLinear{
-		nodesPerReplica: 1,
-	}
-	DNSParams_2 := DNSParamsLinear{
-		nodesPerReplica: 2,
-	}
-	DNSParams_3 := DNSParamsLinear{
-		nodesPerReplica: 3,
-		coresPerReplica: 3,
-	}
+	var DNSParams_1 DNSParamsLinear
+	var DNSParams_2 DNSParamsLinear
+	var DNSParams_3 DNSParamsLinear
 
 	BeforeEach(func() {
 		framework.SkipUnlessProviderIs("gce", "gke")
 		c = f.ClientSet
 
-		Expect(len(framework.GetReadySchedulableNodesOrDie(c).Items)).NotTo(BeZero())
+		nodeCount := len(framework.GetReadySchedulableNodesOrDie(c).Items)
+		Expect(nodeCount).NotTo(BeZero())
 
 		By("Collecting original replicas count and DNS scaling params")
 		var err error
@@ -74,6 +66,35 @@ var _ = framework.KubeDescribe("DNS horizontal autoscaling", func() {
 		pcm, err := fetchDNSScalingConfigMap(c)
 		Expect(err).NotTo(HaveOccurred())
 		previousParams = pcm.Data
+
+		if nodeCount <= 500 {
+			DNSParams_1 = DNSParamsLinear{
+				nodesPerReplica: 1,
+			}
+			DNSParams_2 = DNSParamsLinear{
+				nodesPerReplica: 2,
+			}
+			DNSParams_3 = DNSParamsLinear{
+				nodesPerReplica: 3,
+				coresPerReplica: 3,
+			}
+		} else {
+			// In large clusters, avoid creating/deleting too many DNS pods,
+			// it is supposed to be correctness test, not performance one.
+			// The default setup is: 256 cores/replica, 16 nodes/replica.
+			// With nodeCount > 500, nodes/13, nodes/14, nodes/15 and nodes/16
+			// are different numbers.
+			DNSParams_1 = DNSParamsLinear{
+				nodesPerReplica: 13,
+			}
+			DNSParams_2 = DNSParamsLinear{
+				nodesPerReplica: 14,
+			}
+			DNSParams_3 = DNSParamsLinear{
+				nodesPerReplica: 15,
+				coresPerReplica: 15,
+			}
+		}
 	})
 
 	// This test is separated because it is slow and need to run serially.
@@ -89,7 +110,7 @@ var _ = framework.KubeDescribe("DNS horizontal autoscaling", func() {
 
 			By("Wait for number of running and ready kube-dns pods recover")
 			label := labels.SelectorFromSet(labels.Set(map[string]string{ClusterAddonLabelKey: DNSLabelName}))
-			_, err := framework.WaitForPodsWithLabelRunningReady(c, api.NamespaceSystem, label, originDNSReplicasCount, DNSdefaultTimeout)
+			_, err := framework.WaitForPodsWithLabelRunningReady(c, metav1.NamespaceSystem, label, originDNSReplicasCount, DNSdefaultTimeout)
 			Expect(err).NotTo(HaveOccurred())
 		}()
 		By("Wait for kube-dns scaled to expected number")
@@ -231,7 +252,7 @@ func getScheduableCores(nodes []v1.Node) int64 {
 }
 
 func fetchDNSScalingConfigMap(c clientset.Interface) (*v1.ConfigMap, error) {
-	cm, err := c.Core().ConfigMaps(api.NamespaceSystem).Get(DNSAutoscalerLabelName, metav1.GetOptions{})
+	cm, err := c.Core().ConfigMaps(metav1.NamespaceSystem).Get(DNSAutoscalerLabelName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +260,7 @@ func fetchDNSScalingConfigMap(c clientset.Interface) (*v1.ConfigMap, error) {
 }
 
 func deleteDNSScalingConfigMap(c clientset.Interface) error {
-	if err := c.Core().ConfigMaps(api.NamespaceSystem).Delete(DNSAutoscalerLabelName, nil); err != nil {
+	if err := c.Core().ConfigMaps(metav1.NamespaceSystem).Delete(DNSAutoscalerLabelName, nil); err != nil {
 		return err
 	}
 	framework.Logf("DNS autoscaling ConfigMap deleted.")
@@ -259,13 +280,13 @@ func packLinearParams(params *DNSParamsLinear) map[string]string {
 func packDNSScalingConfigMap(params map[string]string) *v1.ConfigMap {
 	configMap := v1.ConfigMap{}
 	configMap.ObjectMeta.Name = DNSAutoscalerLabelName
-	configMap.ObjectMeta.Namespace = api.NamespaceSystem
+	configMap.ObjectMeta.Namespace = metav1.NamespaceSystem
 	configMap.Data = params
 	return &configMap
 }
 
 func updateDNSScalingConfigMap(c clientset.Interface, configMap *v1.ConfigMap) error {
-	_, err := c.Core().ConfigMaps(api.NamespaceSystem).Update(configMap)
+	_, err := c.Core().ConfigMaps(metav1.NamespaceSystem).Update(configMap)
 	if err != nil {
 		return err
 	}
@@ -275,8 +296,8 @@ func updateDNSScalingConfigMap(c clientset.Interface, configMap *v1.ConfigMap) e
 
 func getDNSReplicas(c clientset.Interface) (int, error) {
 	label := labels.SelectorFromSet(labels.Set(map[string]string{ClusterAddonLabelKey: DNSLabelName}))
-	listOpts := v1.ListOptions{LabelSelector: label.String()}
-	deployments, err := c.Extensions().Deployments(api.NamespaceSystem).List(listOpts)
+	listOpts := metav1.ListOptions{LabelSelector: label.String()}
+	deployments, err := c.Extensions().Deployments(metav1.NamespaceSystem).List(listOpts)
 	if err != nil {
 		return 0, err
 	}
@@ -290,8 +311,8 @@ func getDNSReplicas(c clientset.Interface) (int, error) {
 
 func deleteDNSAutoscalerPod(c clientset.Interface) error {
 	label := labels.SelectorFromSet(labels.Set(map[string]string{ClusterAddonLabelKey: DNSAutoscalerLabelName}))
-	listOpts := v1.ListOptions{LabelSelector: label.String()}
-	pods, err := c.Core().Pods(api.NamespaceSystem).List(listOpts)
+	listOpts := metav1.ListOptions{LabelSelector: label.String()}
+	pods, err := c.Core().Pods(metav1.NamespaceSystem).List(listOpts)
 	if err != nil {
 		return err
 	}
@@ -300,7 +321,7 @@ func deleteDNSAutoscalerPod(c clientset.Interface) error {
 	}
 
 	podName := pods.Items[0].Name
-	if err := c.Core().Pods(api.NamespaceSystem).Delete(podName, nil); err != nil {
+	if err := c.Core().Pods(metav1.NamespaceSystem).Delete(podName, nil); err != nil {
 		return err
 	}
 	framework.Logf("DNS autoscaling pod %v deleted.", podName)

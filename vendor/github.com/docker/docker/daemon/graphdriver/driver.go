@@ -46,12 +46,9 @@ type InitFunc func(root string, options []string, uidMaps, gidMaps []idtools.IDM
 type ProtoDriver interface {
 	// String returns a string representation of this driver.
 	String() string
-	// CreateReadWrite creates a new, empty filesystem layer that is ready
-	// to be used as the storage for a container.
-	CreateReadWrite(id, parent, mountLabel string, storageOpt map[string]string) error
 	// Create creates a new, empty, filesystem layer with the
 	// specified id and parent and mountLabel. Parent and mountLabel may be "".
-	Create(id, parent, mountLabel string, storageOpt map[string]string) error
+	Create(id, parent, mountLabel string) error
 	// Remove attempts to remove the filesystem layer with this id.
 	Remove(id string) error
 	// Get returns the mountpoint for the layered filesystem referred
@@ -113,17 +110,11 @@ type FileGetCloser interface {
 	Close() error
 }
 
-// Checker makes checks on specified filesystems.
-type Checker interface {
-	// IsMounted returns true if the provided path is mounted for the specific checker
-	IsMounted(path string) bool
-}
-
 func init() {
 	drivers = make(map[string]InitFunc)
 }
 
-// Register registers an InitFunc for the driver.
+// Register registers a InitFunc for the driver.
 func Register(name string, initFunc InitFunc) error {
 	if _, exists := drivers[name]; exists {
 		return fmt.Errorf("Name already registered %s", name)

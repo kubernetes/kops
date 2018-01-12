@@ -2,7 +2,7 @@
    runc exec - execute new process inside the container
 
 # SYNOPSIS
-   runc exec [command options] <container-id> <container command>
+   runc exec [command options] <container-id> -- <container command> [args...]
 
 Where "<container-id>" is the name for the instance of the container and
 "<container command>" is the command to be executed in the container.

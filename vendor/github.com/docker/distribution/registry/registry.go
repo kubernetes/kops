@@ -9,8 +9,6 @@ import (
 	"os"
 	"time"
 
-	"rsc.io/letsencrypt"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/Sirupsen/logrus/formatters/logstash"
 	"github.com/bugsnag/bugsnag-go"
@@ -113,10 +111,11 @@ func (registry *Registry) ListenAndServe() error {
 		return err
 	}
 
-	if config.HTTP.TLS.Certificate != "" || config.HTTP.TLS.LetsEncrypt.CacheFile != "" {
+	if config.HTTP.TLS.Certificate != "" {
 		tlsConf := &tls.Config{
 			ClientAuth:               tls.NoClientCert,
 			NextProtos:               []string{"http/1.1"},
+			Certificates:             make([]tls.Certificate, 1),
 			MinVersion:               tls.VersionTLS10,
 			PreferServerCipherSuites: true,
 			CipherSuites: []uint16{
@@ -131,26 +130,9 @@ func (registry *Registry) ListenAndServe() error {
 			},
 		}
 
-		if config.HTTP.TLS.LetsEncrypt.CacheFile != "" {
-			if config.HTTP.TLS.Certificate != "" {
-				return fmt.Errorf("cannot specify both certificate and Let's Encrypt")
-			}
-			var m letsencrypt.Manager
-			if err := m.CacheFile(config.HTTP.TLS.LetsEncrypt.CacheFile); err != nil {
-				return err
-			}
-			if !m.Registered() {
-				if err := m.Register(config.HTTP.TLS.LetsEncrypt.Email, nil); err != nil {
-					return err
-				}
-			}
-			tlsConf.GetCertificate = m.GetCertificate
-		} else {
-			tlsConf.Certificates = make([]tls.Certificate, 1)
-			tlsConf.Certificates[0], err = tls.LoadX509KeyPair(config.HTTP.TLS.Certificate, config.HTTP.TLS.Key)
-			if err != nil {
-				return err
-			}
+		tlsConf.Certificates[0], err = tls.LoadX509KeyPair(config.HTTP.TLS.Certificate, config.HTTP.TLS.Key)
+		if err != nil {
+			return err
 		}
 
 		if len(config.HTTP.TLS.ClientCAs) != 0 {
@@ -285,7 +267,7 @@ func logLevel(level configuration.Loglevel) log.Level {
 	return l
 }
 
-// panicHandler add an HTTP handler to web app. The handler recover the happening
+// panicHandler add a HTTP handler to web app. The handler recover the happening
 // panic. logrus.Panic transmits panic message to pre-config log hooks, which is
 // defined in config.yml.
 func panicHandler(handler http.Handler) http.Handler {

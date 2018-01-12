@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
-	"strings"
 	"testing"
 )
 
@@ -71,16 +70,6 @@ func TestCloneArgsStripFragment(t *testing.T) {
 	}
 }
 
-func gitGetConfig(name string) string {
-	b, err := git([]string{"config", "--get", name}...)
-	if err != nil {
-		// since we are interested in empty or non empty string,
-		// we can safely ignore the err here.
-		return ""
-	}
-	return strings.TrimSpace(string(b))
-}
-
 func TestCheckoutGit(t *testing.T) {
 	root, err := ioutil.TempDir("", "docker-build-git-checkout")
 	if err != nil {
@@ -88,13 +77,8 @@ func TestCheckoutGit(t *testing.T) {
 	}
 	defer os.RemoveAll(root)
 
-	autocrlf := gitGetConfig("core.autocrlf")
-	if !(autocrlf == "true" || autocrlf == "false" ||
-		autocrlf == "input" || autocrlf == "") {
-		t.Logf("unknown core.autocrlf value: \"%s\"", autocrlf)
-	}
 	eol := "\n"
-	if autocrlf == "true" {
+	if runtime.GOOS == "windows" {
 		eol = "\r\n"
 	}
 

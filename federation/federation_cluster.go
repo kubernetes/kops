@@ -19,22 +19,22 @@ package federation
 import (
 	"fmt"
 	"github.com/golang/glog"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api/v1"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/kubeconfig"
-	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/federation/apis/federation/v1beta1"
 	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
-	"k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/v1"
-	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 type FederationCluster struct {
 	FederationNamespace string
 
-	ControllerKubernetesClients []k8s_clientset.Interface
+	ControllerKubernetesClients []kubernetes.Interface
 	FederationClient            federation_clientset.Interface
 
 	ClusterSecretName string
@@ -53,14 +53,7 @@ func (o *FederationCluster) Run(cluster *kopsapi.Cluster) error {
 		return err
 	}
 
-	k := kutil.CreateKubecfg{
-		ContextName:  cluster.ObjectMeta.Name,
-		KeyStore:     keyStore,
-		SecretStore:  secretStore,
-		KubeMasterIP: cluster.Spec.MasterPublicName,
-	}
-
-	conf, err := k.ExtractKubeconfig()
+	conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore)
 	if err != nil {
 		return fmt.Errorf("error building connection information for cluster %q: %v", cluster.ObjectMeta.Name, err)
 	}
@@ -90,7 +83,7 @@ func (o *FederationCluster) Run(cluster *kopsapi.Cluster) error {
 	return nil
 }
 
-func (o *FederationCluster) ensureFederationSecret(k8s k8s_clientset.Interface, caCertData []byte, user kubeconfig.KubectlUser) error {
+func (o *FederationCluster) ensureFederationSecret(k8s kubernetes.Interface, caCertData []byte, user kubeconfig.KubectlUser) error {
 	_, err := mutateSecret(k8s, o.FederationNamespace, o.ClusterSecretName, func(s *v1.Secret) (*v1.Secret, error) {
 		var kubeconfigData []byte
 		var err error
@@ -169,7 +162,7 @@ func (o *FederationCluster) ensureFederationCluster(federationClient federation_
 		}
 
 		// Secret containing credentials for connecting to cluster
-		c.Spec.SecretRef = &v1.LocalObjectReference{
+		c.Spec.SecretRef = &k8sapiv1.LocalObjectReference{
 			Name: o.ClusterSecretName,
 		}
 		return c, nil
@@ -182,7 +175,7 @@ func findCluster(k8s federation_clientset.Interface, name string) (*v1beta1.Clus
 	glog.V(2).Infof("querying k8s for federation cluster %s", name)
 	c, err := k8s.Federation().Clusters().Get(name, meta_v1.GetOptions{})
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			return nil, nil
 		} else {
 			return nil, fmt.Errorf("error reading federation cluster %s: %v", name, err)

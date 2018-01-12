@@ -26,11 +26,19 @@ import (
 )
 
 type KubeBoot struct {
-	Master            bool
+	Master bool
+
+	// InitializeRBAC should be set to true if we should create the core RBAC roles
+	InitializeRBAC bool
+
 	InternalDNSSuffix string
 	InternalIP        net.IP
 	//MasterID          int
 	//EtcdClusters      []*EtcdClusterSpec
+
+	// ApplyTaints controls whether we set taints based on the master label
+	// This should not be needed in k8s 1.6, because kubelet has the --taint flag
+	ApplyTaints bool
 
 	volumeMounter   *VolumeMountController
 	etcdControllers map[string]*EtcdController
@@ -112,9 +120,16 @@ func (k *KubeBoot) syncOnce() error {
 		glog.V(4).Infof("Not in role master; won't scan for volumes")
 	}
 
-	if k.Master {
+	if k.Master && k.ApplyTaints {
 		if err := ApplyMasterTaints(k.Kubernetes); err != nil {
 			glog.Warningf("error updating master taints: %v", err)
+		}
+	}
+
+	if k.InitializeRBAC {
+		// TODO: Idempotency
+		if err := InitializeRBAC(k.Kubernetes); err != nil {
+			glog.Warningf("error initializing RBAC: %v", err)
 		}
 	}
 

@@ -27,18 +27,19 @@ import (
 	"sync"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	utilnet "k8s.io/apimachinery/pkg/util/net"
+	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/transport"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/extensions"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/client/transport"
-	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/runtime/schema"
-	"k8s.io/kubernetes/pkg/util/intstr"
-	utilnet "k8s.io/kubernetes/pkg/util/net"
 	"k8s.io/kubernetes/test/e2e/framework"
 	testutils "k8s.io/kubernetes/test/utils"
 
@@ -61,6 +62,16 @@ const (
 	// depending on the number of nodes in the underlying cluster.
 	nodeCountPerNamespace = 100
 )
+
+var randomKind = schema.GroupKind{Kind: "Random"}
+
+var knownKinds = []schema.GroupKind{
+	api.Kind("ReplicationController"),
+	extensions.Kind("Deployment"),
+	// TODO: uncomment when Jobs are fixed: #38497
+	//batch.Kind("Job"),
+	extensions.Kind("ReplicaSet"),
+}
 
 // This test suite can take a long time to run, so by default it is added to
 // the ginkgo.skip list (see driver.go).
@@ -133,17 +144,31 @@ var _ = framework.KubeDescribe("Load capacity", func() {
 		// The container will consume 1 cpu and 512mb of memory.
 		{podsPerNode: 3, image: "jess/stress", command: []string{"stress", "-c", "1", "-m", "2"}, kind: api.Kind("ReplicationController")},
 		{podsPerNode: 30, image: "gcr.io/google_containers/serve_hostname:v1.4", kind: api.Kind("ReplicationController")},
+		// Tests for other resource types
+		{podsPerNode: 30, image: "gcr.io/google_containers/serve_hostname:v1.4", kind: extensions.Kind("Deployment")},
+		{podsPerNode: 30, image: "gcr.io/google_containers/serve_hostname:v1.4", kind: batch.Kind("Job")},
+		// Test scheduling when daemons are preset
+		{podsPerNode: 30, image: "gcr.io/google_containers/serve_hostname:v1.4", kind: api.Kind("ReplicationController"), daemonsPerNode: 2},
+		// Test with secrets
+		{podsPerNode: 30, image: "gcr.io/google_containers/serve_hostname:v1.4", kind: extensions.Kind("Deployment"), secretsPerPod: 2},
+		// Special test case which randomizes created resources
+		{podsPerNode: 30, image: "gcr.io/google_containers/serve_hostname:v1.4", kind: randomKind},
 	}
 
 	for _, testArg := range loadTests {
 		feature := "ManualPerformance"
-		if testArg.podsPerNode == 30 && testArg.kind == api.Kind("ReplicationController") {
+		if testArg.podsPerNode == 30 && testArg.kind == api.Kind("ReplicationController") && testArg.daemonsPerNode == 0 && testArg.secretsPerPod == 0 {
 			feature = "Performance"
 		}
-		name := fmt.Sprintf("[Feature:%s] should be able to handle %v pods per node %v with %v secrets",
-			feature, testArg.podsPerNode, testArg.kind, testArg.secretsPerPod)
+		name := fmt.Sprintf("[Feature:%s] should be able to handle %v pods per node %v with %v secrets and %v daemons",
+			feature,
+			testArg.podsPerNode,
+			testArg.kind,
+			testArg.secretsPerPod,
+			testArg.daemonsPerNode,
+		)
 		itArg := testArg
-		itArg.services = os.Getenv("CREATE_SERVICES") == "true"
+		itArg.services = os.Getenv("CREATE_SERVICES") != "false"
 
 		It(name, func() {
 			// Create a number of namespaces.
@@ -357,7 +382,9 @@ func generateConfigsForGroup(
 ) ([]testutils.RunObjectConfig, []*testutils.SecretConfig) {
 	configs := make([]testutils.RunObjectConfig, 0, count)
 	secretConfigs := make([]*testutils.SecretConfig, 0, count*secretsPerPod)
+	savedKind := kind
 	for i := 1; i <= count; i++ {
+		kind = savedKind
 		namespace := nss[i%len(nss)].Name
 		secretNames := make([]string, 0, secretsPerPod)
 
@@ -387,6 +414,10 @@ func generateConfigsForGroup(
 			SecretNames:    secretNames,
 		}
 
+		if kind == randomKind {
+			kind = knownKinds[rand.Int()%len(knownKinds)]
+		}
+
 		var config testutils.RunObjectConfig
 		switch kind {
 		case api.Kind("ReplicationController"):
@@ -411,7 +442,7 @@ func generateServicesForConfigs(configs []testutils.RunObjectConfig) []*v1.Servi
 		serviceName := config.GetName() + "-svc"
 		labels := map[string]string{"name": config.GetName()}
 		service := &v1.Service{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      serviceName,
 				Namespace: config.GetNamespace(),
 			},
@@ -471,7 +502,7 @@ func scaleResource(wg *sync.WaitGroup, config testutils.RunObjectConfig, scaling
 		fmt.Sprintf("scaling rc %s for the first time", config.GetName()))
 
 	selector := labels.SelectorFromSet(labels.Set(map[string]string{"name": config.GetName()}))
-	options := v1.ListOptions{
+	options := metav1.ListOptions{
 		LabelSelector:   selector.String(),
 		ResourceVersion: "0",
 	}

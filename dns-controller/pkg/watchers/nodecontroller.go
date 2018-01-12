@@ -21,23 +21,24 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
-	"k8s.io/kubernetes/pkg/api/v1"
-	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/core/v1"
-	"k8s.io/kubernetes/pkg/watch"
+	kopsutil "k8s.io/kops/pkg/apis/kops/util"
 )
 
 // NodeController watches for nodes
 type NodeController struct {
 	util.Stoppable
-	kubeClient client.CoreV1Interface
+	kubeClient kubernetes.Interface
 	scope      dns.Scope
 }
 
 // newNodeController creates a nodeController
-func NewNodeController(kubeClient client.CoreV1Interface, dns dns.Context) (*NodeController, error) {
+func NewNodeController(kubeClient kubernetes.Interface, dns dns.Context) (*NodeController, error) {
 	scope, err := dns.CreateScope("node")
 	if err != nil {
 		return nil, fmt.Errorf("error building dns scope: %v", err)
@@ -63,14 +64,14 @@ func (c *NodeController) Run() {
 
 func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
-		var listOpts v1.ListOptions
+		var listOpts metav1.ListOptions
 
 		// Note we need to watch all the nodes, to set up alias targets
 		//listOpts.LabelSelector = labels.Everything()
 		glog.Warningf("querying without field filter")
 		//listOpts.FieldSelector = fields.Everything()
 
-		nodeList, err := c.kubeClient.Nodes().List(listOpts)
+		nodeList, err := c.kubeClient.CoreV1().Nodes().List(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing nodes: %v", err)
 		}
@@ -88,7 +89,7 @@ func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 
 		listOpts.Watch = true
 		listOpts.ResourceVersion = nodeList.ResourceVersion
-		watcher, err := c.kubeClient.Nodes().Watch(listOpts)
+		watcher, err := c.kubeClient.CoreV1().Nodes().Watch(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error watching nodes: %v", err)
 		}
@@ -215,7 +216,8 @@ func (c *NodeController) updateNodeRecords(node *v1.Node) {
 	// node/role=<role>/external -> ExternalIP
 	// node/role=<role>/internal -> InternalIP
 	{
-		role := node.Labels["kubernetes.io/role"]
+		role := kopsutil.GetNodeRole(node)
+		// Default to node
 		if role == "" {
 			role = "node"
 		}

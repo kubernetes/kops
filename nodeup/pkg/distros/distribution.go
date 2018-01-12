@@ -24,11 +24,12 @@ import (
 type Distribution string
 
 var (
-	DistributionJessie  Distribution = "jessie"
-	DistributionXenial  Distribution = "xenial"
-	DistributionRhel7   Distribution = "rhel7"
-	DistributionCentos7 Distribution = "centos7"
-	DistributionCoreOS  Distribution = "coreos"
+	DistributionJessie      Distribution = "jessie"
+	DistributionXenial      Distribution = "xenial"
+	DistributionRhel7       Distribution = "rhel7"
+	DistributionCentos7     Distribution = "centos7"
+	DistributionCoreOS      Distribution = "coreos"
+	DistributionContainerOS Distribution = "containeros"
 )
 
 func (d Distribution) BuildTags() []string {
@@ -45,6 +46,8 @@ func (d Distribution) BuildTags() []string {
 		t = []string{"_rhel7"}
 	case DistributionCoreOS:
 		t = []string{"_coreos"}
+	case DistributionContainerOS:
+		t = []string{"_containeros"}
 	default:
 		glog.Fatalf("unknown distribution: %s", d)
 		return nil
@@ -67,7 +70,7 @@ func (d Distribution) IsDebianFamily() bool {
 	switch d {
 	case DistributionJessie, DistributionXenial:
 		return true
-	case DistributionCentos7, DistributionRhel7, DistributionCoreOS:
+	case DistributionCentos7, DistributionRhel7, DistributionCoreOS, DistributionContainerOS:
 		return false
 	default:
 		glog.Fatalf("unknown distribution: %s", d)
@@ -79,7 +82,7 @@ func (d Distribution) IsRHELFamily() bool {
 	switch d {
 	case DistributionCentos7, DistributionRhel7:
 		return true
-	case DistributionJessie, DistributionXenial, DistributionCoreOS:
+	case DistributionJessie, DistributionXenial, DistributionCoreOS, DistributionContainerOS:
 		return false
 	default:
 		glog.Fatalf("unknown distribution: %s", d)
@@ -94,6 +97,8 @@ func (d Distribution) IsSystemd() bool {
 	case DistributionCentos7, DistributionRhel7:
 		return true
 	case DistributionCoreOS:
+		return true
+	case DistributionContainerOS:
 		return true
 	default:
 		glog.Fatalf("unknown distribution: %s", d)

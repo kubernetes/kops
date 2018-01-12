@@ -1,4 +1,37 @@
-assignees:
+reviewers:
+  - deads2k
   - fejta
   - ixdy
+  - krousey
+  - liggitt
+  - madhusudancs
+  - ncdc
+  - rmmh
+  - smarterclayton
+  - spiffxp
   - spxtr
+  - sttts
+  - soltysh
+approvers:
+  - deads2k
+  - enisoc
+  - erictune
+  - fejta
+  - foxish # for test/e2e/network-partition.go
+  - ixdy
+  - kow3ns # for test/e2e/statefulset.go
+  - krousey
+  - liggitt
+  - madhusudancs
+  - ncdc
+  - smarterclayton
+  - spiffxp
+  - spxtr
+  - sttts
+  - mikedanese
+  - janetkuo
+  - kargakis
+  - gmarek
+  - soltysh
+  - pwittrock # for test/e2e/kubectl.go
+  - fabianofranz # for test/e2e/kubectl.go

@@ -1,11 +1,11 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/dRlyMxJrL2EQCAcvP4wfLx3yzig\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/jo14IJ9oMjJmju16_ICU62ty30c\"",
  "discoveryVersion": "v1",
  "id": "genomics:v1",
  "name": "genomics",
  "version": "v1",
- "revision": "20160622",
+ "revision": "20160928",
  "title": "Genomics API",
  "description": "Stores, processes, explores and shares genomic data.",
  "ownerDomain": "google.com",
@@ -501,6 +501,10 @@
      "items": {
       "$ref": "Annotation"
      }
+    },
+    "requestId": {
+     "type": "string",
+     "description": "A unique request ID which enables the server to detect duplicated requests. If provided, duplicated requests will result in the same response; if not provided, duplicated requests may result in duplicated data. For a given annotation set, callers should not reuse `request_id`s when writing different batches of annotations - behavior in this case is undefined. A common approach is to use a UUID. For batch jobs where worker crashes are a possibility, consider using some unique variant of a worker or run ID."
     }
    }
   },
@@ -552,7 +556,7 @@
       "type": "object",
       "additionalProperties": {
        "type": "any",
-       "description": "Properties of the object. Contains field @ype with type URL."
+       "description": "Properties of the object. Contains field @type with type URL."
       }
      }
     }
@@ -644,7 +648,7 @@
     },
     "projectId": {
      "type": "string",
-     "description": "The Google Developers Console project ID that this dataset belongs to."
+     "description": "The Google Cloud project ID that this dataset belongs to."
     },
     "name": {
      "type": "string",
@@ -746,41 +750,6 @@
     }
    }
   },
-  "Operation": {
-   "id": "Operation",
-   "type": "object",
-   "description": "This resource represents a long-running operation that is the result of a network API call.",
-   "properties": {
-    "name": {
-     "type": "string",
-     "description": "The server-assigned name, which is only unique within the same service that originally returns it. For example: `operations/CJHU7Oi_ChDrveSpBRjfuL-qzoWAgEw`"
-    },
-    "metadata": {
-     "type": "object",
-     "description": "An OperationMetadata object. This will always be returned with the Operation.",
-     "additionalProperties": {
-      "type": "any",
-      "description": "Properties of the object. Contains field @ype with type URL."
-     }
-    },
-    "done": {
-     "type": "boolean",
-     "description": "If the value is `false`, it means the operation is still in progress. If true, the operation is completed, and either `error` or `response` is available."
-    },
-    "error": {
-     "$ref": "Status",
-     "description": "The error result of the operation in case of failure."
-    },
-    "response": {
-     "type": "object",
-     "description": "If importing ReadGroupSets, an ImportReadGroupSetsResponse is returned. If importing Variants, an ImportVariantsResponse is returned. For exports, an empty response is returned.",
-     "additionalProperties": {
-      "type": "any",
-      "description": "Properties of the object. Contains field @ype with type URL."
-     }
-    }
-   }
-  },
   "ListOperationsResponse": {
    "id": "ListOperationsResponse",
    "type": "object",
@@ -796,6 +765,41 @@
     "nextPageToken": {
      "type": "string",
      "description": "The standard List next-page token."
+    }
+   }
+  },
+  "Operation": {
+   "id": "Operation",
+   "type": "object",
+   "description": "This resource represents a long-running operation that is the result of a network API call.",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The server-assigned name, which is only unique within the same service that originally returns it. For example: `operations/CJHU7Oi_ChDrveSpBRjfuL-qzoWAgEw`"
+    },
+    "metadata": {
+     "type": "object",
+     "description": "An OperationMetadata object. This will always be returned with the Operation.",
+     "additionalProperties": {
+      "type": "any",
+      "description": "Properties of the object. Contains field @type with type URL."
+     }
+    },
+    "done": {
+     "type": "boolean",
+     "description": "If the value is `false`, it means the operation is still in progress. If true, the operation is completed, and either `error` or `response` is available."
+    },
+    "error": {
+     "$ref": "Status",
+     "description": "The error result of the operation in case of failure or cancellation."
+    },
+    "response": {
+     "type": "object",
+     "description": "If importing ReadGroupSets, an ImportReadGroupSetsResponse is returned. If importing Variants, an ImportVariantsResponse is returned. For exports, an empty response is returned.",
+     "additionalProperties": {
+      "type": "any",
+      "description": "Properties of the object. Contains field @type with type URL."
+     }
     }
    }
   },
@@ -842,7 +846,7 @@
    "properties": {
     "projectId": {
      "type": "string",
-     "description": "Required. The Google Developers Console project ID that owns this export. The caller must have WRITE access to this project."
+     "description": "Required. The Google Cloud project ID that owns this export. The caller must have WRITE access to this project."
     },
     "exportUri": {
      "type": "string",
@@ -1341,7 +1345,7 @@
    "properties": {
     "projectId": {
      "type": "string",
-     "description": "The Google Developers Console project ID or number which will be billed for this access. The caller must have WRITE access to this project. Required."
+     "description": "The Google Cloud project ID which will be billed for this access. The caller must have WRITE access to this project. Required."
     },
     "readGroupSetId": {
      "type": "string",
@@ -1832,7 +1836,7 @@
     },
     "callSetIds": {
      "type": "array",
-     "description": "Only return variant calls which belong to call sets with these ids. Leaving this blank returns all variant calls. If a variant has no calls belonging to any of these call sets, it won't be returned at all. Currently, variants with no calls from any call set will never be returned.",
+     "description": "Only return variant calls which belong to call sets with these ids. Leaving this blank returns all variant calls. If a variant has no calls belonging to any of these call sets, it won't be returned at all.",
      "items": {
       "type": "string"
      }
@@ -2133,7 +2137,7 @@
    "properties": {
     "projectId": {
      "type": "string",
-     "description": "The Google Developers Console project ID or number which will be billed for this access. The caller must have WRITE access to this project. Required."
+     "description": "The Google Cloud project ID which will be billed for this access. The caller must have WRITE access to this project. Required."
     },
     "variantSetId": {
      "type": "string",
@@ -2228,7 +2232,7 @@
      "description": "The original request that started the operation. Note that this will be in current version of the API. If the operation was started with v1beta2 API and a GetOperation is performed on v1 API, a v1 request will be returned.",
      "additionalProperties": {
       "type": "any",
-      "description": "Properties of the object. Contains field @ype with type URL."
+      "description": "Properties of the object. Contains field @type with type URL."
      }
     },
     "events": {
@@ -2240,14 +2244,21 @@
     },
     "clientId": {
      "type": "string",
-     "description": "Optionally provided by the caller when submitting the request that creates the operation."
+     "description": "This field is deprecated. Use `labels` instead. Optionally provided by the caller when submitting the request that creates the operation."
     },
     "runtimeMetadata": {
      "type": "object",
      "description": "Runtime metadata on this Operation.",
      "additionalProperties": {
       "type": "any",
-      "description": "Properties of the object. Contains field @ype with type URL."
+      "description": "Properties of the object. Contains field @type with type URL."
+     }
+    },
+    "labels": {
+     "type": "object",
+     "description": "Optionally provided by the caller when submitting the request that creates the operation.",
+     "additionalProperties": {
+      "type": "string"
      }
     }
    }
@@ -2572,7 +2583,7 @@
      "parameters": {
       "projectId": {
        "type": "string",
-       "description": "Required. The project to list datasets for.",
+       "description": "Required. The Google Cloud project ID to list datasets for.",
        "location": "query"
       },
       "pageSize": {
@@ -2730,7 +2741,7 @@
        "type": "string",
        "description": "REQUIRED: The resource for which policy is being specified. Format is `datasets/`.",
        "required": true,
-       "pattern": "^datasets/[^/]*$",
+       "pattern": "^datasets/[^/]+$",
        "location": "path"
       }
      },
@@ -2758,7 +2769,7 @@
        "type": "string",
        "description": "REQUIRED: The resource for which policy is being specified. Format is `datasets/`.",
        "required": true,
-       "pattern": "^datasets/[^/]*$",
+       "pattern": "^datasets/[^/]+$",
        "location": "path"
       }
      },
@@ -2786,7 +2797,7 @@
        "type": "string",
        "description": "REQUIRED: The resource for which policy is being specified. Format is `datasets/`.",
        "required": true,
-       "pattern": "^datasets/[^/]*$",
+       "pattern": "^datasets/[^/]+$",
        "location": "path"
       }
      },
@@ -2808,31 +2819,6 @@
   },
   "operations": {
    "methods": {
-    "get": {
-     "id": "genomics.operations.get",
-     "path": "v1/{+name}",
-     "httpMethod": "GET",
-     "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
-     "parameters": {
-      "name": {
-       "type": "string",
-       "description": "The name of the operation resource.",
-       "required": true,
-       "pattern": "^operations/.*$",
-       "location": "path"
-      }
-     },
-     "parameterOrder": [
-      "name"
-     ],
-     "response": {
-      "$ref": "Operation"
-     },
-     "scopes": [
-      "https://www.googleapis.com/auth/cloud-platform",
-      "https://www.googleapis.com/auth/genomics"
-     ]
-    },
     "list": {
      "id": "genomics.operations.list",
      "path": "v1/{+name}",
@@ -2848,7 +2834,7 @@
       },
       "filter": {
        "type": "string",
-       "description": "A string for filtering Operations. The following filter fields are supported: * projectId: Required. Corresponds to OperationMetadata.projectId. * createTime: The time this job was created, in seconds from the [epoch](http://en.wikipedia.org/wiki/Unix_time). Can use `\u003e=` and/or `= 1432140000` * `projectId = my-project AND createTime \u003e= 1432140000 AND createTime \u003c= 1432150000 AND status = RUNNING`",
+       "description": "A string for filtering Operations. The following filter fields are supported: * projectId: Required. Corresponds to OperationMetadata.projectId. * createTime: The time this job was created, in seconds from the [epoch](http://en.wikipedia.org/wiki/Unix_time). Can use `\u003e=` and/or `= 1432140000` * `projectId = my-project AND createTime \u003e= 1432140000 AND createTime \u003c= 1432150000 AND status = RUNNING` * `projectId = my-project AND labels.color = *` * `projectId = my-project AND labels.color = red`",
        "location": "query"
       },
       "pageSize": {
@@ -2874,6 +2860,31 @@
       "https://www.googleapis.com/auth/genomics"
      ]
     },
+    "get": {
+     "id": "genomics.operations.get",
+     "path": "v1/{+name}",
+     "httpMethod": "GET",
+     "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
+     "parameters": {
+      "name": {
+       "type": "string",
+       "description": "The name of the operation resource.",
+       "required": true,
+       "pattern": "^operations/.+$",
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "name"
+     ],
+     "response": {
+      "$ref": "Operation"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/genomics"
+     ]
+    },
     "cancel": {
      "id": "genomics.operations.cancel",
      "path": "v1/{+name}:cancel",
@@ -2884,7 +2895,7 @@
        "type": "string",
        "description": "The name of the operation resource to be cancelled.",
        "required": true,
-       "pattern": "^operations/.*$",
+       "pattern": "^operations/.+$",
        "location": "path"
       }
      },
@@ -2927,7 +2938,7 @@
      "id": "genomics.readgroupsets.export",
      "path": "v1/readgroupsets/{readGroupSetId}:export",
      "httpMethod": "POST",
-     "description": "Exports a read group set to a BAM file in Google Cloud Storage. For the definitions of read group sets and other genomics resources, see [Fundamentals of Google Genomics](https://cloud.google.com/genomics/fundamentals-of-google-genomics) Note that currently there may be some differences between exported BAM files and the original BAM file at the time of import. See [ImportReadGroupSets](google.genomics.v1.ReadServiceV1.ImportReadGroupSets) for caveats.",
+     "description": "Exports a read group set to a BAM file in Google Cloud Storage. For the definitions of read group sets and other genomics resources, see [Fundamentals of Google Genomics](https://cloud.google.com/genomics/fundamentals-of-google-genomics) Note that currently there may be some differences between exported BAM files and the original BAM file at the time of import. See ImportReadGroupSets for caveats.",
      "parameters": {
       "readGroupSetId": {
        "type": "string",

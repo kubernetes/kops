@@ -35,15 +35,13 @@ set -e
 	debDate="$(date --rfc-2822)"
 
 	# if go-md2man is available, pre-generate the man pages
-	make manpages
+	./man/md2man-all.sh -q || true
+	# TODO decide if it's worth getting go-md2man in _each_ builder environment to avoid this
 
 	builderDir="contrib/builder/deb/${PACKAGE_ARCH}"
 	pkgs=( $(find "${builderDir}/"*/ -type d) )
 	if [ ! -z "$DOCKER_BUILD_PKGS" ]; then
-		pkgs=()
-		for p in $DOCKER_BUILD_PKGS; do
-			pkgs+=( "$builderDir/$p" )
-		done
+		pkgs=( $(echo ${DOCKER_BUILD_PKGS[@]/#/$builderDir\/}) )
 	fi
 	for dir in "${pkgs[@]}"; do
 		[ -d "$dir" ] || { echo >&2 "skipping nonexistent $dir"; continue; }
@@ -60,7 +58,6 @@ set -e
 			FROM $image
 			WORKDIR /usr/src/docker
 			COPY . /usr/src/docker
-			ENV DOCKER_GITCOMMIT $GITCOMMIT
 			RUN mkdir -p /go/src/github.com/docker && mkdir -p /go/src/github.com/opencontainers \
 				&& ln -snf /usr/src/docker /go/src/github.com/docker/docker
 		EOF
@@ -72,13 +69,13 @@ set -e
 		# add runc and containerd compile and install
 		cat >> "$DEST/$version/Dockerfile.build" <<-EOF
 			# Install runc
-			RUN git clone https://github.com/opencontainers/runc.git "/go/src/github.com/opencontainers/runc" \
+			RUN git clone git://github.com/opencontainers/runc.git "/go/src/github.com/opencontainers/runc" \
 					&& cd "/go/src/github.com/opencontainers/runc" \
 					&& git checkout -q "\$RUNC_COMMIT"
 			RUN set -x && export GOPATH="/go" && cd "/go/src/github.com/opencontainers/runc" \
 					&& make BUILDTAGS="\$RUNC_BUILDTAGS" && make install
 			# Install containerd
-			RUN git clone https://github.com/docker/containerd.git "/go/src/github.com/docker/containerd" \
+			RUN git clone git://github.com/docker/containerd.git "/go/src/github.com/docker/containerd" \
 					&& cd "/go/src/github.com/docker/containerd" \
 					&& git checkout -q "\$CONTAINERD_COMMIT"
 			RUN set -x && export GOPATH="/go" && cd "/go/src/github.com/docker/containerd" && make && make install
@@ -89,7 +86,7 @@ set -e
 		cat >> "$DEST/$version/Dockerfile.build" <<-EOF
 			RUN cp -aL hack/make/.build-deb debian
 			RUN { echo '$debSource (${debVersion}-0~${suite}) $suite; urgency=low'; echo; echo '  * Version: $VERSION'; echo; echo " -- $debMaintainer  $debDate"; } > debian/changelog && cat >&2 debian/changelog
-			RUN dpkg-buildpackage -uc -us -I.git
+			RUN dpkg-buildpackage -uc -us
 		EOF
 		tempImage="docker-temp/build-deb:$version"
 		( set -x && docker build -t "$tempImage" -f "$DEST/$version/Dockerfile.build" . )

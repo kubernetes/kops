@@ -119,6 +119,10 @@ type StringResource struct {
 	s string
 }
 
+func (r *StringResource) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&r.s)
+}
+
 var _ Resource = &StringResource{}
 
 func NewStringResource(s string) *StringResource {

@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/JGynskXPDYAm7HfLDYPma5VcVjE\"",
+ "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/-S9kxgdQT4cuFfcjtElZbFgO3uc\"",
  "discoveryVersion": "v1",
  "id": "androidpublisher:v1",
  "name": "androidpublisher",
  "canonicalName": "Android Publisher",
  "version": "v1",
- "revision": "20150323",
+ "revision": "20160722",
  "title": "Google Play Developer API",
  "description": "Lets Android application developers access their Google Play accounts.",
  "ownerDomain": "google.com",
@@ -88,7 +88,7 @@
     },
     "initiationTimestampMsec": {
      "type": "string",
-     "description": "Time at which the subscription was granted, in milliseconds since Epoch.",
+     "description": "Time at which the subscription was granted, in milliseconds since the Epoch.",
      "format": "int64"
     },
     "kind": {
@@ -98,7 +98,7 @@
     },
     "validUntilTimestampMsec": {
      "type": "string",
-     "description": "Time at which the subscription will expire, in milliseconds since Epoch.",
+     "description": "Time at which the subscription will expire, in milliseconds since the Epoch.",
      "format": "int64"
     }
    }

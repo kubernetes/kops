@@ -55,23 +55,13 @@ var (
 		HTTPStatusCode: http.StatusForbidden,
 	})
 
-	// ErrorCodeUnavailable provides a common error to report unavailability
+	// ErrorCodeUnavailable provides a common error to report unavialability
 	// of a service or endpoint.
 	ErrorCodeUnavailable = Register("errcode", ErrorDescriptor{
 		Value:          "UNAVAILABLE",
 		Message:        "service unavailable",
 		Description:    "Returned when a service is not available",
 		HTTPStatusCode: http.StatusServiceUnavailable,
-	})
-
-	// ErrorCodeTooManyRequests is returned if a client attempts too many
-	// times to contact a service endpoint.
-	ErrorCodeTooManyRequests = Register("errcode", ErrorDescriptor{
-		Value:   "TOOMANYREQUESTS",
-		Message: "too many requests",
-		Description: `Returned when a client attempts to contact a
-		service too many times`,
-		HTTPStatusCode: http.StatusTooManyRequests,
 	})
 )
 

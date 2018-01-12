@@ -391,3 +391,64 @@ func TestMergePatchReplaceKeyRequiringEscaping(t *testing.T) {
 		t.Fatalf("Key was not replaced")
 	}
 }
+
+func TestMergeMergePatches(t *testing.T) {
+	cases := []struct {
+		demonstrates string
+		p1           string
+		p2           string
+		exp          string
+	}{
+		{
+			demonstrates: "simple patches are merged normally",
+			p1:           `{"add1": 1}`,
+			p2:           `{"add2": 2}`,
+			exp:          `{"add1": 1, "add2": 2}`,
+		},
+		{
+			demonstrates: "nulls are kept",
+			p1:           `{"del1": null}`,
+			p2:           `{"del2": null}`,
+			exp:          `{"del1": null, "del2": null}`,
+		},
+		{
+			demonstrates: "a key added then deleted is kept deleted",
+			p1:           `{"add_then_delete": "atd"}`,
+			p2:           `{"add_then_delete": null}`,
+			exp:          `{"add_then_delete": null}`,
+		},
+		{
+			demonstrates: "a key deleted then added is kept added",
+			p1:           `{"delete_then_add": null}`,
+			p2:           `{"delete_then_add": "dta"}`,
+			exp:          `{"delete_then_add": "dta"}`,
+		},
+		{
+			demonstrates: "object overrides array",
+			p1:           `[]`,
+			p2:           `{"del": null, "add": "a"}`,
+			exp:          `{"del": null, "add": "a"}`,
+		},
+		{
+			demonstrates: "array overrides object",
+			p1:           `{"del": null, "add": "a"}`,
+			p2:           `[]`,
+			exp:          `[]`,
+		},
+	}
+
+	for _, c := range cases {
+		out, err := MergeMergePatches([]byte(c.p1), []byte(c.p2))
+
+		if err != nil {
+			panic(err)
+		}
+
+		if !compareJSON(c.exp, string(out)) {
+			t.Logf("Error while trying to demonstrate: %v", c.demonstrates)
+			t.Logf("Got %v", string(out))
+			t.Logf("Expected %v", c.exp)
+			t.Fatalf("Merged merge patch is incorrect")
+		}
+	}
+}

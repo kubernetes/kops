@@ -391,7 +391,7 @@ To specify a DNS server for use by Docker:
 
 5. Restart the Docker daemon.
 
-        $ sudo service docker restart
+        $ sudo restart docker
 
 
 &nbsp;

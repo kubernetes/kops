@@ -29,7 +29,7 @@ KUBE_OUTPUT_BINPATH="${KUBE_OUTPUT}/bin"
 # compression for build container
 KUBE_RSYNC_COMPRESS="${KUBE_RSYNC_COMPRESS:-0}"
 
-# Set no_proxy for localhost if behind a proxy, otherwise, 
+# Set no_proxy for localhost if behind a proxy, otherwise,
 # the connections to localhost in scripts will time out
 export no_proxy=127.0.0.1,localhost
 
@@ -54,17 +54,23 @@ KUBE_OUTPUT_HOSTBIN="${KUBE_OUTPUT_BINPATH}/$(kube::util::host_platform)"
 KUBE_AVAILABLE_GROUP_VERSIONS="${KUBE_AVAILABLE_GROUP_VERSIONS:-\
 v1 \
 apps/v1beta1 \
+authentication.k8s.io/v1 \
 authentication.k8s.io/v1beta1 \
+authorization.k8s.io/v1 \
 authorization.k8s.io/v1beta1 \
 autoscaling/v1 \
+autoscaling/v2alpha1 \
 batch/v1 \
 batch/v2alpha1 \
-certificates.k8s.io/v1alpha1 \
+certificates.k8s.io/v1beta1 \
 extensions/v1beta1 \
 imagepolicy.k8s.io/v1alpha1 \
 policy/v1beta1 \
+rbac.authorization.k8s.io/v1beta1 \
 rbac.authorization.k8s.io/v1alpha1 \
-storage.k8s.io/v1beta1\
+settings.k8s.io/v1alpha1 \
+storage.k8s.io/v1beta1 \
+storage.k8s.io/v1\
 }"
 
 # not all group versions are exposed by the server.  This list contains those

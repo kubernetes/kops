@@ -5,6 +5,7 @@
 package googleapi
 
 import (
+	"bytes"
 	"encoding/json"
 	"reflect"
 	"testing"
@@ -40,5 +41,28 @@ func TestTypes(t *testing.T) {
 	}
 	if !reflect.DeepEqual(v, v2) {
 		t.Fatalf("Unmarshal didn't produce same results.\n got: %#v\nwant: %#v\n", v, v2)
+	}
+}
+
+func TestRawMessageMarshal(t *testing.T) {
+	// https://golang.org/issue/14493
+	const want = "{}"
+	b, err := json.Marshal(RawMessage(want))
+	if err != nil {
+		t.Fatalf("Marshal: %v", err)
+	}
+	if !bytes.Equal(b, []byte(want)) {
+		t.Errorf("Marshal(RawMessage(%q)) = %q; want %q", want, b, want)
+	}
+}
+
+func TestRawMessageUnmarshal(t *testing.T) {
+	const want = "{}"
+	var m RawMessage
+	if err := json.Unmarshal([]byte(want), &m); err != nil {
+		t.Fatalf("Unmarshal: %v", err)
+	}
+	if !bytes.Equal([]byte(m), []byte(want)) {
+		t.Errorf("Unmarshal([]byte(%q), &m); m = %q; want %q", want, string(m), want)
 	}
 }

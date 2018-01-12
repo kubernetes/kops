@@ -292,7 +292,6 @@ var noCrossLinkServices = map[string]struct{}{
 	"lambda":            struct{}{},
 	"machinelearning":   struct{}{},
 	"rekognition":       struct{}{},
-	"s3":                struct{}{},
 	"sdb":               struct{}{},
 	"swf":               struct{}{},
 }

@@ -184,6 +184,18 @@ var EqualTests = []struct {
 		false,
 	},
 	{
+		"zero-length maps same",
+		&pb.MessageWithMap{NameMapping: map[int32]string{}},
+		&pb.MessageWithMap{NameMapping: nil},
+		true,
+	},
+	{
+		"orders in map don't matter",
+		&pb.MessageWithMap{NameMapping: map[int32]string{1: "Ken", 2: "Rob"}},
+		&pb.MessageWithMap{NameMapping: map[int32]string{2: "Rob", 1: "Ken"}},
+		true,
+	},
+	{
 		"oneof same",
 		&pb.Communique{Union: &pb.Communique_Number{41}},
 		&pb.Communique{Union: &pb.Communique_Number{41}},

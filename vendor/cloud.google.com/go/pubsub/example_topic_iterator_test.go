@@ -19,20 +19,9 @@ import (
 
 	"cloud.google.com/go/pubsub"
 	"golang.org/x/net/context"
-	"google.golang.org/api/iterator"
 )
 
-func ExampleClient_Topics() {
-	ctx := context.Background()
-	client, err := pubsub.NewClient(ctx, "project-id")
-	if err != nil {
-		// TODO: Handle error.
-	}
-	it := client.Topics(ctx)
-	_ = it // TODO: iterate using Next.
-}
-
-func ExampleTopicIterator_Next() {
+func ExampleTopicIterator() {
 	ctx := context.Background()
 	client, err := pubsub.NewClient(ctx, "project-id")
 	if err != nil {
@@ -42,12 +31,12 @@ func ExampleTopicIterator_Next() {
 	it := client.Topics(ctx)
 	for {
 		t, err := it.Next()
-		if err == iterator.Done {
+		if err == pubsub.Done {
 			break
 		}
 		if err != nil {
 			// TODO: Handle error.
 		}
-		fmt.Println(t)
+		fmt.Println(t.Name())
 	}
 }

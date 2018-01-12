@@ -31,33 +31,10 @@ func (s *DockerSuite) TestLinksInvalidContainerTarget(c *check.C) {
 
 func (s *DockerSuite) TestLinksPingLinkedContainers(c *check.C) {
 	testRequires(c, DaemonIsLinux)
-	// Test with the three different ways of specifying the default network on Linux
-	testLinkPingOnNetwork(c, "")
-	testLinkPingOnNetwork(c, "default")
-	testLinkPingOnNetwork(c, "bridge")
-}
+	dockerCmd(c, "run", "-d", "--name", "container1", "--hostname", "fred", "busybox", "top")
+	dockerCmd(c, "run", "-d", "--name", "container2", "--hostname", "wilma", "busybox", "top")
 
-func testLinkPingOnNetwork(c *check.C, network string) {
-	var postArgs []string
-	if network != "" {
-		postArgs = append(postArgs, []string{"--net", network}...)
-	}
-	postArgs = append(postArgs, []string{"busybox", "top"}...)
-	runArgs1 := append([]string{"run", "-d", "--name", "container1", "--hostname", "fred"}, postArgs...)
-	runArgs2 := append([]string{"run", "-d", "--name", "container2", "--hostname", "wilma"}, postArgs...)
-
-	// Run the two named containers
-	dockerCmd(c, runArgs1...)
-	dockerCmd(c, runArgs2...)
-
-	postArgs = []string{}
-	if network != "" {
-		postArgs = append(postArgs, []string{"--net", network}...)
-	}
-	postArgs = append(postArgs, []string{"busybox", "sh", "-c"}...)
-
-	// Format a run for a container which links to the other two
-	runArgs := append([]string{"run", "--rm", "--link", "container1:alias1", "--link", "container2:alias2"}, postArgs...)
+	runArgs := []string{"run", "--rm", "--link", "container1:alias1", "--link", "container2:alias2", "busybox", "sh", "-c"}
 	pingCmd := "ping -c 1 %s -W 1 && ping -c 1 %s -W 1"
 
 	// test ping by alias, ping by name, and ping by hostname
@@ -68,9 +45,6 @@ func testLinkPingOnNetwork(c *check.C, network string) {
 	// 3. Ping by hostname
 	dockerCmd(c, append(runArgs, fmt.Sprintf(pingCmd, "fred", "wilma"))...)
 
-	// Clean for next round
-	dockerCmd(c, "rm", "-f", "container1")
-	dockerCmd(c, "rm", "-f", "container2")
 }
 
 func (s *DockerSuite) TestLinksPingLinkedContainersAfterRename(c *check.C) {

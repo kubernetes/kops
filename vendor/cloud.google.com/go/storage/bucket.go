@@ -48,15 +48,15 @@ func (b *BucketHandle) Delete(ctx context.Context) error {
 // ACL returns an ACLHandle, which provides access to the bucket's access control list.
 // This controls who can list, create or overwrite the objects in a bucket.
 // This call does not perform any network operations.
-func (b *BucketHandle) ACL() *ACLHandle {
-	return &b.acl
+func (c *BucketHandle) ACL() *ACLHandle {
+	return c.acl
 }
 
 // DefaultObjectACL returns an ACLHandle, which provides access to the bucket's default object ACLs.
 // These ACLs are applied to newly created objects in this bucket that do not have a defined ACL.
 // This call does not perform any network operations.
-func (b *BucketHandle) DefaultObjectACL() *ACLHandle {
-	return &b.defaultObjectACL
+func (c *BucketHandle) DefaultObjectACL() *ACLHandle {
+	return c.defaultObjectACL
 }
 
 // Object returns an ObjectHandle, which provides operations on the named object.
@@ -70,7 +70,7 @@ func (b *BucketHandle) Object(name string) *ObjectHandle {
 		c:      b.c,
 		bucket: b.name,
 		object: name,
-		acl: ACLHandle{
+		acl: &ACLHandle{
 			c:      b.c,
 			bucket: b.name,
 			object: name,

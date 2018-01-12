@@ -19,19 +19,20 @@ package util
 import (
 	"sync"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
+	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	fedclientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_internalclientset"
-	"k8s.io/kubernetes/pkg/apimachinery/registered"
+	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/client/typed/discovery"
 	oldclient "k8s.io/kubernetes/pkg/client/unversioned"
-	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
-	"k8s.io/kubernetes/pkg/runtime/schema"
+	"k8s.io/kubernetes/pkg/version"
 )
 
 func NewClientCache(loader clientcmd.ClientConfig, discoveryClientFactory DiscoveryClientFactory) *ClientCache {
 	return &ClientCache{
-		clientsets:             make(map[schema.GroupVersion]*internalclientset.Clientset),
+		clientsets:             make(map[schema.GroupVersion]internalclientset.Interface),
 		configs:                make(map[schema.GroupVersion]*restclient.Config),
 		fedClientSets:          make(map[schema.GroupVersion]fedclientset.Interface),
 		loader:                 loader,
@@ -43,9 +44,12 @@ func NewClientCache(loader clientcmd.ClientConfig, discoveryClientFactory Discov
 // is invoked only once
 type ClientCache struct {
 	loader        clientcmd.ClientConfig
-	clientsets    map[schema.GroupVersion]*internalclientset.Clientset
+	clientsets    map[schema.GroupVersion]internalclientset.Interface
 	fedClientSets map[schema.GroupVersion]fedclientset.Interface
 	configs       map[schema.GroupVersion]*restclient.Config
+
+	// noVersionConfig provides a cached config for the case of no required version specified
+	noVersionConfig *restclient.Config
 
 	matchVersion bool
 
@@ -76,7 +80,7 @@ func (c *ClientCache) getDefaultConfig() (restclient.Config, discovery.Discovery
 		return restclient.Config{}, nil, err
 	}
 	if c.matchVersion {
-		if err := discovery.MatchesServerVersion(discoveryClient); err != nil {
+		if err := discovery.MatchesServerVersion(version.Get(), discoveryClient); err != nil {
 			return restclient.Config{}, nil, err
 		}
 	}
@@ -103,11 +107,13 @@ func (c *ClientCache) ClientConfigForVersion(requiredVersion *schema.GroupVersio
 	// before looking up from the cache
 	if requiredVersion != nil {
 		if config, ok := c.configs[*requiredVersion]; ok {
-			return config, nil
+			return copyConfig(config), nil
 		}
+	} else if c.noVersionConfig != nil {
+		return copyConfig(c.noVersionConfig), nil
 	}
 
-	negotiatedVersion, err := discovery.NegotiateVersion(discoveryClient, requiredVersion, registered.EnabledVersions())
+	negotiatedVersion, err := discovery.NegotiateVersion(discoveryClient, requiredVersion, api.Registry.EnabledVersions())
 	if err != nil {
 		return nil, err
 	}
@@ -117,20 +123,28 @@ func (c *ClientCache) ClientConfigForVersion(requiredVersion *schema.GroupVersio
 	oldclient.SetKubernetesDefaults(&config)
 
 	if requiredVersion != nil {
-		c.configs[*requiredVersion] = &config
+		c.configs[*requiredVersion] = copyConfig(&config)
+	} else {
+		c.noVersionConfig = copyConfig(&config)
 	}
 
 	// `version` does not necessarily equal `config.Version`.  However, we know that we call this method again with
 	// `config.Version`, we should get the config we've just built.
-	configCopy := config
-	c.configs[*config.GroupVersion] = &configCopy
+	c.configs[*config.GroupVersion] = copyConfig(&config)
 
-	return &config, nil
+	return copyConfig(&config), nil
+}
+
+func copyConfig(in *restclient.Config) *restclient.Config {
+	configCopy := *in
+	copyGroupVersion := *configCopy.GroupVersion
+	configCopy.GroupVersion = &copyGroupVersion
+	return &configCopy
 }
 
 // ClientSetForVersion initializes or reuses a clientset for the specified version, or returns an
 // error if that is not possible
-func (c *ClientCache) ClientSetForVersion(requiredVersion *schema.GroupVersion) (*internalclientset.Clientset, error) {
+func (c *ClientCache) ClientSetForVersion(requiredVersion *schema.GroupVersion) (internalclientset.Interface, error) {
 	if requiredVersion != nil {
 		if clientset, ok := c.clientsets[*requiredVersion]; ok {
 			return clientset, nil

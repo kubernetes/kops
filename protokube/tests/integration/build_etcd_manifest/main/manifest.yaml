@@ -37,7 +37,7 @@ spec:
         host: 127.0.0.1
         path: /health
         port: 4001
-      initialDelaySeconds: 600
+      initialDelaySeconds: 15
       timeoutSeconds: 15
     name: etcd-container
     ports:

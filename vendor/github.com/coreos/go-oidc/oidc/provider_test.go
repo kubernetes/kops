@@ -183,6 +183,40 @@ func TestProviderConfigUnmarshal(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			// token_endpoint_auth_methods_supported can contain `none`
+			data: `{
+				"issuer": "https://server.example.com",
+				"authorization_endpoint": "https://server.example.com/connect/authorize",
+				"token_endpoint": "https://server.example.com/connect/token",
+				"jwks_uri": "https://server.example.com/jwks.json",
+				"response_types_supported": [
+					"code", "code id_token", "id_token", "id_token token"
+				],
+				"subject_types_supported": ["public", "pairwise"],
+				"id_token_signing_alg_values_supported": ["RS256", "ES256", "HS256"],
+				"token_endpoint_auth_methods_supported": ["client_secret_basic", "none"]
+			}
+			`,
+			want: ProviderConfig{
+				Issuer:        &url.URL{Scheme: "https", Host: "server.example.com"},
+				AuthEndpoint:  uri("/connect/authorize"),
+				TokenEndpoint: uri("/connect/token"),
+				KeysEndpoint:  uri("/jwks.json"),
+				ResponseTypesSupported: []string{
+					oauth2.ResponseTypeCode, oauth2.ResponseTypeCodeIDToken,
+					oauth2.ResponseTypeIDToken, oauth2.ResponseTypeIDTokenToken,
+				},
+				SubjectTypesSupported: []string{
+					SubjectTypePublic, SubjectTypePairwise,
+				},
+				IDTokenSigningAlgValues: []string{jose.AlgRS256, jose.AlgES256, jose.AlgHS256},
+				TokenEndpointAuthMethodsSupported: []string{
+					oauth2.AuthMethodClientSecretBasic, "none",
+				},
+			},
+			wantErr: false,
+		},
+		{
 			// invalid scheme 'ftp://'
 			data: `{
 				"issuer": "https://server.example.com",

@@ -78,7 +78,7 @@ function teardown() {
     run git reset --hard "${SPEC_COMMIT}"
   )
   [ "$status" -eq 0 ]
-  [ -e src/runtime-spec/schema/schema.json ]
+  [ -e src/runtime-spec/schema/config-schema.json ]
 
   run bash -c "GOPATH='$GOPATH' go get github.com/xeipuuv/gojsonschema"
   [ "$status" -eq 0 ]
@@ -89,7 +89,7 @@ function teardown() {
   runc spec
   [ -e config.json ]
 
-  run ./validate src/runtime-spec/schema/schema.json config.json
+  run ./validate src/runtime-spec/schema/config-schema.json config.json
   [ "$status" -eq 0 ]
   [[ "${lines[0]}" == *"The document is valid"* ]]
 }

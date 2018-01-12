@@ -84,7 +84,7 @@ func (w *Writer) open() error {
 	return nil
 }
 
-// Write appends to w. It implements the io.Writer interface.
+// Write appends to w.
 func (w *Writer) Write(p []byte) (n int, err error) {
 	if w.err != nil {
 		return 0, w.err
@@ -122,7 +122,7 @@ func (w *Writer) CloseWithError(err error) error {
 	return w.pw.CloseWithError(err)
 }
 
-// Attrs returns metadata about a successfully-written object.
+// ObjectAttrs returns metadata about a successfully-written object.
 // It's only valid to call it after Close returns nil.
 func (w *Writer) Attrs() *ObjectAttrs {
 	return w.obj

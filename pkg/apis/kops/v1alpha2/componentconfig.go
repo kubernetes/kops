@@ -16,7 +16,7 @@ limitations under the License.
 
 package v1alpha2
 
-import metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 type KubeletConfigSpec struct {
 	// not used for clusters version 1.6 and later
@@ -99,8 +99,10 @@ type KubeletConfigSpec struct {
 	// registerSchedulable tells the kubelet to register the node as
 	// schedulable. No-op if register-node is false.
 	RegisterSchedulable *bool `json:"registerSchedulable,omitempty" flag:"register-schedulable"`
+
 	// nodeLabels to add when registering the node in the cluster.
 	NodeLabels map[string]string `json:"nodeLabels,omitempty" flag:"node-labels"`
+
 	// nonMasqueradeCIDR configures masquerading: traffic to IPs outside this range will use IP masquerade.
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty" flag:"non-masquerade-cidr"`
 
@@ -135,6 +137,12 @@ type KubeletConfigSpec struct {
 
 	// The full path of the directory in which to search for additional third party volume plugins
 	VolumePluginDirectory string `json:"volumePluginDirectory,omitempty" flag:"volume-plugin-dir"`
+
+	// Taints to add when registering a node in the cluster
+	Taints []string `json:"taints,omitempty" flag:"register-with-taints"`
+
+	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
+	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }
 
 type KubeProxyConfig struct {
@@ -148,6 +156,11 @@ type KubeProxyConfig struct {
 
 	// master is the address of the Kubernetes API server (overrides any value in kubeconfig)
 	Master string `json:"master,omitempty" flag:"master"`
+
+	// clusterCIDR is the CIDR range of the pods in the cluster. It is used to
+	// bridge traffic coming from outside of the cluster. If not provided,
+	// no off-cluster bridging will be performed.
+	ClusterCIDR string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
 }
 
 type KubeAPIServerConfig struct {
@@ -159,6 +172,7 @@ type KubeAPIServerConfig struct {
 
 	CloudProvider         string   `json:"cloudProvider,omitempty" flag:"cloud-provider"`
 	SecurePort            int32    `json:"securePort,omitempty" flag:"secure-port"`
+	InsecurePort          int32    `json:"insecurePort,omitempty" flag:"insecure-port"`
 	Address               string   `json:"address,omitempty" flag:"address"`
 	EtcdServers           []string `json:"etcdServers,omitempty" flag:"etcd-servers"`
 	EtcdServersOverrides  []string `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
@@ -206,6 +220,11 @@ type KubeAPIServerConfig struct {
 	// The maximum size in megabytes of the audit log file before it gets rotated. Defaults to 100MB.
 	AuditLogMaxSize *int32 `json:"auditLogMaxSize,omitempty" flag:"audit-log-maxsize"`
 
+	// File with webhook configuration for token authentication in kubeconfig format. The API server will query the remote service to determine authentication for bearer tokens.
+	AuthenticationTokenWebhookConfigFile *string `json:"authenticationTokenWebhookConfigFile,omitempty" flag:"authentication-token-webhook-config-file"`
+	// The duration to cache responses from the webhook token authenticator. Default is 2m. (default 2m0s)
+	AuthenticationTokenWebhookCacheTtl *metav1.Duration `json:"authenticationTokenWebhookCacheTtl,omitempty" flag:"authentication-token-webhook-cache-ttl"`
+
 	AuthorizationMode          *string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
 	AuthorizationRBACSuperUser *string `json:"authorizationRbacSuperUser,omitempty" flag:"authorization-rbac-super-user"`
 }
@@ -247,6 +266,9 @@ type KubeControllerManagerConfig struct {
 	// before the terminated pod garbage collector starts deleting terminated pods.
 	// If <= 0, the terminated pod garbage collector is disabled.
 	TerminatedPodGCThreshold *int32 `json:"terminatedPodGCThreshold,omitempty" flag:"terminated-pod-gc-threshold"`
+
+	// UseServiceAccountCredentials controls whether we use individual service account credentials for each controller.
+	UseServiceAccountCredentials *bool `json:"useServiceAccountCredentials,omitempty" flag:"use-service-account-credentials"`
 }
 
 type KubeSchedulerConfig struct {

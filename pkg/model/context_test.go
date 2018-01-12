@@ -17,8 +17,8 @@ limitations under the License.
 package model
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kubernetes/pkg/api"
 	"testing"
 )
 
@@ -48,7 +48,7 @@ func Test_GetELBName32(t *testing.T) {
 	for _, g := range grid {
 		c := &KopsModelContext{
 			Cluster: &kops.Cluster{
-				ObjectMeta: api.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: g.ClusterName,
 				},
 			},

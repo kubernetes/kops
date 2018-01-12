@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"golang.org/x/net/context"
+
+	"github.com/docker/engine-api/types"
 )
 
 func TestImageTagError(t *testing.T) {
@@ -16,7 +18,7 @@ func TestImageTagError(t *testing.T) {
 		transport: newMockClient(nil, errorMock(http.StatusInternalServerError, "Server error")),
 	}
 
-	err := client.ImageTag(context.Background(), "image_id", "repo:tag")
+	err := client.ImageTag(context.Background(), "image_id", "repo:tag", types.ImageTagOptions{})
 	if err == nil || err.Error() != "Error response from daemon: Server error" {
 		t.Fatalf("expected a Server Error, got %v", err)
 	}
@@ -29,7 +31,7 @@ func TestImageTagInvalidReference(t *testing.T) {
 		transport: newMockClient(nil, errorMock(http.StatusInternalServerError, "Server error")),
 	}
 
-	err := client.ImageTag(context.Background(), "image_id", "aa/asdf$$^/aa")
+	err := client.ImageTag(context.Background(), "image_id", "aa/asdf$$^/aa", types.ImageTagOptions{})
 	if err == nil || err.Error() != `Error parsing reference: "aa/asdf$$^/aa" is not a valid repository/tag` {
 		t.Fatalf("expected ErrReferenceInvalidFormat, got %v", err)
 	}
@@ -38,56 +40,73 @@ func TestImageTagInvalidReference(t *testing.T) {
 func TestImageTag(t *testing.T) {
 	expectedURL := "/images/image_id/tag"
 	tagCases := []struct {
+		force               bool
 		reference           string
 		expectedQueryParams map[string]string
 	}{
 		{
+			force:     false,
 			reference: "repository:tag1",
 			expectedQueryParams: map[string]string{
-				"repo": "repository",
-				"tag":  "tag1",
+				"force": "",
+				"repo":  "repository",
+				"tag":   "tag1",
 			},
 		}, {
+			force:     true,
 			reference: "another_repository:latest",
 			expectedQueryParams: map[string]string{
-				"repo": "another_repository",
-				"tag":  "latest",
+				"force": "1",
+				"repo":  "another_repository",
+				"tag":   "latest",
 			},
 		}, {
+			force:     true,
 			reference: "another_repository",
 			expectedQueryParams: map[string]string{
-				"repo": "another_repository",
-				"tag":  "latest",
+				"force": "1",
+				"repo":  "another_repository",
+				"tag":   "latest",
 			},
 		}, {
+			force:     true,
 			reference: "test/another_repository",
 			expectedQueryParams: map[string]string{
-				"repo": "test/another_repository",
-				"tag":  "latest",
+				"force": "1",
+				"repo":  "test/another_repository",
+				"tag":   "latest",
 			},
 		}, {
+			force:     true,
 			reference: "test/another_repository:tag1",
 			expectedQueryParams: map[string]string{
-				"repo": "test/another_repository",
-				"tag":  "tag1",
+				"force": "1",
+				"repo":  "test/another_repository",
+				"tag":   "tag1",
 			},
 		}, {
+			force:     true,
 			reference: "test/test/another_repository:tag1",
 			expectedQueryParams: map[string]string{
-				"repo": "test/test/another_repository",
-				"tag":  "tag1",
+				"force": "1",
+				"repo":  "test/test/another_repository",
+				"tag":   "tag1",
 			},
 		}, {
+			force:     true,
 			reference: "test:5000/test/another_repository:tag1",
 			expectedQueryParams: map[string]string{
-				"repo": "test:5000/test/another_repository",
-				"tag":  "tag1",
+				"force": "1",
+				"repo":  "test:5000/test/another_repository",
+				"tag":   "tag1",
 			},
 		}, {
+			force:     true,
 			reference: "test:5000/test/another_repository",
 			expectedQueryParams: map[string]string{
-				"repo": "test:5000/test/another_repository",
-				"tag":  "latest",
+				"force": "1",
+				"repo":  "test:5000/test/another_repository",
+				"tag":   "latest",
 			},
 		},
 	}
@@ -113,7 +132,9 @@ func TestImageTag(t *testing.T) {
 				}, nil
 			}),
 		}
-		err := client.ImageTag(context.Background(), "image_id", tagCase.reference)
+		err := client.ImageTag(context.Background(), "image_id", tagCase.reference, types.ImageTagOptions{
+			Force: tagCase.force,
+		})
 		if err != nil {
 			t.Fatal(err)
 		}

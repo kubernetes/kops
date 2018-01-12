@@ -26,9 +26,7 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion1
 
 type M struct {
 	F map[string]float64 `protobuf:"bytes,1,rep,name=f" json:"f,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"fixed64,2,opt,name=value,proto3"`
@@ -391,8 +389,6 @@ var (
 	ErrInvalidLengthNopackage = fmt.Errorf("proto: negative length found during unmarshaling")
 	ErrIntOverflowNopackage   = fmt.Errorf("proto: integer overflow")
 )
-
-func init() { proto.RegisterFile("nopackage.proto", fileDescriptorNopackage) }
 
 var fileDescriptorNopackage = []byte{
 	// 129 bytes of a gzipped FileDescriptorProto

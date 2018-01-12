@@ -18,11 +18,11 @@ package gcemodel
 
 import (
 	"fmt"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
-	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 const (
@@ -92,6 +92,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				// Grant DNS permissions
 				t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
 				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleMaster))
+
 			case kops.InstanceGroupRoleNode:
 				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
 			}
@@ -157,12 +158,20 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			name := b.SafeObjectName(zone + "." + ig.ObjectMeta.Name)
 
-			t := &gcetasks.ManagedInstanceGroup{
+			t := &gcetasks.InstanceGroupManager{
 				Name:             s(name),
 				Zone:             s(zone),
 				TargetSize:       fi.Int64(int64(targetSize)),
 				BaseInstanceName: s(ig.ObjectMeta.Name),
 				InstanceTemplate: instanceTemplate,
+			}
+
+			// Attach masters to load balancer if we're using one
+			switch ig.Spec.Role {
+			case kops.InstanceGroupRoleMaster:
+				if b.UseLoadBalancerForAPI() {
+					t.TargetPools = append(t.TargetPools, b.LinkToTargetPool("api"))
+				}
 			}
 
 			c.AddTask(t)

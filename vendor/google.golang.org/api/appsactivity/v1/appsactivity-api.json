@@ -1,18 +1,18 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"bRFOOrZKfO9LweMbPqu0kcu6De8/oEN2Yz1UYeuuQF-hTipAUfX2Yb8\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/reJOwDPkrjuqU_m9CL56zWFA9Q4\"",
  "discoveryVersion": "v1",
  "id": "appsactivity:v1",
  "name": "appsactivity",
  "version": "v1",
- "revision": "20160129",
+ "revision": "20161111",
  "title": "Google Apps Activity API",
  "description": "Provides a historical view of activity.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/google-apps/activity/",
  "protocol": "rest",
@@ -395,6 +395,10 @@
     "isDeleted": {
      "type": "boolean",
      "description": "A boolean which indicates whether the specified User was deleted. If true, name, photo and permission_id will be omitted."
+    },
+    "isMe": {
+     "type": "boolean",
+     "description": "Whether the user is the authenticated user."
     },
     "name": {
      "type": "string",

@@ -4,12 +4,43 @@ import (
 	"archive/tar"
 	"bytes"
 	"net/http"
-	"regexp"
-	"strings"
 
 	"github.com/docker/docker/pkg/integration/checker"
 	"github.com/go-check/check"
 )
+
+func (s *DockerSuite) TestBuildApiDockerfilePath(c *check.C) {
+	// Test to make sure we stop people from trying to leave the
+	// build context when specifying the path to the dockerfile
+	buffer := new(bytes.Buffer)
+	tw := tar.NewWriter(buffer)
+	defer tw.Close()
+
+	dockerfile := []byte("FROM busybox")
+	err := tw.WriteHeader(&tar.Header{
+		Name: "Dockerfile",
+		Size: int64(len(dockerfile)),
+	})
+	//failed to write tar file header
+	c.Assert(err, checker.IsNil)
+
+	_, err = tw.Write(dockerfile)
+	// failed to write tar file content
+	c.Assert(err, checker.IsNil)
+
+	// failed to close tar archive
+	c.Assert(tw.Close(), checker.IsNil)
+
+	res, body, err := sockRequestRaw("POST", "/build?dockerfile=../Dockerfile", buffer, "application/x-tar")
+	c.Assert(err, checker.IsNil)
+	c.Assert(res.StatusCode, checker.Equals, http.StatusInternalServerError)
+
+	out, err := readBody(body)
+	c.Assert(err, checker.IsNil)
+
+	// Didn't complain about leaving build context
+	c.Assert(string(out), checker.Contains, "Forbidden path outside the build context")
+}
 
 func (s *DockerSuite) TestBuildApiDockerFileRemote(c *check.C) {
 	testRequires(c, NotUserNamespace)
@@ -193,59 +224,34 @@ RUN echo from dockerfile`,
 	c.Assert(out, checker.Contains, "from Dockerfile")
 }
 
-func (s *DockerSuite) TestBuildApiUnnormalizedTarPaths(c *check.C) {
-	// Make sure that build context tars with entries of the form
-	// x/./y don't cause caching false positives.
+func (s *DockerSuite) TestBuildApiDockerfileSymlink(c *check.C) {
+	// Test to make sure we stop people from trying to leave the
+	// build context when specifying a symlink as the path to the dockerfile
+	buffer := new(bytes.Buffer)
+	tw := tar.NewWriter(buffer)
+	defer tw.Close()
 
-	buildFromTarContext := func(fileContents []byte) string {
-		buffer := new(bytes.Buffer)
-		tw := tar.NewWriter(buffer)
-		defer tw.Close()
+	err := tw.WriteHeader(&tar.Header{
+		Name:     "Dockerfile",
+		Typeflag: tar.TypeSymlink,
+		Linkname: "/etc/passwd",
+	})
+	// failed to write tar file header
+	c.Assert(err, checker.IsNil)
 
-		dockerfile := []byte(`FROM busybox
-	COPY dir /dir/`)
-		err := tw.WriteHeader(&tar.Header{
-			Name: "Dockerfile",
-			Size: int64(len(dockerfile)),
-		})
-		//failed to write tar file header
-		c.Assert(err, checker.IsNil)
+	// failed to close tar archive
+	c.Assert(tw.Close(), checker.IsNil)
 
-		_, err = tw.Write(dockerfile)
-		// failed to write Dockerfile in tar file content
-		c.Assert(err, checker.IsNil)
+	res, body, err := sockRequestRaw("POST", "/build", buffer, "application/x-tar")
+	c.Assert(err, checker.IsNil)
+	c.Assert(res.StatusCode, checker.Equals, http.StatusInternalServerError)
 
-		err = tw.WriteHeader(&tar.Header{
-			Name: "dir/./file",
-			Size: int64(len(fileContents)),
-		})
-		//failed to write tar file header
-		c.Assert(err, checker.IsNil)
+	out, err := readBody(body)
+	c.Assert(err, checker.IsNil)
 
-		_, err = tw.Write(fileContents)
-		// failed to write file contents in tar file content
-		c.Assert(err, checker.IsNil)
-
-		// failed to close tar archive
-		c.Assert(tw.Close(), checker.IsNil)
-
-		res, body, err := sockRequestRaw("POST", "/build", buffer, "application/x-tar")
-		c.Assert(err, checker.IsNil)
-		c.Assert(res.StatusCode, checker.Equals, http.StatusOK)
-
-		out, err := readBody(body)
-		c.Assert(err, checker.IsNil)
-		lines := strings.Split(string(out), "\n")
-		c.Assert(len(lines), checker.GreaterThan, 1)
-		c.Assert(lines[len(lines)-2], checker.Matches, ".*Successfully built [0-9a-f]{12}.*")
-
-		re := regexp.MustCompile("Successfully built ([0-9a-f]{12})")
-		matches := re.FindStringSubmatch(lines[len(lines)-2])
-		return matches[1]
-	}
-
-	imageA := buildFromTarContext([]byte("abc"))
-	imageB := buildFromTarContext([]byte("def"))
-
-	c.Assert(imageA, checker.Not(checker.Equals), imageB)
+	// The reason the error is "Cannot locate specified Dockerfile" is because
+	// in the builder, the symlink is resolved within the context, therefore
+	// Dockerfile -> /etc/passwd becomes etc/passwd from the context which is
+	// a nonexistent file.
+	c.Assert(string(out), checker.Contains, "Cannot locate specified Dockerfile: Dockerfile", check.Commentf("Didn't complain about leaving build context"))
 }

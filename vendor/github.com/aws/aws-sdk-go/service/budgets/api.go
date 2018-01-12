@@ -47,9 +47,8 @@ func (c *Budgets) CreateBudgetRequest(input *CreateBudgetInput) (req *request.Re
 		input = &CreateBudgetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateBudgetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -122,9 +121,8 @@ func (c *Budgets) CreateNotificationRequest(input *CreateNotificationInput) (req
 		input = &CreateNotificationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateNotificationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -201,9 +199,8 @@ func (c *Budgets) CreateSubscriberRequest(input *CreateSubscriberInput) (req *re
 		input = &CreateSubscriberInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateSubscriberOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -276,9 +273,8 @@ func (c *Budgets) DeleteBudgetRequest(input *DeleteBudgetInput) (req *request.Re
 		input = &DeleteBudgetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteBudgetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -347,9 +343,8 @@ func (c *Budgets) DeleteNotificationRequest(input *DeleteNotificationInput) (req
 		input = &DeleteNotificationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteNotificationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -418,9 +413,8 @@ func (c *Budgets) DeleteSubscriberRequest(input *DeleteSubscriberInput) (req *re
 		input = &DeleteSubscriberInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteSubscriberOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -489,9 +483,8 @@ func (c *Budgets) DescribeBudgetRequest(input *DescribeBudgetInput) (req *reques
 		input = &DescribeBudgetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeBudgetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -560,9 +553,8 @@ func (c *Budgets) DescribeBudgetsRequest(input *DescribeBudgetsInput) (req *requ
 		input = &DescribeBudgetsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeBudgetsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -638,9 +630,8 @@ func (c *Budgets) DescribeNotificationsForBudgetRequest(input *DescribeNotificat
 		input = &DescribeNotificationsForBudgetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeNotificationsForBudgetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -716,9 +707,8 @@ func (c *Budgets) DescribeSubscribersForNotificationRequest(input *DescribeSubsc
 		input = &DescribeSubscribersForNotificationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeSubscribersForNotificationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -794,9 +784,8 @@ func (c *Budgets) UpdateBudgetRequest(input *UpdateBudgetInput) (req *request.Re
 		input = &UpdateBudgetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateBudgetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -865,9 +854,8 @@ func (c *Budgets) UpdateNotificationRequest(input *UpdateNotificationInput) (req
 		input = &UpdateNotificationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateNotificationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -936,9 +924,8 @@ func (c *Budgets) UpdateSubscriberRequest(input *UpdateSubscriberInput) (req *re
 		input = &UpdateSubscriberInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateSubscriberOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

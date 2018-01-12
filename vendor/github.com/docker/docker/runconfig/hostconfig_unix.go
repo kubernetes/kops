@@ -1,4 +1,4 @@
-// +build !windows,!solaris
+// +build !windows
 
 package runconfig
 
@@ -19,7 +19,7 @@ func DefaultDaemonNetworkMode() container.NetworkMode {
 // IsPreDefinedNetwork indicates if a network is predefined by the daemon
 func IsPreDefinedNetwork(network string) bool {
 	n := container.NetworkMode(network)
-	return n.IsBridge() || n.IsHost() || n.IsNone() || n.IsDefault() || network == "ingress"
+	return n.IsBridge() || n.IsHost() || n.IsNone() || n.IsDefault()
 }
 
 // ValidateNetMode ensures that the various combinations of requested
@@ -52,11 +52,11 @@ func ValidateNetMode(c *container.Config, hc *container.HostConfig) error {
 		return ErrConflictContainerNetworkAndLinks
 	}
 
-	if hc.NetworkMode.IsContainer() && len(hc.DNS) > 0 {
+	if (hc.NetworkMode.IsHost() || hc.NetworkMode.IsContainer()) && len(hc.DNS) > 0 {
 		return ErrConflictNetworkAndDNS
 	}
 
-	if hc.NetworkMode.IsContainer() && len(hc.ExtraHosts) > 0 {
+	if (hc.NetworkMode.IsContainer() || hc.NetworkMode.IsHost()) && len(hc.ExtraHosts) > 0 {
 		return ErrConflictNetworkHosts
 	}
 
@@ -84,23 +84,6 @@ func ValidateIsolation(hc *container.HostConfig) error {
 	}
 	if !hc.Isolation.IsValid() {
 		return fmt.Errorf("invalid --isolation: %q - %s only supports 'default'", hc.Isolation, runtime.GOOS)
-	}
-	return nil
-}
-
-// ValidateQoS performs platform specific validation of the QoS settings
-func ValidateQoS(hc *container.HostConfig) error {
-	// We may not be passed a host config, such as in the case of docker commit
-	if hc == nil {
-		return nil
-	}
-
-	if hc.IOMaximumBandwidth != 0 {
-		return fmt.Errorf("invalid QoS settings: %s does not support --io-maxbandwidth", runtime.GOOS)
-	}
-
-	if hc.IOMaximumIOps != 0 {
-		return fmt.Errorf("invalid QoS settings: %s does not support --io-maxiops", runtime.GOOS)
 	}
 	return nil
 }

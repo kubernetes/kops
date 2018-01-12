@@ -32,14 +32,6 @@ func TestCheckMountDestFalsePositive(t *testing.T) {
 	}
 }
 
-func TestCheckMountRoot(t *testing.T) {
-	dest := "/rootfs"
-	err := checkMountDestination("/rootfs", dest)
-	if err == nil {
-		t.Fatal(err)
-	}
-}
-
 func TestNeedsSetupDev(t *testing.T) {
 	config := &configs.Config{
 		Mounts: []*configs.Mount{

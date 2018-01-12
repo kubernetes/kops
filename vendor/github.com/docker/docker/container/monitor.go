@@ -10,6 +10,20 @@ const (
 	loggerCloseTimeout = 10 * time.Second
 )
 
+// supervisor defines the interface that a supervisor must implement
+type supervisor interface {
+	// LogContainerEvent generates events related to a given container
+	LogContainerEvent(*Container, string)
+	// Cleanup ensures that the container is properly unmounted
+	Cleanup(*Container)
+	// StartLogging starts the logging driver for the container
+	StartLogging(*Container) error
+	// Run starts a container
+	Run(c *Container) error
+	// IsShuttingDown tells whether the supervisor is shutting down or not
+	IsShuttingDown() bool
+}
+
 // Reset puts a container into a state where it can be restarted again.
 func (container *Container) Reset(lock bool) {
 	if lock {
@@ -35,7 +49,7 @@ func (container *Container) Reset(lock bool) {
 			}()
 			select {
 			case <-time.After(loggerCloseTimeout):
-				logrus.Warn("Logger didn't exit in time: logs may be truncated")
+				logrus.Warnf("Logger didn't exit in time: logs may be truncated")
 			case <-exit:
 			}
 		}

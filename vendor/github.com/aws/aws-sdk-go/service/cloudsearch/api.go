@@ -46,9 +46,8 @@ func (c *CloudSearch) BuildSuggestersRequest(input *BuildSuggestersInput) (req *
 		input = &BuildSuggestersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BuildSuggestersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -119,9 +118,8 @@ func (c *CloudSearch) CreateDomainRequest(input *CreateDomainInput) (req *reques
 		input = &CreateDomainInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateDomainOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -191,9 +189,8 @@ func (c *CloudSearch) DefineAnalysisSchemeRequest(input *DefineAnalysisSchemeInp
 		input = &DefineAnalysisSchemeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DefineAnalysisSchemeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -271,9 +268,8 @@ func (c *CloudSearch) DefineExpressionRequest(input *DefineExpressionInput) (req
 		input = &DefineExpressionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DefineExpressionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -351,9 +347,8 @@ func (c *CloudSearch) DefineIndexFieldRequest(input *DefineIndexFieldInput) (req
 		input = &DefineIndexFieldInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DefineIndexFieldOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -435,9 +430,8 @@ func (c *CloudSearch) DefineSuggesterRequest(input *DefineSuggesterInput) (req *
 		input = &DefineSuggesterInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DefineSuggesterOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -517,9 +511,8 @@ func (c *CloudSearch) DeleteAnalysisSchemeRequest(input *DeleteAnalysisSchemeInp
 		input = &DeleteAnalysisSchemeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteAnalysisSchemeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -593,9 +586,8 @@ func (c *CloudSearch) DeleteDomainRequest(input *DeleteDomainInput) (req *reques
 		input = &DeleteDomainInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteDomainOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -663,9 +655,8 @@ func (c *CloudSearch) DeleteExpressionRequest(input *DeleteExpressionInput) (req
 		input = &DeleteExpressionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteExpressionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -739,9 +730,8 @@ func (c *CloudSearch) DeleteIndexFieldRequest(input *DeleteIndexFieldInput) (req
 		input = &DeleteIndexFieldInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteIndexFieldOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -815,9 +805,8 @@ func (c *CloudSearch) DeleteSuggesterRequest(input *DeleteSuggesterInput) (req *
 		input = &DeleteSuggesterInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteSuggesterOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -891,9 +880,8 @@ func (c *CloudSearch) DescribeAnalysisSchemesRequest(input *DescribeAnalysisSche
 		input = &DescribeAnalysisSchemesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAnalysisSchemesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -968,9 +956,8 @@ func (c *CloudSearch) DescribeAvailabilityOptionsRequest(input *DescribeAvailabi
 		input = &DescribeAvailabilityOptionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAvailabilityOptionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1052,9 +1039,8 @@ func (c *CloudSearch) DescribeDomainsRequest(input *DescribeDomainsInput) (req *
 		input = &DescribeDomainsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeDomainsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1124,9 +1110,8 @@ func (c *CloudSearch) DescribeExpressionsRequest(input *DescribeExpressionsInput
 		input = &DescribeExpressionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeExpressionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1200,9 +1185,8 @@ func (c *CloudSearch) DescribeIndexFieldsRequest(input *DescribeIndexFieldsInput
 		input = &DescribeIndexFieldsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeIndexFieldsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1276,9 +1260,8 @@ func (c *CloudSearch) DescribeScalingParametersRequest(input *DescribeScalingPar
 		input = &DescribeScalingParametersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeScalingParametersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1350,9 +1333,8 @@ func (c *CloudSearch) DescribeServiceAccessPoliciesRequest(input *DescribeServic
 		input = &DescribeServiceAccessPoliciesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeServiceAccessPoliciesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1426,9 +1408,8 @@ func (c *CloudSearch) DescribeSuggestersRequest(input *DescribeSuggestersInput) 
 		input = &DescribeSuggestersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeSuggestersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1503,9 +1484,8 @@ func (c *CloudSearch) IndexDocumentsRequest(input *IndexDocumentsInput) (req *re
 		input = &IndexDocumentsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &IndexDocumentsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1576,9 +1556,8 @@ func (c *CloudSearch) ListDomainNamesRequest(input *ListDomainNamesInput) (req *
 		input = &ListDomainNamesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListDomainNamesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1639,9 +1618,8 @@ func (c *CloudSearch) UpdateAvailabilityOptionsRequest(input *UpdateAvailability
 		input = &UpdateAvailabilityOptionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateAvailabilityOptionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1724,9 +1702,8 @@ func (c *CloudSearch) UpdateScalingParametersRequest(input *UpdateScalingParamet
 		input = &UpdateScalingParametersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateScalingParametersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1808,9 +1785,8 @@ func (c *CloudSearch) UpdateServiceAccessPoliciesRequest(input *UpdateServiceAcc
 		input = &UpdateServiceAccessPoliciesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateServiceAccessPoliciesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

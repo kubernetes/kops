@@ -1,19 +1,16 @@
 package api
 
 import (
-	"encoding/json"
-	"encoding/pem"
 	"fmt"
 	"mime"
-	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/docker/docker/pkg/ioutils"
 	"github.com/docker/docker/pkg/system"
+	"github.com/docker/docker/pkg/version"
 	"github.com/docker/engine-api/types"
 	"github.com/docker/libtrust"
 )
@@ -21,10 +18,10 @@ import (
 // Common constants for daemon and client.
 const (
 	// Version of Current REST API
-	DefaultVersion string = "1.25"
+	DefaultVersion version.Version = "1.23"
 
 	// MinVersion represents Minimum REST API version supported
-	MinVersion string = "1.12"
+	MinVersion version.Version = "1.12"
 
 	// NoBaseImageSpecifier is the symbol used by the FROM
 	// command to specify that no base image is to be used.
@@ -139,31 +136,11 @@ func LoadOrCreateTrustKey(trustKeyPath string) (libtrust.PrivateKey, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Error generating key: %s", err)
 		}
-		encodedKey, err := serializePrivateKey(trustKey, filepath.Ext(trustKeyPath))
-		if err != nil {
-			return nil, fmt.Errorf("Error serializing key: %s", err)
-		}
-		if err := ioutils.AtomicWriteFile(trustKeyPath, encodedKey, os.FileMode(0600)); err != nil {
+		if err := libtrust.SaveKey(trustKeyPath, trustKey); err != nil {
 			return nil, fmt.Errorf("Error saving key file: %s", err)
 		}
 	} else if err != nil {
 		return nil, fmt.Errorf("Error loading key file %s: %s", trustKeyPath, err)
 	}
 	return trustKey, nil
-}
-
-func serializePrivateKey(key libtrust.PrivateKey, ext string) (encoded []byte, err error) {
-	if ext == ".json" || ext == ".jwk" {
-		encoded, err = json.Marshal(key)
-		if err != nil {
-			return nil, fmt.Errorf("unable to encode private key JWK: %s", err)
-		}
-	} else {
-		pemBlock, err := key.PEMBlock()
-		if err != nil {
-			return nil, fmt.Errorf("unable to encode private key PEM: %s", err)
-		}
-		encoded = pem.EncodeToMemory(pemBlock)
-	}
-	return
 }

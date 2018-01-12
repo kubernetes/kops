@@ -1,11 +1,11 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"jQLIOHBVnDZie4rQHGH1WJF-INE/cvYaayVw4IdFoA5o3qV9XjLT9HI\"",
+ "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/FcNWZezE05ypidUunx03uCyJR70\"",
  "discoveryVersion": "v1",
  "id": "script:v1",
  "name": "script",
  "version": "v1",
- "revision": "20160426",
+ "revision": "20160801",
  "title": "Google Apps Script Execution API",
  "description": "Executes Google Apps Script projects.",
  "ownerDomain": "google.com",
@@ -180,7 +180,7 @@
      "description": "This field is not used.",
      "additionalProperties": {
       "type": "any",
-      "description": "Properties of the object. Contains field @ype with type URL."
+      "description": "Properties of the object. Contains field @type with type URL."
      }
     },
     "done": {
@@ -196,7 +196,7 @@
      "description": "If the script function returns successfully, this field will contain an `ExecutionResponse` object with the function's return value as the object's `result` field.",
      "additionalProperties": {
       "type": "any",
-      "description": "Properties of the object. Contains field @ype with type URL."
+      "description": "Properties of the object. Contains field @type with type URL."
      }
     }
    }
@@ -222,7 +222,7 @@
       "type": "object",
       "additionalProperties": {
        "type": "any",
-       "description": "Properties of the object. Contains field @ype with type URL."
+       "description": "Properties of the object. Contains field @type with type URL."
       }
      }
     }
@@ -274,6 +274,13 @@
     "result": {
      "type": "any",
      "description": "The return value of the script function. The type will match the type returned in Apps Script. Functions called through the Execution API cannot return Apps Script-specific objects (such as a `Document` or `Calendar`); they can only return primitive types such as a `string`, `number`, `array`, `object`, or `boolean`."
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "SUCCESS",
+      "CANCELED"
+     ]
     }
    }
   }

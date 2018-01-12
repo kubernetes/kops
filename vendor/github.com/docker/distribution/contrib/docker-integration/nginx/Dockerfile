@@ -7,4 +7,3 @@ COPY registry-noauth.conf /etc/nginx/registry-noauth.conf
 COPY registry-basic.conf /etc/nginx/registry-basic.conf
 COPY test.passwd /etc/nginx/test.passwd
 COPY ssl /etc/nginx/ssl
-COPY v1 /var/www/html/v1

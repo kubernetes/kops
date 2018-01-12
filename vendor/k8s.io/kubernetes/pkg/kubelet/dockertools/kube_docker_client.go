@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"regexp"
 	"sync"
 	"time"
 
@@ -123,9 +124,6 @@ func (d *kubeDockerClient) InspectContainer(id string) (*dockertypes.ContainerJS
 		return nil, ctxErr
 	}
 	if err != nil {
-		if dockerapi.IsErrContainerNotFound(err) {
-			return nil, containerNotFoundError{ID: id}
-		}
 		return nil, err
 	}
 	return &containerJSON, nil
@@ -189,7 +187,7 @@ func (d *kubeDockerClient) inspectImageRaw(ref string) (*dockertypes.ImageInspec
 	}
 	if err != nil {
 		if dockerapi.IsErrImageNotFound(err) {
-			err = imageNotFoundError{ID: ref}
+			err = ImageNotFoundError{ID: ref}
 		}
 		return nil, err
 	}
@@ -204,7 +202,7 @@ func (d *kubeDockerClient) InspectImageByID(imageID string) (*dockertypes.ImageI
 	}
 
 	if !matchImageIDOnly(*resp, imageID) {
-		return nil, imageNotFoundError{ID: imageID}
+		return nil, ImageNotFoundError{ID: imageID}
 	}
 	return resp, nil
 }
@@ -216,7 +214,7 @@ func (d *kubeDockerClient) InspectImageByRef(imageRef string) (*dockertypes.Imag
 	}
 
 	if !matchImageTagOrSHA(*resp, imageRef) {
-		return nil, imageNotFoundError{ID: imageRef}
+		return nil, ImageNotFoundError{ID: imageRef}
 	}
 	return resp, nil
 }
@@ -607,29 +605,27 @@ func (e operationTimeout) Error() string {
 	return fmt.Sprintf("operation timeout: %v", e.err)
 }
 
-// containerNotFoundError is the error returned by InspectContainer when container not found. We
-// add this error type for testability. We don't use the original error returned by engine-api
-// because dockertypes.containerNotFoundError is private, we can't create and inject it in our test.
-type containerNotFoundError struct {
+// containerNotFoundErrorRegx is the regexp of container not found error message.
+var containerNotFoundErrorRegx = regexp.MustCompile(`No such container: [0-9a-z]+`)
+
+// IsContainerNotFoundError checks whether the error is container not found error.
+func IsContainerNotFoundError(err error) bool {
+	return containerNotFoundErrorRegx.MatchString(err.Error())
+}
+
+// ImageNotFoundError is the error returned by InspectImage when image not found.
+// Expose this to inject error in dockershim for testing.
+type ImageNotFoundError struct {
 	ID string
 }
 
-func (e containerNotFoundError) Error() string {
-	return fmt.Sprintf("no such container: %q", e.ID)
-}
-
-// imageNotFoundError is the error returned by InspectImage when image not found.
-type imageNotFoundError struct {
-	ID string
-}
-
-func (e imageNotFoundError) Error() string {
+func (e ImageNotFoundError) Error() string {
 	return fmt.Sprintf("no such image: %q", e.ID)
 }
 
 // IsImageNotFoundError checks whether the error is image not found error. This is exposed
 // to share with dockershim.
 func IsImageNotFoundError(err error) bool {
-	_, ok := err.(imageNotFoundError)
+	_, ok := err.(ImageNotFoundError)
 	return ok
 }

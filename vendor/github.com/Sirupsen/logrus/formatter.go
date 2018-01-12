@@ -1,9 +1,5 @@
 package logrus
 
-import "time"
-
-const DefaultTimestampFormat = time.RFC3339
-
 // The Formatter interface is used to implement a custom Formatter. It takes an
 // `Entry`. It exposes all the fields, including the default ones:
 //
@@ -31,15 +27,18 @@ type Formatter interface {
 // It's not exported because it's still using Data in an opinionated way. It's to
 // avoid code duplication between the two default formatters.
 func prefixFieldClashes(data Fields) {
-	if t, ok := data["time"]; ok {
-		data["fields.time"] = t
+	_, ok := data["time"]
+	if ok {
+		data["fields.time"] = data["time"]
 	}
 
-	if m, ok := data["msg"]; ok {
-		data["fields.msg"] = m
+	_, ok = data["msg"]
+	if ok {
+		data["fields.msg"] = data["msg"]
 	}
 
-	if l, ok := data["level"]; ok {
-		data["fields.level"] = l
+	_, ok = data["level"]
+	if ok {
+		data["fields.level"] = data["level"]
 	}
 }

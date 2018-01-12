@@ -121,10 +121,8 @@ func (c *Client) NewTransaction(ctx context.Context, opts ...TransactionOption) 
 // must not assume that any of f's changes have been committed until
 // RunInTransaction returns nil.
 //
-// Since f may be called multiple times, f should usually be idempotent – that
-// is, it should have the same result when called multiple times. Note that
-// Transaction.Get will append when unmarshalling slice fields, so it is not
-// necessarily idempotent.
+// Since f may be called multiple times, f should usually be idempotent.
+// Note that Transaction.Get is not idempotent when unmarshaling slice fields.
 func (c *Client) RunInTransaction(ctx context.Context, f func(tx *Transaction) error, opts ...TransactionOption) (*Commit, error) {
 	settings := newTransactionSettings(opts)
 	for n := 0; n < settings.attempts; n++ {

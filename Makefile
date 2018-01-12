@@ -23,16 +23,16 @@ GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell echo ${GOPATH} | cut -d : -f 1)
 UNIQUE:=$(shell date +%s)
-GOVERSION=1.7.4
+GOVERSION=1.7.5
 
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.5.2
+DNS_CONTROLLER_TAG=1.6.0
 
-KOPS_RELEASE_VERSION=1.5.2-beta.2
-KOPS_CI_VERSION=1.6.0-alpha.0
+KOPS_RELEASE_VERSION=1.6.0-alpha.1
+KOPS_CI_VERSION=1.6.0-alpha.2
 
 GITSHA := $(shell cd ${GOPATH_1ST}/src/k8s.io/kops; git describe --always)
 
@@ -105,7 +105,9 @@ codegen: kops-gobindata
 
 test:
 	go test k8s.io/kops/pkg/... -args -v=1 -logtostderr
+	go test k8s.io/kops/nodeup/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
+	go test k8s.io/kops/nodeup/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/protokube/... -args -v=1 -logtostderr
 	go test k8s.io/kops/dns-controller/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/cmd/... -args -v=1 -logtostderr
@@ -125,6 +127,8 @@ crossbuild:
 	mkdir -p .build/dist/
 	GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/darwin/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+
+
 
 crossbuild-in-docker:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
@@ -170,7 +174,7 @@ gcs-publish-ci: gcs-upload
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp .build/upload/${LATEST_FILE} ${GCS_LOCATION}
 
 gen-cli-docs:
-	KOPS_STATE_STORE= kops genhelpdocs --out docs/cli
+	@kops genhelpdocs --out docs/cli
 
 # Will always push a linux-based build up to the server
 push: crossbuild-nodeup
@@ -183,7 +187,8 @@ push-aws-dry: push
 	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --dryrun --v=8
 
 push-gce-run: push
-	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=metadata://gce/config --v=8
+	ssh ${TARGET} sudo cp /tmp/nodeup /home/kubernetes/bin/nodeup
+	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /home/kubernetes/bin/nodeup --conf=/var/lib/toolbox/kubernetes-install/kube_env.yaml --v=8
 
 # -t is for CentOS http://unix.stackexchange.com/questions/122616/why-do-i-need-a-tty-to-run-sudo-if-i-can-sudo-without-a-password
 push-aws-run: push
@@ -255,6 +260,9 @@ utils-dist:
 # See docs/development/dependencies.md
 copydeps:
 	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git
+	ln -sf kubernetes/staging/src/k8s.io/apimachinery vendor/k8s.io/apimachinery
+	ln -sf kubernetes/staging/src/k8s.io/apiserver vendor/k8s.io/apiserver
+	ln -sf kubernetes/staging/src/k8s.io/client-go vendor/k8s.io/client-go
 
 gofmt:
 	gofmt -w -s channels/
@@ -273,6 +281,11 @@ gofmt:
 	gofmt -w -s dns-controller/cmd
 	gofmt -w -s dns-controller/pkg
 
+goimports:
+	sh -c hack/update-goimports
+
+verify-goimports:
+	sh -c hack/verify-goimports
 
 govet:
 	go vet \
@@ -314,6 +327,15 @@ channels-gocode:
 	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/channels
 
 # --------------------------------------------------
+# release tasks
+
+release-tag:
+	git tag ${KOPS_RELEASE_VERSION}
+
+release-github:
+	shipbot -tag ${KOPS_RELEASE_VERSION} -config .shipbot.yaml
+
+# --------------------------------------------------
 # API / embedding examples
 
 examples:
@@ -333,3 +355,20 @@ apimachinery:
 	#cd pkg/apis/kops/v1alpha2/ && ~/k8s/bin/codecgen -d 1234 -o types.generated.go instancegroup.go cluster.go federation.go
 	#cd pkg/apis/kops/v1alpha1/ && ~/k8s/bin/codecgen -d 1234 -o types.generated.go instancegroup.go cluster.go federation.go
 	#cd pkg/apis/kops/ && ~/k8s/bin/codecgen -d 1234 -o types.generated.go instancegroup.go cluster.go federation.go
+
+
+# -----------------------------------------------------
+# kops-server
+
+kops-server-docker-compile:
+	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/kops-server -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops-server.Version=${VERSION} -X k8s.io/kops-server.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops-server
+
+kops-server-build:
+	# Compile the API binary in linux, and copy to local filesystem
+	docker pull golang:${GOVERSION}
+	docker run --name=kops-server-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH}/src:/go/src -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile kops-server-docker-compile
+	docker cp kops-server-build-${UNIQUE}:/go/.build .
+	docker build -t ${DOCKER_REGISTRY}/kops-server:latest -f images/kops-server/Dockerfile .
+
+kops-server-push: kops-server-build
+	docker push ${DOCKER_REGISTRY}/kops-server:latest

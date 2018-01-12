@@ -10,15 +10,13 @@ parent = "smn_cli"
 
 # stop
 
-```markdown
-Usage:  docker stop [OPTIONS] CONTAINER [CONTAINER...]
+    Usage: docker stop [OPTIONS] CONTAINER [CONTAINER...]
 
-Stop one or more running containers
+    Stop a container by sending SIGTERM and then SIGKILL after a
+    grace period
 
-Options:
-      --help       Print usage
-  -t, --time int   Seconds to wait for stop before killing it (default 10)
-```
+      --help             Print usage
+      -t, --time=10      Seconds to wait for stop before killing it
 
 The main process inside the container will receive `SIGTERM`, and after a grace
 period, `SIGKILL`.

@@ -23,14 +23,14 @@ import (
 	"os"
 	"strings"
 
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/api/validation"
-	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
-	utilerrors "k8s.io/kubernetes/pkg/util/errors"
-	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 var FileExtensions = []string{".json", ".yaml", ".yml"}
@@ -72,7 +72,7 @@ type Builder struct {
 	singleResourceType bool
 	continueOnError    bool
 
-	singular bool
+	singleItemImplied bool
 
 	export bool
 
@@ -139,7 +139,7 @@ func (b *Builder) FilenameParam(enforceNamespace bool, filenameOptions *Filename
 			b.URL(defaultHttpGetAttempts, url)
 		default:
 			if !recursive {
-				b.singular = true
+				b.singleItemImplied = true
 			}
 			b.Path(recursive, s)
 		}
@@ -291,11 +291,11 @@ func (b *Builder) DefaultNamespace() *Builder {
 	return b
 }
 
-// AllNamespaces instructs the builder to use NamespaceAll as a namespace to request resources
+// AllNamespaces instructs the builder to metav1.NamespaceAll as a namespace to request resources
 // across all of the namespace. This overrides the namespace set by NamespaceParam().
 func (b *Builder) AllNamespaces(allNamespace bool) *Builder {
 	if allNamespace {
-		b.namespace = api.NamespaceAll
+		b.namespace = metav1.NamespaceAll
 	}
 	b.allNamespace = allNamespace
 	return b
@@ -567,25 +567,31 @@ func (b *Builder) visitorResult() *Result {
 }
 
 func (b *Builder) visitBySelector() *Result {
+	result := &Result{
+		targetsSingleItems: false,
+	}
+
 	if len(b.names) != 0 {
-		return &Result{err: fmt.Errorf("name cannot be provided when a selector is specified")}
+		return result.withError(fmt.Errorf("name cannot be provided when a selector is specified"))
 	}
 	if len(b.resourceTuples) != 0 {
-		return &Result{err: fmt.Errorf("selectors and the all flag cannot be used when passing resource/name arguments")}
+		return result.withError(fmt.Errorf("selectors and the all flag cannot be used when passing resource/name arguments"))
 	}
 	if len(b.resources) == 0 {
-		return &Result{err: fmt.Errorf("at least one resource must be specified to use a selector")}
+		return result.withError(fmt.Errorf("at least one resource must be specified to use a selector"))
 	}
 	mappings, err := b.resourceMappings()
 	if err != nil {
-		return &Result{err: err}
+		result.err = err
+		return result
 	}
 
 	visitors := []Visitor{}
 	for _, mapping := range mappings {
 		client, err := b.mapper.ClientForMapping(mapping)
 		if err != nil {
-			return &Result{err: err}
+			result.err = err
+			return result
 		}
 		selectorNamespace := b.namespace
 		if mapping.Scope.Name() != meta.RESTScopeNameNamespace {
@@ -594,27 +600,36 @@ func (b *Builder) visitBySelector() *Result {
 		visitors = append(visitors, NewSelector(client, mapping, selectorNamespace, b.selector, b.export))
 	}
 	if b.continueOnError {
-		return &Result{visitor: EagerVisitorList(visitors), sources: visitors}
+		result.visitor = EagerVisitorList(visitors)
+	} else {
+		result.visitor = VisitorList(visitors)
 	}
-	return &Result{visitor: VisitorList(visitors), sources: visitors}
+	result.sources = visitors
+	return result
 }
 
 func (b *Builder) visitByResource() *Result {
-	// if b.singular is false, this could be by default, so double-check length
-	// of resourceTuples to determine if in fact it is singular or not
-	isSingular := b.singular
-	if !isSingular {
-		isSingular = len(b.resourceTuples) == 1
+	// if b.singleItemImplied is false, this could be by default, so double-check length
+	// of resourceTuples to determine if in fact it is singleItemImplied or not
+	isSingleItemImplied := b.singleItemImplied
+	if !isSingleItemImplied {
+		isSingleItemImplied = len(b.resourceTuples) == 1
+	}
+
+	result := &Result{
+		singleItemImplied:  isSingleItemImplied,
+		targetsSingleItems: true,
 	}
 
 	if len(b.resources) != 0 {
-		return &Result{singular: isSingular, err: fmt.Errorf("you may not specify individual resources and bulk resources in the same call")}
+		return result.withError(fmt.Errorf("you may not specify individual resources and bulk resources in the same call"))
 	}
 
 	// retrieve one client for each resource
 	mappings, err := b.resourceTupleMappings()
 	if err != nil {
-		return &Result{singular: isSingular, err: err}
+		result.err = err
+		return result
 	}
 	clients := make(map[string]RESTClient)
 	for _, mapping := range mappings {
@@ -624,7 +639,8 @@ func (b *Builder) visitByResource() *Result {
 		}
 		client, err := b.mapper.ClientForMapping(mapping)
 		if err != nil {
-			return &Result{err: err}
+			result.err = err
+			return result
 		}
 		clients[s] = client
 	}
@@ -633,12 +649,12 @@ func (b *Builder) visitByResource() *Result {
 	for _, tuple := range b.resourceTuples {
 		mapping, ok := mappings[tuple.Resource]
 		if !ok {
-			return &Result{singular: isSingular, err: fmt.Errorf("resource %q is not recognized: %v", tuple.Resource, mappings)}
+			return result.withError(fmt.Errorf("resource %q is not recognized: %v", tuple.Resource, mappings))
 		}
 		s := fmt.Sprintf("%s/%s", mapping.GroupVersionKind.GroupVersion().String(), mapping.Resource)
 		client, ok := clients[s]
 		if !ok {
-			return &Result{singular: isSingular, err: fmt.Errorf("could not find a client for resource %q", tuple.Resource)}
+			return result.withError(fmt.Errorf("could not find a client for resource %q", tuple.Resource))
 		}
 
 		selectorNamespace := b.namespace
@@ -650,7 +666,7 @@ func (b *Builder) visitByResource() *Result {
 				if b.allNamespace {
 					errMsg = "a resource cannot be retrieved by name across all namespaces"
 				}
-				return &Result{singular: isSingular, err: fmt.Errorf(errMsg)}
+				return result.withError(fmt.Errorf(errMsg))
 			}
 		}
 
@@ -664,31 +680,38 @@ func (b *Builder) visitByResource() *Result {
 	} else {
 		visitors = VisitorList(items)
 	}
-	return &Result{singular: isSingular, visitor: visitors, sources: items}
+	result.visitor = visitors
+	result.sources = items
+	return result
 }
 
 func (b *Builder) visitByName() *Result {
-	isSingular := len(b.names) == 1
+	result := &Result{
+		singleItemImplied:  len(b.names) == 1,
+		targetsSingleItems: true,
+	}
 
 	if len(b.paths) != 0 {
-		return &Result{singular: isSingular, err: fmt.Errorf("when paths, URLs, or stdin is provided as input, you may not specify a resource by arguments as well")}
+		return result.withError(fmt.Errorf("when paths, URLs, or stdin is provided as input, you may not specify a resource by arguments as well"))
 	}
 	if len(b.resources) == 0 {
-		return &Result{singular: isSingular, err: fmt.Errorf("you must provide a resource and a resource name together")}
+		return result.withError(fmt.Errorf("you must provide a resource and a resource name together"))
 	}
 	if len(b.resources) > 1 {
-		return &Result{singular: isSingular, err: fmt.Errorf("you must specify only one resource")}
+		return result.withError(fmt.Errorf("you must specify only one resource"))
 	}
 
 	mappings, err := b.resourceMappings()
 	if err != nil {
-		return &Result{singular: isSingular, err: err}
+		result.err = err
+		return result
 	}
 	mapping := mappings[0]
 
 	client, err := b.mapper.ClientForMapping(mapping)
 	if err != nil {
-		return &Result{err: err}
+		result.err = err
+		return result
 	}
 
 	selectorNamespace := b.namespace
@@ -700,7 +723,7 @@ func (b *Builder) visitByName() *Result {
 			if b.allNamespace {
 				errMsg = "a resource cannot be retrieved by name across all namespaces"
 			}
-			return &Result{singular: isSingular, err: fmt.Errorf(errMsg)}
+			return result.withError(fmt.Errorf(errMsg))
 		}
 	}
 
@@ -709,19 +732,25 @@ func (b *Builder) visitByName() *Result {
 		info := NewInfo(client, mapping, selectorNamespace, name, b.export)
 		visitors = append(visitors, info)
 	}
-	return &Result{singular: isSingular, visitor: VisitorList(visitors), sources: visitors}
+	result.visitor = VisitorList(visitors)
+	result.sources = visitors
+	return result
 }
 
 func (b *Builder) visitByPaths() *Result {
-	singular := !b.dir && !b.stream && len(b.paths) == 1
+	result := &Result{
+		singleItemImplied:  !b.dir && !b.stream && len(b.paths) == 1,
+		targetsSingleItems: true,
+	}
+
 	if len(b.resources) != 0 {
-		return &Result{singular: singular, err: fmt.Errorf("when paths, URLs, or stdin is provided as input, you may not specify resource arguments as well")}
+		return result.withError(fmt.Errorf("when paths, URLs, or stdin is provided as input, you may not specify resource arguments as well"))
 	}
 	if len(b.names) != 0 {
-		return &Result{err: fmt.Errorf("name cannot be provided when a path is specified")}
+		return result.withError(fmt.Errorf("name cannot be provided when a path is specified"))
 	}
 	if len(b.resourceTuples) != 0 {
-		return &Result{err: fmt.Errorf("resource/name arguments cannot be provided when a path is specified")}
+		return result.withError(fmt.Errorf("resource/name arguments cannot be provided when a path is specified"))
 	}
 
 	var visitors Visitor
@@ -746,7 +775,9 @@ func (b *Builder) visitByPaths() *Result {
 	if b.selector != nil {
 		visitors = NewFilteredVisitor(visitors, FilterBySelector(b.selector))
 	}
-	return &Result{singular: singular, visitor: visitors, sources: b.paths}
+	result.visitor = visitors
+	result.sources = b.paths
+	return result
 }
 
 // Do returns a Result object with a Visitor for the resources identified by the Builder.
@@ -806,12 +837,13 @@ func HasNames(args []string) (bool, error) {
 
 // MultipleTypesRequested returns true if the provided args contain multiple resource kinds
 func MultipleTypesRequested(args []string) bool {
+	if len(args) == 1 && args[0] == "all" {
+		return true
+	}
+
 	args = normalizeMultipleResourcesArgs(args)
 	rKinds := sets.NewString()
 	for _, arg := range args {
-		if arg == "all" {
-			return true
-		}
 		rTuple, found, err := splitResourceTypeName(arg)
 		if err != nil {
 			continue

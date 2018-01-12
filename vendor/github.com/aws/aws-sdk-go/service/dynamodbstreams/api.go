@@ -49,9 +49,8 @@ func (c *DynamoDBStreams) DescribeStreamRequest(input *DescribeStreamInput) (req
 		input = &DescribeStreamInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeStreamOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -128,9 +127,8 @@ func (c *DynamoDBStreams) GetRecordsRequest(input *GetRecordsInput) (req *reques
 		input = &GetRecordsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetRecordsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -234,9 +232,8 @@ func (c *DynamoDBStreams) GetShardIteratorRequest(input *GetShardIteratorInput) 
 		input = &GetShardIteratorInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetShardIteratorOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -321,9 +318,8 @@ func (c *DynamoDBStreams) ListStreamsRequest(input *ListStreamsInput) (req *requ
 		input = &ListStreamsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListStreamsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

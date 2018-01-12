@@ -18,7 +18,6 @@ package cloudup
 
 import (
 	"fmt"
-	"log"
 
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
@@ -35,7 +34,11 @@ type BootstrapChannelBuilder struct {
 var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
 
 func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
-	addons, manifests := b.buildManifest()
+	addons, manifests, err := b.buildManifest()
+	if err != nil {
+		return err
+	}
+
 	addonsYAML, err := utils.YamlMarshal(addons)
 	if err != nil {
 		return fmt.Errorf("error serializing addons yaml: %v", err)
@@ -51,24 +54,29 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Contents: fi.WrapResource(fi.NewBytesResource(addonsYAML)),
 	}
 
-	for key, resource := range manifests {
+	for key, manifest := range manifests {
 		name := b.cluster.ObjectMeta.Name + "-addons-" + key
 		tasks[name] = &fitasks.ManagedFile{
 			Name:     fi.String(name),
-			Location: fi.String(resource),
-			Contents: &fi.ResourceHolder{Name: resource},
+			Location: fi.String(manifest),
+			Contents: &fi.ResourceHolder{Name: manifest},
 		}
 	}
 
 	return nil
 }
 
-func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[string]string) {
+func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[string]string, error) {
 	manifests := make(map[string]string)
 
 	addons := &channelsapi.Addons{}
 	addons.Kind = "Addons"
 	addons.ObjectMeta.Name = "bootstrap"
+
+	kv, err := util.ParseKubernetesVersion(b.cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to determine kubernetes version from %q", b.cluster.Spec.KubernetesVersion)
+	}
 
 	{
 		key := "core.addons.k8s.io"
@@ -88,21 +96,16 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	{
 		key := "kube-dns.addons.k8s.io"
 
-		kv, err := util.ParseKubernetesVersion(b.cluster.Spec.KubernetesVersion)
-		if err != nil {
-			log.Fatalf("unable to determine kubernetes version from %q",
-				b.cluster.Spec.KubernetesVersion)
-		}
-
 		var version string
+		var location string
 		switch {
 		case kv.Major == 1 && kv.Minor <= 5:
 			version = "1.5.1"
+			location = key + "/k8s-1.5.yaml"
 		default:
 			version = "1.6.0"
+			location = key + "/k8s-1.6.yaml"
 		}
-
-		location := key + "/v" + version + ".yaml"
 
 		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 			Name:     fi.String(key),
@@ -130,9 +133,19 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	{
 		key := "dns-controller.addons.k8s.io"
-		version := "1.5.2"
 
-		location := key + "/v" + version + ".yaml"
+		var version string
+		var location string
+		switch {
+		case kv.Major == 1 && kv.Minor <= 5:
+			// This is awkward... we would like to do version 1.6.0,
+			// but if we do then we won't get the new manifest when we upgrade to 1.6.0
+			version = "1.5.3"
+			location = key + "/k8s-1.5.yaml"
+		default:
+			version = "1.6.0"
+			location = key + "/k8s-1.6.yaml"
+		}
 
 		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 			Name:     fi.String(key),
@@ -145,7 +158,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	{
 		key := "storage-aws.addons.k8s.io"
-		version := "1.5.0"
+		version := "1.6.0"
 
 		location := key + "/v" + version + ".yaml"
 
@@ -190,7 +203,13 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Weave != nil {
 		key := "networking.weave"
-		version := "1.9.3"
+		var version string
+		switch {
+		case kv.Major == 1 && kv.Minor <= 5:
+			version = "1.9.3"
+		default:
+			version = "1.9.4"
+		}
 
 		// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
 		location := key + "/v" + version + ".yaml"
@@ -256,5 +275,5 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		manifests[key] = "addons/" + location
 	}
 
-	return addons, manifests
+	return addons, manifests, nil
 }

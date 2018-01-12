@@ -48,9 +48,8 @@ func (c *XRay) BatchGetTracesRequest(input *BatchGetTracesInput) (req *request.R
 		input = &BatchGetTracesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BatchGetTracesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -119,9 +118,8 @@ func (c *XRay) GetServiceGraphRequest(input *GetServiceGraphInput) (req *request
 		input = &GetServiceGraphInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetServiceGraphOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -192,9 +190,8 @@ func (c *XRay) GetTraceGraphRequest(input *GetTraceGraphInput) (req *request.Req
 		input = &GetTraceGraphInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetTraceGraphOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -261,9 +258,8 @@ func (c *XRay) GetTraceSummariesRequest(input *GetTraceSummariesInput) (req *req
 		input = &GetTraceSummariesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetTraceSummariesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -331,9 +327,8 @@ func (c *XRay) PutTelemetryRecordsRequest(input *PutTelemetryRecordsInput) (req 
 		input = &PutTelemetryRecordsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PutTelemetryRecordsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -400,9 +395,8 @@ func (c *XRay) PutTraceSegmentsRequest(input *PutTraceSegmentsInput) (req *reque
 		input = &PutTraceSegmentsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PutTraceSegmentsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

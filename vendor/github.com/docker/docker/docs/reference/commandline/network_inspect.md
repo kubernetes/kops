@@ -10,15 +10,12 @@ parent = "smn_cli"
 
 # network inspect
 
-```markdown
-Usage:  docker network inspect [OPTIONS] NETWORK [NETWORK...]
+    Usage:  docker network inspect [OPTIONS] NETWORK [NETWORK..]
 
-Display detailed information on one or more networks
+    Displays detailed information on a network
 
-Options:
-  -f, --format string   Format the output using the given go template
-      --help            Print usage
-```
+      -f, --format=       Format the output using the given go template.
+      --help             Print usage
 
 Returns information about one or more networks. By default, this command renders all results in a JSON object. For example, if you connect two containers to the default `bridge` network:
 

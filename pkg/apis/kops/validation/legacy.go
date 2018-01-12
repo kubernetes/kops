@@ -19,11 +19,11 @@ package validation
 import (
 	"fmt"
 	"github.com/blang/semver"
+	"k8s.io/apimachinery/pkg/util/validation"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/util/validation"
-	"k8s.io/kubernetes/pkg/util/validation/field"
 	"net"
 	"strings"
 )
@@ -267,26 +267,16 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 		}
 	}
 
-	// AdminAccess
-	if strict && len(c.Spec.SSHAccess) == 0 {
-		// TODO: We may want to allow this
-		return fmt.Errorf("SSHAccess not configured")
-	}
-
-	// AdminAccess
-	if strict && len(c.Spec.KubernetesAPIAccess) == 0 {
-		// TODO: We may want to allow this (maybe)
-		return fmt.Errorf("KubernetesAPIAccess not configured")
-	}
-
 	// KubeProxy
 	if c.Spec.KubeProxy != nil {
 		kubeProxyPath := specPath.Child("KubeProxy")
 
 		master := c.Spec.KubeProxy.Master
-		if strict && master == "" {
-			return field.Required(kubeProxyPath.Child("Master"), "")
-		}
+		// We no longer require the master to be set; nodeup can infer it automatically
+		//if strict && master == "" {
+		//      return field.Required(kubeProxyPath.Child("Master"), "")
+		//}
+
 		if master != "" && !isValidAPIServersURL(master) {
 			return field.Invalid(kubeProxyPath.Child("Master"), master, "Not a valid APIServer URL")
 		}
@@ -446,7 +436,7 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool) er
 	}
 
 	for _, g := range groups {
-		err := g.CrossValidate(c, strict)
+		err := CrossValidateInstanceGroup(g, c, strict)
 		if err != nil {
 			return err
 		}

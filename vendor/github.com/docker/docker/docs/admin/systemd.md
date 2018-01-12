@@ -33,19 +33,15 @@ If you want Docker to start at boot, you should also:
 There are a number of ways to configure the daemon flags and environment variables
 for your Docker daemon.
 
-The recommended way is to use a systemd drop-in file (as described in
-the <a target="_blank"
-href="https://www.freedesktop.org/software/systemd/man/systemd.unit.html">systemd.unit</a>
-documentation). These are local files named `<something>.conf` in the
-`/etc/systemd/system/docker.service.d` directory. This could also be
-`/etc/systemd/system/docker.service`, which also works for overriding
-the defaults from `/lib/systemd/system/docker.service`.
+The recommended way is to use a systemd drop-in file. These are local files in
+the `/etc/systemd/system/docker.service.d` directory. This could also be
+`/etc/systemd/system/docker.service`, which also works for overriding the
+defaults from `/lib/systemd/system/docker.service`.
 
-However, if you had previously used a package which had an
-`EnvironmentFile` (often pointing to `/etc/sysconfig/docker`) then for
-backwards compatibility, you drop a file with a `.conf` extension into
-the `/etc/systemd/system/docker.service.d` directory including the
-following:
+However, if you had previously used a package which had an `EnvironmentFile`
+(often pointing to `/etc/sysconfig/docker`) then for backwards compatibility,
+you drop a file in the `/etc/systemd/system/docker.service.d`
+directory including the following:
 
     [Service]
     EnvironmentFile=-/etc/sysconfig/docker
@@ -123,7 +119,7 @@ If you fail to specify an empty configuration, Docker reports an error such as:
 
 This example overrides the default `docker.service` file.
 
-If you are behind an HTTP proxy server, for example in corporate settings,
+If you are behind a HTTP proxy server, for example in corporate settings,
 you will need to add this configuration in the Docker systemd service file.
 
 First, create a systemd drop-in directory for the docker service:

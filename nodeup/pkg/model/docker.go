@@ -22,9 +22,11 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model/resources"
+	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"strings"
 )
 
 // DockerBuilder install docker (just the packages at the moment)
@@ -227,8 +229,13 @@ func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro 
 }
 
 func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
-	if b.Distribution == distros.DistributionCoreOS {
+	switch b.Distribution {
+	case distros.DistributionCoreOS:
 		glog.Infof("Detected CoreOS; won't install Docker")
+		return nil
+
+	case distros.DistributionContainerOS:
+		glog.Infof("Detected ContainerOS; won't install Docker")
 		return nil
 	}
 
@@ -283,6 +290,10 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	c.AddTask(b.buildSystemdService(dockerSemver))
+
+	if err := b.buildSysconfig(c); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -382,4 +393,26 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 	service.InitDefaults()
 
 	return service
+}
+
+func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
+	flagsString, err := flagbuilder.BuildFlags(b.Cluster.Spec.Docker)
+	if err != nil {
+		return fmt.Errorf("error building docker flags: %v", err)
+	}
+
+	lines := []string{
+		"DOCKER_OPTS=" + flagsString,
+		"DOCKER_NOFILE=1000000",
+	}
+	contents := strings.Join(lines, "\n")
+
+	t := &nodetasks.File{
+		Path:     "/etc/sysconfig/docker",
+		Contents: fi.NewStringResource(contents),
+		Type:     nodetasks.FileType_File,
+	}
+	c.AddTask(t)
+
+	return nil
 }

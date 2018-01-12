@@ -6,6 +6,7 @@ description = "Describes how to use the fluentd logging driver."
 keywords = ["Fluentd, docker, logging, driver"]
 [menu.main]
 parent = "smn_logging"
+weight=2
 +++
 <![end-metadata]-->
 
@@ -89,7 +90,7 @@ and [its documents](http://docs.fluentd.org/).
 To use this logging driver, start the `fluentd` daemon on a host. We recommend
 that you use [the Fluentd docker
 image](https://hub.docker.com/r/fluent/fluentd/). This image is
-especially useful if you want to aggregate multiple container logs on each
+especially useful if you want to aggregate multiple container logs on a each
 host then, later, transfer the logs to another Fluentd node to create an
 aggregate store.
 

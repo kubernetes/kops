@@ -33,7 +33,7 @@ type Configuration struct {
 		// the logger context.
 		Fields map[string]interface{} `yaml:"fields,omitempty"`
 
-		// Hooks allows users to configure the log hooks, to enabling the
+		// Hooks allows users to configurate the log hooks, to enabling the
 		// sequent handling behavior, when defined levels of log message emit.
 		Hooks []LogHook `yaml:"hooks,omitempty"`
 	}
@@ -95,19 +95,6 @@ type Configuration struct {
 			// Specifies the CA certs for client authentication
 			// A file may contain multiple CA certificates encoded as PEM
 			ClientCAs []string `yaml:"clientcas,omitempty"`
-
-			// LetsEncrypt is used to configuration setting up TLS through
-			// Let's Encrypt instead of manually specifying certificate and
-			// key. If a TLS certificate is specified, the Let's Encrypt
-			// section will not be used.
-			LetsEncrypt struct {
-				// CacheFile specifies cache file to use for lets encrypt
-				// certificates and keys.
-				CacheFile string `yaml:"cachefile,omitempty"`
-
-				// Email is the email to use during Let's Encrypt registration
-				Email string `yaml:"email,omitempty"`
-			} `yaml:"letsencrypt,omitempty"`
 		} `yaml:"tls,omitempty"`
 
 		// Headers is a set of headers to include in HTTP responses. A common
@@ -170,26 +157,13 @@ type Configuration struct {
 			// TrustKey is the signing key to use for adding the signature to
 			// schema1 manifests.
 			TrustKey string `yaml:"signingkeyfile,omitempty"`
+
+			// DisableSignatureStore will cause all signatures attached to schema1 manifests
+			// to be ignored. Signatures will be generated on all schema1 manifest requests
+			// rather than only requests which converted schema2 to schema1.
+			DisableSignatureStore bool `yaml:"disablesignaturestore,omitempty"`
 		} `yaml:"schema1,omitempty"`
 	} `yaml:"compatibility,omitempty"`
-
-	// Validation configures validation options for the registry.
-	Validation struct {
-		// Enabled enables the other options in this section.
-		Enabled bool `yaml:"enabled,omitempty"`
-		// Manifests configures manifest validation.
-		Manifests struct {
-			// URLs configures validation for URLs in pushed manifests.
-			URLs struct {
-				// Allow specifies regular expressions (https://godoc.org/regexp/syntax)
-				// that URLs in pushed manifests must match.
-				Allow []string `yaml:"allow,omitempty"`
-				// Deny specifies regular expressions (https://godoc.org/regexp/syntax)
-				// that URLs in pushed manifests must not match.
-				Deny []string `yaml:"deny,omitempty"`
-			} `yaml:"urls,omitempty"`
-		} `yaml:"manifests,omitempty"`
-	} `yaml:"validation,omitempty"`
 }
 
 // LogHook is composed of hook Level and Type.
@@ -222,7 +196,7 @@ type MailOptions struct {
 		// Password defines password of login user
 		Password string `yaml:"password,omitempty"`
 
-		// Insecure defines if smtp login skips the secure certification.
+		// Insecure defines if smtp login skips the secure cerification.
 		Insecure bool `yaml:"insecure,omitempty"`
 	} `yaml:"smtp,omitempty"`
 
@@ -247,7 +221,7 @@ type FileChecker struct {
 // HTTPChecker is a type of entry in the health section for checking HTTP URIs.
 type HTTPChecker struct {
 	// Timeout is the duration to wait before timing out the HTTP request
-	Timeout time.Duration `yaml:"timeout,omitempty"`
+	Timeout time.Duration `yaml:"interval,omitempty"`
 	// StatusCode is the expected status code
 	StatusCode int
 	// Interval is the duration in between checks
@@ -264,7 +238,7 @@ type HTTPChecker struct {
 // TCPChecker is a type of entry in the health section for checking TCP servers.
 type TCPChecker struct {
 	// Timeout is the duration to wait before timing out the TCP connection
-	Timeout time.Duration `yaml:"timeout,omitempty"`
+	Timeout time.Duration `yaml:"interval,omitempty"`
 	// Interval is the duration in between checks
 	Interval time.Duration `yaml:"interval,omitempty"`
 	// Addr is the TCP address to check
@@ -445,7 +419,7 @@ func (storage Storage) MarshalYAML() (interface{}, error) {
 // Auth defines the configuration for registry authorization.
 type Auth map[string]Parameters
 
-// Type returns the auth type, such as htpasswd or token
+// Type returns the storage driver type, such as filesystem or s3
 func (auth Auth) Type() string {
 	// Return only key in this map
 	for k := range auth {

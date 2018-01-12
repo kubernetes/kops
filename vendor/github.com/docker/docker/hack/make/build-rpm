@@ -51,7 +51,8 @@ set -e
 	rpmDate="$(date +'%a %b %d %Y')"
 
 	# if go-md2man is available, pre-generate the man pages
-	make manpages
+	./man/md2man-all.sh -q || true
+	# TODO decide if it's worth getting go-md2man in _each_ builder environment to avoid this
 
 	# Convert the CHANGELOG.md file into RPM changelog format
 	VERSION_REGEX="^\W\W (.*) \((.*)\)$"
@@ -70,10 +71,7 @@ set -e
 	builderDir="contrib/builder/rpm/${PACKAGE_ARCH}"
 	pkgs=( $(find "${builderDir}/"*/ -type d) )
 	if [ ! -z "$DOCKER_BUILD_PKGS" ]; then
-		pkgs=()
-		for p in $DOCKER_BUILD_PKGS; do
-			pkgs+=( "$builderDir/$p" )
-		done
+		pkgs=( $(echo ${DOCKER_BUILD_PKGS[@]/#/$builderDir\/}) )
 	fi
 	for dir in "${pkgs[@]}"; do
 		[ -d "$dir" ] || { echo >&2 "skipping nonexistent $dir"; continue; }
@@ -99,13 +97,13 @@ set -e
 		# add runc and containerd compile and install
 		cat >> "$DEST/$version/Dockerfile.build" <<-EOF
 			# Install runc
-			RUN git clone https://github.com/opencontainers/runc.git "/go/src/github.com/opencontainers/runc" \
+			RUN git clone git://github.com/opencontainers/runc.git "/go/src/github.com/opencontainers/runc" \
 					&& cd "/go/src/github.com/opencontainers/runc" \
 					&& git checkout -q "\$RUNC_COMMIT"
 			RUN set -x && export GOPATH="/go" && cd "/go/src/github.com/opencontainers/runc" \
 					&& make BUILDTAGS="\$RUNC_BUILDTAGS" && make install
 			# Install containerd
-			RUN git clone https://github.com/docker/containerd.git "/go/src/github.com/docker/containerd" \
+			RUN git clone git://github.com/docker/containerd.git "/go/src/github.com/docker/containerd" \
 					&& cd "/go/src/github.com/docker/containerd" \
 					&& git checkout -q "\$CONTAINERD_COMMIT"
 			RUN set -x && export GOPATH="/go" && cd "/go/src/github.com/docker/containerd" && make && make install
@@ -119,9 +117,9 @@ set -e
 			WORKDIR /root/rpmbuild
 			RUN ln -sfv /usr/src/${rpmName}/hack/make/.build-rpm SPECS
 			WORKDIR /root/rpmbuild/SPECS
-			RUN tar --exclude .git -r -C /usr/src -f /root/rpmbuild/SOURCES/${rpmName}.tar ${rpmName}
-			RUN tar --exclude .git -r -C /go/src/github.com/docker -f /root/rpmbuild/SOURCES/${rpmName}.tar containerd
-			RUN tar --exclude .git -r -C /go/src/github.com/opencontainers -f /root/rpmbuild/SOURCES/${rpmName}.tar runc
+			RUN tar -r -C /usr/src -f /root/rpmbuild/SOURCES/${rpmName}.tar ${rpmName}
+			RUN tar -r -C /go/src/github.com/docker -f /root/rpmbuild/SOURCES/${rpmName}.tar containerd
+			RUN tar -r -C /go/src/github.com/opencontainers -f /root/rpmbuild/SOURCES/${rpmName}.tar runc
 			RUN gzip /root/rpmbuild/SOURCES/${rpmName}.tar
 			RUN { cat /usr/src/${rpmName}/contrib/builder/rpm/${PACKAGE_ARCH}/changelog; } >> ${rpmName}.spec && tail >&2 ${rpmName}.spec
 			RUN rpmbuild -ba \

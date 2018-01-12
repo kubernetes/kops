@@ -1,9 +1,6 @@
 [submodule "_vendor/k8s.io/kubernetes"]
 	path = _vendor/k8s.io/kubernetes
 	url = https://github.com/kubernetes/kubernetes
-[submodule "_vendor/google.golang.org/cloud"]
-	path = _vendor/google.golang.org/cloud
-	url = https://github.com/GoogleCloudPlatform/gcloud-golang
 [submodule "_vendor/google.golang.org/api"]
 	path = _vendor/google.golang.org/api
 	url = https://github.com/google/google-api-go-client
@@ -55,9 +52,6 @@
 [submodule "_vendor/github.com/google/gofuzz"]
 	path = _vendor/github.com/google/gofuzz
 	url = https://github.com/google/gofuzz
-[submodule "_vendor/github.com/golang/protobuf"]
-	path = _vendor/github.com/golang/protobuf
-	url = https://github.com/golang/protobuf
 [submodule "_vendor/github.com/gogo/protobuf"]
 	path = _vendor/github.com/gogo/protobuf
 	url = https://github.com/gogo/protobuf
@@ -250,3 +244,33 @@
 [submodule "_vendor/github.com/chai2010/gettext-go"]
 	path = _vendor/github.com/chai2010/gettext-go
 	url = https://github.com/chai2010/gettext-go
+[submodule "_vendor/vbom.ml/util"]
+	path = _vendor/vbom.ml/util
+	url = https://github.com/fvbommel/util.git
+[submodule "_vendor/github.com/spf13/afero"]
+	path = _vendor/github.com/spf13/afero
+	url = https://github.com/spf13/afero
+[submodule "_vendor/github.com/pelletier/go-toml"]
+	path = _vendor/github.com/pelletier/go-toml
+	url = https://github.com/pelletier/go-toml
+[submodule "_vendor/github.com/pelletier/go-buffruneio"]
+	path = _vendor/github.com/pelletier/go-buffruneio
+	url = https://github.com/pelletier/go-buffruneio
+[submodule "_vendor/github.com/coreos/etcd"]
+	path = _vendor/github.com/coreos/etcd
+	url = https://github.com/coreos/etcd
+[submodule "_vendor/google.golang.org/grpc"]
+	path = _vendor/google.golang.org/grpc
+	url = https://github.com/grpc/grpc-go.git
+[submodule "_vendor/github.com/elazarl/go-bindata-assetfs"]
+	path = _vendor/github.com/elazarl/go-bindata-assetfs
+	url = https://github.com/elazarl/go-bindata-assetfs
+[submodule "_vendor/github.com/grpc-ecosystem"]
+	path = _vendor/github.com/grpc-ecosystem
+	url = https://github.com/grpc-ecosystem/grpc-gateway
+[submodule "_vendor/gopkg.in/natefinch/lumberjack.v2"]
+	path = _vendor/gopkg.in/natefinch/lumberjack.v2
+	url = https://gopkg.in/natefinch/lumberjack.v2
+[submodule "_vendor/github.com/golang/protobuf"]
+	path = _vendor/github.com/golang/protobuf
+	url = https://github.com/golang/protobuf

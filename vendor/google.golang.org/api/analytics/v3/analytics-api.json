@@ -1,11 +1,11 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"bRFOOrZKfO9LweMbPqu0kcu6De8/y7JmUhB0GIMusVTZY-o1OGZ6DZQ\"",
+ "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/CEwIV9fdNgUw9Oy31M8HLJeTPyQ\"",
  "discoveryVersion": "v1",
  "id": "analytics:v3",
  "name": "analytics",
  "version": "v3",
- "revision": "20160308",
+ "revision": "20161004",
  "title": "Google Analytics API",
  "description": "Views and manages your Google Analytics data.",
  "ownerDomain": "google.com",
@@ -1610,6 +1610,11 @@
      "type": "boolean",
      "description": "Determines if Analytics data contains samples."
     },
+    "dataLastRefreshed": {
+     "type": "string",
+     "description": "The last refreshed time in seconds for Analytics data.",
+     "format": "int64"
+    },
     "dataTable": {
      "type": "object",
      "properties": {
@@ -2038,6 +2043,86 @@
     }
    }
   },
+  "IncludeConditions": {
+   "id": "IncludeConditions",
+   "type": "object",
+   "description": "JSON template for an Analytics Remarketing Include Conditions.",
+   "properties": {
+    "daysToLookBack": {
+     "type": "integer",
+     "description": "The look-back window lets you specify a time frame for evaluating the behavior that qualifies users for your audience. For example, if your filters include users from Central Asia, and Transactions Greater than 2, and you set the look-back window to 14 days, then any user from Central Asia whose cumulative transactions exceed 2 during the last 14 days is added to the audience.",
+     "format": "int32"
+    },
+    "isSmartList": {
+     "type": "boolean",
+     "description": "Boolean indicating whether this segment is a smart list. https://support.google.com/analytics/answer/4628577"
+    },
+    "kind": {
+     "type": "string",
+     "description": "Resource type for include conditions.",
+     "default": "analytics#includeConditions"
+    },
+    "membershipDurationDays": {
+     "type": "integer",
+     "description": "Number of days (in the range 1 to 540) a user remains in the audience.",
+     "format": "int32"
+    },
+    "segment": {
+     "type": "string",
+     "description": "The segment condition that will cause a user to be added to an audience."
+    }
+   }
+  },
+  "LinkedForeignAccount": {
+   "id": "LinkedForeignAccount",
+   "type": "object",
+   "description": "JSON template for an Analytics Remarketing Audience Foreign Link.",
+   "properties": {
+    "accountId": {
+     "type": "string",
+     "description": "Account ID to which this linked foreign account belongs."
+    },
+    "eligibleForSearch": {
+     "type": "boolean",
+     "description": "Boolean indicating whether this is eligible for search.",
+     "readOnly": true
+    },
+    "id": {
+     "type": "string",
+     "description": "Entity ad account link ID."
+    },
+    "internalWebPropertyId": {
+     "type": "string",
+     "description": "Internal ID for the web property to which this linked foreign account belongs.",
+     "readOnly": true
+    },
+    "kind": {
+     "type": "string",
+     "description": "Resource type for linked foreign account.",
+     "default": "analytics#linkedForeignAccount"
+    },
+    "linkedAccountId": {
+     "type": "string",
+     "description": "The foreign account ID. For example the an AdWords `linkedAccountId` has the following format XXX-XXX-XXXX."
+    },
+    "remarketingAudienceId": {
+     "type": "string",
+     "description": "Remarketing audience ID to which this linked foreign account belongs."
+    },
+    "status": {
+     "type": "string",
+     "description": "The status of this foreign account link."
+    },
+    "type": {
+     "type": "string",
+     "description": "The type of the foreign account. For example `ADWORDS_LINKS`."
+    },
+    "webPropertyId": {
+     "type": "string",
+     "description": "Web property ID of the form UA-XXXXX-YY to which this linked foreign account belongs."
+    }
+   }
+  },
   "McfData": {
    "id": "McfData",
    "type": "object",
@@ -2277,7 +2362,7 @@
     },
     "currency": {
      "type": "string",
-     "description": "The currency type associated with this view (profile), defaults to USD. The supported values are:\nARS, AUD, BGN, BRL, CAD, CHF, CNY, CZK, DKK, EUR, GBP, HKD, HUF, IDR, INR, JPY, KRW, LTL, MXN, NOK, NZD, PHP, PLN, RUB, SEK, THB, TRY, TWD, USD, VND, ZAR"
+     "description": "The currency type associated with this view (profile), defaults to USD. The supported values are:\nUSD, JPY, EUR, GBP, AUD, KRW, BRL, CNY, DKK, RUB, SEK, NOK, PLN, TRY, TWD, HKD, THB, IDR, ARS, MXN, VND, PHP, INR, CHF, CAD, CZK, NZD, HUF, BGN, LTL, ZAR, UAH, AED, BOB, CLP, COP, EGP, HRK, ILS, MAD, MYR, PEN, PKR, RON, RSD, SAR, SGD, VEF, LVL"
     },
     "defaultPage": {
      "type": "string",
@@ -2715,6 +2800,154 @@
     }
    }
   },
+  "RemarketingAudience": {
+   "id": "RemarketingAudience",
+   "type": "object",
+   "description": "JSON template for an Analytics remarketing audience.",
+   "properties": {
+    "accountId": {
+     "type": "string",
+     "description": "Account ID to which this remarketing audience belongs."
+    },
+    "audienceDefinition": {
+     "type": "object",
+     "description": "The simple audience definition that will cause a user to be added to an audience.",
+     "properties": {
+      "includeConditions": {
+       "$ref": "IncludeConditions",
+       "description": "Defines the conditions to include users to the audience."
+      }
+     }
+    },
+    "audienceType": {
+     "type": "string",
+     "description": "The type of audience, either SIMPLE or STATE_BASED."
+    },
+    "created": {
+     "type": "string",
+     "description": "Time this remarketing audience was created.",
+     "format": "date-time",
+     "readOnly": true
+    },
+    "description": {
+     "type": "string",
+     "description": "The description of this remarketing audience.",
+     "readOnly": true
+    },
+    "id": {
+     "type": "string",
+     "description": "Remarketing Audience ID."
+    },
+    "internalWebPropertyId": {
+     "type": "string",
+     "description": "Internal ID for the web property to which this remarketing audience belongs.",
+     "readOnly": true
+    },
+    "kind": {
+     "type": "string",
+     "description": "Collection type.",
+     "default": "analytics#remarketingAudience"
+    },
+    "linkedAdAccounts": {
+     "type": "array",
+     "description": "The linked ad accounts associated with this remarketing audience. A remarketing audience can have only one linkedAdAccount currently.",
+     "items": {
+      "$ref": "LinkedForeignAccount"
+     }
+    },
+    "linkedViews": {
+     "type": "array",
+     "description": "The views (profiles) that this remarketing audience is linked to.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "name": {
+     "type": "string",
+     "description": "The name of this remarketing audience."
+    },
+    "stateBasedAudienceDefinition": {
+     "type": "object",
+     "description": "A state based audience definition that will cause a user to be added or removed from an audience.",
+     "properties": {
+      "excludeConditions": {
+       "type": "object",
+       "description": "Defines the conditions to exclude users from the audience.",
+       "properties": {
+        "exclusionDuration": {
+         "type": "string",
+         "description": "Whether to make the exclusion TEMPORARY or PERMANENT."
+        },
+        "segment": {
+         "type": "string",
+         "description": "The segment condition that will cause a user to be removed from an audience."
+        }
+       }
+      },
+      "includeConditions": {
+       "$ref": "IncludeConditions",
+       "description": "Defines the conditions to include users to the audience."
+      }
+     }
+    },
+    "updated": {
+     "type": "string",
+     "description": "Time this remarketing audience was last modified.",
+     "format": "date-time",
+     "readOnly": true
+    },
+    "webPropertyId": {
+     "type": "string",
+     "description": "Web property ID of the form UA-XXXXX-YY to which this remarketing audience belongs."
+    }
+   }
+  },
+  "RemarketingAudiences": {
+   "id": "RemarketingAudiences",
+   "type": "object",
+   "description": "A remarketing audience collection lists Analytics remarketing audiences to which the user has access. Each resource in the collection corresponds to a single Analytics remarketing audience.",
+   "properties": {
+    "items": {
+     "type": "array",
+     "description": "A list of remarketing audiences.",
+     "items": {
+      "$ref": "RemarketingAudience"
+     }
+    },
+    "itemsPerPage": {
+     "type": "integer",
+     "description": "The maximum number of resources the response can contain, regardless of the actual number of resources returned. Its value ranges from 1 to 1000 with a value of 1000 by default, or otherwise specified by the max-results query parameter.",
+     "format": "int32"
+    },
+    "kind": {
+     "type": "string",
+     "description": "Collection type.",
+     "default": "analytics#remarketingAudiences"
+    },
+    "nextLink": {
+     "type": "string",
+     "description": "Link to next page for this remarketing audience collection."
+    },
+    "previousLink": {
+     "type": "string",
+     "description": "Link to previous page for this view (profile) collection."
+    },
+    "startIndex": {
+     "type": "integer",
+     "description": "The starting index of the resources, which is 1 by default or otherwise specified by the start-index query parameter.",
+     "format": "int32"
+    },
+    "totalResults": {
+     "type": "integer",
+     "description": "The total number of results for the query, regardless of the number of results in the response.",
+     "format": "int32"
+    },
+    "username": {
+     "type": "string",
+     "description": "Email ID of the authenticated user"
+    }
+   }
+  },
   "Segment": {
    "id": "Segment",
    "type": "object",
@@ -2843,7 +3076,7 @@
     },
     "downloadType": {
      "type": "string",
-     "description": "The type of download you need to use for the report data file.",
+     "description": "The type of download you need to use for the report data file. Possible values include `GOOGLE_DRIVE` and `GOOGLE_CLOUD_STORAGE`. If the value is `GOOGLE_DRIVE`, see the `driveDownloadDetails` field. If the value is `GOOGLE_CLOUD_STORAGE`, see the `cloudStorageDownloadDetails` field.",
      "readOnly": true
     },
     "driveDownloadDetails": {
@@ -5702,6 +5935,210 @@
        },
        "response": {
         "$ref": "Profile"
+       },
+       "scopes": [
+        "https://www.googleapis.com/auth/analytics.edit"
+       ]
+      }
+     }
+    },
+    "remarketingAudience": {
+     "methods": {
+      "get": {
+       "id": "analytics.management.remarketingAudience.get",
+       "path": "management/accounts/{accountId}/webproperties/{webPropertyId}/remarketingAudiences/{remarketingAudienceId}",
+       "httpMethod": "GET",
+       "description": "Gets a remarketing audience to which the user has access.",
+       "parameters": {
+        "accountId": {
+         "type": "string",
+         "description": "The account ID of the remarketing audience to retrieve.",
+         "required": true,
+         "location": "path"
+        },
+        "remarketingAudienceId": {
+         "type": "string",
+         "description": "The ID of the remarketing audience to retrieve.",
+         "required": true,
+         "location": "path"
+        },
+        "webPropertyId": {
+         "type": "string",
+         "description": "The web property ID of the remarketing audience to retrieve.",
+         "required": true,
+         "location": "path"
+        }
+       },
+       "parameterOrder": [
+        "accountId",
+        "webPropertyId",
+        "remarketingAudienceId"
+       ],
+       "response": {
+        "$ref": "RemarketingAudience"
+       },
+       "scopes": [
+        "https://www.googleapis.com/auth/analytics.edit",
+        "https://www.googleapis.com/auth/analytics.readonly"
+       ]
+      },
+      "insert": {
+       "id": "analytics.management.remarketingAudience.insert",
+       "path": "management/accounts/{accountId}/webproperties/{webPropertyId}/remarketingAudiences",
+       "httpMethod": "POST",
+       "description": "Creates a new remarketing audience.",
+       "parameters": {
+        "accountId": {
+         "type": "string",
+         "description": "The account ID for which to create the remarketing audience.",
+         "required": true,
+         "location": "path"
+        },
+        "webPropertyId": {
+         "type": "string",
+         "description": "Web property ID for which to create the remarketing audience.",
+         "required": true,
+         "location": "path"
+        }
+       },
+       "parameterOrder": [
+        "accountId",
+        "webPropertyId"
+       ],
+       "request": {
+        "$ref": "RemarketingAudience"
+       },
+       "response": {
+        "$ref": "RemarketingAudience"
+       },
+       "scopes": [
+        "https://www.googleapis.com/auth/analytics.edit"
+       ]
+      },
+      "list": {
+       "id": "analytics.management.remarketingAudience.list",
+       "path": "management/accounts/{accountId}/webproperties/{webPropertyId}/remarketingAudiences",
+       "httpMethod": "GET",
+       "description": "Lists remarketing audiences to which the user has access.",
+       "parameters": {
+        "accountId": {
+         "type": "string",
+         "description": "The account ID of the remarketing audiences to retrieve.",
+         "required": true,
+         "location": "path"
+        },
+        "max-results": {
+         "type": "integer",
+         "description": "The maximum number of remarketing audiences to include in this response.",
+         "format": "int32",
+         "location": "query"
+        },
+        "start-index": {
+         "type": "integer",
+         "description": "An index of the first entity to retrieve. Use this parameter as a pagination mechanism along with the max-results parameter.",
+         "format": "int32",
+         "minimum": "1",
+         "location": "query"
+        },
+        "type": {
+         "type": "string",
+         "default": "all",
+         "location": "query"
+        },
+        "webPropertyId": {
+         "type": "string",
+         "description": "The web property ID of the remarketing audiences to retrieve.",
+         "required": true,
+         "location": "path"
+        }
+       },
+       "parameterOrder": [
+        "accountId",
+        "webPropertyId"
+       ],
+       "response": {
+        "$ref": "RemarketingAudiences"
+       },
+       "scopes": [
+        "https://www.googleapis.com/auth/analytics.edit",
+        "https://www.googleapis.com/auth/analytics.readonly"
+       ]
+      },
+      "patch": {
+       "id": "analytics.management.remarketingAudience.patch",
+       "path": "management/accounts/{accountId}/webproperties/{webPropertyId}/remarketingAudiences/{remarketingAudienceId}",
+       "httpMethod": "PATCH",
+       "description": "Updates an existing remarketing audience. This method supports patch semantics.",
+       "parameters": {
+        "accountId": {
+         "type": "string",
+         "description": "The account ID of the remarketing audience to update.",
+         "required": true,
+         "location": "path"
+        },
+        "remarketingAudienceId": {
+         "type": "string",
+         "description": "The ID of the remarketing audience to update.",
+         "required": true,
+         "location": "path"
+        },
+        "webPropertyId": {
+         "type": "string",
+         "description": "The web property ID of the remarketing audience to update.",
+         "required": true,
+         "location": "path"
+        }
+       },
+       "parameterOrder": [
+        "accountId",
+        "webPropertyId",
+        "remarketingAudienceId"
+       ],
+       "request": {
+        "$ref": "RemarketingAudience"
+       },
+       "response": {
+        "$ref": "RemarketingAudience"
+       },
+       "scopes": [
+        "https://www.googleapis.com/auth/analytics.edit"
+       ]
+      },
+      "update": {
+       "id": "analytics.management.remarketingAudience.update",
+       "path": "management/accounts/{accountId}/webproperties/{webPropertyId}/remarketingAudiences/{remarketingAudienceId}",
+       "httpMethod": "PUT",
+       "description": "Updates an existing remarketing audience.",
+       "parameters": {
+        "accountId": {
+         "type": "string",
+         "description": "The account ID of the remarketing audience to update.",
+         "required": true,
+         "location": "path"
+        },
+        "remarketingAudienceId": {
+         "type": "string",
+         "description": "The ID of the remarketing audience to update.",
+         "required": true,
+         "location": "path"
+        },
+        "webPropertyId": {
+         "type": "string",
+         "description": "The web property ID of the remarketing audience to update.",
+         "required": true,
+         "location": "path"
+        }
+       },
+       "parameterOrder": [
+        "accountId",
+        "webPropertyId",
+        "remarketingAudienceId"
+       ],
+       "request": {
+        "$ref": "RemarketingAudience"
+       },
+       "response": {
+        "$ref": "RemarketingAudience"
        },
        "scopes": [
         "https://www.googleapis.com/auth/analytics.edit"

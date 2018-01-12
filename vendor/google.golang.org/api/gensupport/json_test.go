@@ -36,6 +36,7 @@ type schema struct {
 	MapToAnyArray map[string][]interface{} `json:"maptoanyarray,omitempty"`
 
 	ForceSendFields []string `json:"-"`
+	NullFields      []string `json:"-"`
 }
 
 type child struct {
@@ -58,6 +59,12 @@ func TestBasics(t *testing.T) {
 				ForceSendFields: []string{"B", "F", "I", "Istr", "Str", "PB", "PF", "PI", "PIStr", "PStr"},
 			},
 			want: `{"b":false,"f":0.0,"i":0,"istr":"0","str":""}`,
+		},
+		{
+			s: schema{
+				NullFields: []string{"B", "F", "I", "Istr", "Str", "PB", "PF", "PI", "PIStr", "PStr"},
+			},
+			want: `{"b":null,"f":null,"i":null,"istr":null,"str":null,"pb":null,"pf":null,"pi":null,"pistr":null,"pstr":null}`,
 		},
 		{
 			s: schema{
@@ -105,6 +112,22 @@ func TestBasics(t *testing.T) {
 			},
 			want: `{"b":false,"f":0.0,"i":0,"istr":"0","str":"","pb":false,"pf":0.0,"pi":0,"pistr":"0","pstr":""}`,
 		},
+		{
+			s: schema{
+				B:          false,
+				F:          0.0,
+				I:          0,
+				Istr:       0,
+				Str:        "",
+				PB:         googleapi.Bool(false),
+				PF:         googleapi.Float64(0.0),
+				PI:         googleapi.Int64(int64(0)),
+				PIStr:      googleapi.Int64(int64(0)),
+				PStr:       googleapi.String(""),
+				NullFields: []string{"B", "F", "I", "Istr", "Str"},
+			},
+			want: `{"b":null,"f":null,"i":null,"istr":null,"str":null,"pb":false,"pf":0.0,"pi":0,"pistr":"0","pstr":""}`,
+		},
 	} {
 		checkMarshalJSON(t, tc)
 	}
@@ -146,6 +169,12 @@ func TestSliceFields(t *testing.T) {
 			},
 			want: `{"s":[1],"i64s":["1"]}`,
 		},
+		{
+			s: schema{
+				NullFields: []string{"S", "Int64s"},
+			},
+			want: `{"s":null,"i64s":null}`,
+		},
 	} {
 		checkMarshalJSON(t, tc)
 	}
@@ -173,10 +202,23 @@ func TestMapField(t *testing.T) {
 		},
 		{
 			s: schema{
+				NullFields: []string{"M"},
+			},
+			want: `{"m":null}`,
+		},
+		{
+			s: schema{
 				M:               make(map[string]string),
 				ForceSendFields: []string{"M"},
 			},
 			want: `{"m":{}}`,
+		},
+		{
+			s: schema{
+				M:          make(map[string]string),
+				NullFields: []string{"M"},
+			},
+			want: `{"m":null}`,
 		},
 		{
 			s: schema{
@@ -229,6 +271,12 @@ func TestMapToAnyArray(t *testing.T) {
 				ForceSendFields: []string{"MapToAnyArray"},
 			},
 			want: `{"maptoanyarray":{}}`,
+		},
+		{
+			s: schema{
+				NullFields: []string{"MapToAnyArray"},
+			},
+			want: `{"maptoanyarray":null}`,
 		},
 		{
 			s: schema{
@@ -287,6 +335,12 @@ func TestAnyField(t *testing.T) {
 		},
 		{
 			s: schema{
+				NullFields: []string{"Any"},
+			},
+			want: `{"any":null}`,
+		},
+		{
+			s: schema{
 				Any:             nilAny,
 				ForceSendFields: []string{"Any"},
 			},
@@ -325,6 +379,12 @@ func TestSubschema(t *testing.T) {
 			want: `{}`,
 		},
 		{
+			s: schema{
+				NullFields: []string{"Child"},
+			},
+			want: `{"child":null}`,
+		},
+		{
 			s:    schema{Child: &child{}},
 			want: `{"child":{}}`,
 		},
@@ -354,17 +414,17 @@ func TestSubschema(t *testing.T) {
 
 // checkMarshalJSON verifies that calling schemaToMap on tc.s yields a result which is equivalent to tc.want.
 func checkMarshalJSON(t *testing.T, tc testCase) {
-	doCheckMarshalJSON(t, tc.s, tc.s.ForceSendFields, tc.want)
-	if len(tc.s.ForceSendFields) == 0 {
-		// verify that the code path used when ForceSendFields
-		// is non-empty produces the same output as the fast
-		// path that is used when it is empty.
-		doCheckMarshalJSON(t, tc.s, []string{"dummy"}, tc.want)
+	doCheckMarshalJSON(t, tc.s, tc.s.ForceSendFields, tc.s.NullFields, tc.want)
+	if len(tc.s.ForceSendFields) == 0 && len(tc.s.NullFields) == 0 {
+		// verify that the code path used when ForceSendFields and NullFields
+		// are non-empty produces the same output as the fast path that is used
+		// when they are empty.
+		doCheckMarshalJSON(t, tc.s, []string{"dummy"}, []string{"dummy"}, tc.want)
 	}
 }
 
-func doCheckMarshalJSON(t *testing.T, s schema, forceSendFields []string, wantJSON string) {
-	encoded, err := MarshalJSON(s, forceSendFields)
+func doCheckMarshalJSON(t *testing.T, s schema, forceSendFields, nullFields []string, wantJSON string) {
+	encoded, err := MarshalJSON(s, forceSendFields, nullFields)
 	if err != nil {
 		t.Fatalf("encoding json:\n got err: %v", err)
 	}
@@ -381,7 +441,7 @@ func doCheckMarshalJSON(t *testing.T, s schema, forceSendFields []string, wantJS
 		t.Fatalf("decoding json:\n got err: %v", err)
 	}
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("schemaToMap:\ngot :%s\nwant:%s", got, want)
+		t.Errorf("schemaToMap:\ngot :%v\nwant: %v", got, want)
 	}
 }
 

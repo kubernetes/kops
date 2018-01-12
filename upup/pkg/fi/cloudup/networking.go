@@ -50,7 +50,7 @@ func usesCNI(c *api.Cluster) bool {
 	}
 
 	if networkConfig.Flannel != nil {
-		//  Weave uses CNI
+		//  Flannel uses CNI
 		return true
 	}
 

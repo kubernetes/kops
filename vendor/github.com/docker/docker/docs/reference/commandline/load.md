@@ -10,17 +10,13 @@ parent = "smn_cli"
 
 # load
 
-```markdown
-Usage:  docker load [OPTIONS]
+    Usage: docker load [OPTIONS]
 
-Load an image from a tar archive or STDIN
+    Load an image from a tar archive or STDIN
 
-Options:
-      --help           Print usage
-  -i, --input string   Read from tar archive file, instead of STDIN.
-                       The tarball may be compressed with gzip, bzip, or xz
-  -q, --quiet          Suppress the load output but still outputs the imported images
-```
+      --help             Print usage
+      -i, --input=""     Read from a tar archive file, instead of STDIN. The tarball may be compressed with gzip, bzip, or xz
+      -q, --quiet        Suppress the load output. Without this option, a progress bar is displayed.
 
 Loads a tarred repository from a file or the standard input stream.
 Restores both images and tags.
@@ -28,17 +24,10 @@ Restores both images and tags.
     $ docker images
     REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
     $ docker load < busybox.tar.gz
-    # […]
-    Loaded image: busybox:latest
     $ docker images
     REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
     busybox             latest              769b9341d937        7 weeks ago         2.489 MB
     $ docker load --input fedora.tar
-    # […]
-    Loaded image: fedora:rawhide
-    # […]
-    Loaded image: fedora:20
-    # […]
     $ docker images
     REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
     busybox             latest              769b9341d937        7 weeks ago         2.489 MB

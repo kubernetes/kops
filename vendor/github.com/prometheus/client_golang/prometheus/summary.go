@@ -15,6 +15,7 @@ package prometheus
 
 import (
 	"fmt"
+	"hash/fnv"
 	"math"
 	"sort"
 	"sync"
@@ -407,6 +408,7 @@ func NewSummaryVec(opts SummaryOpts, labelNames []string) *SummaryVec {
 		MetricVec: MetricVec{
 			children: map[uint64]Metric{},
 			desc:     desc,
+			hash:     fnv.New64a(),
 			newMetric: func(lvs ...string) Metric {
 				return newSummary(desc, opts, lvs...)
 			},

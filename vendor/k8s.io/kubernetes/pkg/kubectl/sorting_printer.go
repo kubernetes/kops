@@ -24,20 +24,23 @@ import (
 
 	"github.com/golang/glog"
 
-	"k8s.io/kubernetes/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/util/integer"
+	"k8s.io/client-go/util/jsonpath"
 	"k8s.io/kubernetes/pkg/api/v1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/apis/meta/v1/unstructured"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/util/integer"
-	"k8s.io/kubernetes/pkg/util/jsonpath"
+	"k8s.io/kubernetes/pkg/printers"
+
+	"vbom.ml/util/sortorder"
 )
 
 // Sorting printer sorts list types before delegating to another printer.
 // Non-list types are simply passed through
 type SortingPrinter struct {
 	SortField string
-	Delegate  ResourcePrinter
+	Delegate  printers.ResourcePrinter
 	Decoder   runtime.Decoder
 }
 
@@ -88,17 +91,6 @@ func (s *SortingPrinter) sortObj(obj runtime.Object) error {
 }
 
 func SortObjects(decoder runtime.Decoder, objs []runtime.Object, fieldInput string) (*RuntimeSort, error) {
-	parser := jsonpath.New("sorting")
-
-	field, err := massageJSONPath(fieldInput)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := parser.Parse(field); err != nil {
-		return nil, err
-	}
-
 	for ix := range objs {
 		item := objs[ix]
 		switch u := item.(type) {
@@ -112,18 +104,38 @@ func SortObjects(decoder runtime.Decoder, objs []runtime.Object, fieldInput stri
 		}
 	}
 
-	var values [][]reflect.Value
-	if unstructured, ok := objs[0].(*unstructured.Unstructured); ok {
-		values, err = parser.FindResults(unstructured.Object)
-	} else {
-		values, err = parser.FindResults(reflect.ValueOf(objs[0]).Elem().Interface())
-	}
-
+	field, err := printers.RelaxedJSONPathExpression(fieldInput)
 	if err != nil {
 		return nil, err
 	}
-	if len(values) == 0 {
-		return nil, fmt.Errorf("couldn't find any field with path: %s", field)
+
+	parser := jsonpath.New("sorting").AllowMissingKeys(true)
+	if err := parser.Parse(field); err != nil {
+		return nil, err
+	}
+
+	// We don't do any model validation here, so we traverse all objects to be sorted
+	// and, if the field is valid to at least one of them, we consider it to be a
+	// valid field; otherwise error out.
+	// Note that this requires empty fields to be considered later, when sorting.
+	var fieldFoundOnce bool
+	for _, obj := range objs {
+		var values [][]reflect.Value
+		if unstructured, ok := obj.(*unstructured.Unstructured); ok {
+			values, err = parser.FindResults(unstructured.Object)
+		} else {
+			values, err = parser.FindResults(reflect.ValueOf(obj).Elem().Interface())
+		}
+		if err != nil {
+			return nil, err
+		}
+		if len(values) > 0 && len(values[0]) > 0 {
+			fieldFoundOnce = true
+			break
+		}
+	}
+	if !fieldFoundOnce {
+		return nil, fmt.Errorf("couldn't find any field with path %q in the list of objects", field)
 	}
 
 	sorter := NewRuntimeSort(field, objs)
@@ -165,7 +177,7 @@ func isLess(i, j reflect.Value) (bool, error) {
 	case reflect.Float32, reflect.Float64:
 		return i.Float() < j.Float(), nil
 	case reflect.String:
-		return i.String() < j.String(), nil
+		return sortorder.NaturalLess(i.String(), j.String()), nil
 	case reflect.Ptr:
 		return isLess(i.Elem(), j.Elem())
 	case reflect.Struct:
@@ -244,7 +256,7 @@ func isLess(i, j reflect.Value) (bool, error) {
 			}
 		case string:
 			if jtype, ok := j.Interface().(string); ok {
-				return itype < jtype, nil
+				return sortorder.NaturalLess(itype, jtype), nil
 			}
 		default:
 			return false, fmt.Errorf("unsortable type: %T", itype)
@@ -260,7 +272,7 @@ func (r *RuntimeSort) Less(i, j int) bool {
 	iObj := r.objs[i]
 	jObj := r.objs[j]
 
-	parser := jsonpath.New("sorting")
+	parser := jsonpath.New("sorting").AllowMissingKeys(true)
 	parser.Parse(r.field)
 
 	var iValues [][]reflect.Value
@@ -285,12 +297,18 @@ func (r *RuntimeSort) Less(i, j int) bool {
 		glog.Fatalf("Failed to get j values for %#v using %s (%v)", jObj, r.field, err)
 	}
 
+	if len(iValues) == 0 || len(iValues[0]) == 0 {
+		return true
+	}
+	if len(jValues) == 0 || len(jValues[0]) == 0 {
+		return false
+	}
 	iField := iValues[0][0]
 	jField := jValues[0][0]
 
 	less, err := isLess(iField, jField)
 	if err != nil {
-		glog.Fatalf("Field %s in %v is an unsortable type: %s, err: %v", r.field, iObj, iField.Kind().String(), err)
+		glog.Fatalf("Field %s in %T is an unsortable type: %s, err: %v", r.field, iObj, iField.Kind().String(), err)
 	}
 	return less
 }

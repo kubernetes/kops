@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"bRFOOrZKfO9LweMbPqu0kcu6De8/7Wh2BL46-ycQBGZrIfJ_r7nrkOo\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/i7yRN5hkF8eVOTb2OSGCp8ZAiJE\"",
  "discoveryVersion": "v1",
  "id": "siteVerification:v1",
  "name": "siteVerification",
@@ -11,8 +11,8 @@
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/site-verification/",
  "protocol": "rest",

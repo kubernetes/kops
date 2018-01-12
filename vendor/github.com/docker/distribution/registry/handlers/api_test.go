@@ -29,7 +29,7 @@ import (
 	"github.com/docker/distribution/reference"
 	"github.com/docker/distribution/registry/api/errcode"
 	"github.com/docker/distribution/registry/api/v2"
-	_ "github.com/docker/distribution/registry/storage/driver/testdriver"
+	_ "github.com/docker/distribution/registry/storage/driver/inmemory"
 	"github.com/docker/distribution/testutil"
 	"github.com/docker/libtrust"
 	"github.com/gorilla/handlers"
@@ -219,7 +219,7 @@ func contains(elems []string, e string) bool {
 func TestURLPrefix(t *testing.T) {
 	config := configuration.Configuration{
 		Storage: configuration.Storage{
-			"testdriver": configuration.Parameters{},
+			"inmemory": configuration.Parameters{},
 		},
 	}
 	config.HTTP.Prefix = "/test/"
@@ -296,7 +296,7 @@ func TestBlobDelete(t *testing.T) {
 func TestRelativeURL(t *testing.T) {
 	config := configuration.Configuration{
 		Storage: configuration.Storage{
-			"testdriver": configuration.Parameters{},
+			"inmemory": configuration.Parameters{},
 		},
 	}
 	config.HTTP.Headers = headerConfig
@@ -926,7 +926,7 @@ func testManifestAPISchema1(t *testing.T, env *testEnv, imageName reference.Name
 	}
 
 	// TODO(stevvooe): Add a test case where we take a mostly valid registry,
-	// tamper with the content and ensure that we get an unverified manifest
+	// tamper with the content and ensure that we get a unverified manifest
 	// error.
 
 	// Push 2 random layers
@@ -1067,13 +1067,13 @@ func testManifestAPISchema1(t *testing.T, env *testEnv, imageName reference.Name
 		t.Fatalf("error decoding fetched manifest: %v", err)
 	}
 
-	// check only 1 signature is returned
+	// check two signatures were roundtripped
 	signatures, err = fetchedManifestByDigest.Signatures()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if len(signatures) != 1 {
+	if len(signatures) != 2 {
 		t.Fatalf("expected 2 signature from manifest, got: %d", len(signatures))
 	}
 
@@ -1586,8 +1586,8 @@ func testManifestAPIManifestList(t *testing.T, env *testEnv, args manifestArgs) 
 	if err != nil {
 		t.Fatalf("Error constructing request: %s", err)
 	}
-	// multiple headers in mixed list format to ensure we parse correctly server-side
-	req.Header.Set("Accept", fmt.Sprintf(` %s ; q=0.8 , %s ; q=0.5 `, manifestlist.MediaTypeManifestList, schema1.MediaTypeSignedManifest))
+	req.Header.Set("Accept", manifestlist.MediaTypeManifestList)
+	req.Header.Add("Accept", schema1.MediaTypeSignedManifest)
 	req.Header.Add("Accept", schema2.MediaTypeManifest)
 	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
@@ -1884,8 +1884,8 @@ type testEnv struct {
 func newTestEnvMirror(t *testing.T, deleteEnabled bool) *testEnv {
 	config := configuration.Configuration{
 		Storage: configuration.Storage{
-			"testdriver": configuration.Parameters{},
-			"delete":     configuration.Parameters{"enabled": deleteEnabled},
+			"inmemory": configuration.Parameters{},
+			"delete":   configuration.Parameters{"enabled": deleteEnabled},
 		},
 		Proxy: configuration.Proxy{
 			RemoteURL: "http://example.com",
@@ -1899,8 +1899,8 @@ func newTestEnvMirror(t *testing.T, deleteEnabled bool) *testEnv {
 func newTestEnv(t *testing.T, deleteEnabled bool) *testEnv {
 	config := configuration.Configuration{
 		Storage: configuration.Storage{
-			"testdriver": configuration.Parameters{},
-			"delete":     configuration.Parameters{"enabled": deleteEnabled},
+			"inmemory": configuration.Parameters{},
+			"delete":   configuration.Parameters{"enabled": deleteEnabled},
 		},
 	}
 
@@ -2413,7 +2413,7 @@ func TestCheckContextNotifier(t *testing.T) {
 func TestProxyManifestGetByTag(t *testing.T) {
 	truthConfig := configuration.Configuration{
 		Storage: configuration.Storage{
-			"testdriver": configuration.Parameters{},
+			"inmemory": configuration.Parameters{},
 		},
 	}
 	truthConfig.HTTP.Headers = headerConfig
@@ -2427,7 +2427,7 @@ func TestProxyManifestGetByTag(t *testing.T) {
 
 	proxyConfig := configuration.Configuration{
 		Storage: configuration.Storage{
-			"testdriver": configuration.Parameters{},
+			"inmemory": configuration.Parameters{},
 		},
 		Proxy: configuration.Proxy{
 			RemoteURL: truthEnv.server.URL,

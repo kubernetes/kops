@@ -1,7 +1,7 @@
 apiVersion: kops/v1alpha1
 kind: Cluster
 metadata:
-  creationTimestamp: "2017-01-01T00:00:00Z"
+  creationTimestamp: 2017-01-01T00:00:00Z
   name: private.example.com
 spec:
   adminAccess:
@@ -9,6 +9,8 @@ spec:
   api:
     loadBalancer:
       type: Public
+  authorization:
+    alwaysAllow: {}
   channel: stable
   cloudLabels:
     Owner: John Doe
@@ -49,7 +51,7 @@ spec:
 apiVersion: kops/v1alpha1
 kind: InstanceGroup
 metadata:
-  creationTimestamp: "2017-01-01T00:00:00Z"
+  creationTimestamp: 2017-01-01T00:00:00Z
   labels:
     kops.k8s.io/cluster: private.example.com
   name: bastions
@@ -67,7 +69,7 @@ spec:
 apiVersion: kops/v1alpha1
 kind: InstanceGroup
 metadata:
-  creationTimestamp: "2017-01-01T00:00:00Z"
+  creationTimestamp: 2017-01-01T00:00:00Z
   labels:
     kops.k8s.io/cluster: private.example.com
   name: master-us-test-1a
@@ -88,7 +90,7 @@ spec:
 apiVersion: kops/v1alpha1
 kind: InstanceGroup
 metadata:
-  creationTimestamp: "2017-01-01T00:00:00Z"
+  creationTimestamp: 2017-01-01T00:00:00Z
   labels:
     kops.k8s.io/cluster: private.example.com
   name: nodes

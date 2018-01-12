@@ -20,110 +20,94 @@ import (
 	"fmt"
 	"time"
 
-	"k8s.io/kubernetes/pkg/api/v1"
-	certificates "k8s.io/kubernetes/pkg/apis/certificates/v1alpha1"
-	"k8s.io/kubernetes/pkg/client/cache"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	v1core "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/core/v1"
-	"k8s.io/kubernetes/pkg/client/record"
+	"k8s.io/apimachinery/pkg/api/errors"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
+	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/pkg/api"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/util/workqueue"
+	certificates "k8s.io/kubernetes/pkg/apis/certificates/v1beta1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	certificatesinformers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions/certificates/v1beta1"
+	certificateslisters "k8s.io/kubernetes/pkg/client/listers/certificates/v1beta1"
 	"k8s.io/kubernetes/pkg/controller"
-	"k8s.io/kubernetes/pkg/runtime"
-	utilruntime "k8s.io/kubernetes/pkg/util/runtime"
-	"k8s.io/kubernetes/pkg/util/wait"
-	"k8s.io/kubernetes/pkg/util/workqueue"
-	"k8s.io/kubernetes/pkg/watch"
 
-	"github.com/cloudflare/cfssl/config"
-	"github.com/cloudflare/cfssl/signer"
-	"github.com/cloudflare/cfssl/signer/local"
 	"github.com/golang/glog"
 )
+
+// err returned from these interfaces should indicate utter failure that
+// should be retried. "Buisness logic" errors should be indicated by adding
+// a condition to the CSRs status, not by returning an error.
 
 type AutoApprover interface {
 	AutoApprove(csr *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, error)
 }
 
+type Signer interface {
+	Sign(csr *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, error)
+}
+
 type CertificateController struct {
 	kubeClient clientset.Interface
 
-	// CSR framework and store
-	csrController *cache.Controller
-	csrStore      cache.StoreToCertificateRequestLister
+	csrLister  certificateslisters.CertificateSigningRequestLister
+	csrsSynced cache.InformerSynced
 
 	syncHandler func(csrKey string) error
 
 	approver AutoApprover
-
-	signer *local.Signer
+	signer   Signer
 
 	queue workqueue.RateLimitingInterface
 }
 
-func NewCertificateController(kubeClient clientset.Interface, syncPeriod time.Duration, caCertFile, caKeyFile string, approver AutoApprover) (*CertificateController, error) {
+func NewCertificateController(kubeClient clientset.Interface, csrInformer certificatesinformers.CertificateSigningRequestInformer, signer Signer, approver AutoApprover) (*CertificateController, error) {
 	// Send events to the apiserver
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartLogging(glog.Infof)
-	eventBroadcaster.StartRecordingToSink(&v1core.EventSinkImpl{Interface: kubeClient.Core().Events("")})
-
-	// Configure cfssl signer
-	// TODO: support non-default policy and remote/pkcs11 signing
-	policy := &config.Signing{
-		Default: config.DefaultConfig(),
-	}
-	ca, err := local.NewSignerFromFile(caCertFile, caKeyFile, policy)
-	if err != nil {
-		return nil, err
-	}
+	eventBroadcaster.StartRecordingToSink(&v1core.EventSinkImpl{Interface: v1core.New(kubeClient.Core().RESTClient()).Events("")})
 
 	cc := &CertificateController{
 		kubeClient: kubeClient,
 		queue:      workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "certificate"),
-		signer:     ca,
+		signer:     signer,
 		approver:   approver,
 	}
 
 	// Manage the addition/update of certificate requests
-	cc.csrStore.Store, cc.csrController = cache.NewInformer(
-		&cache.ListWatch{
-			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
-				return cc.kubeClient.Certificates().CertificateSigningRequests().List(options)
-			},
-			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
-				return cc.kubeClient.Certificates().CertificateSigningRequests().Watch(options)
-			},
+	csrInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			csr := obj.(*certificates.CertificateSigningRequest)
+			glog.V(4).Infof("Adding certificate request %s", csr.Name)
+			cc.enqueueCertificateRequest(obj)
 		},
-		&certificates.CertificateSigningRequest{},
-		syncPeriod,
-		cache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
-				csr := obj.(*certificates.CertificateSigningRequest)
-				glog.V(4).Infof("Adding certificate request %s", csr.Name)
-				cc.enqueueCertificateRequest(obj)
-			},
-			UpdateFunc: func(old, new interface{}) {
-				oldCSR := old.(*certificates.CertificateSigningRequest)
-				glog.V(4).Infof("Updating certificate request %s", oldCSR.Name)
-				cc.enqueueCertificateRequest(new)
-			},
-			DeleteFunc: func(obj interface{}) {
-				csr, ok := obj.(*certificates.CertificateSigningRequest)
+		UpdateFunc: func(old, new interface{}) {
+			oldCSR := old.(*certificates.CertificateSigningRequest)
+			glog.V(4).Infof("Updating certificate request %s", oldCSR.Name)
+			cc.enqueueCertificateRequest(new)
+		},
+		DeleteFunc: func(obj interface{}) {
+			csr, ok := obj.(*certificates.CertificateSigningRequest)
+			if !ok {
+				tombstone, ok := obj.(cache.DeletedFinalStateUnknown)
 				if !ok {
-					tombstone, ok := obj.(cache.DeletedFinalStateUnknown)
-					if !ok {
-						glog.V(2).Infof("Couldn't get object from tombstone %#v", obj)
-						return
-					}
-					csr, ok = tombstone.Obj.(*certificates.CertificateSigningRequest)
-					if !ok {
-						glog.V(2).Infof("Tombstone contained object that is not a CSR: %#v", obj)
-						return
-					}
+					glog.V(2).Infof("Couldn't get object from tombstone %#v", obj)
+					return
 				}
-				glog.V(4).Infof("Deleting certificate request %s", csr.Name)
-				cc.enqueueCertificateRequest(obj)
-			},
+				csr, ok = tombstone.Obj.(*certificates.CertificateSigningRequest)
+				if !ok {
+					glog.V(2).Infof("Tombstone contained object that is not a CSR: %#v", obj)
+					return
+				}
+			}
+			glog.V(4).Infof("Deleting certificate request %s", csr.Name)
+			cc.enqueueCertificateRequest(obj)
 		},
-	)
+	})
+	cc.csrLister = csrInformer.Lister()
+	cc.csrsSynced = csrInformer.Informer().HasSynced
 	cc.syncHandler = cc.maybeSignCertificate
 	return cc, nil
 }
@@ -133,9 +117,13 @@ func (cc *CertificateController) Run(workers int, stopCh <-chan struct{}) {
 	defer utilruntime.HandleCrash()
 	defer cc.queue.ShutDown()
 
-	go cc.csrController.Run(stopCh)
-
 	glog.Infof("Starting certificate controller manager")
+
+	if !cache.WaitForCacheSync(stopCh, cc.csrsSynced) {
+		utilruntime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+		return
+	}
+
 	for i := 0; i < workers; i++ {
 		go wait.Until(cc.worker, time.Second, stopCh)
 	}
@@ -186,20 +174,35 @@ func (cc *CertificateController) maybeSignCertificate(key string) error {
 	defer func() {
 		glog.V(4).Infof("Finished syncing certificate request %q (%v)", key, time.Now().Sub(startTime))
 	}()
-	obj, exists, err := cc.csrStore.Store.GetByKey(key)
-	if err != nil {
-		return err
-	}
-	if !exists {
+	csr, err := cc.csrLister.Get(key)
+	if errors.IsNotFound(err) {
 		glog.V(3).Infof("csr has been deleted: %v", key)
 		return nil
 	}
-	csr := obj.(*certificates.CertificateSigningRequest)
+	if err != nil {
+		return err
+	}
+
+	if csr.Status.Certificate != nil {
+		// no need to do anything because it already has a cert
+		return nil
+	}
+
+	// need to operate on a copy so we don't mutate the csr in the shared cache
+	copy, err := api.Scheme.DeepCopy(csr)
+	if err != nil {
+		return err
+	}
+	csr = copy.(*certificates.CertificateSigningRequest)
 
 	if cc.approver != nil {
 		csr, err = cc.approver.AutoApprove(csr)
 		if err != nil {
 			return fmt.Errorf("error auto approving csr: %v", err)
+		}
+		_, err = cc.kubeClient.Certificates().CertificateSigningRequests().UpdateApproval(csr)
+		if err != nil {
+			return fmt.Errorf("error updating approval for csr: %v", err)
 		}
 	}
 
@@ -208,16 +211,16 @@ func (cc *CertificateController) maybeSignCertificate(key string) error {
 	// 2. Generate a signed certificate
 	// 3. Update the Status subresource
 
-	if csr.Status.Certificate == nil && IsCertificateRequestApproved(csr) {
-		pemBytes := csr.Spec.Request
-		req := signer.SignRequest{Request: string(pemBytes)}
-		certBytes, err := cc.signer.Sign(req)
+	if cc.signer != nil && IsCertificateRequestApproved(csr) {
+		csr, err := cc.signer.Sign(csr)
 		if err != nil {
-			return err
+			return fmt.Errorf("error auto signing csr: %v", err)
 		}
-		csr.Status.Certificate = certBytes
+		_, err = cc.kubeClient.Certificates().CertificateSigningRequests().UpdateStatus(csr)
+		if err != nil {
+			return fmt.Errorf("error updating signature for csr: %v", err)
+		}
 	}
 
-	_, err = cc.kubeClient.Certificates().CertificateSigningRequests().UpdateStatus(csr)
-	return err
+	return nil
 }

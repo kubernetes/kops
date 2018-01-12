@@ -30,12 +30,12 @@ package cloudup
 import (
 	"encoding/base64"
 	"fmt"
+	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
-	"k8s.io/kubernetes/pkg/util/sets"
 	"strings"
 	"text/template"
 )

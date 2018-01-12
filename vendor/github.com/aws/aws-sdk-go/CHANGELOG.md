@@ -1,3 +1,39 @@
+Release v1.6.10 (2017-01-04)
+===
+
+Service Client Updates
+---
+* `service/configservice`: Updates service API and documentation
+  * AWSConfig is planning to add support for OversizedConfigurationItemChangeNotification message type in putConfigRule. After this release customers can use/write rules based on OversizedConfigurationItemChangeNotification mesage type.
+* `service/efs`: Updates service API, documentation, and examples
+  * Doc-only Update for EFS: Added code snippets
+* `service/iam`: Updates service documentation and examples
+* `service/lambda`: Updates service documentation and examples
+  * Doc only updates for Lambda: Added code snippets
+* `service/marketplacecommerceanalytics`: Updates service API and documentation
+  * Added support for data set disbursed_amount_by_instance_hours, with historical data available starting 2012-09-04. New data is published to this data set every 30 days.
+* `service/rds`: Updates service documentation
+  * Updated documentation for CopyDBSnapshot.
+* `service/rekognition`: Updates service documentation and examples
+  * Doc-only Update for Rekognition: Added code snippets
+* `service/snowball`: Updates service examples
+* `service/dynamodbstreams`: Updates service API and examples
+  * Doc-only Update for DynamoDB Streams:  Added code snippets
+
+SDK Feature
+---
+* `private/model/api`: Increasing the readability of code generated files. (#1024)
+Release v1.6.9 (2016-12-30)
+===
+
+Service Client Updates
+---
+* `service/codedeploy`: Updates service API and documentation
+  * CodeDeploy will support Iam Session Arns in addition to Iam User Arns for on premise host authentication.
+* `service/ecs`: Updates service API and documentation
+  * Amazon EC2 Container Service (ECS) now supports the ability to customize the placement of tasks on container instances.
+* `aws/endpoints`: Updated Regions and Endpoints metadata.
+
 Release v1.6.8 (2016-12-22)
 ===
 
@@ -6,7 +42,7 @@ Service Client Updates
 * `service/apigateway`: Updates service API and documentation
   * Amazon API Gateway is adding support for generating SDKs in more languages. This update introduces two new operations used to dynamically discover these SDK types and what configuration each type accepts.
 * `service/directoryservice`: Updates service documentation
-  * Alias of single point of contact/owner from your service team: tangbran@amazon.com or nickpi@amazon.com. Added code snippets for the DS SDKs
+  * Added code snippets for the DS SDKs
 * `service/elasticbeanstalk`: Updates service API and documentation
 * `service/iam`: Updates service API and documentation
   * Adds service-specific credentials to IAM service to make it easier to onboard CodeCommit customers.  These are username/password credentials that work with a single service.
@@ -60,6 +96,7 @@ SDK Bug Fixes
 SDK Feature
 ---
 * `private/model/api`: Adds crosslinking to service documentation (#1010)
+
 Release v1.6.4 (2016-12-15)
 ===
 

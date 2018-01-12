@@ -1,24 +1,32 @@
-# please keep this file synchronized with cluster/saltbase/salt/fluentd-gcp/fluentd-gcp.yaml
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: fluentd-gcp-v1.30
+  name: fluentd-gcp-v2.0
   namespace: kube-system
   labels:
     k8s-app: fluentd-gcp
     kubernetes.io/cluster-service: "true"
-    version: v1.30
+    addonmanager.kubernetes.io/mode: Reconcile
+    version: v2.0
 spec:
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
         k8s-app: fluentd-gcp
         kubernetes.io/cluster-service: "true"
-        version: v1.30
+        version: v2.0
+      # This annotation ensures that fluentd does not get evicted if the node
+      # supports critical pod annotation based priority scheme.
+      # Note that this does not guarantee admission on the nodes (#40573).
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      dnsPolicy: Default
       containers:
       - name: fluentd-gcp
-        image: gcr.io/google_containers/fluentd-gcp:1.30
+        image: gcr.io/google-containers/fluentd-gcp:2.0.2
         # If fluentd consumes its own logs, the following situation may happen:
         # fluentd fails to send a chunk to the server => writes it to the log =>
         # tries to send this message to the server => fails to send a chunk and so on.
@@ -28,6 +36,9 @@ spec:
           - '/bin/sh'
           - '-c'
           - '/run.sh $FLUENTD_ARGS 2>&1 >>/var/log/fluentd.log'
+        env:
+        - name: FLUENTD_ARGS
+          value: --no-supervisor
         resources:
           limits:
             memory: 200Mi
@@ -42,6 +53,9 @@ spec:
           readOnly: true
         - name: libsystemddir
           mountPath: /host/lib
+          readOnly: true
+        - name: config-volume
+          mountPath: /etc/fluent/config.d
         # Liveness probe is aimed to help in situarions where fluentd
         # silently hangs for no apparent reasons until manual restart.
         # The idea of this probe is that if fluentd is not queueing or
@@ -57,12 +71,28 @@ spec:
             - '/bin/sh'
             - '-c'
             - >
-              LIVENESS_THRESHOLD_SECONDS=${LIVENESS_THRESHOLD_SECONDS:-600};
+              LIVENESS_THRESHOLD_SECONDS=${LIVENESS_THRESHOLD_SECONDS:-300};
+              STUCK_THRESHOLD_SECONDS=${LIVENESS_THRESHOLD_SECONDS:-900};
+              if [ ! -e /var/log/fluentd-buffers ];
+              then
+                exit 1;
+              fi;
               LAST_MODIFIED_DATE=`stat /var/log/fluentd-buffers | grep Modify | sed -r "s/Modify: (.*)/\1/"`;
               LAST_MODIFIED_TIMESTAMP=`date -d "$LAST_MODIFIED_DATE" +%s`;
-              if [ `date +%s` -gt `expr $LAST_MODIFIED_TIMESTAMP + $LIVENESS_THRESHOLD_SECONDS` ]; then exit 1; fi;
+              if [ `date +%s` -gt `expr $LAST_MODIFIED_TIMESTAMP + $STUCK_THRESHOLD_SECONDS` ];
+              then
+                rm -rf /var/log/fluentd-buffers;
+                exit 1;
+              fi;
+              if [ `date +%s` -gt `expr $LAST_MODIFIED_TIMESTAMP + $LIVENESS_THRESHOLD_SECONDS` ];
+              then
+                exit 1;
+              fi;
       nodeSelector:
         alpha.kubernetes.io/fluentd-ds-ready: "true"
+      tolerations:
+      - key: "node.alpha.kubernetes.io/ismaster"
+        effect: "NoSchedule"
       terminationGracePeriodSeconds: 30
       volumes:
       - name: varlog
@@ -74,3 +104,6 @@ spec:
       - name: libsystemddir
         hostPath:
           path: /usr/lib64
+      - name: config-volume
+        configMap:
+          name: fluentd-gcp-config

@@ -20,7 +20,3 @@ secret/system-monitoring:
 
 secret/system-dns:
   name: "system:dns"
-
-{{ if HasTag "_kope_routing" }}
-secret/kope-routing: {}
-{{ end }}

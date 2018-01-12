@@ -78,7 +78,6 @@ information about each option that appears later in this page.
     storage:
       filesystem:
         rootdirectory: /var/lib/registry
-		maxthreads: 100
       azure:
         accountname: accountname
         accountkey: base64encodedaccountkey
@@ -166,10 +165,6 @@ information about each option that appears later in this page.
             privatekey: /path/to/pem
             keypairid: cloudfrontkeypairid
             duration: 3000s
-      storage:
-        - name: redirect
-          options:
-            baseurl: https://example.com/
     reporting:
       bugsnag:
         apikey: bugsnagapikey
@@ -191,9 +186,6 @@ information about each option that appears later in this page.
         clientcas:
           - /path/to/ca.pem
           - /path/to/another/ca.pem
-        letsencrypt:
-          cachefile: /path/to/cache-file
-          email: emailused@letsencrypt.com
       debug:
         addr: localhost:5001
       headers:
@@ -246,14 +238,7 @@ information about each option that appears later in this page.
     compatibility:
       schema1:
         signingkeyfile: /etc/registry/key.json
-    validation:
-      enabled: true
-      manifests:
-        urls:
-          allow:
-            - ^https?://([^/]+\.)*example\.com/
-          deny:
-            - ^https?://www\.example\.com/
+        disablesignaturestore: true
 
 In some instances a configuration option is **optional** but it contains child
 options marked as **required**. This indicates that you can omit the parent with
@@ -691,7 +676,8 @@ object they're wrapping. This means a registry middleware must implement the
 `distribution.Repository`, and storage middleware must implement
 `driver.StorageDriver`.
 
-An example configuration of the `cloudfront`  middleware, a storage middleware:
+Currently only one middleware, `cloudfront`, a storage middleware, is supported
+in the registry implementation.
 
     middleware:
       registry:
@@ -772,15 +758,6 @@ interpretation of the options.
   </tr>
 </table>
 
-### redirect
-
-In place of the `cloudfront` storage middleware, the `redirect`
-storage middleware can be used to specify a custom URL to a location
-of a proxy for the layer stored by the S3 storage driver.
-
-| Parameter | Required | Description |
-| --- | --- | --- |
-| baseurl   | yes      | `SCHEME://HOST` at which layers are served. Can also contain port. For example, `https://example.com:5443`. |
 
 ## reporting
 
@@ -903,9 +880,6 @@ configuration may contain both.
         clientcas:
           - /path/to/ca.pem
           - /path/to/another/ca.pem
-        letsencrypt:
-          cachefile: /path/to/cache-file
-          email: emailused@letsencrypt.com
       debug:
         addr: localhost:5001
       headers:
@@ -1046,45 +1020,11 @@ and proxy connections to the registry server.
       no
     </td>
     <td>
-      An array of absolute paths to an x509 CA file
+      An array of absolute paths to a x509 CA file
     </td>
   </tr>
 </table>
 
-### letsencrypt
-
-The `letsencrypt` struct within `tls` is **optional**. Use this to configure TLS
-certificates provided by [Let's Encrypt](https://letsencrypt.org/how-it-works/).
-
-<table>
-  <tr>
-    <th>Parameter</th>
-    <th>Required</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>
-      <code>cachefile</code>
-    </td>
-    <td>
-      yes
-    </td>
-    <td>
-       Absolute path to a file for the Let's Encrypt agent to cache data
-    </td>
-  </tr>
-    <tr>
-    <td>
-      <code>email</code>
-    </td>
-    <td>
-      yes
-    </td>
-    <td>
-      Email used to register with Let's Encrypt.
-    </td>
-  </tr>
-</table>
 
 ### debug
 
@@ -1727,7 +1667,7 @@ The TCP address to connect to, including a port number.
       username: [username]
       password: [password]
 
-Proxy enables a registry to be configured as a pull through cache to the official Docker Hub.  See [mirror](recipes/mirror.md) for more information. Pushing to a registry configured as a pull through cache is currently unsupported.
+Proxy enables a registry to be configured as a pull through cache to the official Docker Hub.  See [mirror](mirror.md) for more information. Pushing to a registry configured as a pull through cache is currently unsupported.
 
 <table>
   <tr>
@@ -1777,9 +1717,10 @@ To enable pulling private repositories (e.g. `batman/robin`) a username and pass
     compatibility:
       schema1:
         signingkeyfile: /etc/registry/key.json
+        disablesignaturestore: true
 
 Configure handling of older and deprecated features. Each subsection
-defines such a feature with configurable behavior.
+defines a such a feature with configurable behavior.
 
 ### Schema1
 
@@ -1802,40 +1743,24 @@ defines such a feature with configurable behavior.
      startup.
     </td>
   </tr>
+  <tr>
+    <td>
+      <code>disablesignaturestore</code>
+    </td>
+    <td>
+      no
+    </td>
+    <td>
+     Disables storage of signatures attached to schema1 manifests. By default
+     signatures are detached from schema1 manifests, stored, and reattached
+     when the manifest is requested. When this is true, the storage is disabled
+     and a new signature is always generated for schema1 manifests using the
+     schema1 signing key. Disabling signature storage will cause all newly
+     uploaded signatures to be discarded. Existing stored signatures will not
+     be removed but they will not be re-attached to the corresponding manifest.
+    </td>
+  </tr>
 </table>
-
-## Validation
-
-    validation:
-      enabled: true
-      manifests:
-        urls:
-          allow:
-            - ^https?://([^/]+\.)*example\.com/
-          deny:
-            - ^https?://www\.example\.com/
-
-### Enabled
-
-Use the `enabled` flag to enable the other options in the `validation`
-section. They are disabled by default.
-
-### Manifests
-
-Use the `manifest` subsection to configure manifest validation.
-
-#### URLs
-
-The `allow` and `deny` options are both lists of
-[regular expressions](https://godoc.org/regexp/syntax) that restrict the URLs in
-pushed manifests.
-
-If `allow` is unset, pushing a manifest containing URLs will fail.
-
-If `allow` is set, pushing a manifest will succeed only if all URLs within match
-one of the `allow` regular expressions and one of the following holds:
-1. `deny` is unset.
-2. `deny` is set but no URLs within the manifest match any of the `deny` regular expressions.
 
 ## Example: Development configuration
 
@@ -1869,7 +1794,7 @@ This example illustrates how to configure storage middleware in a registry.
 Middleware allows the registry to serve layers via a content delivery network
 (CDN). This is useful for reducing requests to the storage layer.
 
-The registry supports [Amazon
+Currently, the registry supports [Amazon
 Cloudfront](http://aws.amazon.com/cloudfront/). You can only use Cloudfront in
 conjunction with the S3 storage driver.
 

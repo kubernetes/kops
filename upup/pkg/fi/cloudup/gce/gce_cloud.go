@@ -92,14 +92,6 @@ func (c *GCECloud) Labels() map[string]string {
 	return tags
 }
 
-func (c *GCECloud) WaitForZoneOp(op *compute.Operation, zone string) error {
-	return WaitForZoneOp(c.Compute, op, c.Project, zone)
-}
-
-func (c *GCECloud) WaitForRegionOp(op *compute.Operation) error {
-	return WaitForRegionOp(c.Compute, op, c.Project)
-}
-
-func (c *GCECloud) WaitForGlobalOp(op *compute.Operation) error {
-	return WaitForGlobalOp(c.Compute, op, c.Project)
+func (c *GCECloud) WaitForOp(op *compute.Operation) error {
+	return WaitForOp(c.Compute, op)
 }

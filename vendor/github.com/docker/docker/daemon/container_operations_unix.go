@@ -101,9 +101,6 @@ func (daemon *Daemon) getSize(container *container.Container) (int64, int64) {
 
 // ConnectToNetwork connects a container to a network
 func (daemon *Daemon) ConnectToNetwork(container *container.Container, idOrName string, endpointConfig *networktypes.EndpointSettings) error {
-	if endpointConfig == nil {
-		endpointConfig = &networktypes.EndpointSettings{}
-	}
 	if !container.Running {
 		if container.RemovalInProgress || container.Dead {
 			return errRemovalContainer(container.ID)
@@ -111,7 +108,9 @@ func (daemon *Daemon) ConnectToNetwork(container *container.Container, idOrName 
 		if _, err := daemon.updateNetworkConfig(container, idOrName, endpointConfig, true); err != nil {
 			return err
 		}
-		container.NetworkSettings.Networks[idOrName] = endpointConfig
+		if endpointConfig != nil {
+			container.NetworkSettings.Networks[idOrName] = endpointConfig
+		}
 	} else {
 		if err := daemon.connectToNetwork(container, idOrName, endpointConfig, true); err != nil {
 			return err
@@ -154,6 +153,20 @@ func (daemon *Daemon) DisconnectFromNetwork(container *container.Container, n li
 	return nil
 }
 
+// called from the libcontainer pre-start hook to set the network
+// namespace configuration linkage to the libnetwork "sandbox" entity
+func (daemon *Daemon) setNetworkNamespaceKey(containerID string, pid int) error {
+	path := fmt.Sprintf("/proc/%d/ns/net", pid)
+	var sandbox libnetwork.Sandbox
+	search := libnetwork.SandboxContainerWalker(&sandbox, containerID)
+	daemon.netController.WalkSandboxes(search)
+	if sandbox == nil {
+		return fmt.Errorf("error locating sandbox id %s: no sandbox found", containerID)
+	}
+
+	return sandbox.SetKey(path)
+}
+
 func (daemon *Daemon) getIpcContainer(container *container.Container) (*container.Container, error) {
 	containerID := container.HostConfig.IpcMode.Container()
 	c, err := daemon.GetContainer(containerID)
@@ -162,21 +175,6 @@ func (daemon *Daemon) getIpcContainer(container *container.Container) (*containe
 	}
 	if !c.IsRunning() {
 		return nil, fmt.Errorf("cannot join IPC of a non running container: %s", containerID)
-	}
-	if c.IsRestarting() {
-		return nil, errContainerIsRestarting(container.ID)
-	}
-	return c, nil
-}
-
-func (daemon *Daemon) getPidContainer(container *container.Container) (*container.Container, error) {
-	containerID := container.HostConfig.PidMode.Container()
-	c, err := daemon.GetContainer(containerID)
-	if err != nil {
-		return nil, err
-	}
-	if !c.IsRunning() {
-		return nil, fmt.Errorf("cannot join PID of a non running container: %s", containerID)
 	}
 	if c.IsRestarting() {
 		return nil, errContainerIsRestarting(container.ID)
@@ -262,19 +260,6 @@ func (daemon *Daemon) mountVolumes(container *container.Container) error {
 		if err := mount.Mount(m.Source, dest, "bind", opts); err != nil {
 			return err
 		}
-
-		// mountVolumes() seems to be called for temporary mounts
-		// outside the container. Soon these will be unmounted with
-		// lazy unmount option and given we have mounted the rbind,
-		// all the submounts will propagate if these are shared. If
-		// daemon is running in host namespace and has / as shared
-		// then these unmounts will propagate and unmount original
-		// mount as well. So make all these mounts rprivate.
-		// Do not use propagation property of volume as that should
-		// apply only when mounting happen inside the container.
-		if err := mount.MakeRPrivate(dest); err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -326,7 +311,7 @@ func getDevicesFromPath(deviceMapping containertypes.DeviceMapping) (devs []spec
 
 	// check if it is a symbolic link
 	if src, e := os.Lstat(deviceMapping.PathOnHost); e == nil && src.Mode()&os.ModeSymlink == os.ModeSymlink {
-		if linkedPathOnHost, e := filepath.EvalSymlinks(deviceMapping.PathOnHost); e == nil {
+		if linkedPathOnHost, e := os.Readlink(deviceMapping.PathOnHost); e == nil {
 			resolvedPathOnHost = linkedPathOnHost
 		}
 	}
@@ -368,6 +353,25 @@ func getDevicesFromPath(deviceMapping containertypes.DeviceMapping) (devs []spec
 	}
 
 	return devs, devPermissions, fmt.Errorf("error gathering device information while adding custom device %q: %s", deviceMapping.PathOnHost, err)
+}
+
+func mergeDevices(defaultDevices, userDevices []*configs.Device) []*configs.Device {
+	if len(userDevices) == 0 {
+		return defaultDevices
+	}
+
+	paths := map[string]*configs.Device{}
+	for _, d := range userDevices {
+		paths[d.Path] = d
+	}
+
+	var devs []*configs.Device
+	for _, d := range defaultDevices {
+		if _, defined := paths[d.Path]; !defined {
+			devs = append(devs, d)
+		}
+	}
+	return append(devs, userDevices...)
 }
 
 func detachMounted(path string) error {

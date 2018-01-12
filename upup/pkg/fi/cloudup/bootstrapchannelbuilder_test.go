@@ -92,19 +92,20 @@ func TestBootstrapChannelBuilder_buildManifest(t *testing.T) {
 	c.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
 
 	bcb := BootstrapChannelBuilder{cluster: c}
-	a, m := bcb.buildManifest()
-
-	if a == nil {
+	addons, manifests, err := bcb.buildManifest()
+	if err != nil {
+		t.Fatalf("error building manifests: %v", err)
+	}
+	if addons == nil {
 		t.Fatal("Addons are nil")
 	}
-
-	if m == nil {
+	if manifests == nil {
 		t.Fatal("Manifests are nil")
 	}
 
 	var hasLimit, hasWeave bool
 
-	for _, value := range a.Spec.Addons {
+	for _, value := range addons.Spec.Addons {
 		if *value.Name == "networking.weave" {
 			hasWeave = true
 		}

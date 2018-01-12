@@ -543,15 +543,15 @@ func (p *size) Generate(file *generator.FileDescriptor) {
 			}
 		}
 		if message.DescriptorProto.HasExtension() {
+			p.P(`if m.XXX_extensions != nil {`)
+			p.In()
 			if gogoproto.HasExtensionsMap(file.FileDescriptorProto, message.DescriptorProto) {
-				p.P(`n += `, protoPkg.Use(), `.SizeOfInternalExtension(m)`)
+				p.P(`n += `, protoPkg.Use(), `.SizeOfExtensionMap(m.XXX_extensions)`)
 			} else {
-				p.P(`if m.XXX_extensions != nil {`)
-				p.In()
 				p.P(`n+=len(m.XXX_extensions)`)
-				p.Out()
-				p.P(`}`)
 			}
+			p.Out()
+			p.P(`}`)
 		}
 		if gogoproto.HasUnrecognized(file.FileDescriptorProto, message.DescriptorProto) {
 			p.P(`if m.XXX_unrecognized != nil {`)

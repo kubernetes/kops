@@ -20,13 +20,15 @@ import (
 	"fmt"
 	"testing"
 
-	"k8s.io/kubernetes/pkg/api/resource"
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/pkg/api/v1"
 )
 
 func Test_ValidateClusterPositive(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(v1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -42,7 +44,7 @@ func Test_ValidateClusterPositive(t *testing.T) {
 }
 
 func Test_ValidateClusterMasterAndNodeNotReady(t *testing.T) {
-	nodeList, err := dummyClient("false", "false").Core().Nodes().List(v1.ListOptions{})
+	nodeList, err := dummyClient("false", "false").Core().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -58,7 +60,7 @@ func Test_ValidateClusterMasterAndNodeNotReady(t *testing.T) {
 }
 
 func Test_ValidateClusterComponents(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(v1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -75,7 +77,7 @@ func Test_ValidateClusterComponents(t *testing.T) {
 }
 
 func Test_ValidateClusterPods(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(v1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -92,7 +94,7 @@ func Test_ValidateClusterPods(t *testing.T) {
 }
 
 func Test_ValidateClusterNodeNotReady(t *testing.T) {
-	nodeList, err := dummyClient("true", "false").Core().Nodes().List(v1.ListOptions{})
+	nodeList, err := dummyClient("true", "false").Core().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -108,7 +110,7 @@ func Test_ValidateClusterNodeNotReady(t *testing.T) {
 }
 
 func Test_ValidateClusterMastersNotEnough(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(v1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -123,6 +125,53 @@ func Test_ValidateClusterMastersNotEnough(t *testing.T) {
 	}
 }
 
+func Test_ValidateNoPodFailures(t *testing.T) {
+	failures, err := collectPodFailures(dummyPodClient(
+		[]map[string]string{
+			{
+				"name":  "pod1",
+				"ready": "true",
+				"phase": string(v1.PodRunning),
+			},
+			{
+				"name":  "job1",
+				"ready": "false",
+				"phase": string(v1.PodSucceeded),
+			},
+		},
+	))
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(failures) != 0 {
+		fmt.Printf("failures: %+v\n", failures)
+		t.Fatal("no failures expected")
+	}
+}
+
+func Test_ValidatePodFailure(t *testing.T) {
+	failures, err := collectPodFailures(dummyPodClient(
+		[]map[string]string{
+			{
+				"name":  "pod1",
+				"ready": "false",
+				"phase": string(v1.PodRunning),
+			},
+		},
+	))
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(failures) != 1 || failures[0] != "pod1" {
+		fmt.Printf("failures: %+v\n", failures)
+		t.Fatal("pod1 failure expected")
+	}
+}
+
 func printDebug(validationCluster *ValidationCluster) {
 	fmt.Printf("cluster - masters ready: %v, nodes ready: %v\n", validationCluster.MastersReady, validationCluster.NodesReady)
 	fmt.Printf("mastersNotReady %v\n", len(validationCluster.MastersNotReadyArray))
@@ -134,7 +183,7 @@ func printDebug(validationCluster *ValidationCluster) {
 
 const NODE_READY = "nodeReady"
 
-func dummyClient(masterReady string, nodeReady string) *fake.Clientset {
+func dummyClient(masterReady string, nodeReady string) kubernetes.Interface {
 	return fake.NewSimpleClientset(makeNodeList(
 		[]map[string]string{
 			{
@@ -151,6 +200,37 @@ func dummyClient(masterReady string, nodeReady string) *fake.Clientset {
 	))
 }
 
+func dummyPodClient(pods []map[string]string) kubernetes.Interface {
+	return fake.NewSimpleClientset(makePodList(pods))
+}
+
+func dummyPod(podMap map[string]string) v1.Pod {
+	return v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      podMap["name"],
+			Namespace: "kube-system",
+		},
+		Spec: v1.PodSpec{},
+		Status: v1.PodStatus{
+			Phase: v1.PodPhase(podMap["phase"]),
+			ContainerStatuses: []v1.ContainerStatus{
+				{
+					Ready: podMap["ready"] == "true",
+				},
+			},
+		},
+	}
+}
+
+// MakePodList constructs api.PodList from a list of pod attributes
+func makePodList(pods []map[string]string) *v1.PodList {
+	var list v1.PodList
+	for _, pod := range pods {
+		list.Items = append(list.Items, dummyPod(pod))
+	}
+	return &list
+}
+
 func dummyNode(nodeMap map[string]string) v1.Node {
 
 	nodeReady := v1.ConditionFalse
@@ -158,7 +238,7 @@ func dummyNode(nodeMap map[string]string) v1.Node {
 		nodeReady = v1.ConditionTrue
 	}
 	expectedNode := v1.Node{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: nodeMap["name"],
 			Labels: map[string]string{
 				"kubernetes.io/role": nodeMap["kubernetes.io/role"],

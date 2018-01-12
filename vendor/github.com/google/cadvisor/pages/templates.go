@@ -1,4 +1,4 @@
-// Copyright 2016 Google Inc. All Rights Reserved.
+// Copyright 2017 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ func pagesAssetsHtmlContainersHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "pages/assets/html/containers.html", size: 9533, mode: os.FileMode(416), modTime: time.Unix(1462817463, 0)}
+	info := bindataFileInfo{name: "pages/assets/html/containers.html", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

@@ -17,15 +17,16 @@ limitations under the License.
 package main
 
 import (
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 )
 
 func NewCmdUpdate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "update clusters",
+		Short: "Creates or updates cloud resources to match cluster spec.",
 		Long:  `Update clusters`,
 	}
 

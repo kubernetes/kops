@@ -16,7 +16,6 @@ package trace
 
 import (
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -25,15 +24,11 @@ import (
 	"testing"
 	"time"
 
-	"cloud.google.com/go/datastore"
-	"cloud.google.com/go/internal/testutil"
 	"cloud.google.com/go/storage"
 	"golang.org/x/net/context"
 	api "google.golang.org/api/cloudtrace/v1"
 	compute "google.golang.org/api/compute/v1"
 	"google.golang.org/api/option"
-	dspb "google.golang.org/genproto/googleapis/datastore/v1"
-	"google.golang.org/grpc"
 )
 
 const testProjectID = "testproject"
@@ -62,18 +57,6 @@ func newTestClient(rt http.RoundTripper) *Client {
 		panic(err)
 	}
 	return t
-}
-
-type fakeDatastoreServer struct {
-	dspb.DatastoreServer
-	fail bool
-}
-
-func (f *fakeDatastoreServer) Lookup(ctx context.Context, req *dspb.LookupRequest) (*dspb.LookupResponse, error) {
-	if f.fail {
-		return nil, errors.New("failed!")
-	}
-	return &dspb.LookupResponse{}, nil
 }
 
 // makeRequests makes some requests.
@@ -132,27 +115,6 @@ func makeRequests(t *testing.T, req *http.Request, traceClient *Client, rt *fake
 			}
 			objAttrsList = append(objAttrsList, objAttrs)
 		}
-	}
-
-	// A cloud library call that uses grpc internally.
-	for _, fail := range []bool{false, true} {
-		srv, err := testutil.NewServer()
-		if err != nil {
-			t.Fatalf("creating test datastore server: %v", err)
-		}
-		dspb.RegisterDatastoreServer(srv.Gsrv, &fakeDatastoreServer{fail: fail})
-		srv.Start()
-		conn, err := grpc.Dial(srv.Addr, grpc.WithInsecure(), EnableGRPCTracingDialOption)
-		if err != nil {
-			t.Fatalf("connecting to test datastore server: %v", err)
-		}
-		datastoreClient, err := datastore.NewClient(ctx, testProjectID, option.WithGRPCConn(conn))
-		if err != nil {
-			t.Fatalf("creating datastore client: %v", err)
-		}
-		k := datastore.NewKey(ctx, "Entity", "stringID", 0, nil)
-		e := new(datastore.Entity)
-		datastoreClient.Get(ctx, k, e)
 	}
 
 	done := make(chan struct{})
@@ -249,16 +211,6 @@ func testTrace(t *testing.T, synchronous bool) {
 							"trace.cloud.google.com/http/url":         "https://www.googleapis.com/storage/v1/b/testbucket/o",
 						},
 						Name: "/storage/v1/b/testbucket/o",
-					},
-					&api.TraceSpan{
-						Kind:   "RPC_CLIENT",
-						Labels: nil,
-						Name:   "/google.datastore.v1.Datastore/Lookup",
-					},
-					&api.TraceSpan{
-						Kind:   "RPC_CLIENT",
-						Labels: map[string]string{"error": "rpc error: code = 2 desc = failed!"},
-						Name:   "/google.datastore.v1.Datastore/Lookup",
 					},
 					{
 						Kind: "RPC_SERVER",

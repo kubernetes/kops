@@ -116,32 +116,17 @@ func (s *DockerSuite) TestUpdateContainerWithoutFlags(c *check.C) {
 }
 
 func (s *DockerSuite) TestUpdateKernelMemory(c *check.C) {
-	testRequires(c, DaemonIsLinux, kernelMemorySupport)
+	testRequires(c, DaemonIsLinux)
+	testRequires(c, kernelMemorySupport)
 
 	name := "test-update-container"
 	dockerCmd(c, "run", "-d", "--name", name, "--kernel-memory", "50M", "busybox", "top")
-	dockerCmd(c, "update", "--kernel-memory", "100M", name)
-
-	c.Assert(inspectField(c, name, "HostConfig.KernelMemory"), checker.Equals, "104857600")
-
-	file := "/sys/fs/cgroup/memory/memory.kmem.limit_in_bytes"
-	out, _ := dockerCmd(c, "exec", name, "cat", file)
-	c.Assert(strings.TrimSpace(out), checker.Equals, "104857600")
-}
-
-func (s *DockerSuite) TestUpdateKernelMemoryUninitialized(c *check.C) {
-	testRequires(c, DaemonIsLinux, kernelMemorySupport)
-
-	name := "test-update-container"
-	dockerCmd(c, "run", "-d", "--name", name, "busybox", "top")
 	_, _, err := dockerCmdWithError("update", "--kernel-memory", "100M", name)
-	// Update kernel memory to a running container without kernel memory initialized is not allowed.
+	// Update kernel memory to a running container is not allowed.
 	c.Assert(err, check.NotNil)
 
-	dockerCmd(c, "pause", name)
-	_, _, err = dockerCmdWithError("update", "--kernel-memory", "100M", name)
-	c.Assert(err, check.NotNil)
-	dockerCmd(c, "unpause", name)
+	// Update kernel memory to a running container with failure should not change HostConfig
+	c.Assert(inspectField(c, name, "HostConfig.KernelMemory"), checker.Equals, "52428800")
 
 	dockerCmd(c, "stop", name)
 	dockerCmd(c, "update", "--kernel-memory", "100M", name)

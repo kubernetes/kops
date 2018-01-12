@@ -52,10 +52,16 @@ func TestRecursive(t *testing.T) {
 	}
 }
 
-func construct(t *testing.T, files map[string]string, testNamer namer.Namer) (*parser.Builder, types.Universe, []*types.Type) {
+type file struct {
+	path     string
+	contents string
+}
+
+// Pass files in topological order - deps first!
+func construct(t *testing.T, files []file, testNamer namer.Namer) (*parser.Builder, types.Universe, []*types.Type) {
 	b := parser.New()
-	for name, src := range files {
-		if err := b.AddFile(filepath.Dir(name), name, []byte(src)); err != nil {
+	for _, f := range files {
+		if err := b.AddFileForTest(filepath.Dir(f.path), f.path, []byte(f.contents)); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -69,48 +75,51 @@ func construct(t *testing.T, files map[string]string, testNamer namer.Namer) (*p
 }
 
 func TestBuilder(t *testing.T) {
-	var testFiles = map[string]string{
-		"base/foo/proto/foo.go": `
-package foo
+	var testFiles = []file{
+		{
+			path: "base/common/proto/common.go", contents: `
+                package common
 
-import (
-	"base/common/proto"
-)
+                type Object struct {
+    	            ID int64
+                }
+                `,
+		}, {
+			path: "base/foo/proto/foo.go", contents: `
+                package foo
 
-type Blah struct {
-	common.Object
-	Count int64
-	Frobbers map[string]*Frobber
-	Baz []Object
-	Nickname *string
-	NumberIsAFavorite map[int]bool
-}
+                import (
+	                "base/common/proto"
+                )
 
-type Frobber struct {
-	Name string
-	Amount int64
-}
+                type Blah struct {
+    	            common.Object
+    	            Count int64
+    	            Frobbers map[string]*Frobber
+    	            Baz []Object
+    	            Nickname *string
+    	            NumberIsAFavorite map[int]bool
+                }
 
-type Object struct {
-	common.Object
-}
+                type Frobber struct {
+	                Name string
+	                Amount int64
+                }
 
-func AFunc(obj1 common.Object, obj2 Object) Frobber {
-}
+                type Object struct {
+	                common.Object
+                }
 
-var AVar Frobber
+                func AFunc(obj1 common.Object, obj2 Object) Frobber {
+                }
 
-var (
-	AnotherVar = Frobber{}
-)
-`,
-		"base/common/proto/common.go": `
-package common
-
-type Object struct {
-	ID int64
-}
-`,
+                var AVar Frobber
+    
+                var (
+	                AnotherVar = Frobber{}
+                )
+                `,
+		},
 	}
 
 	var tmplText = `
@@ -195,24 +204,25 @@ var FooAnotherVar proto.Frobber = proto.AnotherVar
 }
 
 func TestStructParse(t *testing.T) {
-	var structTest = map[string]string{
-		"base/foo/proto/foo.go": `
-package foo
+	var structTest = file{
+		path: "base/foo/proto/foo.go",
+		contents: `
+            package foo
 
-// Blah is a test.
-// A test, I tell you.
-type Blah struct {
-	// A is the first field.
-	A int64 ` + "`" + `json:"a"` + "`" + `
-
-	// B is the second field.
-	// Multiline comments work.
-	B string ` + "`" + `json:"b"` + "`" + `
-}
-`,
+            // Blah is a test.
+            // A test, I tell you.
+            type Blah struct {
+	            // A is the first field.
+	            A int64 ` + "`" + `json:"a"` + "`" + `
+            
+	            // B is the second field.
+	            // Multiline comments work.
+	            B string ` + "`" + `json:"b"` + "`" + `
+            }
+            `,
 	}
 
-	_, u, o := construct(t, structTest, namer.NewPublicNamer(0))
+	_, u, o := construct(t, []file{structTest}, namer.NewPublicNamer(0))
 	t.Logf("%#v", o)
 	blahT := u.Type(types.Name{Package: "base/foo/proto", Name: "Blah"})
 	if blahT == nil {
@@ -239,36 +249,40 @@ type Blah struct {
 func TestParseSecondClosestCommentLines(t *testing.T) {
 	const fileName = "base/foo/proto/foo.go"
 	testCases := []struct {
-		testFile map[string]string
+		testFile file
 		expected []string
 	}{
 		{
-			map[string]string{fileName: `package foo
-// Blah's SecondClosestCommentLines.
-// Another line.
+			testFile: file{
+				path: fileName, contents: `
+				    package foo
+                    // Blah's SecondClosestCommentLines.
+                    // Another line.
 
-// Blah is a test.
-// A test, I tell you.
-type Blah struct {
-	a int
-}
-`},
-			[]string{"Blah's SecondClosestCommentLines.", "Another line."},
+                    // Blah is a test.
+                    // A test, I tell you.
+                    type Blah struct {
+	                    a int
+                    }
+                    `},
+			expected: []string{"Blah's SecondClosestCommentLines.", "Another line."},
 		},
 		{
-			map[string]string{fileName: `package foo
-// Blah's SecondClosestCommentLines.
-// Another line.
-
-type Blah struct {
-	a int
-}
-`},
-			[]string{"Blah's SecondClosestCommentLines.", "Another line."},
+			testFile: file{
+				path: fileName, contents: `
+				    package foo
+                    // Blah's SecondClosestCommentLines.
+                    // Another line.
+                    
+                    type Blah struct {
+	                    a int
+                    }
+                    `},
+			expected: []string{"Blah's SecondClosestCommentLines.", "Another line."},
 		},
 	}
 	for _, test := range testCases {
-		_, u, o := construct(t, test.testFile, namer.NewPublicNamer(0))
+		_, u, o := construct(t, []file{test.testFile}, namer.NewPublicNamer(0))
 		t.Logf("%#v", o)
 		blahT := u.Type(types.Name{Package: "base/foo/proto", Name: "Blah"})
 		if e, a := test.expected, blahT.SecondClosestCommentLines; !reflect.DeepEqual(e, a) {
@@ -278,35 +292,35 @@ type Blah struct {
 }
 
 func TestTypeKindParse(t *testing.T) {
-	var testFiles = map[string]string{
-		"a/foo.go": "package a\ntype Test string\n",
-		"b/foo.go": "package b\ntype Test map[int]string\n",
-		"c/foo.go": "package c\ntype Test []string\n",
-		"d/foo.go": "package d\ntype Test struct{a int; b struct{a int}; c map[int]string; d *string}\n",
-		"e/foo.go": "package e\ntype Test *string\n",
-		"f/foo.go": `
-package f
-import (
-	"a"
-	"b"
-)
-type Test []a.Test
-type Test2 *a.Test
-type Test3 map[a.Test]b.Test
-type Test4 struct {
-	a struct {a a.Test; b b.Test}
-	b map[a.Test]b.Test
-	c *a.Test
-	d []a.Test
-	e []string
-}
-`,
-		"g/foo.go": `
-package g
-type Test func(a, b string) (c, d string)
-func (t Test) Method(a, b string) (c, d string) { return t(a, b) }
-type Interface interface{Method(a, b string) (c, d string)}
-`,
+	var testFiles = []file{
+		{path: "a/foo.go", contents: "package a\ntype Test string\n"},
+		{path: "b/foo.go", contents: "package b\ntype Test map[int]string\n"},
+		{path: "c/foo.go", contents: "package c\ntype Test []string\n"},
+		{path: "d/foo.go", contents: "package d\ntype Test struct{a int; b struct{a int}; c map[int]string; d *string}\n"},
+		{path: "e/foo.go", contents: "package e\ntype Test *string\n"},
+		{path: "f/foo.go", contents: `
+            package f
+            import (
+	            "a"
+	            "b"
+            )
+            type Test []a.Test
+            type Test2 *a.Test
+            type Test3 map[a.Test]b.Test
+            type Test4 struct {
+	            a struct {a a.Test; b b.Test}
+	            b map[a.Test]b.Test
+	            c *a.Test
+	            d []a.Test
+	            e []string
+            }
+            `},
+		{path: "g/foo.go", contents: `
+            package g
+            type Test func(a, b string) (c, d string)
+            func (t Test) Method(a, b string) (c, d string) { return t(a, b) }
+            type Interface interface{Method(a, b string) (c, d string)}
+            `},
 	}
 
 	// Check that the right types are found, and the namers give the expected names.

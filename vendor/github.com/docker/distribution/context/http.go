@@ -103,22 +103,20 @@ func GetRequestID(ctx Context) string {
 // WithResponseWriter returns a new context and response writer that makes
 // interesting response statistics available within the context.
 func WithResponseWriter(ctx Context, w http.ResponseWriter) (Context, http.ResponseWriter) {
+	irw := instrumentedResponseWriter{
+		ResponseWriter: w,
+		Context:        ctx,
+	}
+
 	if closeNotifier, ok := w.(http.CloseNotifier); ok {
 		irwCN := &instrumentedResponseWriterCN{
-			instrumentedResponseWriter: instrumentedResponseWriter{
-				ResponseWriter: w,
-				Context:        ctx,
-			},
-			CloseNotifier: closeNotifier,
+			instrumentedResponseWriter: irw,
+			CloseNotifier:              closeNotifier,
 		}
 
 		return irwCN, irwCN
 	}
 
-	irw := instrumentedResponseWriter{
-		ResponseWriter: w,
-		Context:        ctx,
-	}
 	return &irw, &irw
 }
 

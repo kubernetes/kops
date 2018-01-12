@@ -49,9 +49,8 @@ func (c *DirectConnect) AllocateConnectionOnInterconnectRequest(input *AllocateC
 		input = &AllocateConnectionOnInterconnectInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Connection{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -125,9 +124,8 @@ func (c *DirectConnect) AllocatePrivateVirtualInterfaceRequest(input *AllocatePr
 		input = &AllocatePrivateVirtualInterfaceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &VirtualInterface{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -204,9 +202,8 @@ func (c *DirectConnect) AllocatePublicVirtualInterfaceRequest(input *AllocatePub
 		input = &AllocatePublicVirtualInterfaceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &VirtualInterface{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -287,9 +284,8 @@ func (c *DirectConnect) ConfirmConnectionRequest(input *ConfirmConnectionInput) 
 		input = &ConfirmConnectionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ConfirmConnectionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -362,9 +358,8 @@ func (c *DirectConnect) ConfirmPrivateVirtualInterfaceRequest(input *ConfirmPriv
 		input = &ConfirmPrivateVirtualInterfaceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ConfirmPrivateVirtualInterfaceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -437,9 +432,8 @@ func (c *DirectConnect) ConfirmPublicVirtualInterfaceRequest(input *ConfirmPubli
 		input = &ConfirmPublicVirtualInterfaceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ConfirmPublicVirtualInterfaceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -511,9 +505,8 @@ func (c *DirectConnect) CreateBGPPeerRequest(input *CreateBGPPeerInput) (req *re
 		input = &CreateBGPPeerInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateBGPPeerOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -594,9 +587,8 @@ func (c *DirectConnect) CreateConnectionRequest(input *CreateConnectionInput) (r
 		input = &CreateConnectionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Connection{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -674,9 +666,8 @@ func (c *DirectConnect) CreateInterconnectRequest(input *CreateInterconnectInput
 		input = &CreateInterconnectInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Interconnect{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -762,9 +753,8 @@ func (c *DirectConnect) CreatePrivateVirtualInterfaceRequest(input *CreatePrivat
 		input = &CreatePrivateVirtualInterfaceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &VirtualInterface{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -835,9 +825,8 @@ func (c *DirectConnect) CreatePublicVirtualInterfaceRequest(input *CreatePublicV
 		input = &CreatePublicVirtualInterfaceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &VirtualInterface{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -913,9 +902,8 @@ func (c *DirectConnect) DeleteBGPPeerRequest(input *DeleteBGPPeerInput) (req *re
 		input = &DeleteBGPPeerInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteBGPPeerOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -986,9 +974,8 @@ func (c *DirectConnect) DeleteConnectionRequest(input *DeleteConnectionInput) (r
 		input = &DeleteConnectionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Connection{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1062,9 +1049,8 @@ func (c *DirectConnect) DeleteInterconnectRequest(input *DeleteInterconnectInput
 		input = &DeleteInterconnectInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteInterconnectOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1135,9 +1121,8 @@ func (c *DirectConnect) DeleteVirtualInterfaceRequest(input *DeleteVirtualInterf
 		input = &DeleteVirtualInterfaceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteVirtualInterfaceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1206,9 +1191,8 @@ func (c *DirectConnect) DescribeConnectionLoaRequest(input *DescribeConnectionLo
 		input = &DescribeConnectionLoaInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeConnectionLoaOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1283,9 +1267,8 @@ func (c *DirectConnect) DescribeConnectionsRequest(input *DescribeConnectionsInp
 		input = &DescribeConnectionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Connections{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1356,9 +1339,8 @@ func (c *DirectConnect) DescribeConnectionsOnInterconnectRequest(input *Describe
 		input = &DescribeConnectionsOnInterconnectInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &Connections{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1429,9 +1411,8 @@ func (c *DirectConnect) DescribeInterconnectLoaRequest(input *DescribeInterconne
 		input = &DescribeInterconnectLoaInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeInterconnectLoaOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1506,9 +1487,8 @@ func (c *DirectConnect) DescribeInterconnectsRequest(input *DescribeInterconnect
 		input = &DescribeInterconnectsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeInterconnectsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1579,9 +1559,8 @@ func (c *DirectConnect) DescribeLocationsRequest(input *DescribeLocationsInput) 
 		input = &DescribeLocationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeLocationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1652,9 +1631,8 @@ func (c *DirectConnect) DescribeTagsRequest(input *DescribeTagsInput) (req *requ
 		input = &DescribeTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1723,9 +1701,8 @@ func (c *DirectConnect) DescribeVirtualGatewaysRequest(input *DescribeVirtualGat
 		input = &DescribeVirtualGatewaysInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeVirtualGatewaysOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1800,9 +1777,8 @@ func (c *DirectConnect) DescribeVirtualInterfacesRequest(input *DescribeVirtualI
 		input = &DescribeVirtualInterfacesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeVirtualInterfacesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1882,9 +1858,8 @@ func (c *DirectConnect) TagResourceRequest(input *TagResourceInput) (req *reques
 		input = &TagResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &TagResourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1965,9 +1940,8 @@ func (c *DirectConnect) UntagResourceRequest(input *UntagResourceInput) (req *re
 		input = &UntagResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UntagResourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

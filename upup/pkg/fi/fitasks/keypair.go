@@ -105,7 +105,7 @@ func (e *Keypair) normalize(c *fi.Context) error {
 
 	for _, task := range e.AlternateNameTasks {
 		if hasAddress, ok := task.(fi.HasAddress); ok {
-			address, err := hasAddress.FindAddress(c)
+			address, err := hasAddress.FindIPAddress(c)
 			if err != nil {
 				return fmt.Errorf("error finding address for %v: %v", task, err)
 			}
@@ -153,6 +153,8 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	} else if changes != nil {
 		if changes.AlternateNames != nil {
 			createCertificate = true
+		} else if changes.Subject != "" {
+			createCertificate = true
 		} else {
 			glog.Warningf("Ignoring changes in key: %v", fi.DebugAsJsonString(changes))
 		}
@@ -161,8 +163,22 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	if createCertificate {
 		glog.V(2).Infof("Creating PKI keypair %q", name)
 
-		// TODO: Reuse private key if already exists?
-		cert, _, err := c.Keystore.CreateKeypair(name, template)
+		cert, privateKey, err := c.Keystore.FindKeypair(name)
+		if err != nil {
+			return err
+		}
+
+		// We always reuse the private key if it exists,
+		// if we change keys we often have to regenerate e.g. the service accounts
+		// TODO: Eventually rotate keys / don't always reuse?
+		if privateKey == nil {
+			privateKey, err = fi.GeneratePrivateKey()
+			if err != nil {
+				return err
+			}
+		}
+
+		cert, err = c.Keystore.CreateKeypair(name, template, privateKey)
 		if err != nil {
 			return err
 		}

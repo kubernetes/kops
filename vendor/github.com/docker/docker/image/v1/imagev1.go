@@ -3,7 +3,6 @@ package v1
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"regexp"
 	"strings"
 
@@ -11,7 +10,7 @@ import (
 	"github.com/docker/distribution/digest"
 	"github.com/docker/docker/image"
 	"github.com/docker/docker/layer"
-	"github.com/docker/engine-api/types/versions"
+	"github.com/docker/docker/pkg/version"
 )
 
 var validHex = regexp.MustCompile(`^([a-f0-9]{64})$`)
@@ -19,7 +18,7 @@ var validHex = regexp.MustCompile(`^([a-f0-9]{64})$`)
 // noFallbackMinVersion is the minimum version for which v1compatibility
 // information will not be marshaled through the Image struct to remove
 // blank fields.
-var noFallbackMinVersion = "1.8.3"
+var noFallbackMinVersion = version.Version("1.8.3")
 
 // HistoryFromConfig creates a History struct from v1 configuration JSON
 func HistoryFromConfig(imageJSON []byte, emptyLayer bool) (image.History, error) {
@@ -77,7 +76,7 @@ func MakeConfigFromV1Config(imageJSON []byte, rootfs *image.RootFS, history []im
 		return nil, err
 	}
 
-	useFallback := versions.LessThan(dver.DockerVersion, noFallbackMinVersion)
+	useFallback := version.Version(dver.DockerVersion).LessThan(noFallbackMinVersion)
 
 	if useFallback {
 		var v1Image image.V1Image
@@ -119,15 +118,8 @@ func MakeV1ConfigFromConfig(img *image.Image, v1ID, parentV1ID string, throwaway
 	}
 
 	// Delete fields that didn't exist in old manifest
-	imageType := reflect.TypeOf(img).Elem()
-	for i := 0; i < imageType.NumField(); i++ {
-		f := imageType.Field(i)
-		jsonName := strings.Split(f.Tag.Get("json"), ",")[0]
-		// Parent is handled specially below.
-		if jsonName != "" && jsonName != "parent" {
-			delete(configAsMap, jsonName)
-		}
-	}
+	delete(configAsMap, "rootfs")
+	delete(configAsMap, "history")
 	configAsMap["id"] = rawJSON(v1ID)
 	if parentV1ID != "" {
 		configAsMap["parent"] = rawJSON(parentV1ID)

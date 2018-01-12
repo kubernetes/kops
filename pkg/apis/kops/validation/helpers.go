@@ -17,7 +17,7 @@ limitations under the License.
 package validation
 
 import (
-	"k8s.io/kubernetes/pkg/util/validation/field"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"net"
 	"net/url"
 )

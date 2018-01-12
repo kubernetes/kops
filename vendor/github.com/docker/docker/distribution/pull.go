@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/docker/api"
 	"github.com/docker/docker/distribution/metadata"
 	"github.com/docker/docker/distribution/xfer"
@@ -28,7 +27,7 @@ type ImagePullConfig struct {
 	ProgressOutput progress.Output
 	// RegistryService is the registry service to use for TLS configuration
 	// and endpoint lookup.
-	RegistryService registry.Service
+	RegistryService *registry.Service
 	// ImageEventLogger notifies events for a given image
 	ImageEventLogger func(id, name, action string)
 	// MetadataStore is the storage backend for distribution-specific
@@ -85,7 +84,7 @@ func Pull(ctx context.Context, ref reference.Named, imagePullConfig *ImagePullCo
 	}
 
 	// makes sure name is not empty or `scratch`
-	if err := ValidateRepoName(repoInfo.Name()); err != nil {
+	if err := validateRepoName(repoInfo.Name()); err != nil {
 		return err
 	}
 
@@ -98,7 +97,7 @@ func Pull(ctx context.Context, ref reference.Named, imagePullConfig *ImagePullCo
 		lastErr error
 
 		// discardNoSupportErrors is used to track whether an endpoint encountered an error of type registry.ErrNoSupport
-		// By default it is false, which means that if an ErrNoSupport error is encountered, it will be saved in lastErr.
+		// By default it is false, which means that if a ErrNoSupport error is encountered, it will be saved in lastErr.
 		// As soon as another kind of error is encountered, discardNoSupportErrors is set to true, avoiding the saving of
 		// any subsequent ErrNoSupport errors in lastErr.
 		// It's needed for pull-by-digest on v1 endpoints: if there are only v1 endpoints configured, the error should be
@@ -194,8 +193,8 @@ func writeStatus(requestedTag string, out progress.Output, layersDownloaded bool
 	}
 }
 
-// ValidateRepoName validates the name of a repository.
-func ValidateRepoName(name string) error {
+// validateRepoName validates the name of a repository.
+func validateRepoName(name string) error {
 	if name == "" {
 		return fmt.Errorf("Repository name can't be empty")
 	}
@@ -203,23 +202,4 @@ func ValidateRepoName(name string) error {
 		return fmt.Errorf("'%s' is a reserved name", api.NoBaseImageSpecifier)
 	}
 	return nil
-}
-
-func addDigestReference(store reference.Store, ref reference.Named, dgst digest.Digest, imageID image.ID) error {
-	dgstRef, err := reference.WithDigest(ref, dgst)
-	if err != nil {
-		return err
-	}
-
-	if oldTagImageID, err := store.Get(dgstRef); err == nil {
-		if oldTagImageID != imageID {
-			// Updating digests not supported by reference store
-			logrus.Errorf("Image ID for digest %s changed from %s to %s, cannot update", dgst.String(), oldTagImageID, imageID)
-		}
-		return nil
-	} else if err != reference.ErrDoesNotExist {
-		return err
-	}
-
-	return store.AddDigest(dgstRef, imageID, true)
 }

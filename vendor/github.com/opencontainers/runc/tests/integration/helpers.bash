@@ -28,6 +28,12 @@ KERNEL_MINOR="${KERNEL_MINOR%%.*}"
 # Root state path.
 ROOT="$BATS_TMPDIR/runc"
 
+# Cgroup mount
+CGROUP_BASE_PATH=$(grep "cgroup"  /proc/self/mountinfo | gawk 'toupper($NF) ~ /\<MEMORY\>/ { print $5; exit }')
+
+# CONFIG_MEMCG_KMEM support
+KMEM="${CGROUP_BASE_PATH}/memory.kmem.limit_in_bytes"
+
 # Wrapper for runc.
 function runc() {
   run __runc "$@"
@@ -56,6 +62,11 @@ function requires() {
 		case $var in
 			criu)
 				if [ ! -e "$CRIU" ]; then
+					skip "Test requires ${var}."
+				fi
+				;;
+			cgroups_kmem)
+				if [ ! -e "$KMEM" ]; then
 					skip "Test requires ${var}."
 				fi
 				;;

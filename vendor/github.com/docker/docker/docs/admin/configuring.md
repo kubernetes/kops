@@ -22,10 +22,10 @@ or `systemd` to manage the `docker` daemon's start and stop.
 
 ### Running the docker daemon directly
 
-The `docker` daemon can be run directly using the `dockerd` command. By default it listens on
+The `docker` daemon can be run directly using the `docker daemon` command. By default it listens on
 the Unix socket `unix:///var/run/docker.sock`
 
-    $ dockerd
+    $ docker daemon
 
     INFO[0000] +job init_networkdriver()
     INFO[0000] +job serveapi(unix:///var/run/docker.sock)
@@ -48,9 +48,9 @@ Some of the daemon's options are:
 | `--tls=false`         | Enable or disable TLS. By default, this is false.         |
 
 
-Here is an example of running the `docker` daemon with configuration options:
+Here is a an example of running the `docker` daemon with configuration options:
 
-    $ dockerd -D --tls=true --tlscert=/var/docker/server.pem --tlskey=/var/docker/serverkey.pem -H tcp://192.168.59.3:2376
+    $ docker daemon -D --tls=true --tlscert=/var/docker/server.pem --tlskey=/var/docker/serverkey.pem -H tcp://192.168.59.3:2376
 
 These options :
 
@@ -58,7 +58,7 @@ These options :
 - Set `tls` to true with the server certificate and key specified using `--tlscert` and `--tlskey` respectively
 - Listen for connections on `tcp://192.168.59.3:2376`
 
-The command line reference has the [complete list of daemon flags](../reference/commandline/dockerd.md)
+The command line reference has the [complete list of daemon flags](../reference/commandline/daemon.md)
 with explanations.
 
 ### Daemon debugging
@@ -137,7 +137,7 @@ These options :
 - Set `tls` to true with the server certificate and key specified using `--tlscert` and `--tlskey` respectively
 - Listen for connections on `tcp://192.168.59.3:2376`
 
-The command line reference has the [complete list of daemon flags](../reference/commandline/dockerd.md)
+The command line reference has the [complete list of daemon flags](../reference/commandline/daemon.md)
 with explanations.
 
 
@@ -228,7 +228,7 @@ an empty configuration followed by a new one as follows:
 ```
 [Service]
 ExecStart=
-ExecStart=/usr/bin/dockerd -H fd:// -D --tls=true --tlscert=/var/docker/server.pem --tlskey=/var/docker/serverkey.pem -H tcp://192.168.59.3:2376
+ExecStart=/usr/bin/docker daemon -H fd:// -D --tls=true --tlscert=/var/docker/server.pem --tlskey=/var/docker/serverkey.pem -H tcp://192.168.59.3:2376
 ```
 
 These options :
@@ -237,7 +237,7 @@ These options :
 - Set `tls` to true with the server certificate and key specified using `--tlscert` and `--tlskey` respectively
 - Listen for connections on `tcp://192.168.59.3:2376`
 
-The command line reference has the [complete list of daemon flags](../reference/commandline/dockerd.md)
+The command line reference has the [complete list of daemon flags](../reference/commandline/daemon.md)
 with explanations.
 
 6. Save and close the file.
@@ -278,16 +278,3 @@ be viewed using `journalctl -u docker`
     May 06 00:22:06 localhost.localdomain docker[2495]: time="2015-05-06T00:22:06Z" level="info" msg="-job acceptconnections() = OK (0)"
 
 _Note: Using and configuring journal is an advanced topic and is beyond the scope of this article._
-
-
-### Daemonless Containers
-
-Starting with Docker 1.12 containers can run without Docker or containerd running.  This allows the 
-Docker daemon to exit, be upgraded, or recover from a crash without affecting running containers 
-on the system.  To enable this functionality you need to add the `--live-restore` flag when
-launching `dockerd`.  This will ensure that Docker does not kill containers on graceful shutdown or
-on restart leaving the containers running.
-
-While the Docker daemon is down logging will still be captured, however, it will be capped at the kernel's pipe buffer size before the buffer fills up, blocking the process.
-Docker will need to be restarted to flush these buffers.
-You can modify the kernel's buffer size by changing `/proc/sys/fs/pipe-max-size`.

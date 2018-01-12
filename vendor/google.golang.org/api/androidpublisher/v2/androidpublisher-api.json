@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/kcmli-0AhQgKCzcLiKZ8WixyuKk\"",
+ "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/lK1rSeSt4REctli37J8Co4N4a5s\"",
  "discoveryVersion": "v1",
  "id": "androidpublisher:v2",
  "name": "androidpublisher",
  "canonicalName": "Android Publisher",
  "version": "v2",
- "revision": "20160516",
+ "revision": "20161017",
  "title": "Google Play Developer API",
  "description": "Lets Android application developers access their Google Play accounts.",
  "ownerDomain": "google.com",
@@ -219,6 +219,26 @@
     "userComment": {
      "$ref": "UserComment",
      "description": "A comment from a user."
+    }
+   }
+  },
+  "DeobfuscationFile": {
+   "id": "DeobfuscationFile",
+   "type": "object",
+   "description": "Represents a deobfuscation file.",
+   "properties": {
+    "symbolType": {
+     "type": "string",
+     "description": "The type of the deobfuscation file."
+    }
+   }
+  },
+  "DeobfuscationFilesUploadResponse": {
+   "id": "DeobfuscationFilesUploadResponse",
+   "type": "object",
+   "properties": {
+    "deobfuscationFile": {
+     "$ref": "DeobfuscationFile"
     }
    }
   },
@@ -881,7 +901,7 @@
    "properties": {
     "desiredExpiryTimeMillis": {
      "type": "string",
-     "description": "The desired next expiry time for the subscription in milliseconds since Epoch. The given time must be after the current expiry time for the subscription.",
+     "description": "The desired next expiry time to assign to the subscription, in milliseconds since the Epoch. The given time must be later/greater than the current expiry time for the subscription.",
      "format": "int64"
     },
     "expectedExpiryTimeMillis": {
@@ -902,7 +922,7 @@
     },
     "cancelReason": {
      "type": "integer",
-     "description": "The cancel reason of the subscription, if the subscription is not auto renewing. Possible values are:  \n- User cancelled the subscription \n- Subscription was cancelled by the system, for example because of a billing problem",
+     "description": "The reason why a subscription was cancelled or is not auto-renewing. Possible values are:  \n- User cancelled the subscription \n- Subscription was cancelled by the system, for example because of a billing problem",
      "format": "int32"
     },
     "countryCode": {
@@ -915,7 +935,7 @@
     },
     "expiryTimeMillis": {
      "type": "string",
-     "description": "Time at which the subscription will expire, in milliseconds since Epoch.",
+     "description": "Time at which the subscription will expire, in milliseconds since the Epoch.",
      "format": "int64"
     },
     "kind": {
@@ -930,7 +950,7 @@
     },
     "priceAmountMicros": {
      "type": "string",
-     "description": "Price of the subscription, not including tax. Price is expressed in micro-units, where 1,000,000 micro-units equal one unit of the currency. For example, if the subscription price is €1.99, price_amount_micros is 1990000.",
+     "description": "Price of the subscription, not including tax. Price is expressed in micro-units, where 1,000,000 micro-units represents one unit of the currency. For example, if the subscription price is €1.99, price_amount_micros is 1990000.",
      "format": "int64"
     },
     "priceCurrencyCode": {
@@ -939,7 +959,7 @@
     },
     "startTimeMillis": {
      "type": "string",
-     "description": "Time at which the subscription was granted, in milliseconds since Epoch.",
+     "description": "Time at which the subscription was granted, in milliseconds since the Epoch.",
      "format": "int64"
     }
    }
@@ -1603,6 +1623,77 @@
          "resumable": {
           "multipart": true,
           "path": "/resumable/upload/androidpublisher/v2/applications/{packageName}/edits/{editId}/apks"
+         }
+        }
+       }
+      }
+     }
+    },
+    "deobfuscationfiles": {
+     "methods": {
+      "upload": {
+       "id": "androidpublisher.edits.deobfuscationfiles.upload",
+       "path": "{packageName}/edits/{editId}/apks/{apkVersionCode}/deobfuscationFiles/{deobfuscationFileType}",
+       "httpMethod": "POST",
+       "description": "Uploads the deobfuscation file of the specified APK. If a deobfuscation file already exists, it will be replaced.",
+       "parameters": {
+        "apkVersionCode": {
+         "type": "integer",
+         "description": "The version code of the APK whose deobfuscation file is being uploaded.",
+         "required": true,
+         "format": "int32",
+         "location": "path"
+        },
+        "deobfuscationFileType": {
+         "type": "string",
+         "required": true,
+         "enum": [
+          "proguard"
+         ],
+         "enumDescriptions": [
+          ""
+         ],
+         "location": "path"
+        },
+        "editId": {
+         "type": "string",
+         "description": "Unique identifier for this edit.",
+         "required": true,
+         "location": "path"
+        },
+        "packageName": {
+         "type": "string",
+         "description": "Unique identifier of the Android app for which the deobfuscatiuon files are being uploaded; for example, \"com.spiffygame\".",
+         "required": true,
+         "location": "path"
+        }
+       },
+       "parameterOrder": [
+        "packageName",
+        "editId",
+        "apkVersionCode",
+        "deobfuscationFileType"
+       ],
+       "response": {
+        "$ref": "DeobfuscationFilesUploadResponse"
+       },
+       "scopes": [
+        "https://www.googleapis.com/auth/androidpublisher"
+       ],
+       "supportsMediaUpload": true,
+       "mediaUpload": {
+        "accept": [
+         "application/octet-stream"
+        ],
+        "maxSize": "300MB",
+        "protocols": {
+         "simple": {
+          "multipart": true,
+          "path": "/upload/androidpublisher/v2/applications/{packageName}/edits/{editId}/apks/{apkVersionCode}/deobfuscationFiles/{deobfuscationFileType}"
+         },
+         "resumable": {
+          "multipart": true,
+          "path": "/resumable/upload/androidpublisher/v2/applications/{packageName}/edits/{editId}/apks/{apkVersionCode}/deobfuscationFiles/{deobfuscationFileType}"
          }
         }
        }

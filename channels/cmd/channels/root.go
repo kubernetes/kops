@@ -20,11 +20,10 @@ import (
 	goflag "flag"
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 type RootCmd struct {
@@ -79,24 +78,21 @@ func (c *RootCmd) AddCommand(cmd *cobra.Command) {
 	c.cobraCommand.AddCommand(cmd)
 }
 
-func (c *RootCmd) KubernetesClient() (*k8s_clientset.Clientset, error) {
-	config := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		clientcmd.NewDefaultClientConfigLoadingRules(),
-		&clientcmd.ConfigOverrides{})
-	clientConfig, err := config.ClientConfig()
-	if err != nil {
-		if clientcmd.IsEmptyConfig(err) {
-			glog.V(2).Infof("No client config found; will use default config")
-			clientConfig, err = clientcmd.DefaultClientConfig.ClientConfig()
-			if err != nil {
-				return nil, fmt.Errorf("cannot build default kube config settings: %v", err)
-			}
-		} else {
-			return nil, fmt.Errorf("cannot load kubecfg settings: %v", err)
-		}
+func (c *RootCmd) KubernetesClient() (kubernetes.Interface, error) {
+	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	loadingRules.DefaultClientConfig = &clientcmd.DefaultClientConfig
+
+	configOverrides := &clientcmd.ConfigOverrides{
+		ClusterDefaults: clientcmd.ClusterDefaults,
 	}
 
-	k8sClient, err := k8s_clientset.NewForConfig(clientConfig)
+	kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides)
+	config, err := kubeConfig.ClientConfig()
+	if err != nil {
+		return nil, fmt.Errorf("cannot load kubecfg settings: %v", err)
+	}
+
+	k8sClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, fmt.Errorf("cannot build kube client: %v", err)
 	}

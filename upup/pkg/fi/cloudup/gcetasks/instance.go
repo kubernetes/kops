@@ -25,7 +25,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"reflect"
 	"strings"
-	"time"
 )
 
 var scopeAliases map[string]string
@@ -37,10 +36,10 @@ type Instance struct {
 	Tags        []string
 	Preemptible *bool
 	Image       *string
-	Disks       map[string]*PersistentDisk
+	Disks       map[string]*Disk
 
 	CanIPForward *bool
-	IPAddress    *IPAddress
+	IPAddress    *Address
 	Subnet       *Subnet
 
 	Scopes []string
@@ -91,7 +90,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 				if err != nil {
 					return nil, fmt.Errorf("error querying for address %q: %v", ac.NatIP, err)
 				} else if len(addr.Items) != 0 {
-					actual.IPAddress = &IPAddress{Name: &addr.Items[0].Name}
+					actual.IPAddress = &Address{Name: &addr.Items[0].Name}
 				} else {
 					return nil, fmt.Errorf("address not found %q: %v", ac.NatIP, err)
 				}
@@ -105,7 +104,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		}
 	}
 
-	actual.Disks = make(map[string]*PersistentDisk)
+	actual.Disks = make(map[string]*Disk)
 	for i, disk := range r.Disks {
 		if i == 0 {
 			source := disk.Source
@@ -131,7 +130,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 				return nil, fmt.Errorf("unable to parse disk source URL: %q", disk.Source)
 			}
 
-			actual.Disks[disk.DeviceName] = &PersistentDisk{Name: &url.Name}
+			actual.Disks[disk.DeviceName] = &Disk{Name: &url.Name}
 		}
 	}
 
@@ -183,7 +182,7 @@ func scopeToShortForm(s string) string {
 	return s
 }
 
-func (e *Instance) mapToGCE(project string, ipAddressResolver func(*IPAddress) (*string, error)) (*compute.Instance, error) {
+func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*string, error)) (*compute.Instance, error) {
 	zone := *e.Zone
 
 	var scheduling *compute.Scheduling
@@ -313,8 +312,8 @@ func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error
 	project := cloud.Project
 	zone := *e.Zone
 
-	ipAddressResolver := func(ip *IPAddress) (*string, error) {
-		return ip.Address, nil
+	ipAddressResolver := func(ip *Address) (*string, error) {
+		return ip.IPAddress, nil
 	}
 
 	i, err := e.mapToGCE(project, ipAddressResolver)
@@ -339,8 +338,7 @@ func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error
 				return fmt.Errorf("error setting metadata on instance: %v", err)
 			}
 
-			err = waitCompletion(cloud.Compute, project, op)
-			if err != nil {
+			if err := cloud.WaitForOp(op); err != nil {
 				return fmt.Errorf("error setting metadata on instance: %v", err)
 			}
 
@@ -351,46 +349,6 @@ func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error
 			glog.Errorf("Cannot apply changes to Instance: %v", changes)
 			return fmt.Errorf("Cannot apply changes to Instance: %v", changes)
 		}
-	}
-
-	return nil
-}
-
-func waitCompletion(c *compute.Service, project string, op *compute.Operation) error {
-	zone := lastComponent(op.Zone)
-	var status *compute.Operation
-	for {
-		var err error
-		status, err = c.ZoneOperations.Get(project, zone, op.Name).Do()
-		if err != nil {
-			return fmt.Errorf("error fetching operation status: %v", err)
-		}
-		done := false
-		switch status.Status {
-		case "DONE":
-			done = true
-		case "PENDING", "RUNNING":
-			glog.V(4).Infof("operation status=%v", status.Status)
-		}
-
-		if done {
-			break
-		}
-
-		// TODO: Exponential backoff or similar
-		time.Sleep(1 * time.Second)
-	}
-
-	if status.Error != nil {
-		for _, e := range status.Error.Errors {
-			glog.Warningf("operation failed with error: %v", e)
-		}
-
-		return fmt.Errorf("operation failed: %v", status.Error.Errors[0].Message)
-	}
-
-	if status.Warnings != nil {
-		glog.Warningf("operation completed with warnings: %v", status.Warnings)
 	}
 
 	return nil
@@ -436,7 +394,7 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 	project := t.Project
 
 	// This is a "little" hacky...
-	ipAddressResolver := func(ip *IPAddress) (*string, error) {
+	ipAddressResolver := func(ip *Address) (*string, error) {
 		tf := "${google_compute_address." + *ip.Name + ".address}"
 		return &tf, nil
 	}

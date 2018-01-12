@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"io"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/kutil"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
 type ToolboxConvertImportedOptions struct {
@@ -82,7 +82,7 @@ func RunToolboxConvertImported(f *util.Factory, out io.Writer, options *ToolboxC
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
+	list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

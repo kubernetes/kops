@@ -64,7 +64,7 @@ func (bs *blobStore) Put(ctx context.Context, mediaType string, p []byte) (distr
 		// content already present
 		return desc, nil
 	} else if err != distribution.ErrBlobUnknown {
-		context.GetLogger(ctx).Errorf("blobStore: error stating content (%v): %v", dgst, err)
+		context.GetLogger(ctx).Errorf("blobStore: error stating content (%v): %#v", dgst, err)
 		// real error, return it
 		return distribution.Descriptor{}, err
 	}
@@ -75,6 +75,7 @@ func (bs *blobStore) Put(ctx context.Context, mediaType string, p []byte) (distr
 	}
 
 	// TODO(stevvooe): Write out mediatype here, as well.
+
 	return distribution.Descriptor{
 		Size: int64(len(p)),
 

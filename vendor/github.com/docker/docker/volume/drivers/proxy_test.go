@@ -52,13 +52,8 @@ func TestVolumeRequestError(t *testing.T) {
 		fmt.Fprintln(w, `{"Err": "Cannot get volume"}`)
 	})
 
-	mux.HandleFunc("/VolumeDriver.Capabilities", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/vnd.docker.plugins.v1+json")
-		http.Error(w, "error", 500)
-	})
-
 	u, _ := url.Parse(server.URL)
-	client, err := plugins.NewClient("tcp://"+u.Host, &tlsconfig.Options{InsecureSkipVerify: true})
+	client, err := plugins.NewClient("tcp://"+u.Host, tlsconfig.Options{InsecureSkipVerify: true})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -73,7 +68,7 @@ func TestVolumeRequestError(t *testing.T) {
 		t.Fatalf("Unexpected error: %v\n", err)
 	}
 
-	_, err = driver.Mount("volume", "123")
+	_, err = driver.Mount("volume")
 	if err == nil {
 		t.Fatal("Expected error, was nil")
 	}
@@ -82,7 +77,7 @@ func TestVolumeRequestError(t *testing.T) {
 		t.Fatalf("Unexpected error: %v\n", err)
 	}
 
-	err = driver.Unmount("volume", "123")
+	err = driver.Unmount("volume")
 	if err == nil {
 		t.Fatal("Expected error, was nil")
 	}
@@ -123,10 +118,5 @@ func TestVolumeRequestError(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "Cannot get volume") {
 		t.Fatalf("Unexpected error: %v\n", err)
-	}
-
-	_, err = driver.Capabilities()
-	if err == nil {
-		t.Fatal(err)
 	}
 }

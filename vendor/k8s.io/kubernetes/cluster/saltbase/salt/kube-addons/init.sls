@@ -88,6 +88,22 @@ addon-dir-create:
     - group: root
     - dir_mode: 755
     - makedirs: True
+
+/etc/kubernetes/addons/dns/kubedns-sa.yaml:
+  file.managed:
+    - source: salt://kube-addons/dns/kubedns-sa.yaml
+    - user: root
+    - group: root
+    - file_mode: 644
+    - makedirs: True
+
+/etc/kubernetes/addons/dns/kubedns-cm.yaml:
+  file.managed:
+    - source: salt://kube-addons/dns/kubedns-cm.yaml
+    - user: root
+    - group: root
+    - file_mode: 644
+    - makedirs: True
 {% endif %}
 
 {% if pillar.get('enable_dns_horizontal_autoscaler', '').lower() == 'true'
@@ -161,10 +177,10 @@ addon-dir-create:
     - file_mode: 644
 {% endif %}
 
-{% if pillar.get('enable_node_problem_detector', '').lower() == 'true' %}
-/etc/kubernetes/addons/node-problem-detector/node-problem-detector.yaml:
+{% if pillar.get('enable_node_problem_detector', '').lower() == 'daemonset' %}
+/etc/kubernetes/addons/node-problem-detector/npd.yaml:
   file.managed:
-    - source: salt://kube-addons/node-problem-detector/node-problem-detector.yaml
+    - source: salt://kube-addons/node-problem-detector/npd.yaml
     - user: root
     - group: root
     - file_mode: 644

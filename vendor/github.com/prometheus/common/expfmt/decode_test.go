@@ -102,14 +102,9 @@ func TestProtoDecoder(t *testing.T) {
 	scenarios := []struct {
 		in       string
 		expected model.Vector
-		fail     bool
 	}{
 		{
 			in: "",
-		},
-		{
-			in:   "\x8f\x01\n\rrequest_count\x12\x12Number of requests\x18\x00\"0\n#\n\x0fsome_!abel_name\x12\x10some_label_value\x1a\t\t\x00\x00\x00\x00\x00\x00E\xc0\"6\n)\n\x12another_label_name\x12\x13another_label_value\x1a\t\t\x00\x00\x00\x00\x00\x00U@",
-			fail: true,
 		},
 		{
 			in: "\x8f\x01\n\rrequest_count\x12\x12Number of requests\x18\x00\"0\n#\n\x0fsome_label_name\x12\x10some_label_value\x1a\t\t\x00\x00\x00\x00\x00\x00E\xc0\"6\n)\n\x12another_label_name\x12\x13another_label_value\x1a\t\t\x00\x00\x00\x00\x00\x00U@",
@@ -284,12 +279,6 @@ func TestProtoDecoder(t *testing.T) {
 			var smpls model.Vector
 			err := dec.Decode(&smpls)
 			if err == io.EOF {
-				break
-			}
-			if scenario.fail {
-				if err == nil {
-					t.Fatal("Expected error but got none")
-				}
 				break
 			}
 			if err != nil {

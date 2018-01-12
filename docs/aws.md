@@ -112,14 +112,16 @@ domain in Route53.  To do this you should:
   already done this you can also [get the values](ns.md))
 
 ```bash
-ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.example.com --caller-reference $ID | jq .DelegationSet.NameServers
+# Note: This example assumes you have jq installed locally.
+ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.example.com --caller-reference $ID | \
+    jq .DelegationSet.NameServers
 ```
 
 * Note your **PARENT** hosted zone id
 
 ```bash
 # Note: This example assumes you have jq installed locally.
-aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="subdomain.example.com.") | .Id'
+aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="example.com.") | .Id'
 ```
 
 * Create a new JSON file with your values (`subdomain.json`)
@@ -188,7 +190,7 @@ ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.example.com --c
 ```
 
 * You will now go to your registrars page and log in. You will need to create a
-  new **SUBDOMAIN**, and use the 4 NS records listed above for the new
+  new **SUBDOMAIN**, and use the 4 NS records received from the above command for the new
   **SUBDOMAIN**. This **MUST** be done in order to use your cluster. Do **NOT**
   change your top level NS record, or you might take your site offline.
 

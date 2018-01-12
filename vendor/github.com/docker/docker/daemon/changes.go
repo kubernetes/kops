@@ -11,5 +11,5 @@ func (daemon *Daemon) ContainerChanges(name string) ([]archive.Change, error) {
 
 	container.Lock()
 	defer container.Unlock()
-	return container.RWLayer.Changes()
+	return daemon.changes(container)
 }

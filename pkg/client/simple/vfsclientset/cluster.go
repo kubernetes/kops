@@ -19,14 +19,13 @@ package vfsclientset
 import (
 	"fmt"
 	"github.com/golang/glog"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/util/pkg/vfs"
-	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/apis/meta/v1"
 	"os"
 	"strings"
 	"time"
@@ -59,7 +58,7 @@ func (c *ClusterVFS) ConfigBase(clusterName string) (vfs.Path, error) {
 	return configPath, nil
 }
 
-func (c *ClusterVFS) List(options k8sapi.ListOptions) (*api.ClusterList, error) {
+func (c *ClusterVFS) List(options metav1.ListOptions) (*api.ClusterList, error) {
 	names, err := c.listNames()
 	if err != nil {
 		return nil, err
@@ -92,7 +91,7 @@ func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 	}
 
 	if c.ObjectMeta.CreationTimestamp.IsZero() {
-		c.ObjectMeta.CreationTimestamp = v1.NewTime(time.Now().UTC())
+		c.ObjectMeta.CreationTimestamp = metav1.NewTime(time.Now().UTC())
 	}
 
 	clusterName := c.ObjectMeta.Name

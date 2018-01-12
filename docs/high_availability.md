@@ -29,8 +29,9 @@ In short:
 
 ## Using Kops HA
 
-We can create HA clusters using kops, but only it's important to note that you must plan for this at time of cluster creation.  Currently it is not possible to change
-the etcd cluster size (i.e. we cannot change an HA cluster to be non-HA, or a non-HA cluster to be HA.) [Issue #1512](https://github.com/kubernetes/kops/issues/1512)
+We can create HA clusters using kops, but only it's important to note that migrating from a single-master
+cluster to a multi-master cluster is a complicated operation (described [here](./single-to-multi-master.md)).
+If possible, try to plan this at time of cluster creation.
 
 When you first call `kops create cluster`, you specify the `--master-zones` flag listing the zones you want your masters
 to run in, for example:

@@ -12,6 +12,7 @@ import (
 
 	"encoding/json"
 
+	"github.com/opencontainers/runc/libcontainer"
 	"github.com/opencontainers/runc/libcontainer/utils"
 	"github.com/urfave/cli"
 )
@@ -21,6 +22,8 @@ const formatOptions = `table or json`
 // containerState represents the platform agnostic pieces relating to a
 // running container's status and state
 type containerState struct {
+	// Version is the OCI version for the container
+	Version string `json:"ociVersion"`
 	// ID is the container ID
 	ID string `json:"id"`
 	// InitProcessPid is the init process id in the parent namespace
@@ -29,6 +32,8 @@ type containerState struct {
 	Status string `json:"status"`
 	// Bundle is the path on the filesystem to the bundle
 	Bundle string `json:"bundle"`
+	// Rootfs is a path to a directory containing the container's root filesystem.
+	Rootfs string `json:"rootfs"`
 	// Created is the unix timestamp for the creation time of the container in UTC
 	Created time.Time `json:"created"`
 	// Annotations is the user defined annotations added to the config.
@@ -120,22 +125,31 @@ func getContainers(context *cli.Context) ([]containerState, error) {
 		if item.IsDir() {
 			container, err := factory.Load(item.Name())
 			if err != nil {
-				return nil, err
+				fmt.Fprintf(os.Stderr, "load container %s: %v\n", item.Name(), err)
+				continue
 			}
 			containerStatus, err := container.Status()
 			if err != nil {
-				return nil, err
+				fmt.Fprintf(os.Stderr, "status for %s: %v\n", item.Name(), err)
+				continue
 			}
 			state, err := container.State()
 			if err != nil {
-				return nil, err
+				fmt.Fprintf(os.Stderr, "state for %s: %v\n", item.Name(), err)
+				continue
+			}
+			pid := state.BaseState.InitProcessPid
+			if containerStatus == libcontainer.Stopped {
+				pid = 0
 			}
 			bundle, annotations := utils.Annotations(state.Config.Labels)
 			s = append(s, containerState{
+				Version:        state.BaseState.Config.Version,
 				ID:             state.BaseState.ID,
-				InitProcessPid: state.BaseState.InitProcessPid,
+				InitProcessPid: pid,
 				Status:         containerStatus.String(),
 				Bundle:         bundle,
+				Rootfs:         state.BaseState.Config.Rootfs,
 				Created:        state.BaseState.Created,
 				Annotations:    annotations,
 			})

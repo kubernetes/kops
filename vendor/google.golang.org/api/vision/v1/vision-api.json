@@ -118,7 +118,7 @@
           }
         },
         "error": {
-          "description": "If set, represents the error message for the operation.\nNote that filled-in mage annotations are guaranteed to be\ncorrect, even when \u003ccode\u003eerror\u003c/code\u003e is non-empty.",
+          "description": "If set, represents the error message for the operation.\nNote that filled-in image annotations are guaranteed to be\ncorrect, even when \u003ccode\u003eerror\u003c/code\u003e is non-empty.",
           "$ref": "Status"
         }
       },
@@ -153,7 +153,7 @@
           "type": "array",
           "items": {
             "additionalProperties": {
-              "description": "Properties of the object. Contains field @ype with type URL.",
+              "description": "Properties of the object. Contains field @type with type URL.",
               "type": "any"
             },
             "type": "object"
@@ -495,7 +495,7 @@
       "id": "Landmark"
     },
     "ImageContext": {
-      "description": "Image context.",
+      "description": "Image context and/or feature-specific parameters.",
       "type": "object",
       "properties": {
         "latLongRect": {
@@ -503,7 +503,7 @@
           "$ref": "LatLongRect"
         },
         "languageHints": {
-          "description": "List of languages to use for TEXT_DETECTION. In most cases, an empty value\nyields the best results since it enables automatic language detection. For\nlanguages based on the Latin alphabet, setting `language_hints` is not\nneeded. In rare cases, when the language of the text in the image is known,\nsetting a hint will help get better results (although it will be a\nsignificant hindrance if the hint is wrong). Text detection returns an\nerror if one or more of the specified languages is not one of the\n[supported\nlanguages](/translate/v2/translate-reference#supported_languages).",
+          "description": "List of languages to use for TEXT_DETECTION. In most cases, an empty value\nyields the best results since it enables automatic language detection. For\nlanguages based on the Latin alphabet, setting `language_hints` is not\nneeded. In rare cases, when the language of the text in the image is known,\nsetting a hint will help get better results (although it will be a\nsignificant hindrance if the hint is wrong). Text detection returns an\nerror if one or more of the specified languages is not one of the\n[supported\nlanguages](/vision/docs/languages).",
           "type": "array",
           "items": {
             "type": "string"
@@ -849,13 +849,14 @@
       "id": "Position"
     }
   },
-  "revision": "20160606",
+  "revision": "20161114",
   "basePath": "",
   "icons": {
     "x32": "http://www.google.com/images/icons/product/search-32.gif",
     "x16": "http://www.google.com/images/icons/product/search-16.gif"
   },
   "version_module": "True",
+  "canonicalName": "Vision",
   "discoveryVersion": "v1",
   "baseUrl": "https://vision.googleapis.com/",
   "name": "vision",

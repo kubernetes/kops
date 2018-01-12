@@ -51,9 +51,9 @@ common Ethernet switch; no more, no less.
 How mature is the code providing kernel namespaces and private
 networking? Kernel namespaces were introduced [between kernel version
 2.6.15 and
-2.6.26](http://man7.org/linux/man-pages/man7/namespaces.7.html).
-This means that since July 2008 (date of the 2.6.26 release
-), namespace code has been exercised and scrutinized on a large
+2.6.26](http://lxc.sourceforge.net/index.php/about/kernel-namespaces/).
+This means that since July 2008 (date of the 2.6.26 release, now 7 years
+ago), namespace code has been exercised and scrutinized on a large
 number of production systems. And there is more: the design and
 inspiration for the namespaces code are even older. Namespaces are
 actually an effort to reimplement the features of [OpenVZ](
@@ -106,7 +106,7 @@ arbitrary containers.
 For this reason, the REST API endpoint (used by the Docker CLI to
 communicate with the Docker daemon) changed in Docker 0.5.2, and now
 uses a UNIX socket instead of a TCP socket bound on 127.0.0.1 (the
-latter being prone to cross-site request forgery attacks if you happen to run
+latter being prone to cross-site-scripting attacks if you happen to run
 Docker directly on your local machine, outside of a VM). You can then
 use traditional UNIX permission checks to limit access to the control
 socket.
@@ -120,11 +120,13 @@ certificates](https.md).
 
 The daemon is also potentially vulnerable to other inputs, such as image
 loading from either disk with 'docker load', or from the network with
-'docker pull'. As of Docker 1.3.2, images are now extracted in a chrooted 
-subprocess on Linux/Unix platforms, being the first-step in a wider effort 
-toward privilege separation. As of Docker 1.10.0, all images are stored and 
-accessed by the cryptographic checksums of their contents, limiting the 
-possibility of an attacker causing a collision with an existing image.
+'docker pull'. This has been a focus of improvement in the community,
+especially for 'pull' security. While these overlap, it should be noted
+that 'docker load' is a mechanism for backup and restore and is not
+currently considered a secure mechanism for loading images. As of
+Docker 1.3.2, images are now extracted in a chrooted subprocess on
+Linux/Unix platforms, being the first-step in a wider effort toward
+privilege separation.
 
 Eventually, it is expected that the Docker daemon will run restricted
 privileges, delegating operations well-audited sub-processes,
@@ -247,7 +249,7 @@ to a non uid-0 user outside the container, which can help to mitigate the
 risks of container breakout. This facility is available but not enabled
 by default.
 
-Refer to the [daemon command](../reference/commandline/dockerd.md#daemon-user-namespace-options)
+Refer to the [daemon command](../reference/commandline/daemon.md#daemon-user-namespace-options)
 in the command line reference for more information on this feature.
 Additional information on the implementation of User Namespaces in Docker
 can be found in <a href="https://integratedcode.us/2015/10/13/user-namespaces-have-arrived-in-docker/" target="_blank">this blog post</a>.

@@ -5,7 +5,6 @@ description = "Specifies the Docker Registry v2 authentication"
 keywords = ["registry, on-prem, images, tags, repository, distribution, oauth2, advanced"]
 [menu.main]
 parent="smn_registry_ref"
-weight=102
 +++
 <![end-metadata]-->
 
@@ -171,12 +170,12 @@ grant_type=password&username=johndoe&password=A3ddj3w&service=hub.docker.io&clie
 HTTP/1.1 200 OK
 Content-Type: application/json
 
-{"refresh_token":"kas9Da81Dfa8","access_token":"eyJhbGciOiJFUzI1NiIsInR5","expires_in":900,"scope":""}
-```
+{"refresh_token":"kas9Da81Dfa8","access_token":"eyJhbGciOiJFUzI1NiIsInR5","expires_in":"900","scope":""}
+````
 
 #### Example refreshing an Access Token
 
-```
+````
 POST /token HTTP/1.1
 Host: auth.docker.io
 Content-Type: application/x-www-form-urlencoded
@@ -186,6 +185,6 @@ grant_type=refresh_token&refresh_token=kas9Da81Dfa8&service=registry-1.docker.io
 HTTP/1.1 200 OK
 Content-Type: application/json
 
-{"refresh_token":"kas9Da81Dfa8","access_token":"eyJhbGciOiJFUzI1NiIsInR5":"expires_in":900,"scope":"repository:samalba/my-app:pull,repository:samalba/my-app:push"}
-```
+{"refresh_token":"kas9Da81Dfa8","access_token":"eyJhbGciOiJFUzI1NiIsInR5":"expires_in":"900","scope":"repository:samalba/my-app:pull,repository:samalba/my-app:push"}
+````
 

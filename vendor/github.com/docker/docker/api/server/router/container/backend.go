@@ -4,20 +4,19 @@ import (
 	"io"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/docker/docker/api/types/backend"
 	"github.com/docker/docker/pkg/archive"
+	"github.com/docker/docker/pkg/version"
 	"github.com/docker/engine-api/types"
 	"github.com/docker/engine-api/types/container"
 )
 
 // execBackend includes functions to implement to provide exec functionality.
 type execBackend interface {
-	ContainerExecCreate(name string, config *types.ExecConfig) (string, error)
+	ContainerExecCreate(config *types.ExecConfig) (string, error)
 	ContainerExecInspect(id string) (*backend.ExecInspect, error)
 	ContainerExecResize(name string, height, width int) error
-	ContainerExecStart(ctx context.Context, name string, stdin io.ReadCloser, stdout io.Writer, stderr io.Writer) error
+	ContainerExecStart(name string, stdin io.ReadCloser, stdout io.Writer, stderr io.Writer) error
 	ExecExists(name string) (bool, error)
 }
 
@@ -32,26 +31,26 @@ type copyBackend interface {
 
 // stateBackend includes functions to implement to provide container state lifecycle functionality.
 type stateBackend interface {
-	ContainerCreate(config types.ContainerCreateConfig, validateHostname bool) (types.ContainerCreateResponse, error)
+	ContainerCreate(types.ContainerCreateConfig) (types.ContainerCreateResponse, error)
 	ContainerKill(name string, sig uint64) error
 	ContainerPause(name string) error
 	ContainerRename(oldName, newName string) error
 	ContainerResize(name string, height, width int) error
 	ContainerRestart(name string, seconds int) error
 	ContainerRm(name string, config *types.ContainerRmConfig) error
-	ContainerStart(name string, hostConfig *container.HostConfig, validateHostname bool) error
+	ContainerStart(name string, hostConfig *container.HostConfig) error
 	ContainerStop(name string, seconds int) error
 	ContainerUnpause(name string) error
-	ContainerUpdate(name string, hostConfig *container.HostConfig, validateHostname bool) ([]string, error)
+	ContainerUpdate(name string, hostConfig *container.HostConfig) ([]string, error)
 	ContainerWait(name string, timeout time.Duration) (int, error)
 }
 
 // monitorBackend includes functions to implement to provide containers monitoring functionality.
 type monitorBackend interface {
 	ContainerChanges(name string) ([]archive.Change, error)
-	ContainerInspect(name string, size bool, version string) (interface{}, error)
-	ContainerLogs(ctx context.Context, name string, config *backend.ContainerLogsConfig, started chan struct{}) error
-	ContainerStats(ctx context.Context, name string, config *backend.ContainerStatsConfig) error
+	ContainerInspect(name string, size bool, version version.Version) (interface{}, error)
+	ContainerLogs(name string, config *backend.ContainerLogsConfig, started chan struct{}) error
+	ContainerStats(name string, config *backend.ContainerStatsConfig) error
 	ContainerTop(name string, psArgs string) (*types.ContainerProcessList, error)
 
 	Containers(config *types.ContainerListOptions) ([]*types.Container, error)

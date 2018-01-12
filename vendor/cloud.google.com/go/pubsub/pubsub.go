@@ -39,10 +39,8 @@ const (
 const prodAddr = "https://pubsub.googleapis.com/"
 const userAgent = "gcloud-golang-pubsub/20151008"
 
-// Client is a Google Pub/Sub client scoped to a single project.
-//
-// Clients should be reused rather than being created as needed.
-// A Client may be shared by multiple goroutines.
+// Client is a Google Pub/Sub client, which may be used to perform Pub/Sub operations with a project.
+// It must be constructed via NewClient.
 type Client struct {
 	projectID string
 	s         service
@@ -82,15 +80,6 @@ func NewClient(ctx context.Context, projectID string, opts ...option.ClientOptio
 	}
 
 	return c, nil
-}
-
-// Close closes any resources held by the client.
-//
-// Close need not be called at program exit.
-func (c *Client) Close() error {
-	// Nothing now, but will close a connection when
-	// we move to gRPC.
-	return nil
 }
 
 func (c *Client) fullyQualifiedProjectName() string {

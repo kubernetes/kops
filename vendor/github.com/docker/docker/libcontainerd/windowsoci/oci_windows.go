@@ -4,7 +4,11 @@ package windowsoci
 // writing, Windows does not have a spec defined in opencontainers/specs,
 // hence this is an interim workaround. TODO Windows: FIXME @jhowardmsft
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/docker/go-connections/nat"
+)
 
 // WindowsSpec is the full specification for Windows containers.
 type WindowsSpec struct {
@@ -86,8 +90,6 @@ type Platform struct {
 	OS string `json:"os"`
 	// Arch is the architecture
 	Arch string `json:"arch"`
-	// OSVersion is the version of the operating system.
-	OSVersion string `json:"os.version,omitempty"`
 }
 
 // Mount specifies a mount for a container.
@@ -111,6 +113,15 @@ type HvRuntime struct {
 
 // Networking contains the platform specific network settings for the container
 type Networking struct {
+	// TODO Windows TP5. The following three fields are for 'legacy' non-
+	// libnetwork networking through HCS. They can be removed once TP4 is
+	// no longer supported. Also remove in libcontainerd\client_windows.go,
+	// function Create(), and in daemon\oci_windows.go, function CreateSpec()
+	MacAddress   string      `json:"mac,omitempty"`
+	Bridge       string      `json:"bridge,omitempty"`
+	PortBindings nat.PortMap `json:"port_bindings,omitempty"`
+	// End of TODO Windows TP5.
+
 	// List of endpoints to be attached to the container
 	EndpointList []string `json:"endpoints,omitempty"`
 }

@@ -1,12 +1,11 @@
 <!--[metadata]>
 +++
-title = "Registry Overview"
+title = "Docker Registry"
 description = "High-level overview of the Registry"
 keywords = ["registry, on-prem, images, tags, repository, distribution"]
-aliases = ["/registry/overview/"]
 [menu.main]
-parent="smn_registry"
-weight=1
+identifier="smn_registry"
+parent="mn_components"
 +++
 <![end-metadata]-->
 
@@ -29,7 +28,7 @@ You should use the Registry if you want to:
 
 Users looking for a zero maintenance, ready-to-go solution are encouraged to head-over to the [Docker Hub](https://hub.docker.com), which provides a free-to-use, hosted Registry, plus additional features (organization accounts, automated builds, and more).
 
-Users looking for a commercially supported version of the Registry should look into [Docker Trusted Registry](https://docs.docker.com/docker-trusted-registry/overview/).
+Users looking for a commercially supported version of the Registry should look into [Docker Trusted Registry](https://docs.docker.com/docker-trusted-registry/).
 
 ## Requirements
 

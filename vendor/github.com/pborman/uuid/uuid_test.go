@@ -112,7 +112,7 @@ func TestConstants(t *testing.T) {
 			t.Errorf("%x: %v: not a stringer", x, v)
 		} else if s := v.String(); s != tt.name {
 			v, _ := tt.c.(int)
-			t.Errorf("%x: Constant %T:%d gives %q, expected %q", x, tt.c, v, s, tt.name)
+			t.Errorf("%x: Constant %T:%d gives %q, expected %q\n", x, tt.c, v, s, tt.name)
 		}
 	}
 }
@@ -123,14 +123,14 @@ func TestRandomUUID(t *testing.T) {
 		uuid := NewRandom()
 		s := uuid.String()
 		if m[s] {
-			t.Errorf("NewRandom returned duplicated UUID %s", s)
+			t.Errorf("NewRandom returned duplicated UUID %s\n", s)
 		}
 		m[s] = true
 		if v, _ := uuid.Version(); v != 4 {
-			t.Errorf("Random UUID of version %s", v)
+			t.Errorf("Random UUID of version %s\n", v)
 		}
 		if uuid.Variant() != RFC4122 {
-			t.Errorf("Random UUID is variant %d", uuid.Variant())
+			t.Errorf("Random UUID is variant %d\n", uuid.Variant())
 		}
 	}
 }
@@ -140,19 +140,19 @@ func TestNew(t *testing.T) {
 	for x := 1; x < 32; x++ {
 		s := New()
 		if m[s] {
-			t.Errorf("New returned duplicated UUID %s", s)
+			t.Errorf("New returned duplicated UUID %s\n", s)
 		}
 		m[s] = true
 		uuid := Parse(s)
 		if uuid == nil {
-			t.Errorf("New returned %q which does not decode", s)
+			t.Errorf("New returned %q which does not decode\n", s)
 			continue
 		}
 		if v, _ := uuid.Version(); v != 4 {
-			t.Errorf("Random UUID of version %s", v)
+			t.Errorf("Random UUID of version %s\n", v)
 		}
 		if uuid.Variant() != RFC4122 {
-			t.Errorf("Random UUID is variant %d", uuid.Variant())
+			t.Errorf("Random UUID is variant %d\n", uuid.Variant())
 		}
 	}
 }
@@ -160,7 +160,7 @@ func TestNew(t *testing.T) {
 func clockSeq(t *testing.T, uuid UUID) int {
 	seq, ok := uuid.ClockSequence()
 	if !ok {
-		t.Fatalf("%s: invalid clock sequence", uuid)
+		t.Fatalf("%s: invalid clock sequence\n", uuid)
 	}
 	return seq
 }
@@ -179,7 +179,7 @@ func TestClockSeq(t *testing.T) {
 	uuid2 := NewUUID()
 
 	if clockSeq(t, uuid1) != clockSeq(t, uuid2) {
-		t.Errorf("clock sequence %d != %d", clockSeq(t, uuid1), clockSeq(t, uuid2))
+		t.Errorf("clock sequence %d != %d\n", clockSeq(t, uuid1), clockSeq(t, uuid2))
 	}
 
 	SetClockSequence(-1)
@@ -192,13 +192,13 @@ func TestClockSeq(t *testing.T) {
 		uuid2 = NewUUID()
 	}
 	if clockSeq(t, uuid1) == clockSeq(t, uuid2) {
-		t.Errorf("Duplicate clock sequence %d", clockSeq(t, uuid1))
+		t.Errorf("Duplicate clock sequence %d\n", clockSeq(t, uuid1))
 	}
 
 	SetClockSequence(0x1234)
 	uuid1 = NewUUID()
 	if seq := clockSeq(t, uuid1); seq != 0x1234 {
-		t.Errorf("%s: expected seq 0x1234 got 0x%04x", uuid1, seq)
+		t.Errorf("%s: expected seq 0x1234 got 0x%04x\n", uuid1, seq)
 	}
 }
 
@@ -213,15 +213,15 @@ func TestCoding(t *testing.T) {
 		0x5f, 0xfd, 0xce, 0x74, 0xfa, 0xd2,
 	}
 	if v := data.String(); v != text {
-		t.Errorf("%x: encoded to %s, expected %s", data, v, text)
+		t.Errorf("%x: encoded to %s, expected %s\n", data, v, text)
 	}
 	if v := data.URN(); v != urn {
-		t.Errorf("%x: urn is %s, expected %s", data, v, urn)
+		t.Errorf("%x: urn is %s, expected %s\n", data, v, urn)
 	}
 
 	uuid := Parse(text)
 	if !Equal(uuid, data) {
-		t.Errorf("%s: decoded to %s, expected %s", text, uuid, data)
+		t.Errorf("%s: decoded to %s, expected %s\n", text, uuid, data)
 	}
 }
 
@@ -230,30 +230,30 @@ func TestVersion1(t *testing.T) {
 	uuid2 := NewUUID()
 
 	if Equal(uuid1, uuid2) {
-		t.Errorf("%s:duplicate uuid", uuid1)
+		t.Errorf("%s:duplicate uuid\n", uuid1)
 	}
 	if v, _ := uuid1.Version(); v != 1 {
-		t.Errorf("%s: version %s expected 1", uuid1, v)
+		t.Errorf("%s: version %s expected 1\n", uuid1, v)
 	}
 	if v, _ := uuid2.Version(); v != 1 {
-		t.Errorf("%s: version %s expected 1", uuid2, v)
+		t.Errorf("%s: version %s expected 1\n", uuid2, v)
 	}
 	n1 := uuid1.NodeID()
 	n2 := uuid2.NodeID()
 	if !bytes.Equal(n1, n2) {
-		t.Errorf("Different nodes %x != %x", n1, n2)
+		t.Errorf("Different nodes %x != %x\n", n1, n2)
 	}
 	t1, ok := uuid1.Time()
 	if !ok {
-		t.Errorf("%s: invalid time", uuid1)
+		t.Errorf("%s: invalid time\n", uuid1)
 	}
 	t2, ok := uuid2.Time()
 	if !ok {
-		t.Errorf("%s: invalid time", uuid2)
+		t.Errorf("%s: invalid time\n", uuid2)
 	}
 	q1, ok := uuid1.ClockSequence()
 	if !ok {
-		t.Errorf("%s: invalid clock sequence", uuid1)
+		t.Errorf("%s: invalid clock sequence\n", uuid1)
 	}
 	q2, ok := uuid2.ClockSequence()
 	if !ok {
@@ -262,53 +262,11 @@ func TestVersion1(t *testing.T) {
 
 	switch {
 	case t1 == t2 && q1 == q2:
-		t.Error("time stopped")
+		t.Errorf("time stopped\n")
 	case t1 > t2 && q1 == q2:
-		t.Error("time reversed")
+		t.Errorf("time reversed\n")
 	case t1 < t2 && q1 != q2:
-		t.Error("clock sequence chaned unexpectedly")
-	}
-}
-
-func TestNode(t *testing.T) {
-	// This test is mostly to make sure we don't leave nodeMu locked.
-	ifname = ""
-	if ni := NodeInterface(); ni != "" {
-		t.Errorf("NodeInterface got %q, want %q", ni, "")
-	}
-	if SetNodeInterface("xyzzy") {
-		t.Error("SetNodeInterface succeeded on a bad interface name")
-	}
-	if !SetNodeInterface("") {
-		t.Error("SetNodeInterface failed")
-	}
-	if ni := NodeInterface(); ni == "" {
-		t.Error("NodeInterface returned an empty string")
-	}
-
-	ni := NodeID()
-	if len(ni) != 6 {
-		t.Errorf("ni got %d bytes, want 6", len(ni))
-	}
-	hasData := false
-	for _, b := range ni {
-		if b != 0 {
-			hasData = true
-		}
-	}
-	if !hasData {
-		t.Error("nodeid is all zeros")
-	}
-
-	id := []byte{1, 2, 3, 4, 5, 6, 7, 8}
-	SetNodeID(id)
-	ni = NodeID()
-	if !bytes.Equal(ni, id[:6]) {
-		t.Errorf("got nodeid %v, want %v", ni, id[:6])
-	}
-
-	if ni := NodeInterface(); ni != "user" {
-		t.Errorf("got inteface %q, want %q", ni, "user")
+		t.Errorf("clock sequence chaned unexpectedly\n")
 	}
 }
 
@@ -326,10 +284,10 @@ func TestNodeAndTime(t *testing.T) {
 			t.Errorf("Got time %v, want %v", c, want)
 		}
 	} else {
-		t.Errorf("%s: bad time", uuid)
+		t.Errorf("%s: bad time\n", uuid)
 	}
 	if !bytes.Equal(node, uuid.NodeID()) {
-		t.Errorf("Expected node %v got %v", node, uuid.NodeID())
+		t.Errorf("Expected node %v got %v\n", node, uuid.NodeID())
 	}
 }
 
@@ -337,7 +295,7 @@ func TestMD5(t *testing.T) {
 	uuid := NewMD5(NameSpace_DNS, []byte("python.org")).String()
 	want := "6fa459ea-ee8a-3ca4-894e-db77e160355e"
 	if uuid != want {
-		t.Errorf("MD5: got %q expected %q", uuid, want)
+		t.Errorf("MD5: got %q expected %q\n", uuid, want)
 	}
 }
 
@@ -345,7 +303,7 @@ func TestSHA1(t *testing.T) {
 	uuid := NewSHA1(NameSpace_DNS, []byte("python.org")).String()
 	want := "886313e1-3b8a-5372-9b90-0c9aee199e5d"
 	if uuid != want {
-		t.Errorf("SHA1: got %q expected %q", uuid, want)
+		t.Errorf("SHA1: got %q expected %q\n", uuid, want)
 	}
 }
 
@@ -354,49 +312,49 @@ func TestNodeID(t *testing.T) {
 	SetNodeInterface("")
 	s := NodeInterface()
 	if s == "" || s == "user" {
-		t.Errorf("NodeInterface %q after SetInteface", s)
+		t.Errorf("NodeInterface %q after SetInteface\n", s)
 	}
 	node1 := NodeID()
 	if node1 == nil {
-		t.Error("NodeID nil after SetNodeInterface", s)
+		t.Errorf("NodeID nil after SetNodeInterface\n", s)
 	}
 	SetNodeID(nid)
 	s = NodeInterface()
 	if s != "user" {
-		t.Errorf("Expected NodeInterface %q got %q", "user", s)
+		t.Errorf("Expected NodeInterface %q got %q\n", "user", s)
 	}
 	node2 := NodeID()
 	if node2 == nil {
-		t.Error("NodeID nil after SetNodeID", s)
+		t.Errorf("NodeID nil after SetNodeID\n", s)
 	}
 	if bytes.Equal(node1, node2) {
-		t.Error("NodeID not changed after SetNodeID", s)
+		t.Errorf("NodeID not changed after SetNodeID\n", s)
 	} else if !bytes.Equal(nid, node2) {
-		t.Errorf("NodeID is %x, expected %x", node2, nid)
+		t.Errorf("NodeID is %x, expected %x\n", node2, nid)
 	}
 }
 
 func testDCE(t *testing.T, name string, uuid UUID, domain Domain, id uint32) {
 	if uuid == nil {
-		t.Errorf("%s failed", name)
+		t.Errorf("%s failed\n", name)
 		return
 	}
 	if v, _ := uuid.Version(); v != 2 {
-		t.Errorf("%s: %s: expected version 2, got %s", name, uuid, v)
+		t.Errorf("%s: %s: expected version 2, got %s\n", name, uuid, v)
 		return
 	}
 	if v, ok := uuid.Domain(); !ok || v != domain {
 		if !ok {
-			t.Errorf("%s: %d: Domain failed", name, uuid)
+			t.Errorf("%s: %d: Domain failed\n", name, uuid)
 		} else {
-			t.Errorf("%s: %s: expected domain %d, got %d", name, uuid, domain, v)
+			t.Errorf("%s: %s: expected domain %d, got %d\n", name, uuid, domain, v)
 		}
 	}
 	if v, ok := uuid.Id(); !ok || v != id {
 		if !ok {
-			t.Errorf("%s: %d: Id failed", name, uuid)
+			t.Errorf("%s: %d: Id failed\n", name, uuid)
 		} else {
-			t.Errorf("%s: %s: expected id %d, got %d", name, uuid, id, v)
+			t.Errorf("%s: %s: expected id %d, got %d\n", name, uuid, id, v)
 		}
 	}
 }
@@ -421,123 +379,12 @@ func TestBadRand(t *testing.T) {
 	uuid1 := New()
 	uuid2 := New()
 	if uuid1 != uuid2 {
-		t.Errorf("execpted duplicates, got %q and %q", uuid1, uuid2)
+		t.Errorf("execpted duplicates, got %q and %q\n", uuid1, uuid2)
 	}
 	SetRand(nil)
 	uuid1 = New()
 	uuid2 = New()
 	if uuid1 == uuid2 {
-		t.Errorf("unexecpted duplicates, got %q", uuid1)
-	}
-}
-
-func TestUUID_Array(t *testing.T) {
-	expect := Array{
-		0xf4, 0x7a, 0xc1, 0x0b,
-		0x58, 0xcc,
-		0x03, 0x72,
-		0x85, 0x67,
-		0x0e, 0x02, 0xb2, 0xc3, 0xd4, 0x79,
-	}
-	uuid := Parse("f47ac10b-58cc-0372-8567-0e02b2c3d479")
-	if uuid == nil {
-		t.Fatal("invalid uuid")
-	}
-	if uuid.Array() != expect {
-		t.Fatal("invalid array")
-	}
-}
-
-func TestArray_UUID(t *testing.T) {
-	array := Array{
-		0xf4, 0x7a, 0xc1, 0x0b,
-		0x58, 0xcc,
-		0x03, 0x72,
-		0x85, 0x67,
-		0x0e, 0x02, 0xb2, 0xc3, 0xd4, 0x79,
-	}
-	expect := Parse("f47ac10b-58cc-0372-8567-0e02b2c3d479")
-	if expect == nil {
-		t.Fatal("invalid uuid")
-	}
-	if !bytes.Equal(array.UUID(), expect) {
-		t.Fatal("invalid uuid")
-	}
-}
-
-func BenchmarkParse(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		uuid := Parse("f47ac10b-58cc-0372-8567-0e02b2c3d479")
-		if uuid == nil {
-			b.Fatal("invalid uuid")
-		}
-	}
-}
-
-func BenchmarkNew(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		New()
-	}
-}
-
-func BenchmarkUUID_String(b *testing.B) {
-	uuid := Parse("f47ac10b-58cc-0372-8567-0e02b2c3d479")
-	if uuid == nil {
-		b.Fatal("invalid uuid")
-	}
-	for i := 0; i < b.N; i++ {
-		if uuid.String() == "" {
-			b.Fatal("invalid uuid")
-		}
-	}
-}
-
-func BenchmarkUUID_URN(b *testing.B) {
-	uuid := Parse("f47ac10b-58cc-0372-8567-0e02b2c3d479")
-	if uuid == nil {
-		b.Fatal("invalid uuid")
-	}
-	for i := 0; i < b.N; i++ {
-		if uuid.URN() == "" {
-			b.Fatal("invalid uuid")
-		}
-	}
-}
-
-func BenchmarkUUID_Array(b *testing.B) {
-	expect := Array{
-		0xf4, 0x7a, 0xc1, 0x0b,
-		0x58, 0xcc,
-		0x03, 0x72,
-		0x85, 0x67,
-		0x0e, 0x02, 0xb2, 0xc3, 0xd4, 0x79,
-	}
-	uuid := Parse("f47ac10b-58cc-0372-8567-0e02b2c3d479")
-	if uuid == nil {
-		b.Fatal("invalid uuid")
-	}
-	for i := 0; i < b.N; i++ {
-		if uuid.Array() != expect {
-			b.Fatal("invalid array")
-		}
-	}
-}
-
-func BenchmarkArray_UUID(b *testing.B) {
-	array := Array{
-		0xf4, 0x7a, 0xc1, 0x0b,
-		0x58, 0xcc,
-		0x03, 0x72,
-		0x85, 0x67,
-		0x0e, 0x02, 0xb2, 0xc3, 0xd4, 0x79,
-	}
-	expect := Parse("f47ac10b-58cc-0372-8567-0e02b2c3d479")
-	if expect == nil {
-		b.Fatal("invalid uuid")
-	}
-	for i := 0; i < b.N; i++ {
-		if !bytes.Equal(array.UUID(), expect) {
-			b.Fatal("invalid uuid")
-		}
+		t.Errorf("unexecpted duplicates, got %q\n", uuid1)
 	}
 }

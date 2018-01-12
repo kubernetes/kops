@@ -1,13 +1,13 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"jQLIOHBVnDZie4rQHGH1WJF-INE/xUykUeDoZBMkhqViXbAjUkEVLQw\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/cZQ-6vqHhMM0YELMHYWsiSzNXAM\"",
  "discoveryVersion": "v1",
  "id": "dataproc:v1beta1",
  "name": "dataproc",
  "version": "v1beta1",
- "revision": "20160503",
+ "revision": "20161102",
  "title": "Google Cloud Dataproc API",
- "description": "Manages Hadoop-based clusters and jobs on Google Cloud Platform.",
+ "description": "An API for managing Hadoop-based clusters and jobs on Google Cloud Platform.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
@@ -127,6 +127,13 @@
      "$ref": "ClusterConfiguration",
      "description": "[Required] The cluster configuration. Note that Cloud Dataproc may set default values, and values may change when clusters are updated."
     },
+    "labels": {
+     "type": "object",
+     "description": "[Optional] The labels to associate with this cluster. Label keys must be between 1 and 63 characters long, and must conform to the following PCRE regular expression: \\p{Ll}\\p{Lo}{0,62} Label values must be between 1 and 63 characters long, and must conform to the following PCRE regular expression: [\\p{Ll}\\p{Lo}\\p{N}_-]{0,63} No more than 64 labels can be associated with a given cluster.",
+     "additionalProperties": {
+      "type": "string"
+     }
+    },
     "status": {
      "$ref": "ClusterStatus",
      "description": "[Output-only] Cluster status."
@@ -141,6 +148,10 @@
     "clusterUuid": {
      "type": "string",
      "description": "[Output-only] A cluster UUID (Unique Universal Identifier). Cloud Dataproc generates this value when it creates the cluster."
+    },
+    "metrics": {
+     "$ref": "ClusterMetrics",
+     "description": "Contains cluster daemon metrics such as HDFS and YARN stats."
     }
    }
   },
@@ -198,6 +209,10 @@
     "subnetworkUri": {
      "type": "string",
      "description": "The Google Compute Engine subnetwork to be used for machine communications. Cannot be specified with network_uri. Example: `https://www.googleapis.com/compute/v1/projects/[project_id]/regions/us-east1/sub0`."
+    },
+    "internalIpOnly": {
+     "type": "boolean",
+     "description": "If true, all instances in the cluser will only have internal IP addresses. By default, clusters are not restricted to internal IP addresses, and will have ephemeral external IP addresses assigned to each instance. This restriction can only be enabled for subnetwork enabled networks, and all off-cluster dependencies must be configured to be accessible without external IP addresses."
     },
     "serviceAccountScopes": {
      "type": "array",
@@ -353,6 +368,29 @@
     }
    }
   },
+  "ClusterMetrics": {
+   "id": "ClusterMetrics",
+   "type": "object",
+   "description": "Contains cluster daemon metrics, such as HDFS and YARN stats.",
+   "properties": {
+    "hdfsMetrics": {
+     "type": "object",
+     "description": "The HDFS metrics.",
+     "additionalProperties": {
+      "type": "string",
+      "format": "int64"
+     }
+    },
+    "yarnMetrics": {
+     "type": "object",
+     "description": "The YARN metrics.",
+     "additionalProperties": {
+      "type": "string",
+      "format": "int64"
+     }
+    }
+   }
+  },
   "Operation": {
    "id": "Operation",
    "type": "object",
@@ -367,7 +405,7 @@
      "description": "Service-specific metadata associated with the operation. It typically contains progress information and common metadata such as create time. Some services might not provide such metadata. Any method that returns a long-running operation should document the metadata type, if any.",
      "additionalProperties": {
       "type": "any",
-      "description": "Properties of the object. Contains field @ype with type URL."
+      "description": "Properties of the object. Contains field @type with type URL."
      }
     },
     "done": {
@@ -376,14 +414,14 @@
     },
     "error": {
      "$ref": "Status",
-     "description": "The error result of the operation in case of failure."
+     "description": "The error result of the operation in case of failure or cancellation."
     },
     "response": {
      "type": "object",
      "description": "The normal response of the operation in case of success. If the original method returns no data on success, such as `Delete`, the response is `google.protobuf.Empty`. If the original method is standard `Get`/`Create`/`Update`, the response should be the resource. For other methods, the response should have the type `XxxResponse`, where `Xxx` is the original method name. For example, if the original method name is `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.",
      "additionalProperties": {
       "type": "any",
-      "description": "Properties of the object. Contains field @ype with type URL."
+      "description": "Properties of the object. Contains field @type with type URL."
      }
     }
    }
@@ -409,7 +447,7 @@
       "type": "object",
       "additionalProperties": {
        "type": "any",
-       "description": "Properties of the object. Contains field @ype with type URL."
+       "description": "Properties of the object. Contains field @type with type URL."
       }
      }
     }
@@ -523,6 +561,13 @@
     "interactive": {
      "type": "boolean",
      "description": "[Optional] If set to `true`, the driver's stdin will be kept open and `driver_input_uri` will be set to provide a path at which additional input can be sent to the driver."
+    },
+    "labels": {
+     "type": "object",
+     "description": "[Optional] The labels to associate with this job. Label keys must be between 1 and 63 characters long, and must conform to the following regular expression: \\p{Ll}\\p{Lo}{0,62} Label values must be between 1 and 63 characters long, and must conform to the following regular expression: [\\p{Ll}\\p{Lo}\\p{N}_-]{0,63} No more than 64 labels can be associated with a given job.",
+     "additionalProperties": {
+      "type": "string"
+     }
     }
    }
   },
@@ -1007,7 +1052,7 @@
    "properties": {
     "outputUri": {
      "type": "string",
-     "description": "[Output-only] The Google Cloud Storage URI of the diagnostic output. This is a plain text file with a summary of collected diagnostics."
+     "description": "[Output-only] The Google Cloud Storage URI of the diagnostic output. The output report is a plain text file with a summary of collected diagnostics."
     }
    }
   },
@@ -1018,11 +1063,11 @@
    "properties": {
     "clusterName": {
      "type": "string",
-     "description": "Name of the cluster for the operation."
+     "description": "[Output-only] Name of the cluster for the operation."
     },
     "clusterUuid": {
      "type": "string",
-     "description": "Cluster UUId for the operation."
+     "description": "[Output-only] Cluster UUID for the operation."
     },
     "status": {
      "$ref": "ClusterOperationStatus",
@@ -1042,6 +1087,13 @@
     "description": {
      "type": "string",
      "description": "[Output-only] Short description of operation."
+    },
+    "labels": {
+     "type": "object",
+     "description": "[Output-only] labels associated with the operation",
+     "additionalProperties": {
+      "type": "string"
+     }
     }
    }
   },
@@ -1052,7 +1104,7 @@
    "properties": {
     "state": {
      "type": "string",
-     "description": "A message containing the operation state.",
+     "description": "[Output-only] A message containing the operation state.",
      "enum": [
       "UNKNOWN",
       "PENDING",
@@ -1062,15 +1114,15 @@
     },
     "innerState": {
      "type": "string",
-     "description": "A message containing the detailed operation state."
+     "description": "[Output-only] A message containing the detailed operation state."
     },
     "details": {
      "type": "string",
-     "description": "A message containing any operation metadata details."
+     "description": "[Output-only]A message containing any operation metadata details."
     },
     "stateStartTime": {
      "type": "string",
-     "description": "The time this state was entered."
+     "description": "[Output-only] The time this state was entered."
     }
    }
   },
@@ -1320,6 +1372,11 @@
          "required": true,
          "location": "path"
         },
+        "filter": {
+         "type": "string",
+         "description": "[Optional] A filter constraining which clusters to list. Valid filters contain label terms such as: labels.key1 = val1 AND (-labels.k2 = val2 OR labels.k3 = val3)",
+         "location": "query"
+        },
         "pageSize": {
          "type": "integer",
          "description": "The standard List page size.",
@@ -1472,6 +1529,11 @@
           "NON_ACTIVE"
          ],
          "location": "query"
+        },
+        "filter": {
+         "type": "string",
+         "description": "[Optional] A filter constraining which jobs to list. Valid filters contain job state and label terms such as: labels.key1 = val1 AND (labels.k2 = val2 OR labels.k3 = val3)",
+         "location": "query"
         }
        },
        "parameterOrder": [
@@ -1563,7 +1625,7 @@
        "type": "string",
        "description": "The name of the operation resource.",
        "required": true,
-       "pattern": "^operations/.*$",
+       "pattern": "^operations/.+$",
        "location": "path"
       }
      },
@@ -1627,7 +1689,7 @@
        "type": "string",
        "description": "The name of the operation resource to be cancelled.",
        "required": true,
-       "pattern": "^operations/.*$",
+       "pattern": "^operations/.+$",
        "location": "path"
       }
      },
@@ -1654,7 +1716,7 @@
        "type": "string",
        "description": "The name of the operation resource to be deleted.",
        "required": true,
-       "pattern": "^operations/.*$",
+       "pattern": "^operations/.+$",
        "location": "path"
       }
      },

@@ -2,13 +2,8 @@
 
 load helpers
 
-CGROUP_MEMORY=""
 TEST_CGROUP_NAME="runc-cgroups-integration-test"
-
-function init_cgroup_path() {
-	base_path=$(grep "cgroup"  /proc/self/mountinfo | gawk 'toupper($NF) ~ /\<MEMORY\>/ { print $5; exit }')
-	CGROUP_MEMORY="${base_path}/${TEST_CGROUP_NAME}"
-}
+CGROUP_MEMORY="${CGROUP_BASE_PATH}/${TEST_CGROUP_NAME}"
 
 function teardown() {
     rm -f $BATS_TMPDIR/runc-update-integration-test.json
@@ -19,7 +14,6 @@ function teardown() {
 function setup() {
     teardown
     setup_busybox
-    init_cgroup_path
 }
 
 function check_cgroup_value() {
@@ -34,8 +28,9 @@ function check_cgroup_value() {
 }
 
 @test "runc update --kernel-memory (initialized)" {
+    requires cgroups_kmem
     # Add cgroup path
-    sed -i 's/\("linux": {\)/\1\n    "cgroupsPath": "runc-cgroups-integration-test",/'  ${BUSYBOX_BUNDLE}/config.json
+    sed -i 's/\("linux": {\)/\1\n    "cgroupsPath": "\/runc-cgroups-integration-test",/'  ${BUSYBOX_BUNDLE}/config.json
 
     # Set some initial known values
     DATA=$(cat <<-EOF
@@ -61,8 +56,9 @@ EOF
 }
 
 @test "runc update --kernel-memory (uninitialized)" {
+    requires cgroups_kmem
     # Add cgroup path
-    sed -i 's/\("linux": {\)/\1\n    "cgroupsPath": "runc-cgroups-integration-test",/'  ${BUSYBOX_BUNDLE}/config.json
+    sed -i 's/\("linux": {\)/\1\n    "cgroupsPath": "\/runc-cgroups-integration-test",/'  ${BUSYBOX_BUNDLE}/config.json
 
     # run a detached busybox to work with
     runc run -d --console /dev/pts/ptmx test_cgroups_kmem

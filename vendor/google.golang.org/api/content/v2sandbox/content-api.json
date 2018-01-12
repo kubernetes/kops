@@ -1,19 +1,19 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"jQLIOHBVnDZie4rQHGH1WJF-INE/4Fd9gR6kX7T-xSLXae9a3rT8Jqg\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/QIeaaaKpbR6AnbTNjcCCIDMwTuY\"",
  "discoveryVersion": "v1",
  "id": "content:v2sandbox",
  "name": "content",
  "canonicalName": "Shopping Content",
  "version": "v2sandbox",
- "revision": "20160419",
+ "revision": "20161110",
  "title": "Content API for Shopping",
  "description": "Manages product items, inventory, and Merchant Center accounts for Google Shopping.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/shopping-content",
  "protocol": "rest",
@@ -126,6 +126,10 @@
     "acknowledged": {
      "type": "boolean",
      "description": "Whether the order was acknowledged."
+    },
+    "channelType": {
+     "type": "string",
+     "description": "The channel type of the order: \"purchaseOnGoogle\" or \"googleExpress\"."
     },
     "customer": {
      "$ref": "OrderCustomer",
@@ -277,7 +281,7 @@
     },
     "reason": {
      "type": "string",
-     "description": "The reason for the cancellation. Orders that are cancelled with a noIventory reason will lead to the removal of the product from POG until you make an update to that product. This will not affect your Shopping ads."
+     "description": "The reason for the cancellation. Orders that are cancelled with a noInventory reason will lead to the removal of the product from POG until you make an update to that product. This will not affect your Shopping ads."
     },
     "reasonText": {
      "type": "string",

@@ -23,6 +23,9 @@ test:
 test-integration:
 	@./build/integration.sh
 
+test-runner:
+	@$(GO) build github.com/google/cadvisor/integration/runner
+
 format:
 	@echo ">> formatting code"
 	@$(GO) fmt $(pkgs)
@@ -31,21 +34,24 @@ vet:
 	@echo ">> vetting code"
 	@$(GO) vet $(pkgs)
 
-build:
+build: assets
 	@echo ">> building binaries"
-	@./build/assets.sh
 	@./build/build.sh
+
+assets:
+	@echo ">> building assets"
+	@./build/assets.sh
 
 release:
 	@echo ">> building release binaries"
-	@RELEASE=true ./build/build.sh
+	@./build/release.sh
 
 docker:
 	@docker build -t cadvisor:$(shell git rev-parse --short HEAD) -f deploy/Dockerfile .
 
 presubmit: vet
 	@echo ">> checking go formatting"
-	@./build/check_gofmt.sh .
+	@./build/check_gofmt.sh
 	@echo ">> checking file boilerplate"
 	@./build/check_boilerplate.sh
 

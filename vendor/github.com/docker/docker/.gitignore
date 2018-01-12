@@ -7,14 +7,10 @@
 *.test
 .*.swp
 .DS_Store
-# a .bashrc may be added to customize the build environment
-.bashrc
 .gopath/
-.go-pkg-cache/
 autogen/
 bundles/
-cmd/dockerd/dockerd
-cmd/docker/docker
+docker/docker
 dockerversion/version_autogen.go
 docs/AWS_S3_BUCKET
 docs/GITCOMMIT

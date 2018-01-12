@@ -49,9 +49,8 @@ func (c *StorageGateway) ActivateGatewayRequest(input *ActivateGatewayInput) (re
 		input = &ActivateGatewayInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ActivateGatewayOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -128,9 +127,8 @@ func (c *StorageGateway) AddCacheRequest(input *AddCacheInput) (req *request.Req
 		input = &AddCacheInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddCacheOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -205,9 +203,8 @@ func (c *StorageGateway) AddTagsToResourceRequest(input *AddTagsToResourceInput)
 		input = &AddTagsToResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddTagsToResourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -289,9 +286,8 @@ func (c *StorageGateway) AddUploadBufferRequest(input *AddUploadBufferInput) (re
 		input = &AddUploadBufferInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddUploadBufferOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -366,9 +362,8 @@ func (c *StorageGateway) AddWorkingStorageRequest(input *AddWorkingStorageInput)
 		input = &AddWorkingStorageInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddWorkingStorageOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -447,9 +442,8 @@ func (c *StorageGateway) CancelArchivalRequest(input *CancelArchivalInput) (req 
 		input = &CancelArchivalInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CancelArchivalOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -519,9 +513,8 @@ func (c *StorageGateway) CancelRetrievalRequest(input *CancelRetrievalInput) (re
 		input = &CancelRetrievalInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CancelRetrievalOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -592,9 +585,8 @@ func (c *StorageGateway) CreateCachediSCSIVolumeRequest(input *CreateCachediSCSI
 		input = &CreateCachediSCSIVolumeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateCachediSCSIVolumeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -679,9 +671,8 @@ func (c *StorageGateway) CreateNFSFileShareRequest(input *CreateNFSFileShareInpu
 		input = &CreateNFSFileShareInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateNFSFileShareOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -752,9 +743,8 @@ func (c *StorageGateway) CreateSnapshotRequest(input *CreateSnapshotInput) (req 
 		input = &CreateSnapshotInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateSnapshotOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -850,9 +840,8 @@ func (c *StorageGateway) CreateSnapshotFromVolumeRecoveryPointRequest(input *Cre
 		input = &CreateSnapshotFromVolumeRecoveryPointInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateSnapshotFromVolumeRecoveryPointOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -941,9 +930,8 @@ func (c *StorageGateway) CreateStorediSCSIVolumeRequest(input *CreateStorediSCSI
 		input = &CreateStorediSCSIVolumeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateStorediSCSIVolumeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1024,9 +1012,8 @@ func (c *StorageGateway) CreateTapeWithBarcodeRequest(input *CreateTapeWithBarco
 		input = &CreateTapeWithBarcodeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateTapeWithBarcodeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1099,9 +1086,8 @@ func (c *StorageGateway) CreateTapesRequest(input *CreateTapesInput) (req *reque
 		input = &CreateTapesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateTapesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1174,9 +1160,8 @@ func (c *StorageGateway) DeleteBandwidthRateLimitRequest(input *DeleteBandwidthR
 		input = &DeleteBandwidthRateLimitInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteBandwidthRateLimitOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1249,9 +1234,8 @@ func (c *StorageGateway) DeleteChapCredentialsRequest(input *DeleteChapCredentia
 		input = &DeleteChapCredentialsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteChapCredentialsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1321,9 +1305,8 @@ func (c *StorageGateway) DeleteFileShareRequest(input *DeleteFileShareInput) (re
 		input = &DeleteFileShareInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteFileShareOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1392,9 +1375,8 @@ func (c *StorageGateway) DeleteGatewayRequest(input *DeleteGatewayInput) (req *r
 		input = &DeleteGatewayInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteGatewayOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1478,9 +1460,8 @@ func (c *StorageGateway) DeleteSnapshotScheduleRequest(input *DeleteSnapshotSche
 		input = &DeleteSnapshotScheduleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteSnapshotScheduleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1558,9 +1539,8 @@ func (c *StorageGateway) DeleteTapeRequest(input *DeleteTapeInput) (req *request
 		input = &DeleteTapeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteTapeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1629,9 +1609,8 @@ func (c *StorageGateway) DeleteTapeArchiveRequest(input *DeleteTapeArchiveInput)
 		input = &DeleteTapeArchiveInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteTapeArchiveOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1700,9 +1679,8 @@ func (c *StorageGateway) DeleteVolumeRequest(input *DeleteVolumeInput) (req *req
 		input = &DeleteVolumeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteVolumeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1784,9 +1762,8 @@ func (c *StorageGateway) DescribeBandwidthRateLimitRequest(input *DescribeBandwi
 		input = &DescribeBandwidthRateLimitInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeBandwidthRateLimitOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1861,9 +1838,8 @@ func (c *StorageGateway) DescribeCacheRequest(input *DescribeCacheInput) (req *r
 		input = &DescribeCacheInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeCacheOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1936,9 +1912,8 @@ func (c *StorageGateway) DescribeCachediSCSIVolumesRequest(input *DescribeCached
 		input = &DescribeCachediSCSIVolumesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeCachediSCSIVolumesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2012,9 +1987,8 @@ func (c *StorageGateway) DescribeChapCredentialsRequest(input *DescribeChapCrede
 		input = &DescribeChapCredentialsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeChapCredentialsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2084,9 +2058,8 @@ func (c *StorageGateway) DescribeGatewayInformationRequest(input *DescribeGatewa
 		input = &DescribeGatewayInformationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeGatewayInformationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2158,9 +2131,8 @@ func (c *StorageGateway) DescribeMaintenanceStartTimeRequest(input *DescribeMain
 		input = &DescribeMaintenanceStartTimeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeMaintenanceStartTimeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2230,9 +2202,8 @@ func (c *StorageGateway) DescribeNFSFileSharesRequest(input *DescribeNFSFileShar
 		input = &DescribeNFSFileSharesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeNFSFileSharesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2301,9 +2272,8 @@ func (c *StorageGateway) DescribeSnapshotScheduleRequest(input *DescribeSnapshot
 		input = &DescribeSnapshotScheduleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeSnapshotScheduleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2374,9 +2344,8 @@ func (c *StorageGateway) DescribeStorediSCSIVolumesRequest(input *DescribeStored
 		input = &DescribeStorediSCSIVolumesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeStorediSCSIVolumesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2454,9 +2423,8 @@ func (c *StorageGateway) DescribeTapeArchivesRequest(input *DescribeTapeArchives
 		input = &DescribeTapeArchivesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTapeArchivesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2560,9 +2528,8 @@ func (c *StorageGateway) DescribeTapeRecoveryPointsRequest(input *DescribeTapeRe
 		input = &DescribeTapeRecoveryPointsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTapeRecoveryPointsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2667,9 +2634,8 @@ func (c *StorageGateway) DescribeTapesRequest(input *DescribeTapesInput) (req *r
 		input = &DescribeTapesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTapesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2765,9 +2731,8 @@ func (c *StorageGateway) DescribeUploadBufferRequest(input *DescribeUploadBuffer
 		input = &DescribeUploadBufferInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeUploadBufferOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2846,9 +2811,8 @@ func (c *StorageGateway) DescribeVTLDevicesRequest(input *DescribeVTLDevicesInpu
 		input = &DescribeVTLDevicesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeVTLDevicesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2945,9 +2909,8 @@ func (c *StorageGateway) DescribeWorkingStorageRequest(input *DescribeWorkingSto
 		input = &DescribeWorkingStorageInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeWorkingStorageOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3025,9 +2988,8 @@ func (c *StorageGateway) DisableGatewayRequest(input *DisableGatewayInput) (req 
 		input = &DisableGatewayInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DisableGatewayOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3102,9 +3064,8 @@ func (c *StorageGateway) ListFileSharesRequest(input *ListFileSharesInput) (req 
 		input = &ListFileSharesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListFileSharesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3180,9 +3141,8 @@ func (c *StorageGateway) ListGatewaysRequest(input *ListGatewaysInput) (req *req
 		input = &ListGatewaysInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListGatewaysOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3286,9 +3246,8 @@ func (c *StorageGateway) ListLocalDisksRequest(input *ListLocalDisksInput) (req 
 		input = &ListLocalDisksInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListLocalDisksOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3366,9 +3325,8 @@ func (c *StorageGateway) ListTagsForResourceRequest(input *ListTagsForResourceIn
 		input = &ListTagsForResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListTagsForResourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3437,9 +3395,8 @@ func (c *StorageGateway) ListTapesRequest(input *ListTapesInput) (req *request.R
 		input = &ListTapesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListTapesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3517,9 +3474,8 @@ func (c *StorageGateway) ListVolumeInitiatorsRequest(input *ListVolumeInitiators
 		input = &ListVolumeInitiatorsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListVolumeInitiatorsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3589,9 +3545,8 @@ func (c *StorageGateway) ListVolumeRecoveryPointsRequest(input *ListVolumeRecove
 		input = &ListVolumeRecoveryPointsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListVolumeRecoveryPointsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3672,9 +3627,8 @@ func (c *StorageGateway) ListVolumesRequest(input *ListVolumesInput) (req *reque
 		input = &ListVolumesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListVolumesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3778,9 +3732,8 @@ func (c *StorageGateway) RemoveTagsFromResourceRequest(input *RemoveTagsFromReso
 		input = &RemoveTagsFromResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RemoveTagsFromResourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3849,9 +3802,8 @@ func (c *StorageGateway) ResetCacheRequest(input *ResetCacheInput) (req *request
 		input = &ResetCacheInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ResetCacheOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3930,9 +3882,8 @@ func (c *StorageGateway) RetrieveTapeArchiveRequest(input *RetrieveTapeArchiveIn
 		input = &RetrieveTapeArchiveInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RetrieveTapeArchiveOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4008,9 +3959,8 @@ func (c *StorageGateway) RetrieveTapeRecoveryPointRequest(input *RetrieveTapeRec
 		input = &RetrieveTapeRecoveryPointInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RetrieveTapeRecoveryPointOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4087,9 +4037,8 @@ func (c *StorageGateway) SetLocalConsolePasswordRequest(input *SetLocalConsolePa
 		input = &SetLocalConsolePasswordInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SetLocalConsolePasswordOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4161,9 +4110,8 @@ func (c *StorageGateway) ShutdownGatewayRequest(input *ShutdownGatewayInput) (re
 		input = &ShutdownGatewayInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ShutdownGatewayOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4252,9 +4200,8 @@ func (c *StorageGateway) StartGatewayRequest(input *StartGatewayInput) (req *req
 		input = &StartGatewayInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartGatewayOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4334,9 +4281,8 @@ func (c *StorageGateway) UpdateBandwidthRateLimitRequest(input *UpdateBandwidthR
 		input = &UpdateBandwidthRateLimitInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateBandwidthRateLimitOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4414,9 +4360,8 @@ func (c *StorageGateway) UpdateChapCredentialsRequest(input *UpdateChapCredentia
 		input = &UpdateChapCredentialsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateChapCredentialsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4490,9 +4435,8 @@ func (c *StorageGateway) UpdateGatewayInformationRequest(input *UpdateGatewayInf
 		input = &UpdateGatewayInformationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateGatewayInformationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4567,9 +4511,8 @@ func (c *StorageGateway) UpdateGatewaySoftwareNowRequest(input *UpdateGatewaySof
 		input = &UpdateGatewaySoftwareNowInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateGatewaySoftwareNowOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4652,9 +4595,8 @@ func (c *StorageGateway) UpdateMaintenanceStartTimeRequest(input *UpdateMaintena
 		input = &UpdateMaintenanceStartTimeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateMaintenanceStartTimeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4725,9 +4667,8 @@ func (c *StorageGateway) UpdateNFSFileShareRequest(input *UpdateNFSFileShareInpu
 		input = &UpdateNFSFileShareInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateNFSFileShareOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4799,9 +4740,8 @@ func (c *StorageGateway) UpdateSnapshotScheduleRequest(input *UpdateSnapshotSche
 		input = &UpdateSnapshotScheduleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateSnapshotScheduleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4878,9 +4818,8 @@ func (c *StorageGateway) UpdateVTLDeviceTypeRequest(input *UpdateVTLDeviceTypeIn
 		input = &UpdateVTLDeviceTypeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateVTLDeviceTypeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

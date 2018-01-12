@@ -17,8 +17,8 @@ limitations under the License.
 package api
 
 import (
-	v1 "k8s.io/kubernetes/pkg/api/v1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/client-go/pkg/api/v1"
 )
 
 type Addons struct {
@@ -45,6 +45,6 @@ type AddonSpec struct {
 	// Version is a semver version
 	Version *string `json:"version,omitempty"`
 
-	// Manifest is a strings containing the URL to the manifest that should be applied
+	// Manifest is the URL to the manifest that should be applied
 	Manifest *string `json:"manifest,omitempty"`
 }

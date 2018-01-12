@@ -51,9 +51,8 @@ func (c *CognitoSync) BulkPublishRequest(input *BulkPublishInput) (req *request.
 		input = &BulkPublishInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BulkPublishOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -140,9 +139,8 @@ func (c *CognitoSync) DeleteDatasetRequest(input *DeleteDatasetInput) (req *requ
 		input = &DeleteDatasetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteDatasetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -228,9 +226,8 @@ func (c *CognitoSync) DescribeDatasetRequest(input *DescribeDatasetInput) (req *
 		input = &DescribeDatasetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeDatasetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -312,9 +309,8 @@ func (c *CognitoSync) DescribeIdentityPoolUsageRequest(input *DescribeIdentityPo
 		input = &DescribeIdentityPoolUsageInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeIdentityPoolUsageOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -394,9 +390,8 @@ func (c *CognitoSync) DescribeIdentityUsageRequest(input *DescribeIdentityUsageI
 		input = &DescribeIdentityUsageInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeIdentityUsageOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -476,9 +471,8 @@ func (c *CognitoSync) GetBulkPublishDetailsRequest(input *GetBulkPublishDetailsI
 		input = &GetBulkPublishDetailsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetBulkPublishDetailsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -554,9 +548,8 @@ func (c *CognitoSync) GetCognitoEventsRequest(input *GetCognitoEventsInput) (req
 		input = &GetCognitoEventsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetCognitoEventsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -636,9 +629,8 @@ func (c *CognitoSync) GetIdentityPoolConfigurationRequest(input *GetIdentityPool
 		input = &GetIdentityPoolConfigurationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetIdentityPoolConfigurationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -717,9 +709,8 @@ func (c *CognitoSync) ListDatasetsRequest(input *ListDatasetsInput) (req *reques
 		input = &ListDatasetsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListDatasetsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -798,9 +789,8 @@ func (c *CognitoSync) ListIdentityPoolUsageRequest(input *ListIdentityPoolUsageI
 		input = &ListIdentityPoolUsageInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListIdentityPoolUsageOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -877,9 +867,8 @@ func (c *CognitoSync) ListRecordsRequest(input *ListRecordsInput) (req *request.
 		input = &ListRecordsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListRecordsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -959,9 +948,8 @@ func (c *CognitoSync) RegisterDeviceRequest(input *RegisterDeviceInput) (req *re
 		input = &RegisterDeviceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RegisterDeviceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1043,11 +1031,10 @@ func (c *CognitoSync) SetCognitoEventsRequest(input *SetCognitoEventsInput) (req
 		input = &SetCognitoEventsInput{}
 	}
 
+	output = &SetCognitoEventsOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SetCognitoEventsOutput{}
-	req.Data = output
 	return
 }
 
@@ -1129,9 +1116,8 @@ func (c *CognitoSync) SetIdentityPoolConfigurationRequest(input *SetIdentityPool
 		input = &SetIdentityPoolConfigurationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SetIdentityPoolConfigurationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1213,9 +1199,8 @@ func (c *CognitoSync) SubscribeToDatasetRequest(input *SubscribeToDatasetInput) 
 		input = &SubscribeToDatasetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SubscribeToDatasetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1298,9 +1283,8 @@ func (c *CognitoSync) UnsubscribeFromDatasetRequest(input *UnsubscribeFromDatase
 		input = &UnsubscribeFromDatasetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UnsubscribeFromDatasetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1383,9 +1367,8 @@ func (c *CognitoSync) UpdateRecordsRequest(input *UpdateRecordsInput) (req *requ
 		input = &UpdateRecordsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateRecordsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

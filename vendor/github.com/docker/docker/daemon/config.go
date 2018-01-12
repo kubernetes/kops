@@ -18,20 +18,6 @@ import (
 )
 
 const (
-	// defaultMaxConcurrentDownloads is the default value for
-	// maximum number of downloads that
-	// may take place at a time for each pull.
-	defaultMaxConcurrentDownloads = 3
-	// defaultMaxConcurrentUploads is the default value for
-	// maximum number of uploads that
-	// may take place at a time for each push.
-	defaultMaxConcurrentUploads = 5
-	// stockRuntimeName is the reserved name/alias used to represent the
-	// OCI runtime being shipped with the docker daemon package.
-	stockRuntimeName = "runc"
-)
-
-const (
 	defaultNetworkMtu    = 1500
 	disableNetworkBridge = "none"
 )
@@ -43,37 +29,29 @@ const (
 var flatOptions = map[string]bool{
 	"cluster-store-opts": true,
 	"log-opts":           true,
-	"runtimes":           true,
 }
 
 // LogConfig represents the default log configuration.
 // It includes json tags to deserialize configuration from a file
-// using the same names that the flags in the command line use.
+// using the same names that the flags in the command line uses.
 type LogConfig struct {
 	Type   string            `json:"log-driver,omitempty"`
 	Config map[string]string `json:"log-opts,omitempty"`
 }
 
-// commonBridgeConfig stores all the platform-common bridge driver specific
-// configuration.
-type commonBridgeConfig struct {
-	Iface     string `json:"bridge,omitempty"`
-	FixedCIDR string `json:"fixed-cidr,omitempty"`
-}
-
 // CommonTLSOptions defines TLS configuration for the daemon server.
 // It includes json tags to deserialize configuration from a file
-// using the same names that the flags in the command line use.
+// using the same names that the flags in the command line uses.
 type CommonTLSOptions struct {
 	CAFile   string `json:"tlscacert,omitempty"`
 	CertFile string `json:"tlscert,omitempty"`
 	KeyFile  string `json:"tlskey,omitempty"`
 }
 
-// CommonConfig defines the configuration of a docker daemon which is
+// CommonConfig defines the configuration of a docker daemon which are
 // common across platforms.
 // It includes json tags to deserialize configuration from a file
-// using the same names that the flags in the command line use.
+// using the same names that the flags in the command line uses.
 type CommonConfig struct {
 	AuthorizationPlugins []string            `json:"authorization-plugins,omitempty"` // AuthorizationPlugins holds list of authorization plugins
 	AutoRestart          bool                `json:"-"`
@@ -83,6 +61,7 @@ type CommonConfig struct {
 	DNSOptions           []string            `json:"dns-opts,omitempty"`
 	DNSSearch            []string            `json:"dns-search,omitempty"`
 	ExecOptions          []string            `json:"exec-opts,omitempty"`
+	ExecRoot             string              `json:"exec-root,omitempty"`
 	GraphDriver          string              `json:"storage-driver,omitempty"`
 	GraphOptions         []string            `json:"storage-opts,omitempty"`
 	Labels               []string            `json:"labels,omitempty"`
@@ -92,9 +71,6 @@ type CommonConfig struct {
 	Root                 string              `json:"graph,omitempty"`
 	SocketGroup          string              `json:"group,omitempty"`
 	TrustKeyPath         string              `json:"-"`
-	CorsHeaders          string              `json:"api-cors-header,omitempty"`
-	EnableCors           bool                `json:"api-enable-cors,omitempty"`
-	LiveRestore          bool                `json:"live-restore,omitempty"`
 
 	// ClusterStore is the storage backend used for the cluster information. It is used by both
 	// multihost networking (to store networks and endpoints information) and by the node discovery
@@ -110,14 +86,6 @@ type CommonConfig struct {
 	// reachable by other hosts.
 	ClusterAdvertise string `json:"cluster-advertise,omitempty"`
 
-	// MaxConcurrentDownloads is the maximum number of downloads that
-	// may take place at a time for each pull.
-	MaxConcurrentDownloads *int `json:"max-concurrent-downloads,omitempty"`
-
-	// MaxConcurrentUploads is the maximum number of uploads that
-	// may take place at a time for each push.
-	MaxConcurrentUploads *int `json:"max-concurrent-uploads,omitempty"`
-
 	Debug     bool     `json:"debug,omitempty"`
 	Hosts     []string `json:"hosts,omitempty"`
 	LogLevel  string   `json:"log-level,omitempty"`
@@ -127,13 +95,6 @@ type CommonConfig struct {
 	// Embedded structs that allow config
 	// deserialization without the full struct.
 	CommonTLSOptions
-
-	// SwarmDefaultAdvertiseAddr is the default host/IP or network interface
-	// to use if a wildcard address is specified in the ListenAddr value
-	// given to the /swarm/init endpoint and no advertise address is
-	// specified.
-	SwarmDefaultAdvertiseAddr string `json:"swarm-default-advertise-addr"`
-
 	LogConfig
 	bridgeConfig // bridgeConfig holds bridge network specific configuration.
 	registry.ServiceOptions
@@ -147,15 +108,14 @@ type CommonConfig struct {
 // Subsequent calls to `flag.Parse` will populate config with values parsed
 // from the command-line.
 func (config *Config) InstallCommonFlags(cmd *flag.FlagSet, usageFn func(string) string) {
-	var maxConcurrentDownloads, maxConcurrentUploads int
-
 	config.ServiceOptions.InstallCliFlags(cmd, usageFn)
 
-	cmd.Var(opts.NewNamedListOptsRef("storage-opts", &config.GraphOptions, nil), []string{"-storage-opt"}, usageFn("Storage driver options"))
-	cmd.Var(opts.NewNamedListOptsRef("authorization-plugins", &config.AuthorizationPlugins, nil), []string{"-authorization-plugin"}, usageFn("Authorization plugins to load"))
-	cmd.Var(opts.NewNamedListOptsRef("exec-opts", &config.ExecOptions, nil), []string{"-exec-opt"}, usageFn("Runtime execution options"))
+	cmd.Var(opts.NewNamedListOptsRef("storage-opts", &config.GraphOptions, nil), []string{"-storage-opt"}, usageFn("Set storage driver options"))
+	cmd.Var(opts.NewNamedListOptsRef("authorization-plugins", &config.AuthorizationPlugins, nil), []string{"-authorization-plugin"}, usageFn("List authorization plugins in order from first evaluator to last"))
+	cmd.Var(opts.NewNamedListOptsRef("exec-opts", &config.ExecOptions, nil), []string{"-exec-opt"}, usageFn("Set runtime execution options"))
 	cmd.StringVar(&config.Pidfile, []string{"p", "-pidfile"}, defaultPidFile, usageFn("Path to use for daemon PID file"))
 	cmd.StringVar(&config.Root, []string{"g", "-graph"}, defaultGraph, usageFn("Root of the Docker runtime"))
+	cmd.StringVar(&config.ExecRoot, []string{"-exec-root"}, defaultExecRoot, usageFn("Root directory for execution state files"))
 	cmd.BoolVar(&config.AutoRestart, []string{"#r", "#-restart"}, true, usageFn("--restart on the daemon has been deprecated in favor of --restart policies on docker run"))
 	cmd.StringVar(&config.GraphDriver, []string{"s", "-storage-driver"}, "", usageFn("Storage driver to use"))
 	cmd.IntVar(&config.Mtu, []string{"#mtu", "-mtu"}, 0, usageFn("Set the containers network MTU"))
@@ -166,18 +126,10 @@ func (config *Config) InstallCommonFlags(cmd *flag.FlagSet, usageFn func(string)
 	cmd.Var(opts.NewListOptsRef(&config.DNSSearch, opts.ValidateDNSSearch), []string{"-dns-search"}, usageFn("DNS search domains to use"))
 	cmd.Var(opts.NewNamedListOptsRef("labels", &config.Labels, opts.ValidateLabel), []string{"-label"}, usageFn("Set key=value labels to the daemon"))
 	cmd.StringVar(&config.LogConfig.Type, []string{"-log-driver"}, "json-file", usageFn("Default driver for container logs"))
-	cmd.Var(opts.NewNamedMapOpts("log-opts", config.LogConfig.Config, nil), []string{"-log-opt"}, usageFn("Default log driver options for containers"))
+	cmd.Var(opts.NewNamedMapOpts("log-opts", config.LogConfig.Config, nil), []string{"-log-opt"}, usageFn("Set log driver options"))
 	cmd.StringVar(&config.ClusterAdvertise, []string{"-cluster-advertise"}, "", usageFn("Address or interface name to advertise"))
-	cmd.StringVar(&config.ClusterStore, []string{"-cluster-store"}, "", usageFn("URL of the distributed storage backend"))
+	cmd.StringVar(&config.ClusterStore, []string{"-cluster-store"}, "", usageFn("Set the cluster store"))
 	cmd.Var(opts.NewNamedMapOpts("cluster-store-opts", config.ClusterOpts, nil), []string{"-cluster-store-opt"}, usageFn("Set cluster store options"))
-	cmd.StringVar(&config.CorsHeaders, []string{"-api-cors-header"}, "", usageFn("Set CORS headers in the remote API"))
-	cmd.IntVar(&maxConcurrentDownloads, []string{"-max-concurrent-downloads"}, defaultMaxConcurrentDownloads, usageFn("Set the max concurrent downloads for each pull"))
-	cmd.IntVar(&maxConcurrentUploads, []string{"-max-concurrent-uploads"}, defaultMaxConcurrentUploads, usageFn("Set the max concurrent uploads for each push"))
-
-	cmd.StringVar(&config.SwarmDefaultAdvertiseAddr, []string{"-swarm-default-advertise-addr"}, "", usageFn("Set default address or interface for swarm advertised address"))
-
-	config.MaxConcurrentDownloads = &maxConcurrentDownloads
-	config.MaxConcurrentUploads = &maxConcurrentUploads
 }
 
 // IsValueSet returns true if a configuration value
@@ -213,7 +165,7 @@ func ReloadConfiguration(configFile string, flags *flag.FlagSet, reload func(*Co
 		return err
 	}
 
-	if err := ValidateConfiguration(newConfig); err != nil {
+	if err := validateConfiguration(newConfig); err != nil {
 		return fmt.Errorf("file configuration validation failed (%v)", err)
 	}
 
@@ -237,19 +189,13 @@ func MergeDaemonConfigurations(flagsConfig *Config, flags *flag.FlagSet, configF
 		return nil, err
 	}
 
-	if err := ValidateConfiguration(fileConfig); err != nil {
+	if err := validateConfiguration(fileConfig); err != nil {
 		return nil, fmt.Errorf("file configuration validation failed (%v)", err)
 	}
 
 	// merge flags configuration on top of the file configuration
 	if err := mergo.Merge(fileConfig, flagsConfig); err != nil {
 		return nil, err
-	}
-
-	// We need to validate again once both fileConfig and flagsConfig
-	// have been merged
-	if err := ValidateConfiguration(fileConfig); err != nil {
-		return nil, fmt.Errorf("file configuration validation failed (%v)", err)
 	}
 
 	return fileConfig, nil
@@ -280,7 +226,7 @@ func getConflictFreeConfiguration(configFile string, flags *flag.FlagSet) (*Conf
 		}
 
 		// Override flag values to make sure the values set in the config file with nullable values, like `false`,
-		// are not overridden by default truthy values from the flags that were not explicitly set.
+		// are not overriden by default truthy values from the flags that were not explicitly set.
 		// See https://github.com/docker/docker/issues/20289 for an example.
 		//
 		// TODO: Rewrite configuration logic to avoid same issue with other nullable values, like numbers.
@@ -400,10 +346,9 @@ func findConfigurationConflicts(config map[string]interface{}, flags *flag.FlagS
 	return nil
 }
 
-// ValidateConfiguration validates some specific configs.
-// such as config.DNS, config.Labels, config.DNSSearch,
-// as well as config.MaxConcurrentDownloads, config.MaxConcurrentUploads.
-func ValidateConfiguration(config *Config) error {
+// validateConfiguration validates some specific configs.
+// such as config.DNS, config.Labels, config.DNSSearch
+func validateConfiguration(config *Config) error {
 	// validate DNS
 	for _, dns := range config.DNS {
 		if _, err := opts.ValidateIPAddress(dns); err != nil {
@@ -422,30 +367,6 @@ func ValidateConfiguration(config *Config) error {
 	for _, label := range config.Labels {
 		if _, err := opts.ValidateLabel(label); err != nil {
 			return err
-		}
-	}
-
-	// validate MaxConcurrentDownloads
-	if config.IsValueSet("max-concurrent-downloads") && config.MaxConcurrentDownloads != nil && *config.MaxConcurrentDownloads < 0 {
-		return fmt.Errorf("invalid max concurrent downloads: %d", *config.MaxConcurrentDownloads)
-	}
-
-	// validate MaxConcurrentUploads
-	if config.IsValueSet("max-concurrent-uploads") && config.MaxConcurrentUploads != nil && *config.MaxConcurrentUploads < 0 {
-		return fmt.Errorf("invalid max concurrent uploads: %d", *config.MaxConcurrentUploads)
-	}
-
-	// validate that "default" runtime is not reset
-	if runtimes := config.GetAllRuntimes(); len(runtimes) > 0 {
-		if _, ok := runtimes[stockRuntimeName]; ok {
-			return fmt.Errorf("runtime name '%s' is reserved", stockRuntimeName)
-		}
-	}
-
-	if defaultRuntime := config.GetDefaultRuntimeName(); defaultRuntime != "" && defaultRuntime != stockRuntimeName {
-		runtimes := config.GetAllRuntimes()
-		if _, ok := runtimes[defaultRuntime]; !ok {
-			return fmt.Errorf("specified default runtime '%s' does not exist", defaultRuntime)
 		}
 	}
 

@@ -20,10 +20,6 @@ const (
 	// MediaTypeLayer is the mediaType used for layers referenced by the
 	// manifest.
 	MediaTypeLayer = "application/vnd.docker.image.rootfs.diff.tar.gzip"
-
-	// MediaTypeForeignLayer is the mediaType used for layers that must be
-	// downloaded from foreign URLs.
-	MediaTypeForeignLayer = "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip"
 )
 
 var (
@@ -67,6 +63,7 @@ type Manifest struct {
 // References returnes the descriptors of this manifests references.
 func (m Manifest) References() []distribution.Descriptor {
 	return m.Layers
+
 }
 
 // Target returns the target of this signed manifest.

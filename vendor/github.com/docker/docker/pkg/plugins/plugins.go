@@ -55,46 +55,29 @@ type Manifest struct {
 // Plugin is the definition of a docker plugin.
 type Plugin struct {
 	// Name of the plugin
-	name string
+	Name string `json:"-"`
 	// Address of the plugin
 	Addr string
 	// TLS configuration of the plugin
-	TLSConfig *tlsconfig.Options
+	TLSConfig tlsconfig.Options
 	// Client attached to the plugin
-	client *Client
+	Client *Client `json:"-"`
 	// Manifest of the plugin (see above)
 	Manifest *Manifest `json:"-"`
 
 	// error produced by activation
 	activateErr error
-	// specifies if the activation sequence is completed (not if it is successful or not)
+	// specifies if the activation sequence is completed (not if it is sucessful or not)
 	activated bool
 	// wait for activation to finish
 	activateWait *sync.Cond
 }
 
-// Name returns the name of the plugin.
-func (p *Plugin) Name() string {
-	return p.name
-}
-
-// Client returns a ready-to-use plugin client that can be used to communicate with the plugin.
-func (p *Plugin) Client() *Client {
-	return p.client
-}
-
-// IsLegacy returns true for legacy plugins and false otherwise.
-func (p *Plugin) IsLegacy() bool {
-	return true
-}
-
-// NewLocalPlugin creates a new local plugin.
-func NewLocalPlugin(name, addr string) *Plugin {
+func newLocalPlugin(name, addr string) *Plugin {
 	return &Plugin{
-		name: name,
-		Addr: addr,
-		// TODO: change to nil
-		TLSConfig:    &tlsconfig.Options{InsecureSkipVerify: true},
+		Name:         name,
+		Addr:         addr,
+		TLSConfig:    tlsconfig.Options{InsecureSkipVerify: true},
 		activateWait: sync.NewCond(&sync.Mutex{}),
 	}
 }
@@ -119,10 +102,10 @@ func (p *Plugin) activateWithLock() error {
 	if err != nil {
 		return err
 	}
-	p.client = c
+	p.Client = c
 
 	m := new(Manifest)
-	if err = p.client.Call("Plugin.Activate", nil, m); err != nil {
+	if err = p.Client.Call("Plugin.Activate", nil, m); err != nil {
 		return err
 	}
 
@@ -133,7 +116,7 @@ func (p *Plugin) activateWithLock() error {
 		if !handled {
 			continue
 		}
-		handler(p.name, p.client)
+		handler(p.Name, p.Client)
 	}
 	return nil
 }

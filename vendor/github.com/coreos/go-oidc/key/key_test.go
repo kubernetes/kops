@@ -76,7 +76,7 @@ func TestPublicKeyMarshalJSON(t *testing.T) {
 		Modulus:  big.NewInt(int64(17)),
 		Exponent: 65537,
 	}
-	want := `{"kid":"foo","kty":"RSA","alg":"RS256","use":"sig","e":"AQAB","n":"EQ=="}`
+	want := `{"kid":"foo","kty":"RSA","alg":"RS256","use":"sig","e":"AQAB","n":"EQ"}`
 	pubKey := NewPublicKey(k)
 	gotBytes, err := pubKey.MarshalJSON()
 	if err != nil {

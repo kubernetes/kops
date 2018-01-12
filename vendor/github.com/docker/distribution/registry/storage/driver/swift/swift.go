@@ -69,10 +69,8 @@ type Parameters struct {
 	DomainID            string
 	TrustID             string
 	Region              string
-	AuthVersion         int
 	Container           string
 	Prefix              string
-	EndpointType        string
 	InsecureSkipVerify  bool
 	ChunkSize           int
 	SecretKey           string
@@ -176,14 +174,12 @@ func New(params Parameters) (*Driver, error) {
 		ApiKey:         params.Password,
 		AuthUrl:        params.AuthURL,
 		Region:         params.Region,
-		AuthVersion:    params.AuthVersion,
 		UserAgent:      "distribution/" + version.Version,
 		Tenant:         params.Tenant,
 		TenantId:       params.TenantID,
 		Domain:         params.Domain,
 		DomainId:       params.DomainID,
 		TrustId:        params.TrustID,
-		EndpointType:   swift.EndpointType(params.EndpointType),
 		Transport:      transport,
 		ConnectTimeout: 60 * time.Second,
 		Timeout:        15 * 60 * time.Second,
@@ -302,40 +298,14 @@ func (d *driver) Reader(ctx context.Context, path string, offset int64) (io.Read
 	headers := make(swift.Headers)
 	headers["Range"] = "bytes=" + strconv.FormatInt(offset, 10) + "-"
 
-	waitingTime := readAfterWriteWait
-	endTime := time.Now().Add(readAfterWriteTimeout)
-
-	for {
-		file, headers, err := d.Conn.ObjectOpen(d.Container, d.swiftPath(path), false, headers)
-		if err != nil {
-			if err == swift.ObjectNotFound {
-				return nil, storagedriver.PathNotFoundError{Path: path}
-			}
-			if swiftErr, ok := err.(*swift.Error); ok && swiftErr.StatusCode == http.StatusRequestedRangeNotSatisfiable {
-				return ioutil.NopCloser(bytes.NewReader(nil)), nil
-			}
-			return file, err
-		}
-
-		//if this is a DLO and it is clear that segments are still missing,
-		//wait until they show up
-		_, isDLO := headers["X-Object-Manifest"]
-		size, err := file.Length()
-		if err != nil {
-			return file, err
-		}
-		if isDLO && size == 0 {
-			if time.Now().Add(waitingTime).After(endTime) {
-				return nil, fmt.Errorf("Timeout expired while waiting for segments of %s to show up", path)
-			}
-			time.Sleep(waitingTime)
-			waitingTime *= 2
-			continue
-		}
-
-		//if not, then this reader will be fine
-		return file, nil
+	file, _, err := d.Conn.ObjectOpen(d.Container, d.swiftPath(path), false, headers)
+	if err == swift.ObjectNotFound {
+		return nil, storagedriver.PathNotFoundError{Path: path}
 	}
+	if swiftErr, ok := err.(*swift.Error); ok && swiftErr.StatusCode == http.StatusRequestedRangeNotSatisfiable {
+		return ioutil.NopCloser(bytes.NewReader(nil)), nil
+	}
+	return file, err
 }
 
 // Writer returns a FileWriter which will store the content written to it
@@ -415,36 +385,17 @@ func (d *driver) Stat(ctx context.Context, path string) (storagedriver.FileInfo,
 	//Don't trust an empty `objects` slice. A container listing can be
 	//outdated. For files, we can make a HEAD request on the object which
 	//reports existence (at least) much more reliably.
-	waitingTime := readAfterWriteWait
-	endTime := time.Now().Add(readAfterWriteTimeout)
-
-	for {
-		info, headers, err := d.Conn.Object(d.Container, swiftPath)
-		if err != nil {
-			if err == swift.ObjectNotFound {
-				return nil, storagedriver.PathNotFoundError{Path: path}
-			}
-			return nil, err
+	info, _, err := d.Conn.Object(d.Container, swiftPath)
+	if err != nil {
+		if err == swift.ObjectNotFound {
+			return nil, storagedriver.PathNotFoundError{Path: path}
 		}
-
-		//if this is a DLO and it is clear that segments are still missing,
-		//wait until they show up
-		_, isDLO := headers["X-Object-Manifest"]
-		if isDLO && info.Bytes == 0 {
-			if time.Now().Add(waitingTime).After(endTime) {
-				return nil, fmt.Errorf("Timeout expired while waiting for segments of %s to show up", path)
-			}
-			time.Sleep(waitingTime)
-			waitingTime *= 2
-			continue
-		}
-
-		//otherwise, accept the result
-		fi.IsDir = false
-		fi.Size = info.Bytes
-		fi.ModTime = info.LastModified
-		return storagedriver.FileInfoInternal{FileInfoFields: fi}, nil
+		return nil, err
 	}
+	fi.IsDir = false
+	fi.Size = info.Bytes
+	fi.ModTime = info.LastModified
+	return storagedriver.FileInfoInternal{FileInfoFields: fi}, nil
 }
 
 // List returns a list of the objects that are direct descendants of the given path.
@@ -791,9 +742,6 @@ func (w *writer) Close() error {
 		if err := w.driver.createManifest(w.path, w.driver.Container+"/"+w.segmentsPath); err != nil {
 			return err
 		}
-		if err := w.waitForSegmentsToShowUp(); err != nil {
-			return err
-		}
 	}
 	w.closed = true
 
@@ -828,14 +776,10 @@ func (w *writer) Commit() error {
 	}
 
 	w.committed = true
-	return w.waitForSegmentsToShowUp()
-}
 
-func (w *writer) waitForSegmentsToShowUp() error {
 	var err error
 	waitingTime := readAfterWriteWait
 	endTime := time.Now().Add(readAfterWriteTimeout)
-
 	for {
 		var info swift.Object
 		if info, _, err = w.driver.Conn.Object(w.driver.Container, w.driver.swiftPath(w.path)); err == nil {

@@ -30,16 +30,16 @@ import (
 
 	"gopkg.in/gcfg.v1"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/util/flowcontrol"
 	"k8s.io/kubernetes/pkg/api/v1"
 	apiservice "k8s.io/kubernetes/pkg/api/v1/service"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/cloudprovider"
-	"k8s.io/kubernetes/pkg/types"
-	utilerrors "k8s.io/kubernetes/pkg/util/errors"
-	"k8s.io/kubernetes/pkg/util/flowcontrol"
 	netsets "k8s.io/kubernetes/pkg/util/net/sets"
-	"k8s.io/kubernetes/pkg/util/sets"
-	"k8s.io/kubernetes/pkg/util/wait"
 	"k8s.io/kubernetes/pkg/volume"
 
 	"cloud.google.com/go/compute/metadata"
@@ -2484,7 +2484,12 @@ func (gce *GCECloud) CreateDisk(name string, diskType string, zone string, sizeG
 		return err
 	}
 
-	return gce.waitForZoneOp(createOp, zone)
+	err = gce.waitForZoneOp(createOp, zone)
+	if isGCEError(err, "alreadyExists") {
+		glog.Warningf("GCE PD %q already exists, reusing", name)
+		return nil
+	}
+	return err
 }
 
 func (gce *GCECloud) doDeleteDisk(diskToDelete string) error {
@@ -2505,6 +2510,10 @@ func (gce *GCECloud) DeleteDisk(diskToDelete string) error {
 	err := gce.doDeleteDisk(diskToDelete)
 	if isGCEError(err, "resourceInUseByAnotherResource") {
 		return volume.NewDeletedVolumeInUseError(err.Error())
+	}
+
+	if err == cloudprovider.DiskNotFound {
+		return nil
 	}
 	return err
 }
@@ -2588,7 +2597,7 @@ func (gce *GCECloud) AttachDisk(diskName string, nodeName types.NodeName, readOn
 	}
 	attachedDisk := gce.convertDiskToAttachedDisk(disk, readWrite)
 
-	attachOp, err := gce.service.Instances.AttachDisk(gce.projectID, disk.Zone, instanceName, attachedDisk).Do()
+	attachOp, err := gce.service.Instances.AttachDisk(gce.projectID, disk.Zone, instance.Name, attachedDisk).Do()
 	if err != nil {
 		return err
 	}
@@ -2707,6 +2716,7 @@ func (gce *GCECloud) getDiskByName(diskName string, zone string) (*gceDisk, erro
 
 // Scans all managed zones to return the GCE PD
 // Prefer getDiskByName, if the zone can be established
+// Return cloudprovider.DiskNotFound if the given disk cannot be found in any zone
 func (gce *GCECloud) getDiskByNameUnknownZone(diskName string) (*gceDisk, error) {
 	// Note: this is the gotcha right now with GCE PD support:
 	// disk names are not unique per-region.
@@ -2737,7 +2747,8 @@ func (gce *GCECloud) getDiskByNameUnknownZone(diskName string) (*gceDisk, error)
 	if found != nil {
 		return found, nil
 	}
-	return nil, fmt.Errorf("GCE persistent disk %q not found in managed zones (%s)", diskName, strings.Join(gce.managedZones, ","))
+	glog.Warningf("GCE persistent disk %q not found in managed zones (%s)", diskName, strings.Join(gce.managedZones, ","))
+	return nil, cloudprovider.DiskNotFound
 }
 
 // GetGCERegion returns region of the gce zone. Zone names

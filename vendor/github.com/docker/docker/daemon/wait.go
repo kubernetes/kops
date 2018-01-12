@@ -1,10 +1,6 @@
 package daemon
 
-import (
-	"time"
-
-	"golang.org/x/net/context"
-)
+import "time"
 
 // ContainerWait stops processing until the given container is
 // stopped. If the container is not found, an error is returned. On a
@@ -18,15 +14,4 @@ func (daemon *Daemon) ContainerWait(name string, timeout time.Duration) (int, er
 	}
 
 	return container.WaitStop(timeout)
-}
-
-// ContainerWaitWithContext returns a channel where exit code is sent
-// when container stops. Channel can be cancelled with a context.
-func (daemon *Daemon) ContainerWaitWithContext(ctx context.Context, name string) error {
-	container, err := daemon.GetContainer(name)
-	if err != nil {
-		return err
-	}
-
-	return container.WaitWithContext(ctx)
 }

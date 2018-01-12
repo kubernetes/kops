@@ -52,9 +52,8 @@ func (c *CognitoIdentityProvider) AddCustomAttributesRequest(input *AddCustomAtt
 		input = &AddCustomAttributesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddCustomAttributesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -137,11 +136,10 @@ func (c *CognitoIdentityProvider) AdminAddUserToGroupRequest(input *AdminAddUser
 		input = &AdminAddUserToGroupInput{}
 	}
 
+	output = &AdminAddUserToGroupOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &AdminAddUserToGroupOutput{}
-	req.Data = output
 	return
 }
 
@@ -225,9 +223,8 @@ func (c *CognitoIdentityProvider) AdminConfirmSignUpRequest(input *AdminConfirmS
 		input = &AdminConfirmSignUpInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminConfirmSignUpOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -332,9 +329,8 @@ func (c *CognitoIdentityProvider) AdminCreateUserRequest(input *AdminCreateUserI
 		input = &AdminCreateUserInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminCreateUserOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -461,11 +457,10 @@ func (c *CognitoIdentityProvider) AdminDeleteUserRequest(input *AdminDeleteUserI
 		input = &AdminDeleteUserInput{}
 	}
 
+	output = &AdminDeleteUserOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &AdminDeleteUserOutput{}
-	req.Data = output
 	return
 }
 
@@ -549,9 +544,8 @@ func (c *CognitoIdentityProvider) AdminDeleteUserAttributesRequest(input *AdminD
 		input = &AdminDeleteUserAttributesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminDeleteUserAttributesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -636,9 +630,8 @@ func (c *CognitoIdentityProvider) AdminDisableUserRequest(input *AdminDisableUse
 		input = &AdminDisableUserInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminDisableUserOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -722,9 +715,8 @@ func (c *CognitoIdentityProvider) AdminEnableUserRequest(input *AdminEnableUserI
 		input = &AdminEnableUserInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminEnableUserOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -808,11 +800,10 @@ func (c *CognitoIdentityProvider) AdminForgetDeviceRequest(input *AdminForgetDev
 		input = &AdminForgetDeviceInput{}
 	}
 
+	output = &AdminForgetDeviceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &AdminForgetDeviceOutput{}
-	req.Data = output
 	return
 }
 
@@ -899,9 +890,8 @@ func (c *CognitoIdentityProvider) AdminGetDeviceRequest(input *AdminGetDeviceInp
 		input = &AdminGetDeviceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminGetDeviceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -985,9 +975,8 @@ func (c *CognitoIdentityProvider) AdminGetUserRequest(input *AdminGetUserInput) 
 		input = &AdminGetUserInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminGetUserOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1072,9 +1061,8 @@ func (c *CognitoIdentityProvider) AdminInitiateAuthRequest(input *AdminInitiateA
 		input = &AdminInitiateAuthInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminInitiateAuthOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1193,9 +1181,8 @@ func (c *CognitoIdentityProvider) AdminListDevicesRequest(input *AdminListDevice
 		input = &AdminListDevicesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminListDevicesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1279,9 +1266,8 @@ func (c *CognitoIdentityProvider) AdminListGroupsForUserRequest(input *AdminList
 		input = &AdminListGroupsForUserInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminListGroupsForUserOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1365,11 +1351,10 @@ func (c *CognitoIdentityProvider) AdminRemoveUserFromGroupRequest(input *AdminRe
 		input = &AdminRemoveUserFromGroupInput{}
 	}
 
+	output = &AdminRemoveUserFromGroupOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &AdminRemoveUserFromGroupOutput{}
-	req.Data = output
 	return
 }
 
@@ -1453,9 +1438,8 @@ func (c *CognitoIdentityProvider) AdminResetUserPasswordRequest(input *AdminRese
 		input = &AdminResetUserPasswordInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminResetUserPasswordOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1566,9 +1550,8 @@ func (c *CognitoIdentityProvider) AdminRespondToAuthChallengeRequest(input *Admi
 		input = &AdminRespondToAuthChallengeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminRespondToAuthChallengeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1704,9 +1687,8 @@ func (c *CognitoIdentityProvider) AdminSetUserSettingsRequest(input *AdminSetUse
 		input = &AdminSetUserSettingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminSetUserSettingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1786,9 +1768,8 @@ func (c *CognitoIdentityProvider) AdminUpdateDeviceStatusRequest(input *AdminUpd
 		input = &AdminUpdateDeviceStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminUpdateDeviceStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1875,9 +1856,8 @@ func (c *CognitoIdentityProvider) AdminUpdateUserAttributesRequest(input *AdminU
 		input = &AdminUpdateUserAttributesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminUpdateUserAttributesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1980,9 +1960,8 @@ func (c *CognitoIdentityProvider) AdminUserGlobalSignOutRequest(input *AdminUser
 		input = &AdminUserGlobalSignOutInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AdminUserGlobalSignOutOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2066,10 +2045,9 @@ func (c *CognitoIdentityProvider) ChangePasswordRequest(input *ChangePasswordInp
 		input = &ChangePasswordInput{}
 	}
 
+	output = &ChangePasswordOutput{}
 	req = c.newRequest(op, input, output)
 	req.Config.Credentials = credentials.AnonymousCredentials
-	output = &ChangePasswordOutput{}
-	req.Data = output
 	return
 }
 
@@ -2165,9 +2143,8 @@ func (c *CognitoIdentityProvider) ConfirmDeviceRequest(input *ConfirmDeviceInput
 		input = &ConfirmDeviceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ConfirmDeviceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2271,10 +2248,9 @@ func (c *CognitoIdentityProvider) ConfirmForgotPasswordRequest(input *ConfirmFor
 		input = &ConfirmForgotPasswordInput{}
 	}
 
+	output = &ConfirmForgotPasswordOutput{}
 	req = c.newRequest(op, input, output)
 	req.Config.Credentials = credentials.AnonymousCredentials
-	output = &ConfirmForgotPasswordOutput{}
-	req.Data = output
 	return
 }
 
@@ -2391,10 +2367,9 @@ func (c *CognitoIdentityProvider) ConfirmSignUpRequest(input *ConfirmSignUpInput
 		input = &ConfirmSignUpInput{}
 	}
 
+	output = &ConfirmSignUpOutput{}
 	req = c.newRequest(op, input, output)
 	req.Config.Credentials = credentials.AnonymousCredentials
-	output = &ConfirmSignUpOutput{}
-	req.Data = output
 	return
 }
 
@@ -2510,9 +2485,8 @@ func (c *CognitoIdentityProvider) CreateGroupRequest(input *CreateGroupInput) (r
 		input = &CreateGroupInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateGroupOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2601,9 +2575,8 @@ func (c *CognitoIdentityProvider) CreateUserImportJobRequest(input *CreateUserIm
 		input = &CreateUserImportJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateUserImportJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2689,9 +2662,8 @@ func (c *CognitoIdentityProvider) CreateUserPoolRequest(input *CreateUserPoolInp
 		input = &CreateUserPoolInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateUserPoolOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2788,9 +2760,8 @@ func (c *CognitoIdentityProvider) CreateUserPoolClientRequest(input *CreateUserP
 		input = &CreateUserPoolClientInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateUserPoolClientOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2873,11 +2844,10 @@ func (c *CognitoIdentityProvider) DeleteGroupRequest(input *DeleteGroupInput) (r
 		input = &DeleteGroupInput{}
 	}
 
+	output = &DeleteGroupOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteGroupOutput{}
-	req.Data = output
 	return
 }
 
@@ -2958,12 +2928,11 @@ func (c *CognitoIdentityProvider) DeleteUserRequest(input *DeleteUserInput) (req
 		input = &DeleteUserInput{}
 	}
 
+	output = &DeleteUserOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
 	req.Config.Credentials = credentials.AnonymousCredentials
-	output = &DeleteUserOutput{}
-	req.Data = output
 	return
 }
 
@@ -3051,10 +3020,9 @@ func (c *CognitoIdentityProvider) DeleteUserAttributesRequest(input *DeleteUserA
 		input = &DeleteUserAttributesInput{}
 	}
 
+	output = &DeleteUserAttributesOutput{}
 	req = c.newRequest(op, input, output)
 	req.Config.Credentials = credentials.AnonymousCredentials
-	output = &DeleteUserAttributesOutput{}
-	req.Data = output
 	return
 }
 
@@ -3142,11 +3110,10 @@ func (c *CognitoIdentityProvider) DeleteUserPoolRequest(input *DeleteUserPoolInp
 		input = &DeleteUserPoolInput{}
 	}
 
+	output = &DeleteUserPoolOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteUserPoolOutput{}
-	req.Data = output
 	return
 }
 
@@ -3229,11 +3196,10 @@ func (c *CognitoIdentityProvider) DeleteUserPoolClientRequest(input *DeleteUserP
 		input = &DeleteUserPoolClientInput{}
 	}
 
+	output = &DeleteUserPoolClientOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteUserPoolClientOutput{}
-	req.Data = output
 	return
 }
 
@@ -3312,9 +3278,8 @@ func (c *CognitoIdentityProvider) DescribeUserImportJobRequest(input *DescribeUs
 		input = &DescribeUserImportJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeUserImportJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3393,9 +3358,8 @@ func (c *CognitoIdentityProvider) DescribeUserPoolRequest(input *DescribeUserPoo
 		input = &DescribeUserPoolInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeUserPoolOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3478,9 +3442,8 @@ func (c *CognitoIdentityProvider) DescribeUserPoolClientRequest(input *DescribeU
 		input = &DescribeUserPoolClientInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeUserPoolClientOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3560,11 +3523,10 @@ func (c *CognitoIdentityProvider) ForgetDeviceRequest(input *ForgetDeviceInput) 
 		input = &ForgetDeviceInput{}
 	}
 
+	output = &ForgetDeviceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &ForgetDeviceOutput{}
-	req.Data = output
 	return
 }
 
@@ -3655,10 +3617,9 @@ func (c *CognitoIdentityProvider) ForgotPasswordRequest(input *ForgotPasswordInp
 		input = &ForgotPasswordInput{}
 	}
 
+	output = &ForgotPasswordOutput{}
 	req = c.newRequest(op, input, output)
 	req.Config.Credentials = credentials.AnonymousCredentials
-	output = &ForgotPasswordOutput{}
-	req.Data = output
 	return
 }
 
@@ -3776,9 +3737,8 @@ func (c *CognitoIdentityProvider) GetCSVHeaderRequest(input *GetCSVHeaderInput) 
 		input = &GetCSVHeaderInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetCSVHeaderOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3858,9 +3818,8 @@ func (c *CognitoIdentityProvider) GetDeviceRequest(input *GetDeviceInput) (req *
 		input = &GetDeviceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDeviceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3951,9 +3910,8 @@ func (c *CognitoIdentityProvider) GetGroupRequest(input *GetGroupInput) (req *re
 		input = &GetGroupInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetGroupOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4034,10 +3992,9 @@ func (c *CognitoIdentityProvider) GetUserRequest(input *GetUserInput) (req *requ
 		input = &GetUserInput{}
 	}
 
+	output = &GetUserOutput{}
 	req = c.newRequest(op, input, output)
 	req.Config.Credentials = credentials.AnonymousCredentials
-	output = &GetUserOutput{}
-	req.Data = output
 	return
 }
 
@@ -4125,10 +4082,9 @@ func (c *CognitoIdentityProvider) GetUserAttributeVerificationCodeRequest(input 
 		input = &GetUserAttributeVerificationCodeInput{}
 	}
 
+	output = &GetUserAttributeVerificationCodeOutput{}
 	req = c.newRequest(op, input, output)
 	req.Config.Credentials = credentials.AnonymousCredentials
-	output = &GetUserAttributeVerificationCodeOutput{}
-	req.Data = output
 	return
 }
 
@@ -4249,9 +4205,8 @@ func (c *CognitoIdentityProvider) GlobalSignOutRequest(input *GlobalSignOutInput
 		input = &GlobalSignOutInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GlobalSignOutOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4336,9 +4291,8 @@ func (c *CognitoIdentityProvider) InitiateAuthRequest(input *InitiateAuthInput) 
 		input = &InitiateAuthInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &InitiateAuthOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4441,9 +4395,8 @@ func (c *CognitoIdentityProvider) ListDevicesRequest(input *ListDevicesInput) (r
 		input = &ListDevicesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListDevicesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4534,9 +4487,8 @@ func (c *CognitoIdentityProvider) ListGroupsRequest(input *ListGroupsInput) (req
 		input = &ListGroupsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListGroupsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4617,9 +4569,8 @@ func (c *CognitoIdentityProvider) ListUserImportJobsRequest(input *ListUserImpor
 		input = &ListUserImportJobsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListUserImportJobsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4698,9 +4649,8 @@ func (c *CognitoIdentityProvider) ListUserPoolClientsRequest(input *ListUserPool
 		input = &ListUserPoolClientsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListUserPoolClientsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4779,9 +4729,8 @@ func (c *CognitoIdentityProvider) ListUserPoolsRequest(input *ListUserPoolsInput
 		input = &ListUserPoolsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListUserPoolsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4856,9 +4805,8 @@ func (c *CognitoIdentityProvider) ListUsersRequest(input *ListUsersInput) (req *
 		input = &ListUsersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListUsersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4937,9 +4885,8 @@ func (c *CognitoIdentityProvider) ListUsersInGroupRequest(input *ListUsersInGrou
 		input = &ListUsersInGroupInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListUsersInGroupOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5020,10 +4967,9 @@ func (c *CognitoIdentityProvider) ResendConfirmationCodeRequest(input *ResendCon
 		input = &ResendConfirmationCodeInput{}
 	}
 
+	output = &ResendConfirmationCodeOutput{}
 	req = c.newRequest(op, input, output)
 	req.Config.Credentials = credentials.AnonymousCredentials
-	output = &ResendConfirmationCodeOutput{}
-	req.Data = output
 	return
 }
 
@@ -5139,9 +5085,8 @@ func (c *CognitoIdentityProvider) RespondToAuthChallengeRequest(input *RespondTo
 		input = &RespondToAuthChallengeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RespondToAuthChallengeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5275,10 +5220,9 @@ func (c *CognitoIdentityProvider) SetUserSettingsRequest(input *SetUserSettingsI
 		input = &SetUserSettingsInput{}
 	}
 
+	output = &SetUserSettingsOutput{}
 	req = c.newRequest(op, input, output)
 	req.Config.Credentials = credentials.AnonymousCredentials
-	output = &SetUserSettingsOutput{}
-	req.Data = output
 	return
 }
 
@@ -5364,10 +5308,9 @@ func (c *CognitoIdentityProvider) SignUpRequest(input *SignUpInput) (req *reques
 		input = &SignUpInput{}
 	}
 
+	output = &SignUpOutput{}
 	req = c.newRequest(op, input, output)
 	req.Config.Credentials = credentials.AnonymousCredentials
-	output = &SignUpOutput{}
-	req.Data = output
 	return
 }
 
@@ -5484,9 +5427,8 @@ func (c *CognitoIdentityProvider) StartUserImportJobRequest(input *StartUserImpo
 		input = &StartUserImportJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartUserImportJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5568,9 +5510,8 @@ func (c *CognitoIdentityProvider) StopUserImportJobRequest(input *StopUserImport
 		input = &StopUserImportJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StopUserImportJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5652,9 +5593,8 @@ func (c *CognitoIdentityProvider) UpdateDeviceStatusRequest(input *UpdateDeviceS
 		input = &UpdateDeviceStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateDeviceStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5745,9 +5685,8 @@ func (c *CognitoIdentityProvider) UpdateGroupRequest(input *UpdateGroupInput) (r
 		input = &UpdateGroupInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateGroupOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -5828,10 +5767,9 @@ func (c *CognitoIdentityProvider) UpdateUserAttributesRequest(input *UpdateUserA
 		input = &UpdateUserAttributesInput{}
 	}
 
+	output = &UpdateUserAttributesOutput{}
 	req = c.newRequest(op, input, output)
 	req.Config.Credentials = credentials.AnonymousCredentials
-	output = &UpdateUserAttributesOutput{}
-	req.Data = output
 	return
 }
 
@@ -5961,9 +5899,8 @@ func (c *CognitoIdentityProvider) UpdateUserPoolRequest(input *UpdateUserPoolInp
 		input = &UpdateUserPoolInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateUserPoolOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -6066,9 +6003,8 @@ func (c *CognitoIdentityProvider) UpdateUserPoolClientRequest(input *UpdateUserP
 		input = &UpdateUserPoolClientInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateUserPoolClientOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -6148,10 +6084,9 @@ func (c *CognitoIdentityProvider) VerifyUserAttributeRequest(input *VerifyUserAt
 		input = &VerifyUserAttributeInput{}
 	}
 
+	output = &VerifyUserAttributeOutput{}
 	req = c.newRequest(op, input, output)
 	req.Config.Credentials = credentials.AnonymousCredentials
-	output = &VerifyUserAttributeOutput{}
-	req.Data = output
 	return
 }
 

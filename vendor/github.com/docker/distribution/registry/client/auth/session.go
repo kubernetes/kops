@@ -72,19 +72,15 @@ type endpointAuthorizer struct {
 }
 
 func (ea *endpointAuthorizer) ModifyRequest(req *http.Request) error {
-	pingPath := req.URL.Path
-	if v2Root := strings.Index(req.URL.Path, "/v2/"); v2Root != -1 {
-		pingPath = pingPath[:v2Root+4]
-	} else if v1Root := strings.Index(req.URL.Path, "/v1/"); v1Root != -1 {
-		pingPath = pingPath[:v1Root] + "/v2/"
-	} else {
+	v2Root := strings.Index(req.URL.Path, "/v2/")
+	if v2Root == -1 {
 		return nil
 	}
 
 	ping := url.URL{
 		Host:   req.URL.Host,
 		Scheme: req.URL.Scheme,
-		Path:   pingPath,
+		Path:   req.URL.Path[:v2Root+4],
 	}
 
 	challenges, err := ea.challenges.GetChallenges(ping)
@@ -153,19 +149,6 @@ type RepositoryScope struct {
 // using the scope grammar
 func (rs RepositoryScope) String() string {
 	return fmt.Sprintf("repository:%s:%s", rs.Repository, strings.Join(rs.Actions, ","))
-}
-
-// RegistryScope represents a token scope for access
-// to resources in the registry.
-type RegistryScope struct {
-	Name    string
-	Actions []string
-}
-
-// String returns the string representation of the user
-// using the scope grammar
-func (rs RegistryScope) String() string {
-	return fmt.Sprintf("registry:%s:%s", rs.Name, strings.Join(rs.Actions, ","))
 }
 
 // TokenHandlerOptions is used to configure a new token handler

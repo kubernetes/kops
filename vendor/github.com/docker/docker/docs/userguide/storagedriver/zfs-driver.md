@@ -129,29 +129,6 @@ Stop the Docker daemon. Then, ensure that you have a spare block device at
 `/dev/xvdb`. The device identifier may be be different in your environment and 
 you should substitute your own values throughout the procedure.
 
-### Install Zfs on Ubuntu 16.04 LTS
-
-1. If it is running, stop the Docker `daemon`.
-
-2. Install the `zfs` package.
-
-        $ sudo apt-get install -y zfs
-
-        Reading package lists... Done
-        Building dependency tree
-        <output truncated>
-
-3. Verify that the `zfs` module is loaded correctly.
-
-        $ lsmod | grep zfs
-
-        zfs                  2813952  3
-        zunicode              331776  1 zfs
-        zcommon                57344  1 zfs
-        znvpair                90112  2 zfs,zcommon
-        spl                   102400  3 zfs,zcommon,znvpair
-        zavl                   16384  1 zfs
-
 ### Install Zfs on Ubuntu 14.04 LTS
 
 1. If it is running, stop the Docker `daemon`.
@@ -161,7 +138,6 @@ you should substitute your own values throughout the procedure.
     This is required for the `add-apt-repository` command.
 
         $ sudo apt-get install -y software-properties-common
-
         Reading package lists... Done
         Building dependency tree
         <output truncated>
@@ -169,7 +145,6 @@ you should substitute your own values throughout the procedure.
 2. Add the `zfs-native` package archive.
 
         $ sudo add-apt-repository ppa:zfs-native/stable
-
          The native ZFS filesystem for Linux. Install the ubuntu-zfs package.
         <output truncated>
         gpg: key F6B0FC61: public key "Launchpad PPA for Native ZFS for Linux" imported
@@ -181,7 +156,6 @@ you should substitute your own values throughout the procedure.
 archives.
 
         $ sudo apt-get update
-
         Ign http://us-west-2.ec2.archive.ubuntu.com trusty InRelease
         Get:1 http://us-west-2.ec2.archive.ubuntu.com trusty-updates InRelease [64.4 kB]
         <output truncated>
@@ -191,7 +165,6 @@ archives.
 4. Install the `ubuntu-zfs` package.
 
         $ sudo apt-get install -y ubuntu-zfs
-
         Reading package lists... Done
         Building dependency tree
         <output truncated>
@@ -203,7 +176,6 @@ archives.
 6. Verify that it loaded correctly.
 
         $ lsmod | grep zfs
-
         zfs                  2768247  0
         zunicode              331170  1 zfs
         zcommon                55411  1 zfs
@@ -225,7 +197,6 @@ Once ZFS is installed and loaded, you're ready to configure ZFS for Docker.
 2. Check that the `zpool` exists.
 
         $ sudo zfs list
-
         NAME            USED  AVAIL    REFER  MOUNTPOINT
         zpool-docker    55K   3.84G    19K    /zpool-docker
 
@@ -236,7 +207,6 @@ Once ZFS is installed and loaded, you're ready to configure ZFS for Docker.
 4. Check that the previous step worked.
 
         $ sudo zfs list -t all
-
         NAME                 USED  AVAIL  REFER  MOUNTPOINT
         zpool-docker         93.5K  3.84G    19K  /zpool-docker
         zpool-docker/docker  19K    3.84G    19K  /var/lib/docker
@@ -247,19 +217,17 @@ Once ZFS is installed and loaded, you're ready to configure ZFS for Docker.
 5. Start the Docker daemon.
 
         $ sudo service docker start
-
         docker start/running, process 2315
 
     The procedure for starting the Docker daemon may differ depending on the
     Linux distribution you are using. It is possible to force the Docker daemon
     to start with the `zfs` storage driver by passing the 
-    `--storage-driver=zfs`flag to the `dockerd` command, or to the 
+    `--storage-driver=zfs`flag to the `docker daemon` command, or to the 
     `DOCKER_OPTS` line in the Docker config file.
 
 6. Verify that the daemon is using the `zfs` storage driver.
 
         $ sudo docker info
-
         Containers: 0
         Images: 0
         Storage Driver: zfs

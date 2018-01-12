@@ -80,41 +80,15 @@ func slurpSubs(it *SubscriptionIterator) ([]*Subscription, error) {
 	}
 }
 
-func TestSubscriptionID(t *testing.T) {
-	const id = "id"
-	calls := []subListCall{
-		{
-			subs:   []string{"projects/projid/subscriptions/s1", "projects/projid/subscriptions/s2"},
-			outTok: "",
-		},
-	}
-	serv := &subListService{calls: calls, t: t}
-	c := &Client{projectID: "projid", s: serv}
-	s := c.Subscription(id)
-	if got, want := s.ID(), id; got != want {
-		t.Errorf("Subscription.ID() = %q; want %q", got, want)
-	}
-	want := []string{"s1", "s2"}
-	subs, err := slurpSubs(c.Subscriptions(context.Background()))
-	if err != nil {
-		t.Errorf("error listing subscriptions: %v", err)
-	}
-	for i, s := range subs {
-		if got, want := s.ID(), want[i]; got != want {
-			t.Errorf("Subscription.ID() = %q; want %q", got, want)
-		}
-	}
-}
-
 func TestListProjectSubscriptions(t *testing.T) {
 	calls := []subListCall{
 		{
-			subs:   []string{"projects/projid/subscriptions/s1", "projects/projid/subscriptions/s2"},
+			subs:   []string{"s1", "s2"},
 			outTok: "a",
 		},
 		{
 			inTok:  "a",
-			subs:   []string{"projects/projid/subscriptions/s3"},
+			subs:   []string{"s3"},
 			outTok: "",
 		},
 	}
@@ -125,10 +99,7 @@ func TestListProjectSubscriptions(t *testing.T) {
 		t.Errorf("error listing subscriptions: %v", err)
 	}
 	got := subNames(subs)
-	want := []string{
-		"projects/projid/subscriptions/s1",
-		"projects/projid/subscriptions/s2",
-		"projects/projid/subscriptions/s3"}
+	want := []string{"s1", "s2", "s3"}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("sub list: got: %v, want: %v", got, want)
 	}
@@ -140,12 +111,12 @@ func TestListProjectSubscriptions(t *testing.T) {
 func TestListTopicSubscriptions(t *testing.T) {
 	calls := []subListCall{
 		{
-			subs:   []string{"projects/projid/subscriptions/s1", "projects/projid/subscriptions/s2"},
+			subs:   []string{"s1", "s2"},
 			outTok: "a",
 		},
 		{
 			inTok:  "a",
-			subs:   []string{"projects/projid/subscriptions/s3"},
+			subs:   []string{"s3"},
 			outTok: "",
 		},
 	}
@@ -156,10 +127,7 @@ func TestListTopicSubscriptions(t *testing.T) {
 		t.Errorf("error listing subscriptions: %v", err)
 	}
 	got := subNames(subs)
-	want := []string{
-		"projects/projid/subscriptions/s1",
-		"projects/projid/subscriptions/s2",
-		"projects/projid/subscriptions/s3"}
+	want := []string{"s1", "s2", "s3"}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("sub list: got: %v, want: %v", got, want)
 	}

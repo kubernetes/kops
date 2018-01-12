@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
+	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -252,6 +253,10 @@ func (e *InstanceTemplate) mapToGCE(project string) (*compute.InstanceTemplate, 
 	return i, nil
 }
 
+func (e *InstanceTemplate) URL(project string) string {
+	return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/global/instanceTemplates/%s", project, fi.StringValue(e.Name))
+}
+
 func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *InstanceTemplate) error {
 	project := t.Cloud.Project
 
@@ -263,15 +268,47 @@ func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instanc
 	if a == nil {
 		glog.V(4).Infof("Creating InstanceTemplate %v", i)
 
-		_, err := t.Cloud.Compute.InstanceTemplates.Insert(t.Cloud.Project, i).Do()
+		op, err := t.Cloud.Compute.InstanceTemplates.Insert(t.Cloud.Project, i).Do()
 		if err != nil {
 			return fmt.Errorf("error creating InstanceTemplate: %v", err)
 		}
 
+		if err := t.Cloud.WaitForOp(op); err != nil {
+			return fmt.Errorf("error creating InstanceTemplate: %v", err)
+		}
 	} else {
 		// TODO: Make error again
-		glog.Errorf("Cannot apply changes to InstanceTemplate: %v", changes)
+		if changes.Metadata != nil {
+			for k, ev := range e.Metadata {
+				av := a.Metadata[k]
+				if av == nil {
+					glog.Infof("Metadata %q not found", k)
+					continue
+				}
+
+				evString, err := ev.AsString()
+				if err != nil {
+					glog.Infof("Expected.Metadata.%s could not be rendered: %v", k, err)
+					continue
+				}
+				avString, err := av.AsString()
+				if err != nil {
+					glog.Infof("Actual.Metadata.%s could not be rendered: %v", k, err)
+					continue
+				}
+
+				if evString == avString {
+					continue
+				}
+
+				glog.Infof("Difference in Metadata.%s:", k)
+				glog.Infof("%s", diff.FormatDiff(avString, evString))
+			}
+		}
+
+		// TODO: Make error again
 		//return fmt.Errorf("Cannot apply changes to InstanceTemplate: %v", changes)
+		glog.Warningf("Cannot apply changes to InstanceTemplate: %v", changes)
 	}
 
 	return nil

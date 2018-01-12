@@ -77,7 +77,7 @@ func blobUploadDispatcher(ctx *Context, r *http.Request) http.Handler {
 
 		if size := upload.Size(); size != buh.State.Offset {
 			defer upload.Close()
-			ctxu.GetLogger(ctx).Errorf("upload resumed at wrong offest: %d != %d", size, buh.State.Offset)
+			ctxu.GetLogger(ctx).Infof("upload resumed at wrong offest: %d != %d", size, buh.State.Offset)
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				buh.Errors = append(buh.Errors, v2.ErrorCodeBlobUploadInvalid.WithDetail(err))
 				upload.Cancel(buh)
@@ -134,6 +134,7 @@ func (buh *blobUploadHandler) StartBlobUpload(w http.ResponseWriter, r *http.Req
 	}
 
 	buh.Upload = upload
+	defer buh.Upload.Close()
 
 	if err := buh.blobUploadResponse(w, r, true); err != nil {
 		buh.Errors = append(buh.Errors, errcode.ErrorCodeUnknown.WithDetail(err))
@@ -223,8 +224,11 @@ func (buh *blobUploadHandler) PutBlobUploadComplete(w http.ResponseWriter, r *ht
 		return
 	}
 
+	size := buh.Upload.Size()
+
 	desc, err := buh.Upload.Commit(buh, distribution.Descriptor{
 		Digest: dgst,
+		Size:   size,
 
 		// TODO(stevvooe): This isn't wildly important yet, but we should
 		// really set the mediatype. For now, we can let the backend take care
@@ -235,8 +239,6 @@ func (buh *blobUploadHandler) PutBlobUploadComplete(w http.ResponseWriter, r *ht
 		switch err := err.(type) {
 		case distribution.ErrBlobInvalidDigest:
 			buh.Errors = append(buh.Errors, v2.ErrorCodeDigestInvalid.WithDetail(err))
-		case errcode.Error:
-			buh.Errors = append(buh.Errors, err)
 		default:
 			switch err {
 			case distribution.ErrAccessDenied:
@@ -246,7 +248,7 @@ func (buh *blobUploadHandler) PutBlobUploadComplete(w http.ResponseWriter, r *ht
 			case distribution.ErrBlobInvalidLength, distribution.ErrBlobDigestUnsupported:
 				buh.Errors = append(buh.Errors, v2.ErrorCodeBlobUploadInvalid.WithDetail(err))
 			default:
-				ctxu.GetLogger(buh).Errorf("unknown error completing upload: %v", err)
+				ctxu.GetLogger(buh).Errorf("unknown error completing upload: %#v", err)
 				buh.Errors = append(buh.Errors, errcode.ErrorCodeUnknown.WithDetail(err))
 			}
 
@@ -291,7 +293,6 @@ func (buh *blobUploadHandler) blobUploadResponse(w http.ResponseWriter, r *http.
 	// TODO(stevvooe): Need a better way to manage the upload state automatically.
 	buh.State.Name = buh.Repository.Named().Name()
 	buh.State.UUID = buh.Upload.ID()
-	buh.Upload.Close()
 	buh.State.Offset = buh.Upload.Size()
 	buh.State.StartedAt = buh.Upload.StartedAt()
 

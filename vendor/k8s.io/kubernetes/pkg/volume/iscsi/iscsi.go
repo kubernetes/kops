@@ -22,8 +22,8 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/types"
 	"k8s.io/kubernetes/pkg/util/exec"
 	"k8s.io/kubernetes/pkg/util/mount"
 	utilstrings "k8s.io/kubernetes/pkg/util/strings"
@@ -82,6 +82,14 @@ func (plugin *iscsiPlugin) RequiresRemount() bool {
 	return false
 }
 
+func (plugin *iscsiPlugin) SupportsMountOption() bool {
+	return true
+}
+
+func (plugin *iscsiPlugin) SupportsBulkVolumeVerification() bool {
+	return false
+}
+
 func (plugin *iscsiPlugin) GetAccessModes() []v1.PersistentVolumeAccessMode {
 	return []v1.PersistentVolumeAccessMode{
 		v1.ReadWriteOnce,
@@ -104,23 +112,28 @@ func (plugin *iscsiPlugin) newMounterInternal(spec *volume.Spec, podUID types.UI
 
 	lun := strconv.Itoa(int(iscsi.Lun))
 	portal := portalMounter(iscsi.TargetPortal)
-
+	var bkportal []string
+	bkportal = append(bkportal, portal)
+	for _, tp := range iscsi.Portals {
+		bkportal = append(bkportal, portalMounter(string(tp)))
+	}
 	iface := iscsi.ISCSIInterface
 
 	return &iscsiDiskMounter{
 		iscsiDisk: &iscsiDisk{
 			podUID:  podUID,
 			volName: spec.Name(),
-			portal:  portal,
+			portals: bkportal,
 			iqn:     iscsi.IQN,
 			lun:     lun,
 			iface:   iface,
 			manager: manager,
 			plugin:  plugin},
-		fsType:     iscsi.FSType,
-		readOnly:   readOnly,
-		mounter:    &mount.SafeFormatAndMount{Interface: mounter, Runner: exec.New()},
-		deviceUtil: ioutil.NewDeviceHandler(ioutil.NewIOHandler()),
+		fsType:       iscsi.FSType,
+		readOnly:     readOnly,
+		mounter:      &mount.SafeFormatAndMount{Interface: mounter, Runner: exec.New()},
+		deviceUtil:   ioutil.NewDeviceHandler(ioutil.NewIOHandler()),
+		mountOptions: volume.MountOptionFromSpec(spec),
 	}, nil
 }
 
@@ -162,7 +175,7 @@ func (plugin *iscsiPlugin) ConstructVolumeSpec(volumeName, mountPath string) (*v
 type iscsiDisk struct {
 	volName string
 	podUID  types.UID
-	portal  string
+	portals []string
 	iqn     string
 	lun     string
 	iface   string
@@ -180,10 +193,11 @@ func (iscsi *iscsiDisk) GetPath() string {
 
 type iscsiDiskMounter struct {
 	*iscsiDisk
-	readOnly   bool
-	fsType     string
-	mounter    *mount.SafeFormatAndMount
-	deviceUtil ioutil.DeviceUtil
+	readOnly     bool
+	fsType       string
+	mounter      *mount.SafeFormatAndMount
+	deviceUtil   ioutil.DeviceUtil
+	mountOptions []string
 }
 
 var _ volume.Mounter = &iscsiDiskMounter{}
@@ -230,6 +244,12 @@ func (c *iscsiDiskUnmounter) TearDown() error {
 }
 
 func (c *iscsiDiskUnmounter) TearDownAt(dir string) error {
+	if pathExists, pathErr := ioutil.PathExists(dir); pathErr != nil {
+		return fmt.Errorf("Error checking if path exists: %v", pathErr)
+	} else if !pathExists {
+		glog.Warningf("Warning: Unmount skipped because path does not exist: %v", dir)
+		return nil
+	}
 	return diskTearDown(c.manager, *c, dir, c.mounter)
 }
 

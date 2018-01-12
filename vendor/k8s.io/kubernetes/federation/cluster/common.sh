@@ -13,7 +13,67 @@
 # limitations under the License.
 
 # required:
-# KUBE_ROOT: path of the root of the Kubernetes reposiitory
+# KUBE_ROOT: path of the root of the Kubernetes repository
+
+: "${KUBE_ROOT?Must set KUBE_ROOT env var}"
+
+# Provides the $KUBERNETES_PROVIDER, kubeconfig-federation-context()
+# and detect-project function
+source "${KUBE_ROOT}/cluster/kube-util.sh"
+
+# kubefed configuration
+FEDERATION_NAME="${FEDERATION_NAME:-e2e-federation}"
+FEDERATION_NAMESPACE=${FEDERATION_NAMESPACE:-federation-system}
+FEDERATION_KUBE_CONTEXT="${FEDERATION_KUBE_CONTEXT:-e2e-federation}"
+HOST_CLUSTER_ZONE="${FEDERATION_HOST_CLUSTER_ZONE:-}"
+# If $HOST_CLUSTER_ZONE isn't specified, arbitrarily choose
+# last zone as the host cluster zone.
+if [[ -z "${HOST_CLUSTER_ZONE}" ]]; then
+  E2E_ZONES_ARR=(${E2E_ZONES:-})
+  if [[ ${#E2E_ZONES_ARR[@]} > 0 ]]; then
+    HOST_CLUSTER_ZONE=${E2E_ZONES_ARR[-1]}
+  fi
+fi
+
+HOST_CLUSTER_CONTEXT="${FEDERATION_HOST_CLUSTER_CONTEXT:-}"
+if [[ -z "${HOST_CLUSTER_CONTEXT}" ]]; then
+  # Sets ${CLUSTER_CONTEXT}
+  if [[ -z "${HOST_CLUSTER_ZONE:-}" ]]; then
+    echo "At least one of FEDERATION_HOST_CLUSTER_CONTEXT, FEDERATION_HOST_CLUSTER_ZONE or E2E_ZONES is required."
+    exit 1
+  fi
+  kubeconfig-federation-context "${HOST_CLUSTER_ZONE:-}"
+  HOST_CLUSTER_CONTEXT="${CLUSTER_CONTEXT}"
+fi
+
+# kube-dns configuration.
+KUBEDNS_CONFIGMAP_NAME="kube-dns"
+KUBEDNS_CONFIGMAP_NAMESPACE="kube-system"
+KUBEDNS_FEDERATION_FLAG="federations"
+
+function federation_cluster_contexts() {
+  local -r contexts=$("${KUBE_ROOT}/cluster/kubectl.sh" config get-contexts -o name)
+  federation_contexts=()
+  for context in ${contexts}; do
+    # Skip federation context
+    if [[ "${context}" == "${FEDERATION_NAME}" ]]; then
+      continue
+    fi
+    # Skip contexts not beginning with "federation"
+    if [[ "${context}" != federation* ]]; then
+      continue
+    fi
+    federation_contexts+=("${context}")
+  done
+  echo ${federation_contexts[@]}
+}
+
+
+#-----------------------------------------------------------------#
+# NOTE:                                                           #
+# Everything below this line is deprecated. It will be removed    #
+# once we have sufficient confidence in kubefed based testing.    #
+#-----------------------------------------------------------------#
 
 # optional override
 # FEDERATION_IMAGE_REPO_BASE: repo which federated images are tagged under (default gcr.io/google_containers)
@@ -22,10 +82,9 @@
 # KUBE_ARCH
 # KUBE_BUILD_STAGE
 
-: "${KUBE_ROOT?Must set KUBE_ROOT env var}"
+source "${KUBE_ROOT}/cluster/common.sh"
 
-# Provides the $KUBERNETES_PROVIDER variable and detect-project function
-source "${KUBE_ROOT}/cluster/kube-util.sh"
+host_kubectl="${KUBE_ROOT}/cluster/kubectl.sh --namespace=${FEDERATION_NAMESPACE}"
 
 # If $FEDERATION_PUSH_REPO_BASE isn't set, then set the GCR registry name
 # based on the detected project name for gce and gke providers.
@@ -46,7 +105,6 @@ if [[ -z "${FEDERATION_PUSH_REPO_BASE}" ]]; then
 fi
 
 FEDERATION_IMAGE_REPO_BASE=${FEDERATION_IMAGE_REPO_BASE:-'gcr.io/google_containers'}
-FEDERATION_NAMESPACE=${FEDERATION_NAMESPACE:-federation-system}
 
 KUBE_PLATFORM=${KUBE_PLATFORM:-linux}
 KUBE_ARCH=${KUBE_ARCH:-amd64}
@@ -160,7 +218,7 @@ function create-federation-api-objects {
     gen-kube-basicauth
     export FEDERATION_API_BASIC_AUTH="${KUBE_PASSWORD},${KUBE_USER},admin"
 
-    # Create a kubeconfig with credentails for federation-apiserver. We will
+    # Create a kubeconfig with credentials for federation-apiserver. We will
     # then use this kubeconfig to create a secret which the federation
     # controller manager can use to talk to the federation-apiserver.
     # Note that the file name should be "kubeconfig" so that the secret key gets the same name.
@@ -203,12 +261,14 @@ function create-federation-api-objects {
     export FEDERATION_ADMISSION_CONTROL="${FEDERATION_ADMISSION_CONTROL:-NamespaceLifecycle}"
 
     for file in federation-etcd-pvc.yaml federation-apiserver-{deployment,secrets}.yaml federation-controller-manager-deployment.yaml; do
+      echo "Creating manifest: ${file}"
+      $template "${manifests_root}/${file}"
       $template "${manifests_root}/${file}" | $host_kubectl create -f -
     done
 
     # Update the users kubeconfig to include federation-apiserver credentials.
     CONTEXT=${FEDERATION_KUBE_CONTEXT} \
-	   KUBE_BEARER_TOKEN="$FEDERATION_API_TOKEN" \
+	   KUBE_BEARER_TOKEN="${FEDERATION_API_TOKEN}" \
            KUBE_USER="${KUBE_USER}" \
            KUBE_PASSWORD="${KUBE_PASSWORD}" \
 	   SECONDARY_KUBECONFIG=true \
@@ -333,7 +393,7 @@ function push-federation-images {
         # TODO(madhusudancs): Remove this code when the new turn up mechanism work
         # is merged.
         kube::log::status "Building docker image ${docker_image_tag} from the binary"
-        docker build -q -t "${docker_image_tag}" ${docker_build_path} >/dev/null
+        docker build --pull -q -t "${docker_image_tag}" ${docker_build_path} >/dev/null
 
         rm -rf ${docker_build_path}
 
@@ -356,4 +416,10 @@ function cleanup-federation-api-objects {
   $host_kubectl delete pods,svc,rc,deployment,secret -lapp=federated-cluster
   # Delete all resources in FEDERATION_NAMESPACE.
   $host_kubectl delete pvc,pv,pods,svc,rc,deployment,secret --namespace=${FEDERATION_NAMESPACE} --all
+  $host_kubectl delete ns ${FEDERATION_NAMESPACE}
+
+  # Poll until the namespace is completely gone.
+  while $host_kubectl get namespace ${FEDERATION_NAMESPACE} >/dev/null 2>&1; do
+    sleep 5
+  done
 }

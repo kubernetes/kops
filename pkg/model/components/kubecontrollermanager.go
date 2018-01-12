@@ -21,12 +21,12 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/loader"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 )
 
 const (
@@ -108,11 +108,13 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		return fmt.Errorf("unknown cloud provider %q", clusterSpec.CloudProvider)
 	}
 
-	kcm.PathSrvKubernetes = "/srv/kubernetes"
-	kcm.RootCAFile = "/srv/kubernetes/ca.crt"
-	kcm.ServiceAccountPrivateKeyFile = "/srv/kubernetes/server.key"
+	if kcm.Master == "" {
+		if b.Context.IsKubernetesLT("1.6") {
+			// As of 1.6, we find the master using kubeconfig
+			kcm.Master = "127.0.0.1:8080"
+		}
+	}
 
-	kcm.Master = "127.0.0.1:8080"
 	kcm.LogLevel = 2
 
 	image, err := Image("kube-controller-manager", clusterSpec)
@@ -140,7 +142,13 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		// Kopeio is based on kubenet / external
 		kcm.ConfigureCloudRoutes = fi.Bool(true)
 	} else {
-		return fmt.Errorf("No networking mode set")
+		return fmt.Errorf("no networking mode set")
+	}
+
+	if kcm.UseServiceAccountCredentials == nil {
+		if b.Context.IsKubernetesGTE("1.6") {
+			kcm.UseServiceAccountCredentials = fi.Bool(true)
+		}
 	}
 
 	return nil

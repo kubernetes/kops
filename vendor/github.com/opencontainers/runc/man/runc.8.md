@@ -39,8 +39,9 @@ value for "bundle" is the current directory.
    ps           displays the processes running inside a container
    restore      restore a container from a previous checkpoint
    resume       resumes all processes that have been previously paused
+   run          create and run a container
    spec         create a new specification file
-   start        create and run a container
+   start        executes the user defined process in a created container
    state        output the state of a container
    update       update container resource constraints
    help, h      Shows a list of commands or help for one command

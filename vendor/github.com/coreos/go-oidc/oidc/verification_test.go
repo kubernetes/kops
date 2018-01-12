@@ -192,43 +192,22 @@ func TestJWTVerifier(t *testing.T) {
 	}
 	pk2 := *key.NewPublicKey(priv2.JWK())
 
-	jwtPK1, err := jose.NewSignedJWT(NewClaims(iss, "XXX", "XXX", past12, future12), priv1.Signer())
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	jwtPK1BadClaims, err := jose.NewSignedJWT(NewClaims(iss, "XXX", "YYY", past12, future12), priv1.Signer())
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	jwtPK1BadClaims2, err := jose.NewSignedJWT(NewClaims(iss, "XXX", []string{"YYY", "ZZZ"}, past12, future12), priv1.Signer())
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	jwtExpired, err := jose.NewSignedJWT(NewClaims(iss, "XXX", "XXX", past36, past12), priv1.Signer())
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	jwtPK2, err := jose.NewSignedJWT(NewClaims(iss, "XXX", "XXX", past12, future12), priv2.Signer())
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	jwtPK3, err := jose.NewSignedJWT(NewClaims(iss, "XXX", []string{"ZZZ", "XXX"}, past12, future12), priv1.Signer())
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	newJWT := func(issuer, subject string, aud interface{}, issuedAt, exp time.Time, signer jose.Signer) jose.JWT {
+		jwt, err := jose.NewSignedJWT(NewClaims(issuer, subject, aud, issuedAt, exp), signer)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return *jwt
 	}
 
 	tests := []struct {
+		name     string
 		verifier JWTVerifier
 		jwt      jose.JWT
 		wantErr  bool
 	}{
-		// JWT signed with available key
 		{
+			name: "JWT signed with available key",
 			verifier: JWTVerifier{
 				issuer:   "example.com",
 				clientID: "XXX",
@@ -237,12 +216,11 @@ func TestJWTVerifier(t *testing.T) {
 					return []key.PublicKey{pk1}
 				},
 			},
-			jwt:     *jwtPK1,
+			jwt:     newJWT(iss, "XXX", "XXX", past12, future12, priv1.Signer()),
 			wantErr: false,
 		},
-
-		// JWT signed with available key, with bad claims
 		{
+			name: "JWT signed with available key, with bad claims",
 			verifier: JWTVerifier{
 				issuer:   "example.com",
 				clientID: "XXX",
@@ -251,12 +229,12 @@ func TestJWTVerifier(t *testing.T) {
 					return []key.PublicKey{pk1}
 				},
 			},
-			jwt:     *jwtPK1BadClaims,
+			jwt:     newJWT(iss, "XXX", "YYY", past12, future12, priv1.Signer()),
 			wantErr: true,
 		},
 
-		// JWT signed with available key,
 		{
+			name: "JWT signed with available key",
 			verifier: JWTVerifier{
 				issuer:   "example.com",
 				clientID: "XXX",
@@ -265,12 +243,12 @@ func TestJWTVerifier(t *testing.T) {
 					return []key.PublicKey{pk1}
 				},
 			},
-			jwt:     *jwtPK1BadClaims2,
+			jwt:     newJWT(iss, "XXX", []string{"YYY", "ZZZ"}, past12, future12, priv1.Signer()),
 			wantErr: true,
 		},
 
-		// expired JWT signed with available key
 		{
+			name: "expired JWT signed with available key",
 			verifier: JWTVerifier{
 				issuer:   "example.com",
 				clientID: "XXX",
@@ -279,12 +257,12 @@ func TestJWTVerifier(t *testing.T) {
 					return []key.PublicKey{pk1}
 				},
 			},
-			jwt:     *jwtExpired,
+			jwt:     newJWT(iss, "XXX", "XXX", past36, past12, priv1.Signer()),
 			wantErr: true,
 		},
 
-		// JWT signed with unrecognized key, verifiable after sync
 		{
+			name: "JWT signed with unrecognized key, verifiable after sync",
 			verifier: JWTVerifier{
 				issuer:   "example.com",
 				clientID: "XXX",
@@ -300,12 +278,12 @@ func TestJWTVerifier(t *testing.T) {
 					}
 				}(),
 			},
-			jwt:     *jwtPK2,
+			jwt:     newJWT(iss, "XXX", "XXX", past36, future12, priv2.Signer()),
 			wantErr: false,
 		},
 
-		// JWT signed with unrecognized key, not verifiable after sync
 		{
+			name: "JWT signed with unrecognized key, not verifiable after sync",
 			verifier: JWTVerifier{
 				issuer:   "example.com",
 				clientID: "XXX",
@@ -314,12 +292,12 @@ func TestJWTVerifier(t *testing.T) {
 					return []key.PublicKey{pk1}
 				},
 			},
-			jwt:     *jwtPK2,
+			jwt:     newJWT(iss, "XXX", "XXX", past12, future12, priv2.Signer()),
 			wantErr: true,
 		},
 
-		// verifier gets no keys from keysFunc, still not verifiable after sync
 		{
+			name: "verifier gets no keys from keysFunc, still not verifiable after sync",
 			verifier: JWTVerifier{
 				issuer:   "example.com",
 				clientID: "XXX",
@@ -328,12 +306,12 @@ func TestJWTVerifier(t *testing.T) {
 					return []key.PublicKey{}
 				},
 			},
-			jwt:     *jwtPK1,
+			jwt:     newJWT(iss, "XXX", "XXX", past12, future12, priv1.Signer()),
 			wantErr: true,
 		},
 
-		// verifier gets no keys from keysFunc, verifiable after sync
 		{
+			name: "verifier gets no keys from keysFunc, verifiable after sync",
 			verifier: JWTVerifier{
 				issuer:   "example.com",
 				clientID: "XXX",
@@ -349,12 +327,12 @@ func TestJWTVerifier(t *testing.T) {
 					}
 				}(),
 			},
-			jwt:     *jwtPK2,
+			jwt:     newJWT(iss, "XXX", "XXX", past12, future12, priv2.Signer()),
 			wantErr: false,
 		},
 
-		// JWT signed with available key, 'aud' is a string array.
 		{
+			name: "JWT signed with available key, 'aud' is a string array",
 			verifier: JWTVerifier{
 				issuer:   "example.com",
 				clientID: "XXX",
@@ -363,17 +341,40 @@ func TestJWTVerifier(t *testing.T) {
 					return []key.PublicKey{pk1}
 				},
 			},
-			jwt:     *jwtPK3,
+			jwt:     newJWT(iss, "XXX", []string{"ZZZ", "XXX"}, past12, future12, priv1.Signer()),
 			wantErr: false,
+		},
+		{
+			name: "invalid issuer claim shouldn't trigger sync",
+			verifier: JWTVerifier{
+				issuer:   "example.com",
+				clientID: "XXX",
+				syncFunc: func() error {
+					t.Errorf("invalid issuer claim shouldn't trigger a sync")
+					return nil
+				},
+				keysFunc: func() func() []key.PublicKey {
+					var i int
+					return func() []key.PublicKey {
+						defer func() { i++ }()
+						return [][]key.PublicKey{
+							[]key.PublicKey{},
+							[]key.PublicKey{pk2},
+						}[i]
+					}
+				}(),
+			},
+			jwt:     newJWT("invalid-issuer", "XXX", []string{"ZZZ", "XXX"}, past12, future12, priv2.Signer()),
+			wantErr: true,
 		},
 	}
 
-	for i, tt := range tests {
+	for _, tt := range tests {
 		err := tt.verifier.Verify(tt.jwt)
 		if tt.wantErr && (err == nil) {
-			t.Errorf("case %d: wanted non-nil error", i)
+			t.Errorf("case %q: wanted non-nil error", tt.name)
 		} else if !tt.wantErr && (err != nil) {
-			t.Errorf("case %d: wanted nil error, got %v", i, err)
+			t.Errorf("case %q: wanted nil error, got %v", tt.name, err)
 		}
 	}
 }

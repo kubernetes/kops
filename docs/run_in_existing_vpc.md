@@ -80,7 +80,7 @@ but it's better to avoid the later confusion!)
 
 ### Shared Subnets
 
-`kops` can create a cluster in shared subnets in both public and private network [topologies](topology.md). Doing so is not recommended unless you are using [external networking](docs/networking.md#supported-cni-networking)
+`kops` can create a cluster in shared subnets in both public and private network [topologies](topology.md). Doing so is not recommended unless you are using [external networking](networking.md#supported-cni-networking)
 
 After creating a basic cluster spec, edit your cluster to add the ID of the subnet:
 
@@ -118,7 +118,7 @@ If you run in AWS private topology with shared subnets, and you would like Kuber
 
 ### Shared NAT Gateways
 
-On AWS in private [topology](docs/topology.md), `kops` creates one NAT Gateway (NGW) per AZ. If your shared VPC is already set up with an NGW in the subnet that `kops` deploys private resources to, it is possible to specify the ID and have `kops`/`kubernetes` use it.
+On AWS in private [topology](topology.md), `kops` creates one NAT Gateway (NGW) per AZ. If your shared VPC is already set up with an NGW in the subnet that `kops` deploys private resources to, it is possible to specify the ID and have `kops`/`kubernetes` use it.
 
 After creating a basic cluster spec, edit your cluster to specify NGW:
 

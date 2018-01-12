@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"strconv"
 	"strings"
-	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -191,7 +190,7 @@ func TestUserSuppliedLevelFieldHasPrefix(t *testing.T) {
 		log.WithField("level", 1).Info("test")
 	}, func(fields Fields) {
 		assert.Equal(t, fields["level"], "info")
-		assert.Equal(t, fields["fields.level"], 1.0) // JSON has floats only
+		assert.Equal(t, fields["fields.level"], 1)
 	})
 }
 
@@ -224,7 +223,7 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 
 	err := json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded first message")
-	assert.Equal(t, len(fields), 4, "should only have msg/time/level/context fields")
+	assert.Len(t, fields, 4, "should only have msg/time/level/context fields")
 	assert.Equal(t, fields["msg"], "looks delicious")
 	assert.Equal(t, fields["context"], "eating raw fish")
 
@@ -234,7 +233,7 @@ func TestDoubleLoggingDoesntPrefixPreviousFields(t *testing.T) {
 
 	err = json.Unmarshal(buffer.Bytes(), &fields)
 	assert.NoError(t, err, "should have decoded second message")
-	assert.Equal(t, len(fields), 4, "should only have msg/time/level/context fields")
+	assert.Len(t, fields, 4, "should only have msg/time/level/context fields")
 	assert.Equal(t, fields["msg"], "omg it is!")
 	assert.Equal(t, fields["context"], "eating raw fish")
 	assert.Nil(t, fields["fields.msg"], "should not have prefixed previous `msg` entry")
@@ -255,15 +254,7 @@ func TestParseLevel(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, PanicLevel, l)
 
-	l, err = ParseLevel("PANIC")
-	assert.Nil(t, err)
-	assert.Equal(t, PanicLevel, l)
-
 	l, err = ParseLevel("fatal")
-	assert.Nil(t, err)
-	assert.Equal(t, FatalLevel, l)
-
-	l, err = ParseLevel("FATAL")
 	assert.Nil(t, err)
 	assert.Equal(t, FatalLevel, l)
 
@@ -271,15 +262,7 @@ func TestParseLevel(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, ErrorLevel, l)
 
-	l, err = ParseLevel("ERROR")
-	assert.Nil(t, err)
-	assert.Equal(t, ErrorLevel, l)
-
 	l, err = ParseLevel("warn")
-	assert.Nil(t, err)
-	assert.Equal(t, WarnLevel, l)
-
-	l, err = ParseLevel("WARN")
 	assert.Nil(t, err)
 	assert.Equal(t, WarnLevel, l)
 
@@ -287,15 +270,7 @@ func TestParseLevel(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, WarnLevel, l)
 
-	l, err = ParseLevel("WARNING")
-	assert.Nil(t, err)
-	assert.Equal(t, WarnLevel, l)
-
 	l, err = ParseLevel("info")
-	assert.Nil(t, err)
-	assert.Equal(t, InfoLevel, l)
-
-	l, err = ParseLevel("INFO")
 	assert.Nil(t, err)
 	assert.Equal(t, InfoLevel, l)
 
@@ -303,59 +278,6 @@ func TestParseLevel(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, DebugLevel, l)
 
-	l, err = ParseLevel("DEBUG")
-	assert.Nil(t, err)
-	assert.Equal(t, DebugLevel, l)
-
 	l, err = ParseLevel("invalid")
 	assert.Equal(t, "not a valid logrus Level: \"invalid\"", err.Error())
-}
-
-func TestGetSetLevelRace(t *testing.T) {
-	wg := sync.WaitGroup{}
-	for i := 0; i < 100; i++ {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			if i%2 == 0 {
-				SetLevel(InfoLevel)
-			} else {
-				GetLevel()
-			}
-		}(i)
-
-	}
-	wg.Wait()
-}
-
-func TestLoggingRace(t *testing.T) {
-	logger := New()
-
-	var wg sync.WaitGroup
-	wg.Add(100)
-
-	for i := 0; i < 100; i++ {
-		go func() {
-			logger.Info("info")
-			wg.Done()
-		}()
-	}
-	wg.Wait()
-}
-
-// Compile test
-func TestLogrusInterface(t *testing.T) {
-	var buffer bytes.Buffer
-	fn := func(l FieldLogger) {
-		b := l.WithField("key", "value")
-		b.Debug("Test")
-	}
-	// test logger
-	logger := New()
-	logger.Out = &buffer
-	fn(logger)
-
-	// test Entry
-	e := logger.WithField("another", "value")
-	fn(e)
 }

@@ -103,7 +103,7 @@ func (c *CountFilter) routeCounter(req *restful.Request, resp *restful.Response,
 //
 func getAllUsers(request *restful.Request, response *restful.Response) {
 	log.Printf("getAllUsers")
-	response.WriteEntity(UserList{[]User{User{"42", "Gandalf"}, User{"3.14", "Pi"}}})
+	response.WriteEntity(UserList{[]User{{"42", "Gandalf"}, {"3.14", "Pi"}}})
 }
 
 // GET http://localhost:8080/users/42

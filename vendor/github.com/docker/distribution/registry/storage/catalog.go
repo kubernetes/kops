@@ -18,7 +18,7 @@ var ErrFinishedWalk = errors.New("finished walk")
 // Returns a list, or partial list, of repositories in the registry.
 // Because it's a quite expensive operation, it should only be used when building up
 // an initial set of repositories.
-func (reg *registry) Repositories(ctx context.Context, repos []string, last string) (n int, err error) {
+func (reg *registry) Repositories(ctx context.Context, repos []string, last string) (n int, errVal error) {
 	var foundRepos []string
 
 	if len(repos) == 0 {
@@ -39,7 +39,7 @@ func (reg *registry) Repositories(ctx context.Context, repos []string, last stri
 		_, file := path.Split(repoPath)
 		if file == "_layers" {
 			repoPath = strings.TrimSuffix(repoPath, "/_layers")
-			if pathGreaterThan(repoPath, last) {
+			if repoPath > last {
 				foundRepos = append(foundRepos, repoPath)
 			}
 			return ErrSkipDir
@@ -58,11 +58,11 @@ func (reg *registry) Repositories(ctx context.Context, repos []string, last stri
 	n = copy(repos, foundRepos)
 
 	// Signal that we have no more entries by setting EOF
-	if len(foundRepos) <= len(repos) && (err == nil || err == ErrSkipDir) {
-		err = io.EOF
+	if len(foundRepos) <= len(repos) && err != ErrFinishedWalk {
+		errVal = io.EOF
 	}
 
-	return n, err
+	return n, errVal
 }
 
 // Enumerate applies ingester to each repository
@@ -94,24 +94,4 @@ func (reg *registry) Enumerate(ctx context.Context, ingester func(string) error)
 	}
 	return nil
 
-}
-
-func pathGreaterThan(pathX, pathY string) (b bool) {
-	splitPathX := strings.SplitN(pathX, "/", 2)
-	splitPathY := strings.SplitN(pathY, "/", 2)
-
-	if splitPathX[0] == splitPathY[0] {
-		if len(splitPathX) == 1 && len(splitPathY) == 1 {
-			return false
-		} else if len(splitPathX) == 1 && len(splitPathY) != 1 {
-			return false
-		} else if len(splitPathX) != 1 && len(splitPathY) == 1 {
-			return true
-		}
-
-		return pathGreaterThan(splitPathX[1], splitPathY[1])
-
-	}
-
-	return splitPathX[0] > splitPathY[0]
 }

@@ -22,6 +22,9 @@ type DockerConfig struct {
 	IPTables *bool   `json:"ipTables,omitempty" flag:"iptables"`
 	IPMasq   *bool   `json:"ipMasq,omitempty" flag:"ip-masq"`
 
+	LogDriver string   `json:"logDriver,omitempty" flag:"log-driver"`
+	LogOpt    []string `json:"logOpt,omitempty" flag:"log-opt,repeat"`
+
 	// Storage maps to the docker storage flag
 	// But nodeup will also process a comma-separate list, selecting the first supported option
 	Storage *string `json:"storage,omitempty" flag:"storage-driver"`

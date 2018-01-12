@@ -22,7 +22,6 @@ import (
 
 	"cloud.google.com/go/storage"
 	"golang.org/x/net/context"
-	"google.golang.org/api/iterator"
 )
 
 func ExampleNewClient() {
@@ -92,35 +91,6 @@ func ExampleBucketHandle_Attrs() {
 	fmt.Println(attrs)
 }
 
-func ExampleClient_Buckets() {
-	ctx := context.Background()
-	client, err := storage.NewClient(ctx)
-	if err != nil {
-		// TODO: handle error.
-	}
-	it := client.Bucket("my-bucket")
-	_ = it // TODO: iterate using Next or iterator.Pager.
-}
-
-func ExampleBucketIterator_Next() {
-	ctx := context.Background()
-	client, err := storage.NewClient(ctx)
-	if err != nil {
-		// TODO: handle error.
-	}
-	it := client.Buckets(ctx, "my-project")
-	for {
-		bucketAttrs, err := it.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			// TODO: Handle error.
-		}
-		fmt.Println(bucketAttrs)
-	}
-}
-
 func ExampleBucketHandle_Objects() {
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
@@ -128,7 +98,7 @@ func ExampleBucketHandle_Objects() {
 		// TODO: handle error.
 	}
 	it := client.Bucket("my-bucket").Objects(ctx, nil)
-	_ = it // TODO: iterate using Next or iterator.Pager.
+	_ = it // TODO: iterate using Next or NextPage.
 }
 
 func ExampleObjectIterator_Next() {
@@ -140,11 +110,11 @@ func ExampleObjectIterator_Next() {
 	it := client.Bucket("my-bucket").Objects(ctx, nil)
 	for {
 		objAttrs, err := it.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
+		if err != nil && err != storage.Done {
 			// TODO: Handle error.
+		}
+		if err == storage.Done {
+			break
 		}
 		fmt.Println(objAttrs)
 	}
@@ -288,16 +258,6 @@ func ExampleObjectHandle_NewWriter() {
 		// TODO: handle error.
 	}
 	wc := client.Bucket("bucketname").Object("filename1").NewWriter(ctx)
-	_ = wc // TODO: Use the Writer.
-}
-
-func ExampleWriter_Write() {
-	ctx := context.Background()
-	client, err := storage.NewClient(ctx)
-	if err != nil {
-		// TODO: handle error.
-	}
-	wc := client.Bucket("bucketname").Object("filename1").NewWriter(ctx)
 	wc.ContentType = "text/plain"
 	wc.ACL = []storage.ACLRule{{storage.AllUsers, storage.RoleReader}}
 	if _, err := wc.Write([]byte("hello world")); err != nil {
@@ -391,20 +351,4 @@ func ExampleACLHandle_List() {
 		// TODO: handle error.
 	}
 	fmt.Println(aclRules)
-}
-
-func ExampleObjectHandle_ComposeFrom() {
-	ctx := context.Background()
-	client, err := storage.NewClient(ctx)
-	if err != nil {
-		// TODO: handle error.
-	}
-	bkt := client.Bucket("bucketname")
-	src1 := bkt.Object("file1")
-	src2 := bkt.Object("file2")
-	dst := bkt.Object("combo")
-	_, err = dst.ComposeFrom(ctx, []*storage.ObjectHandle{src1, src2}, nil)
-	if err != nil {
-		// TODO: handle error.
-	}
 }

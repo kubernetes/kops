@@ -33,7 +33,7 @@ import (
 func construct(t *testing.T, files map[string]string, testNamer namer.Namer) (*parser.Builder, types.Universe, []*types.Type) {
 	b := parser.New()
 	for name, src := range files {
-		if err := b.AddFile(filepath.Dir(name), name, []byte(src)); err != nil {
+		if err := b.AddFileForTest(filepath.Dir(name), name, []byte(src)); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -71,7 +71,8 @@ func TestSimple(t *testing.T) {
 package foo
 
 // Blah is a test.
-// +k8s:openapi=true
+// +k8s:openapi-gen=true
+// +k8s:openapi-gen=x-kubernetes-type-tag:type_test
 type Blah struct {
 	// A simple string
 	String string
@@ -107,12 +108,15 @@ type Blah struct {
 	Float32 float32
 	// a base64 encoded characters
 	ByteArray []byte
+	// a member with an extension
+	// +k8s:openapi-gen=x-kubernetes-member-tag:member_test
+	WithExtension string
 }
 		`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(`"foo.Blah": {
+	assert.Equal(`"base/foo.Blah": {
 Schema: spec.Schema{
 SchemaProps: spec.SchemaProps{
 Description: "Blah is a test.",
@@ -222,11 +226,28 @@ Type: []string{"string"},
 Format: "byte",
 },
 },
+"WithExtension": {
+spec.VendorExtensible: {
+Extensions: spec.Extensions{
+"x-kubernetes-member-tag": "member_test",
 },
-Required: []string{"String","Int64","Int32","Int16","Int8","Uint","Uint64","Uint32","Uint16","Uint8","Byte","Bool","Float64","Float32","ByteArray"},
+},
+SchemaProps: spec.SchemaProps{
+Description: "a member with an extension",
+Type: []string{"string"},
+Format: "",
+},
+},
+},
+Required: []string{"String","Int64","Int32","Int16","Int8","Uint","Uint64","Uint32","Uint16","Uint8","Byte","Bool","Float64","Float32","ByteArray","WithExtension"},
 },
 },
 Dependencies: []string{
+},
+spec.VendorExtensible: {
+Extensions: spec.Extensions{
+"x-kubernetes-type-tag": "type_test",
+},
 },
 },
 `, buffer.String())
@@ -280,7 +301,7 @@ type Blah struct {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(`"foo.Blah": {
+	assert.Equal(`"base/foo.Blah": {
 Schema: spec.Schema{
 SchemaProps: spec.SchemaProps{
 Description: "PointerSample demonstrate pointer's properties",
@@ -295,7 +316,7 @@ Format: "",
 "StructPointer": {
 SchemaProps: spec.SchemaProps{
 Description: "A struct pointer",
-Ref: spec.MustCreateRef("#/definitions/foo.Blah"),
+Ref: ref("base/foo.Blah"),
 },
 },
 "SlicePointer": {
@@ -331,7 +352,7 @@ Required: []string{"StringPointer","StructPointer","SlicePointer","MapPointer"},
 },
 },
 Dependencies: []string{
-"foo.Blah",},
+"base/foo.Blah",},
 },
 `, buffer.String())
 }

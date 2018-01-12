@@ -14,7 +14,6 @@
 package prometheus
 
 import (
-	"sync"
 	"testing"
 )
 
@@ -31,29 +30,6 @@ func BenchmarkCounterWithLabelValues(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		m.WithLabelValues("eins", "zwei", "drei").Inc()
 	}
-}
-
-func BenchmarkCounterWithLabelValuesConcurrent(b *testing.B) {
-	m := NewCounterVec(
-		CounterOpts{
-			Name: "benchmark_counter",
-			Help: "A counter to benchmark it.",
-		},
-		[]string{"one", "two", "three"},
-	)
-	b.ReportAllocs()
-	b.ResetTimer()
-	wg := sync.WaitGroup{}
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go func() {
-			for j := 0; j < b.N/10; j++ {
-				m.WithLabelValues("eins", "zwei", "drei").Inc()
-			}
-			wg.Done()
-		}()
-	}
-	wg.Wait()
 }
 
 func BenchmarkCounterWithMappedLabels(b *testing.B) {

@@ -17,12 +17,12 @@ limitations under the License.
 package protokube
 
 import (
+	"cloud.google.com/go/compute/metadata"
 	"fmt"
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v0.beta"
-	"google.golang.org/cloud/compute/metadata"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"net"
 	"strings"
@@ -323,7 +323,7 @@ func (v *GCEVolumes) AttachVolume(volume *Volume) error {
 		return fmt.Errorf("error attach disk %q: %v", volumeName, err)
 	}
 
-	err = gce.WaitForZoneOp(v.compute, attachOp, v.project, v.zone)
+	err = gce.WaitForOp(v.compute, attachOp)
 	if err != nil {
 		return fmt.Errorf("error waiting for disk attach to complete %q: %v", volumeName, err)
 	}

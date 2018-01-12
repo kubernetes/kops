@@ -1,7 +1,6 @@
 package tarexport
 
 import (
-	"github.com/docker/distribution"
 	"github.com/docker/docker/image"
 	"github.com/docker/docker/layer"
 	"github.com/docker/docker/reference"
@@ -16,32 +15,23 @@ const (
 )
 
 type manifestItem struct {
-	Config       string
-	RepoTags     []string
-	Layers       []string
-	Parent       image.ID                                 `json:",omitempty"`
-	LayerSources map[layer.DiffID]distribution.Descriptor `json:",omitempty"`
+	Config   string
+	RepoTags []string
+	Layers   []string
+	Parent   image.ID `json:",omitempty"`
 }
 
 type tarexporter struct {
-	is             image.Store
-	ls             layer.Store
-	rs             reference.Store
-	loggerImgEvent LogImageEvent
-}
-
-// LogImageEvent defines interface for event generation related to image tar(load and save) operations
-type LogImageEvent interface {
-	//LogImageEvent generates an event related to an image operation
-	LogImageEvent(imageID, refName, action string)
+	is image.Store
+	ls layer.Store
+	rs reference.Store
 }
 
 // NewTarExporter returns new ImageExporter for tar packages
-func NewTarExporter(is image.Store, ls layer.Store, rs reference.Store, loggerImgEvent LogImageEvent) image.Exporter {
+func NewTarExporter(is image.Store, ls layer.Store, rs reference.Store) image.Exporter {
 	return &tarexporter{
-		is:             is,
-		ls:             ls,
-		rs:             rs,
-		loggerImgEvent: loggerImgEvent,
+		is: is,
+		ls: ls,
+		rs: rs,
 	}
 }

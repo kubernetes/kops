@@ -12,7 +12,7 @@ weight=-3
 
 # Fedora
 
-Docker is supported on Fedora version 22, 23, and 24. This page instructs you to install
+Docker is supported on Fedora version 22 and 23. This page instructs you to install
 using Docker-managed release packages and installation mechanisms. Using these
 packages ensures you get the latest release of Docker. If you wish to install
 using Fedora-managed packages, consult your Fedora release documentation for
@@ -26,7 +26,7 @@ version, open a terminal and use `uname -r` to display your kernel version:
     $ uname -r
     3.19.5-100.fc21.x86_64
 
-If your kernel is at an older version, you must update it.
+If your kernel is at a older version, you must update it.
 
 Finally, is it recommended that you fully update your system. Please keep in
 mind that your system should be fully patched to fix any potential kernel bugs. Any
@@ -60,15 +60,11 @@ There are two ways to install Docker Engine.  You can install with the `dnf` pac
 
         $ sudo dnf install docker-engine
 
-5. Enable the service.
-
-		$ sudo systemctl enable docker.service
-
-6. Start the Docker daemon.
+5. Start the Docker daemon.
 
 		$ sudo systemctl start docker
 
-7. Verify `docker` is installed correctly by running a test image in a container.
+6. Verify `docker` is installed correctly by running a test image in a container.
 
 
         $ sudo docker run hello-world
@@ -113,15 +109,11 @@ There are two ways to install Docker Engine.  You can install with the `dnf` pac
 
 	This script adds the `docker.repo` repository and installs Docker.
 
-4. Enable the service.
-
-		$ sudo systemctl enable docker.service
-
-5. Start the Docker daemon.
+4. Start the Docker daemon.
 
         $ sudo systemctl start docker
 
-6. Verify `docker` is installed correctly by running a test image in a container.
+5. Verify `docker` is installed correctly by running a test image in a container.
 
 		$ sudo docker run hello-world
 
@@ -159,6 +151,12 @@ To create the `docker` group and add your user:
 
         $ docker run hello-world
 
+## Start the docker daemon at boot
+
+To ensure Docker starts when you boot your system, do the following:
+
+    $ sudo systemctl enable docker
+
 If you need to add an HTTP Proxy, set a different directory or partition for the
 Docker runtime files, or make other customizations, read our Systemd article to
 learn how to [customize your Systemd Docker daemon options](../../admin/systemd.md).
@@ -188,7 +186,7 @@ You can uninstall the Docker software with `dnf`.
 
 1. List the package you have installed.
 
-		$ dnf list installed | grep docker
+		$ dnf list installed | grep docker dnf list installed | grep docker
 		docker-engine.x86_64     1.7.1-0.1.fc21 @/docker-engine-1.7.1-0.1.fc21.el7.x86_64
 
 2. Remove the package.
