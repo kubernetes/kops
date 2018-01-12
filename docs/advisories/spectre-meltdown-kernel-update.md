@@ -73,13 +73,13 @@ edit` command or `kops replace -f mycluster.yaml`.
 
 Perform a dry-run update, verifying that all instance groups are updated.
 
-`kops update $CLUSTER` 
+`kops update cluster --name $CLUSTER` 
 
 #### Apply changes
 
 Update the cluster configuration, so that new instances will start with the updated image.
 
-`kops update $CLUSTER --yes`
+`kops update cluster --name $CLUSTER --yes`
 
 #### Preview rolling update
 
