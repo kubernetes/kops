@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "client.go",
+        "endpoints.go",
+        "regions.go",
+        "services.go",
+    ],
+    importpath = "github.com/denverdino/aliyungo/location",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/denverdino/aliyungo/common:go_default_library"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "config_test.go",
+        "endpoints_test.go",
+        "regions_test.go",
+        "services_test.go",
+    ],
+    embed = [":go_default_library"],
+    importpath = "github.com/denverdino/aliyungo/location",
+    deps = ["//vendor/github.com/denverdino/aliyungo/common:go_default_library"],
+)

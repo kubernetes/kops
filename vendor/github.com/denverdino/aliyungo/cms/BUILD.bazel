@@ -1,0 +1,30 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "alarm.go",
+        "alerts.go",
+        "apiproxy.go",
+        "client.go",
+        "project.go",
+    ],
+    importpath = "github.com/denverdino/aliyungo/cms",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/denverdino/aliyungo/cms/util:go_default_library",
+        "//vendor/github.com/denverdino/aliyungo/common:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "alarm_test.go",
+        "client_test.go",
+        "config_test.go",
+    ],
+    embed = [":go_default_library"],
+    importpath = "github.com/denverdino/aliyungo/cms",
+    deps = ["//vendor/github.com/denverdino/aliyungo/common:go_default_library"],
+)
