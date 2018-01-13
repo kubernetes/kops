@@ -204,9 +204,44 @@ var zonesToCloud = map[string]kops.CloudProviderID{
 	"fra1": kops.CloudProviderDO,
 
 	"blr1": kops.CloudProviderDO,
+
+	"cn-qingdao-b": kops.CloudProviderALI,
+	"cn-qingdao-c": kops.CloudProviderALI,
+
+	"cn-beijing-a": kops.CloudProviderALI,
+	"cn-beijing-b": kops.CloudProviderALI,
+	"cn-beijing-c": kops.CloudProviderALI,
+	"cn-beijing-d": kops.CloudProviderALI,
+	"cn-beijing-e": kops.CloudProviderALI,
+
+	"cn-zhangjiakou-a": kops.CloudProviderALI,
+
+	"cn-huhehaote-a": kops.CloudProviderALI,
+
+	"cn-hangzhou-b": kops.CloudProviderALI,
+	"cn-hangzhou-c": kops.CloudProviderALI,
+	"cn-hangzhou-d": kops.CloudProviderALI,
+	"cn-hangzhou-e": kops.CloudProviderALI,
+	"cn-hangzhou-f": kops.CloudProviderALI,
+	"cn-hangzhou-g": kops.CloudProviderALI,
+
+	"cn-shanghai-a": kops.CloudProviderALI,
+	"cn-shanghai-b": kops.CloudProviderALI,
+	"cn-shanghai-c": kops.CloudProviderALI,
+	"cn-shanghai-d": kops.CloudProviderALI,
+
+	"cn-shenzhen-a": kops.CloudProviderALI,
+	"cn-shenzhen-b": kops.CloudProviderALI,
+	"cn-shenzhen-c": kops.CloudProviderALI,
+
+	"cn-hongkong-a": kops.CloudProviderALI,
+	"cn-hongkong-b": kops.CloudProviderALI,
+	"cn-hongkong-c": kops.CloudProviderALI,
 }
 
 // GuessCloudForZone tries to infer the cloudprovider from the zone name
+// Ali has the same zoneNames as AWS in the regions outside China, so if use AliCloud to install k8s in the regions outside China,
+// the users need to provide parameter "--cloud". But the regions inside China can be easily identified.
 func GuessCloudForZone(zone string) (kops.CloudProviderID, bool) {
 	c, found := zonesToCloud[zone]
 	return c, found
