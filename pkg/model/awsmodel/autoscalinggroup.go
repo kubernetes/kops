@@ -60,16 +60,15 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					return err
 				}
 			}
-			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
-			volumeIops := fi.Int32Value(ig.Spec.RootVolumeIops)
 
-			switch volumeType {
-			case "io1":
-				if volumeIops == 0 {
-					volumeIops = DefaultVolumeIops
-				}
-			default:
+			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
+			if volumeType == "" {
 				volumeType = DefaultVolumeType
+			}
+
+			volumeIops := fi.Int32Value(ig.Spec.RootVolumeIops)
+			if volumeIops == 0 {
+				volumeIops = DefaultVolumeIops
 			}
 
 			t := &awstasks.LaunchConfiguration{
