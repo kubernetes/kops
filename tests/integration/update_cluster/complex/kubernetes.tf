@@ -513,6 +513,7 @@ resource "aws_subnet" "us-test-1a-complex-example-com" {
   tags = {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "us-test-1a.complex.example.com"
+    SubnetType                                  = "Public"
     "kubernetes.io/cluster/complex.example.com" = "owned"
     "kubernetes.io/role/elb"                    = "1"
   }
