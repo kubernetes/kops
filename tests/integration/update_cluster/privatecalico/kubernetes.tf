@@ -653,6 +653,7 @@ resource "aws_subnet" "us-test-1a-privatecalico-example-com" {
   tags = {
     KubernetesCluster                                 = "privatecalico.example.com"
     Name                                              = "us-test-1a.privatecalico.example.com"
+    SubnetType                                        = "Private"
     "kubernetes.io/cluster/privatecalico.example.com" = "owned"
     "kubernetes.io/role/internal-elb"                 = "1"
   }
@@ -666,6 +667,7 @@ resource "aws_subnet" "utility-us-test-1a-privatecalico-example-com" {
   tags = {
     KubernetesCluster                                 = "privatecalico.example.com"
     Name                                              = "utility-us-test-1a.privatecalico.example.com"
+    SubnetType                                        = "Utility"
     "kubernetes.io/cluster/privatecalico.example.com" = "owned"
     "kubernetes.io/role/elb"                          = "1"
   }

@@ -644,6 +644,7 @@ resource "aws_subnet" "us-test-1a-privatecanal-example-com" {
   tags = {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "us-test-1a.privatecanal.example.com"
+    SubnetType                                       = "Private"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
     "kubernetes.io/role/internal-elb"                = "1"
   }
@@ -657,6 +658,7 @@ resource "aws_subnet" "utility-us-test-1a-privatecanal-example-com" {
   tags = {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "utility-us-test-1a.privatecanal.example.com"
+    SubnetType                                       = "Utility"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
     "kubernetes.io/role/elb"                         = "1"
   }

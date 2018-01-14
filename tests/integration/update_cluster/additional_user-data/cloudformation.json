@@ -413,6 +413,10 @@
             "Value": "us-test-1a.additionaluserdata.example.com"
           },
           {
+            "Key": "SubnetType",
+            "Value": "Public"
+          },
+          {
             "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
             "Value": "owned"
           },
