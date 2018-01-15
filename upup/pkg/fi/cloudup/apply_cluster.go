@@ -48,6 +48,7 @@ import (
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/baremetal"
@@ -78,6 +79,8 @@ var (
 	AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
 	// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
 	AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
+	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha
+	AlphaAllowALI = featureflag.New("AlphaAllowALI", featureflag.Bool(false))
 	// CloudupModels a list of supported models
 	CloudupModels = []string{"config", "proto", "cloudup"}
 )
@@ -401,6 +404,16 @@ func (c *ApplyClusterCmd) Run() error {
 			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
 		}
 
+	case kops.CloudProviderALI:
+		{
+			if !AlphaAllowALI.Enabled() {
+				return fmt.Errorf("Aliyun support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowALI")
+			}
+			aliCloud := cloud.(aliup.ALICloud)
+			region = aliCloud.Region()
+			l.AddTypes(map[string]interface{}{})
+		}
+
 	case kops.CloudProviderVSphere:
 		{
 			if !AlphaAllowVsphere.Enabled() {
@@ -652,6 +665,8 @@ func (c *ApplyClusterCmd) Run() error {
 			target = baremetal.NewTarget(cloud.(*baremetal.Cloud))
 		case kops.CloudProviderOpenstack:
 			target = openstack.NewOpenstackAPITarget(cloud.(openstack.OpenstackCloud))
+		case kops.CloudProviderALI:
+			target = aliup.NewALIAPITarget(cloud.(aliup.ALICloud))
 		default:
 			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.CloudProvider)
 		}

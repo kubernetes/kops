@@ -1,0 +1,36 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "client.go",
+        "index.go",
+        "logstore.go",
+        "logtail.go",
+        "machine_group.go",
+        "request.go",
+        "signature.go",
+        "sls.pb.go",
+    ],
+    importpath = "github.com/denverdino/aliyungo/sls",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/denverdino/aliyungo/common:go_default_library",
+        "//vendor/github.com/denverdino/aliyungo/util:go_default_library",
+        "//vendor/github.com/golang/protobuf/proto:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "client_test.go",
+        "index_test.go",
+        "logstore_test.go",
+        "logtail_test.go",
+        "machine_group_test.go",
+    ],
+    embed = [":go_default_library"],
+    importpath = "github.com/denverdino/aliyungo/sls",
+    deps = ["//vendor/github.com/denverdino/aliyungo/common:go_default_library"],
+)
