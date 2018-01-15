@@ -152,7 +152,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			cloudTags := map[string]string{aliup.TagClusterName: cluster.ObjectMeta.Name}
 			aliCloud, err := aliup.NewALICloud(region, cloudTags)
 			if err != nil {
-				return nil, fmt.Errorf("error initializin digitalocean cloud!")
+				return nil, fmt.Errorf("error initializing ali cloud!")
 			}
 
 			cloud = aliCloud
