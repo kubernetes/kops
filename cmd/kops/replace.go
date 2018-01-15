@@ -158,25 +158,25 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 				cluster, err := clientset.GetCluster(clusterName)
 				if err != nil {
 					if errors.IsNotFound(err) {
-						cluster = nil
+						return fmt.Errorf("cluster %q not found", clusterName)
 					} else {
 						return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
 					}
-				}
-				if cluster == nil {
-					return fmt.Errorf("cluster %q not found", clusterName)
 				}
 				// check if the instancegroup exists already
 				igName := v.ObjectMeta.Name
 				ig, err := clientset.InstanceGroupsFor(cluster).Get(igName, metav1.GetOptions{})
 				if err != nil {
-					return fmt.Errorf("unable to check for instanceGroup: %v", err)
+					if errors.IsNotFound(err) {
+						if !c.force {
+							return fmt.Errorf("instanceGroup: %v does not exist (try adding --force flag)", igName)
+						}
+					} else {
+						return fmt.Errorf("unable to check for instanceGroup: %v", err)
+					}
 				}
 				switch ig {
 				case nil:
-					if !c.force {
-						return fmt.Errorf("instanceGroup: %v does not exist (try adding --force flag)", igName)
-					}
 					glog.Infof("instanceGroup: %v was not found, creating resource now", igName)
 					_, err = clientset.InstanceGroupsFor(cluster).Create(v)
 					if err != nil {
