@@ -1,0 +1,29 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "client.go",
+        "decrypt.go",
+        "encrypt.go",
+        "keys.go",
+        "regions.go",
+    ],
+    importpath = "github.com/denverdino/aliyungo/kms",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/denverdino/aliyungo/common:go_default_library"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "config_test.go",
+        "decrypt_test.go",
+        "encrypt_test.go",
+        "keys_test.go",
+        "regions_test.go",
+    ],
+    embed = [":go_default_library"],
+    importpath = "github.com/denverdino/aliyungo/kms",
+    deps = ["//vendor/github.com/denverdino/aliyungo/common:go_default_library"],
+)

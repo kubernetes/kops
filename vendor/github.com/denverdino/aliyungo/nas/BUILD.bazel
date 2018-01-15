@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "CreateAccessRule.go",
+        "CreateFileSystem.go",
+        "CreateMountTarget.go",
+        "DescribeAccessRules.go",
+        "DescribeFileSystems.go",
+        "DescribeMountTargets.go",
+        "client.go",
+    ],
+    importpath = "github.com/denverdino/aliyungo/nas",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/denverdino/aliyungo/common:go_default_library"],
+)

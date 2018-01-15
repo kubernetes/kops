@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "client.go",
+        "push.go",
+    ],
+    importpath = "github.com/denverdino/aliyungo/push",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/denverdino/aliyungo/common:go_default_library"],
+)
