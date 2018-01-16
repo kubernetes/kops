@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/util/pkg/slice"
 )
 
 // LoadBalancer manages an ELB.  We find the existing ELB using the Name tag.
@@ -527,7 +528,29 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 				actualSubnets = append(actualSubnets, fi.StringValue(s.ID))
 			}
 
-			return fmt.Errorf("subnet changes on LoadBalancer not yet implemented: actual=%s -> expected=%s", actualSubnets, expectedSubnets)
+			oldSubnetIDs := slice.GetUniqueStrings(expectedSubnets, actualSubnets)
+			if len(oldSubnetIDs) > 0 {
+				request := &elb.DetachLoadBalancerFromSubnetsInput{}
+				request.SetLoadBalancerName(loadBalancerName)
+				request.SetSubnets(aws.StringSlice(oldSubnetIDs))
+
+				glog.V(2).Infof("Detaching Load Balancer from old subnets")
+				if _, err := t.Cloud.ELB().DetachLoadBalancerFromSubnets(request); err != nil {
+					return fmt.Errorf("Error detaching Load Balancer from old subnets: %v", err)
+				}
+			}
+
+			newSubnetIDs := slice.GetUniqueStrings(actualSubnets, expectedSubnets)
+			if len(newSubnetIDs) > 0 {
+				request := &elb.AttachLoadBalancerToSubnetsInput{}
+				request.SetLoadBalancerName(loadBalancerName)
+				request.SetSubnets(aws.StringSlice(newSubnetIDs))
+
+				glog.V(2).Infof("Attaching Load Balancer to new subnets")
+				if _, err := t.Cloud.ELB().AttachLoadBalancerToSubnets(request); err != nil {
+					return fmt.Errorf("Error attaching Load Balancer to new subnets: %v", err)
+				}
+			}
 		}
 
 		if changes.Listeners != nil {
