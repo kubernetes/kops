@@ -419,8 +419,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 	cluster.Spec.ConfigBase = configBase.Path()
 
-	glog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
-
 	// In future we could change the default if the flag is not specified, e.g. in 1.7 maybe the default is RBAC?
 	cluster.Spec.Authorization = &api.AuthorizationSpec{}
 	if strings.EqualFold(c.Authorization, AuthorizationFlagAlwaysAllow) {
@@ -853,6 +851,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	default:
 		return fmt.Errorf("unknown networking mode %q", c.Networking)
 	}
+
+	glog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
 
 	if c.NetworkCIDR != "" {
 		cluster.Spec.NetworkCIDR = c.NetworkCIDR
