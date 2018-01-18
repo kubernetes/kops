@@ -1,3 +1,6 @@
+# Go embed files?
+*.go-e
+
 # Compiled python files
 *.pyc
 
