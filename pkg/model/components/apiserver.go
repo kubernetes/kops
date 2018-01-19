@@ -174,7 +174,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 			"ResourceQuota",
 		}
 	}
-	if b.IsKubernetesGTE("1.7") && b.IsKubernetesLT("1.8") {
+	if b.IsKubernetesGTE("1.7") && b.IsKubernetesLT("1.9") {
 		c.AdmissionControl = []string{
 			"Initializers",
 			"NamespaceLifecycle",
@@ -187,7 +187,9 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 			"ResourceQuota",
 		}
 	}
-	if b.IsKubernetesGTE("1.8") {
+	// Based on recommendations from:
+	// https://kubernetes.io/docs/admin/admission-controllers/#is-there-a-recommended-set-of-admission-controllers-to-use
+	if b.IsKubernetesGTE("1.9") {
 		c.AdmissionControl = []string{
 			"Initializers",
 			"NamespaceLifecycle",
@@ -196,8 +198,9 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 			"PersistentVolumeLabel",
 			"DefaultStorageClass",
 			"DefaultTolerationSeconds",
+			"MutatingAdmissionWebhook",
+			"ValidatingAdmissionWebhook",
 			"NodeRestriction",
-			"Priority",
 			"ResourceQuota",
 		}
 	}
