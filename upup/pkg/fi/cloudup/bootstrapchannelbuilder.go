@@ -476,8 +476,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		key := "networking.projectcalico.org"
 		versions := map[string]string{
 			"pre-k8s-1.6": "2.4.1",
-			"k8s-1.6":     "2.6.2",
-			"k8s-1.7":     "2.6.2",
+			"k8s-1.6":     "2.6.6",
+			"k8s-1.7":     "2.6.6",
 		}
 
 		{
