@@ -67,30 +67,30 @@ func NewRollingUpdateInstanceGroup(cloud fi.Cloud, cloudGroup *cloudinstances.Cl
 	}, nil
 }
 
-// User input routine copied from vendor/google.golang.org/api/examples/gmail.go
-func PromptInteractive(upgradedHost string) (stop_prompting bool) {
-	stop_prompting = false
-	reader := bufio.NewReader(os.Stdin)
+// promptInteractive asks the user to continue, mostly copied from vendor/google.golang.org/api/examples/gmail.go.
+func promptInteractive(upgradedHost string) (stopPrompting bool, err error) {
+	stopPrompting = false
+	scanner := bufio.NewScanner(os.Stdin)
 	glog.Infof("Pausing after finished %q", upgradedHost)
-	fmt.Printf("Continue? (Y)es, (N)o, (A)lwaysYes: [Y] ")
-	val := ""
-	var err error
-	if val, err = reader.ReadString('\n'); err != nil {
-		glog.Fatalf("unable to interpret input: %v", err)
+	fmt.Print("Continue? (Y)es, (N)o, (A)lwaysYes: [Y] ")
+	scanner.Scan()
+	err = scanner.Err()
+	if err != nil {
+		glog.Infof("unable to interpret input: %v", err)
+		return stopPrompting, err
 	}
+	val := scanner.Text()
 	val = strings.TrimSpace(val)
 	val = strings.ToLower(val)
 	switch val {
-	case "y", "", "\n":
-		glog.V(4).Infof("Continuing with next host (response %q)\n", val)
 	case "n":
 		glog.Infof("User signaled to stop")
 		os.Exit(3)
 	case "a":
 		glog.Infof("Always Yes, stop prompting for rest of hosts")
-		stop_prompting = true
+		stopPrompting = true
 	}
-	return stop_prompting
+	return stopPrompting, err
 }
 
 // TODO: Temporarily increase size of ASG?
@@ -198,8 +198,11 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 				glog.Warningf("Cluster validation failed after removing instance, proceeding since fail-on-validate is set to false: %v", err)
 			}
 			if rollingUpdateData.Interactive {
-				var stop_prompting bool = PromptInteractive(nodeName)
-				if stop_prompting {
+				stopPrompting, err := promptInteractive(nodeName)
+				if err != nil {
+					return err
+				}
+				if stopPrompting {
 					// Is a pointer to a struct, changes here push back into the original
 					rollingUpdateData.Interactive = false
 				}
