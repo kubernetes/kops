@@ -39,6 +39,12 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 		}
 	}
 
+	if g.Spec.MaxSize != nil && g.Spec.MinSize != nil {
+		if *g.Spec.MaxSize < *g.Spec.MinSize {
+			return field.Invalid(field.NewPath("MaxSize"), *g.Spec.MaxSize, "maxSize must be greater than or equal to minSize.")
+		}
+	}
+
 	switch g.Spec.Role {
 	case kops.InstanceGroupRoleMaster:
 	case kops.InstanceGroupRoleNode:
