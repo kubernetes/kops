@@ -15,7 +15,7 @@ go_library(
 
 go_binary(
     name = "kube-discovery",
+    embed = [":go_default_library"],
     importpath = "k8s.io/kops/kube-discovery/cmd/kube-discovery",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )
