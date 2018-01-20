@@ -70,7 +70,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1a
 spec:
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-12-02
+  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2018-01-05
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -90,7 +90,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1b
 spec:
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-12-02
+  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2018-01-05
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -110,7 +110,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1c
 spec:
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-12-02
+  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2018-01-05
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -130,7 +130,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: nodes
 spec:
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-12-02
+  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2018-01-05
   machineType: t2.medium
   maxSize: 2
   minSize: 2
