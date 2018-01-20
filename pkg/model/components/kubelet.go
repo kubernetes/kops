@@ -60,7 +60,11 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec.Kubelet.ClusterDNS = ip.String()
 	clusterSpec.Kubelet.ClusterDomain = clusterSpec.ClusterDNSDomain
 	clusterSpec.Kubelet.NonMasqueradeCIDR = clusterSpec.NonMasqueradeCIDR
-	clusterSpec.Kubelet.anonymousAuth = fi.Bool(false)
+
+	// Set secure kubelet on by default when the user has not set this flag
+	if clusterSpec.Kubelet.AnonymousAuth == nil {
+		clusterSpec.Kubelet.AnonymousAuth = fi.Bool(false)
+	}
 
 	if b.Context.IsKubernetesLT("1.7") {
 		// babysit-daemons removed in 1.7

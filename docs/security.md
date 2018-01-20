@@ -48,7 +48,7 @@ By default AnonymousAuth on the kubelet is 'on' and so communication between kub
 # In the cluster spec
 spec:
   kubelet:
-    anonymousAuth: false
+    AnonymousAuth: false
 ```
 
 **Note** on a existing cluster with 'anonymousAuth' unset you would need to first roll out the masters and then update the node instance groups.
