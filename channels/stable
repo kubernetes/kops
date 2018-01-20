@@ -16,8 +16,7 @@ spec:
     - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-01-05
       providerID: aws
       kubernetesVersion: ">=1.8.0 <1.9.0"
-    # Moving to stretch in 1.9 (if goes well)
-    - name: kope.io/k8s-1.8-debian-stretch-amd64-hvm-ebs-2018-01-05
+    - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-01-05
       providerID: aws
       kubernetesVersion: ">=1.9.0 <1.10.0"
     # Need stretch as default in 1.10 (for nvme)
