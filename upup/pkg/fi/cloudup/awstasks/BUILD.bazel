@@ -71,6 +71,7 @@ go_library(
         "//upup/pkg/fi/cloudup/cloudformation:go_default_library",
         "//upup/pkg/fi/cloudup/terraform:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
+        "//util/pkg/slice:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/autoscaling:go_default_library",
