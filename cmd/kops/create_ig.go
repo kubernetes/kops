@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -133,7 +134,10 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 
 	existing, err := clientset.InstanceGroupsFor(cluster).Get(groupName, metav1.GetOptions{})
 	if err != nil {
-		return err
+		// We expect a NotFound error when creating the instance group
+		if !errors.IsNotFound(err) {
+			return err
+		}
 	}
 
 	if existing != nil {
