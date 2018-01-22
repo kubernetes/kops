@@ -224,7 +224,9 @@ func CopyTree(src Path, dest Path, aclOracle ACLOracle) error {
 
 	destFiles, err := dest.ReadTree()
 	if err != nil {
-		return fmt.Errorf("error reading source directory %q: %v", src, err)
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("error reading source directory %q: %v", src, err)
+		}
 	}
 
 	destFileMap := make(map[string]Path)
