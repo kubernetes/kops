@@ -14,19 +14,19 @@ spec:
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-test1-a
-      name: a
+      name: "1"
     - instanceGroup: master-us-test1-b
-      name: b
+      name: "2"
     - instanceGroup: master-us-test1-c
-      name: c
+      name: "3"
     name: main
   - etcdMembers:
     - instanceGroup: master-us-test1-a
-      name: a
+      name: "1"
     - instanceGroup: master-us-test1-b
-      name: b
+      name: "2"
     - instanceGroup: master-us-test1-c
-      name: c
+      name: "3"
     name: events
   iam:
     legacy: false
