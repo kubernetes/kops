@@ -83,7 +83,7 @@ make
 # If the keypair specified is not `$HOME/.ssh/id_rsa`, `aws.yml` need to be modified to add the full path to the private key.
 echo 'SSHPrivateKey: "/absolute/path/to/the/private/key"' >> aws.yml
 
-${GOPATH}/bin/imagebuilder --config aws.yaml --v=8 --publish false --replicate false --up false --down false
+${GOPATH}/bin/imagebuilder --config aws.yaml --v=8 --publish=false --replicate=false --up=false --down=false
 ```
 
 *NOTE*
