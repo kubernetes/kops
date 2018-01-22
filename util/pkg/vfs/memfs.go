@@ -140,7 +140,9 @@ func (p *MemFSPath) ReadTree() ([]Path, error) {
 
 func (p *MemFSPath) readTree(dest *[]Path) {
 	for _, f := range p.children {
-		*dest = append(*dest, f)
+		if !f.HasChildren() {
+			*dest = append(*dest, f)
+		}
 		f.readTree(dest)
 	}
 }
