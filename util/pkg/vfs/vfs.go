@@ -69,6 +69,7 @@ type Path interface {
 	ReadDir() ([]Path, error)
 
 	// ReadTree lists all files (recursively) in the subtree rooted at the current Path
+	/// Note: returns only files, not directories
 	ReadTree() ([]Path, error)
 }
 

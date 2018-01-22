@@ -152,6 +152,8 @@ func (p *FSPath) ReadTree() ([]Path, error) {
 	return paths, nil
 }
 
+// readTree recursively finds files and adds them to dest
+// It excludes directories.
 func readTree(base string, dest *[]Path) error {
 	files, err := ioutil.ReadDir(base)
 	if err != nil {
@@ -159,12 +161,13 @@ func readTree(base string, dest *[]Path) error {
 	}
 	for _, f := range files {
 		p := path.Join(base, f.Name())
-		*dest = append(*dest, NewFSPath(p))
 		if f.IsDir() {
 			err = readTree(p, dest)
 			if err != nil {
 				return err
 			}
+		} else {
+			*dest = append(*dest, NewFSPath(p))
 		}
 	}
 	return nil
