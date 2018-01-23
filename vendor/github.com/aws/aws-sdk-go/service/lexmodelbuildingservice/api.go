@@ -38,7 +38,7 @@ const opCreateBotVersion = "CreateBotVersion"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateBotVersion
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateBotVersion
 func (c *LexModelBuildingService) CreateBotVersionRequest(input *CreateBotVersionInput) (req *request.Request, output *CreateBotVersionOutput) {
 	op := &request.Operation{
 		Name:       opCreateBotVersion,
@@ -98,7 +98,7 @@ func (c *LexModelBuildingService) CreateBotVersionRequest(input *CreateBotVersio
 //   The checksum of the resource that you are trying to change does not match
 //   the checksum in the request. Check the resource's checksum and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateBotVersion
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateBotVersion
 func (c *LexModelBuildingService) CreateBotVersion(input *CreateBotVersionInput) (*CreateBotVersionOutput, error) {
 	req, out := c.CreateBotVersionRequest(input)
 	return out, req.Send()
@@ -145,7 +145,7 @@ const opCreateIntentVersion = "CreateIntentVersion"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateIntentVersion
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateIntentVersion
 func (c *LexModelBuildingService) CreateIntentVersionRequest(input *CreateIntentVersionInput) (req *request.Request, output *CreateIntentVersionOutput) {
 	op := &request.Operation{
 		Name:       opCreateIntentVersion,
@@ -207,7 +207,7 @@ func (c *LexModelBuildingService) CreateIntentVersionRequest(input *CreateIntent
 //   The checksum of the resource that you are trying to change does not match
 //   the checksum in the request. Check the resource's checksum and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateIntentVersion
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateIntentVersion
 func (c *LexModelBuildingService) CreateIntentVersion(input *CreateIntentVersionInput) (*CreateIntentVersionOutput, error) {
 	req, out := c.CreateIntentVersionRequest(input)
 	return out, req.Send()
@@ -254,7 +254,7 @@ const opCreateSlotTypeVersion = "CreateSlotTypeVersion"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateSlotTypeVersion
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateSlotTypeVersion
 func (c *LexModelBuildingService) CreateSlotTypeVersionRequest(input *CreateSlotTypeVersionInput) (req *request.Request, output *CreateSlotTypeVersionOutput) {
 	op := &request.Operation{
 		Name:       opCreateSlotTypeVersion,
@@ -315,7 +315,7 @@ func (c *LexModelBuildingService) CreateSlotTypeVersionRequest(input *CreateSlot
 //   The checksum of the resource that you are trying to change does not match
 //   the checksum in the request. Check the resource's checksum and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateSlotTypeVersion
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateSlotTypeVersion
 func (c *LexModelBuildingService) CreateSlotTypeVersion(input *CreateSlotTypeVersionInput) (*CreateSlotTypeVersionOutput, error) {
 	req, out := c.CreateSlotTypeVersionRequest(input)
 	return out, req.Send()
@@ -362,7 +362,7 @@ const opDeleteBot = "DeleteBot"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBot
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBot
 func (c *LexModelBuildingService) DeleteBotRequest(input *DeleteBotInput) (req *request.Request, output *DeleteBotOutput) {
 	op := &request.Operation{
 		Name:       opDeleteBot,
@@ -432,7 +432,7 @@ func (c *LexModelBuildingService) DeleteBotRequest(input *DeleteBotInput) (req *
 //
 //   "name": string, "version": string } }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBot
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBot
 func (c *LexModelBuildingService) DeleteBot(input *DeleteBotInput) (*DeleteBotOutput, error) {
 	req, out := c.DeleteBotRequest(input)
 	return out, req.Send()
@@ -479,7 +479,7 @@ const opDeleteBotAlias = "DeleteBotAlias"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotAlias
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotAlias
 func (c *LexModelBuildingService) DeleteBotAliasRequest(input *DeleteBotAliasInput) (req *request.Request, output *DeleteBotAliasOutput) {
 	op := &request.Operation{
 		Name:       opDeleteBotAlias,
@@ -548,7 +548,7 @@ func (c *LexModelBuildingService) DeleteBotAliasRequest(input *DeleteBotAliasInp
 //
 //   "name": string, "version": string } }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotAlias
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotAlias
 func (c *LexModelBuildingService) DeleteBotAlias(input *DeleteBotAliasInput) (*DeleteBotAliasOutput, error) {
 	req, out := c.DeleteBotAliasRequest(input)
 	return out, req.Send()
@@ -595,7 +595,7 @@ const opDeleteBotChannelAssociation = "DeleteBotChannelAssociation"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotChannelAssociation
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotChannelAssociation
 func (c *LexModelBuildingService) DeleteBotChannelAssociationRequest(input *DeleteBotChannelAssociationInput) (req *request.Request, output *DeleteBotChannelAssociationOutput) {
 	op := &request.Operation{
 		Name:       opDeleteBotChannelAssociation,
@@ -646,7 +646,7 @@ func (c *LexModelBuildingService) DeleteBotChannelAssociationRequest(input *Dele
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotChannelAssociation
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotChannelAssociation
 func (c *LexModelBuildingService) DeleteBotChannelAssociation(input *DeleteBotChannelAssociationInput) (*DeleteBotChannelAssociationOutput, error) {
 	req, out := c.DeleteBotChannelAssociationRequest(input)
 	return out, req.Send()
@@ -693,7 +693,7 @@ const opDeleteBotVersion = "DeleteBotVersion"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotVersion
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotVersion
 func (c *LexModelBuildingService) DeleteBotVersionRequest(input *DeleteBotVersionInput) (req *request.Request, output *DeleteBotVersionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteBotVersion,
@@ -757,7 +757,7 @@ func (c *LexModelBuildingService) DeleteBotVersionRequest(input *DeleteBotVersio
 //
 //   "name": string, "version": string } }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotVersion
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotVersion
 func (c *LexModelBuildingService) DeleteBotVersion(input *DeleteBotVersionInput) (*DeleteBotVersionOutput, error) {
 	req, out := c.DeleteBotVersionRequest(input)
 	return out, req.Send()
@@ -804,7 +804,7 @@ const opDeleteIntent = "DeleteIntent"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntent
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntent
 func (c *LexModelBuildingService) DeleteIntentRequest(input *DeleteIntentInput) (req *request.Request, output *DeleteIntentOutput) {
 	op := &request.Operation{
 		Name:       opDeleteIntent,
@@ -878,7 +878,7 @@ func (c *LexModelBuildingService) DeleteIntentRequest(input *DeleteIntentInput) 
 //
 //   "name": string, "version": string } }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntent
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntent
 func (c *LexModelBuildingService) DeleteIntent(input *DeleteIntentInput) (*DeleteIntentOutput, error) {
 	req, out := c.DeleteIntentRequest(input)
 	return out, req.Send()
@@ -925,7 +925,7 @@ const opDeleteIntentVersion = "DeleteIntentVersion"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntentVersion
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntentVersion
 func (c *LexModelBuildingService) DeleteIntentVersionRequest(input *DeleteIntentVersionInput) (req *request.Request, output *DeleteIntentVersionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteIntentVersion,
@@ -989,7 +989,7 @@ func (c *LexModelBuildingService) DeleteIntentVersionRequest(input *DeleteIntent
 //
 //   "name": string, "version": string } }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntentVersion
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntentVersion
 func (c *LexModelBuildingService) DeleteIntentVersion(input *DeleteIntentVersionInput) (*DeleteIntentVersionOutput, error) {
 	req, out := c.DeleteIntentVersionRequest(input)
 	return out, req.Send()
@@ -1036,7 +1036,7 @@ const opDeleteSlotType = "DeleteSlotType"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotType
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotType
 func (c *LexModelBuildingService) DeleteSlotTypeRequest(input *DeleteSlotTypeInput) (req *request.Request, output *DeleteSlotTypeOutput) {
 	op := &request.Operation{
 		Name:       opDeleteSlotType,
@@ -1112,7 +1112,7 @@ func (c *LexModelBuildingService) DeleteSlotTypeRequest(input *DeleteSlotTypeInp
 //
 //   "name": string, "version": string } }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotType
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotType
 func (c *LexModelBuildingService) DeleteSlotType(input *DeleteSlotTypeInput) (*DeleteSlotTypeOutput, error) {
 	req, out := c.DeleteSlotTypeRequest(input)
 	return out, req.Send()
@@ -1159,7 +1159,7 @@ const opDeleteSlotTypeVersion = "DeleteSlotTypeVersion"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotTypeVersion
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotTypeVersion
 func (c *LexModelBuildingService) DeleteSlotTypeVersionRequest(input *DeleteSlotTypeVersionInput) (req *request.Request, output *DeleteSlotTypeVersionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteSlotTypeVersion,
@@ -1223,7 +1223,7 @@ func (c *LexModelBuildingService) DeleteSlotTypeVersionRequest(input *DeleteSlot
 //
 //   "name": string, "version": string } }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotTypeVersion
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotTypeVersion
 func (c *LexModelBuildingService) DeleteSlotTypeVersion(input *DeleteSlotTypeVersionInput) (*DeleteSlotTypeVersionOutput, error) {
 	req, out := c.DeleteSlotTypeVersionRequest(input)
 	return out, req.Send()
@@ -1270,7 +1270,7 @@ const opDeleteUtterances = "DeleteUtterances"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteUtterances
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteUtterances
 func (c *LexModelBuildingService) DeleteUtterancesRequest(input *DeleteUtterancesInput) (req *request.Request, output *DeleteUtterancesOutput) {
 	op := &request.Operation{
 		Name:       opDeleteUtterances,
@@ -1295,7 +1295,7 @@ func (c *LexModelBuildingService) DeleteUtterancesRequest(input *DeleteUtterance
 //
 // Amazon Lex stores the utterances that users send to your bot unless the childDirected
 // field in the bot is set to true. Utterances are stored for 15 days for use
-// with the GetUtterancesView operation, and then stored indefinately for use
+// with the GetUtterancesView operation, and then stored indefinitely for use
 // in improving the ability of your bot to respond to user input.
 //
 // Use the DeleteStoredUtterances operation to manually delete stored utterances
@@ -1325,7 +1325,7 @@ func (c *LexModelBuildingService) DeleteUtterancesRequest(input *DeleteUtterance
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteUtterances
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteUtterances
 func (c *LexModelBuildingService) DeleteUtterances(input *DeleteUtterancesInput) (*DeleteUtterancesOutput, error) {
 	req, out := c.DeleteUtterancesRequest(input)
 	return out, req.Send()
@@ -1372,7 +1372,7 @@ const opGetBot = "GetBot"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBot
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBot
 func (c *LexModelBuildingService) GetBotRequest(input *GetBotInput) (req *request.Request, output *GetBotOutput) {
 	op := &request.Operation{
 		Name:       opGetBot,
@@ -1394,7 +1394,7 @@ func (c *LexModelBuildingService) GetBotRequest(input *GetBotInput) (req *reques
 // Returns metadata information for a specific bot. You must provide the bot
 // name and the bot version or alias.
 //
-// The GetBot operation requires permissions for the lex:GetBot action.
+// This operation requires permissions for the lex:GetBot action.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1418,7 +1418,7 @@ func (c *LexModelBuildingService) GetBotRequest(input *GetBotInput) (req *reques
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBot
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBot
 func (c *LexModelBuildingService) GetBot(input *GetBotInput) (*GetBotOutput, error) {
 	req, out := c.GetBotRequest(input)
 	return out, req.Send()
@@ -1465,7 +1465,7 @@ const opGetBotAlias = "GetBotAlias"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAlias
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAlias
 func (c *LexModelBuildingService) GetBotAliasRequest(input *GetBotAliasInput) (req *request.Request, output *GetBotAliasOutput) {
 	op := &request.Operation{
 		Name:       opGetBotAlias,
@@ -1511,7 +1511,7 @@ func (c *LexModelBuildingService) GetBotAliasRequest(input *GetBotAliasInput) (r
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAlias
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAlias
 func (c *LexModelBuildingService) GetBotAlias(input *GetBotAliasInput) (*GetBotAliasOutput, error) {
 	req, out := c.GetBotAliasRequest(input)
 	return out, req.Send()
@@ -1558,7 +1558,7 @@ const opGetBotAliases = "GetBotAliases"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAliases
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAliases
 func (c *LexModelBuildingService) GetBotAliasesRequest(input *GetBotAliasesInput) (req *request.Request, output *GetBotAliasesOutput) {
 	op := &request.Operation{
 		Name:       opGetBotAliases,
@@ -1605,7 +1605,7 @@ func (c *LexModelBuildingService) GetBotAliasesRequest(input *GetBotAliasesInput
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAliases
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAliases
 func (c *LexModelBuildingService) GetBotAliases(input *GetBotAliasesInput) (*GetBotAliasesOutput, error) {
 	req, out := c.GetBotAliasesRequest(input)
 	return out, req.Send()
@@ -1702,7 +1702,7 @@ const opGetBotChannelAssociation = "GetBotChannelAssociation"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociation
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociation
 func (c *LexModelBuildingService) GetBotChannelAssociationRequest(input *GetBotChannelAssociationInput) (req *request.Request, output *GetBotChannelAssociationOutput) {
 	op := &request.Operation{
 		Name:       opGetBotChannelAssociation,
@@ -1749,7 +1749,7 @@ func (c *LexModelBuildingService) GetBotChannelAssociationRequest(input *GetBotC
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociation
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociation
 func (c *LexModelBuildingService) GetBotChannelAssociation(input *GetBotChannelAssociationInput) (*GetBotChannelAssociationOutput, error) {
 	req, out := c.GetBotChannelAssociationRequest(input)
 	return out, req.Send()
@@ -1796,7 +1796,7 @@ const opGetBotChannelAssociations = "GetBotChannelAssociations"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociations
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociations
 func (c *LexModelBuildingService) GetBotChannelAssociationsRequest(input *GetBotChannelAssociationsInput) (req *request.Request, output *GetBotChannelAssociationsOutput) {
 	op := &request.Operation{
 		Name:       opGetBotChannelAssociations,
@@ -1844,7 +1844,7 @@ func (c *LexModelBuildingService) GetBotChannelAssociationsRequest(input *GetBot
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociations
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociations
 func (c *LexModelBuildingService) GetBotChannelAssociations(input *GetBotChannelAssociationsInput) (*GetBotChannelAssociationsOutput, error) {
 	req, out := c.GetBotChannelAssociationsRequest(input)
 	return out, req.Send()
@@ -1941,7 +1941,7 @@ const opGetBotVersions = "GetBotVersions"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotVersions
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotVersions
 func (c *LexModelBuildingService) GetBotVersionsRequest(input *GetBotVersionsInput) (req *request.Request, output *GetBotVersionsOutput) {
 	op := &request.Operation{
 		Name:       opGetBotVersions,
@@ -2000,7 +2000,7 @@ func (c *LexModelBuildingService) GetBotVersionsRequest(input *GetBotVersionsInp
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotVersions
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotVersions
 func (c *LexModelBuildingService) GetBotVersions(input *GetBotVersionsInput) (*GetBotVersionsOutput, error) {
 	req, out := c.GetBotVersionsRequest(input)
 	return out, req.Send()
@@ -2097,7 +2097,7 @@ const opGetBots = "GetBots"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBots
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBots
 func (c *LexModelBuildingService) GetBotsRequest(input *GetBotsInput) (req *request.Request, output *GetBotsOutput) {
 	op := &request.Operation{
 		Name:       opGetBots,
@@ -2155,7 +2155,7 @@ func (c *LexModelBuildingService) GetBotsRequest(input *GetBotsInput) (req *requ
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBots
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBots
 func (c *LexModelBuildingService) GetBots(input *GetBotsInput) (*GetBotsOutput, error) {
 	req, out := c.GetBotsRequest(input)
 	return out, req.Send()
@@ -2252,7 +2252,7 @@ const opGetBuiltinIntent = "GetBuiltinIntent"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntent
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntent
 func (c *LexModelBuildingService) GetBuiltinIntentRequest(input *GetBuiltinIntentInput) (req *request.Request, output *GetBuiltinIntentOutput) {
 	op := &request.Operation{
 		Name:       opGetBuiltinIntent,
@@ -2297,7 +2297,7 @@ func (c *LexModelBuildingService) GetBuiltinIntentRequest(input *GetBuiltinInten
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntent
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntent
 func (c *LexModelBuildingService) GetBuiltinIntent(input *GetBuiltinIntentInput) (*GetBuiltinIntentOutput, error) {
 	req, out := c.GetBuiltinIntentRequest(input)
 	return out, req.Send()
@@ -2344,7 +2344,7 @@ const opGetBuiltinIntents = "GetBuiltinIntents"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntents
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntents
 func (c *LexModelBuildingService) GetBuiltinIntentsRequest(input *GetBuiltinIntentsInput) (req *request.Request, output *GetBuiltinIntentsOutput) {
 	op := &request.Operation{
 		Name:       opGetBuiltinIntents,
@@ -2391,7 +2391,7 @@ func (c *LexModelBuildingService) GetBuiltinIntentsRequest(input *GetBuiltinInte
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntents
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntents
 func (c *LexModelBuildingService) GetBuiltinIntents(input *GetBuiltinIntentsInput) (*GetBuiltinIntentsOutput, error) {
 	req, out := c.GetBuiltinIntentsRequest(input)
 	return out, req.Send()
@@ -2488,7 +2488,7 @@ const opGetBuiltinSlotTypes = "GetBuiltinSlotTypes"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinSlotTypes
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinSlotTypes
 func (c *LexModelBuildingService) GetBuiltinSlotTypesRequest(input *GetBuiltinSlotTypesInput) (req *request.Request, output *GetBuiltinSlotTypesOutput) {
 	op := &request.Operation{
 		Name:       opGetBuiltinSlotTypes,
@@ -2538,7 +2538,7 @@ func (c *LexModelBuildingService) GetBuiltinSlotTypesRequest(input *GetBuiltinSl
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinSlotTypes
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinSlotTypes
 func (c *LexModelBuildingService) GetBuiltinSlotTypes(input *GetBuiltinSlotTypesInput) (*GetBuiltinSlotTypesOutput, error) {
 	req, out := c.GetBuiltinSlotTypesRequest(input)
 	return out, req.Send()
@@ -2610,6 +2610,96 @@ func (c *LexModelBuildingService) GetBuiltinSlotTypesPagesWithContext(ctx aws.Co
 	return p.Err()
 }
 
+const opGetExport = "GetExport"
+
+// GetExportRequest generates a "aws/request.Request" representing the
+// client's request for the GetExport operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetExport for more information on using the GetExport
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the GetExportRequest method.
+//    req, resp := client.GetExportRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetExport
+func (c *LexModelBuildingService) GetExportRequest(input *GetExportInput) (req *request.Request, output *GetExportOutput) {
+	op := &request.Operation{
+		Name:       opGetExport,
+		HTTPMethod: "GET",
+		HTTPPath:   "/exports/",
+	}
+
+	if input == nil {
+		input = &GetExportInput{}
+	}
+
+	output = &GetExportOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetExport API operation for Amazon Lex Model Building Service.
+//
+// Exports the contents of a Amazon Lex resource in a specified format.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Lex Model Building Service's
+// API operation GetExport for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeNotFoundException "NotFoundException"
+//   The resource specified in the request was not found. Check the resource and
+//   try again.
+//
+//   * ErrCodeLimitExceededException "LimitExceededException"
+//   The request exceeded a limit. Try your request again.
+//
+//   * ErrCodeInternalFailureException "InternalFailureException"
+//   An internal Amazon Lex error occurred. Try your request again.
+//
+//   * ErrCodeBadRequestException "BadRequestException"
+//   The request is not well formed. For example, a value is invalid or a required
+//   field is missing. Check the field values, and try again.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetExport
+func (c *LexModelBuildingService) GetExport(input *GetExportInput) (*GetExportOutput, error) {
+	req, out := c.GetExportRequest(input)
+	return out, req.Send()
+}
+
+// GetExportWithContext is the same as GetExport with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetExport for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *LexModelBuildingService) GetExportWithContext(ctx aws.Context, input *GetExportInput, opts ...request.Option) (*GetExportOutput, error) {
+	req, out := c.GetExportRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetIntent = "GetIntent"
 
 // GetIntentRequest generates a "aws/request.Request" representing the
@@ -2635,7 +2725,7 @@ const opGetIntent = "GetIntent"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntent
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntent
 func (c *LexModelBuildingService) GetIntentRequest(input *GetIntentInput) (req *request.Request, output *GetIntentOutput) {
 	op := &request.Operation{
 		Name:       opGetIntent,
@@ -2681,7 +2771,7 @@ func (c *LexModelBuildingService) GetIntentRequest(input *GetIntentInput) (req *
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntent
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntent
 func (c *LexModelBuildingService) GetIntent(input *GetIntentInput) (*GetIntentOutput, error) {
 	req, out := c.GetIntentRequest(input)
 	return out, req.Send()
@@ -2728,7 +2818,7 @@ const opGetIntentVersions = "GetIntentVersions"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentVersions
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentVersions
 func (c *LexModelBuildingService) GetIntentVersionsRequest(input *GetIntentVersionsInput) (req *request.Request, output *GetIntentVersionsOutput) {
 	op := &request.Operation{
 		Name:       opGetIntentVersions,
@@ -2787,7 +2877,7 @@ func (c *LexModelBuildingService) GetIntentVersionsRequest(input *GetIntentVersi
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentVersions
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentVersions
 func (c *LexModelBuildingService) GetIntentVersions(input *GetIntentVersionsInput) (*GetIntentVersionsOutput, error) {
 	req, out := c.GetIntentVersionsRequest(input)
 	return out, req.Send()
@@ -2884,7 +2974,7 @@ const opGetIntents = "GetIntents"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntents
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntents
 func (c *LexModelBuildingService) GetIntentsRequest(input *GetIntentsInput) (req *request.Request, output *GetIntentsOutput) {
 	op := &request.Operation{
 		Name:       opGetIntents,
@@ -2941,7 +3031,7 @@ func (c *LexModelBuildingService) GetIntentsRequest(input *GetIntentsInput) (req
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntents
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntents
 func (c *LexModelBuildingService) GetIntents(input *GetIntentsInput) (*GetIntentsOutput, error) {
 	req, out := c.GetIntentsRequest(input)
 	return out, req.Send()
@@ -3038,7 +3128,7 @@ const opGetSlotType = "GetSlotType"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotType
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotType
 func (c *LexModelBuildingService) GetSlotTypeRequest(input *GetSlotTypeInput) (req *request.Request, output *GetSlotTypeOutput) {
 	op := &request.Operation{
 		Name:       opGetSlotType,
@@ -3084,7 +3174,7 @@ func (c *LexModelBuildingService) GetSlotTypeRequest(input *GetSlotTypeInput) (r
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotType
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotType
 func (c *LexModelBuildingService) GetSlotType(input *GetSlotTypeInput) (*GetSlotTypeOutput, error) {
 	req, out := c.GetSlotTypeRequest(input)
 	return out, req.Send()
@@ -3131,7 +3221,7 @@ const opGetSlotTypeVersions = "GetSlotTypeVersions"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypeVersions
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypeVersions
 func (c *LexModelBuildingService) GetSlotTypeVersionsRequest(input *GetSlotTypeVersionsInput) (req *request.Request, output *GetSlotTypeVersionsOutput) {
 	op := &request.Operation{
 		Name:       opGetSlotTypeVersions,
@@ -3190,7 +3280,7 @@ func (c *LexModelBuildingService) GetSlotTypeVersionsRequest(input *GetSlotTypeV
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypeVersions
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypeVersions
 func (c *LexModelBuildingService) GetSlotTypeVersions(input *GetSlotTypeVersionsInput) (*GetSlotTypeVersionsOutput, error) {
 	req, out := c.GetSlotTypeVersionsRequest(input)
 	return out, req.Send()
@@ -3287,7 +3377,7 @@ const opGetSlotTypes = "GetSlotTypes"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypes
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypes
 func (c *LexModelBuildingService) GetSlotTypesRequest(input *GetSlotTypesInput) (req *request.Request, output *GetSlotTypesOutput) {
 	op := &request.Operation{
 		Name:       opGetSlotTypes,
@@ -3344,7 +3434,7 @@ func (c *LexModelBuildingService) GetSlotTypesRequest(input *GetSlotTypesInput) 
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypes
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypes
 func (c *LexModelBuildingService) GetSlotTypes(input *GetSlotTypesInput) (*GetSlotTypesOutput, error) {
 	req, out := c.GetSlotTypesRequest(input)
 	return out, req.Send()
@@ -3441,7 +3531,7 @@ const opGetUtterancesView = "GetUtterancesView"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetUtterancesView
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetUtterancesView
 func (c *LexModelBuildingService) GetUtterancesViewRequest(input *GetUtterancesViewInput) (req *request.Request, output *GetUtterancesViewOutput) {
 	op := &request.Operation{
 		Name:       opGetUtterancesView,
@@ -3503,7 +3593,7 @@ func (c *LexModelBuildingService) GetUtterancesViewRequest(input *GetUtterancesV
 //   The request is not well formed. For example, a value is invalid or a required
 //   field is missing. Check the field values, and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetUtterancesView
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetUtterancesView
 func (c *LexModelBuildingService) GetUtterancesView(input *GetUtterancesViewInput) (*GetUtterancesViewOutput, error) {
 	req, out := c.GetUtterancesViewRequest(input)
 	return out, req.Send()
@@ -3550,7 +3640,7 @@ const opPutBot = "PutBot"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBot
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBot
 func (c *LexModelBuildingService) PutBotRequest(input *PutBotInput) (req *request.Request, output *PutBotOutput) {
 	op := &request.Operation{
 		Name:       opPutBot,
@@ -3608,7 +3698,7 @@ func (c *LexModelBuildingService) PutBotRequest(input *PutBotInput) (req *reques
 //   The checksum of the resource that you are trying to change does not match
 //   the checksum in the request. Check the resource's checksum and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBot
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBot
 func (c *LexModelBuildingService) PutBot(input *PutBotInput) (*PutBotOutput, error) {
 	req, out := c.PutBotRequest(input)
 	return out, req.Send()
@@ -3655,7 +3745,7 @@ const opPutBotAlias = "PutBotAlias"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBotAlias
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBotAlias
 func (c *LexModelBuildingService) PutBotAliasRequest(input *PutBotAliasInput) (req *request.Request, output *PutBotAliasOutput) {
 	op := &request.Operation{
 		Name:       opPutBotAlias,
@@ -3705,7 +3795,7 @@ func (c *LexModelBuildingService) PutBotAliasRequest(input *PutBotAliasInput) (r
 //   The checksum of the resource that you are trying to change does not match
 //   the checksum in the request. Check the resource's checksum and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBotAlias
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBotAlias
 func (c *LexModelBuildingService) PutBotAlias(input *PutBotAliasInput) (*PutBotAliasOutput, error) {
 	req, out := c.PutBotAliasRequest(input)
 	return out, req.Send()
@@ -3752,7 +3842,7 @@ const opPutIntent = "PutIntent"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutIntent
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutIntent
 func (c *LexModelBuildingService) PutIntentRequest(input *PutIntentInput) (req *request.Request, output *PutIntentOutput) {
 	op := &request.Operation{
 		Name:       opPutIntent,
@@ -3808,9 +3898,11 @@ func (c *LexModelBuildingService) PutIntentRequest(input *PutIntentInput) (req *
 //    asking "Do you want to order a drink with your pizza?"
 //
 // If you specify an existing intent name to update the intent, Amazon Lex replaces
-// the values in the $LATEST version of the slot type with the values in the
-// request. Amazon Lex removes fields that you don't provide in the request.
-// If you don't specify the required fields, Amazon Lex throws an exception.
+// the values in the $LATEST version of the intent with the values in the request.
+// Amazon Lex removes fields that you don't provide in the request. If you don't
+// specify the required fields, Amazon Lex throws an exception. When you update
+// the $LATEST version of an intent, the status field of any bot that uses the
+// $LATEST version of the intent is set to NOT_BUILT.
 //
 // For more information, see how-it-works.
 //
@@ -3841,7 +3933,7 @@ func (c *LexModelBuildingService) PutIntentRequest(input *PutIntentInput) (req *
 //   The checksum of the resource that you are trying to change does not match
 //   the checksum in the request. Check the resource's checksum and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutIntent
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutIntent
 func (c *LexModelBuildingService) PutIntent(input *PutIntentInput) (*PutIntentOutput, error) {
 	req, out := c.PutIntentRequest(input)
 	return out, req.Send()
@@ -3888,7 +3980,7 @@ const opPutSlotType = "PutSlotType"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutSlotType
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutSlotType
 func (c *LexModelBuildingService) PutSlotTypeRequest(input *PutSlotTypeInput) (req *request.Request, output *PutSlotTypeOutput) {
 	op := &request.Operation{
 		Name:       opPutSlotType,
@@ -3916,7 +4008,9 @@ func (c *LexModelBuildingService) PutSlotTypeRequest(input *PutSlotTypeInput) (r
 // If you specify the name of an existing slot type, the fields in the request
 // replace the existing values in the $LATEST version of the slot type. Amazon
 // Lex removes the fields that you don't provide in the request. If you don't
-// specify required fields, Amazon Lex throws an exception.
+// specify required fields, Amazon Lex throws an exception. When you update
+// the $LATEST version of a slot type, if a bot uses the $LATEST version of
+// an intent that contains the slot type, the bot's status field is set to NOT_BUILT.
 //
 // This operation requires permissions for the lex:PutSlotType action.
 //
@@ -3945,7 +4039,7 @@ func (c *LexModelBuildingService) PutSlotTypeRequest(input *PutSlotTypeInput) (r
 //   The checksum of the resource that you are trying to change does not match
 //   the checksum in the request. Check the resource's checksum and try again.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutSlotType
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutSlotType
 func (c *LexModelBuildingService) PutSlotType(input *PutSlotTypeInput) (*PutSlotTypeOutput, error) {
 	req, out := c.PutSlotTypeRequest(input)
 	return out, req.Send()
@@ -3968,7 +4062,7 @@ func (c *LexModelBuildingService) PutSlotTypeWithContext(ctx aws.Context, input 
 }
 
 // Provides information about a bot alias.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/BotAliasMetadata
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/BotAliasMetadata
 type BotAliasMetadata struct {
 	_ struct{} `type:"structure"`
 
@@ -4049,7 +4143,7 @@ func (s *BotAliasMetadata) SetName(v string) *BotAliasMetadata {
 
 // Represents an association between an Amazon Lex bot and an external messaging
 // platform.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/BotChannelAssociation
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/BotChannelAssociation
 type BotChannelAssociation struct {
 	_ struct{} `type:"structure"`
 
@@ -4073,8 +4167,22 @@ type BotChannelAssociation struct {
 	// A text description of the association you are creating.
 	Description *string `locationName:"description" type:"string"`
 
+	// If status is FAILED, Amazon Lex provides the reason that it failed to create
+	// the association.
+	FailureReason *string `locationName:"failureReason" type:"string"`
+
 	// The name of the association between the bot and the channel.
 	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// The status of the bot channel.
+	//
+	//    * CREATED - The channel has been created and is ready for use.
+	//
+	//    * IN_PROGRESS - Channel creation is in progress.
+	//
+	//    * FAILED - There was an error creating the channel. For information about
+	//    the reason for the failure, see the failureReason field.
+	Status *string `locationName:"status" type:"string" enum:"ChannelStatus"`
 
 	// Specifies the type of association by indicating the type of channel being
 	// established between the Amazon Lex bot and the external messaging platform.
@@ -4121,9 +4229,21 @@ func (s *BotChannelAssociation) SetDescription(v string) *BotChannelAssociation 
 	return s
 }
 
+// SetFailureReason sets the FailureReason field's value.
+func (s *BotChannelAssociation) SetFailureReason(v string) *BotChannelAssociation {
+	s.FailureReason = &v
+	return s
+}
+
 // SetName sets the Name field's value.
 func (s *BotChannelAssociation) SetName(v string) *BotChannelAssociation {
 	s.Name = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *BotChannelAssociation) SetStatus(v string) *BotChannelAssociation {
+	s.Status = &v
 	return s
 }
 
@@ -4134,7 +4254,7 @@ func (s *BotChannelAssociation) SetType(v string) *BotChannelAssociation {
 }
 
 // Provides information about a bot. .
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/BotMetadata
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/BotMetadata
 type BotMetadata struct {
 	_ struct{} `type:"structure"`
 
@@ -4205,7 +4325,7 @@ func (s *BotMetadata) SetVersion(v string) *BotMetadata {
 }
 
 // Provides metadata for a built-in intent.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/BuiltinIntentMetadata
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/BuiltinIntentMetadata
 type BuiltinIntentMetadata struct {
 	_ struct{} `type:"structure"`
 
@@ -4241,7 +4361,7 @@ func (s *BuiltinIntentMetadata) SetSupportedLocales(v []*string) *BuiltinIntentM
 }
 
 // Provides information about a slot used in a built-in intent.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/BuiltinIntentSlot
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/BuiltinIntentSlot
 type BuiltinIntentSlot struct {
 	_ struct{} `type:"structure"`
 
@@ -4266,7 +4386,7 @@ func (s *BuiltinIntentSlot) SetName(v string) *BuiltinIntentSlot {
 }
 
 // Provides information about a built in slot type.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/BuiltinSlotTypeMetadata
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/BuiltinSlotTypeMetadata
 type BuiltinSlotTypeMetadata struct {
 	_ struct{} `type:"structure"`
 
@@ -4303,7 +4423,7 @@ func (s *BuiltinSlotTypeMetadata) SetSupportedLocales(v []*string) *BuiltinSlotT
 
 // Specifies a Lambda function that verifies requests to a bot or fulfills the
 // user's request to a bot..
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CodeHook
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CodeHook
 type CodeHook struct {
 	_ struct{} `type:"structure"`
 
@@ -4363,7 +4483,7 @@ func (s *CodeHook) SetUri(v string) *CodeHook {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateBotVersionRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateBotVersionRequest
 type CreateBotVersionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4419,7 +4539,7 @@ func (s *CreateBotVersionInput) SetName(v string) *CreateBotVersionInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateBotVersionResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateBotVersionResponse
 type CreateBotVersionOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4474,7 +4594,7 @@ type CreateBotVersionOutput struct {
 	IdleSessionTTLInSeconds *int64 `locationName:"idleSessionTTLInSeconds" min:"60" type:"integer"`
 
 	// An array of Intent objects. For more information, see PutBot.
-	Intents []*Intent `locationName:"intents" min:"1" type:"list"`
+	Intents []*Intent `locationName:"intents" type:"list"`
 
 	// The date when the $LATEST version of this bot was updated.
 	LastUpdatedDate *time.Time `locationName:"lastUpdatedDate" type:"timestamp" timestampFormat:"unix"`
@@ -4599,7 +4719,7 @@ func (s *CreateBotVersionOutput) SetVoiceId(v string) *CreateBotVersionOutput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateIntentVersionRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateIntentVersionRequest
 type CreateIntentVersionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4655,7 +4775,7 @@ func (s *CreateIntentVersionInput) SetName(v string) *CreateIntentVersionInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateIntentVersionResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateIntentVersionResponse
 type CreateIntentVersionOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4810,7 +4930,7 @@ func (s *CreateIntentVersionOutput) SetVersion(v string) *CreateIntentVersionOut
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateSlotTypeVersionRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateSlotTypeVersionRequest
 type CreateSlotTypeVersionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4866,7 +4986,7 @@ func (s *CreateSlotTypeVersionInput) SetName(v string) *CreateSlotTypeVersionInp
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateSlotTypeVersionResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateSlotTypeVersionResponse
 type CreateSlotTypeVersionOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4889,6 +5009,10 @@ type CreateSlotTypeVersionOutput struct {
 
 	// The name of the slot type.
 	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// The strategy that Amazon Lex uses to determine the value of the slot. For
+	// more information, see PutSlotType.
+	ValueSelectionStrategy *string `locationName:"valueSelectionStrategy" type:"string" enum:"SlotValueSelectionStrategy"`
 
 	// The version assigned to the new slot type version.
 	Version *string `locationName:"version" min:"1" type:"string"`
@@ -4940,13 +5064,19 @@ func (s *CreateSlotTypeVersionOutput) SetName(v string) *CreateSlotTypeVersionOu
 	return s
 }
 
+// SetValueSelectionStrategy sets the ValueSelectionStrategy field's value.
+func (s *CreateSlotTypeVersionOutput) SetValueSelectionStrategy(v string) *CreateSlotTypeVersionOutput {
+	s.ValueSelectionStrategy = &v
+	return s
+}
+
 // SetVersion sets the Version field's value.
 func (s *CreateSlotTypeVersionOutput) SetVersion(v string) *CreateSlotTypeVersionOutput {
 	s.Version = &v
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotAliasRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotAliasRequest
 type DeleteBotAliasInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5005,7 +5135,7 @@ func (s *DeleteBotAliasInput) SetName(v string) *DeleteBotAliasInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotAliasOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotAliasOutput
 type DeleteBotAliasOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5020,7 +5150,7 @@ func (s DeleteBotAliasOutput) GoString() string {
 	return s.String()
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotChannelAssociationRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotChannelAssociationRequest
 type DeleteBotChannelAssociationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5097,7 +5227,7 @@ func (s *DeleteBotChannelAssociationInput) SetName(v string) *DeleteBotChannelAs
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotChannelAssociationOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotChannelAssociationOutput
 type DeleteBotChannelAssociationOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5112,7 +5242,7 @@ func (s DeleteBotChannelAssociationOutput) GoString() string {
 	return s.String()
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotRequest
 type DeleteBotInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5154,7 +5284,7 @@ func (s *DeleteBotInput) SetName(v string) *DeleteBotInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotOutput
 type DeleteBotOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5169,7 +5299,7 @@ func (s DeleteBotOutput) GoString() string {
 	return s.String()
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotVersionRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotVersionRequest
 type DeleteBotVersionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5229,7 +5359,7 @@ func (s *DeleteBotVersionInput) SetVersion(v string) *DeleteBotVersionInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotVersionOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotVersionOutput
 type DeleteBotVersionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5244,7 +5374,7 @@ func (s DeleteBotVersionOutput) GoString() string {
 	return s.String()
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntentRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntentRequest
 type DeleteIntentInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5286,7 +5416,7 @@ func (s *DeleteIntentInput) SetName(v string) *DeleteIntentInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntentOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntentOutput
 type DeleteIntentOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5301,7 +5431,7 @@ func (s DeleteIntentOutput) GoString() string {
 	return s.String()
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntentVersionRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntentVersionRequest
 type DeleteIntentVersionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5361,7 +5491,7 @@ func (s *DeleteIntentVersionInput) SetVersion(v string) *DeleteIntentVersionInpu
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntentVersionOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntentVersionOutput
 type DeleteIntentVersionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5376,7 +5506,7 @@ func (s DeleteIntentVersionOutput) GoString() string {
 	return s.String()
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotTypeRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotTypeRequest
 type DeleteSlotTypeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5418,7 +5548,7 @@ func (s *DeleteSlotTypeInput) SetName(v string) *DeleteSlotTypeInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotTypeOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotTypeOutput
 type DeleteSlotTypeOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5433,7 +5563,7 @@ func (s DeleteSlotTypeOutput) GoString() string {
 	return s.String()
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotTypeVersionRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotTypeVersionRequest
 type DeleteSlotTypeVersionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5493,7 +5623,7 @@ func (s *DeleteSlotTypeVersionInput) SetVersion(v string) *DeleteSlotTypeVersion
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotTypeVersionOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotTypeVersionOutput
 type DeleteSlotTypeVersionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5508,7 +5638,7 @@ func (s DeleteSlotTypeVersionOutput) GoString() string {
 	return s.String()
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteUtterancesRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteUtterancesRequest
 type DeleteUtterancesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5570,7 +5700,7 @@ func (s *DeleteUtterancesInput) SetUserId(v string) *DeleteUtterancesInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteUtterancesOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteUtterancesOutput
 type DeleteUtterancesOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5597,9 +5727,12 @@ func (s DeleteUtterancesOutput) GoString() string {
 //    * thin
 //
 //    * stuffed
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/EnumerationValue
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/EnumerationValue
 type EnumerationValue struct {
 	_ struct{} `type:"structure"`
+
+	// Additional values related to the slot type value.
+	Synonyms []*string `locationName:"synonyms" type:"list"`
 
 	// The value of the slot type.
 	//
@@ -5633,6 +5766,12 @@ func (s *EnumerationValue) Validate() error {
 	return nil
 }
 
+// SetSynonyms sets the Synonyms field's value.
+func (s *EnumerationValue) SetSynonyms(v []*string) *EnumerationValue {
+	s.Synonyms = v
+	return s
+}
+
 // SetValue sets the Value field's value.
 func (s *EnumerationValue) SetValue(v string) *EnumerationValue {
 	s.Value = &v
@@ -5642,7 +5781,7 @@ func (s *EnumerationValue) SetValue(v string) *EnumerationValue {
 // A prompt for additional activity after an intent is fulfilled. For example,
 // after the OrderPizza intent is fulfilled, you might prompt the user to find
 // out whether the user wants to order drinks.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/FollowUpPrompt
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/FollowUpPrompt
 type FollowUpPrompt struct {
 	_ struct{} `type:"structure"`
 
@@ -5724,7 +5863,7 @@ func (s *FollowUpPrompt) SetRejectionStatement(v *Statement) *FollowUpPrompt {
 //    must go back to the client application so that it can perform the operation
 //    and update the graphics. In this case, you want Amazon Lex to return the
 //    intent data to the client.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/FulfillmentActivity
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/FulfillmentActivity
 type FulfillmentActivity struct {
 	_ struct{} `type:"structure"`
 
@@ -5778,7 +5917,7 @@ func (s *FulfillmentActivity) SetType(v string) *FulfillmentActivity {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAliasRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAliasRequest
 type GetBotAliasInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5837,7 +5976,7 @@ func (s *GetBotAliasInput) SetName(v string) *GetBotAliasInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAliasResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAliasResponse
 type GetBotAliasOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5916,7 +6055,7 @@ func (s *GetBotAliasOutput) SetName(v string) *GetBotAliasOutput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAliasesRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAliasesRequest
 type GetBotAliasesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5997,7 +6136,7 @@ func (s *GetBotAliasesInput) SetNextToken(v string) *GetBotAliasesInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAliasesResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAliasesResponse
 type GetBotAliasesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6033,7 +6172,7 @@ func (s *GetBotAliasesOutput) SetNextToken(v string) *GetBotAliasesOutput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociationRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociationRequest
 type GetBotChannelAssociationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6111,7 +6250,7 @@ func (s *GetBotChannelAssociationInput) SetName(v string) *GetBotChannelAssociat
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociationResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociationResponse
 type GetBotChannelAssociationOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6132,8 +6271,22 @@ type GetBotChannelAssociationOutput struct {
 	// A description of the association between the bot and the channel.
 	Description *string `locationName:"description" type:"string"`
 
+	// If status is FAILED, Amazon Lex provides the reason that it failed to create
+	// the association.
+	FailureReason *string `locationName:"failureReason" type:"string"`
+
 	// The name of the association between the bot and the channel.
 	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// The status of the bot channel.
+	//
+	//    * CREATED - The channel has been created and is ready for use.
+	//
+	//    * IN_PROGRESS - Channel creation is in progress.
+	//
+	//    * FAILED - There was an error creating the channel. For information about
+	//    the reason for the failure, see the failureReason field.
+	Status *string `locationName:"status" type:"string" enum:"ChannelStatus"`
 
 	// The type of the messaging platform.
 	Type *string `locationName:"type" type:"string" enum:"ChannelType"`
@@ -6179,9 +6332,21 @@ func (s *GetBotChannelAssociationOutput) SetDescription(v string) *GetBotChannel
 	return s
 }
 
+// SetFailureReason sets the FailureReason field's value.
+func (s *GetBotChannelAssociationOutput) SetFailureReason(v string) *GetBotChannelAssociationOutput {
+	s.FailureReason = &v
+	return s
+}
+
 // SetName sets the Name field's value.
 func (s *GetBotChannelAssociationOutput) SetName(v string) *GetBotChannelAssociationOutput {
 	s.Name = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GetBotChannelAssociationOutput) SetStatus(v string) *GetBotChannelAssociationOutput {
+	s.Status = &v
 	return s
 }
 
@@ -6191,7 +6356,7 @@ func (s *GetBotChannelAssociationOutput) SetType(v string) *GetBotChannelAssocia
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociationsRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociationsRequest
 type GetBotChannelAssociationsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6291,7 +6456,7 @@ func (s *GetBotChannelAssociationsInput) SetNextToken(v string) *GetBotChannelAs
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociationsResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociationsResponse
 type GetBotChannelAssociationsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6328,7 +6493,7 @@ func (s *GetBotChannelAssociationsOutput) SetNextToken(v string) *GetBotChannelA
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotRequest
 type GetBotInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6384,7 +6549,7 @@ func (s *GetBotInput) SetVersionOrAlias(v string) *GetBotInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotResponse
 type GetBotOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6439,7 +6604,7 @@ type GetBotOutput struct {
 	IdleSessionTTLInSeconds *int64 `locationName:"idleSessionTTLInSeconds" min:"60" type:"integer"`
 
 	// An array of intent objects. For more information, see PutBot.
-	Intents []*Intent `locationName:"intents" min:"1" type:"list"`
+	Intents []*Intent `locationName:"intents" type:"list"`
 
 	// The date that the bot was updated. When you create a resource, the creation
 	// date and last updated date are the same.
@@ -6565,7 +6730,7 @@ func (s *GetBotOutput) SetVoiceId(v string) *GetBotOutput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotVersionsRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotVersionsRequest
 type GetBotVersionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6632,7 +6797,7 @@ func (s *GetBotVersionsInput) SetNextToken(v string) *GetBotVersionsInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotVersionsResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotVersionsResponse
 type GetBotVersionsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6669,7 +6834,7 @@ func (s *GetBotVersionsOutput) SetNextToken(v string) *GetBotVersionsOutput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotsRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotsRequest
 type GetBotsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6733,7 +6898,7 @@ func (s *GetBotsInput) SetNextToken(v string) *GetBotsInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotsResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotsResponse
 type GetBotsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6767,7 +6932,7 @@ func (s *GetBotsOutput) SetNextToken(v string) *GetBotsOutput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntentRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntentRequest
 type GetBuiltinIntentInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6808,7 +6973,7 @@ func (s *GetBuiltinIntentInput) SetSignature(v string) *GetBuiltinIntentInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntentResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntentResponse
 type GetBuiltinIntentOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6851,7 +7016,7 @@ func (s *GetBuiltinIntentOutput) SetSupportedLocales(v []*string) *GetBuiltinInt
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntentsRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntentsRequest
 type GetBuiltinIntentsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6921,7 +7086,7 @@ func (s *GetBuiltinIntentsInput) SetSignatureContains(v string) *GetBuiltinInten
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntentsResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntentsResponse
 type GetBuiltinIntentsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6957,7 +7122,7 @@ func (s *GetBuiltinIntentsOutput) SetNextToken(v string) *GetBuiltinIntentsOutpu
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinSlotTypesRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinSlotTypesRequest
 type GetBuiltinSlotTypesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7027,7 +7192,7 @@ func (s *GetBuiltinSlotTypesInput) SetSignatureContains(v string) *GetBuiltinSlo
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinSlotTypesResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinSlotTypesResponse
 type GetBuiltinSlotTypesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7062,7 +7227,182 @@ func (s *GetBuiltinSlotTypesOutput) SetSlotTypes(v []*BuiltinSlotTypeMetadata) *
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetExportRequest
+type GetExportInput struct {
+	_ struct{} `type:"structure"`
+
+	// The format of the exported data.
+	//
+	// ExportType is a required field
+	ExportType *string `location:"querystring" locationName:"exportType" type:"string" required:"true" enum:"ExportType"`
+
+	// The name of the bot to export.
+	//
+	// Name is a required field
+	Name *string `location:"querystring" locationName:"name" min:"1" type:"string" required:"true"`
+
+	// The type of resource to export.
+	//
+	// ResourceType is a required field
+	ResourceType *string `location:"querystring" locationName:"resourceType" type:"string" required:"true" enum:"ResourceType"`
+
+	// The version of the bot to export.
+	//
+	// Version is a required field
+	Version *string `location:"querystring" locationName:"version" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s GetExportInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetExportInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetExportInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetExportInput"}
+	if s.ExportType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ExportType"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.ResourceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceType"))
+	}
+	if s.Version == nil {
+		invalidParams.Add(request.NewErrParamRequired("Version"))
+	}
+	if s.Version != nil && len(*s.Version) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Version", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetExportType sets the ExportType field's value.
+func (s *GetExportInput) SetExportType(v string) *GetExportInput {
+	s.ExportType = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GetExportInput) SetName(v string) *GetExportInput {
+	s.Name = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *GetExportInput) SetResourceType(v string) *GetExportInput {
+	s.ResourceType = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *GetExportInput) SetVersion(v string) *GetExportInput {
+	s.Version = &v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetExportResponse
+type GetExportOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The status of the export.
+	//
+	//    * IN_PROGRESS - The export is in progress.
+	//
+	//    * READY - The export is complete.
+	//
+	//    * FAILED - The export could not be completed.
+	ExportStatus *string `locationName:"exportStatus" type:"string" enum:"ExportStatus"`
+
+	// The format of the exported data.
+	ExportType *string `locationName:"exportType" type:"string" enum:"ExportType"`
+
+	// If status is FAILED, Amazon Lex provides the reason that it failed to export
+	// the resource.
+	FailureReason *string `locationName:"failureReason" type:"string"`
+
+	// The name of the bot being exported.
+	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// The type of the exported resource.
+	ResourceType *string `locationName:"resourceType" type:"string" enum:"ResourceType"`
+
+	// An S3 pre-signed URL that provides the location of the exported resource.
+	// The exported resource is a ZIP archive that contains the exported resource
+	// in JSON format. The structure of the archive may change. Your code should
+	// not rely on the archive structure.
+	Url *string `locationName:"url" type:"string"`
+
+	// The version of the bot being exported.
+	Version *string `locationName:"version" min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s GetExportOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetExportOutput) GoString() string {
+	return s.String()
+}
+
+// SetExportStatus sets the ExportStatus field's value.
+func (s *GetExportOutput) SetExportStatus(v string) *GetExportOutput {
+	s.ExportStatus = &v
+	return s
+}
+
+// SetExportType sets the ExportType field's value.
+func (s *GetExportOutput) SetExportType(v string) *GetExportOutput {
+	s.ExportType = &v
+	return s
+}
+
+// SetFailureReason sets the FailureReason field's value.
+func (s *GetExportOutput) SetFailureReason(v string) *GetExportOutput {
+	s.FailureReason = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GetExportOutput) SetName(v string) *GetExportOutput {
+	s.Name = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *GetExportOutput) SetResourceType(v string) *GetExportOutput {
+	s.ResourceType = &v
+	return s
+}
+
+// SetUrl sets the Url field's value.
+func (s *GetExportOutput) SetUrl(v string) *GetExportOutput {
+	s.Url = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *GetExportOutput) SetVersion(v string) *GetExportOutput {
+	s.Version = &v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentRequest
 type GetIntentInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7121,7 +7461,7 @@ func (s *GetIntentInput) SetVersion(v string) *GetIntentInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentResponse
 type GetIntentOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7277,7 +7617,7 @@ func (s *GetIntentOutput) SetVersion(v string) *GetIntentOutput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentVersionsRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentVersionsRequest
 type GetIntentVersionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7344,7 +7684,7 @@ func (s *GetIntentVersionsInput) SetNextToken(v string) *GetIntentVersionsInput 
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentVersionsResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentVersionsResponse
 type GetIntentVersionsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7381,7 +7721,7 @@ func (s *GetIntentVersionsOutput) SetNextToken(v string) *GetIntentVersionsOutpu
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentsRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentsRequest
 type GetIntentsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7444,7 +7784,7 @@ func (s *GetIntentsInput) SetNextToken(v string) *GetIntentsInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentsResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentsResponse
 type GetIntentsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7478,7 +7818,7 @@ func (s *GetIntentsOutput) SetNextToken(v string) *GetIntentsOutput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypeRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypeRequest
 type GetSlotTypeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7537,7 +7877,7 @@ func (s *GetSlotTypeInput) SetVersion(v string) *GetSlotTypeInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypeResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypeResponse
 type GetSlotTypeOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7560,6 +7900,10 @@ type GetSlotTypeOutput struct {
 
 	// The name of the slot type.
 	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// The strategy that Amazon Lex uses to determine the value of the slot. For
+	// more information, see PutSlotType.
+	ValueSelectionStrategy *string `locationName:"valueSelectionStrategy" type:"string" enum:"SlotValueSelectionStrategy"`
 
 	// The version of the slot type.
 	Version *string `locationName:"version" min:"1" type:"string"`
@@ -7611,13 +7955,19 @@ func (s *GetSlotTypeOutput) SetName(v string) *GetSlotTypeOutput {
 	return s
 }
 
+// SetValueSelectionStrategy sets the ValueSelectionStrategy field's value.
+func (s *GetSlotTypeOutput) SetValueSelectionStrategy(v string) *GetSlotTypeOutput {
+	s.ValueSelectionStrategy = &v
+	return s
+}
+
 // SetVersion sets the Version field's value.
 func (s *GetSlotTypeOutput) SetVersion(v string) *GetSlotTypeOutput {
 	s.Version = &v
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypeVersionsRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypeVersionsRequest
 type GetSlotTypeVersionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7684,7 +8034,7 @@ func (s *GetSlotTypeVersionsInput) SetNextToken(v string) *GetSlotTypeVersionsIn
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypeVersionsResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypeVersionsResponse
 type GetSlotTypeVersionsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7721,7 +8071,7 @@ func (s *GetSlotTypeVersionsOutput) SetSlotTypes(v []*SlotTypeMetadata) *GetSlot
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypesRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypesRequest
 type GetSlotTypesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7785,7 +8135,7 @@ func (s *GetSlotTypesInput) SetNextToken(v string) *GetSlotTypesInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypesResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypesResponse
 type GetSlotTypesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7820,7 +8170,7 @@ func (s *GetSlotTypesOutput) SetSlotTypes(v []*SlotTypeMetadata) *GetSlotTypesOu
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetUtterancesViewRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetUtterancesViewRequest
 type GetUtterancesViewInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7895,7 +8245,7 @@ func (s *GetUtterancesViewInput) SetStatusType(v string) *GetUtterancesViewInput
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetUtterancesViewResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetUtterancesViewResponse
 type GetUtterancesViewOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7931,7 +8281,7 @@ func (s *GetUtterancesViewOutput) SetUtterances(v []*UtteranceList) *GetUtteranc
 }
 
 // Identifies the specific version of an intent.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/Intent
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/Intent
 type Intent struct {
 	_ struct{} `type:"structure"`
 
@@ -7991,7 +8341,7 @@ func (s *Intent) SetIntentVersion(v string) *Intent {
 }
 
 // Provides information about an intent.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/IntentMetadata
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/IntentMetadata
 type IntentMetadata struct {
 	_ struct{} `type:"structure"`
 
@@ -8053,7 +8403,7 @@ func (s *IntentMetadata) SetVersion(v string) *IntentMetadata {
 }
 
 // The message object that provides the message text and its type.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/Message
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/Message
 type Message struct {
 	_ struct{} `type:"structure"`
 
@@ -8113,7 +8463,7 @@ func (s *Message) SetContentType(v string) *Message {
 // messages and specify the number of attempts to get information from the user.
 // If you provide more than one message, Amazon Lex chooses one of the messages
 // to use to prompt the user. For more information, see how-it-works.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/Prompt
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/Prompt
 type Prompt struct {
 	_ struct{} `type:"structure"`
 
@@ -8198,7 +8548,7 @@ func (s *Prompt) SetResponseCard(v string) *Prompt {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBotAliasRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBotAliasRequest
 type PutBotAliasInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8300,7 +8650,7 @@ func (s *PutBotAliasInput) SetName(v string) *PutBotAliasInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBotAliasResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBotAliasResponse
 type PutBotAliasOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8379,7 +8729,7 @@ func (s *PutBotAliasOutput) SetName(v string) *PutBotAliasOutput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBotRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBotRequest
 type PutBotInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8473,7 +8823,7 @@ type PutBotInput struct {
 	// An array of Intent objects. Each intent represents a command that a user
 	// can express. For example, a pizza ordering bot might support an OrderPizza
 	// intent. For more information, see how-it-works.
-	Intents []*Intent `locationName:"intents" min:"1" type:"list"`
+	Intents []*Intent `locationName:"intents" type:"list"`
 
 	// Specifies the target locale for the bot. Any intent used in the bot must
 	// be compatible with the locale of the bot.
@@ -8520,9 +8870,6 @@ func (s *PutBotInput) Validate() error {
 	}
 	if s.IdleSessionTTLInSeconds != nil && *s.IdleSessionTTLInSeconds < 60 {
 		invalidParams.Add(request.NewErrParamMinValue("IdleSessionTTLInSeconds", 60))
-	}
-	if s.Intents != nil && len(s.Intents) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("Intents", 1))
 	}
 	if s.Locale == nil {
 		invalidParams.Add(request.NewErrParamRequired("Locale"))
@@ -8626,7 +8973,7 @@ func (s *PutBotInput) SetVoiceId(v string) *PutBotInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBotResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBotResponse
 type PutBotOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8681,7 +9028,7 @@ type PutBotOutput struct {
 	IdleSessionTTLInSeconds *int64 `locationName:"idleSessionTTLInSeconds" min:"60" type:"integer"`
 
 	// An array of Intent objects. For more information, see PutBot.
-	Intents []*Intent `locationName:"intents" min:"1" type:"list"`
+	Intents []*Intent `locationName:"intents" type:"list"`
 
 	// The date that the bot was updated. When you create a resource, the creation
 	// date and last updated date are the same.
@@ -8811,7 +9158,7 @@ func (s *PutBotOutput) SetVoiceId(v string) *PutBotOutput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutIntentRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutIntentRequest
 type PutIntentInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8885,9 +9232,9 @@ type PutIntentInput struct {
 	// You can specify only one.
 	FollowUpPrompt *FollowUpPrompt `locationName:"followUpPrompt" type:"structure"`
 
-	// Describes how the intent is fulfilled. For example, after a user provides
-	// all of the information for a pizza order, fulfillmentActivity defines how
-	// the bot places an order with a local pizza store.
+	// Required. Describes how the intent is fulfilled. For example, after a user
+	// provides all of the information for a pizza order, fulfillmentActivity defines
+	// how the bot places an order with a local pizza store.
 	//
 	// You might configure Amazon Lex to return all of the intent information to
 	// the client application, or direct it to invoke a Lambda function that can
@@ -8927,7 +9274,7 @@ type PutIntentInput struct {
 
 	// An array of intent slots. At runtime, Amazon Lex elicits required slot values
 	// from the user using prompts defined in the slots. For more information, see
-	// <xref linkend="how-it-works"/>.
+	// how-it-works.
 	Slots []*Slot `locationName:"slots" type:"list"`
 }
 
@@ -9069,7 +9416,7 @@ func (s *PutIntentInput) SetSlots(v []*Slot) *PutIntentInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutIntentResponse
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutIntentResponse
 type PutIntentOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -9227,7 +9574,7 @@ func (s *PutIntentOutput) SetVersion(v string) *PutIntentOutput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutSlotTypeRequest
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutSlotTypeRequest
 type PutSlotTypeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9246,7 +9593,16 @@ type PutSlotTypeInput struct {
 	Description *string `locationName:"description" type:"string"`
 
 	// A list of EnumerationValue objects that defines the values that the slot
-	// type can take.
+	// type can take. Each value can have a list of synonyms, which are additional
+	// values that help train the machine learning model about the values that it
+	// resolves for a slot.
+	//
+	// When Amazon Lex resolves a slot value, it generates a resolution list that
+	// contains up to five possible values for the slot. If you are using a Lambda
+	// function, this resolution list is passed to the function. If you are not
+	// using a Lambda function you can choose to return the value that the user
+	// entered or the first value in the resolution list as the slot value. The
+	// valueSelectionStrategy field indicates the option to use.
 	EnumerationValues []*EnumerationValue `locationName:"enumerationValues" min:"1" type:"list"`
 
 	// The name of the slot type. The name is not case sensitive.
@@ -9260,6 +9616,19 @@ type PutSlotTypeInput struct {
 	//
 	// Name is a required field
 	Name *string `location:"uri" locationName:"name" min:"1" type:"string" required:"true"`
+
+	// Determines the slot resolution strategy that Amazon Lex uses to return slot
+	// type values. The field can be set to one of the following values:
+	//
+	//    * ORIGINAL_VALUE - Returns the value entered by the user, if the user
+	//    value is similar to the slot value.
+	//
+	//    * TOP_RESOLUTION - If there is a resolution list for the slot, return
+	//    the first value in the resolution list as the slot type value. If there
+	//    is no resolution list, null is returned.
+	//
+	// If you don't specify the valueSelectionStrategy, the default is ORIGINAL_VALUE.
+	ValueSelectionStrategy *string `locationName:"valueSelectionStrategy" type:"string" enum:"SlotValueSelectionStrategy"`
 }
 
 // String returns the string representation
@@ -9325,7 +9694,13 @@ func (s *PutSlotTypeInput) SetName(v string) *PutSlotTypeInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutSlotTypeResponse
+// SetValueSelectionStrategy sets the ValueSelectionStrategy field's value.
+func (s *PutSlotTypeInput) SetValueSelectionStrategy(v string) *PutSlotTypeInput {
+	s.ValueSelectionStrategy = &v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutSlotTypeResponse
 type PutSlotTypeOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -9348,6 +9723,10 @@ type PutSlotTypeOutput struct {
 
 	// The name of the slot type.
 	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// The slot resolution strategy that Amazon Lex uses to determine the value
+	// of the slot. For more information, see PutSlotType.
+	ValueSelectionStrategy *string `locationName:"valueSelectionStrategy" type:"string" enum:"SlotValueSelectionStrategy"`
 
 	// The version of the slot type. For a new slot type, the version is always
 	// $LATEST.
@@ -9400,6 +9779,12 @@ func (s *PutSlotTypeOutput) SetName(v string) *PutSlotTypeOutput {
 	return s
 }
 
+// SetValueSelectionStrategy sets the ValueSelectionStrategy field's value.
+func (s *PutSlotTypeOutput) SetValueSelectionStrategy(v string) *PutSlotTypeOutput {
+	s.ValueSelectionStrategy = &v
+	return s
+}
+
 // SetVersion sets the Version field's value.
 func (s *PutSlotTypeOutput) SetVersion(v string) *PutSlotTypeOutput {
 	s.Version = &v
@@ -9409,7 +9794,7 @@ func (s *PutSlotTypeOutput) SetVersion(v string) *PutSlotTypeOutput {
 // Describes the resource that refers to the resource that you are attempting
 // to delete. This object is returned as part of the ResourceInUseException
 // exception.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/ResourceReference
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/ResourceReference
 type ResourceReference struct {
 	_ struct{} `type:"structure"`
 
@@ -9445,7 +9830,7 @@ func (s *ResourceReference) SetVersion(v string) *ResourceReference {
 }
 
 // Identifies the version of a specific slot.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/Slot
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/Slot
 type Slot struct {
 	_ struct{} `type:"structure"`
 
@@ -9590,7 +9975,7 @@ func (s *Slot) SetValueElicitationPrompt(v *Prompt) *Slot {
 }
 
 // Provides information about a slot type..
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/SlotTypeMetadata
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/SlotTypeMetadata
 type SlotTypeMetadata struct {
 	_ struct{} `type:"structure"`
 
@@ -9653,7 +10038,7 @@ func (s *SlotTypeMetadata) SetVersion(v string) *SlotTypeMetadata {
 
 // A collection of messages that convey information to the user. At runtime,
 // Amazon Lex selects the message to convey.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/Statement
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/Statement
 type Statement struct {
 	_ struct{} `type:"structure"`
 
@@ -9721,7 +10106,7 @@ func (s *Statement) SetResponseCard(v string) *Statement {
 }
 
 // Provides information about a single utterance that was made to your bot.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/UtteranceData
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/UtteranceData
 type UtteranceData struct {
 	_ struct{} `type:"structure"`
 
@@ -9784,7 +10169,7 @@ func (s *UtteranceData) SetUtteranceString(v string) *UtteranceData {
 
 // Provides a list of utterances that have been made to a specific version of
 // your bot. The list contains a maximum of 100 utterances.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/UtteranceList
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/UtteranceList
 type UtteranceList struct {
 	_ struct{} `type:"structure"`
 
@@ -9819,6 +10204,17 @@ func (s *UtteranceList) SetUtterances(v []*UtteranceData) *UtteranceList {
 }
 
 const (
+	// ChannelStatusInProgress is a ChannelStatus enum value
+	ChannelStatusInProgress = "IN_PROGRESS"
+
+	// ChannelStatusCreated is a ChannelStatus enum value
+	ChannelStatusCreated = "CREATED"
+
+	// ChannelStatusFailed is a ChannelStatus enum value
+	ChannelStatusFailed = "FAILED"
+)
+
+const (
 	// ChannelTypeFacebook is a ChannelType enum value
 	ChannelTypeFacebook = "Facebook"
 
@@ -9835,6 +10231,22 @@ const (
 
 	// ContentTypeSsml is a ContentType enum value
 	ContentTypeSsml = "SSML"
+)
+
+const (
+	// ExportStatusInProgress is a ExportStatus enum value
+	ExportStatusInProgress = "IN_PROGRESS"
+
+	// ExportStatusReady is a ExportStatus enum value
+	ExportStatusReady = "READY"
+
+	// ExportStatusFailed is a ExportStatus enum value
+	ExportStatusFailed = "FAILED"
+)
+
+const (
+	// ExportTypeAlexaSkillsKit is a ExportType enum value
+	ExportTypeAlexaSkillsKit = "ALEXA_SKILLS_KIT"
 )
 
 const (
@@ -9873,11 +10285,24 @@ const (
 )
 
 const (
+	// ResourceTypeBot is a ResourceType enum value
+	ResourceTypeBot = "BOT"
+)
+
+const (
 	// SlotConstraintRequired is a SlotConstraint enum value
 	SlotConstraintRequired = "Required"
 
 	// SlotConstraintOptional is a SlotConstraint enum value
 	SlotConstraintOptional = "Optional"
+)
+
+const (
+	// SlotValueSelectionStrategyOriginalValue is a SlotValueSelectionStrategy enum value
+	SlotValueSelectionStrategyOriginalValue = "ORIGINAL_VALUE"
+
+	// SlotValueSelectionStrategyTopResolution is a SlotValueSelectionStrategy enum value
+	SlotValueSelectionStrategyTopResolution = "TOP_RESOLUTION"
 )
 
 const (
