@@ -7,6 +7,7 @@
     "protocol":"rest-xml",
     "serviceAbbreviation":"Route 53",
     "serviceFullName":"Amazon Route 53",
+    "serviceId":"Route 53",
     "signatureVersion":"v4",
     "uid":"route53-2013-04-01"
   },
@@ -117,6 +118,28 @@
         {"shape":"DelegationSetNotReusable"}
       ]
     },
+    "CreateQueryLoggingConfig":{
+      "name":"CreateQueryLoggingConfig",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2013-04-01/queryloggingconfig",
+        "responseCode":201
+      },
+      "input":{
+        "shape":"CreateQueryLoggingConfigRequest",
+        "locationName":"CreateQueryLoggingConfigRequest",
+        "xmlNamespace":{"uri":"https://route53.amazonaws.com/doc/2013-04-01/"}
+      },
+      "output":{"shape":"CreateQueryLoggingConfigResponse"},
+      "errors":[
+        {"shape":"ConcurrentModification"},
+        {"shape":"NoSuchHostedZone"},
+        {"shape":"NoSuchCloudWatchLogsLogGroup"},
+        {"shape":"InvalidInput"},
+        {"shape":"QueryLoggingConfigAlreadyExists"},
+        {"shape":"InsufficientCloudWatchLogsResourcePolicy"}
+      ]
+    },
     "CreateReusableDelegationSet":{
       "name":"CreateReusableDelegationSet",
       "http":{
@@ -197,6 +220,7 @@
       "errors":[
         {"shape":"NoSuchTrafficPolicy"},
         {"shape":"InvalidInput"},
+        {"shape":"TooManyTrafficPolicyVersionsForCurrentPolicy"},
         {"shape":"ConcurrentModification"},
         {"shape":"InvalidTrafficPolicyDocument"}
       ]
@@ -249,6 +273,20 @@
         {"shape":"PriorRequestNotComplete"},
         {"shape":"InvalidInput"},
         {"shape":"InvalidDomainName"}
+      ]
+    },
+    "DeleteQueryLoggingConfig":{
+      "name":"DeleteQueryLoggingConfig",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/2013-04-01/queryloggingconfig/{Id}"
+      },
+      "input":{"shape":"DeleteQueryLoggingConfigRequest"},
+      "output":{"shape":"DeleteQueryLoggingConfigResponse"},
+      "errors":[
+        {"shape":"ConcurrentModification"},
+        {"shape":"NoSuchQueryLoggingConfig"},
+        {"shape":"InvalidInput"}
       ]
     },
     "DeleteReusableDelegationSet":{
@@ -332,6 +370,18 @@
         {"shape":"InvalidVPCId"},
         {"shape":"VPCAssociationNotFound"},
         {"shape":"LastVPCAssociation"},
+        {"shape":"InvalidInput"}
+      ]
+    },
+    "GetAccountLimit":{
+      "name":"GetAccountLimit",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2013-04-01/accountlimit/{Type}"
+      },
+      "input":{"shape":"GetAccountLimitRequest"},
+      "output":{"shape":"GetAccountLimitResponse"},
+      "errors":[
         {"shape":"InvalidInput"}
       ]
     },
@@ -444,6 +494,33 @@
         {"shape":"InvalidInput"}
       ]
     },
+    "GetHostedZoneLimit":{
+      "name":"GetHostedZoneLimit",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2013-04-01/hostedzonelimit/{Id}/{Type}"
+      },
+      "input":{"shape":"GetHostedZoneLimitRequest"},
+      "output":{"shape":"GetHostedZoneLimitResponse"},
+      "errors":[
+        {"shape":"NoSuchHostedZone"},
+        {"shape":"InvalidInput"},
+        {"shape":"HostedZoneNotPrivate"}
+      ]
+    },
+    "GetQueryLoggingConfig":{
+      "name":"GetQueryLoggingConfig",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2013-04-01/queryloggingconfig/{Id}"
+      },
+      "input":{"shape":"GetQueryLoggingConfigRequest"},
+      "output":{"shape":"GetQueryLoggingConfigResponse"},
+      "errors":[
+        {"shape":"NoSuchQueryLoggingConfig"},
+        {"shape":"InvalidInput"}
+      ]
+    },
     "GetReusableDelegationSet":{
       "name":"GetReusableDelegationSet",
       "http":{
@@ -456,6 +533,19 @@
         {"shape":"NoSuchDelegationSet"},
         {"shape":"DelegationSetNotReusable"},
         {"shape":"InvalidInput"}
+      ]
+    },
+    "GetReusableDelegationSetLimit":{
+      "name":"GetReusableDelegationSetLimit",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2013-04-01/reusabledelegationsetlimit/{Id}/{Type}"
+      },
+      "input":{"shape":"GetReusableDelegationSetLimitRequest"},
+      "output":{"shape":"GetReusableDelegationSetLimitResponse"},
+      "errors":[
+        {"shape":"InvalidInput"},
+        {"shape":"NoSuchDelegationSet"}
       ]
     },
     "GetTrafficPolicy":{
@@ -543,6 +633,20 @@
       "errors":[
         {"shape":"InvalidInput"},
         {"shape":"InvalidDomainName"}
+      ]
+    },
+    "ListQueryLoggingConfigs":{
+      "name":"ListQueryLoggingConfigs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2013-04-01/queryloggingconfig"
+      },
+      "input":{"shape":"ListQueryLoggingConfigsRequest"},
+      "output":{"shape":"ListQueryLoggingConfigsResponse"},
+      "errors":[
+        {"shape":"InvalidInput"},
+        {"shape":"InvalidPaginationToken"},
+        {"shape":"NoSuchHostedZone"}
       ]
     },
     "ListResourceRecordSets":{
@@ -774,6 +878,27 @@
     }
   },
   "shapes":{
+    "AccountLimit":{
+      "type":"structure",
+      "required":[
+        "Type",
+        "Value"
+      ],
+      "members":{
+        "Type":{"shape":"AccountLimitType"},
+        "Value":{"shape":"LimitValue"}
+      }
+    },
+    "AccountLimitType":{
+      "type":"string",
+      "enum":[
+        "MAX_HEALTH_CHECKS_BY_OWNER",
+        "MAX_HOSTED_ZONES_BY_OWNER",
+        "MAX_TRAFFIC_POLICY_INSTANCES_BY_OWNER",
+        "MAX_REUSABLE_DELEGATION_SETS_BY_OWNER",
+        "MAX_TRAFFIC_POLICIES_BY_OWNER"
+      ]
+    },
     "AlarmIdentifier":{
       "type":"structure",
       "required":[
@@ -966,6 +1091,7 @@
         "Dimensions":{"shape":"DimensionList"}
       }
     },
+    "CloudWatchLogsLogGroupArn":{"type":"string"},
     "CloudWatchRegion":{
       "type":"string",
       "enum":[
@@ -977,6 +1103,7 @@
         "eu-central-1",
         "eu-west-1",
         "eu-west-2",
+        "eu-west-3",
         "ap-south-1",
         "ap-southeast-1",
         "ap-southeast-2",
@@ -1072,6 +1199,32 @@
         "ChangeInfo":{"shape":"ChangeInfo"},
         "DelegationSet":{"shape":"DelegationSet"},
         "VPC":{"shape":"VPC"},
+        "Location":{
+          "shape":"ResourceURI",
+          "location":"header",
+          "locationName":"Location"
+        }
+      }
+    },
+    "CreateQueryLoggingConfigRequest":{
+      "type":"structure",
+      "required":[
+        "HostedZoneId",
+        "CloudWatchLogsLogGroupArn"
+      ],
+      "members":{
+        "HostedZoneId":{"shape":"ResourceId"},
+        "CloudWatchLogsLogGroupArn":{"shape":"CloudWatchLogsLogGroupArn"}
+      }
+    },
+    "CreateQueryLoggingConfigResponse":{
+      "type":"structure",
+      "required":[
+        "QueryLoggingConfig",
+        "Location"
+      ],
+      "members":{
+        "QueryLoggingConfig":{"shape":"QueryLoggingConfig"},
         "Location":{
           "shape":"ResourceURI",
           "location":"header",
@@ -1316,6 +1469,22 @@
         "ChangeInfo":{"shape":"ChangeInfo"}
       }
     },
+    "DeleteQueryLoggingConfigRequest":{
+      "type":"structure",
+      "required":["Id"],
+      "members":{
+        "Id":{
+          "shape":"QueryLoggingConfigId",
+          "location":"uri",
+          "locationName":"Id"
+        }
+      }
+    },
+    "DeleteQueryLoggingConfigResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
     "DeleteReusableDelegationSetRequest":{
       "type":"structure",
       "required":["Id"],
@@ -1518,6 +1687,28 @@
       "max":64,
       "min":1
     },
+    "GetAccountLimitRequest":{
+      "type":"structure",
+      "required":["Type"],
+      "members":{
+        "Type":{
+          "shape":"AccountLimitType",
+          "location":"uri",
+          "locationName":"Type"
+        }
+      }
+    },
+    "GetAccountLimitResponse":{
+      "type":"structure",
+      "required":[
+        "Limit",
+        "Count"
+      ],
+      "members":{
+        "Limit":{"shape":"AccountLimit"},
+        "Count":{"shape":"UsageCount"}
+      }
+    },
     "GetChangeRequest":{
       "type":"structure",
       "required":["Id"],
@@ -1653,6 +1844,36 @@
         "HostedZoneCount":{"shape":"HostedZoneCount"}
       }
     },
+    "GetHostedZoneLimitRequest":{
+      "type":"structure",
+      "required":[
+        "Type",
+        "HostedZoneId"
+      ],
+      "members":{
+        "Type":{
+          "shape":"HostedZoneLimitType",
+          "location":"uri",
+          "locationName":"Type"
+        },
+        "HostedZoneId":{
+          "shape":"ResourceId",
+          "location":"uri",
+          "locationName":"Id"
+        }
+      }
+    },
+    "GetHostedZoneLimitResponse":{
+      "type":"structure",
+      "required":[
+        "Limit",
+        "Count"
+      ],
+      "members":{
+        "Limit":{"shape":"HostedZoneLimit"},
+        "Count":{"shape":"UsageCount"}
+      }
+    },
     "GetHostedZoneRequest":{
       "type":"structure",
       "required":["Id"],
@@ -1671,6 +1892,54 @@
         "HostedZone":{"shape":"HostedZone"},
         "DelegationSet":{"shape":"DelegationSet"},
         "VPCs":{"shape":"VPCs"}
+      }
+    },
+    "GetQueryLoggingConfigRequest":{
+      "type":"structure",
+      "required":["Id"],
+      "members":{
+        "Id":{
+          "shape":"QueryLoggingConfigId",
+          "location":"uri",
+          "locationName":"Id"
+        }
+      }
+    },
+    "GetQueryLoggingConfigResponse":{
+      "type":"structure",
+      "required":["QueryLoggingConfig"],
+      "members":{
+        "QueryLoggingConfig":{"shape":"QueryLoggingConfig"}
+      }
+    },
+    "GetReusableDelegationSetLimitRequest":{
+      "type":"structure",
+      "required":[
+        "Type",
+        "DelegationSetId"
+      ],
+      "members":{
+        "Type":{
+          "shape":"ReusableDelegationSetLimitType",
+          "location":"uri",
+          "locationName":"Type"
+        },
+        "DelegationSetId":{
+          "shape":"ResourceId",
+          "location":"uri",
+          "locationName":"Id"
+        }
+      }
+    },
+    "GetReusableDelegationSetLimitResponse":{
+      "type":"structure",
+      "required":[
+        "Limit",
+        "Count"
+      ],
+      "members":{
+        "Limit":{"shape":"ReusableDelegationSetLimit"},
+        "Count":{"shape":"UsageCount"}
       }
     },
     "GetReusableDelegationSetRequest":{
@@ -1758,6 +2027,7 @@
       "members":{
         "Id":{"shape":"HealthCheckId"},
         "CallerReference":{"shape":"HealthCheckNonce"},
+        "LinkedService":{"shape":"LinkedService"},
         "HealthCheckConfig":{"shape":"HealthCheckConfig"},
         "HealthCheckVersion":{"shape":"HealthCheckVersion"},
         "CloudWatchAlarmConfiguration":{"shape":"CloudWatchAlarmConfiguration"}
@@ -1899,7 +2169,8 @@
         "Name":{"shape":"DNSName"},
         "CallerReference":{"shape":"Nonce"},
         "Config":{"shape":"HostedZoneConfig"},
-        "ResourceRecordSetCount":{"shape":"HostedZoneRRSetCount"}
+        "ResourceRecordSetCount":{"shape":"HostedZoneRRSetCount"},
+        "LinkedService":{"shape":"LinkedService"}
       }
     },
     "HostedZoneAlreadyExists":{
@@ -1918,6 +2189,24 @@
       }
     },
     "HostedZoneCount":{"type":"long"},
+    "HostedZoneLimit":{
+      "type":"structure",
+      "required":[
+        "Type",
+        "Value"
+      ],
+      "members":{
+        "Type":{"shape":"HostedZoneLimitType"},
+        "Value":{"shape":"LimitValue"}
+      }
+    },
+    "HostedZoneLimitType":{
+      "type":"string",
+      "enum":[
+        "MAX_RRSETS_BY_ZONE",
+        "MAX_VPCS_ASSOCIATED_BY_ZONE"
+      ]
+    },
     "HostedZoneNotEmpty":{
       "type":"structure",
       "members":{
@@ -1927,6 +2216,13 @@
       "exception":true
     },
     "HostedZoneNotFound":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "exception":true
+    },
+    "HostedZoneNotPrivate":{
       "type":"structure",
       "members":{
         "message":{"shape":"ErrorMessage"}
@@ -1948,6 +2244,14 @@
     },
     "IPAddressCidr":{"type":"string"},
     "IncompatibleVersion":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "InsufficientCloudWatchLogsResourcePolicy":{
       "type":"structure",
       "members":{
         "message":{"shape":"ErrorMessage"}
@@ -2028,12 +2332,23 @@
       "error":{"httpStatusCode":400},
       "exception":true
     },
+    "LimitValue":{
+      "type":"long",
+      "min":1
+    },
     "LimitsExceeded":{
       "type":"structure",
       "members":{
         "message":{"shape":"ErrorMessage"}
       },
       "exception":true
+    },
+    "LinkedService":{
+      "type":"structure",
+      "members":{
+        "ServicePrincipal":{"shape":"ServicePrincipal"},
+        "Description":{"shape":"ResourceDescription"}
+      }
     },
     "ListGeoLocationsRequest":{
       "type":"structure",
@@ -2178,6 +2493,34 @@
         "IsTruncated":{"shape":"PageTruncated"},
         "NextMarker":{"shape":"PageMarker"},
         "MaxItems":{"shape":"PageMaxItems"}
+      }
+    },
+    "ListQueryLoggingConfigsRequest":{
+      "type":"structure",
+      "members":{
+        "HostedZoneId":{
+          "shape":"ResourceId",
+          "location":"querystring",
+          "locationName":"hostedzoneid"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "location":"querystring",
+          "locationName":"nexttoken"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "location":"querystring",
+          "locationName":"maxresults"
+        }
+      }
+    },
+    "ListQueryLoggingConfigsResponse":{
+      "type":"structure",
+      "required":["QueryLoggingConfigs"],
+      "members":{
+        "QueryLoggingConfigs":{"shape":"QueryLoggingConfigs"},
+        "NextToken":{"shape":"PaginationToken"}
       }
     },
     "ListResourceRecordSetsRequest":{
@@ -2571,6 +2914,14 @@
       "error":{"httpStatusCode":404},
       "exception":true
     },
+    "NoSuchCloudWatchLogsLogGroup":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
     "NoSuchDelegationSet":{
       "type":"structure",
       "members":{
@@ -2595,6 +2946,14 @@
       "exception":true
     },
     "NoSuchHostedZone":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
+    "NoSuchQueryLoggingConfig":{
       "type":"structure",
       "members":{
         "message":{"shape":"ErrorMessage"}
@@ -2666,6 +3025,39 @@
       "error":{"httpStatusCode":400},
       "exception":true
     },
+    "QueryLoggingConfig":{
+      "type":"structure",
+      "required":[
+        "Id",
+        "HostedZoneId",
+        "CloudWatchLogsLogGroupArn"
+      ],
+      "members":{
+        "Id":{"shape":"QueryLoggingConfigId"},
+        "HostedZoneId":{"shape":"ResourceId"},
+        "CloudWatchLogsLogGroupArn":{"shape":"CloudWatchLogsLogGroupArn"}
+      }
+    },
+    "QueryLoggingConfigAlreadyExists":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "error":{"httpStatusCode":409},
+      "exception":true
+    },
+    "QueryLoggingConfigId":{
+      "type":"string",
+      "max":36,
+      "min":1
+    },
+    "QueryLoggingConfigs":{
+      "type":"list",
+      "member":{
+        "shape":"QueryLoggingConfig",
+        "locationName":"QueryLoggingConfig"
+      }
+    },
     "RData":{
       "type":"string",
       "max":4000
@@ -2703,6 +3095,25 @@
       "type":"integer",
       "max":30,
       "min":10
+    },
+    "ResettableElementName":{
+      "type":"string",
+      "enum":[
+        "FullyQualifiedDomainName",
+        "Regions",
+        "ResourcePath",
+        "ChildHealthChecks"
+      ],
+      "max":64,
+      "min":1
+    },
+    "ResettableElementNameList":{
+      "type":"list",
+      "member":{
+        "shape":"ResettableElementName",
+        "locationName":"ResettableElementName"
+      },
+      "max":64
     },
     "ResourceDescription":{
       "type":"string",
@@ -2768,6 +3179,7 @@
         "ca-central-1",
         "eu-west-1",
         "eu-west-2",
+        "eu-west-3",
         "eu-central-1",
         "ap-southeast-1",
         "ap-southeast-2",
@@ -2775,6 +3187,7 @@
         "ap-northeast-2",
         "sa-east-1",
         "cn-north-1",
+        "cn-northwest-1",
         "ap-south-1"
       ],
       "max":64,
@@ -2819,9 +3232,28 @@
       "type":"string",
       "max":1024
     },
+    "ReusableDelegationSetLimit":{
+      "type":"structure",
+      "required":[
+        "Type",
+        "Value"
+      ],
+      "members":{
+        "Type":{"shape":"ReusableDelegationSetLimitType"},
+        "Value":{"shape":"LimitValue"}
+      }
+    },
+    "ReusableDelegationSetLimitType":{
+      "type":"string",
+      "enum":["MAX_ZONES_BY_REUSABLE_DELEGATION_SET"]
+    },
     "SearchString":{
       "type":"string",
       "max":255
+    },
+    "ServicePrincipal":{
+      "type":"string",
+      "max":128
     },
     "Statistic":{
       "type":"string",
@@ -3004,6 +3436,14 @@
       "error":{"httpStatusCode":400},
       "exception":true
     },
+    "TooManyTrafficPolicyVersionsForCurrentPolicy":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
     "TooManyVPCAssociationAuthorizations":{
       "type":"structure",
       "members":{
@@ -3173,7 +3613,8 @@
         "EnableSNI":{"shape":"EnableSNI"},
         "Regions":{"shape":"HealthCheckRegionList"},
         "AlarmIdentifier":{"shape":"AlarmIdentifier"},
-        "InsufficientDataHealthStatus":{"shape":"InsufficientDataHealthStatus"}
+        "InsufficientDataHealthStatus":{"shape":"InsufficientDataHealthStatus"},
+        "ResetElements":{"shape":"ResettableElementNameList"}
       }
     },
     "UpdateHealthCheckResponse":{
@@ -3256,6 +3697,10 @@
         "TrafficPolicyInstance":{"shape":"TrafficPolicyInstance"}
       }
     },
+    "UsageCount":{
+      "type":"long",
+      "min":0
+    },
     "VPC":{
       "type":"structure",
       "members":{
@@ -3292,6 +3737,7 @@
         "us-west-2",
         "eu-west-1",
         "eu-west-2",
+        "eu-west-3",
         "eu-central-1",
         "ap-southeast-1",
         "ap-southeast-2",
