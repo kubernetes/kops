@@ -45,6 +45,7 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.8.0
 
+# Keep in sync with logic in get_workspace_status
 KOPS_RELEASE_VERSION = 1.8.0
 KOPS_CI_VERSION      = 1.8.1-beta.1
 
@@ -56,6 +57,7 @@ KOPS_ROOT           ?= $(patsubst %/,%,$(abspath $(dir $(firstword $(MAKEFILE_LI
 
 GITSHA := $(shell cd ${GOPATH_1ST}/src/k8s.io/kops; git describe --always)
 
+# Keep in sync with logic in get_workspace_status
 ifndef VERSION
   # To keep both CI and end-users building from source happy,
   # we expect that CI sets CI=1.
