@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 
@@ -74,7 +75,6 @@ type CreateClusterOptions struct {
 	KubernetesVersion    string
 	OutDir               string
 	Image                string
-	SSHPublicKey         string
 	VPCID                string
 	SubnetIDs            []string
 	UtilitySubnetIDs     []string
@@ -86,6 +86,9 @@ type CreateClusterOptions struct {
 	NodeSecurityGroups   []string
 	MasterSecurityGroups []string
 	AssociatePublicIP    *bool
+
+	// SSHPublicKeys is a map of the SSH public keys we should configure; required on AWS, not required on GCE
+	SSHPublicKeys map[string][]byte
 
 	// Overrides allows settings values direct in the spec
 	Overrides []string
@@ -144,7 +147,6 @@ func (o *CreateClusterOptions) InitDefaults() {
 	o.Yes = false
 	o.Target = cloudup.TargetDirect
 	o.Models = strings.Join(cloudup.CloudupModels, ",")
-	o.SSHPublicKey = "~/.ssh/id_rsa.pub"
 	o.Networking = "kubenet"
 	o.Channel = api.DefaultChannel
 	o.Topology = api.TopologyPublic
@@ -218,6 +220,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateClusterOptions{}
 	options.InitDefaults()
 
+	sshPublicKey := "~/.ssh/id_rsa.pub"
 	associatePublicIP := false
 
 	cmd := &cobra.Command{
@@ -237,6 +240,11 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 			}
 
 			options.ClusterName = rootCommand.clusterName
+
+			options.SSHPublicKeys, err = loadSSHPublicKeys(sshPublicKey, cmd.Flag("ssh-public-key").Changed)
+			if err != nil {
+				exitWithError(err)
+			}
 
 			err = RunCreateCluster(f, out, options)
 			if err != nil {
@@ -262,7 +270,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
 	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", options.KubernetesVersion, "Version of kubernetes to run (defaults to version in channel)")
 
-	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use")
+	cmd.Flags().StringVar(&sshPublicKey, "ssh-public-key", sshPublicKey, "SSH public key to use")
 
 	cmd.Flags().StringVar(&options.NodeSize, "node-size", options.NodeSize, "Set instance size for nodes")
 
@@ -1006,18 +1014,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		Legacy:                 false,
 	}
 
-	sshPublicKeys := make(map[string][]byte)
-	if c.SSHPublicKey != "" {
-		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
-		authorized, err := ioutil.ReadFile(c.SSHPublicKey)
-		if err != nil {
-			return fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
-		}
-		sshPublicKeys[fi.SecretNameSSHPrimary] = authorized
-
-		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
-	}
-
 	if len(c.AdminAccess) != 0 {
 		if len(c.SSHAccess) != 0 {
 			cluster.Spec.SSHAccess = c.SSHAccess
@@ -1106,13 +1102,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}
 
-	if len(sshPublicKeys) != 0 {
+	if len(c.SSHPublicKeys) != 0 {
 		sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
 		if err != nil {
 			return err
 		}
 
-		for k, data := range sshPublicKeys {
+		for k, data := range c.SSHPublicKeys {
 			err = sshCredentialStore.AddSSHPublicKey(k, data)
 			if err != nil {
 				return fmt.Errorf("error adding SSH public key: %v", err)
@@ -1286,4 +1282,25 @@ func getZoneToSubnetProviderID(VPCID string, region string, subnetIDs []string) 
 		res[subnet.Zone] = subnetID
 	}
 	return res, nil
+}
+
+func loadSSHPublicKeys(sshPublicKey string, flagSpecified bool) (map[string][]byte, error) {
+	sshPublicKeys := make(map[string][]byte)
+	if sshPublicKey != "" {
+		sshPublicKey = utils.ExpandPath(sshPublicKey)
+		authorized, err := ioutil.ReadFile(sshPublicKey)
+		if err != nil {
+			// Ignore file-not-found unless the user actively specified the flag
+			if !flagSpecified && os.IsNotExist(err) {
+				glog.V(2).Infof("SSH key file %q does not exist; ignoring", sshPublicKey)
+			} else {
+				return nil, fmt.Errorf("error reading SSH key file %q: %v", sshPublicKey, err)
+			}
+		} else {
+			sshPublicKeys[fi.SecretNameSSHPrimary] = authorized
+
+			glog.Infof("Using SSH public key: %v\n", sshPublicKey)
+		}
+	}
+	return sshPublicKeys, nil
 }
