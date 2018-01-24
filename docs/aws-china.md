@@ -80,8 +80,8 @@ cd ${GOPATH}/src/k8s.io/kube-deploy/imagebuilder
 sed -i '' "s|publicIP := aws.StringValue(instance.PublicIpAddress)|publicIP := aws.StringValue(instance.PrivateIpAddress)|" pkg/imagebuilder/aws.go
 make
 
-# If the keypair specified is not `$HOME/.ssh/id_rsa`, `aws.yml` need to be modified to add the full path to the private key.
-echo 'SSHPrivateKey: "/absolute/path/to/the/private/key"' >> aws.yml
+# If the keypair specified is not `$HOME/.ssh/id_rsa`, `aws.yaml` need to be modified to add the full path to the private key.
+echo 'SSHPrivateKey: "/absolute/path/to/the/private/key"' >> aws.yaml
 
 ${GOPATH}/bin/imagebuilder --config aws.yaml --v=8 --publish false --replicate false --up false --down false
 ```
