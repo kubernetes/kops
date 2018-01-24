@@ -519,7 +519,7 @@ func addNodeEC2Policies(p *Policy, resource stringorslice.StringOrSlice) {
 	p.Statement = append(p.Statement, &Statement{
 		Sid:      "kopsK8sEC2NodePerms",
 		Effect:   StatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"ec2:DescribeInstances"}),
+		Action:   stringorslice.Slice([]string{"ec2:DescribeInstances", "ec2:DescribeRegions"}),
 		Resource: resource,
 	})
 }
