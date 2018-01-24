@@ -194,7 +194,11 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name strin
 	tags[gce.GceLabelNameRolePrefix+"master"] = "master" // Can't start with a number
 	tags[gce.GceLabelNameEtcdClusterPrefix+etcd.Name] = gce.EncodeGCELabel(clusterSpec)
 
+	// GCE disk names must match the following regular expression: '[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?'
 	name = strings.Replace(name, ".", "-", -1)
+	if strings.IndexByte("0123456789-", name[0]) != -1 {
+		name = "d" + name
+	}
 
 	t := &gcetasks.Disk{
 		Name:      s(name),
