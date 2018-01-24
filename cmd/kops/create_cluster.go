@@ -800,8 +800,22 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 
+	// Populate project
 	if c.Project != "" {
 		cluster.Spec.Project = c.Project
+	}
+	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+		if cluster.Spec.Project == "" {
+			project, err := gce.DefaultProject()
+			if err != nil {
+				glog.Warningf("unable to get default google cloud project: %v", err)
+			} else if project == "" {
+				glog.Warningf("default google cloud project not set")
+			} else {
+				glog.Infof("using google cloud project: %s", project)
+			}
+			cluster.Spec.Project = project
+		}
 	}
 
 	if c.KubernetesVersion != "" {
