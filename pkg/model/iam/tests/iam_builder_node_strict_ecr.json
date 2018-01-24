@@ -5,7 +5,8 @@
       "Sid": "kopsK8sEC2NodePerms",
       "Effect": "Allow",
       "Action": [
-        "ec2:DescribeInstances"
+        "ec2:DescribeInstances",
+        "ec2:DescribeRegions"
       ],
       "Resource": [
         "*"
