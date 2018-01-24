@@ -28,3 +28,18 @@ else
 fi
 echo "BUILD_SCM_STATUS ${tree_status}"
 
+# Compute KOPS_VERSION.  Keep in sync with logic in Makefile
+GITSHA=$(git describe --always)
+
+KOPS_RELEASE_VERSION=1.8.0
+KOPS_CI_VERSION=1.8.1-beta.1
+
+if [[ -z "${VERSION}" ]]; then
+  if [[ -z "${CI}" ]]; then
+    VERSION=${KOPS_RELEASE_VERSION}
+  else
+    VERSION="${KOPS_CI_VERSION}+${GITSHA}"
+  fi
+fi
+
+echo "KOPS_VERSION ${VERSION}"
