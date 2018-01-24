@@ -125,7 +125,7 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 		if err != nil {
 			glog.Infof("unable to get token info: %v", err)
 		} else {
-			glog.Infof("running with GCE credentials: email=%s, scope=%s", tokenInfo.Email, tokenInfo.Scope)
+			glog.V(2).Infof("running with GCE credentials: email=%s, scope=%s", tokenInfo.Email, tokenInfo.Scope)
 		}
 	}
 
