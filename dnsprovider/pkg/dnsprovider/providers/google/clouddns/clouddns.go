@@ -83,7 +83,7 @@ func CreateInterface(projectID string, tokenSource oauth2.TokenSource) (*Interfa
 			oauth2.NoContext,
 			compute.CloudPlatformScope,
 			compute.ComputeScope)
-		glog.Infof("Using DefaultTokenSource %#v", tokenSource)
+		glog.V(4).Infof("Using DefaultTokenSource %#v", tokenSource)
 		if err != nil {
 			return nil, err
 		}
@@ -97,7 +97,7 @@ func CreateInterface(projectID string, tokenSource oauth2.TokenSource) (*Interfa
 	if err != nil {
 		glog.Errorf("Failed to get Cloud DNS client: %v", err)
 	}
-	glog.Infof("Successfully got DNS service: %v\n", service)
+	glog.V(4).Infof("Successfully got DNS service: %v\n", service)
 	return newInterfaceWithStub(projectID, internal.NewService(service)), nil
 }
 
