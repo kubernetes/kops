@@ -81,9 +81,6 @@ func TestVFSCAStoreRoundTrip(t *testing.T) {
 
 	pathMap := make(map[string]vfs.Path)
 	for _, p := range paths {
-		if p.(*vfs.MemFSPath).HasChildren() {
-			continue
-		}
 		pathMap[p.Path()] = p
 	}
 
