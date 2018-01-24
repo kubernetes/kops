@@ -125,7 +125,7 @@ go_binary(
     importpath = "k8s.io/kops/cmd/kops",
     visibility = ["//visibility:public"],
     x_defs = {
-        "k8s.io/kops.Version": "1.8.0",  # keep
+        "k8s.io/kops.Version": "{KOPS_VERSION}",  # keep
         "k8s.io/kops.GitVersion": "{BUILD_SCM_REVISION}",  # keep
     },
 )
