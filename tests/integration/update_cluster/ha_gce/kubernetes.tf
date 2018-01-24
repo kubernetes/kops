@@ -15,43 +15,43 @@ provider "google" {
   region  = "us-test1"
 }
 
-resource "google_compute_disk" "a-etcd-events-ha-gce-example-com" {
-  name = "a-etcd-events-ha-gce-example-com"
+resource "google_compute_disk" "d1-etcd-events-ha-gce-example-com" {
+  name = "d1-etcd-events-ha-gce-example-com"
   type = "pd-ssd"
   size = 20
   zone = "us-test1-a"
 }
 
-resource "google_compute_disk" "a-etcd-main-ha-gce-example-com" {
-  name = "a-etcd-main-ha-gce-example-com"
+resource "google_compute_disk" "d1-etcd-main-ha-gce-example-com" {
+  name = "d1-etcd-main-ha-gce-example-com"
   type = "pd-ssd"
   size = 20
   zone = "us-test1-a"
 }
 
-resource "google_compute_disk" "b-etcd-events-ha-gce-example-com" {
-  name = "b-etcd-events-ha-gce-example-com"
+resource "google_compute_disk" "d2-etcd-events-ha-gce-example-com" {
+  name = "d2-etcd-events-ha-gce-example-com"
   type = "pd-ssd"
   size = 20
   zone = "us-test1-b"
 }
 
-resource "google_compute_disk" "b-etcd-main-ha-gce-example-com" {
-  name = "b-etcd-main-ha-gce-example-com"
+resource "google_compute_disk" "d2-etcd-main-ha-gce-example-com" {
+  name = "d2-etcd-main-ha-gce-example-com"
   type = "pd-ssd"
   size = 20
   zone = "us-test1-b"
 }
 
-resource "google_compute_disk" "c-etcd-events-ha-gce-example-com" {
-  name = "c-etcd-events-ha-gce-example-com"
+resource "google_compute_disk" "d3-etcd-events-ha-gce-example-com" {
+  name = "d3-etcd-events-ha-gce-example-com"
   type = "pd-ssd"
   size = 20
   zone = "us-test1-c"
 }
 
-resource "google_compute_disk" "c-etcd-main-ha-gce-example-com" {
-  name = "c-etcd-main-ha-gce-example-com"
+resource "google_compute_disk" "d3-etcd-main-ha-gce-example-com" {
+  name = "d3-etcd-main-ha-gce-example-com"
   type = "pd-ssd"
   size = 20
   zone = "us-test1-c"
