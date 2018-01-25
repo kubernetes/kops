@@ -810,7 +810,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			if err != nil {
 				glog.Warningf("unable to get default google cloud project: %v", err)
 			} else if project == "" {
-				glog.Warningf("default google cloud project not set")
+				glog.Warningf("default google cloud project not set (try `gcloud config set project <name>`")
 			} else {
 				glog.Infof("using google cloud project: %s", project)
 			}
