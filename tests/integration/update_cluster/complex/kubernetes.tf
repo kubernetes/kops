@@ -83,6 +83,9 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-complex-example-com"
     value               = "1"
     propagate_at_launch = true
   }
+
+  metrics_granularity = "1Minute"
+  enabled_metrics     = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
 }
 
 resource "aws_autoscaling_group" "nodes-complex-example-com" {
@@ -121,6 +124,9 @@ resource "aws_autoscaling_group" "nodes-complex-example-com" {
     value               = "1"
     propagate_at_launch = true
   }
+
+  metrics_granularity = "1Minute"
+  enabled_metrics     = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-complex-example-com" {
