@@ -317,8 +317,9 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	maxAttempts := 10
 	for {
 		attempt++
-		_, err = t.Cloud.Autoscaling().CreateLaunchConfiguration(request)
 
+		glog.V(8).Infof("AWS CreateLaunchConfiguration %s", aws.StringValue(request.LaunchConfigurationName))
+		_, err = t.Cloud.Autoscaling().CreateLaunchConfiguration(request)
 		if err == nil {
 			break
 		}
@@ -335,8 +336,9 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 				continue
 			}
 			glog.V(4).Infof("ErrorCode=%q, Message=%q", awsup.AWSErrorCode(err), awsup.AWSErrorMessage(err))
-			return fmt.Errorf("error creating AutoscalingLaunchConfiguration: %v", err)
 		}
+
+		return fmt.Errorf("error creating AutoscalingLaunchConfiguration: %v", err)
 	}
 
 	e.ID = fi.String(launchConfigurationName)
