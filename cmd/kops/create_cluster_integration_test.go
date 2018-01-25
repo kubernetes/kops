@@ -36,6 +36,7 @@ import (
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
@@ -173,7 +174,15 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 		options.Target = ""
 
 		// Use the public key we produced
-		options.SSHPublicKey = publicKeyPath
+		{
+			publicKey, err := ioutil.ReadFile(publicKeyPath)
+			if err != nil {
+				t.Fatalf("error reading public key %q: %v", publicKeyPath, err)
+			}
+			sshPublicKeys := make(map[string][]byte)
+			sshPublicKeys[fi.SecretNameSSHPrimary] = publicKey
+			options.SSHPublicKeys = sshPublicKeys
+		}
 
 		err = RunCreateCluster(factory, &stdout, options)
 		if err != nil {
