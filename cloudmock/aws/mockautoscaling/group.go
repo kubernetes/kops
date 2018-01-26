@@ -46,6 +46,10 @@ func (m *MockAutoscaling) CreateAutoScalingGroup(input *autoscaling.CreateAutoSc
 	return nil, nil
 }
 
+func (m *MockAutoscaling) EnableMetricsCollection(input *autoscaling.EnableMetricsCollectionInput) (*autoscaling.EnableMetricsCollectionOutput, error) {
+	return nil, nil
+}
+
 func (m *MockAutoscaling) DescribeAutoScalingGroups(input *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error) {
 	if len(input.AutoScalingGroupNames) == 0 {
 		return &autoscaling.DescribeAutoScalingGroupsOutput{
