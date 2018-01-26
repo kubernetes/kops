@@ -948,11 +948,16 @@ func resolveImage(ec2Client ec2iface.EC2API, name string) (*ec2.Image, error) {
 	if response == nil || len(response.Images) == 0 {
 		return nil, fmt.Errorf("could not find Image for %q", name)
 	}
-	if len(response.Images) != 1 {
-		return nil, fmt.Errorf("found multiple Images for %q", name)
-	}
 
 	image := response.Images[0]
+	for _, v := range response.Images {
+		itime, _ := time.Parse(time.RFC3339, *image.CreationDate)
+		vtime, _ := time.Parse(time.RFC3339, *v.CreationDate)
+		if vtime.After(itime) {
+			image = v
+		}
+	}
+
 	glog.V(4).Infof("Resolved image %q", aws.StringValue(image.ImageId))
 	return image, nil
 }
