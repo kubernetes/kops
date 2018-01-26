@@ -274,7 +274,7 @@ spec:
       terminationGracePeriodSeconds: 60
       serviceAccountName: nginx-ingress-controller
       containers:
-      - image: gcr.io/google_containers/nginx-ingress-controller:0.9.0-beta.10
+      - image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.9.0
         name: nginx-ingress-controller
         imagePullPolicy: Always
         ports:
@@ -310,3 +310,4 @@ spec:
         - --default-backend-service=$(POD_NAMESPACE)/nginx-default-backend
         - --configmap=$(POD_NAMESPACE)/ingress-nginx
         - --publish-service=$(POD_NAMESPACE)/ingress-nginx
+        - --annotations-prefix=ingress.kubernetes.io
