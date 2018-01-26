@@ -156,7 +156,7 @@ func (o *CreateClusterOptions) InitDefaults() {
 	// Default to open API & SSH access
 	o.AdminAccess = []string{"0.0.0.0/0"}
 
-	o.Authorization = AuthorizationFlagAlwaysAllow
+	o.Authorization = AuthorizationFlagRBAC
 }
 
 var (
