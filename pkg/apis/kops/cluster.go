@@ -312,6 +312,8 @@ type EtcdClusterSpec struct {
 	LeaderElectionTimeout *metav1.Duration `json:"leaderElectionTimeout,omitempty"`
 	// HeartbeatInterval is the time (in milliseconds) for an etcd heartbeat interval
 	HeartbeatInterval *metav1.Duration `json:"heartbeatInterval,omitempty"`
+	// Image is the etcd docker image to use. Setting this will ignore the Version specified.
+	Image string `json:"image,omitempty"`
 }
 
 // EtcdMemberSpec is a specification for a etcd member
