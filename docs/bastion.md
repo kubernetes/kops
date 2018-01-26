@@ -17,7 +17,7 @@ kops create cluster --topology private --networking $provider --bastion $NAME
 
 To add a bastion instance group to a pre-existing cluster, create a new instance group with the `--role Bastion` flag and one or more subnets (e.g. `utility-us-east-2a,utility-us-east-2b`). 
 ```yaml
-kops create instancegroup --role Bastion --subnet $SUBNET
+kops create instancegroup bastions --role Bastion --subnet $SUBNET
 ```
 
 ### Configure the bastion instance group
