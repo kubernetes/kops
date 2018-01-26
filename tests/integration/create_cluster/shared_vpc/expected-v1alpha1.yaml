@@ -9,7 +9,7 @@ spec:
   api:
     dns: {}
   authorization:
-    alwaysAllow: {}
+    rbac: {}
   channel: stable
   cloudProvider: aws
   configBase: memfs://tests/vpc.example.com

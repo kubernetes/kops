@@ -10,7 +10,7 @@ spec:
     loadBalancer:
       type: Public
   authorization:
-    alwaysAllow: {}
+    rbac: {}
   channel: stable
   cloudLabels:
     Owner: John Doe
