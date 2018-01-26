@@ -1306,6 +1306,7 @@ func autoConvert_v1alpha2_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdCluste
 	out.Version = in.Version
 	out.LeaderElectionTimeout = in.LeaderElectionTimeout
 	out.HeartbeatInterval = in.HeartbeatInterval
+	out.Image = in.Image
 	return nil
 }
 
@@ -1332,6 +1333,7 @@ func autoConvert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec(in *kops.EtcdC
 	out.Version = in.Version
 	out.LeaderElectionTimeout = in.LeaderElectionTimeout
 	out.HeartbeatInterval = in.HeartbeatInterval
+	out.Image = in.Image
 	return nil
 }
 
