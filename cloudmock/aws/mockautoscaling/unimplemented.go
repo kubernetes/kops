@@ -552,10 +552,6 @@ func (m *MockAutoscaling) DisableMetricsCollectionRequest(*autoscaling.DisableMe
 	return nil, nil
 }
 
-func (m *MockAutoscaling) EnableMetricsCollection(*autoscaling.EnableMetricsCollectionInput) (*autoscaling.EnableMetricsCollectionOutput, error) {
-	log.Fatal("Not implemented")
-	return nil, nil
-}
 func (m *MockAutoscaling) EnableMetricsCollectionWithContext(aws.Context, *autoscaling.EnableMetricsCollectionInput, ...request.Option) (*autoscaling.EnableMetricsCollectionOutput, error) {
 	log.Fatal("Not implemented")
 	return nil, nil

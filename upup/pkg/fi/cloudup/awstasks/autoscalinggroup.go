@@ -44,6 +44,9 @@ type AutoscalingGroup struct {
 	Subnets []*Subnet
 	Tags    map[string]string
 
+	Granularity *string
+	Metrics     []*string
+
 	LaunchConfiguration *LaunchConfiguration
 }
 
@@ -196,6 +199,17 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		if err != nil {
 			return fmt.Errorf("error creating AutoscalingGroup: %v", err)
 		}
+
+		_, err = t.Cloud.Autoscaling().EnableMetricsCollection(&autoscaling.EnableMetricsCollectionInput{
+			AutoScalingGroupName: e.Name,
+			Granularity:          e.Granularity,
+			Metrics:              e.Metrics,
+		})
+
+		if err != nil {
+			return fmt.Errorf("error enabling metrics collection for AutoscalingGroup: %v", err)
+		}
+
 	} else {
 		request := &autoscaling.UpdateAutoScalingGroupInput{
 			AutoScalingGroupName: e.Name,
@@ -294,6 +308,8 @@ type terraformAutoscalingGroup struct {
 	MinSize                 *int64               `json:"min_size,omitempty"`
 	VPCZoneIdentifier       []*terraform.Literal `json:"vpc_zone_identifier,omitempty"`
 	Tags                    []*terraformASGTag   `json:"tag,omitempty"`
+	MetricsGranularity      *string              `json:"metrics_granularity,omitempty"`
+	EnabledMetrics          []*string            `json:"enabled_metrics,omitempty"`
 }
 
 func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *AutoscalingGroup) error {
@@ -302,6 +318,8 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		MinSize:                 e.MinSize,
 		MaxSize:                 e.MaxSize,
 		LaunchConfigurationName: e.LaunchConfiguration.TerraformLink(),
+		MetricsGranularity:      e.Granularity,
+		EnabledMetrics:          e.Metrics,
 	}
 
 	for _, s := range e.Subnets {
@@ -364,13 +382,19 @@ type cloudformationASGTag struct {
 	Value             *string `json:"Value"`
 	PropagateAtLaunch *bool   `json:"PropagateAtLaunch"`
 }
+
+type cloudformationASGMetricsCollection struct {
+	Granularity *string   `json:"Granularity"`
+	Metrics     []*string `json:"Metrics"`
+}
 type cloudformationAutoscalingGroup struct {
 	//Name                    *string              `json:"name,omitempty"`
-	LaunchConfigurationName *cloudformation.Literal   `json:"LaunchConfigurationName,omitempty"`
-	MaxSize                 *int64                    `json:"MaxSize,omitempty"`
-	MinSize                 *int64                    `json:"MinSize,omitempty"`
-	VPCZoneIdentifier       []*cloudformation.Literal `json:"VPCZoneIdentifier,omitempty"`
-	Tags                    []*cloudformationASGTag   `json:"Tags,omitempty"`
+	LaunchConfigurationName *cloudformation.Literal               `json:"LaunchConfigurationName,omitempty"`
+	MaxSize                 *int64                                `json:"MaxSize,omitempty"`
+	MinSize                 *int64                                `json:"MinSize,omitempty"`
+	VPCZoneIdentifier       []*cloudformation.Literal             `json:"VPCZoneIdentifier,omitempty"`
+	Tags                    []*cloudformationASGTag               `json:"Tags,omitempty"`
+	MetricsCollection       []*cloudformationASGMetricsCollection `json:"MetricsCollection,omitempty"`
 
 	LoadBalancerNames []*cloudformation.Literal `json:"LoadBalancerNames,omitempty"`
 }
@@ -378,8 +402,14 @@ type cloudformationAutoscalingGroup struct {
 func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *AutoscalingGroup) error {
 	tf := &cloudformationAutoscalingGroup{
 		//Name:                    e.Name,
-		MinSize:                 e.MinSize,
-		MaxSize:                 e.MaxSize,
+		MinSize: e.MinSize,
+		MaxSize: e.MaxSize,
+		MetricsCollection: []*cloudformationASGMetricsCollection{
+			{
+				Granularity: e.Granularity,
+				Metrics:     e.Metrics,
+			},
+		},
 		LaunchConfigurationName: e.LaunchConfiguration.CloudformationLink(),
 	}
 
