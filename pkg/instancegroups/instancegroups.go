@@ -17,8 +17,10 @@ limitations under the License.
 package instancegroups
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -63,6 +65,32 @@ func NewRollingUpdateInstanceGroup(cloud fi.Cloud, cloudGroup *cloudinstances.Cl
 		Cloud:      cloud,
 		CloudGroup: cloudGroup,
 	}, nil
+}
+
+// promptInteractive asks the user to continue, mostly copied from vendor/google.golang.org/api/examples/gmail.go.
+func promptInteractive(upgradedHost string) (stopPrompting bool, err error) {
+	stopPrompting = false
+	scanner := bufio.NewScanner(os.Stdin)
+	glog.Infof("Pausing after finished %q", upgradedHost)
+	fmt.Print("Continue? (Y)es, (N)o, (A)lwaysYes: [Y] ")
+	scanner.Scan()
+	err = scanner.Err()
+	if err != nil {
+		glog.Infof("unable to interpret input: %v", err)
+		return stopPrompting, err
+	}
+	val := scanner.Text()
+	val = strings.TrimSpace(val)
+	val = strings.ToLower(val)
+	switch val {
+	case "n":
+		glog.Infof("User signaled to stop")
+		os.Exit(3)
+	case "a":
+		glog.Infof("Always Yes, stop prompting for rest of hosts")
+		stopPrompting = true
+	}
+	return stopPrompting, err
 }
 
 // TODO: Temporarily increase size of ASG?
@@ -168,6 +196,16 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 				}
 
 				glog.Warningf("Cluster validation failed after removing instance, proceeding since fail-on-validate is set to false: %v", err)
+			}
+			if rollingUpdateData.Interactive {
+				stopPrompting, err := promptInteractive(nodeName)
+				if err != nil {
+					return err
+				}
+				if stopPrompting {
+					// Is a pointer to a struct, changes here push back into the original
+					rollingUpdateData.Interactive = false
+				}
 			}
 		}
 	}

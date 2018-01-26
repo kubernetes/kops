@@ -74,6 +74,7 @@ kops rolling-update cluster
       --fail-on-validate-error       The rolling-update will fail if the cluster fails to validate. (default true)
       --force                        Force rolling update, even if no changes
       --instance-group stringSlice   List of instance groups to update (defaults to all if not specified)
+  -i, --interactive                  Prompt to continue after each instance is updated
       --master-interval duration     Time to wait between restarting masters (default 5m0s)
       --node-interval duration       Time to wait between restarting nodes (default 4m0s)
   -y, --yes                          Perform rolling update immediately, without --yes rolling-update executes a dry-run
