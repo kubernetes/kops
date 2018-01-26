@@ -39,6 +39,8 @@ type RollingUpdateCluster struct {
 	NodeInterval time.Duration
 	// BastionInterval is the amount of time to wait after stopping a bastion instance
 	BastionInterval time.Duration
+	// Interactive prompts user to continue after each instance is updated
+	Interactive bool
 
 	Force bool
 

@@ -129,6 +129,9 @@ type RollingUpdateOptions struct {
 	// BastionInterval is the minimum time to wait after stopping a bastion.  This does not include drain and validate time.
 	BastionInterval time.Duration
 
+	// Interactive rolling-update prompts user to continue after each instances is updated.
+	Interactive bool
+
 	ClusterName string
 
 	// InstanceGroups is the list of instance groups to rolling-update;
@@ -146,6 +149,7 @@ func (o *RollingUpdateOptions) InitDefaults() {
 	o.MasterInterval = 5 * time.Minute
 	o.NodeInterval = 4 * time.Minute
 	o.BastionInterval = 5 * time.Minute
+	o.Interactive = false
 
 	o.PostDrainDelay = 90 * time.Second
 	o.ValidationTimeout = 5 * time.Minute
@@ -171,6 +175,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", options.MasterInterval, "Time to wait between restarting masters")
 	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting nodes")
 	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
+	cmd.Flags().BoolVarP(&options.Interactive, "interactive", "i", options.Interactive, "Prompt to continue after each instance is updated")
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
 
 	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
@@ -363,6 +368,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		MasterInterval:    options.MasterInterval,
 		NodeInterval:      options.NodeInterval,
 		BastionInterval:   options.BastionInterval,
+		Interactive:       options.Interactive,
 		Force:             options.Force,
 		Cloud:             cloud,
 		K8sClient:         k8sClient,
