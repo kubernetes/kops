@@ -42,8 +42,6 @@ type AssetBuilder struct {
 	ContainerAssets []*ContainerAsset
 	FileAssets      []*FileAsset
 	AssetsLocation  *kops.Assets
-	// TODO we'd like to use cloudup.Phase here, but that introduces a go cyclic dependency
-	Phase string
 }
 
 // ContainerAsset models a container's location.
@@ -69,10 +67,9 @@ type FileAsset struct {
 }
 
 // NewAssetBuilder creates a new AssetBuilder.
-func NewAssetBuilder(assets *kops.Assets, phase string) *AssetBuilder {
+func NewAssetBuilder(assets *kops.Assets) *AssetBuilder {
 	return &AssetBuilder{
 		AssetsLocation: assets,
-		Phase:          phase,
 	}
 }
 

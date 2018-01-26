@@ -40,7 +40,7 @@ func buildSchedulerConfigMapCluster() *api.Cluster {
 
 func Test_Build_Scheduler_Without_PolicyConfigMap(t *testing.T) {
 	versions := []string{"v1.6.0", "v1.6.4", "v1.7.0", "v1.7.4"}
-	b := assets.NewAssetBuilder(nil, "")
+	b := assets.NewAssetBuilder(nil)
 
 	for _, v := range versions {
 
@@ -72,7 +72,7 @@ func Test_Build_Scheduler_Without_PolicyConfigMap(t *testing.T) {
 }
 func Test_Build_Scheduler_PolicyConfigMap_Unsupported_Version(t *testing.T) {
 	versions := []string{"v1.6.0", "v1.6.4"}
-	b := assets.NewAssetBuilder(nil, "")
+	b := assets.NewAssetBuilder(nil)
 
 	for _, v := range versions {
 
@@ -105,7 +105,7 @@ func Test_Build_Scheduler_PolicyConfigMap_Unsupported_Version(t *testing.T) {
 
 func Test_Build_Scheduler_PolicyConfigMap_Supported_Version(t *testing.T) {
 	versions := []string{"v1.7.0", "v1.7.4", "v1.8.0"}
-	b := assets.NewAssetBuilder(nil, "")
+	b := assets.NewAssetBuilder(nil)
 
 	for _, v := range versions {
 

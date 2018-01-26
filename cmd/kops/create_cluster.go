@@ -1058,7 +1058,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return err
 	}
 
-	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets, "")
+	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets)
 	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, assetBuilder)
 	if err != nil {
 		return err

@@ -198,10 +198,7 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("unknown phase %q", c.Phase)
 	}
 
-	// This is kinda a hack.  Need to move phases out of fi.  If we use Phase here we introduce a circular
-	// go dependency.
-	phase := string(c.Phase)
-	assetBuilder := assets.NewAssetBuilder(c.Cluster.Spec.Assets, phase)
+	assetBuilder := assets.NewAssetBuilder(c.Cluster.Spec.Assets)
 	err = c.upgradeSpecs(assetBuilder)
 	if err != nil {
 		return err
