@@ -160,6 +160,8 @@ type ClusterSpec struct {
 	IAM *IAMSpec `json:"iam,omitempty"`
 	// EncryptionConfig controls if encryption is enabled
 	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
+	// Target allows for us to nest extra config for targets such as terraform
+	Target *TargetSpec `json:"target,omitempty"`
 }
 
 // FileAssetSpec defines the structure for a file asset
@@ -373,6 +375,25 @@ type HTTPProxy struct {
 	// TODO #3070
 	// User     string `json:"user,omitempty"`
 	// Password string `json:"password,omitempty"`
+}
+
+// TargetSpec allows for specifying target config in an extensible way
+type TargetSpec struct {
+	Terraform *TerraformSpec `json:"terraform,omitempty"`
+}
+
+func (t *TargetSpec) IsEmpty() bool {
+	return t.Terraform == nil
+}
+
+// TerraformSpec allows us to specify terraform config in an extensible way
+type TerraformSpec struct {
+	// ProviderExtraConfig contains key/value pairs to add to the rendered terraform "provider" block
+	ProviderExtraConfig *map[string]string `json:"providerExtraConfig,omitempty"`
+}
+
+func (t *TerraformSpec) IsEmpty() bool {
+	return t.ProviderExtraConfig == nil
 }
 
 // FillDefaults populates default values.
