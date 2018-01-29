@@ -198,6 +198,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
     master: http://127.0.0.1:8080
   kubelet:
     allowPrivileged: true
+    anonymousAuth: false
     apiServers: https://api.internal.minimal.example.com
     babysitDaemons: true
     cgroupRoot: docker
@@ -216,6 +217,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
     reconcileCIDR: true
   masterKubelet:
     allowPrivileged: true
+    anonymousAuth: false
     apiServers: http://127.0.0.1:8080
     babysitDaemons: true
     cgroupRoot: docker

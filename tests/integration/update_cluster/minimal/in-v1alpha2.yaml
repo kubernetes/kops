@@ -19,6 +19,8 @@ spec:
       name: us-test-1a
     name: events
   kubernetesVersion: v1.8.0
+  kubelet:
+    anonymousAuth: false
   masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
