@@ -167,10 +167,10 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 	container := &v1.Container{
 		Name:  "kube-controller-manager",
 		Image: b.Cluster.Spec.KubeControllerManager.Image,
-		Command: []string{
-			"/bin/sh", "-c",
-			"/usr/local/bin/kube-controller-manager " + strings.Join(sortedStrings(flags), " ") + " 2>&1 | /bin/tee -a /var/log/kube-controller-manager.log",
-		},
+		Command: execWithTee(
+			"/usr/local/bin/kube-controller-manager",
+			sortedStrings(flags),
+			"/var/log/kube-controller-manager.log"),
 		Env: getProxyEnvVars(b.Cluster.Spec.EgressProxy),
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{

@@ -18,7 +18,6 @@ package model
 
 import (
 	"fmt"
-	"strings"
 
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
@@ -144,10 +143,10 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	container := &v1.Container{
 		Name:  "kube-proxy",
 		Image: image,
-		Command: []string{
-			"/bin/sh", "-c",
-			"/usr/local/bin/kube-proxy " + strings.Join(sortedStrings(flags), " ") + " 2>&1 | /usr/bin/tee -a /var/log/kube-proxy.log",
-		},
+		Command: execWithTee(
+			"/usr/local/bin/kube-proxy",
+			sortedStrings(flags),
+			"/var/log/kube-proxy.log"),
 		Resources: v1.ResourceRequirements{
 			Requests: v1.ResourceList{
 				"cpu": cpuRequest,
