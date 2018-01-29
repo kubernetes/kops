@@ -100,6 +100,11 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 		return NewFSPath(p), nil
 	}
 
+	if strings.HasPrefix(p, "file://") {
+		f := strings.TrimPrefix(p, "file://")
+		return NewFSPath(f), nil
+	}
+
 	if strings.HasPrefix(p, "s3://") {
 		return c.buildS3Path(p)
 	}
