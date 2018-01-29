@@ -19,6 +19,7 @@ package vfs
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"sync"
 	"time"
 
@@ -29,6 +30,14 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/golang/glog"
+)
+
+var (
+	// matches all regional naming conventions of S3:
+	// https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+	// TODO: perhaps make region regex more specific, ie. (us|eu|ap|cn|ca|sa), to prevent catching bucket names that match region format?
+	//       but that will mean updating this list when AWS introduces new regions
+	s3UrlRegexp = regexp.MustCompile(`s3([-.](?P<region>\w{2}-\w+-\d{1})|[-.](?P<bucket>[\w.\-\_]+)|)?.amazonaws.com(.cn)?(?P<path>.*)?`)
 )
 
 type S3Context struct {
@@ -229,4 +238,26 @@ func validateRegion(region string) error {
 		}
 	}
 	return fmt.Errorf("%s is not a valid region\nPlease check that your region is formatted correctly (i.e. us-east-1)", region)
+}
+
+func VFSPath(url string) (string, error) {
+	if !s3UrlRegexp.MatchString(url) {
+		return "", fmt.Errorf("%s is not a valid S3 URL", url)
+	}
+	groupNames := s3UrlRegexp.SubexpNames()
+	result := s3UrlRegexp.FindAllStringSubmatch(url, -1)[0]
+
+	captured := map[string]string{}
+	for i, value := range result {
+		captured[groupNames[i]] = value
+	}
+	bucket := captured["bucket"]
+	path := captured["path"]
+	if bucket == "" {
+		if path == "" {
+			return "", fmt.Errorf("%s is not a valid S3 URL. No bucket defined.", url)
+		}
+		return fmt.Sprintf("s3:/%s", path), nil
+	}
+	return fmt.Sprintf("s3://%s%s", bucket, path), nil
 }

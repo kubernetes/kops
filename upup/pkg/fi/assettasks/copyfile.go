@@ -197,26 +197,36 @@ func buildVFSPath(target string) (string, error) {
 		return target, nil
 	}
 
-	u, err := url.Parse(target)
-	if err != nil {
-		return "", fmt.Errorf("unable to parse url: %q", target)
-	}
-
 	var vfsPath string
 
-	// These matches only cover a subset of the URLs that you can use, but I am uncertain how to cover more of the possible
-	// options.
-	// This code parses the HOST and determines to use s3 or gs.
-	// URLs.  For instance you can have the bucket name in the s3 url hostname.
-	// We are translating known https urls such as https://s3.amazonaws.com/example-kops to vfs path like
-	// s3://example-kops
-	if u.Host == "s3.amazonaws.com" {
-		vfsPath = "s3:/" + u.Path
-	} else if u.Host == "storage.googleapis.com" {
-		vfsPath = "gs:/" + u.Path
+	// Matches all S3 regional naming conventions:
+	// https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+	// and converts to a s3://<bucket>/<path> vfsPath
+	s3VfsPath, err := vfs.VFSPath(target)
+	if err == nil {
+		vfsPath = s3VfsPath
 	} else {
-		glog.Errorf("unable to determine vfs path s3, google storage, and file paths are supported")
-		glog.Errorf("URLs starting with https://s3.amazonaws.com and http://storage.googleapis.com are transformed into s3 and gs URLs")
+		// These matches only cover a subset of the URLs that you can use, but I am uncertain how to cover more of the possible
+		// options.
+		// This code parses the HOST and determines gs URLs.
+		// For instance you can have the bucket name in the gs url hostname.
+		u, err := url.Parse(target)
+		if err != nil {
+			return "", fmt.Errorf("Unable to parse Google Cloud Storage URL: %q", target)
+		}
+		if u.Host == "storage.googleapis.com" {
+			vfsPath = "gs:/" + u.Path
+		}
+	}
+
+	if vfsPath == "" {
+		glog.Errorf("Unable to determine VFS path from supplied URL: %s", target)
+		glog.Errorf("S3, Google Cloud Storage, and File Paths are supported.")
+		glog.Errorf("For S3, please make sure that the supplied file repository URL adhere to S3 naming conventions, https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region.")
+		glog.Errorf("For GCS, please make sure that the supplied file repository URL adheres to https://storage.googleapis.com/")
+		if err != nil { // print the S3 error for more details
+			return "", fmt.Errorf("Error Details: %v", err)
+		}
 		return "", fmt.Errorf("unable to determine vfs type for %q", target)
 	}
 
