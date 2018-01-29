@@ -33,6 +33,26 @@ func Test_BuildVFSPath(t *testing.T) {
 			true,
 		},
 		{
+			"https://s3.cn-north-1.amazonaws.com/k8s-for-greeks-kops/kubernetes-release/release/v1.7.2/bin/linux/amd64/kubectl",
+			"s3://k8s-for-greeks-kops/kubernetes-release/release/v1.7.2/bin/linux/amd64/kubectl",
+			true,
+		},
+		{
+			"https://s3-cn-north-1.amazonaws.com/k8s-for-greeks-kops/kubernetes-release/release/v1.7.2/bin/linux/amd64/kubectl",
+			"s3://k8s-for-greeks-kops/kubernetes-release/release/v1.7.2/bin/linux/amd64/kubectl",
+			true,
+		},
+		{
+			"https://s3.k8s-for-greeks-kops.amazonaws.com/kubernetes-release/release/v1.7.2/bin/linux/amd64/kubectl",
+			"s3://k8s-for-greeks-kops/kubernetes-release/release/v1.7.2/bin/linux/amd64/kubectl",
+			true,
+		},
+		{
+			"https://s3-k8s-for-greeks-kops.amazonaws.com/kubernetes-release/release/v1.7.2/bin/linux/amd64/kubectl",
+			"s3://k8s-for-greeks-kops/kubernetes-release/release/v1.7.2/bin/linux/amd64/kubectl",
+			true,
+		},
+		{
 			"https://foo/k8s-for-greeks-kops/kubernetes-release/release/v1.7.2/bin/linux/amd64/kubectl",
 			"",
 			false,
