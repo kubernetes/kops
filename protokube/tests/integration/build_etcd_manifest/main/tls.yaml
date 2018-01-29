@@ -41,7 +41,8 @@ spec:
   - command:
     - /bin/sh
     - -c
-    - /usr/local/bin/etcd 2>&1 | /bin/tee -a /var/log/etcd.log
+    - /bin/mkfifo /tmp/pipe; (/bin/tee -a /var/log/etcd.log < /tmp/pipe & ); exec
+      /usr/local/bin/etcd > /tmp/pipe 2>&1
     env:
     - name: ETCD_NAME
       value: node0

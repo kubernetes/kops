@@ -45,7 +45,10 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 				},
 			},
 			Command: []string{
-				"/bin/sh", "-c", "/usr/local/bin/etcd 2>&1 | /bin/tee -a /var/log/etcd.log",
+				"/bin/sh", "-c",
+				"/bin/mkfifo /tmp/pipe; " +
+					"(/bin/tee -a /var/log/etcd.log < /tmp/pipe & ); " +
+					"exec /usr/local/bin/etcd > /tmp/pipe 2>&1",
 			},
 		}
 		// build the environment variables for etcd service
