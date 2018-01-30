@@ -43,7 +43,7 @@ func ParsePEMPrivateKey(data []byte) (*PrivateKey, error) {
 }
 
 func GeneratePrivateKey() (*PrivateKey, error) {
-	rsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
+	rsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 3072)
 	if err != nil {
 		return nil, fmt.Errorf("error generating RSA private key: %v", err)
 	}
