@@ -123,6 +123,6 @@ type AmazonVPCNetworkingSpec struct {
 
 // CiliumNetworkingSpec declares that we want Cilium networking
 type CiliumNetworkingSpec struct {
-	Debug  bool   `json:"Debug,omitempty"`
+	Debug  bool   `json:"debug,omitempty"`
 	Tunnel string `json:"tunnel,omitempty"`
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 
 	"github.com/blang/semver"
@@ -499,6 +500,11 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		}
 	}
 
+	// Cilium specific validation rules
+	if err := validateCilium(c); err != nil {
+		return err
+	}
+
 	if errs := newValidateCluster(c); len(errs) != 0 {
 		return errs[0]
 	}
@@ -533,7 +539,7 @@ func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec, fieldPath *field.Path) 
 		// Not technically a requirement, but doesn't really make sense to allow
 		return field.Invalid(fieldPath.Child("Members"), len(spec.Members), "Should be an odd number of master-zones for quorum. Use --zones and --master-zones to declare node zones and master zones separately")
 	}
-	if err := validateEtcdVersion(spec, fieldPath); err != nil {
+	if err := validateEtcdVersion(spec, fieldPath, nil); err != nil {
 		return err
 	}
 	for _, m := range spec.Members {
@@ -575,23 +581,33 @@ func validateEtcdStorage(specs []*kops.EtcdClusterSpec, fieldPath *field.Path) *
 
 // validateEtcdVersion is responsible for validating the storage version of etcd
 // @TODO semvar package doesn't appear to ignore a 'v' in v1.1.1 should could be a problem later down the line
-func validateEtcdVersion(spec *kops.EtcdClusterSpec, fieldPath *field.Path) *field.Error {
+func validateEtcdVersion(spec *kops.EtcdClusterSpec, fieldPath *field.Path, minimalVersion *semver.Version) *field.Error {
 	// @check if the storage is specified, thats is valid
-	if spec.Version == "" {
-		return nil // as it will be filled in by default for us
+
+	if minimalVersion == nil {
+		v := semver.MustParse("0.0.0")
+		minimalVersion = &v
 	}
 
-	sem, err := semver.Parse(strings.TrimPrefix(spec.Version, "v"))
+	version := spec.Version
+	if spec.Version == "" {
+		version = components.DefaultEtcdVersion
+	}
+
+	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))
 	if err != nil {
-		return field.Invalid(fieldPath.Child("Version"), spec.Version, "the storage version is invalid")
+		return field.Invalid(fieldPath.Child("Version"), version, "the storage version is invalid")
 	}
 
 	// we only support v3 and v2 for now
 	if sem.Major == 3 || sem.Major == 2 {
+		if sem.LT(*minimalVersion) {
+			return field.Invalid(fieldPath.Child("Version"), version, fmt.Sprintf("minimal version required is %s", minimalVersion.String()))
+		}
 		return nil
 	}
 
-	return field.Invalid(fieldPath.Child("Version"), spec.Version, "unsupported storage version, we only support major versions 2 and 3")
+	return field.Invalid(fieldPath.Child("Version"), version, "unsupported storage version, we only support major versions 2 and 3")
 }
 
 // validateEtcdMemberSpec is responsible for validate the cluster member
@@ -604,6 +620,25 @@ func validateEtcdMemberSpec(spec *kops.EtcdMemberSpec, fieldPath *field.Path) *f
 		return field.Required(fieldPath.Child("InstanceGroup"), "EtcdMember did not have InstanceGroup")
 	}
 
+	return nil
+}
+
+func validateCilium(c *kops.Cluster) *field.Error {
+	if c.Spec.Networking.Cilium != nil {
+		specPath := field.NewPath("Spec")
+
+		minimalKubeVersion := semver.MustParse("1.7.0")
+		kubeVersion := semver.MustParse(c.Spec.KubernetesVersion)
+		if kubeVersion.LT(minimalKubeVersion) {
+			return field.Invalid(specPath.Child("KubernetesVersion"), c.Spec.KubernetesVersion, "Cilium needs at least Kubernetes 1.7")
+		}
+
+		minimalVersion := semver.MustParse("3.1.0")
+		path := specPath.Child("EtcdClusters").Index(0)
+		if err := validateEtcdVersion(c.Spec.EtcdClusters[0], path, &minimalVersion); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
