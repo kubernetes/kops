@@ -120,8 +120,8 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.KubeconfigPath = kubeconfigPath
 		clusterSpec.MasterKubelet.KubeconfigPath = kubeconfigPath
 
-		// Only pass require-kubeconfig to versions prior to 1.10; deprecated & being removed
-		if b.Context.IsKubernetesLT("1.10") {
+		// Only pass require-kubeconfig to versions prior to 1.9; deprecated & being removed
+		if b.Context.IsKubernetesLT("1.9") {
 			clusterSpec.Kubelet.RequireKubeconfig = fi.Bool(true)
 			clusterSpec.MasterKubelet.RequireKubeconfig = fi.Bool(true)
 		}
