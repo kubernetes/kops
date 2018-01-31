@@ -184,10 +184,10 @@ type KubeAPIServerConfig struct {
 	CloudProvider string `json:"cloudProvider,omitempty" flag:"cloud-provider"`
 	// SecurePort is the port the kube runs on
 	SecurePort int32 `json:"securePort,omitempty" flag:"secure-port"`
-	// InsecurePort is the port the insecure api runs
-	InsecurePort int32 `json:"insecurePort,omitempty" flag:"insecure-port"`
-	// Address is the binding address for the kube api
-	Address string `json:"address,omitempty" flag:"address"`
+	// Deprecated: InsecurePort is the port the insecure api runs
+	InsecurePort int32 `json:"insecurePort,omitempty" flag:"insecure-port" flag-empty:"-1"`
+	// Deprecated: Address is the binding address for the kube api
+	Address string `json:"address,omitempty" flag:"address" flag-empty:"255.255.255.255"`
 	// AdmissionControl is a list of admission controllers to user
 	AdmissionControl []string `json:"admissionControl,omitempty" flag:"admission-control"`
 	// ServiceClusterIPRange is the service address range
