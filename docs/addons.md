@@ -73,7 +73,7 @@ to ELB-backed `LoadBalancer` services created by Kubernetes. Install using:
 
 The project is created by wearemolecule, and maintained at
 [wearemolecule/route53-kubernetes](https://github.com/wearemolecule/route53-kubernetes).
-[Usage instructions](addons/route53-mapper/README.md)
+[Usage instructions](https://github.com/kubernetes/kops/blob/master/addons/route53-mapper/README.md)
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/route53-mapper/v1.3.0.yml
