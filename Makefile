@@ -20,7 +20,7 @@ GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
-GOVERSION=1.9.2
+GOVERSION=1.9.3
 BUILD=$(GOPATH_1ST)/src/k8s.io/kops/.build
 LOCAL=$(BUILD)/local
 BINDATA_TARGETS=upup/models/bindata.go federation/model/bindata.go
@@ -90,7 +90,7 @@ ifdef STATIC_BUILD
   CGO_ENABLED=0
   export CGO_ENABLED
   EXTRA_BUILDFLAGS=-installsuffix cgo
-  EXTRA_LDFLAGS=-s
+  EXTRA_LDFLAGS=-s -w
 endif
 
 SHASUMCMD := $(shell command -v sha1sum || command -v shasum; 2> /dev/null)
