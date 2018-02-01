@@ -98,12 +98,15 @@ spec:
         # for cluster communication
         - effect: NoSchedule
           operator: Exists
+      # Minimize downtime during a rolling upgrade or deletion; tell Kubernetes to do a "force
+      # deletion": https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods.
+      terminationGracePeriodSeconds: 0
       containers:
         # Runs calico/node container on each Kubernetes node.  This
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v2.6.2
+          image: quay.io/calico/node:v2.6.7
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -183,7 +186,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/calico/cni:v1.11.0
+          image: quay.io/calico/cni:v1.11.2
           command: ["/install-cni.sh"]
           env:
             - name: CNI_CONF_NAME
