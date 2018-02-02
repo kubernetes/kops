@@ -439,3 +439,15 @@ Providing the name of a key already in AWS is an alternative to `--ssh-public-ke
 spec:
   sshKeyName: myexistingkey
 ```
+
+### target
+
+In some use-cases you may wish to augment the target output with extra options.  `target` supports a minimal amount of options you can do this with.  Currently only the terraform target supports this, but if other use cases present themselves, kops may eventually support more.
+
+```yaml
+spec:
+  target:
+    terraform:
+      providerExtraConfig:
+        alias: foo
+```
