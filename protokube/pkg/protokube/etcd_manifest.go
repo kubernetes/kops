@@ -24,6 +24,7 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/util/pkg/exec"
 )
 
 // BuildEtcdManifest creates the pod spec, based on the etcd cluster
@@ -44,12 +45,7 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 					v1.ResourceCPU: c.CPURequest,
 				},
 			},
-			Command: []string{
-				"/bin/sh", "-c",
-				"/bin/mkfifo /tmp/pipe; " +
-					"(/bin/tee -a /var/log/etcd.log < /tmp/pipe & ); " +
-					"exec /usr/local/bin/etcd > /tmp/pipe 2>&1",
-			},
+			Command: exec.WithTee("/usr/local/bin/etcd", []string{}, "/var/log/etcd.log"),
 		}
 		// build the environment variables for etcd service
 		container.Env = buildEtcdEnvironmentOptions(c)

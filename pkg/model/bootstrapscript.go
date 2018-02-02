@@ -111,6 +111,14 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 				spec["kubeControllerManager"] = cs.KubeControllerManager
 				spec["kubeScheduler"] = cs.KubeScheduler
 				spec["masterKubelet"] = cs.MasterKubelet
+				spec["etcdClusters"] = make(map[string]kops.EtcdClusterSpec, 0)
+
+				for _, etcdCluster := range cs.EtcdClusters {
+					spec["etcdClusters"].(map[string]kops.EtcdClusterSpec)[etcdCluster.Name] = kops.EtcdClusterSpec{
+						Image:   etcdCluster.Image,
+						Version: etcdCluster.Version,
+					}
+				}
 			}
 
 			hooks, err := b.getRelevantHooks(cs.Hooks, ig.Spec.Role)

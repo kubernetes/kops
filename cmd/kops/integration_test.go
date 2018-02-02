@@ -511,7 +511,7 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 				t.Logf("actual terraform output in %s", actualPath)
 			}
 
-			t.Fatalf("cloudformation output differed from expected")
+			t.Fatalf("cloudformation output differed from expected. Test file: %s", path.Join(srcDir, expectedCfPath))
 		}
 
 		expectedExtracted, err := ioutil.ReadFile(path.Join(srcDir, expectedCfPath+".extracted.yaml"))
@@ -542,7 +542,7 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 
 				diffString := diff.FormatDiff(expectedValue, extractedValueTrimmed)
 				t.Logf("diff for key %s:\n%s\n\n\n\n\n\n", key, diffString)
-				t.Fatalf("cloudformation output differed from expected")
+				t.Fatalf("cloudformation output differed from expected. Test file: %s", path.Join(srcDir, expectedCfPath+".extracted.yaml"))
 			}
 		}
 	}

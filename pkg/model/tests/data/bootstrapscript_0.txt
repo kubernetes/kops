@@ -159,6 +159,12 @@ cloudConfig:
 docker:
   logLevel: INFO
 encryptionConfig: null
+etcdClusters:
+  events:
+    image: gcr.io/etcd-development/etcd:v3.1.11
+    version: 3.1.11
+  main:
+    version: 3.1.11
 kubeAPIServer:
   image: CoreOS
 kubeControllerManager:
