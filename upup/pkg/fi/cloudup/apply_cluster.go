@@ -659,7 +659,7 @@ func (c *ApplyClusterCmd) Run() error {
 	case TargetTerraform:
 		checkExisting = false
 		outDir := c.OutDir
-		tf := terraform.NewTerraformTarget(cloud, region, project, outDir)
+		tf := terraform.NewTerraformTarget(cloud, region, project, outDir, cluster.Spec.Target)
 
 		// We include a few "util" variables in the TF output
 		if err := tf.AddOutputVariable("region", terraform.LiteralFromStringValue(region)); err != nil {
