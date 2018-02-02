@@ -23,6 +23,7 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/exec"
 
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
@@ -143,7 +144,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	container := &v1.Container{
 		Name:  "kube-proxy",
 		Image: image,
-		Command: execWithTee(
+		Command: exec.WithTee(
 			"/usr/local/bin/kube-proxy",
 			sortedStrings(flags),
 			"/var/log/kube-proxy.log"),
