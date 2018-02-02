@@ -183,7 +183,7 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Romana != nil {
-		addRomanaCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy)
+		addRomanaCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
@@ -564,7 +564,6 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, legac
 				Sid:    "kopsK8sEC2MasterPermsAllResources",
 				Effect: StatementEffectAllow,
 				Action: stringorslice.Slice([]string{
-					"ec2:CreateRoute",             // aws.go
 					"ec2:CreateSecurityGroup",     // aws.go
 					"ec2:CreateTags",              // aws.go, tag.go
 					"ec2:CreateVolume",            // aws.go
@@ -578,6 +577,7 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, legac
 				Action: stringorslice.Of(
 					"ec2:AttachVolume",                  // aws.go
 					"ec2:AuthorizeSecurityGroupIngress", // aws.go
+					"ec2:CreateRoute",                   // aws.go
 					"ec2:DeleteRoute",                   // aws.go
 					"ec2:DeleteSecurityGroup",           // aws.go
 					"ec2:DeleteVolume",                  // aws.go
@@ -726,7 +726,7 @@ func addRoute53ListHostedZonesPermission(p *Policy) {
 	})
 }
 
-func addRomanaCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool) {
+func addRomanaCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string) {
 	if legacyIAM {
 		// Legacy IAM provides ec2:*, so no additional permissions required
 		return
@@ -735,13 +735,28 @@ func addRomanaCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, le
 		// Comments are which Romana component makes the call
 		p.Statement = append(p.Statement,
 			&Statement{
-				Sid:    "kopsK8sEC2MasterPermsRomanaCNI",
+				Sid:    "kopsK8sEC2RomanaCNIMasterPermsAllResources",
 				Effect: StatementEffectAllow,
 				Action: stringorslice.Slice([]string{
 					"ec2:DescribeAvailabilityZones", // vpcrouter
 					"ec2:DescribeVpcs",              // vpcrouter
 				}),
 				Resource: resource,
+			},
+			&Statement{
+				Sid:    "kopsK8sEC2RomanaCNIMasterPermsTaggedResources",
+				Effect: StatementEffectAllow,
+				Action: stringorslice.Slice([]string{
+					"ec2:CreateRoute",  // vpcrouter
+					"ec2:DeleteRoute",  // vpcrouter
+					"ec2:ReplaceRoute", // vpcrouter
+				}),
+				Resource: resource,
+				Condition: Condition{
+					"StringEquals": map[string]string{
+						"ec2:ResourceTag/KubernetesCluster": clusterName,
+					},
+				},
 			},
 		)
 	}
