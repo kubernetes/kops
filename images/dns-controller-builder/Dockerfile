@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install --yes --reinstall lsb-base \
   && rm -rf /var/lib/apt/lists/*
 
 # Install golang
-RUN curl -L https://storage.googleapis.com/golang/go1.9.2.linux-amd64.tar.gz | tar zx -C /usr/local
+RUN curl -L https://storage.googleapis.com/golang/go1.9.3.linux-amd64.tar.gz | tar zx -C /usr/local
 ENV PATH $PATH:/usr/local/go/bin
 
 COPY onbuild.sh /onbuild.sh
