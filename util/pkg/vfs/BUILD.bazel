@@ -47,7 +47,10 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["s3fs_test.go"],
+    srcs = [
+        "s3context_test.go",
+        "s3fs_test.go",
+    ],
     embed = [":go_default_library"],
     importpath = "k8s.io/kops/util/pkg/vfs",
 )
