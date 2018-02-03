@@ -30,10 +30,6 @@ func (c *FakeKopsV1alpha2) Clusters(namespace string) v1alpha2.ClusterInterface 
 	return &FakeClusters{c, namespace}
 }
 
-func (c *FakeKopsV1alpha2) Federations(namespace string) v1alpha2.FederationInterface {
-	return &FakeFederations{c, namespace}
-}
-
 func (c *FakeKopsV1alpha2) InstanceGroups(namespace string) v1alpha2.InstanceGroupInterface {
 	return &FakeInstanceGroups{c, namespace}
 }

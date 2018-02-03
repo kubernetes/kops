@@ -43,7 +43,6 @@ const (
 	* cluster
 	* instancegroup
 	* secret
-	* federation
 
 	`
 )

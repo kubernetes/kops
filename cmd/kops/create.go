@@ -143,16 +143,6 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 			}
 
 			switch v := o.(type) {
-			case *kopsapi.Federation:
-				_, err = clientset.FederationsFor(v).Create(v)
-				if err != nil {
-					if apierrors.IsAlreadyExists(err) {
-						return fmt.Errorf("federation %q already exists", v.ObjectMeta.Name)
-					}
-					return fmt.Errorf("error creating federation: %v", err)
-				}
-				fmt.Fprintf(&sb, "Created federation/%q\n", v.ObjectMeta.Name)
-
 			case *kopsapi.Cluster:
 				// Adding a PerformAssignments() call here as the user might be trying to use
 				// the new `-f` feature, with an old cluster definition.

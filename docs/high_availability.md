@@ -9,7 +9,7 @@ Kubernetes has two strategies for high availability:
 * Run multiple independent clusters and combine them behind one management plane: [federation](https://kubernetes.io/docs/user-guide/federation/)
 * Run a single cluster in multiple cloud zones, with redundant components
 
-kops has experimental early support for federation, but it already has good support for a cluster than runs
+kops has good support for a cluster than runs
 with redundant components.  kops is able to create multiple kubernetes masters, so in the event of
 a master instance failure, the kubernetes API will continue to operate.
 
@@ -27,7 +27,6 @@ In short:
   replaced.  But the use of EBS binds us to a single AZ, and in the event of a prolonged AZ outage, we might experience
   downtime.
 * A multi-node kops cluster can tolerate the outage of a single AZ
-* Federation will allow you to create "uber-clusters" that can tolerate a regional outage
 
 
 Using Kops HA

@@ -24,9 +24,6 @@ Edit a resource configuration. This command changes the desired configuration in
   # Edit a instance group configuration.
   kops edit ig --name k8s-cluster.example.com \
   --state=s3://kops-state-1234 nodes
-  
-  # Edit a cluster federation configuration.
-  kops edit federation k8s-cluster.example.com --state=s3://kops-state-1234
 ```
 
 ### Options inherited from parent commands
@@ -47,6 +44,5 @@ Edit a resource configuration. This command changes the desired configuration in
 ### SEE ALSO
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops edit cluster](kops_edit_cluster.md)	 - Edit cluster.
-* [kops edit federation](kops_edit_federation.md)	 - Edit federation.
 * [kops edit instancegroup](kops_edit_instancegroup.md)	 - Edit instancegroup.
 
