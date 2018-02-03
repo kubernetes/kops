@@ -48,7 +48,7 @@ type ClusterSpec struct {
 	// The Channel we are following
 	Channel string `json:"channel,omitempty"`
 	// ConfigBase is the path where we store configuration for the cluster
-	// This might be different that the location when the cluster spec itself is stored,
+	// This might be different than the location where the cluster spec itself is stored,
 	// both because this must be accessible to the cluster,
 	// and because it might be on a different cloud or storage system (etcd vs S3)
 	ConfigBase string `json:"configBase,omitempty"`
