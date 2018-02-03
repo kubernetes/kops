@@ -58,7 +58,6 @@ func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 	o := &KopsServerOptions{
 		Etcd: genericoptions.NewEtcdOptions(&storagebackend.Config{
 			Prefix: defaultEtcdPathPrefix,
-			Copier: apiserver.Scheme,
 			Codec:  nil,
 		}),
 		SecureServing: genericoptions.NewSecureServingOptions(),
