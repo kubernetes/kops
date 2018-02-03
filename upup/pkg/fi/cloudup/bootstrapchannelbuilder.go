@@ -353,7 +353,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Kopeio != nil {
 		key := "networking.kope.io"
-		version := "1.0.20180120"
+		version := "1.0.20180203"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
