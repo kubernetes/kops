@@ -32,7 +32,6 @@ func NewREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter) (*RES
 	strategy := NewStrategy(scheme)
 
 	store := &genericregistry.Store{
-		Copier: scheme,
 		NewFunc: func() runtime.Object {
 			return &kops.Cluster{}
 		},
