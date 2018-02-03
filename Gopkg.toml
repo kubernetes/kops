@@ -1,7 +1,13 @@
 
 required = [
-  # Need for build
+  # Needed for build
   "github.com/jteeuwen/go-bindata/go-bindata",
+
+  # Needed for apimachinery generation
+  "k8s.io/code-generator/cmd/client-gen",
+  "k8s.io/code-generator/cmd/conversion-gen",
+  "k8s.io/code-generator/cmd/deepcopy-gen",
+  "k8s.io/code-generator/cmd/defaulter-gen",
 ]
 
 [prune]
@@ -25,6 +31,10 @@ required = [
   name = "github.com/jteeuwen/go-bindata"
   revision = "a0ff2567cfb70903282db057e799fd826784d41d"
 
+# Needed for apimachinery generation
+[[override]]
+  name = "k8s.io/code-generator"
+  revision = "91d3f6a57905178524105a085085901bb73bd3dc"
 
 # These come from godeps.json in kubernetes
 [[override]]
