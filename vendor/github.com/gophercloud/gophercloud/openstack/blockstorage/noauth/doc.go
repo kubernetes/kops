@@ -8,7 +8,7 @@ Example of Creating a noauth Service Client
 		Username:   os.Getenv("OS_USERNAME"),
 		TenantName: os.Getenv("OS_TENANT_NAME"),
 	})
-	client, err := noauth.NewBlockStorageV2(provider, noauth.EndpointOpts{
+	client, err := noauth.NewBlockStorageNoAuth(provider, noauth.EndpointOpts{
 		CinderEndpoint: os.Getenv("CINDER_ENDPOINT"),
 	})
 

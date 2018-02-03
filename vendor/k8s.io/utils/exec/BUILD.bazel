@@ -16,3 +16,10 @@ go_test(
     embed = [":go_default_library"],
     importpath = "k8s.io/utils/exec",
 )
+
+go_test(
+    name = "go_default_xtest",
+    srcs = ["new_test.go"],
+    importpath = "k8s.io/utils/exec_test",
+    deps = [":go_default_library"],
+)

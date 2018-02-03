@@ -47,7 +47,7 @@ import (
 		10. Delete storage class.
 */
 
-var _ = SIGDescribe("vsphere volume operations storm", func() {
+var _ = SIGDescribe("Volume Operations Storm [Feature:vsphere]", func() {
 	f := framework.NewDefaultFramework("volume-ops-storm")
 	const DEFAULT_VOLUME_OPS_SCALE = 30
 	var (
@@ -75,7 +75,7 @@ var _ = SIGDescribe("vsphere volume operations storm", func() {
 			volume_ops_scale = DEFAULT_VOLUME_OPS_SCALE
 		}
 		pvclaims = make([]*v1.PersistentVolumeClaim, volume_ops_scale)
-		vsp, err = vsphere.GetVSphere()
+		vsp, err = getVSphere(client)
 		Expect(err).NotTo(HaveOccurred())
 	})
 	AfterEach(func() {
@@ -99,28 +99,28 @@ var _ = SIGDescribe("vsphere volume operations storm", func() {
 		By("Creating PVCs using the Storage Class")
 		count := 0
 		for count < volume_ops_scale {
-			pvclaims[count], err = framework.CreatePVC(client, namespace, getVSphereClaimSpecWithStorageClassAnnotation(namespace, storageclass))
+			pvclaims[count], err = framework.CreatePVC(client, namespace, getVSphereClaimSpecWithStorageClassAnnotation(namespace, "2Gi", storageclass))
 			Expect(err).NotTo(HaveOccurred())
 			count++
 		}
 
 		By("Waiting for all claims to be in bound phase")
-		persistentvolumes, err = framework.WaitForPVClaimBoundPhase(client, pvclaims)
+		persistentvolumes, err = framework.WaitForPVClaimBoundPhase(client, pvclaims, framework.ClaimProvisionTimeout)
 		Expect(err).NotTo(HaveOccurred())
 
 		By("Creating pod to attach PVs to the node")
-		pod, err := framework.CreatePod(client, namespace, pvclaims, false, "")
+		pod, err := framework.CreatePod(client, namespace, nil, pvclaims, false, "")
 		Expect(err).NotTo(HaveOccurred())
 
 		By("Verify all volumes are accessible and available in the pod")
-		verifyVSphereVolumesAccessible(pod, persistentvolumes, vsp)
+		verifyVSphereVolumesAccessible(client, pod, persistentvolumes, vsp)
 
 		By("Deleting pod")
 		framework.ExpectNoError(framework.DeletePodWithWait(f, client, pod))
 
 		By("Waiting for volumes to be detached from the node")
 		for _, pv := range persistentvolumes {
-			waitForVSphereDiskToDetach(vsp, pv.Spec.VsphereVolume.VolumePath, k8stype.NodeName(pod.Spec.NodeName))
+			waitForVSphereDiskToDetach(client, vsp, pv.Spec.VsphereVolume.VolumePath, k8stype.NodeName(pod.Spec.NodeName))
 		}
 	})
 })

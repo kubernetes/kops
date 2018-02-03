@@ -1,0 +1,16 @@
+apiVersion: "cluster-api.k8s.io/v1alpha1"
+kind: Cluster
+metadata:
+  name: test1 
+spec:
+    clusterNetwork:
+        services:
+            cidrBlocks: ["10.96.0.0/12"]
+        pods: 
+            cidrBlocks: ["192.168.0.0/16"]
+        dnsDomain: "cluster.local"
+    providerConfig: >
+      {
+        "apiVersion": "gceproviderconfig/v1alpha1",
+        "kind": "GCEProviderConfig"
+      }

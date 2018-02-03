@@ -25,8 +25,10 @@ import (
 	"k8s.io/kubernetes/cmd/kubeadm/app/cmd"
 )
 
+// Run creates and executes new kubeadm command
 func Run() error {
 	// We do not want these flags to show up in --help
+	pflag.CommandLine.MarkHidden("version")
 	pflag.CommandLine.MarkHidden("google-json-key")
 	pflag.CommandLine.MarkHidden("log-flush-frequency")
 

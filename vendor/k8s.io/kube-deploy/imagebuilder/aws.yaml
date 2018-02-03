@@ -1,0 +1,9 @@
+Cloud: aws
+TemplatePath: templates/1.7.yml
+Tags:
+  k8s.io/kernel: "4.4"
+  k8s.io/version: "1.7"
+  k8s.io/family: "default"
+# Ensure the image is repeatable - really we should be locking to a tag
+BootstrapVZRepo: https://github.com/justinsb/bootstrap-vz.git
+BootstrapVZBranch: image17

@@ -319,3 +319,47 @@ func TestVendorExtensionStringSlice(t *testing.T) {
 		}
 	}
 }
+
+func TestOptionalSwaggerProps_Serialize(t *testing.T) {
+	minimalJsonSpec := []byte(`{
+	"swagger": "2.0",
+	"info": {
+		"version": "0.0.0",
+		"title": "Simple API"
+	},
+	"paths": {
+		"/": {
+			"get": {
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		}
+	}
+}`)
+
+	var minimalSpec Swagger
+	err := json.Unmarshal(minimalJsonSpec, &minimalSpec)
+	if assert.NoError(t, err) {
+		bytes, err := json.Marshal(&minimalSpec)
+		if assert.NoError(t, err) {
+			var ms map[string]interface{}
+			if err := json.Unmarshal(bytes, &ms); assert.NoError(t, err) {
+				assert.NotContains(t, ms, "consumes")
+				assert.NotContains(t, ms, "produces")
+				assert.NotContains(t, ms, "schemes")
+				assert.NotContains(t, ms, "host")
+				assert.NotContains(t, ms, "basePath")
+				assert.NotContains(t, ms, "definitions")
+				assert.NotContains(t, ms, "parameters")
+				assert.NotContains(t, ms, "responses")
+				assert.NotContains(t, ms, "securityDefinitions")
+				assert.NotContains(t, ms, "security")
+				assert.NotContains(t, ms, "tags")
+				assert.NotContains(t, ms, "externalDocs")
+			}
+		}
+	}
+}

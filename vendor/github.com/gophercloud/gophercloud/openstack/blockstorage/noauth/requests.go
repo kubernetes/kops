@@ -48,8 +48,8 @@ func initClientOpts(client *gophercloud.ProviderClient, eo EndpointOpts) (*gophe
 	return sc, nil
 }
 
-// NewBlockStorageV2 creates a ServiceClient that may be used to access a
-// "noauth" block storage service.
-func NewBlockStorageV2(client *gophercloud.ProviderClient, eo EndpointOpts) (*gophercloud.ServiceClient, error) {
+// NewBlockStorageNoAuth creates a ServiceClient that may be used to access a
+// "noauth" block storage service (V2 or V3 Cinder API).
+func NewBlockStorageNoAuth(client *gophercloud.ProviderClient, eo EndpointOpts) (*gophercloud.ServiceClient, error) {
 	return initClientOpts(client, eo)
 }

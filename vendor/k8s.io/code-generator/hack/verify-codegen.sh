@@ -21,8 +21,8 @@ set -o pipefail
 SCRIPT_ROOT=$(dirname "${BASH_SOURCE}")/..
 SCRIPT_BASE=${SCRIPT_ROOT}/../..
 
-DIFFROOT="${SCRIPT_ROOT}/_test"
-TMP_DIFFROOT="${SCRIPT_ROOT}/_tmp/_test"
+DIFFROOT="${SCRIPT_ROOT}/_examples"
+TMP_DIFFROOT="${SCRIPT_ROOT}/_tmp/_examples"
 _tmp="${SCRIPT_ROOT}/_tmp"
 
 cleanup() {
@@ -47,3 +47,7 @@ else
   echo "${DIFFROOT} is out of date. Please run hack/update-codegen.sh"
   exit 1
 fi
+
+# smoke test
+echo "Smoke testing _example by compiling..."
+go build ${SCRIPT_ROOT}/_example/...

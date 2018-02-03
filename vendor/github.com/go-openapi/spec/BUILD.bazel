@@ -50,6 +50,7 @@ go_test(
         "path_item_test.go",
         "paths_test.go",
         "properties_test.go",
+        "response_test.go",
         "schema_test.go",
         "structs_test.go",
         "swagger_test.go",

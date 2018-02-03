@@ -32,9 +32,23 @@ import (
 	"github.com/golang/glog"
 )
 
+// DefaultBasePeerDirs are the peer-dirs nearly everybody will use, i.e. those coming from
+// apimachinery.
+var DefaultBasePeerDirs = []string{
+	"k8s.io/apimachinery/pkg/apis/meta/v1",
+	"k8s.io/apimachinery/pkg/conversion",
+	"k8s.io/apimachinery/pkg/runtime",
+}
+
 // CustomArgs is used by the gengo framework to pass args specific to this generator.
 type CustomArgs struct {
-	ExtraPeerDirs []string // Always consider these as last-ditch possibilities for conversions.
+	// Base peer dirs which nearly everybody will use, i.e. outside of Kubernetes core.
+	BasePeerDirs []string
+
+	// Custom peer dirs which are application specific. Always consider these as
+	// last-ditch possibilities for conversions.
+	ExtraPeerDirs []string //
+
 	// Skipunsafe indicates whether to generate unsafe conversions to improve the efficiency
 	// of these operations. The unsafe operation is a direct pointer assignment via unsafe
 	// (within the allowed uses of unsafe) and is equivalent to a proposed Golang change to
@@ -131,6 +145,10 @@ type conversionFuncMap map[conversionPair]*types.Type
 
 // Returns all manually-defined conversion functions in the package.
 func getManualConversionFunctions(context *generator.Context, pkg *types.Package, manualMap conversionFuncMap) {
+	if pkg == nil {
+		glog.Warningf("Skipping nil package passed to getManualConversionFunctions")
+		return
+	}
 	glog.V(5).Infof("Scanning for conversion functions in %v", pkg.Name)
 
 	scopeName := types.Ref(conversionPackagePath, "Scope").Name
@@ -247,9 +265,8 @@ func Packages(context *generator.Context, arguments *args.GeneratorArgs) generat
 		}
 		skipUnsafe := false
 		if customArgs, ok := arguments.CustomArgs.(*CustomArgs); ok {
-			if len(customArgs.ExtraPeerDirs) > 0 {
-				peerPkgs = append(peerPkgs, customArgs.ExtraPeerDirs...)
-			}
+			peerPkgs = append(peerPkgs, customArgs.BasePeerDirs...)
+			peerPkgs = append(peerPkgs, customArgs.ExtraPeerDirs...)
 			skipUnsafe = customArgs.SkipUnsafe
 		}
 
@@ -262,7 +279,7 @@ func Packages(context *generator.Context, arguments *args.GeneratorArgs) generat
 			externalTypes := externalTypesValues[0]
 			glog.V(5).Infof("  external types tags: %q", externalTypes)
 			var err error
-			typesPkg, err = context.AddDirectory(filepath.Join(pkg.Path, externalTypes))
+			typesPkg, err = context.AddDirectory(externalTypes)
 			if err != nil {
 				glog.Fatalf("cannot import package %s", externalTypes)
 			}
@@ -291,7 +308,11 @@ func Packages(context *generator.Context, arguments *args.GeneratorArgs) generat
 		// Make sure our peer-packages are added and fully parsed.
 		for _, pp := range peerPkgs {
 			context.AddDir(pp)
-			getManualConversionFunctions(context, context.Universe[pp], manualConversions)
+			p := context.Universe[pp]
+			if nil == p {
+				glog.Fatalf("failed to find pkg: %s", pp)
+			}
+			getManualConversionFunctions(context, p, manualConversions)
 		}
 
 		unsafeEquality := TypesEqual(memoryEquivalentTypes)

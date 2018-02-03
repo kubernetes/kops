@@ -19,6 +19,7 @@ package flexvolume
 import (
 	"fmt"
 	"path"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -32,7 +33,10 @@ import (
 	"k8s.io/utils/exec"
 )
 
-const flexVolumePluginName = "kubernetes.io/flexvolume"
+const (
+	flexVolumePluginName       = "kubernetes.io/flexvolume"
+	flexVolumePluginNamePrefix = "flexvolume-"
+)
 
 // FlexVolumePlugin object.
 type flexVolumePlugin struct {
@@ -97,12 +101,16 @@ func (plugin *flexVolumePlugin) Init(host volume.VolumeHost) error {
 func (plugin *flexVolumePlugin) getExecutable() string {
 	parts := strings.Split(plugin.driverName, "/")
 	execName := parts[len(parts)-1]
-	return path.Join(plugin.execPath, execName)
+	execPath := path.Join(plugin.execPath, execName)
+	if runtime.GOOS == "windows" {
+		execPath = volume.GetWindowsPath(execPath)
+	}
+	return execPath
 }
 
 // Name is part of the volume.VolumePlugin interface.
 func (plugin *flexVolumePlugin) GetPluginName() string {
-	return "flexvolume-" + plugin.driverName
+	return flexVolumePluginNamePrefix + plugin.driverName
 }
 
 // GetVolumeName is part of the volume.VolumePlugin interface.

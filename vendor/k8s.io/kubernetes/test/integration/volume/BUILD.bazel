@@ -21,7 +21,7 @@ go_test(
         "//vendor/k8s.io/client-go/rest:go_default_library",
         "//vendor/k8s.io/client-go/tools/cache:go_default_library",
         "//vendor/k8s.io/client-go/tools/reference:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/api:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/legacyscheme:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/api/testapi:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/cloudprovider/providers/fake:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/controller/volume/attachdetach:go_default_library",

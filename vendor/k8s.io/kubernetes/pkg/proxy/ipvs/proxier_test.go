@@ -1,5 +1,3 @@
-// +build linux
-
 /*
 Copyright 2017 The Kubernetes Authors.
 
@@ -27,13 +25,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/kubernetes/pkg/api"
+	api "k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/proxy"
 	"k8s.io/utils/exec"
 	fakeexec "k8s.io/utils/exec/testing"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	netlinktest "k8s.io/kubernetes/pkg/proxy/ipvs/testing"
 	proxyutil "k8s.io/kubernetes/pkg/proxy/util"
+	utilipset "k8s.io/kubernetes/pkg/util/ipset"
+	ipsettest "k8s.io/kubernetes/pkg/util/ipset/testing"
 	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
 	iptablestest "k8s.io/kubernetes/pkg/util/iptables/testing"
 	utilipvs "k8s.io/kubernetes/pkg/util/ipvs"
@@ -86,7 +87,7 @@ func (fake *fakeHealthChecker) SyncEndpoints(newEndpoints map[types.NamespacedNa
 	return nil
 }
 
-func NewFakeProxier(ipt utiliptables.Interface, ipvs utilipvs.Interface, nodeIPs []net.IP) *Proxier {
+func NewFakeProxier(ipt utiliptables.Interface, ipvs utilipvs.Interface, ipset utilipset.Interface, nodeIPs []net.IP) *Proxier {
 	fcmd := fakeexec.FakeCmd{
 		CombinedOutputScript: []fakeexec.FakeCombinedOutputAction{
 			func() ([]byte, error) { return []byte("dummy device have been created"), nil },
@@ -99,23 +100,34 @@ func NewFakeProxier(ipt utiliptables.Interface, ipvs utilipvs.Interface, nodeIPs
 		LookPathFunc: func(cmd string) (string, error) { return cmd, nil },
 	}
 	return &Proxier{
-		exec:             fexec,
-		serviceMap:       make(proxyServiceMap),
-		serviceChanges:   newServiceChangeMap(),
-		endpointsMap:     make(proxyEndpointsMap),
-		endpointsChanges: newEndpointsChangeMap(),
-		iptables:         ipt,
-		ipvs:             ipvs,
-		clusterCIDR:      "10.0.0.0/24",
-		hostname:         testHostname,
-		portsMap:         make(map[proxyutil.LocalPort]proxyutil.Closeable),
-		portMapper:       &fakePortOpener{[]*proxyutil.LocalPort{}},
-		healthChecker:    newFakeHealthChecker(),
-		ipvsScheduler:    DefaultScheduler,
-		ipGetter:         &fakeIPGetter{nodeIPs: nodeIPs},
-		iptablesData:     bytes.NewBuffer(nil),
-		natChains:        bytes.NewBuffer(nil),
-		natRules:         bytes.NewBuffer(nil),
+		exec:               fexec,
+		serviceMap:         make(proxyServiceMap),
+		serviceChanges:     newServiceChangeMap(),
+		endpointsMap:       make(proxyEndpointsMap),
+		endpointsChanges:   newEndpointsChangeMap(testHostname),
+		iptables:           ipt,
+		ipvs:               ipvs,
+		ipset:              ipset,
+		clusterCIDR:        "10.0.0.0/24",
+		hostname:           testHostname,
+		portsMap:           make(map[proxyutil.LocalPort]proxyutil.Closeable),
+		portMapper:         &fakePortOpener{[]*proxyutil.LocalPort{}},
+		healthChecker:      newFakeHealthChecker(),
+		ipvsScheduler:      DefaultScheduler,
+		ipGetter:           &fakeIPGetter{nodeIPs: nodeIPs},
+		iptablesData:       bytes.NewBuffer(nil),
+		natChains:          bytes.NewBuffer(nil),
+		natRules:           bytes.NewBuffer(nil),
+		netlinkHandle:      netlinktest.NewFakeNetlinkHandle(),
+		loopbackSet:        NewIPSet(ipset, KubeLoopBackIPSet, utilipset.HashIPPortIP, false),
+		clusterIPSet:       NewIPSet(ipset, KubeClusterIPSet, utilipset.HashIPPort, false),
+		externalIPSet:      NewIPSet(ipset, KubeExternalIPSet, utilipset.HashIPPort, false),
+		lbIngressSet:       NewIPSet(ipset, KubeLoadBalancerSet, utilipset.HashIPPort, false),
+		lbMasqSet:          NewIPSet(ipset, KubeLoadBalancerMasqSet, utilipset.HashIPPort, false),
+		lbWhiteListIPSet:   NewIPSet(ipset, KubeLoadBalancerSourceIPSet, utilipset.HashIPPortIP, false),
+		lbWhiteListCIDRSet: NewIPSet(ipset, KubeLoadBalancerSourceCIDRSet, utilipset.HashIPPortNet, false),
+		nodePortSetTCP:     NewIPSet(ipset, KubeNodePortSetTCP, utilipset.BitmapPort, false),
+		nodePortSetUDP:     NewIPSet(ipset, KubeNodePortSetUDP, utilipset.BitmapPort, false),
 	}
 }
 
@@ -171,8 +183,11 @@ func makeTestEndpoints(namespace, name string, eptFunc func(*api.Endpoints)) *ap
 func TestNodePort(t *testing.T) {
 	ipt := iptablestest.NewFake()
 	ipvs := ipvstest.NewFake()
-	nodeIP := net.ParseIP("100.101.102.103")
-	fp := NewFakeProxier(ipt, ipvs, []net.IP{nodeIP})
+	ipset := ipsettest.NewFake()
+	nodeIPv4 := net.ParseIP("100.101.102.103")
+	nodeIPv6 := net.ParseIP("2001:db8::1:1")
+	nodeIPs := sets.NewString(nodeIPv4.String(), nodeIPv6.String())
+	fp := NewFakeProxier(ipt, ipvs, ipset, []net.IP{nodeIPv4, nodeIPv6})
 	svcIP := "10.20.30.41"
 	svcPort := 80
 	svcNodePort := 3001
@@ -193,12 +208,16 @@ func TestNodePort(t *testing.T) {
 			}}
 		}),
 	)
-	epIP := "10.180.0.1"
+	epIPv4 := "10.180.0.1"
+	epIPv6 := "1002:ab8::2:10"
+	epIPs := sets.NewString(epIPv4, epIPv6)
 	makeEndpointsMap(fp,
 		makeTestEndpoints(svcPortName.Namespace, svcPortName.Name, func(ept *api.Endpoints) {
 			ept.Subsets = []api.EndpointSubset{{
 				Addresses: []api.EndpointAddress{{
-					IP: epIP,
+					IP: epIPv4,
+				}, {
+					IP: epIPv6,
 				}},
 				Ports: []api.EndpointPort{{
 					Name: svcPortName.Port,
@@ -208,26 +227,26 @@ func TestNodePort(t *testing.T) {
 		}),
 	)
 
-	fp.syncProxyRules(syncReasonForce)
+	fp.syncProxyRules()
 
 	// Check ipvs service and destinations
 	services, err := ipvs.GetVirtualServers()
 	if err != nil {
 		t.Errorf("Failed to get ipvs services, err: %v", err)
 	}
-	if len(services) != 2 {
-		t.Errorf("Expect 2 ipvs services, got %d", len(services))
+	if len(services) != 3 {
+		t.Errorf("Expect 3 ipvs services, got %d", len(services))
 	}
 	found := false
 	for _, svc := range services {
-		if svc.Address.Equal(nodeIP) && svc.Port == uint16(svcNodePort) && svc.Protocol == string(api.ProtocolTCP) {
+		if nodeIPs.Has(svc.Address.String()) && svc.Port == uint16(svcNodePort) && svc.Protocol == string(api.ProtocolTCP) {
 			found = true
 			destinations, err := ipvs.GetRealServers(svc)
 			if err != nil {
 				t.Errorf("Failed to get ipvs destinations, err: %v", err)
 			}
 			for _, dest := range destinations {
-				if dest.Address.To4().String() != epIP || dest.Port != uint16(svcPort) {
+				if !epIPs.Has(dest.Address.String()) || dest.Port != uint16(svcPort) {
 					t.Errorf("service Endpoint mismatch ipvs service destination")
 				}
 			}
@@ -242,8 +261,9 @@ func TestNodePort(t *testing.T) {
 func TestNodePortNoEndpoint(t *testing.T) {
 	ipt := iptablestest.NewFake()
 	ipvs := ipvstest.NewFake()
+	ipset := ipsettest.NewFake()
 	nodeIP := net.ParseIP("100.101.102.103")
-	fp := NewFakeProxier(ipt, ipvs, []net.IP{nodeIP})
+	fp := NewFakeProxier(ipt, ipvs, ipset, []net.IP{nodeIP})
 	svcIP := "10.20.30.41"
 	svcPort := 80
 	svcNodePort := 3001
@@ -266,7 +286,7 @@ func TestNodePortNoEndpoint(t *testing.T) {
 	)
 	makeEndpointsMap(fp)
 
-	fp.syncProxyRules(syncReasonForce)
+	fp.syncProxyRules()
 
 	// Check ipvs service and destinations
 	services, err := ipvs.GetVirtualServers()
@@ -295,7 +315,8 @@ func TestNodePortNoEndpoint(t *testing.T) {
 func TestClusterIPNoEndpoint(t *testing.T) {
 	ipt := iptablestest.NewFake()
 	ipvs := ipvstest.NewFake()
-	fp := NewFakeProxier(ipt, ipvs, nil)
+	ipset := ipsettest.NewFake()
+	fp := NewFakeProxier(ipt, ipvs, ipset, nil)
 	svcIP := "10.20.30.41"
 	svcPort := 80
 	svcPortName := proxy.ServicePortName{
@@ -314,7 +335,7 @@ func TestClusterIPNoEndpoint(t *testing.T) {
 		}),
 	)
 	makeEndpointsMap(fp)
-	fp.syncProxyRules(syncReasonForce)
+	fp.syncProxyRules()
 
 	// check ipvs service and destinations
 	services, err := ipvs.GetVirtualServers()
@@ -324,7 +345,7 @@ func TestClusterIPNoEndpoint(t *testing.T) {
 	if len(services) != 1 {
 		t.Errorf("Expect 1 ipvs services, got %d", len(services))
 	} else {
-		if services[0].Address.To4().String() != svcIP || services[0].Port != uint16(svcPort) && services[0].Protocol == string(api.ProtocolTCP) {
+		if services[0].Address.String() != svcIP || services[0].Port != uint16(svcPort) || services[0].Protocol != string(api.ProtocolTCP) {
 			t.Errorf("Unexpected mismatch service")
 		} else {
 			destinations, _ := ipvs.GetRealServers(services[0])
@@ -338,57 +359,104 @@ func TestClusterIPNoEndpoint(t *testing.T) {
 func TestClusterIP(t *testing.T) {
 	ipt := iptablestest.NewFake()
 	ipvs := ipvstest.NewFake()
-	fp := NewFakeProxier(ipt, ipvs, nil)
-	svcIP := "10.20.30.41"
-	svcPort := 80
-	svcPortName := proxy.ServicePortName{
+	ipset := ipsettest.NewFake()
+	fp := NewFakeProxier(ipt, ipvs, ipset, nil)
+
+	svcIPv4 := "10.20.30.41"
+	svcPortV4 := 80
+	svcPortNameV4 := proxy.ServicePortName{
 		NamespacedName: makeNSN("ns1", "svc1"),
 		Port:           "p80",
 	}
-
+	svcIPv6 := "1002:ab8::2:1"
+	svcPortV6 := 8080
+	svcPortNameV6 := proxy.ServicePortName{
+		NamespacedName: makeNSN("ns2", "svc2"),
+		Port:           "p8080",
+	}
 	makeServiceMap(fp,
-		makeTestService(svcPortName.Namespace, svcPortName.Name, func(svc *api.Service) {
-			svc.Spec.ClusterIP = svcIP
+		makeTestService(svcPortNameV4.Namespace, svcPortNameV4.Name, func(svc *api.Service) {
+			svc.Spec.ClusterIP = svcIPv4
 			svc.Spec.Ports = []api.ServicePort{{
-				Name:     svcPortName.Port,
-				Port:     int32(svcPort),
+				Name:     svcPortNameV4.Port,
+				Port:     int32(svcPortV4),
+				Protocol: api.ProtocolTCP,
+			}}
+		}),
+		makeTestService(svcPortNameV6.Namespace, svcPortNameV6.Name, func(svc *api.Service) {
+			svc.Spec.ClusterIP = svcIPv6
+			svc.Spec.Ports = []api.ServicePort{{
+				Name:     svcPortNameV6.Port,
+				Port:     int32(svcPortV6),
 				Protocol: api.ProtocolTCP,
 			}}
 		}),
 	)
 
-	epIP := "10.180.0.1"
+	epIPv4 := "10.180.0.1"
+	epIPv6 := "1009:ab8::5:6"
 	makeEndpointsMap(fp,
-		makeTestEndpoints(svcPortName.Namespace, svcPortName.Name, func(ept *api.Endpoints) {
+		makeTestEndpoints(svcPortNameV4.Namespace, svcPortNameV4.Name, func(ept *api.Endpoints) {
 			ept.Subsets = []api.EndpointSubset{{
 				Addresses: []api.EndpointAddress{{
-					IP: epIP,
+					IP: epIPv4,
 				}},
 				Ports: []api.EndpointPort{{
-					Name: svcPortName.Port,
-					Port: int32(svcPort),
+					Name: svcPortNameV4.Port,
+					Port: int32(svcPortV4),
+				}},
+			}}
+		}),
+		makeTestEndpoints(svcPortNameV6.Namespace, svcPortNameV6.Name, func(ept *api.Endpoints) {
+			ept.Subsets = []api.EndpointSubset{{
+				Addresses: []api.EndpointAddress{{
+					IP: epIPv6,
+				}},
+				Ports: []api.EndpointPort{{
+					Name: svcPortNameV6.Port,
+					Port: int32(svcPortV6),
 				}},
 			}}
 		}),
 	)
 
-	fp.syncProxyRules(syncReasonForce)
+	fp.syncProxyRules()
 
 	// check ipvs service and destinations
 	services, err := ipvs.GetVirtualServers()
 	if err != nil {
 		t.Errorf("Failed to get ipvs services, err: %v", err)
 	}
-	if len(services) != 1 {
-		t.Errorf("Expect 1 ipvs services, got %d", len(services))
-	} else {
-		if services[0].Address.To4().String() != svcIP || services[0].Port != uint16(svcPort) && services[0].Protocol == string(api.ProtocolTCP) {
-			t.Errorf("Unexpected mismatch service")
-		} else {
-			destinations, _ := ipvs.GetRealServers(services[0])
+	if len(services) != 2 {
+		t.Errorf("Expect 2 ipvs services, got %d", len(services))
+	}
+	for i := range services {
+		// Check services
+		if services[i].Address.String() == svcIPv4 {
+			if services[i].Port != uint16(svcPortV4) || services[i].Protocol != string(api.ProtocolTCP) {
+				t.Errorf("Unexpected mismatch service")
+			}
+			// Check destinations
+			destinations, _ := ipvs.GetRealServers(services[i])
 			if len(destinations) != 1 {
-				t.Errorf("Unexpected %d destinations, expect 0 destinations", len(destinations))
-			} else if destinations[0].Address.To4().String() != epIP || destinations[0].Port != uint16(svcPort) {
+				t.Errorf("Expected 1 destinations, got %d destinations", len(destinations))
+				continue
+			}
+			if destinations[0].Address.String() != epIPv4 || destinations[0].Port != uint16(svcPortV4) {
+				t.Errorf("Unexpected mismatch destinations")
+			}
+		}
+		if services[i].Address.String() == svcIPv6 {
+			if services[i].Port != uint16(svcPortV6) || services[i].Protocol != string(api.ProtocolTCP) {
+				t.Errorf("Unexpected mismatch service")
+			}
+			// Check destinations
+			destinations, _ := ipvs.GetRealServers(services[i])
+			if len(destinations) != 1 {
+				t.Errorf("Expected 1 destinations, got %d destinations", len(destinations))
+				continue
+			}
+			if destinations[0].Address.String() != epIPv6 || destinations[0].Port != uint16(svcPortV6) {
 				t.Errorf("Unexpected mismatch destinations")
 			}
 		}
@@ -398,7 +466,8 @@ func TestClusterIP(t *testing.T) {
 func TestExternalIPsNoEndpoint(t *testing.T) {
 	ipt := iptablestest.NewFake()
 	ipvs := ipvstest.NewFake()
-	fp := NewFakeProxier(ipt, ipvs, nil)
+	ipset := ipsettest.NewFake()
+	fp := NewFakeProxier(ipt, ipvs, ipset, nil)
 	svcIP := "10.20.30.41"
 	svcPort := 80
 	svcExternalIPs := "50.60.70.81"
@@ -423,7 +492,7 @@ func TestExternalIPsNoEndpoint(t *testing.T) {
 
 	makeEndpointsMap(fp)
 
-	fp.syncProxyRules(syncReasonForce)
+	fp.syncProxyRules()
 
 	// check ipvs service and destinations
 	services, err := ipvs.GetVirtualServers()
@@ -435,7 +504,7 @@ func TestExternalIPsNoEndpoint(t *testing.T) {
 	}
 	found := false
 	for _, svc := range services {
-		if svc.Address.To4().String() == svcExternalIPs && svc.Port == uint16(svcPort) && svc.Protocol == string(api.ProtocolTCP) {
+		if svc.Address.String() == svcExternalIPs && svc.Port == uint16(svcPort) && svc.Protocol == string(api.ProtocolTCP) {
 			found = true
 			destinations, _ := ipvs.GetRealServers(svc)
 			if len(destinations) != 0 {
@@ -452,10 +521,11 @@ func TestExternalIPsNoEndpoint(t *testing.T) {
 func TestExternalIPs(t *testing.T) {
 	ipt := iptablestest.NewFake()
 	ipvs := ipvstest.NewFake()
-	fp := NewFakeProxier(ipt, ipvs, nil)
+	ipset := ipsettest.NewFake()
+	fp := NewFakeProxier(ipt, ipvs, ipset, nil)
 	svcIP := "10.20.30.41"
 	svcPort := 80
-	svcExternalIPs := "50.60.70.81"
+	svcExternalIPs := sets.NewString("50.60.70.81", "2012::51")
 	svcPortName := proxy.ServicePortName{
 		NamespacedName: makeNSN("ns1", "svc1"),
 		Port:           "p80",
@@ -465,7 +535,7 @@ func TestExternalIPs(t *testing.T) {
 		makeTestService(svcPortName.Namespace, svcPortName.Name, func(svc *api.Service) {
 			svc.Spec.Type = "ClusterIP"
 			svc.Spec.ClusterIP = svcIP
-			svc.Spec.ExternalIPs = []string{svcExternalIPs}
+			svc.Spec.ExternalIPs = svcExternalIPs.UnsortedList()
 			svc.Spec.Ports = []api.ServicePort{{
 				Name:       svcPortName.Port,
 				Port:       int32(svcPort),
@@ -490,23 +560,23 @@ func TestExternalIPs(t *testing.T) {
 		}),
 	)
 
-	fp.syncProxyRules(syncReasonForce)
+	fp.syncProxyRules()
 
 	// check ipvs service and destinations
 	services, err := ipvs.GetVirtualServers()
 	if err != nil {
 		t.Errorf("Failed to get ipvs services, err: %v", err)
 	}
-	if len(services) != 2 {
-		t.Errorf("Expect 2 ipvs services, got %d", len(services))
+	if len(services) != 3 {
+		t.Errorf("Expect 3 ipvs services, got %d", len(services))
 	}
 	found := false
 	for _, svc := range services {
-		if svc.Address.To4().String() == svcExternalIPs && svc.Port == uint16(svcPort) && svc.Protocol == string(api.ProtocolTCP) {
+		if svcExternalIPs.Has(svc.Address.String()) && svc.Port == uint16(svcPort) && svc.Protocol == string(api.ProtocolTCP) {
 			found = true
 			destinations, _ := ipvs.GetRealServers(svc)
 			for _, dest := range destinations {
-				if dest.Address.To4().String() != epIP || dest.Port != uint16(svcPort) {
+				if dest.Address.String() != epIP || dest.Port != uint16(svcPort) {
 					t.Errorf("service Endpoint mismatch ipvs service destination")
 				}
 			}
@@ -521,7 +591,8 @@ func TestExternalIPs(t *testing.T) {
 func TestLoadBalancer(t *testing.T) {
 	ipt := iptablestest.NewFake()
 	ipvs := ipvstest.NewFake()
-	fp := NewFakeProxier(ipt, ipvs, nil)
+	ipset := ipsettest.NewFake()
+	fp := NewFakeProxier(ipt, ipvs, ipset, nil)
 	svcIP := "10.20.30.41"
 	svcPort := 80
 	svcNodePort := 3001
@@ -562,7 +633,7 @@ func TestLoadBalancer(t *testing.T) {
 		}),
 	)
 
-	fp.syncProxyRules(syncReasonForce)
+	fp.syncProxyRules()
 }
 
 func strPtr(s string) *string {
@@ -572,8 +643,9 @@ func strPtr(s string) *string {
 func TestOnlyLocalNodePorts(t *testing.T) {
 	ipt := iptablestest.NewFake()
 	ipvs := ipvstest.NewFake()
+	ipset := ipsettest.NewFake()
 	nodeIP := net.ParseIP("100.101.102.103")
-	fp := NewFakeProxier(ipt, ipvs, []net.IP{nodeIP})
+	fp := NewFakeProxier(ipt, ipvs, ipset, []net.IP{nodeIP})
 	svcIP := "10.20.30.41"
 	svcPort := 80
 	svcNodePort := 3001
@@ -616,7 +688,7 @@ func TestOnlyLocalNodePorts(t *testing.T) {
 		}),
 	)
 
-	fp.syncProxyRules(syncReasonForce)
+	fp.syncProxyRules()
 
 	// Expect 2 services and 1 destination
 	services, err := ipvs.GetVirtualServers()
@@ -637,7 +709,7 @@ func TestOnlyLocalNodePorts(t *testing.T) {
 			if len(destinations) != 1 {
 				t.Errorf("Expect 1 ipvs destination, got %d", len(destinations))
 			} else {
-				if destinations[0].Address.To4().String() != epIP2 || destinations[0].Port != uint16(svcPort) {
+				if destinations[0].Address.String() != epIP2 || destinations[0].Port != uint16(svcPort) {
 					t.Errorf("service Endpoint mismatch ipvs service destination")
 				}
 			}
@@ -653,7 +725,8 @@ func TestOnlyLocalNodePorts(t *testing.T) {
 func TestOnlyLocalLoadBalancing(t *testing.T) {
 	ipt := iptablestest.NewFake()
 	ipvs := ipvstest.NewFake()
-	fp := NewFakeProxier(ipt, ipvs, nil)
+	ipset := ipsettest.NewFake()
+	fp := NewFakeProxier(ipt, ipvs, ipset, nil)
 	svcIP := "10.20.30.41"
 	svcPort := 80
 	svcNodePort := 3001
@@ -700,7 +773,7 @@ func TestOnlyLocalLoadBalancing(t *testing.T) {
 		}),
 	)
 
-	fp.syncProxyRules(syncReasonForce)
+	fp.syncProxyRules()
 }
 
 func addTestPort(array []api.ServicePort, name string, protocol api.Protocol, port, nodeport int32, targetPort int) []api.ServicePort {
@@ -717,7 +790,8 @@ func addTestPort(array []api.ServicePort, name string, protocol api.Protocol, po
 func TestBuildServiceMapAddRemove(t *testing.T) {
 	ipt := iptablestest.NewFake()
 	ipvs := ipvstest.NewFake()
-	fp := NewFakeProxier(ipt, ipvs, nil)
+	ipset := ipsettest.NewFake()
+	fp := NewFakeProxier(ipt, ipvs, ipset, nil)
 
 	services := []*api.Service{
 		makeTestService("somewhere-else", "cluster-ip", func(svc *api.Service) {
@@ -763,24 +837,24 @@ func TestBuildServiceMapAddRemove(t *testing.T) {
 	for i := range services {
 		fp.OnServiceAdd(services[i])
 	}
-	_, hcPorts, staleUDPServices := updateServiceMap(fp.serviceMap, &fp.serviceChanges)
+	result := updateServiceMap(fp.serviceMap, &fp.serviceChanges)
 	if len(fp.serviceMap) != 8 {
 		t.Errorf("expected service map length 8, got %v", fp.serviceMap)
 	}
 
 	// The only-local-loadbalancer ones get added
-	if len(hcPorts) != 1 {
-		t.Errorf("expected 1 healthcheck port, got %v", hcPorts)
+	if len(result.hcServices) != 1 {
+		t.Errorf("expected 1 healthcheck port, got %v", result.hcServices)
 	} else {
 		nsn := makeNSN("somewhere", "only-local-load-balancer")
-		if port, found := hcPorts[nsn]; !found || port != 345 {
-			t.Errorf("expected healthcheck port [%q]=345: got %v", nsn, hcPorts)
+		if port, found := result.hcServices[nsn]; !found || port != 345 {
+			t.Errorf("expected healthcheck port [%q]=345: got %v", nsn, result.hcServices)
 		}
 	}
 
-	if len(staleUDPServices) != 0 {
+	if len(result.staleServices) != 0 {
 		// Services only added, so nothing stale yet
-		t.Errorf("expected stale UDP services length 0, got %d", len(staleUDPServices))
+		t.Errorf("expected stale UDP services length 0, got %d", len(result.staleServices))
 	}
 
 	// Remove some stuff
@@ -796,24 +870,24 @@ func TestBuildServiceMapAddRemove(t *testing.T) {
 	fp.OnServiceDelete(services[2])
 	fp.OnServiceDelete(services[3])
 
-	_, hcPorts, staleUDPServices = updateServiceMap(fp.serviceMap, &fp.serviceChanges)
+	result = updateServiceMap(fp.serviceMap, &fp.serviceChanges)
 	if len(fp.serviceMap) != 1 {
 		t.Errorf("expected service map length 1, got %v", fp.serviceMap)
 	}
 
-	if len(hcPorts) != 0 {
-		t.Errorf("expected 0 healthcheck ports, got %v", hcPorts)
+	if len(result.hcServices) != 0 {
+		t.Errorf("expected 0 healthcheck ports, got %v", result.hcServices)
 	}
 
 	// All services but one were deleted. While you'd expect only the ClusterIPs
 	// from the three deleted services here, we still have the ClusterIP for
 	// the not-deleted service, because one of it's ServicePorts was deleted.
 	expectedStaleUDPServices := []string{"172.16.55.10", "172.16.55.4", "172.16.55.11", "172.16.55.12"}
-	if len(staleUDPServices) != len(expectedStaleUDPServices) {
-		t.Errorf("expected stale UDP services length %d, got %v", len(expectedStaleUDPServices), staleUDPServices.List())
+	if len(result.staleServices) != len(expectedStaleUDPServices) {
+		t.Errorf("expected stale UDP services length %d, got %v", len(expectedStaleUDPServices), result.staleServices.List())
 	}
 	for _, ip := range expectedStaleUDPServices {
-		if !staleUDPServices.Has(ip) {
+		if !result.staleServices.Has(ip) {
 			t.Errorf("expected stale UDP service service %s", ip)
 		}
 	}
@@ -822,7 +896,8 @@ func TestBuildServiceMapAddRemove(t *testing.T) {
 func TestBuildServiceMapServiceHeadless(t *testing.T) {
 	ipt := iptablestest.NewFake()
 	ipvs := ipvstest.NewFake()
-	fp := NewFakeProxier(ipt, ipvs, nil)
+	ipset := ipsettest.NewFake()
+	fp := NewFakeProxier(ipt, ipvs, ipset, nil)
 
 	makeServiceMap(fp,
 		makeTestService("somewhere-else", "headless", func(svc *api.Service) {
@@ -830,28 +905,33 @@ func TestBuildServiceMapServiceHeadless(t *testing.T) {
 			svc.Spec.ClusterIP = api.ClusterIPNone
 			svc.Spec.Ports = addTestPort(svc.Spec.Ports, "rpc", "UDP", 1234, 0, 0)
 		}),
+		makeTestService("somewhere-else", "headless-without-port", func(svc *api.Service) {
+			svc.Spec.Type = api.ServiceTypeClusterIP
+			svc.Spec.ClusterIP = api.ClusterIPNone
+		}),
 	)
 
 	// Headless service should be ignored
-	_, hcPorts, staleUDPServices := updateServiceMap(fp.serviceMap, &fp.serviceChanges)
+	result := updateServiceMap(fp.serviceMap, &fp.serviceChanges)
 	if len(fp.serviceMap) != 0 {
 		t.Errorf("expected service map length 0, got %d", len(fp.serviceMap))
 	}
 
 	// No proxied services, so no healthchecks
-	if len(hcPorts) != 0 {
-		t.Errorf("expected healthcheck ports length 0, got %d", len(hcPorts))
+	if len(result.hcServices) != 0 {
+		t.Errorf("expected healthcheck ports length 0, got %d", len(result.hcServices))
 	}
 
-	if len(staleUDPServices) != 0 {
-		t.Errorf("expected stale UDP services length 0, got %d", len(staleUDPServices))
+	if len(result.staleServices) != 0 {
+		t.Errorf("expected stale UDP services length 0, got %d", len(result.staleServices))
 	}
 }
 
 func TestBuildServiceMapServiceTypeExternalName(t *testing.T) {
 	ipt := iptablestest.NewFake()
 	ipvs := ipvstest.NewFake()
-	fp := NewFakeProxier(ipt, ipvs, nil)
+	ipset := ipsettest.NewFake()
+	fp := NewFakeProxier(ipt, ipvs, ipset, nil)
 
 	makeServiceMap(fp,
 		makeTestService("somewhere-else", "external-name", func(svc *api.Service) {
@@ -862,23 +942,24 @@ func TestBuildServiceMapServiceTypeExternalName(t *testing.T) {
 		}),
 	)
 
-	_, hcPorts, staleUDPServices := updateServiceMap(fp.serviceMap, &fp.serviceChanges)
+	result := updateServiceMap(fp.serviceMap, &fp.serviceChanges)
 	if len(fp.serviceMap) != 0 {
 		t.Errorf("expected service map length 0, got %v", fp.serviceMap)
 	}
 	// No proxied services, so no healthchecks
-	if len(hcPorts) != 0 {
-		t.Errorf("expected healthcheck ports length 0, got %v", hcPorts)
+	if len(result.hcServices) != 0 {
+		t.Errorf("expected healthcheck ports length 0, got %v", result.hcServices)
 	}
-	if len(staleUDPServices) != 0 {
-		t.Errorf("expected stale UDP services length 0, got %v", staleUDPServices)
+	if len(result.staleServices) != 0 {
+		t.Errorf("expected stale UDP services length 0, got %v", result.staleServices)
 	}
 }
 
 func TestBuildServiceMapServiceUpdate(t *testing.T) {
 	ipt := iptablestest.NewFake()
 	ipvs := ipvstest.NewFake()
-	fp := NewFakeProxier(ipt, ipvs, nil)
+	ipset := ipsettest.NewFake()
+	fp := NewFakeProxier(ipt, ipvs, ipset, nil)
 
 	servicev1 := makeTestService("somewhere", "some-service", func(svc *api.Service) {
 		svc.Spec.Type = api.ServiceTypeClusterIP
@@ -903,77 +984,66 @@ func TestBuildServiceMapServiceUpdate(t *testing.T) {
 
 	fp.OnServiceAdd(servicev1)
 
-	syncRequired, hcPorts, staleUDPServices := updateServiceMap(fp.serviceMap, &fp.serviceChanges)
-	if !syncRequired {
-		t.Errorf("expected sync required, got %t", syncRequired)
-	}
+	result := updateServiceMap(fp.serviceMap, &fp.serviceChanges)
 	if len(fp.serviceMap) != 2 {
 		t.Errorf("expected service map length 2, got %v", fp.serviceMap)
 	}
-	if len(hcPorts) != 0 {
-		t.Errorf("expected healthcheck ports length 0, got %v", hcPorts)
+	if len(result.hcServices) != 0 {
+		t.Errorf("expected healthcheck ports length 0, got %v", result.hcServices)
 	}
-	if len(staleUDPServices) != 0 {
+	if len(result.staleServices) != 0 {
 		// Services only added, so nothing stale yet
-		t.Errorf("expected stale UDP services length 0, got %d", len(staleUDPServices))
+		t.Errorf("expected stale UDP services length 0, got %d", len(result.staleServices))
 	}
 
 	// Change service to load-balancer
 	fp.OnServiceUpdate(servicev1, servicev2)
-	syncRequired, hcPorts, staleUDPServices = updateServiceMap(fp.serviceMap, &fp.serviceChanges)
-	if !syncRequired {
-		t.Errorf("expected sync required, got %t", syncRequired)
-	}
+	result = updateServiceMap(fp.serviceMap, &fp.serviceChanges)
 	if len(fp.serviceMap) != 2 {
 		t.Errorf("expected service map length 2, got %v", fp.serviceMap)
 	}
-	if len(hcPorts) != 1 {
-		t.Errorf("expected healthcheck ports length 1, got %v", hcPorts)
+	if len(result.hcServices) != 1 {
+		t.Errorf("expected healthcheck ports length 1, got %v", result.hcServices)
 	}
-	if len(staleUDPServices) != 0 {
-		t.Errorf("expected stale UDP services length 0, got %v", staleUDPServices.List())
+	if len(result.staleServices) != 0 {
+		t.Errorf("expected stale UDP services length 0, got %v", result.staleServices.List())
 	}
 
 	// No change; make sure the service map stays the same and there are
 	// no health-check changes
 	fp.OnServiceUpdate(servicev2, servicev2)
-	syncRequired, hcPorts, staleUDPServices = updateServiceMap(fp.serviceMap, &fp.serviceChanges)
-	if syncRequired {
-		t.Errorf("not expected sync required, got %t", syncRequired)
-	}
+	result = updateServiceMap(fp.serviceMap, &fp.serviceChanges)
 	if len(fp.serviceMap) != 2 {
 		t.Errorf("expected service map length 2, got %v", fp.serviceMap)
 	}
-	if len(hcPorts) != 1 {
-		t.Errorf("expected healthcheck ports length 1, got %v", hcPorts)
+	if len(result.hcServices) != 1 {
+		t.Errorf("expected healthcheck ports length 1, got %v", result.hcServices)
 	}
-	if len(staleUDPServices) != 0 {
-		t.Errorf("expected stale UDP services length 0, got %v", staleUDPServices.List())
+	if len(result.staleServices) != 0 {
+		t.Errorf("expected stale UDP services length 0, got %v", result.staleServices.List())
 	}
 
 	// And back to ClusterIP
 	fp.OnServiceUpdate(servicev2, servicev1)
-	syncRequired, hcPorts, staleUDPServices = updateServiceMap(fp.serviceMap, &fp.serviceChanges)
-	if !syncRequired {
-		t.Errorf("expected sync required, got %t", syncRequired)
-	}
+	result = updateServiceMap(fp.serviceMap, &fp.serviceChanges)
 	if len(fp.serviceMap) != 2 {
 		t.Errorf("expected service map length 2, got %v", fp.serviceMap)
 	}
-	if len(hcPorts) != 0 {
-		t.Errorf("expected healthcheck ports length 0, got %v", hcPorts)
+	if len(result.hcServices) != 0 {
+		t.Errorf("expected healthcheck ports length 0, got %v", result.hcServices)
 	}
-	if len(staleUDPServices) != 0 {
+	if len(result.staleServices) != 0 {
 		// Services only added, so nothing stale yet
-		t.Errorf("expected stale UDP services length 0, got %d", len(staleUDPServices))
+		t.Errorf("expected stale UDP services length 0, got %d", len(result.staleServices))
 	}
 }
 
 func TestSessionAffinity(t *testing.T) {
 	ipt := iptablestest.NewFake()
 	ipvs := ipvstest.NewFake()
+	ipset := ipsettest.NewFake()
 	nodeIP := net.ParseIP("100.101.102.103")
-	fp := NewFakeProxier(ipt, ipvs, []net.IP{nodeIP})
+	fp := NewFakeProxier(ipt, ipvs, ipset, []net.IP{nodeIP})
 	svcIP := "10.20.30.41"
 	svcPort := 80
 	svcNodePort := 3001
@@ -1005,7 +1075,7 @@ func TestSessionAffinity(t *testing.T) {
 	)
 	makeEndpointsMap(fp)
 
-	fp.syncProxyRules(syncReasonForce)
+	fp.syncProxyRules()
 
 	// check ipvs service and destinations
 	services, err := ipvs.GetVirtualServers()
@@ -1027,8 +1097,11 @@ func makeServicePortName(ns, name, port string) proxy.ServicePortName {
 }
 
 func Test_updateEndpointsMap(t *testing.T) {
-	var nodeName = "host"
+	var nodeName = testHostname
 
+	emptyEndpoint := func(ept *api.Endpoints) {
+		ept.Subsets = []api.EndpointSubset{}
+	}
 	unnamedPort := func(ept *api.Endpoints) {
 		ept.Subsets = []api.EndpointSubset{{
 			Addresses: []api.EndpointAddress{{
@@ -1333,18 +1406,20 @@ func Test_updateEndpointsMap(t *testing.T) {
 		// previousEndpoints and currentEndpoints are used to call appropriate
 		// handlers OnEndpoints* (based on whether corresponding values are nil
 		// or non-nil) and must be of equal length.
-		previousEndpoints    []*api.Endpoints
-		currentEndpoints     []*api.Endpoints
-		oldEndpoints         map[proxy.ServicePortName][]*endpointsInfo
-		expectedResult       map[proxy.ServicePortName][]*endpointsInfo
-		expectedStale        []endpointServicePair
-		expectedHealthchecks map[types.NamespacedName]int
+		previousEndpoints         []*api.Endpoints
+		currentEndpoints          []*api.Endpoints
+		oldEndpoints              map[proxy.ServicePortName][]*endpointsInfo
+		expectedResult            map[proxy.ServicePortName][]*endpointsInfo
+		expectedStaleEndpoints    []endpointServicePair
+		expectedStaleServiceNames map[proxy.ServicePortName]bool
+		expectedHealthchecks      map[types.NamespacedName]int
 	}{{
 		// Case[0]: nothing
-		oldEndpoints:         map[proxy.ServicePortName][]*endpointsInfo{},
-		expectedResult:       map[proxy.ServicePortName][]*endpointsInfo{},
-		expectedStale:        []endpointServicePair{},
-		expectedHealthchecks: map[types.NamespacedName]int{},
+		oldEndpoints:              map[proxy.ServicePortName][]*endpointsInfo{},
+		expectedResult:            map[proxy.ServicePortName][]*endpointsInfo{},
+		expectedStaleEndpoints:    []endpointServicePair{},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{},
+		expectedHealthchecks:      map[types.NamespacedName]int{},
 	}, {
 		// Case[1]: no change, unnamed port
 		previousEndpoints: []*api.Endpoints{
@@ -1355,16 +1430,17 @@ func Test_updateEndpointsMap(t *testing.T) {
 		},
 		oldEndpoints: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", ""): {
-				{"1.1.1.1:11", false},
+				{endpoint: "1.1.1.1:11", isLocal: false},
 			},
 		},
 		expectedResult: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", ""): {
-				{"1.1.1.1:11", false},
+				{endpoint: "1.1.1.1:11", isLocal: false},
 			},
 		},
-		expectedStale:        []endpointServicePair{},
-		expectedHealthchecks: map[types.NamespacedName]int{},
+		expectedStaleEndpoints:    []endpointServicePair{},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{},
+		expectedHealthchecks:      map[types.NamespacedName]int{},
 	}, {
 		// Case[2]: no change, named port, local
 		previousEndpoints: []*api.Endpoints{
@@ -1375,15 +1451,16 @@ func Test_updateEndpointsMap(t *testing.T) {
 		},
 		oldEndpoints: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", true},
+				{endpoint: "1.1.1.1:11", isLocal: true},
 			},
 		},
 		expectedResult: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", true},
+				{endpoint: "1.1.1.1:11", isLocal: true},
 			},
 		},
-		expectedStale: []endpointServicePair{},
+		expectedStaleEndpoints:    []endpointServicePair{},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{},
 		expectedHealthchecks: map[types.NamespacedName]int{
 			makeNSN("ns1", "ep1"): 1,
 		},
@@ -1397,22 +1474,23 @@ func Test_updateEndpointsMap(t *testing.T) {
 		},
 		oldEndpoints: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
+				{endpoint: "1.1.1.1:11", isLocal: false},
 			},
 			makeServicePortName("ns1", "ep1", "p12"): {
-				{"1.1.1.2:12", false},
+				{endpoint: "1.1.1.2:12", isLocal: false},
 			},
 		},
 		expectedResult: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
+				{endpoint: "1.1.1.1:11", isLocal: false},
 			},
 			makeServicePortName("ns1", "ep1", "p12"): {
-				{"1.1.1.2:12", false},
+				{endpoint: "1.1.1.2:12", isLocal: false},
 			},
 		},
-		expectedStale:        []endpointServicePair{},
-		expectedHealthchecks: map[types.NamespacedName]int{},
+		expectedStaleEndpoints:    []endpointServicePair{},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{},
+		expectedHealthchecks:      map[types.NamespacedName]int{},
 	}, {
 		// Case[4]: no change, multiple subsets, multiple ports, local
 		previousEndpoints: []*api.Endpoints{
@@ -1423,32 +1501,33 @@ func Test_updateEndpointsMap(t *testing.T) {
 		},
 		oldEndpoints: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", true},
+				{endpoint: "1.1.1.1:11", isLocal: true},
 			},
 			makeServicePortName("ns1", "ep1", "p12"): {
-				{"1.1.1.1:12", true},
+				{endpoint: "1.1.1.1:12", isLocal: true},
 			},
 			makeServicePortName("ns1", "ep1", "p13"): {
-				{"1.1.1.3:13", false},
+				{endpoint: "1.1.1.3:13", isLocal: false},
 			},
 		},
 		expectedResult: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", true},
+				{endpoint: "1.1.1.1:11", isLocal: true},
 			},
 			makeServicePortName("ns1", "ep1", "p12"): {
-				{"1.1.1.1:12", true},
+				{endpoint: "1.1.1.1:12", isLocal: true},
 			},
 			makeServicePortName("ns1", "ep1", "p13"): {
-				{"1.1.1.3:13", false},
+				{endpoint: "1.1.1.3:13", isLocal: false},
 			},
 		},
-		expectedStale: []endpointServicePair{},
+		expectedStaleEndpoints:    []endpointServicePair{},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{},
 		expectedHealthchecks: map[types.NamespacedName]int{
 			makeNSN("ns1", "ep1"): 1,
 		},
 	}, {
-		// Case[5]: no change, multiple Endpoints, subsets, IPs, and ports
+		// Case[5]: no change, multiple endpoints, subsets, IPs, and ports
 		previousEndpoints: []*api.Endpoints{
 			makeTestEndpoints("ns1", "ep1", multipleSubsetsIPsPorts1),
 			makeTestEndpoints("ns2", "ep2", multipleSubsetsIPsPorts2),
@@ -1459,57 +1538,58 @@ func Test_updateEndpointsMap(t *testing.T) {
 		},
 		oldEndpoints: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
-				{"1.1.1.2:11", true},
+				{endpoint: "1.1.1.1:11", isLocal: false},
+				{endpoint: "1.1.1.2:11", isLocal: true},
 			},
 			makeServicePortName("ns1", "ep1", "p12"): {
-				{"1.1.1.1:12", false},
-				{"1.1.1.2:12", true},
+				{endpoint: "1.1.1.1:12", isLocal: false},
+				{endpoint: "1.1.1.2:12", isLocal: true},
 			},
 			makeServicePortName("ns1", "ep1", "p13"): {
-				{"1.1.1.3:13", false},
-				{"1.1.1.4:13", true},
+				{endpoint: "1.1.1.3:13", isLocal: false},
+				{endpoint: "1.1.1.4:13", isLocal: true},
 			},
 			makeServicePortName("ns1", "ep1", "p14"): {
-				{"1.1.1.3:14", false},
-				{"1.1.1.4:14", true},
+				{endpoint: "1.1.1.3:14", isLocal: false},
+				{endpoint: "1.1.1.4:14", isLocal: true},
 			},
 			makeServicePortName("ns2", "ep2", "p21"): {
-				{"2.2.2.1:21", false},
-				{"2.2.2.2:21", true},
+				{endpoint: "2.2.2.1:21", isLocal: false},
+				{endpoint: "2.2.2.2:21", isLocal: true},
 			},
 			makeServicePortName("ns2", "ep2", "p22"): {
-				{"2.2.2.1:22", false},
-				{"2.2.2.2:22", true},
+				{endpoint: "2.2.2.1:22", isLocal: false},
+				{endpoint: "2.2.2.2:22", isLocal: true},
 			},
 		},
 		expectedResult: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
-				{"1.1.1.2:11", true},
+				{endpoint: "1.1.1.1:11", isLocal: false},
+				{endpoint: "1.1.1.2:11", isLocal: true},
 			},
 			makeServicePortName("ns1", "ep1", "p12"): {
-				{"1.1.1.1:12", false},
-				{"1.1.1.2:12", true},
+				{endpoint: "1.1.1.1:12", isLocal: false},
+				{endpoint: "1.1.1.2:12", isLocal: true},
 			},
 			makeServicePortName("ns1", "ep1", "p13"): {
-				{"1.1.1.3:13", false},
-				{"1.1.1.4:13", true},
+				{endpoint: "1.1.1.3:13", isLocal: false},
+				{endpoint: "1.1.1.4:13", isLocal: true},
 			},
 			makeServicePortName("ns1", "ep1", "p14"): {
-				{"1.1.1.3:14", false},
-				{"1.1.1.4:14", true},
+				{endpoint: "1.1.1.3:14", isLocal: false},
+				{endpoint: "1.1.1.4:14", isLocal: true},
 			},
 			makeServicePortName("ns2", "ep2", "p21"): {
-				{"2.2.2.1:21", false},
-				{"2.2.2.2:21", true},
+				{endpoint: "2.2.2.1:21", isLocal: false},
+				{endpoint: "2.2.2.2:21", isLocal: true},
 			},
 			makeServicePortName("ns2", "ep2", "p22"): {
-				{"2.2.2.1:22", false},
-				{"2.2.2.2:22", true},
+				{endpoint: "2.2.2.1:22", isLocal: false},
+				{endpoint: "2.2.2.2:22", isLocal: true},
 			},
 		},
-		expectedStale: []endpointServicePair{},
+		expectedStaleEndpoints:    []endpointServicePair{},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{},
 		expectedHealthchecks: map[types.NamespacedName]int{
 			makeNSN("ns1", "ep1"): 2,
 			makeNSN("ns2", "ep2"): 1,
@@ -1525,10 +1605,13 @@ func Test_updateEndpointsMap(t *testing.T) {
 		oldEndpoints: map[proxy.ServicePortName][]*endpointsInfo{},
 		expectedResult: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", ""): {
-				{"1.1.1.1:11", true},
+				{endpoint: "1.1.1.1:11", isLocal: true},
 			},
 		},
-		expectedStale: []endpointServicePair{},
+		expectedStaleEndpoints: []endpointServicePair{},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{
+			makeServicePortName("ns1", "ep1", ""): true,
+		},
 		expectedHealthchecks: map[types.NamespacedName]int{
 			makeNSN("ns1", "ep1"): 1,
 		},
@@ -1542,15 +1625,16 @@ func Test_updateEndpointsMap(t *testing.T) {
 		},
 		oldEndpoints: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", ""): {
-				{"1.1.1.1:11", true},
+				{endpoint: "1.1.1.1:11", isLocal: true},
 			},
 		},
 		expectedResult: map[proxy.ServicePortName][]*endpointsInfo{},
-		expectedStale: []endpointServicePair{{
+		expectedStaleEndpoints: []endpointServicePair{{
 			endpoint:        "1.1.1.1:11",
 			servicePortName: makeServicePortName("ns1", "ep1", ""),
 		}},
-		expectedHealthchecks: map[types.NamespacedName]int{},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{},
+		expectedHealthchecks:      map[types.NamespacedName]int{},
 	}, {
 		// Case[8]: add an IP and port
 		previousEndpoints: []*api.Endpoints{
@@ -1561,20 +1645,23 @@ func Test_updateEndpointsMap(t *testing.T) {
 		},
 		oldEndpoints: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
+				{endpoint: "1.1.1.1:11", isLocal: false},
 			},
 		},
 		expectedResult: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
-				{"1.1.1.2:11", true},
+				{endpoint: "1.1.1.1:11", isLocal: false},
+				{endpoint: "1.1.1.2:11", isLocal: true},
 			},
 			makeServicePortName("ns1", "ep1", "p12"): {
-				{"1.1.1.1:12", false},
-				{"1.1.1.2:12", true},
+				{endpoint: "1.1.1.1:12", isLocal: false},
+				{endpoint: "1.1.1.2:12", isLocal: true},
 			},
 		},
-		expectedStale: []endpointServicePair{},
+		expectedStaleEndpoints: []endpointServicePair{},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{
+			makeServicePortName("ns1", "ep1", "p12"): true,
+		},
 		expectedHealthchecks: map[types.NamespacedName]int{
 			makeNSN("ns1", "ep1"): 1,
 		},
@@ -1588,20 +1675,20 @@ func Test_updateEndpointsMap(t *testing.T) {
 		},
 		oldEndpoints: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
-				{"1.1.1.2:11", true},
+				{endpoint: "1.1.1.1:11", isLocal: false},
+				{endpoint: "1.1.1.2:11", isLocal: true},
 			},
 			makeServicePortName("ns1", "ep1", "p12"): {
-				{"1.1.1.1:12", false},
-				{"1.1.1.2:12", true},
+				{endpoint: "1.1.1.1:12", isLocal: false},
+				{endpoint: "1.1.1.2:12", isLocal: true},
 			},
 		},
 		expectedResult: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
+				{endpoint: "1.1.1.1:11", isLocal: false},
 			},
 		},
-		expectedStale: []endpointServicePair{{
+		expectedStaleEndpoints: []endpointServicePair{{
 			endpoint:        "1.1.1.2:11",
 			servicePortName: makeServicePortName("ns1", "ep1", "p11"),
 		}, {
@@ -1611,7 +1698,8 @@ func Test_updateEndpointsMap(t *testing.T) {
 			endpoint:        "1.1.1.2:12",
 			servicePortName: makeServicePortName("ns1", "ep1", "p12"),
 		}},
-		expectedHealthchecks: map[types.NamespacedName]int{},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{},
+		expectedHealthchecks:      map[types.NamespacedName]int{},
 	}, {
 		// Case[10]: add a subset
 		previousEndpoints: []*api.Endpoints{
@@ -1622,18 +1710,21 @@ func Test_updateEndpointsMap(t *testing.T) {
 		},
 		oldEndpoints: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
+				{endpoint: "1.1.1.1:11", isLocal: false},
 			},
 		},
 		expectedResult: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
+				{endpoint: "1.1.1.1:11", isLocal: false},
 			},
 			makeServicePortName("ns1", "ep1", "p12"): {
-				{"1.1.1.2:12", true},
+				{endpoint: "1.1.1.2:12", isLocal: true},
 			},
 		},
-		expectedStale: []endpointServicePair{},
+		expectedStaleEndpoints: []endpointServicePair{},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{
+			makeServicePortName("ns1", "ep1", "p12"): true,
+		},
 		expectedHealthchecks: map[types.NamespacedName]int{
 			makeNSN("ns1", "ep1"): 1,
 		},
@@ -1647,22 +1738,23 @@ func Test_updateEndpointsMap(t *testing.T) {
 		},
 		oldEndpoints: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
+				{endpoint: "1.1.1.1:11", isLocal: false},
 			},
 			makeServicePortName("ns1", "ep1", "p12"): {
-				{"1.1.1.2:12", false},
+				{endpoint: "1.1.1.2:12", isLocal: false},
 			},
 		},
 		expectedResult: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
+				{endpoint: "1.1.1.1:11", isLocal: false},
 			},
 		},
-		expectedStale: []endpointServicePair{{
+		expectedStaleEndpoints: []endpointServicePair{{
 			endpoint:        "1.1.1.2:12",
 			servicePortName: makeServicePortName("ns1", "ep1", "p12"),
 		}},
-		expectedHealthchecks: map[types.NamespacedName]int{},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{},
+		expectedHealthchecks:      map[types.NamespacedName]int{},
 	}, {
 		// Case[12]: rename a port
 		previousEndpoints: []*api.Endpoints{
@@ -1673,18 +1765,21 @@ func Test_updateEndpointsMap(t *testing.T) {
 		},
 		oldEndpoints: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
+				{endpoint: "1.1.1.1:11", isLocal: false},
 			},
 		},
 		expectedResult: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11-2"): {
-				{"1.1.1.1:11", false},
+				{endpoint: "1.1.1.1:11", isLocal: false},
 			},
 		},
-		expectedStale: []endpointServicePair{{
+		expectedStaleEndpoints: []endpointServicePair{{
 			endpoint:        "1.1.1.1:11",
 			servicePortName: makeServicePortName("ns1", "ep1", "p11"),
 		}},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{
+			makeServicePortName("ns1", "ep1", "p11-2"): true,
+		},
 		expectedHealthchecks: map[types.NamespacedName]int{},
 	}, {
 		// Case[13]: renumber a port
@@ -1696,19 +1791,20 @@ func Test_updateEndpointsMap(t *testing.T) {
 		},
 		oldEndpoints: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
+				{endpoint: "1.1.1.1:11", isLocal: false},
 			},
 		},
 		expectedResult: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:22", false},
+				{endpoint: "1.1.1.1:22", isLocal: false},
 			},
 		},
-		expectedStale: []endpointServicePair{{
+		expectedStaleEndpoints: []endpointServicePair{{
 			endpoint:        "1.1.1.1:11",
 			servicePortName: makeServicePortName("ns1", "ep1", "p11"),
 		}},
-		expectedHealthchecks: map[types.NamespacedName]int{},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{},
+		expectedHealthchecks:      map[types.NamespacedName]int{},
 	}, {
 		// Case[14]: complex add and remove
 		previousEndpoints: []*api.Endpoints{
@@ -1725,42 +1821,42 @@ func Test_updateEndpointsMap(t *testing.T) {
 		},
 		oldEndpoints: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
+				{endpoint: "1.1.1.1:11", isLocal: false},
 			},
 			makeServicePortName("ns2", "ep2", "p22"): {
-				{"2.2.2.2:22", true},
-				{"2.2.2.22:22", true},
+				{endpoint: "2.2.2.2:22", isLocal: true},
+				{endpoint: "2.2.2.22:22", isLocal: true},
 			},
 			makeServicePortName("ns2", "ep2", "p23"): {
-				{"2.2.2.3:23", true},
+				{endpoint: "2.2.2.3:23", isLocal: true},
 			},
 			makeServicePortName("ns4", "ep4", "p44"): {
-				{"4.4.4.4:44", true},
-				{"4.4.4.5:44", true},
+				{endpoint: "4.4.4.4:44", isLocal: true},
+				{endpoint: "4.4.4.5:44", isLocal: true},
 			},
 			makeServicePortName("ns4", "ep4", "p45"): {
-				{"4.4.4.6:45", true},
+				{endpoint: "4.4.4.6:45", isLocal: true},
 			},
 		},
 		expectedResult: map[proxy.ServicePortName][]*endpointsInfo{
 			makeServicePortName("ns1", "ep1", "p11"): {
-				{"1.1.1.1:11", false},
-				{"1.1.1.11:11", false},
+				{endpoint: "1.1.1.1:11", isLocal: false},
+				{endpoint: "1.1.1.11:11", isLocal: false},
 			},
 			makeServicePortName("ns1", "ep1", "p12"): {
-				{"1.1.1.2:12", false},
+				{endpoint: "1.1.1.2:12", isLocal: false},
 			},
 			makeServicePortName("ns1", "ep1", "p122"): {
-				{"1.1.1.2:122", false},
+				{endpoint: "1.1.1.2:122", isLocal: false},
 			},
 			makeServicePortName("ns3", "ep3", "p33"): {
-				{"3.3.3.3:33", false},
+				{endpoint: "3.3.3.3:33", isLocal: false},
 			},
 			makeServicePortName("ns4", "ep4", "p44"): {
-				{"4.4.4.4:44", true},
+				{endpoint: "4.4.4.4:44", isLocal: true},
 			},
 		},
-		expectedStale: []endpointServicePair{{
+		expectedStaleEndpoints: []endpointServicePair{{
 			endpoint:        "2.2.2.2:22",
 			servicePortName: makeServicePortName("ns2", "ep2", "p22"),
 		}, {
@@ -1776,18 +1872,44 @@ func Test_updateEndpointsMap(t *testing.T) {
 			endpoint:        "4.4.4.6:45",
 			servicePortName: makeServicePortName("ns4", "ep4", "p45"),
 		}},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{
+			makeServicePortName("ns1", "ep1", "p12"):  true,
+			makeServicePortName("ns1", "ep1", "p122"): true,
+			makeServicePortName("ns3", "ep3", "p33"):  true,
+		},
 		expectedHealthchecks: map[types.NamespacedName]int{
 			makeNSN("ns4", "ep4"): 1,
 		},
-	}}
+	}, {
+		// Case[15]: change from 0 endpoint address to 1 unnamed port
+		previousEndpoints: []*api.Endpoints{
+			makeTestEndpoints("ns1", "ep1", emptyEndpoint),
+		},
+		currentEndpoints: []*api.Endpoints{
+			makeTestEndpoints("ns1", "ep1", unnamedPort),
+		},
+		oldEndpoints: map[proxy.ServicePortName][]*endpointsInfo{},
+		expectedResult: map[proxy.ServicePortName][]*endpointsInfo{
+			makeServicePortName("ns1", "ep1", ""): {
+				{endpoint: "1.1.1.1:11", isLocal: false},
+			},
+		},
+		expectedStaleEndpoints: []endpointServicePair{},
+		expectedStaleServiceNames: map[proxy.ServicePortName]bool{
+			makeServicePortName("ns1", "ep1", ""): true,
+		},
+		expectedHealthchecks: map[types.NamespacedName]int{},
+	},
+	}
 
 	for tci, tc := range testCases {
 		ipt := iptablestest.NewFake()
 		ipvs := ipvstest.NewFake()
-		fp := NewFakeProxier(ipt, ipvs, nil)
+		ipset := ipsettest.NewFake()
+		fp := NewFakeProxier(ipt, ipvs, ipset, nil)
 		fp.hostname = nodeName
 
-		// First check that after adding all previous versions of Endpoints,
+		// First check that after adding all previous versions of endpoints,
 		// the fp.oldEndpoints is as we expect.
 		for i := range tc.previousEndpoints {
 			if tc.previousEndpoints[i] != nil {
@@ -1799,7 +1921,7 @@ func Test_updateEndpointsMap(t *testing.T) {
 
 		// Now let's call appropriate handlers to get to state we want to be.
 		if len(tc.previousEndpoints) != len(tc.currentEndpoints) {
-			t.Fatalf("[%d] different lengths of previous and current Endpoints", tci)
+			t.Fatalf("[%d] different lengths of previous and current endpoints", tci)
 			continue
 		}
 
@@ -1814,19 +1936,27 @@ func Test_updateEndpointsMap(t *testing.T) {
 				fp.OnEndpointsUpdate(prev, curr)
 			}
 		}
-		_, hcEndpoints, stale := updateEndpointsMap(fp.endpointsMap, &fp.endpointsChanges, fp.hostname)
+		result := updateEndpointsMap(fp.endpointsMap, &fp.endpointsChanges, fp.hostname)
 		newMap := fp.endpointsMap
 		compareEndpointsMaps(t, tci, newMap, tc.expectedResult)
-		if len(stale) != len(tc.expectedStale) {
-			t.Errorf("[%d] expected %d stale, got %d: %v", tci, len(tc.expectedStale), len(stale), stale)
+		if len(result.staleEndpoints) != len(tc.expectedStaleEndpoints) {
+			t.Errorf("[%d] expected %d staleEndpoints, got %d: %v", tci, len(tc.expectedStaleEndpoints), len(result.staleEndpoints), result.staleEndpoints)
 		}
-		for _, x := range tc.expectedStale {
-			if stale[x] != true {
-				t.Errorf("[%d] expected stale[%v], but didn't find it: %v", tci, x, stale)
+		for _, x := range tc.expectedStaleEndpoints {
+			if result.staleEndpoints[x] != true {
+				t.Errorf("[%d] expected staleEndpoints[%v], but didn't find it: %v", tci, x, result.staleEndpoints)
 			}
 		}
-		if !reflect.DeepEqual(hcEndpoints, tc.expectedHealthchecks) {
-			t.Errorf("[%d] expected healthchecks %v, got %v", tci, tc.expectedHealthchecks, hcEndpoints)
+		if len(result.staleServiceNames) != len(tc.expectedStaleServiceNames) {
+			t.Errorf("[%d] expected %d staleServiceNames, got %d: %v", tci, len(tc.expectedStaleServiceNames), len(result.staleServiceNames), result.staleServiceNames)
+		}
+		for svcName := range tc.expectedStaleServiceNames {
+			if result.staleServiceNames[svcName] != true {
+				t.Errorf("[%d] expected staleServiceNames[%v], but didn't find it: %v", tci, svcName, result.staleServiceNames)
+			}
+		}
+		if !reflect.DeepEqual(result.hcEndpoints, tc.expectedHealthchecks) {
+			t.Errorf("[%d] expected healthchecks %v, got %v", tci, tc.expectedHealthchecks, result.hcEndpoints)
 		}
 	}
 }
@@ -1914,6 +2044,14 @@ func Test_getLocalIPs(t *testing.T) {
 			{Namespace: "ns2", Name: "ep2"}: sets.NewString("2.2.2.2", "2.2.2.22", "2.2.2.3"),
 			{Namespace: "ns4", Name: "ep4"}: sets.NewString("4.4.4.4", "4.4.4.6"),
 		},
+	}, {
+		// Case[5]: named port local and bad endpoints IP
+		endpointsMap: map[proxy.ServicePortName][]*endpointsInfo{
+			makeServicePortName("ns1", "ep1", "p11"): {
+				{endpoint: "bad ip:11", isLocal: true},
+			},
+		},
+		expected: map[types.NamespacedName]sets.String{},
 	}}
 
 	for tci, tc := range testCases {
@@ -2108,77 +2246,5 @@ func Test_endpointsToEndpointsMap(t *testing.T) {
 				}
 			}
 		}
-	}
-}
-
-func Test_ensureDummyDevice(t *testing.T) {
-	fcmd := fakeexec.FakeCmd{
-		CombinedOutputScript: []fakeexec.FakeCombinedOutputAction{
-			// Success.
-			func() ([]byte, error) { return []byte{}, nil },
-			// Exists.
-			func() ([]byte, error) { return nil, &fakeexec.FakeExitError{Status: 2} },
-		},
-	}
-	fexec := fakeexec.FakeExec{
-		CommandScript: []fakeexec.FakeCommandAction{
-			func(cmd string, args ...string) exec.Cmd { return fakeexec.InitFakeCmd(&fcmd, cmd, args...) },
-			func(cmd string, args ...string) exec.Cmd { return fakeexec.InitFakeCmd(&fcmd, cmd, args...) },
-		},
-	}
-	// Success.
-	exists, err := ensureDummyDevice(&fexec, DefaultDummyDevice)
-	if err != nil {
-		t.Errorf("expected success, got %v", err)
-	}
-	if exists {
-		t.Errorf("expected exists = false")
-	}
-	if fcmd.CombinedOutputCalls != 1 {
-		t.Errorf("expected 1 CombinedOutput() calls, got %d", fcmd.CombinedOutputCalls)
-	}
-	if !sets.NewString(fcmd.CombinedOutputLog[0]...).HasAll("ip", "link", "add", "kube-ipvs0", "type", "dummy") {
-		t.Errorf("wrong CombinedOutput() log, got %s", fcmd.CombinedOutputLog[0])
-	}
-	// Exists.
-	exists, err = ensureDummyDevice(&fexec, DefaultDummyDevice)
-	if err != nil {
-		t.Errorf("expected success, got %v", err)
-	}
-	if !exists {
-		t.Errorf("expected exists = true")
-	}
-}
-
-func Test_deleteDummyDevice(t *testing.T) {
-	fcmd := fakeexec.FakeCmd{
-		CombinedOutputScript: []fakeexec.FakeCombinedOutputAction{
-			// Success.
-			func() ([]byte, error) { return []byte{}, nil },
-			// Failure.
-			func() ([]byte, error) { return nil, &fakeexec.FakeExitError{Status: 1} },
-		},
-	}
-	fexec := fakeexec.FakeExec{
-		CommandScript: []fakeexec.FakeCommandAction{
-			func(cmd string, args ...string) exec.Cmd { return fakeexec.InitFakeCmd(&fcmd, cmd, args...) },
-			func(cmd string, args ...string) exec.Cmd { return fakeexec.InitFakeCmd(&fcmd, cmd, args...) },
-		},
-	}
-	// Success.
-	err := deleteDummyDevice(&fexec, DefaultDummyDevice)
-	if err != nil {
-		t.Errorf("expected success, got %v", err)
-	}
-	if fcmd.CombinedOutputCalls != 1 {
-		t.Errorf("expected 1 CombinedOutput() calls, got %d", fcmd.CombinedOutputCalls)
-	}
-	if !sets.NewString(fcmd.CombinedOutputLog[0]...).HasAll("ip", "link", "del", "kube-ipvs0") {
-		t.Errorf("wrong CombinedOutput() log, got %s", fcmd.CombinedOutputLog[0])
-	}
-	// Failure.
-	err = deleteDummyDevice(&fexec, DefaultDummyDevice)
-	if err == nil {
-		t.Errorf("expected failure")
 	}
 }

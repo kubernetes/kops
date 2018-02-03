@@ -8,7 +8,9 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/domains"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/groups"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/regions"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/roles"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/services"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
 )
 
@@ -147,6 +149,60 @@ func CreateRole(t *testing.T, client *gophercloud.ServiceClient, c *roles.Create
 	return role, nil
 }
 
+// CreateRegion will create a region with a random name.
+// It takes an optional createOpts parameter since creating a region
+// has so many options. An error will be returned if the region was
+// unable to be created.
+func CreateRegion(t *testing.T, client *gophercloud.ServiceClient, c *regions.CreateOpts) (*regions.Region, error) {
+	id := tools.RandomString("ACPTTEST", 8)
+	t.Logf("Attempting to create region: %s", id)
+
+	var createOpts regions.CreateOpts
+	if c != nil {
+		createOpts = *c
+	} else {
+		createOpts = regions.CreateOpts{}
+	}
+
+	createOpts.ID = id
+
+	region, err := regions.Create(client, createOpts).Extract()
+	if err != nil {
+		return region, err
+	}
+
+	t.Logf("Successfully created region %s", id)
+
+	return region, nil
+}
+
+// CreateService will create a service with a random name.
+// It takes an optional createOpts parameter since creating a service
+// has so many options. An error will be returned if the service was
+// unable to be created.
+func CreateService(t *testing.T, client *gophercloud.ServiceClient, c *services.CreateOpts) (*services.Service, error) {
+	name := tools.RandomString("ACPTTEST", 8)
+	t.Logf("Attempting to create service: %s", name)
+
+	var createOpts services.CreateOpts
+	if c != nil {
+		createOpts = *c
+	} else {
+		createOpts = services.CreateOpts{}
+	}
+
+	createOpts.Extra["name"] = name
+
+	service, err := services.Create(client, createOpts).Extract()
+	if err != nil {
+		return service, err
+	}
+
+	t.Logf("Successfully created service %s", service.ID)
+
+	return service, nil
+}
+
 // DeleteProject will delete a project by ID. A fatal error will occur if
 // the project ID failed to be deleted. This works best when using it as
 // a deferred function.
@@ -205,6 +261,30 @@ func DeleteRole(t *testing.T, client *gophercloud.ServiceClient, roleID string) 
 	}
 
 	t.Logf("Deleted role: %s", roleID)
+}
+
+// DeleteRegion will delete a reg by ID. A fatal error will occur if
+// the region failed to be deleted. This works best when using it as
+// a deferred function.
+func DeleteRegion(t *testing.T, client *gophercloud.ServiceClient, regionID string) {
+	err := regions.Delete(client, regionID).ExtractErr()
+	if err != nil {
+		t.Fatalf("Unable to delete region %s: %v", regionID, err)
+	}
+
+	t.Logf("Deleted region: %s", regionID)
+}
+
+// DeleteService will delete a reg by ID. A fatal error will occur if
+// the service failed to be deleted. This works best when using it as
+// a deferred function.
+func DeleteService(t *testing.T, client *gophercloud.ServiceClient, serviceID string) {
+	err := services.Delete(client, serviceID).ExtractErr()
+	if err != nil {
+		t.Fatalf("Unable to delete service %s: %v", serviceID, err)
+	}
+
+	t.Logf("Deleted service: %s", serviceID)
 }
 
 // UnassignRole will delete a role assigned to a user/group on a project/domain

@@ -17,9 +17,10 @@ limitations under the License.
 package constants
 
 import (
-	"testing"
-
+	"fmt"
 	"k8s.io/kubernetes/pkg/util/version"
+	"strings"
+	"testing"
 )
 
 func TestGetStaticPodDirectory(t *testing.T) {
@@ -113,47 +114,57 @@ func TestAddSelfHostedPrefix(t *testing.T) {
 	}
 }
 
-func TestGetNodeBootstrapTokenAuthGroup(t *testing.T) {
+func TestEtcdSupportedVersion(t *testing.T) {
 	var tests = []struct {
-		k8sVersion, expected string
+		kubernetesVersion string
+		expectedVersion   *version.Version
+		expectedError     error
 	}{
 		{
-			k8sVersion: "v1.7.0",
-			expected:   "system:bootstrappers",
+			kubernetesVersion: "1.8.0",
+			expectedVersion:   version.MustParseSemantic("3.0.17"),
+			expectedError:     nil,
 		},
 		{
-			k8sVersion: "v1.7.8",
-			expected:   "system:bootstrappers",
+			kubernetesVersion: "1.80.0",
+			expectedVersion:   nil,
+			expectedError:     fmt.Errorf("Unsupported or unknown kubernetes version"),
 		},
 		{
-			k8sVersion: "v1.8.0-alpha.3",
-			expected:   "system:bootstrappers",
+			kubernetesVersion: "1.9.0",
+			expectedVersion:   version.MustParseSemantic("3.1.11"),
+			expectedError:     nil,
 		},
 		{
-			k8sVersion: "v1.8.0-beta.0",
-			expected:   "system:bootstrappers:kubeadm:default-node-token",
+			kubernetesVersion: "1.10.0",
+			expectedVersion:   version.MustParseSemantic("3.1.11"),
+			expectedError:     nil,
 		},
 		{
-			k8sVersion: "v1.8.0-rc.1",
-			expected:   "system:bootstrappers:kubeadm:default-node-token",
-		},
-		{
-			k8sVersion: "v1.8.0",
-			expected:   "system:bootstrappers:kubeadm:default-node-token",
-		},
-		{
-			k8sVersion: "v1.8.9",
-			expected:   "system:bootstrappers:kubeadm:default-node-token",
+			kubernetesVersion: "1.8.6",
+			expectedVersion:   version.MustParseSemantic("3.0.17"),
+			expectedError:     nil,
 		},
 	}
 	for _, rt := range tests {
-		actual := GetNodeBootstrapTokenAuthGroup(version.MustParseSemantic(rt.k8sVersion))
-		if actual != rt.expected {
-			t.Errorf(
-				"failed GetNodeBootstrapTokenAuthGroup:\n\texpected: %s\n\t  actual: %s",
-				rt.expected,
-				actual,
-			)
+		actualVersion, actualError := EtcdSupportedVersion(rt.kubernetesVersion)
+		if actualError != nil {
+			if actualError.Error() != rt.expectedError.Error() {
+				t.Errorf(
+					"failed EtcdSupportedVersion:\n\texpected error: %v\n\t  actual error: %v",
+					rt.expectedError,
+					actualError,
+				)
+			}
+
+		} else {
+			if strings.Compare(actualVersion.String(), rt.expectedVersion.String()) != 0 {
+				t.Errorf(
+					"failed EtcdSupportedVersion:\n\texpected version: %s\n\t  actual version: %s",
+					rt.expectedVersion.String(),
+					actualVersion.String(),
+				)
+			}
 		}
 	}
 }
