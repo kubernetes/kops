@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "doc.go",
         "fake_cluster.go",
-        "fake_federation.go",
         "fake_instancegroup.go",
         "fake_kops_client.go",
         "fake_sshcredential.go",

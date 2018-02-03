@@ -1,9 +1,0 @@
-kind: Federation
-apiVersion: kops/v1alpha1
-metadata:
-  name: federation
-spec:
-  dnsName: test.federation.com
-  controllers:
-  - control1.federation.com
-  - control2.federation.com
