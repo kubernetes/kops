@@ -220,11 +220,16 @@ func (c *VFSCAStore) loadCertificates(p vfs.Path) (*certificates, error) {
 	}
 
 	for _, f := range files {
+		name := f.Base()
+		if strings.HasSuffix(name, ".yaml") {
+			// ignore bundle
+			continue
+		}
+
 		cert, err := c.loadOneCertificate(f)
 		if err != nil {
 			return nil, fmt.Errorf("error loading certificate %q: %v", f, err)
 		}
-		name := f.Base()
 		name = strings.TrimSuffix(name, ".crt")
 		certs.certificates[name] = cert
 	}
@@ -530,11 +535,16 @@ func (c *VFSCAStore) loadPrivateKeys(p vfs.Path) (*privateKeys, error) {
 	}
 
 	for _, f := range files {
+		name := f.Base()
+		if strings.HasSuffix(name, ".yaml") {
+			// ignore bundle
+			continue
+		}
+
 		key, err := c.loadOnePrivateKey(f)
 		if err != nil {
 			return nil, fmt.Errorf("error loading private key %q: %v", f, err)
 		}
-		name := f.Base()
 		name = strings.TrimSuffix(name, ".key")
 		keys.keys[name] = key
 	}
