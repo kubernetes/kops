@@ -448,6 +448,13 @@ copydeps:
 	find vendor/k8s.io/kubernetes -type f -name "*.go" | xargs sed -i -e 's-k8s.io/kubernetes/staging/src/k8s.io/apimachinery-k8s.io/apimachinery-g'
 	bazel run //:gazelle -- -proto disable
 
+.PHONY: dep-ensure
+dep-ensure:
+	dep ensure -v
+	find vendor/ -name "BUILD" -delete
+	find vendor/ -name "BUILD.bazel" -delete
+	bazel run //:gazelle -- -proto disable
+
 .PHONY: gofmt
 gofmt:
 	gofmt -w -s channels/
