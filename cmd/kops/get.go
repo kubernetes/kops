@@ -104,7 +104,6 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// create subcommands
 	cmd.AddCommand(NewCmdGetCluster(f, out, options))
-	cmd.AddCommand(NewCmdGetFederations(f, out, options))
 	cmd.AddCommand(NewCmdGetInstanceGroups(f, out, options))
 	cmd.AddCommand(NewCmdGetSecrets(f, out, options))
 

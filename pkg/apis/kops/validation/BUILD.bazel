@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "aws.go",
         "cluster.go",
-        "federation.go",
         "gce.go",
         "helpers.go",
         "instancegroup.go",

@@ -109,12 +109,6 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 			}
 
 			switch v := o.(type) {
-			case *kopsapi.Federation:
-				_, err = clientset.FederationsFor(v).Update(v)
-				if err != nil {
-					return fmt.Errorf("error replacing federation: %v", err)
-				}
-
 			case *kopsapi.Cluster:
 				{
 					// Retrieve the current status of the cluster.  This will eventually be part of the cluster object.

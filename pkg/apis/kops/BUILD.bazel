@@ -9,7 +9,6 @@ go_library(
         "componentconfig.go",
         "doc.go",
         "dockerconfig.go",
-        "federation.go",
         "instancegroup.go",
         "keyset.go",
         "labels.go",

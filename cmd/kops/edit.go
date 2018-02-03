@@ -42,9 +42,6 @@ var (
 	# Edit a instance group configuration.
 	kops edit ig --name k8s-cluster.example.com \
 	  --state=s3://kops-state-1234 nodes
-
-	# Edit a cluster federation configuration.
-	kops edit federation k8s-cluster.example.com --state=s3://kops-state-1234
 	`))
 )
 
@@ -59,7 +56,6 @@ func NewCmdEdit(f *util.Factory, out io.Writer) *cobra.Command {
 	// create subcommands
 	cmd.AddCommand(NewCmdEditCluster(f, out))
 	cmd.AddCommand(NewCmdEditInstanceGroup(f, out))
-	cmd.AddCommand(NewCmdEditFederation(f, out))
 
 	return cmd
 }
