@@ -1,29 +1,8 @@
-# Gopkg.toml example
-#
-# Refer to https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md
-# for detailed Gopkg.toml documentation.
-#
-# required = ["github.com/user/thing/cmd/thing"]
-# ignored = ["github.com/user/project/pkgX", "bitbucket.org/user/project/pkgA/pkgY"]
-#
-# [[constraint]]
-#   name = "github.com/user/project"
-#   version = "1.0.0"
-#
-# [[constraint]]
-#   name = "github.com/user/project2"
-#   branch = "dev"
-#   source = "github.com/myfork/project2"
-#
-# [[override]]
-#   name = "github.com/x/y"
-#   version = "2.4.0"
-#
-# [prune]
-#   non-go = false
-#   go-tests = true
-#   unused-packages = true
 
+required = [
+  # Need for build
+  "github.com/jteeuwen/go-bindata/go-bindata",
+]
 
 [prune]
   go-tests = true
@@ -40,6 +19,11 @@
   name = "github.com/aws/aws-sdk-go"
   revision = "5177d71d80f123f6d82aaf762387e39b88c5ba23"
   #version = "v1.12.57"
+
+# We need this for our build
+[[override]]
+  name = "github.com/jteeuwen/go-bindata"
+  revision = "a0ff2567cfb70903282db057e799fd826784d41d"
 
 
 # These come from godeps.json in kubernetes
