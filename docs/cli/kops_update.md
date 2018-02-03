@@ -35,5 +35,4 @@ Creates or updates cloud resources to match cluster desired configuration.
 ### SEE ALSO
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops update cluster](kops_update_cluster.md)	 - Update a cluster.
-* [kops update federation](kops_update_federation.md)	 - Update federation cluster resources.
 

@@ -74,25 +74,6 @@ func (c *VFSClientset) InstanceGroupsFor(cluster *kops.Cluster) kopsinternalvers
 	return newInstanceGroupVFS(c, cluster)
 }
 
-func (c *VFSClientset) federations() kopsinternalversion.FederationInterface {
-	return newFederationVFS(c)
-}
-
-// FederationsFor implements the FederationsFor method of simple.Clientset for a VFS-backed state store
-func (c *VFSClientset) FederationsFor(federation *kops.Federation) kopsinternalversion.FederationInterface {
-	return c.federations()
-}
-
-// ListFederations implements the ListFederations method of simple.Clientset for a VFS-backed state store
-func (c *VFSClientset) ListFederations(options metav1.ListOptions) (*kops.FederationList, error) {
-	return c.federations().List(options)
-}
-
-// GetFederation implements the GetFederation method of simple.Clientset for a VFS-backed state store
-func (c *VFSClientset) GetFederation(name string) (*kops.Federation, error) {
-	return c.federations().Get(name, metav1.GetOptions{})
-}
-
 func (c *VFSClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error) {
 	configBase, err := registry.ConfigBase(cluster)
 	if err != nil {

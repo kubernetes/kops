@@ -9,7 +9,6 @@ go_library(
         "defaults.go",
         "doc.go",
         "dockerconfig.go",
-        "federation.go",
         "instancegroup.go",
         "keyset.go",
         "networking.go",
