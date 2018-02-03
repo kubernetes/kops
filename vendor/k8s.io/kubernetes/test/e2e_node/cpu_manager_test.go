@@ -19,12 +19,14 @@ package e2e_node
 import (
 	"fmt"
 	"os/exec"
+	"strconv"
+	"strings"
 	"time"
 
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/kubelet/apis/kubeletconfig"
 	"k8s.io/kubernetes/pkg/kubelet/cm/cpumanager"
 	"k8s.io/kubernetes/pkg/kubelet/cm/cpuset"
@@ -32,10 +34,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-)
-
-const (
-	cpuManagerFeatureGate = "CPUManager=true"
 )
 
 // Helper for makeCPUManagerPod().
@@ -115,11 +113,13 @@ func waitForContainerRemoval(ctnPartName string) {
 }
 
 func isHTEnabled() bool {
-	err := exec.Command("/bin/sh", "-c", "if [[ $(lscpu | grep \"Thread(s) per core:\" | cut -c24) != \"2\" ]]; then exit 1; fi").Run()
-	if err != nil {
-		return false
-	}
-	return true
+	outData, err := exec.Command("/bin/sh", "-c", "lscpu | grep \"Thread(s) per core:\" | cut -d \":\" -f 2").Output()
+	framework.ExpectNoError(err)
+
+	threadsPerCore, err := strconv.Atoi(strings.TrimSpace(string(outData)))
+	framework.ExpectNoError(err)
+
+	return threadsPerCore > 1
 }
 
 func getCPUSiblingList(cpuRes int64) string {
@@ -142,16 +142,10 @@ func enableCPUManagerInKubelet(f *framework.Framework) (oldCfg *kubeletconfig.Ku
 	// Enable CPU Manager in Kubelet with static policy.
 	oldCfg, err := getCurrentKubeletConfig()
 	framework.ExpectNoError(err)
-	clone, err := scheme.Scheme.DeepCopy(oldCfg)
-	framework.ExpectNoError(err)
-	newCfg := clone.(*kubeletconfig.KubeletConfiguration)
+	newCfg := oldCfg.DeepCopy()
 
 	// Enable CPU Manager using feature gate.
-	if newCfg.FeatureGates != "" {
-		newCfg.FeatureGates = fmt.Sprintf("%s,%s", cpuManagerFeatureGate, newCfg.FeatureGates)
-	} else {
-		newCfg.FeatureGates = cpuManagerFeatureGate
-	}
+	newCfg.FeatureGates[string(features.CPUManager)] = true
 
 	// Set the CPU Manager policy to static.
 	newCfg.CPUManagerPolicy = string(cpumanager.PolicyStatic)
@@ -162,6 +156,10 @@ func enableCPUManagerInKubelet(f *framework.Framework) (oldCfg *kubeletconfig.Ku
 	// The Kubelet panics if either kube-reserved or system-reserved is not set
 	// when CPU Manager is enabled. Set cpu in kube-reserved > 0 so that
 	// kubelet doesn't panic.
+	if newCfg.KubeReserved == nil {
+		newCfg.KubeReserved = map[string]string{}
+	}
+
 	if _, ok := newCfg.KubeReserved["cpu"]; !ok {
 		newCfg.KubeReserved["cpu"] = "200m"
 	}
@@ -189,14 +187,15 @@ func runCPUManagerTests(f *framework.Framework) {
 	var pod, pod1, pod2 *v1.Pod
 
 	It("should assign CPUs as expected based on the Pod spec", func() {
-		oldCfg = enableCPUManagerInKubelet(f)
-
 		cpuCap, cpuAlloc, cpuRes = getLocalNodeCPUDetails(f)
 
-		// Skip CPU Manager tests if the number of allocatable CPUs < 1.
-		if cpuAlloc < 1 {
-			framework.Skipf("Skipping CPU Manager tests since the number of allocatable CPUs < 1")
+		// Skip CPU Manager tests altogether if the CPU capacity < 2.
+		if cpuCap < 2 {
+			framework.Skipf("Skipping CPU Manager tests since the CPU capacity < 2")
 		}
+
+		// Enable CPU Manager in the kubelet.
+		oldCfg = enableCPUManagerInKubelet(f)
 
 		By("running a non-Gu pod")
 		ctnAttrs = []ctnAttribute{
@@ -292,9 +291,9 @@ func runCPUManagerTests(f *framework.Framework) {
 		waitForContainerRemoval(fmt.Sprintf("%s_%s", pod1.Spec.Containers[0].Name, pod1.Name))
 		waitForContainerRemoval(fmt.Sprintf("%s_%s", pod2.Spec.Containers[0].Name, pod2.Name))
 
-		// Skip rest of the tests if the number of allocatable CPUs < 2.
-		if cpuAlloc < 2 {
-			framework.Skipf("Skipping rest of the CPU Manager tests since the number of allocatable CPUs < 2")
+		// Skip rest of the tests if CPU capacity < 3.
+		if cpuCap < 3 {
+			framework.Skipf("Skipping rest of the CPU Manager tests since CPU capacity < 3")
 		}
 
 		By("running a Gu pod requesting multiple CPUs")
@@ -416,7 +415,7 @@ func runCPUManagerTests(f *framework.Framework) {
 }
 
 // Serial because the test updates kubelet configuration.
-var _ = framework.KubeDescribe("CPU Manager [Serial]", func() {
+var _ = SIGDescribe("CPU Manager [Feature:CPUManager]", func() {
 	f := framework.NewDefaultFramework("cpu-manager-test")
 
 	Context("With kubeconfig updated with static CPU Manager policy run the CPU Manager tests", func() {

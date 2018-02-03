@@ -30,7 +30,6 @@ go_library(
         "//vendor/k8s.io/client-go/kubernetes:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/controller:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/version:go_default_library",
         "//vendor/k8s.io/kubernetes/test/e2e/framework:go_default_library",
         "//vendor/k8s.io/kubernetes/test/e2e/generated:go_default_library",
         "//vendor/k8s.io/kubernetes/test/e2e/scheduling:go_default_library",

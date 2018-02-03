@@ -18,11 +18,10 @@ go_library(
         "//vendor/k8s.io/client-go/listers/extensions/v1beta1:go_default_library",
         "//vendor/k8s.io/client-go/tools/cache:go_default_library",
         "//vendor/k8s.io/client-go/tools/record:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/api:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/core:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/cloudprovider:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/controller:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/kubelet/util/format:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/node:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/version:go_default_library",
     ],
 )

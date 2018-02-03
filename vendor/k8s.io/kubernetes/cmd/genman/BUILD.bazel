@@ -14,6 +14,7 @@ go_library(
         "//vendor/k8s.io/kubernetes/cmd/kube-apiserver/app:go_default_library",
         "//vendor/k8s.io/kubernetes/cmd/kube-controller-manager/app:go_default_library",
         "//vendor/k8s.io/kubernetes/cmd/kube-proxy/app:go_default_library",
+        "//vendor/k8s.io/kubernetes/cmd/kubeadm/app/cmd:go_default_library",
         "//vendor/k8s.io/kubernetes/cmd/kubelet/app:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util:go_default_library",

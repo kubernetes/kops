@@ -28,10 +28,13 @@ import (
 	apiserveroptions "k8s.io/apiserver/pkg/server/options"
 	"k8s.io/apiserver/pkg/storage/storagebackend"
 	utilconfig "k8s.io/apiserver/pkg/util/flag"
+	auditwebhook "k8s.io/apiserver/plugin/pkg/audit/webhook"
 	restclient "k8s.io/client-go/rest"
-	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/legacyscheme"
+	kapi "k8s.io/kubernetes/pkg/apis/core"
 	kubeoptions "k8s.io/kubernetes/pkg/kubeapiserver/options"
 	kubeletclient "k8s.io/kubernetes/pkg/kubelet/client"
+	"k8s.io/kubernetes/pkg/master/reconcilers"
 )
 
 func TestAddFlags(t *testing.T) {
@@ -53,6 +56,12 @@ func TestAddFlags(t *testing.T) {
 		"--audit-policy-file=/policy",
 		"--audit-webhook-config-file=/webhook-config",
 		"--audit-webhook-mode=blocking",
+		"--audit-webhook-batch-buffer-size=42",
+		"--audit-webhook-batch-max-size=43",
+		"--audit-webhook-batch-max-wait=1s",
+		"--audit-webhook-batch-throttle-qps=43.5",
+		"--audit-webhook-batch-throttle-burst=44",
+		"--audit-webhook-batch-initial-backoff=2s",
 		"--authentication-token-webhook-cache-ttl=3m",
 		"--authentication-token-webhook-config-file=/token-webhook-config",
 		"--authorization-mode=AlwaysDeny",
@@ -69,6 +78,7 @@ func TestAddFlags(t *testing.T) {
 		"--enable-aggregator-routing=true",
 		"--enable-logs-handler=false",
 		"--enable-swagger-ui=true",
+		"--endpoint-reconciler-type=" + string(reconcilers.MasterCountReconcilerType),
 		"--etcd-quorum-read=false",
 		"--etcd-keyfile=/var/run/kubernetes/etcd.key",
 		"--etcd-certfile=/var/run/kubernetes/etcdce.crt",
@@ -88,9 +98,10 @@ func TestAddFlags(t *testing.T) {
 
 	// This is a snapshot of expected options parsed by args.
 	expected := &ServerRunOptions{
-		ServiceNodePortRange: DefaultServiceNodePortRange,
-		MasterCount:          5,
-		AllowPrivileged:      false,
+		ServiceNodePortRange:   kubeoptions.DefaultServiceNodePortRange,
+		MasterCount:            5,
+		EndpointReconcilerType: string(reconcilers.MasterCountReconcilerType),
+		AllowPrivileged:        false,
 		GenericServerRunOptions: &apiserveroptions.ServerRunOptions{
 			AdvertiseAddress:            net.ParseIP("192.168.10.10"),
 			CorsAllowedOriginList:       []string{"10.10.10.100", "10.10.10.200"},
@@ -100,9 +111,11 @@ func TestAddFlags(t *testing.T) {
 			MinRequestTimeout:           1800,
 		},
 		Admission: &apiserveroptions.AdmissionOptions{
-			PluginNames: []string{"AlwaysDeny"},
-			ConfigFile:  "/admission-control-config",
-			Plugins:     s.Admission.Plugins,
+			RecommendedPluginOrder: []string{"NamespaceLifecycle", "Initializers", "MutatingAdmissionWebhook", "ValidatingAdmissionWebhook"},
+			DefaultOffPlugins:      []string{"Initializers", "MutatingAdmissionWebhook", "ValidatingAdmissionWebhook"},
+			PluginNames:            []string{"AlwaysDeny"},
+			ConfigFile:             "/admission-control-config",
+			Plugins:                s.Admission.Plugins,
 		},
 		Etcd: &apiserveroptions.EtcdOptions{
 			StorageConfig: storagebackend.Config{
@@ -110,11 +123,11 @@ func TestAddFlags(t *testing.T) {
 				ServerList: nil,
 				Prefix:     "/registry",
 				DeserializationCacheSize: 0,
-				Copier:   kapi.Scheme,
-				Quorum:   false,
-				KeyFile:  "/var/run/kubernetes/etcd.key",
-				CAFile:   "/var/run/kubernetes/etcdca.crt",
-				CertFile: "/var/run/kubernetes/etcdce.crt",
+				Quorum:             false,
+				KeyFile:            "/var/run/kubernetes/etcd.key",
+				CAFile:             "/var/run/kubernetes/etcdca.crt",
+				CertFile:           "/var/run/kubernetes/etcdce.crt",
+				CompactionInterval: storagebackend.DefaultCompactInterval,
 			},
 			DefaultStorageMediaType: "application/vnd.kubernetes.protobuf",
 			DeleteCollectionWorkers: 1,
@@ -164,6 +177,14 @@ func TestAddFlags(t *testing.T) {
 			WebhookOptions: apiserveroptions.AuditWebhookOptions{
 				Mode:       "blocking",
 				ConfigFile: "/webhook-config",
+				BatchConfig: auditwebhook.BatchBackendConfig{
+					BufferSize:     42,
+					MaxBatchSize:   43,
+					MaxBatchWait:   1 * time.Second,
+					ThrottleQPS:    43.5,
+					ThrottleBurst:  44,
+					InitialBackoff: 2 * time.Second,
+				},
 			},
 			PolicyFile: "/policy",
 		},
@@ -209,8 +230,8 @@ func TestAddFlags(t *testing.T) {
 			CloudProvider:   "azure",
 		},
 		StorageSerialization: &kubeoptions.StorageSerializationOptions{
-			StorageVersions:        kapi.Registry.AllPreferredGroupVersions(),
-			DefaultStorageVersions: kapi.Registry.AllPreferredGroupVersions(),
+			StorageVersions:        legacyscheme.Registry.AllPreferredGroupVersions(),
+			DefaultStorageVersions: legacyscheme.Registry.AllPreferredGroupVersions(),
 		},
 		APIEnablement: &kubeoptions.APIEnablementOptions{
 			RuntimeConfig: utilconfig.ConfigurationMap{},

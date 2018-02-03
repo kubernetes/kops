@@ -1,0 +1,25 @@
+package: k8s.io/kube-deploy/imagebuilder
+import:
+- package: github.com/aws/aws-sdk-go
+  subpackages:
+  - aws
+  - aws/awserr
+  - aws/session
+  - service/ec2
+- package: github.com/ghodss/yaml
+- package: github.com/golang/glog
+- package: golang.org/x/crypto
+  subpackages:
+  - ssh
+- package: golang.org/x/net
+  subpackages:
+  - context
+- package: golang.org/x/oauth2
+  subpackages:
+  - google
+- package: google.golang.org/api
+  subpackages:
+  - compute/v1
+  - googleapi
+  - storage/v1
+- package: gopkg.in/yaml.v2

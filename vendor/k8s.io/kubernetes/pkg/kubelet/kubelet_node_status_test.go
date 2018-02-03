@@ -144,7 +144,7 @@ func TestNodeStatusWithCloudProviderNodeIP(t *testing.T) {
 		Spec:       v1.NodeSpec{},
 	}
 
-	// TODO : is it possible to mock kubelet.validateNodeIP() to avoid relying on the host interface addresses ?
+	// TODO : is it possible to mock validateNodeIP() to avoid relying on the host interface addresses ?
 	addrs, err := net.InterfaceAddrs()
 	assert.NoError(t, err)
 	for _, addr := range addrs {
@@ -1207,6 +1207,37 @@ func TestUpdateDefaultLabels(t *testing.T) {
 						kubeletapis.LabelOS:                "new-os",
 						kubeletapis.LabelArch:              "new-arch",
 					},
+				},
+			},
+			existingNode: &v1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						kubeletapis.LabelHostname:          "new-hostname",
+						kubeletapis.LabelZoneFailureDomain: "new-zone-failure-domain",
+						kubeletapis.LabelZoneRegion:        "new-zone-region",
+						kubeletapis.LabelInstanceType:      "new-instance-type",
+						kubeletapis.LabelOS:                "new-os",
+						kubeletapis.LabelArch:              "new-arch",
+						"please-persist":                   "foo",
+					},
+				},
+			},
+			needsUpdate: false,
+			finalLabels: map[string]string{
+				kubeletapis.LabelHostname:          "new-hostname",
+				kubeletapis.LabelZoneFailureDomain: "new-zone-failure-domain",
+				kubeletapis.LabelZoneRegion:        "new-zone-region",
+				kubeletapis.LabelInstanceType:      "new-instance-type",
+				kubeletapis.LabelOS:                "new-os",
+				kubeletapis.LabelArch:              "new-arch",
+				"please-persist":                   "foo",
+			},
+		},
+		{
+			name: "make sure existing labels do not get deleted when initial node has no opinion",
+			initialNode: &v1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{},
 				},
 			},
 			existingNode: &v1.Node{

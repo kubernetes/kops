@@ -10,6 +10,7 @@ go_library(
         "quantity_proto.go",
         "scale_int.go",
         "suffix.go",
+        "zz_generated.deepcopy.go",
     ],
     importpath = "k8s.io/apimachinery/pkg/api/resource",
     visibility = ["//visibility:public"],

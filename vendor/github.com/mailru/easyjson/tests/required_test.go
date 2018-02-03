@@ -1,8 +1,8 @@
 package tests
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
 func TestRequiredField(t *testing.T) {
@@ -17,11 +17,11 @@ func TestRequiredField(t *testing.T) {
 		err := v.UnmarshalJSON([]byte(tc.json))
 		if tc.errorMessage == "" {
 			if err != nil {
-				t.Errorf("%s. UnmarshallJSON didn`t expect error: %v", tc.json, err)
+				t.Errorf("%s. UnmarshalJSON didn`t expect error: %v", tc.json, err)
 			}
 		} else {
 			if fmt.Sprintf("%v", err) != tc.errorMessage {
-				t.Errorf("%s. UnmarshallJSON expected error: %v. got: %v", tc.json, tc.errorMessage, err)
+				t.Errorf("%s. UnmarshalJSON expected error: %v. got: %v", tc.json, tc.errorMessage, err)
 			}
 		}
 	}

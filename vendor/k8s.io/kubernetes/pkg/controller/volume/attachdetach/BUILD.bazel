@@ -28,6 +28,7 @@ go_library(
         "//vendor/k8s.io/kubernetes/pkg/util/io:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/volume:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/volume/util:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/volume/util/operationexecutor:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/volume/util/volumehelper:go_default_library",
     ],

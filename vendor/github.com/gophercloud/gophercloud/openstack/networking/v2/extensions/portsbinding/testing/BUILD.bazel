@@ -10,6 +10,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/common:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/ports/testing:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/testhelper:go_default_library",
     ],
 )
@@ -23,7 +24,6 @@ go_test(
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/common:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/portsbinding:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/ports:go_default_library",
-        "//vendor/github.com/gophercloud/gophercloud/pagination:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/testhelper:go_default_library",
     ],
 )

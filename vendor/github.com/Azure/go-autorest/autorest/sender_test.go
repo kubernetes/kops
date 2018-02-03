@@ -1,5 +1,19 @@
 package autorest
 
+// Copyright 2017 Microsoft Corporation
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 import (
 	"bytes"
 	"fmt"
@@ -764,4 +778,34 @@ func newAcceptedResponse() *http.Response {
 	resp := mocks.NewResponseWithStatus("202 Accepted", http.StatusAccepted)
 	mocks.SetAcceptedHeaders(resp)
 	return resp
+}
+
+func TestDelayWithRetryAfterWithSuccess(t *testing.T) {
+	after, retries := 5, 2
+	totalSecs := after * retries
+
+	client := mocks.NewSender()
+	resp := mocks.NewResponseWithStatus("429 Too many requests", http.StatusTooManyRequests)
+	mocks.SetResponseHeader(resp, "Retry-After", fmt.Sprintf("%v", after))
+	client.AppendAndRepeatResponse(resp, retries)
+	client.AppendResponse(mocks.NewResponseWithStatus("200 OK", http.StatusOK))
+
+	d := time.Second * time.Duration(totalSecs)
+	start := time.Now()
+	r, _ := SendWithSender(client, mocks.NewRequest(),
+		DoRetryForStatusCodes(5, time.Duration(time.Second), http.StatusTooManyRequests),
+	)
+
+	if time.Since(start) < d {
+		t.Fatal("autorest: DelayWithRetryAfter failed stopped too soon")
+	}
+
+	Respond(r,
+		ByDiscardingBody(),
+		ByClosing())
+
+	if client.Attempts() != 3 {
+		t.Fatalf("autorest: Sender#DelayWithRetryAfter -- Got: StatusCode %v in %v attempts; Want: StatusCode 200 OK in 2 attempts -- ",
+			r.Status, client.Attempts()-1)
+	}
 }
