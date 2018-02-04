@@ -72,6 +72,7 @@ k8s.io/kops/pkg/client/simple
 k8s.io/kops/pkg/client/simple/api
 k8s.io/kops/pkg/client/simple/vfsclientset
 k8s.io/kops/pkg/cloudinstances
+k8s.io/kops/pkg/commands
 k8s.io/kops/pkg/diff
 k8s.io/kops/pkg/dns
 k8s.io/kops/pkg/edit
