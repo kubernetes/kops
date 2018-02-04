@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"time"
 
+	apps "k8s.io/api/apps/v1beta2"
 	"k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
 	kubeadmapi "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm"
@@ -59,7 +59,7 @@ func NewDaemonSetPrepuller(client clientset.Interface, waiter apiclient.Waiter, 
 
 // CreateFunc creates a DaemonSet for making the image available on every relevant node
 func (d *DaemonSetPrepuller) CreateFunc(component string) error {
-	image := images.GetCoreImage(component, d.cfg.ImageRepository, d.cfg.KubernetesVersion, d.cfg.UnifiedControlPlaneImage)
+	image := images.GetCoreImage(component, d.cfg.GetControlPlaneImageRepository(), d.cfg.KubernetesVersion, d.cfg.UnifiedControlPlaneImage)
 	ds := buildPrePullDaemonSet(component, image)
 
 	// Create the DaemonSet in the API Server
@@ -146,14 +146,14 @@ func addPrepullPrefix(component string) string {
 }
 
 // buildPrePullDaemonSet builds the DaemonSet that ensures the control plane image is available
-func buildPrePullDaemonSet(component, image string) *extensions.DaemonSet {
+func buildPrePullDaemonSet(component, image string) *apps.DaemonSet {
 	var gracePeriodSecs int64
-	return &extensions.DaemonSet{
+	return &apps.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      addPrepullPrefix(component),
 			Namespace: metav1.NamespaceSystem,
 		},
-		Spec: extensions.DaemonSetSpec{
+		Spec: apps.DaemonSetSpec{
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{

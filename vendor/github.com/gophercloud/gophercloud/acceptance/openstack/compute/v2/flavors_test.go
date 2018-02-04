@@ -87,3 +87,30 @@ func TestFlavorCreateDelete(t *testing.T) {
 
 	tools.PrintResource(t, flavor)
 }
+
+func TestFlavorAccessesList(t *testing.T) {
+	client, err := clients.NewComputeV2Client()
+	if err != nil {
+		t.Fatalf("Unable to create a compute client: %v", err)
+	}
+
+	flavor, err := CreatePrivateFlavor(t, client)
+	if err != nil {
+		t.Fatalf("Unable to create flavor: %v", err)
+	}
+	defer DeleteFlavor(t, client, flavor)
+
+	allPages, err := flavors.ListAccesses(client, flavor.ID).AllPages()
+	if err != nil {
+		t.Fatalf("Unable to list flavor accesses: %v", err)
+	}
+
+	allAccesses, err := flavors.ExtractAccesses(allPages)
+	if err != nil {
+		t.Fatalf("Unable to extract accesses: %v", err)
+	}
+
+	for _, access := range allAccesses {
+		tools.PrintResource(t, access)
+	}
+}

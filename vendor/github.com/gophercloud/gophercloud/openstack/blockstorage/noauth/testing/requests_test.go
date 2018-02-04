@@ -15,7 +15,7 @@ func TestNoAuth(t *testing.T) {
 	}
 	provider, err := noauth.NewClient(ao)
 	th.AssertNoErr(t, err)
-	noauthClient, err := noauth.NewBlockStorageV2(provider, noauth.EndpointOpts{
+	noauthClient, err := noauth.NewBlockStorageNoAuth(provider, noauth.EndpointOpts{
 		CinderEndpoint: "http://cinder:8776/v2",
 	})
 	th.AssertNoErr(t, err)
@@ -25,14 +25,14 @@ func TestNoAuth(t *testing.T) {
 	ao2 := gophercloud.AuthOptions{}
 	provider2, err := noauth.NewClient(ao2)
 	th.AssertNoErr(t, err)
-	noauthClient2, err := noauth.NewBlockStorageV2(provider2, noauth.EndpointOpts{
+	noauthClient2, err := noauth.NewBlockStorageNoAuth(provider2, noauth.EndpointOpts{
 		CinderEndpoint: "http://cinder:8776/v2/",
 	})
 	th.AssertNoErr(t, err)
 	th.AssertEquals(t, naResult.Endpoint, noauthClient2.Endpoint)
 	th.AssertEquals(t, naResult.TokenID, noauthClient2.TokenID)
 
-	errTest, err := noauth.NewBlockStorageV2(provider2, noauth.EndpointOpts{})
+	errTest, err := noauth.NewBlockStorageNoAuth(provider2, noauth.EndpointOpts{})
 	_ = errTest
 	th.AssertEquals(t, errorResult, err.Error())
 }

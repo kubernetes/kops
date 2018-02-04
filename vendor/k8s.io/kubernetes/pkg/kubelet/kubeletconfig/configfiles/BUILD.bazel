@@ -20,7 +20,6 @@ go_test(
     embed = [":go_default_library"],
     importpath = "k8s.io/kubernetes/pkg/kubelet/kubeletconfig/configfiles",
     deps = [
-        "//vendor/github.com/davecgh/go-spew/spew:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/kubelet/apis/kubeletconfig:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/kubelet/apis/kubeletconfig/scheme:go_default_library",

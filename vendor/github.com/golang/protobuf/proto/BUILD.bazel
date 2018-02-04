@@ -39,6 +39,7 @@ go_test(
         "encode_test.go",
         "equal_test.go",
         "extensions_test.go",
+        "map_test.go",
         "proto3_test.go",
         "size_test.go",
         "text_parser_test.go",
@@ -51,5 +52,6 @@ go_test(
         "//vendor/github.com/golang/protobuf/proto/testdata:go_default_library",
         "//vendor/github.com/golang/protobuf/ptypes:go_default_library",
         "//vendor/github.com/golang/protobuf/ptypes/any:go_default_library",
+        "//vendor/golang.org/x/sync/errgroup:go_default_library",
     ],
 )

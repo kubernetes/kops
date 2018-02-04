@@ -1,0 +1,6 @@
+tools/upgrader/upgrader
+tools/repair/repair
+tools/machineset/machineset
+tools/machines-client/machines-client
+examples/machines-crd-installer/machines-crd-installer
+examples/machines-controller/machines-controller

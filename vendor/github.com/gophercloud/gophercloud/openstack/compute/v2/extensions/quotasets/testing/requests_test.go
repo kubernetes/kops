@@ -19,6 +19,15 @@ func TestGet(t *testing.T) {
 	th.CheckDeepEquals(t, &FirstQuotaSet, actual)
 }
 
+func TestGetDetail(t *testing.T) {
+	th.SetupHTTP()
+	defer th.TeardownHTTP()
+	HandleGetDetailSuccessfully(t)
+	actual, err := quotasets.GetDetail(client.ServiceClient(), FirstTenantID).Extract()
+	th.CheckDeepEquals(t, FirstQuotaDetailsSet, actual)
+	th.AssertNoErr(t, err)
+}
+
 func TestUpdate(t *testing.T) {
 	th.SetupHTTP()
 	defer th.TeardownHTTP()

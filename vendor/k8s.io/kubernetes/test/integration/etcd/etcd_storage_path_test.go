@@ -49,7 +49,8 @@ import (
 	"k8s.io/client-go/util/flowcontrol"
 	"k8s.io/kubernetes/cmd/kube-apiserver/app"
 	"k8s.io/kubernetes/cmd/kube-apiserver/app/options"
-	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/legacyscheme"
+	kapi "k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/test/integration/framework"
 
@@ -174,6 +175,34 @@ var etcdStorageData = map[schema.GroupVersionResource]struct {
 	},
 	// --
 
+	// k8s.io/kubernetes/pkg/apis/apps/v1
+	gvr("apps", "v1", "daemonsets"): {
+		stub:             `{"metadata": {"name": "ds6"}, "spec": {"selector": {"matchLabels": {"a": "b"}}, "template": {"metadata": {"labels": {"a": "b"}}, "spec": {"containers": [{"image": "fedora:latest", "name": "container6"}]}}}}`,
+		expectedEtcdPath: "/registry/daemonsets/etcdstoragepathtestnamespace/ds6",
+		expectedGVK:      gvkP("extensions", "v1beta1", "DaemonSet"),
+	},
+	gvr("apps", "v1", "deployments"): {
+		stub:             `{"metadata": {"name": "deployment4"}, "spec": {"selector": {"matchLabels": {"f": "z"}}, "template": {"metadata": {"labels": {"f": "z"}}, "spec": {"containers": [{"image": "fedora:latest", "name": "container6"}]}}}}`,
+		expectedEtcdPath: "/registry/deployments/etcdstoragepathtestnamespace/deployment4",
+		expectedGVK:      gvkP("extensions", "v1beta1", "Deployment"),
+	},
+	gvr("apps", "v1", "statefulsets"): {
+		stub:             `{"metadata": {"name": "ss3"}, "spec": {"selector": {"matchLabels": {"a": "b"}}, "template": {"metadata": {"labels": {"a": "b"}}}}}`,
+		expectedEtcdPath: "/registry/statefulsets/etcdstoragepathtestnamespace/ss3",
+		expectedGVK:      gvkP("apps", "v1beta1", "StatefulSet"),
+	},
+	gvr("apps", "v1", "replicasets"): {
+		stub:             `{"metadata": {"name": "rs3"}, "spec": {"selector": {"matchLabels": {"g": "h"}}, "template": {"metadata": {"labels": {"g": "h"}}, "spec": {"containers": [{"image": "fedora:latest", "name": "container4"}]}}}}`,
+		expectedEtcdPath: "/registry/replicasets/etcdstoragepathtestnamespace/rs3",
+		expectedGVK:      gvkP("extensions", "v1beta1", "ReplicaSet"),
+	},
+	gvr("apps", "v1", "controllerrevisions"): {
+		stub:             `{"metadata":{"name":"crs3"},"data":{"name":"abc","namespace":"default","creationTimestamp":null,"Spec":{"Replicas":0,"Selector":{"matchLabels":{"foo":"bar"}},"Template":{"creationTimestamp":null,"labels":{"foo":"bar"},"Spec":{"Volumes":null,"InitContainers":null,"Containers":null,"RestartPolicy":"Always","TerminationGracePeriodSeconds":null,"ActiveDeadlineSeconds":null,"DNSPolicy":"ClusterFirst","NodeSelector":null,"ServiceAccountName":"","AutomountServiceAccountToken":null,"NodeName":"","SecurityContext":null,"ImagePullSecrets":null,"Hostname":"","Subdomain":"","Affinity":null,"SchedulerName":"","Tolerations":null,"HostAliases":null}},"VolumeClaimTemplates":null,"ServiceName":""},"Status":{"ObservedGeneration":null,"Replicas":0}},"revision":0}`,
+		expectedEtcdPath: "/registry/controllerrevisions/etcdstoragepathtestnamespace/crs3",
+		expectedGVK:      gvkP("apps", "v1beta1", "ControllerRevision"),
+	},
+	// --
+
 	// k8s.io/kubernetes/pkg/apis/autoscaling/v1
 	gvr("autoscaling", "v1", "horizontalpodautoscalers"): {
 		stub:             `{"metadata": {"name": "hpa2"}, "spec": {"maxReplicas": 3, "scaleTargetRef": {"kind": "something", "name": "cross"}}}`,
@@ -218,6 +247,14 @@ var etcdStorageData = map[schema.GroupVersionResource]struct {
 	},
 	// --
 
+	// k8s.io/kubernetes/pkg/apis/events/v1beta1
+	gvr("events.k8s.io", "v1beta1", "events"): {
+		stub:             `{"metadata": {"name": "event2"}, "regarding": {"namespace": "etcdstoragepathtestnamespace"}, "note": "some data here", "eventTime": "2017-08-09T15:04:05.000000Z", "reportingInstance": "node-xyz", "reportingController": "k8s.io/my-controller", "action": "DidNothing", "reason": "Lazyness"}`,
+		expectedEtcdPath: "/registry/events/etcdstoragepathtestnamespace/event2",
+		expectedGVK:      gvkP("", "v1", "Event"),
+	},
+	// --
+
 	// k8s.io/kubernetes/pkg/apis/extensions/v1beta1
 	gvr("extensions", "v1beta1", "daemonsets"): {
 		stub:             `{"metadata": {"name": "ds1"}, "spec": {"selector": {"matchLabels": {"u": "t"}}, "template": {"metadata": {"labels": {"u": "t"}}, "spec": {"containers": [{"image": "fedora:latest", "name": "container5"}]}}}}`,
@@ -234,6 +271,7 @@ var etcdStorageData = map[schema.GroupVersionResource]struct {
 	gvr("extensions", "v1beta1", "networkpolicies"): {
 		stub:             `{"metadata": {"name": "np1"}, "spec": {"podSelector": {"matchLabels": {"e": "f"}}}}`,
 		expectedEtcdPath: "/registry/networkpolicies/etcdstoragepathtestnamespace/np1",
+		expectedGVK:      gvkP("networking.k8s.io", "v1", "NetworkPolicy"),
 	},
 	gvr("extensions", "v1beta1", "deployments"): {
 		stub:             `{"metadata": {"name": "deployment1"}, "spec": {"selector": {"matchLabels": {"f": "z"}}, "template": {"metadata": {"labels": {"f": "z"}}, "spec": {"containers": [{"image": "fedora:latest", "name": "container6"}]}}}}`,
@@ -249,7 +287,6 @@ var etcdStorageData = map[schema.GroupVersionResource]struct {
 	gvr("networking.k8s.io", "v1", "networkpolicies"): {
 		stub:             `{"metadata": {"name": "np2"}, "spec": {"podSelector": {"matchLabels": {"e": "f"}}}}`,
 		expectedEtcdPath: "/registry/networkpolicies/etcdstoragepathtestnamespace/np2",
-		expectedGVK:      gvkP("extensions", "v1beta1", "NetworkPolicy"),
 	},
 	// --
 
@@ -257,6 +294,13 @@ var etcdStorageData = map[schema.GroupVersionResource]struct {
 	gvr("policy", "v1beta1", "poddisruptionbudgets"): {
 		stub:             `{"metadata": {"name": "pdb1"}, "spec": {"selector": {"matchLabels": {"anokkey": "anokvalue"}}}}`,
 		expectedEtcdPath: "/registry/poddisruptionbudgets/etcdstoragepathtestnamespace/pdb1",
+	},
+	// --
+
+	// k8s.io/kubernetes/pkg/apis/storage/v1alpha1
+	gvr("storage.k8s.io", "v1alpha1", "volumeattachments"): {
+		stub:             `{"metadata": {"name": "va1"}, "spec": {"attacher": "gce", "nodeName": "localhost", "source": {"persistentVolumeName": "pv1"}}}`,
+		expectedEtcdPath: "/registry/volumeattachments/va1",
 	},
 	// --
 
@@ -286,22 +330,22 @@ var etcdStorageData = map[schema.GroupVersionResource]struct {
 	gvr("rbac.authorization.k8s.io", "v1alpha1", "roles"): {
 		stub:             `{"metadata": {"name": "role1"}, "rules": [{"apiGroups": ["v1"], "resources": ["events"], "verbs": ["watch"]}]}`,
 		expectedEtcdPath: "/registry/roles/etcdstoragepathtestnamespace/role1",
-		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1beta1", "Role"),
+		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1", "Role"),
 	},
 	gvr("rbac.authorization.k8s.io", "v1alpha1", "clusterroles"): {
 		stub:             `{"metadata": {"name": "crole1"}, "rules": [{"nonResourceURLs": ["/version"], "verbs": ["get"]}]}`,
 		expectedEtcdPath: "/registry/clusterroles/crole1",
-		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1beta1", "ClusterRole"),
+		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1", "ClusterRole"),
 	},
 	gvr("rbac.authorization.k8s.io", "v1alpha1", "rolebindings"): {
 		stub:             `{"metadata": {"name": "roleb1"}, "roleRef": {"apiGroup": "rbac.authorization.k8s.io", "kind": "ClusterRole", "name": "somecr"}, "subjects": [{"apiVersion": "rbac.authorization.k8s.io/v1alpha1", "kind": "Group", "name": "system:authenticated"}]}`,
 		expectedEtcdPath: "/registry/rolebindings/etcdstoragepathtestnamespace/roleb1",
-		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1beta1", "RoleBinding"),
+		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1", "RoleBinding"),
 	},
 	gvr("rbac.authorization.k8s.io", "v1alpha1", "clusterrolebindings"): {
 		stub:             `{"metadata": {"name": "croleb1"}, "roleRef": {"apiGroup": "rbac.authorization.k8s.io", "kind": "ClusterRole", "name": "somecr"}, "subjects": [{"apiVersion": "rbac.authorization.k8s.io/v1alpha1", "kind": "Group", "name": "system:authenticated"}]}`,
 		expectedEtcdPath: "/registry/clusterrolebindings/croleb1",
-		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1beta1", "ClusterRoleBinding"),
+		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1", "ClusterRoleBinding"),
 	},
 	// --
 
@@ -309,18 +353,22 @@ var etcdStorageData = map[schema.GroupVersionResource]struct {
 	gvr("rbac.authorization.k8s.io", "v1beta1", "roles"): {
 		stub:             `{"metadata": {"name": "role2"}, "rules": [{"apiGroups": ["v1"], "resources": ["events"], "verbs": ["watch"]}]}`,
 		expectedEtcdPath: "/registry/roles/etcdstoragepathtestnamespace/role2",
+		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1", "Role"),
 	},
 	gvr("rbac.authorization.k8s.io", "v1beta1", "clusterroles"): {
 		stub:             `{"metadata": {"name": "crole2"}, "rules": [{"nonResourceURLs": ["/version"], "verbs": ["get"]}]}`,
 		expectedEtcdPath: "/registry/clusterroles/crole2",
+		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1", "ClusterRole"),
 	},
 	gvr("rbac.authorization.k8s.io", "v1beta1", "rolebindings"): {
 		stub:             `{"metadata": {"name": "roleb2"}, "roleRef": {"apiGroup": "rbac.authorization.k8s.io", "kind": "ClusterRole", "name": "somecr"}, "subjects": [{"apiVersion": "rbac.authorization.k8s.io/v1alpha1", "kind": "Group", "name": "system:authenticated"}]}`,
 		expectedEtcdPath: "/registry/rolebindings/etcdstoragepathtestnamespace/roleb2",
+		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1", "RoleBinding"),
 	},
 	gvr("rbac.authorization.k8s.io", "v1beta1", "clusterrolebindings"): {
 		stub:             `{"metadata": {"name": "croleb2"}, "roleRef": {"apiGroup": "rbac.authorization.k8s.io", "kind": "ClusterRole", "name": "somecr"}, "subjects": [{"apiVersion": "rbac.authorization.k8s.io/v1alpha1", "kind": "Group", "name": "system:authenticated"}]}`,
 		expectedEtcdPath: "/registry/clusterrolebindings/croleb2",
+		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1", "ClusterRoleBinding"),
 	},
 	// --
 
@@ -328,22 +376,18 @@ var etcdStorageData = map[schema.GroupVersionResource]struct {
 	gvr("rbac.authorization.k8s.io", "v1", "roles"): {
 		stub:             `{"metadata": {"name": "role3"}, "rules": [{"apiGroups": ["v1"], "resources": ["events"], "verbs": ["watch"]}]}`,
 		expectedEtcdPath: "/registry/roles/etcdstoragepathtestnamespace/role3",
-		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1beta1", "Role"),
 	},
 	gvr("rbac.authorization.k8s.io", "v1", "clusterroles"): {
 		stub:             `{"metadata": {"name": "crole3"}, "rules": [{"nonResourceURLs": ["/version"], "verbs": ["get"]}]}`,
 		expectedEtcdPath: "/registry/clusterroles/crole3",
-		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1beta1", "ClusterRole"),
 	},
 	gvr("rbac.authorization.k8s.io", "v1", "rolebindings"): {
 		stub:             `{"metadata": {"name": "roleb3"}, "roleRef": {"apiGroup": "rbac.authorization.k8s.io", "kind": "ClusterRole", "name": "somecr"}, "subjects": [{"apiVersion": "rbac.authorization.k8s.io/v1alpha1", "kind": "Group", "name": "system:authenticated"}]}`,
 		expectedEtcdPath: "/registry/rolebindings/etcdstoragepathtestnamespace/roleb3",
-		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1beta1", "RoleBinding"),
 	},
 	gvr("rbac.authorization.k8s.io", "v1", "clusterrolebindings"): {
 		stub:             `{"metadata": {"name": "croleb3"}, "roleRef": {"apiGroup": "rbac.authorization.k8s.io", "kind": "ClusterRole", "name": "somecr"}, "subjects": [{"apiVersion": "rbac.authorization.k8s.io/v1alpha1", "kind": "Group", "name": "system:authenticated"}]}`,
 		expectedEtcdPath: "/registry/clusterrolebindings/croleb3",
-		expectedGVK:      gvkP("rbac.authorization.k8s.io", "v1beta1", "ClusterRoleBinding"),
 	},
 	// --
 
@@ -352,9 +396,14 @@ var etcdStorageData = map[schema.GroupVersionResource]struct {
 		stub:             `{"metadata":{"name":"ic1"},"initializers":[{"name":"initializer.k8s.io","rules":[{"apiGroups":["group"],"apiVersions":["version"],"resources":["resource"]}],"failurePolicy":"Ignore"}]}`,
 		expectedEtcdPath: "/registry/initializerconfigurations/ic1",
 	},
-	gvr("admissionregistration.k8s.io", "v1alpha1", "externaladmissionhookconfigurations"): {
-		stub:             `{"metadata":{"name":"hook1","creationTimestamp":null},"externalAdmissionHooks":[{"name":"externaladmissionhook.k8s.io","clientConfig":{"service":{"namespace":"","name":""},"caBundle":null},"rules":[{"operations":["CREATE"],"apiGroups":["group"],"apiVersions":["version"],"resources":["resource"]}],"failurePolicy":"Ignore"}]}`,
-		expectedEtcdPath: "/registry/externaladmissionhookconfigurations/hook1",
+	// k8s.io/kubernetes/pkg/apis/admissionregistration/v1beta1
+	gvr("admissionregistration.k8s.io", "v1beta1", "validatingwebhookconfigurations"): {
+		stub:             `{"metadata":{"name":"hook1","creationTimestamp":null},"webhooks":[{"name":"externaladmissionhook.k8s.io","clientConfig":{"service":{"namespace":"ns","name":"n"},"caBundle":null},"rules":[{"operations":["CREATE"],"apiGroups":["group"],"apiVersions":["version"],"resources":["resource"]}],"failurePolicy":"Ignore"}]}`,
+		expectedEtcdPath: "/registry/validatingwebhookconfigurations/hook1",
+	},
+	gvr("admissionregistration.k8s.io", "v1beta1", "mutatingwebhookconfigurations"): {
+		stub:             `{"metadata":{"name":"hook1","creationTimestamp":null},"webhooks":[{"name":"externaladmissionhook.k8s.io","clientConfig":{"service":{"namespace":"ns","name":"n"},"caBundle":null},"rules":[{"operations":["CREATE"],"apiGroups":["group"],"apiVersions":["version"],"resources":["resource"]}],"failurePolicy":"Ignore"}]}`,
+		expectedEtcdPath: "/registry/mutatingwebhookconfigurations/hook1",
 	},
 	// --
 
@@ -369,9 +418,6 @@ var etcdStorageData = map[schema.GroupVersionResource]struct {
 // Be very careful when whitelisting an object as ephemeral.
 // Doing so removes the safety we gain from this test by skipping that object.
 var ephemeralWhiteList = createEphemeralWhiteList(
-	// k8s.io/kubernetes/federation/apis/federation/v1beta1
-	gvr("federation", "v1beta1", "clusters"), // we cannot create this
-	// --
 
 	// k8s.io/kubernetes/pkg/api/v1
 	gvr("", "v1", "bindings"),             // annotation on pod, not stored in etcd
@@ -433,15 +479,12 @@ var ephemeralWhiteList = createEphemeralWhiteList(
 
 	// k8s.io/kubernetes/pkg/apis/componentconfig/v1alpha1
 	gvr("componentconfig", "v1alpha1", "kubeschedulerconfigurations"), // not stored in etcd
-	gvr("componentconfig", "v1alpha1", "kubeproxyconfigurations"),     // not stored in etcd
 	// --
 
 	// k8s.io/kubernetes/pkg/apis/extensions/v1beta1
 	gvr("extensions", "v1beta1", "deploymentrollbacks"),          // used to rollback deployment, not stored in etcd
 	gvr("extensions", "v1beta1", "replicationcontrollerdummies"), // not stored in etcd
 	gvr("extensions", "v1beta1", "scales"),                       // not stored in etcd, part of kapiv1.ReplicationController
-	gvr("extensions", "v1beta1", "thirdpartyresourcedatas"),      // we cannot create this
-	gvr("extensions", "v1beta1", "thirdpartyresources"),          // these have been removed from the API server, but kept for the client
 	// --
 
 	// k8s.io/kubernetes/pkg/apis/imagepolicy/v1alpha1
@@ -452,8 +495,8 @@ var ephemeralWhiteList = createEphemeralWhiteList(
 	gvr("policy", "v1beta1", "evictions"), // not stored in etcd, deals with evicting kapiv1.Pod
 	// --
 
-	// k8s.io/kubernetes/pkg/apis/admission/v1alpha1
-	gvr("admission.k8s.io", "v1alpha1", "admissionreviews"), // not stored in etcd, call out to webhooks.
+	// k8s.io/kubernetes/pkg/apis/admission/v1beta1
+	gvr("admission.k8s.io", "v1beta1", "admissionreviews"), // not stored in etcd, call out to webhooks.
 	// --
 )
 
@@ -506,7 +549,7 @@ func TestEtcdStoragePath(t *testing.T) {
 	ephemeralSeen := map[schema.GroupVersionResource]empty{}
 	cohabitatingResources := map[string]map[schema.GroupVersionKind]empty{}
 
-	for gvk, apiType := range kapi.Scheme.AllKnownTypes() {
+	for gvk, apiType := range legacyscheme.Scheme.AllKnownTypes() {
 		// we do not care about internal objects or lists // TODO make sure this is always true
 		if gvk.Version == runtime.APIVersionInternal || strings.HasSuffix(apiType.Name(), "List") {
 			continue
@@ -717,7 +760,7 @@ func startRealMasterOrDie(t *testing.T, certDir string) (*allClient, clientv3.KV
 		// make a copy so we can mutate it to set GroupVersion and NegotiatedSerializer
 		cfg := *kubeClientConfig
 		cfg.ContentConfig.GroupVersion = &schema.GroupVersion{}
-		cfg.ContentConfig.NegotiatedSerializer = kapi.Codecs
+		cfg.ContentConfig.NegotiatedSerializer = legacyscheme.Codecs
 		privilegedClient, err := restclient.RESTClientFor(&cfg)
 		if err != nil {
 			// this happens because we race the API server start
@@ -955,7 +998,7 @@ func (c *allClient) createPrerequisites(mapper meta.RESTMapper, ns string, prere
 }
 
 func newClient(config restclient.Config) (*allClient, error) {
-	config.ContentConfig.NegotiatedSerializer = kapi.Codecs
+	config.ContentConfig.NegotiatedSerializer = legacyscheme.Codecs
 	config.ContentConfig.ContentType = "application/json"
 	config.Timeout = 30 * time.Second
 	config.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(3, 10)

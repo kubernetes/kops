@@ -30,11 +30,6 @@ limitations under the License.
 // one file, of the form:
 //   // +k8s:deepcopy-gen=package
 //
-// Packages can request that the generated DeepCopy functions be registered
-// with an `init()` function call to `Scheme.AddGeneratedDeepCopyFuncs()` by
-// changing the tag to:
-//   // +k8s:deepcopy-gen=package,register
-//
 // DeepCopy functions can be generated for individual types, rather than the
 // entire package by specifying a comment on the type definion of the form:
 //   // +k8s:deepcopy-gen=true
@@ -60,14 +55,14 @@ import (
 func main() {
 	arguments := args.Default()
 
-	// Override defaults.
-	arguments.OutputFileBaseName = "deepcopy_generated"
-	arguments.GoHeaderFilePath = filepath.Join(args.DefaultSourceTree(), "k8s.io/kubernetes/hack/boilerplate/boilerplate.go.txt")
-
 	// Custom args.
 	customArgs := &generators.CustomArgs{}
 	pflag.CommandLine.StringSliceVar(&customArgs.BoundingDirs, "bounding-dirs", customArgs.BoundingDirs,
 		"Comma-separated list of import paths which bound the types for which deep-copies will be generated.")
+
+	// Override defaults.
+	arguments.GoHeaderFilePath = filepath.Join(args.DefaultSourceTree(), "k8s.io/kubernetes/hack/boilerplate/boilerplate.go.txt")
+	arguments.OutputFileBaseName = "deepcopy_generated"
 	arguments.CustomArgs = customArgs
 
 	// Run it.

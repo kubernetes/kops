@@ -14,7 +14,9 @@ go_library(
         "//vendor/github.com/gophercloud/gophercloud/openstack/identity/v3/domains:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/identity/v3/groups:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/identity/v3/projects:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/identity/v3/regions:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/identity/v3/roles:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/identity/v3/services:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/identity/v3/users:go_default_library",
     ],
 )

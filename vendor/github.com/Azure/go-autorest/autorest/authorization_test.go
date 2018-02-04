@@ -1,5 +1,19 @@
 package autorest
 
+// Copyright 2017 Microsoft Corporation
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 import (
 	"fmt"
 	"net/http"
@@ -133,5 +147,42 @@ func TestServicePrincipalTokenWithAuthorizationReturnsErrorIfConnotRefresh(t *te
 	_, err = Prepare(mocks.NewRequest(), ba.WithAuthorization())
 	if err == nil {
 		t.Fatal("azure: BearerAuthorizer#WithAuthorization failed to return an error when refresh fails")
+	}
+}
+
+func TestBearerAuthorizerCallback(t *testing.T) {
+	tenantString := "123-tenantID-456"
+	resourceString := "https://fake.resource.net"
+
+	s := mocks.NewSender()
+	resp := mocks.NewResponseWithStatus("401 Unauthorized", http.StatusUnauthorized)
+	mocks.SetResponseHeader(resp, bearerChallengeHeader, bearer+" \"authorization\"=\"https://fake.net/"+tenantString+"\",\"resource\"=\""+resourceString+"\"")
+	s.AppendResponse(resp)
+
+	auth := NewBearerAuthorizerCallback(s, func(tenantID, resource string) (*BearerAuthorizer, error) {
+		if tenantID != tenantString {
+			t.Fatal("BearerAuthorizerCallback: bad tenant ID")
+		}
+		if resource != resourceString {
+			t.Fatal("BearerAuthorizerCallback: bad resource")
+		}
+
+		oauthConfig, err := adal.NewOAuthConfig(TestActiveDirectoryEndpoint, tenantID)
+		if err != nil {
+			t.Fatalf("azure: NewOAuthConfig returned an error (%v)", err)
+		}
+
+		spt, err := adal.NewServicePrincipalToken(*oauthConfig, "id", "secret", resource)
+		if err != nil {
+			t.Fatalf("azure: NewServicePrincipalToken returned an error (%v)", err)
+		}
+
+		spt.SetSender(s)
+		return NewBearerAuthorizer(spt), nil
+	})
+
+	_, err := Prepare(mocks.NewRequest(), auth.WithAuthorization())
+	if err == nil {
+		t.Fatal("azure: BearerAuthorizerCallback#WithAuthorization failed to return an error when refresh fails")
 	}
 }

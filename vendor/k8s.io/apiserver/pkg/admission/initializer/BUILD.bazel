@@ -9,6 +9,7 @@ go_library(
     importpath = "k8s.io/apiserver/pkg/admission/initializer",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/admission:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/authorization/authorizer:go_default_library",
         "//vendor/k8s.io/client-go/informers:go_default_library",
@@ -22,6 +23,7 @@ go_test(
     importpath = "k8s.io/apiserver/pkg/admission/initializer_test",
     deps = [
         ":go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/admission:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/authorization/authorizer:go_default_library",
         "//vendor/k8s.io/client-go/informers:go_default_library",

@@ -25,7 +25,7 @@ go_library(
         "//vendor/k8s.io/client-go/rest:go_default_library",
         "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",
         "//vendor/k8s.io/client-go/tools/record:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/api:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/legacyscheme:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/apis/certificates/install:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/controller:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/controller/certificates:go_default_library",

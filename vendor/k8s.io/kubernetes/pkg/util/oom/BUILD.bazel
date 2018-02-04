@@ -21,7 +21,6 @@ go_library(
         ],
         "@io_bazel_rules_go//go/platform:linux": [
             "oom_linux.go",
-            "oom_unsupported.go",
         ],
         "@io_bazel_rules_go//go/platform:nacl": [
             "oom_unsupported.go",

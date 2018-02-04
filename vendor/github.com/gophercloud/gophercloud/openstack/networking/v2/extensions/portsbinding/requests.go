@@ -1,113 +1,91 @@
 package portsbinding
 
 import (
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 )
 
-// Get retrieves a specific port based on its unique ID.
-func Get(c *gophercloud.ServiceClient, id string) (r GetResult) {
-	_, r.Err = c.Get(getURL(c, id), &r.Body, nil)
-	return
-}
-
-// CreateOpts represents the attributes used when creating a new
-// port with extended attributes.
-type CreateOpts struct {
+// CreateOptsExt adds port binding options to the base ports.CreateOpts.
+type CreateOptsExt struct {
 	// CreateOptsBuilder is the interface options structs have to satisfy in order
 	// to be used in the main Create operation in this package.
-	ports.CreateOptsBuilder `json:"-"`
+	ports.CreateOptsBuilder
+
 	// The ID of the host where the port is allocated
 	HostID string `json:"binding:host_id,omitempty"`
+
 	// The virtual network interface card (vNIC) type that is bound to the
-	// neutron port
+	// neutron port.
 	VNICType string `json:"binding:vnic_type,omitempty"`
+
 	// A dictionary that enables the application running on the specified
 	// host to pass and receive virtual network interface (VIF) port-specific
-	// information to the plug-in
+	// information to the plug-in.
 	Profile map[string]string `json:"binding:profile,omitempty"`
 }
 
 // ToPortCreateMap casts a CreateOpts struct to a map.
-func (opts CreateOpts) ToPortCreateMap() (map[string]interface{}, error) {
-	b1, err := opts.CreateOptsBuilder.ToPortCreateMap()
+func (opts CreateOptsExt) ToPortCreateMap() (map[string]interface{}, error) {
+	base, err := opts.CreateOptsBuilder.ToPortCreateMap()
 	if err != nil {
 		return nil, err
 	}
 
-	b2, err := gophercloud.BuildRequestBody(opts, "")
-	if err != nil {
-		return nil, err
+	port := base["port"].(map[string]interface{})
+
+	if opts.HostID != "" {
+		port["binding:host_id"] = opts.HostID
 	}
 
-	port := b1["port"].(map[string]interface{})
-
-	for k, v := range b2 {
-		port[k] = v
+	if opts.VNICType != "" {
+		port["binding:vnic_type"] = opts.VNICType
 	}
 
-	return map[string]interface{}{"port": port}, nil
+	if opts.Profile != nil {
+		port["binding:profile"] = opts.Profile
+	}
+
+	return base, nil
 }
 
-// Create accepts a CreateOpts struct and creates a new port with extended attributes.
-// You must remember to provide a NetworkID value.
-func Create(c *gophercloud.ServiceClient, opts ports.CreateOptsBuilder) (r CreateResult) {
-	b, err := opts.ToPortCreateMap()
-	if err != nil {
-		r.Err = err
-		return
-	}
-	_, r.Err = c.Post(createURL(c), b, &r.Body, nil)
-	return
-}
-
-// UpdateOpts represents the attributes used when updating an existing port.
-type UpdateOpts struct {
+// UpdateOptsExt adds port binding options to the base ports.UpdateOpts
+type UpdateOptsExt struct {
 	// UpdateOptsBuilder is the interface options structs have to satisfy in order
 	// to be used in the main Update operation in this package.
-	ports.UpdateOptsBuilder `json:"-"`
-	// The ID of the host where the port is allocated
+	ports.UpdateOptsBuilder
+
+	// The ID of the host where the port is allocated.
 	HostID string `json:"binding:host_id,omitempty"`
+
 	// The virtual network interface card (vNIC) type that is bound to the
-	// neutron port
+	// neutron port.
 	VNICType string `json:"binding:vnic_type,omitempty"`
+
 	// A dictionary that enables the application running on the specified
 	// host to pass and receive virtual network interface (VIF) port-specific
-	// information to the plug-in
+	// information to the plug-in.
 	Profile map[string]string `json:"binding:profile,omitempty"`
 }
 
 // ToPortUpdateMap casts an UpdateOpts struct to a map.
-func (opts UpdateOpts) ToPortUpdateMap() (map[string]interface{}, error) {
-	b1, err := opts.UpdateOptsBuilder.ToPortUpdateMap()
+func (opts UpdateOptsExt) ToPortUpdateMap() (map[string]interface{}, error) {
+	base, err := opts.UpdateOptsBuilder.ToPortUpdateMap()
 	if err != nil {
 		return nil, err
 	}
 
-	b2, err := gophercloud.BuildRequestBody(opts, "")
-	if err != nil {
-		return nil, err
+	port := base["port"].(map[string]interface{})
+
+	if opts.HostID != "" {
+		port["binding:host_id"] = opts.HostID
 	}
 
-	port := b1["port"].(map[string]interface{})
-
-	for k, v := range b2 {
-		port[k] = v
+	if opts.VNICType != "" {
+		port["binding:vnic_type"] = opts.VNICType
 	}
 
-	return map[string]interface{}{"port": port}, nil
-}
-
-// Update accepts a UpdateOpts struct and updates an existing port using the
-// values provided.
-func Update(c *gophercloud.ServiceClient, id string, opts ports.UpdateOptsBuilder) (r UpdateResult) {
-	b, err := opts.ToPortUpdateMap()
-	if err != nil {
-		r.Err = err
-		return r
+	if opts.Profile != nil {
+		port["binding:profile"] = opts.Profile
 	}
-	_, r.Err = c.Put(updateURL(c, id), b, &r.Body, &gophercloud.RequestOpts{
-		OkCodes: []int{200, 201},
-	})
-	return
+
+	return base, nil
 }

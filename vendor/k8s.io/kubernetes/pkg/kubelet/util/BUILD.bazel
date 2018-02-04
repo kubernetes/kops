@@ -10,7 +10,7 @@ go_library(
             "util_unsupported.go",
         ],
         "@io_bazel_rules_go//go/platform:darwin": [
-            "util_unsupported.go",
+            "util_unix.go",
         ],
         "@io_bazel_rules_go//go/platform:dragonfly": [
             "util_unsupported.go",
@@ -46,6 +46,10 @@ go_library(
     deps = [
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "//vendor/github.com/golang/glog:go_default_library",
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
         "@io_bazel_rules_go//go/platform:freebsd": [
             "//vendor/github.com/golang/glog:go_default_library",
             "//vendor/golang.org/x/sys/unix:go_default_library",

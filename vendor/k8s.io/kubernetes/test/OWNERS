@@ -17,10 +17,12 @@ reviewers:
   - ncdc
   - pwittrock # for test/e2e/kubectl.go
   - saad-ali
+  - shyamjvs
   - smarterclayton
   - soltysh
   - sig-testing-reviewers
   - sttts
+  - timothysc
   - zmerlynn
   - vishh
 approvers:
@@ -43,9 +45,11 @@ approvers:
   - ncdc
   - pwittrock # for test/e2e/kubectl.go
   - saad-ali
+  - shyamjvs
   - sig-testing-approvers
   - smarterclayton
   - soltysh
   - sttts
+  - timothysc
   - zmerlynn
   - vishh 

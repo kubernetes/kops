@@ -1,0 +1,22 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "k8s.io/kube-deploy/cluster-api/tools/machines-client",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/client-go/plugin/pkg/client/auth/gcp:go_default_library",
+        "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",
+        "//vendor/k8s.io/kube-deploy/cluster-api/api/cluster/v1alpha1:go_default_library",
+        "//vendor/k8s.io/kube-deploy/cluster-api/client:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "machines-client",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/kube-deploy/cluster-api/tools/machines-client",
+    visibility = ["//visibility:public"],
+)

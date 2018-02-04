@@ -47,8 +47,10 @@ func TestCIDRSetFullyAllocated(t *testing.T) {
 	}
 	for _, tc := range cases {
 		_, clusterCIDR, _ := net.ParseCIDR(tc.clusterCIDRStr)
-		a := NewCIDRSet(clusterCIDR, tc.subNetMaskSize)
-
+		a, err := NewCIDRSet(clusterCIDR, tc.subNetMaskSize)
+		if err != nil {
+			t.Fatalf("unexpected error: %v for %v", err, tc.description)
+		}
 		p, err := a.AllocateNext()
 		if err != nil {
 			t.Fatalf("unexpected error: %v for %v", err, tc.description)
@@ -93,47 +95,113 @@ func TestIndexToCIDRBlock(t *testing.T) {
 			subnetMaskSize: 24,
 			index:          0,
 			CIDRBlock:      "127.123.0.0/24",
-			description:    "Index with IPv4",
+			description:    "1st IP address indexed with IPv4",
 		},
 		{
 			clusterCIDRStr: "127.123.0.0/16",
 			subnetMaskSize: 24,
 			index:          15,
 			CIDRBlock:      "127.123.15.0/24",
-			description:    "Index with IPv4",
+			description:    "16th IP address indexed with IPv4",
 		},
 		{
 			clusterCIDRStr: "192.168.5.219/28",
 			subnetMaskSize: 32,
 			index:          5,
 			CIDRBlock:      "192.168.5.213/32",
-			description:    "Index with IPv4",
+			description:    "5th IP address indexed with IPv4",
 		},
 		{
 			clusterCIDRStr: "2001:0db8:1234:3::/48",
 			subnetMaskSize: 64,
 			index:          0,
 			CIDRBlock:      "2001:db8:1234::/64",
-			description:    "Index with IPv6",
+			description:    "1st IP address indexed with IPv6 /64",
 		},
 		{
 			clusterCIDRStr: "2001:0db8:1234::/48",
 			subnetMaskSize: 64,
 			index:          15,
 			CIDRBlock:      "2001:db8:1234:f::/64",
-			description:    "Index with IPv6",
+			description:    "16th IP address indexed with IPv6 /64",
 		},
 		{
 			clusterCIDRStr: "2001:0db8:85a3::8a2e:0370:7334/50",
 			subnetMaskSize: 63,
 			index:          6425,
 			CIDRBlock:      "2001:db8:85a3:3232::/63",
-			description:    "Index with IPv6",
+			description:    "6426th IP address indexed with IPv6 /63",
+		},
+		{
+			clusterCIDRStr: "2001:0db8::/32",
+			subnetMaskSize: 48,
+			index:          0,
+			CIDRBlock:      "2001:db8::/48",
+			description:    "1st IP address indexed with IPv6 /48",
+		},
+		{
+			clusterCIDRStr: "2001:0db8::/32",
+			subnetMaskSize: 48,
+			index:          15,
+			CIDRBlock:      "2001:db8:f::/48",
+			description:    "16th IP address indexed with IPv6 /48",
+		},
+		{
+			clusterCIDRStr: "2001:0db8:85a3::8a2e:0370:7334/32",
+			subnetMaskSize: 48,
+			index:          6425,
+			CIDRBlock:      "2001:db8:1919::/48",
+			description:    "6426th IP address indexed with IPv6 /48",
+		},
+		{
+			clusterCIDRStr: "2001:0db8:1234:ff00::/56",
+			subnetMaskSize: 72,
+			index:          0,
+			CIDRBlock:      "2001:db8:1234:ff00::/72",
+			description:    "1st IP address indexed with IPv6 /72",
+		},
+		{
+			clusterCIDRStr: "2001:0db8:1234:ff00::/56",
+			subnetMaskSize: 72,
+			index:          15,
+			CIDRBlock:      "2001:db8:1234:ff00:f00::/72",
+			description:    "16th IP address indexed with IPv6 /72",
+		},
+		{
+			clusterCIDRStr: "2001:0db8:1234:ff00::0370:7334/56",
+			subnetMaskSize: 72,
+			index:          6425,
+			CIDRBlock:      "2001:db8:1234:ff19:1900::/72",
+			description:    "6426th IP address indexed with IPv6 /72",
+		},
+		{
+			clusterCIDRStr: "2001:0db8:1234:0:1234::/80",
+			subnetMaskSize: 96,
+			index:          0,
+			CIDRBlock:      "2001:db8:1234:0:1234::/96",
+			description:    "1st IP address indexed with IPv6 /96",
+		},
+		{
+			clusterCIDRStr: "2001:0db8:1234:0:1234::/80",
+			subnetMaskSize: 96,
+			index:          15,
+			CIDRBlock:      "2001:db8:1234:0:1234:f::/96",
+			description:    "16th IP address indexed with IPv6 /96",
+		},
+		{
+			clusterCIDRStr: "2001:0db8:1234:ff00::0370:7334/80",
+			subnetMaskSize: 96,
+			index:          6425,
+			CIDRBlock:      "2001:db8:1234:ff00:0:1919::/96",
+			description:    "6426th IP address indexed with IPv6 /96",
 		},
 	}
 	for _, tc := range cases {
 		_, clusterCIDR, _ := net.ParseCIDR(tc.clusterCIDRStr)
-		a := NewCIDRSet(clusterCIDR, tc.subnetMaskSize)
+		a, err := NewCIDRSet(clusterCIDR, tc.subnetMaskSize)
+		if err != nil {
+			t.Fatalf("error for %v ", tc.description)
+		}
 		cidr := a.indexToCIDRBlock(tc.index)
 		if cidr.String() != tc.CIDRBlock {
 			t.Fatalf("error for %v index %d %s", tc.description, tc.index, cidr.String())
@@ -157,7 +225,10 @@ func TestCIDRSet_RandomishAllocation(t *testing.T) {
 	}
 	for _, tc := range cases {
 		_, clusterCIDR, _ := net.ParseCIDR(tc.clusterCIDRStr)
-		a := NewCIDRSet(clusterCIDR, 24)
+		a, err := NewCIDRSet(clusterCIDR, 24)
+		if err != nil {
+			t.Fatalf("Error allocating CIDRSet for %v", tc.description)
+		}
 		// allocate all the CIDRs
 		var cidrs []*net.IPNet
 
@@ -169,7 +240,7 @@ func TestCIDRSet_RandomishAllocation(t *testing.T) {
 			}
 		}
 
-		var err error
+		//var err error
 		_, err = a.AllocateNext()
 		if err == nil {
 			t.Fatalf("expected error because of fully-allocated range for %v", tc.description)
@@ -215,8 +286,10 @@ func TestCIDRSet_AllocationOccupied(t *testing.T) {
 	}
 	for _, tc := range cases {
 		_, clusterCIDR, _ := net.ParseCIDR(tc.clusterCIDRStr)
-		a := NewCIDRSet(clusterCIDR, 24)
-
+		a, err := NewCIDRSet(clusterCIDR, 24)
+		if err != nil {
+			t.Fatalf("Error allocating CIDRSet for %v", tc.description)
+		}
 		// allocate all the CIDRs
 		var cidrs []*net.IPNet
 		var numCIDRs = 256
@@ -229,7 +302,7 @@ func TestCIDRSet_AllocationOccupied(t *testing.T) {
 			}
 		}
 
-		var err error
+		//var err error
 		_, err = a.AllocateNext()
 		if err == nil {
 			t.Fatalf("expected error because of fully-allocated range for %v", tc.description)
@@ -394,8 +467,10 @@ func TestGetBitforCIDR(t *testing.T) {
 			t.Fatalf("unexpected error: %v for %v", err, tc.description)
 		}
 
-		cs := NewCIDRSet(clusterCIDR, tc.subNetMaskSize)
-
+		cs, err := NewCIDRSet(clusterCIDR, tc.subNetMaskSize)
+		if err != nil {
+			t.Fatalf("Error allocating CIDRSet for %v", tc.description)
+		}
 		_, subnetCIDR, err := net.ParseCIDR(tc.subNetCIDRStr)
 		if err != nil {
 			t.Fatalf("unexpected error: %v for %v", err, tc.description)
@@ -562,7 +637,10 @@ func TestOccupy(t *testing.T) {
 			t.Fatalf("unexpected error: %v for %v", err, tc.description)
 		}
 
-		cs := NewCIDRSet(clusterCIDR, tc.subNetMaskSize)
+		cs, err := NewCIDRSet(clusterCIDR, tc.subNetMaskSize)
+		if err != nil {
+			t.Fatalf("Error allocating CIDRSet for %v", tc.description)
+		}
 
 		_, subnetCIDR, err := net.ParseCIDR(tc.subNetCIDRStr)
 		if err != nil {
@@ -613,12 +691,6 @@ func TestCIDRSetv6(t *testing.T) {
 			description:    "Max cluster subnet size with IPv6",
 		},
 		{
-			clusterCIDRStr: "beef:1234::/60",
-			subNetMaskSize: 65,
-			expectErr:      true,
-			description:    "Max prefix length with IPv6",
-		},
-		{
 			clusterCIDRStr: "2001:beef:1234:369b::/60",
 			subNetMaskSize: 64,
 			expectedCIDR:   "2001:beef:1234:3690::/64",
@@ -629,7 +701,13 @@ func TestCIDRSetv6(t *testing.T) {
 	}
 	for _, tc := range cases {
 		_, clusterCIDR, _ := net.ParseCIDR(tc.clusterCIDRStr)
-		a := NewCIDRSet(clusterCIDR, tc.subNetMaskSize)
+		a, err := NewCIDRSet(clusterCIDR, tc.subNetMaskSize)
+		if err != nil {
+			if tc.expectErr {
+				continue
+			}
+			t.Fatalf("Error allocating CIDRSet for %v", tc.description)
+		}
 
 		p, err := a.AllocateNext()
 		if err == nil && tc.expectErr {

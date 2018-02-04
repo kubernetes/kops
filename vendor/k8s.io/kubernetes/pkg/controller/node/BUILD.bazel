@@ -41,7 +41,6 @@ go_library(
         "//vendor/k8s.io/kubernetes/pkg/util/node:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/system:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/taints:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/version:go_default_library",
         "//vendor/k8s.io/kubernetes/plugin/pkg/scheduler/algorithm:go_default_library",
     ],
 )

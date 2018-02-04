@@ -77,3 +77,31 @@ func TestDumpTo(t *testing.T) {
 		t.Errorf("DumpTo() = %v; want %v", n, len(want))
 	}
 }
+
+func TestReadCloser(t *testing.T) {
+	var b Buffer
+	var want []byte
+
+	s := "test"
+	for i := 0; i < 1000; i++ {
+		b.AppendBytes([]byte(s))
+		want = append(want, s...)
+	}
+
+	out := &bytes.Buffer{}
+	rc := b.ReadCloser()
+	n, err := out.ReadFrom(rc)
+	if err != nil {
+		t.Errorf("ReadCloser() error: %v", err)
+	}
+	rc.Close() // Will always return nil
+
+	got := out.Bytes()
+	if !bytes.Equal(got, want) {
+		t.Errorf("DumpTo(): got %v; want %v", got, want)
+	}
+
+	if n != int64(len(want)) {
+		t.Errorf("DumpTo() = %v; want %v", n, len(want))
+	}
+}

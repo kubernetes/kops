@@ -9,10 +9,14 @@ go_library(
 
 go_test(
     name = "go_default_xtest",
-    srcs = [
-        "example_test.go",
-        "heredoc_test.go",
-    ],
+    srcs = ["example_test.go"],
     importpath = "github.com/MakeNowJust/heredoc_test",
     deps = [":go_default_library"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["heredoc_test.go"],
+    embed = [":go_default_library"],
+    importpath = "github.com/MakeNowJust/heredoc",
 )

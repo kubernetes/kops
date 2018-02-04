@@ -78,7 +78,8 @@ func Get(client *gophercloud.ServiceClient, id string) (r GetResult) {
 	return
 }
 
-// GetExportLocations will get shareID's export locations
+// GetExportLocations will get shareID's export locations.
+// Client must have Microversion set; minimum supported microversion for GetExportLocations is 2.14.
 func GetExportLocations(client *gophercloud.ServiceClient, id string) (r GetExportLocationsResult) {
 	_, r.Err = client.Get(getExportLocationsURL(client, id), &r.Body, nil)
 	return
@@ -110,6 +111,7 @@ func (opts GrantAccessOpts) ToGrantAccessMap() (map[string]interface{}, error) {
 
 // GrantAccess will grant access to a Share based on the values in GrantAccessOpts. To extract
 // the GrantAccess object from the response, call the Extract method on the GrantAccessResult.
+// Client must have Microversion set; minimum supported microversion for GrantAccess is 2.7.
 func GrantAccess(client *gophercloud.ServiceClient, id string, opts GrantAccessOptsBuilder) (r GrantAccessResult) {
 	b, err := opts.ToGrantAccessMap()
 	if err != nil {

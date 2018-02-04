@@ -42,17 +42,6 @@ const (
 	pvReadCmd  string = "cat " + pvTestFile
 )
 
-func (t *PersistentVolumeUpgradeTest) createGCEVolume() *v1.PersistentVolumeSource {
-	diskName, err := framework.CreatePDWithRetry()
-	framework.ExpectNoError(err)
-	return &v1.PersistentVolumeSource{
-		GCEPersistentDisk: &v1.GCEPersistentDiskVolumeSource{
-			PDName:   diskName,
-			FSType:   "ext3",
-			ReadOnly: false,
-		},
-	}
-}
 func (t *PersistentVolumeUpgradeTest) deleteGCEVolume(pvSource *v1.PersistentVolumeSource) error {
 	return framework.DeletePDWithRetry(pvSource.GCEPersistentDisk.PDName)
 }
@@ -67,7 +56,7 @@ func (t *PersistentVolumeUpgradeTest) Setup(f *framework.Framework) {
 	ns := f.Namespace.Name
 
 	By("Initializing PV source")
-	t.pvSource = t.createGCEVolume()
+	t.pvSource, _ = framework.CreateGCEVolume()
 	pvConfig := framework.PersistentVolumeConfig{
 		NamePrefix: "pv-upgrade",
 		PVSource:   *t.pvSource,
@@ -109,7 +98,7 @@ func (t *PersistentVolumeUpgradeTest) Teardown(f *framework.Framework) {
 
 // testPod creates a pod that consumes a pv and prints it out. The output is then verified.
 func (t *PersistentVolumeUpgradeTest) testPod(f *framework.Framework, cmd string) {
-	pod := framework.MakePod(f.Namespace.Name, []*v1.PersistentVolumeClaim{t.pvc}, false, cmd)
+	pod := framework.MakePod(f.Namespace.Name, nil, []*v1.PersistentVolumeClaim{t.pvc}, false, cmd)
 	expectedOutput := []string{pvTestData}
 	f.TestContainerOutput("pod consumes pv", pod, 0, expectedOutput)
 }

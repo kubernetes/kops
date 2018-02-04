@@ -1,29 +1,16 @@
 {
-  "kind": "discovery#restDescription",
-  "description": "Searches the Google Knowledge Graph for entities.",
-  "servicePath": "",
-  "rootUrl": "https://kgsearch.googleapis.com/",
-  "basePath": "",
-  "ownerDomain": "google.com",
-  "name": "kgsearch",
-  "batchPath": "batch",
-  "id": "kgsearch:v1",
-  "documentationLink": "https://developers.google.com/knowledge-graph/",
-  "revision": "20170109",
-  "title": "Knowledge Graph Search API",
-  "ownerName": "Google",
   "discoveryVersion": "v1",
+  "ownerName": "Google",
   "version_module": "True",
   "resources": {
     "entities": {
       "methods": {
         "search": {
-          "description": "Searches Knowledge Graph for entities that match the constraints.\nA list of matched entities will be returned in response, which will be in\nJSON-LD format and compatible with http://schema.org",
+          "httpMethod": "GET",
+          "parameterOrder": [],
           "response": {
             "$ref": "SearchResponse"
           },
-          "parameterOrder": [],
-          "httpMethod": "GET",
           "parameters": {
             "limit": {
               "location": "query",
@@ -37,26 +24,26 @@
               "type": "boolean"
             },
             "query": {
-              "description": "The literal query string for search.",
               "type": "string",
-              "location": "query"
+              "location": "query",
+              "description": "The literal query string for search."
             },
             "types": {
-              "type": "string",
-              "repeated": true,
               "location": "query",
-              "description": "Restricts returned entities with these types, e.g. Person\n(as defined in http://schema.org/Person). If multiple types are specified,\nreturned entities will contain one or more of these types."
+              "description": "Restricts returned entities with these types, e.g. Person\n(as defined in http://schema.org/Person). If multiple types are specified,\nreturned entities will contain one or more of these types.",
+              "type": "string",
+              "repeated": true
             },
             "indent": {
-              "location": "query",
               "description": "Enables indenting of json results.",
-              "type": "boolean"
+              "type": "boolean",
+              "location": "query"
             },
             "languages": {
-              "repeated": true,
-              "location": "query",
               "description": "The list of language codes (defined in ISO 693) to run the query with,\ne.g. 'en'.",
-              "type": "string"
+              "type": "string",
+              "repeated": true,
+              "location": "query"
             },
             "ids": {
               "location": "query",
@@ -66,13 +53,90 @@
             }
           },
           "flatPath": "v1/entities:search",
+          "path": "v1/entities:search",
           "id": "kgsearch.entities.search",
-          "path": "v1/entities:search"
+          "description": "Searches Knowledge Graph for entities that match the constraints.\nA list of matched entities will be returned in response, which will be in\nJSON-LD format and compatible with http://schema.org"
         }
       }
     }
   },
   "parameters": {
+    "quotaUser": {
+      "location": "query",
+      "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+      "type": "string"
+    },
+    "pp": {
+      "location": "query",
+      "description": "Pretty-print response.",
+      "default": "true",
+      "type": "boolean"
+    },
+    "oauth_token": {
+      "type": "string",
+      "location": "query",
+      "description": "OAuth 2.0 token for the current user."
+    },
+    "bearer_token": {
+      "location": "query",
+      "description": "OAuth bearer token.",
+      "type": "string"
+    },
+    "upload_protocol": {
+      "description": "Upload protocol for media (e.g. \"raw\", \"multipart\").",
+      "type": "string",
+      "location": "query"
+    },
+    "prettyPrint": {
+      "location": "query",
+      "description": "Returns response with indentations and line breaks.",
+      "default": "true",
+      "type": "boolean"
+    },
+    "uploadType": {
+      "location": "query",
+      "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\").",
+      "type": "string"
+    },
+    "fields": {
+      "description": "Selector specifying which fields to include in a partial response.",
+      "type": "string",
+      "location": "query"
+    },
+    "callback": {
+      "description": "JSONP",
+      "type": "string",
+      "location": "query"
+    },
+    "$.xgafv": {
+      "description": "V1 error format.",
+      "type": "string",
+      "enumDescriptions": [
+        "v1 error format",
+        "v2 error format"
+      ],
+      "location": "query",
+      "enum": [
+        "1",
+        "2"
+      ]
+    },
+    "alt": {
+      "enumDescriptions": [
+        "Responses with Content-Type of application/json",
+        "Media download with context-dependent Content-Type",
+        "Responses with Content-Type of application/x-protobuf"
+      ],
+      "location": "query",
+      "description": "Data format for response.",
+      "default": "json",
+      "enum": [
+        "json",
+        "media",
+        "proto"
+      ],
+      "type": "string"
+    },
     "access_token": {
       "location": "query",
       "description": "OAuth access token.",
@@ -82,82 +146,6 @@
       "type": "string",
       "location": "query",
       "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
-    },
-    "quotaUser": {
-      "location": "query",
-      "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
-      "type": "string"
-    },
-    "pp": {
-      "description": "Pretty-print response.",
-      "default": "true",
-      "type": "boolean",
-      "location": "query"
-    },
-    "oauth_token": {
-      "description": "OAuth 2.0 token for the current user.",
-      "type": "string",
-      "location": "query"
-    },
-    "bearer_token": {
-      "description": "OAuth bearer token.",
-      "type": "string",
-      "location": "query"
-    },
-    "upload_protocol": {
-      "description": "Upload protocol for media (e.g. \"raw\", \"multipart\").",
-      "type": "string",
-      "location": "query"
-    },
-    "prettyPrint": {
-      "description": "Returns response with indentations and line breaks.",
-      "default": "true",
-      "type": "boolean",
-      "location": "query"
-    },
-    "uploadType": {
-      "location": "query",
-      "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\").",
-      "type": "string"
-    },
-    "fields": {
-      "location": "query",
-      "description": "Selector specifying which fields to include in a partial response.",
-      "type": "string"
-    },
-    "callback": {
-      "description": "JSONP",
-      "type": "string",
-      "location": "query"
-    },
-    "$.xgafv": {
-      "enumDescriptions": [
-        "v1 error format",
-        "v2 error format"
-      ],
-      "location": "query",
-      "enum": [
-        "1",
-        "2"
-      ],
-      "description": "V1 error format.",
-      "type": "string"
-    },
-    "alt": {
-      "location": "query",
-      "description": "Data format for response.",
-      "default": "json",
-      "enum": [
-        "json",
-        "media",
-        "proto"
-      ],
-      "type": "string",
-      "enumDescriptions": [
-        "Responses with Content-Type of application/json",
-        "Media download with context-dependent Content-Type",
-        "Responses with Content-Type of application/x-protobuf"
-      ]
     }
   },
   "schemas": {
@@ -184,11 +172,23 @@
       "id": "SearchResponse"
     }
   },
-  "protocol": "rest",
   "icons": {
-    "x32": "http://www.google.com/images/icons/product/search-32.gif",
-    "x16": "http://www.google.com/images/icons/product/search-16.gif"
+    "x16": "http://www.google.com/images/icons/product/search-16.gif",
+    "x32": "http://www.google.com/images/icons/product/search-32.gif"
   },
+  "protocol": "rest",
   "version": "v1",
-  "baseUrl": "https://kgsearch.googleapis.com/"
+  "baseUrl": "https://kgsearch.googleapis.com/",
+  "servicePath": "",
+  "description": "Searches the Google Knowledge Graph for entities.",
+  "kind": "discovery#restDescription",
+  "rootUrl": "https://kgsearch.googleapis.com/",
+  "basePath": "",
+  "ownerDomain": "google.com",
+  "name": "kgsearch",
+  "batchPath": "batch",
+  "id": "kgsearch:v1",
+  "documentationLink": "https://developers.google.com/knowledge-graph/",
+  "revision": "20170109",
+  "title": "Knowledge Graph Search API"
 }

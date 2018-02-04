@@ -57,6 +57,7 @@ EVICTION_PRESSURE_TRANSITION_PERIOD=${EVICTION_PRESSURE_TRANSITION_PERIOD:-"1m"}
 # and we don't know the IP of the DNS pod to pass in as --cluster-dns.
 # To set this up by hand, set this flag and change DNS_SERVER_IP.
 # Note also that you need API_HOST (defined above) for correct DNS.
+KUBEPROXY_MODE=${KUBEPROXY_MODE:-""}
 ENABLE_CLUSTER_DNS=${KUBE_ENABLE_CLUSTER_DNS:-true}
 DNS_SERVER_IP=${KUBE_DNS_SERVER_IP:-10.0.0.10}
 DNS_DOMAIN=${KUBE_DNS_NAME:-"cluster.local"}
@@ -112,6 +113,11 @@ if [ "${CLOUD_PROVIDER}" == "openstack" ]; then
         echo "Cloud config ${CLOUD_CONFIG} doesn't exist"
         exit 1
     fi
+fi
+
+#set feature gates if using ipvs mode
+if [ "${KUBEPROXY_MODE}" == "ipvs" ]; then
+    FEATURE_GATES="$FEATURE_GATES,SupportIPVSProxyMode=true"
 fi
 
 # warn if users are running with swap allowed
@@ -221,7 +227,6 @@ LOG_DIR=${LOG_DIR:-"/tmp"}
 CONTAINER_RUNTIME=${CONTAINER_RUNTIME:-"docker"}
 CONTAINER_RUNTIME_ENDPOINT=${CONTAINER_RUNTIME_ENDPOINT:-""}
 IMAGE_SERVICE_ENDPOINT=${IMAGE_SERVICE_ENDPOINT:-""}
-ENABLE_CRI=${ENABLE_CRI:-"true"}
 RKT_PATH=${RKT_PATH:-""}
 RKT_STAGE1_IMAGE=${RKT_STAGE1_IMAGE:-""}
 CHAOS_CHANCE=${CHAOS_CHANCE:-0.0}
@@ -414,7 +419,9 @@ function start_apiserver {
     fi
 
     # Admission Controllers to invoke prior to persisting objects in cluster
-    ADMISSION_CONTROL=Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount${security_admission},DefaultStorageClass,DefaultTolerationSeconds,ResourceQuota
+    #
+    # ResourceQuota must come last, or a creation is recorded, but the pod may be forbidden.
+    ADMISSION_CONTROL=Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount${security_admission},DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota
     # This is the default dir and filename where the apiserver will generate a self-signed cert
     # which should be able to be used as the CA to verify itself
 
@@ -732,13 +739,18 @@ function start_kubeproxy {
     PROXY_LOG=${LOG_DIR}/kube-proxy.log
 
     cat <<EOF > /tmp/kube-proxy.yaml
-apiVersion: componentconfig/v1alpha1
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration
 clientConnection:
   kubeconfig: ${CERT_DIR}/kube-proxy.kubeconfig
 hostnameOverride: ${HOSTNAME_OVERRIDE}
 featureGates: ${FEATURE_GATES}
+mode: ${KUBEPROXY_MODE}
 EOF
+    if [ "${KUBEPROXY_MODE}" == "ipvs" ]; then
+	# Load kernel modules required by IPVS proxier
+        sudo modprobe -a ip_vs ip_vs_rr ip_vs_wrr ip_vs_sh nf_conntrack_ipv4
+    fi
 
     sudo "${GO_OUT}/hyperkube" proxy \
       --config=/tmp/kube-proxy.yaml \
@@ -750,25 +762,22 @@ EOF
     ${CONTROLPLANE_SUDO} "${GO_OUT}/hyperkube" scheduler \
       --v=${LOG_LEVEL} \
       --kubeconfig "$CERT_DIR"/scheduler.kubeconfig \
+      --feature-gates="${FEATURE_GATES}" \
       --master="https://${API_HOST}:${API_SECURE_PORT}" >"${SCHEDULER_LOG}" 2>&1 &
     SCHEDULER_PID=$!
 }
 
 function start_kubedns {
     if [[ "${ENABLE_CLUSTER_DNS}" = true ]]; then
-        echo "Creating kube-system namespace"
-        sed -e "s/{{ pillar\['dns_domain'\] }}/${DNS_DOMAIN}/g" "${KUBE_ROOT}/cluster/addons/dns/kubedns-controller.yaml.in" >| kubedns-deployment.yaml
-        sed -e "s/{{ pillar\['dns_server'\] }}/${DNS_SERVER_IP}/g" "${KUBE_ROOT}/cluster/addons/dns/kubedns-svc.yaml.in" >| kubedns-svc.yaml
+        cp "${KUBE_ROOT}/cluster/addons/dns/kube-dns.yaml.in" kube-dns.yaml
+        sed -i -e "s/{{ pillar\['dns_domain'\] }}/${DNS_DOMAIN}/g" kube-dns.yaml
+        sed -i -e "s/{{ pillar\['dns_server'\] }}/${DNS_SERVER_IP}/g" kube-dns.yaml
 
         # TODO update to dns role once we have one.
-        ${KUBECTL} --kubeconfig="${CERT_DIR}/admin.kubeconfig" create clusterrolebinding system:kube-dns --clusterrole=cluster-admin --serviceaccount=kube-system:default
-        # use kubectl to create kubedns deployment and service
-        ${KUBECTL} --kubeconfig="${CERT_DIR}/admin.kubeconfig" --namespace=kube-system create -f ${KUBE_ROOT}/cluster/addons/dns/kubedns-sa.yaml
-        ${KUBECTL} --kubeconfig="${CERT_DIR}/admin.kubeconfig" --namespace=kube-system create -f ${KUBE_ROOT}/cluster/addons/dns/kubedns-cm.yaml
-        ${KUBECTL} --kubeconfig="${CERT_DIR}/admin.kubeconfig" --namespace=kube-system create -f kubedns-deployment.yaml
-        ${KUBECTL} --kubeconfig="${CERT_DIR}/admin.kubeconfig" --namespace=kube-system create -f kubedns-svc.yaml
-        echo "Kube-dns deployment and service successfully deployed."
-        rm  kubedns-deployment.yaml kubedns-svc.yaml
+        # use kubectl to create kubedns addon
+        ${KUBECTL} --kubeconfig="${CERT_DIR}/admin.kubeconfig" --namespace=kube-system create -f kube-dns.yaml
+        echo "Kube-dns addon successfully deployed."
+        rm kube-dns.yaml
     fi
 }
 
@@ -776,8 +785,11 @@ function start_kubedashboard {
     if [[ "${ENABLE_CLUSTER_DASHBOARD}" = true ]]; then
         echo "Creating kubernetes-dashboard"
         # use kubectl to create the dashboard
-        ${KUBECTL} --kubeconfig="${CERT_DIR}/admin.kubeconfig" create -f ${KUBE_ROOT}/cluster/addons/dashboard/dashboard-controller.yaml
-        ${KUBECTL} --kubeconfig="${CERT_DIR}/admin.kubeconfig" create -f ${KUBE_ROOT}/cluster/addons/dashboard/dashboard-service.yaml
+        ${KUBECTL} --kubeconfig="${CERT_DIR}/admin.kubeconfig" apply -f ${KUBE_ROOT}/cluster/addons/dashboard/dashboard-secret.yaml
+        ${KUBECTL} --kubeconfig="${CERT_DIR}/admin.kubeconfig" apply -f ${KUBE_ROOT}/cluster/addons/dashboard/dashboard-configmap.yaml
+        ${KUBECTL} --kubeconfig="${CERT_DIR}/admin.kubeconfig" apply -f ${KUBE_ROOT}/cluster/addons/dashboard/dashboard-rbac.yaml
+        ${KUBECTL} --kubeconfig="${CERT_DIR}/admin.kubeconfig" apply -f ${KUBE_ROOT}/cluster/addons/dashboard/dashboard-controller.yaml
+        ${KUBECTL} --kubeconfig="${CERT_DIR}/admin.kubeconfig" apply -f ${KUBE_ROOT}/cluster/addons/dashboard/dashboard-service.yaml
         echo "kubernetes-dashboard deployment and service successfully deployed."
     fi
 }

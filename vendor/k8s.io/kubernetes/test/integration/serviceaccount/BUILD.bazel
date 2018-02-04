@@ -29,6 +29,7 @@ go_test(
         "//vendor/k8s.io/kubernetes/pkg/controller:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/controller/serviceaccount:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/serviceaccount:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/metrics:go_default_library",
         "//vendor/k8s.io/kubernetes/plugin/pkg/admission/serviceaccount:go_default_library",
         "//vendor/k8s.io/kubernetes/test/integration/framework:go_default_library",
     ],

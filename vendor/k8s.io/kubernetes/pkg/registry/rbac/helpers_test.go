@@ -21,8 +21,8 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	kapi "k8s.io/kubernetes/pkg/api"
-	kapihelper "k8s.io/kubernetes/pkg/api/helper"
+	kapi "k8s.io/kubernetes/pkg/apis/core"
+	kapihelper "k8s.io/kubernetes/pkg/apis/core/helper"
 )
 
 func newPod() *kapi.Pod {
@@ -125,6 +125,19 @@ func TestIsOnlyMutatingGCFields(t *testing.T) {
 			},
 			old: func() runtime.Object {
 				return newPod()
+			},
+			expected: false,
+		},
+		{
+			name: "and nil",
+			obj: func() runtime.Object {
+				obj := newPod()
+				obj.OwnerReferences = append(obj.OwnerReferences, metav1.OwnerReference{Name: "foo"})
+				obj.Spec.RestartPolicy = kapi.RestartPolicyAlways
+				return obj
+			},
+			old: func() runtime.Object {
+				return (*kapi.Pod)(nil)
 			},
 			expected: false,
 		},
