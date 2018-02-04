@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package commands
 
 import (
 	"fmt"
@@ -27,14 +27,14 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
-// cloudDiscoveryStatusStore implements status.Store by inspecting cloud objects.
+// CloudDiscoveryStatusStore implements status.Store by inspecting cloud objects.
 // Likely temporary until we validate our status usage
-type cloudDiscoveryStatusStore struct {
+type CloudDiscoveryStatusStore struct {
 }
 
-var _ kops.StatusStore = &cloudDiscoveryStatusStore{}
+var _ kops.StatusStore = &CloudDiscoveryStatusStore{}
 
-func (s *cloudDiscoveryStatusStore) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+func (s *CloudDiscoveryStatusStore) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
 	cloud, err := cloudup.BuildCloud(cluster)
 	if err != nil {
 		return nil, err
@@ -71,7 +71,7 @@ func (s *cloudDiscoveryStatusStore) GetApiIngressStatus(cluster *kops.Cluster) (
 }
 
 // FindClusterStatus discovers the status of the cluster, by inspecting the cloud objects
-func (s *cloudDiscoveryStatusStore) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error) {
+func (s *CloudDiscoveryStatusStore) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error) {
 	cloud, err := cloudup.BuildCloud(cluster)
 	if err != nil {
 		return nil, err

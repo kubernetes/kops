@@ -27,6 +27,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
@@ -112,7 +113,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 			case *kopsapi.Cluster:
 				{
 					// Retrieve the current status of the cluster.  This will eventually be part of the cluster object.
-					statusDiscovery := &cloudDiscoveryStatusStore{}
+					statusDiscovery := &commands.CloudDiscoveryStatusStore{}
 					status, err := statusDiscovery.FindClusterStatus(v)
 					if err != nil {
 						return err
