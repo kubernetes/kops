@@ -298,6 +298,89 @@ const SingleServerBody = `
 }
 `
 
+// FaultyServerBody is the body of a Get request on an existing server
+// which has a fault/error.
+const FaultyServerBody = `
+{
+	"server": {
+		"status": "ACTIVE",
+		"updated": "2014-09-25T13:04:49Z",
+		"hostId": "29d3c8c896a45aa4c34e52247875d7fefc3d94bbcc9f622b5d204362",
+		"OS-EXT-SRV-ATTR:host": "devstack",
+		"addresses": {
+			"private": [
+				{
+					"OS-EXT-IPS-MAC:mac_addr": "fa:16:3e:9e:89:be",
+					"version": 4,
+					"addr": "10.0.0.31",
+					"OS-EXT-IPS:type": "fixed"
+				}
+			]
+		},
+		"links": [
+			{
+				"href": "http://104.130.131.164:8774/v2/fcad67a6189847c4aecfa3c81a05783b/servers/9e5476bd-a4ec-4653-93d6-72c93aa682ba",
+				"rel": "self"
+			},
+			{
+				"href": "http://104.130.131.164:8774/fcad67a6189847c4aecfa3c81a05783b/servers/9e5476bd-a4ec-4653-93d6-72c93aa682ba",
+				"rel": "bookmark"
+			}
+		],
+		"key_name": null,
+		"image": {
+			"id": "f90f6034-2570-4974-8351-6b49732ef2eb",
+			"links": [
+				{
+					"href": "http://104.130.131.164:8774/fcad67a6189847c4aecfa3c81a05783b/images/f90f6034-2570-4974-8351-6b49732ef2eb",
+					"rel": "bookmark"
+				}
+			]
+		},
+		"OS-EXT-STS:task_state": null,
+		"OS-EXT-STS:vm_state": "active",
+		"OS-EXT-SRV-ATTR:instance_name": "instance-0000001d",
+		"OS-SRV-USG:launched_at": "2014-09-25T13:04:49.000000",
+		"OS-EXT-SRV-ATTR:hypervisor_hostname": "devstack",
+		"flavor": {
+			"id": "1",
+			"links": [
+				{
+					"href": "http://104.130.131.164:8774/fcad67a6189847c4aecfa3c81a05783b/flavors/1",
+					"rel": "bookmark"
+				}
+			]
+		},
+		"id": "9e5476bd-a4ec-4653-93d6-72c93aa682ba",
+		"security_groups": [
+			{
+				"name": "default"
+			}
+		],
+		"OS-SRV-USG:terminated_at": null,
+		"OS-EXT-AZ:availability_zone": "nova",
+		"user_id": "9349aff8be7545ac9d2f1d00999a23cd",
+		"name": "derp",
+		"created": "2014-09-25T13:04:41Z",
+		"tenant_id": "fcad67a6189847c4aecfa3c81a05783b",
+		"OS-DCF:diskConfig": "MANUAL",
+		"os-extended-volumes:volumes_attached": [],
+		"accessIPv4": "",
+		"accessIPv6": "",
+		"progress": 0,
+		"OS-EXT-STS:power_state": 1,
+		"config_drive": "",
+		"metadata": {},
+		"fault": {
+			"message": "Conflict updating instance c2ce4dea-b73f-4d01-8633-2c6032869281. Expected: {'task_state': [u'spawning']}. Actual: {'task_state': None}",
+			"code": 500,
+			"created": "2017-11-11T07:58:39Z",
+			"details": "Stock details for test"
+		}
+	}
+}
+`
+
 const ServerPasswordBody = `
 {
     "password": "xlozO3wLCBRWAa2yDjCCVx8vwNPypxnypmRYDa/zErlQ+EzPe1S/Gz6nfmC52mOlOSCRuUOmG7kqqgejPof6M7bOezS387zjq4LSvvwp28zUknzy4YzfFGhnHAdai3TxUJ26pfQCYrq8UTzmKF2Bq8ioSEtVVzM0A96pDh8W2i7BOz6MdoiVyiev/I1K2LsuipfxSJR7Wdke4zNXJjHHP2RfYsVbZ/k9ANu+Nz4iIH8/7Cacud/pphH7EjrY6a4RZNrjQskrhKYed0YERpotyjYk1eDtRe72GrSiXteqCM4biaQ5w3ruS+AcX//PXk3uJ5kC7d67fPXaVz4WaQRYMg=="
@@ -469,6 +552,15 @@ var (
 				"name": "default",
 			},
 		},
+	}
+
+	faultTimeCreated, _ = time.Parse(time.RFC3339, "2017-11-11T07:58:39Z")
+	DerpFault           = servers.Fault{
+		Code:    500,
+		Created: faultTimeCreated,
+		Details: "Stock details for test",
+		Message: "Conflict updating instance c2ce4dea-b73f-4d01-8633-2c6032869281. " +
+			"Expected: {'task_state': [u'spawning']}. Actual: {'task_state': None}",
 	}
 )
 
@@ -704,6 +796,18 @@ func HandleServerGetSuccessfully(t *testing.T) {
 		th.TestHeader(t, r, "Accept", "application/json")
 
 		fmt.Fprintf(w, SingleServerBody)
+	})
+}
+
+// HandleServerGetFaultSuccessfully sets up the test server to respond to a server Get
+// request which contains a fault.
+func HandleServerGetFaultSuccessfully(t *testing.T) {
+	th.Mux.HandleFunc("/servers/1234asdf", func(w http.ResponseWriter, r *http.Request) {
+		th.TestMethod(t, r, "GET")
+		th.TestHeader(t, r, "X-Auth-Token", client.TokenID)
+		th.TestHeader(t, r, "Accept", "application/json")
+
+		fmt.Fprintf(w, FaultyServerBody)
 	})
 }
 

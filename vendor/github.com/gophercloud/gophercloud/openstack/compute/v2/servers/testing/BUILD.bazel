@@ -27,6 +27,7 @@ go_test(
     deps = [
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/diskconfig:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/servers:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/pagination:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/testhelper:go_default_library",

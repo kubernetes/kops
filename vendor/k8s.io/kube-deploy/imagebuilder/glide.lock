@@ -1,0 +1,88 @@
+hash: d8ebb43fb9bda2861c6d3cf8cc7f270791e1e7f2161c51cefcb32a7630138e2d
+updated: 2016-07-04T16:01:53.294324612-04:00
+imports:
+- name: github.com/aws/aws-sdk-go
+  version: caee6e866bf437a6bef0777a3bf141cdd3aa022d
+  subpackages:
+  - aws
+  - aws/awserr
+  - aws/session
+  - service/ec2
+  - aws/credentials
+  - aws/client
+  - aws/corehandlers
+  - aws/defaults
+  - aws/request
+  - private/endpoints
+  - aws/awsutil
+  - aws/client/metadata
+  - aws/signer/v4
+  - private/protocol
+  - private/protocol/ec2query
+  - private/waiter
+  - aws/credentials/ec2rolecreds
+  - aws/ec2metadata
+  - private/protocol/rest
+  - private/protocol/query/queryutil
+  - private/protocol/xml/xmlutil
+- name: github.com/cloudfoundry-incubator/candiedyaml
+  version: 99c3df83b51532e3615f851d8c2dbb638f5313bf
+- name: github.com/ghodss/yaml
+  version: aa0c862057666179de291b67d9f093d12b5a8473
+- name: github.com/go-ini/ini
+  version: 927d8d7ced542ab92df77ac1637b6e56336ee0dd
+- name: github.com/golang/glog
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+- name: github.com/golang/protobuf
+  version: 3852dcfda249c2097355a6aabb199a28d97b30df
+  subpackages:
+  - proto
+- name: github.com/jmespath/go-jmespath
+  version: 0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74
+- name: golang.org/x/crypto
+  version: 0c565bf13221fb55497d7ae2bb95694db1fd1bff
+  subpackages:
+  - ssh
+  - curve25519
+  - ed25519
+  - ed25519/internal/edwards25519
+- name: golang.org/x/net
+  version: b400c2eff1badec7022a8c8f5bea058b6315eed7
+  subpackages:
+  - context
+  - context/ctxhttp
+- name: golang.org/x/oauth2
+  version: df5b72659a3b1789a345ea643bb7c28442681652
+  subpackages:
+  - google
+  - internal
+  - jws
+  - jwt
+- name: google.golang.org/api
+  version: 57212573ccf9e4f69f4caa0336831697e29adcd6
+  subpackages:
+  - compute/v1
+  - googleapi
+  - storage/v1
+  - gensupport
+  - googleapi/internal/uritemplates
+- name: google.golang.org/appengine
+  version: 267c27e7492265b84fc6719503b14a1e17975d79
+  subpackages:
+  - urlfetch
+  - internal
+  - internal/app_identity
+  - internal/modules
+  - internal/urlfetch
+  - internal/base
+  - internal/datastore
+  - internal/log
+  - internal/remote_api
+- name: google.golang.org/cloud
+  version: ebfe3819c9ab4acaf086ae57e4cbd7dee683baf0
+  subpackages:
+  - compute/metadata
+  - internal
+- name: gopkg.in/yaml.v2
+  version: a83829b6f1293c91addabc89d0571c246397bbf4
+devImports: []

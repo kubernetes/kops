@@ -97,6 +97,7 @@ var _ = framework.KubeDescribe("Summary API", func() {
 						"PageFaults":      bounded(1000, 1E9),
 						"MajorPageFaults": bounded(0, 100000),
 					}),
+					"Accelerators":       BeEmpty(),
 					"Rootfs":             BeNil(),
 					"Logs":               BeNil(),
 					"UserDefinedMetrics": BeEmpty(),
@@ -145,6 +146,7 @@ var _ = framework.KubeDescribe("Summary API", func() {
 							"PageFaults":      bounded(100, 1000000),
 							"MajorPageFaults": bounded(0, 10),
 						}),
+						"Accelerators": BeEmpty(),
 						"Rootfs": ptrMatchAllFields(gstruct.Fields{
 							"Time":           recent(maxStatsAge),
 							"AvailableBytes": fsCapacityBounds,
@@ -167,11 +169,29 @@ var _ = framework.KubeDescribe("Summary API", func() {
 					}),
 				}),
 				"Network": ptrMatchAllFields(gstruct.Fields{
-					"Time":     recent(maxStatsAge),
-					"RxBytes":  bounded(10, 10*framework.Mb),
-					"RxErrors": bounded(0, 1000),
-					"TxBytes":  bounded(10, 10*framework.Mb),
-					"TxErrors": bounded(0, 1000),
+					"Time": recent(maxStatsAge),
+					"InterfaceStats": gstruct.MatchAllFields(gstruct.Fields{
+						"Name":     Equal("eth0"),
+						"RxBytes":  bounded(10, 10*framework.Mb),
+						"RxErrors": bounded(0, 1000),
+						"TxBytes":  bounded(10, 10*framework.Mb),
+						"TxErrors": bounded(0, 1000),
+					}),
+					"Interfaces": Not(BeNil()),
+				}),
+				"CPU": ptrMatchAllFields(gstruct.Fields{
+					"Time":                 recent(maxStatsAge),
+					"UsageNanoCores":       bounded(100000, 1E9),
+					"UsageCoreNanoSeconds": bounded(10000000, 1E11),
+				}),
+				"Memory": ptrMatchAllFields(gstruct.Fields{
+					"Time":            recent(maxStatsAge),
+					"AvailableBytes":  bounded(1*framework.Kb, 10*framework.Mb),
+					"UsageBytes":      bounded(10*framework.Kb, 20*framework.Mb),
+					"WorkingSetBytes": bounded(10*framework.Kb, 20*framework.Mb),
+					"RSSBytes":        bounded(1*framework.Kb, framework.Mb),
+					"PageFaults":      bounded(0, 1000000),
+					"MajorPageFaults": bounded(0, 10),
 				}),
 				"VolumeStats": gstruct.MatchAllElements(summaryObjectID, gstruct.Elements{
 					"test-empty-dir": gstruct.MatchAllFields(gstruct.Fields{
@@ -188,7 +208,17 @@ var _ = framework.KubeDescribe("Summary API", func() {
 						}),
 					}),
 				}),
+				"EphemeralStorage": ptrMatchAllFields(gstruct.Fields{
+					"Time":           recent(maxStatsAge),
+					"AvailableBytes": fsCapacityBounds,
+					"CapacityBytes":  fsCapacityBounds,
+					"UsedBytes":      bounded(framework.Kb, 21*framework.Mb),
+					"InodesFree":     bounded(1E4, 1E8),
+					"Inodes":         bounded(1E4, 1E8),
+					"InodesUsed":     bounded(0, 1E8),
+				}),
 			})
+
 			matchExpectations := ptrMatchAllFields(gstruct.Fields{
 				"Node": gstruct.MatchAllFields(gstruct.Fields{
 					"NodeName":         Equal(framework.TestContext.NodeName),
@@ -210,13 +240,17 @@ var _ = framework.KubeDescribe("Summary API", func() {
 						"MajorPageFaults": bounded(0, 100000),
 					}),
 					// TODO(#28407): Handle non-eth0 network interface names.
-					"Network": Or(BeNil(), ptrMatchAllFields(gstruct.Fields{
-						"Time":     recent(maxStatsAge),
-						"RxBytes":  bounded(1*framework.Mb, 100*framework.Gb),
-						"RxErrors": bounded(0, 100000),
-						"TxBytes":  bounded(10*framework.Kb, 10*framework.Gb),
-						"TxErrors": bounded(0, 100000),
-					})),
+					"Network": ptrMatchAllFields(gstruct.Fields{
+						"Time": recent(maxStatsAge),
+						"InterfaceStats": gstruct.MatchAllFields(gstruct.Fields{
+							"Name":     Or(BeEmpty(), Equal("eth0")),
+							"RxBytes":  Or(BeNil(), bounded(1*framework.Mb, 100*framework.Gb)),
+							"RxErrors": Or(BeNil(), bounded(0, 100000)),
+							"TxBytes":  Or(BeNil(), bounded(10*framework.Kb, 10*framework.Gb)),
+							"TxErrors": Or(BeNil(), bounded(0, 100000)),
+						}),
+						"Interfaces": Not(BeNil()),
+					}),
 					"Fs": ptrMatchAllFields(gstruct.Fields{
 						"Time":           recent(maxStatsAge),
 						"AvailableBytes": fsCapacityBounds,
@@ -342,7 +376,6 @@ func recordSystemCgroupProcesses() {
 	}
 	cgroups := map[string]string{
 		"kubelet": cfg.KubeletCgroups,
-		"runtime": cfg.RuntimeCgroups,
 		"misc":    cfg.SystemCgroups,
 	}
 	for name, cgroup := range cgroups {

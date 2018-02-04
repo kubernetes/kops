@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"math"
+	"net"
 	"time"
 
 	"github.com/mailru/easyjson"
@@ -296,10 +297,10 @@ var structsString = "{" +
 	`"SubNil":null,` +
 
 	`"SubSlice":[{"Value":"s1","Value2":""},{"Value":"s2","Value2":""}],` +
-	`"SubSliceNil":[],` +
+	`"SubSliceNil":null,` +
 
 	`"SubPtrSlice":[{"Value":"p1","Value2":""},{"Value":"p2","Value2":""}],` +
-	`"SubPtrSliceNil":[],` +
+	`"SubPtrSliceNil":null,` +
 
 	`"SubA1":{"Value":"test3","Value2":"v3"},` +
 	`"SubA2":{"Value":"test4","Value2":"v4"},` +
@@ -392,11 +393,54 @@ var rawString = `{` +
 	`}`
 
 type StdMarshaler struct {
-	T time.Time
+	T  time.Time
+	IP net.IP
 }
 
-var stdMarshalerValue = StdMarshaler{T: time.Date(2016, 01, 02, 14, 15, 10, 0, time.UTC)}
-var stdMarshalerString = `{"T":"2016-01-02T14:15:10Z"}`
+var stdMarshalerValue = StdMarshaler{
+	T:  time.Date(2016, 01, 02, 14, 15, 10, 0, time.UTC),
+	IP: net.IPv4(192, 168, 0, 1),
+}
+var stdMarshalerString = `{` +
+	`"T":"2016-01-02T14:15:10Z",` +
+	`"IP":"192.168.0.1"` +
+	`}`
+
+type UserMarshaler struct {
+	V vMarshaler
+	T tMarshaler
+}
+
+type vMarshaler net.IP
+
+func (v vMarshaler) MarshalJSON() ([]byte, error) {
+	return []byte(`"0::0"`), nil
+}
+
+func (v *vMarshaler) UnmarshalJSON([]byte) error {
+	*v = vMarshaler(net.IPv6zero)
+	return nil
+}
+
+type tMarshaler net.IP
+
+func (v tMarshaler) MarshalText() ([]byte, error) {
+	return []byte(`[0::0]`), nil
+}
+
+func (v *tMarshaler) UnmarshalText([]byte) error {
+	*v = tMarshaler(net.IPv6zero)
+	return nil
+}
+
+var userMarshalerValue = UserMarshaler{
+	V: vMarshaler(net.IPv6zero),
+	T: tMarshaler(net.IPv6zero),
+}
+var userMarshalerString = `{` +
+	`"V":"0::0",` +
+	`"T":"[0::0]"` +
+	`}`
 
 type unexportedStruct struct {
 	Value string
@@ -417,6 +461,73 @@ var excludedFieldValue = ExcludedField{
 	DoNotProcess1: false,
 }
 var excludedFieldString = `{"process":true}`
+
+type Slices struct {
+	ByteSlice      []byte
+	EmptyByteSlice []byte
+	NilByteSlice   []byte
+	IntSlice       []int
+	EmptyIntSlice  []int
+	NilIntSlice    []int
+}
+
+var sliceValue = Slices{
+	ByteSlice:      []byte("abc"),
+	EmptyByteSlice: []byte{},
+	NilByteSlice:   []byte(nil),
+	IntSlice:       []int{1, 2, 3, 4, 5},
+	EmptyIntSlice:  []int{},
+	NilIntSlice:    []int(nil),
+}
+
+var sliceString = `{` +
+	`"ByteSlice":"YWJj",` +
+	`"EmptyByteSlice":"",` +
+	`"NilByteSlice":null,` +
+	`"IntSlice":[1,2,3,4,5],` +
+	`"EmptyIntSlice":[],` +
+	`"NilIntSlice":null` +
+	`}`
+
+type Arrays struct {
+	ByteArray      [3]byte
+	EmptyByteArray [0]byte
+	IntArray       [5]int
+	EmptyIntArray  [0]int
+}
+
+var arrayValue = Arrays{
+	ByteArray:      [3]byte{'a', 'b', 'c'},
+	EmptyByteArray: [0]byte{},
+	IntArray:       [5]int{1, 2, 3, 4, 5},
+	EmptyIntArray:  [0]int{},
+}
+
+var arrayString = `{` +
+	`"ByteArray":"YWJj",` +
+	`"EmptyByteArray":"",` +
+	`"IntArray":[1,2,3,4,5],` +
+	`"EmptyIntArray":[]` +
+	`}`
+
+var arrayOverflowString = `{` +
+	`"ByteArray":"YWJjbnNk",` +
+	`"EmptyByteArray":"YWJj",` +
+	`"IntArray":[1,2,3,4,5,6],` +
+	`"EmptyIntArray":[7,8]` +
+	`}`
+
+var arrayUnderflowValue = Arrays{
+	ByteArray:      [3]byte{'x', 0, 0},
+	EmptyByteArray: [0]byte{},
+	IntArray:       [5]int{1, 2, 0, 0, 0},
+	EmptyIntArray:  [0]int{},
+}
+
+var arrayUnderflowString = `{` +
+	`"ByteArray":"eA==",` +
+	`"IntArray":[1,2]` +
+	`}`
 
 type Str string
 
@@ -448,6 +559,7 @@ type NamedMap map[Str]Str
 type DeepNest struct {
 	SliceMap         map[Str][]Str
 	SliceMap1        map[Str][]Str
+	SliceMap2        map[Str][]Str
 	NamedSliceMap    map[Str]NamedSlice
 	NamedMapMap      map[Str]NamedMap
 	MapSlice         []map[Str]Str
@@ -464,7 +576,10 @@ var deepNestValue = DeepNest{
 		},
 	},
 	SliceMap1: map[Str][]Str{
-		"testSliceMap1": nil,
+		"testSliceMap1": []Str(nil),
+	},
+	SliceMap2: map[Str][]Str{
+		"testSliceMap2": []Str{},
 	},
 	NamedSliceMap: map[Str]NamedSlice{
 		"testNamedSliceMap": NamedSlice{
@@ -510,7 +625,10 @@ var deepNestString = `{` +
 	`"testSliceMap":["0","1"]` +
 	`},` +
 	`"SliceMap1":{` +
-	`"testSliceMap1":[]` +
+	`"testSliceMap1":null` +
+	`},` +
+	`"SliceMap2":{` +
+	`"testSliceMap2":[]` +
 	`},` +
 	`"NamedSliceMap":{` +
 	`"testNamedSliceMap":["2","3"]` +
@@ -539,7 +657,38 @@ var IntsValue = Ints{1, 2, 3, 4, 5}
 
 var IntsString = `[1,2,3,4,5]`
 
+//easyjson:json
+type MapStringString map[string]string
+
+var mapStringStringValue = MapStringString{"a": "b"}
+
+var mapStringStringString = `{"a":"b"}`
+
 type RequiredOptionalStruct struct {
 	FirstName string `json:"first_name,required"`
 	Lastname  string `json:"last_name"`
 }
+
+//easyjson:json
+type EncodingFlagsTestMap struct {
+	F map[string]string
+}
+
+//easyjson:json
+type EncodingFlagsTestSlice struct {
+	F []string
+}
+
+type StructWithInterface struct {
+	Field1 int         `json:"f1"`
+	Field2 interface{} `json:"f2"`
+	Field3 string      `json:"f3"`
+}
+
+type EmbeddedStruct struct {
+	Field1 int    `json:"f1"`
+	Field2 string `json:"f2"`
+}
+
+var structWithInterfaceString = `{"f1":1,"f2":{"f1":11,"f2":"22"},"f3":"3"}`
+var structWithInterfaceValueFilled = StructWithInterface{1, &EmbeddedStruct{11, "22"}, "3"}

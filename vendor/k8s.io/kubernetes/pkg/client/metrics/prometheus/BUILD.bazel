@@ -7,6 +7,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/client/metrics:go_default_library",
+        "//vendor/k8s.io/client-go/tools/metrics:go_default_library",
     ],
 )

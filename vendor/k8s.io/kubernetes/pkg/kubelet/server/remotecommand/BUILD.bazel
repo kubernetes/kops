@@ -23,7 +23,7 @@ go_library(
         "//vendor/k8s.io/apiserver/pkg/server/httplog:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/util/wsstream:go_default_library",
         "//vendor/k8s.io/client-go/tools/remotecommand:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/api:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/core:go_default_library",
         "//vendor/k8s.io/utils/exec:go_default_library",
     ],
 )

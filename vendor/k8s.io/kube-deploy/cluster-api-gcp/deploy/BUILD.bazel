@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "deploy.go",
+        "deploy_helper.go",
+    ],
+    importpath = "k8s.io/kube-deploy/cluster-api-gcp/deploy",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/client-go/plugin/pkg/client/auth/gcp:go_default_library",
+        "//vendor/k8s.io/kube-deploy/cluster-api-gcp/cloud:go_default_library",
+        "//vendor/k8s.io/kube-deploy/cluster-api-gcp/util:go_default_library",
+        "//vendor/k8s.io/kube-deploy/cluster-api/api/cluster/v1alpha1:go_default_library",
+        "//vendor/k8s.io/kube-deploy/cluster-api/client:go_default_library",
+        "//vendor/k8s.io/kube-deploy/cluster-api/util:go_default_library",
+    ],
+)

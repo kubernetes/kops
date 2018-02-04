@@ -57,25 +57,30 @@ PACKAGES=(
   k8s.io/api/batch/v2alpha1
   k8s.io/api/apps/v1beta1
   k8s.io/api/apps/v1beta2
+  k8s.io/api/apps/v1
   k8s.io/api/authentication/v1
   k8s.io/api/authentication/v1beta1
+  k8s.io/api/events/v1beta1
   k8s.io/api/rbac/v1alpha1
   k8s.io/api/rbac/v1beta1
+  k8s.io/api/rbac/v1
   k8s.io/api/certificates/v1beta1
   k8s.io/api/imagepolicy/v1alpha1
   k8s.io/api/scheduling/v1alpha1
   k8s.io/api/settings/v1alpha1
+  k8s.io/api/storage/v1alpha1
   k8s.io/api/storage/v1beta1
   k8s.io/api/storage/v1
   k8s.io/api/admissionregistration/v1alpha1
-  k8s.io/api/admission/v1alpha1
+  k8s.io/api/admissionregistration/v1beta1
+  k8s.io/api/admission/v1beta1
   k8s.io/api/networking/v1
-  k8s.io/kubernetes/federation/apis/federation/v1beta1
   k8s.io/metrics/pkg/apis/metrics/v1alpha1
   k8s.io/metrics/pkg/apis/metrics/v1beta1
   k8s.io/metrics/pkg/apis/custom_metrics/v1beta1
   k8s.io/apiserver/pkg/apis/audit/v1alpha1
   k8s.io/apiserver/pkg/apis/audit/v1beta1
+  k8s.io/apiserver/pkg/apis/example2/v1
 )
 
 # requires the 'proto' tag to build (will remove when ready)

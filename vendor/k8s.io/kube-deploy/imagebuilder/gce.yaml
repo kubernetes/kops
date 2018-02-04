@@ -1,0 +1,8 @@
+Cloud: gce
+TemplatePath: templates/1.3.yml
+
+# GCE Project that you want to use
+Project: <project-name>
+
+# GCS bucket where the image should be uploaded
+GCSDestination: gs://<bucket-name>/

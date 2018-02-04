@@ -38,7 +38,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/bgentry/speakeasy:go_default_library",
-        "//vendor/github.com/boltdb/bolt:go_default_library",
+        "//vendor/github.com/coreos/bbolt:go_default_library",
         "//vendor/github.com/coreos/etcd/client:go_default_library",
         "//vendor/github.com/coreos/etcd/clientv3:go_default_library",
         "//vendor/github.com/coreos/etcd/clientv3/concurrency:go_default_library",

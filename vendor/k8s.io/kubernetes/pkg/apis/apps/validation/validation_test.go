@@ -23,8 +23,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/apps"
+	api "k8s.io/kubernetes/pkg/apis/core"
 )
 
 func TestValidateStatefulSet(t *testing.T) {
@@ -293,7 +293,7 @@ func TestValidateStatefulSet(t *testing.T) {
 				field != "metadata.labels" &&
 				field != "status.replicas" &&
 				field != "spec.updateStrategy" &&
-				field != "spec.updateStrategy.rollingUpate" &&
+				field != "spec.updateStrategy.rollingUpdate" &&
 				field != "spec.updateStrategy.rollingUpdate.partition" {
 				t.Errorf("%s: missing prefix for: %v", k, errs[i])
 			}
@@ -430,14 +430,7 @@ func TestValidateStatefulSetUpdate(t *testing.T) {
 		},
 	}
 
-	obj, err := api.Scheme.DeepCopy(validPodTemplate)
-	if err != nil {
-		t.Errorf("failure during test setup when copying PodTemplate: %v", err)
-	}
-	addContainersValidTemplate, ok := obj.(api.PodTemplate)
-	if !ok {
-		t.Errorf("failure during test setup, copied pod template is not a pod template")
-	}
+	addContainersValidTemplate := validPodTemplate.DeepCopy()
 	addContainersValidTemplate.Template.Spec.Containers = append(addContainersValidTemplate.Template.Spec.Containers,
 		api.Container{Name: "def", Image: "image2", ImagePullPolicy: "IfNotPresent"})
 	if len(addContainersValidTemplate.Template.Spec.Containers) != len(validPodTemplate.Template.Spec.Containers)+1 {

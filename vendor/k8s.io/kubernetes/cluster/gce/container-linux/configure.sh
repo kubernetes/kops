@@ -18,10 +18,16 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# Use --retry-connrefused opt only if it's supported by curl.
+CURL_RETRY_CONNREFUSED=""
+if curl --help | grep -q -- '--retry-connrefused'; then
+  CURL_RETRY_CONNREFUSED='--retry-connrefused'
+fi
+
 function download-kube-env {
   # Fetch kube-env from GCE metadata server.
   local -r tmp_kube_env="/tmp/kube-env.yaml"
-  curl --fail --retry 5 --retry-delay 3 --silent --show-error \
+  curl --fail --retry 5 --retry-delay 3 ${CURL_RETRY_CONNREFUSED} --silent --show-error \
     -H "X-Google-Metadata-Request: True" \
     -o "${tmp_kube_env}" \
     http://metadata.google.internal/computeMetadata/v1/instance/attributes/kube-env
@@ -55,7 +61,7 @@ function download-or-bust {
     for url in "${urls[@]}"; do
       local file="${url##*/}"
       rm -f "${file}"
-      if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --max-time 300 --retry 6 --retry-delay 10 "${url}"; then
+      if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --max-time 300 --retry 6 --retry-delay 10 ${CURL_RETRY_CONNREFUSED} "${url}"; then
         echo "== Failed to download ${url}. Retrying. =="
       elif [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
         echo "== Hash validation of ${url} failed. Retrying. =="
@@ -110,13 +116,13 @@ function install-kube-binary-config {
 
   if [[ "${NETWORK_PROVIDER:-}" == "kubenet" ]] || \
      [[ "${NETWORK_PROVIDER:-}" == "cni" ]]; then
-    #TODO(andyzheng0831): We should make the cni version number as a k8s env variable.
-    local -r cni_tar="cni-0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff.tar.gz"
-    local -r cni_sha1="1d9788b0f5420e1a219aad2cb8681823fc515e7c"
+    local -r cni_version="v0.6.0"
+    local -r cni_tar="cni-plugins-amd64-${cni_version}.tgz"
+    local -r cni_sha1="d595d3ded6499a64e8dac02466e2f5f2ce257c9f"
     download-or-bust "${cni_sha1}" "https://storage.googleapis.com/kubernetes-release/network-plugins/${cni_tar}"
     local -r cni_dir="${KUBE_HOME}/cni"
-    mkdir -p "${cni_dir}"
-    tar xzf "${KUBE_HOME}/${cni_tar}" -C "${cni_dir}" --overwrite
+    mkdir -p "${cni_dir}/bin"
+    tar xzf "${KUBE_HOME}/${cni_tar}" -C "${cni_dir}/bin" --overwrite
     mv "${cni_dir}/bin"/* "${kube_bin}"
     rmdir "${cni_dir}/bin"
     rm -f "${KUBE_HOME}/${cni_tar}"

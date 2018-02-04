@@ -28,12 +28,13 @@ import (
 	kubeconfigutil "k8s.io/kubernetes/cmd/kubeadm/app/util/kubeconfig"
 )
 
+// TokenUser defines token user
 const TokenUser = "tls-bootstrap-token-user"
 
 // For returns a KubeConfig object that can be used for doing the TLS Bootstrap with the right credentials
 // Also, before returning anything, it makes sure it can trust the API Server
 func For(cfg *kubeadmapi.NodeConfiguration) (*clientcmdapi.Config, error) {
-	// TODO: Print summary info about the CA certificate, along with the the checksum signature
+	// TODO: Print summary info about the CA certificate, along with the checksum signature
 	// we also need an ability for the user to configure the client to validate received CA cert against a checksum
 	clusterinfo, err := GetValidatedClusterInfoObject(cfg)
 	if err != nil {
@@ -60,7 +61,7 @@ func GetValidatedClusterInfoObject(cfg *kubeadmapi.NodeConfiguration) (*clientcm
 	case len(cfg.DiscoveryToken) != 0:
 		return token.RetrieveValidatedClusterInfo(cfg.DiscoveryToken, cfg.DiscoveryTokenAPIServers, cfg.DiscoveryTokenCACertHashes)
 	default:
-		return nil, fmt.Errorf("couldn't find a valid discovery configuration.")
+		return nil, fmt.Errorf("couldn't find a valid discovery configuration")
 	}
 }
 

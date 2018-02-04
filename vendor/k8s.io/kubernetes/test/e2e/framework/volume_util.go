@@ -359,6 +359,7 @@ func VolumeTestCleanup(f *Framework, config VolumeTestConfig) {
 // pod.
 func TestVolumeClient(client clientset.Interface, config VolumeTestConfig, fsGroup *int64, tests []VolumeTest) {
 	By(fmt.Sprint("starting ", config.Prefix, " client"))
+	var gracePeriod int64 = 1
 	clientPod := &v1.Pod{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Pod",
@@ -387,6 +388,7 @@ func TestVolumeClient(client clientset.Interface, config VolumeTestConfig, fsGro
 					VolumeMounts: []v1.VolumeMount{},
 				},
 			},
+			TerminationGracePeriodSeconds: &gracePeriod,
 			SecurityContext: &v1.PodSecurityContext{
 				SELinuxOptions: &v1.SELinuxOptions{
 					Level: "s0:c0,c1",
@@ -491,4 +493,16 @@ func InjectHtml(client clientset.Interface, config VolumeTestConfig, volume v1.V
 	ExpectNoError(err, "Failed to create injector pod: %v", err)
 	err = WaitForPodSuccessInNamespace(client, injectPod.Name, injectPod.Namespace)
 	Expect(err).NotTo(HaveOccurred())
+}
+
+func CreateGCEVolume() (*v1.PersistentVolumeSource, string) {
+	diskName, err := CreatePDWithRetry()
+	ExpectNoError(err)
+	return &v1.PersistentVolumeSource{
+		GCEPersistentDisk: &v1.GCEPersistentDiskVolumeSource{
+			PDName:   diskName,
+			FSType:   "ext3",
+			ReadOnly: false,
+		},
+	}, diskName
 }

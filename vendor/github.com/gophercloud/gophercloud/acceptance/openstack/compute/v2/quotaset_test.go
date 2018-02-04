@@ -79,14 +79,14 @@ func getTenantIDByName(t *testing.T, client *gophercloud.ServiceClient, name str
 
 //What will be sent as desired Quotas to the Server
 var UpdatQuotaOpts = quotasets.UpdateOpts{
-	FixedIps:                 gophercloud.IntToPointer(10),
-	FloatingIps:              gophercloud.IntToPointer(10),
+	FixedIPs:                 gophercloud.IntToPointer(10),
+	FloatingIPs:              gophercloud.IntToPointer(10),
 	InjectedFileContentBytes: gophercloud.IntToPointer(10240),
 	InjectedFilePathBytes:    gophercloud.IntToPointer(255),
 	InjectedFiles:            gophercloud.IntToPointer(5),
 	KeyPairs:                 gophercloud.IntToPointer(10),
 	MetadataItems:            gophercloud.IntToPointer(128),
-	Ram:                      gophercloud.IntToPointer(20000),
+	RAM:                      gophercloud.IntToPointer(20000),
 	SecurityGroupRules:       gophercloud.IntToPointer(20),
 	SecurityGroups:           gophercloud.IntToPointer(10),
 	Cores:                    gophercloud.IntToPointer(10),
@@ -97,14 +97,14 @@ var UpdatQuotaOpts = quotasets.UpdateOpts{
 
 //What the Server hopefully returns as the new Quotas
 var UpdatedQuotas = quotasets.QuotaSet{
-	FixedIps:                 10,
-	FloatingIps:              10,
+	FixedIPs:                 10,
+	FloatingIPs:              10,
 	InjectedFileContentBytes: 10240,
 	InjectedFilePathBytes:    255,
 	InjectedFiles:            5,
 	KeyPairs:                 10,
 	MetadataItems:            128,
-	Ram:                      20000,
+	RAM:                      20000,
 	SecurityGroupRules:       20,
 	SecurityGroups:           10,
 	Cores:                    10,

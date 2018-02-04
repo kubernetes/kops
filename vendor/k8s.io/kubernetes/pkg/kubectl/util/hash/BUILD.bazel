@@ -5,7 +5,7 @@ go_library(
     srcs = ["hash.go"],
     importpath = "k8s.io/kubernetes/pkg/kubectl/util/hash",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/k8s.io/kubernetes/pkg/api:go_default_library"],
+    deps = ["//vendor/k8s.io/api/core/v1:go_default_library"],
 )
 
 go_test(
@@ -13,5 +13,5 @@ go_test(
     srcs = ["hash_test.go"],
     embed = [":go_default_library"],
     importpath = "k8s.io/kubernetes/pkg/kubectl/util/hash",
-    deps = ["//vendor/k8s.io/kubernetes/pkg/api:go_default_library"],
+    deps = ["//vendor/k8s.io/api/core/v1:go_default_library"],
 )
