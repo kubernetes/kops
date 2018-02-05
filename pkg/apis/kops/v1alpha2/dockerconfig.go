@@ -48,4 +48,6 @@ type DockerConfig struct {
 	StorageOpts []string `json:"storageOpts,omitempty" flag:"storage-opt,repeat"`
 	// Version is consumed by the nodeup and used to pick the docker version
 	Version *string `json:"version,omitempty"`
+	// LiveRestore enables live restore of docker when containers are still running
+	LiveRestore *bool `json:"liveRestore,omitempty" flag:"live-restore"`
 }
