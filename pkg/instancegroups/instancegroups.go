@@ -24,7 +24,6 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/featureflag"
@@ -313,9 +312,7 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 		ErrOut:           errOut,
 	}
 
-	cmd := &cobra.Command{
-		Use: "cordon NODE",
-	}
+	cmd := cmd.NewCmdDrain(f, out, errOut)
 	args := []string{u.Node.Name}
 	err := options.SetupDrain(cmd, args)
 	if err != nil {
