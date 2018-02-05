@@ -1244,6 +1244,7 @@ func autoConvert_v1alpha2_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.Storage = in.Storage
 	out.StorageOpts = in.StorageOpts
 	out.Version = in.Version
+	out.LiveRestore = in.LiveRestore
 	return nil
 }
 
@@ -1270,6 +1271,7 @@ func autoConvert_kops_DockerConfig_To_v1alpha2_DockerConfig(in *kops.DockerConfi
 	out.Storage = in.Storage
 	out.StorageOpts = in.StorageOpts
 	out.Version = in.Version
+	out.LiveRestore = in.LiveRestore
 	return nil
 }
 
