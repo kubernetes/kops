@@ -538,9 +538,9 @@ func (g *genDeepCopy) GenerateType(c *generator.Context, t *types.Type, w io.Wri
 			sw.Do(fmt.Sprintf("func (in *$.type|raw$) DeepCopy%s() $.type2|raw$ {\n", intf.Name.Name), argsFromType(t, intf))
 			sw.Do("if c := in.DeepCopy(); c != nil {\n", nil)
 			sw.Do("return c\n", nil)
-			sw.Do("} else {\n", nil)
+			sw.Do("}\n", nil)
 			sw.Do("return nil\n", nil)
-			sw.Do("}}\n\n", nil)
+			sw.Do("}\n\n", nil)
 		}
 	}
 

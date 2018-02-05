@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -106,22 +106,4 @@ go_library(
         ],
         "//conditions:default": [],
     }),
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "ascii_test.go",
-        "proxy_test.go",
-    ] + select({
-        "@io_bazel_rules_go//go/platform:linux": [
-            "term_linux_test.go",
-        ],
-        "//conditions:default": [],
-    }),
-    embed = [":go_default_library"],
-    importpath = "github.com/docker/docker/pkg/term",
-    deps = [
-        "//vendor/github.com/stretchr/testify/require:go_default_library",
-    ],
 )

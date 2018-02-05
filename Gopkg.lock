@@ -728,7 +728,6 @@
     "find",
     "list",
     "object",
-    "ovf",
     "property",
     "session",
     "task",
@@ -965,14 +964,7 @@
 
 [[projects]]
   name = "k8s.io/apiextensions-apiserver"
-  packages = [
-    "pkg/apis/apiextensions",
-    "pkg/apis/apiextensions/v1beta1",
-    "pkg/client/clientset/clientset",
-    "pkg/client/clientset/clientset/scheme",
-    "pkg/client/clientset/clientset/typed/apiextensions/v1beta1",
-    "pkg/features"
-  ]
+  packages = ["pkg/features"]
   revision = "6f29dd12234812844d29f52bd520bb01374619ce"
 
 [[projects]]
@@ -1328,22 +1320,6 @@
   revision = "8394c995ab8fbe52216f38d0e1a37de36d820528"
 
 [[projects]]
-  branch = "master"
-  name = "k8s.io/kube-deploy"
-  packages = [
-    "cluster-api-gcp/cloud",
-    "cluster-api-gcp/cloud/google",
-    "cluster-api-gcp/cloud/google/gceproviderconfig",
-    "cluster-api-gcp/cloud/google/gceproviderconfig/v1alpha1",
-    "cluster-api-gcp/errors",
-    "cluster-api-gcp/util",
-    "cluster-api/api/cluster/v1alpha1",
-    "cluster-api/client",
-    "cluster-api/util"
-  ]
-  revision = "413e1a6d03b93d8878e1ef7d51d9e4e67b7546c2"
-
-[[projects]]
   name = "k8s.io/kube-openapi"
   packages = [
     "pkg/builder",
@@ -1564,6 +1540,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bb95e3628a3fa1684b7f484e4464484188d5998cd040b240a9d823735e16c3b5"
+  inputs-digest = "44436cf800022ae978ae92627ffb7855936a7574f8bb041bca837216aa1456e4"
   solver-name = "gps-cdcl"
   solver-version = 1

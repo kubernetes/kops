@@ -1,8 +1,0 @@
-*.iml
-.idea/
-_generated_*.md
-gen_kubectl/build/
-gen_kubectl/manifest.json
-gen_open_api/build/
-gen_open_api/includes/
-gen_open_api/manifest.json
