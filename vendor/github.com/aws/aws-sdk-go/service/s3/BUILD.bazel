@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -31,40 +31,5 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/aws/signer/v4:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/restxml:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["unmarshal_error_leak_test.go"],
-    embed = [":go_default_library"],
-    importpath = "github.com/aws/aws-sdk-go/service/s3",
-    deps = [
-        "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/awstesting:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_xtest",
-    srcs = [
-        "bucket_location_test.go",
-        "customizations_test.go",
-        "examples_test.go",
-        "host_style_bucket_test.go",
-        "platform_handlers_go1.6_test.go",
-        "sse_test.go",
-        "statusok_error_test.go",
-        "unmarshal_error_test.go",
-    ],
-    importpath = "github.com/aws/aws-sdk-go/service/s3_test",
-    deps = [
-        ":go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws/awsutil:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/awstesting/unit:go_default_library",
     ],
 )

@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -15,36 +15,5 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/aws/credentials:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/rest:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "header_rules_test.go",
-        "v4_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "github.com/aws/aws-sdk-go/aws/signer/v4",
-    deps = [
-        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws/credentials:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/awstesting:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_xtest",
-    srcs = [
-        "functional_1_5_test.go",
-        "functional_test.go",
-    ],
-    importpath = "github.com/aws/aws-sdk-go/aws/signer/v4_test",
-    deps = [
-        ":go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/awstesting/unit:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/service/s3:go_default_library",
     ],
 )

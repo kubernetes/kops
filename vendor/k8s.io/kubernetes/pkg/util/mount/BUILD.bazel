@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -79,26 +79,4 @@ go_library(
         ],
         "//conditions:default": [],
     }),
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "safe_format_and_mount_test.go",
-    ] + select({
-        "@io_bazel_rules_go//go/platform:linux": [
-            "exec_mount_test.go",
-            "mount_linux_test.go",
-            "nsenter_mount_test.go",
-        ],
-        "@io_bazel_rules_go//go/platform:windows": [
-            "mount_windows_test.go",
-        ],
-        "//conditions:default": [],
-    }),
-    embed = [":go_default_library"],
-    importpath = "k8s.io/kubernetes/pkg/util/mount",
-    deps = [
-        "//vendor/k8s.io/utils/exec/testing:go_default_library",
-    ],
 )

@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -17,22 +17,6 @@ go_library(
     deps = [
         "//vendor/github.com/chai2010/gettext-go/gettext/mo:go_default_library",
         "//vendor/github.com/chai2010/gettext-go/gettext/plural:go_default_library",
-        "//vendor/github.com/chai2010/gettext-go/gettext/po:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "caller_test.go",
-        "gettext_test.go",
-        "testdata_test.go",
-        "tr_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "github.com/chai2010/gettext-go/gettext",
-    deps = [
-        "//vendor/github.com/chai2010/gettext-go/gettext/mo:go_default_library",
         "//vendor/github.com/chai2010/gettext-go/gettext/po:go_default_library",
     ],
 )
