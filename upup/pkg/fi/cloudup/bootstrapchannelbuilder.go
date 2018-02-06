@@ -388,8 +388,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Weave != nil {
 		key := "networking.weave"
-		// 2.0.6-kops.1 = 2.0.5 with kops manifest tweaks.  This should go away with the next version bump.
-		version := "2.0.6-kops.1"
+		// 2.1.3-kops.2 = 2.1.3, kops packaging version 2.
+		version := "2.1.3-kops.2"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
