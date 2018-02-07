@@ -2840,6 +2840,15 @@ func (in *WeaveNetworkingSpec) DeepCopyInto(out *WeaveNetworkingSpec) {
 			**out = **in
 		}
 	}
+	if in.ConnLimit != nil {
+		in, out := &in.ConnLimit, &out.ConnLimit
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(int32)
+			**out = **in
+		}
+	}
 	return
 }
 

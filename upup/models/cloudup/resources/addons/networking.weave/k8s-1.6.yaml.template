@@ -123,6 +123,10 @@ spec:
             - name: WEAVE_MTU
               value: "{{ .Networking.Weave.MTU }}"
             {{- end }}
+            {{- if .Networking.Weave.ConnLimit }}
+            - name: CONN_LIMIT
+              value: "{{ .Networking.Weave.ConnLimit }}"
+            {{- end }}
           image: 'weaveworks/weave-kube:2.1.3'
           livenessProbe:
             httpGet:
