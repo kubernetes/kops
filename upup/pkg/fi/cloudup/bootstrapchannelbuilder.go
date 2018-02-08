@@ -603,7 +603,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Romana != nil {
 		key := "networking.romana"
-		version := "v2.0.0"
+		version := "v2.0.2"
 
 		{
 			location := key + "/k8s-1.7.yaml"
