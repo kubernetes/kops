@@ -359,13 +359,17 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 
 		if role != "" {
 			for _, sg := range e.LaunchConfiguration.SecurityGroups {
-				t.AddOutputVariableArray(role+"_security_group_ids", sg.TerraformLink())
+				if err := t.AddOutputVariableArray(role+"_security_group_ids", sg.TerraformLink()); err != nil {
+					return err
+				}
 			}
 		}
 
 		if role == "node" {
 			for _, s := range e.Subnets {
-				t.AddOutputVariableArray(role+"_subnet_ids", s.TerraformLink())
+				if err := t.AddOutputVariableArray(role+"_subnet_ids", s.TerraformLink()); err != nil {
+					return err
+				}
 			}
 		}
 	}
