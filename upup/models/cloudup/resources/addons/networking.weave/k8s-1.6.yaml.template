@@ -1,7 +1,16 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: weave-net
+  namespace: kube-system
+  labels:
+    name: weave-net
+---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
   name: weave-net
+  namespace: kube-system
   labels:
     name: weave-net
     role.kubernetes.io/networking: "1"
@@ -25,19 +34,11 @@ rules:
       - list
       - watch
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: weave-net
-  labels:
-    name: weave-net
-    role.kubernetes.io/networking: "1"
-  namespace: kube-system
----
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
   name: weave-net
+  namespace: kube-system
   labels:
     name: weave-net
     role.kubernetes.io/networking: "1"
@@ -94,10 +95,10 @@ apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   name: weave-net
+  namespace: kube-system
   labels:
     name: weave-net
     role.kubernetes.io/networking: "1"
-  namespace: kube-system
 spec:
   template:
     metadata:
@@ -127,7 +128,7 @@ spec:
             - name: CONN_LIMIT
               value: "{{ .Networking.Weave.ConnLimit }}"
             {{- end }}
-          image: 'weaveworks/weave-kube:2.1.3'
+          image: 'weaveworks/weave-kube:2.2.0'
           livenessProbe:
             httpGet:
               host: 127.0.0.1
@@ -156,13 +157,15 @@ spec:
             - name: lib-modules
               mountPath: /lib/modules
         - name: weave-npc
+          args:
+            - '--use-legacy-netpol'
           env:
             - name: HOSTNAME
               valueFrom:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: 'weaveworks/weave-npc:2.1.3'
+          image: 'weaveworks/weave-npc:2.2.0'
           resources:
             requests:
               cpu: 50m
