@@ -4,24 +4,24 @@ spec:
     - name: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
       providerID: aws
       kubernetesVersion: ">=1.4.0 <1.5.0"
-    - name: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2018-01-14
+    - name: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2018-02-08
       providerID: aws
       kubernetesVersion: ">=1.5.0 <1.6.0"
-    - name: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2018-01-14
+    - name: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2018-02-08
       providerID: aws
       kubernetesVersion: ">=1.6.0 <1.7.0"
-    - name: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2018-01-14
+    - name: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2018-02-08
       providerID: aws
       kubernetesVersion: ">=1.7.0 <1.8.0"
-    - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-01-14
+    - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-02-08
       providerID: aws
       kubernetesVersion: ">=1.8.0 <1.9.0"
-    - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-01-14
+    - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-02-08
       providerID: aws
       kubernetesVersion: ">=1.9.0 <1.10.0"
     # Need stretch as default in 1.10 (for nvme)
     # BUT... this is causing the submit queue to block, so back to jessie temporarily: https://github.com/kubernetes/kubernetes/issues/56763
-    - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-01-14
+    - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-02-08
       providerID: aws
       kubernetesVersion: ">=1.10.0"
     - providerID: gce
