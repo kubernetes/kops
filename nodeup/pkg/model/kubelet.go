@@ -30,6 +30,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 )
 
 // containerizedMounterHome is the path where we install the containerized mounter (on ContainerOS)
@@ -146,6 +148,17 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	if b.UsesCNI() {
 		flags += " --cni-bin-dir=" + b.CNIBinDir()
 		flags += " --cni-conf-dir=" + b.CNIConfDir()
+		// If we are using the AmazonVPC plugin we need to bind the kubelet to the local ipv4 address
+		if b.Cluster.Spec.Networking.AmazonVPC != nil {
+			sess := session.Must(session.NewSession())
+			metadata := ec2metadata.New(sess)
+			localIpv4, err := metadata.GetMetadata("local-ipv4")
+			if err != nil {
+				glog.Fatalf("Couldn't fetch the local-ipv4 address from the ec2 meta-data: %v", err)
+			} else {
+				flags += " --node-ip=" + localIpv4
+			}
+		}
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Kubenet != nil {
