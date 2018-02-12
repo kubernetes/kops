@@ -22,6 +22,7 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/exec"
 
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -124,7 +125,7 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 	container := &v1.Container{
 		Name:  "kube-scheduler",
 		Image: c.Image,
-		Command: execWithTee(
+		Command: exec.WithTee(
 			"/usr/local/bin/kube-scheduler",
 			sortedStrings(flags),
 			"/var/log/kube-scheduler.log"),

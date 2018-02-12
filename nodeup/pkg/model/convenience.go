@@ -21,7 +21,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
@@ -186,20 +185,4 @@ func addHostPathMapping(pod *v1.Pod, container *v1.Container, name, path string)
 // convEtcdSettingsToMs converts etcd settings to a string rep of int milliseconds
 func convEtcdSettingsToMs(dur *metav1.Duration) string {
 	return strconv.FormatInt(dur.Nanoseconds()/1000000, 10)
-}
-
-// execWithTee returns the command to run the command while piping output to both the log file and stdout/stderr
-func execWithTee(cmd string, args []string, logfile string) []string {
-	// exec so we don't have a shell that doesn't pass signals to the real process
-	execCmd := "exec " + cmd + " " + strings.Join(args, " ")
-
-	// NOTE: tee & mkfifo is in /usr/bin in the kube-proxy image, but /bin in other images
-
-	// Bash supports something like this, but dash and other limited shells don't
-	//shCmd := "exec &> >(/usr/bin/tee -a " + logfile + "); " + execCmd
-	// Instead we create the pipe manually and wire up the tee:
-	shCmd := "mkfifo /tmp/pipe; (tee -a " + logfile + " < /tmp/pipe & ) ; " + execCmd + " > /tmp/pipe 2>&1"
-
-	// Execute shell command
-	return []string{"/bin/sh", "-c", shCmd}
 }

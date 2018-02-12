@@ -157,6 +157,11 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
     storage: overlay,aufs
     version: 1.11.2
   encryptionConfig: null
+  etcdClusters:
+    events:
+      version: 2.2.1
+    main:
+      version: 2.2.1
   kubeAPIServer:
     address: 127.0.0.1
     admissionControl:
