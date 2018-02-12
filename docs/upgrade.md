@@ -38,5 +38,6 @@ Upgrade uses the latest Kubernetes version considered stable by kops, defined in
 * `terraform apply`
 * `kops rolling-update cluster $NAME` to preview, then `kops rolling-update cluster $NAME --yes`
 
-
+### Other Notes:
+* In general, we recommend that you upgrade your cluster one minor release at a time (1.7 --> 1.8 --> 1.9).  Although jumping minor versions may work if you have not enabled alpha features, you run a greater risk of running into problems due to version deprecation. 
 
