@@ -155,10 +155,14 @@ spec:
     auditLogMaxAge: 10
     auditLogMaxBackups: 1
     auditLogMaxSize: 100
-    auditPolicyFile: /srv/kubernetes/audit.conf
+    auditPolicyFile: /srv/kubernetes/audit.yaml
 ```
 
-Note: you could use the fileAssets feature to push an advanced audit policy file on the master nodes.
+**Note**: The auditPolicyFile is needed. If the flag is omitted, no events are logged.
+
+You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#fileassets)  feature to push an advanced audit policy file on the master nodes.
+
+Example policy file can be found [here]( https://raw.githubusercontent.com/kubernetes/website/master/docs/tasks/debug-application-cluster/audit-policy.yaml)
 
 #### runtimeConfig
 
@@ -388,7 +392,7 @@ spec:
 #### elbSecurityGroup
 *WARNING: this works only for Kubernetes version above 1.7.0.*
 
-To avoid creating a security group per elb, you can specify security group id, that will be assigned to your LoadBalancer. It must be security group id, not name. 
+To avoid creating a security group per elb, you can specify security group id, that will be assigned to your LoadBalancer. It must be security group id, not name.
 `api.loadBalancer.additionalSecurityGroups` must be empty, because Kubernetes will add rules per ports that are specified in service file.
 This can be useful to avoid AWS limits: 500 security groups per region and 50 rules per security group.
 
