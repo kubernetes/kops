@@ -173,6 +173,18 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 							InstanceGroup: s("ig-1"),
 						},
 					},
+					Version: "3.1.11",
+				},
+				{
+					Name: "events",
+					Members: []*kops.EtcdMemberSpec{
+						{
+							Name:          "test",
+							InstanceGroup: s("ig-1"),
+						},
+					},
+					Version: "3.1.11",
+					Image:   "gcr.io/etcd-development/etcd:v3.1.11",
 				},
 			},
 			NetworkCIDR: "10.79.0.0/24",
