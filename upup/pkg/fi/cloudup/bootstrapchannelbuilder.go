@@ -353,7 +353,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Kopeio != nil {
 		key := "networking.kope.io"
-		version := "1.0.20171015"
+		version := "1.0.20180203"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -388,8 +388,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Weave != nil {
 		key := "networking.weave"
-		// 2.0.6-kops.1 = 2.0.5 with kops manifest tweaks.  This should go away with the next version bump.
-		version := "2.0.6-kops.1"
+		// 2.2.0-kops.2 = 2.2.0, kops packaging version 1.
+		version := "2.2.0-kops.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -603,7 +603,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Romana != nil {
 		key := "networking.romana"
-		version := "v2.0.0"
+		version := "v2.0.2"
 
 		{
 			location := key + "/k8s-1.7.yaml"

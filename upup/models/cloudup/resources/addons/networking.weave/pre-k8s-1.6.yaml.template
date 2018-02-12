@@ -42,7 +42,11 @@ spec:
             - name: WEAVE_MTU
               value: "{{ .Networking.Weave.MTU }}"
             {{- end }}
-          image: 'weaveworks/weave-kube:2.0.5'
+            {{- if .Networking.Weave.ConnLimit }}
+            - name: CONN_LIMIT
+              value: "{{ .Networking.Weave.ConnLimit }}"
+            {{- end }}
+          image: 'weaveworks/weave-kube:2.2.0'
           livenessProbe:
             httpGet:
               host: 127.0.0.1
@@ -71,13 +75,15 @@ spec:
             - name: lib-modules
               mountPath: /lib/modules
         - name: weave-npc
+          args:
+            - '--use-legacy-netpol'
           env:
             - name: HOSTNAME
               valueFrom:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: 'weaveworks/weave-npc:2.0.5'
+          image: 'weaveworks/weave-npc:2.2.0'
           resources:
             requests:
               cpu: 50m

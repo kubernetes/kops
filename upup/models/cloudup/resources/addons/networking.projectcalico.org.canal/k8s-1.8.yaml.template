@@ -3,7 +3,7 @@
 # This manifest includes the following component versions:
 #   calico/node:v2.6.2
 #   calico/cni:v1.11.0
-#   coreos/flannel:v0.9.1
+#   coreos/flannel:v0.9.0 (bug with v0.9.1: https://github.com/kubernetes/kops/issues/4037)
 
 # This ConfigMap can be used to configure a self-hosted Canal installation.
 kind: ConfigMap
@@ -25,24 +25,34 @@ data:
   cni_network_config: |-
     {
         "name": "k8s-pod-network",
-        "cniVersion": "0.1.0",
-        "type": "calico",
-        "log_level": "info",
-        "datastore_type": "kubernetes",
-        "nodename": "__KUBERNETES_NODE_NAME__",
-        "ipam": {
-            "type": "host-local",
-            "subnet": "usePodCidr"
-        },
-        "policy": {
-            "type": "k8s",
-            "k8s_auth_token": "__SERVICEACCOUNT_TOKEN__"
-        },
-        "kubernetes": {
-            "k8s_api_root": "https://__KUBERNETES_SERVICE_HOST__:__KUBERNETES_SERVICE_PORT__",
-            "kubeconfig": "__KUBECONFIG_FILEPATH__"
-        }
+        "cniVersion": "0.3.0",
+        "plugins": [
+            {
+                "type": "calico",
+                "log_level": "info",
+                "datastore_type": "kubernetes",
+                "nodename": "__KUBERNETES_NODE_NAME__",
+                "ipam": {
+                    "type": "host-local",
+                    "subnet": "usePodCidr"
+                },
+                "policy": {
+                    "type": "k8s",
+                    "k8s_auth_token": "__SERVICEACCOUNT_TOKEN__"
+                },
+                "kubernetes": {
+                    "k8s_api_root": "https://__KUBERNETES_SERVICE_HOST__:__KUBERNETES_SERVICE_PORT__",
+                    "kubeconfig": "__KUBECONFIG_FILEPATH__"
+                }
+            },
+            {
+                "type": "portmap",
+                "capabilities": {"portMappings": true},
+                "snat": true
+            }
+        ]
     }
+
 
   # Flannel network configuration. Mounted into the flannel container.
   net-conf.json: |
@@ -176,6 +186,8 @@ spec:
           image: quay.io/calico/cni:v1.11.0
           command: ["/install-cni.sh"]
           env:
+            - name: CNI_CONF_NAME
+              value: "10-calico.conflist"
             # The CNI network config to install on each node.
             - name: CNI_NETWORK_CONFIG
               valueFrom:
@@ -194,7 +206,7 @@ spec:
         # This container runs flannel using the kube-subnet-mgr backend
         # for allocating subnets.
         - name: kube-flannel
-          image: quay.io/coreos/flannel:v0.9.1
+          image: quay.io/coreos/flannel:v0.9.0
           command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
           securityContext:
             privileged: true

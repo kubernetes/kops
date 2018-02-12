@@ -130,7 +130,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v2.6.2
+          image: quay.io/calico/node:v2.6.6
           resources:
             requests:
               cpu: 10m
@@ -185,7 +185,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/calico/cni:v1.11.0
+          image: quay.io/calico/cni:v1.11.2
           resources:
             requests:
               cpu: 10m
@@ -262,7 +262,8 @@ spec:
       serviceAccountName: calico
       containers:
         - name: calico-policy-controller
-          image: quay.io/calico/kube-controllers:v1.0.0
+          # This shouldn't get updated, since this is the last version we shipped that should be used.
+          image: quay.io/calico/kube-policy-controller:v0.7.0
           env:
             # The location of the Calico etcd cluster.
             - name: ETCD_ENDPOINTS
@@ -316,7 +317,7 @@ spec:
         operator: Exists
       containers:
         - name: calico-kube-controllers
-          image: quay.io/calico/kube-controllers:v1.0.0
+          image: quay.io/calico/kube-controllers:v1.0.3
           resources:
             requests:
               cpu: 10m
@@ -411,7 +412,7 @@ spec:
         operator: Exists
       serviceAccountName: k8s-ec2-srcdst
       containers:
-        - image: ottoyiu/k8s-ec2-srcdst:v0.1.0
+        - image: ottoyiu/k8s-ec2-srcdst:v0.2.0-3-gc0c26eca
           name: k8s-ec2-srcdst
           resources:
             requests:

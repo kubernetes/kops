@@ -1,7 +1,16 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: weave-net
+  namespace: kube-system
+  labels:
+    name: weave-net
+---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
   name: weave-net
+  namespace: kube-system
   labels:
     name: weave-net
     role.kubernetes.io/networking: "1"
@@ -17,7 +26,7 @@ rules:
       - list
       - watch
   - apiGroups:
-      - extensions
+      - 'networking.k8s.io'
     resources:
       - networkpolicies
     verbs:
@@ -25,19 +34,11 @@ rules:
       - list
       - watch
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: weave-net
-  labels:
-    name: weave-net
-    role.kubernetes.io/networking: "1"
-  namespace: kube-system
----
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
   name: weave-net
+  namespace: kube-system
   labels:
     name: weave-net
     role.kubernetes.io/networking: "1"
@@ -50,14 +51,54 @@ subjects:
     name: weave-net
     namespace: kube-system
 ---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: weave-net
+  namespace: kube-system
+  labels:
+    name: weave-net
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - configmaps
+    resourceNames:
+      - weave-net
+    verbs:
+      - get
+      - update
+  - apiGroups:
+      - ''
+    resources:
+      - configmaps
+    verbs:
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: weave-net
+  namespace: kube-system
+  labels:
+    name: weave-net
+roleRef:
+  kind: Role
+  name: weave-net
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: weave-net
+    namespace: kube-system
+---
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   name: weave-net
+  namespace: kube-system
   labels:
     name: weave-net
     role.kubernetes.io/networking: "1"
-  namespace: kube-system
 spec:
   template:
     metadata:
@@ -83,7 +124,11 @@ spec:
             - name: WEAVE_MTU
               value: "{{ .Networking.Weave.MTU }}"
             {{- end }}
-          image: 'weaveworks/weave-kube:2.0.5'
+            {{- if .Networking.Weave.ConnLimit }}
+            - name: CONN_LIMIT
+              value: "{{ .Networking.Weave.ConnLimit }}"
+            {{- end }}
+          image: 'weaveworks/weave-kube:2.2.0'
           livenessProbe:
             httpGet:
               host: 127.0.0.1
@@ -114,13 +159,14 @@ spec:
             - name: xtables-lock
               mountPath: /run/xtables.lock
         - name: weave-npc
+          args: []
           env:
             - name: HOSTNAME
               valueFrom:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: 'weaveworks/weave-npc:2.0.5'
+          image: 'weaveworks/weave-npc:2.2.0'
           resources:
             requests:
               cpu: 50m
