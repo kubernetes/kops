@@ -46,8 +46,8 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 DNS_CONTROLLER_TAG=1.8.0
 
 # Keep in sync with logic in get_workspace_status
-KOPS_RELEASE_VERSION = 1.8.0
-KOPS_CI_VERSION      = 1.8.1-beta.1
+KOPS_RELEASE_VERSION = 1.8.1
+KOPS_CI_VERSION      = 1.8.2-alpha.1
 
 # kops local location
 KOPS                 = ${LOCAL}/kops
