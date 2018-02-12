@@ -234,7 +234,7 @@ func newTemplateContext(files []string) (map[string]interface{}, error) {
 
 // expandFiles is responsible for resolving any references to directories
 func expandFiles(path string) ([]string, error) {
-	// @check if the the path is a directory, if not we can return straight away
+	// @check if the path is a directory, if not we can return straight away
 	stat, err := os.Stat(path)
 	if err != nil {
 		return nil, err
