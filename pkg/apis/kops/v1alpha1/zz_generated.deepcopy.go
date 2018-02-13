@@ -984,6 +984,15 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 			**out = **in
 		}
 	}
+	if in.LiveRestore != nil {
+		in, out := &in.LiveRestore, &out.LiveRestore
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
+			**out = **in
+		}
+	}
 	return
 }
 
