@@ -105,13 +105,16 @@ spec:
 
 ## Creating a new instance group
 
-Suppose you want to add a new group of nodes, perhaps with a different instance type.  You do this using
-`kops create ig <InstanceGroupName>`.  Currently it opens an editor with a skeleton configuration, allowing
-you to edit it before creation.
+Suppose you want to add a new group of nodes, perhaps with a different instance type.  You do this using `kops create ig <InstanceGroupName> --subnet <zone(s)>`. Currently the
+`--subnet` flag is required, and it recieves the zone(s) of the subnet(s) in which the instance group will be. The command opens an editor with a skeleton configuration, allowing you to edit it before creation.
 
 So the procedure is:
 
-* `kops create ig morenodes`, edit and save
+* `kops create ig morenodes --subnet us-east-1a`
+
+  or, in case you need it to be in more than one subnet, use a comma-separated list:
+
+* `kops create ig morenodes --subnet us-east-1a,us-east-1b,us-east-1c`
 * Preview: `kops update cluster <clustername>`
 * Apply: `kops update cluster <clustername> --yes`
 * (no instances need to be relaunched, so no rolling-update is needed)
