@@ -60,7 +60,7 @@ KOPS_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 command -v make >/dev/null 2>&1 || { echo >&2 "I require make but it's not installed.  Aborting."; exit 1; }
 command -v go >/dev/null 2>&1 || { echo >&2 "I require go but it's not installed.  Aborting."; exit 1; }
 command -v docker >/dev/null 2>&1 || { echo >&2 "I require docker but it's not installed.  Aborting."; exit 1; }
-command -v aws >/dev/null 2>&1 || { echo >&2 "I require aws but it's not installed.  Aborting."; exit 1; }
+command -v aws >/dev/null 2>&1 || { echo >&2 "I require aws cli but it's not installed.  Aborting."; exit 1; }
 
 #
 # Check that expected vars are set
@@ -78,7 +78,6 @@ MASTER_ZONES=${MASTER_ZONES:-"us-west-2a,us-west-2b,us-west-2c"}
 MASTER_SIZE=${MASTER_SIZE:-m4.large}
 KOPS_CREATE=${KOPS_CREATE:-yes}
 
-
 # NETWORK
 TOPOLOGY=${TOPOLOGY:-private}
 NETWORKING=${NETWORKING:-weave}
@@ -94,8 +93,12 @@ GIT_VER=git-$(git describe --always)
 echo ==========
 echo "Starting build"
 
-export CI=1
-make && make test && S3_BUCKET=s3://${NODEUP_BUCKET} make upload
+# removing CI=1 because it forces a new upload every time
+# export CI=1
+make && S3_BUCKET=s3://${NODEUP_BUCKET} make upload
+
+# removing make test since it relies on the files in the bucket
+# && make test
 
 KOPS_CHANNEL=$(kops version | awk '{ print $2 }' |sed 's/\+/%2B/')
 KOPS_BASE_URL="http://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${KOPS_CHANNEL}/"
