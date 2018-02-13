@@ -160,6 +160,16 @@ spec:
 
 Note: you could use the fileAssets feature to push an advanced audit policy file on the master nodes.
 
+#### Max Requests Inflight 
+
+The maximum number of non-mutating requests in flight at a given time. When the server exceeds this, it rejects requests. Zero for no limit. (default 400)
+
+```yaml
+spec:
+  kubeAPIServer:
+    maxRequestsInflight: 1000
+```
+
 #### runtimeConfig
 
 Keys and values here are translated into `--runtime-config` values for `kube-apiserver`, separated by commas.
