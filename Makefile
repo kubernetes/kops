@@ -37,8 +37,6 @@ GID:=$(shell id -g)
 TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor" hack/.packages) 
 BAZEL_OPTIONS?=
 
-SOURCES:=$(shell find . -name "*.go")
-
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
@@ -150,7 +148,8 @@ clean: # Remove build directory and bindata-generated files
 .PHONY: kops
 kops: ${KOPS}
 
-${KOPS}: ${BINDATA_TARGETS} ${SOURCES}
+.PHONY: ${KOPS}
+${KOPS}: ${BINDATA_TARGETS}
 	go build ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/cmd/kops/
 
 ${GOBINDATA}:
@@ -346,7 +345,8 @@ push-gce-run: push
 push-aws-run: push
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
 
-${PROTOKUBE}: ${SOURCES}
+.PHONY: ${PROTOKUBE}
+${PROTOKUBE}:
 	go build -o $@ -tags 'peer_name_alternative peer_name_hash' k8s.io/kops/protokube/cmd/protokube
 
 .PHONY: protokube
@@ -381,7 +381,8 @@ protokube-push: protokube-image
 .PHONY: nodeup
 nodeup: ${NODEUP}
 
-${NODEUP}: ${BINDATA_TARGETS} ${SOURCES}
+.PHONY: ${NODEUP}
+${NODEUP}: ${BINDATA_TARGETS}
 	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" -o $@ k8s.io/kops/cmd/nodeup
 
 .PHONY: nodeup-dist
@@ -446,6 +447,13 @@ copydeps:
 	rm -rf vendor/k8s.io/metrics
 	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/metrics vendor/k8s.io/metrics
 	find vendor/k8s.io/kubernetes -type f -name "*.go" | xargs sed -i -e 's-k8s.io/kubernetes/staging/src/k8s.io/apimachinery-k8s.io/apimachinery-g'
+	bazel run //:gazelle -- -proto disable
+
+.PHONY: dep-ensure
+dep-ensure:
+	dep ensure -v
+	find vendor/ -name "BUILD" -delete
+	find vendor/ -name "BUILD.bazel" -delete
 	bazel run //:gazelle -- -proto disable
 
 .PHONY: gofmt
@@ -516,7 +524,8 @@ ci: govet verify-gofmt verify-boilerplate nodeup examples test | verify-gendocs 
 .PHONY: channels
 channels: ${CHANNELS}
 
-${CHANNELS}: ${SOURCES}
+.PHONY: ${CHANNELS}
+${CHANNELS}:
 	go build ${EXTRA_BUILDFLAGS} -o $@ -ldflags "-X k8s.io/kops.Version=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/channels
 
 # --------------------------------------------------

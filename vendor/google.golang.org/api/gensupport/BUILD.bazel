@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -20,28 +20,6 @@ go_library(
     deps = [
         "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/golang.org/x/net/context/ctxhttp:go_default_library",
-        "//vendor/google.golang.org/api/googleapi:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "backoff_test.go",
-        "buffer_test.go",
-        "header_test.go",
-        "json_test.go",
-        "jsonfloat_test.go",
-        "media_test.go",
-        "resumable_test.go",
-        "retry_test.go",
-        "send_test.go",
-        "util_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "google.golang.org/api/gensupport",
-    deps = [
-        "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/google.golang.org/api/googleapi:go_default_library",
     ],
 )

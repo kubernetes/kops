@@ -1,16 +1,8 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
     srcs = ["dmp.go"],
     importpath = "github.com/sergi/go-diff/diffmatchpatch",
     visibility = ["//visibility:public"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["dmp_test.go"],
-    embed = [":go_default_library"],
-    importpath = "github.com/sergi/go-diff/diffmatchpatch",
-    deps = ["//vendor/github.com/stretchr/testify/assert:go_default_library"],
 )

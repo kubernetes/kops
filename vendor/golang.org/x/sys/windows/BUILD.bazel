@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -35,22 +35,4 @@ go_library(
     }),
     importpath = "golang.org/x/sys/windows",
     visibility = ["//visibility:public"],
-)
-
-go_test(
-    name = "go_default_xtest",
-    srcs = select({
-        "@io_bazel_rules_go//go/platform:windows": [
-            "syscall_test.go",
-            "syscall_windows_test.go",
-        ],
-        "//conditions:default": [],
-    }),
-    importpath = "golang.org/x/sys/windows_test",
-    deps = select({
-        "@io_bazel_rules_go//go/platform:windows": [
-            ":go_default_library",
-        ],
-        "//conditions:default": [],
-    }),
 )
