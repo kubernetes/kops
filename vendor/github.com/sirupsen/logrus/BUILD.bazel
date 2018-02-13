@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -60,34 +60,4 @@ go_library(
         ],
         "//conditions:default": [],
     }),
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "alt_exit_test.go",
-        "entry_test.go",
-        "formatter_bench_test.go",
-        "hook_test.go",
-        "json_formatter_test.go",
-        "logger_bench_test.go",
-        "logrus_test.go",
-        "text_formatter_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "github.com/sirupsen/logrus",
-    deps = ["//vendor/github.com/stretchr/testify/assert:go_default_library"],
-)
-
-go_test(
-    name = "go_default_xtest",
-    srcs = [
-        "example_basic_test.go",
-        "example_hook_test.go",
-    ],
-    importpath = "github.com/sirupsen/logrus_test",
-    deps = [
-        ":go_default_library",
-        "//vendor/gopkg.in/gemnasium/logrus-airbrake-hook.v2:go_default_library",
-    ],
 )

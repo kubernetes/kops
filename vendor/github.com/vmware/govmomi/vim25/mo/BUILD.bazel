@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -18,20 +18,5 @@ go_library(
         "//vendor/github.com/vmware/govmomi/vim25/methods:go_default_library",
         "//vendor/github.com/vmware/govmomi/vim25/soap:go_default_library",
         "//vendor/github.com/vmware/govmomi/vim25/types:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "retrieve_test.go",
-        "type_info_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "github.com/vmware/govmomi/vim25/mo",
-    deps = [
-        "//vendor/github.com/vmware/govmomi/vim25/soap:go_default_library",
-        "//vendor/github.com/vmware/govmomi/vim25/types:go_default_library",
-        "//vendor/github.com/vmware/govmomi/vim25/xml:go_default_library",
     ],
 )

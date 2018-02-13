@@ -1,4 +1,3 @@
-load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
@@ -14,19 +13,4 @@ go_library(
         "//vendor/github.com/golang/protobuf/ptypes:go_default_library",
         "//vendor/github.com/golang/protobuf/ptypes/any:go_default_library",
     ],
-)
-
-proto_library(
-    name = "openapiextension_v1_proto",
-    srcs = ["extension.proto"],
-    visibility = ["//visibility:public"],
-    deps = ["@com_google_protobuf//:any_proto"],
-)
-
-go_proto_library(
-    name = "openapiextension_v1_go_proto",
-    importpath = "github.com/googleapis/gnostic/extensions",
-    proto = ":openapiextension_v1_proto",
-    visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/golang/protobuf/ptypes/any:go_default_library"],
 )

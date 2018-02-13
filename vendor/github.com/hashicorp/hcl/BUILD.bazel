@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -15,20 +15,5 @@ go_library(
         "//vendor/github.com/hashicorp/hcl/hcl/parser:go_default_library",
         "//vendor/github.com/hashicorp/hcl/hcl/token:go_default_library",
         "//vendor/github.com/hashicorp/hcl/json/parser:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "decoder_test.go",
-        "hcl_test.go",
-        "lex_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "github.com/hashicorp/hcl",
-    deps = [
-        "//vendor/github.com/hashicorp/hcl/hcl/ast:go_default_library",
-        "//vendor/github.com/hashicorp/hcl/testhelper:go_default_library",
     ],
 )

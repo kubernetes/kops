@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -60,48 +60,5 @@ go_library(
         "//vendor/k8s.io/kubernetes/pkg/registry/rbac/validation:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/node:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/slice:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "describe_test.go",
-        "printers_test.go",
-        "sorted_resource_name_list_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "k8s.io/kubernetes/pkg/printers/internalversion",
-    deps = [
-        "//vendor/github.com/ghodss/yaml:go_default_library",
-        "//vendor/k8s.io/api/core/v1:go_default_library",
-        "//vendor/k8s.io/api/extensions/v1beta1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1/unstructured:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1alpha1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer/yaml:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
-        "//vendor/k8s.io/client-go/kubernetes/fake:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/api/legacyscheme:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/api/testapi:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/apis/apps:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/apis/autoscaling:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/apis/batch:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/apis/core:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/apis/extensions:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/apis/networking:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/apis/policy:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/apis/storage:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/kubectl/testing:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/printers:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/pointer:go_default_library",
     ],
 )

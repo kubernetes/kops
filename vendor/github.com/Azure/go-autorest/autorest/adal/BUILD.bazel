@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -49,21 +49,5 @@ go_library(
     deps = [
         "//vendor/github.com/Azure/go-autorest/autorest/date:go_default_library",
         "//vendor/github.com/dgrijalva/jwt-go:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "config_test.go",
-        "devicetoken_test.go",
-        "persist_test.go",
-        "token_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "github.com/Azure/go-autorest/autorest/adal",
-    deps = [
-        "//vendor/github.com/Azure/go-autorest/autorest/date:go_default_library",
-        "//vendor/github.com/Azure/go-autorest/autorest/mocks:go_default_library",
     ],
 )

@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -23,25 +23,6 @@ go_library(
         "//vendor/github.com/coreos/etcd/pkg/pathutil:go_default_library",
         "//vendor/github.com/coreos/etcd/pkg/types:go_default_library",
         "//vendor/github.com/ugorji/go/codec:go_default_library",
-        "//vendor/golang.org/x/net/context:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "client_test.go",
-        "fake_transport_test.go",
-        "keys_bench_test.go",
-        "keys_test.go",
-        "members_test.go",
-        "srv_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "github.com/coreos/etcd/client",
-    deps = [
-        "//vendor/github.com/coreos/etcd/pkg/testutil:go_default_library",
-        "//vendor/github.com/coreos/etcd/pkg/types:go_default_library",
         "//vendor/golang.org/x/net/context:go_default_library",
     ],
 )

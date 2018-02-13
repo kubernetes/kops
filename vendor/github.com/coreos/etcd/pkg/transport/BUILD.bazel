@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -21,17 +21,4 @@ go_library(
         "//vendor/github.com/coreos/etcd/pkg/fileutil:go_default_library",
         "//vendor/github.com/coreos/etcd/pkg/tlsutil:go_default_library",
     ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "keepalive_listener_test.go",
-        "listener_test.go",
-        "timeout_dialer_test.go",
-        "timeout_listener_test.go",
-        "timeout_transport_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "github.com/coreos/etcd/pkg/transport",
 )

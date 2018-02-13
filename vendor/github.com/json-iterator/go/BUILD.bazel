@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -44,56 +44,4 @@ go_library(
     ],
     importpath = "github.com/json-iterator/go",
     visibility = ["//visibility:public"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "example_test.go",
-        "jsoniter_1dot8_only_test.go",
-        "jsoniter_adapter_test.go",
-        "jsoniter_alias_test.go",
-        "jsoniter_any_array_test.go",
-        "jsoniter_any_bool_test.go",
-        "jsoniter_any_float_test.go",
-        "jsoniter_any_int_test.go",
-        "jsoniter_any_map_test.go",
-        "jsoniter_any_null_test.go",
-        "jsoniter_any_object_test.go",
-        "jsoniter_any_string_test.go",
-        "jsoniter_array_test.go",
-        "jsoniter_bool_test.go",
-        "jsoniter_customize_test.go",
-        "jsoniter_demo_test.go",
-        "jsoniter_encode_interface_test.go",
-        "jsoniter_fixed_array_test.go",
-        "jsoniter_float_test.go",
-        "jsoniter_int_test.go",
-        "jsoniter_interface_test.go",
-        "jsoniter_invalid_test.go",
-        "jsoniter_io_test.go",
-        "jsoniter_iterator_test.go",
-        "jsoniter_large_file_test.go",
-        "jsoniter_map_test.go",
-        "jsoniter_must_be_valid_test.go",
-        "jsoniter_nested_test.go",
-        "jsoniter_null_test.go",
-        "jsoniter_object_test.go",
-        "jsoniter_optional_test.go",
-        "jsoniter_raw_message_test.go",
-        "jsoniter_reader_test.go",
-        "jsoniter_reflect_native_test.go",
-        "jsoniter_skip_test.go",
-        "jsoniter_stream_test.go",
-        "jsoniter_string_test.go",
-        "jsoniter_struct_decoder_test.go",
-        "jsoniter_wrap_test.go",
-        "unmarshal_input_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "github.com/json-iterator/go",
-    deps = [
-        "//vendor/github.com/google/gofuzz:go_default_library",
-        "//vendor/github.com/stretchr/testify/require:go_default_library",
-    ],
 )

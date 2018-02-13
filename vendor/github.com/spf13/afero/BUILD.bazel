@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -63,21 +63,4 @@ go_library(
         "//vendor/golang.org/x/text/transform:go_default_library",
         "//vendor/golang.org/x/text/unicode/norm:go_default_library",
     ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "afero_test.go",
-        "basepath_test.go",
-        "composite_test.go",
-        "copyOnWriteFs_test.go",
-        "ioutil_test.go",
-        "memmap_test.go",
-        "path_test.go",
-        "ro_regexp_test.go",
-        "util_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "github.com/spf13/afero",
 )

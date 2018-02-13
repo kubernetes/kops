@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -17,26 +17,6 @@ go_library(
     deps = [
         "//vendor/github.com/mailru/easyjson/jlexer:go_default_library",
         "//vendor/github.com/mailru/easyjson/jwriter:go_default_library",
-        "//vendor/gopkg.in/yaml.v2:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "convert_test.go",
-        "convert_types_test.go",
-        "json_test.go",
-        "loading_test.go",
-        "net_test.go",
-        "path_test.go",
-        "util_test.go",
-        "yaml_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "github.com/go-openapi/swag",
-    deps = [
-        "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/gopkg.in/yaml.v2:go_default_library",
     ],
 )
