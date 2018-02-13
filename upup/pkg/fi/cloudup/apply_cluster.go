@@ -124,7 +124,7 @@ type ApplyClusterCmd struct {
 	// Phase can be set to a Phase to run the specific subset of tasks, if we don't want to run everything
 	Phase Phase
 
-	// LifecycleOverrides contains a map of lifecycle values to fi.Lifecycle
+	// LifecycleOverrides is passed in to override the lifecycle for one of more phases.
 	LifecycleOverrides map[Phase]fi.Lifecycle
 }
 

@@ -50,3 +50,11 @@ var Lifecycles = sets.NewString(
 	string(LifecycleExistsAndValidates),
 	string(LifecycleExistsAndWarnIfChanges),
 )
+
+var LifecycleNameMap = map[string]Lifecycle{
+	"Sync":                     LifecycleSync,
+	"Ignore":                   LifecycleIgnore,
+	"WarnIfInsufficientAccess": LifecycleWarnIfInsufficientAccess,
+	"ExistsAndValidates":       LifecycleExistsAndValidates,
+	"ExistsAndWarnIfChanges":   LifecycleExistsAndWarnIfChanges,
+}

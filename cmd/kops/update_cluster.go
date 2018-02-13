@@ -183,7 +183,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 
 	var phase cloudup.Phase
 	if c.Phase != "" {
-		phase, err = getPhase(c.Phase)
+		phase, err = parsePhase(c.Phase)
 		if err != nil {
 			return err
 		}
@@ -203,29 +203,24 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	lifecycleOverrideMap := make(map[cloudup.Phase]fi.Lifecycle)
 
 	for _, override := range c.PhaseOverrides {
-
 		values := strings.Split(override, "=")
+		if len(values) != 2 {
+			return fmt.Errorf("Incorrect syntax for override, correct syntax is phaseName=lifecycleName, override provided: %q", override)
+		}
 		phaseName := values[0]
-		lifecycle := values[1]
+		lifecycleName := values[1]
 
-		phaseOverride, err := getPhase(phaseName)
+		phaseOverride, err := parsePhase(phaseName)
 		if err != nil {
-			return fmt.Errorf("incorrect phase name in overides: %v", err)
+			return err
 		}
 
-		switch lifecycle {
-		case string(fi.LifecycleExistsAndValidates):
-			lifecycleOverrideMap[phaseOverride] = fi.LifecycleExistsAndValidates
-		case string(fi.LifecycleIgnore):
-			lifecycleOverrideMap[phaseOverride] = fi.LifecycleIgnore
-		case string(fi.LifecycleWarnIfInsufficientAccess):
-			lifecycleOverrideMap[phaseOverride] = fi.LifecycleWarnIfInsufficientAccess
-		case string(fi.LifecycleExistsAndWarnIfChanges):
-			lifecycleOverrideMap[phaseOverride] = fi.LifecycleExistsAndWarnIfChanges
-		default:
-			return fmt.Errorf("overrides error, unknown lifecycle %q, available lifecycles: %s", lifecycle, strings.Join(fi.Lifecycles.List(), ","))
+		lifecycleOverride, err := parseLifecycle(lifecycleName)
+		if err != nil {
+			return err
 		}
 
+		lifecycleOverrideMap[phaseOverride] = lifecycleOverride
 	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{
@@ -360,19 +355,19 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	return nil
 }
 
-func getPhase(phase string) (cloudup.Phase, error) {
-	switch strings.ToLower(phase) {
-	case string(cloudup.PhaseStageAssets):
-		return cloudup.PhaseStageAssets, nil
-	case string(cloudup.PhaseNetwork):
-		return cloudup.PhaseNetwork, nil
-	case string(cloudup.PhaseSecurity), "iam": // keeping IAM for backwards compatibility
-		return cloudup.PhaseSecurity, nil
-	case string(cloudup.PhaseCluster):
-		return cloudup.PhaseCluster, nil
-	default:
-		return "", fmt.Errorf("unknown phase %q, available phases: %s", phase, strings.Join(cloudup.Phases.List(), ","))
+func parsePhase(phase string) (cloudup.Phase, error) {
+	if v, ok := cloudup.PhasesNameMap[phase]; ok {
+		return v, nil
 	}
+
+	return "", fmt.Errorf("unknown phase %q, available phases: %s", phase, strings.Join(cloudup.Phases.List(), ","))
+}
+
+func parseLifecycle(lifecycle string) (fi.Lifecycle, error) {
+	if v, ok := fi.LifecycleNameMap[lifecycle]; ok {
+		return v, nil
+	}
+	return "", fmt.Errorf("unknown lifecycle %q, available lifecycle: %s", lifecycle, strings.Join(fi.Lifecycles.List(), ","))
 }
 
 func usesBastion(instanceGroups []*kops.InstanceGroup) bool {
