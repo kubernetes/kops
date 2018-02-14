@@ -164,6 +164,16 @@ You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/do
 
 Example policy file can be found [here]( https://raw.githubusercontent.com/kubernetes/website/master/docs/tasks/debug-application-cluster/audit-policy.yaml)
 
+#### Max Requests Inflight 
+
+The maximum number of non-mutating requests in flight at a given time. When the server exceeds this, it rejects requests. Zero for no limit. (default 400)
+
+```yaml
+spec:
+  kubeAPIServer:
+    maxRequestsInflight: 1000
+```
+
 #### runtimeConfig
 
 Keys and values here are translated into `--runtime-config` values for `kube-apiserver`, separated by commas.
