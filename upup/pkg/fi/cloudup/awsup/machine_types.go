@@ -607,6 +607,13 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 
 	// x1 family
 	{
+		Name:           "x1.16xlarge",
+		MemoryGB:       976,
+		ECU:            174.5,
+		Cores:          64,
+		EphemeralDisks: []int{1920},
+	},
+	{
 		Name:           "x1.32xlarge",
 		MemoryGB:       1952,
 		ECU:            349,
