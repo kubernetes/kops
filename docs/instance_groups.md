@@ -203,8 +203,7 @@ If you decide you don't need an InstanceGroup any more, you delete it using: `ko
 
 Example: `kops delete ig morenodes`
 
-No rolling-update is needed (and note this is not currently graceful, so there may be interruptions to
-workloads where the pods are running on those nodes).
+No `kops update cluster` nor `kops rolling-update` is needed, so **be careful** when deleting an instance group, your nodes will be deleted automatically (and note this is not currently graceful, so there may be interruptions to workloads where the pods are running on those nodes).
 
 ## EBS Volume Optimization
 
