@@ -123,6 +123,9 @@ type ApplyClusterCmd struct {
 
 	// Phase can be set to a Phase to run the specific subset of tasks, if we don't want to run everything
 	Phase Phase
+
+	// LifecycleOverrides is passed in to override the lifecycle for one of more phases.
+	LifecycleOverrides map[Phase]fi.Lifecycle
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -197,6 +200,11 @@ func (c *ApplyClusterCmd) Run() error {
 	default:
 		return fmt.Errorf("unknown phase %q", c.Phase)
 	}
+
+	stageAssetsLifecycle = c.overrideLifecycle(PhaseStageAssets, stageAssetsLifecycle)
+	securityLifecycle = c.overrideLifecycle(PhaseSecurity, securityLifecycle)
+	networkLifecycle = c.overrideLifecycle(PhaseNetwork, networkLifecycle)
+	clusterLifecycle = c.overrideLifecycle(PhaseCluster, clusterLifecycle)
 
 	// This is kinda a hack.  Need to move phases out of fi.  If we use Phase here we introduce a circular
 	// go dependency.
@@ -769,6 +777,16 @@ func (c *ApplyClusterCmd) upgradeSpecs(assetBuilder *assets.AssetBuilder) error 
 	}
 
 	return nil
+}
+
+// overrideLifecycle returns the overriden lifecycle value
+func (c *ApplyClusterCmd) overrideLifecycle(key Phase, lifecycle fi.Lifecycle) fi.Lifecycle {
+	value, ok := c.LifecycleOverrides[key]
+	if ok {
+		glog.V(8).Infof("setting override %s to %s", key, value)
+		return value
+	}
+	return lifecycle
 }
 
 // validateKopsVersion ensures that kops meet the version requirements / recommendations in the channel

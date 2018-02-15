@@ -39,3 +39,11 @@ var Phases = sets.NewString(
 	string(PhaseNetwork),
 	string(PhaseCluster),
 )
+
+// PhasesNameMap map of phases to lifecycle name
+var PhasesNameMap = map[string]Phase{
+	"assets":   PhaseStageAssets,
+	"network":  PhaseNetwork,
+	"security": PhaseSecurity,
+	"cluster":  PhaseCluster,
+}
