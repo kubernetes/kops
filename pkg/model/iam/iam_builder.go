@@ -359,15 +359,30 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 						),
 					})
 
-					if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Kuberouter != nil {
-						p.Statement = append(p.Statement, &Statement{
-							Sid:    "kopsK8sS3NodeBucketGetKuberouter",
-							Effect: StatementEffectAllow,
-							Action: stringorslice.Slice([]string{"s3:Get*"}),
-							Resource: stringorslice.Of(
-								strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/kube-router/*"}, ""),
-							),
-						})
+					if b.Cluster.Spec.Networking != nil {
+						// @check if kuberoute is enabled and permit access to the private key
+						if b.Cluster.Spec.Networking.Kuberouter != nil {
+							p.Statement = append(p.Statement, &Statement{
+								Sid:    "kopsK8sS3NodeBucketGetKuberouter",
+								Effect: StatementEffectAllow,
+								Action: stringorslice.Slice([]string{"s3:Get*"}),
+								Resource: stringorslice.Of(
+									strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/kube-router/*"}, ""),
+								),
+							})
+						}
+
+						// @check if calico is enabled as the CNI provider and permit access to the client TLS certificate by default
+						if b.Cluster.Spec.Networking.Calico != nil {
+							p.Statement = append(p.Statement, &Statement{
+								Sid:    "kopsK8sS3NodeBucketGetCalicoClient",
+								Effect: StatementEffectAllow,
+								Action: stringorslice.Slice([]string{"s3:Get*"}),
+								Resource: stringorslice.Of(
+									strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/calico-client/*"}, ""),
+								),
+							})
+						}
 					}
 				}
 			}
