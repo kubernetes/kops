@@ -135,6 +135,9 @@ type AWSCloud interface {
 
 	// FindClusterStatus gets the status of the cluster as it exists in AWS, inferred from volumes
 	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
+
+	// getGroupMessages returns a slice of ASG messages.
+	getCloudGroupMessages(asgName string) ([]cloudinstances.CloudInstanceGroupMemberMessage, error)
 }
 
 type awsCloudImplementation struct {
@@ -371,17 +374,37 @@ func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstanceGroupMember) erro
 // TODO not used yet, as this requires a major refactor of rolling-update code, slowly but surely
 
 // GetCloudGroups returns a groups of instances that back a kops instance groups
-func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node, getGroupMessages bool) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes, getGroupMessages)
 }
 
 // GetCloudGroupMessages returns messages from a groups of autoscale groups
-func (c *awsCloudImplementation) GetCloudGroupMessages(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]string, error) {
-	glog.V(8).Infof("aws cloud GetCloudGroupMessages not implemented yet")
-	return nil, fmt.Errorf("aws provider does not support getting cloud group messages at this time")
+// TODO better comments
+func (c *awsCloudImplementation) getCloudGroupMessages(asgName string) ([]cloudinstances.CloudInstanceGroupMemberMessage, error) {
+	var messages []cloudinstances.CloudInstanceGroupMemberMessage
+
+	input := &autoscaling.DescribeScalingActivitiesInput{
+		AutoScalingGroupName: aws.String(asgName),
+	}
+
+	output, err := c.Autoscaling().DescribeScalingActivities(input)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, a := range output.Activities {
+		message := cloudinstances.CloudInstanceGroupMemberMessage{
+			HumanName: asgName,
+			Message: aws.StringValue(a.Description),
+			StatusCode: aws.StringValue(a.StatusCode),
+		}
+		messages = append(messages, message)
+	}
+
+	return messages, nil
 }
 
-func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node, getGroupMessages bool) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	nodeMap := cloudinstances.GetNodeMap(nodes)
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
@@ -404,10 +427,19 @@ func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.In
 			continue
 		}
 
-		groups[instancegroup.ObjectMeta.Name], err = awsBuildCloudInstanceGroup(c, instancegroup, asg, nodeMap)
+		groups[instancegroup.ObjectMeta.Name], err = awsBuildCloudInstanceGroup(instancegroup, asg, nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error getting cloud instance group %q: %v", instancegroup.ObjectMeta.Name, err)
 		}
+
+		if getGroupMessages {
+			groups[instancegroup.ObjectMeta.Name].Messages, err = c.getCloudGroupMessages(name)
+			if err != nil {
+				return nil, fmt.Errorf("error getting cloud group message %q: %v", name, err)
+			}
+		}
+
+
 	}
 
 	return groups, nil
@@ -466,6 +498,7 @@ func FindAutoscalingGroups(c AWSCloud, tags map[string]string) ([]*autoscaling.G
 					glog.Warningf("Skipping ASG %v (which matches tags): %v", *asg.AutoScalingGroupARN, *asg.Status)
 					continue
 				}
+
 				asgs = append(asgs, asg)
 			}
 			return true
@@ -498,7 +531,7 @@ func matchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription
 	return true
 }
 
-func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+func awsBuildCloudInstanceGroup(ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
 	newLaunchConfigName := aws.StringValue(g.LaunchConfigurationName)
 
 	cg := &cloudinstances.CloudInstanceGroup{

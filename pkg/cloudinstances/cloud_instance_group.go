@@ -50,6 +50,19 @@ type CloudInstanceGroupMember struct {
 	CloudInstanceGroup *CloudInstanceGroup
 }
 
+// CloudInstanceGroupMemberMessage
+type CloudInstanceGroupMemberMessage struct {
+	// HumanName is a unique identifier for the instance, meaningful to the cloud
+	HumanName string `json:"humanName,omitempty"`
+
+	// Message
+	Message string `json:"message,omitempty"`
+
+	// TODO
+	StatusCode string
+}
+
+
 // NewCloudInstanceGroupMember creates a new CloudInstanceGroupMember
 func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(instanceId string, newGroupName string, currentGroupName string, nodeMap map[string]*v1.Node) error {
 	if instanceId == "" {
@@ -59,8 +72,13 @@ func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(instanceId string, newG
 		ID:                 instanceId,
 		CloudInstanceGroup: c,
 	}
-	node := nodeMap[instanceId]
-	if node != nil {
+
+	var node *v1.Node
+	// allow the nodeMap to be nill, specifically when then nodes are not started or the k8s API is not running
+	if nodeMap != nil {
+		node = nodeMap[instanceId]
+	}
+	if node != nil  {
 		cm.Node = node
 	} else {
 		glog.V(8).Infof("unable to find node for instance: %s", instanceId)

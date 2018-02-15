@@ -29,6 +29,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 )
 
 // ValidationCluster a cluster to validate.
@@ -51,6 +53,10 @@ type ValidationCluster struct {
 	Status            string                `json:"status"`
 	ClusterName       string                `json:"clusterName"`
 	InstanceGroups    []*kops.InstanceGroup `json:"instanceGroups,omitempty"`
+
+	// GroupMessages is a slice CloudInstanceGroupMemberMessage of that contains messages from the cloud provider and the Human readable id.
+	// For example with AWS these messages have the ASG Name, and a status message
+	GroupMessages []*cloudinstances.CloudInstanceGroupMemberMessage `json:"cloudInstanceGroupMemberMessages,omitempty"`
 }
 
 // ValidationNode is A K8s node to be validated.
@@ -137,6 +143,28 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 	}
 
 	return validateTheNodes(clusterName, validationCluster)
+
+}
+
+// CollectCloudGroupMessages returns a map of group messages from the cloud provider.  With aws these are a map
+// keyed by ASG names and the list of messages from the ASG
+// TODO wordsmith this some
+func (v ValidationCluster) CollectCloudGroupMessages(cluster *kops.Cluster) ([]*cloudinstances.CloudInstanceGroupMemberMessage, error) {
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return nil, err
+	}
+
+	if cloud == nil {
+		return nil, fmt.Errorf("cloud cannot be nil")
+	}
+
+	// TODO this is always nil we need to send back from validate, but clear before we output json or yaml
+	if v.NodeList != nil {
+		cloud.GetCloudGroupMessages(cluster, v.InstanceGroups, false, v.NodeList.Items)
+	}
+
+	return cloud.GetCloudGroupMessages(cluster, v.InstanceGroups, false, nil)
 
 }
 

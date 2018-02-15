@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	apiutil "k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/util/pkg/tables"
@@ -133,7 +134,17 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 			return err
 		}
 
+
+
+		// TODO output message for cloud groups
 		if hasPlaceHolderIPAddress {
+
+			var igs []*api.InstanceGroup
+
+			for _, i := range instanceGroups {
+				igs = append(igs, &i)
+			}
+
 			message := "Validation Failed\n\n" +
 				"The dns-controller Kubernetes deployment has not updated the Kubernetes cluster's API DNS entry to the correct IP address." +
 				"  The API DNS IP address is the placeholder address that kops creates: 203.0.113.123." +
@@ -144,11 +155,27 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 				ClusterName:  cluster.ObjectMeta.Name,
 				ErrorMessage: message,
 				Status:       validation.ClusterValidationFailed,
+				InstanceGroups: igs,
 			}
 			validationFailed := fmt.Errorf("\nCannot reach cluster's API server: unable to Validate Cluster: %s", cluster.ObjectMeta.Name)
+			validationCluster.GroupMessages, err = getGroupMessages(validationFailed, validationCluster, cluster)
+			// TODO maybe eat the error here?? We want to output something
+			if err != nil {
+				return err
+			}
+
 			switch options.output {
 			case OutputTable:
+				if err != nil {
+					return err
+				}
 				fmt.Println(message)
+
+				err = validateClusterOutputTableGroupMessages(validationCluster,out)
+				if err != nil {
+					return err
+				}
+
 				return validationFailed
 			case OutputYaml:
 				return validateClusterOutputYAML(validationCluster, validationFailed, out)
@@ -163,9 +190,19 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 
 	validationCluster, validationFailed := validation.ValidateCluster(cluster.ObjectMeta.Name, list, k8sClient)
 
-	if validationCluster == nil || validationCluster.NodeList == nil || validationCluster.NodeList.Items == nil {
+	// TODO I think we can output the ASG messages ...
+	if validationCluster == nil {
 		return validationFailed
 	}
+
+	// TODO move
+	validationCluster.GroupMessages, err = getGroupMessages(validationFailed, validationCluster, cluster)
+	if err != nil {
+		return err
+	}
+	//if validationCluster.NodeList == nil || validationCluster.NodeList.Items == nil {
+	//}
+
 
 	switch options.output {
 	case OutputTable:
@@ -179,6 +216,45 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	}
 
 }
+
+// getGroupMessages returns the cloud group messages
+func getGroupMessages(validationFailed error, validationCluster *validation.ValidationCluster, cluster *api.Cluster) ([]*cloudinstances.CloudInstanceGroupMemberMessage, error) {
+	if validationFailed != nil {
+		glog.Infof("validation %s", validationCluster.GroupMessages)
+		m, err := validationCluster.CollectCloudGroupMessages(cluster)
+		if err != nil {
+			// TODO return err?
+			return nil, nil
+		}
+
+		return m, nil
+	}
+	return nil, nil
+}
+
+func validateClusterOutputTableGroupMessages(validationCluster *validation.ValidationCluster,  out io.Writer) error {
+	if len(validationCluster.GroupMessages) != 0 {
+		groupTable := &tables.Table{}
+		groupTable.AddColumn("CLOUD GROUP", func(s *cloudinstances.CloudInstanceGroupMemberMessage) string {
+			return s.HumanName
+		})
+
+		groupTable.AddColumn("MESSAGE", func(s *cloudinstances.CloudInstanceGroupMemberMessage) string {
+			return s.Message
+		})
+
+		fmt.Fprintln(out, "\nCloud Group Messages")
+		err := groupTable.Render(validationCluster.GroupMessages, out, "CLOUD GROUP", "MESSAGE")
+
+		// TODO may want ot not error here ... this would help the UX ...
+		if err != nil {
+			return fmt.Errorf("cannot cloud group messages for %q: %v", validationCluster.ClusterName, err)
+		}
+	}
+
+	return nil
+}
+
 
 func validateClusterOutputTable(validationCluster *validation.ValidationCluster, validationFailed error, instanceGroups []api.InstanceGroup, out io.Writer) error {
 	t := &tables.Table{}
@@ -262,6 +338,9 @@ func validateClusterOutputTable(validationCluster *validation.ValidationCluster,
 			return fmt.Errorf("cannot render pods for %q: %v", validationCluster.ClusterName, err)
 		}
 	}
+
+	// TODO error handling
+	validateClusterOutputTableGroupMessages(validationCluster, out)
 
 	if validationFailed == nil {
 		fmt.Fprintf(out, "\nYour cluster %s is ready\n", validationCluster.ClusterName)
