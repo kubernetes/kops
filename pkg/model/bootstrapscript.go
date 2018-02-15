@@ -59,8 +59,8 @@ func (b *BootstrapScript) KubeEnv(ig *kops.InstanceGroup) (string, error) {
 // ResourceNodeUp generates and returns a nodeup (bootstrap) script from a
 // template file, substituting in specific env vars & cluster spec configuration
 func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.ClusterSpec) (*fi.ResourceHolder, error) {
-	if ig.Spec.Role == kops.InstanceGroupRoleBastion {
-		// Bastions are just bare machines (currently), used as SSH jump-hosts
+	// Bastions can have AdditionalUserData, but if there isn't any skip this part
+	if ig.IsBastion() && len(ig.Spec.AdditionalUserData) == 0 {
 		return nil, nil
 	}
 

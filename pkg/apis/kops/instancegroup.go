@@ -168,6 +168,21 @@ func (g *InstanceGroup) IsMaster() bool {
 	}
 }
 
+// IsBastion checks if instanceGroup is a bastion
+func (g *InstanceGroup) IsBastion() bool {
+	switch g.Spec.Role {
+	case InstanceGroupRoleMaster:
+		return false
+	case InstanceGroupRoleNode:
+		return false
+	case InstanceGroupRoleBastion:
+		return true
+	default:
+		glog.Fatalf("Role not set in group %v", g)
+		return false
+	}
+}
+
 func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
 	if g.Spec.NodeLabels == nil {
 		nodeLabels := make(map[string]string)
