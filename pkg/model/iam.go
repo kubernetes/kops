@@ -143,7 +143,6 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			if b.Cluster.Spec.AdditionalPolicies != nil {
 				roleAsString := reflect.ValueOf(role).String()
 				additionalPolicies := *(b.Cluster.Spec.AdditionalPolicies)
-
 				additionalPolicy = additionalPolicies[strings.ToLower(roleAsString)]
 			}
 

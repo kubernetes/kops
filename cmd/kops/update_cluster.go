@@ -207,19 +207,18 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{
-		Cluster:         cluster,
-		Models:          strings.Split(c.Models, ","),
 		Clientset:       clientset,
-		TargetName:      targetName,
-		OutDir:          c.OutDir,
+		Cluster:         cluster,
 		DryRun:          isDryrun,
-		MaxTaskDuration: c.MaxTaskDuration,
 		InstanceGroups:  instanceGroups,
+		MaxTaskDuration: c.MaxTaskDuration,
+		Models:          strings.Split(c.Models, ","),
+		OutDir:          c.OutDir,
 		Phase:           phase,
+		TargetName:      targetName,
 	}
 
-	err = applyCmd.Run()
-	if err != nil {
+	if err := applyCmd.Run(); err != nil {
 		return err
 	}
 
