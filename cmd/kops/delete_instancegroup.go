@@ -42,6 +42,7 @@ var (
 
 		# Delete an instancegroup for the k8s-cluster.example.com cluster.
 		# The --yes option runs the command immediately.
+		# Note that the cloud resources will be deleted immediately, without running "kops update cluster"
 		kops delete ig --name=k8s-cluster.example.com node-example --yes
 		`))
 

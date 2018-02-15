@@ -23,7 +23,7 @@ kops create instancegroup
 ```
   # Create an instancegroup for the k8s-cluster.example.com cluster.
   kops create ig --name=k8s-cluster.example.com node-example \
-  --role node --subnet my-subnet-name
+  --role node --subnet my-subnet-name,my-other-subnet-name
   
   # Create a YAML manifest for an instancegroup for the k8s-cluster.example.com cluster.
   kops create ig --name=k8s-cluster.example.com node-example \
