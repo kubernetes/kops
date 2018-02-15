@@ -91,11 +91,11 @@ func recreateCloudInstanceGroupMember(c GCECloud, i *cloudinstances.CloudInstanc
 }
 
 // GetCloudGroups returns a map of CloudGroup that backs a list of instance groups
-func (c *gceCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+func (c *gceCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node, getMessages bool) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes, getMessages)
 }
 
-func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node, getMessages bool) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 
 	project := c.Project()

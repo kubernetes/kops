@@ -375,6 +375,12 @@ func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceg
 	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
 }
 
+// GetCloudGroupMessages returns messages from a groups of autoscale groups
+func (c *awsCloudImplementation) GetCloudGroupMessages(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]string, error) {
+	glog.V(8).Infof("aws cloud GetCloudGroupMessages not implemented yet")
+	return nil, fmt.Errorf("aws provider does not support getting cloud group messages at this time")
+}
+
 func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	nodeMap := cloudinstances.GetNodeMap(nodes)
 

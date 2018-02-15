@@ -89,6 +89,12 @@ func (c *MockAWSCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*k
 	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
 }
 
+// GetCloudGroupMessages is not implemented yet
+func (c *MockAWSCloud) GetCloudGroupMessages(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) ([]*cloudinstances.CloudInstanceGroupMemberMessage, error) {
+	glog.V(8).Infof("MockAWSCloud GetCloudGroupMessages not implemented yet")
+	return nil, fmt.Errorf("MockAWSCloud provider does not support getting cloud group messages at this time")
+}
+
 func (c *MockCloud) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderAWS
 }

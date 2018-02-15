@@ -52,7 +52,7 @@ func (c *Cloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 
 // GetCloudGroups is not implemented yet, that needs to return the instances and groups that back a kops cluster.
 // Baremetal may not support this.
-func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node, getGroupMessages bool) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	glog.V(8).Infof("baremetal cloud GetCloudGroups not implemented yet")
 	return nil, fmt.Errorf("baremetal provider does not support getting cloud groups at this time")
 }

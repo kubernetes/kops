@@ -38,7 +38,8 @@ type Cloud interface {
 	DeleteGroup(group *cloudinstances.CloudInstanceGroup) error
 
 	// GetCloudGroups returns a map of cloud instances that back a kops cluster
-	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
+	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node, getGroupMessages bool) (map[string]*cloudinstances.CloudInstanceGroup, error)
+
 }
 
 type VPCInfo struct {

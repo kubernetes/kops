@@ -149,7 +149,7 @@ func (c *openstackCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error
 	return fmt.Errorf("openstackCloud::DeleteGroup not implemented")
 }
 
-func (c *openstackCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func (c *openstackCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node, getMessages bool) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	return nil, fmt.Errorf("openstackCloud::GetCloudGroups not implemented")
 }
 

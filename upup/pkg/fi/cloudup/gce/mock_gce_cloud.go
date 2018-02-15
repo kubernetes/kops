@@ -54,7 +54,7 @@ func buildMockGCECloud(region string, project string) *mockGCECloud {
 }
 
 // GetCloudGroups is not implemented yet
-func (c *mockGCECloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func (c *mockGCECloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node, getMessages bool) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	glog.V(8).Infof("mockGCECloud cloud provider GetCloudGroups not implemented yet")
 	return nil, fmt.Errorf("mockGCECloud cloud provider does not support getting cloud groups at this time")
 }

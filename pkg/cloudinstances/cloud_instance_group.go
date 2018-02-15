@@ -36,6 +36,8 @@ type CloudInstanceGroup struct {
 
 	// Raw allows for the implementer to attach an object, for tracking additional state
 	Raw interface{}
+
+	Messages []CloudInstanceGroupMemberMessage
 }
 
 // CloudInstanceGroupMember describes an instance in a CloudInstanceGroup group.
