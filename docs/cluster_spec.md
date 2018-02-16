@@ -123,6 +123,19 @@ spec:
     zone: us-east-1a
 ```
 
+#### publicIP
+The IP of an existing EIP that you would like to attach to the NAT gateway.
+
+```
+spec:
+  subnets:
+  - cidr: 10.20.64.0/21
+    name: us-east-1a
+    publicIP: 203.93.148.142
+    type: Private
+    zone: us-east-1a
+```
+
 ### kubeAPIServer
 
 This block contains configuration for the `kube-apiserver`.
@@ -388,7 +401,7 @@ spec:
 #### elbSecurityGroup
 *WARNING: this works only for Kubernetes version above 1.7.0.*
 
-To avoid creating a security group per elb, you can specify security group id, that will be assigned to your LoadBalancer. It must be security group id, not name. 
+To avoid creating a security group per elb, you can specify security group id, that will be assigned to your LoadBalancer. It must be security group id, not name.
 `api.loadBalancer.additionalSecurityGroups` must be empty, because Kubernetes will add rules per ports that are specified in service file.
 This can be useful to avoid AWS limits: 500 security groups per region and 50 rules per security group.
 

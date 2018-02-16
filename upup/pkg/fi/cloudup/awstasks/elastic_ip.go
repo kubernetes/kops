@@ -46,6 +46,8 @@ type ElasticIP struct {
 	// TagOnSubnet tags a subnet with the ElasticIP.  Deprecated: doesn't round-trip with terraform.
 	TagOnSubnet *Subnet
 
+	Tags map[string]string
+
 	// AssociatedNatGatewayRouteTable follows the RouteTable -> NatGateway -> ElasticIP
 	AssociatedNatGatewayRouteTable *RouteTable
 }
@@ -229,6 +231,10 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 	} else {
 		publicIp = a.PublicIP
 		eipId = a.ID
+		err := t.AddAWSTags(*a.ID, changes.Tags)
+		if err != nil {
+			return fmt.Errorf("Unable to tag eip %v", err)
+		}
 	}
 
 	// Tag the associated subnet
