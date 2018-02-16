@@ -355,6 +355,8 @@ type ClusterSubnetSpec struct {
 	Egress string `json:"egress,omitempty"`
 
 	Type SubnetType `json:"type,omitempty"`
+	// PublicIP to attatch to NatGateway
+	PublicIP string `json:"publicIP,omitempty"`
 }
 
 type EgressProxySpec struct {

@@ -1148,6 +1148,7 @@ func autoConvert_v1alpha2_ClusterSubnetSpec_To_kops_ClusterSubnetSpec(in *Cluste
 	out.ProviderID = in.ProviderID
 	out.Egress = in.Egress
 	out.Type = kops.SubnetType(in.Type)
+	out.PublicIP = in.PublicIP
 	return nil
 }
 
@@ -1164,6 +1165,7 @@ func autoConvert_kops_ClusterSubnetSpec_To_v1alpha2_ClusterSubnetSpec(in *kops.C
 	out.ProviderID = in.ProviderID
 	out.Egress = in.Egress
 	out.Type = SubnetType(in.Type)
+	out.PublicIP = in.PublicIP
 	return nil
 }
 
