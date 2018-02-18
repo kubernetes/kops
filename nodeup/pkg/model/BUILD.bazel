@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "architecture.go",
+        "calico.go",
         "cloudconfig.go",
         "context.go",
         "convenience.go",
