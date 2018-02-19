@@ -158,6 +158,7 @@ func (c *ApplyClusterCmd) Run() error {
 	c.channel = channel
 
 	stageAssetsLifecycle := fi.LifecycleSync
+	iamLifecycle := fi.LifecycleSync
 	securityLifecycle := fi.LifecycleSync
 	networkLifecycle := fi.LifecycleSync
 	clusterLifecycle := fi.LifecycleSync
@@ -169,16 +170,25 @@ func (c *ApplyClusterCmd) Run() error {
 		// until we implement finding assets we need to to Ignore them
 		stageAssetsLifecycle = fi.LifecycleIgnore
 	case PhaseStageAssets:
+		iamLifecycle = fi.LifecycleIgnore
 		networkLifecycle = fi.LifecycleIgnore
 		securityLifecycle = fi.LifecycleIgnore
 		clusterLifecycle = fi.LifecycleIgnore
 
 	case PhaseNetwork:
+		iamLifecycle = fi.LifecycleIgnore
+		stageAssetsLifecycle = fi.LifecycleIgnore
+		securityLifecycle = fi.LifecycleIgnore
+		clusterLifecycle = fi.LifecycleIgnore
+
+	case PhaseIAM:
+		networkLifecycle = fi.LifecycleExistsAndWarnIfChanges
 		stageAssetsLifecycle = fi.LifecycleIgnore
 		securityLifecycle = fi.LifecycleIgnore
 		clusterLifecycle = fi.LifecycleIgnore
 
 	case PhaseSecurity:
+		iamLifecycle = fi.LifecycleIgnore
 		stageAssetsLifecycle = fi.LifecycleIgnore
 		networkLifecycle = fi.LifecycleExistsAndWarnIfChanges
 		clusterLifecycle = fi.LifecycleIgnore
@@ -187,10 +197,12 @@ func (c *ApplyClusterCmd) Run() error {
 		if c.TargetName == TargetDryRun {
 			stageAssetsLifecycle = fi.LifecycleIgnore
 			securityLifecycle = fi.LifecycleExistsAndWarnIfChanges
+			iamLifecycle = fi.LifecycleExistsAndWarnIfChanges
 			networkLifecycle = fi.LifecycleExistsAndWarnIfChanges
 		} else {
 			stageAssetsLifecycle = fi.LifecycleIgnore
 			networkLifecycle = fi.LifecycleExistsAndValidates
+			iamLifecycle = fi.LifecycleExistsAndValidates
 			securityLifecycle = fi.LifecycleExistsAndValidates
 		}
 
@@ -495,7 +507,7 @@ func (c *ApplyClusterCmd) Run() error {
 					&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
 					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
 					&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
-					&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+					&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: &iamLifecycle},
 				)
 
 				l.Builders = append(l.Builders,
@@ -503,7 +515,7 @@ func (c *ApplyClusterCmd) Run() error {
 				)
 
 				l.Builders = append(l.Builders,
-					&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+					&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: &iamLifecycle},
 				)
 			case kops.CloudProviderDO:
 				l.Builders = append(l.Builders,

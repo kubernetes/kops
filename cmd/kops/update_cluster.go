@@ -181,17 +181,9 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 
 	var phase cloudup.Phase
 	if c.Phase != "" {
-		switch strings.ToLower(c.Phase) {
-		case string(cloudup.PhaseStageAssets):
-			phase = cloudup.PhaseStageAssets
-		case string(cloudup.PhaseNetwork):
-			phase = cloudup.PhaseNetwork
-		case string(cloudup.PhaseSecurity), "iam": // keeping IAM for backwards compatibility
-			phase = cloudup.PhaseSecurity
-		case string(cloudup.PhaseCluster):
-			phase = cloudup.PhaseCluster
-		default:
-			return fmt.Errorf("unknown phase %q, available phases: %s", c.Phase, strings.Join(cloudup.Phases.List(), ","))
+		phase, err = parsePhase(c.Phase)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -333,6 +325,14 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	}
 
 	return nil
+}
+
+func parsePhase(phase string) (cloudup.Phase, error) {
+	if v, ok := cloudup.PhasesNameMap[phase]; ok {
+		return v, nil
+	}
+
+	return "", fmt.Errorf("unknown phase %q, available phases: %s", phase, strings.Join(cloudup.Phases.List(), ","))
 }
 
 func usesBastion(instanceGroups []*kops.InstanceGroup) bool {
