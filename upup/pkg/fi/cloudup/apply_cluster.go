@@ -125,6 +125,8 @@ type ApplyClusterCmd struct {
 	Phase Phase
 
 	// LifecycleOverrides is passed in to override the lifecycle for one of more tasks.
+	// The key value is the task name such as InternetGateway and the value is the fi.Lifecycle
+	// that is re-mapped.
 	LifecycleOverrides map[string]fi.Lifecycle
 }
 
