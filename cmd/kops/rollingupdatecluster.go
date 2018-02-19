@@ -290,7 +290,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		return err
 	}
 
-	groups, err := cloud.GetCloudGroups(cluster, instanceGroups, warnUnmatched, nodes)
+	groups, err := cloud.GetCloudGroups(cluster, instanceGroups, warnUnmatched, nodes, false)
 	if err != nil {
 		return err
 	}

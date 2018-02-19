@@ -23,6 +23,7 @@ import (
 
 	"net"
 
+	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -56,7 +57,7 @@ type ValidationCluster struct {
 
 	// GroupMessages is a slice CloudInstanceGroupMemberMessage of that contains messages from the cloud provider and the Human readable id.
 	// For example with AWS these messages have the ASG Name, and a status message
-	GroupMessages []*cloudinstances.CloudInstanceGroupMemberMessage `json:"cloudInstanceGroupMemberMessages,omitempty"`
+	GroupMessages []cloudinstances.CloudInstanceGroupMemberMessage `json:"cloudInstanceGroupMemberMessages,omitempty"`
 }
 
 // ValidationNode is A K8s node to be validated.
@@ -146,12 +147,16 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 
 }
 
-// CollectCloudGroupMessages returns a map of group messages from the cloud provider.  With aws these are a map
-// keyed by ASG names and the list of messages from the ASG
+// CollectCloudGroupMessages returns a slice of group messages from the cloud provider.  With aws these are a slice of CloudInstanceGroupMemberMessage
+// with ASG names and the list of messages from the ASG
 // TODO wordsmith this some
-func (v ValidationCluster) CollectCloudGroupMessages(cluster *kops.Cluster) ([]*cloudinstances.CloudInstanceGroupMemberMessage, error) {
+func (v ValidationCluster) CollectCloudGroupMessages(cluster *kops.Cluster) ([]cloudinstances.CloudInstanceGroupMemberMessage, error) {
+	var messages []cloudinstances.CloudInstanceGroupMemberMessage
+	var groups map[string]*cloudinstances.CloudInstanceGroup
+
 	cloud, err := cloudup.BuildCloud(cluster)
 	if err != nil {
+		glog.V(2).Infof("error build cloud: %v", err)
 		return nil, err
 	}
 
@@ -161,11 +166,24 @@ func (v ValidationCluster) CollectCloudGroupMessages(cluster *kops.Cluster) ([]*
 
 	// TODO this is always nil we need to send back from validate, but clear before we output json or yaml
 	if v.NodeList != nil {
-		cloud.GetCloudGroupMessages(cluster, v.InstanceGroups, false, v.NodeList.Items)
+		groups, err = cloud.GetCloudGroups(cluster, v.InstanceGroups, false, v.NodeList.Items, true)
+		if err != nil {
+			glog.V(2).Infof("error get cloud groups: %v", err)
+			return nil, err
+		}
+	} else {
+		groups, err = cloud.GetCloudGroups(cluster, v.InstanceGroups, false, nil, true)
+		if err != nil {
+			glog.V(2).Infof("error get cloud groups with no nodes: %v", err)
+			return nil, err
+		}
 	}
 
-	return cloud.GetCloudGroupMessages(cluster, v.InstanceGroups, false, nil)
+	for _,v := range groups {
+		messages = append(messages, v.Messages ...)
+	}
 
+	return messages, nil
 }
 
 func collectComponentFailures(client kubernetes.Interface) (failures []string, err error) {

@@ -134,47 +134,43 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 			return err
 		}
 
-
-
 		// TODO output message for cloud groups
 		if hasPlaceHolderIPAddress {
 
 			var igs []*api.InstanceGroup
-
-			for _, i := range instanceGroups {
-				igs = append(igs, &i)
+			for i := range list.Items {
+				ig := &list.Items[i]
+				igs = append(igs, ig)
+				glog.V(2).Infof("instance group: %#v\n\n", ig.Spec)
 			}
 
-			message := "Validation Failed\n\n" +
+			message := "\nValidation Failed\n\n" +
 				"The dns-controller Kubernetes deployment has not updated the Kubernetes cluster's API DNS entry to the correct IP address." +
 				"  The API DNS IP address is the placeholder address that kops creates: 203.0.113.123." +
 				"  Please wait about 5-10 minutes for a master to start, dns-controller to launch, and DNS to propagate." +
 				"  The protokube container and dns-controller deployment logs may contain more diagnostic information." +
 				"  Etcd and the API DNS entries must be updated for a kops Kubernetes cluster to start."
+
 			validationCluster := &validation.ValidationCluster{
-				ClusterName:  cluster.ObjectMeta.Name,
-				ErrorMessage: message,
-				Status:       validation.ClusterValidationFailed,
+				ClusterName:    cluster.ObjectMeta.Name,
+				ErrorMessage:   message,
+				Status:         validation.ClusterValidationFailed,
 				InstanceGroups: igs,
 			}
-			validationFailed := fmt.Errorf("\nCannot reach cluster's API server: unable to Validate Cluster: %s", cluster.ObjectMeta.Name)
-			validationCluster.GroupMessages, err = getGroupMessages(validationFailed, validationCluster, cluster)
-			// TODO maybe eat the error here?? We want to output something
-			if err != nil {
-				return err
-			}
+
+			validationFailed := fmt.Errorf("\nValidation Failed: Cannot reach cluster's API server: unable to Validate Cluster: %s", cluster.ObjectMeta.Name)
+			validationCluster.GroupMessages = getGroupMessages(validationFailed, validationCluster, cluster)
 
 			switch options.output {
 			case OutputTable:
 				if err != nil {
 					return err
 				}
-				fmt.Println(message)
-
-				err = validateClusterOutputTableGroupMessages(validationCluster,out)
+				err = validateClusterOutputTableGroupMessages(validationCluster, out)
 				if err != nil {
 					return err
 				}
+				fmt.Println(message)
 
 				return validationFailed
 			case OutputYaml:
@@ -190,19 +186,13 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 
 	validationCluster, validationFailed := validation.ValidateCluster(cluster.ObjectMeta.Name, list, k8sClient)
 
-	// TODO I think we can output the ASG messages ...
+	// TODO(@chrislovecnm) I think we can output the ASG messages
+	// TODO check to see if we can output some validation data, at least the ASG messages
 	if validationCluster == nil {
 		return validationFailed
 	}
 
-	// TODO move
-	validationCluster.GroupMessages, err = getGroupMessages(validationFailed, validationCluster, cluster)
-	if err != nil {
-		return err
-	}
-	//if validationCluster.NodeList == nil || validationCluster.NodeList.Items == nil {
-	//}
-
+	validationCluster.GroupMessages = getGroupMessages(validationFailed, validationCluster, cluster)
 
 	switch options.output {
 	case OutputTable:
@@ -218,33 +208,37 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 }
 
 // getGroupMessages returns the cloud group messages
-func getGroupMessages(validationFailed error, validationCluster *validation.ValidationCluster, cluster *api.Cluster) ([]*cloudinstances.CloudInstanceGroupMemberMessage, error) {
+func getGroupMessages(validationFailed error, validationCluster *validation.ValidationCluster, cluster *api.Cluster) []cloudinstances.CloudInstanceGroupMemberMessage {
 	if validationFailed != nil {
-		glog.Infof("validation %s", validationCluster.GroupMessages)
 		m, err := validationCluster.CollectCloudGroupMessages(cluster)
 		if err != nil {
-			// TODO return err?
-			return nil, nil
+			// eating err because some of the cloud providers do not have this implemented
+			glog.Infof("unable to get cloud  group messages %v.", err)
+			return nil
 		}
 
-		return m, nil
+		return m
 	}
-	return nil, nil
+	return nil
 }
 
-func validateClusterOutputTableGroupMessages(validationCluster *validation.ValidationCluster,  out io.Writer) error {
+func validateClusterOutputTableGroupMessages(validationCluster *validation.ValidationCluster, out io.Writer) error {
 	if len(validationCluster.GroupMessages) != 0 {
 		groupTable := &tables.Table{}
-		groupTable.AddColumn("CLOUD GROUP", func(s *cloudinstances.CloudInstanceGroupMemberMessage) string {
+		groupTable.AddColumn("GROUP", func(s cloudinstances.CloudInstanceGroupMemberMessage) string {
 			return s.HumanName
 		})
 
-		groupTable.AddColumn("MESSAGE", func(s *cloudinstances.CloudInstanceGroupMemberMessage) string {
+		groupTable.AddColumn("MESSAGE", func(s cloudinstances.CloudInstanceGroupMemberMessage) string {
 			return s.Message
 		})
 
-		fmt.Fprintln(out, "\nCloud Group Messages")
-		err := groupTable.Render(validationCluster.GroupMessages, out, "CLOUD GROUP", "MESSAGE")
+		groupTable.AddColumn("STATUS", func(s cloudinstances.CloudInstanceGroupMemberMessage) string {
+			return s.StatusCode
+		})
+
+		fmt.Fprintln(out, "\nCLOUD GROUP MESSAGES")
+		err := groupTable.Render(validationCluster.GroupMessages, out, "GROUP", "MESSAGE", "STATUS")
 
 		// TODO may want ot not error here ... this would help the UX ...
 		if err != nil {
@@ -254,7 +248,6 @@ func validateClusterOutputTableGroupMessages(validationCluster *validation.Valid
 
 	return nil
 }
-
 
 func validateClusterOutputTable(validationCluster *validation.ValidationCluster, validationFailed error, instanceGroups []api.InstanceGroup, out io.Writer) error {
 	t := &tables.Table{}
