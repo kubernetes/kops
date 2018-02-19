@@ -66,6 +66,10 @@ type UpdateClusterOptions struct {
 	CreateKubecfg   bool
 
 	Phase string
+
+	// LifecycleOverrides is a slice of taskName=lifecycle name values.  This slice is used
+	// to populate the LifecycleOverrides struct member in ApplyClusterCmd struct.
+	LifecycleOverrides []string
 }
 
 func (o *UpdateClusterOptions) InitDefaults() {
@@ -109,6 +113,8 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
 	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run: "+strings.Join(cloudup.Phases.List(), ", "))
+	cmd.Flags().StringSliceVar(&options.LifecycleOverrides, "lifecycle-overrides", options.LifecycleOverrides, "comma separated list of phase overrides, example: SecurityGroups=Ignore,InternetGateway=ExistsAndWarnIfChanges")
+
 	return cmd
 }
 
@@ -195,6 +201,25 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 	}
 
+	lifecycleOverrideMap := make(map[string]fi.Lifecycle)
+
+	for _, override := range c.LifecycleOverrides {
+		values := strings.Split(override, "=")
+		if len(values) != 2 {
+			return fmt.Errorf("Incorrect syntax for lifecyle-overrides, correct syntax is TaskName=lifecycleName, override provided: %q", override)
+		}
+
+		taskName := values[0]
+		lifecycleName := values[1]
+
+		lifecycleOverride, err := parseLifecycle(lifecycleName)
+		if err != nil {
+			return err
+		}
+
+		lifecycleOverrideMap[taskName] = lifecycleOverride
+	}
+
 	var instanceGroups []*kops.InstanceGroup
 	{
 		list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
@@ -216,6 +241,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		OutDir:          c.OutDir,
 		Phase:           phase,
 		TargetName:      targetName,
+		LifecycleOverrides: lifecycleOverrideMap,
 	}
 
 	if err := applyCmd.Run(); err != nil {
@@ -333,6 +359,13 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	}
 
 	return nil
+}
+
+func parseLifecycle(lifecycle string) (fi.Lifecycle, error) {
+	if v, ok := fi.LifecycleNameMap[lifecycle]; ok {
+		return v, nil
+	}
+	return "", fmt.Errorf("unknown lifecycle %q, available lifecycle: %s", lifecycle, strings.Join(fi.Lifecycles.List(), ","))
 }
 
 func usesBastion(instanceGroups []*kops.InstanceGroup) bool {
