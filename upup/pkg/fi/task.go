@@ -46,10 +46,12 @@ type ModelBuilder interface {
 
 // ModelBuilderContext is a context object that holds state we want to pass to ModelBuilder
 type ModelBuilderContext struct {
-	Tasks map[string]Task
+	Tasks              map[string]Task
+	LifecycleOverrides map[string]Lifecycle
 }
 
 func (c *ModelBuilderContext) AddTask(task Task) {
+	task = c.setLifecycleOverride(task)
 	key := buildTaskKey(task)
 
 	existing, found := c.Tasks[key]
@@ -64,6 +66,7 @@ func (c *ModelBuilderContext) AddTask(task Task) {
 // If it does exist, it verifies that the existing task reflect.DeepEqual the new task,
 // if they are different an error is returned.
 func (c *ModelBuilderContext) EnsureTask(task Task) error {
+	task = c.setLifecycleOverride(task)
 	key := buildTaskKey(task)
 
 	existing, found := c.Tasks[key]
@@ -81,6 +84,32 @@ func (c *ModelBuilderContext) EnsureTask(task Task) error {
 	}
 	c.Tasks[key] = task
 	return nil
+}
+
+// setLifecycleOverride determines if a Lifecycle is in the LifecycleOverrides map for the current task.
+// If the lifecycle exist then the task lifecycle is set to the lifecycle provides in LifecycleOverrides.
+// This func allows for lifecycles to be passed in dynamically and have the task lifecycle set accordingly.
+func (c *ModelBuilderContext) setLifecycleOverride(task Task) Task {
+	// TODO(@chrislovecnm) - wonder if we should update the nodeup tasks to have lifecycle
+	// TODO - so that we can return an error here, rather than just returning.
+	// certain tasks have not implemented HasLifecycle interface
+	hl, ok := task.(HasLifecycle)
+	if !ok {
+		glog.V(8).Infof("task %T does not implement HasLifecycle", task)
+		return task
+	}
+
+	typeName := TypeNameForTask(task)
+	glog.V(8).Infof("testing task %q", typeName)
+
+	// typeName can be values like "InternetGateway"
+	value, ok := c.LifecycleOverrides[typeName]
+	if ok {
+		glog.Warningf("overriding task %s, lifecycle %s", task, value)
+		hl.SetLifecycle(value)
+	}
+
+	return task
 }
 
 func buildTaskKey(task Task) string {

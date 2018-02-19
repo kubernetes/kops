@@ -123,6 +123,11 @@ type ApplyClusterCmd struct {
 
 	// Phase can be set to a Phase to run the specific subset of tasks, if we don't want to run everything
 	Phase Phase
+
+	// LifecycleOverrides is passed in to override the lifecycle for one of more tasks.
+	// The key value is the task name such as InternetGateway and the value is the fi.Lifecycle
+	// that is re-mapped.
+	LifecycleOverrides map[string]fi.Lifecycle
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -628,7 +633,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	tf.AddTo(l.TemplateFunctions)
 
-	taskMap, err := l.BuildTasks(modelStore, fileModels, assetBuilder, &stageAssetsLifecycle)
+	taskMap, err := l.BuildTasks(modelStore, fileModels, assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
