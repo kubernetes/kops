@@ -62,7 +62,6 @@ type CloudInstanceGroupMemberMessage struct {
 	StatusCode string
 }
 
-
 // NewCloudInstanceGroupMember creates a new CloudInstanceGroupMember
 func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(instanceId string, newGroupName string, currentGroupName string, nodeMap map[string]*v1.Node) error {
 	if instanceId == "" {
@@ -78,7 +77,7 @@ func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(instanceId string, newG
 	if nodeMap != nil {
 		node = nodeMap[instanceId]
 	}
-	if node != nil  {
+	if node != nil {
 		cm.Node = node
 	} else {
 		glog.V(8).Infof("unable to find node for instance: %s", instanceId)

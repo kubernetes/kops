@@ -179,8 +179,8 @@ func (v ValidationCluster) CollectCloudGroupMessages(cluster *kops.Cluster) ([]c
 		}
 	}
 
-	for _,v := range groups {
-		messages = append(messages, v.Messages ...)
+	for _, v := range groups {
+		messages = append(messages, v.Messages...)
 	}
 
 	return messages, nil

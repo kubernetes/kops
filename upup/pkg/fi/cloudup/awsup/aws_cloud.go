@@ -394,8 +394,8 @@ func (c *awsCloudImplementation) getCloudGroupMessages(asgName string) ([]cloudi
 
 	for _, a := range output.Activities {
 		message := cloudinstances.CloudInstanceGroupMemberMessage{
-			HumanName: asgName,
-			Message: aws.StringValue(a.Description),
+			HumanName:  asgName,
+			Message:    aws.StringValue(a.Description),
 			StatusCode: aws.StringValue(a.StatusCode),
 		}
 		messages = append(messages, message)
@@ -438,7 +438,6 @@ func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.In
 				return nil, fmt.Errorf("error getting cloud group message %q: %v", name, err)
 			}
 		}
-
 
 	}
 
