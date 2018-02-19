@@ -105,6 +105,15 @@ func (e *executor) RunTasks(taskMap map[string]Task, maxTaskDuration time.Durati
 		for i, err := range taskErrors {
 			ts := tasks[i]
 			if err != nil {
+				//  print warning message and continue like the task succeeded
+				if _, ok := err.(*ExistsAndWarnIfChangesError); ok {
+					glog.Warningf(err.Error())
+					ts.done = true
+					ts.lastError = nil
+					progress = true
+					continue
+				}
+
 				remaining := time.Second * time.Duration(int(ts.deadline.Sub(time.Now()).Seconds()))
 				glog.Warningf("error running task %q (%v remaining to succeed): %v", ts.key, remaining, err)
 				errors = append(errors, err)
