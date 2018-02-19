@@ -127,11 +127,12 @@ func (c *Context) Render(a, e, changes Task) error {
 			case LifecycleExistsAndValidates:
 				return fmt.Errorf("Lifecycle set to ExistsAndValidates, but object was not found")
 			case LifecycleExistsAndWarnIfChanges:
-				return fmt.Errorf("Lifecycle set to ExistsAndWarnIfChanges, but object was not found")
+				return NewExistsAndWarnIfChangesError("Lifecycle set to ExistsAndWarnIfChanges and object was not found.")
 			}
 		} else {
 			switch *lifecycle {
 			case LifecycleExistsAndValidates, LifecycleExistsAndWarnIfChanges:
+
 				out := os.Stderr
 				changeList, err := buildChangeList(a, e, changes)
 				if err != nil {
@@ -239,3 +240,19 @@ func (c *Context) AddWarning(task Task, message string) {
 	c.warnings = append(c.warnings, warning)
 	glog.Warningf("warning during task %s: %s", task, message)
 }
+
+// ExistsAndWarnIfChangesError is the custom error return for fi.LifecycleExistsAndWarnIfChanges.
+// This error is used when an object needs to fail validation, but let the user proceed with a warning.
+type ExistsAndWarnIfChangesError struct {
+	msg string
+}
+
+// NewWarnIfInsufficientAccessError is a builder for ExistsAndWarnIfChangesError.
+func NewExistsAndWarnIfChangesError(message string) *ExistsAndWarnIfChangesError {
+	return &ExistsAndWarnIfChangesError{
+		msg: message,
+	}
+}
+
+// ExistsAndWarnIfChangesError implementation of the error interface.
+func (e *ExistsAndWarnIfChangesError) Error() string { return e.msg }
