@@ -195,11 +195,17 @@ func (c *DNSController) runOnce() error {
 	{
 		// Resolve and build map
 		for _, r := range snapshot.records {
+			if !c.zoneRules.PassesWhiteLists(r.FQDN) {
+				glog.Infof("Ignoring record %q", r.FQDN)
+				continue
+			}
+
 			if r.RecordType == RecordTypeAlias {
 				aliasRecords := snapshot.aliasTargets[r.Value]
 				if len(aliasRecords) == 0 {
 					glog.Infof("Alias in record specified %q, but no records were found for that name", r.Value)
 				}
+
 				for _, aliasRecord := range aliasRecords {
 					key := recordKey{
 						RecordType: aliasRecord.RecordType,
@@ -348,7 +354,7 @@ func newDNSOp(zoneRules *ZoneRules, dnsCache *dnsCache) (*dnsOp, error) {
 			}
 		}
 
-		if len(matches) == 0 && zoneRules.Wildcard {
+		if len(matches) == 0 && zoneRules.Catchall {
 			// No explicit matches but wildcard; treat everything as matching
 			matches = append(matches, zones...)
 		}
@@ -503,7 +509,7 @@ func isCoreDNSZone(zone dnsprovider.Zone) bool {
 	return ok
 }
 
-func FixWildcards(s string) string {
+func FixCatchalls(s string) string {
 	return strings.Replace(s, "\\052", "*", 1)
 }
 
@@ -543,7 +549,7 @@ func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error
 		}
 
 		for _, rr := range rrs {
-			rrName := EnsureDotSuffix(FixWildcards(rr.Name()))
+			rrName := EnsureDotSuffix(FixCatchalls(rr.Name()))
 			if rrName != fqdn {
 				glog.V(8).Infof("Skipping record %q (name != %s)", rrName, fqdn)
 				continue

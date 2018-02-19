@@ -58,7 +58,7 @@ func main() {
 
 // run is responsible for running the protokube service controller
 func run() error {
-	var zones []string
+	var zones, dnsWhiteLists []string
 	var applyTaints, initializeRBAC, containerized, master bool
 	var cloud, clusterID, dnsServer, dnsProviderID, dnsInternalSuffix, gossipSecret, gossipListen string
 	var flagChannels, tlsCert, tlsKey, tlsCA, peerCert, peerKey, peerCA string
@@ -81,6 +81,7 @@ func run() error {
 	flag.StringVar(&tlsCert, "tls-cert", tlsCert, "Path to a file containing the certificate for etcd server")
 	flag.StringVar(&tlsKey, "tls-key", tlsKey, "Path to a file containing the private key for etcd server")
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
+	flags.StringSliceVarP(&dnsWhiteLists, "dns-whitelist", "w", []string{}, "Configure permitted DNS whitelists")
 	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, coredns)")
 	flags.StringVar(&etcdImageSource, "etcd-image", "gcr.io/google_containers/etcd:2.2.1", "Etcd Source Container Registry")
 	flags.StringVar(&etcdElectionTimeout, "etcd-election-timeout", etcdElectionTimeout, "time in ms for an election to timeout")
@@ -260,7 +261,7 @@ func run() error {
 				return fmt.Errorf("DNS provider %q could not be initialized", dnsProviderID)
 			}
 
-			zoneRules, err := dns.ParseZoneRules(zones)
+			zoneRules, err := dns.ParseZoneRules(zones, dnsWhiteLists)
 			if err != nil {
 				return fmt.Errorf("unexpected zone flags: %q", err)
 			}

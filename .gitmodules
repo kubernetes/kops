@@ -394,3 +394,6 @@
 [submodule "_vendor/github.com/inconshreveable/mousetrap"]
 	path = _vendor/github.com/inconshreveable/mousetrap
 	url = https://github.com/inconshreveable/mousetrap
+[submodule "_vendor/github.com/gobwas/glob"]
+	path = _vendor/github.com/gobwas/glob
+	url = https://github.com/gobwas/glob.git

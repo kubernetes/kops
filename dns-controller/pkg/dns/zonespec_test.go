@@ -79,19 +79,19 @@ func TestParseZoneRules(t *testing.T) {
 		{
 			[]string{"*"},
 			ZoneRules{
-				Wildcard: true,
+				Catchall: true,
 			},
 		},
 		{
 			[]string{"*/*"},
 			ZoneRules{
-				Wildcard: true,
+				Catchall: true,
 			},
 		},
 		{
 			[]string{},
 			ZoneRules{
-				Wildcard: true,
+				Catchall: true,
 			},
 		},
 		{
@@ -100,7 +100,7 @@ func TestParseZoneRules(t *testing.T) {
 				Zones: []*ZoneSpec{
 					{Name: "", ID: "1234"},
 				},
-				Wildcard: false,
+				Catchall: false,
 			},
 		},
 		{
@@ -109,7 +109,7 @@ func TestParseZoneRules(t *testing.T) {
 				Zones: []*ZoneSpec{
 					{Name: "example.com.", ID: ""},
 				},
-				Wildcard: false,
+				Catchall: false,
 			},
 		},
 		{
@@ -118,7 +118,7 @@ func TestParseZoneRules(t *testing.T) {
 				Zones: []*ZoneSpec{
 					{Name: "example.com.", ID: "1234"},
 				},
-				Wildcard: false,
+				Catchall: false,
 			},
 		},
 	}
@@ -143,7 +143,7 @@ func TestParseZoneRules(t *testing.T) {
 // 				Zones: []*ZoneSpec{
 // 					&ZoneSpec{Name: "example.com.", ID: "1234"},
 // 				},
-// 				Wildcard: false,
+// 				Catchall: false,
 // 			},
 // 			{},
 // 			true,
