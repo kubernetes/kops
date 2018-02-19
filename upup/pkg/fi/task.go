@@ -86,10 +86,13 @@ func (c *ModelBuilderContext) EnsureTask(task Task) error {
 	return nil
 }
 
-// setLifecycleOverride determines if a lifecycle is in the LifecycleOverrides map for the current task.
+// setLifecycleOverride determines if a Lifecycle is in the LifecycleOverrides map for the current task.
 // If the lifecycle exist then the task lifecycle is set to the lifecycle provides in LifecycleOverrides.
 // This func allows for lifecycles to be passed in dynamically and have the task lifecycle set accordingly.
 func (c *ModelBuilderContext) setLifecycleOverride(task Task) Task {
+	// TODO(@chrislovecnm) - wonder if we should update the nodeup tasks to have lifecycle
+	// TODO - so that we can return an error here, rather than just returning.
+	// certain tasks have not implemented HasLifecycle interface
 	hl, ok := task.(HasLifecycle)
 	if !ok {
 		glog.V(8).Infof("task %T does not implement HasLifecycle", task)
@@ -97,17 +100,16 @@ func (c *ModelBuilderContext) setLifecycleOverride(task Task) Task {
 	}
 
 	typeName := TypeNameForTask(task)
-
 	glog.V(8).Infof("testing task %q", typeName)
 
+	// typeName can be values like "InternetGateway"
 	value, ok := c.LifecycleOverrides[typeName]
 	if ok {
-		glog.V(8).Infof("overriding task %s, lifecycle %s", task, value)
+		glog.Warningf("overriding task %s, lifecycle %s", task, value)
 		hl.SetLifecycle(value)
 	}
 
 	return task
-
 }
 
 func buildTaskKey(task Task) string {
