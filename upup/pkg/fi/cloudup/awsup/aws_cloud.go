@@ -418,7 +418,7 @@ func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.In
 
 		instancegroup, err := matchInstanceGroup(name, cluster.ObjectMeta.Name, instancegroups)
 		if err != nil {
-			return nil, fmt.Errorf("error getting instance group for ASG %q", name)
+			return nil, fmt.Errorf("error getting instance group for ASG %q: %v", name, err)
 		}
 		if instancegroup == nil {
 			if warnUnmatched {
