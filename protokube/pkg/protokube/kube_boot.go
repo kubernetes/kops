@@ -48,6 +48,10 @@ type KubeBoot struct {
 	DNS DNSProvider
 	// ModelDir is the model directory
 	ModelDir string
+	// EtcdBackupImage is the image to use for backing up etcd
+	EtcdBackupImage string
+	// EtcdBackupStore is the VFS path to which we should backup etcd
+	EtcdBackupStore string
 	// Etcd container registry location.
 	EtcdImageSource string
 	// EtcdElectionTimeout is is the leader election timeout

@@ -23,7 +23,7 @@ import (
 
 // EtcdClusterSpec is configuration for the etcd cluster
 type EtcdClusterSpec struct {
-	// ClusterKey is the initial cluster key
+	// ClusterKey is a key that identifies the etcd cluster (main or events)
 	ClusterKey string `json:"clusterKey,omitempty"`
 	// NodeName is my nodename in the cluster
 	NodeName string `json:"nodeName,omitempty"`

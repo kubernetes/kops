@@ -150,8 +150,10 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
   encryptionConfig: null
   etcdClusters:
     events:
+      image: k8s.gcr.io/etcd:2.2.1
       version: 2.2.1
     main:
+      image: k8s.gcr.io/etcd:2.2.1
       version: 2.2.1
   kubeAPIServer:
     address: 127.0.0.1
