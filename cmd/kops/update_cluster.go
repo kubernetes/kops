@@ -232,15 +232,15 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{
-		Clientset:       clientset,
-		Cluster:         cluster,
-		DryRun:          isDryrun,
-		InstanceGroups:  instanceGroups,
-		MaxTaskDuration: c.MaxTaskDuration,
-		Models:          strings.Split(c.Models, ","),
-		OutDir:          c.OutDir,
-		Phase:           phase,
-		TargetName:      targetName,
+		Clientset:          clientset,
+		Cluster:            cluster,
+		DryRun:             isDryrun,
+		InstanceGroups:     instanceGroups,
+		MaxTaskDuration:    c.MaxTaskDuration,
+		Models:             strings.Split(c.Models, ","),
+		OutDir:             c.OutDir,
+		Phase:              phase,
+		TargetName:         targetName,
 		LifecycleOverrides: lifecycleOverrideMap,
 	}
 
