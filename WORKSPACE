@@ -40,7 +40,7 @@ go_register_toolchains(
 git_repository(
     name = "io_bazel_rules_docker",
     remote = "https://github.com/bazelbuild/rules_docker.git",
-    tag = "v0.3.0",
+    tag = "v0.4.0",
 )
 
 load(
