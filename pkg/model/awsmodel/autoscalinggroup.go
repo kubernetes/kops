@@ -177,15 +177,15 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Lifecycle: b.Lifecycle,
 
 				Granularity: s("1Minute"),
-				Metrics: []*string{
-					s("GroupMinSize"),
-					s("GroupMaxSize"),
-					s("GroupDesiredCapacity"),
-					s("GroupInServiceInstances"),
-					s("GroupPendingInstances"),
-					s("GroupStandbyInstances"),
-					s("GroupTerminatingInstances"),
-					s("GroupTotalInstances"),
+				Metrics: []string{
+					"GroupMinSize",
+					"GroupMaxSize",
+					"GroupDesiredCapacity",
+					"GroupInServiceInstances",
+					"GroupPendingInstances",
+					"GroupStandbyInstances",
+					"GroupTerminatingInstances",
+					"GroupTotalInstances",
 				},
 
 				LaunchConfiguration: launchConfiguration,

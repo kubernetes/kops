@@ -34,10 +34,10 @@
           {
             "Granularity": "1Minute",
             "Metrics": [
-              "GroupMinSize",
-              "GroupMaxSize",
               "GroupDesiredCapacity",
               "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
               "GroupPendingInstances",
               "GroupStandbyInstances",
               "GroupTerminatingInstances",
@@ -81,10 +81,10 @@
           {
             "Granularity": "1Minute",
             "Metrics": [
-              "GroupMinSize",
-              "GroupMaxSize",
               "GroupDesiredCapacity",
               "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
               "GroupPendingInstances",
               "GroupStandbyInstances",
               "GroupTerminatingInstances",
