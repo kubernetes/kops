@@ -23,24 +23,24 @@ import (
 )
 
 var (
-	import_long = templates.LongDesc(i18n.T(`
+	importLong = templates.LongDesc(i18n.T(`
 	Imports a kubernetes cluster created by kube-up.sh into a state store.  This command
 	only support AWS clusters at this time.`))
 
-	import_example = templates.Examples(i18n.T(`
+	importExample = templates.Examples(i18n.T(`
 	# Import a cluser
 	kops import cluster --name k8s-cluster.example.com --region us-east-1 \
 	  --state=s3://k8s-cluster.example.com`))
 
-	import_short = i18n.T(`Import a cluster.`)
+	importShort = i18n.T(`Import a cluster.`)
 )
 
 // importCmd represents the import command
 var importCmd = &cobra.Command{
 	Use:     "import",
-	Short:   import_short,
-	Long:    import_long,
-	Example: import_example,
+	Short:   importShort,
+	Long:    importLong,
+	Example: importExample,
 }
 
 func init() {

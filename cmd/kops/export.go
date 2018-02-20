@@ -26,15 +26,15 @@ import (
 )
 
 var (
-	export_long = templates.LongDesc(i18n.T(`
+	exportLong = templates.LongDesc(i18n.T(`
 	Export configurations from a cluster.`))
 
-	export_example = templates.Examples(i18n.T(`
+	exportExample = templates.Examples(i18n.T(`
 	# export a kubecfg file
 	kops export kubecfg kubernetes-cluster.example.com
 		`))
 
-	export_short = i18n.T(`Export configuration.`)
+	exportShort = i18n.T(`Export configuration.`)
 )
 
 type ExportOptions struct {
@@ -44,9 +44,9 @@ func NewCmdExport(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "export",
-		Short:   export_short,
-		Long:    export_long,
-		Example: export_example,
+		Short:   exportShort,
+		Long:    exportLong,
+		Example: exportExample,
 	}
 
 	// create subcommands

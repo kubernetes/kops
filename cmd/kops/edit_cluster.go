@@ -44,7 +44,7 @@ type EditClusterOptions struct {
 }
 
 var (
-	edit_cluster_long = templates.LongDesc(i18n.T(`Edit a cluster configuration.
+	editClusterLong = templates.LongDesc(i18n.T(`Edit a cluster configuration.
 
 	This command changes the desired cluster configuration in the registry.
 
@@ -53,7 +53,7 @@ var (
 
 	kops edit does not update the cloud resources, to apply the changes use "kops update cluster".`))
 
-	edit_cluster_example = templates.Examples(i18n.T(`
+	editClusterExample = templates.Examples(i18n.T(`
 		# Edit a cluster configuration in AWS.
 		kops edit cluster k8s.cluster.site --state=s3://kops-state-1234
 	`))
@@ -65,8 +65,8 @@ func NewCmdEditCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "cluster",
 		Short:   i18n.T("Edit cluster."),
-		Long:    edit_cluster_long,
-		Example: edit_cluster_example,
+		Long:    editClusterLong,
+		Example: editClusterExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := RunEditCluster(f, cmd, args, out, options)
 			if err != nil {

@@ -60,9 +60,9 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "cluster",
-		Short:   validate_short,
-		Long:    validate_long,
-		Example: validate_example,
+		Short:   validateShort,
+		Long:    validateLong,
+		Example: validateExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := RunValidateCluster(f, cmd, args, os.Stdout, options)
 			if err != nil {

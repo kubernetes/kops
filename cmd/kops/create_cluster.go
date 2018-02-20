@@ -160,7 +160,7 @@ func (o *CreateClusterOptions) InitDefaults() {
 }
 
 var (
-	create_cluster_long = templates.LongDesc(i18n.T(`
+	createClusterLong = templates.LongDesc(i18n.T(`
 	Create a kubernetes cluster using command line flags.
 	This command creates cloud based resources such as networks and virtual machines. Once
 	the infrastructure is in place Kubernetes is installed on the virtual machines.
@@ -168,7 +168,7 @@ var (
 	These operations are done in parallel and rely on eventual consistency.
 	`))
 
-	create_cluster_example = templates.Examples(i18n.T(`
+	createClusterExample = templates.Examples(i18n.T(`
 	# Create a cluster in AWS
 	kops create cluster --name=kubernetes-cluster.example.com \
 	--state=s3://kops-state-1234 --zones=eu-west-1a \
@@ -213,7 +213,7 @@ var (
 
 	`))
 
-	create_cluster_short = i18n.T("Create a Kubernetes cluster.")
+	createClusterShort = i18n.T("Create a Kubernetes cluster.")
 )
 
 func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -225,9 +225,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "cluster",
-		Short:   create_cluster_short,
-		Long:    create_cluster_long,
-		Example: create_cluster_example,
+		Short:   createClusterShort,
+		Long:    createClusterLong,
+		Example: createClusterExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			if cmd.Flag("associate-public-ip").Changed {
 				options.AssociatePublicIP = &associatePublicIP
