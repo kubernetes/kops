@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/google_containers/debian-base-amd64:0.2
+FROM k8s.gcr.io/debian-base-amd64:0.2
 
 RUN echo "deb-src http://security.debian.org/ jessie/updates main" >> /etc/apt/sources.list
 RUN echo "deb-src http://ftp.us.debian.org/debian/ jessie main" >> /etc/apt/sources.list

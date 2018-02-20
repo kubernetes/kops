@@ -325,11 +325,11 @@ func dummyNode(nodeMap map[string]string) v1.Node {
 			// images will be sorted from max to min in node status.
 			Images: []v1.ContainerImage{
 				{
-					Names:     []string{"gcr.io/google_containers:v3", "gcr.io/google_containers:v4"},
+					Names:     []string{"k8s.gcr.io:v3", "k8s.gcr.io:v4"},
 					SizeBytes: 456,
 				},
 				{
-					Names:     []string{"gcr.io/google_containers:v1", "gcr.io/google_containers:v2"},
+					Names:     []string{"k8s.gcr.io:v1", "k8s.gcr.io:v2"},
 					SizeBytes: 123,
 				},
 			},

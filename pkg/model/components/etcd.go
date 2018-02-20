@@ -44,7 +44,7 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	// default to gcr.io
-	image := fmt.Sprintf("gcr.io/google_containers/etcd:%s", spec.EtcdClusters[0].Version)
+	image := fmt.Sprintf("k8s.gcr.io/etcd:%s", spec.EtcdClusters[0].Version)
 
 	// override image if set as API value
 	if spec.EtcdClusters[0].Image != "" {

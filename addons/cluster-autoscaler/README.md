@@ -6,7 +6,7 @@ Note that you likely want to change `AWS_REGION` and `GROUP_NAME`, and probably 
 
 ```bash
 CLOUD_PROVIDER=aws
-IMAGE=gcr.io/google_containers/cluster-autoscaler:v1.1.0
+IMAGE=k8s.gcr.io/cluster-autoscaler:v1.1.0
 MIN_NODES=1
 MAX_NODES=5
 AWS_REGION=us-east-1

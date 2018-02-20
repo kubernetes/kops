@@ -128,7 +128,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		normalized := image
 
 		// Remove the 'standard' kubernetes image prefix, just for sanity
-		normalized = strings.TrimPrefix(normalized, "gcr.io/google_containers/")
+		normalized = strings.TrimPrefix(normalized, "k8s.gcr.io/")
 
 		// We can't nest arbitrarily
 		// Some risk of collisions, but also -- and __ in the names appear to be blocked by docker hub
