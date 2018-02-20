@@ -1045,6 +1045,7 @@ func ListDhcpOptions(cloud fi.Cloud, clusterName string) ([]*Resource, error) {
 			ID:      aws.StringValue(o.DhcpOptionsId),
 			Type:    "dhcp-options",
 			Deleter: DeleteDhcpOptions,
+			Shared:  HasSharedTag(ec2.ResourceTypeDhcpOptions+":"+aws.StringValue(o.DhcpOptionsId), o.Tags, clusterName),
 		}
 
 		var blocks []string
@@ -1150,6 +1151,7 @@ func ListInternetGateways(cloud fi.Cloud, clusterName string) ([]*Resource, erro
 			ID:      aws.StringValue(o.InternetGatewayId),
 			Type:    "internet-gateway",
 			Deleter: DeleteInternetGateway,
+			Shared:  HasSharedTag(ec2.ResourceTypeInternetGateway+":"+aws.StringValue(o.InternetGatewayId), o.Tags, clusterName),
 		}
 
 		var blocks []string
