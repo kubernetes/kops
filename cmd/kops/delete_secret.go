@@ -29,14 +29,14 @@ import (
 )
 
 var (
-	delete_secret_long = templates.LongDesc(i18n.T(`
+	deleteSecretLong = templates.LongDesc(i18n.T(`
 		Delete a secret.`))
 
-	delete_secret_example = templates.Examples(i18n.T(`
+	deleteSecretExample = templates.Examples(i18n.T(`
 
 		`))
 
-	delete_secret_short = i18n.T(`Delete a secret`)
+	deleteSecretShort = i18n.T(`Delete a secret`)
 )
 
 type DeleteSecretOptions struct {
@@ -51,9 +51,9 @@ func NewCmdDeleteSecret(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "secret",
-		Short:   delete_secret_short,
-		Long:    delete_secret_long,
-		Example: delete_secret_example,
+		Short:   deleteSecretShort,
+		Long:    deleteSecretLong,
+		Example: deleteSecretExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) != 2 && len(args) != 3 {
 				exitWithError(fmt.Errorf("Syntax: <type> <name> [<id>]"))

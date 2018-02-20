@@ -26,10 +26,10 @@ import (
 )
 
 var (
-	create_secret_long = templates.LongDesc(i18n.T(`
+	createSecretLong = templates.LongDesc(i18n.T(`
 	Create a secret`))
 
-	create_secret_example = templates.Examples(i18n.T(`
+	createSecretExample = templates.Examples(i18n.T(`
 	# Create an new ssh public key called admin.
 	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
 		--name k8s-cluster.example.com --state s3://example.com
@@ -41,15 +41,15 @@ var (
 		--name k8s-cluster.example.com --state s3://example.com
 	`))
 
-	create_secret_short = i18n.T(`Create a secret.`)
+	createSecretShort = i18n.T(`Create a secret.`)
 )
 
 func NewCmdCreateSecret(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "secret",
-		Short:   create_secret_short,
-		Long:    create_secret_long,
-		Example: create_secret_example,
+		Short:   createSecretShort,
+		Long:    createSecretLong,
+		Example: createSecretExample,
 	}
 
 	// create subcommands

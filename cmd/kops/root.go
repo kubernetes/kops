@@ -48,7 +48,7 @@ const (
 )
 
 var (
-	root_long = templates.LongDesc(i18n.T(`
+	rootLong = templates.LongDesc(i18n.T(`
 	kops is Kubernetes ops.
 
 	kops is the easiest way to get a production grade Kubernetes cluster up and running.
@@ -59,7 +59,7 @@ var (
 	officially supported, with GCE and VMware vSphere in alpha support.
 	`))
 
-	root_short = i18n.T(`kops is Kubernetes ops.`)
+	rootShort = i18n.T(`kops is Kubernetes ops.`)
 )
 
 type Factory interface {
@@ -83,8 +83,8 @@ var _ Factory = &RootCmd{}
 var rootCommand = RootCmd{
 	cobraCommand: &cobra.Command{
 		Use:   "kops",
-		Short: root_short,
-		Long:  root_long,
+		Short: rootShort,
+		Long:  rootLong,
 	},
 }
 

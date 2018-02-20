@@ -42,7 +42,7 @@ type CreateOptions struct {
 }
 
 var (
-	create_long = templates.LongDesc(i18n.T(`
+	createLong = templates.LongDesc(i18n.T(`
 		Create a resource:` + validResources +
 		`
 	Create a cluster, instancegroup or secret using command line parameters
@@ -50,7 +50,7 @@ var (
 	(Note: secrets cannot be created from YAML config files yet).
 	`))
 
-	create_example = templates.Examples(i18n.T(`
+	createExample = templates.Examples(i18n.T(`
 
 	# Create a cluster from the configuration specification in a YAML file
 	kops create -f my-cluster.yaml
@@ -72,7 +72,7 @@ var (
 	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
 		--name k8s-cluster.example.com --state s3://example.com
 	`))
-	create_short = i18n.T("Create a resource by command line, filename or stdin.")
+	createShort = i18n.T("Create a resource by command line, filename or stdin.")
 )
 
 func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
@@ -80,9 +80,9 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "create -f FILENAME",
-		Short:   create_short,
-		Long:    create_long,
-		Example: create_example,
+		Short:   createShort,
+		Long:    createLong,
+		Example: createExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			if cmdutil.IsFilenameSliceEmpty(options.Filenames) {
 				cmd.Help()

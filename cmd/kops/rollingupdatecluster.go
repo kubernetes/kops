@@ -43,7 +43,7 @@ import (
 )
 
 var (
-	rollingupdate_long = pretty.LongDesc(i18n.T(`
+	rollingupdateLong = pretty.LongDesc(i18n.T(`
 	This command updates a kubernetes cluster to match the cloud and kops specifications.
 
 	To perform a rolling update, you need to update the cloud resources first with the command
@@ -61,7 +61,7 @@ var (
 	` + pretty.Bash("kops update cluster --target=terraform") + ` then ` + pretty.Bash("terraform plan") + ` then
 	` + pretty.Bash("terraform apply") + ` prior to running ` + pretty.Bash("kops rolling-update cluster") + `.`))
 
-	rollingupdate_example = templates.Examples(i18n.T(`
+	rollingupdateExample = templates.Examples(i18n.T(`
 		# Preview a rolling-update.
 		kops rolling-update cluster
 
@@ -95,7 +95,7 @@ var (
 		  --instance-group nodes
 		`))
 
-	rollingupdate_short = i18n.T(`Rolling update a cluster.`)
+	rollingupdateShort = i18n.T(`Rolling update a cluster.`)
 )
 
 // RollingUpdateOptions is the command Object for a Rolling Update.
@@ -163,9 +163,9 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "cluster",
-		Short:   rollingupdate_short,
-		Long:    rollingupdate_long,
-		Example: rollingupdate_example,
+		Short:   rollingupdateShort,
+		Long:    rollingupdateLong,
+		Example: rollingupdateExample,
 	}
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Perform rolling update immediately, without --yes rolling-update executes a dry-run")
