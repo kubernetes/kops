@@ -551,7 +551,10 @@ examples: ${BINDATA_TARGETS} # Install kops API example
 # api machinery regenerate
 
 .PHONY: apimachinery
-apimachinery:
+apimachinery: apimachinery-codegen goimports
+
+.PHONY: apimachinery-codegen
+apimachinery-codegen:
 	sh -c hack/make-apimachinery.sh
 	${GOPATH}/bin/conversion-gen --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=0  --output-file-base=zz_generated.conversion
 	${GOPATH}/bin/conversion-gen --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.conversion
