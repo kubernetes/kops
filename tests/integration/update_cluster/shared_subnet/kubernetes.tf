@@ -72,7 +72,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-sharedsubnet-example
   }
 
   metrics_granularity = "1Minute"
-  enabled_metrics     = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
 }
 
 resource "aws_autoscaling_group" "nodes-sharedsubnet-example-com" {
@@ -101,7 +101,7 @@ resource "aws_autoscaling_group" "nodes-sharedsubnet-example-com" {
   }
 
   metrics_granularity = "1Minute"
-  enabled_metrics     = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-sharedsubnet-example-com" {

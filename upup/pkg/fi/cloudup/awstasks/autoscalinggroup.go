@@ -45,7 +45,7 @@ type AutoscalingGroup struct {
 	Tags    map[string]string
 
 	Granularity *string
-	Metrics     []*string
+	Metrics     []string
 
 	LaunchConfiguration *LaunchConfiguration
 }
@@ -121,6 +121,12 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		}
 	}
 
+	for _, enabledMetric := range g.EnabledMetrics {
+		actual.Metrics = append(actual.Metrics, aws.StringValue(enabledMetric.Metric))
+		actual.Granularity = enabledMetric.Granularity
+	}
+	sort.Strings(actual.Metrics)
+
 	if len(g.Tags) != 0 {
 		actual.Tags = make(map[string]string)
 		for _, tag := range g.Tags {
@@ -144,7 +150,17 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	return actual, nil
 }
 
+func (e *AutoscalingGroup) normalize(c *fi.Context) error {
+	sort.Strings(e.Metrics)
+
+	return nil
+}
+
 func (e *AutoscalingGroup) Run(c *fi.Context) error {
+	err := e.normalize(c)
+	if err != nil {
+		return err
+	}
 	c.Cloud.(awsup.AWSCloud).AddTags(e.Name, e.Tags)
 	return fi.DefaultDeltaRunMethod(e, c)
 }
@@ -203,9 +219,8 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		_, err = t.Cloud.Autoscaling().EnableMetricsCollection(&autoscaling.EnableMetricsCollectionInput{
 			AutoScalingGroupName: e.Name,
 			Granularity:          e.Granularity,
-			Metrics:              e.Metrics,
+			Metrics:              aws.StringSlice(e.Metrics),
 		})
-
 		if err != nil {
 			return fmt.Errorf("error enabling metrics collection for AutoscalingGroup: %v", err)
 		}
@@ -247,6 +262,22 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			}
 
 			changes.Tags = nil
+		}
+
+		if changes.Metrics != nil || changes.Granularity != nil {
+			// TODO: Support disabling metrics?
+			if len(e.Metrics) != 0 {
+				_, err := t.Cloud.Autoscaling().EnableMetricsCollection(&autoscaling.EnableMetricsCollectionInput{
+					AutoScalingGroupName: e.Name,
+					Granularity:          e.Granularity,
+					Metrics:              aws.StringSlice(e.Metrics),
+				})
+				if err != nil {
+					return fmt.Errorf("error enabling metrics collection for AutoscalingGroup: %v", err)
+				}
+				changes.Metrics = nil
+				changes.Granularity = nil
+			}
 		}
 
 		empty := &AutoscalingGroup{}
@@ -319,7 +350,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		MaxSize:                 e.MaxSize,
 		LaunchConfigurationName: e.LaunchConfiguration.TerraformLink(),
 		MetricsGranularity:      e.Granularity,
-		EnabledMetrics:          e.Metrics,
+		EnabledMetrics:          aws.StringSlice(e.Metrics),
 	}
 
 	for _, s := range e.Subnets {
@@ -411,7 +442,7 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 		MetricsCollection: []*cloudformationASGMetricsCollection{
 			{
 				Granularity: e.Granularity,
-				Metrics:     e.Metrics,
+				Metrics:     aws.StringSlice(e.Metrics),
 			},
 		},
 		LaunchConfigurationName: e.LaunchConfiguration.CloudformationLink(),
