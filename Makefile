@@ -34,7 +34,7 @@ PROTOKUBE=$(LOCAL)/protokube
 UPLOAD=$(BUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
-TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor" hack/.packages) 
+TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor" hack/.packages)
 BAZEL_OPTIONS?=
 
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
@@ -143,7 +143,7 @@ help: # Show this help
 
 .PHONY: clean
 clean: # Remove build directory and bindata-generated files
-	for t in ${BINDATA_TARGETS}; do if test -e $$t; then rm -fv $$t; fi; done 
+	for t in ${BINDATA_TARGETS}; do if test -e $$t; then rm -fv $$t; fi; done
 	if test -e ${BUILD}; then rm -rfv ${BUILD}; fi
 
 .PHONY: kops
@@ -622,6 +622,18 @@ bazel-build-cli:
 #.PHONY: bazel-crossbuild-dns-controller
 #bazel-crossbuild-dns-controller:
 #	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/...
+
+.PHONY: bazel-crossbuild-dns-controller-image
+bazel-crossbuild-dns-controller-image:
+	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:dns-controller.tar
+
+.PHONY: bazel-crossbuild-protokube-image
+bazel-crossbuild-protokube-image:
+	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar
+
+.PHONY: bazel-crossbuild-kube-discovery-image
+bazel-crossbuild-kube-discovery-image:
+	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:kube-discovery.tar
 
 .PHONY: bazel-push
 # Will always push a linux-based build up to the server
