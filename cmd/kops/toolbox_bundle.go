@@ -38,15 +38,15 @@ import (
 )
 
 var (
-	toolbox_bundle_long = templates.LongDesc(i18n.T(`
+	toolboxBundleLong = templates.LongDesc(i18n.T(`
 	Creates a bundle for enrolling a bare metal machine.`))
 
-	toolbox_bundle_example = templates.Examples(i18n.T(`
+	toolboxBundleExample = templates.Examples(i18n.T(`
 	# Bundle
 	kops toolbox bundle --name k8s-cluster.example.com
 	`))
 
-	toolbox_bundle_short = i18n.T(`Bundle cluster information`)
+	toolboxBundleShort = i18n.T(`Bundle cluster information`)
 )
 
 type ToolboxBundleOptions struct {
@@ -63,9 +63,9 @@ func NewCmdToolboxBundle(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "bundle",
-		Short:   toolbox_bundle_short,
-		Long:    toolbox_bundle_long,
-		Example: toolbox_bundle_example,
+		Short:   toolboxBundleShort,
+		Long:    toolboxBundleLong,
+		Example: toolboxBundleExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := RunToolboxBundle(f, out, options, args)
 			if err != nil {

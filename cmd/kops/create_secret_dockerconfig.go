@@ -31,12 +31,12 @@ import (
 )
 
 var (
-	create_secret_dockerconfig_long = templates.LongDesc(i18n.T(`
+	createSecretDockerconfigLong = templates.LongDesc(i18n.T(`
 	Create a new docker config, and store it in the state store.
 	Used to configure docker on each master or node (ie. for auth)
 	Use update to modify it, this command will only create a new entry.`))
 
-	create_secret_dockerconfig_example = templates.Examples(i18n.T(`
+	createSecretDockerconfigExample = templates.Examples(i18n.T(`
 	# Create an new docker config.
 	kops create secret dockerconfig -f /path/to/docker/config.json \
 		--name k8s-cluster.example.com --state s3://example.com
@@ -45,7 +45,7 @@ var (
 		--name k8s-cluster.example.com --state s3://example.com
 	`))
 
-	create_secret_dockerconfig_short = i18n.T(`Create a docker config.`)
+	createSecretDockerconfigShort = i18n.T(`Create a docker config.`)
 )
 
 type CreateSecretDockerConfigOptions struct {
@@ -59,9 +59,9 @@ func NewCmdCreateSecretDockerConfig(f *util.Factory, out io.Writer) *cobra.Comma
 
 	cmd := &cobra.Command{
 		Use:     "dockerconfig",
-		Short:   create_secret_dockerconfig_short,
-		Long:    create_secret_dockerconfig_long,
-		Example: create_secret_dockerconfig_example,
+		Short:   createSecretDockerconfigShort,
+		Long:    createSecretDockerconfigLong,
+		Example: createSecretDockerconfigExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) != 0 {
 				exitWithError(fmt.Errorf("syntax: -f <DockerConfigPath>"))

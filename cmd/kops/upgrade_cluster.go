@@ -46,9 +46,9 @@ var upgradeCluster UpgradeClusterCmd
 func init() {
 	cmd := &cobra.Command{
 		Use:     "cluster",
-		Short:   upgrade_short,
-		Long:    upgrade_long,
-		Example: upgrade_example,
+		Short:   upgradeShort,
+		Long:    upgradeLong,
+		Example: upgradeExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := upgradeCluster.Run(args)
 			if err != nil {

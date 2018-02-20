@@ -33,12 +33,12 @@ import (
 )
 
 var (
-	delete_ig_long = templates.LongDesc(i18n.T(`
+	deleteIgLong = templates.LongDesc(i18n.T(`
 		Delete an instancegroup configuration.  kops has the concept of "instance groups",
 		which are a group of similar virtual machines. On AWS, they map to an
 		AutoScalingGroup. An ig work either as a Kubernetes master or a node.`))
 
-	delete_ig_example = templates.Examples(i18n.T(`
+	deleteIgExample = templates.Examples(i18n.T(`
 
 		# Delete an instancegroup for the k8s-cluster.example.com cluster.
 		# The --yes option runs the command immediately.
@@ -46,7 +46,7 @@ var (
 		kops delete ig --name=k8s-cluster.example.com node-example --yes
 		`))
 
-	delete_ig_short = i18n.T(`Delete instancegroup`)
+	deleteIgShort = i18n.T(`Delete instancegroup`)
 )
 
 type DeleteInstanceGroupOptions struct {
@@ -61,9 +61,9 @@ func NewCmdDeleteInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "instancegroup",
 		Aliases: []string{"instancegroups", "ig"},
-		Short:   delete_ig_short,
-		Long:    delete_ig_long,
-		Example: delete_ig_example,
+		Short:   deleteIgShort,
+		Long:    deleteIgLong,
+		Example: deleteIgExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				exitWithError(fmt.Errorf("Specify name of instance group to delete"))

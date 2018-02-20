@@ -31,12 +31,12 @@ import (
 )
 
 var (
-	create_secret_encryptionconfig_long = templates.LongDesc(i18n.T(`
+	createSecretEncryptionconfigLong = templates.LongDesc(i18n.T(`
 	Create a new encryption config, and store it in the state store.
 	Used to configure encryption-at-rest by the kube-apiserver process
 	on each of the master nodes. The config is not updated by this command.`))
 
-	create_secret_encryptionconfig_example = templates.Examples(i18n.T(`
+	createSecretEncryptionconfigExample = templates.Examples(i18n.T(`
 	# Create a new encryption config.
 	kops create secret encryptionconfig -f config.yaml \
 		--name k8s-cluster.example.com --state s3://example.com
@@ -45,7 +45,7 @@ var (
 		--name k8s-cluster.example.com --state s3://example.com
 	`))
 
-	create_secret_encryptionconfig_short = i18n.T(`Create an encryption config.`)
+	createSecretEncryptionconfigShort = i18n.T(`Create an encryption config.`)
 )
 
 type CreateSecretEncryptionConfigOptions struct {
@@ -59,9 +59,9 @@ func NewCmdCreateSecretEncryptionConfig(f *util.Factory, out io.Writer) *cobra.C
 
 	cmd := &cobra.Command{
 		Use:     "encryptionconfig",
-		Short:   create_secret_encryptionconfig_short,
-		Long:    create_secret_encryptionconfig_long,
-		Example: create_secret_encryptionconfig_example,
+		Short:   createSecretEncryptionconfigShort,
+		Long:    createSecretEncryptionconfigLong,
+		Example: createSecretEncryptionconfigExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) != 0 {
 				exitWithError(fmt.Errorf("syntax: -f <EncryptionConfigPath>"))

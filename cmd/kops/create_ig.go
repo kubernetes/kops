@@ -49,7 +49,7 @@ type CreateInstanceGroupOptions struct {
 }
 
 var (
-	create_ig_long = templates.LongDesc(i18n.T(`
+	createIgLong = templates.LongDesc(i18n.T(`
 		Create an InstanceGroup configuration.
 
 	    An InstanceGroup is a group of similar virtual machines.
@@ -57,7 +57,7 @@ var (
 
 		The Role of an InstanceGroup defines whether machines will act as a Kubernetes master or node.`))
 
-	create_ig_example = templates.Examples(i18n.T(`
+	createIgExample = templates.Examples(i18n.T(`
 
 		# Create an instancegroup for the k8s-cluster.example.com cluster.
 		kops create ig --name=k8s-cluster.example.com node-example \
@@ -68,7 +68,7 @@ var (
 		  --role node --subnet my-subnet-name --dry-run -oyaml
 		`))
 
-	create_ig_short = i18n.T(`Create an instancegroup.`)
+	createIgShort = i18n.T(`Create an instancegroup.`)
 )
 
 // NewCmdCreateInstanceGroup create a new cobra command object for creating a instancegroup.
@@ -81,9 +81,9 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "instancegroup",
 		Aliases: []string{"instancegroups", "ig"},
-		Short:   create_ig_short,
-		Long:    create_ig_long,
-		Example: create_ig_example,
+		Short:   createIgShort,
+		Long:    createIgLong,
+		Example: createIgExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := RunCreateInstanceGroup(f, cmd, args, os.Stdout, options)
 			if err != nil {

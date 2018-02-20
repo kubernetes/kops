@@ -40,7 +40,7 @@ import (
 )
 
 var (
-	update_cluster_long = templates.LongDesc(i18n.T(`
+	updateClusterLong = templates.LongDesc(i18n.T(`
 	Create or update cloud or cluster resources to match current cluster state.  If the cluster or cloud resources already
 	exist this command may modify those resources.
 
@@ -48,12 +48,12 @@ var (
 	be required as well.
 	`))
 
-	update_cluster_example = templates.Examples(i18n.T(`
+	updateClusterExample = templates.Examples(i18n.T(`
 	# After cluster has been edited or upgraded, configure it with:
 	kops update cluster k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes
 	`))
 
-	update_cluster_short = i18n.T("Update a cluster.")
+	updateClusterShort = i18n.T("Update a cluster.")
 )
 
 type UpdateClusterOptions struct {
@@ -88,9 +88,9 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "cluster",
-		Short:   update_cluster_short,
-		Long:    update_cluster_long,
-		Example: update_cluster_example,
+		Short:   updateClusterShort,
+		Long:    updateClusterLong,
+		Example: updateClusterExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := rootCommand.ProcessArgs(args)
 			if err != nil {
