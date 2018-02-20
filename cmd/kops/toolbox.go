@@ -26,23 +26,23 @@ import (
 )
 
 var (
-	toolbox_long = templates.LongDesc(i18n.T(`
+	toolboxLong = templates.LongDesc(i18n.T(`
 	Misc infrequently used commands.`))
 
-	toolbox_example = templates.Examples(i18n.T(`
+	toolboxExample = templates.Examples(i18n.T(`
 	# Dump cluster information
 	kops toolbox dump --name k8s-cluster.example.com
 	`))
 
-	toolbox_short = i18n.T(`Misc infrequently used commands.`)
+	toolboxShort = i18n.T(`Misc infrequently used commands.`)
 )
 
 func NewCmdToolbox(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "toolbox",
-		Short:   toolbox_short,
-		Long:    toolbox_long,
-		Example: toolbox_example,
+		Short:   toolboxShort,
+		Long:    toolboxLong,
+		Example: toolboxExample,
 	}
 
 	cmd.AddCommand(NewCmdToolboxConvertImported(f, out))

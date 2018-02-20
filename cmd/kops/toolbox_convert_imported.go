@@ -31,10 +31,10 @@ import (
 )
 
 var (
-	toolbox_convert_imported_long = templates.LongDesc(i18n.T(`
+	toolboxConvertImportedLong = templates.LongDesc(i18n.T(`
 	Convert an imported cluster into a kops cluster.`))
 
-	toolbox_convert_imported_example = templates.Examples(i18n.T(`
+	toolboxConvertImportedExample = templates.Examples(i18n.T(`
 
 	# Import and convert a cluster
 	kops import cluster --name k8s-cluster.example.com --region us-east-1 \
@@ -44,7 +44,7 @@ var (
 	  --newname k8s-cluster.example.com
 	`))
 
-	toolbox_convert_imported_short = i18n.T(`Convert an imported cluster into a kops cluster.`)
+	toolboxConvertImportedShort = i18n.T(`Convert an imported cluster into a kops cluster.`)
 )
 
 type ToolboxConvertImportedOptions struct {
@@ -66,9 +66,9 @@ func NewCmdToolboxConvertImported(f *util.Factory, out io.Writer) *cobra.Command
 
 	cmd := &cobra.Command{
 		Use:     "convert-imported",
-		Short:   toolbox_convert_imported_short,
-		Long:    toolbox_convert_imported_long,
-		Example: toolbox_convert_imported_example,
+		Short:   toolboxConvertImportedShort,
+		Long:    toolboxConvertImportedLong,
+		Example: toolboxConvertImportedExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := rootCommand.ProcessArgs(args); err != nil {
 				exitWithError(err)

@@ -38,17 +38,17 @@ import (
 const SecretTypeSSHPublicKey = kops.KeysetType("SSHPublicKey")
 
 var (
-	get_secret_long = templates.LongDesc(i18n.T(`
+	getSecretLong = templates.LongDesc(i18n.T(`
 	Display one or many secrets.`))
 
-	get_secret_example = templates.Examples(i18n.T(`
+	getSecretExample = templates.Examples(i18n.T(`
 	# Get a secret
 	kops get secrets kube -oplaintext
 
 	# Get the admin password for a cluster
 	kops get secrets admin -oplaintext`))
 
-	get_secret_short = i18n.T(`Get one or many secrets.`)
+	getSecretShort = i18n.T(`Get one or many secrets.`)
 )
 
 type GetSecretsOptions struct {
@@ -63,9 +63,9 @@ func NewCmdGetSecrets(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 	cmd := &cobra.Command{
 		Use:     "secrets",
 		Aliases: []string{"secret"},
-		Short:   get_secret_short,
-		Long:    get_secret_long,
-		Example: get_secret_example,
+		Short:   getSecretShort,
+		Long:    getSecretLong,
+		Example: getSecretExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := RunGetSecrets(&options, args)
 			if err != nil {

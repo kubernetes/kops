@@ -23,13 +23,13 @@ import (
 )
 
 var (
-	describe_long = templates.LongDesc(i18n.T(`
+	describeLong = templates.LongDesc(i18n.T(`
 	Get additional information about cloud and cluster resources.
 	`))
 
-	describe_example = templates.Examples(i18n.T(`
+	describeExample = templates.Examples(i18n.T(`
 	`))
-	describe_short = i18n.T(`Describe a resource.`)
+	describeShort = i18n.T(`Describe a resource.`)
 )
 
 // DescribeCmd represents the describe command
@@ -40,9 +40,9 @@ type DescribeCmd struct {
 var describeCmd = DescribeCmd{
 	cobraCommand: &cobra.Command{
 		Use:     "describe",
-		Short:   describe_short,
-		Long:    describe_long,
-		Example: describe_example,
+		Short:   describeShort,
+		Long:    describeLong,
+		Example: describeExample,
 	},
 }
 

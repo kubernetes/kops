@@ -43,11 +43,11 @@ type DeleteOptions struct {
 }
 
 var (
-	delete_long = templates.LongDesc(i18n.T(`
+	deleteLong = templates.LongDesc(i18n.T(`
 	Delete Kubernetes clusters, instancegroups, and secrets, or a combination of the before mentioned.
 	`))
 
-	delete_example = templates.Examples(i18n.T(`
+	deleteExample = templates.Examples(i18n.T(`
 		# Delete a cluster using a manifest file
 		kops delete -f my-cluster.yaml
 
@@ -59,7 +59,7 @@ var (
 		kops delete ig --name=k8s-cluster.example.com node-example --yes
 	`))
 
-	delete_short = i18n.T("Delete clusters,instancegroups, or secrets.")
+	deleteShort = i18n.T("Delete clusters,instancegroups, or secrets.")
 )
 
 func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
@@ -67,9 +67,9 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:        "delete -f FILENAME [--yes]",
-		Short:      delete_short,
-		Long:       delete_long,
-		Example:    delete_example,
+		Short:      deleteShort,
+		Long:       deleteLong,
+		Example:    deleteExample,
 		SuggestFor: []string{"rm"},
 		Run: func(cmd *cobra.Command, args []string) {
 			if cmdutil.IsFilenameSliceEmpty(options.Filenames) {

@@ -35,10 +35,10 @@ import (
 )
 
 var (
-	get_cluster_long = templates.LongDesc(i18n.T(`
+	getClusterLong = templates.LongDesc(i18n.T(`
 	Display one or many cluster resources.`))
 
-	get_cluster_example = templates.Examples(i18n.T(`
+	getClusterExample = templates.Examples(i18n.T(`
 	# Get all clusters in a state store
 	kops get clusters
 
@@ -52,7 +52,7 @@ var (
 	kops get cluster k8s-cluster.example.com -o yaml > cluster-desired-config.yaml
 	`))
 
-	get_cluster_short = i18n.T(`Get one or many clusters.`)
+	getClusterShort = i18n.T(`Get one or many clusters.`)
 
 	// Warning for --full.  Since we are not using the template from kubectl
 	// we have to have zero white space before the comment characters otherwise
@@ -88,9 +88,9 @@ func NewCmdGetCluster(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 	cmd := &cobra.Command{
 		Use:     "clusters",
 		Aliases: []string{"cluster"},
-		Short:   get_cluster_short,
-		Long:    get_cluster_long,
-		Example: get_cluster_example,
+		Short:   getClusterShort,
+		Long:    getClusterLong,
+		Example: getClusterExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) != 0 {
 				options.ClusterNames = append(options.ClusterNames, args...)
