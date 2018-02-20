@@ -98,10 +98,6 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return fmt.Errorf("cannot get InstanceGroups for %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
-	if options.output == OutputTable {
-		fmt.Fprintf(out, "Validating cluster %v\n\n", cluster.ObjectMeta.Name)
-	}
-
 	var instanceGroups []api.InstanceGroup
 	for _, ig := range list.Items {
 		instanceGroups = append(instanceGroups, ig)
@@ -128,22 +124,14 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 
 	// Do not use if we are running gossip
 	if !dns.IsGossipHostname(cluster.ObjectMeta.Name) {
-		// TODO we may want to return validation.ValidationCluster instead of building it later on
+
 		hasPlaceHolderIPAddress, err := validation.HasPlaceHolderIP(contextName)
 		if err != nil {
-			return err
+			message := "Error checking api dns"
+			return outputValidationFailed(message, options.output, cluster, list, out, err)
 		}
 
-		// TODO output message for cloud groups
 		if hasPlaceHolderIPAddress {
-
-			var igs []*api.InstanceGroup
-			for i := range list.Items {
-				ig := &list.Items[i]
-				igs = append(igs, ig)
-				glog.V(2).Infof("instance group: %#v\n\n", ig.Spec)
-			}
-
 			message := "\nValidation Failed\n\n" +
 				"The dns-controller Kubernetes deployment has not updated the Kubernetes cluster's API DNS entry to the correct IP address." +
 				"  The API DNS IP address is the placeholder address that kops creates: 203.0.113.123." +
@@ -151,75 +139,83 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 				"  The protokube container and dns-controller deployment logs may contain more diagnostic information." +
 				"  Etcd and the API DNS entries must be updated for a kops Kubernetes cluster to start."
 
-			validationCluster := &validation.ValidationCluster{
-				ClusterName:    cluster.ObjectMeta.Name,
-				ErrorMessage:   message,
-				Status:         validation.ClusterValidationFailed,
-				InstanceGroups: igs,
-			}
-
-			validationFailed := fmt.Errorf("\nValidation Failed: Cannot reach cluster's API server: unable to Validate Cluster: %s", cluster.ObjectMeta.Name)
-			validationCluster.GroupMessages = getGroupMessages(validationFailed, validationCluster, cluster)
-
-			switch options.output {
-			case OutputTable:
-				if err != nil {
-					return err
-				}
-				err = validateClusterOutputTableGroupMessages(validationCluster, out)
-				if err != nil {
-					return err
-				}
-				fmt.Println(message)
-
-				return validationFailed
-			case OutputYaml:
-				return validateClusterOutputYAML(validationCluster, validationFailed, out)
-			case OutputJSON:
-				return validateClusterOutputJSON(validationCluster, validationFailed, out)
-			default:
-				return fmt.Errorf("Unknown output format: %q", options.output)
-			}
-
+			err = fmt.Errorf("\nCannot reach cluster's API server: unable to Validate Cluster: %s", cluster.ObjectMeta.Name)
+			return outputValidationFailed(message, options.output, cluster, list, out, err)
 		}
 	}
 
-	validationCluster, validationFailed := validation.ValidateCluster(cluster.ObjectMeta.Name, list, k8sClient)
-
-	// TODO(@chrislovecnm) I think we can output the ASG messages
-	// TODO check to see if we can output some validation data, at least the ASG messages
-	if validationCluster == nil {
-		return validationFailed
+	validationCluster, err := validation.ValidateCluster(cluster.ObjectMeta.Name, list, k8sClient)
+	if validationCluster == nil || validationCluster.NodeList == nil || validationCluster.NodeList.Items == nil {
+		message := "Error Validating Cluster."
+		if err == nil {
+			err = fmt.Errorf(message)
+		}
+		glog.Infof("message %s", message)
+		return outputValidationFailed(message, options.output, cluster, list, out, err)
 	}
 
-	validationCluster.GroupMessages = getGroupMessages(validationFailed, validationCluster, cluster)
+	// TODO cleanup logging
+	glog.Infof("error: %v", err)
+	glog.Infof("cluster: %+v", validationCluster)
+	glog.Infof("cluster: %s", validationCluster.ErrorMessage)
+
+	validationCluster.GroupMessages = getGroupMessages(validationCluster, cluster)
 
 	switch options.output {
 	case OutputTable:
-		return validateClusterOutputTable(validationCluster, validationFailed, instanceGroups, out)
+		return validateClusterOutputTable(validationCluster, err, instanceGroups, out)
 	case OutputYaml:
-		return validateClusterOutputYAML(validationCluster, validationFailed, out)
+		return validateClusterOutputYAML(validationCluster, err, out)
 	case OutputJSON:
-		return validateClusterOutputJSON(validationCluster, validationFailed, out)
+		return validateClusterOutputJSON(validationCluster, err, out)
 	default:
 		return fmt.Errorf("Unknown output format: %q", options.output)
 	}
 
 }
 
-// getGroupMessages returns the cloud group messages
-func getGroupMessages(validationFailed error, validationCluster *validation.ValidationCluster, cluster *api.Cluster) []cloudinstances.CloudInstanceGroupMemberMessage {
-	if validationFailed != nil {
-		m, err := validationCluster.CollectCloudGroupMessages(cluster)
-		if err != nil {
-			// eating err because some of the cloud providers do not have this implemented
-			glog.Infof("unable to get cloud  group messages %v.", err)
-			return nil
-		}
-
-		return m
+func outputValidationFailed(message string, output string, cluster *api.Cluster, list *api.InstanceGroupList, out io.Writer, err error) error {
+	glog.Infof("outputValidationFailed")
+	glog.Infof("error %v", err)
+	glog.Infof("message %s", message)
+	var igs []*api.InstanceGroup
+	for i := range list.Items {
+		ig := &list.Items[i]
+		igs = append(igs, ig)
 	}
-	return nil
+	validationCluster := &validation.ValidationCluster{
+		NodesReady:     false,
+		MastersReady:   false,
+		ClusterName:    cluster.ObjectMeta.Name,
+		ErrorMessage:   message,
+		Status:         validation.ClusterValidationFailed,
+		InstanceGroups: igs,
+	}
+
+	validationCluster.GroupMessages = getGroupMessages(validationCluster, cluster)
+
+	switch output {
+	case OutputTable:
+		return validateClusterOutputTable(validationCluster, err, list.Items, out)
+	case OutputYaml:
+		return validateClusterOutputYAML(validationCluster, err, out)
+	case OutputJSON:
+		return validateClusterOutputJSON(validationCluster, err, out)
+	default:
+		return fmt.Errorf("Unknown output format: %q", output)
+	}
+}
+
+// getGroupMessages returns the cloud group messages
+func getGroupMessages(validationCluster *validation.ValidationCluster, cluster *api.Cluster) []cloudinstances.CloudInstanceGroupMemberMessage {
+	m, err := validationCluster.CollectCloudGroupMessages(cluster)
+	if err != nil {
+		// eating err because some of the cloud providers do not have this implemented
+		glog.Infof("unable to get cloud  group messages %v.", err)
+		return nil
+	}
+
+	return m
 }
 
 func validateClusterOutputTableGroupMessages(validationCluster *validation.ValidationCluster, out io.Writer) error {
@@ -240,7 +236,6 @@ func validateClusterOutputTableGroupMessages(validationCluster *validation.Valid
 		fmt.Fprintln(out, "\nCLOUD GROUP MESSAGES")
 		err := groupTable.Render(validationCluster.GroupMessages, out, "GROUP", "MESSAGE", "STATUS")
 
-		// TODO may want ot not error here ... this would help the UX ...
 		if err != nil {
 			return fmt.Errorf("cannot cloud group messages for %q: %v", validationCluster.ClusterName, err)
 		}
@@ -250,6 +245,10 @@ func validateClusterOutputTableGroupMessages(validationCluster *validation.Valid
 }
 
 func validateClusterOutputTable(validationCluster *validation.ValidationCluster, validationFailed error, instanceGroups []api.InstanceGroup, out io.Writer) error {
+	fmt.Fprintf(out, "Validating cluster %v\n\n", validationCluster.ClusterName)
+	glog.Infof("validateClusterOutputTable")
+	glog.Infof("error %v", validationFailed)
+
 	t := &tables.Table{}
 	t.AddColumn("NAME", func(c api.InstanceGroup) string {
 		return c.ObjectMeta.Name
@@ -297,11 +296,13 @@ func validateClusterOutputTable(validationCluster *validation.ValidationCluster,
 		return role
 	})
 
-	fmt.Fprintln(out, "\nNODE STATUS")
-	err = nodeTable.Render(validationCluster.NodeList.Items, out, "NAME", "ROLE", "READY")
+	if validationCluster.NodeList != nil {
+		fmt.Fprintln(out, "\nNODE STATUS")
+		err = nodeTable.Render(validationCluster.NodeList.Items, out, "NAME", "ROLE", "READY")
 
-	if err != nil {
-		return fmt.Errorf("cannot render nodes for %q: %v", validationCluster.ClusterName, err)
+		if err != nil {
+			return fmt.Errorf("cannot render nodes for %q: %v", validationCluster.ClusterName, err)
+		}
 	}
 
 	if len(validationCluster.ComponentFailures) != 0 {
@@ -332,7 +333,6 @@ func validateClusterOutputTable(validationCluster *validation.ValidationCluster,
 		}
 	}
 
-	// TODO error handling
 	validateClusterOutputTableGroupMessages(validationCluster, out)
 
 	if validationFailed == nil {
@@ -342,8 +342,12 @@ func validateClusterOutputTable(validationCluster *validation.ValidationCluster,
 		// do we need to print which instance group is not ready?
 		// nodes are going to be a pain
 		fmt.Fprint(out, "\nValidation Failed\n")
-		fmt.Fprintf(out, "Ready Master(s) %d out of %d.\n", len(validationCluster.MastersReadyArray), validationCluster.MastersCount)
-		fmt.Fprintf(out, "Ready Node(s) %d out of %d.\n", len(validationCluster.NodesReadyArray), validationCluster.NodesCount)
+		if validationCluster.MastersReadyArray != nil {
+			fmt.Fprintf(out, "Ready Master(s) %d out of %d.\n", len(validationCluster.MastersReadyArray), validationCluster.MastersCount)
+		}
+		if validationCluster.NodesNotReadyArray != nil {
+			fmt.Fprintf(out, "Ready Node(s) %d out of %d.\n", len(validationCluster.NodesReadyArray), validationCluster.NodesCount)
+		}
 		return validationFailed
 	}
 }
