@@ -76,7 +76,7 @@ spec:
             memory: 500Mi
             cpu: 300m
       - name: addon-resizer
-        image: gcr.io/google_containers/addon-resizer:1.8.1
+        image: k8s.gcr.io/addon-resizer:1.8.1
         resources:
           limits:
             cpu: 100m

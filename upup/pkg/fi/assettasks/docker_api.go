@@ -97,7 +97,7 @@ func (d *dockerAPI) pullImage(name string) error {
 	for scanner.Scan() {
 		// {"status":"Already exists","progressDetail":{},"id":"a3ed95caeb02"}
 
-		// {"status":"Status: Image is up to date for gcr.io/google_containers/cluster-proportional-autoscaler-amd64:1.0.0"}
+		// {"status":"Status: Image is up to date for k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.0.0"}
 		glog.Infof("docker pull %s", scanner.Text())
 	}
 
