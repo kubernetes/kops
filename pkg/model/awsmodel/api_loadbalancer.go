@@ -70,11 +70,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			switch subnet.Type {
 			case kops.SubnetTypePublic, kops.SubnetTypeUtility:
-				if lbSpec.Type != kops.LoadBalancerTypePublic {
-					continue
-				}
+			// ok
 
 			case kops.SubnetTypePrivate:
+				// Private subnets can only be added to Internal Load balancers.
 				if lbSpec.Type != kops.LoadBalancerTypeInternal {
 					continue
 				}
