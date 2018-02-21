@@ -26,6 +26,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/ghodss/yaml"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -94,6 +96,13 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 			if os.Getenv("AWS_REGION") != "" {
 				return fmt.Sprintf("export AWS_REGION=%s\n",
 					os.Getenv("AWS_REGION"))
+			} else {
+				sess := session.Must(session.NewSession(aws.NewConfig().
+					WithMaxRetries(3),
+				))
+				if *sess.Config.Region != "" {
+					return fmt.Sprintf("export AWS_REGION=%s\n", *sess.Config.Region)
+				}
 			}
 			return ""
 		},
