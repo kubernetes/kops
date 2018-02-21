@@ -24,9 +24,11 @@ import (
 	"path"
 	"strings"
 
+	"github.com/blang/semver"
 	"github.com/golang/glog"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/values"
@@ -45,6 +47,9 @@ type AssetBuilder struct {
 	AssetsLocation  *kops.Assets
 	// TODO we'd like to use cloudup.Phase here, but that introduces a go cyclic dependency
 	Phase string
+
+	// KubernetesVersion is the version of kubernetes we are installing
+	KubernetesVersion semver.Version
 }
 
 // ContainerAsset models a container's location.
@@ -67,11 +72,20 @@ type FileAsset struct {
 }
 
 // NewAssetBuilder creates a new AssetBuilder.
-func NewAssetBuilder(assets *kops.Assets, phase string) *AssetBuilder {
-	return &AssetBuilder{
-		AssetsLocation: assets,
+func NewAssetBuilder(cluster *kops.Cluster, phase string) *AssetBuilder {
+	a := &AssetBuilder{
+		AssetsLocation: cluster.Spec.Assets,
 		Phase:          phase,
 	}
+
+	version, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+	if err != nil {
+		// This should have already been validated
+		glog.Fatalf("unexpected error from ParseKubernetesVersion %s: %v", cluster.Spec.KubernetesVersion, err)
+	}
+	a.KubernetesVersion = *version
+
+	return a
 }
 
 // RemapManifest transforms a kubernetes manifest.
@@ -111,6 +125,15 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 	asset := &ContainerAsset{}
 
 	asset.DockerImage = image
+
+	// The k8s.gcr.io prefix is an alias, but for CI builds we run from a docker load,
+	// and we only double-tag from 1.10 onwards.
+	// For versions prior to 1.10, remap k8s.gcr.io to the old name.
+	// This also means that we won't start using the aliased names on existing clusters,
+	// which could otherwise be surprising to users.
+	if !util.IsKubernetesGTE("1.10", a.KubernetesVersion) && strings.HasPrefix(image, "k8s.gcr.io/") {
+		image = "gcr.io/google_containers/" + strings.TrimPrefix(image, "k8s.gcr.io/")
+	}
 
 	if strings.HasPrefix(image, "kope/dns-controller:") {
 		// To use user-defined DNS Controller:
