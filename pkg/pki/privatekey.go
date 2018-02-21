@@ -29,6 +29,8 @@ import (
 	"io"
 
 	"github.com/golang/glog"
+	"os"
+	"strconv"
 )
 
 func ParsePEMPrivateKey(data []byte) (*PrivateKey, error) {
@@ -43,7 +45,17 @@ func ParsePEMPrivateKey(data []byte) (*PrivateKey, error) {
 }
 
 func GeneratePrivateKey() (*PrivateKey, error) {
-	rsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 3072)
+	var rsaKeySize int64 = 2048
+
+	if os.Getenv("RSA_PRIVATE_KEY_SIZE") != "" {
+		var intErr error
+		rsaKeySize, intErr = strconv.ParseInt(os.Getenv("RSA_PRIVATE_KEY_SIZE"), 0, 0)
+		if intErr != nil {
+			return nil, fmt.Errorf("error getting RSA private key size: %v", intErr)
+		}
+	}
+
+	rsaKey, err := rsa.GenerateKey(crypto_rand.Reader, int(rsaKeySize))
 	if err != nil {
 		return nil, fmt.Errorf("error generating RSA private key: %v", err)
 	}
