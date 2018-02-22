@@ -306,7 +306,7 @@ func (c *VFSCAStore) writeKeysetBundle(p vfs.Path, name string, keyset *keyset, 
 	if err != nil {
 		return err
 	}
-	return p.WriteFile(objectData, acl)
+	return p.WriteFile(bytes.NewReader(objectData), acl)
 }
 
 // serializeKeysetBundle converts a keyset bundle to yaml, for writing to VFS
@@ -660,7 +660,7 @@ func mirrorKeyset(cluster *kops.Cluster, basedir vfs.Path, keyset *kops.Keyset) 
 				return err
 			}
 
-			err = p.WriteFile(data, acl)
+			err = p.WriteFile(bytes.NewReader(data), acl)
 			if err != nil {
 				return fmt.Errorf("error writing %q: %v", p, err)
 			}
@@ -677,7 +677,7 @@ func mirrorKeyset(cluster *kops.Cluster, basedir vfs.Path, keyset *kops.Keyset) 
 				return err
 			}
 
-			err = p.WriteFile(data, acl)
+			err = p.WriteFile(bytes.NewReader(data), acl)
 			if err != nil {
 				return fmt.Errorf("error writing %q: %v", p, err)
 			}
@@ -703,7 +703,7 @@ func mirrorSSHCredential(cluster *kops.Cluster, basedir vfs.Path, sshCredential 
 		return err
 	}
 
-	err = p.WriteFile([]byte(sshCredential.Spec.PublicKey), acl)
+	err = p.WriteFile(bytes.NewReader([]byte(sshCredential.Spec.PublicKey)), acl)
 	if err != nil {
 		return fmt.Errorf("error writing %q: %v", p, err)
 	}
@@ -970,7 +970,7 @@ func (c *VFSCAStore) storePrivateKey(name string, ki *keysetItem) error {
 		if err != nil {
 			return err
 		}
-		return p.WriteFile(data.Bytes(), acl)
+		return p.WriteFile(bytes.NewReader(data.Bytes()), acl)
 	}
 }
 
@@ -1012,7 +1012,7 @@ func (c *VFSCAStore) storeCertificate(name string, ki *keysetItem) error {
 		if err != nil {
 			return err
 		}
-		return p.WriteFile(data.Bytes(), acl)
+		return p.WriteFile(bytes.NewReader(data.Bytes()), acl)
 	}
 }
 
@@ -1094,7 +1094,7 @@ func (c *VFSCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 		return err
 	}
 
-	return p.WriteFile(pubkey, acl)
+	return p.WriteFile(bytes.NewReader(pubkey), acl)
 }
 
 func (c *VFSCAStore) buildSSHPublicKeyPath(name string, id string) vfs.Path {
