@@ -184,6 +184,11 @@ type Assets struct {
 	ContainerRegistry *string `json:"containerRegistry,omitempty"`
 	// FileRepository is the url for a private file serving repository
 	FileRepository *string `json:"fileRepository,omitempty"`
+	// ProtokubeIsFile allow a user to treat protokube as a file or container
+	// Default "true" protokube is a tar ball that is downloaded and imported.
+	// Setting this "false" sets protokube to a container, which is staged
+	// in a registry.
+	ProtokubeIsFile bool `json:"protokubeIsFile"`
 }
 
 // IAMSpec adds control over the IAM security policies applied to resources
