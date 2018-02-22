@@ -1,0 +1,46 @@
+package(default_visibility = ["//visibility:public"])
+
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_image",
+)
+
+container_image(
+    name = "dns-controller",
+    base = "@debian_hyperkube_base_amd64//image",
+    cmd = ["/usr/bin/dns-controller"],
+    directory = "/usr/bin/",
+    files = [
+        "//dns-controller/cmd/dns-controller",
+    ],
+)
+
+container_image(
+    name = "protokube",
+    base = "@debian_hyperkube_base_amd64//image",
+    cmd = ["/usr/bin/protokube"],
+    # Packages needed:
+    # ca-certificates: Needed to talk to EC2 API (in base)
+    # e2fsprogs: Needed to mount / format ext4 filesytems (in base)
+    # systemd: needed to start kubelet
+    # TODO: Replace systemd with direct calls, or chroot into rootfs
+    debs = [
+        "@systemd//file",
+    ],
+    directory = "/usr/bin/",
+    files = [
+        "//channels/cmd/channels",
+        # TODO "//kubectl",
+        "//protokube/cmd/protokube",
+    ],
+)
+
+container_image(
+    name = "kube-discovery",
+    base = "@debian_hyperkube_base_amd64//image",
+    cmd = ["/usr/bin/kube-discovery"],
+    directory = "/usr/bin/",
+    files = [
+        "//kube-discovery/cmd/kube-discovery",
+    ],
+)
