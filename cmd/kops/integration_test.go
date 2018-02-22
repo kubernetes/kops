@@ -36,7 +36,6 @@ import (
 
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/diff"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/jsonutils"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -357,8 +356,6 @@ func runTestPhase(t *testing.T, clusterName string, srcDir string, version strin
 }
 
 func runTestGCE(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int) {
-	featureflag.ParseFlags("+AlphaAllowGCE")
-
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 

@@ -25,7 +25,6 @@ So, just create an empty bucket - you can use any name: `gsutil mb gs://kubernet
 
 ```
 PROJECT=`gcloud config get-value project`
-export KOPS_FEATURE_FLAGS=AlphaAllowGCE # to unlock the GCE features
 kops create cluster simple.k8s.local --zones us-central1-a --state gs://kubernetes-clusters/ --project=${PROJECT}
 ```
 

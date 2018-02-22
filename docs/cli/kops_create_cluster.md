@@ -44,10 +44,8 @@ kops create cluster
   --yes
   
   # Create cluster in GCE.
-  # This is an alpha feature.
   export KOPS_STATE_STORE="gs://mybucket-kops"
   export ZONES=${MASTER_ZONES:-"us-east1-b,us-east1-c,us-east1-d"}
-  export KOPS_FEATURE_FLAGS=AlphaAllowGCE
   
   kops create cluster kubernetes-k8s-gce.example.com
   --zones $ZONES \

@@ -74,8 +74,6 @@ var (
 	AlphaAllowBareMetal = featureflag.New("AlphaAllowBareMetal", featureflag.Bool(false))
 	// AlphaAllowDO is a feature flag that gates DigitalOcean support while it is alpha
 	AlphaAllowDO = featureflag.New("AlphaAllowDO", featureflag.Bool(false))
-	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
-	AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
 	// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
 	AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
 	// CloudupModels a list of supported models
@@ -322,10 +320,6 @@ func (c *ApplyClusterCmd) Run() error {
 			gceCloud := cloud.(gce.GCECloud)
 			region = gceCloud.Region()
 			project = gceCloud.Project()
-
-			if !AlphaAllowGCE.Enabled() {
-				return fmt.Errorf("GCE support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowGCE")
-			}
 
 			l.AddTypes(map[string]interface{}{
 				"Disk":                 &gcetasks.Disk{},
