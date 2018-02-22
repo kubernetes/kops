@@ -395,8 +395,8 @@ resource "aws_route_table" "private-us-test-1a-privatedns2-example-com" {
   vpc_id = "vpc-12345678"
 
   tags = {
-    KubernetesCluster = "privatedns2.example.com"
-    Name              = "private-us-test-1a.privatedns2.example.com"
+    KubernetesCluster                               = "privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "shared"
   }
 }
 
@@ -404,8 +404,8 @@ resource "aws_route_table" "privatedns2-example-com" {
   vpc_id = "vpc-12345678"
 
   tags = {
-    KubernetesCluster = "privatedns2.example.com"
-    Name              = "privatedns2.example.com"
+    KubernetesCluster                               = "privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "shared"
   }
 }
 
