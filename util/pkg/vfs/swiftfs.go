@@ -245,10 +245,14 @@ func (p *SwiftPath) Join(relativePath ...string) Path {
 	}
 }
 
-func (p *SwiftPath) WriteFile(data []byte, acl ACL) error {
+func (p *SwiftPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 	done, err := RetryWithBackoff(swiftWriteBackoff, func() (bool, error) {
 		glog.V(4).Infof("Writing file %q", p)
-		createOpts := swiftobject.CreateOpts{Content: bytes.NewReader(data)}
+		if _, err := data.Seek(0, 0); err != nil {
+			return false, fmt.Errorf("error seeking to start of data stream for %s: %v", p, err)
+		}
+
+		createOpts := swiftobject.CreateOpts{Content: data}
 		_, err := swiftobject.Create(p.client, p.bucket, p.key, createOpts).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error writing %s: %v", p, err)
@@ -272,7 +276,7 @@ func (p *SwiftPath) WriteFile(data []byte, acl ACL) error {
 // TODO: should we enable versioning?
 var createFileLockSwift sync.Mutex
 
-func (p *SwiftPath) CreateFile(data []byte, acl ACL) error {
+func (p *SwiftPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 	createFileLockSwift.Lock()
 	defer createFileLockSwift.Unlock()
 

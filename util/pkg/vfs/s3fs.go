@@ -109,7 +109,7 @@ func (p *S3Path) Join(relativePath ...string) Path {
 	}
 }
 
-func (p *S3Path) WriteFile(data []byte, aclObj ACL) error {
+func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 	client, err := p.client()
 	if err != nil {
 		return err
@@ -121,7 +121,7 @@ func (p *S3Path) WriteFile(data []byte, aclObj ACL) error {
 	sse := "AES256"
 
 	request := &s3.PutObjectInput{}
-	request.Body = bytes.NewReader(data)
+	request.Body = data
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)
 	request.ServerSideEncryption = aws.String(sse)
@@ -141,7 +141,7 @@ func (p *S3Path) WriteFile(data []byte, aclObj ACL) error {
 
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208
 
-	glog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q SSE=%q ACL=%q BodyLen=%d", p.bucket, p.key, sse, acl, len(data))
+	glog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q SSE=%q ACL=%q", p.bucket, p.key, sse, acl)
 
 	_, err = client.PutObject(request)
 	if err != nil {
@@ -161,7 +161,7 @@ func (p *S3Path) WriteFile(data []byte, aclObj ACL) error {
 // TODO: should we enable versioning?
 var createFileLockS3 sync.Mutex
 
-func (p *S3Path) CreateFile(data []byte, acl ACL) error {
+func (p *S3Path) CreateFile(data io.ReadSeeker, acl ACL) error {
 	createFileLockS3.Lock()
 	defer createFileLockS3.Unlock()
 
