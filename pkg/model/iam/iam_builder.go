@@ -33,6 +33,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/util/stringorslice"
@@ -393,6 +394,40 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 			// We could implement this approach, but it seems better to
 			// get all clouds using cluster-readable storage
 			return nil, fmt.Errorf("path is not cluster readable: %v", root)
+		}
+	}
+
+	// On the master, grant IAM permissions to the backup store, if it is configured
+	if b.Role == kops.InstanceGroupRoleMaster {
+		backupStores := sets.NewString()
+		for _, c := range b.Cluster.Spec.EtcdClusters {
+			if c.Backups == nil || c.Backups.BackupStore == "" || backupStores.Has(c.Backups.BackupStore) {
+				continue
+			}
+			backupStore := c.Backups.BackupStore
+
+			vfsPath, err := vfs.Context.BuildVfsPath(backupStore)
+			if err != nil {
+				return nil, fmt.Errorf("cannot parse VFS path %q: %v", backupStore, err)
+			}
+
+			if s3Path, ok := vfsPath.(*vfs.S3Path); ok {
+				iamS3Path := s3Path.Bucket() + "/" + s3Path.Key()
+				iamS3Path = strings.TrimSuffix(iamS3Path, "/")
+
+				p.Statement = append(p.Statement, &Statement{
+					Sid:    "kopsEtcdBackups",
+					Effect: StatementEffectAllow,
+					Action: stringorslice.Slice([]string{"s3:GetObject", "s3:DeleteObject", "s3:PutObject"}),
+					Resource: stringorslice.Of(
+						strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/*"}, ""),
+					),
+				})
+			} else {
+				glog.Warningf("unknown backup store, can't apply IAM policy: %q", backupStore)
+			}
+
+			backupStores.Insert(backupStore)
 		}
 	}
 

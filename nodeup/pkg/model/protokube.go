@@ -201,6 +201,8 @@ type ProtokubeFlags struct {
 	DNSInternalSuffix         *string  `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
 	DNSProvider               *string  `json:"dnsProvider,omitempty" flag:"dns"`
 	DNSServer                 *string  `json:"dns-server,omitempty" flag:"dns-server"`
+	EtcdBackupImage           string   `json:"etcd-backup-image,omitempty" flag:"etcd-backup-image"`
+	EtcdBackupStore           string   `json:"etcd-backup-store,omitempty" flag:"etcd-backup-store"`
 	EtcdImage                 *string  `json:"etcd-image,omitempty" flag:"etcd-image"`
 	EtcdLeaderElectionTimeout *string  `json:"etcd-election-timeout,omitempty" flag:"etcd-election-timeout"`
 	EtcdHearbeatInterval      *string  `json:"etcd-heartbeat-interval,omitempty" flag:"etcd-heartbeat-interval"`
@@ -240,6 +242,18 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		EtcdHearbeatInterval:      s(heartbeatInterval),
 		LogLevel:                  fi.Int32(4),
 		Master:                    b(t.IsMaster),
+	}
+
+	for _, e := range t.Cluster.Spec.EtcdClusters {
+		if e.Backups != nil {
+			if f.EtcdBackupImage == "" {
+				f.EtcdBackupImage = e.Backups.Image
+			}
+
+			if f.EtcdBackupStore == "" {
+				f.EtcdBackupStore = e.Backups.BackupStore
+			}
+		}
 	}
 
 	// TODO this is dupicate code with etcd model

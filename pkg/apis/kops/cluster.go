@@ -316,6 +316,16 @@ type EtcdClusterSpec struct {
 	HeartbeatInterval *metav1.Duration `json:"heartbeatInterval,omitempty"`
 	// Image is the etcd docker image to use. Setting this will ignore the Version specified.
 	Image string `json:"image,omitempty"`
+	// Backups describes how we do backups of etcd
+	Backups *EtcdBackupSpec `json:"backups,omitempty"`
+}
+
+// EtcdBackupSpec describes how we want to do backups of etcd
+type EtcdBackupSpec struct {
+	// BackupStore is the VFS path where we will read/write backup data
+	BackupStore string `json:"backupStore,omitempty"`
+	// Image is the etcd backup manager image to use.  Setting this will create a sidecar container in the etcd pod with the specified image.
+	Image string `json:"image,omitempty"`
 }
 
 // EtcdMemberSpec is a specification for a etcd member
