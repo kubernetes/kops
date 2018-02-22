@@ -18,12 +18,14 @@ package instancegroups
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"strings"
 	"sync"
 	"time"
 
+	"k8s.io/api/core/v1"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/validation"
@@ -47,6 +49,8 @@ var (
 
 // RollingUpdateInstanceGroup is the AWS ASG backing an InstanceGroup.
 type RollingUpdateInstanceGroup struct {
+	// Name is the full name of the instancegroup
+	Name string
 	// Update is the reference to the cluster update
 	Update *RollingUpdateCluster
 	// CloudGroup is the cloud instanceGroup we are updating
@@ -124,7 +128,12 @@ func (r *RollingUpdateInstanceGroup) DrainGroup(ctx context.Context, options *Dr
 				// add a convient wrapper to handle any errors
 				err := func() error {
 					// @check if we are draining the node of pods
-					if options.DrainPods {
+					isBastion := node.CloudInstanceGroup.InstanceGroup.Spec.Role == api.InstanceGroupRoleBastion
+					if isBastion && options.DrainPods {
+						update.Infof("node: %s in instancegroup: %s is a bastion, skipping the drain", node.ID, groupName)
+					}
+
+					if options.DrainPods && !isBastion {
 						// @check this is a known kubernetes node
 						if node.Node == nil {
 							update.Infof("unknown node: %s found in instancegroup: %s, skipping the drain", node.ID, groupName)
@@ -189,6 +198,36 @@ func (r *RollingUpdateInstanceGroup) DrainGroup(ctx context.Context, options *Dr
 	worker.Wait()
 
 	return err
+}
+
+// WaitOnNodes is resposible for waiting for new nodes to enter into the cluster
+func (r *RollingUpdateInstanceGroup) WaitOnNodes(ctx context.Context, before []v1.Node, expecting int, timeout time.Duration) error {
+	update := r.Update
+
+	if update.Client == nil {
+		return errors.New("no kubernetes client, unable to determine node status")
+	}
+	update.Infof("waiting to %d new nodes to enter the cluster, current size: %d", expecting, len(before))
+
+	client, err := validation.NewNodeAPIAdapter(update.Client, time.Second*5)
+	if err != nil {
+		return fmt.Errorf("unable to create node api: %s", err)
+	}
+
+	ticker := time.NewTimer(10 * time.Second)
+	for {
+		select {
+		case <-ticker.C:
+			// @step: we get a list of nodes in the cluster
+			_, err := client.GetAllNodes()
+			if err != nil {
+				update.Errorf("failed to retrieve a list of nodes, error: %v", err)
+				continue
+			}
+		case <-ctx.Done():
+			return ErrRolloutCancelled
+		}
+	}
 }
 
 // DrainNode is responsible for cordoning a node and draining the pods

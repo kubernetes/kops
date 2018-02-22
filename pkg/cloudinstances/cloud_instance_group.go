@@ -27,6 +27,25 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 )
 
+// TerminationPolicy is a terminating policy for the cloud instance group
+type TerminationPolicy string
+
+const (
+	// TerminateDefault indicates set the default policy for the cloud provider
+	TerminateDefault = "default"
+	// TerminateNewest indicates we should terminate the newest
+	TerminateNewest = "newest"
+	// TerminateOldest inducated we should terminate the oldest
+	TerminateOldest = "oldest"
+)
+
+var (
+	// TerminateNewestPolicy is just a wrapper to save typing
+	TerminateNewestPolicy = []TerminationPolicy{TerminateNewest}
+	// TerminateOldestPolicy is just a wrapper to save typing
+	TerminateOldestPolicy = []TerminationPolicy{TerminateOldest}
+)
+
 // CloudInstanceGroup is the cloud backing of InstanceGroup.
 type CloudInstanceGroup struct {
 	// HumanName is a user-friendly name for the group

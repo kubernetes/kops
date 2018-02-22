@@ -64,6 +64,13 @@ func (c *Cloud) GetCloudGroupStatus(*kops.Cluster, string) (int, int, error) {
 	return 0, 0, fmt.Errorf("baremetal provider does not support getting cloud groups at this time")
 }
 
+// SetTerminationPolicy is not implemented yet
+// Baremetal may not support this.
+func (c *Cloud) SetTerminationPolicy(*kops.Cluster, string, []cloudinstances.TerminationPolicy) error {
+	glog.V(8).Infof("baremetal cloud SetTerminationPolicy not implemented yet")
+	return fmt.Errorf("baremetal provider does not support setting termination policy at this time")
+}
+
 // DeleteGroup is not implemented yet, is a func that needs to delete a DO instance group.
 // Baremetal may not support this.
 func (c *Cloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {

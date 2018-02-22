@@ -387,6 +387,35 @@ func (c *awsCloudImplementation) GetCloudGroupStatus(cluster *kops.Cluster, name
 	return getCloudGroupStatus(c, cluster, name)
 }
 
+// SetTerminationPolicy is used to set the termination policy in a CloudInstanceGroup
+func (c *awsCloudImplementation) SetTerminationPolicy(cluster *kops.Cluster, name string, policies []cloudinstances.TerminationPolicy) error {
+	return setTerminationPolicy(c, cluster, name, policies)
+}
+
+func setTerminationPolicy(c AWSCloud, cluster *kops.Cluster, name string, policies []cloudinstances.TerminationPolicy) error {
+	var list []string
+	for _, x := range policies {
+		switch x {
+		case cloudinstances.TerminateDefault:
+			list = append(list, []string{"Default"}...)
+		case cloudinstances.TerminateNewest:
+			list = append(list, []string{"NewestInstance"}...)
+		case cloudinstances.TerminateOldest:
+			list = append(list, []string{"OldestInstance", "OldestLaunchConfiguration"}...)
+		}
+	}
+	if len(list) <= 0 {
+		return nil
+	}
+
+	_, err := c.Autoscaling().UpdateAutoScalingGroup(&autoscaling.UpdateAutoScalingGroupInput{
+		AutoScalingGroupName: aws.String(name),
+		TerminationPolicies:  aws.StringSlice(list),
+	})
+
+	return err
+}
+
 func getCloudGroupStatus(c AWSCloud, cluster *kops.Cluster, name string) (int, int, error) {
 	var ready, needsupdate int
 

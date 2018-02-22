@@ -213,6 +213,11 @@ func (c *openstackCloud) GetCloudGroups(*kops.Cluster, []*kops.InstanceGroup, bo
 	return nil, fmt.Errorf("openstackCloud::GetCloudGroups not implemented")
 
 }
+
+func (c *openstackCloud) SetTerminationPolicy(*kops.Cluster, string, []cloudinstances.TerminationPolicy) error {
+	return fmt.Errorf("openstackCloud::SetTerminationPolicy not implemented")
+}
+
 func (c *openstackCloud) GetCloudGroupStatus(*kops.Cluster, string) (int, int, error) {
 	return 0, 0, fmt.Errorf("openstackCloud::GetCloudGroupStatus not implemented")
 }

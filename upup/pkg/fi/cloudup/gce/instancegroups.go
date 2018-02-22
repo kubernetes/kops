@@ -62,6 +62,22 @@ func (c *mockGCECloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember
 	return recreateCloudInstanceGroupMember(c, i)
 }
 
+// SetTerminationPolicy is used to set the termination policy in a CloudInstanceGroup
+func (c *mockGCECloud) SetTerminationPolicy(*kops.Cluster, string, []cloudinstances.TerminationPolicy) error {
+	glog.V(8).Infof("gce cloud SetTerminationPolicy not implemented yet")
+	return fmt.Errorf("gce cloud provider does not support setting termination policy")
+}
+
+// SetTerminationPolicy is used to set the termination policy in a CloudInstanceGroup
+func (c *gceCloudImplementation) SetTerminationPolicy(cluster *kops.Cluster, name string, policies []cloudinstances.TerminationPolicy) error {
+	return setTerminationPolicy(c, cluster, name, policies)
+}
+
+func setTerminationPolicy(GCECloud, *kops.Cluster, string, []cloudinstances.TerminationPolicy) error {
+	glog.V(8).Infof("gce cloud SetTerminationPolicy not implemented yet")
+	return fmt.Errorf("gce cloud provider does not support setting termination policy")
+}
+
 // recreateCloudInstanceGroupMember recreates the specified instances, managed by an InstanceGroupManager
 func recreateCloudInstanceGroupMember(c GCECloud, i *cloudinstances.CloudInstanceGroupMember) error {
 	mig := i.CloudInstanceGroup.Raw.(*compute.InstanceGroupManager)

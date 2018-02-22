@@ -118,6 +118,12 @@ func (c *VSphereCloud) GetCloudGroupStatus(*kops.Cluster, string) (int, int, err
 	return 0, 0, fmt.Errorf("vSphere cloud provider does not support getting cloud groups status at this time")
 }
 
+// SetTerminationPolicy is not implemented yet, that needs to return the instances and groups that back a kops cluster.
+func (c *VSphereCloud) SetTerminationPolicy(*kops.Cluster, string, []cloudinstances.TerminationPolicy) error {
+	glog.V(8).Infof("vSphere cloud provider SetTerminationPolicy not implemented yet")
+	return fmt.Errorf("vSphere cloud provider does not support setting termination policy at this time")
+}
+
 // DeleteGroup is not implemented yet, is a func that needs to delete a vSphere instance group.
 func (c *VSphereCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 	glog.V(8).Infof("vSphere cloud provider DeleteGroup not implemented yet")

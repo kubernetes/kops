@@ -153,7 +153,12 @@ func (c *RollingUpdateCluster) invokeInstanceGroupUpdate(ctx context.Context, gr
 						worker.Done()
 						bucket <- Signal
 					}()
-					update := &RollingUpdateInstanceGroup{Update: c, CloudGroup: group}
+					fullname := fmt.Sprintf("%s.%s", group.InstanceGroup.Name, c.ClusterName)
+					update := &RollingUpdateInstanceGroup{
+						CloudGroup: group,
+						Name:       fullname,
+						Update:     c,
+					}
 					// @step: perform a rollout on the group
 					if err := update.RollingUpdate(rctx, list); err != nil {
 						// return the error for the next iteration to pick up; so the channel is
@@ -232,6 +237,7 @@ func (c *RollingUpdateCluster) DetermineGroupStratergy(group *cloudinstances.Clo
 		strategy.Name = c.Strategy
 		c.Infof("using rollout strategy: %s on instancegroup: %s", strategy.Name, groupName)
 	}
+
 	// @check is rollout options override post delay
 	if c.PostDrainDelay > 0 {
 		strategy.PostDrainDelay = &metav1.Duration{Duration: c.PostDrainDelay}
@@ -290,6 +296,9 @@ func (c *RollingUpdateCluster) DetermineGroupStratergy(group *cloudinstances.Clo
 		if len(group.NeedUpdate) > 0 {
 			c.Infof("toggling the force flag given we are using a %s strategy", strategy.Name)
 			c.Force = true
+		}
+		if c.Cluster.Spec.CloudProvider != string(api.CloudProviderAWS) && strategy.Name == api.ScaleUpRollout {
+			return c.Errorf("rollout stratergy: %s is not supported on cloud provider: %s", strategy.Name, c.Cluster.Spec.CloudProvider)
 		}
 	}
 

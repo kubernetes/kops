@@ -35,8 +35,8 @@ import (
 const CloudTagInstanceGroupRolePrefix = "k8s.io/role/"
 
 var (
-	// terminationPolicies is the termination policy of a ASG
-	terminationPolicies = []string{"OldestInstance", "OldestLaunchConfiguration"}
+// terminationPolicies is the termination policy of a ASG
+//terminationPolicies = []string{"OldestInstance", "OldestLaunchConfiguration"}
 )
 
 //go:generate fitask -type=AutoscalingGroup
@@ -203,7 +203,7 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		request.LaunchConfigurationName = e.LaunchConfiguration.ID
 		request.MinSize = e.MinSize
 		request.MaxSize = e.MaxSize
-		request.SetTerminationPolicies(aws.StringSlice(terminationPolicies))
+		//request.SetTerminationPolicies(aws.StringSlice(terminationPolicies))
 
 		var subnetIDs []string
 		for _, s := range e.Subnets {
@@ -227,7 +227,7 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 	} else {
 		request := &autoscaling.UpdateAutoScalingGroupInput{
 			AutoScalingGroupName: e.Name,
-			TerminationPolicies:  aws.StringSlice(terminationPolicies),
+			//TerminationPolicies:  aws.StringSlice(terminationPolicies),
 		}
 
 		if changes.LaunchConfiguration != nil {

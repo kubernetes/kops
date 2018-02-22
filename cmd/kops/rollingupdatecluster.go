@@ -163,7 +163,7 @@ func (o *RollingUpdateOptions) initDefaults() {
 	o.MasterInterval = 5 * time.Minute
 	o.NodeBatch = 1
 	o.NodeInterval = 4 * time.Minute
-	o.PostDrainDelay = 0
+	o.PostDrainDelay = 20 * time.Second
 	o.ScaleTimeout = 4 * time.Minute
 	o.ValidationTimeout = 5 * time.Minute
 	o.Yes = false
@@ -184,7 +184,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without confirming progress with k8s")
-	cmd.Flags().BoolVar(&drainOption, "drain", drainOption, "Indicates we should drain the node perform terminating")
+	cmd.Flags().BoolVar(&drainOption, "drain", drainOption, "Indicates we should drain the node before terminating")
 	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The rolling-update will fail if draining a node fails.")
 	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate.")
 	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force rolling update, even if no changes")

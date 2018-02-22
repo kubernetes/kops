@@ -104,6 +104,12 @@ func (c *Cloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error
 	return fmt.Errorf("digital ocean cloud provider does not support deleting cloud instances at this time")
 }
 
+// SetTerminationPolicy is not implemented yet, is a func that needs to delete a DO instance group.
+func (c *Cloud) SetTerminationPolicy(*kops.Cluster, string, []cloudinstances.TerminationPolicy) error {
+	glog.V(8).Infof("digitalocean cloud provider DeleteGroup not implemented yet")
+	return fmt.Errorf("digital ocean cloud provider does not support setting termination policy at this time")
+}
+
 // ProviderID returns the kops api identifier for DigitalOcean cloud provider
 func (c *Cloud) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderDO

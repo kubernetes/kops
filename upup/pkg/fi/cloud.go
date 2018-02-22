@@ -37,6 +37,8 @@ type Cloud interface {
 	GetCloudGroups(*kops.Cluster, []*kops.InstanceGroup, bool, []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
 	// GetCloudGroupStatus returns the group size, ready, updated or an error
 	GetCloudGroupStatus(*kops.Cluster, string) (int, int, error)
+	// SetTerminationPolicy is used to set the termination policy in a CloudInstanceGroup
+	SetTerminationPolicy(*kops.Cluster, string, []cloudinstances.TerminationPolicy) error
 	// ProviderID returns the cloud provider ID
 	ProviderID() kops.CloudProviderID
 }

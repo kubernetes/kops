@@ -94,6 +94,10 @@ func (c *MockAWSCloud) GetCloudGroupStatus(cluster *kops.Cluster, name string) (
 	return getCloudGroupStatus(c, cluster, name)
 }
 
+func (c *MockAWSCloud) SetTerminationPolicy(cluster *kops.Cluster, name string, policies []cloudinstances.TerminationPolicy) error {
+	return setTerminationPolicy(c, cluster, name, policies)
+}
+
 func (c *MockCloud) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderAWS
 }
