@@ -1134,6 +1134,7 @@ func autoConvert_v1alpha1_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.Bridge = in.Bridge
 	out.BridgeIP = in.BridgeIP
 	out.DefaultUlimit = in.DefaultUlimit
+	out.Hosts = in.Hosts
 	out.IPMasq = in.IPMasq
 	out.IPTables = in.IPTables
 	out.InsecureRegistry = in.InsecureRegistry
@@ -1161,6 +1162,7 @@ func autoConvert_kops_DockerConfig_To_v1alpha1_DockerConfig(in *kops.DockerConfi
 	out.Bridge = in.Bridge
 	out.BridgeIP = in.BridgeIP
 	out.DefaultUlimit = in.DefaultUlimit
+	out.Hosts = in.Hosts
 	out.IPMasq = in.IPMasq
 	out.IPTables = in.IPTables
 	out.InsecureRegistry = in.InsecureRegistry
