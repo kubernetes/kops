@@ -202,7 +202,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    featureGates: null
     hostnameOverride: '@aws'
     image: k8s.gcr.io/kube-proxy:v1.4.12
     logLevel: 2
@@ -457,7 +456,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    featureGates: null
     hostnameOverride: '@aws'
     image: k8s.gcr.io/kube-proxy:v1.4.12
     logLevel: 2
