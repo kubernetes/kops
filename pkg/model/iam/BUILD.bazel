@@ -12,6 +12,7 @@ go_library(
         "//upup/pkg/fi/cloudup/awstasks:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 

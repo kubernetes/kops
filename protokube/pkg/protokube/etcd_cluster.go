@@ -47,9 +47,9 @@ type EtcdCluster struct {
 	ImageSource string
 	// LogFile is the location of the logfile
 	LogFile string
-	// Me represents myself
+	// Me is the node that we will be in the cluster
 	Me *EtcdNode
-	// Nodes is a list of nodes in the cluster
+	// Nodes is a list of nodes in the cluster (including the self-node, Me)
 	Nodes []*EtcdNode
 	// PeerPort is the port for peers to connect
 	PeerPort int
@@ -77,6 +77,10 @@ type EtcdCluster struct {
 	ElectionTimeout string
 	// HeartbeatInterval is the heartbeat interval
 	HeartbeatInterval string
+	// BackupImage is the image to use for backing up etcd
+	BackupImage string
+	// BackupStore is a VFS path for backing up etcd
+	BackupStore string
 }
 
 // EtcdNode is a definition for the etcd node
@@ -133,6 +137,9 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *etcd.EtcdClusterSpec
 	default:
 		return nil, fmt.Errorf("unknown etcd cluster key %q", spec.ClusterKey)
 	}
+
+	cluster.BackupImage = kubeBoot.EtcdBackupImage
+	cluster.BackupStore = kubeBoot.EtcdBackupStore
 
 	k.cluster = cluster
 

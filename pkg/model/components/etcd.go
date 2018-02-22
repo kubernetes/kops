@@ -23,6 +23,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
+const DefaultBackupImage = "kopeio/etcd-backup:1.0.20180220"
+
 // EtcdOptionsBuilder adds options for etcd to the model
 type EtcdOptionsBuilder struct {
 	Context *OptionsContext
@@ -43,16 +45,35 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
-	// default to gcr.io
-	image := fmt.Sprintf("k8s.gcr.io/etcd:%s", spec.EtcdClusters[0].Version)
+	// remap image
+	for _, c := range spec.EtcdClusters {
+		image := c.Image
+		if image == "" {
+			image = fmt.Sprintf("k8s.gcr.io/etcd:%s", c.Version)
+		}
 
-	// override image if set as API value
-	if spec.EtcdClusters[0].Image != "" {
-		image = spec.EtcdClusters[0].Image
+		image, err := b.Context.AssetBuilder.RemapImage(image)
+		if err != nil {
+			return fmt.Errorf("unable to remap container %q: %v", image, err)
+		}
+		c.Image = image
 	}
-	image, err := b.Context.AssetBuilder.RemapImage(image)
-	if err != nil {
-		return fmt.Errorf("unable to remap container %q: %v", image, err)
+
+	// remap backup manager images
+	for _, c := range spec.EtcdClusters {
+		if c.Backups == nil {
+			continue
+		}
+		image := c.Backups.Image
+		if image == "" {
+			image = fmt.Sprintf(DefaultBackupImage)
+		}
+
+		image, err := b.Context.AssetBuilder.RemapImage(image)
+		if err != nil {
+			return fmt.Errorf("unable to remap container %q: %v", image, err)
+		}
+		c.Backups.Image = image
 	}
 
 	return nil
