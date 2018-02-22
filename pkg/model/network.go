@@ -39,10 +39,10 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	sharedVPC := b.Cluster.SharedVPC()
 	vpcName := b.ClusterName()
+	tags := b.CloudTags(vpcName, sharedVPC)
 
 	// VPC that holds everything for the cluster
 	{
-		tags := b.CloudTags(vpcName, sharedVPC)
 
 		t := &awstasks.VPC{
 			Name:             s(vpcName),
@@ -78,6 +78,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:              s(b.ClusterName()),
 			Lifecycle:         b.Lifecycle,
 			DomainNameServers: s("AmazonProvidedDNS"),
+
+			Tags:   tags,
+			Shared: fi.Bool(sharedVPC),
 		}
 		if b.Region == "us-east-1" {
 			dhcp.DomainName = s("ec2.internal")
@@ -114,6 +117,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 			VPC:       b.LinkToVPC(),
 			Shared:    fi.Bool(sharedVPC),
+
+			Tags: tags,
 		}
 		c.AddTask(igw)
 
@@ -123,6 +128,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Lifecycle: b.Lifecycle,
 
 				VPC: b.LinkToVPC(),
+
+				Tags:   tags,
+				Shared: fi.Bool(sharedVPC),
 			}
 			c.AddTask(publicRouteTable)
 
@@ -268,6 +276,24 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			c.AddTask(ngw)
 		}
 
+		// kops needs to have the correct shared or owned tag on private route tables,
+		// but the 'Name' tag  for the private route table does not match the standard
+		// 'Name' tag value.
+		// Making a copy of the map to use for private route tables, and maintaining the 'Name'
+		// tag with a value like "private-us-test-1a.privatedns1.example.com" instead of using
+		// the usual value like "privatedns1.example.com".
+		privateTags := make(map[string]string)
+		for k, v := range tags {
+			privateTags[k] = v
+		}
+		// We do not set the Name on shared resources remove it if it exists
+		// otherwise set it.
+		if sharedVPC {
+			delete(privateTags, "Name")
+		} else {
+			privateTags["Name"] = b.NamePrivateRouteTableInZone(zone)
+		}
+
 		// Private Route Table
 		//
 		// The private route table that will route to the NAT Gateway
@@ -275,6 +301,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:      s(b.NamePrivateRouteTableInZone(zone)),
 			VPC:       b.LinkToVPC(),
 			Lifecycle: b.Lifecycle,
+
+			Shared: fi.Bool(sharedVPC),
+			Tags:   privateTags,
 		}
 		c.AddTask(rt)
 

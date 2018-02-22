@@ -34,6 +34,11 @@ type RouteTable struct {
 
 	ID  *string
 	VPC *VPC
+
+	// Shared is set if this is a shared RouteTable
+	Shared *bool
+	// Tags is a map of aws tags that are added to the RouteTable
+	Tags map[string]string
 }
 
 var _ fi.CompareWithID = &RouteTable{}
@@ -131,7 +136,7 @@ func (_ *RouteTable) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *RouteTable)
 		e.ID = rt.RouteTableId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
+	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
 type terraformRouteTable struct {
@@ -140,11 +145,9 @@ type terraformRouteTable struct {
 }
 
 func (_ *RouteTable) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *RouteTable) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	tf := &terraformRouteTable{
 		VPCID: e.VPC.TerraformLink(),
-		Tags:  cloud.BuildTags(e.Name),
+		Tags:  e.Tags,
 	}
 
 	return t.RenderResource("aws_route_table", *e.Name, tf)
@@ -160,11 +163,9 @@ type cloudformationRouteTable struct {
 }
 
 func (_ *RouteTable) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *RouteTable) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	cf := &cloudformationRouteTable{
 		VPCID: e.VPC.CloudformationLink(),
-		Tags:  buildCloudformationTags(cloud.BuildTags(e.Name)),
+		Tags:  buildCloudformationTags(e.Tags),
 	}
 
 	return t.RenderResource("AWS::EC2::RouteTable", *e.Name, cf)

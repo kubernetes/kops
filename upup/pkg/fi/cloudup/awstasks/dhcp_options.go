@@ -38,6 +38,12 @@ type DHCPOptions struct {
 	ID                *string
 	DomainName        *string
 	DomainNameServers *string
+
+	// Shared is set if this is a shared DHCPOptions
+	Shared *bool
+
+	// Tags is a map of aws tags that are added to the InternetGateway
+	Tags map[string]string
 }
 
 var _ fi.CompareWithID = &DHCPOptions{}
@@ -157,7 +163,7 @@ func (_ *DHCPOptions) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DHCPOption
 		e.ID = response.DhcpOptions.DhcpOptionsId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
+	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
 type terraformDHCPOptions struct {
@@ -167,11 +173,9 @@ type terraformDHCPOptions struct {
 }
 
 func (_ *DHCPOptions) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DHCPOptions) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	tf := &terraformDHCPOptions{
 		DomainName: e.DomainName,
-		Tags:       cloud.BuildTags(e.Name),
+		Tags:       e.Tags,
 	}
 
 	if e.DomainNameServers != nil {
@@ -192,11 +196,9 @@ type cloudformationDHCPOptions struct {
 }
 
 func (_ *DHCPOptions) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *DHCPOptions) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	cf := &cloudformationDHCPOptions{
 		DomainName: e.DomainName,
-		Tags:       buildCloudformationTags(cloud.BuildTags(e.Name)),
+		Tags:       buildCloudformationTags(e.Tags),
 	}
 
 	if e.DomainNameServers != nil {
