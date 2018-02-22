@@ -32,6 +32,10 @@ const (
 	ProviderName = "aws-route53"
 )
 
+var (
+	MaxBatchSize int
+)
+
 func init() {
 	dnsprovider.RegisterDnsProvider(ProviderName, func(config io.Reader) (dnsprovider.Interface, error) {
 		return newRoute53(config)
