@@ -33,7 +33,9 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 	}()
 
 	cluster := &api.Cluster{}
-	assetBuilder := assets.NewAssetBuilder(nil, "")
+	cluster.Spec.KubernetesVersion = "v1.9.0"
+
+	assetBuilder := assets.NewAssetBuilder(cluster, "")
 	cniAsset, cniAssetHashString, err := findCNIAssets(cluster, assetBuilder)
 
 	if err != nil {
@@ -51,9 +53,9 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 
 func Test_FindCNIAssetDefaultValue1_6(t *testing.T) {
 
-	cluster := &api.Cluster{Spec: api.ClusterSpec{}}
+	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.7.0"
-	assetBuilder := assets.NewAssetBuilder(nil, "")
+	assetBuilder := assets.NewAssetBuilder(cluster, "")
 	cniAsset, cniAssetHashString, err := findCNIAssets(cluster, assetBuilder)
 
 	if err != nil {
@@ -72,9 +74,9 @@ func Test_FindCNIAssetDefaultValue1_6(t *testing.T) {
 
 func Test_FindCNIAssetDefaultValue1_5(t *testing.T) {
 
-	cluster := &api.Cluster{Spec: api.ClusterSpec{}}
+	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.5.12"
-	assetBuilder := assets.NewAssetBuilder(nil, "")
+	assetBuilder := assets.NewAssetBuilder(cluster, "")
 	cniAsset, cniAssetHashString, err := findCNIAssets(cluster, assetBuilder)
 
 	if err != nil {

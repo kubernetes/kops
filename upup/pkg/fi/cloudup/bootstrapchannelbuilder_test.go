@@ -78,7 +78,7 @@ func runChannelBuilderTest(t *testing.T, key string) {
 	bcb := BootstrapChannelBuilder{
 		cluster:      cluster,
 		templates:    templates,
-		assetBuilder: assets.NewAssetBuilder(nil, ""),
+		assetBuilder: assets.NewAssetBuilder(cluster, ""),
 	}
 
 	context := &fi.ModelBuilderContext{

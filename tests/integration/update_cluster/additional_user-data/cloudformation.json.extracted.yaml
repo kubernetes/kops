@@ -159,10 +159,10 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
   encryptionConfig: null
   etcdClusters:
     events:
-      image: k8s.gcr.io/etcd:2.2.1
+      image: gcr.io/google_containers/etcd:2.2.1
       version: 2.2.1
     main:
-      image: k8s.gcr.io/etcd:2.2.1
+      image: gcr.io/google_containers/etcd:2.2.1
       version: 2.2.1
   kubeAPIServer:
     address: 127.0.0.1
@@ -181,7 +181,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
     - http://127.0.0.1:4001
     etcdServersOverrides:
     - /events#http://127.0.0.1:4002
-    image: k8s.gcr.io/kube-apiserver:v1.4.12
+    image: gcr.io/google_containers/kube-apiserver:v1.4.12
     insecurePort: 8080
     logLevel: 2
     securePort: 443
@@ -194,7 +194,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
     clusterCIDR: 100.96.0.0/11
     clusterName: additionaluserdata.example.com
     configureCloudRoutes: true
-    image: k8s.gcr.io/kube-controller-manager:v1.4.12
+    image: gcr.io/google_containers/kube-controller-manager:v1.4.12
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -203,10 +203,10 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
     hostnameOverride: '@aws'
-    image: k8s.gcr.io/kube-proxy:v1.4.12
+    image: gcr.io/google_containers/kube-proxy:v1.4.12
     logLevel: 2
   kubeScheduler:
-    image: k8s.gcr.io/kube-scheduler:v1.4.12
+    image: gcr.io/google_containers/kube-scheduler:v1.4.12
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -226,7 +226,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
     networkPluginMTU: 9001
     networkPluginName: kubenet
     nonMasqueradeCIDR: 100.64.0.0/10
-    podInfraContainerImage: k8s.gcr.io/pause-amd64:3.0
+    podInfraContainerImage: gcr.io/google_containers/pause-amd64:3.0
     podManifestPath: /etc/kubernetes/manifests
     reconcileCIDR: true
   masterKubelet:
@@ -245,7 +245,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
     networkPluginName: kubenet
     nonMasqueradeCIDR: 100.64.0.0/10
     podCIDR: 10.123.45.0/28
-    podInfraContainerImage: k8s.gcr.io/pause-amd64:3.0
+    podInfraContainerImage: gcr.io/google_containers/pause-amd64:3.0
     podManifestPath: /etc/kubernetes/manifests
     reconcileCIDR: true
     registerSchedulable: false
@@ -457,7 +457,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
     hostnameOverride: '@aws'
-    image: k8s.gcr.io/kube-proxy:v1.4.12
+    image: gcr.io/google_containers/kube-proxy:v1.4.12
     logLevel: 2
   kubelet:
     allowPrivileged: true
@@ -474,7 +474,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
     networkPluginMTU: 9001
     networkPluginName: kubenet
     nonMasqueradeCIDR: 100.64.0.0/10
-    podInfraContainerImage: k8s.gcr.io/pause-amd64:3.0
+    podInfraContainerImage: gcr.io/google_containers/pause-amd64:3.0
     podManifestPath: /etc/kubernetes/manifests
     reconcileCIDR: true
 

@@ -24,13 +24,13 @@ import (
 	"k8s.io/kops/pkg/assets"
 )
 
-func buildSchedulerConfigMapCluster() *api.Cluster {
+func buildSchedulerConfigMapCluster(version string) *api.Cluster {
 	usePolicyConfigMap := true
 
 	return &api.Cluster{
 		Spec: api.ClusterSpec{
 			CloudProvider:     "aws",
-			KubernetesVersion: "v1.4.0",
+			KubernetesVersion: version,
 			KubeScheduler: &api.KubeSchedulerConfig{
 				UsePolicyConfigMap: &usePolicyConfigMap,
 			},
@@ -40,14 +40,14 @@ func buildSchedulerConfigMapCluster() *api.Cluster {
 
 func Test_Build_Scheduler_Without_PolicyConfigMap(t *testing.T) {
 	versions := []string{"v1.6.0", "v1.6.4", "v1.7.0", "v1.7.4"}
-	b := assets.NewAssetBuilder(nil, "")
 
 	for _, v := range versions {
 
 		c := buildCluster()
+		c.Spec.KubernetesVersion = v
+		b := assets.NewAssetBuilder(c, "")
 
 		version, err := util.ParseKubernetesVersion(v)
-
 		if err != nil {
 			t.Fatalf("unexpected error from ParseKubernetesVersion %s: %v", v, err)
 		}
@@ -59,10 +59,7 @@ func Test_Build_Scheduler_Without_PolicyConfigMap(t *testing.T) {
 			},
 		}
 
-		spec := c.Spec
-
-		spec.KubernetesVersion = v
-		err = ks.BuildOptions(&spec)
+		err = ks.BuildOptions(&c.Spec)
 
 		if err != nil {
 			t.Fatalf("unexpected error from BuildOptions: %v", err)
@@ -72,14 +69,13 @@ func Test_Build_Scheduler_Without_PolicyConfigMap(t *testing.T) {
 }
 func Test_Build_Scheduler_PolicyConfigMap_Unsupported_Version(t *testing.T) {
 	versions := []string{"v1.6.0", "v1.6.4"}
-	b := assets.NewAssetBuilder(nil, "")
 
 	for _, v := range versions {
 
-		c := buildSchedulerConfigMapCluster()
+		c := buildSchedulerConfigMapCluster(v)
+		b := assets.NewAssetBuilder(c, "")
 
 		version, err := util.ParseKubernetesVersion(v)
-
 		if err != nil {
 			t.Fatalf("unexpected error from ParseKubernetesVersion %s: %v", v, err)
 		}
@@ -91,11 +87,7 @@ func Test_Build_Scheduler_PolicyConfigMap_Unsupported_Version(t *testing.T) {
 			},
 		}
 
-		spec := c.Spec
-
-		spec.KubernetesVersion = v
-		err = ks.BuildOptions(&spec)
-
+		err = ks.BuildOptions(&c.Spec)
 		if err == nil {
 			t.Fatalf("error is expected, but none are returned")
 		}
@@ -105,14 +97,13 @@ func Test_Build_Scheduler_PolicyConfigMap_Unsupported_Version(t *testing.T) {
 
 func Test_Build_Scheduler_PolicyConfigMap_Supported_Version(t *testing.T) {
 	versions := []string{"v1.7.0", "v1.7.4", "v1.8.0"}
-	b := assets.NewAssetBuilder(nil, "")
 
 	for _, v := range versions {
 
-		c := buildSchedulerConfigMapCluster()
+		c := buildSchedulerConfigMapCluster(v)
+		b := assets.NewAssetBuilder(c, "")
 
 		version, err := util.ParseKubernetesVersion(v)
-
 		if err != nil {
 			t.Fatalf("unexpected error from ParseKubernetesVersion %s: %v", v, err)
 		}
@@ -124,11 +115,7 @@ func Test_Build_Scheduler_PolicyConfigMap_Supported_Version(t *testing.T) {
 			},
 		}
 
-		spec := c.Spec
-
-		spec.KubernetesVersion = v
-		err = ks.BuildOptions(&spec)
-
+		err = ks.BuildOptions(&c.Spec)
 		if err != nil {
 			t.Fatalf("unexpected error from BuildOptions %s: %v", v, err)
 		}
