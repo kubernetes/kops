@@ -3,8 +3,8 @@
 
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "4d8d6244320dd751590f9100cf39fd7a4b75cd901e1f3ffdfd6f048328883695",
-    url = "https://github.com/bazelbuild/rules_go/releases/download/0.9.0/rules_go-0.9.0.tar.gz",
+    url = "https://github.com/bazelbuild/rules_go/releases/download/0.10.0/rules_go-0.10.0.tar.gz",
+    sha256 = "53c8222c6eab05dd49c40184c361493705d4234e60c42c4cd13ab4898da4c6be",
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains", "go_download_sdk")
@@ -40,7 +40,7 @@ go_register_toolchains(
 git_repository(
     name = "io_bazel_rules_docker",
     remote = "https://github.com/bazelbuild/rules_docker.git",
-    tag = "v0.3.0",
+    tag = "v0.4.0",
 )
 
 load(
@@ -58,4 +58,51 @@ container_pull(
     registry = "k8s.gcr.io",
     repository = "debian-hyperkube-base-amd64",
     tag = "0.8",
+)
+
+git_repository(
+    name = "distroless_rules",
+    remote = "https://github.com/googlecloudplatform/distroless.git",
+    commit = "886114394dfed219001ec3b068b139a3456e49d4"
+)
+
+load(
+    "@distroless_rules//package_manager:package_manager.bzl",
+    "package_manager_repositories",
+    "dpkg_src",
+    "dpkg_list",
+)
+
+package_manager_repositories()
+
+dpkg_src(
+    name = "debian_stretch",
+    arch = "amd64",
+    distro = "stretch",
+    sha256 = "9aea0e4c9ce210991c6edcb5370cb9b11e9e554a0f563e7754a4028a8fd0cb73",
+    snapshot = "20171101T160520Z",
+    url = "http://snapshot.debian.org/archive",
+)
+
+dpkg_list(
+    name = "package_bundle",
+    packages = [
+        "cgmanager",
+        "dbus",
+        "libapparmor1",
+        "libcgmanager0",
+        "libcryptsetup4",
+        "libdbus-1-3",
+        "libnih-dbus1",
+        "libnih1",
+        "libpam-systemd",
+        "libprocps6",
+        "libseccomp2",
+        "procps",
+        "systemd-shim",
+        "systemd",
+    ],
+    sources = [
+        "@debian_stretch//file:Packages.json",
+    ],
 )
