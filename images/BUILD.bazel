@@ -54,7 +54,6 @@ container_image(
     },
     files = [
         "//channels/cmd/channels",
-        # TODO "//kubectl",
         "//protokube/cmd/protokube",
     ],
 )
