@@ -24,7 +24,9 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
+
 	"k8s.io/kops/cloudmock/aws/mockec2"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -105,7 +107,12 @@ func TestElasticIPCreate(t *testing.T) {
 }
 
 func checkNoChanges(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) {
-	assetBuilder := assets.NewAssetBuilder(nil, "")
+	cluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			KubernetesVersion: "v1.9.0",
+		},
+	}
+	assetBuilder := assets.NewAssetBuilder(cluster, "")
 	target := fi.NewDryRunTarget(assetBuilder, os.Stderr)
 	context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
 	if err != nil {
