@@ -61,6 +61,14 @@ func newS3Path(s3Context *S3Context, bucket string, key string) *S3Path {
 }
 
 func (p *S3Path) Path() string {
+	response,_ := p.GetVersioning()
+	if response != true {
+		fmt.Println("S3 Bucket Versioning is not set. Let's set it")
+		p.SetVersioning("Enabled")
+	} else {
+	fmt.Println("S3 Bucket Versioning is set already.")
+	}
+
 	return "s3://" + p.bucket + "/" + p.key
 }
 
@@ -186,6 +194,53 @@ func (p *S3Path) ReadFile() ([]byte, error) {
 		return nil, err
 	}
 	return b.Bytes(), nil
+}
+
+// GetVersioning implements Path::GetVersioning
+func (p *S3Path) GetVersioning() (bool, error) {
+	client, err := p.client()
+	if err != nil {
+		return false, err
+	}
+
+	request := &s3.GetBucketVersioningInput{}
+	request.SetBucket(p.bucket)
+
+	response, err := client.GetBucketVersioning(request)
+	if err != nil {
+		return false, fmt.Errorf("error getting s3 bucket versioning: %v", p, err)
+	}
+
+	if strings.Contains(response.String(),"Status: \"Enabled\"") {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
+
+// SetVersioning implements Path::SetVersioning
+// It will take "Enabled" or "Disabled" as parameter
+func (p *S3Path) SetVersioning(status string) ( error) {
+	client, err := p.client()
+	if err != nil {
+		return err
+	}
+
+	requestConfig := &s3.VersioningConfiguration{}
+	requestConfig.SetStatus(status)
+	requestConfig.SetMFADelete("Disabled")
+
+	request := &s3.PutBucketVersioningInput{}
+	request.SetVersioningConfiguration(requestConfig)
+	request.Bucket = aws.String(p.bucket)
+
+	response, err := client.PutBucketVersioning(request)
+	if err != nil {
+		return fmt.Errorf("error setting s3 bucket versioning: %v", p, err)
+	}
+
+	response.String()
+	return nil
 }
 
 // WriteTo implements io.WriterTo
