@@ -59,3 +59,50 @@ container_pull(
     repository = "debian-hyperkube-base-amd64",
     tag = "0.8",
 )
+
+git_repository(
+    name = "distroless_rules",
+    remote = "https://github.com/googlecloudplatform/distroless.git",
+    commit = "886114394dfed219001ec3b068b139a3456e49d4"
+)
+
+load(
+    "@distroless_rules//package_manager:package_manager.bzl",
+    "package_manager_repositories",
+    "dpkg_src",
+    "dpkg_list",
+)
+
+package_manager_repositories()
+
+dpkg_src(
+    name = "debian_stretch",
+    arch = "amd64",
+    distro = "stretch",
+    sha256 = "9aea0e4c9ce210991c6edcb5370cb9b11e9e554a0f563e7754a4028a8fd0cb73",
+    snapshot = "20171101T160520Z",
+    url = "http://snapshot.debian.org/archive",
+)
+
+dpkg_list(
+    name = "package_bundle",
+    packages = [
+        "cgmanager",
+        "dbus",
+        "libapparmor1",
+        "libcgmanager0",
+        "libcryptsetup4",
+        "libdbus-1-3",
+        "libnih-dbus1",
+        "libnih1",
+        "libpam-systemd",
+        "libprocps6",
+        "libseccomp2",
+        "procps",
+        "systemd-shim",
+        "systemd",
+    ],
+    sources = [
+        "@debian_stretch//file:Packages.json",
+    ],
+)
