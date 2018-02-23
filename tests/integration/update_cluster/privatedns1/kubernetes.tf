@@ -293,8 +293,9 @@ resource "aws_internet_gateway" "privatedns1-example-com" {
   vpc_id = "${aws_vpc.privatedns1-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -409,8 +410,9 @@ resource "aws_route_table" "private-us-test-1a-privatedns1-example-com" {
   vpc_id = "${aws_vpc.privatedns1-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "private-us-test-1a.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "private-us-test-1a.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -418,8 +420,9 @@ resource "aws_route_table" "privatedns1-example-com" {
   vpc_id = "${aws_vpc.privatedns1-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -695,8 +698,9 @@ resource "aws_vpc_dhcp_options" "privatedns1-example-com" {
   domain_name_servers = ["AmazonProvidedDNS"]
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 

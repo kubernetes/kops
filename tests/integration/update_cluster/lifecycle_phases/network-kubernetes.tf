@@ -22,8 +22,9 @@ resource "aws_internet_gateway" "privateweave-example-com" {
   vpc_id = "${aws_vpc.privateweave-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
@@ -48,8 +49,9 @@ resource "aws_route_table" "private-us-test-1a-privateweave-example-com" {
   vpc_id = "${aws_vpc.privateweave-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "private-us-test-1a.privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "private-us-test-1a.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
@@ -57,8 +59,9 @@ resource "aws_route_table" "privateweave-example-com" {
   vpc_id = "${aws_vpc.privateweave-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
@@ -117,8 +120,9 @@ resource "aws_vpc_dhcp_options" "privateweave-example-com" {
   domain_name_servers = ["AmazonProvidedDNS"]
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
