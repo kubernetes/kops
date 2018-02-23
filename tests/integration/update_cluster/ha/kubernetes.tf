@@ -278,8 +278,9 @@ resource "aws_internet_gateway" "ha-example-com" {
   vpc_id = "${aws_vpc.ha-example-com.id}"
 
   tags = {
-    KubernetesCluster = "ha.example.com"
-    Name              = "ha.example.com"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -397,8 +398,9 @@ resource "aws_route_table" "ha-example-com" {
   vpc_id = "${aws_vpc.ha-example-com.id}"
 
   tags = {
-    KubernetesCluster = "ha.example.com"
-    Name              = "ha.example.com"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -606,8 +608,9 @@ resource "aws_vpc_dhcp_options" "ha-example-com" {
   domain_name_servers = ["AmazonProvidedDNS"]
 
   tags = {
-    KubernetesCluster = "ha.example.com"
-    Name              = "ha.example.com"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 

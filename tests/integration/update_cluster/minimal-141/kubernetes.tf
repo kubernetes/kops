@@ -164,8 +164,9 @@ resource "aws_internet_gateway" "minimal-141-example-com" {
   vpc_id = "${aws_vpc.minimal-141-example-com.id}"
 
   tags = {
-    KubernetesCluster = "minimal-141.example.com"
-    Name              = "minimal-141.example.com"
+    KubernetesCluster                               = "minimal-141.example.com"
+    Name                                            = "minimal-141.example.com"
+    "kubernetes.io/cluster/minimal-141.example.com" = "owned"
   }
 }
 
@@ -231,8 +232,9 @@ resource "aws_route_table" "minimal-141-example-com" {
   vpc_id = "${aws_vpc.minimal-141-example-com.id}"
 
   tags = {
-    KubernetesCluster = "minimal-141.example.com"
-    Name              = "minimal-141.example.com"
+    KubernetesCluster                               = "minimal-141.example.com"
+    Name                                            = "minimal-141.example.com"
+    "kubernetes.io/cluster/minimal-141.example.com" = "owned"
   }
 }
 
@@ -402,8 +404,9 @@ resource "aws_vpc_dhcp_options" "minimal-141-example-com" {
   domain_name_servers = ["AmazonProvidedDNS"]
 
   tags = {
-    KubernetesCluster = "minimal-141.example.com"
-    Name              = "minimal-141.example.com"
+    KubernetesCluster                               = "minimal-141.example.com"
+    Name                                            = "minimal-141.example.com"
+    "kubernetes.io/cluster/minimal-141.example.com" = "owned"
   }
 }
 

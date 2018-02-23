@@ -293,8 +293,9 @@ resource "aws_internet_gateway" "privateflannel-example-com" {
   vpc_id = "${aws_vpc.privateflannel-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privateflannel.example.com"
-    Name              = "privateflannel.example.com"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 
@@ -404,8 +405,9 @@ resource "aws_route_table" "private-us-test-1a-privateflannel-example-com" {
   vpc_id = "${aws_vpc.privateflannel-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privateflannel.example.com"
-    Name              = "private-us-test-1a.privateflannel.example.com"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "private-us-test-1a.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 
@@ -413,8 +415,9 @@ resource "aws_route_table" "privateflannel-example-com" {
   vpc_id = "${aws_vpc.privateflannel-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privateflannel.example.com"
-    Name              = "privateflannel.example.com"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 
@@ -690,8 +693,9 @@ resource "aws_vpc_dhcp_options" "privateflannel-example-com" {
   domain_name_servers = ["AmazonProvidedDNS"]
 
   tags = {
-    KubernetesCluster = "privateflannel.example.com"
-    Name              = "privateflannel.example.com"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 

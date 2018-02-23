@@ -289,8 +289,9 @@ resource "aws_internet_gateway" "privatekopeio-example-com" {
   vpc_id = "${aws_vpc.privatekopeio-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privatekopeio.example.com"
-    Name              = "privatekopeio.example.com"
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
 }
 
@@ -395,8 +396,9 @@ resource "aws_route_table" "private-us-test-1a-privatekopeio-example-com" {
   vpc_id = "${aws_vpc.privatekopeio-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privatekopeio.example.com"
-    Name              = "private-us-test-1a.privatekopeio.example.com"
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "private-us-test-1a.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
 }
 
@@ -404,8 +406,9 @@ resource "aws_route_table" "privatekopeio-example-com" {
   vpc_id = "${aws_vpc.privatekopeio-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privatekopeio.example.com"
-    Name              = "privatekopeio.example.com"
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
 }
 
@@ -681,8 +684,9 @@ resource "aws_vpc_dhcp_options" "privatekopeio-example-com" {
   domain_name_servers = ["AmazonProvidedDNS"]
 
   tags = {
-    KubernetesCluster = "privatekopeio.example.com"
-    Name              = "privatekopeio.example.com"
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
 }
 
