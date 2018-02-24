@@ -17,6 +17,8 @@ limitations under the License.
 package gcemodel
 
 import (
+	"fmt"
+
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 )
@@ -37,5 +39,27 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 	c.AddTask(network)
 
+	if b.UseIPAliases() {
+		if len(b.Cluster.Spec.Subnets) != 1 {
+			return fmt.Errorf("expected exactly one subnet for IPAlias mode")
+		}
+		subnet := b.Cluster.Spec.Subnets[0]
+		if subnet.CIDR == "" {
+			return fmt.Errorf("subnet CIDR must be set of IPAlias mode")
+		}
+
+		t := &gcetasks.Subnet{
+			Name:      s(b.NameForIPAliasSubnet()),
+			Network:   b.LinkToNetwork(),
+			Lifecycle: b.Lifecycle,
+			Region:    s(b.Region),
+			CIDR:      s(subnet.CIDR),
+			SecondaryIpRanges: map[string]string{
+				"pods-default":     b.Cluster.Spec.KubeControllerManager.ClusterCIDR,
+				"services-default": b.Cluster.Spec.ServiceClusterIPRange,
+			},
+		}
+		c.AddTask(t)
+	}
 	return nil
 }

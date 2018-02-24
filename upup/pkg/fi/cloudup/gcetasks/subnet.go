@@ -18,6 +18,7 @@ package gcetasks
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
@@ -34,6 +35,8 @@ type Subnet struct {
 	Network *Network
 	Region  *string
 	CIDR    *string
+
+	SecondaryIpRanges map[string]string
 }
 
 var _ fi.CompareWithID = &Subnet{}
@@ -55,9 +58,19 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 
 	actual := &Subnet{}
 	actual.Name = &s.Name
-	actual.Network = &Network{Name: &s.Network}
-	actual.Region = &s.Region
+	actual.Network = &Network{Name: fi.String(lastComponent(s.Network))}
+	actual.Region = fi.String(lastComponent(s.Region))
 	actual.CIDR = &s.IpCidrRange
+
+	if len(s.SecondaryIpRanges) != 0 {
+		actual.SecondaryIpRanges = make(map[string]string)
+		for _, r := range s.SecondaryIpRanges {
+			actual.SecondaryIpRanges[r.RangeName] = r.IpCidrRange
+		}
+	}
+
+	// Prevent spurious changes
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }
@@ -71,28 +84,60 @@ func (_ *Subnet) CheckChanges(a, e, changes *Subnet) error {
 }
 
 func (_ *Subnet) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Subnet) error {
+	project := t.Cloud.Project()
+
 	if a == nil {
 		glog.V(2).Infof("Creating Subnet with CIDR: %q", *e.CIDR)
 
 		subnet := &compute.Subnetwork{
 			IpCidrRange: *e.CIDR,
 			Name:        *e.Name,
-			Network:     *e.Network.Name,
+			Network:     e.Network.URL(project),
 		}
+
+		for k, v := range e.SecondaryIpRanges {
+			subnet.SecondaryIpRanges = append(subnet.SecondaryIpRanges, &compute.SubnetworkSecondaryRange{
+				RangeName:   k,
+				IpCidrRange: v,
+			})
+		}
+
 		_, err := t.Cloud.Compute().Subnetworks.Insert(t.Cloud.Project(), t.Cloud.Region(), subnet).Do()
 		if err != nil {
 			return fmt.Errorf("error creating Subnet: %v", err)
+		}
+	} else {
+		empty := &Network{}
+		if !reflect.DeepEqual(empty, changes) {
+			return fmt.Errorf("cannot apply changes to Subnet: %v", changes)
 		}
 	}
 
 	return nil
 }
 
+func (e *Subnet) URL(project string, region string) string {
+	u := gce.GoogleCloudURL{
+		Version: "beta",
+		Project: project,
+		Name:    *e.Name,
+		Type:    "subnetworks",
+		Region:  region,
+	}
+	return u.BuildURL()
+}
+
 type terraformSubnet struct {
-	Name    *string            `json:"name"`
-	Network *terraform.Literal `json:"network"`
-	Region  *string            `json:"region"`
-	CIDR    *string            `json:"ip_cidr_range"`
+	Name             *string                `json:"name"`
+	Network          *terraform.Literal     `json:"network"`
+	Region           *string                `json:"region"`
+	CIDR             *string                `json:"ip_cidr_range"`
+	SecondaryIPRange []terraformSubnetRange `json:"secondary_ip_range,omitempty"`
+}
+
+type terraformSubnetRange struct {
+	Name string `json:"range_name,omitempty"`
+	CIDR string `json:"ip_cidr_range,omitempty"`
 }
 
 func (_ *Subnet) RenderSubnet(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
@@ -102,6 +147,14 @@ func (_ *Subnet) RenderSubnet(t *terraform.TerraformTarget, a, e, changes *Subne
 		Region:  e.Region,
 		CIDR:    e.CIDR,
 	}
+
+	for k, v := range e.SecondaryIpRanges {
+		tf.SecondaryIPRange = append(tf.SecondaryIPRange, terraformSubnetRange{
+			Name: k,
+			CIDR: v,
+		})
+	}
+
 	return t.RenderResource("google_compute_subnetwork", *e.Name, tf)
 }
 

@@ -42,6 +42,16 @@ func (c *GCEModelContext) NameForNetwork() string {
 	return networkName
 }
 
+// NameForIPAliasSubnet returns the name for the GCE subnet used for ip aliases
+func (c *GCEModelContext) NameForIPAliasSubnet() string {
+	return c.SafeObjectName("default")
+}
+
+// LinkToIPAliasSubnet returns the GCE subnet object used for ip aliases
+func (c *GCEModelContext) LinkToIPAliasSubnet() *gcetasks.Subnet {
+	return &gcetasks.Subnet{Name: s(c.NameForIPAliasSubnet())}
+}
+
 // SafeObjectName returns the object name and cluster name escaped for GCE
 func (c *GCEModelContext) SafeObjectName(name string) string {
 	return gce.SafeObjectName(name, c.Cluster.ObjectMeta.Name)
@@ -69,4 +79,9 @@ func (c *GCEModelContext) NameForIPAddress(id string) string {
 
 func (c *GCEModelContext) NameForFirewallRule(id string) string {
 	return c.SafeObjectName(id)
+}
+
+// UseIPAliases determines whether IP aliases are being used for CIDR to pod mappings
+func (c *GCEModelContext) UseIPAliases() bool {
+	return true
 }
