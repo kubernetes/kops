@@ -1236,6 +1236,7 @@ func autoConvert_v1alpha2_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.IPMasq = in.IPMasq
 	out.IPTables = in.IPTables
 	out.InsecureRegistry = in.InsecureRegistry
+	out.LiveRestore = in.LiveRestore
 	if err := v1.Convert_Pointer_string_To_string(&in.LogDriver, &out.LogDriver, s); err != nil {
 		return err
 	}
@@ -1246,7 +1247,6 @@ func autoConvert_v1alpha2_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.Storage = in.Storage
 	out.StorageOpts = in.StorageOpts
 	out.Version = in.Version
-	out.LiveRestore = in.LiveRestore
 	return nil
 }
 
@@ -1263,6 +1263,7 @@ func autoConvert_kops_DockerConfig_To_v1alpha2_DockerConfig(in *kops.DockerConfi
 	out.IPMasq = in.IPMasq
 	out.IPTables = in.IPTables
 	out.InsecureRegistry = in.InsecureRegistry
+	out.LiveRestore = in.LiveRestore
 	if err := v1.Convert_string_To_Pointer_string(&in.LogDriver, &out.LogDriver, s); err != nil {
 		return err
 	}
@@ -1273,7 +1274,6 @@ func autoConvert_kops_DockerConfig_To_v1alpha2_DockerConfig(in *kops.DockerConfi
 	out.Storage = in.Storage
 	out.StorageOpts = in.StorageOpts
 	out.Version = in.Version
-	out.LiveRestore = in.LiveRestore
 	return nil
 }
 
