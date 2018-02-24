@@ -18,36 +18,22 @@ set -o nounset
 set -o pipefail
 
 KOPS_ROOT=$(git rev-parse --show-toplevel)
+# https://github.com/kubernetes/test-infra/issues/5699#issuecomment-348350792
+cd ${KOPS_ROOT}
 TMP_GOPATH=$(mktemp -d)
-cd "${KOPS_ROOT}"
+
+# manually remove BUILD file for k8s.io/apimachinery/pkg/util/sets/BUILD if it
+# exists; there is a specific set-gen rule that breaks importing
+# ref: https://github.com/kubernetes/kubernetes/blob/4e2f5e2212b05a305435ef96f4b49dc0932e1264/staging/src/k8s.io/apimachinery/pkg/util/sets/BUILD#L23-L49
+# rm -f ${KOPS_ROOT}/vendor/k8s.io/apimachinery/pkg/util/sets/{BUILD,BUILD.bazel}
 
 "${KOPS_ROOT}/hack/go_install_from_commit.sh" \
   github.com/bazelbuild/bazel-gazelle/cmd/gazelle \
   eaa1e87d2a3ca716780ca6650ef5b9b9663b8773 \
   "${TMP_GOPATH}"
 
-
-gazelle_diff=$("${TMP_GOPATH}/bin/gazelle" fix \
+"${TMP_GOPATH}/bin/gazelle" fix \
   -external=vendored \
-  -mode=diff \
+  -mode=fix \
   -proto=disable \
-  -repo_root="${KOPS_ROOT}")
-
-if [[ -n "${gazelle_diff}" ]]; then
-  echo "${gazelle_diff}" >&2
-  echo >&2
-  echo "Run ./hack/update-bazel.sh" >&2
-  exit 1
-fi
-
-# Make sure there are no BUILD files outside vendor - we should only have
-# BUILD.bazel files.
-old_build_files=$(find . -name BUILD \( -type f -o -type l \) \
-  -not -path './vendor/*' | sort)
-if [[ -n "${old_build_files}" ]]; then
-  echo "One or more BUILD files found in the tree:" >&2
-  echo "${old_build_files}" >&2
-  echo >&2
-  echo "Only BUILD.bazel is allowed." >&2
-  exit 1
-fi
+  -repo_root="${KOPS_ROOT}"
