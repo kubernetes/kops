@@ -36,6 +36,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
+        "image_test.go",
         "kubecontrollermanager_test.go",
         "kubelet_test.go",
         "kubescheduler_test.go",
@@ -46,6 +47,7 @@ go_test(
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/util:go_default_library",
         "//pkg/assets:go_default_library",
+        "//util/pkg/vfs:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
 )
