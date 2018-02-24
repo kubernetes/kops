@@ -18,13 +18,12 @@ package digitalocean
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/digitalocean/godo"
 	"github.com/golang/glog"
 	"golang.org/x/oauth2"
-
-	"fmt"
 
 	"k8s.io/api/core/v1"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
