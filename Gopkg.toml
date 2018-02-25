@@ -387,6 +387,3 @@ required = [
 [[override]]
   name = "github.com/sirupsen/logrus"
   revision = "89742aefa4b206dcf400792f3bd35b542998eb3b"
-[[override]]
-  name = "github.com/weaveworks/mesh"
-  revision = "1f158d31de55abf9f97bbaa0a260e2b8023a3785"

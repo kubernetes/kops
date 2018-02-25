@@ -10,7 +10,7 @@ import (
 )
 
 // PeerName must be globally unique and usable as a map key.
-type PeerName string
+type PeerName string2
 
 const (
 	// PeerNameFlavour is the type of peer names we use.

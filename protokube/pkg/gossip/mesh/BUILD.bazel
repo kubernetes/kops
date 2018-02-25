@@ -13,11 +13,11 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//protokube/pkg/gossip:go_default_library",
+        "//protokube/pkg/gossip/mesh/repackaged/weaveworks/mesh:go_default_library",
         "//vendor/github.com/gogo/protobuf/gogoproto:go_default_library",
         "//vendor/github.com/gogo/protobuf/proto:go_default_library",
         "//vendor/github.com/gogo/protobuf/sortkeys:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
-        "//vendor/github.com/weaveworks/mesh:go_default_library",
     ],
 )

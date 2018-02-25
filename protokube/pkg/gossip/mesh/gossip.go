@@ -23,8 +23,8 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/weaveworks/mesh"
 	"k8s.io/kops/protokube/pkg/gossip"
+	"k8s.io/kops/protokube/pkg/gossip/mesh/repackaged/weaveworks/mesh"
 )
 
 type MeshGossiper struct {

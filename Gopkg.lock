@@ -743,11 +743,6 @@
   revision = "b8b228cfbad7f0a69ed90393ca9aee085d3c6ef1"
 
 [[projects]]
-  name = "github.com/weaveworks/mesh"
-  packages = ["."]
-  revision = "1f158d31de55abf9f97bbaa0a260e2b8023a3785"
-
-[[projects]]
   name = "golang.org/x/crypto"
   packages = [
     "curve25519",
@@ -1540,6 +1535,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "44436cf800022ae978ae92627ffb7855936a7574f8bb041bca837216aa1456e4"
+  inputs-digest = "08a01727f305c4359ecb1c2dcedd4645cd3fa185e2370694a22760519e89c69b"
   solver-name = "gps-cdcl"
   solver-version = 1
