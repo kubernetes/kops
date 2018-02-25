@@ -418,6 +418,15 @@ func (in *CloudControllerManagerConfig) DeepCopyInto(out *CloudControllerManager
 			**out = **in
 		}
 	}
+	if in.CIDRAllocatorType != nil {
+		in, out := &in.CIDRAllocatorType, &out.CIDRAllocatorType
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
 	if in.LeaderElection != nil {
 		in, out := &in.LeaderElection, &out.LeaderElection
 		if *in == nil {
@@ -1863,6 +1872,15 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 			*out = nil
 		} else {
 			*out = new(bool)
+			**out = **in
+		}
+	}
+	if in.CIDRAllocatorType != nil {
+		in, out := &in.CIDRAllocatorType, &out.CIDRAllocatorType
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
 			**out = **in
 		}
 	}
