@@ -1,5 +1,3 @@
-// +build peer_name_hash
-
 package mesh
 
 // Let peer names be SHA256 hashes of anything, provided they are unique.
@@ -10,7 +8,7 @@ import (
 )
 
 // PeerName must be globally unique and usable as a map key.
-type PeerName string2
+type PeerName string
 
 const (
 	// PeerNameFlavour is the type of peer names we use.
