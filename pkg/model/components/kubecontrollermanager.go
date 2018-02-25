@@ -152,6 +152,10 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		kcm.ConfigureCloudRoutes = fi.Bool(true)
 
 		// TODO: Should this be a new networking mode (gce?)
+		// Notes: we need to set nonMasqueradeCIDR to 10.64.0.0/11
+		// We need to set subnet CIDR to 10.40.0.0/19
+		// Conversion is impossible for users using 100.64.0.0
+		// TODO: We need to delete subnets
 		switch kops.CloudProviderID(clusterSpec.CloudProvider) {
 		case kops.CloudProviderGCE:
 			kcm.ConfigureCloudRoutes = fi.Bool(false)
