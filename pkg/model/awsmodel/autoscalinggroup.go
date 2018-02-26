@@ -89,7 +89,9 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			if ig.Spec.SecurityGroup != nil {
 				t.SecurityGroups = []*awstasks.SecurityGroup{
 					{
-						Name: ig.Spec.SecurityGroup,
+						Name:   ig.Spec.SecurityGroup,
+						ID:     ig.Spec.SecurityGroup,
+						Shared: fi.Bool(true),
 					},
 				}
 			}
