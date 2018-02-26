@@ -52,7 +52,6 @@ go_test(
         "aws_utils_test.go",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/upup/pkg/fi/cloudup/awsup",
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",

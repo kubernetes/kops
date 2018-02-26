@@ -3,7 +3,6 @@ load("@io_bazel_rules_go//go:def.bzl", "go_test")
 go_test(
     name = "go_default_test",
     srcs = ["componentconfig_test.go"],
-    importpath = "k8s.io/kops/tests/codecs",
     deps = [
         "//pkg/apis/kops/v1alpha2:go_default_library",
         "//pkg/diff:go_default_library",

@@ -28,7 +28,6 @@ go_test(
     name = "go_default_test",
     srcs = ["rollingupdate_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/pkg/instancegroups",
     deps = [
         "//cloudmock/aws/mockautoscaling:go_default_library",
         "//pkg/apis/kops:go_default_library",

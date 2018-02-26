@@ -23,6 +23,5 @@ go_library(
 go_binary(
     name = "protokube",
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/protokube/cmd/protokube",
     visibility = ["//visibility:public"],
 )

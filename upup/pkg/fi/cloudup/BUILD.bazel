@@ -93,7 +93,6 @@ go_test(
         "//upup/pkg/fi/cloudup/tests:exported_testdata",  # keep
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/upup/pkg/fi/cloudup",
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/validation:go_default_library",

@@ -24,5 +24,4 @@ go_test(
     size = "small",
     srcs = ["gce_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/pkg/resources/gce",
 )
