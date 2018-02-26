@@ -416,6 +416,10 @@ func Convert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *Cali
 
 func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha2_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
 	out.CrossSubnet = in.CrossSubnet
+	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
+	out.PrometheusMetricsPort = in.PrometheusMetricsPort
+	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
+	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
 	return nil
 }
 
