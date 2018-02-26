@@ -26,12 +26,12 @@ import (
 )
 
 var (
-	set_long = templates.LongDesc(i18n.T(`Set a configuration field.
+	setLong = templates.LongDesc(i18n.T(`Set a configuration field.
 
         kops set does not update the cloud resources, to apply the changes use "kops update cluster".
     `))
 
-	set_example = templates.Examples(i18n.T(`
+	setExample = templates.Examples(i18n.T(`
     # Set cluster to run kubernetes version 1.10.0
     kops set cluster k8s-cluster.example.com cluster.spec.kubernetesVersion=1.10.0
 	`))
@@ -41,8 +41,8 @@ func NewCmdSet(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "set",
 		Short:   i18n.T("Set fields on clusters and other resources."),
-		Long:    set_long,
-		Example: set_example,
+		Long:    setLong,
+		Example: setExample,
 	}
 
 	// create subcommands
