@@ -48,6 +48,8 @@ type AutoscalingGroup struct {
 	Metrics     []string
 
 	LaunchConfiguration *LaunchConfiguration
+
+	SuspendProcesses []string
 }
 
 var _ fi.CompareWithID = &AutoscalingGroup{}
@@ -304,6 +306,21 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 	}
 
+	if e.SuspendProcesses != nil {
+		processQuery := &autoscaling.ScalingProcessQuery{}
+		processQuery.AutoScalingGroupName = e.Name
+		processQuery.ScalingProcesses = []*string{}
+
+		for _, p := range e.SuspendProcesses {
+			processQuery.ScalingProcesses = append(processQuery.ScalingProcesses, &p)
+		}
+
+		_, err := t.Cloud.Autoscaling().SuspendProcesses(processQuery)
+		if err != nil {
+			return fmt.Errorf("error suspending processes: %v", err)
+		}
+	}
+
 	// TODO: Use PropagateAtLaunch = false for tagging?
 
 	return nil // We have
@@ -341,9 +358,11 @@ type terraformAutoscalingGroup struct {
 	Tags                    []*terraformASGTag   `json:"tag,omitempty"`
 	MetricsGranularity      *string              `json:"metrics_granularity,omitempty"`
 	EnabledMetrics          []*string            `json:"enabled_metrics,omitempty"`
+	SuspendedProcesses      []*string            `json:"suspended_processes, omitempty"`
 }
 
 func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *AutoscalingGroup) error {
+
 	tf := &terraformAutoscalingGroup{
 		Name:                    e.Name,
 		MinSize:                 e.MinSize,
@@ -404,6 +423,14 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 			}
 		}
 	}
+
+	var processes []*string
+	if e.SuspendProcesses != nil {
+		for _, p := range e.SuspendProcesses {
+			processes = append(processes, fi.String(p))
+		}
+	}
+	tf.SuspendedProcesses = processes
 
 	return t.RenderResource("aws_autoscaling_group", *e.Name, tf)
 }
