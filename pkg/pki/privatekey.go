@@ -47,9 +47,9 @@ func ParsePEMPrivateKey(data []byte) (*PrivateKey, error) {
 func GeneratePrivateKey() (*PrivateKey, error) {
 	var rsaKeySize int64 = 2048
 
-	if os.Getenv("RSA_PRIVATE_KEY_SIZE") != "" {
+	if os.Getenv("KOPS_RSA_PRIVATE_KEY_SIZE") != "" {
 		var intErr error
-		rsaKeySize, intErr = strconv.ParseInt(os.Getenv("RSA_PRIVATE_KEY_SIZE"), 0, 0)
+		rsaKeySize, intErr = strconv.ParseInt(os.Getenv("KOPS_RSA_PRIVATE_KEY_SIZE"), 0, 0)
 		if intErr != nil {
 			return nil, fmt.Errorf("error getting RSA private key size: %v", intErr)
 		}
