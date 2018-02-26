@@ -19,6 +19,9 @@ This addon requires [additional IAM permissions](../../docs/iam_roles.md) on the
 The required permissions are described [here](https://github.com/wearemolecule/route53-kubernetes).
 These can be configured using `kops edit cluster` or `kops create -f [...]`.
 
+**Important:**
+In case when the zone used is a sub-zone of a master zone i.e. there is a `NS` record in the master pointing to the private zone `NS` records, the Route53 IAM permissions on the master nodes need to be applied to **both** master and slave zone. Additionally to the Route53 requirements described in [additional IAM permissions](../../docs/iam_roles.md) the `route53:ListHostedZonesByName` needs to be added to the list.
+
 ### Service Configuration
 
 Add the `dns: route53` label and your target DNS entry in a `domainName`
