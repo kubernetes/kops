@@ -26,12 +26,12 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/edit"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -99,13 +99,9 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		return err
 	}
 
-	list, err := clientset.InstanceGroupsFor(oldCluster).List(metav1.ListOptions{})
+	instanceGroups, err := commands.ReadAllInstanceGroups(clientset, oldCluster)
 	if err != nil {
 		return err
-	}
-	var instancegroups []*api.InstanceGroup
-	for i := range list.Items {
-		instancegroups = append(instancegroups, &list.Items[i])
 	}
 
 	var (
@@ -222,7 +218,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 			continue
 		}
 
-		err = validation.DeepValidate(fullCluster, instancegroups, true)
+		err = validation.DeepValidate(fullCluster, instanceGroups, true)
 		if err != nil {
 			results = editResults{
 				file: file,
@@ -238,7 +234,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		}
 
 		// Retrieve the current status of the cluster.  This will eventually be part of the cluster object.
-		statusDiscovery := &cloudDiscoveryStatusStore{}
+		statusDiscovery := &commands.CloudDiscoveryStatusStore{}
 		status, err := statusDiscovery.FindClusterStatus(oldCluster)
 		if err != nil {
 			return err
