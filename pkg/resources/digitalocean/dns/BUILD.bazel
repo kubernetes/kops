@@ -20,7 +20,6 @@ go_test(
     size = "small",
     srcs = ["dns_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/pkg/resources/digitalocean/dns",
     deps = [
         "//dnsprovider/pkg/dnsprovider/rrstype:go_default_library",
         "//vendor/github.com/digitalocean/godo:go_default_library",

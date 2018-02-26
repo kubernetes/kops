@@ -22,6 +22,5 @@ go_library(
 go_binary(
     name = "kops-api-example",
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/examples/kops-api-example",
     visibility = ["//visibility:public"],
 )

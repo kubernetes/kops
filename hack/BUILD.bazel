@@ -1,6 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-
 # this does not work, and I am uncertain we will need it
 #sh_test(
 #    name = "verify-packages",
@@ -29,4 +28,3 @@ test_suite(
         "verify-gofmt",
     ],
 )
-

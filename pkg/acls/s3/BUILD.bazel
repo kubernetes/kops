@@ -18,7 +18,6 @@ go_test(
     name = "go_default_test",
     srcs = ["storage_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/pkg/acls/s3",
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/values:go_default_library",
