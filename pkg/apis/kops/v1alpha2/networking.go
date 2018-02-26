@@ -70,6 +70,16 @@ type FlannelNetworkingSpec struct {
 // CalicoNetworkingSpec declares that we want Calico networking
 type CalicoNetworkingSpec struct {
 	CrossSubnet bool `json:"crossSubnet,omitempty"` // Enables Calico's cross-subnet mode when set to true
+	// PrometheusMetricsEnabled can be set to enable the experimental Prometheus
+	// metrics server (default: false)
+	PrometheusMetricsEnabled bool `json:"prometheusMetricsEnabled,omitempty"`
+	// PrometheusMetricsPort is the TCP port that the experimental Prometheus
+	// metrics server should bind to (default: 9091)
+	PrometheusMetricsPort int32 `json:"prometheusMetricsPort,omitempty"`
+	// PrometheusGoMetricsEnabled enables Prometheus Go runtime metrics collection
+	PrometheusGoMetricsEnabled bool `json:"prometheusGoMetricsEnabled,omitempty"`
+	// PrometheusProcessMetricsEnabled enables Prometheus process metrics collection
+	PrometheusProcessMetricsEnabled bool `json:"prometheusProcessMetricsEnabled,omitempty"`
 }
 
 // CanalNetworkingSpec declares that we want Canal networking
