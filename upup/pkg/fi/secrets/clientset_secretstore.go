@@ -17,6 +17,7 @@ limitations under the License.
 package secrets
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -89,7 +90,7 @@ func (c *ClientsetSecretStore) MirrorTo(basedir vfs.Path) error {
 			return err
 		}
 
-		if err := p.WriteFile(data, acl); err != nil {
+		if err := p.WriteFile(bytes.NewReader(data), acl); err != nil {
 			return fmt.Errorf("error writing secret to %q: %v", p, err)
 		}
 	}

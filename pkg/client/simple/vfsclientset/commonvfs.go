@@ -162,10 +162,11 @@ func (c *commonVFS) writeConfig(cluster *kops.Cluster, configPath vfs.Path, o ru
 		return err
 	}
 
+	rs := bytes.NewReader(data)
 	if create {
-		err = configPath.CreateFile(data, acl)
+		err = configPath.CreateFile(rs, acl)
 	} else {
-		err = configPath.WriteFile(data, acl)
+		err = configPath.WriteFile(rs, acl)
 	}
 	if err != nil {
 		if create && os.IsExist(err) {

@@ -17,6 +17,7 @@ limitations under the License.
 package registry
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -81,10 +82,11 @@ func WriteConfigDeprecated(cluster *kops.Cluster, configPath vfs.Path, config in
 		return err
 	}
 
+	rs := bytes.NewReader(data)
 	if create {
-		err = configPath.CreateFile(data, acl)
+		err = configPath.CreateFile(rs, acl)
 	} else {
-		err = configPath.WriteFile(data, acl)
+		err = configPath.WriteFile(rs, acl)
 	}
 	if err != nil {
 		return fmt.Errorf("error writing configuration file %s: %v", configPath, err)
