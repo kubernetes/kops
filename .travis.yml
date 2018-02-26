@@ -5,6 +5,9 @@ os:
 go:
   - 1.8
   - 1.9
+  - "1.10"
+# removed because of govet issue with apimahcinery
+#  - tip
 
 go_import_path: k8s.io/kops
 
