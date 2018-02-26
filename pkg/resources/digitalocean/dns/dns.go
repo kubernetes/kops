@@ -17,18 +17,64 @@ limitations under the License.
 package dns
 
 import (
+	"errors"
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/digitalocean/godo"
 	"github.com/digitalocean/godo/context"
 
 	"github.com/golang/glog"
 
+	"golang.org/x/oauth2"
+
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 )
 
-const ipPlaceholder = "203.0.113.123"
+const (
+	ipPlaceholder = "203.0.113.123"
+	providerName  = "digitalocean"
+)
+
+func init() {
+	dnsprovider.RegisterDnsProvider(providerName, func(config io.Reader) (dnsprovider.Interface, error) {
+		client, err := newClient()
+		if err != nil {
+			return nil, err
+		}
+
+		return NewProvider(client), nil
+	})
+}
+
+// TokenSource implements oauth2.TokenSource
+type TokenSource struct {
+	AccessToken string
+}
+
+// Token() returns oauth2.Token
+func (t *TokenSource) Token() (*oauth2.Token, error) {
+	token := &oauth2.Token{
+		AccessToken: t.AccessToken,
+	}
+	return token, nil
+}
+
+func newClient() (*godo.Client, error) {
+	accessToken := os.Getenv("DO_ACCESS_TOKEN")
+	if accessToken == "" {
+		return nil, errors.New("DO_ACCESS_TOKEN is required")
+	}
+
+	tokenSource := &TokenSource{
+		AccessToken: accessToken,
+	}
+
+	oauthClient := oauth2.NewClient(oauth2.NoContext, tokenSource)
+	return godo.NewClient(oauthClient), nil
+}
 
 // DNS implements dnsprovider.Interface
 type DNS struct {
