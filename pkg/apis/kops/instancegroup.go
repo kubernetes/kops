@@ -114,6 +114,8 @@ type InstanceGroupSpec struct {
 	Taints []string `json:"taints,omitempty"`
 	// AdditionalUserData is any aditional user-data to be passed to the host
 	AdditionalUserData []UserData `json:"additionalUserData,omitempty"`
+	// SuspendProcesses disables the listed Scaling Policies
+	SuspendProcesses []string `json:"suspendProcesses,omitempty"`
 }
 
 // UserData defines a user-data section

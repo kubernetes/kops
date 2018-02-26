@@ -219,7 +219,7 @@ spec:
 Kops utilizes cloud-init to initialize and setup a host at boot time. However in certain cases you may already be leaveraging certain features of cloud-init in your infrastructure and would like to continue doing so. More information on cloud-init can be found [here](http://cloudinit.readthedocs.io/en/latest/)
 
 
-Aditional user-user data can be passed to the host provisioning by setting the `AdditionalUserData` field. A list of valid user-data content-types can be found [here](http://cloudinit.readthedocs.io/en/latest/topics/format.html#mime-multi-part-archive) 
+Aditional user-user data can be passed to the host provisioning by setting the `AdditionalUserData` field. A list of valid user-data content-types can be found [here](http://cloudinit.readthedocs.io/en/latest/topics/format.html#mime-multi-part-archive)
 
 Example:
 ```
@@ -252,7 +252,7 @@ If you need to add tags on auto scaling groups or instances (propagate ASG tags)
 apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
-  labels: 
+  labels:
     kops.k8s.io/cluster: k8s.dev.local
   name: nodes
 spec:
@@ -264,4 +264,30 @@ spec:
   maxSize: 20
   minSize: 2
   role: Node
+```
+
+## Suspending Scaling Processes on AWS Autoscaling groups
+
+Autoscaling groups automatically include multiple [scaling processes](https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html#process-types)
+that keep our ASGs healthy.  In some cases, you may want to disable certain scaling activities.
+
+An example of this is if you are running multiple AZs in an ASG while using a Kubernetes Autoscaler.
+The autoscaler will remove specific instances that are not being used.  In some cases, the `AZRebalance` process
+will rescale the ASG without warning.
+
+```
+# Example for nodes
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: k8s.dev.local
+  name: nodes
+spec:
+  machineType: m4.xlarge
+  maxSize: 20
+  minSize: 2
+  role: Node
+  suspendProcesses:
+  - AZRebalance
 ```

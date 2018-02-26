@@ -224,6 +224,12 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			t.Tags = tags
 
+			if ig.Spec.SuspendProcesses != nil {
+				for _, p := range ig.Spec.SuspendProcesses {
+					t.SuspendProcesses = append(t.SuspendProcesses, p)
+				}
+			}
+
 			c.AddTask(t)
 		}
 	}
