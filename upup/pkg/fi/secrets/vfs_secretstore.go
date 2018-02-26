@@ -17,6 +17,7 @@ limitations under the License.
 package secrets
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -188,8 +189,9 @@ func (c *VFSSecretStore) createSecret(s *fi.Secret, p vfs.Path, acl vfs.ACL, rep
 		return fmt.Errorf("error serializing secret: %v", err)
 	}
 
+	rs := bytes.NewReader(data)
 	if replace {
-		return p.WriteFile(data, acl)
+		return p.WriteFile(rs, acl)
 	}
-	return p.CreateFile(data, acl)
+	return p.CreateFile(rs, acl)
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"bytes"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -97,7 +98,7 @@ func TestImage(t *testing.T) {
 				t.Errorf("error building vfs path for %s: %v", k, err)
 				continue
 			}
-			if err := p.WriteFile([]byte(v), nil); err != nil {
+			if err := p.WriteFile(bytes.NewReader([]byte(v)), nil); err != nil {
 				t.Errorf("error writing vfs path %s: %v", k, err)
 				continue
 			}

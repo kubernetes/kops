@@ -149,7 +149,7 @@ func RunToolboxBundle(context Factory, out io.Writer, options *ToolboxBundleOpti
 		}
 		p := root.Join("etc", "kubernetes", "bootstrap", file.Header.Name)
 		glog.Infof("writing %s", p)
-		if err := p.WriteFile(file.Data, sshAcl); err != nil {
+		if err := p.WriteFile(bytes.NewReader(file.Data), sshAcl); err != nil {
 			return fmt.Errorf("error writing file %q: %v", file.Header.Name, err)
 		}
 	}

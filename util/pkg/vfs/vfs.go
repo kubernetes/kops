@@ -52,9 +52,9 @@ type Path interface {
 	// As this reads the entire file into memory, consider using WriteTo for bigger files
 	ReadFile() ([]byte, error)
 
-	WriteFile(data []byte, acl ACL) error
+	WriteFile(data io.ReadSeeker, acl ACL) error
 	// CreateFile writes the file contents, but only if the file does not already exist
-	CreateFile(data []byte, acl ACL) error
+	CreateFile(data io.ReadSeeker, acl ACL) error
 
 	// Remove deletes the file
 	Remove() error
