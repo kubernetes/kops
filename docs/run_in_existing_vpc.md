@@ -3,75 +3,74 @@
 When launching into a shared VPC, the VPC & the Internet Gateway will be reused. By default we create a new subnet per zone,
 and a new route table, but you can also use a shared subnet (see [below](#shared-subnets)).
 
-Use kops create cluster with the `--vpc` argument for your existing VPC:
+1. Use `kops create cluster` with the `--vpc` argument for your existing VPC:
 
+  ```shell
+  export KOPS_STATE_STORE=s3://<somes3bucket>
+  export CLUSTER_NAME=<sharedvpc.mydomain.com>
+  export VPC_ID=vpc-12345678 # replace with your VPC id
+  export NETWORK_CIDR=10.100.0.0/16 # replace with the cidr for the VPC ${VPC_ID}
 
-```
-export KOPS_STATE_STORE=s3://<somes3bucket>
-export CLUSTER_NAME=<sharedvpc.mydomain.com>
-export VPC_ID=vpc-12345678 # replace with your VPC id
-export NETWORK_CIDR=10.100.0.0/16 # replace with the cidr for the VPC ${VPC_ID}
+  kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} --vpc=${VPC_ID}
+  ```
 
-kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} --vpc=${VPC_ID}
-```
+2. Then `kops edit cluster ${CLUSTER_NAME}` will show you something like:
 
-Then `kops edit cluster ${CLUSTER_NAME}` will show you something like:
+  ```yaml
+  metadata:
+    creationTimestamp: "2016-06-27T14:23:34Z"
+    name: ${CLUSTER_NAME}
+  spec:
+    cloudProvider: aws
+    networkCIDR: ${NETWORK_CIDR}
+    networkID: ${VPC_ID}
+    nonMasqueradeCIDR: 100.64.0.0/10
+    subnets:
+    - cidr: 172.20.32.0/19
+      name: us-east-1b
+      type: Public
+      zone: us-east-1b
+  ```
 
-```
-metadata:
-  creationTimestamp: "2016-06-27T14:23:34Z"
-  name: ${CLUSTER_NAME}
-spec:
-  cloudProvider: aws
-  networkCIDR: ${NETWORK_CIDR}
-  networkID: ${VPC_ID}
-  nonMasqueradeCIDR: 100.64.0.0/10
-  subnets:
-  - cidr: 172.20.32.0/19
-    name: us-east-1b
-    type: Public
-    zone: us-east-1b
-```
+  Verify that `networkCIDR` & `networkID` match your VPC CIDR & ID. 
+  You likely need to set the CIDR on each of the Zones, because subnets in a VPC cannot overlap.
 
+3. You can then run `kops update cluster` in preview mode (without `--yes`). 
+  You don't need any arguments, because they're all in the cluster spec:
 
-Verify that networkCIDR & networkID match your VPC CIDR & ID.  You likely need to set the CIDR on each of the Zones,
-because subnets in a VPC cannot overlap.
+  ```shell
+  kops update cluster ${CLUSTER_NAME}
+  ```
 
-You can then run `kops update cluster` in preview mode (without --yes).  You don't need any arguments,
-because they're all in the cluster spec:
+  Review the changes to make sure they are OK - the Kubernetes settings might 
+   not be ones you want on a shared VPC (in which case, open an issue!)
 
-```
-kops update cluster ${CLUSTER_NAME}
-```
+  **Note also the Kubernetes VPCs (currently) require `EnableDNSHostnames=true`. kops will detect the required change,
+   but refuse to make it automatically because it is a shared VPC. Please review the implications and make the change
+   to the VPC manually.**
 
-Review the changes to make sure they are OK -  the Kubernetes settings might not be ones you want on a shared VPC (in which case,
-open an issue!)
+4. Once you're happy, you can create the cluster using:
 
-Note also the Kubernetes VPCs (currently) require `EnableDNSHostnames=true`.  kops will detect the required change,
- but refuse to make it automatically because it is a shared VPC.  Please review the implications and make the change
- to the VPC manually.
+  ```shell
+  kops update cluster ${CLUSTER_NAME} --yes
+  ```
 
-Once you're happy, you can create the cluster using:
+  This will add an additional Tag to your aws vpc resource. This tag
+  will be removed automatically if you delete your kops cluster.
 
-```
-kops update cluster ${CLUSTER_NAME} --yes
-```
+  ```
+  "kubernetes.io/cluster/<cluster-name>" = "shared"
+  ```
 
-This will add an additional Tag to your aws vpc resource. This tag
-will be removed automatically if you delete your kops cluster.
-```
-"kubernetes.io/cluster/<cluster-name>" = "shared"
-```
-
-Prior to kops 1.8 this Tag Key was `KubernetesCluster` which is obsolete and should
-not be used anymore as it only supports one cluster.
+  **Prior to kops 1.8 this Tag Key was `KubernetesCluster` which is obsolete and should
+  not be used anymore as it only supports one cluster.**
 
 
 ### VPC with multiple CIDRs
 
 AWS now allows you to add more CIDRs to a VPC, the param `AdditionalNetworkCIDRs` allows you to specify any additional CIDRs added to the VPC.
 
-```
+```yaml
 metadata:
   creationTimestamp: "2016-06-27T14:23:34Z"
   name: ${CLUSTER_NAME}
@@ -95,72 +94,75 @@ spec:
 ```
 
 
-
 ## Advanced Options for Creating Clusters in Existing VPCs
 
 ### Shared Subnets
 
 `kops` can create a cluster in shared subnets in both public and private network [topologies](topology.md). Doing so is not recommended unless you are using [external networking](networking.md#supported-cni-networking)
 
-Use kops create cluster with the `--subnets` argument for your existing subnets:
+1. Use kops create cluster with the `--subnets` argument for your existing subnets:
 
-```
-export KOPS_STATE_STORE=s3://<somes3bucket>
-export CLUSTER_NAME=<sharedvpc.mydomain.com>
-export VPC_ID=vpc-12345678 # replace with your VPC id
-export NETWORK_CIDR=10.100.0.0/16 # replace with the cidr for the VPC ${VPC_ID}
-export SUBNET_ID=subnet-12345678 # replace with your subnet id
-export SUBNET_CIDR=10.100.0.0/24 # replace with your subnet CIDR
-export SUBNET_IDS=$SUBNET_IDS # replace with your comma separated subnet ids
+  ```shell
+  export KOPS_STATE_STORE=s3://<somes3bucket>
+  export CLUSTER_NAME=<sharedvpc.mydomain.com>
+  export VPC_ID=vpc-12345678 # replace with your VPC id
+  export NETWORK_CIDR=10.100.0.0/16 # replace with the cidr for the VPC ${VPC_ID}
+  export SUBNET_ID=subnet-12345678 # replace with your subnet id
+  export SUBNET_CIDR=10.100.0.0/24 # replace with your subnet CIDR
+  export SUBNET_IDS=$SUBNET_IDS # replace with your comma separated subnet ids
 
-kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} --subnets=${SUBNET_IDS}
-```
+  kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} --subnets=${SUBNET_IDS}
+  ```
 
-`--vpc` is optional when specifying `--subnets`. When creating a cluster with a private topology and shared subnets, the utility subnets should be specified similarly with `--utility-subnets`.
+  `--vpc` is optional when specifying `--subnets`. When creating a cluster with a 
+  private topology and shared subnets, the utility subnets should be specified similarly with `--utility-subnets`.
 
-Then `kops edit cluster ${CLUSTER_NAME}` will show you something like:
+2. Then `kops edit cluster ${CLUSTER_NAME}` will show you something like:
 
-```
-metadata:
-  creationTimestamp: "2016-06-27T14:23:34Z"
-  name: ${CLUSTER_NAME}
-spec:
-  cloudProvider: aws
-  networkCIDR: ${NETWORK_CIDR}
-  networkID: ${VPC_ID}
-  nonMasqueradeCIDR: 100.64.0.0/10
-  subnets:
-  - cidr: ${SUBNET_CIDR}
-    id: ${SUBNET_ID}
-    name: us-east-1b
-    type: Public
-    zone: us-east-1b
-```
+  ```
+  metadata:
+    creationTimestamp: "2016-06-27T14:23:34Z"
+    name: ${CLUSTER_NAME}
+  spec:
+    cloudProvider: aws
+    networkCIDR: ${NETWORK_CIDR}
+    networkID: ${VPC_ID}
+    nonMasqueradeCIDR: 100.64.0.0/10
+    subnets:
+    - cidr: ${SUBNET_CIDR}
+      id: ${SUBNET_ID}
+      name: us-east-1b
+      type: Public
+      zone: us-east-1b
+  ```
 
-Once you're happy, you can create the cluster using:
+3. Once you're happy, you can create the cluster using:
 
-```
-kops update cluster ${CLUSTER_NAME} --yes
-```
+  ```
+  kops update cluster ${CLUSTER_NAME} --yes
+  ```
 
-If you run in AWS private topology with shared subnets, and you would like Kubernetes to provision resources in these shared subnets, you must create tags on them.
-This is important, for example, if your `utility` subnets are shared, you will not be able to launch any services that create Elastic Load Balancers (ELBs).
-Prior to kops 1.8 `KubernetesCluster` tag was used for this. This lead to several problems if there were more than one Kubernetes Cluster in a subnet.
-After you upgraded to kops 1.8 remove `KubernetesCluster` Tag from subnets otherwise `kubernetes.io/cluster/<clustername>` won't have any effect!
+  **If you run in AWS private topology with shared subnets, and you would like Kubernetes to provision resources in these shared subnets, you must create tags on them.**
+  
+  **This is important, for example, if your `utility` subnets are shared, you will not be able to launch any services that create Elastic Load Balancers (ELBs).**
+  
+  **Prior to kops 1.8 `KubernetesCluster` tag was used for this. This lead to several problems if there were more than one Kubernetes Cluster in a subnet.**
+  
+  **After you upgraded to kops 1.8 remove `KubernetesCluster` Tag from subnets otherwise `kubernetes.io/cluster/<clustername>` won't have any effect!**
 
-These are currently needed Tags on shared resources:
+  **These are currently needed Tags on shared resources:**
 
-Public Subnets:
-```
-"kubernetes.io/cluster/<cluster-name>" = "shared"
-"kubernetes.io/role/elb"               = "1"
-```
+  Public Subnets:
+  ```
+  "kubernetes.io/cluster/<cluster-name>" = "shared"
+  "kubernetes.io/role/elb"               = "1"
+  ```
 
-Private Subnets:
-```
-"kubernetes.io/cluster/<cluster-name>" = "shared"
-"kubernetes.io/role/internal-elb"      = "1"
-```
+  Private Subnets:
+  ```
+  "kubernetes.io/cluster/<cluster-name>" = "shared"
+  "kubernetes.io/role/internal-elb"      = "1"
+  ```
 
 
 ### Shared NAT Gateways
