@@ -145,7 +145,7 @@ func parseKeyset(o *kops.Keyset) (*keyset, error) {
 			id: key.Id,
 		}
 		if len(key.PublicMaterial) != 0 {
-			cert, err := pki.LoadPEMCertificate(key.PublicMaterial)
+			cert, err := pki.ParsePEMCertificate(key.PublicMaterial)
 			if err != nil {
 				glog.Warningf("key public material was %s", key.PublicMaterial)
 				return nil, fmt.Errorf("error loading certificate %s/%s: %v", name, key.Id, err)
