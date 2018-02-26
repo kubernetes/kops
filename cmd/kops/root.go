@@ -140,6 +140,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdUpdate(f, out))
 	cmd.AddCommand(NewCmdReplace(f, out))
 	cmd.AddCommand(NewCmdRollingUpdate(f, out))
+	cmd.AddCommand(NewCmdSet(f, out))
 	cmd.AddCommand(NewCmdToolbox(f, out))
 	cmd.AddCommand(NewCmdValidate(f, out))
 
@@ -207,8 +208,16 @@ func (c *RootCmd) ClusterName() string {
 		return c.clusterName
 	}
 
+	c.clusterName = ClusterNameFromKubecfg()
+
+	return c.clusterName
+}
+
+func ClusterNameFromKubecfg() string {
 	// Read from kubeconfig
 	pathOptions := clientcmd.NewDefaultPathOptions()
+
+	clusterName := ""
 
 	config, err := pathOptions.GetStartingConfig()
 	if err != nil {
@@ -223,7 +232,7 @@ func (c *RootCmd) ClusterName() string {
 			glog.Warningf("context %q in kubecfg did not have a cluster", config.CurrentContext)
 		} else {
 			fmt.Fprintf(os.Stderr, "Using cluster from kubectl context: %s\n\n", context.Cluster)
-			c.clusterName = context.Cluster
+			clusterName = context.Cluster
 		}
 	}
 
@@ -235,7 +244,7 @@ func (c *RootCmd) ClusterName() string {
 	//	c.clusterName = config.Name
 	//}
 
-	return c.clusterName
+	return clusterName
 }
 
 func readKubectlClusterConfig() (*kubeconfig.KubectlClusterWithName, error) {
