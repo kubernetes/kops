@@ -30,13 +30,13 @@ import (
 )
 
 var (
-	set_cluster_long = templates.LongDesc(i18n.T(`Set a cluster field value.
+	setClusterLong = templates.LongDesc(i18n.T(`Set a cluster field value.
 
         This command changes the desired cluster configuration in the registry.
 
         kops set does not update the cloud resources, to apply the changes use "kops update cluster".`))
 
-	set_cluster_example = templates.Examples(i18n.T(`
+	setClusterExample = templates.Examples(i18n.T(`
 		# Set cluster to run kubernetes version 1.10.0
 		kops set cluster k8s.cluster.site spec.kubernetesVersion=1.10.0
 	`))
@@ -49,8 +49,8 @@ func NewCmdSetCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "cluster",
 		Short:   i18n.T("Set cluster fields."),
-		Long:    set_cluster_long,
-		Example: set_cluster_example,
+		Long:    setClusterLong,
+		Example: setClusterExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			for i, arg := range args {
 				index := strings.Index(arg, "=")
