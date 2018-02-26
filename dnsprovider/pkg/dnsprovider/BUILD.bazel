@@ -19,6 +19,5 @@ go_test(
     name = "go_default_test",
     srcs = ["dns_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/dnsprovider/pkg/dnsprovider",
     deps = ["//dnsprovider/pkg/dnsprovider/rrstype:go_default_library"],
 )

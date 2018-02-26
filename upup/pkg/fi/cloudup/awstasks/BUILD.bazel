@@ -99,7 +99,6 @@ go_test(
         "vpc_test.go",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/upup/pkg/fi/cloudup/awstasks",
     deps = [
         "//cloudmock/aws/mockec2:go_default_library",
         "//pkg/apis/kops:go_default_library",

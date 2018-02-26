@@ -118,7 +118,6 @@ go_library(
 go_binary(
     name = "kops",
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/cmd/kops",
     visibility = ["//visibility:public"],
     x_defs = {
         "k8s.io/kops.Version": "{KOPS_VERSION}",  # keep
@@ -142,7 +141,6 @@ go_test(
         "//tests/integration/update_cluster:exported_testdata",  # keep
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/cmd/kops",
     deps = [
         "//cmd/kops/util:go_default_library",
         "//pkg/apis/kops:go_default_library",

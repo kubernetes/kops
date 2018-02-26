@@ -4,7 +4,6 @@ go_test(
     name = "go_default_test",
     srcs = ["integration_test.go"],
     data = glob(["main/*"]),  #keep
-    importpath = "k8s.io/kops/protokube/tests/integration/build_etcd_manifest",
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/diff:go_default_library",

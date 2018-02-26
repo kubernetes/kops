@@ -7,7 +7,6 @@ go_test(
         "exported_testdata",  # keep
         "//channels:channeldata",  # keep
     ],
-    importpath = "k8s.io/kops/tests/integration/channel",
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//vendor/github.com/blang/semver:go_default_library",

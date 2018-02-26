@@ -21,7 +21,6 @@ go_test(
     srcs = ["iam_builder_test.go"],
     data = glob(["tests/*"]),  #keep
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/pkg/model/iam",
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/diff:go_default_library",
