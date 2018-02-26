@@ -32,6 +32,8 @@ type DockerConfig struct {
 	IPTables *bool `json:"ipTables,omitempty" flag:"iptables"`
 	// InsecureRegistry enable insecure registry communication @question according to dockers this a list??
 	InsecureRegistry *string `json:"insecureRegistry,omitempty" flag:"insecure-registry"`
+	// LiveRestore enables live restore of docker when containers are still running
+	LiveRestore *bool `json:"liveRestore,omitempty" flag:"live-restore"`
 	// LogDriver is the defailt driver for container logs (default "json-file")
 	LogDriver string `json:"logDriver,omitempty" flag:"log-driver"`
 	// LogLevel is the logging level ("debug", "info", "warn", "error", "fatal") (default "info")
@@ -48,6 +50,4 @@ type DockerConfig struct {
 	StorageOpts []string `json:"storageOpts,omitempty" flag:"storage-opt,repeat"`
 	// Version is consumed by the nodeup and used to pick the docker version
 	Version *string `json:"version,omitempty"`
-	// LiveRestore enables live restore of docker when containers are still running
-	LiveRestore *bool `json:"liveRestore,omitempty" flag:"live-restore"`
 }

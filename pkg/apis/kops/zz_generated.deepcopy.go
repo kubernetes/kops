@@ -1053,6 +1053,15 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 			**out = **in
 		}
 	}
+	if in.LiveRestore != nil {
+		in, out := &in.LiveRestore, &out.LiveRestore
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
+			**out = **in
+		}
+	}
 	if in.LogLevel != nil {
 		in, out := &in.LogLevel, &out.LogLevel
 		if *in == nil {
@@ -1101,15 +1110,6 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 			*out = nil
 		} else {
 			*out = new(string)
-			**out = **in
-		}
-	}
-	if in.LiveRestore != nil {
-		in, out := &in.LiveRestore, &out.LiveRestore
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(bool)
 			**out = **in
 		}
 	}
