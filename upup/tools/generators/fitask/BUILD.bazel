@@ -14,6 +14,5 @@ go_library(
 go_binary(
     name = "fitask",
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/upup/tools/generators/fitask",
     visibility = ["//visibility:public"],
 )

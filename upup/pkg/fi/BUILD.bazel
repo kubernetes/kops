@@ -99,7 +99,6 @@ go_test(
         "vfs_castore_test.go",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/upup/pkg/fi",
     deps = [
         "//pkg/pki:go_default_library",
         "//util/pkg/vfs:go_default_library",

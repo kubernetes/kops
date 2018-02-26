@@ -11,6 +11,5 @@ go_test(
     name = "go_default_test",
     srcs = ["stringorslice_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/pkg/util/stringorslice",
     deps = ["//vendor/github.com/golang/glog:go_default_library"],
 )

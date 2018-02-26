@@ -35,7 +35,6 @@ go_test(
     size = "small",
     srcs = ["aws_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/pkg/resources",
     deps = [
         "//cloudmock/aws/mockec2:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",

@@ -39,6 +39,5 @@ go_test(
         "service_test.go",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/upup/pkg/fi/nodeup/nodetasks",
     deps = ["//upup/pkg/fi:go_default_library"],
 )
