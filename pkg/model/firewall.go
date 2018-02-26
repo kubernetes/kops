@@ -367,7 +367,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeG
 			if len(masterGroups) == 1 && len(nodeGroups) == 1 {
 				nodeSecGroupName = ""
 			} else {
-				nodeSecGroupName = fmt.Sprintf("-%s-%s", masterSecGroupName, nodeSecGroupName)
+				nodeSecGroupName = fmt.Sprintf("%s-%s", masterSecGroupName, nodeSecGroupName)
 			}
 
 			// Masters can talk to nodes
