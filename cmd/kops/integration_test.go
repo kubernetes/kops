@@ -156,6 +156,13 @@ func TestPhaseCluster(t *testing.T) {
 	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseCluster)
 }
 
+// TestSharedSecurityGroups runs the test on a configuration with a shared VPC
+func TestSharedSecurityGroups(t *testing.T) {
+	// TODO need lifecycles and phases to fix this ... I think?
+	t.Skip("skipping test because we are getting tf for the security rules")
+	runTestAWS(t, "sec-groups.example.com", "shared_security_groups", "v1alpha2", false, 1)
+}
+
 func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedFilenames []string, tfFileName string, phase *cloudup.Phase) {
 	var stdout bytes.Buffer
 

@@ -45,6 +45,16 @@ spec:
       type: Public
       idleTimeoutSeconds: 300
 ```
+Additionally, you can increase idle timeout of the load balancer by setting its `idleTimeoutSeconds`. The default idle timeout is 5 minutes, with a maximum of 3600 seconds (60 minutes) being allowed by AWS.
+For more information see [configuring idle timeouts](http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-idle-timeout.html).
+
+```yaml
+spec:
+  api:
+    loadBalancer:
+      type: Public
+      idleTimeoutSeconds: 300
+```
 
 ### etcdClusters v3 & tls
 
@@ -464,4 +474,48 @@ spec:
     terraform:
       providerExtraConfig:
         alias: foo
+```
+
+### Custom Security Groups
+
+This is an aplpha feature.  Currently security group rules may be updated.
+
+If you are unable to have kops manage its own security groups, API values exist to re-use security groups.  The configuration of the security groups is not trivial, so we do recommend having kops create its own sercurity groups.  If you must re-use or utilize other security groups, we recommend having kops export terraform which will provide a starting point for the security groups. All kops cluster manifest values are lists, which
+will accept multiple security groups.
+
+
+#### Prerequisites
+
+In order to re-use security groups, kops must be running inside of a shared VPC.  At this point shared security groups are only available in AWS.  Security groups must be created before kops is run.
+
+`kops` requires both master and node security groups to be defined, in every use case when re-using security groups.  If using an ELB for the API, a security group is aways required.  If using bastions, and ELB for that, security groups is always required.
+
+`kops` creates security groups with rules reference each other, because of this `kops` is unable to re-use a value for say a node security group.
+
+#### API Manifest Examples
+
+```yaml
+spec:
+  api:
+    loadBalancer:
+      type: Public
+      # API ELB loadbalancer list of security group id exists in the loadBalancer section
+      securityGroups:
+      - sg-ca130742
+  # securityGroups API definition includes the following element
+  # these api manifest elements allow for the setting of a list of
+  # sg ids
+  securityGroups:
+    # always required
+    masterGroups:
+    - sg-df180cab
+    # always required
+    nodeGroups:
+    - sg-2c1e0a5q
+    # required if using a bastion with private topology
+    bastionGroups:
+    - sg-a3110542
+    # required if using a bastion with private topology
+    bastionELBGroups:
+    - sg-dd1004af
 ```

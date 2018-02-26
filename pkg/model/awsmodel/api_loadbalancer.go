@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/model/shared"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -93,6 +94,25 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	var securityGroups []*awstasks.SecurityGroup
+	if b.Cluster.Spec.API.LoadBalancer.SecurityGroups != nil {
+		glog.V(8).Infof("re-using security groups for api elb")
+		securityGroups = shared.AddSecurityGroups(b.Cluster.Spec.API.LoadBalancer.SecurityGroups, b.Lifecycle, b.LinkToVPC(), c, b.LinkToELBSecurityGroup("api"))
+	} else {
+
+		// Create security group for API ELB
+		t := &awstasks.SecurityGroup{
+			Name:      s(b.ELBSecurityGroupName("api")),
+			Lifecycle: b.Lifecycle,
+
+			VPC:              b.LinkToVPC(),
+			Description:      s("Security group for api ELB"),
+			RemoveExtraRules: []string{"port=443"},
+		}
+		securityGroups = append(securityGroups, t)
+		c.AddTask(t)
+	}
+
 	var elb *awstasks.LoadBalancer
 	{
 		loadBalancerName := b.GetELBName32("api")
@@ -107,10 +127,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 
 			LoadBalancerName: s(loadBalancerName),
-			SecurityGroups: []*awstasks.SecurityGroup{
-				b.LinkToELBSecurityGroup("api"),
-			},
-			Subnets: elbSubnets,
+			SecurityGroups:   securityGroups,
+			Subnets:          elbSubnets,
 			Listeners: map[string]*awstasks.LoadBalancerListener{
 				"443": {InstancePort: 443},
 			},
@@ -139,19 +157,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		c.AddTask(elb)
-	}
-
-	// Create security group for API ELB
-	{
-		t := &awstasks.SecurityGroup{
-			Name:      s(b.ELBSecurityGroupName("api")),
-			Lifecycle: b.SecurityLifecycle,
-
-			VPC:              b.LinkToVPC(),
-			Description:      s("Security group for api ELB"),
-			RemoveExtraRules: []string{"port=443"},
-		}
-		c.AddTask(t)
 	}
 
 	// Allow traffic from ELB to egress freely

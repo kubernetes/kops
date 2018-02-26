@@ -106,6 +106,7 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 	// * If users are running an overlay, we punch a hole in it anyway
 	//b.applyNodeToMasterAllowSpecificPorts(c)
 	b.applyNodeToMasterBlockSpecificPorts(c)
+	// re-using provided security group for the node
 
 	return nil
 }

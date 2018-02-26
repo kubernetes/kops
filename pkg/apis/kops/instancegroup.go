@@ -114,6 +114,8 @@ type InstanceGroupSpec struct {
 	Taints []string `json:"taints,omitempty"`
 	// AdditionalUserData is any aditional user-data to be passed to the host
 	AdditionalUserData []UserData `json:"additionalUserData,omitempty"`
+	// SecurityGroup is the id of the shared security group to use. Currently only AWS is supported.
+	SecurityGroup *string `json:"securityGroup,omitempty"`
 }
 
 // UserData defines a user-data section
@@ -175,5 +177,20 @@ func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
 		g.Spec.NodeLabels = nodeLabels
 	} else {
 		g.Spec.NodeLabels[NodeLabelInstanceGroup] = g.Name
+	}
+}
+
+// IsMaster checks if instanceGroup is a bastion
+func (g *InstanceGroup) IsBastion() bool {
+	switch g.Spec.Role {
+	case InstanceGroupRoleMaster:
+		return false
+	case InstanceGroupRoleNode:
+		return false
+	case InstanceGroupRoleBastion:
+		return true
+	default:
+		glog.Fatalf("Role not set in group %v", g)
+		return false
 	}
 }

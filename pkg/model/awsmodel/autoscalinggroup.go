@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
+	"k8s.io/kops/pkg/model/shared"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
@@ -78,13 +79,23 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				SecurityGroups: []*awstasks.SecurityGroup{
 					b.LinkToSecurityGroup(ig.Spec.Role),
 				},
-				IAMInstanceProfile: b.LinkToIAMInstanceProfile(ig),
-				ImageID:            s(ig.Spec.Image),
-				InstanceType:       s(ig.Spec.MachineType),
-
+				IAMInstanceProfile:     b.LinkToIAMInstanceProfile(ig),
+				ImageID:                s(ig.Spec.Image),
+				InstanceType:           s(ig.Spec.MachineType),
 				RootVolumeSize:         i64(int64(volumeSize)),
 				RootVolumeType:         s(volumeType),
 				RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
+			}
+
+			// we cannot refactor this, but we can refactor the other stuff
+			if b.Cluster.Spec.SecurityGroups != nil {
+				if ig.Spec.Role == kops.InstanceGroupRoleMaster && len(b.Cluster.Spec.SecurityGroups.MasterGroups) != 0 {
+					t.SecurityGroups = shared.AddSecurityGroups(b.Cluster.Spec.SecurityGroups.MasterGroups, nil, nil, nil, b.LinkToSecurityGroup(ig.Spec.Role))
+				} else if ig.Spec.Role == kops.InstanceGroupRoleNode && len(b.Cluster.Spec.SecurityGroups.NodeGroups) != 0 {
+					t.SecurityGroups = shared.AddSecurityGroups(b.Cluster.Spec.SecurityGroups.NodeGroups, nil, nil, nil, b.LinkToSecurityGroup(ig.Spec.Role))
+				} else if ig.Spec.Role == kops.InstanceGroupRoleBastion && b.Cluster.Spec.SecurityGroups.BastionGroups != nil && len(b.Cluster.Spec.SecurityGroups.BastionGroups) != 0 {
+					t.SecurityGroups = shared.AddSecurityGroups(b.Cluster.Spec.SecurityGroups.BastionGroups, nil, nil, nil, b.LinkToSecurityGroup(ig.Spec.Role))
+				}
 			}
 
 			if volumeType == "io1" {
@@ -95,18 +106,9 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				t.Tenancy = s(ig.Spec.Tenancy)
 			}
 
-			for _, id := range ig.Spec.AdditionalSecurityGroups {
-				sgTask := &awstasks.SecurityGroup{
-					Name:   fi.String(id),
-					ID:     fi.String(id),
-					Shared: fi.Bool(true),
-
-					Lifecycle: b.SecurityLifecycle,
-				}
-				if err := c.EnsureTask(sgTask); err != nil {
-					return err
-				}
-				t.SecurityGroups = append(t.SecurityGroups, sgTask)
+			if len(ig.Spec.AdditionalSecurityGroups) != 0 {
+				sharedGroups := shared.AddSecurityGroups(ig.Spec.AdditionalSecurityGroups, nil, nil, c, nil)
+				t.SecurityGroups = append(t.SecurityGroups, sharedGroups...)
 			}
 
 			if t.SSHKey, err = b.LinkToSSHKey(); err != nil {

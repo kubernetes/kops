@@ -19,8 +19,10 @@ package model
 import (
 	"time"
 
+	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model/shared"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
@@ -54,17 +56,25 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	// Create security group for bastion instances
-	{
-		t := &awstasks.SecurityGroup{
-			Name:      s(b.SecurityGroupName(kops.InstanceGroupRoleBastion)),
-			Lifecycle: b.SecurityLifecycle,
-
-			VPC:              b.LinkToVPC(),
-			Description:      s("Security group for bastion"),
-			RemoveExtraRules: []string{"port=22"},
+	if b.Cluster.Spec.SecurityGroups != nil {
+		if len(b.Cluster.Spec.SecurityGroups.BastionGroups) > 0 {
+			glog.V(8).Infof("re-using security group for bastion")
+			shared.AddSecurityGroups(b.Cluster.Spec.SecurityGroups.BastionGroups, b.Lifecycle, b.LinkToVPC(), c, b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion))
 		}
-		c.AddTask(t)
+	} else {
+		// Create security group for bastion instances
+		{
+			t := &awstasks.SecurityGroup{
+				Name:      s(b.SecurityGroupName(kops.InstanceGroupRoleBastion)),
+				Lifecycle: b.Lifecycle,
+
+				VPC:              b.LinkToVPC(),
+				Description:      s("Security group for bastion"),
+				RemoveExtraRules: []string{"port=22"},
+			}
+			c.AddTask(t)
+		}
+
 	}
 
 	// Allow traffic from bastion instances to egress freely
@@ -126,17 +136,27 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	// Create security group for bastion ELB
-	{
-		t := &awstasks.SecurityGroup{
-			Name:      s(b.ELBSecurityGroupName(BastionELBSecurityGroupPrefix)),
-			Lifecycle: b.SecurityLifecycle,
-
-			VPC:              b.LinkToVPC(),
-			Description:      s("Security group for bastion ELB"),
-			RemoveExtraRules: []string{"port=22"},
+	sharedSecurityGroups := []*awstasks.SecurityGroup{}
+	if b.Cluster.Spec.SecurityGroups != nil {
+		if b.Cluster.Spec.SecurityGroups.BastionELBGroups != nil {
+			glog.V(8).Infof("re-using security groups for bastion elb")
+			// re-use security group for bastion elb instance
+			link := &awstasks.SecurityGroup{Name: s(b.ELBSecurityGroupName(BastionELBSecurityGroupPrefix))}
+			sharedSecurityGroups = shared.AddSecurityGroups(b.Cluster.Spec.SecurityGroups.BastionELBGroups, b.Lifecycle, b.LinkToVPC(), c, link)
 		}
-		c.AddTask(t)
+	} else {
+		// Create security group for bastion ELB
+		{
+			t := &awstasks.SecurityGroup{
+				Name:      s(b.ELBSecurityGroupName(BastionELBSecurityGroupPrefix)),
+				Lifecycle: b.Lifecycle,
+
+				VPC:              b.LinkToVPC(),
+				Description:      s("Security group for bastion ELB"),
+				RemoveExtraRules: []string{"port=22"},
+			}
+			c.AddTask(t)
+		}
 	}
 
 	// Allow traffic from ELB to egress freely
@@ -224,6 +244,10 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			ConnectionSettings: &awstasks.LoadBalancerConnectionSettings{
 				IdleTimeout: i64(int64(idleTimeout.Seconds())),
 			},
+		}
+
+		if len(sharedSecurityGroups) != 0 {
+			elb.SecurityGroups = sharedSecurityGroups
 		}
 
 		c.AddTask(elb)

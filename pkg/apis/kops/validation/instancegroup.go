@@ -114,6 +114,13 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, st
 		}
 	}
 
+	/*
+		// TODO note sure where to put this so that the fieldPaths work correctly
+		if cluster.Spec.SecurityGroups != nil && g.IsBastion() {
+			allErrs =  append(allErrs, validateBastionSharedSecurityGroups(cluster.Spec.SecurityGroups, fieldPath.Child("securityGroups"))...)
+		}
+	*/
+
 	if len(allErrs) != 0 {
 		return allErrs[0]
 	}

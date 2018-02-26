@@ -94,6 +94,16 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 		allErrs = append(allErrs, validateNetworking(spec.Networking, fieldPath.Child("networking"))...)
 	}
 
+	if spec.SecurityGroups != nil {
+		allErrs = append(allErrs, validateBaseSharedSecurityGroups(spec.SecurityGroups, fieldPath.Child("securityGroups"))...)
+		// TODO where do we put this??
+		//
+	}
+
+	if spec.API != nil && spec.API.LoadBalancer != nil {
+		allErrs = append(allErrs, validateELBSharedSecurityGroups(spec.API.LoadBalancer, spec.SecurityGroups, fieldPath.Child("loadbalancer"))...)
+	}
+
 	return allErrs
 }
 
@@ -248,4 +258,71 @@ func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, fldPath *field.Pat
 	}
 
 	return allErrs
+}
+
+// validateELBSharedSecurityGroups tests if security groups are being used that loadbalancer security groups are used
+func validateELBSharedSecurityGroups(v *kops.LoadBalancerAccessSpec, securityGroups *kops.SecurityGroups, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	noLoadBalancerGroups := emptySlice(v.SecurityGroups)
+
+	// securityGroups are not defined and no load balancer security groups
+	// return no errors
+	if securityGroups == nil && noLoadBalancerGroups {
+		return allErrs
+	}
+
+	// securityGroups are defined and no load balancer security groups do not exist
+	if securityGroups != nil && noLoadBalancerGroups {
+		allErrs = append(allErrs, field.Required(fldPath.Child("SecurityGroups"), "SecurityGroups must be defined"))
+	}
+
+	return allErrs
+}
+
+// validateBaseSharedSecurityGroups tests if nodes and masters are defined
+func validateBaseSharedSecurityGroups(v *kops.SecurityGroups, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if emptySlice(v.MasterGroups) {
+		allErrs = append(allErrs, field.Required(fldPath.Child("MasterGroups"), "MasterGroups must be defined"))
+	}
+
+	if emptySlice(v.NodeGroups) {
+		allErrs = append(allErrs, field.Required(fldPath.Child("NodeGroups"), "NodeGroups must be defined"))
+	}
+
+	return allErrs
+}
+
+// validateBastionSharedSecurityGroups tests is bastions shared groups are defined
+func validateBastionSharedSecurityGroups(v *kops.SecurityGroups, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	// if we have securityGroups both bastion and bastionELBGroups are required
+	if emptySlice(v.BastionGroups) {
+		allErrs = append(allErrs, field.Required(fldPath.Child("BastionGroups"), "BastionGroups must be defined"))
+	}
+
+	if emptySlice(v.BastionELBGroups) {
+		allErrs = append(allErrs, field.Required(fldPath.Child("BastionELBGroups"), "BastionELBGroups must be defined"))
+	}
+
+	return allErrs
+}
+
+func emptySlice(s []string) bool {
+	if len(s) != 0 {
+		return false
+	}
+	return false
+}
+
+func hasBastions(instanceGroups *kops.InstanceGroupList) bool {
+	for _, i := range instanceGroups.Items {
+		if i.IsBastion() {
+			return true
+		}
+	}
+
+	return false
 }
