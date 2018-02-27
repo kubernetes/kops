@@ -46,6 +46,9 @@ type KubeletConfigSpec struct {
 	EnableDebuggingHandlers *bool `json:"enableDebuggingHandlers,omitempty" flag:"enable-debugging-handlers"`
 	// RegisterNode enables automatic registration with the apiserver.
 	RegisterNode *bool `json:"registerNode,omitempty" flag:"register-node"`
+	// NodeStatusUpdateFrequency Specifies how often kubelet posts node status to master (default 10s)
+	// must work with nodeMonitorGracePeriod in KubeControllerManagerConfig.
+	NodeStatusUpdateFrequency *bool `json:"nodeStatusUpdateFrequency,omitempty" flag:"node-status-update-frequency"`
 	// ClusterDomain is the DNS domain for this cluster
 	ClusterDomain string `json:"clusterDomain,omitempty" flag:"cluster-domain"`
 	// ClusterDNS is the IP address for a cluster DNS server
@@ -331,6 +334,13 @@ type KubeControllerManagerConfig struct {
 	// before the terminated pod garbage collector starts deleting terminated pods.
 	// If <= 0, the terminated pod garbage collector is disabled.
 	TerminatedPodGCThreshold *int32 `json:"terminatedPodGCThreshold,omitempty" flag:"terminated-pod-gc-threshold"`
+	// NodeMonitorPeriod is the period for syncing NodeStatus in NodeController. (default 5s)
+	NodeMonitorPeriod *metav1.Duration `json:"nodeMonitorPeriod,omitempty" flag:"node-monitor-period"`
+	// NodeMonitorGracePeriod is the amount of time which we allow running Node to be unresponsive before marking it unhealthy. (default 40s)
+	// Must be N-1 times more than kubelet's nodeStatusUpdateFrequency, where N means number of retries allowed for kubelet to post node status.
+	NodeMonitorGracePeriod *metav1.Duration `json:"nodeMonitorGracePeriod,omitempty" flag:"node-monitor-grace-period"`
+	// PodEvictionTimeout is the grace period for deleting pods on failed nodes. (default 5m0s)
+	PodEvictionTimeout *metav1.Duration `json:"podEvictionTimeout,omitempty" flag:"pod-eviction-timeout"`
 	// UseServiceAccountCredentials controls whether we use individual service account credentials for each controller.
 	UseServiceAccountCredentials *bool `json:"useServiceAccountCredentials,omitempty" flag:"use-service-account-credentials"`
 	// HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs
