@@ -48,7 +48,7 @@ type KubeletConfigSpec struct {
 	RegisterNode *bool `json:"registerNode,omitempty" flag:"register-node"`
 	// NodeStatusUpdateFrequency Specifies how often kubelet posts node status to master (default 10s)
 	// must work with nodeMonitorGracePeriod in KubeControllerManagerConfig.
-	NodeStatusUpdateFrequency *bool `json:"nodeStatusUpdateFrequency,omitempty" flag:"node-status-update-frequency"`
+	NodeStatusUpdateFrequency *metav1.Duration `json:"nodeStatusUpdateFrequency,omitempty" flag:"node-status-update-frequency"`
 	// ClusterDomain is the DNS domain for this cluster
 	ClusterDomain string `json:"clusterDomain,omitempty" flag:"cluster-domain"`
 	// ClusterDNS is the IP address for a cluster DNS server
