@@ -1921,6 +1921,33 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 			**out = **in
 		}
 	}
+	if in.NodeMonitorPeriod != nil {
+		in, out := &in.NodeMonitorPeriod, &out.NodeMonitorPeriod
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
+	if in.NodeMonitorGracePeriod != nil {
+		in, out := &in.NodeMonitorGracePeriod, &out.NodeMonitorGracePeriod
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
+	if in.PodEvictionTimeout != nil {
+		in, out := &in.PodEvictionTimeout, &out.PodEvictionTimeout
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
 	if in.UseServiceAccountCredentials != nil {
 		in, out := &in.UseServiceAccountCredentials, &out.UseServiceAccountCredentials
 		if *in == nil {
@@ -2138,6 +2165,15 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 			*out = nil
 		} else {
 			*out = new(bool)
+			**out = **in
+		}
+	}
+	if in.NodeStatusUpdateFrequency != nil {
+		in, out := &in.NodeStatusUpdateFrequency, &out.NodeStatusUpdateFrequency
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
 			**out = **in
 		}
 	}
