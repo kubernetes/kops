@@ -119,6 +119,23 @@ So the procedure is:
 * Apply: `kops update cluster <clustername> --yes`
 * (no instances need to be relaunched, so no rolling-update is needed)
 
+
+## Moving from one instancs group spanning multiple AZs to one instance group per AZ
+
+It may be beneficial to have one IG per AZ rather than one IG spanning multiple AZs. One common example is, when you have a persistent volume claim bound to an AWS EBS Volume this volume is bound to the AZ it has been created in so any resource (e.g. a StatefulSet) depending on that volume is bound to that same AZ. In this case you have to ensure that there is at least one node running in that same AZ, which is not guaruanteed by one IG. This however can be guarantueed by one IG per AZ.
+
+So the procedure is:
+
+* `kops edit ig nodes`
+* Remove two of the subnets, e.g. `eu-central-1b` and `eu-central-1c`
+  * Alternatively you can also delete the existing IG and create a new one with a more suitable name
+* `kops create ig nodes-eu-central-1b --subnet us-central-1b`
+* `kops create ig nodes-eu-central-1c --subnet us-central-1c`
+* Preview: `kops update cluster <clustername>`
+* Apply: `kops update cluster <clustername> --yes`
+* Rolling update to update existing instances: `kops rolling-update cluster --yes`
+
+
 ## Converting an instance group to use spot instances
 
 Follow the normal procedure for reconfiguring an InstanceGroup, but set the maxPrice property to your bid.
