@@ -46,6 +46,8 @@ type ClusterList struct {
 type ClusterSpec struct {
 	// Channel we are following
 	Channel string `json:"channel,omitempty"`
+	// Additional addons that should be installed on the cluster
+	Addons []AddonSpec `json:"addons,omitempty"`
 	// ConfigBase is the path where we store configuration for the cluster
 	// This might be different that the location when the cluster spec itself is stored,
 	// both because this must be accessible to the cluster,
@@ -161,6 +163,12 @@ type ClusterSpec struct {
 	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
 	// Target allows for us to nest extra config for targets such as terraform
 	Target *TargetSpec `json:"target,omitempty"`
+}
+
+// AddonSpec defines an addon that we want to install in the cluster
+type AddonSpec struct {
+	// Manifest is a path to the manifest that defines the addon
+	Manifest string `json:"manifest,omitempty"`
 }
 
 // FileAssetSpec defines the structure for a file asset
