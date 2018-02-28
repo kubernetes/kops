@@ -358,7 +358,7 @@ type terraformAutoscalingGroup struct {
 	Tags                    []*terraformASGTag   `json:"tag,omitempty"`
 	MetricsGranularity      *string              `json:"metrics_granularity,omitempty"`
 	EnabledMetrics          []*string            `json:"enabled_metrics,omitempty"`
-	SuspendedProcesses      []*string            `json:"suspended_processes, omitempty"`
+	SuspendedProcesses      []*string            `json:"suspended_processes,omitempty"`
 }
 
 func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *AutoscalingGroup) error {
