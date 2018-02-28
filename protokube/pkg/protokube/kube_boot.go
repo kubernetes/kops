@@ -58,6 +58,8 @@ type KubeBoot struct {
 	EtcdElectionTimeout string
 	// EtcdHeartbeatInterval is the heartbeat interval
 	EtcdHeartbeatInterval string
+	// TLSAuth indicates we should enforce peer and client verification
+	TLSAuth bool
 	// TLSCA is the path to a client ca for etcd
 	TLSCA string
 	// TLSCert is the path to a tls certificate for etcd
@@ -73,7 +75,8 @@ type KubeBoot struct {
 	// Kubernetes is the context methods for kubernetes
 	Kubernetes *KubernetesContext
 	// Master indicates we are a master node
-	Master          bool
+	Master bool
+
 	volumeMounter   *VolumeMountController
 	etcdControllers map[string]*EtcdController
 }

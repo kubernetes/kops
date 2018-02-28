@@ -1249,6 +1249,7 @@ func autoConvert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdCluste
 	} else {
 		out.Members = nil
 	}
+	out.EnableTLSAuth = in.EnableTLSAuth
 	out.EnableEtcdTLS = in.EnableEtcdTLS
 	out.Version = in.Version
 	out.LeaderElectionTimeout = in.LeaderElectionTimeout
@@ -1286,6 +1287,7 @@ func autoConvert_kops_EtcdClusterSpec_To_v1alpha1_EtcdClusterSpec(in *kops.EtcdC
 		out.Members = nil
 	}
 	out.EnableEtcdTLS = in.EnableEtcdTLS
+	out.EnableTLSAuth = in.EnableTLSAuth
 	out.Version = in.Version
 	out.LeaderElectionTimeout = in.LeaderElectionTimeout
 	out.HeartbeatInterval = in.HeartbeatInterval

@@ -222,6 +222,23 @@ func (c *NodeupModelContext) UseEtcdTLS() bool {
 	return false
 }
 
+// UseTLSAuth checks the peer-auth is set in both cluster
+// @NOTE: in retrospect i think we should have consolidated the common config in the wrapper struct; it
+// feels wierd we set things like version, tls etc per cluster since they both have to be the same.
+func (c *NodeupModelContext) UseTLSAuth() bool {
+	if !c.UseEtcdTLS() {
+		return false
+	}
+
+	for _, x := range c.Cluster.Spec.EtcdClusters {
+		if x.EnableTLSAuth {
+			return true
+		}
+	}
+
+	return false
+}
+
 // UsesCNI checks if the cluster has CNI configured
 func (c *NodeupModelContext) UsesCNI() bool {
 	networking := c.Cluster.Spec.Networking
