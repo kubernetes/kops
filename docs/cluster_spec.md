@@ -123,6 +123,19 @@ spec:
     zone: us-east-1a
 ```
 
+#### publicIP
+The IP of an existing EIP that you would like to attach to the NAT gateway.
+
+```
+spec:
+  subnets:
+  - cidr: 10.20.64.0/21
+    name: us-east-1a
+    publicIP: 203.93.148.142
+    type: Private
+    zone: us-east-1a
+```
+
 ### kubeAPIServer
 
 This block contains configuration for the `kube-apiserver`.
