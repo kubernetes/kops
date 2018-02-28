@@ -1038,7 +1038,9 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 		configBase.Join("addons", "bootstrap-channel.yaml").Path(),
 	}
 
-	channels = append(channels, c.Cluster.Spec.AddonChannels...)
+	for i := range c.Cluster.Spec.Addons {
+		channels = append(channels, c.Cluster.Spec.Addons[i].Manifest)
+	}
 
 	role := ig.Spec.Role
 	if role == "" {

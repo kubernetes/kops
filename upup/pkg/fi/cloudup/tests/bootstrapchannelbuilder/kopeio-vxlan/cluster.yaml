@@ -4,8 +4,8 @@ metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
   name: minimal.example.com
 spec:
-  addonChannels:
-  - s3://somebucket/example.yaml
+  addons:
+  - manifest: s3://somebucket/example.yaml
   kubernetesApiAccess:
   - 0.0.0.0/0
   channel: stable
