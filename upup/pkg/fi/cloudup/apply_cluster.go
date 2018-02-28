@@ -1038,6 +1038,10 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 		configBase.Join("addons", "bootstrap-channel.yaml").Path(),
 	}
 
+	for i := range c.Cluster.Spec.Addons {
+		channels = append(channels, c.Cluster.Spec.Addons[i].Manifest)
+	}
+
 	role := ig.Spec.Role
 	if role == "" {
 		return nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
