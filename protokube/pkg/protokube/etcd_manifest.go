@@ -202,6 +202,12 @@ func buildEtcdEnvironmentOptions(c *EtcdCluster) []v1.EnvVar {
 	if notEmpty(c.TLSKey) {
 		options = append(options, v1.EnvVar{Name: "ETCD_KEY_FILE", Value: c.TLSKey})
 	}
+	if c.isTLS() {
+		if c.TLSAuth {
+			options = append(options, v1.EnvVar{Name: "ETCD_CLIENT_CERT_AUTH", Value: "true"})
+			options = append(options, v1.EnvVar{Name: "ETCD_PEER_CLIENT_CERT_AUTH", Value: "true"})
+		}
+	}
 
 	// @step: generate the initial cluster
 	var hosts []string
