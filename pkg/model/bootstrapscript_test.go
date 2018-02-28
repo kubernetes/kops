@@ -201,7 +201,10 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 				CloudProvider: "aws",
 			},
 			KubeProxy: &kops.KubeProxyConfig{
-				CPURequest: "30m",
+				CPURequest:    "30m",
+				CPULimit:      "30m",
+				MemoryRequest: "30Mi",
+				MemoryLimit:   "30Mi",
 				FeatureGates: map[string]string{
 					"AdvancedAuditing": "true",
 				},

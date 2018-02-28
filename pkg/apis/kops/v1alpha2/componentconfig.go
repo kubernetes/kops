@@ -162,7 +162,14 @@ type KubeletConfigSpec struct {
 type KubeProxyConfig struct {
 	Image string `json:"image,omitempty"`
 	// TODO: Better type ?
-	CPURequest string `json:"cpuRequest,omitempty"` // e.g. "20m"
+	// CPURequest, cpu request compute resource for kube proxy e.g. "20m"
+	CPURequest string `json:"cpuRequest,omitempty"`
+	// CPULimit, cpu limit compute resource for kube proxy e.g. "30m"
+	CPULimit string `json:"cpuLimit,omitempty"`
+	// MemoryRequest, memory request compute resource for kube proxy e.g. "30Mi"
+	MemoryRequest string `json:"memoryRequest,omitempty"`
+	// MemoryLimit, memory limit compute resource for kube proxy e.g. "30Mi"
+	MemoryLimit string `json:"memoryLimit,omitempty"`
 	// LogLevel is the logging level of the proxy
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v"`
 	// ClusterCIDR is the CIDR range of the pods in the cluster

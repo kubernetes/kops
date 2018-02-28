@@ -124,9 +124,38 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		}
 	}
 
+	resourceRequests := v1.ResourceList{}
+	resourceLimits := v1.ResourceList{}
+
 	cpuRequest, err := resource.ParseQuantity(c.CPURequest)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing CPURequest=%q", c.CPURequest)
+	}
+
+	resourceRequests["cpu"] = cpuRequest
+
+	if c.CPULimit != "" {
+		cpuLimit, err := resource.ParseQuantity(c.CPULimit)
+		if err != nil {
+			return nil, fmt.Errorf("Error parsing CPULimit=%q", c.CPULimit)
+		}
+		resourceLimits["cpu"] = cpuLimit
+	}
+
+	if c.MemoryRequest != "" {
+		memoryRequest, err := resource.ParseQuantity(c.MemoryRequest)
+		if err != nil {
+			return nil, fmt.Errorf("Error parsing MemoryRequest=%q", c.MemoryRequest)
+		}
+		resourceRequests["memory"] = memoryRequest
+	}
+
+	if c.MemoryLimit != "" {
+		memoryLimit, err := resource.ParseQuantity(c.MemoryLimit)
+		if err != nil {
+			return nil, fmt.Errorf("Error parsing MemoryLimit=%q", c.MemoryLimit)
+		}
+		resourceLimits["memory"] = memoryLimit
 	}
 
 	flags, err := flagbuilder.BuildFlagsList(c)
@@ -149,9 +178,8 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 			sortedStrings(flags),
 			"/var/log/kube-proxy.log"),
 		Resources: v1.ResourceRequirements{
-			Requests: v1.ResourceList{
-				"cpu": cpuRequest,
-			},
+			Requests: resourceRequests,
+			Limits:   resourceLimits,
 		},
 		SecurityContext: &v1.SecurityContext{
 			Privileged: fi.Bool(true),

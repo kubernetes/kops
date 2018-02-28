@@ -2343,6 +2343,9 @@ func Convert_kops_KubeDNSConfig_To_v1alpha2_KubeDNSConfig(in *kops.KubeDNSConfig
 func autoConvert_v1alpha2_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyConfig, out *kops.KubeProxyConfig, s conversion.Scope) error {
 	out.Image = in.Image
 	out.CPURequest = in.CPURequest
+	out.CPULimit = in.CPULimit
+	out.MemoryRequest = in.MemoryRequest
+	out.MemoryLimit = in.MemoryLimit
 	out.LogLevel = in.LogLevel
 	out.ClusterCIDR = in.ClusterCIDR
 	out.HostnameOverride = in.HostnameOverride
@@ -2360,6 +2363,9 @@ func Convert_v1alpha2_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyConfi
 func autoConvert_kops_KubeProxyConfig_To_v1alpha2_KubeProxyConfig(in *kops.KubeProxyConfig, out *KubeProxyConfig, s conversion.Scope) error {
 	out.Image = in.Image
 	out.CPURequest = in.CPURequest
+	out.CPULimit = in.CPULimit
+	out.MemoryRequest = in.MemoryRequest
+	out.MemoryLimit = in.MemoryLimit
 	out.LogLevel = in.LogLevel
 	out.ClusterCIDR = in.ClusterCIDR
 	out.HostnameOverride = in.HostnameOverride
