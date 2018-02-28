@@ -1,0 +1,144 @@
+apiVersion: kops/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: 2017-09-25T19:37:59Z
+  name: sec-groups.example.com
+spec:
+  api:
+    dns: {}
+  authorization:
+    alwaysAllow: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: memfs://clusters.example.com/sec-groups.example.com
+  etcdClusters:
+   - etcdMembers:
+     - instanceGroup: master-us-test-1a
+       name: a
+     - instanceGroup: master-us-test-1b
+       name: b
+     - instanceGroup: master-us-test-1c
+       name: c
+     name: main
+   - etcdMembers:
+     - instanceGroup: master-us-test-1a
+       name: a
+     - instanceGroup: master-us-test-1b
+       name: b
+     - instanceGroup: master-us-test-1c
+       name: c
+     name: events
+  iam:
+    legacy: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.8.5
+  masterInternalName: api.internal.sec-groups.example.com
+  masterPublicName: api.sec-groups.example.com
+  networkCIDR: 172.20.0.0/16
+  networkID: vpc-0301e07b
+  networking:
+    weave:
+      mtu: 8912
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-test-1a
+    type: Public
+    zone: us-test-1a
+    id: subnet-12345678
+  - cidr: 172.20.64.0/19
+    name: us-test-1b
+    type: Public
+    zone: us-test-1b
+    id: subnet-12345679
+  - cidr: 172.20.96.0/19
+    name: us-test-1c
+    type: Public
+    zone: us-test-1c
+    id: subnet-12345671
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: 2017-09-25T19:37:59Z
+  labels:
+    kops.k8s.io/cluster: sec-groups.example.com
+  name: master-us-test-1a
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1a
+  securityGroup: sg-c4d4a3b7
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: 2017-09-25T19:37:59Z
+  labels:
+    kops.k8s.io/cluster: sec-groups.example.com
+  name: master-us-test-1b
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1b
+  securityGroup: sg-c4d4a3b8
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: 2017-09-25T19:37:59Z
+  labels:
+    kops.k8s.io/cluster: sec-groups.example.com
+  name: master-us-test-1c
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1c
+  securityGroup: sg-c4d4a3b9
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: 2017-09-25T19:37:59Z
+  labels:
+    kops.k8s.io/cluster: sec-groups.example.com
+  name: nodes
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+  - us-test-1a
+  - us-test-1b
+  - us-test-1c
+  securityGroup: sg-15eb9c66

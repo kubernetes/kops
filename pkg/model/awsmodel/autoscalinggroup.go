@@ -78,13 +78,22 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				SecurityGroups: []*awstasks.SecurityGroup{
 					b.LinkToSecurityGroup(ig.Spec.Role),
 				},
-				IAMInstanceProfile: b.LinkToIAMInstanceProfile(ig),
-				ImageID:            s(ig.Spec.Image),
-				InstanceType:       s(ig.Spec.MachineType),
-
+				IAMInstanceProfile:     b.LinkToIAMInstanceProfile(ig),
+				ImageID:                s(ig.Spec.Image),
+				InstanceType:           s(ig.Spec.MachineType),
 				RootVolumeSize:         i64(int64(volumeSize)),
 				RootVolumeType:         s(volumeType),
 				RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
+			}
+
+			if ig.Spec.SecurityGroup != nil {
+				t.SecurityGroups = []*awstasks.SecurityGroup{
+					{
+						Name:   ig.Spec.SecurityGroup,
+						ID:     ig.Spec.SecurityGroup,
+						Shared: fi.Bool(true),
+					},
+				}
 			}
 
 			if volumeType == "io1" {

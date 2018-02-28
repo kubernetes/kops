@@ -52,15 +52,15 @@ const updateClusterTestBase = "../../tests/integration/update_cluster/"
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimal(t *testing.T) {
-	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha0", false, 1)
-	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha1", false, 1)
-	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha2", false, 1)
+	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha0", false, 1, nil)
+	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha1", false, 1, nil)
+	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha2", false, 1, nil)
 }
 
 // TestHA runs the test on a simple HA configuration, similar to kops create cluster minimal.example.com --zones us-west-1a,us-west-1b,us-west-1c --master-count=3
 func TestHA(t *testing.T) {
-	runTestAWS(t, "ha.example.com", "ha", "v1alpha1", false, 3)
-	runTestAWS(t, "ha.example.com", "ha", "v1alpha2", false, 3)
+	runTestAWS(t, "ha.example.com", "ha", "v1alpha1", false, 3, nil)
+	runTestAWS(t, "ha.example.com", "ha", "v1alpha2", false, 3, nil)
 }
 
 // TestHighAvailabilityGCE runs the test on a simple HA GCE configuration, similar to kops create cluster ha-gce.example.com
@@ -71,7 +71,7 @@ func TestHighAvailabilityGCE(t *testing.T) {
 
 // TestComplex runs the test on a more complex configuration, intended to hit more of the edge cases
 func TestComplex(t *testing.T) {
-	runTestAWS(t, "complex.example.com", "complex", "v1alpha2", false, 1)
+	runTestAWS(t, "complex.example.com", "complex", "v1alpha2", false, 1, nil)
 }
 
 // TestMinimalCloudformation runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -86,56 +86,56 @@ func TestAdditionalUserData(t *testing.T) {
 
 // TestMinimal_141 runs the test on a configuration from 1.4.1 release
 func TestMinimal_141(t *testing.T) {
-	runTestAWS(t, "minimal-141.example.com", "minimal-141", "v1alpha0", false, 1)
+	runTestAWS(t, "minimal-141.example.com", "minimal-141", "v1alpha0", false, 1, nil)
 }
 
 // TestPrivateWeave runs the test on a configuration with private topology, weave networking
 func TestPrivateWeave(t *testing.T) {
-	runTestAWS(t, "privateweave.example.com", "privateweave", "v1alpha1", true, 1)
-	runTestAWS(t, "privateweave.example.com", "privateweave", "v1alpha2", true, 1)
+	runTestAWS(t, "privateweave.example.com", "privateweave", "v1alpha1", true, 1, nil)
+	runTestAWS(t, "privateweave.example.com", "privateweave", "v1alpha2", true, 1, nil)
 }
 
 // TestPrivateFlannel runs the test on a configuration with private topology, flannel networking
 func TestPrivateFlannel(t *testing.T) {
-	runTestAWS(t, "privateflannel.example.com", "privateflannel", "v1alpha1", true, 1)
-	runTestAWS(t, "privateflannel.example.com", "privateflannel", "v1alpha2", true, 1)
+	runTestAWS(t, "privateflannel.example.com", "privateflannel", "v1alpha1", true, 1, nil)
+	runTestAWS(t, "privateflannel.example.com", "privateflannel", "v1alpha2", true, 1, nil)
 }
 
 // TestPrivateCalico runs the test on a configuration with private topology, calico networking
 func TestPrivateCalico(t *testing.T) {
-	runTestAWS(t, "privatecalico.example.com", "privatecalico", "v1alpha1", true, 1)
-	runTestAWS(t, "privatecalico.example.com", "privatecalico", "v1alpha2", true, 1)
+	runTestAWS(t, "privatecalico.example.com", "privatecalico", "v1alpha1", true, 1, nil)
+	runTestAWS(t, "privatecalico.example.com", "privatecalico", "v1alpha2", true, 1, nil)
 }
 
 // TestPrivateCanal runs the test on a configuration with private topology, canal networking
 func TestPrivateCanal(t *testing.T) {
-	runTestAWS(t, "privatecanal.example.com", "privatecanal", "v1alpha1", true, 1)
-	runTestAWS(t, "privatecanal.example.com", "privatecanal", "v1alpha2", true, 1)
+	runTestAWS(t, "privatecanal.example.com", "privatecanal", "v1alpha1", true, 1, nil)
+	runTestAWS(t, "privatecanal.example.com", "privatecanal", "v1alpha2", true, 1, nil)
 }
 
 // TestPrivateKopeio runs the test on a configuration with private topology, kopeio networking
 func TestPrivateKopeio(t *testing.T) {
-	runTestAWS(t, "privatekopeio.example.com", "privatekopeio", "v1alpha2", true, 1)
+	runTestAWS(t, "privatekopeio.example.com", "privatekopeio", "v1alpha2", true, 1, nil)
 }
 
 // TestPrivateDns1 runs the test on a configuration with private topology, private dns
 func TestPrivateDns1(t *testing.T) {
-	runTestAWS(t, "privatedns1.example.com", "privatedns1", "v1alpha2", true, 1)
+	runTestAWS(t, "privatedns1.example.com", "privatedns1", "v1alpha2", true, 1, nil)
 }
 
 // TestPrivateDns2 runs the test on a configuration with private topology, private dns, extant vpc
 func TestPrivateDns2(t *testing.T) {
-	runTestAWS(t, "privatedns2.example.com", "privatedns2", "v1alpha2", true, 1)
+	runTestAWS(t, "privatedns2.example.com", "privatedns2", "v1alpha2", true, 1, nil)
 }
 
 // TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
 func TestSharedSubnet(t *testing.T) {
-	runTestAWS(t, "sharedsubnet.example.com", "shared_subnet", "v1alpha2", false, 1)
+	runTestAWS(t, "sharedsubnet.example.com", "shared_subnet", "v1alpha2", false, 1, nil)
 }
 
 // TestSharedVPC runs the test on a configuration with a shared VPC
 func TestSharedVPC(t *testing.T) {
-	runTestAWS(t, "sharedvpc.example.com", "shared_vpc", "v1alpha2", false, 1)
+	runTestAWS(t, "sharedvpc.example.com", "shared_vpc", "v1alpha2", false, 1, nil)
 }
 
 // TestPhaseNetwork tests the output of tf for the network phase
@@ -156,7 +156,13 @@ func TestPhaseCluster(t *testing.T) {
 	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseCluster)
 }
 
-func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedFilenames []string, tfFileName string, phase *cloudup.Phase) {
+// TestSharedSecurityGroups runs the test on a configuration with a shared VPC
+func TestSharedSecurityGroups(t *testing.T) {
+	overrides := []string{"SecurityGroupRule=Ignore"}
+	runTestAWS(t, "sec-groups.example.com", "shared_security_groups", "v1alpha2", false, 3, overrides)
+}
+
+func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedFilenames []string, tfFileName string, phase *cloudup.Phase, lifecycleOverrides []string) {
 	var stdout bytes.Buffer
 
 	srcDir = updateClusterTestBase + srcDir
@@ -207,6 +213,8 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 
 		// We don't test it here, and it adds a dependency on kubectl
 		options.CreateKubecfg = false
+
+		options.LifecycleOverrides = lifecycleOverrides
 
 		err := RunUpdateCluster(factory, clusterName, &stdout, options)
 		if err != nil {
@@ -276,7 +284,7 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 	}
 }
 
-func runTestAWS(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int) {
+func runTestAWS(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int, lifecycleOverides []string) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -307,7 +315,7 @@ func runTestAWS(t *testing.T, clusterName string, srcDir string, version string,
 			// "aws_launch_configuration_bastions." + clusterName + "_user_data",
 		}...)
 	}
-	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, "", nil)
+	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, "", nil, lifecycleOverides)
 }
 
 func runTestPhase(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int, phase cloudup.Phase) {
@@ -353,7 +361,7 @@ func runTestPhase(t *testing.T, clusterName string, srcDir string, version strin
 		}
 	}
 
-	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, tfFileName, &phase)
+	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, tfFileName, &phase, nil)
 }
 
 func runTestGCE(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int) {
@@ -378,7 +386,7 @@ func runTestGCE(t *testing.T, clusterName string, srcDir string, version string,
 		expectedFilenames = append(expectedFilenames, prefix+"startup-script")
 	}
 
-	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, "", nil)
+	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, "", nil, nil)
 }
 
 func runTestCloudformation(t *testing.T, clusterName string, srcDir string, version string, private bool) {

@@ -1808,6 +1808,7 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 		out.AdditionalUserData = nil
 	}
 	out.SuspendProcesses = in.SuspendProcesses
+	out.SecurityGroup = in.SecurityGroup
 	return nil
 }
 
@@ -1878,6 +1879,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 		out.AdditionalUserData = nil
 	}
 	out.SuspendProcesses = in.SuspendProcesses
+	out.SecurityGroup = in.SecurityGroup
 	return nil
 }
 
@@ -2568,6 +2570,7 @@ func autoConvert_v1alpha2_LoadBalancerAccessSpec_To_kops_LoadBalancerAccessSpec(
 	out.Type = kops.LoadBalancerType(in.Type)
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
+	out.SecurityGroup = in.SecurityGroup
 	return nil
 }
 
@@ -2580,6 +2583,7 @@ func autoConvert_kops_LoadBalancerAccessSpec_To_v1alpha2_LoadBalancerAccessSpec(
 	out.Type = LoadBalancerType(in.Type)
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
+	out.SecurityGroup = in.SecurityGroup
 	return nil
 }
 

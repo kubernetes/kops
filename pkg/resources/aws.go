@@ -529,6 +529,7 @@ func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*Resource, error)
 			Deleter: DeleteSecurityGroup,
 			Dumper:  DumpSecurityGroup,
 			Obj:     sg,
+			Shared:  HasSharedTag(ec2.ResourceTypeSecurityGroup+":"+aws.StringValue(sg.GroupId), sg.Tags, clusterName),
 		}
 
 		var blocks []string
