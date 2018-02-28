@@ -90,7 +90,7 @@ resource "aws_autoscaling_group" "bastion-bastionuserdata-example-com" {
   }
 
   metrics_granularity = "1Minute"
-  enabled_metrics     = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
 }
 
 resource "aws_autoscaling_group" "master-us-test-1a-masters-bastionuserdata-example-com" {
@@ -119,7 +119,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-bastionuserdata-exam
   }
 
   metrics_granularity = "1Minute"
-  enabled_metrics     = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
 }
 
 resource "aws_autoscaling_group" "nodes-bastionuserdata-example-com" {
@@ -148,7 +148,7 @@ resource "aws_autoscaling_group" "nodes-bastionuserdata-example-com" {
   }
 
   metrics_granularity = "1Minute"
-  enabled_metrics     = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-bastionuserdata-example-com" {
@@ -293,8 +293,9 @@ resource "aws_internet_gateway" "bastionuserdata-example-com" {
   vpc_id = "${aws_vpc.bastionuserdata-example-com.id}"
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
@@ -405,8 +406,9 @@ resource "aws_route_table" "bastionuserdata-example-com" {
   vpc_id = "${aws_vpc.bastionuserdata-example-com.id}"
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
@@ -414,8 +416,9 @@ resource "aws_route_table" "private-us-test-1a-bastionuserdata-example-com" {
   vpc_id = "${aws_vpc.bastionuserdata-example-com.id}"
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "private-us-test-1a.bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "private-us-test-1a.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
@@ -700,8 +703,9 @@ resource "aws_vpc_dhcp_options" "bastionuserdata-example-com" {
   domain_name_servers = ["AmazonProvidedDNS"]
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
