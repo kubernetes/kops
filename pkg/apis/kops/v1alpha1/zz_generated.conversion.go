@@ -1947,6 +1947,9 @@ func autoConvert_v1alpha1_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	}
 	out.AttachDetachReconcileSyncPeriod = in.AttachDetachReconcileSyncPeriod
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
+	out.NodeMonitorPeriod = in.NodeMonitorPeriod
+	out.NodeMonitorGracePeriod = in.NodeMonitorGracePeriod
+	out.PodEvictionTimeout = in.PodEvictionTimeout
 	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
 	out.HorizontalPodAutoscalerSyncPeriod = in.HorizontalPodAutoscalerSyncPeriod
 	out.HorizontalPodAutoscalerDownscaleDelay = in.HorizontalPodAutoscalerDownscaleDelay
@@ -1984,6 +1987,9 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerMana
 	}
 	out.AttachDetachReconcileSyncPeriod = in.AttachDetachReconcileSyncPeriod
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
+	out.NodeMonitorPeriod = in.NodeMonitorPeriod
+	out.NodeMonitorGracePeriod = in.NodeMonitorGracePeriod
+	out.PodEvictionTimeout = in.PodEvictionTimeout
 	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
 	out.HorizontalPodAutoscalerSyncPeriod = in.HorizontalPodAutoscalerSyncPeriod
 	out.HorizontalPodAutoscalerDownscaleDelay = in.HorizontalPodAutoscalerDownscaleDelay
@@ -2118,6 +2124,7 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.AllowPrivileged = in.AllowPrivileged
 	out.EnableDebuggingHandlers = in.EnableDebuggingHandlers
 	out.RegisterNode = in.RegisterNode
+	out.NodeStatusUpdateFrequency = in.NodeStatusUpdateFrequency
 	out.ClusterDomain = in.ClusterDomain
 	out.ClusterDNS = in.ClusterDNS
 	out.NetworkPluginName = in.NetworkPluginName
@@ -2183,6 +2190,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.AllowPrivileged = in.AllowPrivileged
 	out.EnableDebuggingHandlers = in.EnableDebuggingHandlers
 	out.RegisterNode = in.RegisterNode
+	out.NodeStatusUpdateFrequency = in.NodeStatusUpdateFrequency
 	out.ClusterDomain = in.ClusterDomain
 	out.ClusterDNS = in.ClusterDNS
 	out.NetworkPluginName = in.NetworkPluginName
