@@ -84,6 +84,11 @@ func TestAdditionalUserData(t *testing.T) {
 	runTestCloudformation(t, "additionaluserdata.example.com", "additional_user-data", "v1alpha2", false)
 }
 
+// TestBastionAdditionalUserData runs the test on passing additional user-data to a bastion instance group
+func TestBastionAdditionalUserData(t *testing.T) {
+	runTestAWS(t, "bastionuserdata.example.com", "bastionadditional_user-data", "v1alpha2", true, 1)
+}
+
 // TestMinimal_141 runs the test on a configuration from 1.4.1 release
 func TestMinimal_141(t *testing.T) {
 	runTestAWS(t, "minimal-141.example.com", "minimal-141", "v1alpha0", false, 1)
@@ -257,7 +262,8 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 
 	// Compare data files if they are provided
 	if len(expectedFilenames) > 0 {
-		files, err := ioutil.ReadDir(path.Join(h.TempDir, "out", "data"))
+		actualDataPath := path.Join(h.TempDir, "out", "data")
+		files, err := ioutil.ReadDir(actualDataPath)
 		if err != nil {
 			t.Fatalf("failed to read data dir: %v", err)
 		}
@@ -272,7 +278,41 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 			t.Fatalf("unexpected data files.  actual=%q, expected=%q", actualFilenames, expectedFilenames)
 		}
 
-		// TODO: any verification of data files?
+		// Some tests might provide _some_ tf data files (not necessarilly all that
+		// are actually produced), validate that the provided expected data file
+		// contents match actual data file content
+		expectedDataPath := path.Join(srcDir, "data")
+		if _, err := os.Stat(expectedDataPath); err == nil {
+			expectedDataFiles, err := ioutil.ReadDir(expectedDataPath)
+			if err != nil {
+				t.Fatalf("failed to read expected data dir: %v", err)
+			}
+			for _, expectedDataFile := range expectedDataFiles {
+				dataFileName := expectedDataFile.Name()
+				expectedDataContent, err :=
+					ioutil.ReadFile(path.Join(expectedDataPath, dataFileName))
+				if err != nil {
+					t.Fatalf("failed to read expected data file: %v", err)
+				}
+				actualDataContent, err :=
+					ioutil.ReadFile(path.Join(actualDataPath, dataFileName))
+				if err != nil {
+					t.Fatalf("failed to read actual data file: %v", err)
+				}
+				if string(expectedDataContent) != string(actualDataContent) {
+					t.Fatalf(
+						"actual data file (%s) did not match the content of expected data file (%s). "+
+							"NOTE: If outputs seem identical, check for end-of-line differences, "+
+							"especially if the file is in multipart MIME format!"+
+							"\nBEGIN_ACTUAL:\n%s\nEND_ACTUAL\nBEGIN_EXPECTED:\n%s\nEND_EXPECTED",
+						path.Join(actualDataPath, dataFileName),
+						path.Join(expectedDataPath, dataFileName),
+						actualDataContent,
+						expectedDataContent,
+					)
+				}
+			}
+		}
 	}
 }
 
@@ -303,9 +343,13 @@ func runTestAWS(t *testing.T, clusterName string, srcDir string, version string,
 			"aws_iam_role_bastions." + clusterName + "_policy",
 			"aws_iam_role_policy_bastions." + clusterName + "_policy",
 
-			// bastions don't have any userdata
+			// bastions usually don't have any userdata
 			// "aws_launch_configuration_bastions." + clusterName + "_user_data",
 		}...)
+	}
+	// Special case that tests a bastion with user-data
+	if srcDir == "bastionadditional_user-data" {
+		expectedFilenames = append(expectedFilenames, "aws_launch_configuration_bastion."+clusterName+"_user_data")
 	}
 	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, "", nil)
 }
