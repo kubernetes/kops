@@ -6,6 +6,8 @@ metadata:
 spec:
   additionalSans:
   - proxy.api.minimal.example.com
+  addonChannels:
+  - s3://somebucket/example.yaml
   api:
     dns: {}
   authorization:
