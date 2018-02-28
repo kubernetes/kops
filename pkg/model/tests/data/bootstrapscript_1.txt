@@ -179,9 +179,12 @@ kubeAPIServer:
 kubeControllerManager:
   cloudProvider: aws
 kubeProxy:
+  cpuLimit: 30m
   cpuRequest: 30m
   featureGates:
     AdvancedAuditing: "true"
+  memoryLimit: 30Mi
+  memoryRequest: 30Mi
 kubeScheduler:
   image: SomeImage
 kubelet:

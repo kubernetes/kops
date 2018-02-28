@@ -168,9 +168,12 @@ hooks:
     - pkF7ytM3ENpYWZF36FoHJsqXP5Y= (fingerprint)
     image: busybox
 kubeProxy:
+  cpuLimit: 30m
   cpuRequest: 30m
   featureGates:
     AdvancedAuditing: "true"
+  memoryLimit: 30Mi
+  memoryRequest: 30Mi
 kubelet:
   kubeconfigPath: /etc/kubernetes/config.txt
 
