@@ -105,9 +105,6 @@ func (c *ResourceRecordChangeset) Apply() error {
 	}
 
 	for {
-		// Limit batch size
-		maxBatchSize := 900
-
 		var batch []*route53.Change
 		// We group the changes so that changes with the same key are in the same batch
 		for k := range keys {
@@ -115,7 +112,7 @@ func (c *ResourceRecordChangeset) Apply() error {
 				continue
 			}
 
-			if len(batch)+3 >= maxBatchSize {
+			if len(batch)+3 >= MaxBatchSize {
 				break
 			}
 
@@ -142,6 +139,7 @@ func (c *ResourceRecordChangeset) Apply() error {
 				sb.WriteString(fmt.Sprintf("\t%s %s %s\n", aws.StringValue(change.Action), aws.StringValue(change.ResourceRecordSet.Type), aws.StringValue(change.ResourceRecordSet.Name)))
 			}
 
+			glog.V(8).Infof("Route53 MaxBatchSize: %v\n", MaxBatchSize)
 			glog.V(8).Infof("Route53 Changeset:\n%s", sb.String())
 		}
 

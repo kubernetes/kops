@@ -33,7 +33,7 @@ import (
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/watchers"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
-	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	k8scoredns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/coredns"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 	_ "k8s.io/kops/pkg/resources/digitalocean/dns"
@@ -65,6 +65,8 @@ func main() {
 	flags.StringVar(&gossipListen, "gossip-listen", "0.0.0.0:3998", "The address on which to listen if gossip is enabled")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 	flags.StringVar(&watchNamespace, "watch-namespace", "", "Limits the functionality for pods, services and ingress to specific namespace, by default all")
+	flag.IntVar(&route53.MaxBatchSize, "route53-batch-size", route53.MaxBatchSize, "Maximum number of operations performed per changeset batch")
+
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
 
