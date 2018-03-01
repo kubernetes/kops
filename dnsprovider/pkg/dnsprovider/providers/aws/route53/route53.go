@@ -32,6 +32,9 @@ const (
 	ProviderName = "aws-route53"
 )
 
+// MaxBatchSize is used to limit the max size of resource record changesets
+var MaxBatchSize = 900
+
 func init() {
 	dnsprovider.RegisterDnsProvider(ProviderName, func(config io.Reader) (dnsprovider.Interface, error) {
 		return newRoute53(config)
