@@ -1010,6 +1010,19 @@ func (m *MockEC2) DescribeAccountAttributesRequest(*ec2.DescribeAccountAttribute
 	return nil, nil
 }
 
+func (m *MockEC2) DescribeAggregateIdFormat(*ec2.DescribeAggregateIdFormatInput) (*ec2.DescribeAggregateIdFormatOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeAggregateIdFormatWithContext(aws.Context, *ec2.DescribeAggregateIdFormatInput, ...request.Option) (*ec2.DescribeAggregateIdFormatOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeAggregateIdFormatRequest(*ec2.DescribeAggregateIdFormatInput) (*request.Request, *ec2.DescribeAggregateIdFormatOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
 func (m *MockEC2) DescribeAvailabilityZones(*ec2.DescribeAvailabilityZonesInput) (*ec2.DescribeAvailabilityZonesOutput, error) {
 	panic("Not implemented")
 	return nil, nil
@@ -1410,6 +1423,19 @@ func (m *MockEC2) DescribePrefixListsWithContext(aws.Context, *ec2.DescribePrefi
 	return nil, nil
 }
 func (m *MockEC2) DescribePrefixListsRequest(*ec2.DescribePrefixListsInput) (*request.Request, *ec2.DescribePrefixListsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribePrincipalIdFormat(*ec2.DescribePrincipalIdFormatInput) (*ec2.DescribePrincipalIdFormatOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribePrincipalIdFormatWithContext(aws.Context, *ec2.DescribePrincipalIdFormatInput, ...request.Option) (*ec2.DescribePrincipalIdFormatOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribePrincipalIdFormatRequest(*ec2.DescribePrincipalIdFormatInput) (*request.Request, *ec2.DescribePrincipalIdFormatOutput) {
 	panic("Not implemented")
 	return nil, nil
 }
