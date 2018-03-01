@@ -1,5 +1,3 @@
-// +build peer_name_hash
-
 package mesh
 
 // Let peer names be SHA256 hashes of anything, provided they are unique.

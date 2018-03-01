@@ -22,8 +22,8 @@ import (
 	"time"
 
 	"github.com/gogo/protobuf/proto"
-	"github.com/weaveworks/mesh"
 	"k8s.io/kops/protokube/pkg/gossip"
+	"k8s.io/kops/protokube/pkg/gossip/mesh/repackaged/weaveworks/mesh"
 )
 
 // state is an implementation of a LWW map
