@@ -26,7 +26,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/ghodss/yaml"
 
@@ -96,13 +95,14 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 			if os.Getenv("AWS_REGION") != "" {
 				return fmt.Sprintf("export AWS_REGION=%s\n",
 					os.Getenv("AWS_REGION"))
-			} else {
-				sess := session.Must(session.NewSession(aws.NewConfig().
-					WithMaxRetries(3),
-				))
-				if *sess.Config.Region != "" {
-					return fmt.Sprintf("export AWS_REGION=%s\n", *sess.Config.Region)
-				}
+			}
+			// If AWS_REGION env is not set, ask AWS SDK to give us a full session with shared config
+			// this will include the default region and is better than brute-forcing it in nodeup.
+			sess := session.Must(session.NewSessionWithOptions(session.Options{
+				SharedConfigState: session.SharedConfigEnable,
+			}))
+			if *sess.Config.Region != "" {
+				return fmt.Sprintf("export AWS_REGION=%s\n", *sess.Config.Region)
 			}
 			return ""
 		},
