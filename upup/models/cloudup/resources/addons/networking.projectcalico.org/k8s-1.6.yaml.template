@@ -137,7 +137,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v2.6.6
+          image: quay.io/calico/node:v2.6.7
           resources:
             requests:
               cpu: 10m
