@@ -65,7 +65,7 @@ func main() {
 	flags.StringVar(&gossipListen, "gossip-listen", "0.0.0.0:3998", "The address on which to listen if gossip is enabled")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 	flags.StringVar(&watchNamespace, "watch-namespace", "", "Limits the functionality for pods, services and ingress to specific namespace, by default all")
-	flag.IntVar(&route53.MaxBatchSize, "route53-batch-size", 900, "Maximum number of operations performed per changeset batch")
+	flag.IntVar(&route53.MaxBatchSize, "route53-batch-size", route53.MaxBatchSize, "Maximum number of operations performed per changeset batch")
 
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
