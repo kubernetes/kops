@@ -204,6 +204,8 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	{
 		addHostPathMapping(pod, container, "kubeconfig", "/var/lib/kube-proxy/kubeconfig")
 		addHostPathMapping(pod, container, "logfile", "/var/log/kube-proxy.log").ReadOnly = false
+		// @note: mapping the host modules directory to fix the missing ipvs kernel module
+		addHostPathMapping(pod, container, "modules", "/lib/modules")
 
 		// Map SSL certs from host: /usr/share/ca-certificates -> /etc/ssl/certs
 		sslCertsHost := addHostPathMapping(pod, container, "ssl-certs-hosts", "/usr/share/ca-certificates")
