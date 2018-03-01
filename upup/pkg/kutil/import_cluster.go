@@ -725,7 +725,7 @@ func (u *UserDataConfiguration) ParseCert(key string) (*pki.Certificate, error) 
 	if err != nil {
 		return nil, fmt.Errorf("error decoding base64 certificate %q: %v", key, err)
 	}
-	cert, err := pki.LoadPEMCertificate(data)
+	cert, err := pki.ParsePEMCertificate(data)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing certificate %q: %v", key, err)
 	}
