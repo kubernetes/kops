@@ -160,6 +160,10 @@ func (r *SecurityGroupRule) GetLifecycle() *fi.Lifecycle {
 	return r.Lifecycle
 }
 
+func (r *SecurityGroupRule) SetLifecycle(lifecycle fi.Lifecycle) {
+	r.Lifecycle = &lifecycle
+}
+
 func (r *SecurityGroupRule) String() string {
 	return fi.TaskAsString(r)
 }

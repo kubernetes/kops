@@ -12,11 +12,23 @@ While bazel works well for small projects, building with kubernetes still has a 
 
 ## How to run
 
-Build: `bazel build //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/...`
+```
+make bazel-build
+make bazel-build-cli
 
-Test: `bazel test //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/...`
+# To build end to end and upload to s3
+make bazel-upload
+```
 
-Regenerate bazel files using gazelle: `bazel run //:gazelle`
+Test:
+```
+make bazel-test
+```
+
+Regenerate bazel files using gazelle:
+```
+make bazel-gazelle
+```
 
 ## Other changes needed
 

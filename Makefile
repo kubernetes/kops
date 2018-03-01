@@ -20,10 +20,10 @@ GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
-GOVERSION=1.9.2
+GOVERSION=1.9.3
 BUILD=$(GOPATH_1ST)/src/k8s.io/kops/.build
 LOCAL=$(BUILD)/local
-BINDATA_TARGETS=upup/models/bindata.go federation/model/bindata.go
+BINDATA_TARGETS=upup/models/bindata.go
 ARTIFACTS=$(BUILD)/artifacts
 DIST=$(BUILD)/dist
 IMAGES=$(DIST)/images
@@ -32,12 +32,14 @@ CHANNELS=$(LOCAL)/channels
 NODEUP=$(LOCAL)/nodeup
 PROTOKUBE=$(LOCAL)/protokube
 UPLOAD=$(BUILD)/upload
+BAZELBUILD=$(GOPATH_1ST)/src/k8s.io/kops/.bazelbuild
+BAZELDIST=$(BAZELBUILD)/dist
+BAZELIMAGES=$(BAZELDIST)/images
+BAZELUPLOAD=$(BAZELBUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
-TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor" hack/.packages) 
+TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor" hack/.packages)
 BAZEL_OPTIONS?=
-
-SOURCES:=$(shell find . -name "*.go")
 
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
@@ -46,8 +48,9 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 DNS_CONTROLLER_TAG=1.8.0
 
 # Keep in sync with logic in get_workspace_status
-KOPS_RELEASE_VERSION = 1.8.0
-KOPS_CI_VERSION      = 1.8.1-beta.1
+# Update variables in tools/get_workplace_status.sh for the bazel build
+KOPS_RELEASE_VERSION = 1.8.1
+KOPS_CI_VERSION      = 1.8.2-alpha.1
 
 # kops local location
 KOPS                 = ${LOCAL}/kops
@@ -86,11 +89,18 @@ KOPS_SERVER_TAG := $(subst +,-,${VERSION})
 GO15VENDOREXPERIMENT=1
 export GO15VENDOREXPERIMENT
 
+COMPILERVERSION := $(shell go version | cut -d' ' -f3 | tr -d '\n')
+ifeq ($(COMPILERVERSION),go1.10)
+LDFLAGS := -ldflags=all=
+else
+LDFLAGS := -ldflags=
+endif
+
 ifdef STATIC_BUILD
   CGO_ENABLED=0
   export CGO_ENABLED
   EXTRA_BUILDFLAGS=-installsuffix cgo
-  EXTRA_LDFLAGS=-s
+  EXTRA_LDFLAGS=-s -w
 endif
 
 SHASUMCMD := $(shell command -v sha1sum || command -v shasum; 2> /dev/null)
@@ -101,7 +111,7 @@ endif
 
 .PHONY: kops-install # Install kops to local $GOPATH/bin
 kops-install: gobindata-tool ${BINDATA_TARGETS}
-	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/
+	go install ${EXTRA_BUILDFLAGS} ${LDFLAGS}"-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/
 
 .PHONY: channels-install # Install channels to local $GOPATH/bin
 channels-install: ${CHANNELS}
@@ -144,18 +154,19 @@ help: # Show this help
 
 .PHONY: clean
 clean: # Remove build directory and bindata-generated files
-	for t in ${BINDATA_TARGETS}; do if test -e $$t; then rm -fv $$t; fi; done 
+	for t in ${BINDATA_TARGETS}; do if test -e $$t; then rm -fv $$t; fi; done
 	if test -e ${BUILD}; then rm -rfv ${BUILD}; fi
 
 .PHONY: kops
 kops: ${KOPS}
 
-${KOPS}: ${BINDATA_TARGETS} ${SOURCES}
-	go build ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/cmd/kops/
+.PHONY: ${KOPS}
+${KOPS}: ${BINDATA_TARGETS}
+	go build ${EXTRA_BUILDFLAGS} ${LDFLAGS}"-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/cmd/kops/
 
 ${GOBINDATA}:
 	mkdir -p ${LOCAL}
-	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
+	go build ${EXTRA_BUILDFLAGS} ${LDFLAGS}"${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
 
 .PHONY: gobindata-tool
 gobindata-tool: ${GOBINDATA}
@@ -166,10 +177,6 @@ kops-gobindata: gobindata-tool ${BINDATA_TARGETS}
 UPUP_MODELS_BINDATA_SOURCES:=$(shell find upup/models/ | egrep -v "upup/models/bindata.go")
 upup/models/bindata.go: ${GOBINDATA} ${UPUP_MODELS_BINDATA_SOURCES}
 	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOBINDATA} -o $@ -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
-
-FEDERATION_MODELS_BINDATA_SOURCES:=$(shell find federation/model/ | egrep -v "federation/model/bindata.go")
-federation/model/bindata.go: ${GOBINDATA} ${FEDERATION_MODELS_BINDATA_SOURCES}
-	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOBINDATA} -o $@ -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
@@ -208,7 +215,7 @@ test: ${BINDATA_TARGETS}  # Run tests locally
 .PHONY: ${DIST}/linux/amd64/nodeup
 ${DIST}/linux/amd64/nodeup: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
-	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
+	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
 
 .PHONY: crossbuild-nodeup
 crossbuild-nodeup: ${DIST}/linux/amd64/nodeup
@@ -222,17 +229,17 @@ crossbuild-nodeup-in-docker:
 .PHONY: ${DIST}/darwin/amd64/kops
 ${DIST}/darwin/amd64/kops: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
-	GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+	GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
 .PHONY: ${DIST}/linux/amd64/kops
 ${DIST}/linux/amd64/kops: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
-	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
 .PHONY: ${DIST}/windows/amd64/kops.exe
 ${DIST}/windows/amd64/kops.exe: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
-	GOOS=windows GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+	GOOS=windows GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
 
 .PHONY: crossbuild
@@ -350,7 +357,8 @@ push-gce-run: push
 push-aws-run: push
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
 
-${PROTOKUBE}: ${SOURCES}
+.PHONY: ${PROTOKUBE}
+${PROTOKUBE}:
 	go build -o $@ -tags 'peer_name_alternative peer_name_hash' k8s.io/kops/protokube/cmd/protokube
 
 .PHONY: protokube
@@ -385,8 +393,9 @@ protokube-push: protokube-image
 .PHONY: nodeup
 nodeup: ${NODEUP}
 
-${NODEUP}: ${BINDATA_TARGETS} ${SOURCES}
-	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" -o $@ k8s.io/kops/cmd/nodeup
+.PHONY: ${NODEUP}
+${NODEUP}: ${BINDATA_TARGETS}
+	go build ${EXTRA_BUILDFLAGS} ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" -o $@ k8s.io/kops/cmd/nodeup
 
 .PHONY: nodeup-dist
 nodeup-dist:
@@ -400,7 +409,7 @@ nodeup-dist:
 
 .PHONY: dns-controller-gocode
 dns-controller-gocode:
-	go install -tags 'peer_name_alternative peer_name_hash' -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${DNS_CONTROLLER_TAG}" k8s.io/kops/dns-controller/cmd/dns-controller
+	go install -tags 'peer_name_alternative peer_name_hash' ${LDFLAGS}"${EXTRA_LDFLAGS} -X main.BuildVersion=${DNS_CONTROLLER_TAG}" k8s.io/kops/dns-controller/cmd/dns-controller
 
 .PHONY: dns-controller-builder-image
 dns-controller-builder-image:
@@ -452,13 +461,19 @@ copydeps:
 	find vendor/k8s.io/kubernetes -type f -name "*.go" | xargs sed -i -e 's-k8s.io/kubernetes/staging/src/k8s.io/apimachinery-k8s.io/apimachinery-g'
 	bazel run //:gazelle -- -proto disable
 
+.PHONY: dep-ensure
+dep-ensure:
+	dep ensure -v
+	find vendor/ -name "BUILD" -delete
+	find vendor/ -name "BUILD.bazel" -delete
+	bazel run //:gazelle -- -proto disable
+
 .PHONY: gofmt
 gofmt:
 	gofmt -w -s channels/
 	gofmt -w -s cloudmock/
 	gofmt -w -s cmd/
 	gofmt -w -s examples/
-	gofmt -w -s federation/
 	gofmt -w -s nodeup/
 	gofmt -w -s util/
 	gofmt -w -s upup/pkg/
@@ -507,12 +522,16 @@ verify-gendocs: ${KOPS}
 	     exit 1; \
 	fi
 	@echo "cli docs up-to-date"
+
+.PHONY: verify-bazel
+verify-bazel:
+	hack/verify-bazel.sh
 #
 # verify-gendocs will call kops target
 # verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendoc generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-boilerplate nodeup examples test | verify-gendocs verify-packages
+ci: govet verify-gofmt verify-boilerplate verify-bazel nodeup examples test | verify-gendocs verify-packages
 	echo "Done!"
 
 # --------------------------------------------------
@@ -521,8 +540,9 @@ ci: govet verify-gofmt verify-boilerplate nodeup examples test | verify-gendocs 
 .PHONY: channels
 channels: ${CHANNELS}
 
-${CHANNELS}: ${SOURCES}
-	go build ${EXTRA_BUILDFLAGS} -o $@ -ldflags "-X k8s.io/kops.Version=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/channels
+.PHONY: ${CHANNELS}
+${CHANNELS}:
+	go build ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"-X k8s.io/kops.Version=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/channels
 
 # --------------------------------------------------
 # release tasks
@@ -546,7 +566,10 @@ examples: ${BINDATA_TARGETS} # Install kops API example
 # api machinery regenerate
 
 .PHONY: apimachinery
-apimachinery:
+apimachinery: apimachinery-codegen goimports
+
+.PHONY: apimachinery-codegen
+apimachinery-codegen:
 	sh -c hack/make-apimachinery.sh
 	${GOPATH}/bin/conversion-gen --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=0  --output-file-base=zz_generated.conversion
 	${GOPATH}/bin/conversion-gen --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.conversion
@@ -557,9 +580,7 @@ apimachinery:
 	${GOPATH}/bin/defaulter-gen --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.defaults
 	#go install github.com/ugorji/go/codec/codecgen
 	# codecgen works only if invoked from directory where the file is located.
-	#cd pkg/apis/kops/v1alpha2/ && ~/k8s/bin/codecgen -d 1234 -o types.generated.go instancegroup.go cluster.go federation.go
-	#cd pkg/apis/kops/v1alpha1/ && ~/k8s/bin/codecgen -d 1234 -o types.generated.go instancegroup.go cluster.go federation.go
-	#cd pkg/apis/kops/ && ~/k8s/bin/codecgen -d 1234 -o types.generated.go instancegroup.go cluster.go federation.go
+	#cd pkg/apis/kops/ && ~/k8s/bin/codecgen -d 1234 -o types.generated.go instancegroup.go cluster.go
 	${GOPATH}/bin/client-gen  --input-base k8s.io/kops/pkg/apis/ --input="kops/,kops/v1alpha1,kops/v1alpha2" --clientset-path k8s.io/kops/pkg/client/clientset_generated/
 	${GOPATH}/bin/client-gen  --clientset-name="clientset" --input-base k8s.io/kops/pkg/apis/ --input="kops/,kops/v1alpha1,kops/v1alpha2" --clientset-path k8s.io/kops/pkg/client/clientset_generated/
 
@@ -569,7 +590,7 @@ apimachinery:
 
 .PHONY: kops-server-docker-compile
 kops-server-docker-compile:
-	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/amd64/kops-server -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops-server.Version=${VERSION} -X k8s.io/kops-server.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops-server
+	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/amd64/kops-server ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops-server.Version=${VERSION} -X k8s.io/kops-server.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops-server
 
 .PHONY: kops-server-build
 kops-server-build:
@@ -588,34 +609,46 @@ kops-server-push: kops-server-build
 
 .PHONY: bazel-test
 bazel-test:
-	bazel ${BAZEL_OPTIONS} test //cmd/... //pkg/... //channels/... //nodeup/... //protokube/... //dns-controller/... //tests/... //upup/... //util/... //federation/... //hack:verify-all --test_output=errors
+	bazel ${BAZEL_OPTIONS} test //cmd/... //pkg/... //channels/... //nodeup/... //protokube/... //dns-controller/... //tests/... //upup/... //util/... //hack:verify-all --test_output=errors
 
 .PHONY: bazel-build
 bazel-build:
-	bazel build //cmd/... //pkg/... //channels/... //nodeup/... //protokube/... //dns-controller/... //util/... //federation/...
+	bazel build //cmd/... //pkg/... //channels/... //nodeup/... //protokube/... //dns-controller/... //util/...
 
 .PHONY: bazel-build-cli
 bazel-build-cli:
 	bazel build //cmd/kops/...
 
 # Not working yet, but we can hope
-#.PHONY: bazel-crossbuild-kops
-#bazel-crossbuild-kops:
-#	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64 //cmd/kops/...
-#	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops/...
-#	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:windows_amd64 //cmd/kops/...
-#
-#.PHONY: bazel-crossbuild-nodeup
-#bazel-crossbuild-nodeup:
-#	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/nodeup/...
+.PHONY: bazel-crossbuild-kops
+bazel-crossbuild-kops:
+	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64 //cmd/kops/...
+	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops/...
+	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:windows_amd64 //cmd/kops/...
 
-#.PHONY: bazel-crossbuild-protokube
-#bazel-crossbuild-protokube:
-#	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/...
+.PHONY: bazel-crossbuild-nodeup
+bazel-crossbuild-nodeup:
+	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/nodeup/...
 
-#.PHONY: bazel-crossbuild-dns-controller
-#bazel-crossbuild-dns-controller:
-#	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/...
+.PHONY: bazel-crossbuild-protokube
+bazel-crossbuild-protokube:
+	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/...
+
+.PHONY: bazel-crossbuild-dns-controller
+bazel-crossbuild-dns-controller:
+	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/...
+
+.PHONY: bazel-crossbuild-dns-controller-image
+bazel-crossbuild-dns-controller-image:
+	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:dns-controller.tar
+
+.PHONY: bazel-crossbuild-protokube-image
+bazel-crossbuild-protokube-image:
+	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar
+
+.PHONY: bazel-crossbuild-kube-discovery-image
+bazel-crossbuild-kube-discovery-image:
+	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:kube-discovery.tar
 
 .PHONY: bazel-push
 # Will always push a linux-based build up to the server
@@ -653,3 +686,33 @@ push-kube-discovery:
 	bazel run //kube-discovery/images:kube-discovery
 	docker tag bazel/kube-discovery/images:kube-discovery ${DOCKER_REGISTRY}/kube-discovery:${DOCKER_TAG}
 	docker push ${DOCKER_REGISTRY}/kube-discovery:${DOCKER_TAG}
+
+.PHONY: bazel-protokube-export
+bazel-protokube-export:
+	mkdir -p ${BAZELIMAGES}
+	bazel build --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar
+	cp bazel-bin/images/protokube.tar ${BAZELIMAGES}/protokube.tar
+	gzip --force --fast ${BAZELIMAGES}/protokube.tar
+	(${SHASUMCMD} ${BAZELIMAGES}/protokube.tar.gz | cut -d' ' -f1) > ${BAZELIMAGES}/protokube.tar.gz.sha1
+
+.PHONY: bazel-version-dist
+bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokube-export utils-dist
+	rm -rf ${BAZELUPLOAD}
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
+	mkdir -p ${BAZELUPLOAD}/utils/${VERSION}/linux/amd64/
+	cp bazel-bin/cmd/nodeup/linux_amd64_stripped/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
+	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha1
+	cp ${BAZELIMAGES}/protokube.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz
+	cp ${BAZELIMAGES}/protokube.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha1
+	cp bazel-bin/cmd/kops/linux_amd64_stripped/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops
+	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops.sha1
+	cp bazel-bin/cmd/kops/darwin_amd64_pure_stripped/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops
+	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
+	cp ${DIST}/linux/amd64/utils.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz
+	cp ${DIST}/linux/amd64/utils.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
+
+.PHONY: bazel-upload
+bazel-upload: bazel-version-dist # Upload kops to S3
+	aws s3 sync --acl public-read ${BAZELUPLOAD}/ ${S3_BUCKET}

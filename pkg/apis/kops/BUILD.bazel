@@ -9,7 +9,6 @@ go_library(
         "componentconfig.go",
         "doc.go",
         "dockerconfig.go",
-        "federation.go",
         "instancegroup.go",
         "keyset.go",
         "labels.go",
@@ -30,7 +29,6 @@ go_library(
         "//vendor/github.com/blang/semver:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/conversion:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
     ],
@@ -43,6 +41,5 @@ go_test(
         "semver_test.go",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/pkg/apis/kops",
     deps = ["//vendor/github.com/blang/semver:go_default_library"],
 )

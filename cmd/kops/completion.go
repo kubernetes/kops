@@ -45,7 +45,7 @@ const boilerPlate = `
 `
 
 var (
-	completion_shells = map[string]func(out io.Writer, cmd *cobra.Command) error{
+	completionShells = map[string]func(out io.Writer, cmd *cobra.Command) error{
 		"bash": runCompletionBash,
 		"zsh":  runCompletionZsh,
 	}
@@ -125,7 +125,7 @@ func RunCompletion(f *util.Factory, cmd *cobra.Command, args []string, out io.Wr
 		return fmt.Errorf("shell is required")
 	}
 
-	run, found := completion_shells[c.Shell]
+	run, found := completionShells[c.Shell]
 	if !found {
 		return fmt.Errorf("Unsupported shell type %q.", args[0])
 	}

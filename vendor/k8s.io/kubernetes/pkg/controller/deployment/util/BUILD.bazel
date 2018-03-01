@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -31,29 +31,5 @@ go_library(
         "//vendor/k8s.io/kubernetes/pkg/apis/extensions:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/controller:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/labels:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "deployment_util_test.go",
-        "hash_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "k8s.io/kubernetes/pkg/controller/deployment/util",
-    deps = [
-        "//vendor/k8s.io/api/core/v1:go_default_library",
-        "//vendor/k8s.io/api/extensions/v1beta1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
-        "//vendor/k8s.io/client-go/kubernetes/fake:go_default_library",
-        "//vendor/k8s.io/client-go/testing:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/api/v1:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/controller:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/hash:go_default_library",
     ],
 )

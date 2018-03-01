@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -38,35 +38,6 @@ go_library(
         "//vendor/google.golang.org/grpc/stats:go_default_library",
         "//vendor/google.golang.org/grpc/status:go_default_library",
         "//vendor/google.golang.org/grpc/tap:go_default_library",
-        "//vendor/google.golang.org/grpc/transport:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "backoff_test.go",
-        "balancer_test.go",
-        "call_test.go",
-        "clientconn_test.go",
-        "codec_benchmark_test.go",
-        "codec_test.go",
-        "proxy_test.go",
-        "rpc_util_test.go",
-        "server_test.go",
-    ],
-    data = glob(["testdata/**"]),
-    embed = [":go_default_library"],
-    importpath = "google.golang.org/grpc",
-    deps = [
-        "//vendor/github.com/golang/protobuf/proto:go_default_library",
-        "//vendor/golang.org/x/net/context:go_default_library",
-        "//vendor/google.golang.org/grpc/codes:go_default_library",
-        "//vendor/google.golang.org/grpc/credentials:go_default_library",
-        "//vendor/google.golang.org/grpc/keepalive:go_default_library",
-        "//vendor/google.golang.org/grpc/naming:go_default_library",
-        "//vendor/google.golang.org/grpc/status:go_default_library",
-        "//vendor/google.golang.org/grpc/test/codec_perf:go_default_library",
         "//vendor/google.golang.org/grpc/transport:go_default_library",
     ],
 )

@@ -59,8 +59,8 @@ func (b *BootstrapScript) KubeEnv(ig *kops.InstanceGroup) (string, error) {
 // ResourceNodeUp generates and returns a nodeup (bootstrap) script from a
 // template file, substituting in specific env vars & cluster spec configuration
 func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.ClusterSpec) (*fi.ResourceHolder, error) {
-	if ig.Spec.Role == kops.InstanceGroupRoleBastion {
-		// Bastions are just bare machines (currently), used as SSH jump-hosts
+	// Bastions can have AdditionalUserData, but if there isn't any skip this part
+	if ig.IsBastion() && len(ig.Spec.AdditionalUserData) == 0 {
 		return nil, nil
 	}
 
@@ -111,6 +111,14 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 				spec["kubeControllerManager"] = cs.KubeControllerManager
 				spec["kubeScheduler"] = cs.KubeScheduler
 				spec["masterKubelet"] = cs.MasterKubelet
+				spec["etcdClusters"] = make(map[string]kops.EtcdClusterSpec, 0)
+
+				for _, etcdCluster := range cs.EtcdClusters {
+					spec["etcdClusters"].(map[string]kops.EtcdClusterSpec)[etcdCluster.Name] = kops.EtcdClusterSpec{
+						Image:   etcdCluster.Image,
+						Version: etcdCluster.Version,
+					}
+				}
 			}
 
 			hooks, err := b.getRelevantHooks(cs.Hooks, ig.Spec.Role)
@@ -141,6 +149,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 			spec["kubelet"] = ig.Spec.Kubelet
 			spec["nodeLabels"] = ig.Spec.NodeLabels
 			spec["taints"] = ig.Spec.Taints
+			spec["suspendProcesses"] = ig.Spec.SuspendProcesses
 
 			hooks, err := b.getRelevantHooks(ig.Spec.Hooks, ig.Spec.Role)
 			if err != nil {

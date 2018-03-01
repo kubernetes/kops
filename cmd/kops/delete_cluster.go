@@ -44,19 +44,19 @@ type DeleteClusterOptions struct {
 }
 
 var (
-	delete_cluster_long = templates.LongDesc(i18n.T(`
+	deleteClusterLong = templates.LongDesc(i18n.T(`
 	Deletes a Kubernetes cluster and all associated resources.  Resources include instancegroups,
 	secrets and the state store.  There is no "UNDO" for this command.
 	`))
 
-	delete_cluster_example = templates.Examples(i18n.T(`
+	deleteClusterExample = templates.Examples(i18n.T(`
 	# Delete a cluster.
 	# The --yes option runs the command immediately.
 	kops delete cluster --name=k8s.cluster.site --yes
 
 	`))
 
-	delete_cluster_short = i18n.T("Delete a cluster.")
+	deleteClusterShort = i18n.T("Delete a cluster.")
 )
 
 func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -64,9 +64,9 @@ func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "cluster CLUSTERNAME [--yes]",
-		Short:   delete_cluster_short,
-		Long:    delete_cluster_long,
-		Example: delete_cluster_example,
+		Short:   deleteClusterShort,
+		Long:    deleteClusterLong,
+		Example: deleteClusterExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := rootCommand.ProcessArgs(args)
 			if err != nil {

@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/exec"
 
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -247,7 +248,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	container := &v1.Container{
 		Name:  "kube-apiserver",
 		Image: b.Cluster.Spec.KubeAPIServer.Image,
-		Command: execWithTee(
+		Command: exec.WithTee(
 			"/usr/local/bin/kube-apiserver",
 			sortedStrings(flags),
 			"/var/log/kube-apiserver.log"),

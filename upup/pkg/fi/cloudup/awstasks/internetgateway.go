@@ -32,9 +32,13 @@ type InternetGateway struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
 
-	ID     *string
-	VPC    *VPC
+	ID  *string
+	VPC *VPC
+	// Shared is set if this is a shared InternetGateway
 	Shared *bool
+
+	// Tags is a map of aws tags that are added to the InternetGateway
+	Tags map[string]string
 }
 
 var _ fi.CompareWithID = &InternetGateway{}
@@ -163,12 +167,7 @@ func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Intern
 		}
 	}
 
-	tags := t.Cloud.BuildTags(e.Name)
-	if shared {
-		// Don't tag shared resources
-		tags = nil
-	}
-	return t.AddAWSTags(*e.ID, tags)
+	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
 type terraformInternetGateway struct {
@@ -203,11 +202,9 @@ func (_ *InternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, ch
 		return nil
 	}
 
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	tf := &terraformInternetGateway{
 		VPCID: e.VPC.TerraformLink(),
-		Tags:  cloud.BuildTags(e.Name),
+		Tags:  e.Tags,
 	}
 
 	return t.RenderResource("aws_internet_gateway", *e.Name, tf)
@@ -263,11 +260,9 @@ func (_ *InternetGateway) RenderCloudformation(t *cloudformation.CloudformationT
 		return nil
 	}
 
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	{
 		cf := &cloudformationInternetGateway{
-			Tags: buildCloudformationTags(cloud.BuildTags(e.Name)),
+			Tags: buildCloudformationTags(e.Tags),
 		}
 
 		err := t.RenderResource("AWS::EC2::InternetGateway", *e.Name, cf)

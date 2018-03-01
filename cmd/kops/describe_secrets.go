@@ -33,15 +33,15 @@ import (
 )
 
 var (
-	describe_secret_long = templates.LongDesc(i18n.T(`
+	describeSecretLong = templates.LongDesc(i18n.T(`
 	Get additional information about cluster secrets.
 	`))
 
 	// TODO: what is an example??
-	describe_secret_example = templates.Examples(i18n.T(`
+	describeSecretExample = templates.Examples(i18n.T(`
 	
 	`))
-	describe_secret_short = i18n.T(`Describe a cluster secret`)
+	describeSecretShort = i18n.T(`Describe a cluster secret`)
 )
 
 type DescribeSecretsCommand struct {
@@ -54,9 +54,9 @@ func init() {
 	cmd := &cobra.Command{
 		Use:     "secrets",
 		Aliases: []string{"secret"},
-		Short:   describe_secret_short,
-		Long:    describe_secret_long,
-		Example: describe_secret_example,
+		Short:   describeSecretShort,
+		Long:    describeSecretLong,
+		Example: describeSecretExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := describeSecretsCommand.Run(args)
 			if err != nil {

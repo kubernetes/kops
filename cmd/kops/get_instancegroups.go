@@ -34,10 +34,10 @@ import (
 )
 
 var (
-	get_instancegroups_long = templates.LongDesc(i18n.T(`
+	getInstancegroupsLong = templates.LongDesc(i18n.T(`
 	Display one or many instancegroup resources.`))
 
-	get_instancegroups_example = templates.Examples(i18n.T(`
+	getInstancegroupsExample = templates.Examples(i18n.T(`
 	# Get all instancegroups in a state store
 	kops get ig
 
@@ -48,7 +48,7 @@ var (
 	kops get ig --name k8s-cluster.example.com -o yaml > instancegroups-desired-config.yaml
 	`))
 
-	get_instancegroups_short = i18n.T(`Get one or many instancegroups`)
+	getInstancegroupsShort = i18n.T(`Get one or many instancegroups`)
 )
 
 type GetInstanceGroupsOptions struct {
@@ -63,9 +63,9 @@ func NewCmdGetInstanceGroups(f *util.Factory, out io.Writer, getOptions *GetOpti
 	cmd := &cobra.Command{
 		Use:     "instancegroups",
 		Aliases: []string{"instancegroup", "ig"},
-		Short:   get_instancegroups_short,
-		Long:    get_instancegroups_long,
-		Example: get_instancegroups_example,
+		Short:   getInstancegroupsShort,
+		Long:    getInstancegroupsLong,
+		Example: getInstancegroupsExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := RunGetInstanceGroups(&options, args)
 			if err != nil {

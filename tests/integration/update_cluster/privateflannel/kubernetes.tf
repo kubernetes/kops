@@ -90,7 +90,7 @@ resource "aws_autoscaling_group" "bastion-privateflannel-example-com" {
   }
 
   metrics_granularity = "1Minute"
-  enabled_metrics     = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
 }
 
 resource "aws_autoscaling_group" "master-us-test-1a-masters-privateflannel-example-com" {
@@ -119,7 +119,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privateflannel-examp
   }
 
   metrics_granularity = "1Minute"
-  enabled_metrics     = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
 }
 
 resource "aws_autoscaling_group" "nodes-privateflannel-example-com" {
@@ -148,7 +148,7 @@ resource "aws_autoscaling_group" "nodes-privateflannel-example-com" {
   }
 
   metrics_granularity = "1Minute"
-  enabled_metrics     = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-privateflannel-example-com" {
@@ -293,8 +293,9 @@ resource "aws_internet_gateway" "privateflannel-example-com" {
   vpc_id = "${aws_vpc.privateflannel-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privateflannel.example.com"
-    Name              = "privateflannel.example.com"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 
@@ -404,8 +405,9 @@ resource "aws_route_table" "private-us-test-1a-privateflannel-example-com" {
   vpc_id = "${aws_vpc.privateflannel-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privateflannel.example.com"
-    Name              = "private-us-test-1a.privateflannel.example.com"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "private-us-test-1a.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 
@@ -413,8 +415,9 @@ resource "aws_route_table" "privateflannel-example-com" {
   vpc_id = "${aws_vpc.privateflannel-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privateflannel.example.com"
-    Name              = "privateflannel.example.com"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 
@@ -690,8 +693,9 @@ resource "aws_vpc_dhcp_options" "privateflannel-example-com" {
   domain_name_servers = ["AmazonProvidedDNS"]
 
   tags = {
-    KubernetesCluster = "privateflannel.example.com"
-    Name              = "privateflannel.example.com"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 

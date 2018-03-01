@@ -79,7 +79,7 @@ kops uses DNS to allow nodes and end-users to discover the api-server.  The apis
 
 ## etcd bringup
 
-etcd is where we have put all of our synchronization logic, so it is more complicated that most other pieces,
+etcd is where we have put all of our synchronization logic, so it is more complicated than most other pieces,
 and we must be really careful when bringing it up.
 
 kops follows CoreOS's recommend procedure for [bring-up of etcd on clouds](https://github.com/coreos/etcd/issues/5418):
@@ -107,7 +107,7 @@ Most of this has focused on things that happen on the master, but the node bring
 * nodeup installs docker & kubelet
 * in /etc/kubernetes/manifests, we have kube-proxy
 
-So kubelet will start up, and will kube-proxy.  It will try to reach the api-server on the internal DNS name,
+So kubelet will start up, as will kube-proxy.  It will try to reach the api-server on the internal DNS name,
 and once the master is up it will succeed.  Then:
 
 * kubelet creates a Node object representing itself

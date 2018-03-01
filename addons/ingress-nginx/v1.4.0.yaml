@@ -30,7 +30,7 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
       - name: default-http-backend
-        image: gcr.io/google_containers/defaultbackend:1.0
+        image: k8s.gcr.io/defaultbackend:1.0
         livenessProbe:
           httpGet:
             path: /healthz
@@ -101,7 +101,7 @@ spec:
     spec:
       terminationGracePeriodSeconds: 60
       containers:
-      - image: gcr.io/google_containers/nginx-ingress-controller:0.8.3
+      - image: k8s.gcr.io/nginx-ingress-controller:0.8.3
         name: ingress-nginx
         imagePullPolicy: Always
         ports:

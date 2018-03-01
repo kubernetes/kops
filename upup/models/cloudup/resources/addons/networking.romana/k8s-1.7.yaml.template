@@ -137,7 +137,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: romana-daemon
-        image: quay.io/romana/daemon:v2.0.0
+        image: quay.io/romana/daemon:v2.0.2
         imagePullPolicy: Always
         resources:
           requests:
@@ -170,7 +170,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: romana-listener
-        image: quay.io/romana/listener:v2.0.0
+        image: quay.io/romana/listener:v2.0.2
         imagePullPolicy: Always
         resources:
           requests:
@@ -202,7 +202,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: romana-agent
-        image: quay.io/romana/agent:v2.0.0
+        image: quay.io/romana/agent:v2.0.2
         imagePullPolicy: Always
         resources:
           requests:
@@ -305,7 +305,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: romana-aws
-        image: quay.io/romana/aws:v2.0.0
+        image: quay.io/romana/aws:v2.0.2
         imagePullPolicy: Always
         resources:
           requests:
@@ -334,7 +334,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: romana-vpcrouter
-        image: quay.io/romana/vpcrouter-romana-plugin:1.1.12
+        image: quay.io/romana/vpcrouter-romana-plugin:1.1.17
         imagePullPolicy: Always
         resources:
           requests:

@@ -47,9 +47,9 @@ type EtcdCluster struct {
 	ImageSource string
 	// LogFile is the location of the logfile
 	LogFile string
-	// Me represents myself
+	// Me is the node that we will be in the cluster
 	Me *EtcdNode
-	// Nodes is a list of nodes in the cluster
+	// Nodes is a list of nodes in the cluster (including the self-node, Me)
 	Nodes []*EtcdNode
 	// PeerPort is the port for peers to connect
 	PeerPort int
@@ -61,6 +61,8 @@ type EtcdCluster struct {
 	Spec *etcd.EtcdClusterSpec
 	// VolumeMountPath is the mount path
 	VolumeMountPath string
+	// TLSAuth indicates we should enforce peer and client verification
+	TLSAuth bool
 	// TLSCA is the path to a client ca for etcd clients
 	TLSCA string
 	// TLSCert is the path to a client certificate for etcd
@@ -77,6 +79,10 @@ type EtcdCluster struct {
 	ElectionTimeout string
 	// HeartbeatInterval is the heartbeat interval
 	HeartbeatInterval string
+	// BackupImage is the image to use for backing up etcd
+	BackupImage string
+	// BackupStore is a VFS path for backing up etcd
+	BackupStore string
 }
 
 // EtcdNode is a definition for the etcd node
@@ -100,24 +106,24 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *etcd.EtcdClusterSpec
 	}
 
 	cluster := &EtcdCluster{
-		// @TODO we need to deprecate this port and use 2379, but that would be a breaking change
+		CPURequest:        resource.MustParse("100m"),
 		ClientPort:        4001,
 		ClusterName:       "etcd-" + spec.ClusterKey,
-		CPURequest:        resource.MustParse("100m"),
 		DataDirName:       "data-" + spec.ClusterKey,
+		ElectionTimeout:   kubeBoot.EtcdElectionTimeout,
+		HeartbeatInterval: kubeBoot.EtcdHeartbeatInterval,
 		ImageSource:       kubeBoot.EtcdImageSource,
-		TLSCA:             kubeBoot.TLSCA,
-		TLSCert:           kubeBoot.TLSCert,
-		TLSKey:            kubeBoot.TLSKey,
 		PeerCA:            kubeBoot.PeerCA,
 		PeerCert:          kubeBoot.PeerCert,
 		PeerKey:           kubeBoot.PeerKey,
 		PeerPort:          2380,
 		PodName:           "etcd-server-" + spec.ClusterKey,
 		Spec:              spec,
+		TLSAuth:           kubeBoot.TLSAuth,
+		TLSCA:             kubeBoot.TLSCA,
+		TLSCert:           kubeBoot.TLSCert,
+		TLSKey:            kubeBoot.TLSKey,
 		VolumeMountPath:   v.Mountpoint,
-		ElectionTimeout:   kubeBoot.EtcdElectionTimeout,
-		HeartbeatInterval: kubeBoot.EtcdHeartbeatInterval,
 	}
 
 	// We used to build this through text files ... it turns out to just be more complicated than code!
@@ -133,6 +139,9 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *etcd.EtcdClusterSpec
 	default:
 		return nil, fmt.Errorf("unknown etcd cluster key %q", spec.ClusterKey)
 	}
+
+	cluster.BackupImage = kubeBoot.EtcdBackupImage
+	cluster.BackupStore = kubeBoot.EtcdBackupStore
 
 	k.cluster = cluster
 

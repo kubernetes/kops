@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -84,41 +84,4 @@ go_library(
     }),
     importpath = "github.com/miekg/dns",
     visibility = ["//visibility:public"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "client_test.go",
-        "clientconfig_test.go",
-        "dns_bench_test.go",
-        "dns_test.go",
-        "dnssec_test.go",
-        "dyn_test.go",
-        "edns_test.go",
-        "fuzz_test.go",
-        "issue_test.go",
-        "labels_test.go",
-        "nsecx_test.go",
-        "parse_test.go",
-        "remote_test.go",
-        "sanitize_test.go",
-        "server_test.go",
-        "sig0_test.go",
-        "tsig_test.go",
-        "types_test.go",
-        "update_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "github.com/miekg/dns",
-)
-
-go_test(
-    name = "go_default_xtest",
-    srcs = [
-        "example_test.go",
-        "privaterr_test.go",
-    ],
-    importpath = "github.com/miekg/dns_test",
-    deps = [":go_default_library"],
 )

@@ -23,7 +23,7 @@ kops create instancegroup
 ```
   # Create an instancegroup for the k8s-cluster.example.com cluster.
   kops create ig --name=k8s-cluster.example.com node-example \
-  --role node --subnet my-subnet-name
+  --role node --subnet my-subnet-name,my-other-subnet-name
   
   # Create a YAML manifest for an instancegroup for the k8s-cluster.example.com cluster.
   kops create ig --name=k8s-cluster.example.com node-example \
@@ -37,7 +37,7 @@ kops create instancegroup
       --edit                 If true, an editor will be opened to edit default values. (default true)
   -o, --output string        Ouput format. One of json|yaml
       --role string          Type of instance group to create (Node,Master,Bastion) (default "Node")
-      --subnet stringSlice   Subnets in which to create instance group
+      --subnet stringSlice   Subnet in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.
 ```
 
 ### Options inherited from parent commands

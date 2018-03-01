@@ -26,12 +26,16 @@ type DockerConfig struct {
 	BridgeIP *string `json:"bridgeIP,omitempty" flag:"bip"`
 	// DefaultUlimit is the ulimits for containers
 	DefaultUlimit []string `json:"defaultUlimit,omitempty" flag:"default-ulimit,repeat"`
+	// Hosts enables you to configure the endpoints the docker daemon listens on i.e tcp://0.0.0.0.2375 or unix:///var/run/docker.sock etc
+	Hosts []string `json:"hosts,omitempty" flag:"host,repeat"`
 	// IPMasq enables ip masquerading for containers
 	IPMasq *bool `json:"ipMasq,omitempty" flag:"ip-masq"`
 	// IPtables enables addition of iptables rules
 	IPTables *bool `json:"ipTables,omitempty" flag:"iptables"`
 	// InsecureRegistry enable insecure registry communication @question according to dockers this a list??
 	InsecureRegistry *string `json:"insecureRegistry,omitempty" flag:"insecure-registry"`
+	// LiveRestore enables live restore of docker when containers are still running
+	LiveRestore *bool `json:"liveRestore,omitempty" flag:"live-restore"`
 	// LogDriver is the defailt driver for container logs (default "json-file")
 	LogDriver *string `json:"logDriver,omitempty" flag:"log-driver"`
 	// LogLevel is the logging level ("debug", "info", "warn", "error", "fatal") (default "info")

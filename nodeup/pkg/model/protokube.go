@@ -70,12 +70,12 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 		// retrieve the etcd peer certificates and private keys from the keystore
 		if t.UseEtcdTLS() {
 			for _, x := range []string{"etcd", "etcd-client"} {
-				if err := t.buildCertificateTask(c, x, fmt.Sprintf("%s.pem", x)); err != nil {
+				if err := t.BuildCertificateTask(c, x, fmt.Sprintf("%s.pem", x)); err != nil {
 					return err
 				}
 			}
 			for _, x := range []string{"etcd", "etcd-client"} {
-				if err := t.buildPrivateTask(c, x, fmt.Sprintf("%s-key.pem", x)); err != nil {
+				if err := t.BuildPrivateTask(c, x, fmt.Sprintf("%s-key.pem", x)); err != nil {
 					return err
 				}
 			}
@@ -201,6 +201,8 @@ type ProtokubeFlags struct {
 	DNSInternalSuffix         *string  `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
 	DNSProvider               *string  `json:"dnsProvider,omitempty" flag:"dns"`
 	DNSServer                 *string  `json:"dns-server,omitempty" flag:"dns-server"`
+	EtcdBackupImage           string   `json:"etcd-backup-image,omitempty" flag:"etcd-backup-image"`
+	EtcdBackupStore           string   `json:"etcd-backup-store,omitempty" flag:"etcd-backup-store"`
 	EtcdImage                 *string  `json:"etcd-image,omitempty" flag:"etcd-image"`
 	EtcdLeaderElectionTimeout *string  `json:"etcd-election-timeout,omitempty" flag:"etcd-election-timeout"`
 	EtcdHearbeatInterval      *string  `json:"etcd-heartbeat-interval,omitempty" flag:"etcd-heartbeat-interval"`
@@ -210,6 +212,7 @@ type ProtokubeFlags struct {
 	PeerTLSCaFile             *string  `json:"peer-ca,omitempty" flag:"peer-ca"`
 	PeerTLSCertFile           *string  `json:"peer-cert,omitempty" flag:"peer-cert"`
 	PeerTLSKeyFile            *string  `json:"peer-key,omitempty" flag:"peer-key"`
+	TLSAuth                   *bool    `json:"tls-auth,omitempty" flag:"tls-auth"`
 	TLSCAFile                 *string  `json:"tls-ca,omitempty" flag:"tls-ca"`
 	TLSCertFile               *string  `json:"tls-cert,omitempty" flag:"tls-cert"`
 	TLSKeyFile                *string  `json:"tls-key,omitempty" flag:"tls-key"`
@@ -242,13 +245,25 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		Master:                    b(t.IsMaster),
 	}
 
+	for _, e := range t.Cluster.Spec.EtcdClusters {
+		if e.Backups != nil {
+			if f.EtcdBackupImage == "" {
+				f.EtcdBackupImage = e.Backups.Image
+			}
+
+			if f.EtcdBackupStore == "" {
+				f.EtcdBackupStore = e.Backups.BackupStore
+			}
+		}
+	}
+
 	// TODO this is dupicate code with etcd model
-	image := fmt.Sprintf("gcr.io/google_containers/etcd:%s", imageVersion)
+	image := fmt.Sprintf("k8s.gcr.io/etcd:%s", imageVersion)
 	// override image if set as API value
 	if etcdContainerImage != "" {
 		image = etcdContainerImage
 	}
-	assets := assets.NewAssetBuilder(t.Cluster.Spec.Assets, "")
+	assets := assets.NewAssetBuilder(t.Cluster, "")
 	remapped, err := assets.RemapImage(image)
 	if err != nil {
 		return nil, fmt.Errorf("unable to remap container %q: %v", image, err)
@@ -271,6 +286,10 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		f.TLSCAFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
 		f.TLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))
 		f.TLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-key.pem"))
+	}
+	if t.UseTLSAuth() {
+		enableAuth := true
+		f.TLSAuth = b(enableAuth)
 	}
 
 	zone := t.Cluster.Spec.DNSZone
@@ -377,56 +396,4 @@ func (t *ProtokubeBuilder) writeProxyEnvVars(buffer *bytes.Buffer) {
 		buffer.WriteString(envVar.Value)
 		buffer.WriteString(" ")
 	}
-}
-
-// buildCertificateTask is responsible for build a certificate request task
-func (t *ProtokubeBuilder) buildCertificateTask(c *fi.ModelBuilderContext, name, filename string) error {
-	cert, err := t.KeyStore.FindCert(name)
-	if err != nil {
-		return err
-	}
-
-	if cert == nil {
-		return fmt.Errorf("certificate %q not found", name)
-	}
-
-	serialized, err := cert.AsString()
-	if err != nil {
-		return err
-	}
-
-	c.AddTask(&nodetasks.File{
-		Path:     filepath.Join(t.PathSrvKubernetes(), filename),
-		Contents: fi.NewStringResource(serialized),
-		Type:     nodetasks.FileType_File,
-		Mode:     s("0400"),
-	})
-
-	return nil
-}
-
-// buildPrivateKeyTask is responsible for build a certificate request task
-func (t *ProtokubeBuilder) buildPrivateTask(c *fi.ModelBuilderContext, name, filename string) error {
-	cert, err := t.KeyStore.FindPrivateKey(name)
-	if err != nil {
-		return err
-	}
-
-	if cert == nil {
-		return fmt.Errorf("private key %q not found", name)
-	}
-
-	serialized, err := cert.AsString()
-	if err != nil {
-		return err
-	}
-
-	c.AddTask(&nodetasks.File{
-		Path:     filepath.Join(t.PathSrvKubernetes(), filename),
-		Contents: fi.NewStringResource(serialized),
-		Type:     nodetasks.FileType_File,
-		Mode:     s("0400"),
-	})
-
-	return nil
 }

@@ -33,15 +33,15 @@ import (
 )
 
 var (
-	toolbox_dump_long = templates.LongDesc(i18n.T(`
+	toolboxDumpLong = templates.LongDesc(i18n.T(`
 	Displays cluster information.  Includes information about cloud and Kubernetes resources.`))
 
-	toolbox_dump_example = templates.Examples(i18n.T(`
+	toolboxDumpExample = templates.Examples(i18n.T(`
 	# Dump cluster information
 	kops toolbox dump --name k8s-cluster.example.com
 	`))
 
-	toolbox_dump_short = i18n.T(`Dump cluster information`)
+	toolboxDumpShort = i18n.T(`Dump cluster information`)
 )
 
 type ToolboxDumpOptions struct {
@@ -60,9 +60,9 @@ func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "dump",
-		Short:   toolbox_dump_short,
-		Long:    toolbox_dump_long,
-		Example: toolbox_dump_example,
+		Short:   toolboxDumpShort,
+		Long:    toolboxDumpLong,
+		Example: toolboxDumpExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := rootCommand.ProcessArgs(args); err != nil {
 				exitWithError(err)

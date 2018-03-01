@@ -100,6 +100,18 @@ spec:
             # Auto-detect the BGP IP address.
             - name: IP
               value: ""
+            # Set to enable the experimental Prometheus metrics server
+            - name: FELIX_PROMETHEUSMETRICSENABLED
+              value: "{{- or .Networking.Calico.PrometheusMetricsEnabled "false" }}"
+            # TCP port that the Prometheus metrics server should bind to
+            - name: FELIX_PROMETHEUSMETRICSPORT
+              value: "{{- or .Networking.Calico.PrometheusMetricsPort "9091" }}"
+            # Enable Prometheus Go runtime metrics collection
+            - name: FELIX_PROMETHEUSGOMETRICSENABLED
+              value: "{{- or .Networking.Calico.PrometheusGoMetricsEnabled "true" }}"
+            # Enable Prometheus process metrics collection
+            - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
+              value: "{{- or .Networking.Calico.PrometheusProcessMetricsEnabled "true" }}"
           securityContext:
             privileged: true
           volumeMounts:

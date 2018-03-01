@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -25,30 +25,5 @@ go_library(
         "//vendor/github.com/imdario/mergo:go_default_library",
         "//vendor/github.com/satori/go.uuid:go_default_library",
         "//vendor/golang.org/x/crypto/scrypt:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "crypto_test.go",
-        "date_test.go",
-        "defaults_test.go",
-        "dict_test.go",
-        "example_test.go",
-        "flow_control_test.go",
-        "functions_test.go",
-        "list_test.go",
-        "numeric_test.go",
-        "reflect_test.go",
-        "regex_test.go",
-        "semver_test.go",
-        "strings_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "github.com/Masterminds/sprig",
-    deps = [
-        "//vendor/github.com/aokoli/goutils:go_default_library",
-        "//vendor/github.com/stretchr/testify/assert:go_default_library",
     ],
 )

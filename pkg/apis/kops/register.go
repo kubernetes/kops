@@ -59,8 +59,6 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&ClusterList{},
 		&InstanceGroup{},
 		&InstanceGroupList{},
-		&Federation{},
-		&FederationList{},
 		&Keyset{},
 		&KeysetList{},
 		&SSHCredential{},
@@ -74,9 +72,6 @@ func (obj *Cluster) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
 func (obj *InstanceGroup) GetObjectKind() schema.ObjectKind {
-	return &obj.TypeMeta
-}
-func (obj *Federation) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
 func (obj *Keyset) GetObjectKind() schema.ObjectKind {

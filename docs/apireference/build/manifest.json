@@ -191,6 +191,12 @@
       "filename": "_generated_statusdetails_v1_meta_definition.md"
     },
     {
+      "filename": "_generated_targetspec_v1alpha2_kops_definition.md"
+    },
+    {
+      "filename": "_generated_terraformspec_v1alpha2_kops_definition.md"
+    },
+    {
       "filename": "_generated_time_v1_meta_definition.md"
     },
     {

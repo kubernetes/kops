@@ -124,7 +124,7 @@ func (b *Builder) Build(cluster *kops.Cluster, ig *kops.InstanceGroup) (*Data, e
 
 	{
 		phase := cloudup.PhaseCluster
-		assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets, string(phase))
+		assetBuilder := assets.NewAssetBuilder(cluster, string(phase))
 
 		applyCmd := &cloudup.ApplyClusterCmd{
 			Cluster:        cluster,

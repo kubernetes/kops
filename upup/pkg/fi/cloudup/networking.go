@@ -114,7 +114,8 @@ const (
 	defaultCNIAssetHashStringK8s1_9 = "d595d3ded6499a64e8dac02466e2f5f2ce257c9f"
 
 	// Environment variable for overriding CNI url
-	ENV_VAR_CNI_VERSION_URL = "CNI_VERSION_URL"
+	ENV_VAR_CNI_VERSION_URL       = "CNI_VERSION_URL"
+	ENV_VAR_CNI_ASSET_HASH_STRING = "CNI_ASSET_HASH_STRING"
 )
 
 func findCNIAssets(c *api.Cluster, assetBuilder *assets.AssetBuilder) (*url.URL, string, error) {
@@ -124,8 +125,17 @@ func findCNIAssets(c *api.Cluster, assetBuilder *assets.AssetBuilder) (*url.URL,
 		if err != nil {
 			return nil, "", fmt.Errorf("unable to parse %q as a URL: %v", cniVersionURL, err)
 		}
+
 		glog.Infof("Using CNI asset version %q, as set in %s", cniVersionURL, ENV_VAR_CNI_VERSION_URL)
-		return u, "", nil
+
+		if cniAssetHashString := os.Getenv(ENV_VAR_CNI_ASSET_HASH_STRING); cniAssetHashString != "" {
+
+			glog.Infof("Using CNI asset hash %q, as set in %s", cniAssetHashString, ENV_VAR_CNI_ASSET_HASH_STRING)
+
+			return u, cniAssetHashString, nil
+		} else {
+			return u, "", nil
+		}
 	}
 
 	sv, err := util.ParseKubernetesVersion(c.Spec.KubernetesVersion)

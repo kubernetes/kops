@@ -3,7 +3,7 @@ clusterName: etcd-main
 clusterToken: token-main
 cpuRequest: "200m"
 dataDirName: data-main
-imageSource: gcr.io/google_containers/etcd:2.2.1
+imageSource: k8s.gcr.io/etcd:2.2.1
 logFile: /var/log/etcd.log
 peerPort: 2380
 podName: etcd-server-main
@@ -35,8 +35,8 @@ spec:
   - command:
     - /bin/sh
     - -c
-    - /bin/mkfifo /tmp/pipe; (/bin/tee -a /var/log/etcd.log < /tmp/pipe & ); exec
-      /usr/local/bin/etcd > /tmp/pipe 2>&1
+    - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /usr/local/bin/etcd  >
+      /tmp/pipe 2>&1
     env:
     - name: ETCD_NAME
       value: node0
@@ -56,7 +56,7 @@ spec:
       value: token-main
     - name: ETCD_INITIAL_CLUSTER
       value: node0=http://node0.internal:2380,node1=http://node1.internal:2380,node2=http://node2.internal:2380
-    image: gcr.io/google_containers/etcd:2.2.1
+    image: k8s.gcr.io/etcd:2.2.1
     livenessProbe:
       httpGet:
         host: 127.0.0.1

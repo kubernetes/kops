@@ -17,49 +17,37 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-export KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
+KOPS_ROOT=$(git rev-parse --show-toplevel)
+TMP_GOPATH=$(mktemp -d)
+cd "${KOPS_ROOT}"
 
-# Example:  kube::util::trap_add 'echo "in trap DEBUG"' DEBUG
-# See: http://stackoverflow.com/questions/3338030/multiple-bash-traps-for-the-same-signal
-trap_add() {
-  local trap_add_cmd
-  trap_add_cmd=$1
-  shift
+"${KOPS_ROOT}/hack/go_install_from_commit.sh" \
+  github.com/bazelbuild/bazel-gazelle/cmd/gazelle \
+  a85b63b06c2e0c75931e57c4a1a18d4e566bb6f4 \
+  "${TMP_GOPATH}"
 
-  for trap_add_name in "$@"; do
-    local existing_cmd
-    local new_cmd
 
-    # Grab the currently defined trap commands for this trap
-    existing_cmd=`trap -p "${trap_add_name}" |  awk -F"'" '{print $2}'`
+gazelle_diff=$("${TMP_GOPATH}/bin/gazelle" fix \
+  -external=vendored \
+  -mode=diff \
+  -proto=disable \
+  -repo_root="${KOPS_ROOT}")
 
-    if [[ -z "${existing_cmd}" ]]; then
-      new_cmd="${trap_add_cmd}"
-    else
-      new_cmd="${trap_add_cmd};${existing_cmd}"
-    fi
+if [[ -n "${gazelle_diff}" ]]; then
+  echo "${gazelle_diff}" >&2
+  echo >&2
+  echo "Run ./hack/update-bazel.sh" >&2
+  exit 1
+fi
 
-    # Assign the test
-    trap "${new_cmd}" "${trap_add_name}"
-  done
-}
-
-_tmpdir="$(mktemp -d -t verify-bazel.XXXXXX)"
-trap_add "rm -rf ${_tmpdir}" EXIT
-
-_tmp_gopath="${_tmpdir}/go"
-_tmp_kuberoot="${_tmp_gopath}/src/k8s.io/kops"
-mkdir -p "${_tmp_kuberoot}/.."
-cp -a "${KUBE_ROOT}" "${_tmp_kuberoot}/.."
-
-cd "${_tmp_kuberoot}"
-GOPATH="${_tmp_gopath}" bazel run //:gazelle
-
-diff=$(diff -Naupr "${KUBE_ROOT}" "${_tmp_kuberoot}" || true)
-
-if [[ -n "${diff}" ]]; then
-  echo "${diff}"
-  echo
-  echo "Run make bazel-gazelle"
+# Make sure there are no BUILD files outside vendor - we should only have
+# BUILD.bazel files.
+old_build_files=$(find . -name BUILD \( -type f -o -type l \) \
+  -not -path './vendor/*' | sort)
+if [[ -n "${old_build_files}" ]]; then
+  echo "One or more BUILD files found in the tree:" >&2
+  echo "${old_build_files}" >&2
+  echo >&2
+  echo "Only BUILD.bazel is allowed." >&2
   exit 1
 fi

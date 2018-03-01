@@ -18,8 +18,6 @@ package v1alpha1
 
 type ClusterExpansion interface{}
 
-type FederationExpansion interface{}
-
 type InstanceGroupExpansion interface{}
 
 type SSHCredentialExpansion interface{}

@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model"
@@ -236,6 +237,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	} else {
 		loader.Builders = append(loader.Builders, &model.KubeRouterBuilder{NodeupModelContext: modelContext})
 	}
+	if c.cluster.Spec.Networking.Calico != nil {
+		loader.Builders = append(loader.Builders, &model.CalicoBuilder{NodeupModelContext: modelContext})
+	}
 
 	taskMap, err := loader.Build(c.ModelDir)
 	if err != nil {
@@ -268,7 +272,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			Tags:     nodeTags,
 		}
 	case "dryrun":
-		assetBuilder := assets.NewAssetBuilder(c.cluster.Spec.Assets, "")
+		assetBuilder := assets.NewAssetBuilder(c.cluster, "")
 		target = fi.NewDryRunTarget(assetBuilder, out)
 	case "cloudinit":
 		checkExisting = false

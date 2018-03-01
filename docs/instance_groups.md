@@ -105,16 +105,36 @@ spec:
 
 ## Creating a new instance group
 
-Suppose you want to add a new group of nodes, perhaps with a different instance type.  You do this using
-`kops create ig <InstanceGroupName>`.  Currently it opens an editor with a skeleton configuration, allowing
-you to edit it before creation.
+Suppose you want to add a new group of nodes, perhaps with a different instance type.  You do this using `kops create ig <InstanceGroupName> --subnet <zone(s)>`. Currently the
+`--subnet` flag is required, and it recieves the zone(s) of the subnet(s) in which the instance group will be. The command opens an editor with a skeleton configuration, allowing you to edit it before creation.
 
 So the procedure is:
 
-* `kops create ig morenodes`, edit and save
+* `kops create ig morenodes --subnet us-east-1a`
+
+  or, in case you need it to be in more than one subnet, use a comma-separated list:
+
+* `kops create ig morenodes --subnet us-east-1a,us-east-1b,us-east-1c`
 * Preview: `kops update cluster <clustername>`
 * Apply: `kops update cluster <clustername> --yes`
 * (no instances need to be relaunched, so no rolling-update is needed)
+
+
+## Moving from one instancegroup spanning multiple AZs to one instance group per AZ
+
+It may be beneficial to have one IG per AZ rather than one IG spanning multiple AZs. One common example is, when you have a persistent volume claim bound to an AWS EBS Volume this volume is bound to the AZ it has been created in so any resource (e.g. a StatefulSet) depending on that volume is bound to that same AZ. In this case you have to ensure that there is at least one node running in that same AZ, which is not guaruanteed by one IG. This however can be guarantueed by one IG per AZ.
+
+So the procedure is:
+
+* `kops edit ig nodes`
+* Remove two of the subnets, e.g. `eu-central-1b` and `eu-central-1c`
+  * Alternatively you can also delete the existing IG and create a new one with a more suitable name
+* `kops create ig nodes-eu-central-1b --subnet us-central-1b`
+* `kops create ig nodes-eu-central-1c --subnet us-central-1c`
+* Preview: `kops update cluster <clustername>`
+* Apply: `kops update cluster <clustername> --yes`
+* Rolling update to update existing instances: `kops rolling-update cluster --yes`
+
 
 ## Converting an instance group to use spot instances
 
@@ -200,8 +220,7 @@ If you decide you don't need an InstanceGroup any more, you delete it using: `ko
 
 Example: `kops delete ig morenodes`
 
-No rolling-update is needed (and note this is not currently graceful, so there may be interruptions to
-workloads where the pods are running on those nodes).
+No `kops update cluster` nor `kops rolling-update` is needed, so **be careful** when deleting an instance group, your nodes will be deleted automatically (and note this is not currently graceful, so there may be interruptions to workloads where the pods are running on those nodes).
 
 ## EBS Volume Optimization
 
@@ -217,7 +236,7 @@ spec:
 Kops utilizes cloud-init to initialize and setup a host at boot time. However in certain cases you may already be leaveraging certain features of cloud-init in your infrastructure and would like to continue doing so. More information on cloud-init can be found [here](http://cloudinit.readthedocs.io/en/latest/)
 
 
-Aditional user-user data can be passed to the host provisioning by setting the `AdditionalUserData` field. A list of valid user-data content-types can be found [here](http://cloudinit.readthedocs.io/en/latest/topics/format.html#mime-multi-part-archive) 
+Aditional user-user data can be passed to the host provisioning by setting the `AdditionalUserData` field. A list of valid user-data content-types can be found [here](http://cloudinit.readthedocs.io/en/latest/topics/format.html#mime-multi-part-archive)
 
 Example:
 ```
@@ -250,7 +269,7 @@ If you need to add tags on auto scaling groups or instances (propagate ASG tags)
 apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
-  labels: 
+  labels:
     kops.k8s.io/cluster: k8s.dev.local
   name: nodes
 spec:
@@ -262,4 +281,30 @@ spec:
   maxSize: 20
   minSize: 2
   role: Node
+```
+
+## Suspending Scaling Processes on AWS Autoscaling groups
+
+Autoscaling groups automatically include multiple [scaling processes](https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html#process-types)
+that keep our ASGs healthy.  In some cases, you may want to disable certain scaling activities.
+
+An example of this is if you are running multiple AZs in an ASG while using a Kubernetes Autoscaler.
+The autoscaler will remove specific instances that are not being used.  In some cases, the `AZRebalance` process
+will rescale the ASG without warning.
+
+```
+# Example for nodes
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: k8s.dev.local
+  name: nodes
+spec:
+  machineType: m4.xlarge
+  maxSize: 20
+  minSize: 2
+  role: Node
+  suspendProcesses:
+  - AZRebalance
 ```

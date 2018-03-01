@@ -46,6 +46,9 @@ type KubeletConfigSpec struct {
 	EnableDebuggingHandlers *bool `json:"enableDebuggingHandlers,omitempty" flag:"enable-debugging-handlers"`
 	// RegisterNode enables automatic registration with the apiserver.
 	RegisterNode *bool `json:"registerNode,omitempty" flag:"register-node"`
+	// NodeStatusUpdateFrequency Specifies how often kubelet posts node status to master (default 10s)
+	// must work with nodeMonitorGracePeriod in KubeControllerManagerConfig.
+	NodeStatusUpdateFrequency *metav1.Duration `json:"nodeStatusUpdateFrequency,omitempty" flag:"node-status-update-frequency"`
 	// ClusterDomain is the DNS domain for this cluster
 	ClusterDomain string `json:"clusterDomain,omitempty" flag:"cluster-domain"`
 	// ClusterDNS is the IP address for a cluster DNS server
@@ -159,7 +162,14 @@ type KubeletConfigSpec struct {
 type KubeProxyConfig struct {
 	Image string `json:"image,omitempty"`
 	// TODO: Better type ?
-	CPURequest string `json:"cpuRequest,omitempty"` // e.g. "20m"
+	// CPURequest, cpu request compute resource for kube proxy e.g. "20m"
+	CPURequest string `json:"cpuRequest,omitempty"`
+	// CPULimit, cpu limit compute resource for kube proxy e.g. "30m"
+	CPULimit string `json:"cpuLimit,omitempty"`
+	// MemoryRequest, memory request compute resource for kube proxy e.g. "30Mi"
+	MemoryRequest string `json:"memoryRequest,omitempty"`
+	// MemoryLimit, memory limit compute resource for kube proxy e.g. "30Mi"
+	MemoryLimit string `json:"memoryLimit,omitempty"`
 	// LogLevel is the logging level of the proxy
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v"`
 	// ClusterCIDR is the CIDR range of the pods in the cluster
@@ -171,7 +181,7 @@ type KubeProxyConfig struct {
 	// Enabled allows enabling or disabling kube-proxy
 	Enabled *bool `json:"enabled,omitempty"`
 	// FeatureGates is a series of key pairs used to switch on features for the proxy
-	FeatureGates map[string]string `json:"featureGates" flag:"feature-gates"`
+	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }
 
 // KubeAPIServerConfig defines the configuration for the kube api
@@ -293,6 +303,8 @@ type KubeAPIServerConfig struct {
 	RequestheaderAllowedNames []string `json:"requestheaderAllowedNames,omitempty" flag:"requestheader-allowed-names"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
+	// MaxRequestsInflight The maximum number of non-mutating requests in flight at a given time.
+	MaxRequestsInflight int32 `json:"maxRequestsInflight,omitempty" flag:"max-requests-inflight" flag-empty:"0"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
@@ -316,6 +328,8 @@ type KubeControllerManagerConfig struct {
 	AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty" flag:"allocate-node-cidrs"`
 	// ConfigureCloudRoutes enables CIDRs allocated with to be configured on the cloud provider.
 	ConfigureCloudRoutes *bool `json:"configureCloudRoutes,omitempty" flag:"configure-cloud-routes"`
+	// CIDRAllocatorType specifies the type of CIDR allocator to use.
+	CIDRAllocatorType *string `json:"cidrAllocatorType,omitempty" flag:"cidr-allocator-type"`
 	// rootCAFile is the root certificate authority will be included in service account's token secret. This must be a valid PEM-encoded CA bundle.
 	RootCAFile string `json:"rootCAFile,omitempty" flag:"root-ca-file"`
 	// LeaderElection defines the configuration of leader election client.
@@ -327,6 +341,13 @@ type KubeControllerManagerConfig struct {
 	// before the terminated pod garbage collector starts deleting terminated pods.
 	// If <= 0, the terminated pod garbage collector is disabled.
 	TerminatedPodGCThreshold *int32 `json:"terminatedPodGCThreshold,omitempty" flag:"terminated-pod-gc-threshold"`
+	// NodeMonitorPeriod is the period for syncing NodeStatus in NodeController. (default 5s)
+	NodeMonitorPeriod *metav1.Duration `json:"nodeMonitorPeriod,omitempty" flag:"node-monitor-period"`
+	// NodeMonitorGracePeriod is the amount of time which we allow running Node to be unresponsive before marking it unhealthy. (default 40s)
+	// Must be N-1 times more than kubelet's nodeStatusUpdateFrequency, where N means number of retries allowed for kubelet to post node status.
+	NodeMonitorGracePeriod *metav1.Duration `json:"nodeMonitorGracePeriod,omitempty" flag:"node-monitor-grace-period"`
+	// PodEvictionTimeout is the grace period for deleting pods on failed nodes. (default 5m0s)
+	PodEvictionTimeout *metav1.Duration `json:"podEvictionTimeout,omitempty" flag:"pod-eviction-timeout"`
 	// UseServiceAccountCredentials controls whether we use individual service account credentials for each controller.
 	UseServiceAccountCredentials *bool `json:"useServiceAccountCredentials,omitempty" flag:"use-service-account-credentials"`
 	// HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs
@@ -366,6 +387,8 @@ type CloudControllerManagerConfig struct {
 	AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty" flag:"allocate-node-cidrs"`
 	// ConfigureCloudRoutes enables CIDRs allocated with to be configured on the cloud provider.
 	ConfigureCloudRoutes *bool `json:"configureCloudRoutes,omitempty" flag:"configure-cloud-routes"`
+	// CIDRAllocatorType specifies the type of CIDR allocator to use.
+	CIDRAllocatorType *string `json:"cidrAllocatorType,omitempty" flag:"cidr-allocator-type"`
 	// LeaderElection defines the configuration of leader election client.
 	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
 	// UseServiceAccountCredentials controls whether we use individual service account credentials for each controller.

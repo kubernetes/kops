@@ -114,6 +114,8 @@ type InstanceGroupSpec struct {
 	Taints []string `json:"taints,omitempty"`
 	// AdditionalUserData is any aditional user-data to be passed to the host
 	AdditionalUserData []UserData `json:"additionalUserData,omitempty"`
+	// SuspendProcesses disables the listed Scaling Policies
+	SuspendProcesses []string `json:"suspendProcesses,omitempty"`
 }
 
 // UserData defines a user-data section
@@ -162,6 +164,21 @@ func (g *InstanceGroup) IsMaster() bool {
 		return false
 	case InstanceGroupRoleBastion:
 		return false
+	default:
+		glog.Fatalf("Role not set in group %v", g)
+		return false
+	}
+}
+
+// IsBastion checks if instanceGroup is a bastion
+func (g *InstanceGroup) IsBastion() bool {
+	switch g.Spec.Role {
+	case InstanceGroupRoleMaster:
+		return false
+	case InstanceGroupRoleNode:
+		return false
+	case InstanceGroupRoleBastion:
+		return true
 	default:
 		glog.Fatalf("Role not set in group %v", g)
 		return false

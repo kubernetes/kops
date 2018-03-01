@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "aws.go",
         "cluster.go",
-        "federation.go",
         "gce.go",
         "helpers.go",
         "instancegroup.go",
@@ -37,7 +36,6 @@ go_test(
         "validation_test.go",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/pkg/apis/kops/validation",
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",

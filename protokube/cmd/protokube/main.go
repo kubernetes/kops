@@ -59,10 +59,10 @@ func main() {
 // run is responsible for running the protokube service controller
 func run() error {
 	var zones []string
-	var applyTaints, initializeRBAC, containerized, master bool
+	var applyTaints, initializeRBAC, containerized, master, tlsAuth bool
 	var cloud, clusterID, dnsServer, dnsProviderID, dnsInternalSuffix, gossipSecret, gossipListen string
 	var flagChannels, tlsCert, tlsKey, tlsCA, peerCert, peerKey, peerCA string
-	var etcdImageSource, etcdElectionTimeout, etcdHeartbeatInterval string
+	var etcdBackupImage, etcdBackupStore, etcdImageSource, etcdElectionTimeout, etcdHeartbeatInterval string
 
 	flag.BoolVar(&applyTaints, "apply-taints", applyTaints, "Apply taints to nodes based on the role")
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
@@ -77,12 +77,15 @@ func run() error {
 	flag.StringVar(&peerCA, "peer-ca", peerCA, "Path to a file containing the peer ca in PEM format")
 	flag.StringVar(&peerCert, "peer-cert", peerCert, "Path to a file containing the peer certificate")
 	flag.StringVar(&peerKey, "peer-key", peerKey, "Path to a file containing the private key for the peers")
+	flag.BoolVar(&tlsAuth, "tls-auth", tlsAuth, "Indicates the peers and client should enforce authentication via CA")
 	flag.StringVar(&tlsCA, "tls-ca", tlsCA, "Path to a file containing the ca for client certificates")
 	flag.StringVar(&tlsCert, "tls-cert", tlsCert, "Path to a file containing the certificate for etcd server")
 	flag.StringVar(&tlsKey, "tls-key", tlsKey, "Path to a file containing the private key for etcd server")
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
 	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, coredns)")
-	flags.StringVar(&etcdImageSource, "etcd-image", "gcr.io/google_containers/etcd:2.2.1", "Etcd Source Container Registry")
+	flags.StringVar(&etcdBackupImage, "etcd-backup-image", "", "Set to override the image for (experimental) etcd backups")
+	flags.StringVar(&etcdBackupStore, "etcd-backup-store", "", "Set to enable (experimental) etcd backups")
+	flags.StringVar(&etcdImageSource, "etcd-image", "k8s.gcr.io/etcd:2.2.1", "Etcd Source Container Registry")
 	flags.StringVar(&etcdElectionTimeout, "etcd-election-timeout", etcdElectionTimeout, "time in ms for an election to timeout")
 	flags.StringVar(&etcdHeartbeatInterval, "etcd-heartbeat-interval", etcdHeartbeatInterval, "time in ms of a heartbeat interval")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
@@ -295,6 +298,8 @@ func run() error {
 		ApplyTaints:           applyTaints,
 		Channels:              channels,
 		DNS:                   dnsProvider,
+		EtcdBackupImage:       etcdBackupImage,
+		EtcdBackupStore:       etcdBackupStore,
 		EtcdImageSource:       etcdImageSource,
 		EtcdElectionTimeout:   etcdElectionTimeout,
 		EtcdHeartbeatInterval: etcdHeartbeatInterval,
@@ -307,6 +312,7 @@ func run() error {
 		PeerCA:                peerCA,
 		PeerCert:              peerCert,
 		PeerKey:               peerKey,
+		TLSAuth:               tlsAuth,
 		TLSCA:                 tlsCA,
 		TLSCert:               tlsCert,
 		TLSKey:                tlsKey,

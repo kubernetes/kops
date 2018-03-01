@@ -26,13 +26,13 @@ import (
 )
 
 var (
-	version_long = templates.LongDesc(i18n.T(`
+	versionLong = templates.LongDesc(i18n.T(`
 	Print the kops version and git SHA.`))
 
-	version_example = templates.Examples(i18n.T(`
+	versionExample = templates.Examples(i18n.T(`
 	kops version`))
 
-	version_short = i18n.T(`Print the kops version information.`)
+	versionShort = i18n.T(`Print the kops version information.`)
 )
 
 type VersionCmd struct {
@@ -42,9 +42,9 @@ type VersionCmd struct {
 var versionCmd = VersionCmd{
 	cobraCommand: &cobra.Command{
 		Use:     "version",
-		Short:   version_short,
-		Long:    version_long,
-		Example: version_example,
+		Short:   versionShort,
+		Long:    versionLong,
+		Example: versionExample,
 	},
 }
 

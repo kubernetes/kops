@@ -1,3 +1,4 @@
+{{- $etcd_scheme := EtcdScheme }}
 # This ConfigMap is used to configure a self-hosted Calico installation.
 kind: ConfigMap
 apiVersion: v1
@@ -9,7 +10,7 @@ data:
   etcd_endpoints: "{{ $cluster := index .EtcdClusters 0 -}}
                       {{- range $j, $member := $cluster.Members -}}
                           {{- if $j }},{{ end -}}
-                          http://etcd-{{ $member.Name }}.internal.{{ ClusterName }}:4001
+                          {{ $etcd_scheme }}://etcd-{{ $member.Name }}.internal.{{ ClusterName }}:4001
                       {{- end }}"
 
   # Configure the Calico backend to use.
@@ -24,6 +25,12 @@ data:
         {
           "type": "calico",
           "etcd_endpoints": "__ETCD_ENDPOINTS__",
+          {{- if eq $etcd_scheme "https" }}
+          "etcd_ca_cert_file": "/srv/kubernetes/calico/ca.pem",
+          "etcd_cert_file": "/srv/kubernetes/calico/calico-client.pem",
+          "etcd_key_file": "/srv/kubernetes/calico/calico-client-key.pem",
+          "etcd_scheme": "https",
+          {{- end }}
           "log_level": "info",
           "ipam": {
             "type": "calico-ipam"
@@ -152,6 +159,14 @@ spec:
                 configMapKeyRef:
                   name: calico-config
                   key: etcd_endpoints
+            {{- if eq $etcd_scheme "https" }}
+            - name: ETCD_CERT_FILE
+              value: /certs/calico-client.pem
+            - name: ETCD_KEY_FILE
+              value: /certs/calico-client-key.pem
+            - name: ETCD_CA_CERT_FILE
+              value: /certs/ca.pem
+            {{- end }}
             # Enable BGP.  Disable to enforce policy only.
             - name: CALICO_NETWORKING_BACKEND
               valueFrom:
@@ -178,6 +193,18 @@ spec:
             # Set Felix logging to "info"
             - name: FELIX_LOGSEVERITYSCREEN
               value: "info"
+            # Set to enable the experimental Prometheus metrics server
+            - name: FELIX_PROMETHEUSMETRICSENABLED
+              value: "{{- or .Networking.Calico.PrometheusMetricsEnabled "false" }}"
+            # TCP port that the Prometheus metrics server should bind to
+            - name: FELIX_PROMETHEUSMETRICSPORT
+              value: "{{- or .Networking.Calico.PrometheusMetricsPort "9091" }}"
+            # Enable Prometheus Go runtime metrics collection
+            - name: FELIX_PROMETHEUSGOMETRICSENABLED
+              value: "{{- or .Networking.Calico.PrometheusGoMetricsEnabled "true" }}"
+            # Enable Prometheus process metrics collection
+            - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
+              value: "{{- or .Networking.Calico.PrometheusProcessMetricsEnabled "true" }}"
             - name: FELIX_HEALTHENABLED
               value: "true"
           securityContext:
@@ -193,6 +220,11 @@ spec:
             - mountPath: /etc/hosts
               name: etc-hosts
               readOnly: true
+            {{- if eq $etcd_scheme "https" }}
+            - mountPath: /certs
+              name: calico
+              readOnly: true
+            {{- end }}
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
@@ -245,6 +277,11 @@ spec:
         - name: etc-hosts
           hostPath:
             path: /etc/hosts
+        {{- if eq $etcd_scheme "https" }}
+        - name: calico
+          hostPath:
+            path: /srv/kubernetes/calico
+        {{- end }}
 
 ---
 
@@ -293,7 +330,27 @@ spec:
                 configMapKeyRef:
                   name: calico-config
                   key: etcd_endpoints
-
+            {{- if eq $etcd_scheme "https" }}
+            - name: ETCD_CERT_FILE
+              value: /certs/calico-client.pem
+            - name: ETCD_KEY_FILE
+              value: /certs/calico-client-key.pem
+            - name: ETCD_CA_CERT_FILE
+              value: /certs/ca.pem
+          volumeMounts:
+            - mountPath: /certs
+              name: calico
+              readOnly: true
+            {{- end }}
+      volumes:
+        - name: etc-hosts
+          hostPath:
+            path: /etc/hosts
+        {{- if eq $etcd_scheme "https" }}
+        - name: calico
+          hostPath:
+            path: /srv/kubernetes/calico
+        {{- end }}
 ---
 
 # This deployment turns off the old "policy-controller". It should remain at 0 replicas, and then
@@ -330,16 +387,33 @@ spec:
                 configMapKeyRef:
                   name: calico-config
                   key: etcd_endpoints
-
+            {{- if eq $etcd_scheme "https" }}
+            - name: ETCD_CERT_FILE
+              value: /certs/calico-client.pem
+            - name: ETCD_KEY_FILE
+              value: /certs/calico-client-key.pem
+            - name: ETCD_CA_CERT_FILE
+              value: /certs/ca.pem
+            {{- end }}
           volumeMounts:
             # Necessary for gossip based DNS
             - mountPath: /etc/hosts
               name: etc-hosts
               readOnly: true
+            {{- if eq $etcd_scheme "https" }}
+            - mountPath: /certs
+              name: calico
+              readOnly: true
+            {{ end }}
       volumes:
         - name: etc-hosts
           hostPath:
             path: /etc/hosts
+        {{- if eq $etcd_scheme "https" }}
+        - name: calico
+          hostPath:
+            path: /srv/kubernetes/calico
+        {{- end }}
 
 {{ if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}
 # This manifest installs the k8s-ec2-srcdst container, which disables
