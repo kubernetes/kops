@@ -1,9 +1,0 @@
-bin/
-default.etcd/
-kubeconfig
-apiserver.local.config/
-zz_generated*
-pkg/client/*_generated
-pkg/openapi/openapi_generated.go
-.crt
-.key

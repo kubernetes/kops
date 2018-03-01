@@ -17,7 +17,6 @@ go_library(
         "//pkg/validation:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
-        "//vendor/github.com/spf13/cobra:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes:go_default_library",
         "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd:go_default_library",
@@ -29,7 +28,6 @@ go_test(
     name = "go_default_test",
     srcs = ["rollingupdate_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/pkg/instancegroups",
     deps = [
         "//cloudmock/aws/mockautoscaling:go_default_library",
         "//pkg/apis/kops:go_default_library",

@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import (
 // sets.Byte is a set of bytes, implemented via map[byte]struct{} for minimal memory consumption.
 type Byte map[byte]Empty
 
-// New creates a Byte from a list of values.
+// NewByte creates a Byte from a list of values.
 func NewByte(items ...byte) Byte {
 	ss := Byte{}
 	ss.Insert(items...)

@@ -30,6 +30,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -40,7 +41,7 @@ import (
 )
 
 var (
-	update_cluster_long = templates.LongDesc(i18n.T(`
+	updateClusterLong = templates.LongDesc(i18n.T(`
 	Create or update cloud or cluster resources to match current cluster state.  If the cluster or cloud resources already
 	exist this command may modify those resources.
 
@@ -48,12 +49,12 @@ var (
 	be required as well.
 	`))
 
-	update_cluster_example = templates.Examples(i18n.T(`
+	updateClusterExample = templates.Examples(i18n.T(`
 	# After cluster has been edited or upgraded, configure it with:
 	kops update cluster k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes
 	`))
 
-	update_cluster_short = i18n.T("Update a cluster.")
+	updateClusterShort = i18n.T("Update a cluster.")
 )
 
 type UpdateClusterOptions struct {
@@ -66,6 +67,10 @@ type UpdateClusterOptions struct {
 	CreateKubecfg   bool
 
 	Phase string
+
+	// LifecycleOverrides is a slice of taskName=lifecycle name values.  This slice is used
+	// to populate the LifecycleOverrides struct member in ApplyClusterCmd struct.
+	LifecycleOverrides []string
 }
 
 func (o *UpdateClusterOptions) InitDefaults() {
@@ -84,9 +89,9 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "cluster",
-		Short:   update_cluster_short,
-		Long:    update_cluster_long,
-		Example: update_cluster_example,
+		Short:   updateClusterShort,
+		Long:    updateClusterLong,
+		Example: updateClusterExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := rootCommand.ProcessArgs(args)
 			if err != nil {
@@ -109,6 +114,8 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
 	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run: "+strings.Join(cloudup.Phases.List(), ", "))
+	cmd.Flags().StringSliceVar(&options.LifecycleOverrides, "lifecycle-overrides", options.LifecycleOverrides, "comma separated list of phase overrides, example: SecurityGroups=Ignore,InternetGateway=ExistsAndWarnIfChanges")
+
 	return cmd
 }
 
@@ -195,6 +202,25 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 	}
 
+	lifecycleOverrideMap := make(map[string]fi.Lifecycle)
+
+	for _, override := range c.LifecycleOverrides {
+		values := strings.Split(override, "=")
+		if len(values) != 2 {
+			return fmt.Errorf("Incorrect syntax for lifecyle-overrides, correct syntax is TaskName=lifecycleName, override provided: %q", override)
+		}
+
+		taskName := values[0]
+		lifecycleName := values[1]
+
+		lifecycleOverride, err := parseLifecycle(lifecycleName)
+		if err != nil {
+			return err
+		}
+
+		lifecycleOverrideMap[taskName] = lifecycleOverride
+	}
+
 	var instanceGroups []*kops.InstanceGroup
 	{
 		list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
@@ -207,19 +233,19 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{
-		Cluster:         cluster,
-		Models:          strings.Split(c.Models, ","),
-		Clientset:       clientset,
-		TargetName:      targetName,
-		OutDir:          c.OutDir,
-		DryRun:          isDryrun,
-		MaxTaskDuration: c.MaxTaskDuration,
-		InstanceGroups:  instanceGroups,
-		Phase:           phase,
+		Clientset:          clientset,
+		Cluster:            cluster,
+		DryRun:             isDryrun,
+		InstanceGroups:     instanceGroups,
+		MaxTaskDuration:    c.MaxTaskDuration,
+		Models:             strings.Split(c.Models, ","),
+		OutDir:             c.OutDir,
+		Phase:              phase,
+		TargetName:         targetName,
+		LifecycleOverrides: lifecycleOverrideMap,
 	}
 
-	err = applyCmd.Run()
-	if err != nil {
+	if err := applyCmd.Run(); err != nil {
 		return err
 	}
 
@@ -251,7 +277,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 		if kubecfgCert != nil {
 			glog.Infof("Exporting kubecfg for cluster")
-			conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &cloudDiscoveryStatusStore{})
+			conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{})
 			if err != nil {
 				return err
 			}
@@ -334,6 +360,13 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	}
 
 	return nil
+}
+
+func parseLifecycle(lifecycle string) (fi.Lifecycle, error) {
+	if v, ok := fi.LifecycleNameMap[lifecycle]; ok {
+		return v, nil
+	}
+	return "", fmt.Errorf("unknown lifecycle %q, available lifecycle: %s", lifecycle, strings.Join(fi.Lifecycles.List(), ","))
 }
 
 func usesBastion(instanceGroups []*kops.InstanceGroup) bool {

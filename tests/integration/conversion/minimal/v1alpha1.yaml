@@ -6,6 +6,8 @@ metadata:
 spec:
   additionalSans:
   - proxy.api.minimal.example.com
+  addons:
+  - manifest: s3://somebucket/example.yaml
   adminAccess:
   - 0.0.0.0/0
   api:

@@ -254,10 +254,25 @@ done
 
 ## Upload assets
 
+## Get default S3 multipart_threshold
+
+AWS_S3_DEFAULT_MULTIPART_THRESHOLD=$(aws configure get default.s3.multipart_threshold)
+
+if [ ! -n "$AWS_S3_DEFAULT_MULTIPART_THRESHOLD" ]; then
+  AWS_S3_DEFAULT_MULTIPART_THRESHOLD=8MB
+fi
+
+## Set multipart_threshold to 1024MB to prevent Etag not returns MD5 when upload multipart
+
+aws configure set default.s3.multipart_threshold 1024MB
+
 aws s3api create-bucket --bucket $ASSET_BUCKET --create-bucket-configuration LocationConstraint=$AWS_REGION
 for dir in "kubernetes" "kops"; do
   aws s3 sync --acl public-read "$dir" "s3://$ASSET_BUCKET/$ASSET_PREFIX$dir"
 done
+
+aws configure set default.s3.multipart_threshold $AWS_S3_DEFAULT_MULTIPART_THRESHOLD
+
 ```
 
 When create the cluster, add these parameters to the command line.

@@ -79,11 +79,11 @@ func (p *KubernetesPath) Join(relativePath ...string) Path {
 	}
 }
 
-func (p *KubernetesPath) WriteFile(data []byte, acl ACL) error {
+func (p *KubernetesPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 	return fmt.Errorf("KubernetesPath::WriteFile not supported")
 }
 
-func (p *KubernetesPath) CreateFile(data []byte, acl ACL) error {
+func (p *KubernetesPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 	return fmt.Errorf("KubernetesPath::CreateFile not supported")
 }
 

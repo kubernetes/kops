@@ -109,23 +109,30 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// For clients assuming we are using etcdv3 is can switch on user authentication and map the common names for auth.
 	if b.UseEtcdTLS() {
 		alternativeNames := []string{fmt.Sprintf("*.internal.%s", b.ClusterName()), "localhost", "127.0.0.1"}
-		{
-			// @question should wildcard's be here instead of generating per node. If we ever provide the
-			// ability to resize the master, this will become a blocker
+		// @question should wildcard's be here instead of generating per node. If we ever provide the
+		// ability to resize the master, this will become a blocker
+		c.AddTask(&fitasks.Keypair{
+			AlternateNames: alternativeNames,
+			Lifecycle:      b.Lifecycle,
+			Name:           fi.String("etcd"),
+			Subject:        "cn=etcd",
+			Type:           "clientServer",
+			Signer:         defaultCA,
+		})
+		c.AddTask(&fitasks.Keypair{
+			Name:      fi.String("etcd-client"),
+			Lifecycle: b.Lifecycle,
+			Subject:   "cn=etcd-client",
+			Type:      "client",
+			Signer:    defaultCA,
+		})
+
+		// @check if calico is enabled as the CNI provider
+		if b.KopsModelContext.Cluster.Spec.Networking.Calico != nil {
 			c.AddTask(&fitasks.Keypair{
-				AlternateNames: alternativeNames,
-				Lifecycle:      b.Lifecycle,
-				Name:           fi.String("etcd"),
-				Subject:        "cn=etcd",
-				Type:           "server",
-				Signer:         defaultCA,
-			})
-		}
-		{
-			c.AddTask(&fitasks.Keypair{
-				Name:      fi.String("etcd-client"),
+				Name:      fi.String("calico-client"),
 				Lifecycle: b.Lifecycle,
-				Subject:   "cn=etcd-client",
+				Subject:   "cn=calico-client",
 				Type:      "client",
 				Signer:    defaultCA,
 			})

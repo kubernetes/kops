@@ -15,14 +15,14 @@ spec:
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
-    version: 1.14.5
+    version: 1.14.8
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0'
     manifest: kube-dns.addons.k8s.io/k8s-1.6.yaml
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
-    version: 1.14.5
+    version: 1.14.8
   - id: k8s-1.8
     kubernetesVersion: '>=1.8.0'
     manifest: rbac.addons.k8s.io/k8s-1.8.yaml
@@ -69,11 +69,11 @@ spec:
     name: networking.kope.io
     selector:
       role.kubernetes.io/networking: "1"
-    version: 1.0.20180120
+    version: 1.0.20180203
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0'
     manifest: networking.kope.io/k8s-1.6.yaml
     name: networking.kope.io
     selector:
       role.kubernetes.io/networking: "1"
-    version: 1.0.20180120
+    version: 1.0.20180203

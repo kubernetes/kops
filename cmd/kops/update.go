@@ -26,11 +26,11 @@ import (
 )
 
 var (
-	update_long = templates.LongDesc(i18n.T(`
+	updateLong = templates.LongDesc(i18n.T(`
 	Creates or updates cloud resources to match cluster desired configuration.
 	`))
 
-	update_example = templates.Examples(i18n.T(`
+	updateExample = templates.Examples(i18n.T(`
 		# After cluster has been created, configure it with:
 		kops update cluster k8s.cluster.site --yes --state=s3://kops-state-1234
 	`))
@@ -42,13 +42,12 @@ func NewCmdUpdate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "update",
 		Short:   update_short,
-		Long:    update_long,
-		Example: update_example,
+		Long:    updateLong,
+		Example: updateExample,
 	}
 
 	//  subcommands
 	cmd.AddCommand(NewCmdUpdateCluster(f, out))
-	cmd.AddCommand(NewCmdUpdateFederation(f, out))
 
 	return cmd
 }

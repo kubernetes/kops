@@ -104,7 +104,7 @@ func TestPopulateCluster_Default_NoError(t *testing.T) {
 func mockedPopulateClusterSpec(c *api.Cluster) (*api.Cluster, error) {
 	vfs.Context.ResetMemfsContext(true)
 
-	assetBuilder := assets.NewAssetBuilder(nil, "")
+	assetBuilder := assets.NewAssetBuilder(c, "")
 	basePath, err := vfs.Context.BuildVfsPath("memfs://tests")
 	if err != nil {
 		return nil, fmt.Errorf("error building vfspath: %v", err)

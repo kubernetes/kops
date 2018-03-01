@@ -90,7 +90,7 @@ resource "aws_autoscaling_group" "bastion-privatecanal-example-com" {
   }
 
   metrics_granularity = "1Minute"
-  enabled_metrics     = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
 }
 
 resource "aws_autoscaling_group" "master-us-test-1a-masters-privatecanal-example-com" {
@@ -119,7 +119,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatecanal-example
   }
 
   metrics_granularity = "1Minute"
-  enabled_metrics     = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
 }
 
 resource "aws_autoscaling_group" "nodes-privatecanal-example-com" {
@@ -148,7 +148,7 @@ resource "aws_autoscaling_group" "nodes-privatecanal-example-com" {
   }
 
   metrics_granularity = "1Minute"
-  enabled_metrics     = ["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-privatecanal-example-com" {
@@ -293,8 +293,9 @@ resource "aws_internet_gateway" "privatecanal-example-com" {
   vpc_id = "${aws_vpc.privatecanal-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -404,8 +405,9 @@ resource "aws_route_table" "private-us-test-1a-privatecanal-example-com" {
   vpc_id = "${aws_vpc.privatecanal-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "private-us-test-1a.privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "private-us-test-1a.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -413,8 +415,9 @@ resource "aws_route_table" "privatecanal-example-com" {
   vpc_id = "${aws_vpc.privatecanal-example-com.id}"
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -690,8 +693,9 @@ resource "aws_vpc_dhcp_options" "privatecanal-example-com" {
   domain_name_servers = ["AmazonProvidedDNS"]
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 

@@ -59,7 +59,6 @@ go_test(
     ],
     data = glob(["tests/**"]),  #keep
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/pkg/model",
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/nodeup:go_default_library",

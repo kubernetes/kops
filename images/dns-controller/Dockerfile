@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/google_containers/debian-base-amd64:0.3
+FROM k8s.gcr.io/debian-base-amd64:0.3
 
 # ca-certificates: Needed to talk to EC2 API
 RUN apt-get update && apt-get install --yes ca-certificates \

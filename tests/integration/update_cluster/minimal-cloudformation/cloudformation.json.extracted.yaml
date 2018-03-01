@@ -148,6 +148,13 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
     storage: overlay,aufs
     version: 1.11.2
   encryptionConfig: null
+  etcdClusters:
+    events:
+      image: gcr.io/google_containers/etcd:2.2.1
+      version: 2.2.1
+    main:
+      image: gcr.io/google_containers/etcd:2.2.1
+      version: 2.2.1
   kubeAPIServer:
     address: 127.0.0.1
     admissionControl:
@@ -186,7 +193,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    featureGates: null
     hostnameOverride: '@aws'
     image: gcr.io/google_containers/kube-proxy:v1.4.12
     logLevel: 2
@@ -240,6 +246,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
   cat > ig_spec.yaml << '__EOF_IG_SPEC'
   kubelet: null
   nodeLabels: null
+  suspendProcesses: null
   taints: null
 
   __EOF_IG_SPEC
@@ -420,7 +427,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.Use
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    featureGates: null
     hostnameOverride: '@aws'
     image: gcr.io/google_containers/kube-proxy:v1.4.12
     logLevel: 2
@@ -448,6 +454,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.Use
   cat > ig_spec.yaml << '__EOF_IG_SPEC'
   kubelet: null
   nodeLabels: null
+  suspendProcesses: null
   taints: null
 
   __EOF_IG_SPEC

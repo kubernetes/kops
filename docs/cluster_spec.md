@@ -123,6 +123,19 @@ spec:
     zone: us-east-1a
 ```
 
+#### publicIP
+The IP of an existing EIP that you would like to attach to the NAT gateway.
+
+```
+spec:
+  subnets:
+  - cidr: 10.20.64.0/21
+    name: us-east-1a
+    publicIP: 203.93.148.142
+    type: Private
+    zone: us-east-1a
+```
+
 ### kubeAPIServer
 
 This block contains configuration for the `kube-apiserver`.
@@ -155,10 +168,24 @@ spec:
     auditLogMaxAge: 10
     auditLogMaxBackups: 1
     auditLogMaxSize: 100
-    auditPolicyFile: /srv/kubernetes/audit.conf
+    auditPolicyFile: /srv/kubernetes/audit.yaml
 ```
 
-Note: you could use the fileAssets feature to push an advanced audit policy file on the master nodes.
+**Note**: The auditPolicyFile is needed. If the flag is omitted, no events are logged.
+
+You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#fileassets)  feature to push an advanced audit policy file on the master nodes.
+
+Example policy file can be found [here]( https://raw.githubusercontent.com/kubernetes/website/master/docs/tasks/debug-application-cluster/audit-policy.yaml)
+
+#### Max Requests Inflight 
+
+The maximum number of non-mutating requests in flight at a given time. When the server exceeds this, it rejects requests. Zero for no limit. (default 400)
+
+```yaml
+spec:
+  kubeAPIServer:
+    maxRequestsInflight: 1000
+```
 
 #### runtimeConfig
 
@@ -388,7 +415,7 @@ spec:
 #### elbSecurityGroup
 *WARNING: this works only for Kubernetes version above 1.7.0.*
 
-To avoid creating a security group per elb, you can specify security group id, that will be assigned to your LoadBalancer. It must be security group id, not name. 
+To avoid creating a security group per elb, you can specify security group id, that will be assigned to your LoadBalancer. It must be security group id, not name.
 `api.loadBalancer.additionalSecurityGroups` must be empty, because Kubernetes will add rules per ports that are specified in service file.
 This can be useful to avoid AWS limits: 500 security groups per region and 50 rules per security group.
 
@@ -438,4 +465,16 @@ Providing the name of a key already in AWS is an alternative to `--ssh-public-ke
 ```yaml
 spec:
   sshKeyName: myexistingkey
+```
+
+### target
+
+In some use-cases you may wish to augment the target output with extra options.  `target` supports a minimal amount of options you can do this with.  Currently only the terraform target supports this, but if other use cases present themselves, kops may eventually support more.
+
+```yaml
+spec:
+  target:
+    terraform:
+      providerExtraConfig:
+        alias: foo
 ```

@@ -34,10 +34,10 @@
           {
             "Granularity": "1Minute",
             "Metrics": [
-              "GroupMinSize",
-              "GroupMaxSize",
               "GroupDesiredCapacity",
               "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
               "GroupPendingInstances",
               "GroupStandbyInstances",
               "GroupTerminatingInstances",
@@ -81,10 +81,10 @@
           {
             "Granularity": "1Minute",
             "Metrics": [
-              "GroupMinSize",
-              "GroupMaxSize",
               "GroupDesiredCapacity",
               "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
               "GroupPendingInstances",
               "GroupStandbyInstances",
               "GroupTerminatingInstances",
@@ -169,6 +169,10 @@
           {
             "Key": "Name",
             "Value": "additionaluserdata.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
+            "Value": "owned"
           }
         ]
       }
@@ -184,6 +188,10 @@
           {
             "Key": "Name",
             "Value": "additionaluserdata.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
+            "Value": "owned"
           }
         ]
       }
@@ -214,6 +222,10 @@
           {
             "Key": "Name",
             "Value": "additionaluserdata.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
+            "Value": "owned"
           }
         ]
       }

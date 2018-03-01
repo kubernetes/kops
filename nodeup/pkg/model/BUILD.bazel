@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "architecture.go",
+        "calico.go",
         "cloudconfig.go",
         "context.go",
         "convenience.go",
@@ -47,6 +48,7 @@ go_library(
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/nodeup/nodetasks:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
+        "//util/pkg/exec:go_default_library",
         "//vendor/github.com/blang/semver:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
@@ -65,7 +67,6 @@ go_test(
     ],
     data = glob(["tests/**"]),  #keep
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/nodeup/pkg/model",
     deps = [
         "//nodeup/pkg/distros:go_default_library",
         "//pkg/apis/kops:go_default_library",

@@ -149,7 +149,7 @@ func ignoreHandler(i *loader.TreeWalkItem) error {
 	return nil
 }
 
-func (l *Loader) BuildTasks(modelStore vfs.Path, models []string, assetBuilder *assets.AssetBuilder, lifecycle *fi.Lifecycle) (map[string]fi.Task, error) {
+func (l *Loader) BuildTasks(modelStore vfs.Path, models []string, assetBuilder *assets.AssetBuilder, lifecycle *fi.Lifecycle, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
 	// Second pass: load everything else
 	tw := &loader.TreeWalker{
 		DefaultHandler: l.objectHandler,
@@ -172,7 +172,8 @@ func (l *Loader) BuildTasks(modelStore vfs.Path, models []string, assetBuilder *
 
 	for _, builder := range l.Builders {
 		context := &fi.ModelBuilderContext{
-			Tasks: l.tasks,
+			Tasks:              l.tasks,
+			LifecycleOverrides: lifecycleOverrides,
 		}
 		err := builder.Build(context)
 		if err != nil {

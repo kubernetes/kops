@@ -13,7 +13,6 @@ go_test(
     srcs = ["templater_test.go"],
     data = glob(["integration_tests.yml"]),  #keep
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/pkg/util/templater",
     deps = [
         "//pkg/diff:go_default_library",
         "//vendor/gopkg.in/yaml.v2:go_default_library",

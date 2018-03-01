@@ -123,6 +123,11 @@ type ApplyClusterCmd struct {
 
 	// Phase can be set to a Phase to run the specific subset of tasks, if we don't want to run everything
 	Phase Phase
+
+	// LifecycleOverrides is passed in to override the lifecycle for one of more tasks.
+	// The key value is the task name such as InternetGateway and the value is the fi.Lifecycle
+	// that is re-mapped.
+	LifecycleOverrides map[string]fi.Lifecycle
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -201,7 +206,7 @@ func (c *ApplyClusterCmd) Run() error {
 	// This is kinda a hack.  Need to move phases out of fi.  If we use Phase here we introduce a circular
 	// go dependency.
 	phase := string(c.Phase)
-	assetBuilder := assets.NewAssetBuilder(c.Cluster.Spec.Assets, phase)
+	assetBuilder := assets.NewAssetBuilder(c.Cluster, phase)
 	err = c.upgradeSpecs(assetBuilder)
 	if err != nil {
 		return err
@@ -628,7 +633,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	tf.AddTo(l.TemplateFunctions)
 
-	taskMap, err := l.BuildTasks(modelStore, fileModels, assetBuilder, &stageAssetsLifecycle)
+	taskMap, err := l.BuildTasks(modelStore, fileModels, assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
@@ -659,7 +664,7 @@ func (c *ApplyClusterCmd) Run() error {
 	case TargetTerraform:
 		checkExisting = false
 		outDir := c.OutDir
-		tf := terraform.NewTerraformTarget(cloud, region, project, outDir)
+		tf := terraform.NewTerraformTarget(cloud, region, project, outDir, cluster.Spec.Target)
 
 		// We include a few "util" variables in the TF output
 		if err := tf.AddOutputVariable("region", terraform.LiteralFromStringValue(region)); err != nil {
@@ -1031,6 +1036,10 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 
 	channels := []string{
 		configBase.Join("addons", "bootstrap-channel.yaml").Path(),
+	}
+
+	for i := range c.Cluster.Spec.Addons {
+		channels = append(channels, c.Cluster.Spec.Addons[i].Manifest)
 	}
 
 	role := ig.Spec.Role

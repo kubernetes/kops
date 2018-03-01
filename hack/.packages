@@ -27,10 +27,6 @@ k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/stubs
 k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype
 k8s.io/kops/dnsprovider/pkg/dnsprovider/tests
 k8s.io/kops/examples/kops-api-example
-k8s.io/kops/federation
-k8s.io/kops/federation/model
-k8s.io/kops/federation/targets/kubernetestarget
-k8s.io/kops/federation/tasks
 k8s.io/kops/kube-discovery/cmd/kube-discovery
 k8s.io/kops/nodeup/pkg/bootstrap
 k8s.io/kops/nodeup/pkg/distros
@@ -76,6 +72,7 @@ k8s.io/kops/pkg/client/simple
 k8s.io/kops/pkg/client/simple/api
 k8s.io/kops/pkg/client/simple/vfsclientset
 k8s.io/kops/pkg/cloudinstances
+k8s.io/kops/pkg/commands
 k8s.io/kops/pkg/diff
 k8s.io/kops/pkg/dns
 k8s.io/kops/pkg/edit
@@ -85,6 +82,7 @@ k8s.io/kops/pkg/formatter
 k8s.io/kops/pkg/instancegroups
 k8s.io/kops/pkg/jsonutils
 k8s.io/kops/pkg/k8scodecs
+k8s.io/kops/pkg/k8sversion
 k8s.io/kops/pkg/kopscodecs
 k8s.io/kops/pkg/kubeconfig
 k8s.io/kops/pkg/kubemanifest
@@ -159,6 +157,7 @@ k8s.io/kops/upup/pkg/fi/utils
 k8s.io/kops/upup/pkg/kutil
 k8s.io/kops/upup/tools/generators/fitask
 k8s.io/kops/upup/tools/generators/pkg/codegen
+k8s.io/kops/util/pkg/exec
 k8s.io/kops/util/pkg/hashing
 k8s.io/kops/util/pkg/slice
 k8s.io/kops/util/pkg/tables

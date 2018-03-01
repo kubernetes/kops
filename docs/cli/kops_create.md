@@ -13,7 +13,6 @@ Create a resource:
   * cluster  
   * instancegroup  
   * secret  
-  * federation  
 
 Create a cluster, instancegroup or secret using command line parameters or YAML configuration specification files. (Note: secrets cannot be created from YAML config files yet).
 

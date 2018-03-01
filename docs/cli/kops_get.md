@@ -12,8 +12,7 @@ Display one or many resources.
 
   * cluster  
   * instancegroup  
-  * secret  
-  * federation
+  * secret
 
 ```
 kops get
@@ -65,7 +64,6 @@ kops get
 ### SEE ALSO
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops get clusters](kops_get_clusters.md)	 - Get one or many clusters.
-* [kops get federations](kops_get_federations.md)	 - Get federation.
 * [kops get instancegroups](kops_get_instancegroups.md)	 - Get one or many instancegroups
 * [kops get secrets](kops_get_secrets.md)	 - Get one or many secrets.
 

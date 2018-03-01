@@ -135,11 +135,11 @@ func (p *GSPath) Join(relativePath ...string) Path {
 	}
 }
 
-func (p *GSPath) WriteFile(data []byte, acl ACL) error {
+func (p *GSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 	done, err := RetryWithBackoff(gcsWriteBackoff, func() (bool, error) {
 		glog.V(4).Infof("Writing file %q", p)
 
-		md5Hash, err := hashing.HashAlgorithmMD5.Hash(bytes.NewReader(data))
+		md5Hash, err := hashing.HashAlgorithmMD5.Hash(data)
 		if err != nil {
 			return false, err
 		}
@@ -157,8 +157,11 @@ func (p *GSPath) WriteFile(data []byte, acl ACL) error {
 			obj.Acl = gsAcl.Acl
 		}
 
-		r := bytes.NewReader(data)
-		_, err = p.client.Objects.Insert(p.bucket, obj).Media(r).Do()
+		if _, err := data.Seek(0, 0); err != nil {
+			return false, fmt.Errorf("error seeking to start of data stream for write to %s: %v", p, err)
+		}
+
+		_, err = p.client.Objects.Insert(p.bucket, obj).Media(data).Do()
 		if err != nil {
 			return false, fmt.Errorf("error writing %s: %v", p, err)
 		}
@@ -181,7 +184,7 @@ func (p *GSPath) WriteFile(data []byte, acl ACL) error {
 // TODO: should we enable versioning?
 var createFileLockGCS sync.Mutex
 
-func (p *GSPath) CreateFile(data []byte, acl ACL) error {
+func (p *GSPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 	createFileLockGCS.Lock()
 	defer createFileLockGCS.Unlock()
 

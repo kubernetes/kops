@@ -20,7 +20,6 @@ go_library(
         "describe_secrets.go",
         "edit.go",
         "edit_cluster.go",
-        "edit_federation.go",
         "edit_instancegroup.go",
         "editor.go",
         "export.go",
@@ -28,7 +27,6 @@ go_library(
         "gen_help_docs.go",
         "get.go",
         "get_cluster.go",
-        "get_federation.go",
         "get_instancegroups.go",
         "get_secrets.go",
         "import.go",
@@ -39,7 +37,8 @@ go_library(
         "rollingupdate.go",
         "rollingupdatecluster.go",
         "root.go",
-        "status_discovery.go",
+        "set.go",
+        "set_cluster.go",
         "toolbox.go",
         "toolbox_bundle.go",
         "toolbox_convert_imported.go",
@@ -47,7 +46,6 @@ go_library(
         "toolbox_template.go",
         "update.go",
         "update_cluster.go",
-        "update_federation.go",
         "upgrade.go",
         "upgrade_cluster.go",
         "validate.go",
@@ -59,7 +57,6 @@ go_library(
     deps = [
         "//:go_default_library",
         "//cmd/kops/util:go_default_library",
-        "//federation:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/model:go_default_library",
         "//pkg/apis/kops/registry:go_default_library",
@@ -70,6 +67,7 @@ go_library(
         "//pkg/bundle:go_default_library",
         "//pkg/client/simple:go_default_library",
         "//pkg/cloudinstances:go_default_library",
+        "//pkg/commands:go_default_library",
         "//pkg/dns:go_default_library",
         "//pkg/edit:go_default_library",
         "//pkg/featureflag:go_default_library",
@@ -85,7 +83,6 @@ go_library(
         "//pkg/validation:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup:go_default_library",
-        "//upup/pkg/fi/cloudup/awstasks:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
@@ -122,7 +119,6 @@ go_library(
 go_binary(
     name = "kops",
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/cmd/kops",
     visibility = ["//visibility:public"],
     x_defs = {
         "k8s.io/kops.Version": "{KOPS_VERSION}",  # keep
@@ -146,7 +142,6 @@ go_test(
         "//tests/integration/update_cluster:exported_testdata",  # keep
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/cmd/kops",
     deps = [
         "//cmd/kops/util:go_default_library",
         "//pkg/apis/kops:go_default_library",
@@ -155,6 +150,7 @@ go_test(
         "//pkg/jsonutils:go_default_library",
         "//pkg/kopscodecs:go_default_library",
         "//pkg/testutils:go_default_library",
+        "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",

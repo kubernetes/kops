@@ -17,6 +17,7 @@ limitations under the License.
 package fitasks
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 
@@ -96,7 +97,7 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 		return err
 	}
 
-	err = p.WriteFile(data, acl)
+	err = p.WriteFile(bytes.NewReader(data), acl)
 	if err != nil {
 		return fmt.Errorf("error creating ManagedFile %q: %v", location, err)
 	}

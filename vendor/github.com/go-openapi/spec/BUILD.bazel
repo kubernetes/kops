@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -31,36 +31,5 @@ go_library(
         "//vendor/github.com/go-openapi/jsonpointer:go_default_library",
         "//vendor/github.com/go-openapi/jsonreference:go_default_library",
         "//vendor/github.com/go-openapi/swag:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "auth_test.go",
-        "contact_info_test.go",
-        "expander_test.go",
-        "external_docs_test.go",
-        "header_test.go",
-        "info_test.go",
-        "items_test.go",
-        "license_test.go",
-        "operation_test.go",
-        "parameters_test.go",
-        "path_item_test.go",
-        "paths_test.go",
-        "properties_test.go",
-        "schema_test.go",
-        "structs_test.go",
-        "swagger_test.go",
-        "xml_object_test.go",
-    ],
-    embed = [":go_default_library"],
-    importpath = "github.com/go-openapi/spec",
-    deps = [
-        "//vendor/github.com/go-openapi/jsonpointer:go_default_library",
-        "//vendor/github.com/go-openapi/swag:go_default_library",
-        "//vendor/github.com/stretchr/testify/assert:go_default_library",
-        "//vendor/gopkg.in/yaml.v2:go_default_library",
     ],
 )

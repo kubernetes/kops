@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -12,6 +12,7 @@ go_library(
             "dirent.go",
             "env_unix.go",
             "flock.go",
+            "pagesize_unix.go",
             "race0.go",
             "sockcmsg_unix.go",
             "str.go",
@@ -20,12 +21,15 @@ go_library(
             "syscall_darwin.go",
             "syscall_unix.go",
             "syscall_unix_gc.go",
+            "timestruct.go",
         ],
         "@io_bazel_rules_go//go/platform:dragonfly": [
             "constants.go",
+            "dev_dragonfly.go",
             "dirent.go",
             "env_unix.go",
             "flock.go",
+            "pagesize_unix.go",
             "race0.go",
             "sockcmsg_unix.go",
             "str.go",
@@ -35,13 +39,16 @@ go_library(
             "syscall_no_getwd.go",
             "syscall_unix.go",
             "syscall_unix_gc.go",
+            "timestruct.go",
         ],
         "@io_bazel_rules_go//go/platform:freebsd": [
             "cap_freebsd.go",
             "constants.go",
+            "dev_freebsd.go",
             "dirent.go",
             "env_unix.go",
             "flock.go",
+            "pagesize_unix.go",
             "race0.go",
             "sockcmsg_unix.go",
             "str.go",
@@ -51,6 +58,7 @@ go_library(
             "syscall_no_getwd.go",
             "syscall_unix.go",
             "syscall_unix_gc.go",
+            "timestruct.go",
         ],
         "@io_bazel_rules_go//go/platform:linux": [
             "bluetooth_linux.go",
@@ -59,6 +67,7 @@ go_library(
             "dirent.go",
             "env_unix.go",
             "flock.go",
+            "pagesize_unix.go",
             "race0.go",
             "sockcmsg_linux.go",
             "sockcmsg_unix.go",
@@ -67,6 +76,7 @@ go_library(
             "syscall_linux.go",
             "syscall_unix.go",
             "syscall_unix_gc.go",
+            "timestruct.go",
         ],
         "@io_bazel_rules_go//go/platform:nacl": [
             "dirent.go",
@@ -77,6 +87,7 @@ go_library(
             "dirent.go",
             "env_unix.go",
             "flock.go",
+            "pagesize_unix.go",
             "race0.go",
             "sockcmsg_unix.go",
             "str.go",
@@ -86,12 +97,15 @@ go_library(
             "syscall_no_getwd.go",
             "syscall_unix.go",
             "syscall_unix_gc.go",
+            "timestruct.go",
         ],
         "@io_bazel_rules_go//go/platform:openbsd": [
             "constants.go",
+            "dev_openbsd.go",
             "dirent.go",
             "env_unix.go",
             "flock.go",
+            "pagesize_unix.go",
             "race0.go",
             "sockcmsg_unix.go",
             "str.go",
@@ -101,12 +115,13 @@ go_library(
             "syscall_openbsd.go",
             "syscall_unix.go",
             "syscall_unix_gc.go",
-            "zsysctl_openbsd.go",
+            "timestruct.go",
         ],
         "@io_bazel_rules_go//go/platform:solaris": [
             "constants.go",
             "dirent.go",
             "env_unix.go",
+            "pagesize_unix.go",
             "race0.go",
             "sockcmsg_unix.go",
             "str.go",
@@ -114,6 +129,7 @@ go_library(
             "syscall_solaris.go",
             "syscall_unix.go",
             "syscall_unix_gc.go",
+            "timestruct.go",
         ],
         "//conditions:default": [],
     }) + select({
@@ -227,6 +243,7 @@ go_library(
             "flock_linux_32bit.go",
             "syscall_linux_386.go",
             "zerrors_linux_386.go",
+            "zptrace386_linux.go",
             "zsyscall_linux_386.go",
             "zsysnum_linux_386.go",
             "ztypes_linux_386.go",
@@ -236,6 +253,7 @@ go_library(
             "syscall_linux_amd64.go",
             "syscall_linux_amd64_gc.go",
             "zerrors_linux_amd64.go",
+            "zptrace386_linux.go",
             "zsyscall_linux_amd64.go",
             "zsysnum_linux_amd64.go",
             "ztypes_linux_amd64.go",
@@ -245,6 +263,7 @@ go_library(
             "flock_linux_32bit.go",
             "syscall_linux_arm.go",
             "zerrors_linux_arm.go",
+            "zptracearm_linux.go",
             "zsyscall_linux_arm.go",
             "zsysnum_linux_arm.go",
             "ztypes_linux_arm.go",
@@ -253,6 +272,7 @@ go_library(
             "asm_linux_arm64.s",
             "syscall_linux_arm64.go",
             "zerrors_linux_arm64.go",
+            "zptracearm_linux.go",
             "zsyscall_linux_arm64.go",
             "zsysnum_linux_arm64.go",
             "ztypes_linux_arm64.go",
@@ -262,6 +282,7 @@ go_library(
             "flock_linux_32bit.go",
             "syscall_linux_mipsx.go",
             "zerrors_linux_mips.go",
+            "zptracemips_linux.go",
             "zsyscall_linux_mips.go",
             "zsysnum_linux_mips.go",
             "ztypes_linux_mips.go",
@@ -270,6 +291,7 @@ go_library(
             "asm_linux_mips64x.s",
             "syscall_linux_mips64x.go",
             "zerrors_linux_mips64.go",
+            "zptracemips_linux.go",
             "zsyscall_linux_mips64.go",
             "zsysnum_linux_mips64.go",
             "ztypes_linux_mips64.go",
@@ -278,6 +300,7 @@ go_library(
             "asm_linux_mips64x.s",
             "syscall_linux_mips64x.go",
             "zerrors_linux_mips64le.go",
+            "zptracemipsle_linux.go",
             "zsyscall_linux_mips64le.go",
             "zsysnum_linux_mips64le.go",
             "ztypes_linux_mips64le.go",
@@ -287,6 +310,7 @@ go_library(
             "flock_linux_32bit.go",
             "syscall_linux_mipsx.go",
             "zerrors_linux_mipsle.go",
+            "zptracemipsle_linux.go",
             "zsyscall_linux_mipsle.go",
             "zsysnum_linux_mipsle.go",
             "ztypes_linux_mipsle.go",
@@ -345,6 +369,7 @@ go_library(
             "syscall_openbsd_386.go",
             "zerrors_openbsd_386.go",
             "zsyscall_openbsd_386.go",
+            "zsysctl_openbsd_386.go",
             "zsysnum_openbsd_386.go",
             "ztypes_openbsd_386.go",
         ],
@@ -354,6 +379,7 @@ go_library(
             "syscall_openbsd_amd64.go",
             "zerrors_openbsd_amd64.go",
             "zsyscall_openbsd_amd64.go",
+            "zsysctl_openbsd_amd64.go",
             "zsysnum_openbsd_amd64.go",
             "ztypes_openbsd_amd64.go",
         ],
@@ -363,6 +389,7 @@ go_library(
             "syscall_openbsd_arm.go",
             "zerrors_openbsd_arm.go",
             "zsyscall_openbsd_arm.go",
+            "zsysctl_openbsd_arm.go",
             "zsysnum_openbsd_arm.go",
             "ztypes_openbsd_arm.go",
         ],
@@ -379,113 +406,4 @@ go_library(
     cgo = True,
     importpath = "golang.org/x/sys/unix",
     visibility = ["//visibility:public"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = select({
-        "@io_bazel_rules_go//go/platform:darwin": [
-            "export_test.go",
-        ],
-        "@io_bazel_rules_go//go/platform:dragonfly": [
-            "export_test.go",
-        ],
-        "@io_bazel_rules_go//go/platform:freebsd": [
-            "export_test.go",
-        ],
-        "@io_bazel_rules_go//go/platform:linux": [
-            "export_test.go",
-        ],
-        "@io_bazel_rules_go//go/platform:netbsd": [
-            "export_test.go",
-        ],
-        "@io_bazel_rules_go//go/platform:openbsd": [
-            "export_test.go",
-        ],
-        "@io_bazel_rules_go//go/platform:solaris": [
-            "export_test.go",
-        ],
-        "//conditions:default": [],
-    }),
-    embed = [":go_default_library"],
-    importpath = "golang.org/x/sys/unix",
-)
-
-go_test(
-    name = "go_default_xtest",
-    srcs = select({
-        "@io_bazel_rules_go//go/platform:darwin": [
-            "dev_darwin_test.go",
-            "mmap_unix_test.go",
-            "syscall_bsd_test.go",
-            "syscall_test.go",
-            "syscall_unix_test.go",
-        ],
-        "@io_bazel_rules_go//go/platform:dragonfly": [
-            "mmap_unix_test.go",
-            "syscall_bsd_test.go",
-            "syscall_test.go",
-            "syscall_unix_test.go",
-        ],
-        "@io_bazel_rules_go//go/platform:freebsd": [
-            "mmap_unix_test.go",
-            "syscall_bsd_test.go",
-            "syscall_freebsd_test.go",
-            "syscall_test.go",
-            "syscall_unix_test.go",
-        ],
-        "@io_bazel_rules_go//go/platform:linux": [
-            "creds_test.go",
-            "dev_linux_test.go",
-            "mmap_unix_test.go",
-            "syscall_linux_test.go",
-            "syscall_test.go",
-            "syscall_unix_test.go",
-        ],
-        "@io_bazel_rules_go//go/platform:netbsd": [
-            "dev_netbsd_test.go",
-            "mmap_unix_test.go",
-            "syscall_test.go",
-            "syscall_unix_test.go",
-        ],
-        "@io_bazel_rules_go//go/platform:openbsd": [
-            "mmap_unix_test.go",
-            "openbsd_test.go",
-            "syscall_bsd_test.go",
-            "syscall_test.go",
-            "syscall_unix_test.go",
-        ],
-        "@io_bazel_rules_go//go/platform:solaris": [
-            "mmap_unix_test.go",
-            "syscall_solaris_test.go",
-            "syscall_test.go",
-            "syscall_unix_test.go",
-        ],
-        "//conditions:default": [],
-    }),
-    importpath = "golang.org/x/sys/unix_test",
-    deps = select({
-        "@io_bazel_rules_go//go/platform:darwin": [
-            ":go_default_library",
-        ],
-        "@io_bazel_rules_go//go/platform:dragonfly": [
-            ":go_default_library",
-        ],
-        "@io_bazel_rules_go//go/platform:freebsd": [
-            ":go_default_library",
-        ],
-        "@io_bazel_rules_go//go/platform:linux": [
-            ":go_default_library",
-        ],
-        "@io_bazel_rules_go//go/platform:netbsd": [
-            ":go_default_library",
-        ],
-        "@io_bazel_rules_go//go/platform:openbsd": [
-            ":go_default_library",
-        ],
-        "@io_bazel_rules_go//go/platform:solaris": [
-            ":go_default_library",
-        ],
-        "//conditions:default": [],
-    }),
 )

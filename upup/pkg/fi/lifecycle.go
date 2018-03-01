@@ -16,6 +16,8 @@ limitations under the License.
 
 package fi
 
+import "k8s.io/apimachinery/pkg/util/sets"
+
 type Lifecycle string
 
 const (
@@ -38,4 +40,27 @@ const (
 // HasLifecycle indicates that the task has a Lifecycle
 type HasLifecycle interface {
 	GetLifecycle() *Lifecycle
+	// SetLifecycle is used to override a tasks lifecycle. If a lifecycle overide exists for a specific task name, then the
+	// lifecycle is modified.
+	SetLifecycle(lifecycle Lifecycle)
+}
+
+// Lifecycles are used for ux validation.  When validation fails the lifecycle names are
+// printed out.
+var Lifecycles = sets.NewString(
+	string(LifecycleSync),
+	string(LifecycleIgnore),
+	string(LifecycleWarnIfInsufficientAccess),
+	string(LifecycleExistsAndValidates),
+	string(LifecycleExistsAndWarnIfChanges),
+)
+
+// LifecycleNameMap is used to validate in the UX.  When a user provides a lifecycle name
+// it then can be mapped to the actual lifecycle.
+var LifecycleNameMap = map[string]Lifecycle{
+	"Sync":                     LifecycleSync,
+	"Ignore":                   LifecycleIgnore,
+	"WarnIfInsufficientAccess": LifecycleWarnIfInsufficientAccess,
+	"ExistsAndValidates":       LifecycleExistsAndValidates,
+	"ExistsAndWarnIfChanges":   LifecycleExistsAndWarnIfChanges,
 }

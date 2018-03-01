@@ -17,15 +17,15 @@ limitations under the License.
 package vfs
 
 import (
-	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/golang/glog"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
-// VFSScan scans a source Path for changes files
+// VFSScan scans a source Path for changed files
 type VFSScan struct {
 	Base   Path
 	hashes map[string]*hashing.Hash
@@ -148,25 +148,40 @@ func SyncDir(src *VFSScan, destBase Path) error {
 			continue
 		}
 
-		srcData, err := f.ReadFile()
-		if err != nil {
-			return fmt.Errorf("error reading source file %q: %v", f, err)
+		if err := CopyFile(f, destFile, nil); err != nil {
+			return err
 		}
+	}
 
-		destData, err := destFile.ReadFile()
-		if err != nil {
-			if !os.IsNotExist(err) {
-				return fmt.Errorf("error reading dest file %q: %v", f, err)
-			}
-		}
+	return nil
+}
 
-		if destData == nil || !bytes.Equal(srcData, destData) {
-			glog.V(2).Infof("Copying data from %s to %s", f, destFile)
-			err = destFile.WriteFile(srcData, nil)
-			if err != nil {
-				return fmt.Errorf("error writing dest file %q: %v", f, err)
-			}
+// CopyFile copies the file at src to dest.  It uses a TempFile, rather than buffering in memory.
+func CopyFile(src, dest Path, acl ACL) error {
+	tempFile, err := ioutil.TempFile("", "")
+	if err != nil {
+		return fmt.Errorf("error creating temp file: %v", err)
+	}
+
+	defer func() {
+		if err := os.Remove(tempFile.Name()); err != nil {
+			glog.Warningf("error removing temp file %q: %v", tempFile.Name(), err)
 		}
+	}()
+	defer tempFile.Close()
+
+	if _, err := src.WriteTo(tempFile); err != nil {
+		return fmt.Errorf("error reading source file %q: %v", src, err)
+	}
+
+	if _, err := tempFile.Seek(0, 0); err != nil {
+		return fmt.Errorf("error seeking in temp file during copy: %v", err)
+	}
+
+	glog.V(2).Infof("Copying data from %s to %s", src, dest)
+	err = dest.WriteFile(tempFile, acl)
+	if err != nil {
+		return fmt.Errorf("error writing dest file %q: %v", dest, err)
 	}
 
 	return nil
@@ -258,30 +273,12 @@ func CopyTree(src Path, dest Path, aclOracle ACLOracle) error {
 
 		destFile = dest.Join(relativePath)
 
-		srcData, err := srcFile.ReadFile()
+		acl, err := aclOracle(destFile)
 		if err != nil {
-			return fmt.Errorf("error reading source file %q: %v", srcFile, err)
+			return err
 		}
-
-		// We do still read the dest file ... unknown if we should if the destFile supported hash
-		destData, err := destFile.ReadFile()
-		if err != nil {
-			if !os.IsNotExist(err) {
-				return fmt.Errorf("error reading dest file %q: %v", destFile, err)
-			}
-		}
-
-		if destData == nil || !bytes.Equal(srcData, destData) {
-			acl, err := aclOracle(destFile)
-			if err != nil {
-				return err
-			}
-
-			glog.V(2).Infof("Copying data from %s to %s", srcFile, destFile)
-			err = destFile.WriteFile(srcData, acl)
-			if err != nil {
-				return fmt.Errorf("error writing dest file %q: %v", destFile, err)
-			}
+		if err := CopyFile(srcFile, destFile, acl); err != nil {
+			return err
 		}
 	}
 

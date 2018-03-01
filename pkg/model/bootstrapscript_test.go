@@ -173,6 +173,18 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 							InstanceGroup: s("ig-1"),
 						},
 					},
+					Version: "3.1.11",
+				},
+				{
+					Name: "events",
+					Members: []*kops.EtcdMemberSpec{
+						{
+							Name:          "test",
+							InstanceGroup: s("ig-1"),
+						},
+					},
+					Version: "3.1.11",
+					Image:   "gcr.io/etcd-development/etcd:v3.1.11",
 				},
 			},
 			NetworkCIDR: "10.79.0.0/24",
@@ -189,7 +201,10 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 				CloudProvider: "aws",
 			},
 			KubeProxy: &kops.KubeProxyConfig{
-				CPURequest: "30m",
+				CPURequest:    "30m",
+				CPULimit:      "30m",
+				MemoryRequest: "30Mi",
+				MemoryLimit:   "30Mi",
 				FeatureGates: map[string]string{
 					"AdvancedAuditing": "true",
 				},
@@ -248,6 +263,9 @@ func makeTestInstanceGroup(role kops.InstanceGroupRole, hookSpecRoles []kops.Ins
 			Taints: []string{
 				"key1=value1:NoSchedule",
 				"key2=value2:NoExecute",
+			},
+			SuspendProcesses: []string{
+				"AZRebalance",
 			},
 			Hooks: []kops.HookSpec{
 				{

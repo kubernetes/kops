@@ -24,8 +24,11 @@ import (
 	"path"
 	"strings"
 
+	"github.com/blang/semver"
 	"github.com/golang/glog"
+
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/values"
@@ -44,6 +47,9 @@ type AssetBuilder struct {
 	AssetsLocation  *kops.Assets
 	// TODO we'd like to use cloudup.Phase here, but that introduces a go cyclic dependency
 	Phase string
+
+	// KubernetesVersion is the version of kubernetes we are installing
+	KubernetesVersion semver.Version
 }
 
 // ContainerAsset models a container's location.
@@ -51,7 +57,6 @@ type ContainerAsset struct {
 	// DockerImage will be the name of the container we should run.
 	// This is used to copy a container to a ContainerRegistry.
 	DockerImage string
-
 	// CanonicalLocation will be the source location of the container.
 	CanonicalLocation string
 }
@@ -60,20 +65,27 @@ type ContainerAsset struct {
 type FileAsset struct {
 	// FileURL is the URL of a file that is accessed by a Kubernetes cluster.
 	FileURL *url.URL
-
 	// CanonicalFileURL is the source URL of a file. This is used to copy a file to a FileRepository.
 	CanonicalFileURL *url.URL
-
 	// SHAValue is the SHA hash of the FileAsset.
 	SHAValue string
 }
 
 // NewAssetBuilder creates a new AssetBuilder.
-func NewAssetBuilder(assets *kops.Assets, phase string) *AssetBuilder {
-	return &AssetBuilder{
-		AssetsLocation: assets,
+func NewAssetBuilder(cluster *kops.Cluster, phase string) *AssetBuilder {
+	a := &AssetBuilder{
+		AssetsLocation: cluster.Spec.Assets,
 		Phase:          phase,
 	}
+
+	version, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+	if err != nil {
+		// This should have already been validated
+		glog.Fatalf("unexpected error from ParseKubernetesVersion %s: %v", cluster.Spec.KubernetesVersion, err)
+	}
+	a.KubernetesVersion = *version
+
+	return a
 }
 
 // RemapManifest transforms a kubernetes manifest.
@@ -84,6 +96,7 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 	if !RewriteManifests.Enabled() {
 		return data, nil
 	}
+
 	manifests, err := kubemanifest.LoadManifestsFrom(data)
 	if err != nil {
 		return nil, err
@@ -92,10 +105,10 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 	var yamlSeparator = []byte("\n---\n\n")
 	var remappedManifests [][]byte
 	for _, manifest := range manifests {
-		err := manifest.RemapImages(a.RemapImage)
-		if err != nil {
+		if err := manifest.RemapImages(a.RemapImage); err != nil {
 			return nil, fmt.Errorf("error remapping images: %v", err)
 		}
+
 		y, err := manifest.ToYAML()
 		if err != nil {
 			return nil, fmt.Errorf("error re-marshalling manifest: %v", err)
@@ -113,6 +126,15 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 
 	asset.DockerImage = image
 
+	// The k8s.gcr.io prefix is an alias, but for CI builds we run from a docker load,
+	// and we only double-tag from 1.10 onwards.
+	// For versions prior to 1.10, remap k8s.gcr.io to the old name.
+	// This also means that we won't start using the aliased names on existing clusters,
+	// which could otherwise be surprising to users.
+	if !util.IsKubernetesGTE("1.10", a.KubernetesVersion) && strings.HasPrefix(image, "k8s.gcr.io/") {
+		image = "gcr.io/google_containers/" + strings.TrimPrefix(image, "k8s.gcr.io/")
+	}
+
 	if strings.HasPrefix(image, "kope/dns-controller:") {
 		// To use user-defined DNS Controller:
 		// 1. DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push
@@ -129,7 +151,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		normalized := image
 
 		// Remove the 'standard' kubernetes image prefix, just for sanity
-		normalized = strings.TrimPrefix(normalized, "gcr.io/google_containers/")
+		normalized = strings.TrimPrefix(normalized, "k8s.gcr.io/")
 
 		// We can't nest arbitrarily
 		// Some risk of collisions, but also -- and __ in the names appear to be blocked by docker hub
@@ -146,7 +168,8 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 	return image, nil
 }
 
-// RemapFile sets a new url location for the file, if a AssetsLocation is defined.
+// RemapFileAndSHA returns a remapped url for the file, if AssetsLocation is defined.
+// It also returns the SHA hash of the file.
 func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Hash, error) {
 	if fileURL == nil {
 		return nil, nil, fmt.Errorf("unable to remap an nil URL")

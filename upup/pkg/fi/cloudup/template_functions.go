@@ -43,25 +43,24 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
+// TemplateFunctions provides a collection of methods used throughout the templates
 type TemplateFunctions struct {
 	cluster        *kops.Cluster
 	instanceGroups []*kops.InstanceGroup
-
-	tags   sets.String
-	region string
-
-	modelContext *model.KopsModelContext
+	modelContext   *model.KopsModelContext
+	region         string
+	tags           sets.String
 }
 
 // This will define the available functions we can use in our YAML models
 // If we are trying to get a new function implemented it MUST
 // be defined here.
 func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
+	dest["EtcdScheme"] = tf.EtcdScheme
 	dest["SharedVPC"] = tf.SharedVPC
-
+	dest["UseEtcdTLS"] = tf.UseEtcdTLS
 	// Remember that we may be on a different arch from the target.  Hard-code for now.
 	dest["Arch"] = func() string { return "amd64" }
-
 	dest["replace"] = func(s, find, replace string) string {
 		return strings.Replace(s, find, replace, -1)
 	}
@@ -71,7 +70,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	dest["ClusterName"] = tf.modelContext.ClusterName
 	dest["HasTag"] = tf.HasTag
-
 	dest["WithDefaultBool"] = func(v *bool, defaultValue bool) bool {
 		if v != nil {
 			return *v
@@ -104,6 +102,26 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 		}
 		dest["FlannelBackendType"] = func() string { return flannelBackendType }
 	}
+}
+
+// UseEtcdTLS checks if cluster is using etcd tls
+func (tf *TemplateFunctions) UseEtcdTLS() bool {
+	for _, x := range tf.cluster.Spec.EtcdClusters {
+		if x.EnableEtcdTLS {
+			return true
+		}
+	}
+
+	return false
+}
+
+// EtcdScheme parses and grabs the protocol to the etcd cluster
+func (tf *TemplateFunctions) EtcdScheme() string {
+	if tf.UseEtcdTLS() {
+		return "https"
+	}
+
+	return "http"
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer

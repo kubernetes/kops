@@ -44,6 +44,8 @@ type ClusterList struct {
 type ClusterSpec struct {
 	// The Channel we are following
 	Channel string `json:"channel,omitempty"`
+	// Additional addons that should be installed on the cluster
+	Addons []AddonSpec `json:"addons,omitempty"`
 	// ConfigBase is the path where we store configuration for the cluster
 	// This might be different that the location when the cluster spec itself is stored,
 	// both because this must be accessible to the cluster,
@@ -160,6 +162,14 @@ type ClusterSpec struct {
 	IAM *IAMSpec `json:"iam,omitempty"`
 	// EncryptionConfig holds the encryption config
 	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
+	// Target allows for us to nest extra config for targets such as terraform
+	Target *TargetSpec `json:"target,omitempty"`
+}
+
+// AddonSpec defines an addon that we want to install in the cluster
+type AddonSpec struct {
+	// Manifest is a path to the manifest that defines the addon
+	Manifest string `json:"manifest,omitempty"`
 }
 
 // FileAssetSpec defines the structure for a file asset
@@ -303,6 +313,8 @@ type EtcdClusterSpec struct {
 	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
 	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients
 	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
+	// EnableTLSAuth indicates client and peer TLS auth should be enforced
+	EnableTLSAuth bool `json:"enableTLSAuth,omitempty"`
 	// Version is the version of etcd to run i.e. 2.1.2, 3.0.17 etcd
 	Version string `json:"version,omitempty"`
 	// LeaderElectionTimeout is the time (in milliseconds) for an etcd leader election timeout
@@ -310,6 +322,16 @@ type EtcdClusterSpec struct {
 	// HeartbeatInterval is the time (in milliseconds) for an etcd heartbeat interval
 	HeartbeatInterval *metav1.Duration `json:"heartbeatInterval,omitempty"`
 	// Image is the etcd docker image to use. Setting this will ignore the Version specified.
+	Image string `json:"image,omitempty"`
+	// Backups describes how we do backups of etcd
+	Backups *EtcdBackupSpec `json:"backups,omitempty"`
+}
+
+// EtcdBackupSpec describes how we want to do backups of etcd
+type EtcdBackupSpec struct {
+	// BackupStore is the VFS path where we will read/write backup data
+	BackupStore string `json:"backupStore,omitempty"`
+	// Image is the etcd backup manager image to use.  Setting this will create a sidecar container in the etcd pod with the specified image.
 	Image string `json:"image,omitempty"`
 }
 
@@ -355,6 +377,8 @@ type ClusterSubnetSpec struct {
 	Egress string `json:"egress,omitempty"`
 
 	Type SubnetType `json:"type,omitempty"`
+	// PublicIP to attatch to NatGateway
+	PublicIP string `json:"publicIP,omitempty"`
 }
 
 type EgressProxySpec struct {
@@ -369,4 +393,23 @@ type HTTPProxy struct {
 	// TODO #3070
 	// User     string `json:"user,omitempty"`
 	// Password string `json:"password,omitempty"`
+}
+
+// TargetSpec allows for specifying target config in an extensible way
+type TargetSpec struct {
+	Terraform *TerraformSpec `json:"terraform,omitempty"`
+}
+
+func (t *TargetSpec) IsEmpty() bool {
+	return t.Terraform == nil
+}
+
+// TerraformSpec allows us to specify terraform config in an extensible way
+type TerraformSpec struct {
+	// ProviderExtraConfig contains key/value pairs to add to the rendered terraform "provider" block
+	ProviderExtraConfig *map[string]string `json:"providerExtraConfig,omitempty"`
+}
+
+func (t *TerraformSpec) IsEmpty() bool {
+	return t.ProviderExtraConfig == nil
 }

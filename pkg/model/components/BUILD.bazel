@@ -21,6 +21,7 @@ go_library(
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/util:go_default_library",
         "//pkg/assets:go_default_library",
+        "//pkg/k8sversion:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",
         "//upup/pkg/fi/loader:go_default_library",
@@ -35,16 +36,17 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
+        "image_test.go",
         "kubecontrollermanager_test.go",
         "kubelet_test.go",
         "kubescheduler_test.go",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/pkg/model/components",
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/util:go_default_library",
         "//pkg/assets:go_default_library",
+        "//util/pkg/vfs:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
 )

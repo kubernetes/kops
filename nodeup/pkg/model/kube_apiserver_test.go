@@ -41,10 +41,24 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 		},
 		{
 			kops.KubeAPIServerConfig{
+				MaxRequestsInflight: 1000,
+			},
+			"--insecure-port=0 --max-requests-inflight=1000 --secure-port=0",
+		},
+		{
+			kops.KubeAPIServerConfig{
 				InsecurePort: 8080,
 				SecurePort:   443,
 			},
 			"--insecure-port=8080 --secure-port=443",
+		},
+		{
+			kops.KubeAPIServerConfig{
+				InsecurePort:        8080,
+				SecurePort:          443,
+				MaxRequestsInflight: 1000,
+			},
+			"--insecure-port=8080 --max-requests-inflight=1000 --secure-port=443",
 		},
 		{
 			kops.KubeAPIServerConfig{

@@ -33,10 +33,10 @@ import (
 )
 
 var (
-	get_long = templates.LongDesc(i18n.T(`
+	getLong = templates.LongDesc(i18n.T(`
 	Display one or many resources.` + validResources))
 
-	get_example = templates.Examples(i18n.T(`
+	getExample = templates.Examples(i18n.T(`
 	# Get all clusters in a state store
 	kops get clusters
 
@@ -55,7 +55,7 @@ var (
 	# Get the admin password for a cluster
 	kops get secrets admin -oplaintext`))
 
-	get_short = i18n.T(`Get one or many resources.`)
+	getShort = i18n.T(`Get one or many resources.`)
 )
 
 type GetOptions struct {
@@ -77,9 +77,9 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:        "get",
 		SuggestFor: []string{"list"},
-		Short:      get_short,
-		Long:       get_long,
-		Example:    get_example,
+		Short:      getShort,
+		Long:       getLong,
+		Example:    getExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) != 0 {
 				options.clusterName = args[0]
@@ -104,7 +104,6 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// create subcommands
 	cmd.AddCommand(NewCmdGetCluster(f, out, options))
-	cmd.AddCommand(NewCmdGetFederations(f, out, options))
 	cmd.AddCommand(NewCmdGetInstanceGroups(f, out, options))
 	cmd.AddCommand(NewCmdGetSecrets(f, out, options))
 

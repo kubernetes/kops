@@ -147,7 +147,7 @@ func mkdirAll(sftpClient *sftp.Client, dir string) error {
 	return nil
 }
 
-func (p *SSHPath) WriteFile(data []byte, acl ACL) error {
+func (p *SSHPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 	sftpClient, err := p.newClient()
 	if err != nil {
 		return err
@@ -169,10 +169,7 @@ func (p *SSHPath) WriteFile(data []byte, acl ACL) error {
 
 	// Note from here on in we have to close f and delete or rename the temp file
 
-	n, err := f.Write(data)
-	if err == nil && n < len(data) {
-		err = io.ErrShortWrite
-	}
+	_, err = io.Copy(f, data)
 
 	if closeErr := f.Close(); err == nil {
 		err = closeErr
@@ -230,7 +227,7 @@ func (p *SSHPath) WriteFile(data []byte, acl ACL) error {
 // Not a great approach, but fine for a single process (with low concurrency)
 var createFileLockSSH sync.Mutex
 
-func (p *SSHPath) CreateFile(data []byte, acl ACL) error {
+func (p *SSHPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 	createFileLockSSH.Lock()
 	defer createFileLockSSH.Unlock()
 

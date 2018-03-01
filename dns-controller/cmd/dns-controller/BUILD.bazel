@@ -12,6 +12,7 @@ go_library(
         "//dnsprovider/pkg/dnsprovider/providers/aws/route53:go_default_library",
         "//dnsprovider/pkg/dnsprovider/providers/coredns:go_default_library",
         "//dnsprovider/pkg/dnsprovider/providers/google/clouddns:go_default_library",
+        "//pkg/resources/digitalocean/dns:go_default_library",
         "//protokube/pkg/gossip:go_default_library",
         "//protokube/pkg/gossip/dns:go_default_library",
         "//protokube/pkg/gossip/dns/provider:go_default_library",
@@ -26,6 +27,5 @@ go_library(
 go_binary(
     name = "dns-controller",
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/dns-controller/cmd/dns-controller",
     visibility = ["//visibility:public"],
 )

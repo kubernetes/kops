@@ -37,6 +37,7 @@ See [1.5.0-alpha4 commit](https://github.com/kubernetes/kops/commit/a60d7982e04c
 * Edit makefile
 * If updating dns-controller: bump version in Makefile, code, manifests, and tests
 
+`git commit -m "Release 1.X.Y`
 
 ## Check builds OK
 
@@ -73,7 +74,9 @@ git push --tags
 For the time being, we are also maintaining a release branch.  We push released
 versions to that.
 
-`git push origin release-1.7:release`
+`git push origin release-1.8:release`
+
+## Pull request to master branch (for release commit)
 
 ## Upload to github
 

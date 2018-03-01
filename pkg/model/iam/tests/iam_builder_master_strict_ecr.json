@@ -6,6 +6,7 @@
       "Effect": "Allow",
       "Action": [
         "ec2:DescribeInstances",
+        "ec2:DescribeRegions",
         "ec2:DescribeRouteTables",
         "ec2:DescribeSecurityGroups",
         "ec2:DescribeSubnets",
@@ -19,7 +20,6 @@
       "Sid": "kopsK8sEC2MasterPermsAllResources",
       "Effect": "Allow",
       "Action": [
-        "ec2:CreateRoute",
         "ec2:CreateSecurityGroup",
         "ec2:CreateTags",
         "ec2:CreateVolume",
@@ -35,6 +35,7 @@
       "Action": [
         "ec2:AttachVolume",
         "ec2:AuthorizeSecurityGroupIngress",
+        "ec2:CreateRoute",
         "ec2:DeleteRoute",
         "ec2:DeleteSecurityGroup",
         "ec2:DeleteVolume",

@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "admissionregistration_client.go",
         "doc.go",
-        "externaladmissionhookconfiguration.go",
         "generated_expansion.go",
         "initializerconfiguration.go",
     ],

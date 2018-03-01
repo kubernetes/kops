@@ -159,6 +159,12 @@ cloudConfig:
 docker:
   logLevel: INFO
 encryptionConfig: null
+etcdClusters:
+  events:
+    image: gcr.io/etcd-development/etcd:v3.1.11
+    version: 3.1.11
+  main:
+    version: 3.1.11
 fileAssets:
 - content: E1oeAbrnQsSldrIP1BpoP2SDykM= (fingerprint)
   name: iptables-restore
@@ -173,9 +179,12 @@ kubeAPIServer:
 kubeControllerManager:
   cloudProvider: aws
 kubeProxy:
+  cpuLimit: 30m
   cpuRequest: 30m
   featureGates:
     AdvancedAuditing: "true"
+  memoryLimit: 30Mi
+  memoryRequest: 30Mi
 kubeScheduler:
   image: SomeImage
 kubelet:
@@ -206,6 +215,8 @@ kubelet:
 nodeLabels:
   label2: value2
   labelname: labelvalue
+suspendProcesses:
+- AZRebalance
 taints:
 - key1=value1:NoSchedule
 - key2=value2:NoExecute

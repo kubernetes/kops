@@ -94,6 +94,8 @@ type InstanceGroupSpec struct {
 	// Zones is the names of the Zones where machines in this instance group should be placed
 	// This is needed for regional subnets (e.g. GCE), to restrict placement to particular zones
 	Zones []string `json:"zones,omitempty"`
+	// SuspendProcesses disables the listed Scaling Policies
+	SuspendProcesses []string `json:"suspendProcesses,omitempty"`
 }
 
 // UserData defines a user-data section

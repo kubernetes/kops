@@ -11,6 +11,5 @@ go_library(
 go_binary(
     name = "channels",
     embed = [":go_default_library"],
-    importpath = "k8s.io/kops/channels/cmd/channels",
     visibility = ["//visibility:public"],
 )

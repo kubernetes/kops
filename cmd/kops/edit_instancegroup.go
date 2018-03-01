@@ -37,7 +37,7 @@ import (
 )
 
 var (
-	edit_instancegroup_long = templates.LongDesc(i18n.T(`Edit a cluster configuration.
+	editInstancegroupLong = templates.LongDesc(i18n.T(`Edit a cluster configuration.
 
 	This command changes the instancegroup desired configuration in the registry.
 
@@ -46,12 +46,12 @@ var (
 
 	kops edit does not update the cloud resources, to apply the changes use "kops update cluster".`))
 
-	edit_instancegroup_example = templates.Examples(i18n.T(`
+	editInstancegroupExample = templates.Examples(i18n.T(`
 	# Edit an instancegroup desired configuration.
 	kops edit ig --name k8s-cluster.example.com node --state=s3://kops-state-1234
 	`))
 
-	edit_instancegroup_short = i18n.T(`Edit instancegroup.`)
+	editInstancegroupShort = i18n.T(`Edit instancegroup.`)
 )
 
 type EditInstanceGroupOptions struct {
@@ -63,9 +63,9 @@ func NewCmdEditInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "instancegroup",
 		Aliases: []string{"instancegroups", "ig"},
-		Short:   edit_instancegroup_short,
-		Long:    edit_instancegroup_long,
-		Example: edit_instancegroup_example,
+		Short:   editInstancegroupShort,
+		Long:    editInstancegroupLong,
+		Example: editInstancegroupExample,
 		Run: func(cmd *cobra.Command, args []string) {
 
 			err := RunEditInstanceGroup(f, cmd, args, os.Stdout, options)
@@ -168,7 +168,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
 
-	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets, "")
+	assetBuilder := assets.NewAssetBuilder(cluster, "")
 	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, assetBuilder)
 	if err != nil {
 		return err

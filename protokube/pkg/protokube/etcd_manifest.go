@@ -24,6 +24,7 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/util/pkg/exec"
 )
 
 // BuildEtcdManifest creates the pod spec, based on the etcd cluster
@@ -44,12 +45,7 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 					v1.ResourceCPU: c.CPURequest,
 				},
 			},
-			Command: []string{
-				"/bin/sh", "-c",
-				"/bin/mkfifo /tmp/pipe; " +
-					"(/bin/tee -a /var/log/etcd.log < /tmp/pipe & ); " +
-					"exec /usr/local/bin/etcd > /tmp/pipe 2>&1",
-			},
+			Command: exec.WithTee("/usr/local/bin/etcd", []string{}, "/var/log/etcd.log"),
 		}
 		// build the environment variables for etcd service
 		container.Env = buildEtcdEnvironmentOptions(c)
@@ -146,6 +142,11 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 		pod.Spec.Containers = append(pod.Spec.Containers, container)
 	}
 
+	if c.BackupStore != "" && c.BackupImage != "" {
+		backupContainer := buildEtcdBackupManagerContainer(c)
+		pod.Spec.Containers = append(pod.Spec.Containers, *backupContainer)
+	}
+
 	kubemanifest.MarkPodAsCritical(pod)
 
 	return pod
@@ -201,6 +202,12 @@ func buildEtcdEnvironmentOptions(c *EtcdCluster) []v1.EnvVar {
 	if notEmpty(c.TLSKey) {
 		options = append(options, v1.EnvVar{Name: "ETCD_KEY_FILE", Value: c.TLSKey})
 	}
+	if c.isTLS() {
+		if c.TLSAuth {
+			options = append(options, v1.EnvVar{Name: "ETCD_CLIENT_CERT_AUTH", Value: "true"})
+			options = append(options, v1.EnvVar{Name: "ETCD_PEER_CLIENT_CERT_AUTH", Value: "true"})
+		}
+	}
 
 	// @step: generate the initial cluster
 	var hosts []string
@@ -236,4 +243,43 @@ func buildCertificateDirectories(c *EtcdCluster) []string {
 // notEmpty is just a code pretty version if string != ""
 func notEmpty(v string) bool {
 	return v != ""
+}
+
+// buildEtcdBackupManagerContainer builds a container for the standalone etcd backup manager
+func buildEtcdBackupManagerContainer(c *EtcdCluster) *v1.Container {
+	command := []string{"/etcd-backup"}
+	command = append(command, "--backup-store", c.BackupStore)
+	command = append(command, "--cluster-name", c.ClusterName)
+	command = append(command, "--data-dir", "/var/etcd/"+c.DataDirName)
+
+	container := v1.Container{
+		Name:    "etcd-backup",
+		Image:   c.BackupImage,
+		Command: command,
+	}
+
+	// TODO: TLS options
+	// TODO: Liveness probe?
+
+	// volume should already have been registered
+	container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
+		Name:      "varetcdata",
+		MountPath: "/var/etcd/" + c.DataDirName,
+		ReadOnly:  false,
+	})
+
+	if c.isTLS() {
+		for _, dirname := range buildCertificateDirectories(c) {
+			normalized := strings.Replace(dirname, "/", "", -1)
+
+			// pod volume already registered for etcd container above
+			container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
+				Name:      normalized,
+				MountPath: dirname,
+				ReadOnly:  true,
+			})
+		}
+	}
+
+	return &container
 }
