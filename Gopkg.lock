@@ -93,6 +93,7 @@
     "aws/request",
     "aws/session",
     "aws/signer/v4",
+    "internal/sdkrand",
     "internal/shareddefaults",
     "private/protocol",
     "private/protocol/ec2query",
@@ -119,7 +120,7 @@
     "service/s3",
     "service/sts"
   ]
-  revision = "5177d71d80f123f6d82aaf762387e39b88c5ba23"
+  revision = "bff41fb23b7550368282029f6478819d6a99ae0f"
 
 [[projects]]
   name = "github.com/beorn7/perks"
@@ -1540,6 +1541,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "44436cf800022ae978ae92627ffb7855936a7574f8bb041bca837216aa1456e4"
+  inputs-digest = "7445d8b26618a25cff0c477f71b45cfe1c66c213599a07c2c751ad94ee64e86d"
   solver-name = "gps-cdcl"
   solver-version = 1
