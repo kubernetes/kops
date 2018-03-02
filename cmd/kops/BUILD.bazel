@@ -145,6 +145,7 @@ go_test(
         "//tests/integration/update_cluster:exported_testdata",  # keep
     ],
     embed = [":go_default_library"],
+    shard_count = 10,
     deps = [
         "//cmd/kops/util:go_default_library",
         "//pkg/apis/kops:go_default_library",
