@@ -155,7 +155,6 @@ that the only people who can get things done around here are the "maintainers".
 We also would love to add more "official" maintainers, so show us what you can
 do!
 
-
 What this means:
 
 __Issues__
@@ -203,7 +202,6 @@ The maintainers and other community members are generally available on the [kube
 
 
 ## GitHub Issues
-
 
 ### Bugs
 
