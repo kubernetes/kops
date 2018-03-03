@@ -1152,7 +1152,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		//  updateClusterOptions.MaxTaskDuration = c.MaxTaskDuration
 		//  updateClusterOptions.CreateKubecfg = c.CreateKubecfg
 
-		err := RunUpdateCluster(f, clusterName, out, updateClusterOptions)
+		_, err := RunUpdateCluster(f, clusterName, out, updateClusterOptions)
 		if err != nil {
 			return err
 		}
