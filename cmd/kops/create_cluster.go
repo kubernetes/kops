@@ -23,6 +23,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/user"
 	"strconv"
 	"strings"
 
@@ -220,7 +221,13 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateClusterOptions{}
 	options.InitDefaults()
 
-	sshPublicKey := "~/.ssh/id_rsa.pub"
+	// Find the users home directory in an os independent manner
+	usr, err := user.Current()
+	if err != nil {
+		glog.Fatalf("unable to find users home directory: %v", err)
+	}
+
+	sshPublicKey := fmt.Sprintf("%s/.ssh/id_rsa.pub", usr.HomeDir)
 	associatePublicIP := false
 
 	cmd := &cobra.Command{
