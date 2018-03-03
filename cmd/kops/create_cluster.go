@@ -277,7 +277,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
 	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", options.KubernetesVersion, "Version of kubernetes to run (defaults to version in channel)")
 
-	cmd.Flags().StringVar(&sshPublicKey, "ssh-public-key", sshPublicKey, "SSH public key to use")
+	cmd.Flags().StringVar(&sshPublicKey, "ssh-public-key", "~/.ssh/id_rsa.pub", "SSH public key to use")
 
 	cmd.Flags().StringVar(&options.NodeSize, "node-size", options.NodeSize, "Set instance size for nodes")
 
