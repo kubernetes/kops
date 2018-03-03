@@ -11,7 +11,6 @@ go_library(
     importpath = "k8s.io/kops/pkg/pki",
     visibility = ["//visibility:public"],
     deps = [
-        "//upup/pkg/fi/utils:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/golang.org/x/crypto/ssh:go_default_library",
     ],

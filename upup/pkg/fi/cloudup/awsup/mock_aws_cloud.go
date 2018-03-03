@@ -25,7 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
-	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
@@ -73,6 +73,7 @@ type MockCloud struct {
 	MockAutoscaling    autoscalingiface.AutoScalingAPI
 	MockCloudFormation *cloudformation.CloudFormation
 	MockEC2            ec2iface.EC2API
+	MockIAM            iamiface.IAMAPI
 	MockRoute53        route53iface.Route53API
 	MockELB            elbiface.ELBAPI
 }
@@ -190,9 +191,11 @@ func (c *MockAWSCloud) EC2() ec2iface.EC2API {
 	return c.MockEC2
 }
 
-func (c *MockAWSCloud) IAM() *iam.IAM {
-	glog.Fatalf("MockAWSCloud IAM not implemented")
-	return nil
+func (c *MockAWSCloud) IAM() iamiface.IAMAPI {
+	if c.MockIAM == nil {
+		glog.Fatalf("MockAWSCloud MockIAM not set")
+	}
+	return c.MockIAM
 }
 
 func (c *MockAWSCloud) ELB() elbiface.ELBAPI {
@@ -204,7 +207,7 @@ func (c *MockAWSCloud) ELB() elbiface.ELBAPI {
 
 func (c *MockAWSCloud) Autoscaling() autoscalingiface.AutoScalingAPI {
 	if c.MockAutoscaling == nil {
-		glog.Fatalf("MockAWSCloud Autoscaling not implemented")
+		glog.Fatalf("MockAWSCloud Autoscaling not set")
 	}
 	return c.MockAutoscaling
 }
