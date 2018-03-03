@@ -42,33 +42,41 @@ func (m *MockEC2) CreateTags(request *ec2.CreateTagsInput) (*ec2.CreateTagsOutpu
 
 	for _, v := range request.Resources {
 		resourceId := *v
-		resourceType := ""
-		if strings.HasPrefix(resourceId, "subnet-") {
-			resourceType = ec2.ResourceTypeSubnet
-		} else if strings.HasPrefix(resourceId, "vpc-") {
-			resourceType = ec2.ResourceTypeVpc
-		} else if strings.HasPrefix(resourceId, "sg-") {
-			resourceType = ec2.ResourceTypeSecurityGroup
-		} else if strings.HasPrefix(resourceId, "vol-") {
-			resourceType = ec2.ResourceTypeVolume
-		} else if strings.HasPrefix(resourceId, "igw-") {
-			resourceType = ec2.ResourceTypeInternetGateway
-		} else {
-			glog.Fatalf("Unknown resource-type in create tags: %v", resourceId)
-		}
-
 		for _, tag := range request.Tags {
-			t := &ec2.TagDescription{
-				Key:          tag.Key,
-				Value:        tag.Value,
-				ResourceId:   s(resourceId),
-				ResourceType: s(resourceType),
-			}
-			m.Tags = append(m.Tags, t)
+			m.addTag(resourceId, tag)
 		}
 	}
 	response := &ec2.CreateTagsOutput{}
 	return response, nil
+}
+
+func (m *MockEC2) addTag(resourceId string, tag *ec2.Tag) {
+	resourceType := ""
+	if strings.HasPrefix(resourceId, "subnet-") {
+		resourceType = ec2.ResourceTypeSubnet
+	} else if strings.HasPrefix(resourceId, "vpc-") {
+		resourceType = ec2.ResourceTypeVpc
+	} else if strings.HasPrefix(resourceId, "sg-") {
+		resourceType = ec2.ResourceTypeSecurityGroup
+	} else if strings.HasPrefix(resourceId, "vol-") {
+		resourceType = ec2.ResourceTypeVolume
+	} else if strings.HasPrefix(resourceId, "igw-") {
+		resourceType = ec2.ResourceTypeInternetGateway
+	} else if strings.HasPrefix(resourceId, "dopt-") {
+		resourceType = ec2.ResourceTypeDhcpOptions
+	} else if strings.HasPrefix(resourceId, "rtb-") {
+		resourceType = ec2.ResourceTypeRouteTable
+	} else {
+		glog.Fatalf("Unknown resource-type in create tags: %v", resourceId)
+	}
+
+	t := &ec2.TagDescription{
+		Key:          tag.Key,
+		Value:        tag.Value,
+		ResourceId:   s(resourceId),
+		ResourceType: s(resourceType),
+	}
+	m.Tags = append(m.Tags, t)
 }
 
 func (m *MockEC2) DescribeTagsRequest(*ec2.DescribeTagsInput) (*request.Request, *ec2.DescribeTagsOutput) {

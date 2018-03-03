@@ -327,7 +327,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 	})
 	for _, group := range asgGroups.AutoScalingGroups {
 		if len(group.Instances) != 2 {
-			t.Errorf("Expected 2 instances got: %v", len(group.Instances))
+			t.Errorf("Expected 2 instances got: %v in %v", len(group.Instances), group)
 		}
 	}
 
@@ -336,7 +336,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 	})
 	for _, group := range asgGroups.AutoScalingGroups {
 		if len(group.Instances) != 2 {
-			t.Errorf("Expected 2 instances got: %v", len(group.Instances))
+			t.Errorf("Expected 2 instances got: %v in %v", len(group.Instances), group)
 		}
 	}
 
@@ -345,7 +345,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 	})
 	for _, group := range asgGroups.AutoScalingGroups {
 		if len(group.Instances) != 1 {
-			t.Errorf("Expected 1 instances got: %v", len(group.Instances))
+			t.Errorf("Expected 1 instance got: %v in %v", len(group.Instances), group)
 		}
 	}
 
@@ -354,7 +354,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 	})
 	for _, group := range asgGroups.AutoScalingGroups {
 		if len(group.Instances) != 1 {
-			t.Errorf("Expected 1 instances got: %v", len(group.Instances))
+			t.Errorf("Expected 1 instance got: %v in %v", len(group.Instances), group)
 		}
 	}
 }
