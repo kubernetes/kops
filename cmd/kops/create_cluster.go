@@ -457,7 +457,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			SubnetIds: []*string{aws.String(c.SubnetIDs[0])},
 		})
 		if err != nil {
-			return fmt.Errorf("error describing subnet %s", c.SubnetIDs[0])
+			return fmt.Errorf("error describing subnet %s: %v", c.SubnetIDs[0], err)
 		}
 		if len(res.Subnets) == 0 || res.Subnets[0].VpcId == nil {
 			return fmt.Errorf("failed to determine VPC id of subnet %s", c.SubnetIDs[0])
