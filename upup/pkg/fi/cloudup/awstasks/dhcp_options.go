@@ -79,6 +79,7 @@ func (e *DHCPOptions) Find(c *fi.Context) (*DHCPOptions, error) {
 	actual := &DHCPOptions{
 		ID:   o.DhcpOptionsId,
 		Name: findNameTag(o.Tags),
+		Tags: intersectTags(o.Tags, e.Tags),
 	}
 
 	for _, s := range o.DhcpConfigurations {
@@ -104,6 +105,7 @@ func (e *DHCPOptions) Find(c *fi.Context) (*DHCPOptions, error) {
 
 	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle
+	actual.Shared = e.Shared
 
 	return actual, nil
 }

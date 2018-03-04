@@ -215,12 +215,16 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 				if err != nil {
 					return err
 				}
+				taskName := getTaskName(r.changes)
+				fmt.Fprintf(b, "  %s/%s\n", taskName, idForTask(taskMap, r.e))
+
 				if len(changeList) == 0 {
+					fmt.Fprintf(b, "   internal consistency error!\n")
+					fmt.Fprintf(b, "    actual: %+v\n", r.a)
+					fmt.Fprintf(b, "    expect: %+v\n", r.e)
 					continue
 				}
 
-				taskName := getTaskName(r.changes)
-				fmt.Fprintf(b, "  %s/%s\n", taskName, idForTask(taskMap, r.e))
 				for _, change := range changeList {
 					lines := strings.Split(change.Description, "\n")
 					if len(lines) == 1 {
