@@ -89,6 +89,7 @@ func TestSharedInternetGatewayDoesNotRename(t *testing.T) {
 			VPC:    vpc1,
 			Shared: fi.Bool(true),
 			ID:     internetGateway.InternetGateway.InternetGatewayId,
+			Tags:   make(map[string]string),
 		}
 
 		return map[string]fi.Task{
