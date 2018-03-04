@@ -62,12 +62,14 @@ func (e *RouteTable) Find(c *fi.Context) (*RouteTable, error) {
 		ID:   rt.RouteTableId,
 		VPC:  &VPC{ID: rt.VpcId},
 		Name: e.Name,
+		Tags: intersectTags(rt.Tags, e.Tags),
 	}
 	glog.V(2).Infof("found matching RouteTable %q", *actual.ID)
 	e.ID = actual.ID
 
 	// Prevent spurious changes
 	actual.Lifecycle = e.Lifecycle
+	actual.Shared = e.Shared
 
 	return actual, nil
 }
