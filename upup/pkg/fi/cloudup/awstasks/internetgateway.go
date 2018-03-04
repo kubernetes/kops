@@ -93,6 +93,7 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 	actual := &InternetGateway{
 		ID:   igw.InternetGatewayId,
 		Name: findNameTag(igw.Tags),
+		Tags: intersectTags(igw.Tags, e.Tags),
 	}
 
 	glog.V(2).Infof("found matching InternetGateway %q", *actual.ID)
