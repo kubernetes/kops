@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/apiserver/pkg/authentication/user"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/tokens"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -34,8 +35,12 @@ type PKIModelBuilder struct {
 
 var _ fi.ModelBuilder = &PKIModelBuilder{}
 
-// Build is responsible for generating the various pki assets
+// Build is responsible for generating the various pki assets.
 func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
+
+	// Note: the fitasks.Keypair structs are created with a Format that == 	fitasks.KeypairType
+	// to denote that these tasks are using the newer Keypar API Type.  This value is used
+	// to upgrade a legacy Keypair to the newer Keypair API object.
 
 	// TODO: Only create the CA via this task
 	defaultCA := &fitasks.Keypair{
@@ -43,6 +48,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Lifecycle: b.Lifecycle,
 		Subject:   "cn=kubernetes",
 		Type:      "ca",
+
+		Format: string(kops.SecretTypeKeypair),
 	}
 	c.AddTask(defaultCA)
 
@@ -55,6 +62,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subject: "o=" + user.NodesGroup + ",cn=kubelet",
 			Type:    "client",
 			Signer:  defaultCA,
+
+			Format: string(kops.SecretTypeKeypair),
 		}
 		c.AddTask(t)
 	}
@@ -68,6 +77,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subject:   "cn=kubelet-api",
 			Type:      "client",
 			Signer:    defaultCA,
+
+			Format: string(kops.SecretTypeKeypair),
 		})
 	}
 	{
@@ -77,6 +88,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subject:   "cn=" + user.KubeScheduler,
 			Type:      "client",
 			Signer:    defaultCA,
+
+			Format: string(kops.SecretTypeKeypair),
 		}
 		c.AddTask(t)
 	}
@@ -88,6 +101,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subject:   "cn=" + user.KubeProxy,
 			Type:      "client",
 			Signer:    defaultCA,
+
+			Format: string(kops.SecretTypeKeypair),
 		}
 		c.AddTask(t)
 	}
@@ -99,6 +114,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subject:   "cn=" + user.KubeControllerManager,
 			Type:      "client",
 			Signer:    defaultCA,
+
+			Format: string(kops.SecretTypeKeypair),
 		}
 		c.AddTask(t)
 	}
@@ -118,6 +135,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subject:        "cn=etcd",
 			Type:           "clientServer",
 			Signer:         defaultCA,
+
+			Format: string(kops.SecretTypeKeypair),
 		})
 		c.AddTask(&fitasks.Keypair{
 			Name:      fi.String("etcd-client"),
@@ -125,6 +144,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subject:   "cn=etcd-client",
 			Type:      "client",
 			Signer:    defaultCA,
+
+			Format: string(kops.SecretTypeKeypair),
 		})
 
 		// @check if calico is enabled as the CNI provider
@@ -135,6 +156,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Subject:   "cn=calico-client",
 				Type:      "client",
 				Signer:    defaultCA,
+
+				Format: string(kops.SecretTypeKeypair),
 			})
 		}
 	}
@@ -145,6 +168,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subject: "cn=" + "system:kube-router",
 			Type:    "client",
 			Signer:  defaultCA,
+
+			Format: string(kops.SecretTypeKeypair),
 		}
 		c.AddTask(t)
 	}
@@ -156,6 +181,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subject:   "o=" + user.SystemPrivilegedGroup + ",cn=kubecfg",
 			Type:      "client",
 			Signer:    defaultCA,
+
+			Format: string(kops.SecretTypeKeypair),
 		}
 		c.AddTask(t)
 	}
@@ -167,6 +194,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subject:   "cn=apiserver-proxy-client",
 			Type:      "client",
 			Signer:    defaultCA,
+
+			Format: string(kops.SecretTypeKeypair),
 		}
 		c.AddTask(t)
 	}
@@ -177,6 +206,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=apiserver-aggregator-ca",
 			Type:      "ca",
+
+			Format: string(kops.SecretTypeKeypair),
 		}
 		c.AddTask(aggregatorCA)
 
@@ -187,6 +218,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subject: "cn=aggregator",
 			Type:    "client",
 			Signer:  aggregatorCA,
+
+			Format: string(kops.SecretTypeKeypair),
 		}
 		c.AddTask(aggregator)
 	}
@@ -199,6 +232,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subject:   "o=" + user.SystemPrivilegedGroup + ",cn=kops",
 			Type:      "client",
 			Signer:    defaultCA,
+
+			Format: string(kops.SecretTypeKeypair),
 		}
 		c.AddTask(t)
 	}
@@ -236,6 +271,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Type:           "server",
 			AlternateNames: alternateNames,
 			Signer:         defaultCA,
+
+			Format: string(kops.SecretTypeKeypair),
 		}
 		c.AddTask(t)
 	}
