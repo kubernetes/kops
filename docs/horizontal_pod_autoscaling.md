@@ -5,25 +5,42 @@ pods in a replication controller, deployment or replica set based on observed
 CPU utilization (or, with alpha support, on some other, application-provided
 metrics).
 
-Kops can assist in setting up HPA and recommends Kubernetes `>= 1.7` and Kops
-`>=1.8`. Relevant reading you will need to go through:
-
-* [Configure The Aggregation Layer][1]
-* [Horizontal Pod Autoscaling][5]
-
-## Required API Versions
-
 The current stable version, which only includes support for CPU autoscaling, can
-be found in the `autoscaling/v1` API version.
+be found in the `autoscaling/v1` API version. The alpha version, which includes
+support for scaling on memory and custom metrics, can be found in
+`autoscaling/v2alpha1` in 1.7 and `autoscaling/v2beta1` 1.8 and 1.9.
 
-## Extra Capabilites
+Kops can assist in setting up HPA and recommends Kubernetes `1.7.x` to `1.9.x`
+and Kops `>=1.7`. Relevant reading you will need to go through:
+
+* [Extending the Kubernetes API with the aggregation layer][k8s-extend-api]
+* [Configure The Aggregation Layer][k8s-aggregation-layer]
+* [Horizontal Pod Autoscaling][k8s-hpa]
+
+While the above links go into details on how Kubernetes needs to be configured
+to work with HPA, a lot of that work is already done for you by Kops.
+Specifically:
+
+* [x] Enable the [Aggregation Layer][k8s-aggregation-layer] via the following
+  kube-apiserver flags:
+   * [x] `--requestheader-client-ca-file=<path to aggregator CA cert>`
+   * [x] `--requestheader-allowed-names=aggregator`
+   * [x] `--requestheader-extra-headers-prefix=X-Remote-Extra-`
+   * [x] `--requestheader-group-headers=X-Remote-Group`
+   * [x] `--requestheader-username-headers=X-Remote-User`
+   * [x] `--proxy-client-cert-file=<path to aggregator proxy cert>`
+   * [x] `--proxy-client-key-file=<path to aggregator proxy key>`
+* [x] Enable [Horizontal Pod Scaling][k8s-hpa] ... set the appropriate flags for
+  `kube-controller-manager`:
+   * [x] `--horizontal-pod-autoscaler-use-rest-clients` should be true.
+   * [x] `--kubeconfig <path-to-kubeconfig>`
+
+## Cluster Configuration
 
 ### Support For Multiple Metrics
 
-The alpha version, which includes support for scaling on memory and custom
-metrics, can be found in `autoscaling/v2alpha1` or `autoscaling/v2beta1`. Use
-these if you want to specify multiple metrics for the Horizontal Pod Autoscaler
-to scale on:
+Enable API versions required to support scaling on cpu, memory and custom
+metrics:
 
 ```yaml
 # On K8s 1.7
@@ -34,7 +51,7 @@ spec:
 ```
 
 ```yaml
-# On K8s 1.8
+# On K8s 1.8 and 1.9
 spec:
   kubeAPIServer:
     runtimeConfig:
@@ -59,9 +76,12 @@ spec:
     horizontalPodAutoscalerUseRestClients: true
 ```
 
-## Relevant PRs
+## Implementation Details
 
-* [kubernetes/kops#3679][2] - set `--requestheader-xxx` kube-apiserver flags required to enable aggregation layer
+These are the PRs that enable the required configuration:
+
+* [kubernetes/kops#3679][pr-1] - sets `--requestheader-xxx` kube-apiserver flags
+  required to enable aggregation layer
   ```
   --requestheader-client-ca-file=<path to aggregator CA cert>
   --requestheader-allowed-names=aggregator
@@ -69,17 +89,23 @@ spec:
   --requestheader-group-headers=X-Remote-Group
   --requestheader-username-headers=X-Remote-User
   ```
-* [kubernetes/kops#3165][3] - sets `--proxy-client-xxx` kube-apiserver flags required to enable aggregation layer
+* [kubernetes/kops#3165][pr-2] - sets `--proxy-client-xxx` kube-apiserver flags
+  required to enable aggregation layer
   ```
   --proxy-client-cert-file=<path to aggregator proxy cert>
   --proxy-client-key-file=<path to aggregator proxy key>
   ```
-* [kubernetes/kops#3939][4] - add config option to set `--horizontal-pod-autoscaler-use-rest-clients` kube-controller-manager flag required to enable custom metrics
-* [kubernetes/kops#1574][6] - add config options to set `--enable-custom-metrics` flag on master and node kubelets required to enable custom metrics
+* [kubernetes/kops#3939][pr-3] - add config option to set `--horizontal-pod-
+  autoscaler-use-rest-clients` kube-controller-manager flag required to enable
+  custom metrics
+* [kubernetes/kops#1574][pr-4] - add config options to set `--enable-custom-
+  metrics` flag on master and node kubelets required to enable custom metrics
 
-[1]: https://kubernetes.io/docs/tasks/access-kubernetes-api/configure-aggregation-layer/
-[2]: https://github.com/kubernetes/kops/pull/3679
-[3]: https://github.com/kubernetes/kops/pull/3165
-[4]: https://github.com/kubernetes/kops/pull/3939
-[5]: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
-[6]: https://github.com/kubernetes/kops/pull/1574
+[k8s-aggregation-layer]: https://v1-9.docs.kubernetes.io/docs/tasks/access-kubernetes-api/configure-aggregation-layer/
+[k8s-extend-api]: https://v1-9.docs.kubernetes.io/docs/concepts/api-extension/apiserver-aggregation/
+[k8s-hpa]: https://v1-9.docs.kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+
+[pr-1]: https://github.com/kubernetes/kops/pull/3679
+[pr-2]: https://github.com/kubernetes/kops/pull/3165
+[pr-3]: https://github.com/kubernetes/kops/pull/3939
+[pr-4]: https://github.com/kubernetes/kops/pull/1574
