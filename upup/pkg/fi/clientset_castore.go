@@ -85,7 +85,7 @@ func (c *ClientsetCAStore) readCAKeypairs(id string) (*keyset, error) {
 		return cached, nil
 	}
 
-	keyset, err := c.loadKeyset(id)
+	keyset, _, err := c.loadKeyset(id)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ type keysetItem struct {
 	privateKey  *pki.PrivateKey
 }
 
-func parseKeyset(o *kops.Keyset) (*keyset, error) {
+func parseKeyset(o *kops.Keyset) (*keyset, string, error) {
 	name := o.Name
 
 	keyset := &keyset{
@@ -148,7 +148,7 @@ func parseKeyset(o *kops.Keyset) (*keyset, error) {
 			cert, err := pki.ParsePEMCertificate(key.PublicMaterial)
 			if err != nil {
 				glog.Warningf("key public material was %s", key.PublicMaterial)
-				return nil, fmt.Errorf("error loading certificate %s/%s: %v", name, key.Id, err)
+				return nil, "", fmt.Errorf("error loading certificate %s/%s: %v", name, key.Id, err)
 			}
 			ki.certificate = cert
 		}
@@ -156,7 +156,7 @@ func parseKeyset(o *kops.Keyset) (*keyset, error) {
 		if len(key.PrivateMaterial) != 0 {
 			privateKey, err := pki.ParsePEMPrivateKey(key.PrivateMaterial)
 			if err != nil {
-				return nil, fmt.Errorf("error loading private key %s/%s: %v", name, key.Id, err)
+				return nil, "", fmt.Errorf("error loading private key %s/%s: %v", name, key.Id, err)
 			}
 			ki.privateKey = privateKey
 		}
@@ -166,17 +166,20 @@ func parseKeyset(o *kops.Keyset) (*keyset, error) {
 
 	keyset.primary = keyset.findPrimary()
 
-	return keyset, nil
+	// This value == Keypair when using the API Keyset.  When the keyset is a legacy value the o.Spec.Type value is
+	// not set. The keypair task is using this value to upgrade legacy keysets to keysets that use the API.
+	keypairType := string(o.Spec.Type)
+	return keyset, keypairType, nil
 }
 
-// loadKeyset gets the named keyset
-func (c *ClientsetCAStore) loadKeyset(name string) (*keyset, error) {
+// loadKeyset gets the named keyset and the format of the Keyset.
+func (c *ClientsetCAStore) loadKeyset(name string) (*keyset, string, error) {
 	o, err := c.clientset.Keysets(c.namespace).Get(name, v1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
-			return nil, nil
+			return nil, "", nil
 		}
-		return nil, fmt.Errorf("error reading keyset %q: %v", name, err)
+		return nil, "", fmt.Errorf("error reading keyset %q: %v", name, err)
 	}
 
 	return parseKeyset(o)
@@ -186,6 +189,7 @@ func (c *ClientsetCAStore) loadKeyset(name string) (*keyset, error) {
 func (k *keyset) findPrimary() *keysetItem {
 	var primary *keysetItem
 	var primaryVersion *big.Int
+
 	for _, item := range k.items {
 		version, ok := big.NewInt(0).SetString(item.id, 10)
 		if !ok {
@@ -236,22 +240,22 @@ func (c *ClientsetCAStore) CertificatePool(id string, createIfMissing bool) (*Ce
 }
 
 // FindKeypair implements CAStore::FindKeypair
-func (c *ClientsetCAStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	keyset, err := c.loadKeyset(name)
+func (c *ClientsetCAStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, string, error) {
+	keyset, keysetType, err := c.loadKeyset(name)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, "", err
 	}
 
 	if keyset != nil && keyset.primary != nil {
-		return keyset.primary.certificate, keyset.primary.privateKey, nil
+		return keyset.primary.certificate, keyset.primary.privateKey, keysetType, nil
 	}
 
-	return nil, nil, nil
+	return nil, nil, "", nil
 }
 
 // FindCert implements CAStore::FindCert
 func (c *ClientsetCAStore) FindCert(name string) (*pki.Certificate, error) {
-	keyset, err := c.loadKeyset(name)
+	keyset, _, err := c.loadKeyset(name)
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +270,7 @@ func (c *ClientsetCAStore) FindCert(name string) (*pki.Certificate, error) {
 
 // FindCertificatePool implements CAStore::FindCertificatePool
 func (c *ClientsetCAStore) FindCertificatePool(name string) (*CertificatePool, error) {
-	keyset, err := c.loadKeyset(name)
+	keyset, _, err := c.loadKeyset(name)
 	if err != nil {
 		return nil, err
 	}
@@ -388,7 +392,7 @@ func (c *ClientsetCAStore) storeAndVerifyKeypair(name string, cert *pki.Certific
 	}
 
 	// Make double-sure it round-trips
-	keyset, err := c.loadKeyset(name)
+	keyset, _, err := c.loadKeyset(name)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching stored certificate: %v", err)
 	}
@@ -427,7 +431,7 @@ func (c *ClientsetCAStore) AddCert(name string, cert *pki.Certificate) error {
 
 // FindPrivateKey implements CAStore::FindPrivateKey
 func (c *ClientsetCAStore) FindPrivateKey(name string) (*pki.PrivateKey, error) {
-	keyset, err := c.loadKeyset(name)
+	keyset, _, err := c.loadKeyset(name)
 	if err != nil {
 		return nil, err
 	}
