@@ -35,6 +35,10 @@ Specifically:
    * [x] `--horizontal-pod-autoscaler-use-rest-clients` should be true.
    * [x] `--kubeconfig <path-to-kubeconfig>`
 
+Ensure that you use **1.8.5 at minimum for Kubernetes 1.8.x** due to [a nasty
+bug affecting the API aggregation layer][issue-1]. It was fixed in
+[kubernetes/kubernetes#55259][pr-5].
+
 ## Cluster Configuration
 
 ### Support For Multiple Metrics
@@ -124,3 +128,6 @@ These are the PRs that enable the required configuration:
 [pr-2]: https://github.com/kubernetes/kops/pull/3165
 [pr-3]: https://github.com/kubernetes/kops/pull/3939
 [pr-4]: https://github.com/kubernetes/kops/pull/1574
+[pr-5]: https://github.com/kubernetes/kubernetes/pull/55259
+
+[issue-1]: https://github.com/kubernetes/kubernetes/issues/55022
