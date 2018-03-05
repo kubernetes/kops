@@ -58,6 +58,15 @@ spec:
       autoscaling/v2beta1: "true"
 ```
 
+If you've set the above configuration, your cluster is now ready for the
+resource metrics API ([installation instruction here][k8s-metrics-server]). The
+compatibility matrix is as follows:
+
+Metrics Server | Metrics API group/version | Supported Kubernetes version
+---------------|---------------------------|-----------------------------
+0.2.x          | `metrics.k8s.io/v1beta1`  | 1.8+
+0.1.x          | `metrics/v1alpha1`        | 1.7
+
 ### Support For Custom Metrics
 
 Enable gathering custom metrics:
@@ -75,6 +84,10 @@ spec:
   kubeControllerManager:
     horizontalPodAutoscalerUseRestClients: true
 ```
+
+If you've set the above configuration, your cluster is now ready for the custom
+metrics API. Register it via the API aggregation layer. If you're using
+Prometheus, checkout the [custom metrics adapter for Prometheus][k8s-prometheus-custom-metrics-adapter].
 
 ## Implementation Details
 
@@ -104,6 +117,8 @@ These are the PRs that enable the required configuration:
 [k8s-aggregation-layer]: https://v1-9.docs.kubernetes.io/docs/tasks/access-kubernetes-api/configure-aggregation-layer/
 [k8s-extend-api]: https://v1-9.docs.kubernetes.io/docs/concepts/api-extension/apiserver-aggregation/
 [k8s-hpa]: https://v1-9.docs.kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+[k8s-metrics-server]: https://github.com/kubernetes-incubator/metrics-server#deployment
+[k8s-prometheus-custom-metrics-adapter]: https://github.com/DirectXMan12/k8s-prometheus-adapter
 
 [pr-1]: https://github.com/kubernetes/kops/pull/3679
 [pr-2]: https://github.com/kubernetes/kops/pull/3165
