@@ -169,6 +169,11 @@ spec:
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
+            # Set noderef for node controller.
+            - name: CALICO_K8S_NODE_REF
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
             # Auto-detect the BGP IP address.
             - name: IP
               value: ""
@@ -287,6 +292,13 @@ spec:
             requests:
               cpu: 10m
           env:
+            # By default only policy, profile, workloadendpoint are turned
+            # on, node controller will decommission nodes that do not exist anymore
+            # this and CALICO_K8S_NODE_REF in calico-node fixes #3224, but invalid nodes that are
+            # already registered in calico needs to be deleted manually, see
+            # https://docs.projectcalico.org/v2.6/usage/decommissioning-a-node
+            - name: ENABLED_CONTROLLERS
+              value: policy,profile,workloadendpoint,node
             # The location of the Calico etcd cluster.
             - name: ETCD_ENDPOINTS
               valueFrom:

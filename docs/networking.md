@@ -190,6 +190,15 @@ For help with Calico or to report any issues:
 
 Calico currently uses etcd as a backend for storing information about workloads and policies.  Calico does not interfere with normal etcd operations and does not require special handling when upgrading etcd.  For more information please visit the [etcd Docs](https://coreos.com/etcd/docs/latest/)
 
+#### Calico troubleshooting
+##### New nodes are taking minutes for syncing ip routes and new pods on them can't reach kubedns
+This is caused by nodes in the Calico etcd nodestore no longer existing. Due to the ephemeral nature of AWS EC2 instances, new nodes are brought up with different hostnames, and nodes that are taken offline remain in the Calico nodestore. This is unlike most datacentre deployments where the hostnames are mostly static in a cluster. Read more about this issue at https://github.com/kubernetes/kops/issues/3224
+This has been solved in kops 1.8.2, when creating a new cluster no action is needed, but if the cluster was created with a prior kops version the following actions should be taken:
+  * Use kops to update the cluster ```kops update cluster <name> --yes```
+  * Delete all calico-node pods in kube-system namespace, so that they will apply the new env CALICO_K8S_NODE_REF and update the current nodes in etcd
+  * Decommission all invalid nodes, [see here](https://docs.projectcalico.org/v2.6/usage/decommissioning-a-node)
+  * All nodes that are deleted from the cluster after this actions should be cleaned from calico's etcd storage and the delay programming routes should be solved.
+
 ### Canal Example for CNI and Network Policy
 
 Canal is a project that combines [Flannel](https://github.com/coreos/flannel) and [Calico](http://docs.projectcalico.org/latest/getting-started/kubernetes/installation/hosted/) for CNI Networking.  It uses Flannel for networking pod traffic between hosts via VXLAN and Calico for network policy enforcement and pod to pod traffic.
