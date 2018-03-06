@@ -701,8 +701,8 @@ func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*Resource, error) {
 
 	glog.V(2).Infof("Listing EC2 Keypairs")
 	request := &ec2.DescribeKeyPairsInput{
-	// We need to match both the name and a prefix
-	//Filters: []*ec2.Filter{awsup.NewEC2Filter("key-name", keypairName)},
+		// We need to match both the name and a prefix
+		//Filters: []*ec2.Filter{awsup.NewEC2Filter("key-name", keypairName)},
 	}
 	response, err := c.EC2().DescribeKeyPairs(request)
 	if err != nil {
