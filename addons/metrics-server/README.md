@@ -13,8 +13,8 @@ the top-level directory of this repository:
 
 ```console
 # Kubernetes 1.7
-$ kubectl apply -f addons/metrics-server/1.7/
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/metrics-server/v1.7.x.yaml
 
 # Kubernetes 1.8+
-$ kubectl apply -f addons/metrics-server/1.8+/
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/metrics-server/v1.8.x.yaml
 ```
