@@ -174,7 +174,7 @@ aws ec2 authorize-security-group-ingress --group-id $sgidingress --protocol tcp 
 aws ec2 authorize-security-group-ingress --group-id $sgidingress --protocol tcp --port 80 --cidr 0.0.0.0/0
 
 aws ec2 authorize-security-group-ingress --group-id $sgidnode --protocol all --port -1 --source-group $sgidingress
-aws ec2 create-tags --resources $sgidingress--tags "kubernetes.io/cluster/id=owned" "kubernetes:application=kube-ingress-aws-controller"
+aws ec2 create-tags --resources $sgidingress --tags '[{"Key": "kubernetes.io/cluster/id", "Value": "owned"}, {"Key": "kubernetes:application", "Value": "kube-ingress-aws-controller"}]'
 ```
 
 ### AWS Certificate Manager (ACM)
