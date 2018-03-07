@@ -204,7 +204,7 @@ ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.example.com --c
 
 #### Using Public/Private DNS (Kops 1.5+)
 
-By default the assumption is that NS records are publically available.  If you
+By default the assumption is that NS records are publicly available.  If you
 require private DNS records you should modify the commands we run later in this
 guide to include:
 
