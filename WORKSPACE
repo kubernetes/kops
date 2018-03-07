@@ -42,13 +42,13 @@ container_pull(
 )
 
 git_repository(
-    name = "distroless_rules",
+    name = "distroless",
     remote = "https://github.com/googlecloudplatform/distroless.git",
     commit = "886114394dfed219001ec3b068b139a3456e49d4"
 )
 
 load(
-    "@distroless_rules//package_manager:package_manager.bzl",
+    "@distroless//package_manager:package_manager.bzl",
     "package_manager_repositories",
     "dpkg_src",
     "dpkg_list",
