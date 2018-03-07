@@ -23,7 +23,7 @@ There are a few steps to upgrade a kubernetes cluster:
 
 ## Importing the existing cluster
 
-The `import cluster` command reverse engineers an existing cluster, and creates a cluster
+The `import cluster` command reverses engineers an existing cluster, and creates a cluster
 configuration.
 
 Make sure you have set `export KOPS_STATE_STORE=s3://<mybucket>`
