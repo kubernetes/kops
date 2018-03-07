@@ -42,6 +42,9 @@ type NatGateway struct {
 	// Shared is set if this is a shared NatGateway
 	Shared *bool
 
+	// Tags is a map of aws tags that are added to the NatGateway
+	Tags map[string]string
+
 	// We can't tag NatGateways, so we have to find through a surrogate
 	AssociatedRouteTable *RouteTable
 }
@@ -303,6 +306,11 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 		id = a.ID
 	}
 
+	err := t.AddAWSTags(*e.ID, e.Tags)
+	if err != nil {
+		return fmt.Errorf("unable to tag NatGateway")
+	}
+
 	// Tag the associated subnet
 	if e.Subnet == nil {
 		return fmt.Errorf("Subnet not set")
@@ -313,7 +321,7 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 	// TODO: AssociatedNatgateway tag is obsolete - we can get from the route table instead
 	tags := make(map[string]string)
 	tags["AssociatedNatgateway"] = *id
-	err := t.AddAWSTags(*e.Subnet.ID, tags)
+	err = t.AddAWSTags(*e.Subnet.ID, tags)
 	if err != nil {
 		return fmt.Errorf("unable to tag subnet %v", err)
 	}
@@ -340,6 +348,7 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 type terraformNATGateway struct {
 	AllocationID *terraform.Literal `json:"allocation_id,omitempty"`
 	SubnetID     *terraform.Literal `json:"subnet_id,omitempty"`
+	Tag          map[string]string  `json:"tags,omitempty"`
 }
 
 func (_ *NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NatGateway) error {
@@ -355,6 +364,7 @@ func (_ *NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	tf := &terraformNATGateway{
 		AllocationID: e.ElasticIP.TerraformLink(),
 		SubnetID:     e.Subnet.TerraformLink(),
+		Tag:          e.Tags,
 	}
 
 	return t.RenderResource("aws_nat_gateway", *e.Name, tf)
@@ -375,6 +385,7 @@ func (e *NatGateway) TerraformLink() *terraform.Literal {
 type cloudformationNATGateway struct {
 	AllocationID *cloudformation.Literal `json:"AllocationId,omitempty"`
 	SubnetID     *cloudformation.Literal `json:"SubnetId,omitempty"`
+	Tag          map[string]string       `json:"tags,omitempty"`
 }
 
 func (_ *NatGateway) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *NatGateway) error {
@@ -390,6 +401,7 @@ func (_ *NatGateway) RenderCloudformation(t *cloudformation.CloudformationTarget
 	tf := &cloudformationNATGateway{
 		AllocationID: e.ElasticIP.CloudformationAllocationID(),
 		SubnetID:     e.Subnet.CloudformationLink(),
+		Tag:          e.Tags,
 	}
 
 	return t.RenderResource("AWS::EC2::NatGateway", *e.Name, tf)
