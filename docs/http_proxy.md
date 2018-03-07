@@ -2,7 +2,7 @@
 HTTP Forward Proxy Support
 ==========================
 
-It is possible to launch a kubernetes cluster from behind an http forward proxy ("corporate proxy").  To do so, you will need to configure the `egressProxy` for the cluster.
+It is possible to launch a Kubernetes cluster from behind an http forward proxy ("corporate proxy").  To do so, you will need to configure the `egressProxy` for the cluster.
 
 It is assumed the proxy is already existing.  If you want a private topology on AWS, for example, with an proxy instead of a NAT instance, you'll need to create the proxy yourself.  See [Running in a shared VPC](run_in_existing_vpc.md).
 
