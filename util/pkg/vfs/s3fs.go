@@ -34,11 +34,11 @@ import (
 )
 
 type S3Path struct {
-	s3Context *S3Context
-	bucket    string
-	region    string
-	key       string
-	etag      *string
+	s3Context     *S3Context
+	bucket        string
+	bucketDetails *S3BucketDetails
+	key           string
+	etag          *string
 }
 
 var _ Path = &S3Path{}
@@ -124,7 +124,10 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 	request.Body = data
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)
-	request.ServerSideEncryption = aws.String(sse)
+
+	if !p.bucketDetails.defaultEncryption {
+		request.ServerSideEncryption = aws.String(sse)
+	}
 
 	acl := os.Getenv("KOPS_STATE_S3_ACL")
 	acl = strings.TrimSpace(acl)
@@ -141,7 +144,11 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208
 
-	glog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q SSE=%q ACL=%q", p.bucket, p.key, sse, acl)
+	if p.bucketDetails.defaultEncryption {
+		glog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q ACL=%q with DefaultBucketEncryption", p.bucket, p.key, acl)
+	} else {
+		glog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q SSE=%q ACL=%q", p.bucket, p.key, sse, acl)
+	}
 
 	_, err = client.PutObject(request)
 	if err != nil {
@@ -299,14 +306,16 @@ func (p *S3Path) ReadTree() ([]Path, error) {
 
 func (p *S3Path) client() (*s3.S3, error) {
 	var err error
-	if p.region == "" {
-		p.region, err = p.s3Context.getRegionForBucket(p.bucket)
+	if p.bucketDetails == nil || p.bucketDetails.region == "" {
+		bucketDetails, err := p.s3Context.getDetailsForBucket(p.bucket)
+
+		p.bucketDetails = bucketDetails
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	client, err := p.s3Context.getClient(p.region)
+	client, err := p.s3Context.getClient(p.bucketDetails.region)
 	if err != nil {
 		return nil, err
 	}
