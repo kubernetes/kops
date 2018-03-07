@@ -31,6 +31,12 @@ resource "aws_internet_gateway" "privateweave-example-com" {
 resource "aws_nat_gateway" "us-test-1a-privateweave-example-com" {
   allocation_id = "${aws_eip.us-test-1a-privateweave-example-com.id}"
   subnet_id     = "${aws_subnet.utility-us-test-1a-privateweave-example-com.id}"
+
+  tags = {
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "us-test-1a.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
+  }
 }
 
 resource "aws_route" "0-0-0-0--0" {
