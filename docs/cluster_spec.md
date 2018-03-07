@@ -106,7 +106,7 @@ ID of a subnet to share in an existing VPC.
 #### egress
 The resource identifier (ID) of something in your existing VPC that you would like to use as "egress" to the outside world.
 
-This feature was originally envisioned to allow re-use of NAT Gateways. In this case, the usage is as follows. Although NAT gateways are "public"-facing resources, in the Cluster spec, you must specify them in the private subnet section. One way to think about this is that you are specifying "egress", which is the default route out from this private subnet.
+This feature was originally envisioned to allow re-use of NAT gateways. In this case, the usage is as follows. Although NAT gateways are "public"-facing resources, in the Cluster spec, you must specify them in the private subnet section. One way to think about this is that you are specifying "egress", which is the default route out from this private subnet.
 
 ```
 spec:
