@@ -47,6 +47,10 @@ type VFSCAStore struct {
 
 	mutex     sync.Mutex
 	cachedCAs map[string]*cachedEntry
+
+	// SerialGenerator is the function for generating certificate serial numbers
+	// It can be replaced for testing purposes.
+	SerialGenerator func() *big.Int
 }
 
 type cachedEntry struct {
@@ -57,12 +61,17 @@ type cachedEntry struct {
 var _ CAStore = &VFSCAStore{}
 var _ SSHCredentialStore = &VFSCAStore{}
 
-func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path, allowList bool) CAStore {
+func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path, allowList bool) *VFSCAStore {
 	c := &VFSCAStore{
 		basedir:   basedir,
 		cluster:   cluster,
 		cachedCAs: make(map[string]*cachedEntry),
 		allowList: allowList,
+	}
+
+	c.SerialGenerator = func() *big.Int {
+		t := time.Now().UnixNano()
+		return pki.BuildPKISerial(t)
 	}
 
 	return c
@@ -157,8 +166,7 @@ func (c *VFSCAStore) generateCACertificate(name string) (*keyset, *keyset, error
 		return nil, nil, err
 	}
 
-	t := time.Now().UnixNano()
-	serial := pki.BuildPKISerial(t).String()
+	serial := c.SerialGenerator().String()
 
 	err = c.storePrivateKey(name, &keysetItem{id: serial, privateKey: caPrivateKey})
 	if err != nil {
@@ -922,7 +930,7 @@ func (c *VFSCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) {
 }
 
 func (c *VFSCAStore) CreateKeypair(signer string, id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
-	serial := c.buildSerial()
+	serial := c.SerialGenerator()
 
 	cert, err := c.IssueCert(signer, id, serial, privateKey, template)
 	if err != nil {
@@ -1073,11 +1081,6 @@ func (c *VFSCAStore) deleteCertificate(name string, id string) (bool, error) {
 		}
 		return true, nil
 	}
-}
-
-func (c *VFSCAStore) buildSerial() *big.Int {
-	t := time.Now().UnixNano()
-	return pki.BuildPKISerial(t)
 }
 
 // AddSSHPublicKey stores an SSH public key
