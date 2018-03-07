@@ -17,7 +17,7 @@ chmod +x ./kops
 sudo mv ./kops /usr/local/bin/
 ```
 
-You can also rerun rerun [these steps](development/building.md) if previously built from source.
+You can also rerun [these steps](development/building.md) if previously built from source.
 
 ## Linux
 
@@ -30,4 +30,4 @@ chmod +x ./kops
 sudo mv ./kops /usr/local/bin/
 ```
 
-You can also rerun rerun [these steps](development/building.md) if previously built from source.
+You can also rerun [these steps](development/building.md) if previously built from source.
