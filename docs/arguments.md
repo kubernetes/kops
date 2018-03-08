@@ -35,7 +35,7 @@ You do have to set up the DNS nameservers so your hosted zone resolves.  kops us
 zone for you, but now (as you have to set up the nameservers anyway), there doesn't seem much reason to do so!
 
 If you don't specify a dns-zone, kops will list all your hosted zones, and choose the longest that
-is a a suffix of your cluster name.  So for `dev.kubernetes.example.com`, if you have `kubernetes.example.com`,
+is a suffix of your cluster name.  So for `dev.kubernetes.example.com`, if you have `kubernetes.example.com`,
 `example.com` and `somethingelse.example.com`, it would choose `kubernetes.example.com`.  `example.com` matches
 but is shorter; `somethingelse.example.com` is not a suffix-match.
 
