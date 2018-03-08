@@ -4,6 +4,7 @@
 * [Getting started on AWS](aws.md)
 * [Getting started on GCE](tutorial/gce.md)
 * [CLI reference](cli/kops.md)
+* [Creating A Kubernetes Cluster In AWS (YouTube)](https://youtu.be/S0tQ40T9tqg)
 
 
 ## Overview
