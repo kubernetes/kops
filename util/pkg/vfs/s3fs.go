@@ -63,12 +63,8 @@ func newS3Path(s3Context *S3Context, bucket string, key string) *S3Path {
 func (p *S3Path) Path() string {
 	response,_ := p.GetVersioning()
 	if response != true {
-		fmt.Println("S3 Bucket Versioning is not set. Let's set it")
-		p.SetVersioning("Enabled")
-	} else {
-		fmt.Println("S3 Bucket Versioning is set already.")
+		glog.V(4).Infof("S3 Bucket Versioning is not set.")
 	}
-
 	return "s3://" + p.bucket + "/" + p.key
 }
 
@@ -163,6 +159,7 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 	return nil
 }
 
+// GetVersioning implements Path::GetVersioning
 func (p *S3Path) GetVersioning() (bool, error) {
 	client, err := p.client()
 	if err != nil {
@@ -184,6 +181,7 @@ func (p *S3Path) GetVersioning() (bool, error) {
 	}
 }
 
+// GetVersioning implements Path::SetVersioning
 func (p *S3Path) SetVersioning(status string) ( error) {
 	client, err := p.client()
 	if err != nil {
@@ -192,18 +190,17 @@ func (p *S3Path) SetVersioning(status string) ( error) {
 
 	requestConfig := &s3.VersioningConfiguration{}
 	requestConfig.SetStatus(status)
-	requestConfig.SetMFADelete("Disabled")
+	requestConfig.SetMFADelete(s3.MFADeleteDisabled)
 
 	request := &s3.PutBucketVersioningInput{}
 	request.SetVersioningConfiguration(requestConfig)
 	request.Bucket = aws.String(p.bucket)
 
-	response, err := client.PutBucketVersioning(request)
+	_, err = client.PutBucketVersioning(request)
 	if err != nil {
 		return fmt.Errorf("error setting s3 bucket versioning: %v", p, err)
 	}
 
-	response.String()
 	return nil
 }
 
