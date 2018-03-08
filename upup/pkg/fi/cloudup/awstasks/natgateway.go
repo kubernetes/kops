@@ -110,9 +110,12 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 		return nil, fmt.Errorf("found multiple elastic IPs attached to NatGateway %q", aws.StringValue(ngw.NatGatewayId))
 	}
 
-	// NATGateways don't have a Name (no tags), so we set the name to avoid spurious changes
-	actual.Name = e.Name
+	// NATGateways now have names and tags so lets pull from there instead.
+	actual.Name = findNameTag(ngw.Tags)
+	actual.Tags = intersectTags(ngw.Tags, e.Tags)
 	actual.Lifecycle = e.Lifecycle
+
+	actual.Shared = e.Shared
 
 	actual.AssociatedRouteTable = e.AssociatedRouteTable
 
