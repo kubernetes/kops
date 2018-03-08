@@ -159,7 +159,6 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 	return nil
 }
 
-// GetVersioning implements Path::GetVersioning
 func (p *S3Path) GetVersioning() (bool, error) {
 	client, err := p.client()
 	if err != nil {
@@ -181,7 +180,6 @@ func (p *S3Path) GetVersioning() (bool, error) {
 	}
 }
 
-// GetVersioning implements Path::SetVersioning
 func (p *S3Path) SetVersioning(status string) ( error) {
 	client, err := p.client()
 	if err != nil {
