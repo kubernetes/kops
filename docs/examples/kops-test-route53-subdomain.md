@@ -37,7 +37,7 @@ For our setup we already have a hosted DNS domain in AWS:
 ||+-------------------------------------------------------------------+----------------------------------------+||
 ```
 
-We can also check our that our domain is reacheable from the Internet using "dig". You can use other "dns" tools too, but we recommend to use dig (available on all modern linux distributions and other unix-like operating systems. Normally, dig is part of bind-tools and other bind-related packages):
+We can also check out that our domain is reacheable from the Internet using "dig". You can use other "dns" tools too, but we recommend to use dig (available on all modern linux distributions and other unix-like operating systems. Normally, dig is part of bind-tools and other bind-related packages):
 
 ```bash
 dig +short example.org soa
