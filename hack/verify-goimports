@@ -40,7 +40,7 @@ process = subprocess.Popen(['goimports', '-l'] + paths, stdout=subprocess.PIPE, 
 stdout, stderr = process.communicate()
 
 if stdout != "":
-  print("!!! 'goimports -w' needs to be run on the following files: ")
+  print("FAIL: 'goimports -w' needs to be run on the following files: ")
   print(stdout)
-  print('!!! Please run: make goimports')
+  print('FAIL: Please run the following command: make goimports')
   sys.exit(1)
