@@ -61,6 +61,7 @@ func newS3Path(s3Context *S3Context, bucket string, key string) *S3Path {
 }
 
 func (p *S3Path) Path() string {
+        // Check the versioning state
 	response,_ := p.GetVersioning()
 	if response != true {
 		glog.V(4).Infof("S3 Bucket Versioning is not set.")
