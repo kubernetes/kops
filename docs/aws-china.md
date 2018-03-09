@@ -88,7 +88,7 @@ ${GOPATH}/bin/imagebuilder --config aws.yaml --v=8 --publish=false --replicate=f
 
 *NOTE*
 
-`imagebuilder` may complain `image not found after build` and the execution failes. But from the logs ahead the exception, we can find the AMI has been registered actually. It seems that the AMI newly created not available yet despite `bootstrap-vz` claims so. [kubernetes/kube-deploy#293](https://github.com/kubernetes/kube-deploy/issues/293).
+`imagebuilder` may complain `image not found after build` and the execution fails. But from the logs ahead the exception, we can find the AMI has been registered actually. It seems that the AMI newly created not available yet despite `bootstrap-vz` claims so. [kubernetes/kube-deploy#293](https://github.com/kubernetes/kube-deploy/issues/293).
 
 Wait one minute or so, the AMI should be available finally.
 
