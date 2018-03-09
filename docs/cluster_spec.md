@@ -106,7 +106,7 @@ ID of a subnet to share in an existing VPC.
 #### egress
 The resource identifier (ID) of something in your existing VPC that you would like to use as "egress" to the outside world.
 
-This feature was originally envisioned to allow re-use of NAT Gateways. In this case, the usage is as follows. Although NAT gateways are "public"-facing resources, in the Cluster spec, you must specify them in the private subnet section. One way to think about this is that you are specifying "egress", which is the default route out from this private subnet.
+This feature was originally envisioned to allow re-use of NAT gateways. In this case, the usage is as follows. Although NAT gateways are "public"-facing resources, in the Cluster spec, you must specify them in the private subnet section. One way to think about this is that you are specifying "egress", which is the default route out from this private subnet.
 
 ```
 spec:
@@ -275,7 +275,7 @@ spec:
     horizontalPodAutoscalerUpscaleDelay: 3m0s
 ```
 
-For more details on `horizontalPodAutoscaler` flags see the [HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/).
+For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [Kops guides on how to set it up](horizontal_pod_autoscaling.md).
 
 ####  Feature Gates
 
