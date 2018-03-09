@@ -374,6 +374,12 @@ resource "aws_launch_configuration" "nodes-privatecalico-example-com" {
 resource "aws_nat_gateway" "us-test-1a-privatecalico-example-com" {
   allocation_id = "${aws_eip.us-test-1a-privatecalico-example-com.id}"
   subnet_id     = "${aws_subnet.utility-us-test-1a-privatecalico-example-com.id}"
+
+  tags = {
+    KubernetesCluster                                 = "privatecalico.example.com"
+    Name                                              = "us-test-1a.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
 }
 
 resource "aws_route" "0-0-0-0--0" {
