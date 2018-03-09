@@ -123,6 +123,7 @@ k8s.io/kops/protokube/pkg/gossip/gce
 k8s.io/kops/protokube/pkg/gossip/mesh
 k8s.io/kops/protokube/pkg/protokube
 k8s.io/kops/protokube/tests/integration/build_etcd_manifest
+k8s.io/kops/tests
 k8s.io/kops/tests/codecs
 k8s.io/kops/tests/integration/channel
 k8s.io/kops/tests/integration/conversion
