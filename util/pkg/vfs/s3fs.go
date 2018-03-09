@@ -159,6 +159,7 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 	return nil
 }
 
+// It will check to see if Versioning is set on S3 bucket
 func (p *S3Path) GetVersioning() (bool, error) {
 	client, err := p.client()
 	if err != nil {
@@ -180,6 +181,7 @@ func (p *S3Path) GetVersioning() (bool, error) {
 	}
 }
 
+// It will set Versioning enabled ot disabled for S3 bucket
 func (p *S3Path) SetVersioning(status string) ( error) {
 	client, err := p.client()
 	if err != nil {
