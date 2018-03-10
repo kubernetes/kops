@@ -129,8 +129,8 @@ So the procedure is:
 * `kops edit ig nodes`
 * Remove two of the subnets, e.g. `eu-central-1b` and `eu-central-1c`
   * Alternatively you can also delete the existing IG and create a new one with a more suitable name
-* `kops create ig nodes-eu-central-1b --subnet us-central-1b`
-* `kops create ig nodes-eu-central-1c --subnet us-central-1c`
+* `kops create ig nodes-eu-central-1b --subnet eu-central-1b`
+* `kops create ig nodes-eu-central-1c --subnet eu-central-1c`
 * Preview: `kops update cluster <clustername>`
 * Apply: `kops update cluster <clustername> --yes`
 * Rolling update to update existing instances: `kops rolling-update cluster --yes`
