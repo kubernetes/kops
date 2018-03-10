@@ -85,24 +85,23 @@ func TestKeypairUpgrade(t *testing.T) {
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
 	buildTasks := func() map[string]fi.Task {
+		format := string(fi.KeysetFormatV1Alpha2)
+
 		ca := &fitasks.Keypair{
 			Name:      fi.String(fi.CertificateId_CA),
 			Lifecycle: &lifecycle,
 			Subject:   "cn=kubernetes",
 			Type:      "ca",
-
-			Format: string(kops.SecretTypeKeypair),
+			Format:    format,
 		}
 
 		kubelet := &fitasks.Keypair{
 			Name:      fi.String("kubelet"),
 			Lifecycle: &lifecycle,
-
-			Subject: "o=nodes,cn=kubelet",
-			Type:    "client",
-			Signer:  ca,
-
-			Format: string(kops.SecretTypeKeypair),
+			Subject:   "o=nodes,cn=kubelet",
+			Type:      "client",
+			Signer:    ca,
+			Format:    format,
 		}
 
 		tasks := make(map[string]fi.Task)
