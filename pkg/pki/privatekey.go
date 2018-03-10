@@ -27,10 +27,10 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
-
-	"github.com/golang/glog"
 	"os"
 	"strconv"
+
+	"github.com/golang/glog"
 )
 
 func ParsePEMPrivateKey(data []byte) (*PrivateKey, error) {
@@ -166,10 +166,10 @@ func parsePEMPrivateKey(pemData []byte) (crypto.PrivateKey, error) {
 		}
 
 		if block.Type == "RSA PRIVATE KEY" {
-			glog.V(8).Infof("Parsing pem block: %q", block.Type)
+			glog.V(10).Infof("Parsing pem block: %q", block.Type)
 			return x509.ParsePKCS1PrivateKey(block.Bytes)
 		} else if block.Type == "PRIVATE KEY" {
-			glog.V(8).Infof("Parsing pem block: %q", block.Type)
+			glog.V(10).Infof("Parsing pem block: %q", block.Type)
 			k, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 			if err != nil {
 				return nil, err
