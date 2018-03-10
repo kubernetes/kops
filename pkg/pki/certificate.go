@@ -100,7 +100,7 @@ func parsePEMCertificate(pemData []byte) (*x509.Certificate, error) {
 		}
 
 		if block.Type == "CERTIFICATE" {
-			glog.V(8).Infof("Parsing pem block: %q", block.Type)
+			glog.V(10).Infof("Parsing pem block: %q", block.Type)
 			return x509.ParseCertificate(block.Bytes)
 		} else {
 			glog.Infof("Ignoring unexpected PEM block: %q", block.Type)
