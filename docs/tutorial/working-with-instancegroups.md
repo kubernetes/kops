@@ -8,7 +8,7 @@ We'll assume you have a working cluster - if not, you probably want to read [how
 
 ## Changing the number of nodes
 
-If you `kops get ig` you should see that you have instance groups for your nodes and for your master:
+If you `kops get ig` you should see that you have InstanceGroups for your nodes and for your master:
 
 ```
 > kops get ig
@@ -17,9 +17,9 @@ master-us-central1-a	Master	n1-standard-1	1	1	us-central1
 nodes			Node	n1-standard-2	2	2	us-central1
 ```
 
-Let's change the number of nodes to 3.  We'll edit the instancegroup configuration using `kops edit` (which
+Let's change the number of nodes to 3.  We'll edit the InstanceGroup configuration using `kops edit` (which
 should be very familiar to you if you've used `kubectl edit`).  `kops edit ig nodes` will open
-the instancegroup in your editor, looking a bit like this:
+the InstanceGroup in your editor, looking a bit like this:
 
 ```
 apiVersion: kops/v1alpha2
