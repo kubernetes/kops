@@ -127,8 +127,8 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 		ClusterName:    clusterName,
 		ErrorMessage:   ClusterValidationPassed,
 		InstanceGroups: instanceGroups,
-		NodesCount: nodeCount,
-		MastersCount: masterCount,
+		NodesCount:     nodeCount,
+		MastersCount:   masterCount,
 	}
 
 	validationCluster.NodeList, err = nodeAA.GetAllNodes()
