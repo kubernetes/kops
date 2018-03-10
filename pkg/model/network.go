@@ -235,6 +235,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 					// If we're here, it means this NatGateway was specified, so we are Shared
 					Shared: fi.Bool(true),
+					Tags:   b.CloudTags(zone+"."+b.ClusterName(), true),
 				}
 
 				c.AddTask(ngw)
@@ -276,6 +277,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Subnet:               utilitySubnet,
 				ElasticIP:            eip,
 				AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+				Tags:                 b.CloudTags(zone+"."+b.ClusterName(), false),
 			}
 			c.AddTask(ngw)
 		}
