@@ -175,6 +175,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		return err
 	}
 
+	changeStoredFormat := false
 	createCertificate := false
 	if a == nil {
 		createCertificate = true
@@ -190,9 +191,9 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		} else if changes.Type != "" {
 			createCertificate = true
 			glog.V(8).Infof("creating certificate new Type")
-		} else if a.Format != "" {
-			// We only want to log that we are ignoring the changes if we are not going to save a new
-			// keypair.yaml file.  If a.Format is empty we are going to save a new keypar.yaml file.
+		} else if changes.Format != "" {
+			changeStoredFormat = true
+		} else {
 			glog.Warningf("Ignoring changes in key: %v", fi.DebugAsJsonString(changes))
 		}
 	}
@@ -227,11 +228,14 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			return err
 		}
 
-		glog.V(8).Infof("created certificate %v", cert)
+		glog.V(8).Infof("created certificate with cn=%s", cert.Subject.CommonName)
+	}
 
-	} else if a.Format == "" {
-		// The a.KeypairType will == "" when the keyset is a legacy keyset and does not have a keypair.yaml
-		// file API object in the state store
+	// TODO: Check correct subject / flags
+
+	if changeStoredFormat {
+		// We fetch and reinsert the same keypair, forcing an update to our preferred format
+		// TODO: We're assuming that we want to save in the preferred format
 		cert, privateKey, _, err := c.Keystore.FindKeypair(name)
 		if err != nil {
 			return err
@@ -240,10 +244,9 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		if err != nil {
 			return err
 		}
-		glog.Infof("updated Legacy Keypair for: %q, to newer Keypair API format", name)
-	}
 
-	// TODO: Check correct subject / flags
+		glog.Infof("updated Keypair %q to API format %q", name, e.Format)
+	}
 
 	return nil
 }
