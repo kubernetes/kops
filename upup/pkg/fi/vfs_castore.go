@@ -548,6 +548,10 @@ func (c *VFSCAStore) ListKeysets() ([]*kops.Keyset, error) {
 				continue
 			}
 
+			if tokens[1] == "keyset.yaml" {
+				continue
+			}
+
 			name := tokens[0]
 			keyset := keysets[name]
 			if keyset == nil {
