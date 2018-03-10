@@ -111,7 +111,7 @@ func (nodeAA *NodeAPIAdapter) WaitForNodeToBe(nodeName string, conditionType v1.
 
 	var cond *v1.NodeCondition
 	err := wait.PollImmediate(Poll, nodeAA.timeout, func() (bool, error) {
-		node, err := nodeAA.client.Core().Nodes().Get(nodeName, metav1.GetOptions{})
+		node, err := nodeAA.client.CoreV1().Nodes().Get(nodeName, metav1.GetOptions{})
 		// FIXME this is not erroring on 500's for instance.  We will keep looping
 		if err != nil {
 			// TODO: Check if e.g. NotFound
@@ -158,7 +158,7 @@ func (nodeAA *NodeAPIAdapter) waitListSchedulableNodes() (*v1.NodeList, error) {
 	var nodeList *v1.NodeList
 	err := wait.PollImmediate(Poll, SingleCallTimeout, func() (bool, error) {
 		var err error
-		nodeList, err = nodeAA.client.Core().Nodes().List(metav1.ListOptions{FieldSelector: "spec.unschedulable=false"})
+		nodeList, err = nodeAA.client.CoreV1().Nodes().List(metav1.ListOptions{FieldSelector: "spec.unschedulable=false"})
 		if err != nil {
 			// error logging TODO
 			return false, err
