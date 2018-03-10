@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/validation"
@@ -209,21 +210,37 @@ func (r *RollingUpdateInstanceGroup) WaitOnNodes(ctx context.Context, before []v
 	}
 	update.Infof("waiting to %d new nodes to enter the cluster, current size: %d", expecting, len(before))
 
-	client, err := validation.NewNodeAPIAdapter(update.Client, time.Second*5)
-	if err != nil {
-		return fmt.Errorf("unable to create node api: %s", err)
-	}
-
 	ticker := time.NewTimer(10 * time.Second)
 	for {
 		select {
 		case <-ticker.C:
 			// @step: we get a list of nodes in the cluster
-			_, err := client.GetAllNodes()
+			nodes, err := r.Update.Client.CoreV1().Nodes().List(metav1.ListOptions{})
 			if err != nil {
 				update.Errorf("failed to retrieve a list of nodes, error: %v", err)
 				continue
 			}
+			count := 0
+
+			// @check if this is a node we already knew about
+			for _, x := range nodes.Items {
+				for _, j := range before {
+					if x.GetName() == j.GetName() {
+						continue
+					}
+					// @check the node is ready
+					if !validation.IsNodeReady(&x) {
+						update.Infof("found new node: %s, but currently not in a 'ready' state", x.GetName())
+						continue
+					}
+					count++
+				}
+			}
+			if count >= expecting {
+				update.Infof("found %d new nodes in the cluster", expecting)
+				return nil
+			}
+
 		case <-ctx.Done():
 			return ErrRolloutCancelled
 		}
@@ -295,7 +312,7 @@ func (r *RollingUpdateInstanceGroup) DuplicateGroup(name string) (*api.InstanceG
 
 // ValidateCluster runs our validation methods on the K8s Cluster.
 func (r *RollingUpdateInstanceGroup) ValidateCluster(list *api.InstanceGroupList) error {
-	if _, err := validation.ValidateCluster(r.Update.ClusterName, list, r.Update.Client); err != nil {
+	if _, err := validation.ValidateCluster(r.Update.Cluster, list, r.Update.Client); err != nil {
 		return fmt.Errorf("cluster: %s did not pass validation: %s", r.Update.ClusterName, err)
 	}
 
@@ -362,7 +379,7 @@ func (r *RollingUpdateInstanceGroup) ValidateClusterWithTimeout(ctx context.Cont
 
 // tryValidateCluster attempts to validate to the cluster
 func (r *RollingUpdateInstanceGroup) tryValidateCluster(list *api.InstanceGroupList) bool {
-	if _, err := validation.ValidateCluster(r.Update.ClusterName, list, r.Update.Client); err != nil {
+	if _, err := validation.ValidateCluster(r.Update.Cluster, list, r.Update.Client); err != nil {
 		return false
 	}
 

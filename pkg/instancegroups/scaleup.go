@@ -54,9 +54,7 @@ func (p *scaleProvider) RollingUpdate(ctx context.Context, list *api.InstanceGro
 	if newMinSize > newMaxSize {
 		newMaxSize = newMinSize
 	}
-	update.Infof("strategy: %s, adjusting size setting on instancegroup: %s, min/max (%d/%d)",
-		strategy.Name, name, newMinSize, newMaxSize)
-
+	update.Infof("strategy: %s, adjusting size setting on instancegroup: %s, min/max (%d/%d)", strategy.Name, name, newMinSize, newMaxSize)
 	update.Infof("updating the configuration with adjusted instancegroup settings for: %s", name)
 
 	// @step: grab the configuration from source
@@ -92,7 +90,7 @@ func (p *scaleProvider) RollingUpdate(ctx context.Context, list *api.InstanceGro
 		if err := p.GroupUpdate.WaitForGroupSize(ctx, name, int(newMinSize), update.ScaleTimeout); err != nil {
 			return err
 		}
-		update.Infof("instancegroup: %s has successfully rescaled", name)
+		update.Infof("instancegroup: %s has successfully rescaled to %d nodes", name, int(newMinSize))
 
 		// @TODO look at a better way of doing, we should probably just get the instancegroup count and wait for
 		// the same count of nodes to be registered
@@ -172,6 +170,10 @@ func (p *scaleProvider) RollingUpdate(ctx context.Context, list *api.InstanceGro
 
 		{
 			// @step: we need to wait for a node interval and then attempt to validate cluster
+			update.Infof("waiting for instancegroup: %s to revert to %d nodes", name, int(oldMinSize))
+			if err := p.GroupUpdate.WaitForGroupSize(ctx, name, int(oldMinSize), update.ScaleTimeout); err != nil {
+				return err
+			}
 			update.Infof("waiting to %s while the instancegroup: %s is reverted", strategy.Interval.Duration, name)
 			if err = p.GroupUpdate.WaitFor(ctx, strategy.Interval.Duration); err != nil {
 				return err

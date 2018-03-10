@@ -248,7 +248,7 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 				Status:   getNodeReadyStatus(node),
 			}
 
-			ready := isNodeReady(node)
+			ready := IsNodeReady(node)
 
 			// TODO: Use instance group role instead...
 			if n.Role == "master" {

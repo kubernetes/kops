@@ -39,11 +39,11 @@ func findNodeCondition(node *v1.Node, conditionType v1.NodeConditionType) *v1.No
 	return nil
 }
 
-// isNodeReady returns if a Node is considered ready.
+// IsNodeReady returns if a Node is considered ready.
 // It is considered ready if:
 // 1) its Ready condition is set to true
 // 2) doesn't have NetworkUnavailable condition set to true
-func isNodeReady(node *v1.Node) bool {
+func IsNodeReady(node *v1.Node) bool {
 	nodeReadyCondition := findNodeCondition(node, v1.NodeReady)
 	if nodeReadyCondition == nil {
 		glog.Warningf("v1.NodeReady condition not set on node %s", node.Name)

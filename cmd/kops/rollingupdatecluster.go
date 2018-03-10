@@ -338,7 +338,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 
 	// @NOTE: we need to add a warning for those choosing to validate but have a low node interval
 	// as its unlikely kubernetes will detect the errors
-	lowInterval := time.Second * 60
+	lowInterval := time.Second * 120
 	logIntervalWaring := "Note: the %s interval on %s is low, kubernetes might not have time to detect node errors causing issues with validation"
 	if options.MasterInterval < lowInterval {
 		glog.Warningf(fmt.Sprintf(logIntervalWaring, "master", options.MasterInterval))
