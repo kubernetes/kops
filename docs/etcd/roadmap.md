@@ -25,7 +25,7 @@ it matures.
 
 To make adoption easier, the etcd-manager has added a standalone backup tool, that can backup etcd into the
 [expected structure](https://github.com/kopeio/etcd-manager/blob/master/docs/backupstructure.md), even if you are not running the etcd-manager.  It should be possible to then use
-the etcd manager from that backup.
+the etcd-manager from that backup.
 
 ## Roadmap
 

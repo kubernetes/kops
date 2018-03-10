@@ -700,10 +700,10 @@ func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*Resource, error) {
 	keypairName := "kubernetes." + clusterName
 
 	glog.V(2).Infof("Listing EC2 Keypairs")
-	request := &ec2.DescribeKeyPairsInput{
-		// We need to match both the name and a prefix
-		//Filters: []*ec2.Filter{awsup.NewEC2Filter("key-name", keypairName)},
-	}
+
+	// TODO: We need to match both the name and a prefix
+	// TODO: usee 'Filters: []*ec2.Filter{awsup.NewEC2Filter("key-name", keypairName)},'
+	request := &ec2.DescribeKeyPairsInput{}
 	response, err := c.EC2().DescribeKeyPairs(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing KeyPairs: %v", err)

@@ -1,5 +1,5 @@
 In order to develop inside a Docker container you must mount your local copy of 
-the Kops repo into the container's `GOPATH`. For the offical Golang Docker 
+the Kops repo into the container's `GOPATH`. For the official Golang Docker 
 image this is simply a matter of running the following command:
 
 ```bash
