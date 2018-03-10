@@ -90,7 +90,7 @@ func (c *KubernetesKeystore) findSecret(id string) (*v1.Secret, error) {
 	return secret, nil
 }
 
-func (c *KubernetesKeystore) FindKeypair(id string) (*pki.Certificate, *pki.PrivateKey, string, error) {
+func (c *KubernetesKeystore) FindKeypair(id string) (*pki.Certificate, *pki.PrivateKey, fi.KeysetFormat, error) {
 	secret, err := c.findSecret(id)
 	if err != nil {
 		return nil, nil, "", err
@@ -105,10 +105,7 @@ func (c *KubernetesKeystore) FindKeypair(id string) (*pki.Certificate, *pki.Priv
 		return nil, nil, "", fmt.Errorf("error parsing secret %s/%s from kubernetes: %v", c.namespace, id, err)
 	}
 
-	// This value is when using the API Keyset.  When the keyset is a legacy value the secret.Type value is
-	// not set. The keypair task is using this value to upgrade legacy keysets to keysets that use the API.
-	keypairType := string(secret.Type)
-	return keypair.Certificate, keypair.PrivateKey, keypairType, nil
+	return keypair.Certificate, keypair.PrivateKey, fi.KeysetFormatV1Alpha2, nil
 }
 
 func (c *KubernetesKeystore) CreateKeypair(signer string, id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
