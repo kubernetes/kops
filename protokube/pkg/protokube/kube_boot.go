@@ -126,19 +126,6 @@ func (k *KubeBoot) syncOnce() error {
 		glog.V(4).Infof("Not in role master; won't scan for volumes")
 	}
 
-	if k.Master && k.ApplyTaints {
-		if err := applyMasterTaints(k.Kubernetes); err != nil {
-			glog.Warningf("error updating master taints: %v", err)
-		}
-	}
-
-	if k.InitializeRBAC {
-		// @TODO: Idempotency: good question; not sure this should ever be done on the node though
-		if err := applyRBAC(k.Kubernetes); err != nil {
-			glog.Warningf("error initializing rbac: %v", err)
-		}
-	}
-
 	// Ensure kubelet is running. We avoid doing this automatically so
 	// that when kubelet comes up the first time, all volume mounts
 	// and DNS are available, avoiding the scenario where
@@ -147,9 +134,21 @@ func (k *KubeBoot) syncOnce() error {
 		glog.Warningf("error ensuring kubelet started: %v", err)
 	}
 
-	for _, channel := range k.Channels {
-		if err := applyChannel(channel); err != nil {
-			glog.Warningf("error applying channel %q: %v", channel, err)
+	if k.Master {
+		if k.ApplyTaints {
+			if err := applyMasterTaints(k.Kubernetes); err != nil {
+				glog.Warningf("error updating master taints: %v", err)
+			}
+		}
+		if k.InitializeRBAC {
+			if err := applyRBAC(k.Kubernetes); err != nil {
+				glog.Warningf("error initializing rbac: %v", err)
+			}
+		}
+		for _, channel := range k.Channels {
+			if err := applyChannel(channel); err != nil {
+				glog.Warningf("error applying channel %q: %v", channel, err)
+			}
 		}
 	}
 
