@@ -47,7 +47,7 @@ export KOPS_STATE_STORE=s3://my-kops-s3-bucket-for-cluster-state
 Some things to note from here:
 
 - "NAME" will be an environment variable that we'll use from now in order to refer to our cluster name. For this practical exercise, our cluster name is "coreosbasedkopscluster.k8s.local".
-- Because we'll use gossip DNS instead of a valid DNS domain on AWS ROUTE53 service, our cluster name need to include the string **".k8s.local"** at the end (this is covered on our AWS tutorials). You can see more about this on our [Getting Started Doc.](https://github.com/kubernetes/kops/blob/master/docs/aws.md)
+- Because we'll use gossip DNS instead of a valid DNS domain on AWS ROUTE53 service, our cluster name needs to include the string **".k8s.local"** at the end (this is covered on our AWS tutorials). You can see more about this on our [Getting Started Doc.](https://github.com/kubernetes/kops/blob/master/docs/aws.md)
 
 
 ## COREOS IMAGE INFORMATION:
@@ -187,7 +187,7 @@ Your cluster coreosbasedkopscluster.k8s.local is ready
 
 ```
 
-Before continuing, let's note something interesting here: Can you see your masters ?. Two of them (master-us-east-1a and master-us-east-1c) are using "m3.medium" "aws instance type", but "master-us-east-1b" is using "c4.large". This happens because KOPS uses the AWS API in order to determine if the required instance type is available on the "az". At the moment we launched this cluster, "m3.medium" was unavailable on "us-east-1b". This forced KOPS to choose the nearest instance type candidate on the AZ.
+Before continuing, let's note something interesting here: Can you see your masters? Two of them (master-us-east-1a and master-us-east-1c) are using "m3.medium" "aws instance type", but "master-us-east-1b" is using "c4.large". This happens because KOPS uses the AWS API in order to determine if the required instance type is available on the "az". At the moment we launched this cluster, "m3.medium" was unavailable on "us-east-1b". This forced KOPS to choose the nearest instance type candidate on the AZ.
 
 If you don't want KOPS to auto-select the instance type, you can use the following arguments in order to enforce the instance types for both masters and nodes:
 
