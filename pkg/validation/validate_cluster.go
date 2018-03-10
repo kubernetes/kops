@@ -23,6 +23,7 @@ import (
 
 	"net"
 
+	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -96,9 +97,16 @@ func HasPlaceHolderIP(clusterName string) (bool, error) {
 func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupList, clusterKubernetesClient kubernetes.Interface) (*ValidationCluster, error) {
 	var instanceGroups []*kops.InstanceGroup
 
+	var nodeCount, masterCount int
 	for i := range instanceGroupList.Items {
 		ig := &instanceGroupList.Items[i]
 		instanceGroups = append(instanceGroups, ig)
+		switch ig.Spec.Role {
+		case kops.InstanceGroupRoleMaster:
+			masterCount++
+		case kops.InstanceGroupRoleNode:
+			nodeCount++
+		}
 	}
 
 	if len(instanceGroups) == 0 {
@@ -119,6 +127,8 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 		ClusterName:    clusterName,
 		ErrorMessage:   ClusterValidationPassed,
 		InstanceGroups: instanceGroups,
+		NodesCount:     nodeCount,
+		MastersCount:   masterCount,
 	}
 
 	validationCluster.NodeList, err = nodeAA.GetAllNodes()
@@ -175,7 +185,7 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 	nodes := validationCluster.NodeList
 
 	if nodes == nil || len(nodes.Items) == 0 {
-		return nil, fmt.Errorf("No nodes found in validationCluster")
+		return nil, fmt.Errorf("no nodes found in validationCluster")
 	}
 	// Needed for when NodesCount and MastersCounts are predefined, i.e tests
 	presetNodeCount := validationCluster.NodesCount == 0
@@ -188,7 +198,10 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 			role = "node"
 		}
 
+		glog.V(8).Infof("checking node with role: %q", role)
+
 		n := &ValidationNode{
+			// need to change to kubeletapis.LabelZoneFailureDomain
 			Zone:     node.ObjectMeta.Labels["failure-domain.beta.kubernetes.io/zone"],
 			Hostname: node.ObjectMeta.Labels["kubernetes.io/hostname"],
 			Role:     role,
@@ -196,6 +209,12 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 		}
 
 		ready := IsNodeOrMasterReady(node)
+
+		if ready {
+			glog.V(8).Infof("node %q is READY", n.Hostname)
+		} else {
+			glog.V(8).Infof("node %q is NOT READY", n.Hostname)
+		}
 
 		// TODO: Use instance group role instead...
 		if n.Role == "master" {
@@ -223,22 +242,17 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 	validationCluster.MastersReady = true
 	if len(validationCluster.MastersNotReadyArray) != 0 || validationCluster.MastersCount != len(validationCluster.MastersReadyArray) {
 		validationCluster.MastersReady = false
-	}
-
-	validationCluster.NodesReady = true
-	if len(validationCluster.NodesNotReadyArray) != 0 || validationCluster.NodesCount > len(validationCluster.NodesReadyArray) {
-		validationCluster.NodesReady = false
-	}
-
-	if !validationCluster.MastersReady {
 		validationCluster.Status = ClusterValidationFailed
 		validationCluster.ErrorMessage = fmt.Sprintf("your masters are NOT ready %s", clusterName)
 		return validationCluster, fmt.Errorf(validationCluster.ErrorMessage)
 	}
 
-	if !validationCluster.NodesReady {
+	validationCluster.NodesReady = true
+	if len(validationCluster.NodesNotReadyArray) != 0 || validationCluster.NodesCount > len(validationCluster.NodesReadyArray) {
+		validationCluster.NodesReady = false
 		validationCluster.Status = ClusterValidationFailed
 		validationCluster.ErrorMessage = fmt.Sprintf("your nodes are NOT ready %s", clusterName)
+		glog.V(8).Infof("Node or nodes are not ready")
 		return validationCluster, fmt.Errorf(validationCluster.ErrorMessage)
 	}
 

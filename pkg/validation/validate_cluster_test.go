@@ -28,7 +28,7 @@ import (
 )
 
 func Test_ValidateClusterPositive(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").CoreV1().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -38,13 +38,31 @@ func Test_ValidateClusterPositive(t *testing.T) {
 	validationCluster, err = validateTheNodes("foo", validationCluster)
 
 	if err != nil {
-		printDebug(validationCluster)
+		printDebug(validationCluster, t)
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
+func Test_ValidateClusterNoNodes(t *testing.T) {
+	nodeList, err := dummyClientNoNodes("true").CoreV1().Nodes().List(metav1.ListOptions{})
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	validationCluster := &ValidationCluster{NodeList: nodeList, NodesCount: 3, MastersCount: 1}
+	validationCluster, err = validateTheNodes("foo", validationCluster)
+
+	if err == nil {
+		printDebug(validationCluster, t)
+		t.Fatalf("this test is expected to fail, no nodes should exist")
+	}
+
+	printDebug(validationCluster, t)
+
+}
 
 func Test_ValidateClusterMasterAndNodeNotReady(t *testing.T) {
-	nodeList, err := dummyClient("false", "false").Core().Nodes().List(metav1.ListOptions{})
+	nodeList, err := dummyClient("false", "false").CoreV1().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -54,13 +72,13 @@ func Test_ValidateClusterMasterAndNodeNotReady(t *testing.T) {
 	validationCluster, err = validateTheNodes("foo", validationCluster)
 
 	if err == nil {
-		printDebug(validationCluster)
+		printDebug(validationCluster, t)
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func Test_ValidateClusterComponents(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").CoreV1().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -71,13 +89,13 @@ func Test_ValidateClusterComponents(t *testing.T) {
 	validationCluster, err = validateTheNodes("foo", validationCluster)
 
 	if err == nil {
-		printDebug(validationCluster)
+		printDebug(validationCluster, t)
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func Test_ValidateClusterPods(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").CoreV1().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -88,13 +106,13 @@ func Test_ValidateClusterPods(t *testing.T) {
 	validationCluster, err = validateTheNodes("foo", validationCluster)
 
 	if err == nil {
-		printDebug(validationCluster)
+		printDebug(validationCluster, t)
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func Test_ValidateClusterNodeNotReady(t *testing.T) {
-	nodeList, err := dummyClient("true", "false").Core().Nodes().List(metav1.ListOptions{})
+	nodeList, err := dummyClient("true", "false").CoreV1().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -104,13 +122,13 @@ func Test_ValidateClusterNodeNotReady(t *testing.T) {
 	validationCluster, err = validateTheNodes("foo", validationCluster)
 
 	if err == nil {
-		printDebug(validationCluster)
+		printDebug(validationCluster, t)
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func Test_ValidateClusterMastersNotEnough(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").CoreV1().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -120,13 +138,13 @@ func Test_ValidateClusterMastersNotEnough(t *testing.T) {
 	validationCluster, err = validateTheNodes("foo", validationCluster)
 
 	if err == nil {
-		printDebug(validationCluster)
+		printDebug(validationCluster, t)
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func Test_ValidateNodesNotEnough(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").CoreV1().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -136,9 +154,11 @@ func Test_ValidateNodesNotEnough(t *testing.T) {
 	validationCluster, err = validateTheNodes("foo", validationCluster)
 
 	if err == nil {
-		printDebug(validationCluster)
+		printDebug(validationCluster, t)
 		t.Fatal("Too few nodes not caught")
 	}
+
+	t.Logf("err: %v", err)
 }
 
 func Test_ValidateNoPodFailures(t *testing.T) {
@@ -188,16 +208,28 @@ func Test_ValidatePodFailure(t *testing.T) {
 	}
 }
 
-func printDebug(validationCluster *ValidationCluster) {
-	fmt.Printf("cluster - masters ready: %v, nodes ready: %v\n", validationCluster.MastersReady, validationCluster.NodesReady)
-	fmt.Printf("mastersNotReady %v\n", len(validationCluster.MastersNotReadyArray))
-	fmt.Printf("mastersCount %v, mastersReady %v\n", validationCluster.MastersCount, len(validationCluster.MastersReadyArray))
-	fmt.Printf("nodesNotReady %v\n", len(validationCluster.NodesNotReadyArray))
-	fmt.Printf("nodesCount %v, nodesReady %v\n", validationCluster.NodesCount, len(validationCluster.NodesReadyArray))
+func printDebug(validationCluster *ValidationCluster, t *testing.T) {
+	t.Logf("cluster - masters ready: %v, nodes ready: %v\n", validationCluster.MastersReady, validationCluster.NodesReady)
+	t.Logf("mastersNotReady %v\n", len(validationCluster.MastersNotReadyArray))
+	t.Logf("mastersCount %v, mastersReady %v\n", validationCluster.MastersCount, len(validationCluster.MastersReadyArray))
+	t.Logf("nodesNotReady %v\n", len(validationCluster.NodesNotReadyArray))
+	t.Logf("nodesCount %v, nodesReady %v\n", validationCluster.NodesCount, len(validationCluster.NodesReadyArray))
 
 }
 
-const NODE_READY = "nodeReady"
+const NodeReady = "nodeReady"
+
+func dummyClientNoNodes(masterReady string) kubernetes.Interface {
+	return fake.NewSimpleClientset(makeNodeList(
+		[]map[string]string{
+			{
+				"name":               "master1",
+				"kubernetes.io/role": "master",
+				NodeReady:            masterReady,
+			},
+		},
+	))
+}
 
 func dummyClient(masterReady string, nodeReady string) kubernetes.Interface {
 	return fake.NewSimpleClientset(makeNodeList(
@@ -205,17 +237,17 @@ func dummyClient(masterReady string, nodeReady string) kubernetes.Interface {
 			{
 				"name":               "master1",
 				"kubernetes.io/role": "master",
-				NODE_READY:           masterReady,
+				NodeReady:            masterReady,
 			},
 			{
 				"name":               "node1",
 				"kubernetes.io/role": "node",
-				NODE_READY:           nodeReady,
+				NodeReady:            nodeReady,
 			},
 			{
 				"name":               "node2",
 				"kubernetes.io/role": "node",
-				NODE_READY:           "true",
+				NodeReady:            nodeReady,
 			},
 		},
 	))
@@ -255,7 +287,7 @@ func makePodList(pods []map[string]string) *v1.PodList {
 func dummyNode(nodeMap map[string]string) v1.Node {
 
 	nodeReady := v1.ConditionFalse
-	if nodeMap[NODE_READY] == "true" {
+	if nodeMap[NodeReady] == "true" {
 		nodeReady = v1.ConditionTrue
 	}
 	expectedNode := v1.Node{
