@@ -573,9 +573,13 @@ func (c *VFSCAStore) ListKeysets() ([]*kops.Keyset, error) {
 				keysets[name] = keyset
 			}
 
-			keyset.Spec.Keys = append(keyset.Spec.Keys, kops.KeysetItem{
-				Id: strings.TrimSuffix(tokens[1], ".crt"),
-			})
+			if tokens[1] == "keyset.yaml" {
+				// TODO: Should we load the keyset to get the actual ids?
+			} else {
+				keyset.Spec.Keys = append(keyset.Spec.Keys, kops.KeysetItem{
+					Id: strings.TrimSuffix(tokens[1], ".crt"),
+				})
+			}
 		}
 	}
 
