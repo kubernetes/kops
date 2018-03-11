@@ -128,6 +128,9 @@ type ApplyClusterCmd struct {
 	// The key value is the task name such as InternetGateway and the value is the fi.Lifecycle
 	// that is re-mapped.
 	LifecycleOverrides map[string]fi.Lifecycle
+
+	// TaskMap is the map of tasks that we built (output)
+	TaskMap map[string]fi.Task
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -637,6 +640,8 @@ func (c *ApplyClusterCmd) Run() error {
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
+
+	c.TaskMap = taskMap
 
 	var target fi.Target
 	dryRun := false

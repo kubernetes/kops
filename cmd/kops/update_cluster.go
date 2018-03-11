@@ -100,8 +100,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 			clusterName := rootCommand.ClusterName()
 
-			err = RunUpdateCluster(f, clusterName, out, options)
-			if err != nil {
+			if _, err := RunUpdateCluster(f, clusterName, out, options); err != nil {
 				exitWithError(err)
 			}
 		},
@@ -119,7 +118,17 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *UpdateClusterOptions) error {
+type UpdateClusterResults struct {
+	// Target is the fi.Target we will operated against.  This can be used to get dryrun results (primarily for tests)
+	Target fi.Target
+
+	// TaskMap is the map of tasks that we built (output)
+	TaskMap map[string]fi.Task
+}
+
+func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *UpdateClusterOptions) (*UpdateClusterResults, error) {
+	results := &UpdateClusterResults{}
+
 	isDryrun := false
 	targetName := c.Target
 
@@ -147,27 +156,27 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 
 	cluster, err := GetCluster(f, clusterName)
 	if err != nil {
-		return err
+		return results, err
 	}
 
 	clientset, err := f.Clientset()
 	if err != nil {
-		return err
+		return results, err
 	}
 
 	keyStore, err := clientset.KeyStore(cluster)
 	if err != nil {
-		return err
+		return results, err
 	}
 
 	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
 	if err != nil {
-		return err
+		return results, err
 	}
 
 	secretStore, err := clientset.SecretStore(cluster)
 	if err != nil {
-		return err
+		return results, err
 	}
 
 	if c.SSHPublicKey != "" {
@@ -176,11 +185,11 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
 		authorized, err := ioutil.ReadFile(c.SSHPublicKey)
 		if err != nil {
-			return fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
+			return results, fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
 		}
 		err = sshCredentialStore.AddSSHPublicKey(fi.SecretNameSSHPrimary, authorized)
 		if err != nil {
-			return fmt.Errorf("error adding SSH public key: %v", err)
+			return results, fmt.Errorf("error adding SSH public key: %v", err)
 		}
 
 		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
@@ -198,7 +207,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		case string(cloudup.PhaseCluster):
 			phase = cloudup.PhaseCluster
 		default:
-			return fmt.Errorf("unknown phase %q, available phases: %s", c.Phase, strings.Join(cloudup.Phases.List(), ","))
+			return results, fmt.Errorf("unknown phase %q, available phases: %s", c.Phase, strings.Join(cloudup.Phases.List(), ","))
 		}
 	}
 
@@ -207,7 +216,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	for _, override := range c.LifecycleOverrides {
 		values := strings.Split(override, "=")
 		if len(values) != 2 {
-			return fmt.Errorf("Incorrect syntax for lifecyle-overrides, correct syntax is TaskName=lifecycleName, override provided: %q", override)
+			return results, fmt.Errorf("Incorrect syntax for lifecyle-overrides, correct syntax is TaskName=lifecycleName, override provided: %q", override)
 		}
 
 		taskName := values[0]
@@ -215,7 +224,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 
 		lifecycleOverride, err := parseLifecycle(lifecycleName)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		lifecycleOverrideMap[taskName] = lifecycleOverride
@@ -225,7 +234,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	{
 		list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 		if err != nil {
-			return err
+			return nil, err
 		}
 		for i := range list.Items {
 			instanceGroups = append(instanceGroups, &list.Items[i])
@@ -246,8 +255,11 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	}
 
 	if err := applyCmd.Run(); err != nil {
-		return err
+		return results, err
 	}
+
+	results.Target = applyCmd.Target
+	results.TaskMap = applyCmd.TaskMap
 
 	if isDryrun {
 		target := applyCmd.Target.(*fi.DryRunTarget)
@@ -256,7 +268,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		} else {
 			fmt.Fprintf(out, "No changes need to be applied\n")
 		}
-		return nil
+		return results, nil
 	}
 
 	firstRun := false
@@ -279,11 +291,11 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 			glog.Infof("Exporting kubecfg for cluster")
 			conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{})
 			if err != nil {
-				return err
+				return nil, err
 			}
 			err = conf.WriteKubecfg()
 			if err != nil {
-				return err
+				return nil, err
 			}
 		} else {
 			glog.Infof("kubecfg cert not found; won't export kubecfg")
@@ -355,11 +367,11 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 
 		_, err := out.Write(sb.Bytes())
 		if err != nil {
-			return fmt.Errorf("error writing to output: %v", err)
+			return nil, fmt.Errorf("error writing to output: %v", err)
 		}
 	}
 
-	return nil
+	return results, nil
 }
 
 func parseLifecycle(lifecycle string) (fi.Lifecycle, error) {

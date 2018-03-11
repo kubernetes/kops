@@ -37,15 +37,15 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 	cloud.MockEC2 = c
 
 	// Matches by vpc id
-	c.RouteTables = append(c.RouteTables, &ec2.RouteTable{
+	c.AddRouteTable(&ec2.RouteTable{
 		VpcId:        aws.String("vpc-1234"),
-		RouteTableId: aws.String("rt-1234"),
+		RouteTableId: aws.String("rtb-1234"),
 	})
 
 	// Skips main route tables
-	c.RouteTables = append(c.RouteTables, &ec2.RouteTable{
+	c.AddRouteTable(&ec2.RouteTable{
 		VpcId:        aws.String("vpc-1234"),
-		RouteTableId: aws.String("rt-1234main"),
+		RouteTableId: aws.String("rtb-1234main"),
 		Associations: []*ec2.RouteTableAssociation{
 			{
 				Main: aws.Bool(true),
@@ -54,9 +54,9 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 	})
 
 	// Skips route table tagged with other cluster
-	c.RouteTables = append(c.RouteTables, &ec2.RouteTable{
+	c.AddRouteTable(&ec2.RouteTable{
 		VpcId:        aws.String("vpc-1234"),
-		RouteTableId: aws.String("rt-1234main"),
+		RouteTableId: aws.String("rtb-1234notmain"),
 		Tags: []*ec2.Tag{
 			{
 				Key:   aws.String(awsup.TagClusterName),
@@ -66,9 +66,9 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 	})
 
 	// Ignores non-matching vpcs
-	c.RouteTables = append(c.RouteTables, &ec2.RouteTable{
+	c.AddRouteTable(&ec2.RouteTable{
 		VpcId:        aws.String("vpc-5555"),
-		RouteTableId: aws.String("rt-5555"),
+		RouteTableId: aws.String("rtb-5555"),
 	})
 
 	resources["vpc:vpc-1234"] = &Resource{}
@@ -83,7 +83,7 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
-	expected := []string{"route-table:rt-1234", "vpc:vpc-1234"}
+	expected := []string{"route-table:rtb-1234", "vpc:vpc-1234"}
 	if !reflect.DeepEqual(expected, keys) {
 		t.Fatalf("expected=%q, actual=%q", expected, keys)
 	}
@@ -98,9 +98,9 @@ func TestListRouteTables(t *testing.T) {
 	c := &mockec2.MockEC2{}
 	cloud.MockEC2 = c
 
-	c.RouteTables = append(c.RouteTables, &ec2.RouteTable{
+	c.AddRouteTable(&ec2.RouteTable{
 		VpcId:        aws.String("vpc-1234"),
-		RouteTableId: aws.String("rt-shared"),
+		RouteTableId: aws.String("rtb-shared"),
 		Tags: []*ec2.Tag{
 			{
 				Key:   aws.String("KubernetesCluster"),
@@ -112,9 +112,9 @@ func TestListRouteTables(t *testing.T) {
 			},
 		},
 	})
-	c.RouteTables = append(c.RouteTables, &ec2.RouteTable{
+	c.AddRouteTable(&ec2.RouteTable{
 		VpcId:        aws.String("vpc-1234"),
-		RouteTableId: aws.String("rt-owned"),
+		RouteTableId: aws.String("rtb-owned"),
 		Tags: []*ec2.Tag{
 			{
 				Key:   aws.String("KubernetesCluster"),
@@ -132,10 +132,10 @@ func TestListRouteTables(t *testing.T) {
 		t.Fatalf("error listing route tables: %v", err)
 	}
 	for _, rt := range resources {
-		if rt.ID == "rt-shared" && !rt.Shared {
+		if rt.ID == "rtb-shared" && !rt.Shared {
 			t.Fatalf("expected Shared: true, got: %v", rt.Shared)
 		}
-		if rt.ID == "rt-owned" && rt.Shared {
+		if rt.ID == "rtb-owned" && rt.Shared {
 			t.Fatalf("expected Shared: false, got: %v", rt.Shared)
 		}
 	}

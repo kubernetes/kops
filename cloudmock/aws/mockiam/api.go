@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,20 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mockautoscaling
+package mockiam
 
 import (
+	"fmt"
+	"math/rand"
 	"sync"
 
-	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
+	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 )
 
-type MockAutoscaling struct {
-	mutex sync.Mutex
-
-	Groups               map[string]*autoscaling.Group
-	LaunchConfigurations map[string]*autoscaling.LaunchConfiguration
+type MockIAM struct {
+	mutex            sync.Mutex
+	InstanceProfiles map[string]*iam.InstanceProfile
+	Roles            map[string]*iam.Role
+	RolePolicies     []*rolePolicy
 }
 
-var _ autoscalingiface.AutoScalingAPI = &MockAutoscaling{}
+var _ iamiface.IAMAPI = &MockIAM{}
+
+func (m *MockIAM) createID() string {
+	return "AID" + fmt.Sprintf("%x", rand.Int63())
+}

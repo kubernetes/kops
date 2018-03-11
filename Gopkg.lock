@@ -114,6 +114,7 @@
     "service/elb/elbiface",
     "service/elbv2",
     "service/iam",
+    "service/iam/iamiface",
     "service/kms",
     "service/route53",
     "service/route53/route53iface",
@@ -1541,6 +1542,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7445d8b26618a25cff0c477f71b45cfe1c66c213599a07c2c751ad94ee64e86d"
+  inputs-digest = "08b9c9892557af4ea36c5173c564d6aac7cec6cdedd4a149ee74681d93dde51e"
   solver-name = "gps-cdcl"
   solver-version = 1

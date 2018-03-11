@@ -60,6 +60,9 @@ func (m *MockEC2) CreateSubnetWithContext(aws.Context, *ec2.CreateSubnetInput, .
 }
 
 func (m *MockEC2) CreateSubnet(request *ec2.CreateSubnetInput) (*ec2.CreateSubnetOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("CreateSubnet: %v", request)
 
 	m.subnetNumber++
@@ -98,6 +101,10 @@ func (m *MockEC2) DescribeSubnetsWithContext(aws.Context, *ec2.DescribeSubnetsIn
 func (m *MockEC2) DescribeSubnets(request *ec2.DescribeSubnetsInput) (*ec2.DescribeSubnetsOutput, error) {
 	glog.Infof("DescribeSubnets: %v", request)
 
+	if len(request.SubnetIds) != 0 {
+		request.Filters = append(request.Filters, &ec2.Filter{Name: s("subnet-id"), Values: request.SubnetIds})
+	}
+
 	var subnets []*ec2.Subnet
 
 	for id, subnet := range m.subnets {
@@ -108,6 +115,12 @@ func (m *MockEC2) DescribeSubnets(request *ec2.DescribeSubnetsInput) (*ec2.Descr
 			case "vpc-id":
 				if *subnet.main.VpcId == *filter.Values[0] {
 					match = true
+				}
+			case "subnet-id":
+				for _, v := range filter.Values {
+					if *subnet.main.SubnetId == *v {
+						match = true
+					}
 				}
 			default:
 				if strings.HasPrefix(*filter.Name, "tag:") {
@@ -137,4 +150,57 @@ func (m *MockEC2) DescribeSubnets(request *ec2.DescribeSubnetsInput) (*ec2.Descr
 	}
 
 	return response, nil
+}
+
+func (m *MockEC2) AssociateRouteTable(request *ec2.AssociateRouteTableInput) (*ec2.AssociateRouteTableOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("AuthorizeSecurityGroupIngress: %v", request)
+
+	if aws.StringValue(request.SubnetId) == "" {
+		return nil, fmt.Errorf("SubnetId not specified")
+	}
+	if aws.StringValue(request.RouteTableId) == "" {
+		return nil, fmt.Errorf("RouteTableId not specified")
+	}
+
+	if request.DryRun != nil {
+		glog.Fatalf("DryRun")
+	}
+
+	subnet := m.subnets[*request.SubnetId]
+	if subnet == nil {
+		return nil, fmt.Errorf("Subnet not found")
+	}
+	rt := m.RouteTables[*request.RouteTableId]
+	if rt == nil {
+		return nil, fmt.Errorf("RouteTable not found")
+	}
+
+	associationID := m.allocateId("rta-")
+
+	rt.Associations = append(rt.Associations, &ec2.RouteTableAssociation{
+		RouteTableId:            rt.RouteTableId,
+		SubnetId:                subnet.main.SubnetId,
+		RouteTableAssociationId: &associationID,
+	})
+	// TODO: More fields
+	// // Indicates whether this is the main route table.
+	// Main *bool `locationName:"main" type:"boolean"`
+
+	// TODO: We need to fold permissions
+
+	response := &ec2.AssociateRouteTableOutput{
+		AssociationId: &associationID,
+	}
+	return response, nil
+}
+func (m *MockEC2) AssociateRouteTableWithContext(aws.Context, *ec2.AssociateRouteTableInput, ...request.Option) (*ec2.AssociateRouteTableOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) AssociateRouteTableRequest(*ec2.AssociateRouteTableInput) (*request.Request, *ec2.AssociateRouteTableOutput) {
+	panic("Not implemented")
+	return nil, nil
 }

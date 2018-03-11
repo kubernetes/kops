@@ -23,6 +23,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+
+	"k8s.io/kops/pkg/pki"
 )
 
 func (m *MockEC2) DescribeKeyPairsRequest(*ec2.DescribeKeyPairsInput) (*request.Request, *ec2.DescribeKeyPairsOutput) {
@@ -42,7 +44,10 @@ func (m *MockEC2) ImportKeyPairWithContext(aws.Context, *ec2.ImportKeyPairInput,
 func (m *MockEC2) ImportKeyPair(request *ec2.ImportKeyPairInput) (*ec2.ImportKeyPairOutput, error) {
 	glog.Infof("ImportKeyPair: %v", request)
 
-	fp := "12345" // TODO: calculate fingerprint
+	fp, err := pki.ComputeAWSKeyFingerprint(string(request.PublicKeyMaterial))
+	if err != nil {
+		return nil, err
+	}
 
 	kp := &ec2.KeyPairInfo{
 		KeyFingerprint: aws.String(fp),
