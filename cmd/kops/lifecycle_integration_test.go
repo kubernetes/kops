@@ -55,6 +55,14 @@ func TestLifecycleMinimal(t *testing.T) {
 	})
 }
 
+// TestLifecyclePrivateCalico runs the test on a private topology
+func TestLifecyclePrivateCalico(t *testing.T) {
+	runLifecycleTestAWS(&LifecycleTestOptions{
+		t:      t,
+		SrcDir: "privatecalico",
+	})
+}
+
 func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptions) {
 	t := o.t
 

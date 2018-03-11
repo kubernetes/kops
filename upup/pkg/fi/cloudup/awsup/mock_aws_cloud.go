@@ -151,11 +151,11 @@ func (c *MockAWSCloud) GetTags(resourceID string) (map[string]string, error) {
 }
 
 func (c *MockAWSCloud) GetELBTags(loadBalancerName string) (map[string]string, error) {
-	return nil, fmt.Errorf("MockAWSCloud GetELBTags not implemented")
+	return getELBTags(c, loadBalancerName)
 }
 
 func (c *MockAWSCloud) CreateELBTags(loadBalancerName string, tags map[string]string) error {
-	return fmt.Errorf("MockAWSCloud CreateELBTags not implemented")
+	return createELBTags(c, loadBalancerName, tags)
 }
 
 func (c *MockAWSCloud) DescribeInstance(instanceID string) (*ec2.Instance, error) {

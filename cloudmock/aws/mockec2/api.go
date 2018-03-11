@@ -54,6 +54,8 @@ type MockEC2 struct {
 	internetGatewayNumber int
 	InternetGateways      map[string]*internetGatewayInfo
 
+	NatGateways map[string]*ec2.NatGateway
+
 	ids map[string]*idAllocator
 }
 

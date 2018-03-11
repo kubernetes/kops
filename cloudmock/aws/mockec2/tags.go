@@ -27,6 +27,9 @@ import (
 	"github.com/golang/glog"
 )
 
+// Not (yet?) in aws-sdk-go
+const ResourceTypeNatGateway = "nat-gateway"
+
 func (m *MockEC2) CreateTagsRequest(*ec2.CreateTagsInput) (*request.Request, *ec2.CreateTagsOutput) {
 	panic("Not implemented")
 	return nil, nil
@@ -62,6 +65,8 @@ func (m *MockEC2) addTag(resourceId string, tag *ec2.Tag) {
 		resourceType = ec2.ResourceTypeVolume
 	} else if strings.HasPrefix(resourceId, "igw-") {
 		resourceType = ec2.ResourceTypeInternetGateway
+	} else if strings.HasPrefix(resourceId, "ngw-") {
+		resourceType = ResourceTypeNatGateway
 	} else if strings.HasPrefix(resourceId, "dopt-") {
 		resourceType = ec2.ResourceTypeDhcpOptions
 	} else if strings.HasPrefix(resourceId, "rtb-") {
