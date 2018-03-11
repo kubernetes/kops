@@ -17,14 +17,126 @@ limitations under the License.
 package mockelb
 
 import (
+	"sync"
+	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
+	"github.com/golang/glog"
 )
+
+const elbZoneID = "FAKEZONE-CLOUDMOCK-ELB"
 
 type MockELB struct {
 	elbiface.ELBAPI
+
+	mutex sync.Mutex
+
+	LoadBalancers map[string]*loadBalancer
 }
 
-func (*MockELB) DescribeLoadBalancersPages(input *elb.DescribeLoadBalancersInput, fn func(p *elb.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool)) error {
+type loadBalancer struct {
+	description elb.LoadBalancerDescription
+	attributes  elb.LoadBalancerAttributes
+	tags        map[string]string
+}
+
+func (m *MockELB) DescribeLoadBalancers(request *elb.DescribeLoadBalancersInput) (*elb.DescribeLoadBalancersOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.V(2).Infof("DescribeLoadBalancers %v", request)
+
+	if request.PageSize != nil {
+		glog.Warningf("PageSize not implemented")
+	}
+	if request.Marker != nil {
+		glog.Fatalf("Marker not implemented")
+	}
+
+	var elbs []*elb.LoadBalancerDescription
+	for _, elb := range m.LoadBalancers {
+		match := false
+
+		if len(request.LoadBalancerNames) > 0 {
+			for _, name := range request.LoadBalancerNames {
+				if aws.StringValue(elb.description.LoadBalancerName) == aws.StringValue(name) {
+					match = true
+				}
+			}
+		} else {
+			match = true
+		}
+
+		if match {
+			elbs = append(elbs, &elb.description)
+		}
+	}
+
+	return &elb.DescribeLoadBalancersOutput{
+		LoadBalancerDescriptions: elbs,
+	}, nil
+}
+
+func (m *MockELB) DescribeLoadBalancersPages(request *elb.DescribeLoadBalancersInput, callback func(p *elb.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool)) error {
+	// For the mock, we just send everything in one page
+	page, err := m.DescribeLoadBalancers(request)
+	if err != nil {
+		return err
+	}
+
+	callback(page, false)
+
 	return nil
+}
+
+func (m *MockELB) CreateLoadBalancer(request *elb.CreateLoadBalancerInput) (*elb.CreateLoadBalancerOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.V(2).Infof("CreateLoadBalancer %v", request)
+	createdTime := time.Now().UTC()
+
+	dnsName := *request.LoadBalancerName + ".elb.cloudmock.com"
+
+	lb := &loadBalancer{
+		description: elb.LoadBalancerDescription{
+			AvailabilityZones: request.AvailabilityZones,
+			CreatedTime:       &createdTime,
+			LoadBalancerName:  request.LoadBalancerName,
+			Scheme:            request.Scheme,
+			SecurityGroups:    request.SecurityGroups,
+			Subnets:           request.Subnets,
+			DNSName:           aws.String(dnsName),
+
+			CanonicalHostedZoneNameID: aws.String(elbZoneID),
+		},
+		tags: make(map[string]string),
+	}
+
+	for _, listener := range request.Listeners {
+		lb.description.ListenerDescriptions = append(lb.description.ListenerDescriptions, &elb.ListenerDescription{
+			Listener: listener,
+		})
+	}
+
+	// for _, tag := range input.Tags {
+	// 	g.Tags = append(g.Tags, &autoscaling.TagDescription{
+	// 		Key:               tag.Key,
+	// 		PropagateAtLaunch: tag.PropagateAtLaunch,
+	// 		ResourceId:        tag.ResourceId,
+	// 		ResourceType:      tag.ResourceType,
+	// 		Value:             tag.Value,
+	// 	})
+	// }
+
+	if m.LoadBalancers == nil {
+		m.LoadBalancers = make(map[string]*loadBalancer)
+	}
+	m.LoadBalancers[*request.LoadBalancerName] = lb
+
+	return &elb.CreateLoadBalancerOutput{
+		DNSName: aws.String(dnsName),
+	}, nil
 }

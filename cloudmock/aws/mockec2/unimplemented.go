@@ -399,19 +399,6 @@ func (m *MockEC2) CreateInstanceExportTaskRequest(*ec2.CreateInstanceExportTaskI
 	return nil, nil
 }
 
-func (m *MockEC2) CreateNatGateway(*ec2.CreateNatGatewayInput) (*ec2.CreateNatGatewayOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateNatGatewayWithContext(aws.Context, *ec2.CreateNatGatewayInput, ...request.Option) (*ec2.CreateNatGatewayOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateNatGatewayRequest(*ec2.CreateNatGatewayInput) (*request.Request, *ec2.CreateNatGatewayOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
 func (m *MockEC2) CreateNetworkAcl(*ec2.CreateNetworkAclInput) (*ec2.CreateNetworkAclOutput, error) {
 	panic("Not implemented")
 	return nil, nil
@@ -1221,28 +1208,6 @@ func (m *MockEC2) DescribeMovingAddressesWithContext(aws.Context, *ec2.DescribeM
 func (m *MockEC2) DescribeMovingAddressesRequest(*ec2.DescribeMovingAddressesInput) (*request.Request, *ec2.DescribeMovingAddressesOutput) {
 	panic("Not implemented")
 	return nil, nil
-}
-
-func (m *MockEC2) DescribeNatGateways(*ec2.DescribeNatGatewaysInput) (*ec2.DescribeNatGatewaysOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeNatGatewaysWithContext(aws.Context, *ec2.DescribeNatGatewaysInput, ...request.Option) (*ec2.DescribeNatGatewaysOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeNatGatewaysRequest(*ec2.DescribeNatGatewaysInput) (*request.Request, *ec2.DescribeNatGatewaysOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) DescribeNatGatewaysPages(*ec2.DescribeNatGatewaysInput, func(*ec2.DescribeNatGatewaysOutput, bool) bool) error {
-	panic("Not implemented")
-	return nil
-}
-func (m *MockEC2) DescribeNatGatewaysPagesWithContext(aws.Context, *ec2.DescribeNatGatewaysInput, func(*ec2.DescribeNatGatewaysOutput, bool) bool, ...request.Option) error {
-	panic("Not implemented")
-	return nil
 }
 
 func (m *MockEC2) DescribeNetworkAcls(*ec2.DescribeNetworkAclsInput) (*ec2.DescribeNetworkAclsOutput, error) {
@@ -2721,15 +2686,6 @@ func (m *MockEC2) WaitUntilKeyPairExists(*ec2.DescribeKeyPairsInput) error {
 	return nil
 }
 func (m *MockEC2) WaitUntilKeyPairExistsWithContext(aws.Context, *ec2.DescribeKeyPairsInput, ...request.WaiterOption) error {
-	panic("Not implemented")
-	return nil
-}
-
-func (m *MockEC2) WaitUntilNatGatewayAvailable(*ec2.DescribeNatGatewaysInput) error {
-	panic("Not implemented")
-	return nil
-}
-func (m *MockEC2) WaitUntilNatGatewayAvailableWithContext(aws.Context, *ec2.DescribeNatGatewaysInput, ...request.WaiterOption) error {
 	panic("Not implemented")
 	return nil
 }
