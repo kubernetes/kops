@@ -42,8 +42,8 @@ done
 
 if [[ ${#TEMP_ARRAY[@]} -gt 0 ]]; then
   for file in "${TEMP_ARRAY[@]}"; do
-    echo "Boilerplate header is wrong for: ${file}"
+    echo "FAIL: Boilerplate header is wrong for: ${file}"
   done
-  echo "Execute hack/update-header.sh to update headers"
+  echo "FAIL: Please execute ./hack/update-header.sh to update headers"
   exit 1
 fi

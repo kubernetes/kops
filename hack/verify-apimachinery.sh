@@ -23,5 +23,6 @@ export API_OPTIONS="--verify-only"
 if make apimachinery-codegen; then
 	echo "apimachinery is up to date"
 else
-	echo "\n TEST FAILED - apimachinery is not up to date please run 'make apimachinery'"
+	echo "\n FAIL: - the verify-apimachinery.sh test failed, apimachinery is not up to date"
+	echo "\n FAIL: - please run the command 'make apimachinery'"
 fi

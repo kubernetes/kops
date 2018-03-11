@@ -497,7 +497,8 @@ verify-gendocs: ${KOPS}
 	'${KOPS}' genhelpdocs --out "$$TMP_DOCS"; \
 	\
 	if ! diff -r "$$TMP_DOCS" '${KOPS_ROOT}/docs/cli'; then \
-	     echo "Please run make gen-cli-docs." 1>&2; \
+	     echo "FAIL: make verify-gendocs failed, as the generated markdown docs are out of date." 1>&2; \
+	     echo "FAIL: Please run the following command: make gen-cli-docs." 1>&2; \
 	     exit 1; \
 	fi
 	@echo "cli docs up-to-date"
