@@ -49,7 +49,7 @@ if [[ -n "${old_build_files}" ]]; then
   echo "One or more BUILD files found in the tree:" >&2
   echo "${old_build_files}" >&2
   echo >&2
-  echo "FAIL: Only bazel files anmed BUILD.bazel are allowed." >&2
+  echo "FAIL: Only bazel files named BUILD.bazel are allowed." >&2
   echo "FAIL: Please move incorrectly named files to BUILD.bazel" >&2
   exit 1
 fi
