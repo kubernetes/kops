@@ -32,7 +32,6 @@ limitations under the License.
 package tests
 
 import (
-	"bytes"
 	"math/big"
 	"reflect"
 	"sort"
@@ -40,6 +39,7 @@ import (
 	"time"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/vfs"
@@ -139,7 +139,7 @@ func TestKeypairUpgrade(t *testing.T) {
 	checkPaths(t, basedir, expected)
 
 	// Save the contents of those files
-	contents := make(map[string][]byte)
+	contents := make(map[string]string)
 	for _, k := range expected {
 		p, err := vfs.Context.BuildVfsPath(k)
 		if err != nil {
@@ -149,7 +149,7 @@ func TestKeypairUpgrade(t *testing.T) {
 		if err != nil {
 			t.Fatalf("error reading vfs path: %v", err)
 		}
-		contents[k] = b
+		contents[k] = string(b)
 	}
 
 	t.Logf("verifying that rerunning tasks does not change keys")
@@ -214,19 +214,19 @@ func checkPaths(t *testing.T, basedir vfs.Path, expected []string) {
 }
 
 // checkPaths verifies that the files and their contents in the tree rooted at basedir are exactly as expected
-func checkContents(t *testing.T, basedir vfs.Path, expected map[string][]byte) {
+func checkContents(t *testing.T, basedir vfs.Path, expected map[string]string) {
 	paths, err := basedir.ReadTree()
 	if err != nil {
 		t.Errorf("ReadTree failed: %v", err)
 	}
 
-	actual := make(map[string][]byte)
+	actual := make(map[string]string)
 	for _, p := range paths {
 		b, err := p.ReadFile()
 		if err != nil {
-			t.Fatalf("error reading vfs path: %v", err)
+			t.Fatalf("error reading vfs path %q: %v", p, err)
 		}
-		actual[p.Path()] = b
+		actual[p.Path()] = string(b)
 	}
 
 	var actualKeys []string
@@ -245,10 +245,10 @@ func checkContents(t *testing.T, basedir vfs.Path, expected map[string][]byte) {
 	}
 	if !reflect.DeepEqual(actual, expected) {
 		for k := range actual {
-			if !bytes.Equal(actual[k], expected[k]) {
-				t.Logf("mismatch on key %q", k)
+			if actual[k] != expected[k] {
+				t.Errorf("mismatch on key %q", k)
+				t.Errorf("diff: %s", diff.FormatDiff(actual[k], expected[k]))
 			}
 		}
-		t.Fatalf("unexpected path contents: %v", actual)
 	}
 }
