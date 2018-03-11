@@ -36,6 +36,7 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/service/elb:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/elb/elbiface:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/iam:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/iam/iamiface:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/route53:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/route53/route53iface:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",

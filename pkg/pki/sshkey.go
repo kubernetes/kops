@@ -28,8 +28,6 @@ import (
 	"strings"
 
 	"golang.org/x/crypto/ssh"
-
-	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // parseSSHPublicKey parses the SSH public key string
@@ -99,11 +97,11 @@ func ComputeOpenSSHKeyFingerprint(publicKey string) (string, error) {
 // Annoyingly, the ssh code wraps the actual crypto keys, so we have to use reflection tricks
 func toDER(pubkey ssh.PublicKey) ([]byte, error) {
 	pubkeyValue := reflect.ValueOf(pubkey)
-	typeName := utils.BuildTypeName(pubkeyValue.Type())
+	typeName := fmt.Sprintf("%T", pubkey)
 
 	var cryptoKey crypto.PublicKey
 	switch typeName {
-	case "*rsaPublicKey":
+	case "*ssh.rsaPublicKey":
 		var rsaPublicKey *rsa.PublicKey
 		targetType := reflect.ValueOf(rsaPublicKey).Type()
 		rsaPublicKey = pubkeyValue.Convert(targetType).Interface().(*rsa.PublicKey)

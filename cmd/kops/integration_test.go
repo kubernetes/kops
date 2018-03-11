@@ -213,7 +213,7 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 		// We don't test it here, and it adds a dependency on kubectl
 		options.CreateKubecfg = false
 
-		err := RunUpdateCluster(factory, clusterName, &stdout, options)
+		_, err := RunUpdateCluster(factory, clusterName, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running update cluster %q: %v", clusterName, err)
 		}
@@ -475,7 +475,7 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 		// We don't test it here, and it adds a dependency on kubectl
 		options.CreateKubecfg = false
 
-		err := RunUpdateCluster(factory, clusterName, &stdout, options)
+		_, err := RunUpdateCluster(factory, clusterName, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running update cluster %q: %v", clusterName, err)
 		}

@@ -138,6 +138,7 @@ go_test(
         "createcluster_test.go",
         "delete_confirm_test.go",
         "integration_test.go",
+        "lifecycle_integration_test.go",
     ],
     data = [
         "//channels:channeldata",  # keep
