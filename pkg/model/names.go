@@ -20,7 +20,9 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
+
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
 
@@ -126,7 +128,7 @@ func (c *KopsModelContext) SSHKeyName() (string, error) {
 		return name, nil
 	}
 
-	fingerprint, err := awstasks.ComputeOpenSSHKeyFingerprint(string(c.SSHPublicKeys[0]))
+	fingerprint, err := pki.ComputeOpenSSHKeyFingerprint(string(c.SSHPublicKeys[0]))
 	if err != nil {
 		return "", err
 	}
