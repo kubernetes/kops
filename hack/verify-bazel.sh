@@ -36,7 +36,8 @@ gazelle_diff=$("${TMP_GOPATH}/bin/gazelle" fix \
 if [[ -n "${gazelle_diff}" ]]; then
   echo "${gazelle_diff}" >&2
   echo >&2
-  echo "Run ./hack/update-bazel.sh" >&2
+  echo "FAIL: ./hack/verify-bazel.sh failed, as the bazel files are not up to date" >&2
+  echo "FAIL: Please execute the following command: ./hack/update-bazel.sh" >&2
   exit 1
 fi
 
@@ -48,6 +49,7 @@ if [[ -n "${old_build_files}" ]]; then
   echo "One or more BUILD files found in the tree:" >&2
   echo "${old_build_files}" >&2
   echo >&2
-  echo "Only BUILD.bazel is allowed." >&2
+  echo "FAIL: Only bazel files anmed BUILD.bazel are allowed." >&2
+  echo "FAIL: Please move incorrectly named files to BUILD.bazel" >&2
   exit 1
 fi

@@ -20,8 +20,8 @@ GOFMT="gofmt -s -w"
 
 bad_files=$(git ls-files "*.go" | grep -v vendor | xargs -I {} $GOFMT -l {})
 if [[ -n "${bad_files}" ]]; then
-  echo "!!! '$GOFMT' needs to be run on the following files: "
+  echo "FAIL: '$GOFMT' needs to be run on the following files: "
   echo "${bad_files}"
-  echo "!!! Please run: make gofmt"
+  echo "FAIL: please execute make gofmt"
   exit 1
 fi
