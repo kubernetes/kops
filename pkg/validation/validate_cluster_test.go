@@ -28,7 +28,7 @@ import (
 )
 
 func Test_ValidateClusterPositive(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").CoreV1().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -44,7 +44,7 @@ func Test_ValidateClusterPositive(t *testing.T) {
 }
 
 func Test_ValidateClusterMasterAndNodeNotReady(t *testing.T) {
-	nodeList, err := dummyClient("false", "false").Core().Nodes().List(metav1.ListOptions{})
+	nodeList, err := dummyClient("false", "false").CoreV1().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -60,7 +60,7 @@ func Test_ValidateClusterMasterAndNodeNotReady(t *testing.T) {
 }
 
 func Test_ValidateClusterComponents(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").CoreV1().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -77,7 +77,7 @@ func Test_ValidateClusterComponents(t *testing.T) {
 }
 
 func Test_ValidateClusterPods(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").CoreV1().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -94,7 +94,7 @@ func Test_ValidateClusterPods(t *testing.T) {
 }
 
 func Test_ValidateClusterNodeNotReady(t *testing.T) {
-	nodeList, err := dummyClient("true", "false").Core().Nodes().List(metav1.ListOptions{})
+	nodeList, err := dummyClient("true", "false").CoreV1().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -110,7 +110,7 @@ func Test_ValidateClusterNodeNotReady(t *testing.T) {
 }
 
 func Test_ValidateClusterMastersNotEnough(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").CoreV1().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -126,7 +126,7 @@ func Test_ValidateClusterMastersNotEnough(t *testing.T) {
 }
 
 func Test_ValidateNodesNotEnough(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").CoreV1().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
