@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package awstasks
+package pki
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ import (
 )
 
 func checkAWSFingerprintEqual(t *testing.T, publicKey string, fingerprint string) {
-	actual, err := computeAWSKeyFingerprint(publicKey)
+	actual, err := ComputeAWSKeyFingerprint(publicKey)
 	if err != nil {
 		t.Fatalf("Unexpected error computing AWS key fingerprint: %v", err)
 	}
@@ -33,7 +33,7 @@ func checkAWSFingerprintEqual(t *testing.T, publicKey string, fingerprint string
 }
 
 func checkAWSFingerprintError(t *testing.T, publicKey string, message string) {
-	_, err := computeAWSKeyFingerprint(publicKey)
+	_, err := ComputeAWSKeyFingerprint(publicKey)
 	if err == nil {
 		t.Fatalf("Expected error %q computing AWS key fingerprint", message)
 	}
