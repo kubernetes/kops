@@ -66,6 +66,7 @@ go_library(
     deps = [
         "//pkg/diff:go_default_library",
         "//pkg/featureflag:go_default_library",
+        "//pkg/pki:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/cloudformation:go_default_library",
@@ -80,7 +81,6 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/service/iam:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/route53:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
-        "//vendor/golang.org/x/crypto/ssh:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/validation/field:go_default_library",
     ],
@@ -94,7 +94,6 @@ go_test(
         "elastic_ip_test.go",
         "internetgateway_test.go",
         "securitygroup_test.go",
-        "sshkey_test.go",
         "subnet_test.go",
         "vpc_test.go",
     ],
