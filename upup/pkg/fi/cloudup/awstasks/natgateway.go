@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -78,14 +79,13 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 		}
 
 		if len(response.NatGateways) != 1 {
-			return nil, fmt.Errorf("found %d Nat Gateways, expected 1", len(response.NatGateways))
+			return nil, fmt.Errorf("found %d Nat Gateways with ID %q, expected 1", len(response.NatGateways), fi.StringValue(e.ID))
 		}
 		ngw = response.NatGateways[0]
 
 		if len(ngw.NatGatewayAddresses) != 1 {
 			return nil, fmt.Errorf("found %d EIP Addresses for 1 NATGateway, expected 1", len(ngw.NatGatewayAddresses))
 		}
-		actual.ElasticIP = &ElasticIP{ID: ngw.NatGatewayAddresses[0].AllocationId}
 	} else {
 		// This is the normal/default path
 		var err error
@@ -113,10 +113,10 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 	// NATGateways now have names and tags so lets pull from there instead.
 	actual.Name = findNameTag(ngw.Tags)
 	actual.Tags = intersectTags(ngw.Tags, e.Tags)
+
+	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle
-
 	actual.Shared = e.Shared
-
 	actual.AssociatedRouteTable = e.AssociatedRouteTable
 
 	e.ID = actual.ID
@@ -231,7 +231,7 @@ func (s *NatGateway) CheckChanges(a, e, changes *NatGateway) error {
 	if a == nil {
 		if !fi.BoolValue(e.Shared) {
 			if e.ElasticIP == nil {
-				return fi.RequiredField("ElasticIp")
+				return fi.RequiredField("ElasticIP")
 			}
 			if e.Subnet == nil {
 				return fi.RequiredField("Subnet")
@@ -245,7 +245,15 @@ func (s *NatGateway) CheckChanges(a, e, changes *NatGateway) error {
 	// Delta
 	if a != nil {
 		if changes.ElasticIP != nil {
-			return fi.CannotChangeField("ElasticIp")
+			eID := ""
+			if e.ElasticIP != nil {
+				eID = fi.StringValue(e.ElasticIP.ID)
+			}
+			aID := ""
+			if a.ElasticIP != nil {
+				aID = fi.StringValue(a.ElasticIP.ID)
+			}
+			return fi.FieldIsImmutable(eID, aID, field.NewPath("ElasticIP"))
 		}
 		if changes.Subnet != nil {
 			return fi.CannotChangeField("Subnet")
