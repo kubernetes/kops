@@ -145,20 +145,20 @@ func TestSharedVPC(t *testing.T) {
 
 // TestPhaseNetwork tests the output of tf for the network phase
 func TestPhaseNetwork(t *testing.T) {
-	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseNetwork)
+	runTestPhase(t, "lifecyclephases.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseNetwork)
 }
 
 // TestPhaseIAM tests the output of tf for the iam phase
 func TestPhaseIAM(t *testing.T) {
 	t.Skip("unable to test w/o allowing failed validation")
-	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseSecurity)
+	runTestPhase(t, "lifecyclephases.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseSecurity)
 }
 
 // TestPhaseCluster tests the output of tf for the cluster phase
 func TestPhaseCluster(t *testing.T) {
 	// TODO fix tf for phase, and allow override on validation
 	t.Skip("unable to test w/o allowing failed validation")
-	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseCluster)
+	runTestPhase(t, "lifecyclephases.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseCluster)
 }
 
 func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedFilenames []string, tfFileName string, phase *cloudup.Phase) {
