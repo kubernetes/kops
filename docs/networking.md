@@ -194,9 +194,8 @@ Calico currently uses etcd as a backend for storing information about workloads 
 #### Calico troubleshooting
 ##### New nodes are taking minutes for syncing ip routes and new pods on them can't reach kubedns
 This is caused by nodes in the Calico etcd nodestore no longer existing. Due to the ephemeral nature of AWS EC2 instances, new nodes are brought up with different hostnames, and nodes that are taken offline remain in the Calico nodestore. This is unlike most datacentre deployments where the hostnames are mostly static in a cluster. Read more about this issue at https://github.com/kubernetes/kops/issues/3224
-This has been solved in kops 1.8.2, when creating a new cluster no action is needed, but if the cluster was created with a prior kops version the following actions should be taken:
-  * Use kops to update the cluster ```kops update cluster <name> --yes``` and wait for calico-kube-controllers deployment and calico-node daemonset to be updated
-  * Delete all calico-node pods in kube-system namespace, so that they will be recreated with the new env CALICO_K8S_NODE_REF and update the current nodes in etcd
+This has been solved in kops 1.9.0, when creating a new cluster no action is needed, but if the cluster was created with a prior kops version the following actions should be taken:
+  * Use kops to update the cluster ```kops update cluster <name> --yes``` and wait for calico-kube-controllers deployment and calico-node daemonset pods to be updated
   * Decommission all invalid nodes, [see here](https://docs.projectcalico.org/v2.6/usage/decommissioning-a-node)
   * All nodes that are deleted from the cluster after this actions should be cleaned from calico's etcd storage and the delay programming routes should be solved.
 
