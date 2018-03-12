@@ -415,6 +415,7 @@ resource "aws_route_table" "bastionuserdata-example-com" {
     KubernetesCluster                                   = "bastionuserdata.example.com"
     Name                                                = "bastionuserdata.example.com"
     "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+    "kubernetes.io/kops/role"                           = "public"
   }
 }
 
@@ -425,6 +426,7 @@ resource "aws_route_table" "private-us-test-1a-bastionuserdata-example-com" {
     KubernetesCluster                                   = "bastionuserdata.example.com"
     Name                                                = "private-us-test-1a.bastionuserdata.example.com"
     "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+    "kubernetes.io/kops/role"                           = "private-us-test-1a"
   }
 }
 

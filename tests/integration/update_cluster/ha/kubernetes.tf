@@ -401,6 +401,7 @@ resource "aws_route_table" "ha-example-com" {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "ha.example.com"
     "kubernetes.io/cluster/ha.example.com" = "owned"
+    "kubernetes.io/kops/role"              = "public"
   }
 }
 

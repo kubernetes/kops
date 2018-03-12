@@ -419,6 +419,7 @@ resource "aws_route_table" "private-us-test-1a-privatedns1-example-com" {
     KubernetesCluster                               = "privatedns1.example.com"
     Name                                            = "private-us-test-1a.privatedns1.example.com"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+    "kubernetes.io/kops/role"                       = "private-us-test-1a"
   }
 }
 
@@ -429,6 +430,7 @@ resource "aws_route_table" "privatedns1-example-com" {
     KubernetesCluster                               = "privatedns1.example.com"
     Name                                            = "privatedns1.example.com"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+    "kubernetes.io/kops/role"                       = "public"
   }
 }
 

@@ -228,6 +228,10 @@
           {
             "Key": "kubernetes.io/cluster/minimal.example.com",
             "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/kops/role",
+            "Value": "public"
           }
         ]
       }
