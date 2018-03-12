@@ -112,6 +112,11 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 		e.ID = actual.ID
 	}
 
+	// We don't set the tags for a shared IGW
+	if fi.BoolValue(e.Shared) {
+		actual.Tags = e.Tags
+	}
+
 	return actual, nil
 }
 
