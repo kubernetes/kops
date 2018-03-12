@@ -65,7 +65,7 @@ func (m *MockEC2) addTag(resourceId string, tag *ec2.Tag) {
 		resourceType = ec2.ResourceTypeVolume
 	} else if strings.HasPrefix(resourceId, "igw-") {
 		resourceType = ec2.ResourceTypeInternetGateway
-	} else if strings.HasPrefix(resourceId, "ngw-") {
+	} else if strings.HasPrefix(resourceId, "nat-") {
 		resourceType = ResourceTypeNatGateway
 	} else if strings.HasPrefix(resourceId, "dopt-") {
 		resourceType = ec2.ResourceTypeDhcpOptions
@@ -112,6 +112,20 @@ func (m *MockEC2) hasTag(resourceType string, resourceId string, filter *ec2.Fil
 
 			for _, v := range filter.Values {
 				if *tag.Value == *v {
+					return true
+				}
+			}
+		}
+	} else if name == "tag-key" {
+		for _, tag := range m.Tags {
+			if *tag.ResourceId != resourceId {
+				continue
+			}
+			if *tag.ResourceType != resourceType {
+				continue
+			}
+			for _, v := range filter.Values {
+				if *tag.Key == *v {
 					return true
 				}
 			}
