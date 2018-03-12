@@ -414,6 +414,7 @@ resource "aws_route_table" "private-us-test-1a-privatecanal-example-com" {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "private-us-test-1a.privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+    "kubernetes.io/kops/role"                        = "private-us-test-1a"
   }
 }
 
@@ -424,6 +425,7 @@ resource "aws_route_table" "privatecanal-example-com" {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+    "kubernetes.io/kops/role"                        = "public"
   }
 }
 
