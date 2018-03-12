@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -124,7 +125,7 @@ func (s *VPC) CheckChanges(a, e, changes *VPC) error {
 	if a != nil {
 		if changes.CIDR != nil {
 			// TODO: Do we want to destroy & recreate the VPC?
-			return fi.CannotChangeField("CIDR")
+			return fi.FieldIsImmutable(e.CIDR, a.CIDR, field.NewPath("CIDR"))
 		}
 	}
 	return nil
