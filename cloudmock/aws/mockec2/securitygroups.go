@@ -96,6 +96,9 @@ func (m *MockEC2) DescribeSecurityGroupsWithContext(aws.Context, *ec2.DescribeSe
 	return nil, nil
 }
 func (m *MockEC2) DescribeSecurityGroups(request *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeSecurityGroups: %v", request)
 
 	if len(request.GroupIds) != 0 {
