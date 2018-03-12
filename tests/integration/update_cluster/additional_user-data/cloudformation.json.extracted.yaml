@@ -27,8 +27,8 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.7.0/linux/amd64/nodeup
-  NODEUP_HASH=2a7b5fdd443e7c91c0af84593e2111c1a4105b79
+  NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
+  NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
 
 
@@ -265,7 +265,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
   - c4871c7315817ee114f5c554a58da8ebc54f08c3@https://storage.googleapis.com/kubernetes-release/release/v1.4.12/bin/linux/amd64/kubelet
   - d9fdb6b37597d371ef853cde76170f38a553aa78@https://storage.googleapis.com/kubernetes-release/release/v1.4.12/bin/linux/amd64/kubectl
   - 19d49f7b2b99cd2493d5ae0ace896c64e289ccbb@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz
-  - 5d95d64d7134f202ba60b1fa14adaff138905d15@https://kubeupv2.s3.amazonaws.com/kops/1.7.0/linux/amd64/utils.tar.gz
+  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
   ClusterName: additionaluserdata.example.com
   ConfigBase: memfs://clusters.example.com/additionaluserdata.example.com
   InstanceGroupName: master-us-test-1a
@@ -276,9 +276,9 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
   channels:
   - memfs://clusters.example.com/additionaluserdata.example.com/addons/bootstrap-channel.yaml
   protokubeImage:
-    hash: 5bd97a02f0793d1906e9f446c548ececf1444737
-    name: protokube:1.7.0
-    source: https://kubeupv2.s3.amazonaws.com/kops/1.7.0/images/protokube.tar.gz
+    hash: 0b1f26208f8f6cc02468368706d0236670fec8a2
+    name: protokube:1.8.1
+    source: https://kubeupv2.s3.amazonaws.com/kops/1.8.1/images/protokube.tar.gz
 
   __EOF_KUBE_ENV
 
@@ -325,8 +325,8 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.7.0/linux/amd64/nodeup
-  NODEUP_HASH=2a7b5fdd443e7c91c0af84593e2111c1a4105b79
+  NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
+  NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
 
 
@@ -494,7 +494,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
   - c4871c7315817ee114f5c554a58da8ebc54f08c3@https://storage.googleapis.com/kubernetes-release/release/v1.4.12/bin/linux/amd64/kubelet
   - d9fdb6b37597d371ef853cde76170f38a553aa78@https://storage.googleapis.com/kubernetes-release/release/v1.4.12/bin/linux/amd64/kubectl
   - 19d49f7b2b99cd2493d5ae0ace896c64e289ccbb@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz
-  - 5d95d64d7134f202ba60b1fa14adaff138905d15@https://kubeupv2.s3.amazonaws.com/kops/1.7.0/linux/amd64/utils.tar.gz
+  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
   ClusterName: additionaluserdata.example.com
   ConfigBase: memfs://clusters.example.com/additionaluserdata.example.com
   InstanceGroupName: nodes
@@ -504,9 +504,9 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
   channels:
   - memfs://clusters.example.com/additionaluserdata.example.com/addons/bootstrap-channel.yaml
   protokubeImage:
-    hash: 5bd97a02f0793d1906e9f446c548ececf1444737
-    name: protokube:1.7.0
-    source: https://kubeupv2.s3.amazonaws.com/kops/1.7.0/images/protokube.tar.gz
+    hash: 0b1f26208f8f6cc02468368706d0236670fec8a2
+    name: protokube:1.8.1
+    source: https://kubeupv2.s3.amazonaws.com/kops/1.8.1/images/protokube.tar.gz
 
   __EOF_KUBE_ENV
 
