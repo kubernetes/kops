@@ -203,7 +203,7 @@ func findNatGatewayFromRouteTable(cloud awsup.AWSCloud, routeTable *RouteTable) 
 	// Find via route on private route table
 	if routeTable.ID != nil {
 		glog.V(2).Infof("trying to match NatGateway via RouteTable %s", *routeTable.ID)
-		rt, err := routeTable.findEc2RouteTable(cloud)
+		rt, err := findRouteTableByID(cloud, *routeTable.ID)
 		if err != nil {
 			return nil, fmt.Errorf("error finding associated RouteTable to NatGateway: %v", err)
 		}

@@ -74,6 +74,9 @@ const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
 
 const TagRoleMaster = "master"
 
+// TagNameKopsRole is the AWS tag used to identify the role an object plays for a cluster
+const TagNameKopsRole = "kubernetes.io/kops/role"
+
 const (
 	WellKnownAccountKopeio = "383156758163"
 	WellKnownAccountRedhat = "309956199498"

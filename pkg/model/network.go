@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
 )
 
@@ -123,13 +124,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(igw)
 
 		if !allSubnetsShared {
+			routeTableTags := b.CloudTags(vpcName, sharedVPC)
+			routeTableTags[awsup.TagNameKopsRole] = "public"
 			publicRouteTable = &awstasks.RouteTable{
 				Name:      s(b.ClusterName()),
 				Lifecycle: b.Lifecycle,
 
 				VPC: b.LinkToVPC(),
 
-				Tags:   tags,
+				Tags:   routeTableTags,
 				Shared: fi.Bool(sharedVPC),
 			}
 			c.AddTask(publicRouteTable)
@@ -282,34 +285,18 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			c.AddTask(ngw)
 		}
 
-		// kops needs to have the correct shared or owned tag on private route tables,
-		// but the 'Name' tag  for the private route table does not match the standard
-		// 'Name' tag value.
-		// Making a copy of the map to use for private route tables, and maintaining the 'Name'
-		// tag with a value like "private-us-test-1a.privatedns1.example.com" instead of using
-		// the usual value like "privatedns1.example.com".
-		privateTags := make(map[string]string)
-		for k, v := range tags {
-			privateTags[k] = v
-		}
-		// We do not set the Name on shared resources remove it if it exists
-		// otherwise set it.
-		if sharedVPC {
-			delete(privateTags, "Name")
-		} else {
-			privateTags["Name"] = b.NamePrivateRouteTableInZone(zone)
-		}
-
 		// Private Route Table
 		//
 		// The private route table that will route to the NAT Gateway
+		routeTableTags := b.CloudTags(b.NamePrivateRouteTableInZone(zone), sharedVPC)
+		routeTableTags[awsup.TagNameKopsRole] = "private-" + zone
 		rt := &awstasks.RouteTable{
 			Name:      s(b.NamePrivateRouteTableInZone(zone)),
 			VPC:       b.LinkToVPC(),
 			Lifecycle: b.Lifecycle,
 
 			Shared: fi.Bool(sharedVPC),
-			Tags:   privateTags,
+			Tags:   routeTableTags,
 		}
 		c.AddTask(rt)
 
