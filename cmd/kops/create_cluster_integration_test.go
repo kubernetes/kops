@@ -24,13 +24,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/glog"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/golang/glog"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
@@ -130,9 +130,9 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 
 	cloudTags := map[string]string{}
 	awsCloud, _ := awsup.NewAWSCloud("us-test-1", cloudTags)
-	awsCloud.EC2().CreateVpc(&ec2.CreateVpcInput{
+	(awsCloud.EC2().(*mockec2.MockEC2)).CreateVpcWithId(&ec2.CreateVpcInput{
 		CidrBlock: aws.String("10.0.0.0/12"),
-	})
+	}, "vpc-12345678")
 
 	awsCloud.EC2().CreateSubnet(&ec2.CreateSubnetInput{
 		AvailabilityZone: aws.String("us-test-1a"),

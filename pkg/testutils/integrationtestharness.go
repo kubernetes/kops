@@ -149,11 +149,25 @@ func (h *IntegrationTestHarness) SetupMockAWS() {
 		OwnerId:        aws.String(awsup.WellKnownAccountKopeio),
 		RootDeviceName: aws.String("/dev/xvda"),
 	})
+
+	mockEC2.CreateVpcWithId(&ec2.CreateVpcInput{
+		CidrBlock: aws.String("172.20.0.0/16"),
+	}, "vpc-12345678")
 	mockEC2.CreateInternetGateway(&ec2.CreateInternetGatewayInput{})
 	mockEC2.AttachInternetGateway(&ec2.AttachInternetGatewayInput{
 		InternetGatewayId: aws.String("igw-1"),
 		VpcId:             aws.String("vpc-12345678"),
 	})
+
+	mockEC2.AllocateAddressWithId(&ec2.AllocateAddressInput{
+		Address: aws.String("123.45.67.8"),
+	}, "eip-12345678")
+
+	mockEC2.CreateNatGatewayWithId(&ec2.CreateNatGatewayInput{
+		SubnetId:     aws.String("subnet-12345678"),
+		AllocationId: aws.String("eip-12345678"),
+	}, "nat-12345678")
+
 }
 
 // SetupMockGCE configures a mock GCE cloud provider
