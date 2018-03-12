@@ -25,7 +25,7 @@ spec:
       providerID: aws
       kubernetesVersion: ">=1.10.0"
     - providerID: gce
-      name: "cos-cloud/cos-stable-60-9592-90-0"
+      name: "cos-cloud/cos-stable-64-10176-62-0"
   cluster:
     kubernetesVersion: v1.5.8
     networking:
