@@ -228,7 +228,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		var ngw *awstasks.NatGateway
 		if b.Cluster.Spec.Subnets[i].Egress != "" {
-			if strings.Contains(b.Cluster.Spec.Subnets[i].Egress, "nat-") {
+			if strings.HasPrefix(b.Cluster.Spec.Subnets[i].Egress, "nat-") {
 
 				ngw = &awstasks.NatGateway{
 					Name:                 s(zone + "." + b.ClusterName()),
