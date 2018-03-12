@@ -826,7 +826,7 @@ func (c *ApplyClusterCmd) validateKopsVersion() error {
 			fmt.Printf("A new kops version is available: %s\n", recommended)
 		}
 		fmt.Printf("\n")
-		fmt.Printf("This version of kops is no longer supported; upgrading is required\n")
+		fmt.Printf("This version of kops (%s) is no longer supported; upgrading is required\n", kopsbase.Version)
 		fmt.Printf("(you can bypass this check by exporting KOPS_RUN_OBSOLETE_VERSION)\n")
 		fmt.Printf("\n")
 		fmt.Printf("More information: %s\n", buildPermalink("upgrade_kops", recommended.String()))
