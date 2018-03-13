@@ -71,7 +71,7 @@ func (nodeAA *NodeAPIAdapter) GetAllNodes() (nodes *v1.NodeList, err error) {
 	return nodes, nil
 }
 
-// GetReadySchedulableNodesOrDie addresses the common use case of getting nodes you can do work on.
+// GetReadySchedulableNodes addresses the common use case of getting nodes you can do work on.
 // 1) Needs to be schedulable.
 // 2) Needs to be ready.
 // If EITHER 1 or 2 is not true, most tests will want to ignore the node entirely.
