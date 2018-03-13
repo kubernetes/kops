@@ -93,6 +93,9 @@ func (m *MockEC2) DescribeInternetGatewaysWithContext(aws.Context, *ec2.Describe
 }
 
 func (m *MockEC2) DescribeInternetGateways(request *ec2.DescribeInternetGatewaysInput) (*ec2.DescribeInternetGatewaysOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeInternetGateways: %v", request)
 
 	var internetGateways []*ec2.InternetGateway

@@ -190,6 +190,7 @@ func (m *MockAutoscaling) DescribeAutoScalingGroupsPages(request *autoscaling.De
 
 	return nil
 }
+
 func (m *MockAutoscaling) DescribeAutoScalingGroupsPagesWithContext(aws.Context, *autoscaling.DescribeAutoScalingGroupsInput, func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool, ...request.Option) error {
 	glog.Fatalf("Not implemented")
 	return nil

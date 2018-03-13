@@ -45,19 +45,6 @@ func (m *MockAutoscaling) AttachLoadBalancerTargetGroupsRequest(*autoscaling.Att
 	return nil, nil
 }
 
-func (m *MockAutoscaling) AttachLoadBalancers(*autoscaling.AttachLoadBalancersInput) (*autoscaling.AttachLoadBalancersOutput, error) {
-	glog.Fatalf("Not implemented")
-	return nil, nil
-}
-func (m *MockAutoscaling) AttachLoadBalancersWithContext(aws.Context, *autoscaling.AttachLoadBalancersInput, ...request.Option) (*autoscaling.AttachLoadBalancersOutput, error) {
-	glog.Fatalf("Not implemented")
-	return nil, nil
-}
-func (m *MockAutoscaling) AttachLoadBalancersRequest(*autoscaling.AttachLoadBalancersInput) (*request.Request, *autoscaling.AttachLoadBalancersOutput) {
-	glog.Fatalf("Not implemented")
-	return nil, nil
-}
-
 func (m *MockAutoscaling) CompleteLifecycleAction(*autoscaling.CompleteLifecycleActionInput) (*autoscaling.CompleteLifecycleActionOutput, error) {
 	glog.Fatalf("Not implemented")
 	return nil, nil

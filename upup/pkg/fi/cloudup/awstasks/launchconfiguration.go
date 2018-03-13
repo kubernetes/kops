@@ -143,7 +143,7 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		actual.RootVolumeIops = b.Ebs.Iops
 	}
 
-	userData, err := base64.StdEncoding.DecodeString(*lc.UserData)
+	userData, err := base64.StdEncoding.DecodeString(aws.StringValue(lc.UserData))
 	if err != nil {
 		return nil, fmt.Errorf("error decoding UserData: %v", err)
 	}

@@ -737,6 +737,10 @@ func addAWSTags(c AWSCloud, id string, expected map[string]string) error {
 }
 
 func (c *awsCloudImplementation) GetELBTags(loadBalancerName string) (map[string]string, error) {
+	return getELBTags(c, loadBalancerName)
+}
+
+func getELBTags(c AWSCloud, loadBalancerName string) (map[string]string, error) {
 	tags := map[string]string{}
 
 	request := &elb.DescribeTagsInput{
@@ -764,6 +768,10 @@ func (c *awsCloudImplementation) GetELBTags(loadBalancerName string) (map[string
 
 // CreateELBTags will add tags to the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 func (c *awsCloudImplementation) CreateELBTags(loadBalancerName string, tags map[string]string) error {
+	return createELBTags(c, loadBalancerName, tags)
+}
+
+func createELBTags(c AWSCloud, loadBalancerName string, tags map[string]string) error {
 	if len(tags) == 0 {
 		return nil
 	}

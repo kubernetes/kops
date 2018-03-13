@@ -10,6 +10,7 @@ go_library(
         "images.go",
         "internetgateways.go",
         "keypairs.go",
+        "natgateway.go",
         "routetable.go",
         "securitygroups.go",
         "subnets.go",
