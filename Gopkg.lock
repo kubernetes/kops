@@ -189,6 +189,16 @@
   revision = "511bcaf42ccd42c38aba7427b6673277bf19e2a1"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/denverdino/aliyungo"
+  packages = [
+    "common",
+    "oss",
+    "util"
+  ]
+  revision = "6d4d995ed284b965796e17e6660a0fbace80bc0a"
+
+[[projects]]
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
   revision = "01aeca54ebda6e0fbfafd0a524d234159c05ec20"
@@ -1542,6 +1552,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "08b9c9892557af4ea36c5173c564d6aac7cec6cdedd4a149ee74681d93dde51e"
+  inputs-digest = "1646ec31959fddc6539adec05d55c73b97410a53b213de6ddbbcee51081d891c"
   solver-name = "gps-cdcl"
   solver-version = 1
