@@ -33,7 +33,7 @@ type ClusterStatus struct {
 	EtcdClusters []EtcdClusterStatus `json:"etcdClusters,omitempty"`
 }
 
-// EtcdStatus represents the status of etcd: because etcd only allows limited reconfiguration, we have to block changes once etcd has been initialized.
+// EtcdClusterStatus represents the status of etcd: because etcd only allows limited reconfiguration, we have to block changes once etcd has been initialized.
 type EtcdClusterStatus struct {
 	// Name is the name of the etcd cluster (main, events etc)
 	Name string `json:"name,omitempty"`
@@ -49,7 +49,7 @@ type EtcdMemberStatus struct {
 	VolumeId string `json:"volumeId,omitempty"`
 }
 
-// ApiIngress represents the status of an ingress point:
+// ApiIngressStatus represents the status of an ingress point:
 // traffic intended for the service should be sent to an ingress point.
 type ApiIngressStatus struct {
 	// IP is set for load-balancer ingress points that are IP based
