@@ -450,7 +450,7 @@ type cloudformationASGMetricsCollection struct {
 	Metrics     []*string `json:"Metrics"`
 }
 type cloudformationAutoscalingGroup struct {
-	//Name                    *string              `json:"name,omitempty"`
+	Name                    *string                               `json:"AutoScalingGroupName,omitempty"`
 	LaunchConfigurationName *cloudformation.Literal               `json:"LaunchConfigurationName,omitempty"`
 	MaxSize                 *int64                                `json:"MaxSize,omitempty"`
 	MinSize                 *int64                                `json:"MinSize,omitempty"`
@@ -463,7 +463,7 @@ type cloudformationAutoscalingGroup struct {
 
 func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *AutoscalingGroup) error {
 	tf := &cloudformationAutoscalingGroup{
-		//Name:                    e.Name,
+		Name:    e.Name,
 		MinSize: e.MinSize,
 		MaxSize: e.MaxSize,
 		MetricsCollection: []*cloudformationASGMetricsCollection{
