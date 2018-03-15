@@ -213,6 +213,6 @@ func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
 type LoadBalancer struct {
 	// LoadBalancerName to associate with this instance group (AWS ELB)
 	LoadBalancerName *string `json:"loadBalancerName,omitempty"`
-	// TargetGroup to associate with this instance group (AWS ALB/NLB)
+	// TargetGroupARN to associate with this instance group (AWS ALB/NLB)
 	TargetGroupARN *string `json:"targetGroupArn,omitempty"`
 }

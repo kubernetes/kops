@@ -112,11 +112,16 @@ type terraformExternalLoadBalancerAttachment struct {
 }
 
 func (_ *ExternalLoadBalancerAttachment) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ExternalLoadBalancerAttachment) error {
-	return fmt.Errorf("Terraform external load balancer attachment not implemented yet")
+	tf := &terraformExternalLoadBalancerAttachment{
+		ELB:              terraform.LiteralFromStringValue(e.LoadBalancerName),
+		AutoscalingGroup: e.AutoscalingGroup.TerraformLink(),
+	}
+
+	return t.RenderResource("aws_autoscaling_attachment", *e.Name, tf)
 }
 
 func (e *ExternalLoadBalancerAttachment) TerraformLink() *terraform.Literal {
-	return nil
+	return terraform.LiteralProperty("aws_autoscaling_attachment", e.LoadBalancerName, "id")
 }
 
 func (_ *ExternalLoadBalancerAttachment) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *ExternalLoadBalancerAttachment) error {

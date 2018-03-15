@@ -244,7 +244,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			for _, lb := range ig.Spec.ExternalLoadBalancers {
 				if lb.LoadBalancerName != nil {
 					t := &awstasks.ExternalLoadBalancerAttachment{
-						Name:             s("extlb-" + *lb.LoadBalancerName),
+						Name:             s("extlb-" + *lb.LoadBalancerName + "-" + ig.Name),
 						Lifecycle:        b.Lifecycle,
 						LoadBalancerName: *lb.LoadBalancerName,
 						AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
@@ -255,7 +255,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				if lb.TargetGroupARN != nil {
 					t := &awstasks.ExternalTargetGroupAttachment{
-						Name:             s("exttg-" + *lb.TargetGroupARN),
+						Name:             s("exttg-" + *lb.TargetGroupARN + "-" + ig.Name),
 						Lifecycle:        b.Lifecycle,
 						TargetGroupARN:   *lb.TargetGroupARN,
 						AutoscalingGroup: b.LinkToAutoscalingGroup(ig),

@@ -18,6 +18,7 @@ package awstasks
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
@@ -38,8 +39,12 @@ type ExternalTargetGroupAttachment struct {
 	AutoscalingGroup *AutoscalingGroup
 }
 
+func (e *ExternalTargetGroupAttachment) name() string {
+	re := regexp.MustCompile("arn:.*:targetgroup/")
+	return re.ReplaceAllString(*e.Name, "")
+}
+
 func (e *ExternalTargetGroupAttachment) Find(c *fi.Context) (*ExternalTargetGroupAttachment, error) {
-	fmt.Println()
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if e.TargetGroupARN == "" {
@@ -108,20 +113,24 @@ func (_ *ExternalTargetGroupAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, c
 }
 
 type terraformExternalTargetGroupAttachment struct {
+	TargetGroupARN   *terraform.Literal `json:"alb_target_group_arn,omitempty"`
 	AutoscalingGroup *terraform.Literal `json:"autoscaling_group_name,omitempty"`
 }
 
 func (_ *ExternalTargetGroupAttachment) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ExternalTargetGroupAttachment) error {
-	return fmt.Errorf("Terraform external load balancer attachment not implemented yet")
+	tf := &terraformExternalTargetGroupAttachment{
+		TargetGroupARN:   terraform.LiteralFromStringValue(e.TargetGroupARN),
+		AutoscalingGroup: e.AutoscalingGroup.TerraformLink(),
+	}
+
+	return t.RenderResource("aws_autoscaling_attachment", e.name(), tf)
 }
 
 func (e *ExternalTargetGroupAttachment) TerraformLink() *terraform.Literal {
-	return nil
+	return terraform.LiteralProperty("aws_autoscaling_attachment", e.name(), "id")
 }
 
 func (_ *ExternalTargetGroupAttachment) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *ExternalTargetGroupAttachment) error {
-	fmt.Println("Rendering TargetGroupAttachment!")
-
 	cfObj, ok := t.Find(e.AutoscalingGroup.CloudformationLink())
 	if !ok {
 		// topo-sort fail?
