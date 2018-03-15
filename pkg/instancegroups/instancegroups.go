@@ -337,7 +337,7 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 	return nil
 }
 
-// Delete and CloudInstanceGroups
+// Delete a CloudInstanceGroups
 func (r *RollingUpdateInstanceGroup) Delete() error {
 	if r.CloudGroup == nil {
 		return fmt.Errorf("group has to be set")
