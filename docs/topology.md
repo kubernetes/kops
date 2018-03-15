@@ -59,7 +59,7 @@ The AWS ELB does not support changing from internet facing to Internal.  However
         type: Internal
 ```
  - Quit the edit
- - Run the update commmand to check the config: `kops update cluster $NAME`
+ - Run the update command to check the config: `kops update cluster $NAME`
  - BEFORE DOING the same command with the `--yes` option go into the AWS console and DELETE the api ELB!!!!!!
  - Now run: `kops update cluster $NAME --yes`
  - Finally execute a rolling update so that the instances register with the new internal ELB,  execute: `kops rolling-update cluster --cloudonly --force` command.  We have to use the  `--cloudonly` option because we deleted the api ELB so there is no way to talk to the cluster through the k8s api.  The force option is there because kops / terraform doesn't know that we need to update the instances with the ELB so we have to force it.
