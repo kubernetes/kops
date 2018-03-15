@@ -309,6 +309,37 @@ spec:
   - AZRebalance
 ```
 
+## Attaching existing Load Balancers to Instance Groups
+
+Instance groups can be linked to up to 10 load balancers. When attached, any instance launched will
+automatically register itself to the load balancer. For example, if you can create an instance group
+dedicated to running an ingress controller exposed on a
+[NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport), you can
+manually create a load balancer and link it to the instance group. Traffic to the load balancer will now
+automatically go to one of the nodes.
+
+You can specify either `loadBalancerName` to link the instance group to an AWS Classic ELB or you can
+specify `targetGroupARN` to link the instance group to a target group, which are used by Application
+load balancers and Network load balancers.
+
+```
+# Example ingress nodes
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: k8s.dev.local
+  name: ingress
+spec:
+  machineType: m4.large
+  maxSize: 2
+  minSize: 2
+  role: Node
+  externalLoadBalancers:
+  - targetGroupARN: arn:aws:elasticloadbalancing:eu-west-1:123456789012:targetgroup/my-ingress-target-group/0123456789abcdef
+  - loadBalancerName: my-elb-classic-load-balancer
+```
+
 ## Enabling Detailed-Monitoring on AWS instances
 
 Detailed-Monitoring will cause the monitoring data to be available every 1 minute instead of every 5 minutes. [Enabling Detailed Monitoring](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-cloudwatch-new.html). In production environments you may want to consider to enable detailed monitoring for quicker troubleshooting.
