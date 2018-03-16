@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"path"
+	"strings"
 	"testing"
 	"time"
 
@@ -41,7 +42,7 @@ func (o *LifecycleTestOptions) AddDefaults() {
 		o.Version = "v1alpha2"
 	}
 	if o.ClusterName == "" {
-		o.ClusterName = o.SrcDir + ".example.com"
+		o.ClusterName = strings.Replace(o.SrcDir, "_", "", -1) + ".example.com"
 	}
 
 	o.SrcDir = "../../tests/integration/update_cluster/" + o.SrcDir
@@ -60,6 +61,22 @@ func TestLifecyclePrivateCalico(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:      t,
 		SrcDir: "privatecalico",
+	})
+}
+
+// TestLifecyclePrivateKopeio runs the test on a private topology, with kopeio networking
+func TestLifecyclePrivateKopeio(t *testing.T) {
+	runLifecycleTestAWS(&LifecycleTestOptions{
+		t:      t,
+		SrcDir: "privatekopeio",
+	})
+}
+
+// TestLifecycleSharedVPC runs the test on a shared VPC
+func TestLifecycleSharedVPC(t *testing.T) {
+	runLifecycleTestAWS(&LifecycleTestOptions{
+		t:      t,
+		SrcDir: "shared_vpc",
 	})
 }
 

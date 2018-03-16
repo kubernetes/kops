@@ -311,6 +311,7 @@ resource "aws_route_table" "complex-example-com" {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "complex.example.com"
     "kubernetes.io/cluster/complex.example.com" = "owned"
+    "kubernetes.io/kops/role"                   = "public"
   }
 }
 

@@ -39,8 +39,7 @@ type MockEC2 struct {
 	securityGroupNumber int
 	SecurityGroups      map[string]*ec2.SecurityGroup
 
-	subnetNumber int
-	subnets      map[string]*subnetInfo
+	subnets map[string]*subnetInfo
 
 	Volumes map[string]*ec2.Volume
 
@@ -48,15 +47,15 @@ type MockEC2 struct {
 
 	Tags []*ec2.TagDescription
 
-	vpcNumber int
-	Vpcs      map[string]*vpcInfo
+	Vpcs map[string]*vpcInfo
 
 	internetGatewayNumber int
 	InternetGateways      map[string]*internetGatewayInfo
 
 	NatGateways map[string]*ec2.NatGateway
 
-	ids map[string]*idAllocator
+	idsMutex sync.Mutex
+	ids      map[string]*idAllocator
 }
 
 var _ ec2iface.EC2API = &MockEC2{}
@@ -66,6 +65,9 @@ type idAllocator struct {
 }
 
 func (m *MockEC2) allocateId(prefix string) string {
+	m.idsMutex.Lock()
+	defer m.idsMutex.Unlock()
+
 	ids := m.ids[prefix]
 	if ids == nil {
 		if m.ids == nil {

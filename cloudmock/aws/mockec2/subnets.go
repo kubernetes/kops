@@ -59,17 +59,12 @@ func (m *MockEC2) CreateSubnetWithContext(aws.Context, *ec2.CreateSubnetInput, .
 	return nil, nil
 }
 
-func (m *MockEC2) CreateSubnet(request *ec2.CreateSubnetInput) (*ec2.CreateSubnetOutput, error) {
+func (m *MockEC2) CreateSubnetWithId(request *ec2.CreateSubnetInput, id string) (*ec2.CreateSubnetOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("CreateSubnet: %v", request)
-
-	m.subnetNumber++
-	n := m.subnetNumber
-
 	subnet := &ec2.Subnet{
-		SubnetId:         s(fmt.Sprintf("subnet-%d", n)),
+		SubnetId:         s(id),
 		VpcId:            request.VpcId,
 		CidrBlock:        request.CidrBlock,
 		AvailabilityZone: request.AvailabilityZone,
@@ -86,6 +81,13 @@ func (m *MockEC2) CreateSubnet(request *ec2.CreateSubnetInput) (*ec2.CreateSubne
 		Subnet: subnet,
 	}
 	return response, nil
+}
+
+func (m *MockEC2) CreateSubnet(request *ec2.CreateSubnetInput) (*ec2.CreateSubnetOutput, error) {
+	glog.Infof("CreateSubnet: %v", request)
+
+	id := m.allocateId("subnet")
+	return m.CreateSubnetWithId(request, id)
 }
 
 func (m *MockEC2) DescribeSubnetsRequest(*ec2.DescribeSubnetsInput) (*request.Request, *ec2.DescribeSubnetsOutput) {

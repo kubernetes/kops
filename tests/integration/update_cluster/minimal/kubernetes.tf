@@ -235,6 +235,7 @@ resource "aws_route_table" "minimal-example-com" {
     KubernetesCluster                           = "minimal.example.com"
     Name                                        = "minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "kubernetes.io/kops/role"                   = "public"
   }
 }
 

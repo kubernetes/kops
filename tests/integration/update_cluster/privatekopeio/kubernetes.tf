@@ -399,6 +399,7 @@ resource "aws_route_table" "private-us-test-1a-privatekopeio-example-com" {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "private-us-test-1a.privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+    "kubernetes.io/kops/role"                         = "private-us-test-1a"
   }
 }
 
@@ -409,6 +410,7 @@ resource "aws_route_table" "privatekopeio-example-com" {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+    "kubernetes.io/kops/role"                         = "public"
   }
 }
 

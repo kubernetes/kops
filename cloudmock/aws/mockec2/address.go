@@ -37,8 +37,9 @@ func (m *MockEC2) AllocateAddressWithContext(aws.Context, *ec2.AllocateAddressIn
 	return nil, nil
 }
 
-func (m *MockEC2) AllocateAddress(request *ec2.AllocateAddressInput) (*ec2.AllocateAddressOutput, error) {
-	glog.Infof("AllocateAddress: %v", request)
+func (m *MockEC2) AllocateAddressWithId(request *ec2.AllocateAddressInput, id string) (*ec2.AllocateAddressOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
 
 	m.addressNumber++
 	n := m.addressNumber
@@ -52,7 +53,7 @@ func (m *MockEC2) AllocateAddress(request *ec2.AllocateAddressInput) (*ec2.Alloc
 	}
 
 	address := &ec2.Address{
-		AllocationId: s(fmt.Sprintf("eip-%d", n)),
+		AllocationId: s(id),
 		Domain:       s("vpc"),
 		PublicIp:     s(publicIP.String()),
 	}
@@ -63,6 +64,12 @@ func (m *MockEC2) AllocateAddress(request *ec2.AllocateAddressInput) (*ec2.Alloc
 		PublicIp:     address.PublicIp,
 	}
 	return response, nil
+}
+
+func (m *MockEC2) AllocateAddress(request *ec2.AllocateAddressInput) (*ec2.AllocateAddressOutput, error) {
+	glog.Infof("AllocateAddress: %v", request)
+	id := m.allocateId("eip")
+	return m.AllocateAddressWithId(request, id)
 }
 
 func (m *MockEC2) AssignPrivateIpAddressesRequest(*ec2.AssignPrivateIpAddressesInput) (*request.Request, *ec2.AssignPrivateIpAddressesOutput) {
@@ -106,6 +113,9 @@ func (m *MockEC2) DescribeAddressesWithContext(aws.Context, *ec2.DescribeAddress
 }
 
 func (m *MockEC2) DescribeAddresses(request *ec2.DescribeAddressesInput) (*ec2.DescribeAddressesOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeAddresses: %v", request)
 
 	var addresses []*ec2.Address
