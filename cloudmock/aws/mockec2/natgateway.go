@@ -26,13 +26,9 @@ import (
 	"github.com/golang/glog"
 )
 
-func (m *MockEC2) CreateNatGateway(request *ec2.CreateNatGatewayInput) (*ec2.CreateNatGatewayOutput, error) {
+func (m *MockEC2) CreateNatGatewayWithId(request *ec2.CreateNatGatewayInput, id string) (*ec2.CreateNatGatewayOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-
-	glog.Infof("CreateNatGateway: %v", request)
-
-	id := m.allocateId("ngw")
 
 	ngw := &ec2.NatGateway{
 		NatGatewayId: s(id),
@@ -67,6 +63,13 @@ func (m *MockEC2) CreateNatGateway(request *ec2.CreateNatGatewayInput) (*ec2.Cre
 		NatGateway:  &copy,
 		ClientToken: request.ClientToken,
 	}, nil
+}
+
+func (m *MockEC2) CreateNatGateway(request *ec2.CreateNatGatewayInput) (*ec2.CreateNatGatewayOutput, error) {
+	glog.Infof("CreateNatGateway: %v", request)
+
+	id := m.allocateId("nat")
+	return m.CreateNatGatewayWithId(request, id)
 }
 
 func (m *MockEC2) WaitUntilNatGatewayAvailable(request *ec2.DescribeNatGatewaysInput) error {

@@ -18,7 +18,6 @@ package mockec2
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -65,7 +64,6 @@ func (m *MockEC2) DescribeRouteTables(request *ec2.DescribeRouteTablesInput) (*e
 	}
 
 	response := &ec2.DescribeRouteTablesOutput{}
-
 	for _, rt := range m.RouteTables {
 		allFiltersMatch := true
 		for _, filter := range request.Filters {
@@ -86,11 +84,7 @@ func (m *MockEC2) DescribeRouteTables(request *ec2.DescribeRouteTablesInput) (*e
 					}
 				}
 			default:
-				if strings.HasPrefix(*filter.Name, "tag:") {
-					match = m.hasTag(ec2.ResourceTypeRouteTable, *rt.RouteTableId, filter)
-				} else {
-					return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
-				}
+				match = m.hasTag(ec2.ResourceTypeRouteTable, *rt.RouteTableId, filter)
 			}
 
 			if !match {

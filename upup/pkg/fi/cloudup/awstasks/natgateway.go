@@ -73,7 +73,6 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 		}
 
 		response, err := cloud.EC2().DescribeNatGateways(request)
-
 		if err != nil {
 			return nil, fmt.Errorf("error listing Nat Gateways %v", err)
 		}
@@ -112,6 +111,10 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 
 	// NATGateways now have names and tags so lets pull from there instead.
 	actual.Name = findNameTag(ngw.Tags)
+	if e.Tags["Name"] == "" {
+		// If we're not tagging by name, avoid spurious differences
+		actual.Name = e.Name
+	}
 	actual.Tags = intersectTags(ngw.Tags, e.Tags)
 
 	// Avoid spurious changes
@@ -200,7 +203,7 @@ func findNatGatewayFromRouteTable(cloud awsup.AWSCloud, routeTable *RouteTable) 
 	// Find via route on private route table
 	if routeTable.ID != nil {
 		glog.V(2).Infof("trying to match NatGateway via RouteTable %s", *routeTable.ID)
-		rt, err := routeTable.findEc2RouteTable(cloud)
+		rt, err := findRouteTableByID(cloud, *routeTable.ID)
 		if err != nil {
 			return nil, fmt.Errorf("error finding associated RouteTable to NatGateway: %v", err)
 		}
