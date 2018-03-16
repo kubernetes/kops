@@ -189,7 +189,7 @@ aws acm list-certificates
 
 If you have one, you can move on to the next section.
 
-To create an ACM certificate, you have to requset a CSR with a domain name that you own in [route53](https://aws.amazon.com/route53/), for example.org. We will here request one wildcard certificate for example.org:
+To create an ACM certificate, you have to request a CSR with a domain name that you own in [route53](https://aws.amazon.com/route53/), for example.org. We will here request one wildcard certificate for example.org:
 
 ```
 aws acm request-certificate --domain-name *.example.org
