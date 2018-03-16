@@ -13,7 +13,7 @@ Create a secret
 ### Examples
 
 ```
-  # Create an new ssh public key called admin.
+  # Create a new ssh public key called admin.
   kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
   --name k8s-cluster.example.com --state s3://example.com
   
