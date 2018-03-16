@@ -33,6 +33,13 @@ const (
 	SecretNameSSHPrimary = "admin"
 )
 
+type KeysetFormat string
+
+const (
+	KeysetFormatLegacy   KeysetFormat = "legacy"
+	KeysetFormatV1Alpha2 KeysetFormat = "v1alpha2"
+)
+
 type KeystoreItem struct {
 	Type kops.KeysetType
 	Name string
@@ -47,7 +54,7 @@ type Keystore interface {
 	// This func returns a cert, private key and a string.  The string value is the Format of the keystore which is either
 	// an empty string, which denotes a Legacy Keypair, or a value of "Keypair".  This string is used by a keypair
 	// task convert a Legacy Keypair to the new Keypair API format.
-	FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, string, error)
+	FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, KeysetFormat, error)
 
 	CreateKeypair(signer string, name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error)
 

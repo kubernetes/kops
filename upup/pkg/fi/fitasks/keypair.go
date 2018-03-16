@@ -53,7 +53,7 @@ type Keypair struct {
 	Type string `json:"type"`
 	// Format stores the api version of kops.Keyset.  We are using this info in order to determine if kops
 	// is accessing legacy secrets that do not use keyset.yaml.
-	Format string `json:"keypairType"`
+	Format string `json:"format"`
 }
 
 var _ fi.HasCheckExisting = &Keypair{}
@@ -76,7 +76,7 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 		return nil, nil
 	}
 
-	cert, key, keySetType, err := c.Keystore.FindKeypair(name)
+	cert, key, format, err := c.Keystore.FindKeypair(name)
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +100,7 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 		AlternateNames: alternateNames,
 		Subject:        pkixNameToString(&cert.Subject),
 		Type:           buildTypeDescription(cert.Certificate),
-
-		Format: keySetType,
+		Format:         string(format),
 	}
 
 	actual.Signer = &Keypair{Subject: pkixNameToString(&cert.Certificate.Issuer)}
