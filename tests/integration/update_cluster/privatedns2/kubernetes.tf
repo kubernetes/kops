@@ -312,6 +312,8 @@ resource "aws_launch_configuration" "bastion-privatedns2-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-privatedns2-example-com" {
@@ -338,6 +340,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privatedns2-examp
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-privatedns2-example-com" {
@@ -359,6 +363,8 @@ resource "aws_launch_configuration" "nodes-privatedns2-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_nat_gateway" "us-test-1a-privatedns2-example-com" {

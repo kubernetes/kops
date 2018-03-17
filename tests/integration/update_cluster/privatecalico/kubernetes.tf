@@ -322,6 +322,8 @@ resource "aws_launch_configuration" "bastion-privatecalico-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-privatecalico-example-com" {
@@ -348,6 +350,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privatecalico-exa
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-privatecalico-example-com" {
@@ -369,6 +373,8 @@ resource "aws_launch_configuration" "nodes-privatecalico-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_nat_gateway" "us-test-1a-privatecalico-example-com" {
