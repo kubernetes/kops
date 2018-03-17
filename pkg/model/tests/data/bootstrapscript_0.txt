@@ -23,6 +23,8 @@ NODEUP_HASH=NUSHash
 
 
 
+
+
 echo "http_proxy=http://example.com:80" >> /etc/environment
 echo "https_proxy=http://example.com:80" >> /etc/environment
 echo "no_proxy=" >> /etc/environment
