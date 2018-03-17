@@ -68,7 +68,7 @@ func run() error {
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
 	flag.BoolVar(&initializeRBAC, "initialize-rbac", initializeRBAC, "Set if we should initialize RBAC")
 	flag.BoolVar(&master, "master", master, "Whether or not this node is a master")
-	flag.StringVar(&cloud, "cloud", "aws", "CloudProvider we are using (aws,gce)")
+	flag.StringVar(&cloud, "cloud", "aws", "CloudProvider we are using (aws,digitalocean,gce)")
 	flag.StringVar(&clusterID, "cluster-id", clusterID, "Cluster ID")
 	flag.StringVar(&dnsInternalSuffix, "dns-internal-suffix", dnsInternalSuffix, "DNS suffix for internal domain names")
 	flag.StringVar(&dnsServer, "dns-server", dnsServer, "DNS Server")
@@ -82,7 +82,7 @@ func run() error {
 	flag.StringVar(&tlsCert, "tls-cert", tlsCert, "Path to a file containing the certificate for etcd server")
 	flag.StringVar(&tlsKey, "tls-key", tlsKey, "Path to a file containing the private key for etcd server")
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
-	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, coredns)")
+	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, coredns, digitalocean)")
 	flags.StringVar(&etcdBackupImage, "etcd-backup-image", "", "Set to override the image for (experimental) etcd backups")
 	flags.StringVar(&etcdBackupStore, "etcd-backup-store", "", "Set to enable (experimental) etcd backups")
 	flags.StringVar(&etcdImageSource, "etcd-image", "k8s.gcr.io/etcd:2.2.1", "Etcd Source Container Registry")
@@ -114,6 +114,28 @@ func run() error {
 		if internalIP == nil {
 			internalIP = awsVolumes.InternalIP()
 		}
+	} else if cloud == "digitalocean" {
+		if clusterID == "" {
+			glog.Error("digitalocean requires --cluster-id")
+			os.Exit(1)
+		}
+
+		doVolumes, err := protokube.NewDOVolumes(clusterID)
+		if err != nil {
+			glog.Errorf("Error initializing DigitalOcean: %q", err)
+			os.Exit(1)
+		}
+
+		volumes = doVolumes
+
+		if internalIP == nil {
+			internalIP, err = protokube.GetDropletInternalIP()
+			if err != nil {
+				glog.Errorf("Error getting droplet internal IP: %s", err)
+				os.Exit(1)
+			}
+		}
+
 	} else if cloud == "gce" {
 		gceVolumes, err := protokube.NewGCEVolumes()
 		if err != nil {

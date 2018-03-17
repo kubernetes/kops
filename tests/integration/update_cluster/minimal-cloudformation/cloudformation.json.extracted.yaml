@@ -26,6 +26,8 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
 
 
 
+
+
   function ensure-install-dir() {
     INSTALL_DIR="/var/cache/kubernetes-install"
     # On ContainerOS, we install to /var/lib/toolbox install (because of noexec)
@@ -297,6 +299,8 @@ Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.Use
 
   NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
+
+
 
 
 

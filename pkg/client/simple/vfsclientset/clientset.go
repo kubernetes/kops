@@ -112,6 +112,11 @@ func DeleteAllClusterState(basePath vfs.Path) error {
 		if err != nil {
 			return err
 		}
+
+		if relativePath == "" {
+			continue
+		}
+
 		if relativePath == "config" || relativePath == "cluster.spec" {
 			continue
 		}
