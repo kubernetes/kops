@@ -308,3 +308,25 @@ spec:
   suspendProcesses:
   - AZRebalance
 ```
+
+## Enabling Detailed-Monitoring on AWS instances
+
+Detailed-Monitoring will cause the monitoring data to be available every 1 minute instead of every 5 minutes. [Enabling Detailed Monitoring](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-cloudwatch-new.html). In production environments you may want to consider to enable detailed monitoring for quicker troubleshooting.
+
+**Note: that enabling detailed monitoring is a subject for [charge](https://aws.amazon.com/cloudwatch)**
+
+```
+# Example for nodes
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: k8s.dev.local
+  name: nodes
+spec:
+  detailedInstanceMonitoring: true
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+```
