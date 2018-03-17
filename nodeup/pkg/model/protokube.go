@@ -324,6 +324,9 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 			switch kops.CloudProviderID(t.Cluster.Spec.CloudProvider) {
 			case kops.CloudProviderAWS:
 				f.DNSProvider = fi.String("aws-route53")
+			case kops.CloudProviderDO:
+				f.DNSProvider = fi.String("digitalocean")
+				f.ClusterID = fi.String(t.Cluster.Name)
 			case kops.CloudProviderGCE:
 				f.DNSProvider = fi.String("google-clouddns")
 			case kops.CloudProviderVSphere:
@@ -379,6 +382,14 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 		buffer.WriteString(" -e S3_SECRET_ACCESS_KEY=")
 		buffer.WriteString("'")
 		buffer.WriteString(os.Getenv("S3_SECRET_ACCESS_KEY"))
+		buffer.WriteString("'")
+		buffer.WriteString(" ")
+	}
+
+	if kops.CloudProviderID(t.Cluster.Spec.CloudProvider) == kops.CloudProviderDO && os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
+		buffer.WriteString(" ")
+		buffer.WriteString("-e 'DIGITALOCEAN_ACCESS_TOKEN=")
+		buffer.WriteString(os.Getenv("DIGITALOCEAN_ACCESS_TOKEN"))
 		buffer.WriteString("'")
 		buffer.WriteString(" ")
 	}

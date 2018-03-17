@@ -87,6 +87,20 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 			return ""
 		},
 
+		"DO_ENV": func() string {
+			if kops.CloudProviderID(cs.CloudProvider) != kops.CloudProviderDO {
+				return ""
+			}
+
+			doToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+			if doToken != "" {
+				return fmt.Sprintf("export DIGITALOCEAN_ACCESS_TOKEN=%s\n", doToken)
+			}
+
+			return ""
+
+		},
+
 		"ProxyEnv": func() string {
 			return b.createProxyEnv(cs.EgressProxy)
 		},

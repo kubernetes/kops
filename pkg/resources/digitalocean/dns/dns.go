@@ -63,9 +63,9 @@ func (t *TokenSource) Token() (*oauth2.Token, error) {
 }
 
 func newClient() (*godo.Client, error) {
-	accessToken := os.Getenv("DO_ACCESS_TOKEN")
+	accessToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	if accessToken == "" {
-		return nil, errors.New("DO_ACCESS_TOKEN is required")
+		return nil, errors.New("DIGITALOCEAN_ACCESS_TOKEN is required")
 	}
 
 	tokenSource := &TokenSource{
