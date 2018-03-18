@@ -18,11 +18,11 @@ package validation
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"time"
 
-	"net"
-
+	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -216,7 +216,8 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 			} else {
 				validationCluster.NodesNotReadyArray = append(validationCluster.NodesNotReadyArray, n)
 			}
-
+		} else {
+			glog.Warningf("ignoring node with role %q", n.Role)
 		}
 	}
 
