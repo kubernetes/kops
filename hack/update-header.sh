@@ -19,13 +19,15 @@
 BAD_HEADERS=$((${KUBE_ROOT}/hack/verify-boilerplate.sh || true) | awk '{ print $6}')
 FORMATS="sh go Makefile Dockerfile"
 
+YEAR=`date +%Y`
+
 for i in ${FORMATS}
 do
 	:
 	for j in ${BAD_HEADERS}
 	do
 		:
-	        HEADER=$(cat ${KUBE_ROOT}/hack/boilerplate/boilerplate.${i}.txt | sed 's/YEAR/2017/')
+	        HEADER=$(cat ${KUBE_ROOT}/hack/boilerplate/boilerplate.${i}.txt | sed "s/YEAR/${YEAR}/")
 			value=$(<${j})
 			if [[ "$j" != *$i ]]
             then
