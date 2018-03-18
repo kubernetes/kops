@@ -242,7 +242,7 @@ func describeLoadBalancers(cloud awsup.AWSCloud, request *elb.DescribeLoadBalanc
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("error listing elb Tags: %v", err)
+		return nil, fmt.Errorf("error listing ELBs: %v", err)
 	}
 
 	return found, nil
@@ -317,6 +317,8 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	if err != nil {
 		return nil, err
 	}
+	glog.V(4).Info("ELB attributes: %+v", lbAttributes)
+
 	if lbAttributes != nil {
 		actual.AccessLog = &LoadBalancerAccessLog{}
 		if lbAttributes.AccessLog.EmitInterval != nil {
@@ -385,6 +387,8 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 
 	// TODO: Make Normalize a standard method
 	actual.Normalize()
+
+	glog.V(4).Infof("Found ELB %+v", actual)
 
 	return actual, nil
 }
@@ -599,6 +603,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 	}
 
 	if err := e.modifyLoadBalancerAttributes(t, a, e, changes); err != nil {
+		glog.Infof("error modifying ELB attributes: %v", err)
 		return err
 	}
 
