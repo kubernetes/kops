@@ -94,6 +94,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	dest["ProxyEnv"] = tf.ProxyEnv
 
+	dest["DO_TOKEN"] = func() string {
+		return os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+	}
+
 	if tf.cluster.Spec.Networking != nil && tf.cluster.Spec.Networking.Flannel != nil {
 		flannelBackendType := tf.cluster.Spec.Networking.Flannel.Backend
 		if flannelBackendType == "" {
@@ -187,8 +191,6 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 		case kops.CloudProviderGCE:
 			argv = append(argv, "--dns=google-clouddns")
 		case kops.CloudProviderDO:
-			// this is not supported yet, here so we can successfully create clusters
-			// this will be supported for digitalocean in the future
 			argv = append(argv, "--dns=digitalocean")
 		case kops.CloudProviderVSphere:
 			argv = append(argv, "--dns=coredns")
