@@ -52,7 +52,7 @@ spec:
 ```
 
 An `A` record for `test.mydomain.tld` will be created as an alias to the ELB
-that is configured by Kuberntes (see `service.beta.kubernetes.io/aws-load-
+that is configured by Kubernetes (see `service.beta.kubernetes.io/aws-load-
 balancer` annotations). This assumes that a hosted zone exists in Route53 for
 `mydomain.tld`. Any record that previously existed for that dns record will be
 updated.
