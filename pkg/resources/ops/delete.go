@@ -23,6 +23,7 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/resources"
+	awsresources "k8s.io/kops/pkg/resources/aws"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -126,7 +127,7 @@ func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource)
 					}
 					if err != nil {
 						mutex.Lock()
-						if resources.IsDependencyViolation(err) {
+						if awsresources.IsDependencyViolation(err) {
 							fmt.Printf("%s\tstill has dependencies, will retry\n", human)
 							glog.V(4).Infof("API call made when had dependency: %s", human)
 						} else {

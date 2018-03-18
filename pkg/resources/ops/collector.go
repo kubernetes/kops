@@ -21,6 +21,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
+	"k8s.io/kops/pkg/resources/aws"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/resources/gce"
 	"k8s.io/kops/upup/pkg/fi"
@@ -33,7 +34,7 @@ import (
 func ListResources(cloud fi.Cloud, clusterName string, region string) (map[string]*resources.Resource, error) {
 	switch cloud.ProviderID() {
 	case kops.CloudProviderAWS:
-		return resources.ListResourcesAWS(cloud.(awsup.AWSCloud), clusterName)
+		return aws.ListResourcesAWS(cloud.(awsup.AWSCloud), clusterName)
 	case kops.CloudProviderDO:
 		return digitalocean.ListResources(cloud, clusterName)
 	case kops.CloudProviderGCE:

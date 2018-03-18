@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package resources
+package aws
 
 import (
 	"reflect"
@@ -24,12 +24,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/cloudmock/aws/mockec2"
+	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 func TestAddUntaggedRouteTables(t *testing.T) {
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
-	resources := make(map[string]*Resource)
+	resourceTrackers := make(map[string]*resources.Resource)
 
 	clusterName := "me.example.com"
 
@@ -71,15 +72,15 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 		RouteTableId: aws.String("rtb-5555"),
 	})
 
-	resources["vpc:vpc-1234"] = &Resource{}
+	resourceTrackers["vpc:vpc-1234"] = &resources.Resource{}
 
-	err := addUntaggedRouteTables(cloud, clusterName, resources)
+	err := addUntaggedRouteTables(cloud, clusterName, resourceTrackers)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
 	var keys []string
-	for k := range resources {
+	for k := range resourceTrackers {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
@@ -127,11 +128,11 @@ func TestListRouteTables(t *testing.T) {
 		},
 	})
 
-	resources, err := ListRouteTables(cloud, clusterName)
+	resourceTrackers, err := ListRouteTables(cloud, clusterName)
 	if err != nil {
 		t.Fatalf("error listing route tables: %v", err)
 	}
-	for _, rt := range resources {
+	for _, rt := range resourceTrackers {
 		if rt.ID == "rtb-shared" && !rt.Shared {
 			t.Fatalf("expected Shared: true, got: %v", rt.Shared)
 		}

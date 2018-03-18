@@ -19,7 +19,7 @@ go_library(
         "//pkg/client/simple:go_default_library",
         "//pkg/kubeconfig:go_default_library",
         "//pkg/pki:go_default_library",
-        "//pkg/resources:go_default_library",
+        "//pkg/resources/aws:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
