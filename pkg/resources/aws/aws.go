@@ -389,6 +389,7 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*resources.Resource, e
 				}
 
 				var blocks []string
+				blocks = append(blocks, "subnet:"+aws.StringValue(instance.SubnetId))
 				blocks = append(blocks, "vpc:"+aws.StringValue(instance.VpcId))
 
 				for _, volume := range instance.BlockDeviceMappings {
@@ -400,8 +401,6 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*resources.Resource, e
 				for _, sg := range instance.SecurityGroups {
 					blocks = append(blocks, "security-group:"+aws.StringValue(sg.GroupId))
 				}
-				blocks = append(blocks, "subnet:"+aws.StringValue(instance.SubnetId))
-				blocks = append(blocks, "vpc:"+aws.StringValue(instance.VpcId))
 
 				resourceTracker.Blocks = blocks
 
@@ -728,19 +727,6 @@ func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 	}
 
 	return resourceTrackers, nil
-}
-
-func IsDependencyViolation(err error) bool {
-	code := awsup.AWSErrorCode(err)
-	switch code {
-	case "":
-		return false
-	case "DependencyViolation", "VolumeInUse", "InvalidIPAddress.InUse":
-		return true
-	default:
-		glog.Infof("unexpected aws error code: %q", code)
-		return false
-	}
 }
 
 func DeleteSubnet(cloud fi.Cloud, tracker *resources.Resource) error {
@@ -1209,80 +1195,6 @@ func DescribeInternetGatewaysIgnoreTags(cloud fi.Cloud) ([]*ec2.InternetGateway,
 	}
 
 	return gateways, nil
-}
-
-func DeleteVPC(cloud fi.Cloud, r *resources.Resource) error {
-	c := cloud.(awsup.AWSCloud)
-
-	id := r.ID
-
-	glog.V(2).Infof("Deleting EC2 VPC %q", id)
-	request := &ec2.DeleteVpcInput{
-		VpcId: &id,
-	}
-	_, err := c.EC2().DeleteVpc(request)
-	if err != nil {
-		if IsDependencyViolation(err) {
-			return err
-		}
-		return fmt.Errorf("error deleting VPC %q: %v", id, err)
-	}
-	return nil
-}
-
-func DumpVPC(op *resources.DumpOperation, r *resources.Resource) error {
-	data := make(map[string]interface{})
-	data["id"] = r.ID
-	data["type"] = ec2.ResourceTypeVpc
-	data["raw"] = r.Obj
-	op.Dump.Resources = append(op.Dump.Resources, data)
-	return nil
-}
-
-func DescribeVPCs(cloud fi.Cloud) ([]*ec2.Vpc, error) {
-	c := cloud.(awsup.AWSCloud)
-
-	glog.V(2).Infof("Listing EC2 VPC")
-	request := &ec2.DescribeVpcsInput{
-		Filters: BuildEC2Filters(cloud),
-	}
-	response, err := c.EC2().DescribeVpcs(request)
-	if err != nil {
-		return nil, fmt.Errorf("error listing VPCs: %v", err)
-	}
-
-	return response.Vpcs, nil
-}
-
-func ListVPCs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
-	vpcs, err := DescribeVPCs(cloud)
-	if err != nil {
-		return nil, err
-	}
-
-	var resourceTrackers []*resources.Resource
-	for _, v := range vpcs {
-		vpcID := aws.StringValue(v.VpcId)
-
-		resourceTracker := &resources.Resource{
-			Name:    FindName(v.Tags),
-			ID:      vpcID,
-			Type:    ec2.ResourceTypeVpc,
-			Deleter: DeleteVPC,
-			Dumper:  DumpVPC,
-			Obj:     v,
-			Shared:  HasSharedTag(ec2.ResourceTypeVpc+":"+vpcID, v.Tags, clusterName),
-		}
-
-		var blocks []string
-		blocks = append(blocks, "dhcp-options:"+aws.StringValue(v.DhcpOptionsId))
-
-		resourceTracker.Blocks = blocks
-
-		resourceTrackers = append(resourceTrackers, resourceTracker)
-	}
-
-	return resourceTrackers, nil
 }
 
 func DeleteAutoScalingGroup(cloud fi.Cloud, r *resources.Resource) error {

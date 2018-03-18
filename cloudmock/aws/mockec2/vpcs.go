@@ -18,7 +18,6 @@ package mockec2
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -127,11 +126,7 @@ func (m *MockEC2) DescribeVpcs(request *ec2.DescribeVpcsInput) (*ec2.DescribeVpc
 					}
 				}
 			default:
-				if strings.HasPrefix(*filter.Name, "tag:") {
-					match = m.hasTag(ec2.ResourceTypeVpc, *vpc.main.VpcId, filter)
-				} else {
-					return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
-				}
+				match = m.hasTag(ec2.ResourceTypeVpc, *vpc.main.VpcId, filter)
 			}
 
 			if !match {

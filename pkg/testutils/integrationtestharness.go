@@ -95,7 +95,7 @@ func (h *IntegrationTestHarness) Close() {
 	}
 }
 
-func (h *IntegrationTestHarness) SetupMockAWS() {
+func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 	cloud := awsup.InstallMockAWSCloud("us-test-1", "abc")
 	mockEC2 := &mockec2.MockEC2{}
 	cloud.MockEC2 = mockEC2
@@ -179,6 +179,7 @@ func (h *IntegrationTestHarness) SetupMockAWS() {
 		AllocationId: aws.String("eip-12345678"),
 	}, "nat-12345678")
 
+	return cloud
 }
 
 // SetupMockGCE configures a mock GCE cloud provider
