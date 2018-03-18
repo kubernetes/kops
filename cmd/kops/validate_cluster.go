@@ -33,7 +33,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
-	apiutil "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/util/pkg/tables"
 )
@@ -69,7 +68,7 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 			}
 			// We want the validate command to exit non-zero if validation found a problem,
 			// even if we didn't really hit an error during validation.
-			if len(result.PodFailures) != 0 {
+			if len(result.Failures) != 0 {
 				os.Exit(2)
 			}
 		},
@@ -129,43 +128,43 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return nil, fmt.Errorf("Cannot build kubernetes api client for %q: %v", contextName, err)
 	}
 
-	validationCluster, validationFailed := validation.ValidateCluster(cluster, list, k8sClient)
-
-	if validationCluster == nil || validationCluster.NodeList == nil || validationCluster.NodeList.Items == nil {
-		return validationCluster, validationFailed
+	result, err := validation.ValidateCluster(cluster, list, k8sClient)
+	if err != nil {
+		return nil, fmt.Errorf("unexpected error during validation: %v", err)
 	}
 
 	switch options.output {
 	case OutputTable:
-		if err := validateClusterOutputTable(validationCluster, validationFailed, instanceGroups, out); err != nil {
+		if err := validateClusterOutputTable(result, cluster, instanceGroups, out); err != nil {
 			return nil, err
 		}
+
 	case OutputYaml:
-		y, err := yaml.Marshal(validationCluster)
+		y, err := yaml.Marshal(result)
 		if err != nil {
 			return nil, fmt.Errorf("unable to marshal YAML: %v", err)
 		}
 		if _, err := out.Write(y); err != nil {
-			return nil, fmt.Errorf("unable to print data: %v", err)
+			return nil, fmt.Errorf("error writing to output: %v", err)
 		}
 
 	case OutputJSON:
-		j, err := json.Marshal(validationCluster)
+		j, err := json.Marshal(result)
 		if err != nil {
 			return nil, fmt.Errorf("unable to marshal JSON: %v", err)
 		}
 		if _, err := out.Write(j); err != nil {
-			return nil, fmt.Errorf("unable to print data: %v", err)
+			return nil, fmt.Errorf("error writing to output: %v", err)
 		}
 
 	default:
 		return nil, fmt.Errorf("Unknown output format: %q", options.output)
 	}
 
-	return validationCluster, validationFailed
+	return result, nil
 }
 
-func validateClusterOutputTable(validationCluster *validation.ValidationCluster, validationFailed error, instanceGroups []api.InstanceGroup, out io.Writer) error {
+func validateClusterOutputTable(result *validation.ValidationCluster, cluster *api.Cluster, instanceGroups []api.InstanceGroup, out io.Writer) error {
 	t := &tables.Table{}
 	t.AddColumn("NAME", func(c api.InstanceGroup) string {
 		return c.ObjectMeta.Name
@@ -190,73 +189,52 @@ func validateClusterOutputTable(validationCluster *validation.ValidationCluster,
 	err := t.Render(instanceGroups, out, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "SUBNETS")
 
 	if err != nil {
-		return fmt.Errorf("cannot render nodes for %q: %v", validationCluster.ClusterName, err)
+		return fmt.Errorf("cannot render nodes for %q: %v", cluster.Name, err)
 	}
 
-	nodeTable := &tables.Table{}
-
-	nodeTable.AddColumn("NAME", func(n v1.Node) string {
-		return n.Name
-	})
-
-	nodeTable.AddColumn("READY", func(n v1.Node) v1.ConditionStatus {
-		return validation.GetNodeReadyStatus(&n)
-	})
-
-	nodeTable.AddColumn("ROLE", func(n v1.Node) string {
-		// TODO: Maybe print the instance group role instead?
-		// TODO: Maybe include the instance group name?
-		role := apiutil.GetNodeRole(&n)
-		if role == "" {
-			role = "node"
-		}
-		return role
-	})
-
-	fmt.Fprintln(out, "\nNODE STATUS")
-	err = nodeTable.Render(validationCluster.NodeList.Items, out, "NAME", "ROLE", "READY")
-
-	if err != nil {
-		return fmt.Errorf("cannot render nodes for %q: %v", validationCluster.ClusterName, err)
-	}
-
-	if len(validationCluster.ComponentFailures) != 0 {
-		componentFailuresTable := &tables.Table{}
-		componentFailuresTable.AddColumn("NAME", func(s string) string {
-			return s
+	{
+		nodeTable := &tables.Table{}
+		nodeTable.AddColumn("NAME", func(n *validation.ValidationNode) string {
+			return n.Name
 		})
 
-		fmt.Fprintln(out, "\nComponent Failures")
-		err = componentFailuresTable.Render(validationCluster.ComponentFailures, out, "NAME")
-
-		if err != nil {
-			return fmt.Errorf("cannot render components for %q: %v", validationCluster.ClusterName, err)
-		}
-	}
-
-	if len(validationCluster.PodFailures) != 0 {
-		podFailuresTable := &tables.Table{}
-		podFailuresTable.AddColumn("NAME", func(s string) string {
-			return s
+		nodeTable.AddColumn("READY", func(n *validation.ValidationNode) v1.ConditionStatus {
+			return n.Status
 		})
 
-		fmt.Fprintln(out, "\nPod Failures in kube-system")
-		err = podFailuresTable.Render(validationCluster.PodFailures, out, "NAME")
+		nodeTable.AddColumn("ROLE", func(n *validation.ValidationNode) string {
+			return n.Role
+		})
 
-		if err != nil {
-			return fmt.Errorf("cannot render pods for %q: %v", validationCluster.ClusterName, err)
+		fmt.Fprintln(out, "\nNODE STATUS")
+		if err := nodeTable.Render(result.Nodes, out, "NAME", "ROLE", "READY"); err != nil {
+			return fmt.Errorf("cannot render nodes for %q: %v", cluster.Name, err)
 		}
 	}
 
-	if validationFailed == nil {
-		fmt.Fprintf(out, "\nYour cluster %s is ready\n", validationCluster.ClusterName)
-		return nil
+	if len(result.Failures) != 0 {
+		failuresTable := &tables.Table{}
+		failuresTable.AddColumn("KIND", func(e *validation.ValidationError) string {
+			return e.Kind
+		})
+		failuresTable.AddColumn("NAME", func(e *validation.ValidationError) string {
+			return e.Name
+		})
+		failuresTable.AddColumn("MESSAGE", func(e *validation.ValidationError) string {
+			return e.Message
+		})
+
+		fmt.Fprintln(out, "\nVALIDATION ERRORS")
+		if err := failuresTable.Render(result.Failures, out, "KIND", "NAME", "MESSAGE"); err != nil {
+			return fmt.Errorf("error rendering failures table: %v", err)
+		}
+	}
+
+	if len(result.Failures) == 0 {
+		fmt.Fprintf(out, "\nYour cluster %s is ready\n", cluster.Name)
 	} else {
-		// do we need to print which instance group is not ready?
-		// nodes are going to be a pain
 		fmt.Fprint(out, "\nValidation Failed\n")
-		fmt.Fprintf(out, "Ready Master(s) %d out of %d.\n", len(validationCluster.MastersReadyArray), validationCluster.MastersCount)
-		fmt.Fprintf(out, "Ready Node(s) %d out of %d.\n", len(validationCluster.NodesReadyArray), validationCluster.NodesCount)
-		return validationFailed
 	}
+
+	return nil
 }

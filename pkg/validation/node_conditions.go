@@ -21,7 +21,7 @@ import (
 	"k8s.io/api/core/v1"
 )
 
-func GetNodeReadyStatus(node *v1.Node) v1.ConditionStatus {
+func getNodeReadyStatus(node *v1.Node) v1.ConditionStatus {
 	cond := findNodeCondition(node, v1.NodeReady)
 	if cond != nil {
 		return cond.Status
