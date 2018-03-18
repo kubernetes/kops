@@ -80,6 +80,22 @@ func TestLifecycleSharedVPC(t *testing.T) {
 	})
 }
 
+// TestLifecycleSharedSubnet runs the test on a shared subnet
+func TestLifecycleSharedSubnet(t *testing.T) {
+	runLifecycleTestAWS(&LifecycleTestOptions{
+		t:      t,
+		SrcDir: "shared_subnet",
+	})
+}
+
+// TestLifecyclePrivateSharedSubnet runs the test on a shared subnet with private topology
+func TestLifecyclePrivateSharedSubnet(t *testing.T) {
+	runLifecycleTestAWS(&LifecycleTestOptions{
+		t:      t,
+		SrcDir: "private-shared-subnet",
+	})
+}
+
 func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptions) {
 	t := o.t
 

@@ -123,6 +123,11 @@ func TestPrivateKopeio(t *testing.T) {
 	runTestAWS(t, "privatekopeio.example.com", "privatekopeio", "v1alpha2", true, 1)
 }
 
+// TestPrivateSharedSubnet runs the test on a configuration with private topology & shared subnets
+func TestPrivateSharedSubnet(t *testing.T) {
+	runTestAWS(t, "private-shared-subnet.example.com", "private-shared-subnet", "v1alpha2", true, 1)
+}
+
 // TestPrivateDns1 runs the test on a configuration with private topology, private dns
 func TestPrivateDns1(t *testing.T) {
 	runTestAWS(t, "privatedns1.example.com", "privatedns1", "v1alpha2", true, 1)

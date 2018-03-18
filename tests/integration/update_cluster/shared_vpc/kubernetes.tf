@@ -222,7 +222,9 @@ resource "aws_route_table" "sharedvpc-example-com" {
   vpc_id = "vpc-12345678"
 
   tags = {
-    "kubernetes.io/cluster/sharedvpc.example.com" = "shared"
+    KubernetesCluster                             = "sharedvpc.example.com"
+    Name                                          = "sharedvpc.example.com"
+    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
     "kubernetes.io/kops/role"                     = "public"
   }
 }
