@@ -8,7 +8,7 @@ certificates. ALBs are used to route traffic to an Ingress http router for examp
 [skipper](https://github.com/zalando/skipper/), which routes
 traffic to Kubernetes services and implements
 [advanced features](https://zalando.github.io/skipper/dataclients/kubernetes/)
-like green-blue deployments, feature toggles, reate limits,
+like green-blue deployments, feature toggles, rate limits,
 circuitbreakers, metrics, access logs, opentracing API, shadow traffic or A/B tests.
 
 Advantages:
