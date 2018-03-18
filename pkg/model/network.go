@@ -44,13 +44,17 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// VPC that holds everything for the cluster
 	{
-
+		vpcTags := tags
+		if sharedVPC {
+			// We don't tag a shared VPC - we can identify it by its ID anyway.  Issue #4265
+			vpcTags = nil
+		}
 		t := &awstasks.VPC{
 			Name:             s(vpcName),
 			Lifecycle:        b.Lifecycle,
 			Shared:           fi.Bool(sharedVPC),
 			EnableDNSSupport: fi.Bool(true),
-			Tags:             tags,
+			Tags:             vpcTags,
 		}
 
 		if sharedVPC && b.IsKubernetesGTE("1.5") {
