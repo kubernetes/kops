@@ -140,35 +140,41 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 
 }
 
-func collectComponentFailures(client kubernetes.Interface) (failures []string, err error) {
+func collectComponentFailures(client kubernetes.Interface) ([]string, error) {
 	componentList, err := client.CoreV1().ComponentStatuses().List(metav1.ListOptions{})
-	if err == nil {
-		for _, component := range componentList.Items {
-			for _, condition := range component.Conditions {
-				if condition.Status != v1.ConditionTrue {
-					failures = append(failures, component.Name)
-				}
+	if err != nil {
+		return nil, fmt.Errorf("error listing ComponentStatuses: %v", err)
+	}
+
+	var failures []string
+	for _, component := range componentList.Items {
+		for _, condition := range component.Conditions {
+			if condition.Status != v1.ConditionTrue {
+				failures = append(failures, component.Name)
 			}
 		}
 	}
-	return
+	return failures, nil
 }
 
-func collectPodFailures(client kubernetes.Interface) (failures []string, err error) {
+func collectPodFailures(client kubernetes.Interface) ([]string, error) {
 	pods, err := client.CoreV1().Pods("kube-system").List(metav1.ListOptions{})
-	if err == nil {
-		for _, pod := range pods.Items {
-			if pod.Status.Phase == v1.PodSucceeded {
-				continue
-			}
-			for _, status := range pod.Status.ContainerStatuses {
-				if !status.Ready {
-					failures = append(failures, pod.Name)
-				}
+	if err != nil {
+		return nil, fmt.Errorf("error listing Pods: %v", err)
+	}
+
+	var failures []string
+	for _, pod := range pods.Items {
+		if pod.Status.Phase == v1.PodSucceeded {
+			continue
+		}
+		for _, status := range pod.Status.ContainerStatuses {
+			if !status.Ready {
+				failures = append(failures, pod.Name)
 			}
 		}
 	}
-	return
+	return failures, nil
 }
 
 func validateTheNodes(clusterName string, validationCluster *ValidationCluster) (*ValidationCluster, error) {
