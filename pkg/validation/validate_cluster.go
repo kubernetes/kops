@@ -105,10 +105,7 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 		return nil, fmt.Errorf("no InstanceGroup objects found")
 	}
 
-	timeout, err := time.ParseDuration("10s")
-	if err != nil {
-		return nil, fmt.Errorf("cannot set timeout %q: %v", clusterName, err)
-	}
+	timeout := 10 * time.Second
 
 	nodeAA, err := NewNodeAPIAdapter(clusterKubernetesClient, timeout)
 	if err != nil {
