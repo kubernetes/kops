@@ -32,6 +32,9 @@ type vpcInfo struct {
 }
 
 func (m *MockEC2) FindVpc(id string) *ec2.Vpc {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	vpc := m.Vpcs[id]
 	if vpc == nil {
 		return nil
@@ -162,6 +165,9 @@ func (m *MockEC2) DescribeVpcAttributeWithContext(aws.Context, *ec2.DescribeVpcA
 	return nil, nil
 }
 func (m *MockEC2) DescribeVpcAttribute(request *ec2.DescribeVpcAttributeInput) (*ec2.DescribeVpcAttributeOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeVpcs: %v", request)
 
 	vpc := m.Vpcs[*request.VpcId]
@@ -180,10 +186,10 @@ func (m *MockEC2) DescribeVpcAttribute(request *ec2.DescribeVpcAttributeInput) (
 }
 
 func (m *MockEC2) ModifyVpcAttribute(request *ec2.ModifyVpcAttributeInput) (*ec2.ModifyVpcAttributeOutput, error) {
-	glog.Infof("ModifyVpcAttribute: %v", request)
-
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
+
+	glog.Infof("ModifyVpcAttribute: %v", request)
 
 	vpc := m.Vpcs[*request.VpcId]
 	if vpc == nil {
