@@ -172,7 +172,8 @@ func initConfig() {
 		}
 	}
 
-	viper.BindEnv("KOPS_STATE_STORE")
+	viper.BindEnv("KOPS_STATE_STORE", "KOPS_STATE_STORE")
+
 	// fmt.Println("Env state:", viper.GetString("KOPS_STATE_STORE"))
 
 }
