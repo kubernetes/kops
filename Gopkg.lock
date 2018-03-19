@@ -189,6 +189,16 @@
   revision = "511bcaf42ccd42c38aba7427b6673277bf19e2a1"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/denverdino/aliyungo"
+  packages = [
+    "common",
+    "oss",
+    "util"
+  ]
+  revision = "2581e433b270014481c9ec66a91368661533febb"
+
+[[projects]]
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
   revision = "01aeca54ebda6e0fbfafd0a524d234159c05ec20"
