@@ -14,6 +14,7 @@ go_library(
         "//pkg/client/simple/vfsclientset:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/spf13/viper:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/validation/field:go_default_library",
         "//vendor/k8s.io/client-go/rest:go_default_library",
     ],
