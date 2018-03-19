@@ -402,7 +402,8 @@ resource "aws_route_table" "private-us-test-1a-privatedns2-example-com" {
 
   tags = {
     KubernetesCluster                               = "privatedns2.example.com"
-    "kubernetes.io/cluster/privatedns2.example.com" = "shared"
+    Name                                            = "private-us-test-1a.privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
     "kubernetes.io/kops/role"                       = "private-us-test-1a"
   }
 }
@@ -412,7 +413,8 @@ resource "aws_route_table" "privatedns2-example-com" {
 
   tags = {
     KubernetesCluster                               = "privatedns2.example.com"
-    "kubernetes.io/cluster/privatedns2.example.com" = "shared"
+    Name                                            = "privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
     "kubernetes.io/kops/role"                       = "public"
   }
 }
