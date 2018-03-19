@@ -243,7 +243,8 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 		t.Fatalf("unexpected error reading expected YAML: %v", err)
 	}
 
-	expectedYAML := strings.TrimSpace(string(expectedYAMLBytes))
+	//on windows, with git set to autocrlf, the reference files on disk have windows line endings
+	expectedYAML := strings.Replace(strings.TrimSpace(string(expectedYAMLBytes)), "\r\n", "\n", -1)
 
 	actualYAML := strings.Join(yamlAll, "\n\n---\n\n")
 	if actualYAML != expectedYAML {
