@@ -267,27 +267,44 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		}
 	}
 
-	// Check KubeDNS.ServerIP
+	// @check the custom kubedns options are valid
 	if c.Spec.KubeDNS != nil {
-		serverIPString := c.Spec.KubeDNS.ServerIP
-		if serverIPString == "" {
-			return field.Required(fieldSpec.Child("KubeDNS", "ServerIP"), "Cluster did not have KubeDNS.ServerIP set")
+		if c.Spec.KubeDNS.ServerIP != "" {
+			address := c.Spec.KubeDNS.ServerIP
+			ip := net.ParseIP(address)
+			if ip == nil {
+				return field.Invalid(fieldSpec.Child("kubeDNS", "serverIP"), address, "Cluster had an invalid kubeDNS.serverIP")
+			}
+			if !serviceClusterIPRange.Contains(ip) {
+				return field.Invalid(fieldSpec.Child("kubeDNS", "serverIP"), address, fmt.Sprintf("ServiceClusterIPRange %q must contain the DNS Server IP %q", c.Spec.ServiceClusterIPRange, address))
+			}
+			if c.Spec.Kubelet != nil && c.Spec.Kubelet.ClusterDNS != c.Spec.KubeDNS.ServerIP {
+				return field.Invalid(fieldSpec.Child("kubeDNS", "serverIP"), address, "Kubelet ClusterDNS did not match cluster kubeDNS.serverIP")
+			}
+			if c.Spec.MasterKubelet != nil && c.Spec.MasterKubelet.ClusterDNS != c.Spec.KubeDNS.ServerIP {
+				return field.Invalid(fieldSpec.Child("kubeDNS", "serverIP"), address, "MasterKubelet ClusterDNS did not match cluster kubeDNS.serverIP")
+			}
 		}
 
-		dnsServiceIP := net.ParseIP(serverIPString)
-		if dnsServiceIP == nil {
-			return field.Invalid(fieldSpec.Child("KubeDNS", "ServerIP"), serverIPString, "Cluster had an invalid KubeDNS.ServerIP")
+		// @check the nameservers are valid
+		for i, x := range c.Spec.KubeDNS.UpstreamNameservers {
+			if ip := net.ParseIP(x); ip == nil {
+				return field.Invalid(fieldSpec.Child("kubeDNS", "upstreamNameservers").Index(i), x, "Invalid nameserver given, should be a valid ip address")
+			}
 		}
 
-		if !serviceClusterIPRange.Contains(dnsServiceIP) {
-			return field.Invalid(fieldSpec.Child("KubeDNS", "ServerIP"), serverIPString, fmt.Sprintf("ServiceClusterIPRange %q must contain the DNS Server IP %q", c.Spec.ServiceClusterIPRange, serverIPString))
-		}
-
-		if c.Spec.Kubelet != nil && c.Spec.Kubelet.ClusterDNS != c.Spec.KubeDNS.ServerIP {
-			return field.Invalid(fieldSpec.Child("KubeDNS", "ServerIP"), serverIPString, "Kubelet ClusterDNS did not match cluster KubeDNS.ServerIP")
-		}
-		if c.Spec.MasterKubelet != nil && c.Spec.MasterKubelet.ClusterDNS != c.Spec.KubeDNS.ServerIP {
-			return field.Invalid(fieldSpec.Child("KubeDNS", "ServerIP"), serverIPString, "MasterKubelet ClusterDNS did not match cluster KubeDNS.ServerIP")
+		// @check the stubdomain if any
+		if c.Spec.KubeDNS.StubDomains != nil {
+			for domain, nameservers := range c.Spec.KubeDNS.StubDomains {
+				if len(nameservers) <= 0 {
+					return field.Invalid(fieldSpec.Child("kubeDNS", "stubDomains").Key(domain), domain, "No nameservers specified for the stub domain")
+				}
+				for i, x := range nameservers {
+					if ip := net.ParseIP(x); ip == nil {
+						return field.Invalid(fieldSpec.Child("kubeDNS", "stubDomains").Key(domain).Index(i), x, "Invalid nameserver given, should be a valid ip address")
+					}
+				}
+			}
 		}
 	}
 

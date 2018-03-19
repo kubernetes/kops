@@ -285,22 +285,24 @@ type LoadBalancerAccessSpec struct {
 
 // KubeDNSConfig defines the kube dns configuration
 type KubeDNSConfig struct {
-	// Image is the name of the docker image to run
-	// Deprecated as this is now in the addon
-	Image string `json:"image,omitempty"`
-	// Replicas is the number of pod replicas
-	// Deprecated as this is now in the addon, and controlled by autoscaler
-	Replicas int `json:"replicas,omitempty"`
-	// Domain is the dns domain
-	Domain string `json:"domain,omitempty"`
-	// ServerIP is the server ip
-	ServerIP string `json:"serverIP,omitempty"`
 	// CacheMaxSize is the maximum entries to keep in dnsmaq
 	CacheMaxSize int `json:"cacheMaxSize,omitempty"`
 	// CacheMaxConcurrent is the maximum number of concurrent queries for dnsmasq
 	CacheMaxConcurrent int `json:"cacheMaxConcurrent,omitempty"`
+	// Domain is the dns domain
+	Domain string `json:"domain,omitempty"`
+	// Image is the name of the docker image to run - @deprecated as this is now in the addon
+	Image string `json:"image,omitempty"`
+	// Replicas is the number of pod replicas - @deprecated as this is now in the addon, and controlled by autoscaler
+	Replicas int `json:"replicas,omitempty"`
 	// Provider indicates whether CoreDNS or kube-dns will be the default service discovery.
 	Provider string `json:"provider,omitempty"`
+	// ServerIP is the server ip
+	ServerIP string `json:"serverIP,omitempty"`
+	// StubDomains redirects a domains to another DNS service
+	StubDomains map[string][]string `json:"stubDomains,omitempty"`
+	// UpstreamNameservers sets the upstream nameservers for queries not on the cluster domain
+	UpstreamNameservers []string `json:"upstreamNameservers,omitempty"`
 }
 
 // ExternalDNSConfig are options of the dns-controller
