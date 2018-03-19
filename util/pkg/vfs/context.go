@@ -26,6 +26,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/denverdino/aliyungo/oss"
 	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	"golang.org/x/net/context"
@@ -46,6 +47,8 @@ type VFSContext struct {
 	gcsClient *storage.Service
 	// swiftClient is the openstack swift client
 	swiftClient *gophercloud.ServiceClient
+	// ossClient is the Aliyun Open Source Storage client
+	ossClient *oss.Client
 }
 
 var Context = VFSContext{
@@ -123,6 +126,10 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 
 	if strings.HasPrefix(p, "swift://") {
 		return c.buildOpenstackSwiftPath(p)
+	}
+
+	if strings.HasPrefix(p, "oss://") {
+		return c.buildOSSPath(p)
 	}
 
 	return nil, fmt.Errorf("unknown / unhandled path type: %q", p)
@@ -347,4 +354,28 @@ func (c *VFSContext) buildOpenstackSwiftPath(p string) (*SwiftPath, error) {
 	}
 
 	return NewSwiftPath(c.swiftClient, bucket, u.Path)
+}
+
+func (c *VFSContext) buildOSSPath(p string) (*OSSPath, error) {
+	u, err := url.Parse(p)
+	if err != nil {
+		return nil, fmt.Errorf("invalid aliyun oss path: %q", p)
+	}
+
+	if u.Scheme != "oss" {
+		return nil, fmt.Errorf("invalid aliyun oss path: %q", p)
+	}
+
+	bucket := strings.TrimSuffix(u.Host, "/")
+	if bucket == "" {
+		return nil, fmt.Errorf("invalid aliyun oss path: %q", p)
+	}
+
+	ossClient, err := NewAliOSSClient()
+	if err != nil {
+		return nil, err
+	}
+	c.ossClient = ossClient
+
+	return NewOSSPath(c.ossClient, bucket, u.Path)
 }
