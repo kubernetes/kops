@@ -357,7 +357,7 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.13.1",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.13.1-1.el7.centos.noarch.rpm",
 		Hash:          "948c518a610af631fa98aa32d9bcd43e9ddd5ebc",
-		Dependencies:  []string{"policycoreutils-python"},
+		Dependencies:  []string{"policycoreutils-python", "selinux-policy-base", "selinux-policy-targeted"},
 	},
 
 	// 17.03.2 - k8s 1.8
