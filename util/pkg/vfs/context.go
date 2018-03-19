@@ -79,6 +79,9 @@ func (c *VFSContext) ReadFile(location string) ([]byte, error) {
 			case "aws":
 				httpURL := "http://169.254.169.254/latest/" + u.Path
 				return c.readHttpLocation(httpURL, nil)
+			case "digitalocean":
+				httpURL := "http://169.254.169.254/metadata/v1" + u.Path
+				return c.readHttpLocation(httpURL, nil)
 
 			default:
 				return nil, fmt.Errorf("unknown metadata type: %q in %q", u.Host, location)
