@@ -31,6 +31,9 @@ type subnetInfo struct {
 }
 
 func (m *MockEC2) FindSubnet(id string) *ec2.Subnet {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	subnet := m.subnets[id]
 	if subnet == nil {
 		return nil
@@ -42,6 +45,9 @@ func (m *MockEC2) FindSubnet(id string) *ec2.Subnet {
 }
 
 func (m *MockEC2) SubnetIds() []string {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	var ids []string
 	for id := range m.subnets {
 		ids = append(ids, id)
@@ -101,6 +107,9 @@ func (m *MockEC2) DescribeSubnetsWithContext(aws.Context, *ec2.DescribeSubnetsIn
 }
 
 func (m *MockEC2) DescribeSubnets(request *ec2.DescribeSubnetsInput) (*ec2.DescribeSubnetsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeSubnets: %v", request)
 
 	if len(request.SubnetIds) != 0 {
