@@ -11,6 +11,7 @@ go_library(
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/resources:go_default_library",
+        "//pkg/resources/aws:go_default_library",
         "//pkg/resources/digitalocean:go_default_library",
         "//pkg/resources/gce:go_default_library",
         "//upup/pkg/fi:go_default_library",
