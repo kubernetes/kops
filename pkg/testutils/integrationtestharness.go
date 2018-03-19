@@ -68,7 +68,9 @@ func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
 		}
 		channelPath += "/"
 		h.originalDefaultChannelBase = kops.DefaultChannelBase
-		kops.DefaultChannelBase = "file://" + channelPath
+
+		// Make sure any platform-specific separators that aren't /, are converted to / for use in a file: protocol URL
+		kops.DefaultChannelBase = "file://" + filepath.ToSlash(channelPath)
 	}
 
 	return h
