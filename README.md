@@ -71,7 +71,7 @@ Kubernetes minor release number.  A minor version is the second digit in the
 release number.  kops version 1.8.0 has a minor version of 8. The numbering
 follows the semantic versioning specification, MAJOR.MINOR.PATCH.
 
-For example kops, 1.8.0 does not support Kubernetes 1.9.2, but kops 1.9.0
+For example, kops 1.8.0 does not support Kubernetes 1.9.2, but kops 1.9.0
 supports Kubernetes 1.9.2 and previous Kubernetes versions. Only when kops minor
 version matches, the Kubernetes minor version does kops officially support the
 Kubernetes release.  kops does not stop a user from installing mismatching
