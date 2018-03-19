@@ -1,8 +1,0 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
-
-go_library(
-    name = "go_default_library",
-    srcs = ["slice.go"],
-    importpath = "k8s.io/kubernetes/pkg/kubectl/util/slice",
-    visibility = ["//visibility:public"],
-)

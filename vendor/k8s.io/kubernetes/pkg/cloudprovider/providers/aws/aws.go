@@ -2922,7 +2922,7 @@ func (c *Cloud) findSubnets() ([]*ec2.Subnet, error) {
 
 	subnets, err := c.ec2.DescribeSubnets(request)
 	if err != nil {
-		return nil, fmt.Errorf("error describing subnets: %v", err)
+		return nil, fmt.Errorf("error describing subnets: %q", err)
 	}
 
 	var matches []*ec2.Subnet
@@ -2945,7 +2945,7 @@ func (c *Cloud) findSubnets() ([]*ec2.Subnet, error) {
 
 	subnets, err = c.ec2.DescribeSubnets(request)
 	if err != nil {
-		return nil, fmt.Errorf("error describing subnets: %v", err)
+		return nil, fmt.Errorf("error describing subnets: %q", err)
 	}
 
 	return subnets, nil

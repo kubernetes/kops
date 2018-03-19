@@ -1,9 +1,0 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
-
-go_library(
-    name = "go_default_library",
-    srcs = ["sorted_event_list.go"],
-    importpath = "k8s.io/kubernetes/pkg/api/events",
-    visibility = ["//visibility:public"],
-    deps = ["//vendor/k8s.io/kubernetes/pkg/apis/core:go_default_library"],
-)
