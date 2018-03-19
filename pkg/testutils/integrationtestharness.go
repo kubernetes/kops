@@ -159,6 +159,17 @@ func (h *IntegrationTestHarness) SetupMockAWS() {
 		VpcId:             aws.String("vpc-12345678"),
 	})
 
+	mockEC2.CreateSubnetWithId(&ec2.CreateSubnetInput{
+		VpcId:            aws.String("vpc-12345678"),
+		AvailabilityZone: aws.String("us-test-1a"),
+		CidrBlock:        aws.String("172.20.32.0/19"),
+	}, "subnet-12345678")
+	mockEC2.CreateSubnetWithId(&ec2.CreateSubnetInput{
+		VpcId:            aws.String("vpc-12345678"),
+		AvailabilityZone: aws.String("us-test-1a"),
+		CidrBlock:        aws.String("172.20.4.0/22"),
+	}, "subnet-abcdef")
+
 	mockEC2.AllocateAddressWithId(&ec2.AllocateAddressInput{
 		Address: aws.String("123.45.67.8"),
 	}, "eip-12345678")

@@ -101,11 +101,18 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	allSubnetsShared := true
+	allSubnetsSharedInZone := make(map[string]bool)
+	for i := range b.Cluster.Spec.Subnets {
+		subnetSpec := &b.Cluster.Spec.Subnets[i]
+		allSubnetsSharedInZone[subnetSpec.Zone] = true
+	}
+
 	for i := range b.Cluster.Spec.Subnets {
 		subnetSpec := &b.Cluster.Spec.Subnets[i]
 		sharedSubnet := subnetSpec.ProviderID != ""
 		if !sharedSubnet {
 			allSubnetsShared = false
+			allSubnetsSharedInZone[subnetSpec.Zone] = false
 		}
 	}
 
@@ -124,7 +131,11 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(igw)
 
 		if !allSubnetsShared {
-			routeTableTags := b.CloudTags(vpcName, sharedVPC)
+			// The route table is not shared if we're creating a subnet for our cluster
+			// That subnet will be owned, and will be associated with our RouteTable.
+			// On deletion we delete the subnet & the route table.
+			sharedRouteTable := false
+			routeTableTags := b.CloudTags(vpcName, sharedRouteTable)
 			routeTableTags[awsup.TagNameKopsRole] = "public"
 			publicRouteTable = &awstasks.RouteTable{
 				Name:      s(b.ClusterName()),
@@ -133,7 +144,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				VPC: b.LinkToVPC(),
 
 				Tags:   routeTableTags,
-				Shared: fi.Bool(sharedVPC),
+				Shared: fi.Bool(sharedRouteTable),
 			}
 			c.AddTask(publicRouteTable)
 
@@ -288,14 +299,17 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Private Route Table
 		//
 		// The private route table that will route to the NAT Gateway
-		routeTableTags := b.CloudTags(b.NamePrivateRouteTableInZone(zone), sharedVPC)
+		// We create an owned route table if we created any subnet in that zone.
+		// Otherwise we consider it shared.
+		routeTableShared := allSubnetsSharedInZone[zone]
+		routeTableTags := b.CloudTags(b.NamePrivateRouteTableInZone(zone), routeTableShared)
 		routeTableTags[awsup.TagNameKopsRole] = "private-" + zone
 		rt := &awstasks.RouteTable{
 			Name:      s(b.NamePrivateRouteTableInZone(zone)),
 			VPC:       b.LinkToVPC(),
 			Lifecycle: b.Lifecycle,
 
-			Shared: fi.Bool(sharedVPC),
+			Shared: fi.Bool(routeTableShared),
 			Tags:   routeTableTags,
 		}
 		c.AddTask(rt)
