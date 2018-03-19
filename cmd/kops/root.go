@@ -163,6 +163,18 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+
+	if rootCommand.RegistryPath != "" {
+		viper.SetConfigFile(rootCommand.RegistryPath)
+		// If a state file is found, read it in.
+		if err := viper.ReadInConfig(); err == nil {
+			fmt.Println("Using state file:", viper.ConfigFileUsed())
+		}
+	}
+
+	viper.BindEnv("KOPS_STATE_STORE")
+	// fmt.Println("Env state:", viper.GetString("KOPS_STATE_STORE"))
+
 }
 
 func (c *RootCmd) AddCommand(cmd *cobra.Command) {
