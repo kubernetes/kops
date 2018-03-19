@@ -65,6 +65,10 @@ func validateEtcdClusterUpdate(fp *field.Path, obj *kops.EtcdClusterSpec, status
 		allErrs = append(allErrs, field.Forbidden(fp.Child("Name"), "Name cannot be changed"))
 	}
 
+	if obj.Version != old.Version {
+		allErrs = append(allErrs, field.Forbidden(fp.Child("Version"), "Version cannot be changed"))
+	}
+
 	var etcdClusterStatus *kops.EtcdClusterStatus
 	if status != nil {
 		for i := range status.EtcdClusters {
