@@ -169,10 +169,12 @@ func (_ *LoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e,
 
 	glog.V(2).Infof("Configuring ELB attributes for ELB %q", loadBalancerName)
 
-	_, err := t.Cloud.ELB().ModifyLoadBalancerAttributes(request)
+	response, err := t.Cloud.ELB().ModifyLoadBalancerAttributes(request)
 	if err != nil {
 		return fmt.Errorf("error configuring ELB attributes for ELB %q: %v", loadBalancerName, err)
 	}
+
+	glog.V(4).Infof("modified ELB attributes for ELB %q, response %+v", loadBalancerName, response)
 
 	return nil
 }
