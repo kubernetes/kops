@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	"github.com/spf13/viper"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/rest"
 	gceacls "k8s.io/kops/pkg/acls/gce"
@@ -64,7 +65,7 @@ Trailing slash will be trimmed.`
 
 func (f *Factory) Clientset() (simple.Clientset, error) {
 	if f.clientset == nil {
-		registryPath := f.options.RegistryPath
+		registryPath := viper.GetString("KOPS_STATE_STORE")
 		if registryPath == "" {
 			return nil, field.Required(field.NewPath("State Store"), STATE_ERROR)
 		}
