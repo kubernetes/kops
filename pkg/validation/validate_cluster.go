@@ -19,7 +19,6 @@ package validation
 import (
 	"fmt"
 	"net/url"
-	"time"
 
 	"net"
 
@@ -105,26 +104,18 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 		return nil, fmt.Errorf("no InstanceGroup objects found")
 	}
 
-	timeout, err := time.ParseDuration("10s")
-	if err != nil {
-		return nil, fmt.Errorf("cannot set timeout %q: %v", clusterName, err)
-	}
-
-	nodeAA, err := NewNodeAPIAdapter(clusterKubernetesClient, timeout)
-	if err != nil {
-		return nil, fmt.Errorf("error building node adapter for %q: %v", clusterName, err)
-	}
-
 	validationCluster := &ValidationCluster{
 		ClusterName:    clusterName,
 		ErrorMessage:   ClusterValidationPassed,
 		InstanceGroups: instanceGroups,
 	}
 
-	validationCluster.NodeList, err = nodeAA.GetAllNodes()
+	nodes, err := clusterKubernetesClient.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("cannot get nodes for %q: %v", clusterName, err)
+		return nil, fmt.Errorf("error querying nodes: %v", err)
 	}
+
+	validationCluster.NodeList = nodes
 
 	validationCluster.ComponentFailures, err = collectComponentFailures(clusterKubernetesClient)
 	if err != nil {
@@ -192,10 +183,10 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 			Zone:     node.ObjectMeta.Labels["failure-domain.beta.kubernetes.io/zone"],
 			Hostname: node.ObjectMeta.Labels["kubernetes.io/hostname"],
 			Role:     role,
-			Status:   GetNodeConditionStatus(node),
+			Status:   GetNodeReadyStatus(node),
 		}
 
-		ready := IsNodeOrMasterReady(node)
+		ready := isNodeReady(node)
 
 		// TODO: Use instance group role instead...
 		if n.Role == "master" {
