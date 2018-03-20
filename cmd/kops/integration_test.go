@@ -169,6 +169,11 @@ func TestPhaseNetwork(t *testing.T) {
 	runTestPhase(t, "lifecyclephases.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseNetwork)
 }
 
+func TestExternalLoadBalancer(t *testing.T) {
+	runTestAWS(t, "externallb.example.com", "externallb", "v1alpha2", false, 1)
+	runTestCloudformation(t, "externallb.example.com", "externallb", "v1alpha2", false)
+}
+
 // TestPhaseIAM tests the output of tf for the iam phase
 func TestPhaseIAM(t *testing.T) {
 	t.Skip("unable to test w/o allowing failed validation")
