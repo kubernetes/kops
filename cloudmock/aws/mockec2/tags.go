@@ -41,6 +41,9 @@ func (m *MockEC2) CreateTagsWithContext(aws.Context, *ec2.CreateTagsInput, ...re
 }
 
 func (m *MockEC2) CreateTags(request *ec2.CreateTagsInput) (*ec2.CreateTagsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("CreateTags %v", request)
 
 	for _, v := range request.Resources {
@@ -156,6 +159,9 @@ func (m *MockEC2) getTags(resourceType string, resourceId string) []*ec2.Tag {
 }
 
 func (m *MockEC2) DescribeTags(request *ec2.DescribeTagsInput) (*ec2.DescribeTagsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeTags %v", request)
 
 	var tags []*ec2.TagDescription
