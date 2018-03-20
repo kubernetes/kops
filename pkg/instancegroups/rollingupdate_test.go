@@ -85,6 +85,9 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
 
+	cluster := &kopsapi.Cluster{}
+	cluster.Name = "test.k8s.local"
+
 	c := &RollingUpdateCluster{
 		Cloud:           mockcloud,
 		MasterInterval:  1 * time.Millisecond,
@@ -207,7 +210,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		},
 	}
 
-	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	if err != nil {
 		t.Errorf("Error on rolling update: %v", err)
 	}
@@ -226,6 +229,9 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
 
+	cluster := &kopsapi.Cluster{}
+	cluster.Name = "test.k8s.local"
+
 	c := &RollingUpdateCluster{
 		Cloud:           mockcloud,
 		MasterInterval:  1 * time.Millisecond,
@@ -317,7 +323,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		},
 	}
 
-	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	if err != nil {
 		t.Errorf("Error on rolling update: %v", err)
 	}
@@ -364,6 +370,9 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 
 	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
+
+	cluster := &kopsapi.Cluster{}
+	cluster.Name = "test.k8s.local"
 
 	c := &RollingUpdateCluster{
 		Cloud:           mockcloud,
@@ -455,7 +464,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		},
 	}
 
-	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	if err != nil {
 		t.Errorf("Error on rolling update: %v", err)
 	}
@@ -488,7 +497,7 @@ func TestRollingUpdateEmptyGroup(t *testing.T) {
 	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 
-	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
+	err := c.RollingUpdate(groups, &kopsapi.Cluster{}, &kopsapi.InstanceGroupList{})
 	if err != nil {
 		t.Errorf("Error on rolling update: %v", err)
 	}
@@ -535,6 +544,9 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 
 	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
+
+	cluster := &kopsapi.Cluster{}
+	cluster.Name = "test.k8s.local"
 
 	c := &RollingUpdateCluster{
 		Cloud:           mockcloud,
@@ -626,7 +638,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		},
 	}
 
-	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	if err == nil {
 		t.Errorf("Error expected on rolling update: %v", err)
 	}
