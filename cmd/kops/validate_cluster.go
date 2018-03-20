@@ -64,9 +64,14 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    validateLong,
 		Example: validateExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunValidateCluster(f, cmd, args, os.Stdout, options)
+			result, err := RunValidateCluster(f, cmd, args, os.Stdout, options)
 			if err != nil {
 				exitWithError(err)
+			}
+			// We want the validate command to exit non-zero if validation found a problem,
+			// even if we didn't really hit an error during validation.
+			if len(result.PodFailures) != 0 {
+				os.Exit(2)
 			}
 		},
 	}
@@ -76,25 +81,25 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *ValidateClusterOptions) error {
+func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *ValidateClusterOptions) (*validation.ValidationCluster, error) {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	cluster, err := rootCommand.Cluster()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	clientSet, err := f.Clientset()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	list, err := clientSet.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
-		return fmt.Errorf("cannot get InstanceGroups for %q: %v", cluster.ObjectMeta.Name, err)
+		return nil, fmt.Errorf("cannot get InstanceGroups for %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
 	if options.output == OutputTable {
@@ -108,7 +113,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	}
 
 	if len(instanceGroups) == 0 {
-		return fmt.Errorf("no InstanceGroup objects found\n")
+		return nil, fmt.Errorf("no InstanceGroup objects found")
 	}
 
 	// TODO: Refactor into util.Factory
@@ -117,12 +122,12 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		clientcmd.NewDefaultClientConfigLoadingRules(),
 		&clientcmd.ConfigOverrides{CurrentContext: contextName}).ClientConfig()
 	if err != nil {
-		return fmt.Errorf("Cannot load kubecfg settings for %q: %v\n", contextName, err)
+		return nil, fmt.Errorf("Cannot load kubecfg settings for %q: %v", contextName, err)
 	}
 
 	k8sClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return fmt.Errorf("Cannot build kube api client for %q: %v\n", contextName, err)
+		return nil, fmt.Errorf("Cannot build kubernetes api client for %q: %v", contextName, err)
 	}
 
 	// Do not use if we are running gossip
@@ -130,7 +135,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		// TODO we may want to return validation.ValidationCluster instead of building it later on
 		hasPlaceHolderIPAddress, err := validation.HasPlaceHolderIP(contextName)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		if hasPlaceHolderIPAddress {
@@ -149,35 +154,47 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 			switch options.output {
 			case OutputTable:
 				fmt.Println(message)
-				return validationFailed
+				return validationCluster, validationFailed
 			case OutputYaml:
-				return validateClusterOutputYAML(validationCluster, validationFailed, out)
+				if err := validateClusterOutputYAML(validationCluster, validationFailed, out); err != nil {
+					return nil, err
+				}
 			case OutputJSON:
-				return validateClusterOutputJSON(validationCluster, validationFailed, out)
+				if err := validateClusterOutputJSON(validationCluster, validationFailed, out); err != nil {
+					return nil, err
+				}
 			default:
-				return fmt.Errorf("Unknown output format: %q", options.output)
+				return nil, fmt.Errorf("Unknown output format: %q", options.output)
 			}
 
+			return validationCluster, validationFailed
 		}
 	}
 
 	validationCluster, validationFailed := validation.ValidateCluster(cluster.ObjectMeta.Name, list, k8sClient)
 
 	if validationCluster == nil || validationCluster.NodeList == nil || validationCluster.NodeList.Items == nil {
-		return validationFailed
+		return validationCluster, validationFailed
 	}
 
 	switch options.output {
 	case OutputTable:
-		return validateClusterOutputTable(validationCluster, validationFailed, instanceGroups, out)
+		if err := validateClusterOutputTable(validationCluster, validationFailed, instanceGroups, out); err != nil {
+			return nil, err
+		}
 	case OutputYaml:
-		return validateClusterOutputYAML(validationCluster, validationFailed, out)
+		if err := validateClusterOutputYAML(validationCluster, validationFailed, out); err != nil {
+			return nil, err
+		}
 	case OutputJSON:
-		return validateClusterOutputJSON(validationCluster, validationFailed, out)
+		if err := validateClusterOutputJSON(validationCluster, validationFailed, out); err != nil {
+			return nil, err
+		}
 	default:
-		return fmt.Errorf("Unknown output format: %q", options.output)
+		return nil, fmt.Errorf("Unknown output format: %q", options.output)
 	}
 
+	return validationCluster, validationFailed
 }
 
 func validateClusterOutputTable(validationCluster *validation.ValidationCluster, validationFailed error, instanceGroups []api.InstanceGroup, out io.Writer) error {
