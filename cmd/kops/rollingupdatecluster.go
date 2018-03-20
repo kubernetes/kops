@@ -380,5 +380,5 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		PostDrainDelay:    options.PostDrainDelay,
 		ValidationTimeout: options.ValidationTimeout,
 	}
-	return d.RollingUpdate(groups, list)
+	return d.RollingUpdate(groups, cluster, list)
 }

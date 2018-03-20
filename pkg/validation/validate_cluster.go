@@ -93,7 +93,9 @@ func HasPlaceHolderIP(clusterName string) (bool, error) {
 }
 
 // ValidateCluster validate a k8s cluster with a provided instance group list
-func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupList, clusterKubernetesClient kubernetes.Interface) (*ValidationCluster, error) {
+func ValidateCluster(cluster *kops.Cluster, instanceGroupList *kops.InstanceGroupList, clusterKubernetesClient kubernetes.Interface) (*ValidationCluster, error) {
+	clusterName := cluster.Name
+
 	var instanceGroups []*kops.InstanceGroup
 
 	for i := range instanceGroupList.Items {

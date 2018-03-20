@@ -161,7 +161,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		}
 	}
 
-	validationCluster, validationFailed := validation.ValidateCluster(cluster.ObjectMeta.Name, list, k8sClient)
+	validationCluster, validationFailed := validation.ValidateCluster(cluster, list, k8sClient)
 
 	if validationCluster == nil || validationCluster.NodeList == nil || validationCluster.NodeList.Items == nil {
 		return validationFailed
