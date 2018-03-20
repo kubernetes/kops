@@ -141,13 +141,23 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 			return nil, err
 		}
 	case OutputYaml:
-		if err := validateClusterOutputYAML(validationCluster, validationFailed, out); err != nil {
-			return nil, err
+		y, err := yaml.Marshal(validationCluster)
+		if err != nil {
+			return nil, fmt.Errorf("unable to marshal YAML: %v", err)
 		}
+		if _, err := out.Write(y); err != nil {
+			return nil, fmt.Errorf("unable to print data: %v", err)
+		}
+
 	case OutputJSON:
-		if err := validateClusterOutputJSON(validationCluster, validationFailed, out); err != nil {
-			return nil, err
+		j, err := json.Marshal(validationCluster)
+		if err != nil {
+			return nil, fmt.Errorf("unable to marshal JSON: %v", err)
 		}
+		if _, err := out.Write(j); err != nil {
+			return nil, fmt.Errorf("unable to print data: %v", err)
+		}
+
 	default:
 		return nil, fmt.Errorf("Unknown output format: %q", options.output)
 	}
@@ -249,27 +259,4 @@ func validateClusterOutputTable(validationCluster *validation.ValidationCluster,
 		fmt.Fprintf(out, "Ready Node(s) %d out of %d.\n", len(validationCluster.NodesReadyArray), validationCluster.NodesCount)
 		return validationFailed
 	}
-}
-
-func validateClusterOutputYAML(validationCluster *validation.ValidationCluster, validationFailed error, out io.Writer) error {
-	y, err := yaml.Marshal(validationCluster)
-	if err != nil {
-		return fmt.Errorf("unable to marshall YAML: %v\n", err)
-	}
-	return validateOutput(y, validationFailed, out)
-}
-
-func validateClusterOutputJSON(validationCluster *validation.ValidationCluster, validationFailed error, out io.Writer) error {
-	j, err := json.Marshal(validationCluster)
-	if err != nil {
-		return fmt.Errorf("unable to marshall JSON: %v\n", err)
-	}
-	return validateOutput(j, validationFailed, out)
-}
-
-func validateOutput(b []byte, validationFailed error, out io.Writer) error {
-	if _, err := out.Write(b); err != nil {
-		return fmt.Errorf("unable to print data: %v\n", err)
-	}
-	return validationFailed
 }
