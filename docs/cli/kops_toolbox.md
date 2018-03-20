@@ -38,4 +38,5 @@ Misc infrequently used commands.
 * [kops toolbox convert-imported](kops_toolbox_convert-imported.md)	 - Convert an imported cluster into a kops cluster.
 * [kops toolbox dump](kops_toolbox_dump.md)	 - Dump cluster information
 * [kops toolbox template](kops_toolbox_template.md)	 - Generate cluster.yaml from template
+* [kops cluster templating] (https://github.com/kubernetes/kops/blob/master/docs/cluster_template.md) - This document details the template language used
 
