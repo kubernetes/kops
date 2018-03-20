@@ -189,7 +189,7 @@ func (m *MockEC2) AssociateRouteTable(request *ec2.AssociateRouteTableInput) (*e
 		return nil, fmt.Errorf("RouteTable not found")
 	}
 
-	associationID := m.allocateId("rta-")
+	associationID := m.allocateId("rta")
 
 	rt.Associations = append(rt.Associations, &ec2.RouteTableAssociation{
 		RouteTableId:            rt.RouteTableId,
