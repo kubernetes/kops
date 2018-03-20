@@ -232,7 +232,7 @@ func validateClusterOutputTable(validationCluster *validation.ValidationCluster,
 	})
 
 	nodeTable.AddColumn("READY", func(n v1.Node) v1.ConditionStatus {
-		return validation.GetNodeConditionStatus(&n)
+		return validation.GetNodeReadyStatus(&n)
 	})
 
 	nodeTable.AddColumn("ROLE", func(n v1.Node) string {
