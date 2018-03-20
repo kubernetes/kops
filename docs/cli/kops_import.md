@@ -13,7 +13,7 @@ Imports a kubernetes cluster created by kube-up.sh into a state store.  This com
 ### Examples
 
 ```
-  # Import a cluser
+  # Import a cluster
   kops import cluster --name k8s-cluster.example.com --region us-east-1 \
   --state=s3://k8s-cluster.example.com
 ```
