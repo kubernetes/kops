@@ -55,4 +55,5 @@ kops toolbox template
 
 ### SEE ALSO
 * [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands.
+* [kops cluster templating](https://github.com/kubernetes/kops/blob/master/docs/cluster_template.md)	 - This document details the template language used
 
