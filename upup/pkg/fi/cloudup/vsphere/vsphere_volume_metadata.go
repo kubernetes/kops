@@ -35,7 +35,7 @@ type VolumeMetadata struct {
 	VolumeId string `json:"volumeId,omitempty"`
 }
 
-// EtcdMemberSpec is the specification of members of etcd cluser, to be associated with this volume.
+// EtcdMemberSpec is the specification of members of etcd cluster, to be associated with this volume.
 type EtcdMemberSpec struct {
 	// Name is the name of the member within the etcd cluster
 	Name          string `json:"name,omitempty"`

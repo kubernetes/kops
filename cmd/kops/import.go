@@ -28,7 +28,7 @@ var (
 	only support AWS clusters at this time.`))
 
 	importExample = templates.Examples(i18n.T(`
-	# Import a cluser
+	# Import a cluster
 	kops import cluster --name k8s-cluster.example.com --region us-east-1 \
 	  --state=s3://k8s-cluster.example.com`))
 
