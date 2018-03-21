@@ -27,6 +27,9 @@ import (
 )
 
 func (m *MockEC2) DescribeDhcpOptions(request *ec2.DescribeDhcpOptionsInput) (*ec2.DescribeDhcpOptionsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeDhcpOptions: %v", request)
 
 	if request.DryRun != nil {

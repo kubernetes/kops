@@ -125,6 +125,9 @@ func (m *MockEC2) DescribeVolumesWithContext(aws.Context, *ec2.DescribeVolumesIn
 	return nil, nil
 }
 func (m *MockEC2) DescribeVolumes(request *ec2.DescribeVolumesInput) (*ec2.DescribeVolumesOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeVolumes: %v", request)
 
 	if request.VolumeIds != nil {
