@@ -18,9 +18,8 @@ package validation
 
 import (
 	"fmt"
-	"net/url"
-
 	"net"
+	"net/url"
 
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,6 +27,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/dns"
 )
 
 // ValidationCluster a cluster to validate.
@@ -94,6 +94,32 @@ func HasPlaceHolderIP(clusterName string) (bool, error) {
 // ValidateCluster validate a k8s cluster with a provided instance group list
 func ValidateCluster(cluster *kops.Cluster, instanceGroupList *kops.InstanceGroupList, clusterKubernetesClient kubernetes.Interface) (*ValidationCluster, error) {
 	clusterName := cluster.Name
+
+	// Do not use if we are running gossip
+	if !dns.IsGossipHostname(clusterName) {
+		contextName := clusterName
+
+		hasPlaceHolderIPAddress, err := HasPlaceHolderIP(contextName)
+		if err != nil {
+			return nil, err
+		}
+
+		if hasPlaceHolderIPAddress {
+			message := "Validation Failed\n\n" +
+				"The dns-controller Kubernetes deployment has not updated the Kubernetes cluster's API DNS entry to the correct IP address." +
+				"  The API DNS IP address is the placeholder address that kops creates: 203.0.113.123." +
+				"  Please wait about 5-10 minutes for a master to start, dns-controller to launch, and DNS to propagate." +
+				"  The protokube container and dns-controller deployment logs may contain more diagnostic information." +
+				"  Etcd and the API DNS entries must be updated for a kops Kubernetes cluster to start."
+			validationCluster := &ValidationCluster{
+				ClusterName:  clusterName,
+				ErrorMessage: message,
+				Status:       ClusterValidationFailed,
+			}
+			validationFailed := fmt.Errorf("\nCannot reach cluster's API server: unable to Validate Cluster: %s", clusterName)
+			return validationCluster, validationFailed
+		}
+	}
 
 	var instanceGroups []*kops.InstanceGroup
 

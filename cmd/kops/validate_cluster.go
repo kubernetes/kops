@@ -34,7 +34,6 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	apiutil "k8s.io/kops/pkg/apis/kops/util"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/util/pkg/tables"
 )
@@ -128,47 +127,6 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	k8sClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, fmt.Errorf("Cannot build kubernetes api client for %q: %v", contextName, err)
-	}
-
-	// Do not use if we are running gossip
-	if !dns.IsGossipHostname(cluster.ObjectMeta.Name) {
-		// TODO we may want to return validation.ValidationCluster instead of building it later on
-		hasPlaceHolderIPAddress, err := validation.HasPlaceHolderIP(contextName)
-		if err != nil {
-			return nil, err
-		}
-
-		if hasPlaceHolderIPAddress {
-			message := "Validation Failed\n\n" +
-				"The dns-controller Kubernetes deployment has not updated the Kubernetes cluster's API DNS entry to the correct IP address." +
-				"  The API DNS IP address is the placeholder address that kops creates: 203.0.113.123." +
-				"  Please wait about 5-10 minutes for a master to start, dns-controller to launch, and DNS to propagate." +
-				"  The protokube container and dns-controller deployment logs may contain more diagnostic information." +
-				"  Etcd and the API DNS entries must be updated for a kops Kubernetes cluster to start."
-			validationCluster := &validation.ValidationCluster{
-				ClusterName:  cluster.ObjectMeta.Name,
-				ErrorMessage: message,
-				Status:       validation.ClusterValidationFailed,
-			}
-			validationFailed := fmt.Errorf("\nCannot reach cluster's API server: unable to Validate Cluster: %s", cluster.ObjectMeta.Name)
-			switch options.output {
-			case OutputTable:
-				fmt.Println(message)
-				return validationCluster, validationFailed
-			case OutputYaml:
-				if err := validateClusterOutputYAML(validationCluster, validationFailed, out); err != nil {
-					return nil, err
-				}
-			case OutputJSON:
-				if err := validateClusterOutputJSON(validationCluster, validationFailed, out); err != nil {
-					return nil, err
-				}
-			default:
-				return nil, fmt.Errorf("Unknown output format: %q", options.output)
-			}
-
-			return validationCluster, validationFailed
-		}
 	}
 
 	validationCluster, validationFailed := validation.ValidateCluster(cluster, list, k8sClient)
