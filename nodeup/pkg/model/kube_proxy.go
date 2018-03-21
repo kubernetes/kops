@@ -217,6 +217,19 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		addHostPathMapping(pod, container, "etchosts", "/etc/hosts")
 	}
 
+	// Mount the iptables lock file
+	if b.IsKubernetesGTE("1.9") {
+		addHostPathMapping(pod, container, "iptableslock", "/run/xtables.lock").ReadOnly = false
+
+		vol := pod.Spec.Volumes[len(pod.Spec.Volumes)-1]
+		if vol.Name != "iptableslock" {
+			// Sanity check
+			glog.Fatalf("expected volume to be last volume added")
+		}
+		hostPathType := v1.HostPathFileOrCreate
+		vol.HostPath.Type = &hostPathType
+	}
+
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 
 	// Note that e.g. kubeadm has this as a daemonset, but this doesn't have a lot of test coverage AFAICT
