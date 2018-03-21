@@ -26,7 +26,7 @@ Automates checking for and applying Kubernetes updates. This upgrades a cluster 
 
 ```
       --alsologtostderr                  log to standard error as well as files
-      --config string                    config file (default is $HOME/.kops.yaml)
+      --config string                    yaml config file (default is $HOME/.kops.yaml)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
