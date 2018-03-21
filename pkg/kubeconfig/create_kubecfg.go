@@ -18,6 +18,7 @@ package kubeconfig
 
 import (
 	"fmt"
+	"net"
 	"sort"
 
 	"github.com/golang/glog"
@@ -36,8 +37,10 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 
 	server := "https://" + master
 	topology := cluster.Spec.Topology
+	ips, lookupErr := net.LookupIP(master)
+	privateDNSResolves := lookupErr == nil && len(ips) > 0
 
-	if dns.IsGossipHostname(master) || topology.DNS.Type == kops.DNSTypePrivate {
+	if dns.IsGossipHostname(master) || (topology.DNS.Type == kops.DNSTypePrivate && !privateDNSResolves) {
 		ingresses, err := status.GetApiIngressStatus(cluster)
 		if err != nil {
 			return nil, fmt.Errorf("error getting ingress status: %v", err)
