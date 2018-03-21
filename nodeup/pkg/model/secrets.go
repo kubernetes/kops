@@ -50,7 +50,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("certificate %q not found", fi.CertificateId_CA)
 		}
 
-		serialized, err := ca.AsString()
+		serialized, err := ca.Primary.AsString()
 		if err != nil {
 			return err
 		}
