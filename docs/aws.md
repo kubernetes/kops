@@ -271,6 +271,8 @@ to revert or recover a previous state store.
 aws s3api put-bucket-versioning --bucket prefix-example-com-state-store  --versioning-configuration Status=Enabled
 ```
 
+Information regarding cluster state store location must be set when using `kops` cli see [state store](state.md) for further information.
+
 ### Sharing an S3 bucket across multiple accounts
 
 It is possible to use a single S3 bucket for storing kops state for clusters
