@@ -289,7 +289,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 		if kubecfgCert != nil {
 			glog.Infof("Exporting kubecfg for cluster")
-			conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{})
+			conf, err := kubeconfig.BuildKubecfg(rootCommand.PathOptions(), cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{})
 			if err != nil {
 				return nil, err
 			}

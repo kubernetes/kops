@@ -75,6 +75,8 @@ type RootCmd struct {
 
 	clusterName string
 
+	pathOptions *clientcmd.PathOptions
+
 	cobraCommand *cobra.Command
 }
 
@@ -101,6 +103,8 @@ func init() {
 
 	factory := util.NewFactory(&rootCommand.FactoryOptions)
 	rootCommand.factory = factory
+
+	rootCommand.pathOptions = clientcmd.NewDefaultPathOptions()
 
 	NewCmdRoot(factory, os.Stdout)
 }
@@ -130,6 +134,9 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 
 	defaultClusterName := os.Getenv("KOPS_CLUSTER_NAME")
 	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", defaultClusterName, "Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable")
+
+	// file paths are common to all sub commands
+	cmd.PersistentFlags().StringVar(&rootCommand.pathOptions.LoadingRules.ExplicitPath, rootCommand.pathOptions.ExplicitFileFlag, rootCommand.pathOptions.LoadingRules.ExplicitPath, "use a particular kubeconfig file")
 
 	// create subcommands
 	cmd.AddCommand(NewCmdCompletion(f, out))
@@ -214,9 +221,13 @@ func (c *RootCmd) ClusterName() string {
 	return c.clusterName
 }
 
+func (c *RootCmd) PathOptions() *clientcmd.PathOptions {
+	return c.pathOptions
+}
+
 func ClusterNameFromKubecfg() string {
 	// Read from kubeconfig
-	pathOptions := clientcmd.NewDefaultPathOptions()
+	pathOptions := rootCommand.PathOptions()
 
 	clusterName := ""
 

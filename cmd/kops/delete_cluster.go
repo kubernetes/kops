@@ -202,7 +202,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 		}
 	}
 
-	b := kubeconfig.NewKubeconfigBuilder()
+	b := kubeconfig.NewKubeconfigBuilder(rootCommand.PathOptions())
 	b.Context = clusterName
 	err = b.DeleteKubeConfig()
 	if err != nil {

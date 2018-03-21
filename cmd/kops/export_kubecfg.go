@@ -93,7 +93,7 @@ func RunExportKubecfg(f *util.Factory, out io.Writer, options *ExportKubecfgOpti
 		return err
 	}
 
-	conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{})
+	conf, err := kubeconfig.BuildKubecfg(rootCommand.PathOptions(), cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{})
 	if err != nil {
 		return err
 	}
