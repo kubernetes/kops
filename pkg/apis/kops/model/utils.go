@@ -33,8 +33,9 @@ func FindSubnet(c *kops.Cluster, subnetName string) *kops.ClusterSubnetSpec {
 	return nil
 }
 
-// FindZonesForInstanceGroup computes the zones for an instance group, which are the zones directly declared in the InstanceGroup, or the subnet zones
-func FindZonesForInstanceGroup(c *kops.Cluster, ig *kops.InstanceGroup) ([]string, error) {
+// FindZonesOrRegionForInstanceGroup computes the zones or region for an instance group,
+// which are the zones/regions directly declared in the InstanceGroup, or the subnet
+func FindZonesOrRegionForInstanceGroup(c *kops.Cluster, ig *kops.InstanceGroup) ([]string, error) {
 	zones := sets.NewString(ig.Spec.Zones...)
 	for _, subnetName := range ig.Spec.Subnets {
 		subnet := FindSubnet(c, subnetName)
@@ -44,6 +45,13 @@ func FindZonesForInstanceGroup(c *kops.Cluster, ig *kops.InstanceGroup) ([]strin
 
 		if subnet.Zone != "" {
 			zones.Insert(subnet.Zone)
+			continue
+		}
+
+		// fallback to setting the Region
+		if subnet.Region != "" {
+			zones.Insert(subnet.Region)
+			continue
 		}
 	}
 	return zones.List(), nil

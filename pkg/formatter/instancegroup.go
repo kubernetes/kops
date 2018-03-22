@@ -37,7 +37,7 @@ func RenderInstanceGroupSubnets(cluster *kops.Cluster) InstanceGroupRenderFuncti
 //RenderInstanceGroupZones renders the zone names for an InstanceGroup
 func RenderInstanceGroupZones(cluster *kops.Cluster) InstanceGroupRenderFunction {
 	return func(ig *kops.InstanceGroup) string {
-		zones, err := model.FindZonesForInstanceGroup(cluster, ig)
+		zones, err := model.FindZonesOrRegionForInstanceGroup(cluster, ig)
 		if err != nil {
 			glog.Warningf("error fetching zones for instancegroup: %v", err)
 			return ""

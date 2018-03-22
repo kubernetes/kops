@@ -63,7 +63,7 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				return fmt.Errorf("InstanceGroup not found (for etcd %s/%s): %q", m.Name, etcd.Name, igName)
 			}
 
-			zones, err := model.FindZonesForInstanceGroup(b.Cluster, ig)
+			zones, err := model.FindZonesOrRegionForInstanceGroup(b.Cluster, ig)
 			if err != nil {
 				return err
 			}

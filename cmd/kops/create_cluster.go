@@ -521,10 +521,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 		if subnet == nil {
 			subnet = &api.ClusterSubnetSpec{
-				Name: subnetName,
-				// region and zone are the same for DO
+				Name:   subnetName,
 				Region: region,
-				Zone:   region,
 			}
 			cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
 		}
@@ -631,7 +629,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		masterAZs := sets.NewString()
 		duplicateAZs := false
 		for _, ig := range masters {
-			zones, err := model.FindZonesForInstanceGroup(cluster, ig)
+			zones, err := model.FindZonesOrRegionForInstanceGroup(cluster, ig)
 			if err != nil {
 				return err
 			}
