@@ -224,7 +224,7 @@ aws acm resend-validation-email
 
 kube-ingress-aws-controller will be deployed as deployment with 1
 replica, which is ok for production, because it's only configuring
-ALBs. Skipper will be deployed as daemonset and we create 2 ingress, 2
+ALBs. Skipper will be deployed as daemonset and we create 2 ingresses, 2
 services and 2 deployments to show green-blue deployments.
 
 Change region and hostnames depending on
