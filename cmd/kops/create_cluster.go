@@ -929,6 +929,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.Networking.AmazonVPC = &api.AmazonVPCNetworkingSpec{}
 	case "cilium":
 		cluster.Spec.Networking.Cilium = &api.CiliumNetworkingSpec{}
+	case "amazonvpcipvlan":
+		cluster.Spec.Networking.AmazonVPCIPVlan = &api.AmazonVPCIPVlanNetworkingSpec{}
 	default:
 		return fmt.Errorf("unknown networking mode %q", c.Networking)
 	}

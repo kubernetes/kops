@@ -18,6 +18,7 @@ package nodeup
 
 import (
 	"errors"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -27,8 +28,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
-
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model"
@@ -247,6 +252,14 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		loader.Builders = append(loader.Builders, &model.EtcdTLSBuilder{NodeupModelContext: modelContext})
 	}
 
+	loader.TemplateFunctions["MapJson"] = func(m map[string]string) (string, error) {
+		bytes, err := json.Marshal(m)
+		if err != nil {
+			return "", err
+		}
+		return string(bytes), nil
+	}
+
 	taskMap, err := loader.Build(c.ModelDir)
 	if err != nil {
 		return fmt.Errorf("error building loader: %v", err)
@@ -340,7 +353,67 @@ func evaluateSpec(c *api.Cluster) error {
 		}
 	}
 
+	if c.Spec.Networking.AmazonVPCIPVlan != nil && len(c.Spec.Networking.AmazonVPCIPVlan.SecurityGroupIds) == 0 {
+		// use the same security groups as the node when no alternative has been provided
+		ids, err := evaluateSecurityGroups(c.Spec.NetworkID)
+		if err != nil {
+			return err
+		}
+		c.Spec.Networking.AmazonVPCIPVlan.SecurityGroupIds = ids
+	}
+
 	return nil
+}
+
+func evaluateSecurityGroups(vpcId string) ([]string, error) {
+	config := aws.NewConfig()
+	config = config.WithCredentialsChainVerboseErrors(true)
+
+	s, err := session.NewSession(config)
+	if err != nil {
+		return nil, fmt.Errorf("error starting new AWS session: %v", err)
+	}
+	s.Handlers.Send.PushFront(func(r *request.Request) {
+		// Log requests
+		glog.V(4).Infof("AWS API Request: %s/%s", r.ClientInfo.ServiceName, r.Operation.Name)
+	})
+
+	metadata := ec2metadata.New(s, config)
+
+	region, err := metadata.Region()
+	if err != nil {
+		return nil, fmt.Errorf("error querying ec2 metadata service (for az/region): %v", err)
+	}
+
+	sgNames, err := metadata.GetMetadata("security-groups")
+	if err != nil {
+		return nil, fmt.Errorf("error querying ec2 metadata service (for security-groups): %v", err)
+	}
+	svc := ec2.New(s, config.WithRegion(region))
+
+	result, err := svc.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{
+		Filters: []*ec2.Filter{
+			{
+				Name:   aws.String("group-name"),
+				Values: aws.StringSlice(strings.Fields(sgNames)),
+			},
+			{
+				Name:   aws.String("vpc-id"),
+				Values: []*string{aws.String(vpcId)},
+			},
+		},
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error looking up instance security group ids: %v", err)
+	}
+	var sgIds []string
+	for _, group := range result.SecurityGroups {
+		sgIds = append(sgIds, *group.GroupId)
+	}
+
+	return sgIds, nil
+
 }
 
 func evaluateHostnameOverride(hostnameOverride string) (string, error) {
