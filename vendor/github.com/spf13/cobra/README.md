@@ -172,11 +172,11 @@ func main() {
 Cobra provides its own program that will create your application and add any
 commands you want. It's the easiest way to incorporate Cobra into your application.
 
-In order to use the cobra command, compile it using the following command:
+In order to use the Cobra command, compile it using the following command:
 
     > go install github.com/spf13/cobra/cobra
 
-This will create the cobra executable under your go path bin directory!
+This will create the Cobra executable under your go path bin directory!
 
 ### cobra init
 
@@ -256,7 +256,7 @@ license:
 
 ## Manually implementing Cobra
 
-To manually implement cobra you need to create a bare main.go file and a RootCmd file.
+To manually implement Cobra you need to create a bare main.go file and a RootCmd file.
 You will optionally provide additional commands as you see fit.
 
 ### Create the root command
