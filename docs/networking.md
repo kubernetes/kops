@@ -2,9 +2,9 @@
 
 Kubernetes Operations (kops) currently supports 4 networking modes:
 
-* `kubenet` kubernetes native networking via a CNI plugin.  This is the default.
+* `kubenet` Kubernetes native networking via a CNI plugin.  This is the default.
 * `cni` Container Network Interface(CNI) style networking, often installed via a Daemonset.
-* `classic` kubernetes native networking, done in-process.
+* `classic` Kubernetes native networking, done in-process.
 * `external` networking is done via a Daemonset. This is used in some custom implementations.
 
 ### kops Default Networking
@@ -17,7 +17,7 @@ One important limitation when using `kubenet` networking is that an AWS routing 
 50 entries, which sets a limit of 50 nodes per cluster. AWS support will sometimes raise the limit to 100,
 but their documentation notes that routing tables over 50 may take a performance hit.
 
-Because k8s modifies the AWS routing table, this means that realistically kubernetes needs to own the
+Because k8s modifies the AWS routing table, this means that realistically Kubernetes needs to own the
 routing table, and thus it requires its own subnet.  It is theoretically possible to share a routing table
 with other infrastructure (but not a second cluster!), but this is not really recommended.  Certain
 `cni` networking solutions claim to address these problems.
