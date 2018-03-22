@@ -214,7 +214,7 @@ Limitations:
     - if using a DNS server, update the `CNAME` record for `example.com` to point to the new ELB's DNS name.
     - if using a reverse proxy, update the upstream to point to the new ELB's DNS name. 
     - note that if you're proxying through Cloudflare or similar, changes are instantaneous because it's technically a reverse proxy and not a DNS record.
-    - if not using Cloudflare or similar, you'll want to update you DNS record's TTL to a very low duration about 48 hours in advance of this change (and then change it back to the previous value once the shift has been finalized).
+    - if not using Cloudflare or similar, you'll want to update your DNS record's TTL to a very low duration about 48 hours in advance of this change (and then change it back to the previous value once the shift has been finalized).
 12. Rejoice.
 13. Once traffic has shifted from the old cluster, delete the old resources after confirming that traffic has stabilized and that no new errors are generated.
     - autoscaling groups
