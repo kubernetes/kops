@@ -44,7 +44,7 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 		// external is based on kubenet
 		assetNames = append(assetNames, "bridge", "host-local", "loopback")
 
-	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil || networking.Cilium != nil || networking.AmazonVPCIPVlan != nil {
+	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil || networking.Cilium != nil {
 		assetNames = append(assetNames, "bridge", "host-local", "loopback", "ptp")
 		// Do we need tuning?
 
@@ -58,6 +58,8 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 		// TODO combine with External
 		// Kopeio is based on kubenet / external
 		assetNames = append(assetNames, "bridge", "host-local", "loopback")
+	} else if networking.AmazonVPCIPVlan != nil {
+		assetNames = append(assetNames, "cni-ipvlan-vpc-k8s-ipam", "cni-ipvlan-vpc-k8s-ipvlan", "cni-ipvlan-vpc-k8s-tool", "cni-ipvlan-vpc-k8s-unnumbered-ptp")
 	} else {
 		return fmt.Errorf("no networking mode set")
 	}
@@ -66,17 +68,6 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 		if err := b.addCNIBinAsset(c, assetName); err != nil {
 			return err
 		}
-	}
-
-	if networking.AmazonVPCIPVlan != nil {
-		binDownloadTask := &nodetasks.Archive{
-			Source:    networking.AmazonVPCIPVlan.BinariesDownloadURL,
-			TargetDir: "/opt/cni/bin",
-			Name:      "cni-ipvlan-vpc-k8s-binaries",
-			Gzip:      true,
-		}
-
-		c.AddTask(binDownloadTask)
 	}
 
 	return nil
