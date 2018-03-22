@@ -35,9 +35,26 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	}
 
 	server := "https://" + master
-	topology := cluster.Spec.Topology
 
-	if dns.IsGossipHostname(master) || topology.DNS.Type == kops.DNSTypePrivate {
+	// We use the LoadBalancer where we know the master DNS name is otherwise unreachable
+	useELBName := false
+
+	// If the master DNS is a gossip DNS name; there's no way that name can resolve outside the cluster
+	if dns.IsGossipHostname(master) {
+		useELBName = true
+	}
+
+	// If the DNS is set up as a private HostedZone, but here we have to be
+	// careful that we aren't accessing the API over DirectConnect (or a VPN).
+	// We differentiate using the heuristic that if we have an internal ELB
+	// we are likely connected directly to the VPC.
+	privateDNS := cluster.Spec.Topology != nil && cluster.Spec.Topology.DNS.Type == kops.DNSTypePrivate
+	internalELB := cluster.Spec.API != nil && cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == kops.LoadBalancerTypeInternal
+	if privateDNS && !internalELB {
+		useELBName = true
+	}
+
+	if useELBName {
 		ingresses, err := status.GetApiIngressStatus(cluster)
 		if err != nil {
 			return nil, fmt.Errorf("error getting ingress status: %v", err)
