@@ -120,7 +120,7 @@ So the procedure is:
 * (no instances need to be relaunched, so no rolling-update is needed)
 
 
-## Moving from one instancegroup spanning multiple AZs to one instance group per AZ
+## Moving from one instance group spanning multiple AZs to one instance group per AZ
 
 It may be beneficial to have one IG per AZ rather than one IG spanning multiple AZs. One common example is, when you have a persistent volume claim bound to an AWS EBS Volume this volume is bound to the AZ it has been created in so any resource (e.g. a StatefulSet) depending on that volume is bound to that same AZ. In this case you have to ensure that there is at least one node running in that same AZ, which is not guaruanteed by one IG. This however can be guarantueed by one IG per AZ.
 
