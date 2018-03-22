@@ -71,7 +71,7 @@ Kubernetes minor release number.  A minor version is the second digit in the
 release number.  kops version 1.8.0 has a minor version of 8. The numbering
 follows the semantic versioning specification, MAJOR.MINOR.PATCH.
 
-For example kops, 1.8.0 does not support Kubernetes 1.9.2, but kops 1.9.0
+For example, kops 1.8.0 does not support Kubernetes 1.9.2, but kops 1.9.0
 supports Kubernetes 1.9.2 and previous Kubernetes versions. Only when kops minor
 version matches, the Kubernetes minor version does kops officially support the
 Kubernetes release.  kops does not stop a user from installing mismatching
@@ -81,11 +81,12 @@ Kubernetes version.
 
 #### Compatibility Matrix
 
-| kops version | k8s 1.5.x | k8s 1.6.x | k8s 1.7.x | k8s 1.8.x |
-|--------------|-----------|-----------|-----------|-----------|
-| 1.8.x        | Y         | Y         | Y         | Y         |
-| 1.7.x        | Y         | Y         | Y         | N         |
-| 1.6.x        | Y         | Y         | N         | N         |
+| kops version       | k8s 1.5.x | k8s 1.6.x | k8s 1.7.x | k8s 1.8.x | k8s 1.9.x |
+|--------------------|-----------|-----------|-----------|-----------|-----------|
+| 1.9.x (unreleased) | Y         | Y         | Y         | Y         | Y         |
+| 1.8.x              | Y         | Y         | Y         | Y         | N         |
+| 1.7.x              | Y         | Y         | Y         | N         | N         |
+| 1.6.x              | Y         | Y         | N         | N         | N         |
 
 Use the latest version of kops for all releases of Kubernetes, with the caveat
 that higher versions of Kubernetes are not _officially_ supported by kops.

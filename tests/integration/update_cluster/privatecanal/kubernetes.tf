@@ -374,6 +374,12 @@ resource "aws_launch_configuration" "nodes-privatecanal-example-com" {
 resource "aws_nat_gateway" "us-test-1a-privatecanal-example-com" {
   allocation_id = "${aws_eip.us-test-1a-privatecanal-example-com.id}"
   subnet_id     = "${aws_subnet.utility-us-test-1a-privatecanal-example-com.id}"
+
+  tags = {
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "us-test-1a.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+  }
 }
 
 resource "aws_route" "0-0-0-0--0" {
@@ -408,6 +414,7 @@ resource "aws_route_table" "private-us-test-1a-privatecanal-example-com" {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "private-us-test-1a.privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+    "kubernetes.io/kops/role"                        = "private-us-test-1a"
   }
 }
 
@@ -418,6 +425,7 @@ resource "aws_route_table" "privatecanal-example-com" {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+    "kubernetes.io/kops/role"                        = "public"
   }
 }
 

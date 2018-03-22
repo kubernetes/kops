@@ -21,6 +21,8 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
 	"k8s.io/kops/nodeup/pkg/distros"
@@ -146,6 +148,16 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	if b.UsesCNI() {
 		flags += " --cni-bin-dir=" + b.CNIBinDir()
 		flags += " --cni-conf-dir=" + b.CNIConfDir()
+		// If we are using the AmazonVPC plugin we need to bind the kubelet to the local ipv4 address
+		if b.Cluster.Spec.Networking.AmazonVPC != nil {
+			sess := session.Must(session.NewSession())
+			metadata := ec2metadata.New(sess)
+			localIpv4, err := metadata.GetMetadata("local-ipv4")
+			if err != nil {
+				return nil, fmt.Errorf("error fetching the local-ipv4 address from the ec2 meta-data: %v", err)
+			}
+			flags += " --node-ip=" + localIpv4
+		}
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Kubenet != nil {

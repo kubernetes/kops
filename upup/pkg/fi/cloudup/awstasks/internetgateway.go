@@ -93,6 +93,7 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 	actual := &InternetGateway{
 		ID:   igw.InternetGatewayId,
 		Name: findNameTag(igw.Tags),
+		Tags: intersectTags(igw.Tags, e.Tags),
 	}
 
 	glog.V(2).Infof("found matching InternetGateway %q", *actual.ID)
@@ -109,6 +110,11 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 	}
 	if e.ID == nil {
 		e.ID = actual.ID
+	}
+
+	// We don't set the tags for a shared IGW
+	if fi.BoolValue(e.Shared) {
+		actual.Tags = e.Tags
 	}
 
 	return actual, nil

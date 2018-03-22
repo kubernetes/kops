@@ -149,7 +149,7 @@ func TestSecurityGroupCreate(t *testing.T) {
 			VpcId:       vpc1.ID,
 			GroupName:   s("sg1"),
 		}
-		actual := c.SecurityGroups[0]
+		actual := c.SecurityGroups[*sg1.ID]
 		if !reflect.DeepEqual(actual, expected) {
 			t.Fatalf("Unexpected SecurityGroup: expected=%v actual=%v", expected, actual)
 		}

@@ -32,8 +32,8 @@ Create a secret
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
-      --name string                      Name of cluster
-      --state string                     Location of state storage
+      --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
+      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
@@ -43,5 +43,6 @@ Create a secret
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
 * [kops create secret dockerconfig](kops_create_secret_dockerconfig.md)	 - Create a docker config.
 * [kops create secret encryptionconfig](kops_create_secret_encryptionconfig.md)	 - Create an encryption config.
+* [kops create secret keypair](kops_create_secret_keypair.md)	 - Create a secret keypair.
 * [kops create secret sshpublickey](kops_create_secret_sshpublickey.md)	 - Create a ssh public key.
 

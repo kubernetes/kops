@@ -26,6 +26,64 @@ import (
 	"github.com/golang/glog"
 )
 
+func (m *MockEC2) CreateVolume(request *ec2.CreateVolumeInput) (*ec2.Volume, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("CreateVolume: %v", request)
+
+	if request.DryRun != nil {
+		glog.Fatalf("DryRun")
+	}
+
+	n := len(m.Volumes) + 1
+
+	volume := &ec2.Volume{
+		VolumeId:         s(fmt.Sprintf("vol-%d", n)),
+		AvailabilityZone: request.AvailabilityZone,
+		Encrypted:        request.Encrypted,
+		Iops:             request.Iops,
+		KmsKeyId:         request.KmsKeyId,
+		Size:             request.Size,
+		SnapshotId:       request.SnapshotId,
+		VolumeType:       request.VolumeType,
+	}
+
+	for _, tags := range request.TagSpecifications {
+		for _, tag := range tags.Tags {
+			m.addTag(*volume.VolumeId, tag)
+		}
+	}
+	if m.Volumes == nil {
+		m.Volumes = make(map[string]*ec2.Volume)
+	}
+	m.Volumes[*volume.VolumeId] = volume
+
+	copy := *volume
+	copy.Tags = m.getTags(ec2.ResourceTypeVolume, *volume.VolumeId)
+
+	// TODO: a few fields
+	// // Information about the volume attachments.
+	// Attachments []*VolumeAttachment `locationName:"attachmentSet" locationNameList:"item" type:"list"`
+
+	// // The time stamp when volume creation was initiated.
+	// CreateTime *time.Time `locationName:"createTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// // The volume state.
+	// State *string `locationName:"status" type:"string" enum:"VolumeState"`
+
+	return &copy, nil
+}
+
+func (m *MockEC2) CreateVolumeWithContext(aws.Context, *ec2.CreateVolumeInput, ...request.Option) (*ec2.Volume, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) CreateVolumeRequest(*ec2.CreateVolumeInput) (*request.Request, *ec2.Volume) {
+	panic("Not implemented")
+	return nil, nil
+}
+
 func (m *MockEC2) DescribeVolumeAttributeRequest(*ec2.DescribeVolumeAttributeInput) (*request.Request, *ec2.DescribeVolumeAttributeOutput) {
 	panic("MockEC2 DescribeVolumeAttributeRequest not implemented")
 	return nil, nil
@@ -67,7 +125,14 @@ func (m *MockEC2) DescribeVolumesWithContext(aws.Context, *ec2.DescribeVolumesIn
 	return nil, nil
 }
 func (m *MockEC2) DescribeVolumes(request *ec2.DescribeVolumesInput) (*ec2.DescribeVolumesOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeVolumes: %v", request)
+
+	if request.VolumeIds != nil {
+		glog.Fatalf("VolumeIds")
+	}
 
 	var volumes []*ec2.Volume
 

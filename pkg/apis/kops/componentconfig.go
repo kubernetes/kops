@@ -334,7 +334,7 @@ type KubeControllerManagerConfig struct {
 	RootCAFile string `json:"rootCAFile,omitempty" flag:"root-ca-file"`
 	// LeaderElection defines the configuration of leader election client.
 	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
-	// ReconcilerSyncLoopPeriod is the amount of time the reconciler sync states loop
+	// AttachDetachReconcileSyncPeriod is the amount of time the reconciler sync states loop
 	// wait between successive executions. Is set to 1 min by kops by default
 	AttachDetachReconcileSyncPeriod *metav1.Duration `json:"attachDetachReconcileSyncPeriod,omitempty" flag:"attach-detach-reconcile-sync-period"`
 	// TerminatedPodGCThreshold is the number of terminated pods that can exist

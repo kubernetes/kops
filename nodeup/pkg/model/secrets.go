@@ -34,6 +34,11 @@ type SecretBuilder struct {
 
 var _ fi.ModelBuilder = &SecretBuilder{}
 
+const (
+	adminUser  = "admin"
+	adminGroup = "system:masters"
+)
+
 // Build is responsible for pulling down the secrets
 func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.KeyStore == nil {
@@ -50,7 +55,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("certificate %q not found", fi.CertificateId_CA)
 		}
 
-		serialized, err := ca.AsString()
+		serialized, err := ca.Primary.AsString()
 		if err != nil {
 			return err
 		}
@@ -196,7 +201,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		if token == nil {
 			return fmt.Errorf("token not found: %q", key)
 		}
-		csv := string(token.Data) + ",admin,admin,system:masters"
+		csv := string(token.Data) + "," + adminUser + "," + adminUser + "," + adminGroup
 
 		t := &nodetasks.File{
 			Path:     filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv"),
@@ -215,7 +220,11 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		var lines []string
 		for id, token := range allTokens {
-			lines = append(lines, token+","+id+","+id)
+			if id == adminUser {
+				lines = append(lines, token+","+id+","+id+","+adminGroup)
+			} else {
+				lines = append(lines, token+","+id+","+id)
+			}
 		}
 		csv := strings.Join(lines, "\n")
 

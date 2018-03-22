@@ -123,6 +123,11 @@ func TestPrivateKopeio(t *testing.T) {
 	runTestAWS(t, "privatekopeio.example.com", "privatekopeio", "v1alpha2", true, 1)
 }
 
+// TestPrivateSharedSubnet runs the test on a configuration with private topology & shared subnets
+func TestPrivateSharedSubnet(t *testing.T) {
+	runTestAWS(t, "private-shared-subnet.example.com", "private-shared-subnet", "v1alpha2", true, 1)
+}
+
 // TestPrivateDns1 runs the test on a configuration with private topology, private dns
 func TestPrivateDns1(t *testing.T) {
 	runTestAWS(t, "privatedns1.example.com", "privatedns1", "v1alpha2", true, 1)
@@ -145,20 +150,20 @@ func TestSharedVPC(t *testing.T) {
 
 // TestPhaseNetwork tests the output of tf for the network phase
 func TestPhaseNetwork(t *testing.T) {
-	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseNetwork)
+	runTestPhase(t, "lifecyclephases.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseNetwork)
 }
 
 // TestPhaseIAM tests the output of tf for the iam phase
 func TestPhaseIAM(t *testing.T) {
 	t.Skip("unable to test w/o allowing failed validation")
-	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseSecurity)
+	runTestPhase(t, "lifecyclephases.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseSecurity)
 }
 
 // TestPhaseCluster tests the output of tf for the cluster phase
 func TestPhaseCluster(t *testing.T) {
 	// TODO fix tf for phase, and allow override on validation
 	t.Skip("unable to test w/o allowing failed validation")
-	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseCluster)
+	runTestPhase(t, "lifecyclephases.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseCluster)
 }
 
 func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedFilenames []string, tfFileName string, phase *cloudup.Phase) {
@@ -213,7 +218,7 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 		// We don't test it here, and it adds a dependency on kubectl
 		options.CreateKubecfg = false
 
-		err := RunUpdateCluster(factory, clusterName, &stdout, options)
+		_, err := RunUpdateCluster(factory, clusterName, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running update cluster %q: %v", clusterName, err)
 		}
@@ -320,7 +325,7 @@ func runTestAWS(t *testing.T, clusterName string, srcDir string, version string,
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.7.0")
+	h.MockKopsVersion("1.8.1")
 	h.SetupMockAWS()
 
 	expectedFilenames := []string{
@@ -358,7 +363,7 @@ func runTestPhase(t *testing.T, clusterName string, srcDir string, version strin
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.7.0")
+	h.MockKopsVersion("1.8.1")
 	h.SetupMockAWS()
 	phaseName := string(phase)
 	if phaseName == "" {
@@ -406,7 +411,7 @@ func runTestGCE(t *testing.T, clusterName string, srcDir string, version string,
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.7.0")
+	h.MockKopsVersion("1.8.1")
 	h.SetupMockGCE()
 
 	expectedFilenames := []string{
@@ -438,7 +443,7 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.7.0")
+	h.MockKopsVersion("1.8.1")
 	h.SetupMockAWS()
 
 	factory := util.NewFactory(factoryOptions)
@@ -475,7 +480,7 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 		// We don't test it here, and it adds a dependency on kubectl
 		options.CreateKubecfg = false
 
-		err := RunUpdateCluster(factory, clusterName, &stdout, options)
+		_, err := RunUpdateCluster(factory, clusterName, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running update cluster %q: %v", clusterName, err)
 		}

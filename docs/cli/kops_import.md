@@ -13,7 +13,7 @@ Imports a kubernetes cluster created by kube-up.sh into a state store.  This com
 ### Examples
 
 ```
-  # Import a cluser
+  # Import a cluster
   kops import cluster --name k8s-cluster.example.com --region us-east-1 \
   --state=s3://k8s-cluster.example.com
 ```
@@ -26,8 +26,8 @@ Imports a kubernetes cluster created by kube-up.sh into a state store.  This com
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
-      --name string                      Name of cluster
-      --state string                     Location of state storage
+      --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
+      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging

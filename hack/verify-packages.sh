@@ -21,9 +21,9 @@ packages_file="${KUBE_ROOT}/hack/.packages"
 if ! diff -u "${packages_file}" <(go list k8s.io/kops/... | grep -v vendor); then
 	{
 		echo
-		echo "hack/.packages is not in up to date. Please run:"
+		echo "FAIL: ./hack/verify-packages.sh failed as the ./hack/.packages file is not in up to date."
 		echo
-		echo "  go list k8s.io/kops/... | grep -v vendor > hack/.packages"
+		echo "FAIL: please execute the following command:  'go list k8s.io/kops/... | grep -v vendor > hack/.packages'"
 		echo
 	} >&2
 	false

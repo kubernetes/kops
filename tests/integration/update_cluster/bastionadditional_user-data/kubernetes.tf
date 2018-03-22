@@ -375,6 +375,12 @@ resource "aws_launch_configuration" "nodes-bastionuserdata-example-com" {
 resource "aws_nat_gateway" "us-test-1a-bastionuserdata-example-com" {
   allocation_id = "${aws_eip.us-test-1a-bastionuserdata-example-com.id}"
   subnet_id     = "${aws_subnet.utility-us-test-1a-bastionuserdata-example-com.id}"
+
+  tags = {
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "us-test-1a.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
 }
 
 resource "aws_route" "0-0-0-0--0" {
@@ -409,6 +415,7 @@ resource "aws_route_table" "bastionuserdata-example-com" {
     KubernetesCluster                                   = "bastionuserdata.example.com"
     Name                                                = "bastionuserdata.example.com"
     "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+    "kubernetes.io/kops/role"                           = "public"
   }
 }
 
@@ -419,6 +426,7 @@ resource "aws_route_table" "private-us-test-1a-bastionuserdata-example-com" {
     KubernetesCluster                                   = "bastionuserdata.example.com"
     Name                                                = "private-us-test-1a.bastionuserdata.example.com"
     "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+    "kubernetes.io/kops/role"                           = "private-us-test-1a"
   }
 }
 

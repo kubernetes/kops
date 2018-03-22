@@ -6,6 +6,7 @@ k8s.io/kops/channels/pkg/cmd
 k8s.io/kops/cloudmock/aws/mockautoscaling
 k8s.io/kops/cloudmock/aws/mockec2
 k8s.io/kops/cloudmock/aws/mockelb
+k8s.io/kops/cloudmock/aws/mockiam
 k8s.io/kops/cloudmock/aws/mockroute53
 k8s.io/kops/cmd/kops
 k8s.io/kops/cmd/kops/util
@@ -99,6 +100,7 @@ k8s.io/kops/pkg/openapi
 k8s.io/kops/pkg/pki
 k8s.io/kops/pkg/pretty
 k8s.io/kops/pkg/resources
+k8s.io/kops/pkg/resources/aws
 k8s.io/kops/pkg/resources/digitalocean
 k8s.io/kops/pkg/resources/digitalocean/dns
 k8s.io/kops/pkg/resources/gce
@@ -123,6 +125,7 @@ k8s.io/kops/protokube/pkg/gossip/gce
 k8s.io/kops/protokube/pkg/gossip/mesh
 k8s.io/kops/protokube/pkg/protokube
 k8s.io/kops/protokube/tests/integration/build_etcd_manifest
+k8s.io/kops/tests
 k8s.io/kops/tests/codecs
 k8s.io/kops/tests/integration/channel
 k8s.io/kops/tests/integration/conversion

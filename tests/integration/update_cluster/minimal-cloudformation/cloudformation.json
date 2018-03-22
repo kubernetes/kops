@@ -3,6 +3,7 @@
     "AWSAutoScalingAutoScalingGroupmasterustest1amastersminimalexamplecom": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
+        "AutoScalingGroupName": "master-us-test-1a.masters.minimal.example.com",
         "LaunchConfigurationName": {
           "Ref": "AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexamplecom"
         },
@@ -50,6 +51,7 @@
     "AWSAutoScalingAutoScalingGroupnodesminimalexamplecom": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
+        "AutoScalingGroupName": "nodes.minimal.example.com",
         "LaunchConfigurationName": {
           "Ref": "AWSAutoScalingLaunchConfigurationnodesminimalexamplecom"
         },
@@ -226,6 +228,10 @@
           {
             "Key": "kubernetes.io/cluster/minimal.example.com",
             "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/kops/role",
+            "Value": "public"
           }
         ]
       }

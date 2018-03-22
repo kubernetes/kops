@@ -128,6 +128,9 @@ type ApplyClusterCmd struct {
 	// The key value is the task name such as InternetGateway and the value is the fi.Lifecycle
 	// that is re-mapped.
 	LifecycleOverrides map[string]fi.Lifecycle
+
+	// TaskMap is the map of tasks that we built (output)
+	TaskMap map[string]fi.Task
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -638,6 +641,8 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
 
+	c.TaskMap = taskMap
+
 	var target fi.Target
 	dryRun := false
 	shouldPrecreateDNS := true
@@ -821,7 +826,7 @@ func (c *ApplyClusterCmd) validateKopsVersion() error {
 			fmt.Printf("A new kops version is available: %s\n", recommended)
 		}
 		fmt.Printf("\n")
-		fmt.Printf("This version of kops is no longer supported; upgrading is required\n")
+		fmt.Printf("This version of kops (%s) is no longer supported; upgrading is required\n", kopsbase.Version)
 		fmt.Printf("(you can bypass this check by exporting KOPS_RUN_OBSOLETE_VERSION)\n")
 		fmt.Printf("\n")
 		fmt.Printf("More information: %s\n", buildPermalink("upgrade_kops", recommended.String()))

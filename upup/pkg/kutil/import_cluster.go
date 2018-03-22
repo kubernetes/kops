@@ -32,7 +32,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/pki"
-	"k8s.io/kops/pkg/resources"
+	awsresources "k8s.io/kops/pkg/resources/aws"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -150,7 +150,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	masterInstanceGroups := []*kops.InstanceGroup{masterGroup}
 	instanceGroups = append(instanceGroups, masterGroup)
 
-	awsSubnets, err := resources.DescribeSubnets(x.Cloud)
+	awsSubnets, err := awsresources.DescribeSubnets(x.Cloud)
 	if err != nil {
 		return fmt.Errorf("error finding subnets: %v", err)
 	}
@@ -318,7 +318,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		// Determine the machine type
 		for _, group := range groups {
 			name := aws.StringValue(group.LaunchConfigurationName)
-			launchConfiguration, err := resources.FindAutoscalingLaunchConfiguration(awsCloud, name)
+			launchConfiguration, err := awsresources.FindAutoscalingLaunchConfiguration(awsCloud, name)
 			if err != nil {
 				return fmt.Errorf("error finding autoscaling LaunchConfiguration %q: %v", name, err)
 			}
@@ -623,7 +623,7 @@ func parseInt(s string) (int, error) {
 //}
 
 func findInstances(c awsup.AWSCloud) ([]*ec2.Instance, error) {
-	filters := resources.BuildEC2Filters(c)
+	filters := awsresources.BuildEC2Filters(c)
 
 	request := &ec2.DescribeInstancesInput{
 		Filters: filters,
@@ -725,7 +725,7 @@ func (u *UserDataConfiguration) ParseCert(key string) (*pki.Certificate, error) 
 	if err != nil {
 		return nil, fmt.Errorf("error decoding base64 certificate %q: %v", key, err)
 	}
-	cert, err := pki.LoadPEMCertificate(data)
+	cert, err := pki.ParsePEMCertificate(data)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing certificate %q: %v", key, err)
 	}

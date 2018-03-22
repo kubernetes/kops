@@ -18,7 +18,6 @@ package mockec2
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -32,6 +31,9 @@ type vpcInfo struct {
 }
 
 func (m *MockEC2) FindVpc(id string) *ec2.Vpc {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	vpc := m.Vpcs[id]
 	if vpc == nil {
 		return nil
@@ -51,13 +53,9 @@ func (m *MockEC2) CreateVpcWithContext(aws.Context, *ec2.CreateVpcInput, ...requ
 	panic("Not implemented")
 	return nil, nil
 }
-func (m *MockEC2) CreateVpc(request *ec2.CreateVpcInput) (*ec2.CreateVpcOutput, error) {
-	glog.Infof("CreateVpc: %v", request)
-
-	m.vpcNumber++
-	n := m.vpcNumber
-
-	id := fmt.Sprintf("vpc-%d", n)
+func (m *MockEC2) CreateVpcWithId(request *ec2.CreateVpcInput, id string) (*ec2.CreateVpcOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
 
 	vpc := &vpcInfo{
 		main: ec2.Vpc{
@@ -66,8 +64,8 @@ func (m *MockEC2) CreateVpc(request *ec2.CreateVpcInput) (*ec2.CreateVpcOutput, 
 			IsDefault: aws.Bool(false),
 		},
 		attributes: ec2.DescribeVpcAttributeOutput{
-			EnableDnsHostnames: &ec2.AttributeBooleanValue{Value: aws.Bool(false)},
-			EnableDnsSupport:   &ec2.AttributeBooleanValue{Value: aws.Bool(false)},
+			EnableDnsHostnames: &ec2.AttributeBooleanValue{Value: aws.Bool(true)},
+			EnableDnsSupport:   &ec2.AttributeBooleanValue{Value: aws.Bool(true)},
 		},
 	}
 
@@ -82,6 +80,18 @@ func (m *MockEC2) CreateVpc(request *ec2.CreateVpcInput) (*ec2.CreateVpcOutput, 
 	return response, nil
 }
 
+func (m *MockEC2) CreateVpc(request *ec2.CreateVpcInput) (*ec2.CreateVpcOutput, error) {
+	glog.Infof("CreateVpc: %v", request)
+
+	if request.DryRun != nil {
+		glog.Fatalf("DryRun")
+	}
+
+	id := m.allocateId("vpc")
+
+	return m.CreateVpcWithId(request, id)
+}
+
 func (m *MockEC2) DescribeVpcsRequest(*ec2.DescribeVpcsInput) (*request.Request, *ec2.DescribeVpcsOutput) {
 	panic("Not implemented")
 	return nil, nil
@@ -93,22 +103,30 @@ func (m *MockEC2) DescribeVpcsWithContext(aws.Context, *ec2.DescribeVpcsInput, .
 }
 
 func (m *MockEC2) DescribeVpcs(request *ec2.DescribeVpcsInput) (*ec2.DescribeVpcsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeVpcs: %v", request)
+
+	if len(request.VpcIds) != 0 {
+		request.Filters = append(request.Filters, &ec2.Filter{Name: s("vpc-id"), Values: request.VpcIds})
+	}
 
 	var vpcs []*ec2.Vpc
 
-	for _, vpc := range m.Vpcs {
+	for k, vpc := range m.Vpcs {
 		allFiltersMatch := true
 		for _, filter := range request.Filters {
 			match := false
 			switch *filter.Name {
-
-			default:
-				if strings.HasPrefix(*filter.Name, "tag:") {
-					match = m.hasTag(ec2.ResourceTypeVpc, *vpc.main.VpcId, filter)
-				} else {
-					return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
+			case "vpc-id":
+				for _, v := range filter.Values {
+					if k == *v {
+						match = true
+					}
 				}
+			default:
+				match = m.hasTag(ec2.ResourceTypeVpc, *vpc.main.VpcId, filter)
 			}
 
 			if !match {
@@ -142,6 +160,9 @@ func (m *MockEC2) DescribeVpcAttributeWithContext(aws.Context, *ec2.DescribeVpcA
 	return nil, nil
 }
 func (m *MockEC2) DescribeVpcAttribute(request *ec2.DescribeVpcAttributeInput) (*ec2.DescribeVpcAttributeOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeVpcs: %v", request)
 
 	vpc := m.Vpcs[*request.VpcId]
@@ -157,4 +178,36 @@ func (m *MockEC2) DescribeVpcAttribute(request *ec2.DescribeVpcAttributeInput) (
 	}
 
 	return response, nil
+}
+
+func (m *MockEC2) ModifyVpcAttribute(request *ec2.ModifyVpcAttributeInput) (*ec2.ModifyVpcAttributeOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("ModifyVpcAttribute: %v", request)
+
+	vpc := m.Vpcs[*request.VpcId]
+	if vpc == nil {
+		return nil, fmt.Errorf("not found")
+	}
+
+	if request.EnableDnsHostnames != nil {
+		vpc.attributes.EnableDnsHostnames = request.EnableDnsHostnames
+	}
+
+	if request.EnableDnsSupport != nil {
+		vpc.attributes.EnableDnsSupport = request.EnableDnsSupport
+	}
+
+	response := &ec2.ModifyVpcAttributeOutput{}
+
+	return response, nil
+}
+func (m *MockEC2) ModifyVpcAttributeWithContext(aws.Context, *ec2.ModifyVpcAttributeInput, ...request.Option) (*ec2.ModifyVpcAttributeOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) ModifyVpcAttributeRequest(*ec2.ModifyVpcAttributeInput) (*request.Request, *ec2.ModifyVpcAttributeOutput) {
+	panic("Not implemented")
+	return nil, nil
 }

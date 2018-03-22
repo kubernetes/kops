@@ -374,6 +374,12 @@ resource "aws_launch_configuration" "nodes-privatedns1-example-com" {
 resource "aws_nat_gateway" "us-test-1a-privatedns1-example-com" {
   allocation_id = "${aws_eip.us-test-1a-privatedns1-example-com.id}"
   subnet_id     = "${aws_subnet.utility-us-test-1a-privatedns1-example-com.id}"
+
+  tags = {
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "us-test-1a.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
 }
 
 resource "aws_route" "0-0-0-0--0" {
@@ -413,6 +419,7 @@ resource "aws_route_table" "private-us-test-1a-privatedns1-example-com" {
     KubernetesCluster                               = "privatedns1.example.com"
     Name                                            = "private-us-test-1a.privatedns1.example.com"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+    "kubernetes.io/kops/role"                       = "private-us-test-1a"
   }
 }
 
@@ -423,6 +430,7 @@ resource "aws_route_table" "privatedns1-example-com" {
     KubernetesCluster                               = "privatedns1.example.com"
     Name                                            = "privatedns1.example.com"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+    "kubernetes.io/kops/role"                       = "public"
   }
 }
 

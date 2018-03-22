@@ -8,7 +8,7 @@ certificates. ALBs are used to route traffic to an Ingress http router for examp
 [skipper](https://github.com/zalando/skipper/), which routes
 traffic to Kubernetes services and implements
 [advanced features](https://zalando.github.io/skipper/dataclients/kubernetes/)
-like green-blue deployments, feature toggles, reate limits,
+like green-blue deployments, feature toggles, rate limits,
 circuitbreakers, metrics, access logs, opentracing API, shadow traffic or A/B tests.
 
 Advantages:
@@ -174,7 +174,7 @@ aws ec2 authorize-security-group-ingress --group-id $sgidingress --protocol tcp 
 aws ec2 authorize-security-group-ingress --group-id $sgidingress --protocol tcp --port 80 --cidr 0.0.0.0/0
 
 aws ec2 authorize-security-group-ingress --group-id $sgidnode --protocol all --port -1 --source-group $sgidingress
-aws ec2 create-tags --resources $sgidingress--tags "kubernetes.io/cluster/id=owned" "kubernetes:application=kube-ingress-aws-controller"
+aws ec2 create-tags --resources $sgidingress --tags '[{"Key": "kubernetes.io/cluster/id", "Value": "owned"}, {"Key": "kubernetes:application", "Value": "kube-ingress-aws-controller"}]'
 ```
 
 ### AWS Certificate Manager (ACM)
@@ -189,7 +189,7 @@ aws acm list-certificates
 
 If you have one, you can move on to the next section.
 
-To create an ACM certificate, you have to requset a CSR with a domain name that you own in [route53](https://aws.amazon.com/route53/), for example.org. We will here request one wildcard certificate for example.org:
+To create an ACM certificate, you have to request a CSR with a domain name that you own in [route53](https://aws.amazon.com/route53/), for example.org. We will here request one wildcard certificate for example.org:
 
 ```
 aws acm request-certificate --domain-name *.example.org

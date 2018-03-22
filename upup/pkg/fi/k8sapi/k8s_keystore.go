@@ -57,7 +57,7 @@ func (c *KubernetesKeystore) issueCert(signer string, id string, serial *big.Int
 
 	template.SerialNumber = serial
 
-	caCert, caKey, err := c.FindKeypair(signer)
+	caCert, caKey, _, err := c.FindKeypair(signer)
 	if err != nil {
 		return nil, err
 	}
@@ -90,22 +90,22 @@ func (c *KubernetesKeystore) findSecret(id string) (*v1.Secret, error) {
 	return secret, nil
 }
 
-func (c *KubernetesKeystore) FindKeypair(id string) (*pki.Certificate, *pki.PrivateKey, error) {
+func (c *KubernetesKeystore) FindKeypair(id string) (*pki.Certificate, *pki.PrivateKey, fi.KeysetFormat, error) {
 	secret, err := c.findSecret(id)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, "", err
 	}
 
 	if secret == nil {
-		return nil, nil, nil
+		return nil, nil, "", nil
 	}
 
 	keypair, err := ParseKeypairSecret(secret)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error parsing secret %s/%s from kubernetes: %v", c.namespace, id, err)
+		return nil, nil, "", fmt.Errorf("error parsing secret %s/%s from kubernetes: %v", c.namespace, id, err)
 	}
 
-	return keypair.Certificate, keypair.PrivateKey, nil
+	return keypair.Certificate, keypair.PrivateKey, fi.KeysetFormatV1Alpha2, nil
 }
 
 func (c *KubernetesKeystore) CreateKeypair(signer string, id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {

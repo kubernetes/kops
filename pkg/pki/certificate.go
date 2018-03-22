@@ -41,13 +41,13 @@ type Certificate struct {
 func (c *Certificate) UnmarshalJSON(b []byte) error {
 	s := ""
 	if err := json.Unmarshal(b, &s); err == nil {
-		r, err := LoadPEMCertificate([]byte(s))
+		r, err := ParsePEMCertificate([]byte(s))
 		if err != nil {
 			// Alternative form: Check if base64 encoded
 			// TODO: Do we need this?  I think we need this only on nodeup, but maybe we could just not base64-it?
 			d, err2 := base64.StdEncoding.DecodeString(s)
 			if err2 == nil {
-				r2, err2 := LoadPEMCertificate(d)
+				r2, err2 := ParsePEMCertificate(d)
 				if err2 == nil {
 					glog.Warningf("used base64 decode of certificate")
 					r = r2
@@ -75,7 +75,7 @@ func (c *Certificate) MarshalJSON() ([]byte, error) {
 	return json.Marshal(data.String())
 }
 
-func LoadPEMCertificate(pemData []byte) (*Certificate, error) {
+func ParsePEMCertificate(pemData []byte) (*Certificate, error) {
 	cert, err := parsePEMCertificate(pemData)
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func parsePEMCertificate(pemData []byte) (*x509.Certificate, error) {
 		}
 
 		if block.Type == "CERTIFICATE" {
-			glog.V(8).Infof("Parsing pem block: %q", block.Type)
+			glog.V(10).Infof("Parsing pem block: %q", block.Type)
 			return x509.ParseCertificate(block.Bytes)
 		} else {
 			glog.Infof("Ignoring unexpected PEM block: %q", block.Type)

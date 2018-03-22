@@ -34,6 +34,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
@@ -73,6 +74,9 @@ const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
 
 const TagRoleMaster = "master"
 
+// TagNameKopsRole is the AWS tag used to identify the role an object plays for a cluster
+const TagNameKopsRole = "kubernetes.io/kops/role"
+
 const (
 	WellKnownAccountKopeio = "383156758163"
 	WellKnownAccountRedhat = "309956199498"
@@ -86,7 +90,7 @@ type AWSCloud interface {
 
 	CloudFormation() *cloudformation.CloudFormation
 	EC2() ec2iface.EC2API
-	IAM() *iam.IAM
+	IAM() iamiface.IAMAPI
 	ELB() elbiface.ELBAPI
 	Autoscaling() autoscalingiface.AutoScalingAPI
 	Route53() route53iface.Route53API
@@ -736,6 +740,10 @@ func addAWSTags(c AWSCloud, id string, expected map[string]string) error {
 }
 
 func (c *awsCloudImplementation) GetELBTags(loadBalancerName string) (map[string]string, error) {
+	return getELBTags(c, loadBalancerName)
+}
+
+func getELBTags(c AWSCloud, loadBalancerName string) (map[string]string, error) {
 	tags := map[string]string{}
 
 	request := &elb.DescribeTagsInput{
@@ -763,6 +771,10 @@ func (c *awsCloudImplementation) GetELBTags(loadBalancerName string) (map[string
 
 // CreateELBTags will add tags to the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 func (c *awsCloudImplementation) CreateELBTags(loadBalancerName string, tags map[string]string) error {
+	return createELBTags(c, loadBalancerName, tags)
+}
+
+func createELBTags(c AWSCloud, loadBalancerName string, tags map[string]string) error {
 	if len(tags) == 0 {
 		return nil
 	}
@@ -1027,7 +1039,7 @@ func (c *awsCloudImplementation) EC2() ec2iface.EC2API {
 	return c.ec2
 }
 
-func (c *awsCloudImplementation) IAM() *iam.IAM {
+func (c *awsCloudImplementation) IAM() iamiface.IAMAPI {
 	return c.iam
 }
 

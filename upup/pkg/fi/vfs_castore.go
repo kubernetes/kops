@@ -47,6 +47,10 @@ type VFSCAStore struct {
 
 	mutex     sync.Mutex
 	cachedCAs map[string]*cachedEntry
+
+	// SerialGenerator is the function for generating certificate serial numbers
+	// It can be replaced for testing purposes.
+	SerialGenerator func() *big.Int
 }
 
 type cachedEntry struct {
@@ -57,12 +61,17 @@ type cachedEntry struct {
 var _ CAStore = &VFSCAStore{}
 var _ SSHCredentialStore = &VFSCAStore{}
 
-func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path, allowList bool) CAStore {
+func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path, allowList bool) *VFSCAStore {
 	c := &VFSCAStore{
 		basedir:   basedir,
 		cluster:   cluster,
 		cachedCAs: make(map[string]*cachedEntry),
 		allowList: allowList,
+	}
+
+	c.SerialGenerator = func() *big.Int {
+		t := time.Now().UnixNano()
+		return pki.BuildPKISerial(t)
 	}
 
 	return c
@@ -157,8 +166,7 @@ func (c *VFSCAStore) generateCACertificate(name string) (*keyset, *keyset, error
 		return nil, nil, err
 	}
 
-	t := time.Now().UnixNano()
-	serial := pki.BuildPKISerial(t).String()
+	serial := c.SerialGenerator().String()
 
 	err = c.storePrivateKey(name, &keysetItem{id: serial, privateKey: caPrivateKey})
 	if err != nil {
@@ -208,7 +216,7 @@ func (c *VFSCAStore) buildPrivateKeyPath(name string, id string) vfs.Path {
 	return c.basedir.Join("private", name, id+".key")
 }
 
-func (c *VFSCAStore) parseKeysetYaml(data []byte) (*kops.Keyset, error) {
+func (c *VFSCAStore) parseKeysetYaml(data []byte) (*kops.Keyset, KeysetFormat, error) {
 	codecs := kopscodecs.Codecs
 	yaml, ok := runtime.SerializerInfoForMediaType(codecs.SupportedMediaTypes(), "application/yaml")
 	if !ok {
@@ -218,16 +226,21 @@ func (c *VFSCAStore) parseKeysetYaml(data []byte) (*kops.Keyset, error) {
 
 	defaultReadVersion := v1alpha2.SchemeGroupVersion.WithKind("Keyset")
 
-	object, _, err := decoder.Decode(data, &defaultReadVersion, nil)
+	object, gvk, err := decoder.Decode(data, &defaultReadVersion, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing keyset: %v", err)
+		return nil, "", fmt.Errorf("error parsing keyset: %v", err)
 	}
 
 	keyset, ok := object.(*kops.Keyset)
 	if !ok {
-		return nil, fmt.Errorf("object was not a keyset, was a %T", object)
+		return nil, "", fmt.Errorf("object was not a keyset, was a %T", object)
 	}
-	return keyset, nil
+
+	if gvk == nil {
+		return nil, "", fmt.Errorf("object did not have GroupVersionKind: %q", keyset.Name)
+	}
+
+	return keyset, KeysetFormat(gvk.Version), nil
 }
 
 // loadCertificatesBundle loads a keyset from the path
@@ -243,7 +256,7 @@ func (c *VFSCAStore) loadKeysetBundle(p vfs.Path) (*keyset, error) {
 		}
 	}
 
-	o, err := c.parseKeysetYaml(data)
+	o, format, err := c.parseKeysetYaml(data)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing bundle %q: %v", p, err)
 	}
@@ -253,6 +266,7 @@ func (c *VFSCAStore) loadKeysetBundle(p vfs.Path) (*keyset, error) {
 		return nil, fmt.Errorf("error mapping bundle %q: %v", p, err)
 	}
 
+	keyset.format = format
 	return keyset, nil
 }
 
@@ -408,6 +422,7 @@ func (c *VFSCAStore) loadCertificates(p vfs.Path, useBundle bool) (*keyset, erro
 		return nil, nil
 	}
 
+	keyset.format = KeysetFormatLegacy
 	keyset.primary = keyset.findPrimary()
 
 	return keyset, nil
@@ -421,7 +436,7 @@ func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*pki.Certificate, error) {
 		}
 		return nil, err
 	}
-	cert, err := pki.LoadPEMCertificate(data)
+	cert, err := pki.ParsePEMCertificate(data)
 	if err != nil {
 		return nil, err
 	}
@@ -444,36 +459,37 @@ func (c *VFSCAStore) CertificatePool(id string, createIfMissing bool) (*Certific
 
 }
 
-func (c *VFSCAStore) FindKeypair(id string) (*pki.Certificate, *pki.PrivateKey, error) {
-	cert, err := c.FindCert(id)
+func (c *VFSCAStore) FindKeypair(id string) (*pki.Certificate, *pki.PrivateKey, KeysetFormat, error) {
+	cert, certFormat, err := c.findCert(id)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, "", err
 	}
 
 	key, err := c.FindPrivateKey(id)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, "", err
 	}
 
-	return cert, key, nil
+	return cert, key, certFormat, nil
+}
+
+func (c *VFSCAStore) findCert(name string) (*pki.Certificate, KeysetFormat, error) {
+	p := c.buildCertificatePoolPath(name)
+	certs, err := c.loadCertificates(p, true)
+	if err != nil {
+		return nil, "", fmt.Errorf("error in 'FindCert' attempting to load cert %q: %v", name, err)
+	}
+
+	if certs != nil && certs.primary != nil {
+		return certs.primary.certificate, certs.format, nil
+	}
+
+	return nil, "", nil
 }
 
 func (c *VFSCAStore) FindCert(name string) (*pki.Certificate, error) {
-	var certs *keyset
-
-	var err error
-	p := c.buildCertificatePoolPath(name)
-	certs, err = c.loadCertificates(p, true)
-	if err != nil {
-		return nil, fmt.Errorf("error in 'FindCert' attempting to load cert %q: %v", name, err)
-	}
-
-	var cert *pki.Certificate
-	if certs != nil && certs.primary != nil {
-		cert = certs.primary.certificate
-	}
-
-	return cert, nil
+	cert, _, err := c.findCert(name)
+	return cert, err
 }
 
 func (c *VFSCAStore) FindCertificatePool(name string) (*CertificatePool, error) {
@@ -922,7 +938,7 @@ func (c *VFSCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) {
 }
 
 func (c *VFSCAStore) CreateKeypair(signer string, id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
-	serial := c.buildSerial()
+	serial := c.SerialGenerator()
 
 	cert, err := c.IssueCert(signer, id, serial, privateKey, template)
 	if err != nil {
@@ -1073,11 +1089,6 @@ func (c *VFSCAStore) deleteCertificate(name string, id string) (bool, error) {
 		}
 		return true, nil
 	}
-}
-
-func (c *VFSCAStore) buildSerial() *big.Int {
-	t := time.Now().UnixNano()
-	return pki.BuildPKISerial(t)
 }
 
 // AddSSHPublicKey stores an SSH public key

@@ -51,6 +51,9 @@ type Keypair struct {
 	Subject string `json:"subject"`
 	// Type the type of certificate i.e. CA, server, client etc
 	Type string `json:"type"`
+	// Format stores the api version of kops.Keyset.  We are using this info in order to determine if kops
+	// is accessing legacy secrets that do not use keyset.yaml.
+	Format string `json:"format"`
 }
 
 var _ fi.HasCheckExisting = &Keypair{}
@@ -73,7 +76,7 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 		return nil, nil
 	}
 
-	cert, key, err := c.Keystore.FindKeypair(name)
+	cert, key, format, err := c.Keystore.FindKeypair(name)
 	if err != nil {
 		return nil, err
 	}
@@ -97,6 +100,7 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 		AlternateNames: alternateNames,
 		Subject:        pkixNameToString(&cert.Subject),
 		Type:           buildTypeDescription(cert.Certificate),
+		Format:         string(format),
 	}
 
 	actual.Signer = &Keypair{Subject: pkixNameToString(&cert.Certificate.Issuer)}
@@ -170,16 +174,24 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		return err
 	}
 
+	changeStoredFormat := false
 	createCertificate := false
 	if a == nil {
 		createCertificate = true
+		glog.V(8).Infof("creating brand new certificate")
 	} else if changes != nil {
+		glog.V(8).Infof("creating certificate as changes are not nil")
 		if changes.AlternateNames != nil {
 			createCertificate = true
+			glog.V(8).Infof("creating certificate new AlternateNames")
 		} else if changes.Subject != "" {
 			createCertificate = true
+			glog.V(8).Infof("creating certificate new Subject")
 		} else if changes.Type != "" {
 			createCertificate = true
+			glog.V(8).Infof("creating certificate new Type")
+		} else if changes.Format != "" {
+			changeStoredFormat = true
 		} else {
 			glog.Warningf("Ignoring changes in key: %v", fi.DebugAsJsonString(changes))
 		}
@@ -188,7 +200,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	if createCertificate {
 		glog.V(2).Infof("Creating PKI keypair %q", name)
 
-		cert, privateKey, err := c.Keystore.FindKeypair(name)
+		cert, privateKey, _, err := c.Keystore.FindKeypair(name)
 		if err != nil {
 			return err
 		}
@@ -197,6 +209,8 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		// if we change keys we often have to regenerate e.g. the service accounts
 		// TODO: Eventually rotate keys / don't always reuse?
 		if privateKey == nil {
+			glog.V(2).Infof("Creating privateKey %q", name)
+
 			privateKey, err = pki.GeneratePrivateKey()
 			if err != nil {
 				return err
@@ -207,15 +221,31 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		if e.Signer != nil {
 			signer = fi.StringValue(e.Signer.Name)
 		}
+
 		cert, err = c.Keystore.CreateKeypair(signer, name, template, privateKey)
 		if err != nil {
 			return err
 		}
 
-		glog.V(8).Infof("created certificate %v", cert)
+		glog.V(8).Infof("created certificate with cn=%s", cert.Subject.CommonName)
 	}
 
 	// TODO: Check correct subject / flags
+
+	if changeStoredFormat {
+		// We fetch and reinsert the same keypair, forcing an update to our preferred format
+		// TODO: We're assuming that we want to save in the preferred format
+		cert, privateKey, _, err := c.Keystore.FindKeypair(name)
+		if err != nil {
+			return err
+		}
+		err = c.Keystore.StoreKeypair(name, cert, privateKey)
+		if err != nil {
+			return err
+		}
+
+		glog.Infof("updated Keypair %q to API format %q", name, e.Format)
+	}
 
 	return nil
 }

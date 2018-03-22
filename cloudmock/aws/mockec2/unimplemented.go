@@ -74,19 +74,6 @@ func (m *MockEC2) AssignIpv6AddressesRequest(*ec2.AssignIpv6AddressesInput) (*re
 	return nil, nil
 }
 
-func (m *MockEC2) AssociateDhcpOptions(*ec2.AssociateDhcpOptionsInput) (*ec2.AssociateDhcpOptionsOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) AssociateDhcpOptionsWithContext(aws.Context, *ec2.AssociateDhcpOptionsInput, ...request.Option) (*ec2.AssociateDhcpOptionsOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) AssociateDhcpOptionsRequest(*ec2.AssociateDhcpOptionsInput) (*request.Request, *ec2.AssociateDhcpOptionsOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
 func (m *MockEC2) AssociateIamInstanceProfile(*ec2.AssociateIamInstanceProfileInput) (*ec2.AssociateIamInstanceProfileOutput, error) {
 	panic("Not implemented")
 	return nil, nil
@@ -96,19 +83,6 @@ func (m *MockEC2) AssociateIamInstanceProfileWithContext(aws.Context, *ec2.Assoc
 	return nil, nil
 }
 func (m *MockEC2) AssociateIamInstanceProfileRequest(*ec2.AssociateIamInstanceProfileInput) (*request.Request, *ec2.AssociateIamInstanceProfileOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) AssociateRouteTable(*ec2.AssociateRouteTableInput) (*ec2.AssociateRouteTableOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) AssociateRouteTableWithContext(aws.Context, *ec2.AssociateRouteTableInput, ...request.Option) (*ec2.AssociateRouteTableOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) AssociateRouteTableRequest(*ec2.AssociateRouteTableInput) (*request.Request, *ec2.AssociateRouteTableOutput) {
 	panic("Not implemented")
 	return nil, nil
 }
@@ -360,19 +334,6 @@ func (m *MockEC2) CreateDefaultVpcRequest(*ec2.CreateDefaultVpcInput) (*request.
 	return nil, nil
 }
 
-func (m *MockEC2) CreateDhcpOptions(*ec2.CreateDhcpOptionsInput) (*ec2.CreateDhcpOptionsOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateDhcpOptionsWithContext(aws.Context, *ec2.CreateDhcpOptionsInput, ...request.Option) (*ec2.CreateDhcpOptionsOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateDhcpOptionsRequest(*ec2.CreateDhcpOptionsInput) (*request.Request, *ec2.CreateDhcpOptionsOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
 func (m *MockEC2) CreateEgressOnlyInternetGateway(*ec2.CreateEgressOnlyInternetGatewayInput) (*ec2.CreateEgressOnlyInternetGatewayOutput, error) {
 	panic("Not implemented")
 	return nil, nil
@@ -434,19 +395,6 @@ func (m *MockEC2) CreateInstanceExportTaskWithContext(aws.Context, *ec2.CreateIn
 	return nil, nil
 }
 func (m *MockEC2) CreateInstanceExportTaskRequest(*ec2.CreateInstanceExportTaskInput) (*request.Request, *ec2.CreateInstanceExportTaskOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) CreateNatGateway(*ec2.CreateNatGatewayInput) (*ec2.CreateNatGatewayOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateNatGatewayWithContext(aws.Context, *ec2.CreateNatGatewayInput, ...request.Option) (*ec2.CreateNatGatewayOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateNatGatewayRequest(*ec2.CreateNatGatewayInput) (*request.Request, *ec2.CreateNatGatewayOutput) {
 	panic("Not implemented")
 	return nil, nil
 }
@@ -529,32 +477,6 @@ func (m *MockEC2) CreateReservedInstancesListingRequest(*ec2.CreateReservedInsta
 	return nil, nil
 }
 
-func (m *MockEC2) CreateRoute(*ec2.CreateRouteInput) (*ec2.CreateRouteOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateRouteWithContext(aws.Context, *ec2.CreateRouteInput, ...request.Option) (*ec2.CreateRouteOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateRouteRequest(*ec2.CreateRouteInput) (*request.Request, *ec2.CreateRouteOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) CreateRouteTable(*ec2.CreateRouteTableInput) (*ec2.CreateRouteTableOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateRouteTableWithContext(aws.Context, *ec2.CreateRouteTableInput, ...request.Option) (*ec2.CreateRouteTableOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateRouteTableRequest(*ec2.CreateRouteTableInput) (*request.Request, *ec2.CreateRouteTableOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
 func (m *MockEC2) CreateSnapshot(*ec2.CreateSnapshotInput) (*ec2.Snapshot, error) {
 	panic("Not implemented")
 	return nil, nil
@@ -577,19 +499,6 @@ func (m *MockEC2) CreateSpotDatafeedSubscriptionWithContext(aws.Context, *ec2.Cr
 	return nil, nil
 }
 func (m *MockEC2) CreateSpotDatafeedSubscriptionRequest(*ec2.CreateSpotDatafeedSubscriptionInput) (*request.Request, *ec2.CreateSpotDatafeedSubscriptionOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) CreateVolume(*ec2.CreateVolumeInput) (*ec2.Volume, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateVolumeWithContext(aws.Context, *ec2.CreateVolumeInput, ...request.Option) (*ec2.Volume, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateVolumeRequest(*ec2.CreateVolumeInput) (*request.Request, *ec2.Volume) {
 	panic("Not implemented")
 	return nil, nil
 }
@@ -668,19 +577,6 @@ func (m *MockEC2) DeleteCustomerGatewayWithContext(aws.Context, *ec2.DeleteCusto
 	return nil, nil
 }
 func (m *MockEC2) DeleteCustomerGatewayRequest(*ec2.DeleteCustomerGatewayInput) (*request.Request, *ec2.DeleteCustomerGatewayOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) DeleteDhcpOptions(*ec2.DeleteDhcpOptionsInput) (*ec2.DeleteDhcpOptionsOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteDhcpOptionsWithContext(aws.Context, *ec2.DeleteDhcpOptionsInput, ...request.Option) (*ec2.DeleteDhcpOptionsOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteDhcpOptionsRequest(*ec2.DeleteDhcpOptionsInput) (*request.Request, *ec2.DeleteDhcpOptionsOutput) {
 	panic("Not implemented")
 	return nil, nil
 }
@@ -1088,19 +984,6 @@ func (m *MockEC2) DescribeCustomerGatewaysRequest(*ec2.DescribeCustomerGatewaysI
 	return nil, nil
 }
 
-func (m *MockEC2) DescribeDhcpOptions(*ec2.DescribeDhcpOptionsInput) (*ec2.DescribeDhcpOptionsOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeDhcpOptionsWithContext(aws.Context, *ec2.DescribeDhcpOptionsInput, ...request.Option) (*ec2.DescribeDhcpOptionsOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeDhcpOptionsRequest(*ec2.DescribeDhcpOptionsInput) (*request.Request, *ec2.DescribeDhcpOptionsOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
 func (m *MockEC2) DescribeEgressOnlyInternetGateways(*ec2.DescribeEgressOnlyInternetGatewaysInput) (*ec2.DescribeEgressOnlyInternetGatewaysOutput, error) {
 	panic("Not implemented")
 	return nil, nil
@@ -1325,28 +1208,6 @@ func (m *MockEC2) DescribeMovingAddressesWithContext(aws.Context, *ec2.DescribeM
 func (m *MockEC2) DescribeMovingAddressesRequest(*ec2.DescribeMovingAddressesInput) (*request.Request, *ec2.DescribeMovingAddressesOutput) {
 	panic("Not implemented")
 	return nil, nil
-}
-
-func (m *MockEC2) DescribeNatGateways(*ec2.DescribeNatGatewaysInput) (*ec2.DescribeNatGatewaysOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeNatGatewaysWithContext(aws.Context, *ec2.DescribeNatGatewaysInput, ...request.Option) (*ec2.DescribeNatGatewaysOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeNatGatewaysRequest(*ec2.DescribeNatGatewaysInput) (*request.Request, *ec2.DescribeNatGatewaysOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) DescribeNatGatewaysPages(*ec2.DescribeNatGatewaysInput, func(*ec2.DescribeNatGatewaysOutput, bool) bool) error {
-	panic("Not implemented")
-	return nil
-}
-func (m *MockEC2) DescribeNatGatewaysPagesWithContext(aws.Context, *ec2.DescribeNatGatewaysInput, func(*ec2.DescribeNatGatewaysOutput, bool) bool, ...request.Option) error {
-	panic("Not implemented")
-	return nil
 }
 
 func (m *MockEC2) DescribeNetworkAcls(*ec2.DescribeNetworkAclsInput) (*ec2.DescribeNetworkAclsOutput, error) {
@@ -2278,19 +2139,6 @@ func (m *MockEC2) ModifyVolumeAttributeRequest(*ec2.ModifyVolumeAttributeInput) 
 	return nil, nil
 }
 
-func (m *MockEC2) ModifyVpcAttribute(*ec2.ModifyVpcAttributeInput) (*ec2.ModifyVpcAttributeOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) ModifyVpcAttributeWithContext(aws.Context, *ec2.ModifyVpcAttributeInput, ...request.Option) (*ec2.ModifyVpcAttributeOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) ModifyVpcAttributeRequest(*ec2.ModifyVpcAttributeInput) (*request.Request, *ec2.ModifyVpcAttributeOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
 func (m *MockEC2) ModifyVpcEndpoint(*ec2.ModifyVpcEndpointInput) (*ec2.ModifyVpcEndpointOutput, error) {
 	panic("Not implemented")
 	return nil, nil
@@ -2838,15 +2686,6 @@ func (m *MockEC2) WaitUntilKeyPairExists(*ec2.DescribeKeyPairsInput) error {
 	return nil
 }
 func (m *MockEC2) WaitUntilKeyPairExistsWithContext(aws.Context, *ec2.DescribeKeyPairsInput, ...request.WaiterOption) error {
-	panic("Not implemented")
-	return nil
-}
-
-func (m *MockEC2) WaitUntilNatGatewayAvailable(*ec2.DescribeNatGatewaysInput) error {
-	panic("Not implemented")
-	return nil
-}
-func (m *MockEC2) WaitUntilNatGatewayAvailableWithContext(aws.Context, *ec2.DescribeNatGatewaysInput, ...request.WaiterOption) error {
 	panic("Not implemented")
 	return nil
 }

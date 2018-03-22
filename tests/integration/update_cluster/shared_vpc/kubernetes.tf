@@ -223,7 +223,9 @@ resource "aws_route_table" "sharedvpc-example-com" {
 
   tags = {
     KubernetesCluster                             = "sharedvpc.example.com"
-    "kubernetes.io/cluster/sharedvpc.example.com" = "shared"
+    Name                                          = "sharedvpc.example.com"
+    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
+    "kubernetes.io/kops/role"                     = "public"
   }
 }
 

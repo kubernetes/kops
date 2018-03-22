@@ -37,6 +37,9 @@ func (m *MockEC2) CreateSecurityGroupWithContext(aws.Context, *ec2.CreateSecurit
 }
 
 func (m *MockEC2) CreateSecurityGroup(request *ec2.CreateSecurityGroupInput) (*ec2.CreateSecurityGroupOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("CreateSecurityGroup: %v", request)
 
 	m.securityGroupNumber++
@@ -48,7 +51,11 @@ func (m *MockEC2) CreateSecurityGroup(request *ec2.CreateSecurityGroupInput) (*e
 		VpcId:       request.VpcId,
 		Description: request.Description,
 	}
-	m.SecurityGroups = append(m.SecurityGroups, sg)
+	if m.SecurityGroups == nil {
+		m.SecurityGroups = make(map[string]*ec2.SecurityGroup)
+	}
+	m.SecurityGroups[*sg.GroupId] = sg
+
 	response := &ec2.CreateSecurityGroupOutput{
 		GroupId: sg.GroupId,
 	}
@@ -89,7 +96,14 @@ func (m *MockEC2) DescribeSecurityGroupsWithContext(aws.Context, *ec2.DescribeSe
 	return nil, nil
 }
 func (m *MockEC2) DescribeSecurityGroups(request *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeSecurityGroups: %v", request)
+
+	if len(request.GroupIds) != 0 {
+		request.Filters = append(request.Filters, &ec2.Filter{Name: s("group-id"), Values: request.GroupIds})
+	}
 
 	var groups []*ec2.SecurityGroup
 
@@ -108,6 +122,12 @@ func (m *MockEC2) DescribeSecurityGroups(request *ec2.DescribeSecurityGroupsInpu
 			case "group-name":
 				for _, v := range filter.Values {
 					if sg.GroupName != nil && *sg.GroupName == *v {
+						match = true
+					}
+				}
+			case "group-id":
+				for _, v := range filter.Values {
+					if sg.GroupId != nil && *sg.GroupId == *v {
 						match = true
 					}
 				}
@@ -186,9 +206,54 @@ func (m *MockEC2) AuthorizeSecurityGroupEgressWithContext(aws.Context, *ec2.Auth
 	panic("Not implemented")
 	return nil, nil
 }
-func (m *MockEC2) AuthorizeSecurityGroupEgress(*ec2.AuthorizeSecurityGroupEgressInput) (*ec2.AuthorizeSecurityGroupEgressOutput, error) {
-	panic("Not implemented")
-	return nil, nil
+func (m *MockEC2) AuthorizeSecurityGroupEgress(request *ec2.AuthorizeSecurityGroupEgressInput) (*ec2.AuthorizeSecurityGroupEgressOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("AuthorizeSecurityGroupEgress: %v", request)
+
+	if aws.StringValue(request.GroupId) == "" {
+		return nil, fmt.Errorf("GroupId not specified")
+	}
+
+	if request.DryRun != nil {
+		glog.Fatalf("DryRun")
+	}
+
+	sg := m.SecurityGroups[*request.GroupId]
+	if sg == nil {
+		return nil, fmt.Errorf("sg not found")
+	}
+
+	if request.CidrIp != nil {
+		if request.SourceSecurityGroupName != nil {
+			glog.Fatalf("SourceSecurityGroupName not implemented")
+		}
+		if request.SourceSecurityGroupOwnerId != nil {
+			glog.Fatalf("SourceSecurityGroupOwnerId not implemented")
+		}
+
+		p := &ec2.IpPermission{
+			FromPort:   request.FromPort,
+			ToPort:     request.ToPort,
+			IpProtocol: request.IpProtocol,
+		}
+
+		if request.CidrIp != nil {
+			p.IpRanges = append(p.IpRanges, &ec2.IpRange{CidrIp: request.CidrIp})
+		}
+
+		sg.IpPermissionsEgress = append(sg.IpPermissionsEgress, p)
+	}
+
+	for _, p := range request.IpPermissions {
+		sg.IpPermissionsEgress = append(sg.IpPermissionsEgress, p)
+	}
+
+	// TODO: We need to fold permissions
+
+	response := &ec2.AuthorizeSecurityGroupEgressOutput{}
+	return response, nil
 }
 func (m *MockEC2) AuthorizeSecurityGroupIngressRequest(*ec2.AuthorizeSecurityGroupIngressInput) (*request.Request, *ec2.AuthorizeSecurityGroupIngressOutput) {
 	panic("Not implemented")
@@ -198,7 +263,55 @@ func (m *MockEC2) AuthorizeSecurityGroupIngressWithContext(aws.Context, *ec2.Aut
 	panic("Not implemented")
 	return nil, nil
 }
-func (m *MockEC2) AuthorizeSecurityGroupIngress(*ec2.AuthorizeSecurityGroupIngressInput) (*ec2.AuthorizeSecurityGroupIngressOutput, error) {
-	panic("Not implemented")
-	return nil, nil
+func (m *MockEC2) AuthorizeSecurityGroupIngress(request *ec2.AuthorizeSecurityGroupIngressInput) (*ec2.AuthorizeSecurityGroupIngressOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("AuthorizeSecurityGroupIngress: %v", request)
+
+	if aws.StringValue(request.GroupId) == "" {
+		return nil, fmt.Errorf("GroupId not specified")
+	}
+
+	if request.DryRun != nil {
+		glog.Fatalf("DryRun")
+	}
+
+	if request.GroupName != nil {
+		glog.Fatalf("GroupName not implemented")
+	}
+	sg := m.SecurityGroups[*request.GroupId]
+	if sg == nil {
+		return nil, fmt.Errorf("sg not found")
+	}
+
+	if request.CidrIp != nil {
+		if request.SourceSecurityGroupName != nil {
+			glog.Fatalf("SourceSecurityGroupName not implemented")
+		}
+		if request.SourceSecurityGroupOwnerId != nil {
+			glog.Fatalf("SourceSecurityGroupOwnerId not implemented")
+		}
+
+		p := &ec2.IpPermission{
+			FromPort:   request.FromPort,
+			ToPort:     request.ToPort,
+			IpProtocol: request.IpProtocol,
+		}
+
+		if request.CidrIp != nil {
+			p.IpRanges = append(p.IpRanges, &ec2.IpRange{CidrIp: request.CidrIp})
+		}
+
+		sg.IpPermissions = append(sg.IpPermissions, p)
+	}
+
+	for _, p := range request.IpPermissions {
+		sg.IpPermissions = append(sg.IpPermissions, p)
+	}
+
+	// TODO: We need to fold permissions
+
+	response := &ec2.AuthorizeSecurityGroupIngressOutput{}
+	return response, nil
 }

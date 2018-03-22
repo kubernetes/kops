@@ -102,7 +102,7 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 	flags = append(flags, "--kubeconfig="+"/var/lib/kube-scheduler/kubeconfig")
 
 	if c.UsePolicyConfigMap != nil {
-		flags = append(flags, "--policy-configmap=scheduler-policy")
+		flags = append(flags, "--policy-configmap=scheduler-policy --policy-configmap-namespace=kube-system")
 	}
 
 	pod := &v1.Pod{

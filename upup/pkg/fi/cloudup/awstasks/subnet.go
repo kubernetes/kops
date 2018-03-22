@@ -136,7 +136,15 @@ func (s *Subnet) CheckChanges(a, e, changes *Subnet) error {
 	if a != nil {
 		// TODO: Do we want to destroy & recreate the subnet when theses immutable fields change?
 		if changes.VPC != nil {
-			errors = append(errors, fi.FieldIsImmutable(a.VPC, e.VPC, fieldPath.Child("VPC")))
+			var aID *string
+			if a.VPC != nil {
+				aID = a.VPC.ID
+			}
+			var eID *string
+			if e.VPC != nil {
+				eID = e.VPC.ID
+			}
+			errors = append(errors, fi.FieldIsImmutable(eID, aID, fieldPath.Child("VPC")))
 		}
 		if changes.AvailabilityZone != nil {
 			errors = append(errors, fi.FieldIsImmutable(a.AvailabilityZone, e.AvailabilityZone, fieldPath.Child("AvailabilityZone")))

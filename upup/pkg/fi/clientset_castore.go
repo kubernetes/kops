@@ -122,6 +122,7 @@ func (c *ClientsetCAStore) generateCACertificate(id string) (*keyset, error) {
 
 // keyset is a parsed Keyset
 type keyset struct {
+	format  KeysetFormat
 	items   map[string]*keysetItem
 	primary *keysetItem
 }
@@ -145,7 +146,7 @@ func parseKeyset(o *kops.Keyset) (*keyset, error) {
 			id: key.Id,
 		}
 		if len(key.PublicMaterial) != 0 {
-			cert, err := pki.LoadPEMCertificate(key.PublicMaterial)
+			cert, err := pki.ParsePEMCertificate(key.PublicMaterial)
 			if err != nil {
 				glog.Warningf("key public material was %s", key.PublicMaterial)
 				return nil, fmt.Errorf("error loading certificate %s/%s: %v", name, key.Id, err)
@@ -169,7 +170,7 @@ func parseKeyset(o *kops.Keyset) (*keyset, error) {
 	return keyset, nil
 }
 
-// loadKeyset gets the named keyset
+// loadKeyset gets the named keyset and the format of the Keyset.
 func (c *ClientsetCAStore) loadKeyset(name string) (*keyset, error) {
 	o, err := c.clientset.Keysets(c.namespace).Get(name, v1.GetOptions{})
 	if err != nil {
@@ -179,13 +180,19 @@ func (c *ClientsetCAStore) loadKeyset(name string) (*keyset, error) {
 		return nil, fmt.Errorf("error reading keyset %q: %v", name, err)
 	}
 
-	return parseKeyset(o)
+	keyset, err := parseKeyset(o)
+	if err != nil {
+		return nil, err
+	}
+	keyset.format = KeysetFormatV1Alpha2
+	return keyset, nil
 }
 
 // findPrimary returns the primary keysetItem in the keyset
 func (k *keyset) findPrimary() *keysetItem {
 	var primary *keysetItem
 	var primaryVersion *big.Int
+
 	for _, item := range k.items {
 		version, ok := big.NewInt(0).SetString(item.id, 10)
 		if !ok {
@@ -236,17 +243,17 @@ func (c *ClientsetCAStore) CertificatePool(id string, createIfMissing bool) (*Ce
 }
 
 // FindKeypair implements CAStore::FindKeypair
-func (c *ClientsetCAStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+func (c *ClientsetCAStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, KeysetFormat, error) {
 	keyset, err := c.loadKeyset(name)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, "", err
 	}
 
 	if keyset != nil && keyset.primary != nil {
-		return keyset.primary.certificate, keyset.primary.privateKey, nil
+		return keyset.primary.certificate, keyset.primary.privateKey, keyset.format, nil
 	}
 
-	return nil, nil, nil
+	return nil, nil, "", nil
 }
 
 // FindCert implements CAStore::FindCert
@@ -256,12 +263,11 @@ func (c *ClientsetCAStore) FindCert(name string) (*pki.Certificate, error) {
 		return nil, err
 	}
 
-	var cert *pki.Certificate
 	if keyset != nil && keyset.primary != nil {
-		cert = keyset.primary.certificate
+		return keyset.primary.certificate, nil
 	}
 
-	return cert, nil
+	return nil, nil
 }
 
 // FindCertificatePool implements CAStore::FindCertificatePool

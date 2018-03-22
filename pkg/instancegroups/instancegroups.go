@@ -97,7 +97,7 @@ func promptInteractive(upgradedHost string) (stopPrompting bool, err error) {
 // TODO: Batch termination, like a rolling-update
 
 // RollingUpdate performs a rolling update on a list of ec2 instances.
-func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, isBastion bool, sleepAfterTerminate time.Duration, validationTimeout time.Duration) (err error) {
+func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster, instanceGroupList *api.InstanceGroupList, isBastion bool, sleepAfterTerminate time.Duration, validationTimeout time.Duration) (err error) {
 
 	// we should not get here, but hey I am going to check.
 	if rollingUpdateData == nil {
@@ -127,7 +127,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 	} else if rollingUpdateData.CloudOnly {
 		glog.V(3).Info("Not validating cluster as validation is turned off via the cloud-only flag.")
 	} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
-		if err = r.ValidateCluster(rollingUpdateData, instanceGroupList); err != nil {
+		if err = r.ValidateCluster(rollingUpdateData, cluster, instanceGroupList); err != nil {
 			if rollingUpdateData.FailOnValidate {
 				return fmt.Errorf("error validating cluster: %v", err)
 			} else {
@@ -187,7 +187,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 			glog.Infof("Validating the cluster.")
 
-			if err = r.ValidateClusterWithDuration(rollingUpdateData, instanceGroupList, validationTimeout); err != nil {
+			if err = r.ValidateClusterWithDuration(rollingUpdateData, cluster, instanceGroupList, validationTimeout); err != nil {
 
 				if rollingUpdateData.FailOnValidate {
 					glog.Errorf("Cluster did not validate within %s", validationTimeout)
@@ -213,12 +213,12 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 }
 
 // ValidateClusterWithDuration runs validation.ValidateCluster until either we get positive result or the timeout expires
-func (r *RollingUpdateInstanceGroup) ValidateClusterWithDuration(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, duration time.Duration) error {
+func (r *RollingUpdateInstanceGroup) ValidateClusterWithDuration(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster, instanceGroupList *api.InstanceGroupList, duration time.Duration) error {
 	// TODO should we expose this to the UI?
 	tickDuration := 30 * time.Second
 	// Try to validate cluster at least once, this will handle durations that are lower
 	// than our tick time
-	if r.tryValidateCluster(rollingUpdateData, instanceGroupList, duration, tickDuration) {
+	if r.tryValidateCluster(rollingUpdateData, cluster, instanceGroupList, duration, tickDuration) {
 		return nil
 	}
 
@@ -232,7 +232,7 @@ func (r *RollingUpdateInstanceGroup) ValidateClusterWithDuration(rollingUpdateDa
 			return fmt.Errorf("cluster did not validate within a duation of %q", duration)
 		case <-tick:
 			// Got a tick, validate cluster
-			if r.tryValidateCluster(rollingUpdateData, instanceGroupList, duration, tickDuration) {
+			if r.tryValidateCluster(rollingUpdateData, cluster, instanceGroupList, duration, tickDuration) {
 				return nil
 			}
 			// ValidateCluster didn't work yet, so let's try again
@@ -241,8 +241,8 @@ func (r *RollingUpdateInstanceGroup) ValidateClusterWithDuration(rollingUpdateDa
 	}
 }
 
-func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, duration time.Duration, tickDuration time.Duration) bool {
-	if _, err := validation.ValidateCluster(rollingUpdateData.ClusterName, instanceGroupList, rollingUpdateData.K8sClient); err != nil {
+func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster, instanceGroupList *api.InstanceGroupList, duration time.Duration, tickDuration time.Duration) bool {
+	if _, err := validation.ValidateCluster(cluster, instanceGroupList, rollingUpdateData.K8sClient); err != nil {
 		glog.Infof("Cluster did not validate, will try again in %q until duration %q expires: %v.", tickDuration, duration, err)
 		return false
 	} else {
@@ -252,10 +252,9 @@ func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *Rolli
 }
 
 // ValidateCluster runs our validation methods on the K8s Cluster.
-func (r *RollingUpdateInstanceGroup) ValidateCluster(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList) error {
-
-	if _, err := validation.ValidateCluster(rollingUpdateData.ClusterName, instanceGroupList, rollingUpdateData.K8sClient); err != nil {
-		return fmt.Errorf("cluster %q did not pass validation: %v", rollingUpdateData.ClusterName, err)
+func (r *RollingUpdateInstanceGroup) ValidateCluster(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster, instanceGroupList *api.InstanceGroupList) error {
+	if _, err := validation.ValidateCluster(cluster, instanceGroupList, rollingUpdateData.K8sClient); err != nil {
+		return fmt.Errorf("cluster %q did not pass validation: %v", cluster.Name, err)
 	}
 
 	return nil
@@ -337,7 +336,7 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 	return nil
 }
 
-// Delete and CloudInstanceGroups
+// Delete a CloudInstanceGroups
 func (r *RollingUpdateInstanceGroup) Delete() error {
 	if r.CloudGroup == nil {
 		return fmt.Errorf("group has to be set")

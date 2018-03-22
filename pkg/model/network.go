@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
 )
 
@@ -43,13 +44,17 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// VPC that holds everything for the cluster
 	{
-
+		vpcTags := tags
+		if sharedVPC {
+			// We don't tag a shared VPC - we can identify it by its ID anyway.  Issue #4265
+			vpcTags = nil
+		}
 		t := &awstasks.VPC{
 			Name:             s(vpcName),
 			Lifecycle:        b.Lifecycle,
 			Shared:           fi.Bool(sharedVPC),
 			EnableDNSSupport: fi.Bool(true),
-			Tags:             tags,
+			Tags:             vpcTags,
 		}
 
 		if sharedVPC && b.IsKubernetesGTE("1.5") {
@@ -100,11 +105,18 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	allSubnetsShared := true
+	allSubnetsSharedInZone := make(map[string]bool)
+	for i := range b.Cluster.Spec.Subnets {
+		subnetSpec := &b.Cluster.Spec.Subnets[i]
+		allSubnetsSharedInZone[subnetSpec.Zone] = true
+	}
+
 	for i := range b.Cluster.Spec.Subnets {
 		subnetSpec := &b.Cluster.Spec.Subnets[i]
 		sharedSubnet := subnetSpec.ProviderID != ""
 		if !sharedSubnet {
 			allSubnetsShared = false
+			allSubnetsSharedInZone[subnetSpec.Zone] = false
 		}
 	}
 
@@ -123,14 +135,20 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(igw)
 
 		if !allSubnetsShared {
+			// The route table is not shared if we're creating a subnet for our cluster
+			// That subnet will be owned, and will be associated with our RouteTable.
+			// On deletion we delete the subnet & the route table.
+			sharedRouteTable := false
+			routeTableTags := b.CloudTags(vpcName, sharedRouteTable)
+			routeTableTags[awsup.TagNameKopsRole] = "public"
 			publicRouteTable = &awstasks.RouteTable{
 				Name:      s(b.ClusterName()),
 				Lifecycle: b.Lifecycle,
 
 				VPC: b.LinkToVPC(),
 
-				Tags:   tags,
-				Shared: fi.Bool(sharedVPC),
+				Tags:   routeTableTags,
+				Shared: fi.Bool(sharedRouteTable),
 			}
 			c.AddTask(publicRouteTable)
 
@@ -225,7 +243,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		var ngw *awstasks.NatGateway
 		if b.Cluster.Spec.Subnets[i].Egress != "" {
-			if strings.Contains(b.Cluster.Spec.Subnets[i].Egress, "nat-") {
+			if strings.HasPrefix(b.Cluster.Spec.Subnets[i].Egress, "nat-") {
 
 				ngw = &awstasks.NatGateway{
 					Name:                 s(zone + "." + b.ClusterName()),
@@ -235,6 +253,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 					// If we're here, it means this NatGateway was specified, so we are Shared
 					Shared: fi.Bool(true),
+					Tags:   b.CloudTags(zone+"."+b.ClusterName(), true),
 				}
 
 				c.AddTask(ngw)
@@ -276,38 +295,26 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Subnet:               utilitySubnet,
 				ElasticIP:            eip,
 				AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+				Tags:                 b.CloudTags(zone+"."+b.ClusterName(), false),
 			}
 			c.AddTask(ngw)
-		}
-
-		// kops needs to have the correct shared or owned tag on private route tables,
-		// but the 'Name' tag  for the private route table does not match the standard
-		// 'Name' tag value.
-		// Making a copy of the map to use for private route tables, and maintaining the 'Name'
-		// tag with a value like "private-us-test-1a.privatedns1.example.com" instead of using
-		// the usual value like "privatedns1.example.com".
-		privateTags := make(map[string]string)
-		for k, v := range tags {
-			privateTags[k] = v
-		}
-		// We do not set the Name on shared resources remove it if it exists
-		// otherwise set it.
-		if sharedVPC {
-			delete(privateTags, "Name")
-		} else {
-			privateTags["Name"] = b.NamePrivateRouteTableInZone(zone)
 		}
 
 		// Private Route Table
 		//
 		// The private route table that will route to the NAT Gateway
+		// We create an owned route table if we created any subnet in that zone.
+		// Otherwise we consider it shared.
+		routeTableShared := allSubnetsSharedInZone[zone]
+		routeTableTags := b.CloudTags(b.NamePrivateRouteTableInZone(zone), routeTableShared)
+		routeTableTags[awsup.TagNameKopsRole] = "private-" + zone
 		rt := &awstasks.RouteTable{
 			Name:      s(b.NamePrivateRouteTableInZone(zone)),
 			VPC:       b.LinkToVPC(),
 			Lifecycle: b.Lifecycle,
 
-			Shared: fi.Bool(sharedVPC),
-			Tags:   privateTags,
+			Shared: fi.Bool(routeTableShared),
+			Tags:   routeTableTags,
 		}
 		c.AddTask(rt)
 

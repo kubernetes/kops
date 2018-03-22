@@ -18,7 +18,7 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-  kubernetesVersion: v1.5.7
+  kubernetesVersion: v1.8.2
   masterInternalName: api.internal.privatekopeio.example.com
   masterPublicName: api.privatekopeio.example.com
   networkCIDR: 172.20.0.0/16

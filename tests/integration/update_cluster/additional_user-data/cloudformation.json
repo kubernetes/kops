@@ -3,6 +3,7 @@
     "AWSAutoScalingAutoScalingGroupmasterustest1amastersadditionaluserdataexamplecom": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
+        "AutoScalingGroupName": "master-us-test-1a.masters.additionaluserdata.example.com",
         "LaunchConfigurationName": {
           "Ref": "AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserdataexamplecom"
         },
@@ -50,6 +51,7 @@
     "AWSAutoScalingAutoScalingGroupnodesadditionaluserdataexamplecom": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
+        "AutoScalingGroupName": "nodes.additionaluserdata.example.com",
         "LaunchConfigurationName": {
           "Ref": "AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom"
         },
@@ -226,6 +228,10 @@
           {
             "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
             "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/kops/role",
+            "Value": "public"
           }
         ]
       }
