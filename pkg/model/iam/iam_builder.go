@@ -188,6 +188,10 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
 	}
 
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPCIPVlan != nil {
+		addAmazonVPCIPVlanPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+	}
+
 	return p, nil
 }
 
@@ -219,6 +223,10 @@ func (b *PolicyBuilder) BuildAWSPolicyNode() (*Policy, error) {
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
 		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+	}
+
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPCIPVlan != nil {
+		addAmazonVPCIPVlanPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
 	}
 
 	return p, nil
@@ -816,6 +824,34 @@ func addRomanaCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, le
 					"ec2:ResourceTag/KubernetesCluster": clusterName,
 				},
 			},
+		},
+	)
+}
+
+func addAmazonVPCIPVlanPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string) {
+	if legacyIAM {
+		// Legacy IAM provides ec2:*, so no additional permissions required
+		return
+	}
+
+	p.Statement = append(p.Statement,
+		&Statement{
+			Sid:    "cniIpvlanVpcK8s",
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:DescribeSubnets",
+				"ec2:AttachNetworkInterface",
+				"ec2:AssignPrivateIpAddresses",
+				"ec2:UnassignPrivateIpAddresses",
+				"ec2:CreateNetworkInterface",
+				"ec2:DescribeNetworkInterfaces",
+				"ec2:DescribeVpcPeeringConnections",
+				"ec2:DescribeSecurityGroups",
+				"ec2:DetachNetworkInterface",
+				"ec2:DeleteNetworkInterface",
+				"ec2:ModifyNetworkInterfaceAttribute",
+			}),
+			Resource: resource,
 		},
 	)
 }

@@ -95,6 +95,11 @@ func usesCNI(c *api.Cluster) bool {
 		return true
 	}
 
+	if networkConfig.AmazonVPCIPVlan != nil {
+		// AmazonVPCIPVlan uses CNI
+		return true
+	}
+
 	// Assume other modes also use CNI
 	glog.Warningf("Unknown networking mode configured")
 	return true

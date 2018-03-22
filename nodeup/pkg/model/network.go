@@ -43,7 +43,8 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 	} else if networking.External != nil {
 		// external is based on kubenet
 		assetNames = append(assetNames, "bridge", "host-local", "loopback")
-	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil || networking.Cilium != nil {
+
+	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil || networking.Cilium != nil || networking.AmazonVPCIPVlan != nil {
 		assetNames = append(assetNames, "bridge", "host-local", "loopback", "ptp")
 		// Do we need tuning?
 
@@ -65,6 +66,17 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 		if err := b.addCNIBinAsset(c, assetName); err != nil {
 			return err
 		}
+	}
+
+	if networking.AmazonVPCIPVlan != nil {
+		binDownloadTask := &nodetasks.Archive{
+			Source:    networking.AmazonVPCIPVlan.BinariesDownloadURL,
+			TargetDir: "/opt/cni/bin",
+			Name:      "cni-ipvlan-vpc-k8s-binaries",
+			Gzip:      true,
+		}
+
+		c.AddTask(binDownloadTask)
 	}
 
 	return nil
