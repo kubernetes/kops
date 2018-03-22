@@ -42,8 +42,6 @@ type Archive struct {
 	// Hash is the source tar
 	Hash string `json:"hash,omitempty"`
 
-	Gzip bool `json:"gzip,omitempty"`
-
 	// TargetDir is the directory for extraction
 	TargetDir string `json:"target,omitempty"`
 
@@ -164,13 +162,7 @@ func (_ *Archive) RenderLocal(t *local.LocalTarget, a, e, changes *Archive) erro
 			return fmt.Errorf("error creating directories %q: %v", targetDir, err)
 		}
 
-		var extractArgs = "xf"
-
-		if e.Gzip {
-			extractArgs = "xzf"
-		}
-
-		args := []string{"tar", extractArgs, localFile, "-C", targetDir}
+		args := []string{"tar", "xf", localFile, "-C", targetDir}
 		if e.StripComponents != 0 {
 			args = append(args, "--strip-components="+strconv.Itoa(e.StripComponents))
 		}
