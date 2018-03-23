@@ -338,7 +338,7 @@ spec:
     - some_service.service
     requires:
     - docker.service
-      execContainer:
+    execContainer:
       image: kopeio/nvidia-bootstrap:1.6
       # these are added as -e to the docker environment
       environment:
