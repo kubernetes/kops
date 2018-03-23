@@ -216,6 +216,10 @@ type HookSpec struct {
 	ExecContainer *ExecContainerAction `json:"execContainer,omitempty"`
 	// Manifest is a raw systemd unit file
 	Manifest string `json:"manifest,omitempty"`
+	// UseRawManifest indicates that the contents of Manifest should be used as the contents
+	// of the systemd unit, unmodified. Before and Requires are ignored when used together
+	// with this value (and validation shouldn't allow them to be set)
+	UseRawManifest bool `json:"useRawManifest,omitempty"`
 }
 
 // ExecContainerAction defines an hood action

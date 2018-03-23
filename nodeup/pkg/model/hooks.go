@@ -116,30 +116,36 @@ func (h *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*no
 		}
 	}
 	// build the base unit file
-	unit := &systemd.Manifest{}
-	unit.Set("Unit", "Description", "Kops Hook "+name)
+	var definition *string
+	if hook.UseRawManifest {
+		definition = s(hook.Manifest)
+	} else {
+		unit := &systemd.Manifest{}
+		unit.Set("Unit", "Description", "Kops Hook "+name)
 
-	// add any service dependencies to the unit
-	for _, x := range hook.Requires {
-		unit.Set("Unit", "Requires", x)
-	}
-	for _, x := range hook.Before {
-		unit.Set("Unit", "Before", x)
-	}
-
-	// are we a raw unit file or a docker exec?
-	switch hook.ExecContainer {
-	case nil:
-		unit.SetSection("Service", hook.Manifest)
-	default:
-		if err := h.buildDockerService(unit, hook); err != nil {
-			return nil, err
+		// add any service dependencies to the unit
+		for _, x := range hook.Requires {
+			unit.Set("Unit", "Requires", x)
 		}
+		for _, x := range hook.Before {
+			unit.Set("Unit", "Before", x)
+		}
+
+		// are we a raw unit file or a docker exec?
+		switch hook.ExecContainer {
+		case nil:
+			unit.SetSection("Service", hook.Manifest)
+		default:
+			if err := h.buildDockerService(unit, hook); err != nil {
+				return nil, err
+			}
+		}
+		definition = s(unit.Render())
 	}
 
 	service := &nodetasks.Service{
 		Name:       ensureSystemdSuffix(name),
-		Definition: s(unit.Render()),
+		Definition: definition,
 	}
 
 	service.InitDefaults()

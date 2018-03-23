@@ -1587,6 +1587,7 @@ func autoConvert_v1alpha1_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.Hook
 		out.ExecContainer = nil
 	}
 	out.Manifest = in.Manifest
+	out.UseRawManifest = in.UseRawManifest
 	return nil
 }
 
@@ -1619,6 +1620,7 @@ func autoConvert_kops_HookSpec_To_v1alpha1_HookSpec(in *kops.HookSpec, out *Hook
 		out.ExecContainer = nil
 	}
 	out.Manifest = in.Manifest
+	out.UseRawManifest = in.UseRawManifest
 	return nil
 }
 
