@@ -183,11 +183,32 @@ func validateFileAssetSpec(v *kops.FileAssetSpec, fieldPath *field.Path) field.E
 func validateHookSpec(v *kops.HookSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if !v.Disabled && v.ExecContainer == nil && v.Manifest == "" {
+	// if this unit is disabled, short-circuit and do not validate
+	if v.Disabled {
+		return allErrs
+	}
+
+	if v.ExecContainer == nil && v.Manifest == "" {
 		allErrs = append(allErrs, field.Required(fieldPath, "you must set either manifest or execContainer for a hook"))
 	}
 
-	if !v.Disabled && v.ExecContainer != nil {
+	if v.ExecContainer != nil && v.UseRawManifest {
+		allErrs = append(allErrs, field.Forbidden(fieldPath, "execContainer may not be used with useRawManifest (use manifest instead)"))
+	}
+
+	if v.Manifest == "" && v.UseRawManifest {
+		allErrs = append(allErrs, field.Required(fieldPath, "you must set manifest when useRawManifest is true"))
+	}
+
+	if v.Before != nil && v.UseRawManifest {
+		allErrs = append(allErrs, field.Forbidden(fieldPath, "before may not be used with useRawManifest"))
+	}
+
+	if v.Requires != nil && v.UseRawManifest {
+		allErrs = append(allErrs, field.Forbidden(fieldPath, "requires may not be used with useRawManifest"))
+	}
+
+	if v.ExecContainer != nil {
 		allErrs = append(allErrs, validateExecContainerAction(v.ExecContainer, fieldPath.Child("ExecContainer"))...)
 	}
 
