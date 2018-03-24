@@ -199,7 +199,7 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 			continue
 		}
 
-		if resources["vpc:"+vpcID] == nil {
+		if resources["vpc:"+vpcID] == nil || resources["vpc:"+vpcID].Shared {
 			// Not deleting this VPC; ignore
 			continue
 		}
