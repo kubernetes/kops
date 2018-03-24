@@ -6,6 +6,7 @@ go_library(
         "aws.go",
         "errors.go",
         "filters.go",
+        "routetable.go",
         "tags.go",
         "vpc.go",
     ],

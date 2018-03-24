@@ -943,62 +943,6 @@ func DescribeRouteTablesIgnoreTags(cloud fi.Cloud) ([]*ec2.RouteTable, error) {
 	return response.RouteTables, nil
 }
 
-// DescribeRouteTables lists route-tables tagged for the cloud
-func DescribeRouteTables(cloud fi.Cloud) ([]*ec2.RouteTable, error) {
-	c := cloud.(awsup.AWSCloud)
-
-	glog.V(2).Infof("Listing EC2 RouteTables")
-	request := &ec2.DescribeRouteTablesInput{
-		Filters: BuildEC2Filters(cloud),
-	}
-	response, err := c.EC2().DescribeRouteTables(request)
-	if err != nil {
-		return nil, fmt.Errorf("error listing RouteTables: %v", err)
-	}
-
-	return response.RouteTables, nil
-}
-
-func ListRouteTables(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
-	routeTables, err := DescribeRouteTables(cloud)
-	if err != nil {
-		return nil, err
-	}
-
-	var resourceTrackers []*resources.Resource
-
-	for _, rt := range routeTables {
-		resourceTracker := buildTrackerForRouteTable(rt, clusterName)
-		resourceTrackers = append(resourceTrackers, resourceTracker)
-	}
-
-	return resourceTrackers, nil
-}
-
-func buildTrackerForRouteTable(rt *ec2.RouteTable, clusterName string) *resources.Resource {
-	resourceTracker := &resources.Resource{
-		Name:    FindName(rt.Tags),
-		ID:      aws.StringValue(rt.RouteTableId),
-		Type:    ec2.ResourceTypeRouteTable,
-		Deleter: DeleteRouteTable,
-		Shared:  HasSharedTag(ec2.ResourceTypeRouteTable+":"+*rt.RouteTableId, rt.Tags, clusterName),
-	}
-
-	var blocks []string
-	var blocked []string
-
-	blocks = append(blocks, "vpc:"+aws.StringValue(rt.VpcId))
-
-	for _, a := range rt.Associations {
-		blocked = append(blocked, "subnet:"+aws.StringValue(a.SubnetId))
-	}
-
-	resourceTracker.Blocks = blocks
-	resourceTracker.Blocked = blocked
-
-	return resourceTracker
-}
-
 func DeleteDhcpOptions(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(awsup.AWSCloud)
 
