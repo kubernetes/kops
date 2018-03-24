@@ -184,3 +184,49 @@ func makePodList(pods []map[string]string) *v1.PodList {
 	}
 	return &list
 }
+
+func Test_ValidateBastionNodes(t *testing.T) {
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	groups["ig1"] = &cloudinstances.CloudInstanceGroup{
+		InstanceGroup: &kopsapi.InstanceGroup{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "ig1",
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: kopsapi.InstanceGroupRoleNode,
+			},
+		},
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID:   "i-00001",
+				Node: nil,
+			},
+		},
+	}
+
+	// When an instancegroup's nodes are not ready, that is an error
+	{
+		v := &ValidationCluster{}
+		groups["ig1"].InstanceGroup.Spec.Role = kopsapi.InstanceGroupRoleNode
+		v.validateNodes(groups)
+		if len(v.Failures) != 1 {
+			printDebug(t, v)
+			t.Fatal("Nodes are expected to join cluster")
+		} else if v.Failures[0].Message != "machine \"i-00001\" has not yet joined cluster" {
+			printDebug(t, v)
+			t.Fatalf("unexpected validation failure: %+v", v.Failures[0])
+		}
+	}
+
+	// Except for a bastion instancegroup - those are not expected to join as nodes
+	{
+		v := &ValidationCluster{}
+		groups["ig1"].InstanceGroup.Spec.Role = kopsapi.InstanceGroupRoleBastion
+		v.validateNodes(groups)
+		if len(v.Failures) != 0 {
+			printDebug(t, v)
+			t.Fatal("Bastion nodes are not expected to join cluster")
+		}
+	}
+
+}

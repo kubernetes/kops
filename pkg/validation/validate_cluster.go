@@ -219,11 +219,19 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 			node := member.Node
 
 			if node == nil {
-				v.addError(&ValidationError{
-					Kind:    "Machine",
-					Name:    member.ID,
-					Message: fmt.Sprintf("machine %q has not yet joined cluster", member.ID),
-				})
+				nodeExpectedToJoin := true
+				if cloudGroup.InstanceGroup.Spec.Role == kops.InstanceGroupRoleBastion {
+					// bastion nodes don't join the cluster
+					nodeExpectedToJoin = false
+				}
+
+				if nodeExpectedToJoin {
+					v.addError(&ValidationError{
+						Kind:    "Machine",
+						Name:    member.ID,
+						Message: fmt.Sprintf("machine %q has not yet joined cluster", member.ID),
+					})
+				}
 				continue
 			}
 
