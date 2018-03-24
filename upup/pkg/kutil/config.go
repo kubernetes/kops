@@ -30,7 +30,7 @@ func NewClientConfig(clientConfig *restclient.Config, namespace string) clientcm
 	return c
 }
 
-// ClientConfig is used to make it easy to get an api server client
+// SimpleClientConfig is used to make it easy to get an api server client
 type SimpleClientConfig struct {
 	clientConfig *restclient.Config
 	namespace    string
