@@ -37,7 +37,7 @@ func (k *KubeBoot) CreateInternalDNSNameRecord(fqdn string) error {
 	return k.DNS.Replace(fqdn, values)
 }
 
-// BuildInternalDNSName builds a DNS name for use inside the cluster, adding our internal DNS suffix to the key,
+// BuildInternalDNSName builds a DNS name for use inside the cluster, adding our internal DNS suffix to the key
 func (k *KubeBoot) BuildInternalDNSName(key string) string {
 	fqdn := key + k.InternalDNSSuffix
 	return fqdn
