@@ -56,5 +56,9 @@ func intersectTags(tags []*ec2.Tag, desired map[string]string) map[string]string
 			actual[k] = v
 		}
 	}
+	if len(actual) == 0 && desired == nil {
+		// Avoid problems with comparison between nil & {}
+		return nil
+	}
 	return actual
 }
