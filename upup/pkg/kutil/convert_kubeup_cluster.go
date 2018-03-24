@@ -138,7 +138,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		return err
 	}
 
-	routeTables, err := awsresources.DescribeRouteTables(x.Cloud)
+	routeTables, err := awsresources.DescribeRouteTables(x.Cloud, oldClusterName)
 	if err != nil {
 		return err
 	}
