@@ -27,6 +27,9 @@ import (
 )
 
 func (m *MockIAM) GetInstanceProfile(request *iam.GetInstanceProfileInput) (*iam.GetInstanceProfileOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	ip := m.InstanceProfiles[aws.StringValue(request.InstanceProfileName)]
 	if ip == nil {
 		return nil, awserr.New("NoSuchEntity", "No such entity", nil)
@@ -106,11 +109,127 @@ func (m *MockIAM) AddRoleToInstanceProfile(request *iam.AddRoleToInstanceProfile
 
 	return &iam.AddRoleToInstanceProfileOutput{}, nil
 }
+
 func (m *MockIAM) AddRoleToInstanceProfileWithContext(aws.Context, *iam.AddRoleToInstanceProfileInput, ...request.Option) (*iam.AddRoleToInstanceProfileOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
+
 func (m *MockIAM) AddRoleToInstanceProfileRequest(*iam.AddRoleToInstanceProfileInput) (*request.Request, *iam.AddRoleToInstanceProfileOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockIAM) RemoveRoleFromInstanceProfile(request *iam.RemoveRoleFromInstanceProfileInput) (*iam.RemoveRoleFromInstanceProfileOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("RemoveRoleFromInstanceProfile: %v", request)
+
+	ip := m.InstanceProfiles[aws.StringValue(request.InstanceProfileName)]
+	if ip == nil {
+		return nil, fmt.Errorf("InstanceProfile not found")
+	}
+
+	found := false
+	var newRoles []*iam.Role
+	for _, role := range ip.Roles {
+		if aws.StringValue(role.RoleName) == aws.StringValue(request.RoleName) {
+			found = true
+			continue
+		}
+		newRoles = append(newRoles, role)
+	}
+
+	if !found {
+		return nil, fmt.Errorf("Role not found")
+	}
+	ip.Roles = newRoles
+
+	return &iam.RemoveRoleFromInstanceProfileOutput{}, nil
+}
+
+func (m *MockIAM) RemoveRoleFromInstanceProfileWithContext(aws.Context, *iam.RemoveRoleFromInstanceProfileInput, ...request.Option) (*iam.RemoveRoleFromInstanceProfileOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockIAM) RemoveRoleFromInstanceProfileRequest(*iam.RemoveRoleFromInstanceProfileInput) (*request.Request, *iam.RemoveRoleFromInstanceProfileOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockIAM) ListInstanceProfiles(request *iam.ListInstanceProfilesInput) (*iam.ListInstanceProfilesOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("ListInstanceProfiles: %v", request)
+
+	if request.PathPrefix != nil {
+		glog.Fatalf("MockIAM ListInstanceProfiles PathPrefix not implemented")
+	}
+
+	var instanceProfiles []*iam.InstanceProfile
+
+	for _, ip := range m.InstanceProfiles {
+		copy := *ip
+		instanceProfiles = append(instanceProfiles, &copy)
+	}
+
+	response := &iam.ListInstanceProfilesOutput{
+		InstanceProfiles: instanceProfiles,
+	}
+
+	return response, nil
+}
+
+func (m *MockIAM) ListInstanceProfilesWithContext(aws.Context, *iam.ListInstanceProfilesInput, ...request.Option) (*iam.ListInstanceProfilesOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockIAM) ListInstanceProfilesRequest(*iam.ListInstanceProfilesInput) (*request.Request, *iam.ListInstanceProfilesOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockIAM) ListInstanceProfilesPages(request *iam.ListInstanceProfilesInput, callback func(*iam.ListInstanceProfilesOutput, bool) bool) error {
+	// For the mock, we just send everything in one page
+	page, err := m.ListInstanceProfiles(request)
+	if err != nil {
+		return err
+	}
+
+	callback(page, false)
+
+	return nil
+}
+
+func (m *MockIAM) ListInstanceProfilesPagesWithContext(aws.Context, *iam.ListInstanceProfilesInput, func(*iam.ListInstanceProfilesOutput, bool) bool, ...request.Option) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockIAM) DeleteInstanceProfile(request *iam.DeleteInstanceProfileInput) (*iam.DeleteInstanceProfileOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteInstanceProfile: %v", request)
+
+	id := aws.StringValue(request.InstanceProfileName)
+	o := m.InstanceProfiles[id]
+	if o == nil {
+		return nil, fmt.Errorf("InstanceProfile %q not found", id)
+	}
+	delete(m.InstanceProfiles, id)
+
+	return &iam.DeleteInstanceProfileOutput{}, nil
+}
+
+func (m *MockIAM) DeleteInstanceProfileWithContext(aws.Context, *iam.DeleteInstanceProfileInput, ...request.Option) (*iam.DeleteInstanceProfileOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockIAM) DeleteInstanceProfileRequest(*iam.DeleteInstanceProfileInput) (*request.Request, *iam.DeleteInstanceProfileOutput) {
 	panic("Not implemented")
 	return nil, nil
 }

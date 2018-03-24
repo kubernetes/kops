@@ -36,6 +36,9 @@ func (m *MockRoute53) GetHostedZoneWithContext(aws.Context, *route53.GetHostedZo
 }
 
 func (m *MockRoute53) GetHostedZone(request *route53.GetHostedZoneInput) (*route53.GetHostedZoneOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("GetHostedZone %v", request)
 
 	if request.Id == nil {
@@ -91,6 +94,9 @@ func (m *MockRoute53) ListHostedZonesPagesWithContext(aws.Context, *route53.List
 }
 
 func (m *MockRoute53) ListHostedZonesPages(request *route53.ListHostedZonesInput, callback func(*route53.ListHostedZonesOutput, bool) bool) error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("ListHostedZonesPages %v", request)
 
 	page := &route53.ListHostedZonesOutput{}
@@ -115,6 +121,9 @@ func (m *MockRoute53) ListHostedZonesByNameWithContext(aws.Context, *route53.Lis
 }
 
 func (m *MockRoute53) ListHostedZonesByName(*route53.ListHostedZonesByNameInput) (*route53.ListHostedZonesByNameOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	var zones []*route53.HostedZone
 
 	for _, z := range m.Zones {

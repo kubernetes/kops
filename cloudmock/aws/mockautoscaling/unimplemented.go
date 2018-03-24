@@ -80,32 +80,6 @@ func (m *MockAutoscaling) CreateOrUpdateTagsRequest(*autoscaling.CreateOrUpdateT
 	return nil, nil
 }
 
-func (m *MockAutoscaling) DeleteAutoScalingGroup(*autoscaling.DeleteAutoScalingGroupInput) (*autoscaling.DeleteAutoScalingGroupOutput, error) {
-	glog.Fatalf("Not implemented")
-	return nil, nil
-}
-func (m *MockAutoscaling) DeleteAutoScalingGroupWithContext(aws.Context, *autoscaling.DeleteAutoScalingGroupInput, ...request.Option) (*autoscaling.DeleteAutoScalingGroupOutput, error) {
-	glog.Fatalf("Not implemented")
-	return nil, nil
-}
-func (m *MockAutoscaling) DeleteAutoScalingGroupRequest(*autoscaling.DeleteAutoScalingGroupInput) (*request.Request, *autoscaling.DeleteAutoScalingGroupOutput) {
-	glog.Fatalf("Not implemented")
-	return nil, nil
-}
-
-func (m *MockAutoscaling) DeleteLaunchConfiguration(*autoscaling.DeleteLaunchConfigurationInput) (*autoscaling.DeleteLaunchConfigurationOutput, error) {
-	glog.Fatalf("Not implemented")
-	return nil, nil
-}
-func (m *MockAutoscaling) DeleteLaunchConfigurationWithContext(aws.Context, *autoscaling.DeleteLaunchConfigurationInput, ...request.Option) (*autoscaling.DeleteLaunchConfigurationOutput, error) {
-	glog.Fatalf("Not implemented")
-	return nil, nil
-}
-func (m *MockAutoscaling) DeleteLaunchConfigurationRequest(*autoscaling.DeleteLaunchConfigurationInput) (*request.Request, *autoscaling.DeleteLaunchConfigurationOutput) {
-	glog.Fatalf("Not implemented")
-	return nil, nil
-}
-
 func (m *MockAutoscaling) DeleteLifecycleHook(*autoscaling.DeleteLifecycleHookInput) (*autoscaling.DeleteLifecycleHookOutput, error) {
 	glog.Fatalf("Not implemented")
 	return nil, nil
@@ -394,28 +368,6 @@ func (m *MockAutoscaling) DescribeScheduledActionsPages(*autoscaling.DescribeSch
 	return nil
 }
 func (m *MockAutoscaling) DescribeScheduledActionsPagesWithContext(aws.Context, *autoscaling.DescribeScheduledActionsInput, func(*autoscaling.DescribeScheduledActionsOutput, bool) bool, ...request.Option) error {
-	glog.Fatalf("Not implemented")
-	return nil
-}
-
-func (m *MockAutoscaling) DescribeTags(*autoscaling.DescribeTagsInput) (*autoscaling.DescribeTagsOutput, error) {
-	glog.Fatalf("Not implemented")
-	return nil, nil
-}
-func (m *MockAutoscaling) DescribeTagsWithContext(aws.Context, *autoscaling.DescribeTagsInput, ...request.Option) (*autoscaling.DescribeTagsOutput, error) {
-	glog.Fatalf("Not implemented")
-	return nil, nil
-}
-func (m *MockAutoscaling) DescribeTagsRequest(*autoscaling.DescribeTagsInput) (*request.Request, *autoscaling.DescribeTagsOutput) {
-	glog.Fatalf("Not implemented")
-	return nil, nil
-}
-
-func (m *MockAutoscaling) DescribeTagsPages(*autoscaling.DescribeTagsInput, func(*autoscaling.DescribeTagsOutput, bool) bool) error {
-	glog.Fatalf("Not implemented")
-	return nil
-}
-func (m *MockAutoscaling) DescribeTagsPagesWithContext(aws.Context, *autoscaling.DescribeTagsInput, func(*autoscaling.DescribeTagsOutput, bool) bool, ...request.Option) error {
 	glog.Fatalf("Not implemented")
 	return nil
 }

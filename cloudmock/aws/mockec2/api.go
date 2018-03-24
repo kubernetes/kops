@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 )
@@ -28,7 +29,7 @@ type MockEC2 struct {
 	mutex sync.Mutex
 
 	addressNumber int
-	Addresses     []*ec2.Address
+	Addresses     map[string]*ec2.Address
 
 	RouteTables map[string]*ec2.RouteTable
 
@@ -43,14 +44,13 @@ type MockEC2 struct {
 
 	Volumes map[string]*ec2.Volume
 
-	KeyPairs []*ec2.KeyPairInfo
+	KeyPairs map[string]*ec2.KeyPairInfo
 
 	Tags []*ec2.TagDescription
 
 	Vpcs map[string]*vpcInfo
 
-	internetGatewayNumber int
-	InternetGateways      map[string]*internetGatewayInfo
+	InternetGateways map[string]*ec2.InternetGateway
 
 	NatGateways map[string]*ec2.NatGateway
 
@@ -59,6 +59,46 @@ type MockEC2 struct {
 }
 
 var _ ec2iface.EC2API = &MockEC2{}
+
+func (m *MockEC2) All() map[string]interface{} {
+	all := make(map[string]interface{})
+
+	for _, o := range m.Addresses {
+		all[aws.StringValue(o.AllocationId)] = o
+	}
+	for id, o := range m.RouteTables {
+		all[id] = o
+	}
+	for id, o := range m.DhcpOptions {
+		all[id] = o
+	}
+	for _, o := range m.Images {
+		all[aws.StringValue(o.ImageId)] = o
+	}
+	for id, o := range m.SecurityGroups {
+		all[id] = o
+	}
+	for id, o := range m.subnets {
+		all[id] = &o.main
+	}
+	for id, o := range m.Volumes {
+		all[id] = o
+	}
+	for id, o := range m.KeyPairs {
+		all[id] = o
+	}
+	for id, o := range m.Vpcs {
+		all[id] = o
+	}
+	for id, o := range m.InternetGateways {
+		all[id] = o
+	}
+	for id, o := range m.NatGateways {
+		all[id] = o
+	}
+
+	return all
+}
 
 type idAllocator struct {
 	NextId int

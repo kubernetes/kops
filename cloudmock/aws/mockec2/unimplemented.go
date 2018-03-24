@@ -606,46 +606,6 @@ func (m *MockEC2) DeleteFlowLogsRequest(*ec2.DeleteFlowLogsInput) (*request.Requ
 	panic("Not implemented")
 	return nil, nil
 }
-
-func (m *MockEC2) DeleteInternetGateway(*ec2.DeleteInternetGatewayInput) (*ec2.DeleteInternetGatewayOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteInternetGatewayWithContext(aws.Context, *ec2.DeleteInternetGatewayInput, ...request.Option) (*ec2.DeleteInternetGatewayOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteInternetGatewayRequest(*ec2.DeleteInternetGatewayInput) (*request.Request, *ec2.DeleteInternetGatewayOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) DeleteKeyPair(*ec2.DeleteKeyPairInput) (*ec2.DeleteKeyPairOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteKeyPairWithContext(aws.Context, *ec2.DeleteKeyPairInput, ...request.Option) (*ec2.DeleteKeyPairOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteKeyPairRequest(*ec2.DeleteKeyPairInput) (*request.Request, *ec2.DeleteKeyPairOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) DeleteNatGateway(*ec2.DeleteNatGatewayInput) (*ec2.DeleteNatGatewayOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteNatGatewayWithContext(aws.Context, *ec2.DeleteNatGatewayInput, ...request.Option) (*ec2.DeleteNatGatewayOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteNatGatewayRequest(*ec2.DeleteNatGatewayInput) (*request.Request, *ec2.DeleteNatGatewayOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
 func (m *MockEC2) DeleteNetworkAcl(*ec2.DeleteNetworkAclInput) (*ec2.DeleteNetworkAclOutput, error) {
 	panic("Not implemented")
 	return nil, nil
@@ -724,19 +684,6 @@ func (m *MockEC2) DeleteRouteRequest(*ec2.DeleteRouteInput) (*request.Request, *
 	return nil, nil
 }
 
-func (m *MockEC2) DeleteRouteTable(*ec2.DeleteRouteTableInput) (*ec2.DeleteRouteTableOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteRouteTableWithContext(aws.Context, *ec2.DeleteRouteTableInput, ...request.Option) (*ec2.DeleteRouteTableOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteRouteTableRequest(*ec2.DeleteRouteTableInput) (*request.Request, *ec2.DeleteRouteTableOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
 func (m *MockEC2) DeleteSnapshot(*ec2.DeleteSnapshotInput) (*ec2.DeleteSnapshotOutput, error) {
 	panic("Not implemented")
 	return nil, nil
@@ -763,19 +710,6 @@ func (m *MockEC2) DeleteSpotDatafeedSubscriptionRequest(*ec2.DeleteSpotDatafeedS
 	return nil, nil
 }
 
-func (m *MockEC2) DeleteSubnet(*ec2.DeleteSubnetInput) (*ec2.DeleteSubnetOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteSubnetWithContext(aws.Context, *ec2.DeleteSubnetInput, ...request.Option) (*ec2.DeleteSubnetOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteSubnetRequest(*ec2.DeleteSubnetInput) (*request.Request, *ec2.DeleteSubnetOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
 func (m *MockEC2) DeleteTags(*ec2.DeleteTagsInput) (*ec2.DeleteTagsOutput, error) {
 	panic("Not implemented")
 	return nil, nil
@@ -785,32 +719,6 @@ func (m *MockEC2) DeleteTagsWithContext(aws.Context, *ec2.DeleteTagsInput, ...re
 	return nil, nil
 }
 func (m *MockEC2) DeleteTagsRequest(*ec2.DeleteTagsInput) (*request.Request, *ec2.DeleteTagsOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) DeleteVolume(*ec2.DeleteVolumeInput) (*ec2.DeleteVolumeOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteVolumeWithContext(aws.Context, *ec2.DeleteVolumeInput, ...request.Option) (*ec2.DeleteVolumeOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteVolumeRequest(*ec2.DeleteVolumeInput) (*request.Request, *ec2.DeleteVolumeOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) DeleteVpc(*ec2.DeleteVpcInput) (*ec2.DeleteVpcOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteVpcWithContext(aws.Context, *ec2.DeleteVpcInput, ...request.Option) (*ec2.DeleteVpcOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DeleteVpcRequest(*ec2.DeleteVpcInput) (*request.Request, *ec2.DeleteVpcOutput) {
 	panic("Not implemented")
 	return nil, nil
 }
@@ -1171,28 +1079,6 @@ func (m *MockEC2) DescribeInstanceStatusPages(*ec2.DescribeInstanceStatusInput, 
 	return nil
 }
 func (m *MockEC2) DescribeInstanceStatusPagesWithContext(aws.Context, *ec2.DescribeInstanceStatusInput, func(*ec2.DescribeInstanceStatusOutput, bool) bool, ...request.Option) error {
-	panic("Not implemented")
-	return nil
-}
-
-func (m *MockEC2) DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeInstancesWithContext(aws.Context, *ec2.DescribeInstancesInput, ...request.Option) (*ec2.DescribeInstancesOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeInstancesRequest(*ec2.DescribeInstancesInput) (*request.Request, *ec2.DescribeInstancesOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) DescribeInstancesPages(*ec2.DescribeInstancesInput, func(*ec2.DescribeInstancesOutput, bool) bool) error {
-	panic("Not implemented")
-	return nil
-}
-func (m *MockEC2) DescribeInstancesPagesWithContext(aws.Context, *ec2.DescribeInstancesInput, func(*ec2.DescribeInstancesOutput, bool) bool, ...request.Option) error {
 	panic("Not implemented")
 	return nil
 }
@@ -1641,19 +1527,6 @@ func (m *MockEC2) DetachClassicLinkVpcWithContext(aws.Context, *ec2.DetachClassi
 	return nil, nil
 }
 func (m *MockEC2) DetachClassicLinkVpcRequest(*ec2.DetachClassicLinkVpcInput) (*request.Request, *ec2.DetachClassicLinkVpcOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) DetachInternetGateway(*ec2.DetachInternetGatewayInput) (*ec2.DetachInternetGatewayOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DetachInternetGatewayWithContext(aws.Context, *ec2.DetachInternetGatewayInput, ...request.Option) (*ec2.DetachInternetGatewayOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DetachInternetGatewayRequest(*ec2.DetachInternetGatewayInput) (*request.Request, *ec2.DetachInternetGatewayOutput) {
 	panic("Not implemented")
 	return nil, nil
 }

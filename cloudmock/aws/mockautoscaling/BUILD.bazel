@@ -7,6 +7,7 @@ go_library(
         "attach.go",
         "group.go",
         "launchconfigurations.go",
+        "tags.go",
         "unimplemented.go",
     ],
     importpath = "k8s.io/kops/cloudmock/aws/mockautoscaling",

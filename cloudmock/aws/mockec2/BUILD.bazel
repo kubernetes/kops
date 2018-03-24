@@ -8,6 +8,7 @@ go_library(
         "convenience.go",
         "dhcpoptions.go",
         "images.go",
+        "instances.go",
         "internetgateways.go",
         "keypairs.go",
         "natgateway.go",

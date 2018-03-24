@@ -19,15 +19,18 @@ package main
 import (
 	"bytes"
 	"path"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 	"time"
 
-	"k8s.io/kops/upup/pkg/fi"
-
+	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 type LifecycleTestOptions struct {
@@ -168,6 +171,25 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 			t.Fatalf("Target had changes after executing: %v", b.String())
 		}
 	}
+
+	{
+		options := &DeleteClusterOptions{}
+		options.Yes = true
+		options.ClusterName = o.ClusterName
+
+		if err := RunDeleteCluster(factory, &stdout, options); err != nil {
+			t.Fatalf("error running delete cluster %q: %v", o.ClusterName, err)
+		}
+	}
+}
+
+// AllResources returns all resources
+func AllResources(c *awsup.MockAWSCloud) map[string]interface{} {
+	all := make(map[string]interface{})
+	for k, v := range c.MockEC2.(*mockec2.MockEC2).All() {
+		all[k] = v
+	}
+	return all
 }
 
 func runLifecycleTestAWS(o *LifecycleTestOptions) {
@@ -177,7 +199,23 @@ func runLifecycleTestAWS(o *LifecycleTestOptions) {
 	defer h.Close()
 
 	h.MockKopsVersion("1.8.1")
-	h.SetupMockAWS()
+	cloud := h.SetupMockAWS()
+
+	var beforeIds []string
+	for id := range AllResources(cloud) {
+		beforeIds = append(beforeIds, id)
+	}
+	sort.Strings(beforeIds)
 
 	runLifecycleTest(h, o)
+
+	var afterIds []string
+	for id := range AllResources(cloud) {
+		afterIds = append(afterIds, id)
+	}
+	sort.Strings(afterIds)
+
+	if !reflect.DeepEqual(beforeIds, afterIds) {
+		h.T.Fatalf("resources changed by cluster create / destroy: %v -> %v", beforeIds, afterIds)
+	}
 }
