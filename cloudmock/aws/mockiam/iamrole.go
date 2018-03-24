@@ -17,6 +17,8 @@ limitations under the License.
 package mockiam
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -25,6 +27,9 @@ import (
 )
 
 func (m *MockIAM) GetRole(request *iam.GetRoleInput) (*iam.GetRoleOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	role := m.Roles[aws.StringValue(request.RoleName)]
 	if role == nil {
 		return nil, awserr.New("NoSuchEntity", "No such entity", nil)
@@ -74,6 +79,80 @@ func (m *MockIAM) CreateRoleWithContext(aws.Context, *iam.CreateRoleInput, ...re
 	return nil, nil
 }
 func (m *MockIAM) CreateRoleRequest(*iam.CreateRoleInput) (*request.Request, *iam.CreateRoleOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockIAM) ListRoles(request *iam.ListRolesInput) (*iam.ListRolesOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("ListRoles: %v", request)
+
+	if request.PathPrefix != nil {
+		glog.Fatalf("MockIAM ListRoles PathPrefix not implemented")
+	}
+
+	var roles []*iam.Role
+
+	for _, r := range m.Roles {
+		copy := *r
+		roles = append(roles, &copy)
+	}
+
+	response := &iam.ListRolesOutput{
+		Roles: roles,
+	}
+
+	return response, nil
+}
+
+func (m *MockIAM) ListRolesWithContext(aws.Context, *iam.ListRolesInput, ...request.Option) (*iam.ListRolesOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockIAM) ListRolesRequest(*iam.ListRolesInput) (*request.Request, *iam.ListRolesOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockIAM) ListRolesPages(request *iam.ListRolesInput, callback func(*iam.ListRolesOutput, bool) bool) error {
+	// For the mock, we just send everything in one page
+	page, err := m.ListRoles(request)
+	if err != nil {
+		return err
+	}
+
+	callback(page, false)
+
+	return nil
+}
+
+func (m *MockIAM) ListRolesPagesWithContext(aws.Context, *iam.ListRolesInput, func(*iam.ListRolesOutput, bool) bool, ...request.Option) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockIAM) DeleteRole(request *iam.DeleteRoleInput) (*iam.DeleteRoleOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteRole: %v", request)
+
+	id := aws.StringValue(request.RoleName)
+	o := m.Roles[id]
+	if o == nil {
+		return nil, fmt.Errorf("Role %q not found", id)
+	}
+	delete(m.Roles, id)
+
+	return &iam.DeleteRoleOutput{}, nil
+}
+func (m *MockIAM) DeleteRoleWithContext(aws.Context, *iam.DeleteRoleInput, ...request.Option) (*iam.DeleteRoleOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockIAM) DeleteRoleRequest(*iam.DeleteRoleInput) (*request.Request, *iam.DeleteRoleOutput) {
 	panic("Not implemented")
 	return nil, nil
 }

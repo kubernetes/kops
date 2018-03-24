@@ -175,3 +175,28 @@ func (m *MockEC2) DescribeNatGatewaysPagesWithContext(aws.Context, *ec2.Describe
 	panic("Not implemented")
 	return nil
 }
+
+func (m *MockEC2) DeleteNatGateway(request *ec2.DeleteNatGatewayInput) (*ec2.DeleteNatGatewayOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteNatGateway: %v", request)
+
+	id := aws.StringValue(request.NatGatewayId)
+	o := m.NatGateways[id]
+	if o == nil {
+		return nil, fmt.Errorf("NatGateway %q not found", id)
+	}
+	delete(m.NatGateways, id)
+
+	return &ec2.DeleteNatGatewayOutput{}, nil
+}
+
+func (m *MockEC2) DeleteNatGatewayWithContext(aws.Context, *ec2.DeleteNatGatewayInput, ...request.Option) (*ec2.DeleteNatGatewayOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DeleteNatGatewayRequest(*ec2.DeleteNatGatewayInput) (*request.Request, *ec2.DeleteNatGatewayOutput) {
+	panic("Not implemented")
+	return nil, nil
+}

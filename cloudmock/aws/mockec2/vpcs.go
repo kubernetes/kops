@@ -211,3 +211,28 @@ func (m *MockEC2) ModifyVpcAttributeRequest(*ec2.ModifyVpcAttributeInput) (*requ
 	panic("Not implemented")
 	return nil, nil
 }
+
+func (m *MockEC2) DeleteVpc(request *ec2.DeleteVpcInput) (*ec2.DeleteVpcOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteVpc: %v", request)
+
+	id := aws.StringValue(request.VpcId)
+	o := m.Vpcs[id]
+	if o == nil {
+		return nil, fmt.Errorf("VPC %q not found", id)
+	}
+	delete(m.Vpcs, id)
+
+	return &ec2.DeleteVpcOutput{}, nil
+}
+
+func (m *MockEC2) DeleteVpcWithContext(aws.Context, *ec2.DeleteVpcInput, ...request.Option) (*ec2.DeleteVpcOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DeleteVpcRequest(*ec2.DeleteVpcInput) (*request.Request, *ec2.DeleteVpcOutput) {
+	panic("Not implemented")
+	return nil, nil
+}

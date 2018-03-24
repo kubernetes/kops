@@ -94,7 +94,7 @@ func TestElasticIPCreate(t *testing.T) {
 			Domain:       s("vpc"),
 			PublicIp:     s("192.0.2.1"),
 		}
-		actual := c.Addresses[0]
+		actual := c.Addresses[*eip1.ID]
 		if !reflect.DeepEqual(actual, expected) {
 			t.Fatalf("Unexpected ElasticIP: expected=%v actual=%v", expected, actual)
 		}

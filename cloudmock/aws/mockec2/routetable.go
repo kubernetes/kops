@@ -180,3 +180,27 @@ func (m *MockEC2) CreateRouteRequest(*ec2.CreateRouteInput) (*request.Request, *
 	panic("Not implemented")
 	return nil, nil
 }
+
+func (m *MockEC2) DeleteRouteTable(request *ec2.DeleteRouteTableInput) (*ec2.DeleteRouteTableOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteRouteTable: %v", request)
+
+	id := aws.StringValue(request.RouteTableId)
+	o := m.RouteTables[id]
+	if o == nil {
+		return nil, fmt.Errorf("RouteTable %q not found", id)
+	}
+	delete(m.RouteTables, id)
+
+	return &ec2.DeleteRouteTableOutput{}, nil
+}
+func (m *MockEC2) DeleteRouteTableWithContext(aws.Context, *ec2.DeleteRouteTableInput, ...request.Option) (*ec2.DeleteRouteTableOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DeleteRouteTableRequest(*ec2.DeleteRouteTableInput) (*request.Request, *ec2.DeleteRouteTableOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
