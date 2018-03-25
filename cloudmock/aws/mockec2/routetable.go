@@ -106,26 +106,29 @@ func (m *MockEC2) DescribeRouteTables(request *ec2.DescribeRouteTablesInput) (*e
 }
 
 func (m *MockEC2) CreateRouteTable(request *ec2.CreateRouteTableInput) (*ec2.CreateRouteTableOutput, error) {
+	glog.Infof("CreateRouteTable: %v", request)
+
+	id := m.allocateId("rtb")
+	return m.CreateRouteTableWithId(request, id)
+}
+
+func (m *MockEC2) CreateRouteTableWithId(request *ec2.CreateRouteTableInput, id string) (*ec2.CreateRouteTableOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-
-	glog.Infof("CreateRouteTable: %v", request)
 
 	if request.DryRun != nil {
 		glog.Fatalf("DryRun")
 	}
 
-	n := len(m.RouteTables) + 1
-
 	rt := &ec2.RouteTable{
-		RouteTableId: s(fmt.Sprintf("rtb-%d", n)),
+		RouteTableId: s(id),
 		VpcId:        request.VpcId,
 	}
 
 	if m.RouteTables == nil {
 		m.RouteTables = make(map[string]*ec2.RouteTable)
 	}
-	m.RouteTables[*rt.RouteTableId] = rt
+	m.RouteTables[id] = rt
 
 	copy := *rt
 	response := &ec2.CreateRouteTableOutput{
