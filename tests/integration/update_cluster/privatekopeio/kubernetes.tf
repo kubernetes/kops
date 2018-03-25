@@ -158,10 +158,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privatekopeio-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privatekopeio.example.com"
-    Name                 = "us-test-1a.etcd-events.privatekopeio.example.com"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "us-test-1a.etcd-events.privatekopeio.example.com"
+    "k8s.io/etcd/events"                              = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                              = "1"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
 }
 
@@ -172,10 +173,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatekopeio-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privatekopeio.example.com"
-    Name                 = "us-test-1a.etcd-main.privatekopeio.example.com"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "us-test-1a.etcd-main.privatekopeio.example.com"
+    "k8s.io/etcd/main"                                = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                              = "1"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
 }
 
