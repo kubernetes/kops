@@ -183,6 +183,12 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privateweave-example-com" {
 
 resource "aws_eip" "us-test-1a-privateweave-example-com" {
   vpc = true
+
+  tags = {
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "us-test-1a.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
+  }
 }
 
 resource "aws_elb" "api-privateweave-example-com" {
