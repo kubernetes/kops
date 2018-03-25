@@ -279,12 +279,14 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 }
 
 type terraformElasticIP struct {
-	VPC *bool `json:"vpc"`
+	VPC  *bool             `json:"vpc"`
+	Tags map[string]string `json:"tags,omitempty"`
 }
 
 func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ElasticIP) error {
 	tf := &terraformElasticIP{
-		VPC: aws.Bool(true),
+		VPC:  aws.Bool(true),
+		Tags: e.Tags,
 	}
 
 	return t.RenderResource("aws_eip", *e.Name, tf)
@@ -295,12 +297,14 @@ func (e *ElasticIP) TerraformLink() *terraform.Literal {
 }
 
 type cloudformationElasticIP struct {
-	Domain *string `json:"Domain"`
+	Domain *string             `json:"Domain"`
+	Tags   []cloudformationTag `json:"Tags,omitempty"`
 }
 
 func (_ *ElasticIP) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *ElasticIP) error {
 	tf := &cloudformationElasticIP{
 		Domain: aws.String("vpc"),
+		Tags:   buildCloudformationTags(e.Tags),
 	}
 
 	return t.RenderResource("AWS::EC2::EIP", *e.Name, tf)

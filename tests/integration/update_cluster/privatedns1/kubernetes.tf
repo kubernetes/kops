@@ -183,6 +183,12 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatedns1-example-com" {
 
 resource "aws_eip" "us-test-1a-privatedns1-example-com" {
   vpc = true
+
+  tags = {
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "us-test-1a.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
 }
 
 resource "aws_elb" "api-privatedns1-example-com" {
