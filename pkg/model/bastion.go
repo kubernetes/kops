@@ -64,6 +64,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Description:      s("Security group for bastion"),
 			RemoveExtraRules: []string{"port=22"},
 		}
+		t.Tags = b.CloudTags(*t.Name, false)
 		c.AddTask(t)
 	}
 
@@ -136,6 +137,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Description:      s("Security group for bastion ELB"),
 			RemoveExtraRules: []string{"port=22"},
 		}
+		t.Tags = b.CloudTags(*t.Name, false)
 		c.AddTask(t)
 	}
 

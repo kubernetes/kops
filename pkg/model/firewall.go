@@ -60,6 +60,7 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 			Description:      s("Security group for nodes"),
 			RemoveExtraRules: []string{"port=22"},
 		}
+		t.Tags = b.CloudTags(*t.Name, false)
 		c.AddTask(t)
 	}
 
@@ -333,6 +334,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext) error
 				// TODO: Protocol 4 for calico
 			},
 		}
+		t.Tags = b.CloudTags(*t.Name, false)
 		c.AddTask(t)
 	}
 
