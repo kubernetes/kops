@@ -71,7 +71,7 @@ func (m *MockEC2) AllocateAddressWithId(request *ec2.AllocateAddressInput, id st
 
 func (m *MockEC2) AllocateAddress(request *ec2.AllocateAddressInput) (*ec2.AllocateAddressOutput, error) {
 	glog.Infof("AllocateAddress: %v", request)
-	id := m.allocateId("eip")
+	id := m.allocateId("eipalloc")
 	return m.AllocateAddressWithId(request, id)
 }
 
