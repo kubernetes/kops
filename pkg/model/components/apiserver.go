@@ -94,6 +94,41 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeAPIServer.AuthorizationMode = fi.String("RBAC")
 	}
 
+	if clusterSpec.KubeAPIServer.EtcdQuorumRead == nil {
+		if b.IsKubernetesGTE("1.9") {
+			// 1.9 changed etcd-quorum-reads default to true
+			// There's a balance between some bugs which are attributed to not having etcd-quorum-reads,
+			// and the poor implementation of quorum-reads in etcd2.
+
+			etcdHA := false
+			etcdV2 := true
+			for _, c := range clusterSpec.EtcdClusters {
+				if len(c.Members) > 1 {
+					etcdHA = true
+				}
+				if c.Version != "" && !strings.HasPrefix(c.Version, "2.") {
+					etcdV2 = false
+				}
+			}
+
+			if !etcdV2 {
+				// etcd3 quorum reads are cheap.  Stick with default (which is to enable quorum reads)
+				clusterSpec.KubeAPIServer.EtcdQuorumRead = nil
+			} else {
+				// etcd2 quorum reads go through raft => write to disk => expensive
+				if !etcdHA {
+					// Turn off quorum reads - they still go through raft, but don't serve any purpose in non-HA clusters.
+					clusterSpec.KubeAPIServer.EtcdQuorumRead = fi.Bool(false)
+				} else {
+					// The problematic case.  We risk exposing more bugs, but against that we have to balance performance.
+					// For now we turn off quorum reads - it's a bad enough performance regression
+					// We'll likely make this default to true once we can set IOPS on the etcd volume and can easily upgrade to etcd3
+					clusterSpec.KubeAPIServer.EtcdQuorumRead = fi.Bool(false)
+				}
+			}
+		}
+	}
+
 	if err := b.configureAggregation(clusterSpec); err != nil {
 		return nil
 	}
