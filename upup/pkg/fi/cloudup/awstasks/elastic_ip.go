@@ -251,10 +251,10 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 	} else {
 		publicIp = a.PublicIP
 		eipId = a.ID
-		err := t.AddAWSTags(*a.ID, changes.Tags)
-		if err != nil {
-			return fmt.Errorf("unable to tag ElasticIP: %v", err)
-		}
+	}
+
+	if err := t.AddAWSTags(*e.ID, e.Tags); err != nil {
+		return err
 	}
 
 	// Tag the associated subnet
