@@ -187,6 +187,8 @@ resource "aws_launch_configuration" "bastion-lifecyclephases-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-lifecyclephases-example-com" {
@@ -213,6 +215,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-lifecyclephases-e
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-lifecyclephases-example-com" {
@@ -234,6 +238,8 @@ resource "aws_launch_configuration" "nodes-lifecyclephases-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 terraform = {

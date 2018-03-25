@@ -125,7 +125,8 @@
             "Ref": "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom"
           }
         ],
-        "UserData": "extracted"
+        "UserData": "extracted",
+        "InstanceMonitoring": false
       }
     },
     "AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom": {
@@ -153,7 +154,8 @@
             "Ref": "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom"
           }
         ],
-        "UserData": "extracted"
+        "UserData": "extracted",
+        "InstanceMonitoring": false
       }
     },
     "AWSEC2DHCPOptionsadditionaluserdataexamplecom": {

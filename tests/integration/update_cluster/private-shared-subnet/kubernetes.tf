@@ -314,6 +314,8 @@ resource "aws_launch_configuration" "bastion-private-shared-subnet-example-com" 
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-private-shared-subnet-example-com" {
@@ -340,6 +342,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-private-shared-su
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-private-shared-subnet-example-com" {
@@ -361,6 +365,8 @@ resource "aws_launch_configuration" "nodes-private-shared-subnet-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_route53_record" "api-private-shared-subnet-example-com" {

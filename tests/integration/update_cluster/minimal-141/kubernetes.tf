@@ -201,6 +201,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-minimal-141-examp
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-minimal-141-example-com" {
@@ -222,6 +224,8 @@ resource "aws_launch_configuration" "nodes-minimal-141-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_route" "0-0-0-0--0" {

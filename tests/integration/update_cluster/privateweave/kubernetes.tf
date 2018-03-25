@@ -330,6 +330,8 @@ resource "aws_launch_configuration" "bastion-privateweave-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-privateweave-example-com" {
@@ -356,6 +358,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privateweave-exam
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-privateweave-example-com" {
@@ -377,6 +381,8 @@ resource "aws_launch_configuration" "nodes-privateweave-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_nat_gateway" "us-test-1a-privateweave-example-com" {

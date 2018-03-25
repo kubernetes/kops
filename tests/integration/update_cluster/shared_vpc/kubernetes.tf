@@ -191,6 +191,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-sharedvpc-example
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-sharedvpc-example-com" {
@@ -212,6 +214,8 @@ resource "aws_launch_configuration" "nodes-sharedvpc-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_route" "0-0-0-0--0" {
