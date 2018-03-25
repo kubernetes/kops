@@ -183,6 +183,12 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privateflannel-example-com" {
 
 resource "aws_eip" "us-test-1a-privateflannel-example-com" {
   vpc = true
+
+  tags = {
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "us-test-1a.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+  }
 }
 
 resource "aws_elb" "api-privateflannel-example-com" {

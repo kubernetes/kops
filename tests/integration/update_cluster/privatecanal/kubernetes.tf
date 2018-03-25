@@ -183,6 +183,12 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatecanal-example-com" {
 
 resource "aws_eip" "us-test-1a-privatecanal-example-com" {
   vpc = true
+
+  tags = {
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "us-test-1a.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+  }
 }
 
 resource "aws_elb" "api-privatecanal-example-com" {

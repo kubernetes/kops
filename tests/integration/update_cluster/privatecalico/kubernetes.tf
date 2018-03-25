@@ -183,6 +183,12 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatecalico-example-com" {
 
 resource "aws_eip" "us-test-1a-privatecalico-example-com" {
   vpc = true
+
+  tags = {
+    KubernetesCluster                                 = "privatecalico.example.com"
+    Name                                              = "us-test-1a.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
+  }
 }
 
 resource "aws_elb" "api-privatecalico-example-com" {
