@@ -266,8 +266,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			// Every NGW needs a public (Elastic) IP address, every private
 			// subnet needs a NGW, lets create it. We tie it to a subnet
 			// so we can track it in AWS
-			var eip = &awstasks.ElasticIP{}
-			eip = &awstasks.ElasticIP{
+			eip := &awstasks.ElasticIP{
 				Name:                           s(zone + "." + b.ClusterName()),
 				Lifecycle:                      b.Lifecycle,
 				AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
@@ -276,6 +275,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			if b.Cluster.Spec.Subnets[i].PublicIP != "" {
 				eip.PublicIP = s(b.Cluster.Spec.Subnets[i].PublicIP)
 				eip.Tags = b.CloudTags(*eip.Name, true)
+			} else {
+				eip.Tags = b.CloudTags(*eip.Name, false)
 			}
 
 			c.AddTask(eip)
