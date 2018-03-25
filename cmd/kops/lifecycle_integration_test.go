@@ -201,6 +201,11 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 				resource = id[:dashIndex]
 			}
 
+			legacy := tags["KubernetesCluster"]
+			if legacy != "" && legacy != o.ClusterName {
+				t.Errorf("unexpected legacy KubernetesCluster tag: actual=%q cluster=%q", legacy, o.ClusterName)
+			}
+
 			ownership := tags["kubernetes.io/cluster/"+o.ClusterName]
 			if beforeResources[id] != nil {
 				expect := ""
@@ -221,6 +226,11 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 				default:
 					if ownership == "" {
 						t.Errorf("no kubernetes.io/cluster/ tag on %q", id)
+					}
+					if legacy == "" {
+						// We want to deprecate the KubernetesCluster tag, e.g. in IAM
+						// but we should probably keep it around for people that may be using it for other purposes
+						t.Errorf("no (legacy) KubernetesCluster tag on %q", id)
 					}
 				}
 			}
