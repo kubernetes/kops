@@ -57,7 +57,10 @@ func (m *MockEC2) AllocateAddressWithId(request *ec2.AllocateAddressInput, id st
 		Domain:       s("vpc"),
 		PublicIp:     s(publicIP.String()),
 	}
-	m.Addresses = append(m.Addresses, address)
+	if m.Addresses == nil {
+		m.Addresses = make(map[string]*ec2.Address)
+	}
+	m.Addresses[id] = address
 	response := &ec2.AllocateAddressOutput{
 		AllocationId: address.AllocationId,
 		Domain:       address.Domain,
@@ -167,6 +170,7 @@ func (m *MockEC2) DescribeAddresses(request *ec2.DescribeAddressesInput) (*ec2.D
 
 	return response, nil
 }
+
 func (m *MockEC2) ReleaseAddressRequest(*ec2.ReleaseAddressInput) (*request.Request, *ec2.ReleaseAddressOutput) {
 	panic("Not implemented")
 	return nil, nil
@@ -175,7 +179,18 @@ func (m *MockEC2) ReleaseAddressWithContext(aws.Context, *ec2.ReleaseAddressInpu
 	panic("Not implemented")
 	return nil, nil
 }
-func (m *MockEC2) ReleaseAddress(*ec2.ReleaseAddressInput) (*ec2.ReleaseAddressOutput, error) {
-	panic("Not implemented")
-	return nil, nil
+func (m *MockEC2) ReleaseAddress(request *ec2.ReleaseAddressInput) (*ec2.ReleaseAddressOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("ReleaseAddress: %v", request)
+
+	id := aws.StringValue(request.AllocationId)
+	o := m.Addresses[id]
+	if o == nil {
+		return nil, fmt.Errorf("Address %q not found", id)
+	}
+	delete(m.Addresses, id)
+
+	return &ec2.ReleaseAddressOutput{}, nil
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package mockelb
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -139,4 +140,20 @@ func (m *MockELB) CreateLoadBalancer(request *elb.CreateLoadBalancerInput) (*elb
 	return &elb.CreateLoadBalancerOutput{
 		DNSName: aws.String(dnsName),
 	}, nil
+}
+
+func (m *MockELB) DeleteLoadBalancer(request *elb.DeleteLoadBalancerInput) (*elb.DeleteLoadBalancerOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteLoadBalancer: %v", request)
+
+	id := aws.StringValue(request.LoadBalancerName)
+	o := m.LoadBalancers[id]
+	if o == nil {
+		return nil, fmt.Errorf("LoadBalancer %q not found", id)
+	}
+	delete(m.LoadBalancers, id)
+
+	return &elb.DeleteLoadBalancerOutput{}, nil
 }

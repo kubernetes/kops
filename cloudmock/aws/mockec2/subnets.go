@@ -215,3 +215,28 @@ func (m *MockEC2) AssociateRouteTableRequest(*ec2.AssociateRouteTableInput) (*re
 	panic("Not implemented")
 	return nil, nil
 }
+
+func (m *MockEC2) DeleteSubnet(request *ec2.DeleteSubnetInput) (*ec2.DeleteSubnetOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteSubnet: %v", request)
+
+	id := aws.StringValue(request.SubnetId)
+	o := m.subnets[id]
+	if o == nil {
+		return nil, fmt.Errorf("Subnet %q not found", id)
+	}
+	delete(m.subnets, id)
+
+	return &ec2.DeleteSubnetOutput{}, nil
+}
+
+func (m *MockEC2) DeleteSubnetWithContext(aws.Context, *ec2.DeleteSubnetInput, ...request.Option) (*ec2.DeleteSubnetOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DeleteSubnetRequest(*ec2.DeleteSubnetInput) (*request.Request, *ec2.DeleteSubnetOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
