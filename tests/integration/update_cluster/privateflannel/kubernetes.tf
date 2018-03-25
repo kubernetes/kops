@@ -158,10 +158,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privateflannel-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privateflannel.example.com"
-    Name                 = "us-test-1a.etcd-events.privateflannel.example.com"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "us-test-1a.etcd-events.privateflannel.example.com"
+    "k8s.io/etcd/events"                               = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                               = "1"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 
@@ -172,10 +173,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privateflannel-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privateflannel.example.com"
-    Name                 = "us-test-1a.etcd-main.privateflannel.example.com"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "us-test-1a.etcd-main.privateflannel.example.com"
+    "k8s.io/etcd/main"                                 = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                               = "1"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 
