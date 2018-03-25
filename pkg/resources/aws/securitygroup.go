@@ -133,7 +133,7 @@ func DescribeSecurityGroups(cloud fi.Cloud, clusterName string) (map[string]*ec2
 		}
 		response, err := c.EC2().DescribeSecurityGroups(request)
 		if err != nil {
-			return nil, fmt.Errorf("error listing VPCs: %v", err)
+			return nil, fmt.Errorf("error listing SecurityGroups: %v", err)
 		}
 
 		for _, group := range response.SecurityGroups {

@@ -18,7 +18,6 @@ package mockec2
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -146,11 +145,7 @@ func (m *MockEC2) DescribeSecurityGroups(request *ec2.DescribeSecurityGroupsInpu
 				}
 
 			default:
-				if strings.HasPrefix(*filter.Name, "tag:") {
-					match = m.hasTag(ec2.ResourceTypeSecurityGroup, *sg.GroupId, filter)
-				} else {
-					return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
-				}
+				match = m.hasTag(ec2.ResourceTypeSecurityGroup, *sg.GroupId, filter)
 			}
 
 			if !match {
