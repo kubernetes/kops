@@ -222,8 +222,9 @@ resource "aws_security_group" "masters-sharedsubnet-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "sharedsubnet.example.com"
-    Name              = "masters.sharedsubnet.example.com"
+    KubernetesCluster                                = "sharedsubnet.example.com"
+    Name                                             = "masters.sharedsubnet.example.com"
+    "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
   }
 }
 
@@ -233,8 +234,9 @@ resource "aws_security_group" "nodes-sharedsubnet-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "sharedsubnet.example.com"
-    Name              = "nodes.sharedsubnet.example.com"
+    KubernetesCluster                                = "sharedsubnet.example.com"
+    Name                                             = "nodes.sharedsubnet.example.com"
+    "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
   }
 }
 

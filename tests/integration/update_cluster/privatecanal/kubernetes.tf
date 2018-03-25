@@ -445,8 +445,9 @@ resource "aws_security_group" "api-elb-privatecanal-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "api-elb.privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "api-elb.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -456,8 +457,9 @@ resource "aws_security_group" "bastion-elb-privatecanal-example-com" {
   description = "Security group for bastion ELB"
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "bastion-elb.privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "bastion-elb.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -467,8 +469,9 @@ resource "aws_security_group" "bastion-privatecanal-example-com" {
   description = "Security group for bastion"
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "bastion.privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "bastion.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -478,8 +481,9 @@ resource "aws_security_group" "masters-privatecanal-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "masters.privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "masters.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -489,8 +493,9 @@ resource "aws_security_group" "nodes-privatecanal-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "nodes.privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "nodes.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 

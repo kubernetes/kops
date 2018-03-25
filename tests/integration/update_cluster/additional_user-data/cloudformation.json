@@ -409,6 +409,10 @@
           {
             "Key": "Name",
             "Value": "masters.additionaluserdata.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
+            "Value": "owned"
           }
         ]
       }
@@ -428,6 +432,10 @@
           {
             "Key": "Name",
             "Value": "nodes.additionaluserdata.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
+            "Value": "owned"
           }
         ]
       }

@@ -409,6 +409,10 @@
           {
             "Key": "Name",
             "Value": "masters.minimal.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned"
           }
         ]
       }
@@ -428,6 +432,10 @@
           {
             "Key": "Name",
             "Value": "nodes.minimal.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned"
           }
         ]
       }
