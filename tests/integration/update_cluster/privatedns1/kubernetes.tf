@@ -158,10 +158,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privatedns1-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privatedns1.example.com"
-    Name                 = "us-test-1a.etcd-events.privatedns1.example.com"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "us-test-1a.etcd-events.privatedns1.example.com"
+    "k8s.io/etcd/events"                            = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                            = "1"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -172,10 +173,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatedns1-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privatedns1.example.com"
-    Name                 = "us-test-1a.etcd-main.privatedns1.example.com"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "us-test-1a.etcd-main.privatedns1.example.com"
+    "k8s.io/etcd/main"                              = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                            = "1"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 

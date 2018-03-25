@@ -137,12 +137,13 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-complex-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "complex.example.com"
-    Name                 = "us-test-1a.etcd-events.complex.example.com"
-    Owner                = "John Doe"
-    "foo/bar"            = "fib+baz"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "us-test-1a.etcd-events.complex.example.com"
+    Owner                                       = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "k8s.io/etcd/events"                        = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                        = "1"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
@@ -153,12 +154,13 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-complex-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "complex.example.com"
-    Name                 = "us-test-1a.etcd-main.complex.example.com"
-    Owner                = "John Doe"
-    "foo/bar"            = "fib+baz"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "us-test-1a.etcd-main.complex.example.com"
+    Owner                                       = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "k8s.io/etcd/main"                          = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                        = "1"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
