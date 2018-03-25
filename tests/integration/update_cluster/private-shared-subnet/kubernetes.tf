@@ -380,8 +380,9 @@ resource "aws_security_group" "api-elb-private-shared-subnet-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "private-shared-subnet.example.com"
-    Name              = "api-elb.private-shared-subnet.example.com"
+    KubernetesCluster                                         = "private-shared-subnet.example.com"
+    Name                                                      = "api-elb.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
 }
 
@@ -391,8 +392,9 @@ resource "aws_security_group" "bastion-elb-private-shared-subnet-example-com" {
   description = "Security group for bastion ELB"
 
   tags = {
-    KubernetesCluster = "private-shared-subnet.example.com"
-    Name              = "bastion-elb.private-shared-subnet.example.com"
+    KubernetesCluster                                         = "private-shared-subnet.example.com"
+    Name                                                      = "bastion-elb.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
 }
 
@@ -402,8 +404,9 @@ resource "aws_security_group" "bastion-private-shared-subnet-example-com" {
   description = "Security group for bastion"
 
   tags = {
-    KubernetesCluster = "private-shared-subnet.example.com"
-    Name              = "bastion.private-shared-subnet.example.com"
+    KubernetesCluster                                         = "private-shared-subnet.example.com"
+    Name                                                      = "bastion.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
 }
 
@@ -413,8 +416,9 @@ resource "aws_security_group" "masters-private-shared-subnet-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "private-shared-subnet.example.com"
-    Name              = "masters.private-shared-subnet.example.com"
+    KubernetesCluster                                         = "private-shared-subnet.example.com"
+    Name                                                      = "masters.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
 }
 
@@ -424,8 +428,9 @@ resource "aws_security_group" "nodes-private-shared-subnet-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "private-shared-subnet.example.com"
-    Name              = "nodes.private-shared-subnet.example.com"
+    KubernetesCluster                                         = "private-shared-subnet.example.com"
+    Name                                                      = "nodes.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
 }
 

@@ -326,8 +326,9 @@ resource "aws_security_group" "api-elb-complex-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "complex.example.com"
-    Name              = "api-elb.complex.example.com"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "api-elb.complex.example.com"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
@@ -337,8 +338,9 @@ resource "aws_security_group" "masters-complex-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "complex.example.com"
-    Name              = "masters.complex.example.com"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "masters.complex.example.com"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
@@ -348,8 +350,9 @@ resource "aws_security_group" "nodes-complex-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "complex.example.com"
-    Name              = "nodes.complex.example.com"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "nodes.complex.example.com"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 

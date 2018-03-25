@@ -445,8 +445,9 @@ resource "aws_security_group" "api-elb-privatecalico-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "privatecalico.example.com"
-    Name              = "api-elb.privatecalico.example.com"
+    KubernetesCluster                                 = "privatecalico.example.com"
+    Name                                              = "api-elb.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
 }
 
@@ -456,8 +457,9 @@ resource "aws_security_group" "bastion-elb-privatecalico-example-com" {
   description = "Security group for bastion ELB"
 
   tags = {
-    KubernetesCluster = "privatecalico.example.com"
-    Name              = "bastion-elb.privatecalico.example.com"
+    KubernetesCluster                                 = "privatecalico.example.com"
+    Name                                              = "bastion-elb.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
 }
 
@@ -467,8 +469,9 @@ resource "aws_security_group" "bastion-privatecalico-example-com" {
   description = "Security group for bastion"
 
   tags = {
-    KubernetesCluster = "privatecalico.example.com"
-    Name              = "bastion.privatecalico.example.com"
+    KubernetesCluster                                 = "privatecalico.example.com"
+    Name                                              = "bastion.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
 }
 
@@ -478,8 +481,9 @@ resource "aws_security_group" "masters-privatecalico-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "privatecalico.example.com"
-    Name              = "masters.privatecalico.example.com"
+    KubernetesCluster                                 = "privatecalico.example.com"
+    Name                                              = "masters.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
 }
 
@@ -489,8 +493,9 @@ resource "aws_security_group" "nodes-privatecalico-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "privatecalico.example.com"
-    Name              = "nodes.privatecalico.example.com"
+    KubernetesCluster                                 = "privatecalico.example.com"
+    Name                                              = "nodes.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
 }
 

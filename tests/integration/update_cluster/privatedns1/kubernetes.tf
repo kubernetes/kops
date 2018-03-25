@@ -450,8 +450,9 @@ resource "aws_security_group" "api-elb-privatedns1-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "api-elb.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "api-elb.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -461,8 +462,9 @@ resource "aws_security_group" "bastion-elb-privatedns1-example-com" {
   description = "Security group for bastion ELB"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "bastion-elb.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "bastion-elb.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -472,8 +474,9 @@ resource "aws_security_group" "bastion-privatedns1-example-com" {
   description = "Security group for bastion"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "bastion.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "bastion.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -483,8 +486,9 @@ resource "aws_security_group" "masters-privatedns1-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "masters.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "masters.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -494,8 +498,9 @@ resource "aws_security_group" "nodes-privatedns1-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "nodes.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "nodes.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 

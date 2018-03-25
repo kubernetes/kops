@@ -446,8 +446,9 @@ resource "aws_security_group" "api-elb-bastionuserdata-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "api-elb.bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "api-elb.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
@@ -457,8 +458,9 @@ resource "aws_security_group" "bastion-bastionuserdata-example-com" {
   description = "Security group for bastion"
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "bastion.bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "bastion.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
@@ -468,8 +470,9 @@ resource "aws_security_group" "bastion-elb-bastionuserdata-example-com" {
   description = "Security group for bastion ELB"
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "bastion-elb.bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "bastion-elb.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
@@ -479,8 +482,9 @@ resource "aws_security_group" "masters-bastionuserdata-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "masters.bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "masters.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
@@ -490,8 +494,9 @@ resource "aws_security_group" "nodes-bastionuserdata-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "nodes.bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "nodes.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
