@@ -123,7 +123,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		return fmt.Errorf("error finding subnets: %v", err)
 	}
 
-	securityGroups, err := awsresources.DescribeSecurityGroups(x.Cloud)
+	securityGroups, err := awsresources.DescribeSecurityGroups(x.Cloud, x.OldClusterName)
 	if err != nil {
 		return fmt.Errorf("error finding security groups: %v", err)
 	}
