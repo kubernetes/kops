@@ -93,8 +93,9 @@ resource "aws_security_group" "api-elb-lifecyclephases-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "lifecyclephases.example.com"
-    Name              = "api-elb.lifecyclephases.example.com"
+    KubernetesCluster                                   = "lifecyclephases.example.com"
+    Name                                                = "api-elb.lifecyclephases.example.com"
+    "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
   }
 }
 
@@ -104,8 +105,9 @@ resource "aws_security_group" "bastion-elb-lifecyclephases-example-com" {
   description = "Security group for bastion ELB"
 
   tags = {
-    KubernetesCluster = "lifecyclephases.example.com"
-    Name              = "bastion-elb.lifecyclephases.example.com"
+    KubernetesCluster                                   = "lifecyclephases.example.com"
+    Name                                                = "bastion-elb.lifecyclephases.example.com"
+    "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
   }
 }
 
@@ -115,8 +117,9 @@ resource "aws_security_group" "bastion-lifecyclephases-example-com" {
   description = "Security group for bastion"
 
   tags = {
-    KubernetesCluster = "lifecyclephases.example.com"
-    Name              = "bastion.lifecyclephases.example.com"
+    KubernetesCluster                                   = "lifecyclephases.example.com"
+    Name                                                = "bastion.lifecyclephases.example.com"
+    "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
   }
 }
 
@@ -126,8 +129,9 @@ resource "aws_security_group" "masters-lifecyclephases-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "lifecyclephases.example.com"
-    Name              = "masters.lifecyclephases.example.com"
+    KubernetesCluster                                   = "lifecyclephases.example.com"
+    Name                                                = "masters.lifecyclephases.example.com"
+    "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
   }
 }
 
@@ -137,8 +141,9 @@ resource "aws_security_group" "nodes-lifecyclephases-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "lifecyclephases.example.com"
-    Name              = "nodes.lifecyclephases.example.com"
+    KubernetesCluster                                   = "lifecyclephases.example.com"
+    Name                                                = "nodes.lifecyclephases.example.com"
+    "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
   }
 }
 

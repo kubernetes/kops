@@ -426,8 +426,9 @@ resource "aws_security_group" "masters-ha-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "ha.example.com"
-    Name              = "masters.ha.example.com"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "masters.ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -437,8 +438,9 @@ resource "aws_security_group" "nodes-ha-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "ha.example.com"
-    Name              = "nodes.ha.example.com"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "nodes.ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
