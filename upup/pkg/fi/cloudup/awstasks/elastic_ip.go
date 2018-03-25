@@ -160,6 +160,28 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 		actual.TagOnSubnet = e.TagOnSubnet
 		actual.AssociatedNatGatewayRouteTable = e.AssociatedNatGatewayRouteTable
 
+		{
+			tags, err := cloud.EC2().DescribeTags(&ec2.DescribeTagsInput{
+				Filters: []*ec2.Filter{
+					{
+						Name:   aws.String("resource-id"),
+						Values: aws.StringSlice([]string{*a.AllocationId}),
+					},
+				},
+			})
+			if err != nil {
+				return nil, fmt.Errorf("error querying tags for ElasticIP: %v", err)
+			}
+			var ec2Tags []*ec2.Tag
+			for _, t := range tags.Tags {
+				ec2Tags = append(ec2Tags, &ec2.Tag{
+					Key:   t.Key,
+					Value: t.Value,
+				})
+			}
+			actual.Tags = intersectTags(ec2Tags, e.Tags)
+		}
+
 		// ElasticIP don't have a Name (no tags), so we set the name to avoid spurious changes
 		actual.Name = e.Name
 
@@ -183,7 +205,7 @@ func (e *ElasticIP) Run(c *fi.Context) error {
 
 // CheckChanges validates the resource. EIPs are simple, so virtually no
 // validation
-func (s *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
+func (_ *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
 	// This is a new EIP
 	if a == nil {
 		// No logic for EIPs - they are just created
