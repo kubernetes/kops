@@ -164,10 +164,22 @@ func (m *MockEC2) CreateDhcpOptionsRequest(*ec2.CreateDhcpOptionsInput) (*reques
 	return nil, nil
 }
 
-func (m *MockEC2) DeleteDhcpOptions(*ec2.DeleteDhcpOptionsInput) (*ec2.DeleteDhcpOptionsOutput, error) {
-	panic("Not implemented")
-	return nil, nil
+func (m *MockEC2) DeleteDhcpOptions(request *ec2.DeleteDhcpOptionsInput) (*ec2.DeleteDhcpOptionsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteDhcpOptions: %v", request)
+
+	id := aws.StringValue(request.DhcpOptionsId)
+	o := m.DhcpOptions[id]
+	if o == nil {
+		return nil, fmt.Errorf("DhcpOptions %q not found", id)
+	}
+	delete(m.DhcpOptions, id)
+
+	return &ec2.DeleteDhcpOptionsOutput{}, nil
 }
+
 func (m *MockEC2) DeleteDhcpOptionsWithContext(aws.Context, *ec2.DeleteDhcpOptionsInput, ...request.Option) (*ec2.DeleteDhcpOptionsOutput, error) {
 	panic("Not implemented")
 	return nil, nil

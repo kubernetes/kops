@@ -62,17 +62,30 @@ func (m *MockEC2) CreateSecurityGroup(request *ec2.CreateSecurityGroupInput) (*e
 	return response, nil
 }
 
-func (m *MockEC2) DeleteSecurityGroupRequest(*ec2.DeleteSecurityGroupInput) (*request.Request, *ec2.DeleteSecurityGroupOutput) {
-	panic("MockEC2 DeleteSecurityGroupRequest not implemented")
+func (m *MockEC2) DeleteSecurityGroupRequest(request *ec2.DeleteSecurityGroupInput) (*request.Request, *ec2.DeleteSecurityGroupOutput) {
+	panic("Not implemented")
 	return nil, nil
 }
+
 func (m *MockEC2) DeleteSecurityGroupWithContext(aws.Context, *ec2.DeleteSecurityGroupInput, ...request.Option) (*ec2.DeleteSecurityGroupOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
-func (m *MockEC2) DeleteSecurityGroup(*ec2.DeleteSecurityGroupInput) (*ec2.DeleteSecurityGroupOutput, error) {
-	panic("MockEC2 DeleteSecurityGroup not implemented")
-	return nil, nil
+
+func (m *MockEC2) DeleteSecurityGroup(request *ec2.DeleteSecurityGroupInput) (*ec2.DeleteSecurityGroupOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteSecurityGroup: %v", request)
+
+	id := aws.StringValue(request.GroupId)
+	o := m.SecurityGroups[id]
+	if o == nil {
+		return nil, fmt.Errorf("SecurityGroup %q not found", id)
+	}
+	delete(m.SecurityGroups, id)
+
+	return &ec2.DeleteSecurityGroupOutput{}, nil
 }
 
 func (m *MockEC2) DescribeSecurityGroupReferencesRequest(*ec2.DescribeSecurityGroupReferencesInput) (*request.Request, *ec2.DescribeSecurityGroupReferencesOutput) {
@@ -194,10 +207,35 @@ func (m *MockEC2) RevokeSecurityGroupIngressWithContext(aws.Context, *ec2.Revoke
 	panic("Not implemented")
 	return nil, nil
 }
-func (m *MockEC2) RevokeSecurityGroupIngress(*ec2.RevokeSecurityGroupIngressInput) (*ec2.RevokeSecurityGroupIngressOutput, error) {
-	panic("Not implemented")
-	return nil, nil
+
+func (m *MockEC2) RevokeSecurityGroupIngress(request *ec2.RevokeSecurityGroupIngressInput) (*ec2.RevokeSecurityGroupIngressOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("RevokeSecurityGroupIngress: %v", request)
+
+	if aws.StringValue(request.GroupId) == "" {
+		return nil, fmt.Errorf("GroupId not specified")
+	}
+
+	if request.DryRun != nil {
+		glog.Fatalf("DryRun")
+	}
+
+	if request.GroupName != nil {
+		glog.Fatalf("GroupName not implemented")
+	}
+	sg := m.SecurityGroups[*request.GroupId]
+	if sg == nil {
+		return nil, fmt.Errorf("SecurityGroup not found")
+	}
+
+	glog.Warningf("RevokeSecurityGroupIngress not implemented - does not actually revoke permissions")
+
+	response := &ec2.RevokeSecurityGroupIngressOutput{}
+	return response, nil
 }
+
 func (m *MockEC2) AuthorizeSecurityGroupEgressRequest(*ec2.AuthorizeSecurityGroupEgressInput) (*request.Request, *ec2.AuthorizeSecurityGroupEgressOutput) {
 	panic("Not implemented")
 	return nil, nil
