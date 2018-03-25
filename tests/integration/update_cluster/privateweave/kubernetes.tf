@@ -445,8 +445,9 @@ resource "aws_security_group" "api-elb-privateweave-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "api-elb.privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "api-elb.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
@@ -456,8 +457,9 @@ resource "aws_security_group" "bastion-elb-privateweave-example-com" {
   description = "Security group for bastion ELB"
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "bastion-elb.privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "bastion-elb.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
@@ -467,8 +469,9 @@ resource "aws_security_group" "bastion-privateweave-example-com" {
   description = "Security group for bastion"
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "bastion.privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "bastion.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
@@ -478,8 +481,9 @@ resource "aws_security_group" "masters-privateweave-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "masters.privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "masters.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
@@ -489,8 +493,9 @@ resource "aws_security_group" "nodes-privateweave-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "nodes.privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "nodes.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 

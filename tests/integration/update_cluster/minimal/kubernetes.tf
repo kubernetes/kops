@@ -250,8 +250,9 @@ resource "aws_security_group" "masters-minimal-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "minimal.example.com"
-    Name              = "masters.minimal.example.com"
+    KubernetesCluster                           = "minimal.example.com"
+    Name                                        = "masters.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
 }
 
@@ -261,8 +262,9 @@ resource "aws_security_group" "nodes-minimal-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "minimal.example.com"
-    Name              = "nodes.minimal.example.com"
+    KubernetesCluster                           = "minimal.example.com"
+    Name                                        = "nodes.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
 }
 
