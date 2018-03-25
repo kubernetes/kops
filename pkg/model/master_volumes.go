@@ -130,6 +130,9 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 	// This says "only mount on a master"
 	tags[awsup.TagNameRolePrefix+"master"] = "1"
 
+	// We always add an owned tags (these can't be shared)
+	tags["kubernetes.io/cluster/"+b.Cluster.ObjectMeta.Name] = "owned"
+
 	encrypted := fi.BoolValue(m.EncryptedVolume)
 
 	t := &awstasks.EBSVolume{

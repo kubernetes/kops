@@ -165,10 +165,11 @@ resource "aws_ebs_volume" "a-etcd-events-ha-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "ha.example.com"
-    Name                 = "a.etcd-events.ha.example.com"
-    "k8s.io/etcd/events" = "a/a,b,c"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "a.etcd-events.ha.example.com"
+    "k8s.io/etcd/events"                   = "a/a,b,c"
+    "k8s.io/role/master"                   = "1"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -179,10 +180,11 @@ resource "aws_ebs_volume" "a-etcd-main-ha-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "ha.example.com"
-    Name                 = "a.etcd-main.ha.example.com"
-    "k8s.io/etcd/main"   = "a/a,b,c"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "a.etcd-main.ha.example.com"
+    "k8s.io/etcd/main"                     = "a/a,b,c"
+    "k8s.io/role/master"                   = "1"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -193,10 +195,11 @@ resource "aws_ebs_volume" "b-etcd-events-ha-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "ha.example.com"
-    Name                 = "b.etcd-events.ha.example.com"
-    "k8s.io/etcd/events" = "b/a,b,c"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "b.etcd-events.ha.example.com"
+    "k8s.io/etcd/events"                   = "b/a,b,c"
+    "k8s.io/role/master"                   = "1"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -207,10 +210,11 @@ resource "aws_ebs_volume" "b-etcd-main-ha-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "ha.example.com"
-    Name                 = "b.etcd-main.ha.example.com"
-    "k8s.io/etcd/main"   = "b/a,b,c"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "b.etcd-main.ha.example.com"
+    "k8s.io/etcd/main"                     = "b/a,b,c"
+    "k8s.io/role/master"                   = "1"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -221,10 +225,11 @@ resource "aws_ebs_volume" "c-etcd-events-ha-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "ha.example.com"
-    Name                 = "c.etcd-events.ha.example.com"
-    "k8s.io/etcd/events" = "c/a,b,c"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "c.etcd-events.ha.example.com"
+    "k8s.io/etcd/events"                   = "c/a,b,c"
+    "k8s.io/role/master"                   = "1"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -235,10 +240,11 @@ resource "aws_ebs_volume" "c-etcd-main-ha-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "ha.example.com"
-    Name                 = "c.etcd-main.ha.example.com"
-    "k8s.io/etcd/main"   = "c/a,b,c"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "c.etcd-main.ha.example.com"
+    "k8s.io/etcd/main"                     = "c/a,b,c"
+    "k8s.io/role/master"                   = "1"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 

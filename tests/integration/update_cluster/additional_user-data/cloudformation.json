@@ -550,6 +550,10 @@
           {
             "Key": "k8s.io/role/master",
             "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
+            "Value": "owned"
           }
         ]
       }
@@ -577,6 +581,10 @@
           {
             "Key": "k8s.io/role/master",
             "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
+            "Value": "owned"
           }
         ]
       }

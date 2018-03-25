@@ -19,6 +19,7 @@ package awstasks
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
@@ -139,6 +140,19 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 			VolumeType:       e.VolumeType,
 			KmsKeyId:         e.KmsKeyId,
 			Encrypted:        e.Encrypted,
+		}
+
+		if len(e.Tags) != 0 {
+			request.TagSpecifications = []*ec2.TagSpecification{
+				{ResourceType: aws.String(ec2.ResourceTypeVolume)},
+			}
+
+			for k, v := range e.Tags {
+				request.TagSpecifications[0].Tags = append(request.TagSpecifications[0].Tags, &ec2.Tag{
+					Key:   aws.String(k),
+					Value: aws.String(v),
+				})
+			}
 		}
 
 		response, err := t.Cloud.EC2().CreateVolume(request)
