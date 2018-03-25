@@ -81,6 +81,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				IAMInstanceProfile: b.LinkToIAMInstanceProfile(ig),
 				ImageID:            s(ig.Spec.Image),
 				InstanceType:       s(ig.Spec.MachineType),
+				InstanceMonitoring: ig.Spec.DetailedInstanceMonitoring,
 
 				RootVolumeSize:         i64(int64(volumeSize)),
 				RootVolumeType:         s(volumeType),

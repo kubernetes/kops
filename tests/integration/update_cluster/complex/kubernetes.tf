@@ -264,6 +264,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-complex-example-c
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-complex-example-com" {
@@ -285,6 +287,8 @@ resource "aws_launch_configuration" "nodes-complex-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = true
 }
 
 resource "aws_route" "0-0-0-0--0" {

@@ -46,6 +46,7 @@ type LaunchConfiguration struct {
 	SecurityGroups     []*SecurityGroup
 	AssociatePublicIP  *bool
 	IAMInstanceProfile *IAMInstanceProfile
+	InstanceMonitoring *bool
 
 	// RootVolumeSize is the size of the EBS root volume to use, in GB
 	RootVolumeSize *int64
@@ -119,6 +120,7 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		SSHKey:                 &SSHKey{Name: lc.KeyName},
 		AssociatePublicIP:      lc.AssociatePublicIpAddress,
 		IAMInstanceProfile:     &IAMInstanceProfile{Name: lc.IamInstanceProfile},
+		InstanceMonitoring:     lc.InstanceMonitoring.Enabled,
 		SpotPrice:              aws.StringValue(lc.SpotPrice),
 		Tenancy:                lc.PlacementTenancy,
 		RootVolumeOptimization: lc.EbsOptimized,
@@ -312,6 +314,11 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	if e.IAMInstanceProfile != nil {
 		request.IamInstanceProfile = e.IAMInstanceProfile.Name
 	}
+	if e.InstanceMonitoring != nil {
+		request.InstanceMonitoring = &autoscaling.InstanceMonitoring{Enabled: e.InstanceMonitoring}
+	} else {
+		request.InstanceMonitoring = &autoscaling.InstanceMonitoring{Enabled: fi.Bool(false)}
+	}
 
 	attempt := 0
 	maxAttempts := 10
@@ -361,6 +368,7 @@ type terraformLaunchConfiguration struct {
 	Lifecycle                *terraform.Lifecycle    `json:"lifecycle,omitempty"`
 	SpotPrice                *string                 `json:"spot_price,omitempty"`
 	PlacementTenancy         *string                 `json:"placement_tenancy,omitempty"`
+	InstanceMonitoring       *bool                   `json:"enable_monitoring,omitempty"`
 }
 
 type terraformBlockDevice struct {
@@ -457,7 +465,11 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 	if e.IAMInstanceProfile != nil {
 		tf.IAMInstanceProfile = e.IAMInstanceProfile.TerraformLink()
 	}
-
+	if e.InstanceMonitoring != nil {
+		tf.InstanceMonitoring = e.InstanceMonitoring
+	} else {
+		tf.InstanceMonitoring = fi.Bool(false)
+	}
 	// So that we can update configurations
 	tf.Lifecycle = &terraform.Lifecycle{CreateBeforeDestroy: fi.Bool(true)}
 
@@ -480,6 +492,7 @@ type cloudformationLaunchConfiguration struct {
 	SpotPrice                *string                      `json:"SpotPrice,omitempty"`
 	UserData                 *string                      `json:"UserData,omitempty"`
 	PlacementTenancy         *string                      `json:"PlacementTenancy,omitempty"`
+	InstanceMonitoring       *bool                        `json:"InstanceMonitoring,omitempty"`
 
 	//NamePrefix               *string                 `json:"name_prefix,omitempty"`
 	//Lifecycle                *cloudformation.Lifecycle    `json:"lifecycle,omitempty"`
@@ -590,6 +603,11 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 		cf.IAMInstanceProfile = e.IAMInstanceProfile.CloudformationLink()
 	}
 
+	if e.InstanceMonitoring != nil {
+		cf.InstanceMonitoring = e.InstanceMonitoring
+	} else {
+		cf.InstanceMonitoring = fi.Bool(false)
+	}
 	// So that we can update configurations
 	//tf.Lifecycle = &cloudformation.Lifecycle{CreateBeforeDestroy: fi.Bool(true)}
 

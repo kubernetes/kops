@@ -1562,6 +1562,15 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.DetailedInstanceMonitoring != nil {
+		in, out := &in.DetailedInstanceMonitoring, &out.DetailedInstanceMonitoring
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
+			**out = **in
+		}
+	}
 	return
 }
 

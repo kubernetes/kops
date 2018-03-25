@@ -125,7 +125,8 @@
             "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
           }
         ],
-        "UserData": "extracted"
+        "UserData": "extracted",
+        "InstanceMonitoring": false
       }
     },
     "AWSAutoScalingLaunchConfigurationnodesminimalexamplecom": {
@@ -153,7 +154,8 @@
             "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
           }
         ],
-        "UserData": "extracted"
+        "UserData": "extracted",
+        "InstanceMonitoring": false
       }
     },
     "AWSEC2DHCPOptionsminimalexamplecom": {
