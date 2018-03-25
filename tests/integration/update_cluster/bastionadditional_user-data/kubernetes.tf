@@ -183,6 +183,12 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-bastionuserdata-example-com" {
 
 resource "aws_eip" "us-test-1a-bastionuserdata-example-com" {
   vpc = true
+
+  tags = {
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "us-test-1a.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
 }
 
 resource "aws_elb" "api-bastionuserdata-example-com" {
