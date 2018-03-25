@@ -38,6 +38,9 @@ type LifecycleTestOptions struct {
 	SrcDir      string
 	Version     string
 	ClusterName string
+
+	// Shared is a list of resource ids we expect to be tagged as shared
+	Shared []string
 }
 
 func (o *LifecycleTestOptions) AddDefaults() {
@@ -72,6 +75,7 @@ func TestLifecyclePrivateKopeio(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:      t,
 		SrcDir: "privatekopeio",
+		Shared: []string{"nat-12345678"},
 	})
 }
 
@@ -88,6 +92,7 @@ func TestLifecycleSharedSubnet(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:      t,
 		SrcDir: "shared_subnet",
+		Shared: []string{"subnet-12345678"},
 	})
 }
 
@@ -96,10 +101,11 @@ func TestLifecyclePrivateSharedSubnet(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:      t,
 		SrcDir: "private-shared-subnet",
+		Shared: []string{"subnet-12345678", "subnet-abcdef"},
 	})
 }
 
-func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptions) {
+func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptions, cloud *awsup.MockAWSCloud) {
 	t := o.t
 
 	var stdout bytes.Buffer
@@ -110,6 +116,8 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 	factoryOptions.RegistryPath = "memfs://tests"
 
 	factory := util.NewFactory(factoryOptions)
+
+	beforeResources := AllResources(cloud)
 
 	{
 		options := &CreateOptions{}
@@ -173,10 +181,56 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 	}
 
 	{
+		var ids []string
+		for id := range AllResources(cloud) {
+			ids = append(ids, id)
+		}
+		sort.Strings(ids)
+
+		for _, id := range ids {
+			tags, err := cloud.GetTags(id)
+			if err != nil {
+				t.Fatalf("error getting tags for %q: %v", id, err)
+			}
+
+			dashIndex := strings.Index(id, "-")
+			resource := ""
+			if dashIndex == -1 {
+				t.Errorf("unknown resource type: %q", id)
+			} else {
+				resource = id[:dashIndex]
+			}
+
+			ownership := tags["kubernetes.io/cluster/"+o.ClusterName]
+			if beforeResources[id] != nil {
+				expect := ""
+				for _, s := range o.Shared {
+					if id == s {
+						expect = "shared"
+					}
+				}
+				if ownership != expect {
+					t.Errorf("unexpected kubernetes.io/cluster/ tag on %q: actual=%q expected=%q", id, ownership, expect)
+				}
+			} else {
+				switch resource {
+				case "ami":
+				case "sshkey":
+					// ignore
+
+				default:
+					if ownership == "" {
+						t.Errorf("no kubernetes.io/cluster/ tag on %q", id)
+					}
+				}
+			}
+		}
+	}
+
+	{
 		options := &DeleteClusterOptions{}
 		options.Yes = true
 		options.ClusterName = o.ClusterName
-
 		if err := RunDeleteCluster(factory, &stdout, options); err != nil {
 			t.Fatalf("error running delete cluster %q: %v", o.ClusterName, err)
 		}
@@ -195,6 +249,8 @@ func AllResources(c *awsup.MockAWSCloud) map[string]interface{} {
 func runLifecycleTestAWS(o *LifecycleTestOptions) {
 	o.AddDefaults()
 
+	t := o.t
+
 	h := testutils.NewIntegrationTestHarness(o.t)
 	defer h.Close()
 
@@ -207,7 +263,7 @@ func runLifecycleTestAWS(o *LifecycleTestOptions) {
 	}
 	sort.Strings(beforeIds)
 
-	runLifecycleTest(h, o)
+	runLifecycleTest(h, o, cloud)
 
 	var afterIds []string
 	for id := range AllResources(cloud) {
@@ -216,6 +272,6 @@ func runLifecycleTestAWS(o *LifecycleTestOptions) {
 	sort.Strings(afterIds)
 
 	if !reflect.DeepEqual(beforeIds, afterIds) {
-		h.T.Fatalf("resources changed by cluster create / destroy: %v -> %v", beforeIds, afterIds)
+		t.Fatalf("resources changed by cluster create / destroy: %v -> %v", beforeIds, afterIds)
 	}
 }
