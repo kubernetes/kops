@@ -6,6 +6,7 @@ go_library(
         "aws.go",
         "errors.go",
         "filters.go",
+        "natgateway.go",
         "routetable.go",
         "securitygroup.go",
         "tags.go",
