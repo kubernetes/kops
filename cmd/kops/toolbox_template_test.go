@@ -17,8 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"testing"
 	"reflect"
+	"testing"
 )
 
 // Copied from the Helm (https://github.com/kubernetes/helm) project:
