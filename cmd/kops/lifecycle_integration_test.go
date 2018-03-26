@@ -108,6 +108,8 @@ func TestLifecyclePrivateSharedSubnet(t *testing.T) {
 func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptions, cloud *awsup.MockAWSCloud) {
 	t := o.t
 
+	t.Logf("running lifecycle test for cluster %s", o.ClusterName)
+
 	var stdout bytes.Buffer
 
 	inputYAML := "in-" + o.Version + ".yaml"
@@ -216,6 +218,9 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 				}
 				if ownership != expect {
 					t.Errorf("unexpected kubernetes.io/cluster/ tag on %q: actual=%q expected=%q", id, ownership, expect)
+				}
+				if legacy != "" {
+					t.Errorf("added (legacy) KubernetesCluster tag on %q, but it is shared", id)
 				}
 			} else {
 				switch resource {
