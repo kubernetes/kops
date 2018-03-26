@@ -18,188 +18,262 @@ package validation
 
 import (
 	"fmt"
-	"time"
+	"net"
+	"net/url"
 
+	"github.com/golang/glog"
+	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/api/v1"
-	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 )
 
-// A cluster to validate
+// ValidationCluster a cluster to validate.
 type ValidationCluster struct {
-	MastersReady         bool              `json:"mastersReady,omitempty"`
-	MastersReadyArray    []*ValidationNode `json:"mastersReadyArray,omitempty"`
-	MastersNotReadyArray []*ValidationNode `json:"mastersNotReadyArray,omitempty"`
-	MastersCount         int               `json:"mastersCount,omitempty"`
+	Failures []*ValidationError `json:"failures,omitempty"`
 
-	NodesReady         bool              `json:"nodesReady,omitempty"`
-	NodesReadyArray    []*ValidationNode `json:"nodesReadyArray,omitempty"`
-	NodesNotReadyArray []*ValidationNode `json:"nodesNotReadyArray,omitempty"`
-	NodesCount         int               `json:"nodesCount,omitempty"`
-
-	NodeList *v1.NodeList `json:"nodeList,omitempty"`
-
-	ComponentFailures []string `json:"componentFailures,omitempty"`
-	PodFailures       []string `json:"podFailures,omitempty"`
+	Nodes []*ValidationNode `json:"nodes,omitempty"`
 }
 
-// A K8s node to be validated
+// ValidationError holds a validation failure
+type ValidationError struct {
+	Kind    string `json:"type,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+func (v *ValidationCluster) addError(failure *ValidationError) {
+	v.Failures = append(v.Failures, failure)
+}
+
+// ValidationNode represents the validation status for a node
 type ValidationNode struct {
+	Name     string             `json:"name,omitempty"`
 	Zone     string             `json:"zone,omitempty"`
 	Role     string             `json:"role,omitempty"`
 	Hostname string             `json:"hostname,omitempty"`
 	Status   v1.ConditionStatus `json:"status,omitempty"`
 }
 
+// hasPlaceHolderIP checks if the API DNS has been updated.
+func hasPlaceHolderIP(clusterName string) (bool, error) {
+
+	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{CurrentContext: clusterName}).ClientConfig()
+
+	apiAddr, err := url.Parse(config.Host)
+	if err != nil {
+		return true, fmt.Errorf("unable to parse Kubernetes cluster API URL: %v", err)
+	}
+
+	hostAddrs, err := net.LookupHost(apiAddr.Host)
+	if err != nil {
+		return true, fmt.Errorf("unable to resolve Kubernetes cluster API URL dns: %v", err)
+	}
+
+	for _, h := range hostAddrs {
+		if h == "203.0.113.123" {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 // ValidateCluster validate a k8s cluster with a provided instance group list
-func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupList, clusterKubernetesClient k8s_clientset.Interface) (*ValidationCluster, error) {
+func ValidateCluster(cluster *kops.Cluster, instanceGroupList *kops.InstanceGroupList, k8sClient kubernetes.Interface) (*ValidationCluster, error) {
+	clusterName := cluster.Name
+
+	v := &ValidationCluster{}
+
+	// Do not use if we are running gossip
+	if !dns.IsGossipHostname(clusterName) {
+		contextName := clusterName
+
+		hasPlaceHolderIPAddress, err := hasPlaceHolderIP(contextName)
+		if err != nil {
+			return nil, err
+		}
+
+		if hasPlaceHolderIPAddress {
+			message := "Validation Failed\n\n" +
+				"The dns-controller Kubernetes deployment has not updated the Kubernetes cluster's API DNS entry to the correct IP address." +
+				"  The API DNS IP address is the placeholder address that kops creates: 203.0.113.123." +
+				"  Please wait about 5-10 minutes for a master to start, dns-controller to launch, and DNS to propagate." +
+				"  The protokube container and dns-controller deployment logs may contain more diagnostic information." +
+				"  Etcd and the API DNS entries must be updated for a kops Kubernetes cluster to start."
+			v.addError(&ValidationError{
+				Kind:    "dns",
+				Name:    "apiserver",
+				Message: message,
+			})
+			return v, nil
+		}
+	}
+
 	var instanceGroups []*kops.InstanceGroup
-	validationCluster := &ValidationCluster{}
 
 	for i := range instanceGroupList.Items {
 		ig := &instanceGroupList.Items[i]
 		instanceGroups = append(instanceGroups, ig)
-		if ig.Spec.Role == kops.InstanceGroupRoleMaster {
-			validationCluster.MastersCount += int(fi.Int32Value(ig.Spec.MinSize))
-		} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
-			validationCluster.NodesCount += int(fi.Int32Value(ig.Spec.MinSize))
-		}
 	}
 
 	if len(instanceGroups) == 0 {
-		return validationCluster, fmt.Errorf("no InstanceGroup objects found")
+		return nil, fmt.Errorf("no InstanceGroup objects found")
 	}
 
-	timeout, err := time.ParseDuration("10s")
+	cloud, err := cloudup.BuildCloud(cluster)
 	if err != nil {
-		return nil, fmt.Errorf("cannot set timeout %q: %v", clusterName, err)
+		return nil, err
 	}
 
-	nodeAA, err := NewNodeAPIAdapter(clusterKubernetesClient, timeout)
+	nodeList, err := k8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("error building node adapter for %q: %v", clusterName, err)
+		return nil, fmt.Errorf("error listing nodes: %v", err)
 	}
 
-	validationCluster.NodeList, err = nodeAA.GetAllNodes()
+	warnUnmatched := false
+	cloudGroups, err := cloud.GetCloudGroups(cluster, instanceGroups, warnUnmatched, nodeList.Items)
 	if err != nil {
-		return nil, fmt.Errorf("cannot get nodes for %q: %v", clusterName, err)
+		return nil, err
 	}
+	v.validateNodes(cloudGroups)
 
-	validationCluster.ComponentFailures, err = collectComponentFailures(clusterKubernetesClient)
-	if err != nil {
+	if err := v.collectComponentFailures(k8sClient); err != nil {
 		return nil, fmt.Errorf("cannot get component status for %q: %v", clusterName, err)
 	}
 
-	validationCluster.PodFailures, err = collectPodFailures(clusterKubernetesClient)
-	if err != nil {
+	if err = v.collectPodFailures(k8sClient); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", clusterName, err)
 	}
 
-	return validateTheNodes(clusterName, validationCluster)
-
+	return v, nil
 }
 
-func getRoleNode(node *v1.Node) string {
-	role := kops.RoleNodeLabelValue
-	if val, ok := node.ObjectMeta.Labels[kops.RoleLabelName]; ok {
-		role = val
+func (v *ValidationCluster) collectComponentFailures(client kubernetes.Interface) error {
+	componentList, err := client.CoreV1().ComponentStatuses().List(metav1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("error listing ComponentStatuses: %v", err)
 	}
 
-	return role
+	for _, component := range componentList.Items {
+		for _, condition := range component.Conditions {
+			if condition.Status != v1.ConditionTrue {
+				v.addError(&ValidationError{
+					Kind:    "ComponentStatus",
+					Name:    component.Name,
+					Message: "component is unhealthy",
+				})
+			}
+		}
+	}
+	return nil
 }
 
-func collectComponentFailures(client k8s_clientset.Interface) (failures []string, err error) {
-	componentList, err := client.CoreV1().ComponentStatuses().List(v1.ListOptions{})
-	if err == nil {
-		for _, component := range componentList.Items {
-			for _, condition := range component.Conditions {
-				if condition.Status != v1.ConditionTrue {
-					failures = append(failures, component.Name)
+func (v *ValidationCluster) collectPodFailures(client kubernetes.Interface) error {
+	pods, err := client.CoreV1().Pods("kube-system").List(metav1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("error listing Pods: %v", err)
+	}
+
+	for _, pod := range pods.Items {
+		if pod.Status.Phase == v1.PodSucceeded {
+			continue
+		}
+		for _, status := range pod.Status.ContainerStatuses {
+			if !status.Ready {
+				v.addError(&ValidationError{
+					Kind:    "Pod",
+					Name:    "kube-system/" + pod.Name,
+					Message: fmt.Sprintf("kube-system pod %q is not healthy", pod.Name),
+				})
+			}
+		}
+	}
+	return nil
+}
+
+func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances.CloudInstanceGroup) {
+	for _, cloudGroup := range cloudGroups {
+		var allMembers []*cloudinstances.CloudInstanceGroupMember
+		allMembers = append(allMembers, cloudGroup.Ready...)
+		allMembers = append(allMembers, cloudGroup.NeedUpdate...)
+		if len(allMembers) < cloudGroup.MinSize {
+			v.addError(&ValidationError{
+				Kind: "InstanceGroup",
+				Name: cloudGroup.InstanceGroup.Name,
+				Message: fmt.Sprintf("InstanceGroup %q did not have enough nodes %d vs %d",
+					cloudGroup.InstanceGroup.Name,
+					len(allMembers),
+					cloudGroup.MinSize),
+			})
+		}
+
+		for _, member := range allMembers {
+			node := member.Node
+
+			if node == nil {
+				nodeExpectedToJoin := true
+				if cloudGroup.InstanceGroup.Spec.Role == kops.InstanceGroupRoleBastion {
+					// bastion nodes don't join the cluster
+					nodeExpectedToJoin = false
 				}
-			}
-		}
-	}
-	return
-}
 
-func collectPodFailures(client k8s_clientset.Interface) (failures []string, err error) {
-	pods, err := client.CoreV1().Pods("kube-system").List(v1.ListOptions{})
-	if err == nil {
-		for _, pod := range pods.Items {
-			for _, status := range pod.Status.ContainerStatuses {
-				if !status.Ready {
-					failures = append(failures, pod.Name)
+				if nodeExpectedToJoin {
+					v.addError(&ValidationError{
+						Kind:    "Machine",
+						Name:    member.ID,
+						Message: fmt.Sprintf("machine %q has not yet joined cluster", member.ID),
+					})
 				}
+				continue
 			}
-		}
-	}
-	return
-}
 
-func validateTheNodes(clusterName string, validationCluster *ValidationCluster) (*ValidationCluster, error) {
-	nodes := validationCluster.NodeList
+			role := util.GetNodeRole(node)
+			if role == "" {
+				role = "node"
+			}
 
-	if nodes == nil || len(nodes.Items) == 0 {
-		return validationCluster, fmt.Errorf("No nodes found in validationCluster")
-	}
+			n := &ValidationNode{
+				Name:     node.Name,
+				Zone:     node.ObjectMeta.Labels["failure-domain.beta.kubernetes.io/zone"],
+				Hostname: node.ObjectMeta.Labels["kubernetes.io/hostname"],
+				Role:     role,
+				Status:   getNodeReadyStatus(node),
+			}
 
-	for i := range nodes.Items {
-		node := &nodes.Items[i]
+			ready := isNodeReady(node)
 
-		role := getRoleNode(node)
+			// TODO: Use instance group role instead...
+			if n.Role == "master" {
+				if !ready {
+					v.addError(&ValidationError{
+						Kind:    "Node",
+						Name:    node.Name,
+						Message: fmt.Sprintf("master %q is not ready", node.Name),
+					})
+				}
 
-		n := &ValidationNode{
-			Zone:     node.ObjectMeta.Labels["failure-domain.beta.kubernetes.io/zone"],
-			Hostname: node.ObjectMeta.Labels["kubernetes.io/hostname"],
-			Role:     role,
-			Status:   GetNodeConditionStatus(node),
-		}
+				v.Nodes = append(v.Nodes, n)
+			} else if n.Role == "node" {
+				if !ready {
+					v.addError(&ValidationError{
+						Kind:    "Node",
+						Name:    node.Name,
+						Message: fmt.Sprintf("node %q is not ready", node.Name),
+					})
+				}
 
-		ready := IsNodeOrMasterReady(node)
-
-		// TODO: Use instance group role instead...
-		if n.Role == kops.RoleMasterLabelValue {
-			if ready {
-				validationCluster.MastersReadyArray = append(validationCluster.MastersReadyArray, n)
+				v.Nodes = append(v.Nodes, n)
 			} else {
-				validationCluster.MastersNotReadyArray = append(validationCluster.MastersNotReadyArray, n)
+				glog.Warningf("ignoring node with role %q", n.Role)
 			}
-		} else if n.Role == kops.RoleNodeLabelValue {
-			if ready {
-				validationCluster.NodesReadyArray = append(validationCluster.NodesReadyArray, n)
-			} else {
-				validationCluster.NodesNotReadyArray = append(validationCluster.NodesNotReadyArray, n)
-			}
-
 		}
 	}
-
-	validationCluster.MastersReady = true
-	if len(validationCluster.MastersNotReadyArray) != 0 || validationCluster.MastersCount != len(validationCluster.MastersReadyArray) {
-		validationCluster.MastersReady = false
-	}
-
-	validationCluster.NodesReady = true
-	if len(validationCluster.NodesNotReadyArray) != 0 || validationCluster.NodesCount != len(validationCluster.NodesReadyArray) {
-		validationCluster.NodesReady = false
-	}
-
-	if !validationCluster.MastersReady {
-		return validationCluster, fmt.Errorf("your masters are NOT ready %s", clusterName)
-	}
-
-	if !validationCluster.NodesReady {
-		return validationCluster, fmt.Errorf("your nodes are NOT ready %s", clusterName)
-	}
-
-	if len(validationCluster.ComponentFailures) != 0 {
-		return validationCluster, fmt.Errorf("your components are NOT healthy %s", clusterName)
-	}
-
-	if len(validationCluster.PodFailures) != 0 {
-		return validationCluster, fmt.Errorf("your kube-system pods are NOT healthy %s", clusterName)
-	}
-
-	return validationCluster, nil
 }

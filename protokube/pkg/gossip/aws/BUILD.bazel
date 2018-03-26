@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["seeds.go"],
+    importpath = "k8s.io/kops/protokube/pkg/gossip/aws",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//protokube/pkg/gossip:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2/ec2iface:go_default_library",
+    ],
+)

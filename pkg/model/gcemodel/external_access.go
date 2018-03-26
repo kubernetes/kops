@@ -27,6 +27,7 @@ import (
 // (SSHAccess, KubernetesAPIAccess)
 type ExternalAccessModelBuilder struct {
 	*GCEModelContext
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &ExternalAccessModelBuilder{}
@@ -50,6 +51,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	} else {
 		c.AddTask(&gcetasks.FirewallRule{
 			Name:         s(b.SafeObjectName("ssh-external-to-master")),
+			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{"tcp:22"},
 			SourceRanges: b.Cluster.Spec.SSHAccess,
@@ -58,11 +60,38 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		c.AddTask(&gcetasks.FirewallRule{
 			Name:         s(b.SafeObjectName("ssh-external-to-node")),
+			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			Allowed:      []string{"tcp:22"},
 			SourceRanges: b.Cluster.Spec.SSHAccess,
 			Network:      b.LinkToNetwork(),
 		})
+	}
+
+	// NodePort access
+	{
+		nodePortRange, err := b.NodePortRange()
+		if err != nil {
+			return err
+		}
+		nodePortRangeString := nodePortRange.String()
+		t := &gcetasks.FirewallRule{
+			Name:       s(b.SafeObjectName("nodeport-external-to-node")),
+			Lifecycle:  b.Lifecycle,
+			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
+			Allowed: []string{
+				"tcp:" + nodePortRangeString,
+				"udp:" + nodePortRangeString,
+			},
+			SourceRanges: b.Cluster.Spec.NodePortAccess,
+			Network:      b.LinkToNetwork(),
+		}
+		if len(t.SourceRanges) == 0 {
+			// Empty SourceRanges is interpreted as 0.0.0.0/0 if tags are empty, so we set a SourceTag
+			// This is already covered by the normal node-to-node rules, but avoids opening the NodePort range
+			t.SourceTags = []string{b.GCETagForRole(kops.InstanceGroupRoleNode)}
+		}
+		c.AddTask(t)
 	}
 
 	if !b.UseLoadBalancerForAPI() {
@@ -73,6 +102,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// HTTPS to the master is allowed (for API access)
 		c.AddTask(&gcetasks.FirewallRule{
 			Name:         s(b.SafeObjectName("kubernetes-master-https")),
+			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{"tcp:443"},
 			SourceRanges: b.Cluster.Spec.KubernetesAPIAccess,

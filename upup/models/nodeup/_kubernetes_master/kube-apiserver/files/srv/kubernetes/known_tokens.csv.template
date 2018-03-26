@@ -1,3 +1,0 @@
-{{ range $id, $token := AllTokens }}
-{{ $token }},{{ $id }},{{ $id }}
-{{ end }}

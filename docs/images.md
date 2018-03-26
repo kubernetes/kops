@@ -44,10 +44,13 @@ The tooling used to build these images is open source:
   used for building the kernel.
 
 The latest image name is kept in the [stable channel manifest](https://github.com/kubernetes/kops/blob/master/channels/stable),
-but an example is `kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21`.  This means to look for an image published 
+but an example is `kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21`.  This means to look for an image published
 by `kope.io`, (which is a well-known alias to account `383156758163`), with the name
 `k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21`.  By using a name instead of an AMI, we can reference an image
 irrespective of the region in which it is located.
+
+kops should also now work on stock Debian 9 (Stretch) images.  Stock Debian 8 (Jessie) images are not recommended,
+as they typically do not have a suitable kernel and kernel options configured.
 
 ## Ubuntu
 
@@ -94,12 +97,26 @@ Be aware of the following limitations:
 
 ## CoreOS
 
-CoreOS support is highly experimental.  Please report any issues.
+CoreOS has been tested enough to be considered ready for production with kops, but if you encounter any problem please report it to us.
 
 The following steps are known:
 
-* CoreOS AMIs can be found using `aws ec2 describe-images --region=us-east-1 --owner=595879546273 --filters Name=virtualization-type,Values=hvm`
-* You can specify the name using the 'coreos.com` owner alias, for example `coreos.com/CoreOS-stable-1235.9.0-hvm`
+* The latest stable CoreOS AMI can be found using:
+```
+aws ec2 describe-images --region=us-east-1 --owner=595879546273 \
+    --filters "Name=virtualization-type,Values=hvm" "Name=name,Values=CoreOS-stable*" \
+    --query 'sort_by(Images,&CreationDate)[-1].{id:ImageLocation}'
+```
 
+Also, you can obtain the "AMI ID" from CoreOS web page too. They publish their AMI's using a json file at [https://coreos.com/dist/aws/aws-stable.json](https://coreos.com/dist/aws/aws-stable.json). Using some scripting and a "json" parser (like jq) you can obtain the AMI ID from a specific availability zone:
 
+```
+curl -s https://coreos.com/dist/aws/aws-stable.json|sed -r 's/-/_/g'|jq '.us_east_1.hvm'|sed -r 's/_/-/g'
+"ami-32705b49"
+```
 
+* You can specify the name using the `coreos.com` owner alias, for example `coreos.com/CoreOS-stable-1409.8.0-hvm` or leave it at `595879546273/CoreOS-stable-1409.8.0-hvm` if you prefer to do so.
+
+As part of our documentation, you will find a practical exercise using CoreOS with KOPS. See the file ["coreos-kops-tests-multimaster.md"](https://github.com/kubernetes/kops/blob/master/docs/examples/coreos-kops-tests-multimaster.md) in the "examples" directory. This exercise covers not only using kops with CoreOS, but also a practical view of KOPS with a multi-master kubernetes setup.
+
+> Note: SSH username for CoreOS based instances will be `core`

@@ -18,13 +18,13 @@ package protokube
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/util/exec"
-	"k8s.io/kubernetes/pkg/util/mount"
-	"k8s.io/kubernetes/pkg/util/sets"
 	"os"
 	"sort"
 	"time"
+
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kubernetes/pkg/util/mount"
 )
 
 type VolumeMountController struct {
@@ -58,9 +58,20 @@ func (k *VolumeMountController) mountMasterVolumes() ([]*Volume, error) {
 		glog.V(2).Infof("Master volume %q is attached at %q", v.ID, v.LocalDevice)
 
 		mountpoint := "/mnt/master-" + v.ID
+
+		// On ContainerOS, we mount to /mnt/disks instead (/mnt is readonly)
+		_, err := os.Stat(pathFor("/mnt/disks"))
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return nil, fmt.Errorf("error checking for /mnt/disks: %v", err)
+			}
+		} else {
+			mountpoint = "/mnt/disks/master-" + v.ID
+		}
+
 		glog.Infof("Doing safe-format-and-mount of %s to %s", v.LocalDevice, mountpoint)
 		fstype := ""
-		err = k.safeFormatAndMount(v.LocalDevice, mountpoint, fstype)
+		err = k.safeFormatAndMount(v, mountpoint, fstype)
 		if err != nil {
 			glog.Warningf("unable to mount master volume: %q", err)
 			continue
@@ -79,80 +90,70 @@ func (k *VolumeMountController) mountMasterVolumes() ([]*Volume, error) {
 	return volumes, nil
 }
 
-func (k *VolumeMountController) safeFormatAndMount(device string, mountpoint string, fstype string) error {
+func (k *VolumeMountController) safeFormatAndMount(volume *Volume, mountpoint string, fstype string) error {
 	// Wait for the device to show up
-
+	device := ""
 	for {
-		_, err := os.Stat(PathFor(device))
-		if err == nil {
+		found, err := k.provider.FindMountedVolume(volume)
+		if err != nil {
+			return err
+		}
+
+		if found != "" {
+			device = found
 			break
 		}
-		if !os.IsNotExist(err) {
-			return fmt.Errorf("error checking for device %q: %v", device, err)
-		}
-		glog.Infof("Waiting for device %q to be attached", device)
+
+		glog.Infof("Waiting for volume %q to be attached", volume.ID)
 		time.Sleep(1 * time.Second)
 	}
-	glog.Infof("Found device %q", device)
+	glog.Infof("Found volume %q mounted at device %q", volume.ID, device)
 
-	//// Mount the device
-	//var mounter mount.Interface
-	//runner := exec.New()
-	//if k.Containerized {
-	//	mounter = mount.NewNsenterMounter()
-	//	runner = NewChrootRunner(runner, "/rootfs")
-	//} else {
-	//	mounter = mount.New()
-	//}
+	safeFormatAndMount := &mount.SafeFormatAndMount{}
 
-	// If we are containerized, we still first SafeFormatAndMount in our namespace
-	// This is because SafeFormatAndMount doesn't seem to work in a container
-	safeFormatAndMount := &mount.SafeFormatAndMount{Interface: mount.New(""), Runner: exec.New()}
+	if Containerized {
+		// Build mount & exec implementations that execute in the host namespaces
+		safeFormatAndMount.Interface = mount.NewNsenterMounter()
+		safeFormatAndMount.Exec = NewNsEnterExec()
+
+		// Note that we don't use pathFor for operations going through safeFormatAndMount,
+		// because NewNsenterMounter and NewNsEnterExec will operate in the host
+	} else {
+		safeFormatAndMount.Interface = mount.New("")
+		safeFormatAndMount.Exec = mount.NewOsExec()
+	}
 
 	// Check if it is already mounted
+	// TODO: can we now use IsLikelyNotMountPoint or IsMountPointMatch instead here
 	mounts, err := safeFormatAndMount.List()
 	if err != nil {
 		return fmt.Errorf("error listing existing mounts: %v", err)
 	}
 
-	// Note: IsLikelyNotMountPoint is not containerized
-
-	findMountpoint := PathFor(mountpoint)
 	var existing []*mount.MountPoint
 	for i := range mounts {
 		m := &mounts[i]
 		glog.V(8).Infof("found existing mount: %v", m)
-		if m.Path == findMountpoint {
+		// Note: when containerized, we still list mounts in the host, so we don't need to call pathFor(mountpoint)
+		if m.Path == mountpoint {
 			existing = append(existing, m)
 		}
 	}
 
-	options := []string{}
-	//if readOnly {
-	//	options = append(options, "ro")
-	//}
+	// Mount only if isn't mounted already
 	if len(existing) == 0 {
-		glog.Infof("Creating mount directory %q", PathFor(mountpoint))
-		if err := os.MkdirAll(PathFor(mountpoint), 0750); err != nil {
+		options := []string{}
+
+		glog.Infof("Creating mount directory %q", pathFor(mountpoint))
+		if err := os.MkdirAll(pathFor(mountpoint), 0750); err != nil {
 			return err
 		}
 
-		glog.Infof("Mounting device %q on %q", PathFor(device), PathFor(mountpoint))
+		glog.Infof("Mounting device %q on %q", device, mountpoint)
 
-		err = safeFormatAndMount.FormatAndMount(PathFor(device), PathFor(mountpoint), fstype, options)
+		err = safeFormatAndMount.FormatAndMount(device, mountpoint, fstype, options)
 		if err != nil {
-			//os.Remove(mountpoint)
-			return fmt.Errorf("error formatting and mounting disk %q on %q: %v", PathFor(device), PathFor(mountpoint), err)
-		}
-
-		// If we are containerized, we then also mount it into the host
-		if Containerized {
-			hostMounter := mount.NewNsenterMounter()
-			err = hostMounter.Mount(device, mountpoint, fstype, options)
-			if err != nil {
-				//os.Remove(mountpoint)
-				return fmt.Errorf("error formatting and mounting disk %q on %q in host: %v", device, mountpoint, err)
-			}
+			return fmt.Errorf("error formatting and mounting disk %q on %q: %v", device, mountpoint, err)
 		}
 	} else {
 		glog.Infof("Device already mounted on %q, verifying it is our device", mountpoint)
@@ -165,12 +166,38 @@ func (k *VolumeMountController) safeFormatAndMount(device string, mountpoint str
 				glog.Infof("%s\t%s", m.Device, m.Path)
 			}
 
-			return fmt.Errorf("Found multiple existing mounts of %q at %q", device, mountpoint)
+			return fmt.Errorf("found multiple existing mounts of %q at %q", device, mountpoint)
 		} else {
 			glog.Infof("Found existing mount of %q at %q", device, mountpoint)
 		}
-
 	}
+
+	// If we're containerized we also want to mount the device (again) into our container
+	// We could also do this with mount propagation, but this is simple
+	if Containerized {
+		source := pathFor(device)
+		target := pathFor(mountpoint)
+		options := []string{}
+
+		mounter := mount.New("")
+
+		mountedDevice, _, err := mount.GetDeviceNameFromMount(mounter, target)
+		if err != nil {
+			return fmt.Errorf("error checking for mounts of %s inside container: %v", target, err)
+		}
+
+		if mountedDevice != "" {
+			if mountedDevice != source {
+				return fmt.Errorf("device already mounted at %s, but is %s and we want %s", target, mountedDevice, source)
+			}
+		} else {
+			glog.Infof("mounting inside container: %s -> %s", source, target)
+			if err := mounter.Mount(source, target, fstype, options); err != nil {
+				return fmt.Errorf("error mounting %s inside container at %s: %v", source, target, err)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -183,6 +210,10 @@ func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 	var tryAttach []*Volume
 	var attached []*Volume
 	for _, v := range volumes {
+		if doNotMountVolume(v) {
+			continue
+		}
+
 		if v.AttachedTo == "" {
 			tryAttach = append(tryAttach, v)
 		}
@@ -241,6 +272,15 @@ func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 
 	glog.V(2).Infof("Currently attached volumes: %v", attached)
 	return attached, nil
+}
+
+// doNotMountVolume tests that the volume has an Etcd Cluster associated
+func doNotMountVolume(v *Volume) bool {
+	if len(v.Info.EtcdClusters) == 0 {
+		glog.Warningf("Local device: %q, volume id: %q is being skipped and will not mounted, since it does not have a etcd cluster", v.LocalDevice, v.ID)
+		return true
+	}
+	return false
 }
 
 // ByEtcdClusterName sorts volumes so that we mount in a consistent order,

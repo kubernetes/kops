@@ -89,6 +89,9 @@ func main() {
 					}
 
 					fi, err := os.Lstat(procSelfExe)
+					if err != nil {
+						glog.Fatalf("error doing lstat on %q: %v", procSelfExe, err)
+					}
 					if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
 						glog.Fatalf("file %v is not a symlink", procSelfExe)
 					}

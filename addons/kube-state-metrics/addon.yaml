@@ -1,0 +1,17 @@
+kind: Addons
+metadata:
+  name: kube-state-metrics
+spec:
+  addons:
+  - version: v1.0.1
+    selector:
+      k8s-addon: kube-state-metrics.addons.k8s.io
+    manifest: v1.0.1.yaml
+  - version: v1.1.0-rc.0
+    selector:
+      k8s-addon: kube-state-metrics.addons.k8s.io
+    manifest: v1.1.0-rc.0.yaml
+  - version: v1.1.0
+    selector:
+      k8s-addon: kube-state-metrics.addons.k8s.io
+    manifest: v1.1.0.yaml

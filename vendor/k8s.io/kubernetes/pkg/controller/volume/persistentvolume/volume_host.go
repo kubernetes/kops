@@ -20,10 +20,10 @@ import (
 	"fmt"
 	"net"
 
-	"k8s.io/kubernetes/pkg/api/v1"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/pkg/cloudprovider"
-	"k8s.io/kubernetes/pkg/types"
 	"k8s.io/kubernetes/pkg/util/io"
 	"k8s.io/kubernetes/pkg/util/mount"
 	vol "k8s.io/kubernetes/pkg/volume"
@@ -37,11 +37,19 @@ func (ctrl *PersistentVolumeController) GetPluginDir(pluginName string) string {
 	return ""
 }
 
+func (ctrl *PersistentVolumeController) GetVolumeDevicePluginDir(pluginName string) string {
+	return ""
+}
+
 func (ctrl *PersistentVolumeController) GetPodVolumeDir(podUID types.UID, pluginName string, volumeName string) string {
 	return ""
 }
 
 func (ctrl *PersistentVolumeController) GetPodPluginDir(podUID types.UID, pluginName string) string {
+	return ""
+}
+
+func (ctrl *PersistentVolumeController) GetPodVolumeDeviceDir(ppodUID types.UID, pluginName string) string {
 	return ""
 }
 
@@ -61,7 +69,7 @@ func (ctrl *PersistentVolumeController) GetCloudProvider() cloudprovider.Interfa
 	return ctrl.cloud
 }
 
-func (ctrl *PersistentVolumeController) GetMounter() mount.Interface {
+func (ctrl *PersistentVolumeController) GetMounter(pluginName string) mount.Interface {
 	return nil
 }
 
@@ -79,4 +87,28 @@ func (ctrl *PersistentVolumeController) GetHostIP() (net.IP, error) {
 
 func (ctrl *PersistentVolumeController) GetNodeAllocatable() (v1.ResourceList, error) {
 	return v1.ResourceList{}, nil
+}
+
+func (adc *PersistentVolumeController) GetSecretFunc() func(namespace, name string) (*v1.Secret, error) {
+	return func(_, _ string) (*v1.Secret, error) {
+		return nil, fmt.Errorf("GetSecret unsupported in PersistentVolumeController")
+	}
+}
+
+func (adc *PersistentVolumeController) GetConfigMapFunc() func(namespace, name string) (*v1.ConfigMap, error) {
+	return func(_, _ string) (*v1.ConfigMap, error) {
+		return nil, fmt.Errorf("GetConfigMap unsupported in PersistentVolumeController")
+	}
+}
+
+func (adc *PersistentVolumeController) GetExec(pluginName string) mount.Exec {
+	return mount.NewOsExec()
+}
+
+func (ctrl *PersistentVolumeController) GetNodeLabels() (map[string]string, error) {
+	return nil, fmt.Errorf("GetNodeLabels() unsupported in PersistentVolumeController")
+}
+
+func (ctrl *PersistentVolumeController) GetNodeName() types.NodeName {
+	return ""
 }

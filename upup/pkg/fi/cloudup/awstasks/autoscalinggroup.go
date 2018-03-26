@@ -36,14 +36,20 @@ const CloudTagInstanceGroupRolePrefix = "k8s.io/role/"
 
 //go:generate fitask -type=AutoscalingGroup
 type AutoscalingGroup struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	MinSize *int64
 	MaxSize *int64
 	Subnets []*Subnet
 	Tags    map[string]string
 
+	Granularity *string
+	Metrics     []string
+
 	LaunchConfiguration *LaunchConfiguration
+
+	SuspendProcesses []string
 }
 
 var _ fi.CompareWithID = &AutoscalingGroup{}
@@ -117,6 +123,12 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		}
 	}
 
+	for _, enabledMetric := range g.EnabledMetrics {
+		actual.Metrics = append(actual.Metrics, aws.StringValue(enabledMetric.Metric))
+		actual.Granularity = enabledMetric.Granularity
+	}
+	sort.Strings(actual.Metrics)
+
 	if len(g.Tags) != 0 {
 		actual.Tags = make(map[string]string)
 		for _, tag := range g.Tags {
@@ -134,10 +146,23 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		actual.Subnets = e.Subnets
 	}
 
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 
+func (e *AutoscalingGroup) normalize(c *fi.Context) error {
+	sort.Strings(e.Metrics)
+
+	return nil
+}
+
 func (e *AutoscalingGroup) Run(c *fi.Context) error {
+	err := e.normalize(c)
+	if err != nil {
+		return err
+	}
 	c.Cloud.(awsup.AWSCloud).AddTags(e.Name, e.Tags)
 	return fi.DefaultDeltaRunMethod(e, c)
 }
@@ -192,6 +217,16 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		if err != nil {
 			return fmt.Errorf("error creating AutoscalingGroup: %v", err)
 		}
+
+		_, err = t.Cloud.Autoscaling().EnableMetricsCollection(&autoscaling.EnableMetricsCollectionInput{
+			AutoScalingGroupName: e.Name,
+			Granularity:          e.Granularity,
+			Metrics:              aws.StringSlice(e.Metrics),
+		})
+		if err != nil {
+			return fmt.Errorf("error enabling metrics collection for AutoscalingGroup: %v", err)
+		}
+
 	} else {
 		request := &autoscaling.UpdateAutoScalingGroupInput{
 			AutoScalingGroupName: e.Name,
@@ -218,11 +253,33 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			changes.Subnets = nil
 		}
 
-		var tagsRequest *autoscaling.CreateOrUpdateTagsInput
+		var updateTagsRequest *autoscaling.CreateOrUpdateTagsInput
+		var deleteTagsRequest *autoscaling.DeleteTagsInput
 		if changes.Tags != nil {
-			tagsRequest = &autoscaling.CreateOrUpdateTagsInput{}
-			tagsRequest.Tags = tags
+			updateTagsRequest = &autoscaling.CreateOrUpdateTagsInput{Tags: tags}
+
+			if a != nil && len(a.Tags) > 0 {
+				deleteTagsRequest = &autoscaling.DeleteTagsInput{}
+				deleteTagsRequest.Tags = e.getASGTagsToDelete(a.Tags)
+			}
+
 			changes.Tags = nil
+		}
+
+		if changes.Metrics != nil || changes.Granularity != nil {
+			// TODO: Support disabling metrics?
+			if len(e.Metrics) != 0 {
+				_, err := t.Cloud.Autoscaling().EnableMetricsCollection(&autoscaling.EnableMetricsCollectionInput{
+					AutoScalingGroupName: e.Name,
+					Granularity:          e.Granularity,
+					Metrics:              aws.StringSlice(e.Metrics),
+				})
+				if err != nil {
+					return fmt.Errorf("error enabling metrics collection for AutoscalingGroup: %v", err)
+				}
+				changes.Metrics = nil
+				changes.Granularity = nil
+			}
 		}
 
 		empty := &AutoscalingGroup{}
@@ -232,22 +289,59 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 
 		glog.V(2).Infof("Updating autoscaling group %s", *e.Name)
 
-		_, err := t.Cloud.Autoscaling().UpdateAutoScalingGroup(request)
-		if err != nil {
+		if _, err := t.Cloud.Autoscaling().UpdateAutoScalingGroup(request); err != nil {
 			return fmt.Errorf("error updating AutoscalingGroup: %v", err)
 		}
 
-		if tagsRequest != nil {
-			_, err := t.Cloud.Autoscaling().CreateOrUpdateTags(tagsRequest)
-			if err != nil {
+		if updateTagsRequest != nil {
+			if _, err := t.Cloud.Autoscaling().CreateOrUpdateTags(updateTagsRequest); err != nil {
 				return fmt.Errorf("error updating AutoscalingGroup tags: %v", err)
 			}
+		}
+
+		if deleteTagsRequest != nil && len(deleteTagsRequest.Tags) > 0 {
+			if _, err := t.Cloud.Autoscaling().DeleteTags(deleteTagsRequest); err != nil {
+				return fmt.Errorf("error deleting old AutoscalingGroup tags: %v", err)
+			}
+		}
+	}
+
+	if e.SuspendProcesses != nil {
+		processQuery := &autoscaling.ScalingProcessQuery{}
+		processQuery.AutoScalingGroupName = e.Name
+		processQuery.ScalingProcesses = []*string{}
+
+		for _, p := range e.SuspendProcesses {
+			processQuery.ScalingProcesses = append(processQuery.ScalingProcesses, &p)
+		}
+
+		_, err := t.Cloud.Autoscaling().SuspendProcesses(processQuery)
+		if err != nil {
+			return fmt.Errorf("error suspending processes: %v", err)
 		}
 	}
 
 	// TODO: Use PropagateAtLaunch = false for tagging?
 
 	return nil // We have
+}
+
+// getASGTagsToDelete loops through the currently set tags and builds a list of
+// tags to be deleted from the Autoscaling Group
+func (e *AutoscalingGroup) getASGTagsToDelete(currentTags map[string]string) []*autoscaling.Tag {
+	tagsToDelete := []*autoscaling.Tag{}
+
+	for k, v := range currentTags {
+		if _, ok := e.Tags[k]; !ok {
+			tagsToDelete = append(tagsToDelete, &autoscaling.Tag{
+				Key:          aws.String(k),
+				Value:        aws.String(v),
+				ResourceId:   e.Name,
+				ResourceType: aws.String("auto-scaling-group"),
+			})
+		}
+	}
+	return tagsToDelete
 }
 
 type terraformASGTag struct {
@@ -262,14 +356,20 @@ type terraformAutoscalingGroup struct {
 	MinSize                 *int64               `json:"min_size,omitempty"`
 	VPCZoneIdentifier       []*terraform.Literal `json:"vpc_zone_identifier,omitempty"`
 	Tags                    []*terraformASGTag   `json:"tag,omitempty"`
+	MetricsGranularity      *string              `json:"metrics_granularity,omitempty"`
+	EnabledMetrics          []*string            `json:"enabled_metrics,omitempty"`
+	SuspendedProcesses      []*string            `json:"suspended_processes,omitempty"`
 }
 
 func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *AutoscalingGroup) error {
+
 	tf := &terraformAutoscalingGroup{
 		Name:                    e.Name,
 		MinSize:                 e.MinSize,
 		MaxSize:                 e.MaxSize,
 		LaunchConfigurationName: e.LaunchConfiguration.TerraformLink(),
+		MetricsGranularity:      e.Granularity,
+		EnabledMetrics:          aws.StringSlice(e.Metrics),
 	}
 
 	for _, s := range e.Subnets {
@@ -309,16 +409,28 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 
 		if role != "" {
 			for _, sg := range e.LaunchConfiguration.SecurityGroups {
-				t.AddOutputVariableArray(role+"_security_group_ids", sg.TerraformLink())
+				if err := t.AddOutputVariableArray(role+"_security_group_ids", sg.TerraformLink()); err != nil {
+					return err
+				}
 			}
 		}
 
 		if role == "node" {
 			for _, s := range e.Subnets {
-				t.AddOutputVariableArray(role+"_subnet_ids", s.TerraformLink())
+				if err := t.AddOutputVariableArray(role+"_subnet_ids", s.TerraformLink()); err != nil {
+					return err
+				}
 			}
 		}
 	}
+
+	var processes []*string
+	if e.SuspendProcesses != nil {
+		for _, p := range e.SuspendProcesses {
+			processes = append(processes, fi.String(p))
+		}
+	}
+	tf.SuspendedProcesses = processes
 
 	return t.RenderResource("aws_autoscaling_group", *e.Name, tf)
 }
@@ -332,22 +444,34 @@ type cloudformationASGTag struct {
 	Value             *string `json:"Value"`
 	PropagateAtLaunch *bool   `json:"PropagateAtLaunch"`
 }
+
+type cloudformationASGMetricsCollection struct {
+	Granularity *string   `json:"Granularity"`
+	Metrics     []*string `json:"Metrics"`
+}
 type cloudformationAutoscalingGroup struct {
-	//Name                    *string              `json:"name,omitempty"`
-	LaunchConfigurationName *cloudformation.Literal   `json:"LaunchConfigurationName,omitempty"`
-	MaxSize                 *int64                    `json:"MaxSize,omitempty"`
-	MinSize                 *int64                    `json:"MinSize,omitempty"`
-	VPCZoneIdentifier       []*cloudformation.Literal `json:"VPCZoneIdentifier,omitempty"`
-	Tags                    []*cloudformationASGTag   `json:"Tags,omitempty"`
+	Name                    *string                               `json:"AutoScalingGroupName,omitempty"`
+	LaunchConfigurationName *cloudformation.Literal               `json:"LaunchConfigurationName,omitempty"`
+	MaxSize                 *int64                                `json:"MaxSize,omitempty"`
+	MinSize                 *int64                                `json:"MinSize,omitempty"`
+	VPCZoneIdentifier       []*cloudformation.Literal             `json:"VPCZoneIdentifier,omitempty"`
+	Tags                    []*cloudformationASGTag               `json:"Tags,omitempty"`
+	MetricsCollection       []*cloudformationASGMetricsCollection `json:"MetricsCollection,omitempty"`
 
 	LoadBalancerNames []*cloudformation.Literal `json:"LoadBalancerNames,omitempty"`
 }
 
 func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *AutoscalingGroup) error {
 	tf := &cloudformationAutoscalingGroup{
-		//Name:                    e.Name,
-		MinSize:                 e.MinSize,
-		MaxSize:                 e.MaxSize,
+		Name:    e.Name,
+		MinSize: e.MinSize,
+		MaxSize: e.MaxSize,
+		MetricsCollection: []*cloudformationASGMetricsCollection{
+			{
+				Granularity: e.Granularity,
+				Metrics:     aws.StringSlice(e.Metrics),
+			},
+		},
 		LaunchConfigurationName: e.LaunchConfiguration.CloudformationLink(),
 	}
 

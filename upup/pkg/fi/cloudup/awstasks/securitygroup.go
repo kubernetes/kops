@@ -32,7 +32,8 @@ import (
 
 //go:generate fitask -type=SecurityGroup
 type SecurityGroup struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	ID          *string
 	Description *string
@@ -42,6 +43,8 @@ type SecurityGroup struct {
 
 	// Shared is set if this is a shared security group (one we don't create or own)
 	Shared *bool
+
+	Tags map[string]string
 }
 
 var _ fi.CompareWithID = &SecurityGroup{}
@@ -73,6 +76,7 @@ func (e *SecurityGroup) Find(c *fi.Context) (*SecurityGroup, error) {
 		Name:        sg.GroupName,
 		Description: sg.Description,
 		VPC:         &VPC{ID: sg.VpcId},
+		Tags:        intersectTags(sg.Tags, e.Tags),
 	}
 
 	glog.V(2).Infof("found matching SecurityGroup %q", *actual.ID)
@@ -82,6 +86,7 @@ func (e *SecurityGroup) Find(c *fi.Context) (*SecurityGroup, error) {
 
 	// Prevent spurious comparison failures
 	actual.Shared = e.Shared
+	actual.Lifecycle = e.Lifecycle
 	if e.ID == nil {
 		e.ID = actual.ID
 	}
@@ -178,7 +183,7 @@ func (_ *SecurityGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Security
 		e.ID = response.GroupId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
+	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
 type terraformSecurityGroup struct {
@@ -189,8 +194,6 @@ type terraformSecurityGroup struct {
 }
 
 func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroup) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not terraform owned / managed
@@ -201,7 +204,7 @@ func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, chan
 		Name:        e.Name,
 		VPCID:       e.VPC.TerraformLink(),
 		Description: e.Description,
-		Tags:        cloud.BuildTags(e.Name),
+		Tags:        e.Tags,
 	}
 
 	return t.RenderResource("aws_security_group", *e.Name, tf)
@@ -235,13 +238,11 @@ func (_ *SecurityGroup) RenderCloudformation(t *cloudformation.CloudformationTar
 		return nil
 	}
 
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	tf := &cloudformationSecurityGroup{
 		//Name:        e.Name,
 		VpcId:       e.VPC.CloudformationLink(),
 		Description: e.Description,
-		Tags:        buildCloudformationTags(cloud.BuildTags(e.Name)),
+		Tags:        buildCloudformationTags(e.Tags),
 	}
 
 	return t.RenderResource("AWS::EC2::SecurityGroup", *e.Name, tf)

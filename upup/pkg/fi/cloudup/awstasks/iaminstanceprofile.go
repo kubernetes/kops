@@ -32,8 +32,10 @@ import (
 
 //go:generate fitask -type=IAMInstanceProfile
 type IAMInstanceProfile struct {
-	Name *string
-	ID   *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
+	ID *string
 }
 
 var _ fi.CompareWithID = &IAMInstanceProfile{}
@@ -80,6 +82,9 @@ func (e *IAMInstanceProfile) Find(c *fi.Context) (*IAMInstanceProfile, error) {
 
 	e.ID = actual.ID
 	e.Name = actual.Name
+
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

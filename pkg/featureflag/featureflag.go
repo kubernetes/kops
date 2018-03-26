@@ -25,10 +25,11 @@ limitations under the License.
 package featureflag
 
 import (
-	"github.com/golang/glog"
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/golang/glog"
 )
 
 func Bool(b bool) *bool {
@@ -39,13 +40,31 @@ func Bool(b bool) *bool {
 var DNSPreCreate = New("DNSPreCreate", Bool(true))
 
 // DrainAndValidateRollingUpdate if set will use new rolling update code that will drain and validate.
-var DrainAndValidateRollingUpdate = New("DrainAndValidateRollingUpdate", Bool(false))
+var DrainAndValidateRollingUpdate = New("DrainAndValidateRollingUpdate", Bool(true))
 
 // VPCSkipEnableDNSSupport if set will make that a VPC does not need DNSSupport enabled.
 var VPCSkipEnableDNSSupport = New("VPCSkipEnableDNSSupport", Bool(false))
 
 // SkipTerraformFormat if set will mean that we will not `tf fmt` the generated terraform.
 var SkipTerraformFormat = New("SkipTerraformFormat", Bool(false))
+
+var VSphereCloudProvider = New("VSphereCloudProvider", Bool(false))
+
+var EnableExternalDNS = New("EnableExternalDNS", Bool(false))
+
+//EnableExternalCloudController toggles the use of cloud-controller-manager introduced in v1.7
+var EnableExternalCloudController = New("EnableExternalCloudController", Bool(false))
+
+// EnableSeparateConfigBase allows a config-base that is different from the state store
+var EnableSeparateConfigBase = New("EnableSeparateConfigBase", Bool(false))
+
+// SpecOverrideFlag allows setting spec values on create
+var SpecOverrideFlag = New("SpecOverrideFlag", Bool(false))
+
+// GoogleCloudBucketAcl means the ACL will be set on a bucket when using GCS
+// In particular, this is the only (?) way to grant the bucket.list permission
+// However we should no longer need it, with the keyset.yaml fix
+var GoogleCloudBucketAcl = New("GoogleCloudBucketAcl", Bool(false))
 
 var flags = make(map[string]*FeatureFlag)
 var flagsMutex sync.Mutex

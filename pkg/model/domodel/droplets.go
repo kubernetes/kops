@@ -1,0 +1,71 @@
+/*
+Copyright 2016 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package domodel
+
+import (
+	"strings"
+
+	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
+)
+
+// DropletBuilder configures droplets for the cluster
+type DropletBuilder struct {
+	*DOModelContext
+
+	BootstrapScript *model.BootstrapScript
+	Lifecycle       *fi.Lifecycle
+}
+
+var _ fi.ModelBuilder = &DropletBuilder{}
+
+func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
+	sshKeyName, err := d.SSHKeyName()
+	if err != nil {
+		return err
+	}
+
+	splitSSHKeyName := strings.Split(sshKeyName, "-")
+	sshKeyFingerPrint := splitSSHKeyName[len(splitSSHKeyName)-1]
+
+	// replace "." with "-" since DO API does not accept "."
+	clusterTag := "KubernetesCluster:" + strings.Replace(d.ClusterName(), ".", "-", -1)
+
+	for _, ig := range d.InstanceGroups {
+		name := d.AutoscalingGroupName(ig)
+
+		var droplet dotasks.Droplet
+		droplet.Name = fi.String(name)
+		// during alpha support we only allow 1 region
+		// validation for only 1 region is done at this point
+		droplet.Region = fi.String(d.Cluster.Spec.Subnets[0].Region)
+		droplet.Size = fi.String(ig.Spec.MachineType)
+		droplet.Image = fi.String(ig.Spec.Image)
+		droplet.SSHKey = fi.String(sshKeyFingerPrint)
+		droplet.Tags = []string{clusterTag}
+
+		userData, err := d.BootstrapScript.ResourceNodeUp(ig, &d.Cluster.Spec)
+		if err != nil {
+			return err
+		}
+		droplet.UserData = userData
+
+		c.AddTask(&droplet)
+	}
+	return nil
+}

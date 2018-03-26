@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "apply.go",
+        "apply_channel.go",
+        "factory.go",
+        "get.go",
+        "get_addons.go",
+        "root.go",
+    ],
+    importpath = "k8s.io/kops/channels/pkg/cmd",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//channels/pkg/channels:go_default_library",
+        "//util/pkg/tables:go_default_library",
+        "//vendor/github.com/blang/semver:go_default_library",
+        "//vendor/github.com/spf13/cobra:go_default_library",
+        "//vendor/github.com/spf13/viper:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes:go_default_library",
+        "//vendor/k8s.io/client-go/plugin/pkg/client/auth:go_default_library",
+        "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",
+    ],
+)

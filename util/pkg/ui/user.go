@@ -20,9 +20,10 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"k8s.io/kubernetes/pkg/util/sets"
 	"os"
 	"strings"
+
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // ConfirmArgs encapsulates the arguments that can he passed to GetConfirm

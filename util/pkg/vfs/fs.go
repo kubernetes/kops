@@ -18,13 +18,14 @@ package vfs
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"io"
 	"io/ioutil"
-	"k8s.io/kops/util/pkg/hashing"
 	"os"
 	"path"
 	"sync"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 type FSPath struct {
@@ -45,7 +46,7 @@ func (p *FSPath) Join(relativePath ...string) Path {
 	return &FSPath{location: joined}
 }
 
-func (p *FSPath) WriteFile(data []byte) error {
+func (p *FSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 	dir := path.Dir(p.location)
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
@@ -60,10 +61,7 @@ func (p *FSPath) WriteFile(data []byte) error {
 	// Note from here on in we have to close f and delete or rename the temp file
 	tempfile := f.Name()
 
-	n, err := f.Write(data)
-	if err == nil && n < len(data) {
-		err = io.ErrShortWrite
-	}
+	_, err = io.Copy(f, data)
 
 	if closeErr := f.Close(); err == nil {
 		err = closeErr
@@ -94,7 +92,7 @@ func (p *FSPath) WriteFile(data []byte) error {
 // TODO: should we take a file lock or equivalent here?  Can we use RENAME_NOREPLACE ?
 var createFileLock sync.Mutex
 
-func (p *FSPath) CreateFile(data []byte) error {
+func (p *FSPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 	createFileLock.Lock()
 	defer createFileLock.Unlock()
 
@@ -108,11 +106,23 @@ func (p *FSPath) CreateFile(data []byte) error {
 		return err
 	}
 
-	return p.WriteFile(data)
+	return p.WriteFile(data, acl)
 }
 
+// ReadFile implements Path::ReadFile
 func (p *FSPath) ReadFile() ([]byte, error) {
 	return ioutil.ReadFile(p.location)
+}
+
+// WriteTo implements io.WriterTo
+func (p *FSPath) WriteTo(out io.Writer) (int64, error) {
+	f, err := os.Open(p.location)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+
+	return io.Copy(out, f)
 }
 
 func (p *FSPath) ReadDir() ([]Path, error) {
@@ -139,6 +149,8 @@ func (p *FSPath) ReadTree() ([]Path, error) {
 	return paths, nil
 }
 
+// readTree recursively finds files and adds them to dest
+// It excludes directories.
 func readTree(base string, dest *[]Path) error {
 	files, err := ioutil.ReadDir(base)
 	if err != nil {
@@ -146,12 +158,13 @@ func readTree(base string, dest *[]Path) error {
 	}
 	for _, f := range files {
 		p := path.Join(base, f.Name())
-		*dest = append(*dest, NewFSPath(p))
 		if f.IsDir() {
 			err = readTree(p, dest)
 			if err != nil {
 				return err
 			}
+		} else {
+			*dest = append(*dest, NewFSPath(p))
 		}
 	}
 	return nil

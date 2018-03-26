@@ -186,7 +186,7 @@ and then push nodeup using:
 
 ```
 export S3_BUCKET_NAME=<yourbucketname>
-make upload S3_BUCKET=s3://${S3_BUCKET_NAME} VERSION=dev
+make kops-install upload S3_BUCKET=s3://${S3_BUCKET_NAME} VERSION=dev
 
 export KOPS_BASE_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/dev/
 

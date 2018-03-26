@@ -20,24 +20,31 @@ import (
 	"fmt"
 
 	"encoding/json"
+
+	"net/url"
+	"reflect"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"k8s.io/kubernetes/pkg/util/diff"
-	"net/url"
-	"reflect"
 )
 
 //go:generate fitask -type=IAMRole
 type IAMRole struct {
-	ID                 *string
+	ID        *string
+	Lifecycle *fi.Lifecycle
+
 	Name               *string
 	RolePolicyDocument *fi.ResourceHolder // "inline" IAM policy
+
+	// ExportWithId will expose the name & ARN for reuse as part of a larger system.  Only supported by terraform currently.
+	ExportWithID *string
 }
 
 var _ fi.CompareWithID = &IAMRole{}
@@ -100,8 +107,12 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 		actual.RolePolicyDocument = fi.WrapResource(fi.NewStringResource(actualPolicy))
 	}
 
-	glog.V(2).Infof("found matching IAMRole %q", *actual.ID)
+	glog.V(2).Infof("found matching IAMRole %q", aws.StringValue(actual.ID))
 	e.ID = actual.ID
+
+	// Avoid spurious changes
+	actual.ExportWithID = e.ExportWithID
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }
@@ -159,7 +170,7 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 			if actualPolicy == policy {
 				glog.Warning("Policies were actually the same")
 			} else {
-				d := diff.StringDiff(actualPolicy, policy)
+				d := diff.FormatDiff(actualPolicy, policy)
 				glog.V(2).Infof("diff: %s", d)
 			}
 
@@ -192,6 +203,11 @@ func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *I
 	tf := &terraformIAMRole{
 		Name:             e.Name,
 		AssumeRolePolicy: policy,
+	}
+
+	if fi.StringValue(e.ExportWithID) != "" {
+		t.AddOutputVariable(*e.ExportWithID+"_role_arn", terraform.LiteralProperty("aws_iam_role", *e.Name, "arn"))
+		t.AddOutputVariable(*e.ExportWithID+"_role_name", e.TerraformLink())
 	}
 
 	return t.RenderResource("aws_iam_role", *e.Name, tf)

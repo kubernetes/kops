@@ -23,14 +23,17 @@ import (
 
 // See http://ghodss.com/2014/the-right-way-to-handle-yaml-in-golang/
 
-func YamlToJson(yamlBytes []byte) ([]byte, error) {
+// YAMLToJSON converts yaml to json
+func YAMLToJSON(yamlBytes []byte) ([]byte, error) {
 	return yaml.YAMLToJSON(yamlBytes)
 }
 
+// YamlUnmarshal unmarshalls the yaml content to an interface
 func YamlUnmarshal(yamlBytes []byte, dest interface{}) error {
 	return yaml.Unmarshal(yamlBytes, dest)
 }
 
+// YamlMarshal trys to marshal the input struct into yaml content
 func YamlMarshal(o interface{}) ([]byte, error) {
 	return yaml.Marshal(o)
 }

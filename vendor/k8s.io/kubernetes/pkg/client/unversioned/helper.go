@@ -17,11 +17,11 @@ limitations under the License.
 package unversioned
 
 import (
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/apimachinery/registered"
-	"k8s.io/kubernetes/pkg/client/restclient"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	restclient "k8s.io/client-go/rest"
+	"k8s.io/kubernetes/pkg/api/legacyscheme"
 	// Import solely to initialize client auth plugins.
-	_ "k8s.io/kubernetes/plugin/pkg/client/auth"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
 const (
@@ -36,16 +36,12 @@ func SetKubernetesDefaults(config *restclient.Config) error {
 	if config.APIPath == "" {
 		config.APIPath = legacyAPIPath
 	}
-	if config.GroupVersion == nil || config.GroupVersion.Group != api.GroupName {
-		g, err := registered.Group(api.GroupName)
-		if err != nil {
-			return err
-		}
-		copyGroupVersion := g.GroupVersion
-		config.GroupVersion = &copyGroupVersion
+	// TODO chase down uses and tolerate nil
+	if config.GroupVersion == nil {
+		config.GroupVersion = &schema.GroupVersion{}
 	}
 	if config.NegotiatedSerializer == nil {
-		config.NegotiatedSerializer = api.Codecs
+		config.NegotiatedSerializer = legacyscheme.Codecs
 	}
 	return restclient.SetKubernetesDefaults(config)
 }
@@ -56,7 +52,7 @@ func setGroupDefaults(groupName string, config *restclient.Config) error {
 		config.UserAgent = restclient.DefaultKubernetesUserAgent()
 	}
 	if config.GroupVersion == nil || config.GroupVersion.Group != groupName {
-		g, err := registered.Group(groupName)
+		g, err := legacyscheme.Registry.Group(groupName)
 		if err != nil {
 			return err
 		}
@@ -64,7 +60,7 @@ func setGroupDefaults(groupName string, config *restclient.Config) error {
 		config.GroupVersion = &copyGroupVersion
 	}
 	if config.NegotiatedSerializer == nil {
-		config.NegotiatedSerializer = api.Codecs
+		config.NegotiatedSerializer = legacyscheme.Codecs
 	}
 	return nil
 }

@@ -17,16 +17,23 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var (
-	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes, addDefaultingFuncs, addConversionFuncs)
-	//SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
-	AddToScheme = SchemeBuilder.AddToScheme
+	SchemeBuilder      runtime.SchemeBuilder
+	localSchemeBuilder = &SchemeBuilder
+	AddToScheme        = localSchemeBuilder.AddToScheme
 )
+
+func init() {
+	// We only register manually written functions here. The registration of the
+	// generated functions takes place in the generated files. The separation
+	// makes the code compile even when the generated files are missing.
+	localSchemeBuilder.Register(addKnownTypes, addDefaultingFuncs, addConversionFuncs)
+}
 
 // GroupName is the group name use in this package
 const GroupName = "kops"
@@ -34,15 +41,15 @@ const GroupName = "kops"
 // SchemeGroupVersion is group version used to register these objects
 var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: "v1alpha1"}
 
-// Kind takes an unqualified kind and returns a Group qualified GroupKind
-func Kind(kind string) schema.GroupKind {
-	return SchemeGroupVersion.WithKind(kind).GroupKind()
-}
-
-// Resource takes an unqualified resource and returns a Group qualified GroupResource
-func Resource(resource string) schema.GroupResource {
-	return SchemeGroupVersion.WithResource(resource).GroupResource()
-}
+//// Kind takes an unqualified kind and returns a Group qualified GroupKind
+//func Kind(kind string) schema.GroupKind {
+//	return SchemeGroupVersion.WithKind(kind).GroupKind()
+//}
+//
+//// Resource takes an unqualified resource and returns a Group qualified GroupResource
+//func Resource(resource string) schema.GroupResource {
+//	return SchemeGroupVersion.WithResource(resource).GroupResource()
+//}
 
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
@@ -50,11 +57,11 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&ClusterList{},
 		&InstanceGroup{},
 		&InstanceGroupList{},
-		&Federation{},
-		&FederationList{},
-		&v1.ListOptions{},
+		&SSHCredential{},
+		&SSHCredentialList{},
 	)
-	// ?? versionedwatch.AddToGroupVersion(scheme, SchemeGroupVersion)
+
+	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 
 	return nil
 }
@@ -65,7 +72,7 @@ func (obj *Cluster) GetObjectKind() schema.ObjectKind {
 func (obj *InstanceGroup) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
-func (obj *Federation) GetObjectKind() schema.ObjectKind {
+func (obj *SSHCredential) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
 

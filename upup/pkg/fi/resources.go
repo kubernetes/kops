@@ -21,8 +21,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"k8s.io/kops/util/pkg/vfs"
 	"os"
+
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type Resource interface {
@@ -117,6 +118,10 @@ func ResourceAsBytes(r Resource) ([]byte, error) {
 
 type StringResource struct {
 	s string
+}
+
+func (r *StringResource) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&r.s)
 }
 
 var _ Resource = &StringResource{}

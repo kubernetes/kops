@@ -18,23 +18,31 @@ package model
 
 import (
 	"fmt"
+	"strings"
+
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"strings"
 )
 
 // DNSModelBuilder builds DNS related model objects
 type DNSModelBuilder struct {
 	*KopsModelContext
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &DNSModelBuilder{}
 
 func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
+	if dns.IsGossipHostname(b.Cluster.Name) {
+		return nil
+	}
+
 	// Configuration for a DNS zone
 	dnsZone := &awstasks.DNSZone{
-		Name: s(b.NameForDNSZone()),
+		Name:      s(b.NameForDNSZone()),
+		Lifecycle: b.Lifecycle,
 	}
 
 	topology := b.Cluster.Spec.Topology
@@ -72,23 +80,35 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		if err := b.ensureDNSZone(c); err != nil {
 			return err
 		}
+	} else {
+		// We now create the DNS Zone for AWS even in the case of public zones;
+		// it has to exist for the IAM record anyway.
+		// TODO: We can now rationalize the code paths
+		if !dns.IsGossipHostname(b.Cluster.Name) {
+			if err := b.ensureDNSZone(c); err != nil {
+				return err
+			}
+		}
 	}
 
 	if b.UseLoadBalancerForAPI() {
 		// This will point our DNS to the load balancer, and put the pieces
 		// together for kubectl to be work
 
-		if err := b.ensureDNSZone(c); err != nil {
-			return err
-		}
+		if !dns.IsGossipHostname(b.Cluster.Name) {
+			if err := b.ensureDNSZone(c); err != nil {
+				return err
+			}
 
-		apiDnsName := &awstasks.DNSName{
-			Name:               s(b.Cluster.Spec.MasterPublicName),
-			Zone:               b.LinkToDNSZone(),
-			ResourceType:       s("A"),
-			TargetLoadBalancer: b.LinkToELB("api"),
+			apiDnsName := &awstasks.DNSName{
+				Name:               s(b.Cluster.Spec.MasterPublicName),
+				Lifecycle:          b.Lifecycle,
+				Zone:               b.LinkToDNSZone(),
+				ResourceType:       s("A"),
+				TargetLoadBalancer: b.LinkToELB("api"),
+			}
+			c.AddTask(apiDnsName)
 		}
-		c.AddTask(apiDnsName)
 	}
 
 	if b.UsesBastionDns() {

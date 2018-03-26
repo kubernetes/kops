@@ -18,6 +18,8 @@ package mockroute53
 
 import (
 	"fmt"
+
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
@@ -28,7 +30,15 @@ func (m *MockRoute53) GetHostedZoneRequest(*route53.GetHostedZoneInput) (*reques
 	return nil, nil
 }
 
+func (m *MockRoute53) GetHostedZoneWithContext(aws.Context, *route53.GetHostedZoneInput, ...request.Option) (*route53.GetHostedZoneOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
 func (m *MockRoute53) GetHostedZone(request *route53.GetHostedZoneInput) (*route53.GetHostedZoneOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("GetHostedZone %v", request)
 
 	if request.Id == nil {
@@ -45,13 +55,17 @@ func (m *MockRoute53) GetHostedZone(request *route53.GetHostedZoneInput) (*route
 	response := &route53.GetHostedZoneOutput{
 		// DelegationSet ???
 		HostedZone: &copy,
-		// VPCs
+		VPCs:       zone.vpcs,
 	}
 	return response, nil
 }
 
 func (m *MockRoute53) GetHostedZoneCountRequest(*route53.GetHostedZoneCountInput) (*request.Request, *route53.GetHostedZoneCountOutput) {
 	panic("MockRoute53 GetHostedZoneCountRequest not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) GetHostedZoneCountWithContext(aws.Context, *route53.GetHostedZoneCountInput, ...request.Option) (*route53.GetHostedZoneCountOutput, error) {
+	panic("Not implemented")
 	return nil, nil
 }
 func (m *MockRoute53) GetHostedZoneCount(*route53.GetHostedZoneCountInput) (*route53.GetHostedZoneCountOutput, error) {
@@ -64,12 +78,25 @@ func (m *MockRoute53) ListHostedZonesRequest(*route53.ListHostedZonesInput) (*re
 	return nil, nil
 }
 
+func (m *MockRoute53) ListHostedZonesWithContext(aws.Context, *route53.ListHostedZonesInput, ...request.Option) (*route53.ListHostedZonesOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
 func (m *MockRoute53) ListHostedZones(*route53.ListHostedZonesInput) (*route53.ListHostedZonesOutput, error) {
 	panic("MockRoute53 ListHostedZones not implemented")
 	return nil, nil
 }
 
+func (m *MockRoute53) ListHostedZonesPagesWithContext(aws.Context, *route53.ListHostedZonesInput, func(*route53.ListHostedZonesOutput, bool) bool, ...request.Option) error {
+	panic("Not implemented")
+	return nil
+}
+
 func (m *MockRoute53) ListHostedZonesPages(request *route53.ListHostedZonesInput, callback func(*route53.ListHostedZonesOutput, bool) bool) error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("ListHostedZonesPages %v", request)
 
 	page := &route53.ListHostedZonesOutput{}
@@ -88,7 +115,22 @@ func (m *MockRoute53) ListHostedZonesByNameRequest(*route53.ListHostedZonesByNam
 	return nil, nil
 }
 
-func (m *MockRoute53) ListHostedZonesByName(*route53.ListHostedZonesByNameInput) (*route53.ListHostedZonesByNameOutput, error) {
-	panic("MockRoute53 ListHostedZonesByName not implemented")
+func (m *MockRoute53) ListHostedZonesByNameWithContext(aws.Context, *route53.ListHostedZonesByNameInput, ...request.Option) (*route53.ListHostedZonesByNameOutput, error) {
+	panic("Not implemented")
 	return nil, nil
+}
+
+func (m *MockRoute53) ListHostedZonesByName(*route53.ListHostedZonesByNameInput) (*route53.ListHostedZonesByNameOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	var zones []*route53.HostedZone
+
+	for _, z := range m.Zones {
+		zones = append(zones, z.hostedZone)
+	}
+
+	return &route53.ListHostedZonesByNameOutput{
+		HostedZones: zones,
+	}, nil
 }

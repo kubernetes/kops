@@ -18,16 +18,19 @@ package fi
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"io"
-	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kops/util/pkg/hashing"
 	"net/http"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 type asset struct {
@@ -200,7 +203,10 @@ func (a *AssetStore) addURL(url string, hash *hashing.Hash) error {
 	glog.V(2).Infof("added asset %q for %q", asset.Key, asset.resource)
 	a.assets = append(a.assets, asset)
 
-	if strings.HasSuffix(assetPath, ".tar.gz") {
+	// normalize filename suffix
+	file := strings.ToLower(assetPath)
+	// pickup both tar.gz and tgz files
+	if strings.HasSuffix(file, ".tar.gz") || strings.HasSuffix(file, ".tgz") {
 		err = a.addArchive(source, localFile)
 		if err != nil {
 			return err
@@ -255,19 +261,25 @@ func (a *AssetStore) addURL(url string, hash *hashing.Hash) error {
 func (a *AssetStore) addArchive(archiveSource *Source, archiveFile string) error {
 	extracted := path.Join(a.cacheDir, "extracted/"+path.Base(archiveFile))
 
-	// TODO: Use a temp file so this is atomic
 	if _, err := os.Stat(extracted); os.IsNotExist(err) {
-		err := os.MkdirAll(extracted, 0755)
+		// We extract to a temporary dir which we then rename so this is atomic
+		// (untarring can be slow, and we might crash / be interrupted half-way through)
+		extractedTemp := extracted + ".tmp-" + strconv.FormatInt(time.Now().UnixNano(), 10)
+		err := os.MkdirAll(extractedTemp, 0755)
 		if err != nil {
-			return fmt.Errorf("error creating directories %q: %v", path.Dir(extracted), err)
+			return fmt.Errorf("error creating directories %q: %v", path.Dir(extractedTemp), err)
 		}
 
-		args := []string{"tar", "zxf", archiveFile, "-C", extracted}
+		args := []string{"tar", "zxf", archiveFile, "-C", extractedTemp}
 		glog.Infof("running extract command %s", args)
 		cmd := exec.Command(args[0], args[1:]...)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("error expanding asset file %q %v: %s", archiveFile, err, string(output))
+		}
+
+		if err := os.Rename(extractedTemp, extracted); err != nil {
+			return fmt.Errorf("error renaming extracted temp dir %s -> %s: %v", extractedTemp, extracted, err)
 		}
 	}
 

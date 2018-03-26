@@ -18,16 +18,16 @@ package nodetasks
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"time"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kubernetes/pkg/util/exec"
 	"k8s.io/kubernetes/pkg/util/mount"
-	"os"
-	"path/filepath"
-	"time"
 )
 
 // MountDiskTask is responsible for mounting a device on a mountpoint
@@ -43,7 +43,28 @@ type MountDiskTask struct {
 var _ fi.Task = &MountDiskTask{}
 
 func (s *MountDiskTask) String() string {
-	return fmt.Sprintf("Disk: %s", s.Name)
+	return fmt.Sprintf("MountDisk: %s %s->%s", s.Name, s.Device, s.Mountpoint)
+}
+
+var _ CreatesDir = &MountDiskTask{}
+
+// Dir implements CreatesDir::Dir
+func (e *MountDiskTask) Dir() string {
+	return e.Mountpoint
+}
+
+var _ fi.HasDependencies = &MountDiskTask{}
+
+// GetDependencies implements HasDependencies::GetDependencies
+func (e *MountDiskTask) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
+
+	// Requires parent directories to be created
+	for _, v := range findCreatesDirParents(e.Mountpoint, tasks) {
+		deps = append(deps, v)
+	}
+
+	return deps
 }
 
 func NewMountDiskTask(name string, contents string, meta string) (fi.Task, error) {
@@ -121,7 +142,7 @@ func (_ *MountDiskTask) RenderLocal(t *local.LocalTarget, a, e, changes *MountDi
 	if changes.Mountpoint != "" {
 		glog.Infof("Mounting device %q on %q", e.Device, e.Mountpoint)
 
-		mounter := &mount.SafeFormatAndMount{Interface: mount.New(""), Runner: exec.New()}
+		mounter := &mount.SafeFormatAndMount{Interface: mount.New(""), Exec: mount.NewOsExec()}
 
 		fstype := ""
 		options := []string{}

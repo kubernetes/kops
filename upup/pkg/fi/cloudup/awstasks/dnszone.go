@@ -19,6 +19,11 @@ package awstasks
 import (
 	"fmt"
 
+	"math/rand"
+	"reflect"
+	"strconv"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
@@ -26,16 +31,14 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"math/rand"
-	"reflect"
-	"strconv"
-	"strings"
 )
 
 // DNSZone is a zone object in a dns provider
 //go:generate fitask -type=DNSZone
 type DNSZone struct {
-	Name    *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	DNSName *string
 	ZoneID  *string
 
@@ -92,6 +95,9 @@ func (e *DNSZone) Find(c *fi.Context) (*DNSZone, error) {
 		e.DNSName = actual.DNSName
 	}
 
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 
@@ -132,7 +138,7 @@ func (e *DNSZone) findExisting(cloud awsup.AWSCloud) (*route53.GetHostedZoneOutp
 
 	var zones []*route53.HostedZone
 	for _, zone := range response.HostedZones {
-		if aws.StringValue(zone.Name) == findName {
+		if aws.StringValue(zone.Name) == findName && fi.BoolValue(zone.Config.PrivateZone) == fi.BoolValue(e.Private) {
 			zones = append(zones, zone)
 		}
 	}
@@ -219,10 +225,9 @@ func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error
 	return nil
 }
 
-type terraformRoute53Zone struct {
-	Name      *string              `json:"name"`
-	VPCID     *terraform.Literal   `json:"vpc_id,omitempty"`
-	Tags      map[string]string    `json:"tags,omitempty"`
+type terraformRoute53ZoneAssociation struct {
+	ZoneID    *terraform.Literal   `json:"zone_id"`
+	VPCID     *terraform.Literal   `json:"vpc_id"`
 	Lifecycle *terraform.Lifecycle `json:"lifecycle,omitempty"`
 }
 
@@ -244,34 +249,45 @@ func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 		glog.Infof("Existing zone %q found; will configure TF to reuse", aws.StringValue(z.HostedZone.Name))
 
 		e.ZoneID = z.HostedZone.Id
-	}
 
-	if z == nil {
-		// Because we expect most users to create their zones externally,
-		// we now block hostedzone creation in terraform.
-		// This lets us perform deeper DNS validation, but also solves the problem
-		// that otherwise we don't know if TF created the hosted zone
-		// (in which case we should output it) or whether it already existed (in which case we should not)
-		// The root problem here is that TF doesn't have a strong notion of an unmanaged resource
-		return fmt.Errorf("Creation of Route53 hosted zones is not supported for terraform")
-		//tf := &terraformRoute53Zone{
-		//	Name: e.Name,
-		//	//Tags:               cloud.BuildTags(e.Name, nil),
-		//}
-		//
-		//tf.Lifecycle = &terraform.Lifecycle{
-		//	PreventDestroy: fi.Bool(true),
-		//}
-		//
-		//return t.RenderResource("aws_route53_zone", *e.Name, tf)
-	} else {
-		// Same problem here also...
+		// If the user specifies dns=private we'll have a non-nil PrivateVPC that specifies the VPC
+		// that should used with the private Route53 zone. If the zone doesn't already know about the
+		// VPC, we add that association.
 		if e.PrivateVPC != nil {
-			return fmt.Errorf("Route53 private hosted zones are not supported for terraform")
+			assocNeeded := true
+			var vpcName string
+			if e.PrivateVPC.ID != nil {
+				vpcName = *e.PrivateVPC.ID
+				for _, vpc := range z.VPCs {
+					if *vpc.VPCId == vpcName {
+						glog.Infof("VPC %q already associated with zone %q", vpcName, aws.StringValue(z.HostedZone.Name))
+						assocNeeded = false
+					}
+				}
+			} else {
+				vpcName = *e.PrivateVPC.Name
+			}
+
+			if assocNeeded {
+				glog.Infof("No association between VPC %q and zone %q; adding", vpcName, aws.StringValue(z.HostedZone.Name))
+				tf := &terraformRoute53ZoneAssociation{
+					ZoneID: terraform.LiteralFromStringValue(*e.ZoneID),
+					VPCID:  e.PrivateVPC.TerraformLink(),
+				}
+				return t.RenderResource("aws_route53_zone_association", *e.Name, tf)
+			}
 		}
 
 		return nil
 	}
+
+	// Because we expect most users to create their zones externally,
+	// we now block hostedzone creation in terraform.
+	// This lets us perform deeper DNS validation, but also solves the problem
+	// that otherwise we don't know if TF created the hosted zone
+	// (in which case we should output it) or whether it already existed (in which case we should not)
+	// The root problem here is that TF doesn't have a strong notion of an unmanaged resource
+	return fmt.Errorf("Creation of Route53 hosted zones is not supported for terraform")
 }
 
 func (e *DNSZone) TerraformLink() *terraform.Literal {

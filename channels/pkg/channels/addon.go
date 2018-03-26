@@ -18,13 +18,15 @@ package channels
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/channels/pkg/api"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/kubernetes/pkg/util/validation/field"
 	"net/url"
+
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/kops/channels/pkg/api"
 )
 
+// Addon is a wrapper around a single version of an addon
 type Addon struct {
 	Name            string
 	ChannelName     string
@@ -32,16 +34,42 @@ type Addon struct {
 	Spec            *api.AddonSpec
 }
 
+// AddonUpdate holds data about a proposed update to an addon
 type AddonUpdate struct {
 	Name            string
 	ExistingVersion *ChannelVersion
 	NewVersion      *ChannelVersion
 }
 
+// AddonMenu is a collection of addons, with helpers for computing the latest versions
+type AddonMenu struct {
+	Addons map[string]*Addon
+}
+
+func NewAddonMenu() *AddonMenu {
+	return &AddonMenu{
+		Addons: make(map[string]*Addon),
+	}
+}
+
+func (m *AddonMenu) MergeAddons(o *AddonMenu) {
+	for k, v := range o.Addons {
+		existing := m.Addons[k]
+		if existing == nil {
+			m.Addons[k] = v
+		} else {
+			if existing.ChannelVersion().replaces(v.ChannelVersion()) {
+				m.Addons[k] = v
+			}
+		}
+	}
+}
+
 func (a *Addon) ChannelVersion() *ChannelVersion {
 	return &ChannelVersion{
 		Channel: &a.ChannelName,
 		Version: a.Spec.Version,
+		Id:      a.Spec.Id,
 	}
 }
 
@@ -57,7 +85,7 @@ func (a *Addon) buildChannel() *Channel {
 	}
 	return channel
 }
-func (a *Addon) GetRequiredUpdates(k8sClient *clientset.Clientset) (*AddonUpdate, error) {
+func (a *Addon) GetRequiredUpdates(k8sClient kubernetes.Interface) (*AddonUpdate, error) {
 	newVersion := a.ChannelVersion()
 
 	channel := a.buildChannel()
@@ -67,7 +95,7 @@ func (a *Addon) GetRequiredUpdates(k8sClient *clientset.Clientset) (*AddonUpdate
 		return nil, err
 	}
 
-	if existingVersion != nil && !newVersion.Replaces(existingVersion) {
+	if existingVersion != nil && !newVersion.replaces(existingVersion) {
 		return nil, nil
 	}
 
@@ -78,7 +106,7 @@ func (a *Addon) GetRequiredUpdates(k8sClient *clientset.Clientset) (*AddonUpdate
 	}, nil
 }
 
-func (a *Addon) EnsureUpdated(k8sClient *clientset.Clientset) (*AddonUpdate, error) {
+func (a *Addon) EnsureUpdated(k8sClient kubernetes.Interface) (*AddonUpdate, error) {
 	required, err := a.GetRequiredUpdates(k8sClient)
 	if err != nil {
 		return nil, err

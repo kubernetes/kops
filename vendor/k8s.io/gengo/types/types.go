@@ -16,6 +16,8 @@ limitations under the License.
 
 package types
 
+import "strings"
+
 // Ref makes a reference to the given type. It can only be used for e.g.
 // passing to namers.
 func Ref(packageName, typeName string) *Type {
@@ -42,6 +44,19 @@ func (n Name) String() string {
 		return n.Name
 	}
 	return n.Package + "." + n.Name
+}
+
+// ParseFullyQualifiedName parses a name like k8s.io/kubernetes/pkg/api.Pod into a Name.
+func ParseFullyQualifiedName(fqn string) Name {
+	cs := strings.Split(fqn, ".")
+	pkg := ""
+	if len(cs) > 1 {
+		pkg = strings.Join(cs[0:len(cs) - 1], ".")
+	}
+	return Name{
+		Name: cs[len(cs) - 1],
+		Package: pkg,
+	}
 }
 
 // The possible classes of types.
@@ -94,14 +109,18 @@ type Package struct {
 	// Canonical name of this package-- its path.
 	Path string
 
+	// The location this package was loaded from
+	SourcePath string
+
 	// Short name of this package; the name that appears in the
 	// 'package x' line.
 	Name string
 
-	// DocComments from doc.go, if any.
+	// The comment right above the package declaration in doc.go, if any.
 	DocComments []string
 
-	// Comments from doc.go, if any.
+	// All comments from doc.go, if any.
+	// TODO: remove Comments and use DocComments everywhere.
 	Comments []string
 
 	// Types within this package, indexed by their name (*not* including
@@ -160,7 +179,7 @@ func (p *Package) Function(funcName string) *Type {
 	return t
 }
 
-// Variable gets the given varaible Type in this Package. If the variable is
+// Variable gets the given variable Type in this Package. If the variable is
 // not already defined, this will add it. If a variable is added, it's the caller's
 // responsibility to finish construction of the variable by setting Underlying
 // to the correct type.

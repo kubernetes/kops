@@ -18,12 +18,12 @@ package models
 
 import (
 	"errors"
+	"io"
 	"os"
 	"path"
 	"strings"
 
 	_ "github.com/google/cadvisor/pages/static"
-
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -49,14 +49,25 @@ func (p *AssetPath) Join(relativePath ...string) vfs.Path {
 	return &AssetPath{location: joined}
 }
 
-func (p *AssetPath) WriteFile(data []byte) error {
+func (p *AssetPath) WriteFile(data io.ReadSeeker, acl vfs.ACL) error {
 	return ReadOnlyError
 }
 
-func (p *AssetPath) CreateFile(data []byte) error {
+func (p *AssetPath) CreateFile(data io.ReadSeeker, acl vfs.ACL) error {
 	return ReadOnlyError
 }
 
+// WriteTo implements io.WriterTo
+func (p *AssetPath) WriteTo(out io.Writer) (int64, error) {
+	data, err := p.ReadFile()
+	if err != nil {
+		return 0, err
+	}
+	n, err := out.Write(data)
+	return int64(n), err
+}
+
+// ReadFile implements Path::ReadFile
 func (p *AssetPath) ReadFile() ([]byte, error) {
 	data, err := Asset(p.location)
 	if err != nil {

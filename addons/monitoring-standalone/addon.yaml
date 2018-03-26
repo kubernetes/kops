@@ -11,3 +11,12 @@ spec:
     selector:
       k8s-addon: monitoring-standalone.addons.k8s.io
     manifest: v1.2.0.yaml
+  - version: 1.3.0
+    selector:
+      k8s-addon: monitoring-standalone.addons.k8s.io
+    manifest: v1.3.0.yaml
+  - version: 1.6.0
+    selector:
+      k8s-addon: monitoring-standalone.addons.k8s.io
+    manifest: v1.6.0.yaml
+    kubernetesVersion: ">=1.6.0"

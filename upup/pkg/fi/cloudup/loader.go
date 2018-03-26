@@ -20,18 +20,21 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
 	"io"
-	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/loader"
-	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/util/sets"
 	"os"
 	"reflect"
 	"strings"
 	"text/template"
+
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
+	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/assettasks"
+	"k8s.io/kops/upup/pkg/fi/loader"
+	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 const (
@@ -146,7 +149,7 @@ func ignoreHandler(i *loader.TreeWalkItem) error {
 	return nil
 }
 
-func (l *Loader) BuildTasks(modelStore vfs.Path, models []string) (map[string]fi.Task, error) {
+func (l *Loader) BuildTasks(modelStore vfs.Path, models []string, assetBuilder *assets.AssetBuilder, lifecycle *fi.Lifecycle, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
 	// Second pass: load everything else
 	tw := &loader.TreeWalker{
 		DefaultHandler: l.objectHandler,
@@ -169,7 +172,8 @@ func (l *Loader) BuildTasks(modelStore vfs.Path, models []string) (map[string]fi
 
 	for _, builder := range l.Builders {
 		context := &fi.ModelBuilderContext{
-			Tasks: l.tasks,
+			Tasks:              l.tasks,
+			LifecycleOverrides: lifecycleOverrides,
 		}
 		err := builder.Build(context)
 		if err != nil {
@@ -178,11 +182,78 @@ func (l *Loader) BuildTasks(modelStore vfs.Path, models []string) (map[string]fi
 		l.tasks = context.Tasks
 	}
 
+	if err := l.addAssetCopyTasks(assetBuilder.ContainerAssets, lifecycle); err != nil {
+		return nil, err
+	}
+
+	if err := l.addAssetFileCopyTasks(assetBuilder.FileAssets, lifecycle); err != nil {
+		return nil, err
+	}
 	err := l.processDeferrals()
 	if err != nil {
 		return nil, err
 	}
 	return l.tasks, nil
+}
+
+func (l *Loader) addAssetCopyTasks(assets []*assets.ContainerAsset, lifecycle *fi.Lifecycle) error {
+	for _, asset := range assets {
+		if asset.CanonicalLocation != "" && asset.DockerImage != asset.CanonicalLocation {
+			context := &fi.ModelBuilderContext{
+				Tasks: l.tasks,
+			}
+
+			copyImageTask := &assettasks.CopyDockerImage{
+				Name:        fi.String(asset.DockerImage),
+				SourceImage: fi.String(asset.CanonicalLocation),
+				TargetImage: fi.String(asset.DockerImage),
+				Lifecycle:   lifecycle,
+			}
+
+			if err := context.EnsureTask(copyImageTask); err != nil {
+				return fmt.Errorf("error adding asset-copy task: %v", err)
+			}
+
+			l.tasks = context.Tasks
+
+		}
+	}
+
+	return nil
+}
+
+// addAssetFileCopyTasks creates the new tasks for copying files.
+func (l *Loader) addAssetFileCopyTasks(assets []*assets.FileAsset, lifecycle *fi.Lifecycle) error {
+	for _, asset := range assets {
+
+		if asset.FileURL == nil {
+			return fmt.Errorf("asset file url cannot be nil")
+		}
+
+		// test if the asset needs to be copied
+		if asset.CanonicalFileURL != nil && asset.FileURL.String() != asset.CanonicalFileURL.String() {
+			glog.V(10).Infof("processing asset: %q, %q", asset.FileURL.String(), asset.CanonicalFileURL.String())
+			context := &fi.ModelBuilderContext{
+				Tasks: l.tasks,
+			}
+
+			glog.V(10).Infof("adding task: %q", asset.FileURL.String())
+
+			copyFileTask := &assettasks.CopyFile{
+				Name:       fi.String(asset.CanonicalFileURL.String()),
+				TargetFile: fi.String(asset.FileURL.String()),
+				SourceFile: fi.String(asset.CanonicalFileURL.String()),
+				SHA:        fi.String(asset.SHAValue),
+				Lifecycle:  lifecycle,
+			}
+
+			context.AddTask(copyFileTask)
+			l.tasks = context.Tasks
+
+		}
+	}
+
+	return nil
 }
 
 func (l *Loader) processDeferrals() error {

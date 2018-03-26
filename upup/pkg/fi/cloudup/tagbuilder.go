@@ -27,10 +27,10 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
@@ -45,7 +45,7 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 	} else if networking.External != nil {
 		// external is based on kubenet
 		tags.Insert("_networking_kubenet", "_networking_external")
-	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil {
+	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil {
 		tags.Insert("_networking_cni")
 	} else if networking.Kopeio != nil {
 		// TODO combine with the External
@@ -53,19 +53,32 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 		// TODO combine with External
 		tags.Insert("_networking_kubenet", "_networking_external")
 	} else {
-		return nil, fmt.Errorf("No networking mode set")
+		return nil, fmt.Errorf("no networking mode set")
 	}
 
-	switch cluster.Spec.CloudProvider {
-	case "gce":
+	switch api.CloudProviderID(cluster.Spec.CloudProvider) {
+	case api.CloudProviderGCE:
 		{
 			tags.Insert("_gce")
 		}
 
-	case "aws":
+	case api.CloudProviderAWS:
 		{
 			tags.Insert("_aws")
 		}
+	case api.CloudProviderDO:
+		{
+			tags.Insert("_do")
+		}
+	case api.CloudProviderVSphere:
+		{
+			tags.Insert("_vsphere")
+		}
+
+	case api.CloudProviderBareMetal:
+		// No tags
+
+	case api.CloudProviderOpenstack:
 
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
@@ -78,7 +91,9 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 			return nil, fmt.Errorf("unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
 		}
 
-		if sv.Major == 1 && sv.Minor >= 5 {
+		if sv.Major == 1 && sv.Minor >= 6 {
+			versionTag = "_k8s_1_6"
+		} else if sv.Major == 1 && sv.Minor == 5 {
 			versionTag = "_k8s_1_5"
 		} else if sv.Major == 1 && sv.Minor == 4 {
 			versionTag = "_k8s_1_4"
@@ -107,39 +122,23 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 		return nil, fmt.Errorf("Networking is not set, and should not be nil here")
 	}
 
-	if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil {
+	if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil {
 		// external is based on cni, weave, flannel, calico, etc
 		tags.Insert("_networking_cni")
 	}
 
 	switch role {
 	case api.InstanceGroupRoleNode:
-		tags.Insert("_kubernetes_pool")
-
-		// TODO: Should we run _protokube on the nodes?
-		tags.Insert("_protokube")
+		// No tags
 
 	case api.InstanceGroupRoleMaster:
 		tags.Insert("_kubernetes_master")
-
-		if !fi.BoolValue(cluster.Spec.IsolateMasters) {
-			// Run this master as a pool node also (start kube-proxy etc)
-			tags.Insert("_kubernetes_pool")
-		}
-
-		tags.Insert("_protokube")
 
 	case api.InstanceGroupRoleBastion:
 		// No tags
 
 	default:
 		return nil, fmt.Errorf("Unrecognized role: %v", role)
-	}
-
-	// TODO: Replace with list of CNI plugins ?
-	if usesCNI(cluster) {
-		tags.Insert("_cni_bridge", "_cni_host_local", "_cni_loopback", "_cni_ptp", "_cni_flannel")
-		//tags.Insert("_cni_tuning")
 	}
 
 	switch fi.StringValue(cluster.Spec.UpdatePolicy) {
@@ -156,6 +155,9 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 	}
 	if clusterTags.Has("_aws") {
 		tags.Insert("_aws")
+	}
+	if clusterTags.Has("_do") {
+		tags.Insert("_do")
 	}
 
 	return tags, nil

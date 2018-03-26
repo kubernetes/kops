@@ -21,12 +21,12 @@ import (
 	"errors"
 	"fmt"
 
-	metricsapi "k8s.io/heapster/metrics/apis/metrics/v1alpha1"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/validation"
-	coreclient "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/internalversion"
-	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/runtime/schema"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/kubernetes/pkg/apis/core/validation"
+	metricsapi "k8s.io/metrics/pkg/apis/metrics/v1alpha1"
 )
 
 const (
@@ -46,14 +46,14 @@ var (
 )
 
 type HeapsterMetricsClient struct {
-	SVCClient         coreclient.ServicesGetter
+	SVCClient         corev1.ServicesGetter
 	HeapsterNamespace string
 	HeapsterScheme    string
 	HeapsterService   string
 	HeapsterPort      string
 }
 
-func NewHeapsterMetricsClient(svcClient coreclient.ServicesGetter, namespace, scheme, service, port string) *HeapsterMetricsClient {
+func NewHeapsterMetricsClient(svcClient corev1.ServicesGetter, namespace, scheme, service, port string) *HeapsterMetricsClient {
 	return &HeapsterMetricsClient{
 		SVCClient:         svcClient,
 		HeapsterNamespace: namespace,
@@ -63,12 +63,12 @@ func NewHeapsterMetricsClient(svcClient coreclient.ServicesGetter, namespace, sc
 	}
 }
 
-func DefaultHeapsterMetricsClient(svcClient coreclient.ServicesGetter) *HeapsterMetricsClient {
+func DefaultHeapsterMetricsClient(svcClient corev1.ServicesGetter) *HeapsterMetricsClient {
 	return NewHeapsterMetricsClient(svcClient, DefaultHeapsterNamespace, DefaultHeapsterScheme, DefaultHeapsterService, DefaultHeapsterPort)
 }
 
 func podMetricsUrl(namespace string, name string) (string, error) {
-	if namespace == api.NamespaceAll {
+	if namespace == metav1.NamespaceAll {
 		return fmt.Sprintf("%s/pods", metricsRoot), nil
 	}
 	errs := validation.ValidateNamespaceName(namespace, false)
@@ -97,8 +97,8 @@ func nodeMetricsUrl(name string) (string, error) {
 	return fmt.Sprintf("%s/nodes/%s", metricsRoot, name), nil
 }
 
-func (cli *HeapsterMetricsClient) GetNodeMetrics(nodeName string, selector labels.Selector) ([]metricsapi.NodeMetrics, error) {
-	params := map[string]string{"labelSelector": selector.String()}
+func (cli *HeapsterMetricsClient) GetNodeMetrics(nodeName string, selector string) ([]metricsapi.NodeMetrics, error) {
+	params := map[string]string{"labelSelector": selector}
 	path, err := nodeMetricsUrl(nodeName)
 	if err != nil {
 		return []metricsapi.NodeMetrics{}, err
@@ -128,7 +128,7 @@ func (cli *HeapsterMetricsClient) GetNodeMetrics(nodeName string, selector label
 
 func (cli *HeapsterMetricsClient) GetPodMetrics(namespace string, podName string, allNamespaces bool, selector labels.Selector) ([]metricsapi.PodMetrics, error) {
 	if allNamespaces {
-		namespace = api.NamespaceAll
+		namespace = metav1.NamespaceAll
 	}
 	path, err := podMetricsUrl(namespace, podName)
 	if err != nil {

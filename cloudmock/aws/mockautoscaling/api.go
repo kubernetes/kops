@@ -17,12 +17,17 @@ limitations under the License.
 package mockautoscaling
 
 import (
+	"sync"
+
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 )
 
 type MockAutoscaling struct {
-	Groups []*autoscaling.Group
+	mutex sync.Mutex
+
+	Groups               map[string]*autoscaling.Group
+	LaunchConfigurations map[string]*autoscaling.LaunchConfiguration
 }
 
 var _ autoscalingiface.AutoScalingAPI = &MockAutoscaling{}

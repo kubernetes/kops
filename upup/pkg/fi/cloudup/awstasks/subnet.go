@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -30,12 +31,16 @@ import (
 
 //go:generate fitask -type=Subnet
 type Subnet struct {
-	Name             *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID               *string
 	VPC              *VPC
 	AvailabilityZone *string
 	CIDR             *string
 	Shared           *bool
+
+	Tags map[string]string
 }
 
 var _ fi.CompareWithID = &Subnet{}
@@ -70,10 +75,15 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 		CIDR:             subnet.CidrBlock,
 		Name:             findNameTag(subnet.Tags),
 		Shared:           e.Shared,
+		Tags:             intersectTags(subnet.Tags, e.Tags),
 	}
 
 	glog.V(2).Infof("found matching subnet %q", *actual.ID)
 	e.ID = actual.ID
+
+	// Prevent spurious changes
+	actual.Lifecycle = e.Lifecycle // Lifecycle is not materialized in AWS
+	actual.Name = e.Name           // Name is part of Tags
 
 	return actual, nil
 }
@@ -109,31 +119,45 @@ func (e *Subnet) Run(c *fi.Context) error {
 }
 
 func (s *Subnet) CheckChanges(a, e, changes *Subnet) error {
+	var errors field.ErrorList
+	fieldPath := field.NewPath("Subnet")
+
 	if a == nil {
 		if e.VPC == nil {
-			return fi.RequiredField("VPC")
+			errors = append(errors, field.Required(fieldPath.Child("VPC"), "must specify a VPC"))
 		}
 
 		if e.CIDR == nil {
 			// TODO: Auto-assign CIDR?
-			return fi.RequiredField("CIDR")
+			errors = append(errors, field.Required(fieldPath.Child("CIDR"), "must specify a CIDR"))
 		}
 	}
 
 	if a != nil {
+		// TODO: Do we want to destroy & recreate the subnet when theses immutable fields change?
 		if changes.VPC != nil {
-			// TODO: Do we want to destroy & recreate the subnet?
-			return fi.CannotChangeField("VPC")
+			var aID *string
+			if a.VPC != nil {
+				aID = a.VPC.ID
+			}
+			var eID *string
+			if e.VPC != nil {
+				eID = e.VPC.ID
+			}
+			errors = append(errors, fi.FieldIsImmutable(eID, aID, fieldPath.Child("VPC")))
 		}
 		if changes.AvailabilityZone != nil {
-			// TODO: Do we want to destroy & recreate the subnet?
-			return fi.CannotChangeField("AvailabilityZone")
+			errors = append(errors, fi.FieldIsImmutable(a.AvailabilityZone, e.AvailabilityZone, fieldPath.Child("AvailabilityZone")))
 		}
 		if changes.CIDR != nil {
-			// TODO: Do we want to destroy & recreate the subnet?
-			return fi.CannotChangeField("CIDR")
+			errors = append(errors, fi.FieldIsImmutable(a.CIDR, e.CIDR, fieldPath.Child("CIDR")))
 		}
 	}
+
+	if len(errors) != 0 {
+		return errors[0]
+	}
+
 	return nil
 }
 
@@ -144,8 +168,6 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 		if a == nil {
 			return fmt.Errorf("Subnet with id %q not found", fi.StringValue(e.ID))
 		}
-
-		return nil
 	}
 
 	if a == nil {
@@ -165,7 +187,7 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 		e.ID = response.Subnet.SubnetId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
+	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
 func subnetSlicesEqualIgnoreOrder(l, r []*Subnet) bool {
@@ -192,11 +214,14 @@ type terraformSubnet struct {
 }
 
 func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not terraform owned / managed
+		// We won't apply changes, but our validation (kops update) will still warn
+		//
+		// We probably shouldn't output subnet_ids only in this case - we normally output them by role,
+		// but removing it now might break people.  We could always output subnet_ids though, if we
+		// ever get a request for that.
 		return t.AddOutputVariableArray("subnet_ids", terraform.LiteralFromStringValue(*e.ID))
 	}
 
@@ -204,7 +229,7 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 		VPCID:            e.VPC.TerraformLink(),
 		CIDR:             e.CIDR,
 		AvailabilityZone: e.AvailabilityZone,
-		Tags:             cloud.BuildTags(e.Name),
+		Tags:             e.Tags,
 	}
 
 	return t.RenderResource("aws_subnet", *e.Name, tf)
@@ -232,11 +257,10 @@ type cloudformationSubnet struct {
 }
 
 func (_ *Subnet) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *Subnet) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not cloudformation owned / managed
+		// We won't apply changes, but our validation (kops update) will still warn
 		return nil
 	}
 
@@ -244,7 +268,7 @@ func (_ *Subnet) RenderCloudformation(t *cloudformation.CloudformationTarget, a,
 		VPCID:            e.VPC.CloudformationLink(),
 		CIDR:             e.CIDR,
 		AvailabilityZone: e.AvailabilityZone,
-		Tags:             buildCloudformationTags(cloud.BuildTags(e.Name)),
+		Tags:             buildCloudformationTags(e.Tags),
 	}
 
 	return t.RenderResource("AWS::EC2::Subnet", *e.Name, cf)

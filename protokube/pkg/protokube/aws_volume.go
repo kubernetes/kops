@@ -18,53 +18,59 @@ package protokube
 
 import (
 	"fmt"
+	"net"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/kops/protokube/pkg/etcd"
+	"k8s.io/kops/protokube/pkg/gossip"
+	gossipaws "k8s.io/kops/protokube/pkg/gossip/aws"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"net"
-	"strings"
-	"sync"
-	"time"
 )
-
-//const TagNameMasterId = "k8s.io/master/id"
-
-//const DefaultAttachDevice = "/dev/xvdb"
 
 var devices = []string{"/dev/xvdu", "/dev/xvdv", "/dev/xvdx", "/dev/xvdx", "/dev/xvdy", "/dev/xvdz"}
 
+// AWSVolumes defines the aws volume implementation
 type AWSVolumes struct {
-	ec2      *ec2.EC2
-	metadata *ec2metadata.EC2Metadata
+	mutex sync.Mutex
 
-	zone       string
 	clusterTag string
+	deviceMap  map[string]string
+	ec2        *ec2.EC2
 	instanceId string
 	internalIP net.IP
-
-	mutex     sync.Mutex
-	deviceMap map[string]string
+	metadata   *ec2metadata.EC2Metadata
+	zone       string
 }
 
 var _ Volumes = &AWSVolumes{}
 
+// NewAWSVolumes returns a new aws volume provider
 func NewAWSVolumes() (*AWSVolumes, error) {
 	a := &AWSVolumes{
 		deviceMap: make(map[string]string),
 	}
 
-	s := session.New()
+	config := aws.NewConfig()
+	config = config.WithCredentialsChainVerboseErrors(true)
+
+	s, err := session.NewSession(config)
+	if err != nil {
+		return nil, fmt.Errorf("error starting new AWS session: %v", err)
+	}
 	s.Handlers.Send.PushFront(func(r *request.Request) {
 		// Log requests
 		glog.V(4).Infof("AWS API Request: %s/%s", r.ClientInfo.ServiceName, r.Operation.Name)
 	})
-
-	config := aws.NewConfig()
-	config = config.WithCredentialsChainVerboseErrors(true)
 
 	a.metadata = ec2metadata.New(s, config)
 
@@ -182,6 +188,13 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 				}
 			}
 
+			// never mount root volumes
+			// these are volumes that aws sets aside for root volumes mount points
+			if vol.LocalDevice == "/dev/sda1" || vol.LocalDevice == "/dev/xvda" {
+				glog.Warningf("Not mounting: %q, since it is a root volume", vol.LocalDevice)
+				continue
+			}
+
 			skipVolume := false
 
 			for _, tag := range v.Tags {
@@ -204,7 +217,7 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 				default:
 					if strings.HasPrefix(k, awsup.TagNameEtcdClusterPrefix) {
 						etcdClusterName := strings.TrimPrefix(k, awsup.TagNameEtcdClusterPrefix)
-						spec, err := ParseEtcdClusterSpec(etcdClusterName, v)
+						spec, err := etcd.ParseEtcdClusterSpec(etcdClusterName, v)
 						if err != nil {
 							// Fail safe
 							glog.Warningf("error parsing etcd cluster tag %q on volume %q; skipping volume: %v", v, volumeID, err)
@@ -263,6 +276,72 @@ func (a *AWSVolumes) FindVolumes() ([]*Volume, error) {
 	}
 
 	return a.findVolumes(request)
+}
+
+// FindMountedVolume implements Volumes::FindMountedVolume
+func (v *AWSVolumes) FindMountedVolume(volume *Volume) (string, error) {
+	device := volume.LocalDevice
+
+	_, err := os.Stat(pathFor(device))
+	if err == nil {
+		return device, nil
+	}
+	if !os.IsNotExist(err) {
+		return "", fmt.Errorf("error checking for device %q: %v", device, err)
+	}
+
+	if volume.ID != "" {
+		expected := volume.ID
+		expected = "nvme-Amazon_Elastic_Block_Store_" + strings.Replace(expected, "-", "", -1)
+
+		// Look for nvme devices
+		// On AWS, nvme volumes are not mounted on a device path, but are instead mounted on an nvme device
+		// We must identify the correct volume by matching the nvme info
+		device, err := findNvmeVolume(expected)
+		if err != nil {
+			return "", fmt.Errorf("error checking for nvme volume %q: %v", expected, err)
+		}
+		if device != "" {
+			glog.Infof("found nvme volume %q at %q", expected, device)
+			return device, nil
+		}
+	}
+
+	return "", nil
+}
+
+func findNvmeVolume(findName string) (device string, err error) {
+	p := pathFor(filepath.Join("/dev/disk/by-id", findName))
+	stat, err := os.Lstat(p)
+	if err != nil {
+		if os.IsNotExist(err) {
+			glog.V(4).Infof("nvme path not found %q", p)
+			return "", nil
+		}
+		return "", fmt.Errorf("error getting stat of %q: %v", p, err)
+	}
+
+	if stat.Mode()&os.ModeSymlink != os.ModeSymlink {
+		glog.Warningf("nvme file %q found, but was not a symlink", p)
+		return "", nil
+	}
+
+	resolved, err := filepath.EvalSymlinks(p)
+	if err != nil {
+		return "", fmt.Errorf("error reading target of symlink %q: %v", p, err)
+	}
+
+	// Reverse pathFor
+	devPath := pathFor("/dev")
+	if strings.HasPrefix(resolved, devPath) {
+		resolved = strings.Replace(resolved, devPath, "/dev", 1)
+	}
+
+	if !strings.HasPrefix(resolved, "/dev") {
+		return "", fmt.Errorf("resolved symlink for %q was unexpected: %q", p, resolved)
+	}
+
+	return resolved, nil
 }
 
 // assignDevice picks a hopefully unused device and reserves it for the volume attachment
@@ -352,7 +431,7 @@ func (a *AWSVolumes) AttachVolume(volume *Volume) error {
 		switch v.Status {
 		case "attaching":
 			glog.V(2).Infof("Waiting for volume %q to be attached (currently %q)", volumeID, v.Status)
-		// continue looping
+			// continue looping
 
 		default:
 			return fmt.Errorf("Observed unexpected volume state %q", v.Status)
@@ -360,4 +439,15 @@ func (a *AWSVolumes) AttachVolume(volume *Volume) error {
 
 		time.Sleep(10 * time.Second)
 	}
+}
+
+func (a *AWSVolumes) GossipSeeds() (gossip.SeedProvider, error) {
+	tags := make(map[string]string)
+	tags[awsup.TagClusterName] = a.clusterTag
+
+	return gossipaws.NewSeedProvider(a.ec2, tags)
+}
+
+func (a *AWSVolumes) InstanceID() string {
+	return a.instanceId
 }

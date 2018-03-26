@@ -19,6 +19,7 @@ package awstasks
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
@@ -29,7 +30,9 @@ import (
 
 //go:generate fitask -type=EBSVolume
 type EBSVolume struct {
-	Name             *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID               *string
 	AvailabilityZone *string
 	VolumeType       *string
@@ -102,6 +105,9 @@ func (e *EBSVolume) find(cloud awsup.AWSCloud) (*EBSVolume, error) {
 
 	actual.Tags = mapEC2TagsToMap(v.Tags)
 
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 
@@ -136,6 +142,19 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 			Encrypted:        e.Encrypted,
 		}
 
+		if len(e.Tags) != 0 {
+			request.TagSpecifications = []*ec2.TagSpecification{
+				{ResourceType: aws.String(ec2.ResourceTypeVolume)},
+			}
+
+			for k, v := range e.Tags {
+				request.TagSpecifications[0].Tags = append(request.TagSpecifications[0].Tags, &ec2.Tag{
+					Key:   aws.String(k),
+					Value: aws.String(v),
+				})
+			}
+		}
+
 		response, err := t.Cloud.EC2().CreateVolume(request)
 		if err != nil {
 			return fmt.Errorf("error creating PersistentVolume: %v", err)
@@ -144,7 +163,31 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 		e.ID = response.VolumeId
 	}
 
-	return t.AddAWSTags(*e.ID, e.Tags)
+	if err := t.AddAWSTags(*e.ID, e.Tags); err != nil {
+		return fmt.Errorf("error adding AWS Tags to EBS Volume: %v", err)
+	}
+
+	if a != nil && len(a.Tags) > 0 {
+		tagsToDelete := e.getEBSVolumeTagsToDelete(a.Tags)
+		if len(tagsToDelete) > 0 {
+			return t.DeleteTags(*e.ID, tagsToDelete)
+		}
+	}
+
+	return nil
+}
+
+// getEBSVolumeTagsToDelete loops through the currently set tags and builds
+// a list of tags to be deleted from the EBS Volume
+func (e *EBSVolume) getEBSVolumeTagsToDelete(currentTags map[string]string) map[string]string {
+	tagsToDelete := map[string]string{}
+	for k, v := range currentTags {
+		if _, ok := e.Tags[k]; !ok {
+			tagsToDelete[k] = v
+		}
+	}
+
+	return tagsToDelete
 }
 
 type terraformVolume struct {

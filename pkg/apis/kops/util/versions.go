@@ -48,6 +48,30 @@ func ParseKubernetesVersion(version string) (*semver.Version, error) {
 			sv = semver.Version{Major: 1, Minor: 6}
 		} else if strings.Contains(v, "/v1.7.") {
 			sv = semver.Version{Major: 1, Minor: 7}
+		} else if strings.Contains(v, "/v1.8.") {
+			sv = semver.Version{Major: 1, Minor: 8}
+		} else if strings.Contains(v, "/v1.9.") {
+			sv = semver.Version{Major: 1, Minor: 9}
+		} else if strings.Contains(v, "/v1.10.") {
+			sv = semver.Version{Major: 1, Minor: 10}
+		} else if strings.Contains(v, "/v1.11.") {
+			sv = semver.Version{Major: 1, Minor: 11}
+		} else if strings.Contains(v, "/v1.12.") {
+			sv = semver.Version{Major: 1, Minor: 12}
+		} else if strings.Contains(v, "/v1.13.") {
+			sv = semver.Version{Major: 1, Minor: 13}
+		} else if strings.Contains(v, "/v1.14.") {
+			sv = semver.Version{Major: 1, Minor: 14}
+		} else if strings.Contains(v, "/v1.15.") {
+			sv = semver.Version{Major: 1, Minor: 15}
+		} else if strings.Contains(v, "/v1.16.") {
+			sv = semver.Version{Major: 1, Minor: 16}
+		} else if strings.Contains(v, "/v1.17.") {
+			sv = semver.Version{Major: 1, Minor: 17}
+		} else if strings.Contains(v, "/v1.18.") {
+			sv = semver.Version{Major: 1, Minor: 18}
+		} else if strings.Contains(v, "/v1.19.") {
+			sv = semver.Version{Major: 1, Minor: 19}
 		} else {
 			glog.Errorf("unable to parse Kubernetes version %q", version)
 			return nil, fmt.Errorf("unable to parse kubernetes version %q", version)
@@ -56,4 +80,19 @@ func ParseKubernetesVersion(version string) (*semver.Version, error) {
 	}
 
 	return &sv, nil
+}
+
+// TODO: Convert to our own KubernetesVersion type?
+
+func IsKubernetesGTE(version string, k8sVersion semver.Version) bool {
+	parsedVersion, err := ParseKubernetesVersion(version)
+	if err != nil {
+		panic(fmt.Sprintf("Error parsing version %s: %v", version, err))
+	}
+
+	// Ignore Pre & Build fields
+	k8sVersion.Pre = nil
+	k8sVersion.Build = nil
+
+	return k8sVersion.GTE(*parsedVersion)
 }

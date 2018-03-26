@@ -18,13 +18,33 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/kutil"
-	k8sapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+)
+
+var (
+	toolboxConvertImportedLong = templates.LongDesc(i18n.T(`
+	Convert an imported cluster into a kops cluster.`))
+
+	toolboxConvertImportedExample = templates.Examples(i18n.T(`
+
+	# Import and convert a cluster
+	kops import cluster --name k8s-cluster.example.com --region us-east-1 \
+	  --state=s3://k8s-cluster.example.com
+
+	kops toolbox convert-imported k8s-cluster.example.com  \
+	  --newname k8s-cluster.example.com
+	`))
+
+	toolboxConvertImportedShort = i18n.T(`Convert an imported cluster into a kops cluster.`)
 )
 
 type ToolboxConvertImportedOptions struct {
@@ -45,8 +65,10 @@ func NewCmdToolboxConvertImported(f *util.Factory, out io.Writer) *cobra.Command
 	options.InitDefaults()
 
 	cmd := &cobra.Command{
-		Use:   "convert-imported",
-		Short: "Convert an imported cluster into a kops cluster",
+		Use:     "convert-imported",
+		Short:   toolboxConvertImportedShort,
+		Long:    toolboxConvertImportedLong,
+		Example: toolboxConvertImportedExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := rootCommand.ProcessArgs(args); err != nil {
 				exitWithError(err)
@@ -77,12 +99,16 @@ func RunToolboxConvertImported(f *util.Factory, out io.Writer, options *ToolboxC
 		return fmt.Errorf("ClusterName is required")
 	}
 
-	cluster, err := clientset.Clusters().Get(options.ClusterName)
+	cluster, err := clientset.GetCluster(options.ClusterName)
 	if err != nil {
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
+	if cluster == nil {
+		return fmt.Errorf("cluster %q not found", options.ClusterName)
+	}
+
+	list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

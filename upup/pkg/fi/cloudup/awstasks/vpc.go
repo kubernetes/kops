@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -31,14 +32,19 @@ import (
 
 //go:generate fitask -type=VPC
 type VPC struct {
-	Name               *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID                 *string
 	CIDR               *string
+	AdditionalCIDR     *[]string
 	EnableDNSHostnames *bool
 	EnableDNSSupport   *bool
 
 	// Shared is set if this is a shared VPC
 	Shared *bool
+
+	Tags map[string]string
 }
 
 var _ fi.CompareWithID = &VPC{}
@@ -71,9 +77,11 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 	}
 	vpc := response.Vpcs[0]
 	actual := &VPC{
-		ID:   vpc.VpcId,
-		CIDR: vpc.CidrBlock,
-		Name: findNameTag(vpc.Tags),
+		ID:             vpc.VpcId,
+		CIDR:           vpc.CidrBlock,
+		AdditionalCIDR: getAdditionalCIDR(vpc.CidrBlock, vpc.CidrBlockAssociationSet),
+		Name:           findNameTag(vpc.Tags),
+		Tags:           intersectTags(vpc.Tags, e.Tags),
 	}
 
 	glog.V(4).Infof("found matching VPC %v", actual)
@@ -101,6 +109,8 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 	if e.ID == nil {
 		e.ID = actual.ID
 	}
+	actual.Lifecycle = e.Lifecycle
+	actual.Name = e.Name // Name is part of Tags
 
 	return actual, nil
 }
@@ -115,7 +125,7 @@ func (s *VPC) CheckChanges(a, e, changes *VPC) error {
 	if a != nil {
 		if changes.CIDR != nil {
 			// TODO: Do we want to destroy & recreate the VPC?
-			return fi.CannotChangeField("CIDR")
+			return fi.FieldIsImmutable(e.CIDR, a.CIDR, field.NewPath("CIDR"))
 		}
 	}
 	return nil
@@ -137,11 +147,10 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 			if featureflag.VPCSkipEnableDNSSupport.Enabled() {
 				glog.Warningf("VPC did not have EnableDNSSupport=true, but ignoring because of VPCSkipEnableDNSSupport feature-flag")
 			} else {
+				// TODO: We could easily just allow kops to fix this...
 				return fmt.Errorf("VPC with id %q was set to be shared, but did not have EnableDNSSupport=true.", fi.StringValue(e.ID))
 			}
 		}
-
-		return nil
 	}
 
 	if a == nil {
@@ -183,12 +192,7 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 		}
 	}
 
-	tags := t.Cloud.BuildTags(e.Name)
-	if shared {
-		// Don't tag shared resources
-		tags = nil
-	}
-	return t.AddAWSTags(*e.ID, tags)
+	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
 type terraformVPC struct {
@@ -199,8 +203,6 @@ type terraformVPC struct {
 }
 
 func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	if err := t.AddOutputVariable("vpc_id", e.TerraformLink()); err != nil {
 		return err
 	}
@@ -208,12 +210,13 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not terraform owned / managed
+		// We won't apply changes, but our validation (kops update) will still warn
 		return nil
 	}
 
 	tf := &terraformVPC{
 		CIDR:               e.CIDR,
-		Tags:               cloud.BuildTags(e.Name),
+		Tags:               e.Tags,
 		EnableDNSHostnames: e.EnableDNSHostnames,
 		EnableDNSSupport:   e.EnableDNSSupport,
 	}
@@ -243,11 +246,10 @@ type cloudformationVPC struct {
 }
 
 func (_ *VPC) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *VPC) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not cloudformation owned / managed
+		// We won't apply changes, but our validation (kops update) will still warn
 		return nil
 	}
 
@@ -255,7 +257,7 @@ func (_ *VPC) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e,
 		CidrBlock:          e.CIDR,
 		EnableDnsHostnames: e.EnableDNSHostnames,
 		EnableDnsSupport:   e.EnableDNSSupport,
-		Tags:               buildCloudformationTags(cloud.BuildTags(e.Name)),
+		Tags:               buildCloudformationTags(e.Tags),
 	}
 
 	return t.RenderResource("AWS::EC2::VPC", *e.Name, tf)
@@ -273,4 +275,16 @@ func (e *VPC) CloudformationLink() *cloudformation.Literal {
 	}
 
 	return cloudformation.Ref("AWS::EC2::VPC", *e.Name)
+}
+
+func getAdditionalCIDR(CIDR *string, additionalCIDRSet []*ec2.VpcCidrBlockAssociation) *[]string {
+	var additionalCIDRs []string
+
+	for _, CIDRSet := range additionalCIDRSet {
+		if *CIDRSet.CidrBlock != *CIDR {
+			additionalCIDRs = append(additionalCIDRs, *CIDRSet.CidrBlock)
+		}
+	}
+
+	return &additionalCIDRs
 }

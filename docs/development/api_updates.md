@@ -3,7 +3,7 @@
 Kops uses the Kubernetes API machinery.  It is well designed, and very powerful, but you have to
 jump through some hoops to use it.
 
-Recommended reading: [kubernetes API changes doc](https://github.com/kubernetes/kubernetes/blob/master/docs/devel/api_changes.md)
+Recommended reading: [kubernetes API changes doc](https://github.com/kubernetes/community/blob/master/contributors/devel/api_changes.md)
 
 The kops APIs live in [pkg/apis/kops](https://github.com/kubernetes/kops/tree/master/pkg/apis/kops), both in
 that directory directly (the unversioned API) and in the versioned subdirectories (`v1alpha1`, `v1alpha2`).
@@ -17,7 +17,6 @@ go get k8s.io/kubernetes
 cd ${GOPATH}/src/k8s.io/kubernetes
 git checkout master
 git pull
-go install ./cmd/libs/go2idl/conversion-gen
 ```
 
 Then you can run `make apimachinery && make` to update the generated API machinery code (conversion functions).  Note

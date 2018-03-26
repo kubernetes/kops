@@ -19,13 +19,14 @@ package cloudinit
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/golang/glog"
 	"io"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kubernetes/pkg/util/sets"
 	"os"
 	"path"
+
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 type CloudInitTarget struct {

@@ -22,9 +22,10 @@ import (
 )
 
 func apply() error {
-	clientset := vfsclientset.NewVFSClientset(registryBase)
+	allowList := true
+	clientset := vfsclientset.NewVFSClientset(registryBase, allowList)
 
-	cluster, err := clientset.Clusters().Get(clusterName)
+	cluster, err := clientset.GetCluster(clusterName)
 	if err != nil {
 		return err
 	}

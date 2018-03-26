@@ -17,8 +17,9 @@ limitations under the License.
 package diff
 
 import (
-	"github.com/sergi/go-diff/diffmatchpatch"
 	"testing"
+
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 func Test_Diff_1(t *testing.T) {
@@ -163,7 +164,6 @@ F`
 		// We do need to cleanup, as otherwise we get some spurious changes on complex diffs
 		diffs = dmp.DiffCleanupSemantic(diffs)
 
-		t.Logf("diffs %v", diffs)
 	}
 
 	actual := FormatDiff(l, r)

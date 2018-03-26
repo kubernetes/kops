@@ -17,15 +17,17 @@ limitations under the License.
 package config
 
 import (
+	"fmt"
 	"io"
 	"path"
 	"strconv"
 
 	"github.com/spf13/cobra"
 
-	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 // NewCmdConfig creates a command object for the "config" action, and adds all child commands to it.
@@ -36,7 +38,7 @@ func NewCmdConfig(pathOptions *clientcmd.PathOptions, out, errOut io.Writer) *co
 
 	cmd := &cobra.Command{
 		Use:   "config SUBCOMMAND",
-		Short: "Modify kubeconfig files",
+		Short: i18n.T("Modify kubeconfig files"),
 		Long: templates.LongDesc(`
 			Modify kubeconfig files using subcommands like "kubectl config set current-context my-context"
 
@@ -51,7 +53,7 @@ func NewCmdConfig(pathOptions *clientcmd.PathOptions, out, errOut io.Writer) *co
 	// file paths are common to all sub commands
 	cmd.PersistentFlags().StringVar(&pathOptions.LoadingRules.ExplicitPath, pathOptions.ExplicitFileFlag, pathOptions.LoadingRules.ExplicitPath, "use a particular kubeconfig file")
 
-	cmd.AddCommand(NewCmdConfigView(out, pathOptions))
+	cmd.AddCommand(NewCmdConfigView(out, errOut, pathOptions))
 	cmd.AddCommand(NewCmdConfigSetCluster(out, pathOptions))
 	cmd.AddCommand(NewCmdConfigSetAuthInfo(out, pathOptions))
 	cmd.AddCommand(NewCmdConfigSetContext(out, pathOptions))
@@ -62,7 +64,8 @@ func NewCmdConfig(pathOptions *clientcmd.PathOptions, out, errOut io.Writer) *co
 	cmd.AddCommand(NewCmdConfigGetContexts(out, pathOptions))
 	cmd.AddCommand(NewCmdConfigGetClusters(out, pathOptions))
 	cmd.AddCommand(NewCmdConfigDeleteCluster(out, pathOptions))
-	cmd.AddCommand(NewCmdConfigDeleteContext(out, pathOptions))
+	cmd.AddCommand(NewCmdConfigDeleteContext(out, errOut, pathOptions))
+	cmd.AddCommand(NewCmdConfigRenameContext(out, pathOptions))
 
 	return cmd
 }
@@ -78,4 +81,10 @@ func toBool(propertyValue string) (bool, error) {
 	}
 
 	return boolValue, nil
+}
+
+func helpErrorf(cmd *cobra.Command, format string, args ...interface{}) error {
+	cmd.Help()
+	msg := fmt.Sprintf(format, args...)
+	return fmt.Errorf("%s\n", msg)
 }

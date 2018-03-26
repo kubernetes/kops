@@ -19,13 +19,34 @@ package main
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
 	"io"
-	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/upup/pkg/fi/cloudup"
-	"k8s.io/kops/upup/pkg/kutil"
-	"k8s.io/kops/util/pkg/ui"
 	"os"
+
+	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/instancegroups"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/util/pkg/ui"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+)
+
+var (
+	deleteIgLong = templates.LongDesc(i18n.T(`
+		Delete an instancegroup configuration.  kops has the concept of "instance groups",
+		which are a group of similar virtual machines. On AWS, they map to an
+		AutoScalingGroup. An ig work either as a Kubernetes master or a node.`))
+
+	deleteIgExample = templates.Examples(i18n.T(`
+
+		# Delete an instancegroup for the k8s-cluster.example.com cluster.
+		# The --yes option runs the command immediately.
+		# Note that the cloud resources will be deleted immediately, without running "kops update cluster"
+		kops delete ig --name=k8s-cluster.example.com node-example --yes
+		`))
+
+	deleteIgShort = i18n.T(`Delete instancegroup`)
 )
 
 type DeleteInstanceGroupOptions struct {
@@ -40,8 +61,9 @@ func NewCmdDeleteInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "instancegroup",
 		Aliases: []string{"instancegroups", "ig"},
-		Short:   "Delete instancegroup",
-		Long:    `Delete an instancegroup configuration.`,
+		Short:   deleteIgShort,
+		Long:    deleteIgLong,
+		Example: deleteIgExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				exitWithError(fmt.Errorf("Specify name of instance group to delete"))
@@ -88,7 +110,11 @@ func NewCmdDeleteInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
+// RunDeleteInstanceGroup runs the deletion of an instance group
 func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInstanceGroupOptions) error {
+
+	// TODO make this drain and validate the ig?
+	// TODO implement drain and validate logic
 	groupName := options.GroupName
 	if groupName == "" {
 		return fmt.Errorf("GroupName is required")
@@ -97,11 +123,6 @@ func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInsta
 	clusterName := options.ClusterName
 	if clusterName == "" {
 		return fmt.Errorf("ClusterName is required")
-	}
-
-	if !options.Yes {
-		// Just for sanity / safety
-		return fmt.Errorf("Yes must be specified")
 	}
 
 	cluster, err := GetCluster(f, clusterName)
@@ -114,7 +135,7 @@ func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInsta
 		return err
 	}
 
-	group, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Get(groupName)
+	group, err := clientset.InstanceGroupsFor(cluster).Get(groupName, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("error reading InstanceGroup %q: %v", groupName, err)
 	}
@@ -127,7 +148,14 @@ func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInsta
 		return err
 	}
 
-	d := &kutil.DeleteInstanceGroup{}
+	fmt.Fprintf(out, "InstanceGroup %q found for deletion\n", groupName)
+
+	if !options.Yes {
+		fmt.Fprintf(out, "\nMust specify --yes to delete instancegroup\n")
+		return nil
+	}
+
+	d := &instancegroups.DeleteInstanceGroup{}
 	d.Cluster = cluster
 	d.Cloud = cloud
 	d.Clientset = clientset
@@ -137,7 +165,7 @@ func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInsta
 		return err
 	}
 
-	fmt.Fprintf(out, "InstanceGroup %q deleted\n", group.ObjectMeta.Name)
+	fmt.Fprintf(out, "\nDeleted InstanceGroup: %q\n", group.ObjectMeta.Name)
 
 	return nil
 }

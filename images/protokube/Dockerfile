@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM debian:jessie
+FROM k8s.gcr.io/debian-base-amd64:0.3
 
 # ca-certificates: Needed to talk to EC2 API
 # e2fsprogs: Needed to mount / format ext4 filesytems
-RUN apt-get update && apt-get install --yes ca-certificates e2fsprogs
-
-COPY /.build/artifacts/kubectl /usr/bin/kubectl
+RUN apt-get update && apt-get install --yes \
+  bash ca-certificates e2fsprogs systemd \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY /.build/artifacts/protokube /usr/bin/protokube
 COPY /.build/artifacts/channels /usr/bin/channels

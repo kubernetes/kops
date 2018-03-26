@@ -1,0 +1,16 @@
+package(default_visibility = ["//visibility:public"])
+
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_image",
+)
+
+container_image(
+    name = "kube-discovery",
+    base = "@debian_hyperkube_base_amd64//image",
+    cmd = ["/usr/bin/kube-discovery"],
+    directory = "/usr/bin/",
+    files = [
+        "//kube-discovery/cmd/kube-discovery",
+    ],
+)

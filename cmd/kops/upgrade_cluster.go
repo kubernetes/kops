@@ -19,18 +19,19 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
-	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/tables"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
 type UpgradeClusterCmd struct {
@@ -43,9 +44,10 @@ var upgradeCluster UpgradeClusterCmd
 
 func init() {
 	cmd := &cobra.Command{
-		Use:   "cluster",
-		Short: "Upgrade cluster",
-		Long:  `Upgrades a k8s cluster.`,
+		Use:     "cluster",
+		Short:   upgradeShort,
+		Long:    upgradeLong,
+		Example: upgradeExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := upgradeCluster.Run(args)
 			if err != nil {
@@ -85,14 +87,9 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
+	instanceGroups, err := commands.ReadAllInstanceGroups(clientset, cluster)
 	if err != nil {
 		return err
-	}
-
-	var instanceGroups []*api.InstanceGroup
-	for i := range list.Items {
-		instanceGroups = append(instanceGroups, &list.Items[i])
 	}
 
 	if cluster.ObjectMeta.Annotations[api.AnnotationNameManagement] == api.AnnotationValueManagementImported {
@@ -202,17 +199,21 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 			glog.Warningf("No matching images specified in channel; cannot prompt for upgrade")
 		} else {
 			for _, ig := range instanceGroups {
-				if ig.Spec.Image != image.Name {
-					target := ig
-					actions = append(actions, &upgradeAction{
-						Item:     "InstanceGroup/" + target.ObjectMeta.Name,
-						Property: "Image",
-						Old:      target.Spec.Image,
-						New:      image.Name,
-						apply: func() {
-							target.Spec.Image = image.Name
-						},
-					})
+				if strings.Contains(ig.Spec.Image, "kope.io") {
+					if ig.Spec.Image != image.Name {
+						target := ig
+						actions = append(actions, &upgradeAction{
+							Item:     "InstanceGroup/" + target.ObjectMeta.Name,
+							Property: "Image",
+							Old:      target.Spec.Image,
+							New:      image.Name,
+							apply: func() {
+								target.Spec.Image = image.Name
+							},
+						})
+					}
+				} else {
+					glog.Infof("Custom image (%s) has been provided for Instance Group %q; not updating image", ig.Spec.Image, ig.GetName())
 				}
 			}
 		}
@@ -276,30 +277,12 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 			action.apply()
 		}
 
-		// TODO: DRY this chunk
-		err = cloudup.PerformAssignments(cluster)
-		if err != nil {
-			return fmt.Errorf("error populating configuration: %v", err)
-		}
-
-		fullCluster, err := cloudup.PopulateClusterSpec(cluster)
-		if err != nil {
-			return err
-		}
-
-		err = validation.DeepValidate(fullCluster, instanceGroups, true)
-		if err != nil {
-			return err
-		}
-
-		// Note we perform as much validation as we can, before writing a bad config
-		_, err = clientset.Clusters().Update(cluster)
-		if err != nil {
+		if err := commands.UpdateCluster(clientset, cluster, instanceGroups); err != nil {
 			return err
 		}
 
 		for _, g := range instanceGroups {
-			_, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Update(g)
+			_, err := clientset.InstanceGroupsFor(cluster).Update(g)
 			if err != nil {
 				return fmt.Errorf("error writing InstanceGroup %q: %v", g.ObjectMeta.Name, err)
 			}

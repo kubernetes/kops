@@ -18,14 +18,19 @@ package protokube
 
 import (
 	"fmt"
+	"net"
+	"os"
+	"strings"
+
+	"cloud.google.com/go/compute/metadata"
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v0.beta"
-	"google.golang.org/cloud/compute/metadata"
+	"k8s.io/kops/protokube/pkg/etcd"
+	"k8s.io/kops/protokube/pkg/gossip"
+	gossipgce "k8s.io/kops/protokube/pkg/gossip/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
-	"net"
-	"strings"
 )
 
 // GCEVolumes is the Volumes implementation for GCE
@@ -34,6 +39,7 @@ type GCEVolumes struct {
 
 	project      string
 	zone         string
+	region       string
 	clusterName  string
 	instanceName string
 	internalIP   net.IP
@@ -71,7 +77,7 @@ func (a *GCEVolumes) ClusterID() string {
 	return a.clusterName
 }
 
-// ClusterID returns the current GCE project
+// Project returns the current GCE project
 func (a *GCEVolumes) Project() string {
 	return a.project
 }
@@ -120,6 +126,13 @@ func (a *GCEVolumes) discoverTags() error {
 			return fmt.Errorf("zone metadata was empty")
 		}
 		glog.Infof("Found zone=%q", a.zone)
+
+		region, err := regionFromZone(zone)
+		if err != nil {
+			return fmt.Errorf("error determining region from zone %q: %v", zone, err)
+		}
+		a.region = region
+		glog.Infof("Found region=%q", a.region)
 	}
 
 	// Instance Name
@@ -197,7 +210,7 @@ func (v *GCEVolumes) buildGCEVolume(d *compute.Disk) (*Volume, error) {
 				if err != nil {
 					return nil, fmt.Errorf("Error decoding GCE label: %s=%q", k, v)
 				}
-				spec, err := ParseEtcdClusterSpec(etcdClusterName, value)
+				spec, err := etcd.ParseEtcdClusterSpec(etcdClusterName, value)
 				if err != nil {
 					return nil, fmt.Errorf("error parsing etcd cluster label %q on volume %q: %v", value, volumeName, err)
 				}
@@ -226,7 +239,7 @@ func (v *GCEVolumes) FindVolumes() ([]*Volume, error) {
 
 			diskClusterName := d.Labels[gce.GceLabelNameKubernetesCluster]
 			if diskClusterName == "" {
-				glog.V(2).Infof("Skipping disk %q with no cluster name", d.Name)
+				glog.V(4).Infof("Skipping disk %q with no cluster name", d.Name)
 				continue
 			}
 			// Note that the cluster name is _not_ encoded with EncodeGCELabel
@@ -298,6 +311,20 @@ func (v *GCEVolumes) FindVolumes() ([]*Volume, error) {
 	return volumes, nil
 }
 
+// FindMountedVolume implements Volumes::FindMountedVolume
+func (v *GCEVolumes) FindMountedVolume(volume *Volume) (string, error) {
+	device := volume.LocalDevice
+
+	_, err := os.Stat(pathFor(device))
+	if err == nil {
+		return device, nil
+	}
+	if os.IsNotExist(err) {
+		return "", nil
+	}
+	return "", fmt.Errorf("error checking for device %q: %v", device, err)
+}
+
 // AttachVolume attaches the specified volume to this instance, returning the mountpoint & nil if successful
 func (v *GCEVolumes) AttachVolume(volume *Volume) error {
 	volumeName := volume.ID
@@ -323,7 +350,7 @@ func (v *GCEVolumes) AttachVolume(volume *Volume) error {
 		return fmt.Errorf("error attach disk %q: %v", volumeName, err)
 	}
 
-	err = gce.WaitForZoneOp(v.compute, attachOp, v.project, v.zone)
+	err = gce.WaitForOp(v.compute, attachOp)
 	if err != nil {
 		return fmt.Errorf("error waiting for disk attach to complete %q: %v", volumeName, err)
 	}
@@ -335,4 +362,24 @@ func (v *GCEVolumes) AttachVolume(volume *Volume) error {
 	volume.LocalDevice = devicePath
 
 	return nil
+}
+
+func (g *GCEVolumes) GossipSeeds() (gossip.SeedProvider, error) {
+	return gossipgce.NewSeedProvider(g.compute, g.region, g.project)
+}
+
+func (g *GCEVolumes) InstanceName() string {
+	return g.instanceName
+}
+
+// regionFromZone returns region of the gce zone. Zone names
+// are of the form: ${region-name}-${ix}.
+// For example, "us-central1-b" has a region of "us-central1".
+// So we look for the last '-' and trim to just before that.
+func regionFromZone(zone string) (string, error) {
+	ix := strings.LastIndex(zone, "-")
+	if ix == -1 {
+		return "", fmt.Errorf("unexpected zone: %s", zone)
+	}
+	return zone[:ix], nil
 }

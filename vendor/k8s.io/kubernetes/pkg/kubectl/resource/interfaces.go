@@ -17,9 +17,9 @@ limitations under the License.
 package resource
 
 import (
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/meta"
-	client "k8s.io/kubernetes/pkg/client/restclient"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/types"
+	client "k8s.io/client-go/rest"
 )
 
 // RESTClient is a client helper for dealing with RESTful resources
@@ -27,7 +27,7 @@ import (
 type RESTClient interface {
 	Get() *client.Request
 	Post() *client.Request
-	Patch(api.PatchType) *client.Request
+	Patch(types.PatchType) *client.Request
 	Delete() *client.Request
 	Put() *client.Request
 }
@@ -43,4 +43,42 @@ type ClientMapperFunc func(mapping *meta.RESTMapping) (RESTClient, error)
 // ClientForMapping implements ClientMapper
 func (f ClientMapperFunc) ClientForMapping(mapping *meta.RESTMapping) (RESTClient, error) {
 	return f(mapping)
+}
+
+// RequestTransform is a function that is given a chance to modify the outgoing request.
+type RequestTransform func(*client.Request)
+
+// NewClientWithOptions wraps the provided RESTClient and invokes each transform on each
+// newly created request.
+func NewClientWithOptions(c RESTClient, transforms ...RequestTransform) RESTClient {
+	return &clientOptions{c: c, transforms: transforms}
+}
+
+type clientOptions struct {
+	c          RESTClient
+	transforms []RequestTransform
+}
+
+func (c *clientOptions) modify(req *client.Request) *client.Request {
+	for _, transform := range c.transforms {
+		transform(req)
+	}
+	return req
+}
+
+func (c *clientOptions) Get() *client.Request {
+	return c.modify(c.c.Get())
+}
+
+func (c *clientOptions) Post() *client.Request {
+	return c.modify(c.c.Post())
+}
+func (c *clientOptions) Patch(t types.PatchType) *client.Request {
+	return c.modify(c.c.Patch(t))
+}
+func (c *clientOptions) Delete() *client.Request {
+	return c.modify(c.c.Delete())
+}
+func (c *clientOptions) Put() *client.Request {
+	return c.modify(c.c.Put())
 }

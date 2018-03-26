@@ -19,9 +19,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"k8s.io/kops/util/pkg/vfs"
 	"os"
 	"strings"
+
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 // registryBase is the base path where state files are kept (the state store)

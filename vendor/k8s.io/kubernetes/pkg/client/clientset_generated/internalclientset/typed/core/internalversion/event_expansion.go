@@ -19,10 +19,14 @@ package internalversion
 import (
 	"fmt"
 
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/kubernetes/pkg/api/ref"
+	api "k8s.io/kubernetes/pkg/apis/core"
+	k8s_api_v1 "k8s.io/kubernetes/pkg/apis/core/v1"
 )
 
 // The EventExpansion interface allows manually adding extra methods to the EventInterface.
@@ -33,7 +37,7 @@ type EventExpansion interface {
 	UpdateWithEventNamespace(event *api.Event) (*api.Event, error)
 	PatchWithEventNamespace(event *api.Event, data []byte) (*api.Event, error)
 	// Search finds events about the specified object
-	Search(objOrRef runtime.Object) (*api.EventList, error)
+	Search(scheme *runtime.Scheme, objOrRef runtime.Object) (*api.EventList, error)
 	// Returns the appropriate field selector based on the API version being used to communicate with the server.
 	// The returned field selector can be used with List and Watch to filter desired events.
 	GetFieldSelector(involvedObjectName, involvedObjectNamespace, involvedObjectKind, involvedObjectUID *string) fields.Selector
@@ -84,7 +88,7 @@ func (e *events) PatchWithEventNamespace(incompleteEvent *api.Event, data []byte
 		return nil, fmt.Errorf("can't patch an event with namespace '%v' in namespace '%v'", incompleteEvent.Namespace, e.ns)
 	}
 	result := &api.Event{}
-	err := e.client.Patch(api.StrategicMergePatchType).
+	err := e.client.Patch(types.StrategicMergePatchType).
 		NamespaceIfScoped(incompleteEvent.Namespace, len(incompleteEvent.Namespace) > 0).
 		Resource("events").
 		Name(incompleteEvent.Name).
@@ -97,8 +101,8 @@ func (e *events) PatchWithEventNamespace(incompleteEvent *api.Event, data []byte
 // Search finds events about the specified object. The namespace of the
 // object must match this event's client namespace unless the event client
 // was made with the "" namespace.
-func (e *events) Search(objOrRef runtime.Object) (*api.EventList, error) {
-	ref, err := api.GetReference(objOrRef)
+func (e *events) Search(scheme *runtime.Scheme, objOrRef runtime.Object) (*api.EventList, error) {
+	ref, err := ref.GetReference(scheme, objOrRef)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +120,7 @@ func (e *events) Search(objOrRef runtime.Object) (*api.EventList, error) {
 		refUID = &stringRefUID
 	}
 	fieldSelector := e.GetFieldSelector(&ref.Name, &ref.Namespace, refKind, refUID)
-	return e.List(api.ListOptions{FieldSelector: fieldSelector})
+	return e.List(metav1.ListOptions{FieldSelector: fieldSelector.String()})
 }
 
 // Returns the appropriate field selector based on the API version being used to communicate with the server.
@@ -151,7 +155,7 @@ type EventSinkImpl struct {
 
 func (e *EventSinkImpl) Create(event *v1.Event) (*v1.Event, error) {
 	internalEvent := &api.Event{}
-	err := v1.Convert_v1_Event_To_api_Event(event, internalEvent, nil)
+	err := k8s_api_v1.Convert_v1_Event_To_core_Event(event, internalEvent, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +168,7 @@ func (e *EventSinkImpl) Create(event *v1.Event) (*v1.Event, error) {
 
 func (e *EventSinkImpl) Update(event *v1.Event) (*v1.Event, error) {
 	internalEvent := &api.Event{}
-	err := v1.Convert_v1_Event_To_api_Event(event, internalEvent, nil)
+	err := k8s_api_v1.Convert_v1_Event_To_core_Event(event, internalEvent, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +181,7 @@ func (e *EventSinkImpl) Update(event *v1.Event) (*v1.Event, error) {
 
 func (e *EventSinkImpl) Patch(event *v1.Event, data []byte) (*v1.Event, error) {
 	internalEvent := &api.Event{}
-	err := v1.Convert_v1_Event_To_api_Event(event, internalEvent, nil)
+	err := k8s_api_v1.Convert_v1_Event_To_core_Event(event, internalEvent, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +190,7 @@ func (e *EventSinkImpl) Patch(event *v1.Event, data []byte) (*v1.Event, error) {
 		return nil, err
 	}
 	externalEvent := &v1.Event{}
-	err = v1.Convert_api_Event_To_v1_Event(internalEvent, externalEvent, nil)
+	err = k8s_api_v1.Convert_core_Event_To_v1_Event(internalEvent, externalEvent, nil)
 	if err != nil {
 		// Patch succeeded, no need to report the failed conversion
 		return event, nil

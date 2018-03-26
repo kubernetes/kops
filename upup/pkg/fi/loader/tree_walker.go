@@ -18,12 +18,13 @@ package loader
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/util/sets"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type TreeWalker struct {

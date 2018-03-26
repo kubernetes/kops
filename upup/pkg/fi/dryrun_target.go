@@ -21,13 +21,14 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"sort"
 	"strings"
 	"sync"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"sort"
 )
 
 // DryRunTarget is a special Target that does not execute anything, but instead tracks all changes.
@@ -41,6 +42,9 @@ type DryRunTarget struct {
 
 	// The destination to which the final report will be printed on Finish()
 	out io.Writer
+
+	// assetBuilder records all assets used
+	assetBuilder *assets.AssetBuilder
 }
 
 type render struct {
@@ -70,9 +74,10 @@ func (a DeletionByTaskName) Less(i, j int) bool {
 
 var _ Target = &DryRunTarget{}
 
-func NewDryRunTarget(out io.Writer) *DryRunTarget {
+func NewDryRunTarget(assetBuilder *assets.AssetBuilder, out io.Writer) *DryRunTarget {
 	t := &DryRunTarget{}
 	t.out = out
+	t.assetBuilder = assetBuilder
 	return t
 }
 
@@ -157,11 +162,20 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 						field := changes.Field(i)
 
 						fieldName := changes.Type().Field(i).Name
+						if changes.Type().Field(i).PkgPath != "" {
+							// Not exported
+							continue
+						}
+
 						fieldValue := ValueAsString(field)
 
 						shouldPrint := true
 						if fieldName == "Name" {
 							// The field name is already printed above, no need to repeat it.
+							shouldPrint = false
+						}
+						if fieldName == "Lifecycle" {
+							// Lifecycle is a "system" field; no need to show it
 							shouldPrint = false
 						}
 						if fieldValue == "<nil>" || fieldValue == "<resource>" {
@@ -197,82 +211,20 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 			fmt.Fprintf(b, "Will modify resources:\n")
 			// We can't use our reflection helpers here - we want corresponding values from a,e,c
 			for _, r := range updates {
-				type change struct {
-					FieldName   string
-					Description string
+				changeList, err := buildChangeList(r.a, r.e, r.changes)
+				if err != nil {
+					return err
 				}
-				var changeList []change
-
-				valC := reflect.ValueOf(r.changes)
-				valA := reflect.ValueOf(r.a)
-				valE := reflect.ValueOf(r.e)
-				if valC.Kind() == reflect.Ptr && !valC.IsNil() {
-					valC = valC.Elem()
-				}
-				if valA.Kind() == reflect.Ptr && !valA.IsNil() {
-					valA = valA.Elem()
-				}
-				if valE.Kind() == reflect.Ptr && !valE.IsNil() {
-					valE = valE.Elem()
-				}
-				if valC.Kind() == reflect.Struct {
-					for i := 0; i < valC.NumField(); i++ {
-						fieldValC := valC.Field(i)
-
-						changed := true
-						switch fieldValC.Kind() {
-						case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map:
-							changed = !fieldValC.IsNil()
-
-						case reflect.String:
-							changed = fieldValC.Interface().(string) != ""
-						}
-						if !changed {
-							continue
-						}
-
-						if fieldValC.Kind() == reflect.String && fieldValC.Interface().(string) == "" {
-							// No change
-							continue
-						}
-
-						fieldValE := valE.Field(i)
-
-						description := ""
-						ignored := false
-						if fieldValE.CanInterface() {
-							fieldValA := valA.Field(i)
-
-							switch fieldValE.Interface().(type) {
-							//case SimpleUnit:
-							//	ignored = true
-							case Resource, ResourceHolder:
-								resA, okA := tryResourceAsString(fieldValA)
-								resE, okE := tryResourceAsString(fieldValE)
-								if okA && okE {
-									description = diff.FormatDiff(resA, resE)
-								}
-							}
-
-							if !ignored && description == "" {
-								description = fmt.Sprintf(" %v -> %v", ValueAsString(fieldValA), ValueAsString(fieldValE))
-							}
-						}
-						if ignored {
-							continue
-						}
-						changeList = append(changeList, change{FieldName: valC.Type().Field(i).Name, Description: description})
-					}
-				} else {
-					return fmt.Errorf("unhandled change type: %v", valC.Type())
-				}
+				taskName := getTaskName(r.changes)
+				fmt.Fprintf(b, "  %s/%s\n", taskName, idForTask(taskMap, r.e))
 
 				if len(changeList) == 0 {
+					fmt.Fprintf(b, "   internal consistency error!\n")
+					fmt.Fprintf(b, "    actual: %+v\n", r.a)
+					fmt.Fprintf(b, "    expect: %+v\n", r.e)
 					continue
 				}
 
-				taskName := getTaskName(r.changes)
-				fmt.Fprintf(b, "  %s/%s\n", taskName, idForTask(taskMap, r.e))
 				for _, change := range changeList {
 					lines := strings.Split(change.Description, "\n")
 					if len(lines) == 1 {
@@ -299,12 +251,121 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 		}
 	}
 
+	if len(t.assetBuilder.ContainerAssets) != 0 {
+		glog.V(4).Infof("ContainerAssets:")
+		for _, a := range t.assetBuilder.ContainerAssets {
+			glog.V(4).Infof("  %s %s", a.DockerImage, a.CanonicalLocation)
+		}
+	}
+
+	if len(t.assetBuilder.FileAssets) != 0 {
+		glog.V(4).Infof("FileAssets:")
+		for _, a := range t.assetBuilder.FileAssets {
+			if a.FileURL != nil && a.CanonicalFileURL != nil {
+				glog.V(4).Infof("  %s %s", a.FileURL.String(), a.CanonicalFileURL.String())
+			} else if a.FileURL != nil {
+				glog.V(4).Infof("  %s", a.FileURL.String())
+			}
+		}
+	}
+
 	_, err := out.Write(b.Bytes())
 	return err
 }
 
+type change struct {
+	FieldName   string
+	Description string
+}
+
+func buildChangeList(a, e, changes Task) ([]change, error) {
+	var changeList []change
+
+	valC := reflect.ValueOf(changes)
+	valA := reflect.ValueOf(a)
+	valE := reflect.ValueOf(e)
+	if valC.Kind() == reflect.Ptr && !valC.IsNil() {
+		valC = valC.Elem()
+	}
+	if valA.Kind() == reflect.Ptr && !valA.IsNil() {
+		valA = valA.Elem()
+	}
+	if valE.Kind() == reflect.Ptr && !valE.IsNil() {
+		valE = valE.Elem()
+	}
+	if valC.Kind() == reflect.Struct {
+		for i := 0; i < valC.NumField(); i++ {
+			if valC.Type().Field(i).PkgPath != "" {
+				// Not exported
+				continue
+			}
+
+			fieldValC := valC.Field(i)
+
+			changed := true
+			switch fieldValC.Kind() {
+			case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map:
+				changed = !fieldValC.IsNil()
+
+			case reflect.String:
+				changed = fieldValC.Interface().(string) != ""
+			}
+			if !changed {
+				continue
+			}
+
+			if fieldValC.Kind() == reflect.String && fieldValC.Interface().(string) == "" {
+				// No change
+				continue
+			}
+
+			fieldValE := valE.Field(i)
+
+			description := ""
+			ignored := false
+			if fieldValE.CanInterface() {
+				fieldValA := valA.Field(i)
+
+				switch fieldValE.Interface().(type) {
+				//case SimpleUnit:
+				//	ignored = true
+				case Resource, ResourceHolder:
+					resA, okA := tryResourceAsString(fieldValA)
+					resE, okE := tryResourceAsString(fieldValE)
+					if okA && okE {
+						description = diff.FormatDiff(resA, resE)
+					}
+				}
+
+				if !ignored && description == "" {
+					description = fmt.Sprintf(" %v -> %v", ValueAsString(fieldValA), ValueAsString(fieldValE))
+				}
+			}
+			if ignored {
+				continue
+			}
+			changeList = append(changeList, change{FieldName: valC.Type().Field(i).Name, Description: description})
+		}
+	} else {
+		return nil, fmt.Errorf("unhandled change type: %v", valC.Type())
+	}
+
+	return changeList, nil
+}
+
 func tryResourceAsString(v reflect.Value) (string, bool) {
+	if !v.IsValid() {
+		return "", false
+	}
 	if !v.CanInterface() {
+		return "", false
+	}
+
+	// Guard against nil interface go-tcha
+	if v.Kind() == reflect.Interface && v.IsNil() {
+		return "", false
+	}
+	if v.Kind() == reflect.Ptr && v.IsNil() {
 		return "", false
 	}
 
@@ -337,7 +398,7 @@ func getTaskName(t Task) string {
 	return s
 }
 
-// asString returns a human-readable string representation of the passed value
+// ValueAsString returns a human-readable string representation of the passed value
 func ValueAsString(value reflect.Value) string {
 	b := &bytes.Buffer{}
 

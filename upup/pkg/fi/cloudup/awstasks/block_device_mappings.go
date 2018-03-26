@@ -29,6 +29,7 @@ type BlockDeviceMapping struct {
 	EbsDeleteOnTermination *bool
 	EbsVolumeSize          *int64
 	EbsVolumeType          *string
+	EbsVolumeIops          *int64
 }
 
 func BlockDeviceMappingFromEC2(i *ec2.BlockDeviceMapping) (string, *BlockDeviceMapping) {
@@ -76,6 +77,7 @@ func (i *BlockDeviceMapping) ToAutoscaling(deviceName string) *autoscaling.Block
 		o.Ebs.DeleteOnTermination = i.EbsDeleteOnTermination
 		o.Ebs.VolumeSize = i.EbsVolumeSize
 		o.Ebs.VolumeType = i.EbsVolumeType
+		o.Ebs.Iops = i.EbsVolumeIops
 	}
 
 	return o

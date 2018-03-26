@@ -18,6 +18,7 @@ package components
 
 import (
 	"fmt"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -30,8 +31,15 @@ type DockerOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &DockerOptionsBuilder{}
 
+// BuildOptions is responsible for filling in the default setting for docker daemon
 func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
+
+	sv, err := KubernetesVersion(clusterSpec)
+	if err != nil {
+		return fmt.Errorf("unable to determine kubernetes version from %q", clusterSpec.KubernetesVersion)
+	}
+
 	if clusterSpec.Docker == nil {
 		clusterSpec.Docker = &kops.DockerConfig{}
 	}
@@ -41,13 +49,14 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 			return fmt.Errorf("KubernetesVersion is required")
 		}
 
-		sv, err := KubernetesVersion(clusterSpec)
-		if err != nil {
-			return fmt.Errorf("unable to determine kubernetes version from %q", clusterSpec.KubernetesVersion)
-		}
-
 		dockerVersion := ""
-		if sv.Major == 1 && sv.Minor >= 5 {
+		if sv.Major == 1 && sv.Minor >= 9 {
+			dockerVersion = "17.03.2"
+		} else if sv.Major == 1 && sv.Minor >= 8 {
+			dockerVersion = "1.13.1"
+		} else if sv.Major == 1 && sv.Minor >= 6 {
+			dockerVersion = "1.12.6"
+		} else if sv.Major == 1 && sv.Minor >= 5 {
 			dockerVersion = "1.12.3"
 		} else if sv.Major == 1 && sv.Minor <= 4 {
 			dockerVersion = "1.11.2"
@@ -58,6 +67,15 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 
 		clusterSpec.Docker.Version = &dockerVersion
+	}
+
+	if sv.Major == 1 && sv.Minor >= 6 {
+		if len(clusterSpec.Docker.LogOpt) == 0 && clusterSpec.Docker.LogDriver == "" {
+			// Use built-in docker logging, if not configured otherwise (by the user)
+			clusterSpec.Docker.LogDriver = "json-file"
+			clusterSpec.Docker.LogOpt = append(clusterSpec.Docker.LogOpt, "max-size=10m")
+			clusterSpec.Docker.LogOpt = append(clusterSpec.Docker.LogOpt, "max-file=5")
+		}
 	}
 
 	return nil

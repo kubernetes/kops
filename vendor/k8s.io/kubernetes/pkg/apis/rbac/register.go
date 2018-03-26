@@ -17,11 +17,8 @@ limitations under the License.
 package rbac
 
 import (
-	"k8s.io/kubernetes/pkg/api"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
-	"k8s.io/kubernetes/pkg/watch/versioned"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 const GroupName = "rbac.authorization.k8s.io"
@@ -44,7 +41,7 @@ var (
 	AddToScheme   = SchemeBuilder.AddToScheme
 )
 
-// Adds the list of known types to api.Scheme.
+// Adds the list of known types to the given scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Role{},
@@ -56,12 +53,6 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&ClusterRoleBinding{},
 		&ClusterRoleBindingList{},
 		&ClusterRoleList{},
-
-		&api.ListOptions{},
-		&api.DeleteOptions{},
-		&metav1.ExportOptions{},
-		&metav1.GetOptions{},
 	)
-	versioned.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
 }

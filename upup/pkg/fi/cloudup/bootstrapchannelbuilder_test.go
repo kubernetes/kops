@@ -17,24 +17,31 @@ limitations under the License.
 package cloudup
 
 import (
-	"testing"
-
 	"io/ioutil"
 	"path"
 	"strings"
+	"testing"
 
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/pkg/templates"
+	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
-
-	// Register our APIs
-	_ "k8s.io/kops/pkg/apis/kops/install"
 )
 
 func TestBootstrapChannelBuilder_BuildTasks(t *testing.T) {
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.SetupMockAWS()
+
 	runChannelBuilderTest(t, "simple")
 	runChannelBuilderTest(t, "kopeio-vxlan")
+	runChannelBuilderTest(t, "weave")
 }
 
 func runChannelBuilderTest(t *testing.T, key string) {
@@ -45,12 +52,34 @@ func runChannelBuilderTest(t *testing.T, key string) {
 	if err != nil {
 		t.Fatalf("error reading cluster yaml file %q: %v", clusterYamlPath, err)
 	}
-	obj, _, err := api.ParseVersionedYaml(clusterYaml)
+	obj, _, err := kopscodecs.ParseVersionedYaml(clusterYaml)
 	if err != nil {
 		t.Fatalf("error parsing cluster yaml %q: %v", clusterYamlPath, err)
 	}
 	cluster := obj.(*api.Cluster)
-	bcb := BootstrapChannelBuilder{cluster: cluster}
+
+	if err := PerformAssignments(cluster); err != nil {
+		t.Fatalf("error from PerformAssignments: %v", err)
+	}
+
+	fullSpec, err := mockedPopulateClusterSpec(cluster)
+	if err != nil {
+		t.Fatalf("error from PopulateClusterSpec: %v", err)
+	}
+	cluster = fullSpec
+
+	templates, err := templates.LoadTemplates(cluster, models.NewAssetPath("cloudup/resources"))
+	if err != nil {
+		t.Fatalf("error building templates: %v", err)
+	}
+	tf := &TemplateFunctions{cluster: cluster}
+	tf.AddTo(templates.TemplateFunctions)
+
+	bcb := BootstrapChannelBuilder{
+		cluster:      cluster,
+		templates:    templates,
+		assetBuilder: assets.NewAssetBuilder(cluster, ""),
+	}
 
 	context := &fi.ModelBuilderContext{
 		Tasks: make(map[string]fi.Task),
@@ -83,43 +112,5 @@ func runChannelBuilderTest(t *testing.T, key string) {
 		t.Logf("diff:\n%s\n", diffString)
 
 		t.Fatalf("manifest differed from expected for test %q", key)
-	}
-}
-
-func TestBootstrapChannelBuilder_buildManifest(t *testing.T) {
-	c := buildDefaultCluster(t)
-
-	c.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
-
-	bcb := BootstrapChannelBuilder{cluster: c}
-	a, m := bcb.buildManifest()
-
-	if a == nil {
-		t.Fatal("Addons are nil")
-	}
-
-	if m == nil {
-		t.Fatal("Manifests are nil")
-	}
-
-	var hasLimit, hasWeave bool
-
-	for _, value := range a.Spec.Addons {
-		if *value.Name == "networking.weave" {
-			hasWeave = true
-		}
-
-		if *value.Name == "limit-range.addons.k8s.io" {
-			hasLimit = true
-		}
-
-	}
-
-	if !hasWeave {
-		t.Fatal("unable to find weave")
-	}
-
-	if !hasLimit {
-		t.Fatal("unable to find limit-builder")
 	}
 }

@@ -17,17 +17,20 @@ limitations under the License.
 package bootstrap
 
 import (
+	"bytes"
 	"fmt"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/util/sets"
-	"strings"
-	"time"
 )
 
 type Installation struct {
@@ -77,7 +80,7 @@ func (i *Installation) Run() error {
 	}
 
 	checkExisting := true
-	context, err := fi.NewContext(target, cloud, keyStore, secretStore, configBase, checkExisting, tasks)
+	context, err := fi.NewContext(target, nil, cloud, keyStore, secretStore, configBase, checkExisting, tasks)
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}
@@ -108,6 +111,35 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 	manifest.Set("Unit", "Description", "Run kops bootstrap (nodeup)")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
 
+	var buffer bytes.Buffer
+
+	if os.Getenv("AWS_REGION") != "" {
+		buffer.WriteString("\"AWS_REGION=")
+		buffer.WriteString(os.Getenv("AWS_REGION"))
+		buffer.WriteString("\" ")
+	}
+
+	// Pass in required credentials when using user-defined s3 endpoint
+	if os.Getenv("S3_ENDPOINT") != "" {
+		buffer.WriteString("\"S3_ENDPOINT=")
+		buffer.WriteString(os.Getenv("S3_ENDPOINT"))
+		buffer.WriteString("\" ")
+		buffer.WriteString("\"S3_REGION=")
+		buffer.WriteString(os.Getenv("S3_REGION"))
+		buffer.WriteString("\" ")
+		buffer.WriteString("\"S3_ACCESS_KEY_ID=")
+		buffer.WriteString(os.Getenv("S3_ACCESS_KEY_ID"))
+		buffer.WriteString("\" ")
+		buffer.WriteString("\"S3_SECRET_ACCESS_KEY=")
+		buffer.WriteString(os.Getenv("S3_SECRET_ACCESS_KEY"))
+		buffer.WriteString("\" ")
+	}
+
+	if buffer.String() != "" {
+		manifest.Set("Service", "Environment", buffer.String())
+	}
+
+	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 	manifest.Set("Service", "ExecStart", command)
 	manifest.Set("Service", "Type", "oneshot")
 

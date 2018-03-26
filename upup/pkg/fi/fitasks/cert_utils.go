@@ -21,8 +21,9 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
-	"github.com/golang/glog"
 	"strings"
+
+	"github.com/golang/glog"
 )
 
 func pkixNameToString(name *pkix.Name) string {
@@ -76,6 +77,8 @@ func parsePkixName(s string) (*pkix.Name, error) {
 		switch k {
 		case "cn":
 			name.CommonName = v
+		case "o":
+			name.Organization = append(name.Organization, v)
 		default:
 			return nil, fmt.Errorf("unrecognized key %q in token %q", k, token)
 		}

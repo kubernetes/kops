@@ -17,11 +17,12 @@ limitations under the License.
 package validation
 
 import (
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kubernetes/pkg/util/sets"
-	"k8s.io/kubernetes/pkg/util/validation"
-	"k8s.io/kubernetes/pkg/util/validation/field"
 	"testing"
+
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/validation"
+	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 func Test_Validate_DNS(t *testing.T) {
@@ -93,7 +94,7 @@ func testErrors(t *testing.T, context interface{}, actual field.ErrorList, expec
 
 		for _, expected := range expectedErrors {
 			if !errStrings.Has(expected) {
-				t.Errorf("expected error %v from %q, was not found in %q", expected, context, errStrings.List())
+				t.Errorf("expected error %v from %v, was not found in %q", expected, context, errStrings.List())
 			}
 		}
 	}
@@ -143,6 +144,45 @@ func TestValidateSubnets(t *testing.T) {
 	}
 }
 
+func TestValidateKubeAPIServer(t *testing.T) {
+	str := "foobar"
+
+	grid := []struct {
+		Input          kops.KubeAPIServerConfig
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.KubeAPIServerConfig{
+				ProxyClientCertFile: &str,
+			},
+			ExpectedErrors: []string{
+				"Invalid value::KubeAPIServer",
+			},
+		},
+		{
+			Input: kops.KubeAPIServerConfig{
+				ProxyClientKeyFile: &str,
+			},
+			ExpectedErrors: []string{
+				"Invalid value::KubeAPIServer",
+			},
+		},
+		{
+			Input: kops.KubeAPIServerConfig{
+				ServiceNodePortRange: str,
+			},
+			ExpectedErrors: []string{
+				"Invalid value::KubeAPIServer",
+			},
+		},
+	}
+	for _, g := range grid {
+		errs := validateKubeAPIServer(&g.Input, field.NewPath("KubeAPIServer"))
+
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
+
 func Test_Validate_DockerConfig_Storage(t *testing.T) {
 	for _, name := range []string{"aufs", "zfs", "overlay"} {
 		config := &kops.DockerConfig{Storage: &name}
@@ -161,5 +201,43 @@ func Test_Validate_DockerConfig_Storage(t *testing.T) {
 		if errs[0].Field != "docker.storage" || errs[0].Type != field.ErrorTypeNotSupported {
 			t.Fatalf("Not the expected error validating DockerConfig %q", errs)
 		}
+	}
+}
+
+func Test_Validate_Networking_Flannel(t *testing.T) {
+
+	grid := []struct {
+		Input          kops.FlannelNetworkingSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.FlannelNetworkingSpec{
+				Backend: "udp",
+			},
+		},
+		{
+			Input: kops.FlannelNetworkingSpec{
+				Backend: "vxlan",
+			},
+		},
+		{
+			Input: kops.FlannelNetworkingSpec{
+				Backend: "",
+			},
+			ExpectedErrors: []string{"Required value::Networking.Flannel.Backend"},
+		},
+		{
+			Input: kops.FlannelNetworkingSpec{
+				Backend: "nope",
+			},
+			ExpectedErrors: []string{"Unsupported value::Networking.Flannel.Backend"},
+		},
+	}
+	for _, g := range grid {
+		networking := &kops.NetworkingSpec{}
+		networking.Flannel = &g.Input
+
+		errs := validateNetworking(networking, field.NewPath("Networking"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }

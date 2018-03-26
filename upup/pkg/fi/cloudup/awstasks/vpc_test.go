@@ -17,13 +17,14 @@ limitations under the License.
 package awstasks
 
 import (
+	"reflect"
+	"testing"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"reflect"
-	"testing"
 )
 
 func TestVPCCreate(t *testing.T) {
@@ -36,6 +37,7 @@ func TestVPCCreate(t *testing.T) {
 		vpc1 := &VPC{
 			Name: s("vpc1"),
 			CIDR: s("172.21.0.0/16"),
+			Tags: map[string]string{"Name": "vpc1"},
 		}
 		return map[string]fi.Task{
 			"vpc1": vpc1,
@@ -50,7 +52,7 @@ func TestVPCCreate(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(target, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}

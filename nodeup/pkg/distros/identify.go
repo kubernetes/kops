@@ -18,11 +18,12 @@ package distros
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/golang/glog"
 )
 
 // FindDistribution identifies the distribution on which we are running
@@ -37,7 +38,6 @@ func FindDistribution(rootfs string) (Distribution, error) {
 				return DistributionXenial, nil
 			}
 		}
-		glog.Warningf("unhandled lsb-release info %q", string(lsbRelease))
 	} else if !os.IsNotExist(err) {
 		glog.Warningf("error reading /etc/lsb-release: %v", err)
 	}
@@ -48,6 +48,8 @@ func FindDistribution(rootfs string) (Distribution, error) {
 		debianVersion := strings.TrimSpace(string(debianVersionBytes))
 		if strings.HasPrefix(debianVersion, "8.") {
 			return DistributionJessie, nil
+		} else if strings.HasPrefix(debianVersion, "9.") {
+			return DistributionDebian9, nil
 		} else {
 			return "", fmt.Errorf("unhandled debian version %q", debianVersion)
 		}
@@ -74,18 +76,39 @@ func FindDistribution(rootfs string) (Distribution, error) {
 	}
 
 	// CoreOS uses /usr/lib/os-release
-	osRelease, err := ioutil.ReadFile(path.Join(rootfs, "usr/lib/os-release"))
+	usrLibOsRelease, err := ioutil.ReadFile(path.Join(rootfs, "usr/lib/os-release"))
 	if err == nil {
-		for _, line := range strings.Split(string(osRelease), "\n") {
+		for _, line := range strings.Split(string(usrLibOsRelease), "\n") {
 			line = strings.TrimSpace(line)
 			if line == "ID=coreos" {
 				return DistributionCoreOS, nil
 			}
 		}
-		glog.Warningf("unhandled os-release info %q", string(osRelease))
+		glog.Warningf("unhandled os-release info %q", string(usrLibOsRelease))
 	} else if !os.IsNotExist(err) {
 		glog.Warningf("error reading /usr/lib/os-release: %v", err)
 	}
+
+	// ContainerOS uses /etc/os-release
+	osRelease, err := ioutil.ReadFile(path.Join(rootfs, "etc/os-release"))
+	if err == nil {
+		for _, line := range strings.Split(string(osRelease), "\n") {
+			line = strings.TrimSpace(line)
+			if line == "ID=cos" {
+				return DistributionContainerOS, nil
+			}
+		}
+		glog.Warningf("unhandled /etc/os-release info %q", string(osRelease))
+	} else if !os.IsNotExist(err) {
+		glog.Warningf("error reading /etc/os-release: %v", err)
+	}
+
+	glog.Warningf("could not determine distro")
+	glog.Warningf("  /etc/lsb-release: %q", string(lsbRelease))
+	glog.Warningf("  /etc/debian_version: %q", string(debianVersionBytes))
+	glog.Warningf("  /etc/redhat-release: %q", string(redhatRelease))
+	glog.Warningf("  /usr/lib/os-release: %q", string(usrLibOsRelease))
+	glog.Warningf("  /etc/os-release: %q", string(osRelease))
 
 	return "", fmt.Errorf("cannot identify distro")
 }

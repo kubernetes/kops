@@ -1,5 +1,7 @@
-// Copyright (c) 2013, Vastech SA (PTY) LTD. All rights reserved.
-// http://github.com/gogo/protobuf/gogoproto
+// Protocol Buffers for Go with Gadgets
+//
+// Copyright (c) 2013, The GoGo Authors. All rights reserved.
+// http://github.com/gogo/protobuf
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -275,7 +277,7 @@ func GetUnsafeExtension(pb Message, fieldNum int32) (interface{}, error) {
 	return GetExtension(pb, desc)
 }
 
-func NewUnsafeXXX_InternalExtensions(m map[int32]Extension) *XXX_InternalExtensions {
+func NewUnsafeXXX_InternalExtensions(m map[int32]Extension) XXX_InternalExtensions {
 	x := &XXX_InternalExtensions{
 		p: new(struct {
 			mu           sync.Mutex
@@ -283,7 +285,7 @@ func NewUnsafeXXX_InternalExtensions(m map[int32]Extension) *XXX_InternalExtensi
 		}),
 	}
 	x.p.extensionMap = m
-	return x
+	return *x
 }
 
 func GetUnsafeExtensionsMap(extendable Message) map[int32]Extension {

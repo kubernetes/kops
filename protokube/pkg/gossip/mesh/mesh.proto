@@ -1,0 +1,24 @@
+// To regenerate mesh.pb.go run make protokube-gocode
+syntax = 'proto3';
+
+package mesh;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.goproto_stringer_all) = false;
+option (gogoproto.stringer_all) =  true;
+option (gogoproto.goproto_getters_all) = true;
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_unrecognized_all) = false;
+
+message KVState {
+    map<string, KVStateRecord> records = 1;
+}
+
+message KVStateRecord {
+    bytes data = 1;
+	bool tombstone = 2;
+	uint64 version = 3;
+}

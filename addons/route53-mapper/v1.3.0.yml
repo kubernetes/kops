@@ -1,0 +1,26 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: route53-mapper
+  namespace: kube-system
+  labels:
+    app: route53-mapper
+    k8s-addon: route53-mapper.addons.k8s.io
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: route53-mapper
+  template:
+    metadata:
+      labels:
+        app: route53-mapper
+      annotations:
+        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"dedicated", "value":"master"}]'
+    spec:
+      nodeSelector:
+        kubernetes.io/role: master
+      containers:
+        - image: quay.io/molecule/route53-kubernetes:v1.3.0
+          name: route53-mapper

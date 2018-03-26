@@ -18,42 +18,67 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
-
 	"strings"
 
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/sshcredentials"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/tables"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
-type GetSecretsCommand struct {
+// SecretTypeSSHPublicKey is set in a KeysetItem.Type for an SSH public keypair
+// As we move fully to using API objects this should go away.
+const SecretTypeSSHPublicKey = kops.KeysetType("SSHPublicKey")
+
+var (
+	getSecretLong = templates.LongDesc(i18n.T(`
+	Display one or many secrets.`))
+
+	getSecretExample = templates.Examples(i18n.T(`
+	# Get a secret
+	kops get secrets kube -oplaintext
+
+	# Get the admin password for a cluster
+	kops get secrets admin -oplaintext`))
+
+	getSecretShort = i18n.T(`Get one or many secrets.`)
+)
+
+type GetSecretsOptions struct {
+	*GetOptions
 	Type string
 }
 
-var getSecretsCommand GetSecretsCommand
-
-func init() {
+func NewCmdGetSecrets(f *util.Factory, out io.Writer, getOptions *GetOptions) *cobra.Command {
+	options := GetSecretsOptions{
+		GetOptions: getOptions,
+	}
 	cmd := &cobra.Command{
 		Use:     "secrets",
 		Aliases: []string{"secret"},
-		Short:   "get secrets",
-		Long:    `List or get secrets.`,
+		Short:   getSecretShort,
+		Long:    getSecretLong,
+		Example: getSecretExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := getSecretsCommand.Run(args)
+			err := RunGetSecrets(&options, args)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	getCmd.cobraCommand.AddCommand(cmd)
-
-	cmd.Flags().StringVarP(&getSecretsCommand.Type, "type", "", "", "Filter by secret type")
+	cmd.Flags().StringVarP(&options.Type, "type", "", "", "Filter by secret type")
+	return cmd
 }
 
-func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, secretType string, names []string) ([]*fi.KeystoreItem, error) {
+func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, sshCredentialStore fi.SSHCredentialStore, secretType string, names []string) ([]*fi.KeystoreItem, error) {
 	var items []*fi.KeystoreItem
 
 	findType := strings.ToLower(secretType)
@@ -67,35 +92,69 @@ func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, secretType str
 	}
 
 	{
-		l, err := keyStore.List()
+		l, err := keyStore.ListKeysets()
 		if err != nil {
-			return nil, fmt.Errorf("error listing CA store items %v", err)
+			return nil, fmt.Errorf("error listing Keysets: %v", err)
 		}
 
-		for _, i := range l {
-			if findType != "" && findType != strings.ToLower(i.Type) {
+		for _, keyset := range l {
+			if findType != "" && findType != strings.ToLower(string(keyset.Spec.Type)) {
 				continue
 			}
-			items = append(items, i)
+			for _, key := range keyset.Spec.Keys {
+				item := &fi.KeystoreItem{
+					Name: keyset.Name,
+					Type: keyset.Spec.Type,
+					Id:   key.Id,
+				}
+				items = append(items, item)
+			}
 		}
 	}
 
-	if findType == "" || findType == strings.ToLower(fi.SecretTypeSecret) {
-		l, err := secretStore.ListSecrets()
+	if findType == "" || findType == strings.ToLower(string(kops.SecretTypeSecret)) {
+		names, err := secretStore.ListSecrets()
 		if err != nil {
 			return nil, fmt.Errorf("error listing secrets %v", err)
 		}
 
-		for _, id := range l {
+		for _, name := range names {
 			i := &fi.KeystoreItem{
-				Name: id,
-				Type: fi.SecretTypeSecret,
+				Name: name,
+				Type: kops.SecretTypeSecret,
 			}
-			if findType != "" && findType != strings.ToLower(i.Type) {
+			if findType != "" && findType != strings.ToLower(string(i.Type)) {
 				continue
 			}
 
 			items = append(items, i)
+		}
+	}
+
+	if findType == "" || findType == strings.ToLower(string(SecretTypeSSHPublicKey)) {
+		l, err := sshCredentialStore.ListSSHCredentials()
+		if err != nil {
+			return nil, fmt.Errorf("error listing SSH credentials %v", err)
+		}
+
+		for i := range l {
+			id, err := sshcredentials.Fingerprint(l[i].Spec.PublicKey)
+			if err != nil {
+				glog.Warningf("unable to compute fingerprint for public key %q", l[i].Name)
+			}
+			item := &fi.KeystoreItem{
+				Name: l[i].Name,
+				Id:   id,
+				Type: SecretTypeSSHPublicKey,
+			}
+			if l[i].Spec.PublicKey != "" {
+				item.Data = []byte(l[i].Spec.PublicKey)
+			}
+			if findType != "" && findType != strings.ToLower(string(item.Type)) {
+				continue
+			}
+
+			items = append(items, item)
 		}
 	}
 
@@ -122,33 +181,41 @@ func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, secretType str
 	return items, nil
 }
 
-func (c *GetSecretsCommand) Run(args []string) error {
+func RunGetSecrets(options *GetSecretsOptions, args []string) error {
 	cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
+	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
 
-	secretStore, err := registry.SecretStore(cluster)
+	keyStore, err := clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}
 
-	items, err := listSecrets(keyStore, secretStore, c.Type, args)
+	secretStore, err := clientset.SecretStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	items, err := listSecrets(keyStore, secretStore, sshCredentialStore, options.Type, args)
 	if err != nil {
 		return err
 	}
 
 	if len(items) == 0 {
-		fmt.Fprintf(os.Stderr, "No secrets found\n")
-
-		return nil
+		return fmt.Errorf("No secrets found")
 	}
-	switch getCmd.output {
+	switch options.output {
 
 	case OutputTable:
 
@@ -160,7 +227,7 @@ func (c *GetSecretsCommand) Run(args []string) error {
 			return i.Id
 		})
 		t.AddColumn("TYPE", func(i *fi.KeystoreItem) string {
-			return i.Type
+			return string(i.Type)
 		})
 		return t.Render(items, os.Stdout, "TYPE", "NAME", "ID")
 
@@ -172,7 +239,7 @@ func (c *GetSecretsCommand) Run(args []string) error {
 		for _, i := range items {
 			var data string
 			switch i.Type {
-			case fi.SecretTypeSecret:
+			case kops.SecretTypeSecret:
 				secret, err := secretStore.FindSecret(i.Name)
 				if err != nil {
 					return fmt.Errorf("error getting secret %q: %v", i.Name, err)
@@ -194,6 +261,6 @@ func (c *GetSecretsCommand) Run(args []string) error {
 		return nil
 
 	default:
-		return fmt.Errorf("Unknown output format: %q", getCmd.output)
+		return fmt.Errorf("Unknown output format: %q", options.output)
 	}
 }

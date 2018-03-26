@@ -17,12 +17,12 @@ limitations under the License.
 package main
 
 import (
-	"github.com/blang/semver"
 	"io/ioutil"
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"path"
 	"testing"
+
+	"github.com/blang/semver"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 // TestKopsUpgrades tests the version logic for kops versions
@@ -105,7 +105,7 @@ func TestKopsUpgrades(t *testing.T) {
 
 		required, err := versionInfo.IsUpgradeRequired(kopsVersion)
 		if err != nil {
-			t.Errorf("unexpected error from IsUpgradeRequired(%q)", g.KopsVersion, err)
+			t.Errorf("unexpected error from IsUpgradeRequired(%q): %v", g.KopsVersion, err)
 			continue
 		}
 		if required != g.ExpectedRequired {
@@ -199,7 +199,7 @@ func TestKubernetesUpgrades(t *testing.T) {
 
 		required, err := versionInfo.IsUpgradeRequired(kubernetesVersion)
 		if err != nil {
-			t.Errorf("unexpected error from IsUpgradeRequired(%q)", g.KubernetesVersion, err)
+			t.Errorf("unexpected error from IsUpgradeRequired(%q): %v", g.KubernetesVersion, err)
 			continue
 		}
 		if required != g.ExpectedRequired {
@@ -239,7 +239,7 @@ func TestFindImage(t *testing.T) {
 	for _, g := range grid {
 		kubernetesVersion := semver.MustParse(g.KubernetesVersion)
 
-		image := channel.FindImage(fi.CloudProviderAWS, kubernetesVersion)
+		image := channel.FindImage(kops.CloudProviderAWS, kubernetesVersion)
 		name := ""
 		if image != nil {
 			name = image.Name
@@ -301,6 +301,87 @@ func TestOrdering(t *testing.T) {
 
 	if !semver.MustParseRange(">=1.5.0-alpha1")(semver.MustParse("1.5.0")) {
 		t.Fatalf("Expected: '>=1.5.0-alpha1' to include 1.5.0")
+	}
+}
+
+// TestChannelsSelfConsistent tests the channels have version recommendations that are consistent
+// i.e. we don't recommend 1.5.2 and then recommend upgrading it to 1.5.4
+func TestChannelsSelfConsistent(t *testing.T) {
+
+	grid := []struct {
+		KopsVersion               string
+		Channel                   string
+		ExpectedKubernetesVersion string
+	}{
+		{
+			KopsVersion: "1.4.4",
+			Channel:     "alpha",
+		},
+		{
+			KopsVersion: "1.4.4",
+			Channel:     "stable",
+		},
+		{
+			KopsVersion: "1.5.3",
+			Channel:     "alpha",
+		},
+		{
+			KopsVersion: "1.5.3",
+			Channel:     "stable",
+		},
+		{
+			KopsVersion: "1.6.0-beta.1",
+			Channel:     "alpha",
+		},
+		{
+			KopsVersion: "1.6.0-beta.1",
+			Channel:     "stable",
+		},
+		{
+			KopsVersion: "1.7.0",
+			Channel:     "alpha",
+		},
+		{
+			KopsVersion: "1.7.0",
+			Channel:     "stable",
+		},
+	}
+	for _, g := range grid {
+		srcDir := "../../../channels/"
+		sourcePath := path.Join(srcDir, g.Channel)
+		sourceBytes, err := ioutil.ReadFile(sourcePath)
+		if err != nil {
+			t.Fatalf("unexpected error reading sourcePath %q: %v", sourcePath, err)
+		}
+
+		channel, err := kops.ParseChannel(sourceBytes)
+		if err != nil {
+			t.Fatalf("failed to parse channel %s: %v", g.Channel, err)
+		}
+
+		kubernetesVersion := kops.RecommendedKubernetesVersion(channel, g.KopsVersion)
+
+		if kubernetesVersion == nil {
+			t.Errorf("RecommendedKubernetesVersion returned nil for %s/%q", g.Channel, kubernetesVersion)
+			continue
+		}
+
+		versionInfo := kops.FindKubernetesVersionSpec(channel.Spec.KubernetesVersions, *kubernetesVersion)
+		if versionInfo == nil {
+			t.Errorf("FindKubernetesVersionSpec did not find version for %s/%q", g.Channel, *kubernetesVersion)
+			continue
+		}
+
+		recommended, err := versionInfo.FindRecommendedUpgrade(*kubernetesVersion)
+		if err != nil {
+			t.Errorf("FindRecommendedUpgrade have error for %s/%q: %v", g.Channel, *kubernetesVersion, err)
+			continue
+		}
+
+		if recommended != nil {
+			t.Errorf("Kops recommended kubernetesVersion is %q, but then k8s recommended kubernetesVersion is %q (%s)", *kubernetesVersion, *recommended, g.Channel)
+			continue
+		}
 	}
 }
 

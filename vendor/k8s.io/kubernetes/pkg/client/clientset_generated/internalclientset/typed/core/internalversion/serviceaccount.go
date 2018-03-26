@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@ limitations under the License.
 package internalversion
 
 import (
-	api "k8s.io/kubernetes/pkg/api"
-	v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	watch "k8s.io/kubernetes/pkg/watch"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
+	rest "k8s.io/client-go/rest"
+	core "k8s.io/kubernetes/pkg/apis/core"
+	scheme "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
 )
 
 // ServiceAccountsGetter has a method to return a ServiceAccountInterface.
@@ -31,20 +33,20 @@ type ServiceAccountsGetter interface {
 
 // ServiceAccountInterface has methods to work with ServiceAccount resources.
 type ServiceAccountInterface interface {
-	Create(*api.ServiceAccount) (*api.ServiceAccount, error)
-	Update(*api.ServiceAccount) (*api.ServiceAccount, error)
-	Delete(name string, options *api.DeleteOptions) error
-	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
-	Get(name string, options v1.GetOptions) (*api.ServiceAccount, error)
-	List(opts api.ListOptions) (*api.ServiceAccountList, error)
-	Watch(opts api.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *api.ServiceAccount, err error)
+	Create(*core.ServiceAccount) (*core.ServiceAccount, error)
+	Update(*core.ServiceAccount) (*core.ServiceAccount, error)
+	Delete(name string, options *v1.DeleteOptions) error
+	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
+	Get(name string, options v1.GetOptions) (*core.ServiceAccount, error)
+	List(opts v1.ListOptions) (*core.ServiceAccountList, error)
+	Watch(opts v1.ListOptions) (watch.Interface, error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *core.ServiceAccount, err error)
 	ServiceAccountExpansion
 }
 
 // serviceAccounts implements ServiceAccountInterface
 type serviceAccounts struct {
-	client restclient.Interface
+	client rest.Interface
 	ns     string
 }
 
@@ -56,9 +58,44 @@ func newServiceAccounts(c *CoreClient, namespace string) *serviceAccounts {
 	}
 }
 
+// Get takes name of the serviceAccount, and returns the corresponding serviceAccount object, and an error if there is any.
+func (c *serviceAccounts) Get(name string, options v1.GetOptions) (result *core.ServiceAccount, err error) {
+	result = &core.ServiceAccount{}
+	err = c.client.Get().
+		Namespace(c.ns).
+		Resource("serviceaccounts").
+		Name(name).
+		VersionedParams(&options, scheme.ParameterCodec).
+		Do().
+		Into(result)
+	return
+}
+
+// List takes label and field selectors, and returns the list of ServiceAccounts that match those selectors.
+func (c *serviceAccounts) List(opts v1.ListOptions) (result *core.ServiceAccountList, err error) {
+	result = &core.ServiceAccountList{}
+	err = c.client.Get().
+		Namespace(c.ns).
+		Resource("serviceaccounts").
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Do().
+		Into(result)
+	return
+}
+
+// Watch returns a watch.Interface that watches the requested serviceAccounts.
+func (c *serviceAccounts) Watch(opts v1.ListOptions) (watch.Interface, error) {
+	opts.Watch = true
+	return c.client.Get().
+		Namespace(c.ns).
+		Resource("serviceaccounts").
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Watch()
+}
+
 // Create takes the representation of a serviceAccount and creates it.  Returns the server's representation of the serviceAccount, and an error, if there is any.
-func (c *serviceAccounts) Create(serviceAccount *api.ServiceAccount) (result *api.ServiceAccount, err error) {
-	result = &api.ServiceAccount{}
+func (c *serviceAccounts) Create(serviceAccount *core.ServiceAccount) (result *core.ServiceAccount, err error) {
+	result = &core.ServiceAccount{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("serviceaccounts").
@@ -69,8 +106,8 @@ func (c *serviceAccounts) Create(serviceAccount *api.ServiceAccount) (result *ap
 }
 
 // Update takes the representation of a serviceAccount and updates it. Returns the server's representation of the serviceAccount, and an error, if there is any.
-func (c *serviceAccounts) Update(serviceAccount *api.ServiceAccount) (result *api.ServiceAccount, err error) {
-	result = &api.ServiceAccount{}
+func (c *serviceAccounts) Update(serviceAccount *core.ServiceAccount) (result *core.ServiceAccount, err error) {
+	result = &core.ServiceAccount{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("serviceaccounts").
@@ -82,7 +119,7 @@ func (c *serviceAccounts) Update(serviceAccount *api.ServiceAccount) (result *ap
 }
 
 // Delete takes name of the serviceAccount and deletes it. Returns an error if one occurs.
-func (c *serviceAccounts) Delete(name string, options *api.DeleteOptions) error {
+func (c *serviceAccounts) Delete(name string, options *v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("serviceaccounts").
@@ -93,54 +130,19 @@ func (c *serviceAccounts) Delete(name string, options *api.DeleteOptions) error 
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *serviceAccounts) DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error {
+func (c *serviceAccounts) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("serviceaccounts").
-		VersionedParams(&listOptions, api.ParameterCodec).
+		VersionedParams(&listOptions, scheme.ParameterCodec).
 		Body(options).
 		Do().
 		Error()
 }
 
-// Get takes name of the serviceAccount, and returns the corresponding serviceAccount object, and an error if there is any.
-func (c *serviceAccounts) Get(name string, options v1.GetOptions) (result *api.ServiceAccount, err error) {
-	result = &api.ServiceAccount{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("serviceaccounts").
-		Name(name).
-		VersionedParams(&options, api.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of ServiceAccounts that match those selectors.
-func (c *serviceAccounts) List(opts api.ListOptions) (result *api.ServiceAccountList, err error) {
-	result = &api.ServiceAccountList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("serviceaccounts").
-		VersionedParams(&opts, api.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested serviceAccounts.
-func (c *serviceAccounts) Watch(opts api.ListOptions) (watch.Interface, error) {
-	return c.client.Get().
-		Prefix("watch").
-		Namespace(c.ns).
-		Resource("serviceaccounts").
-		VersionedParams(&opts, api.ParameterCodec).
-		Watch()
-}
-
 // Patch applies the patch and returns the patched serviceAccount.
-func (c *serviceAccounts) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *api.ServiceAccount, err error) {
-	result = &api.ServiceAccount{}
+func (c *serviceAccounts) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *core.ServiceAccount, err error) {
+	result = &core.ServiceAccount{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("serviceaccounts").

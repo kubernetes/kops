@@ -18,17 +18,19 @@ package nodetasks
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
-	"k8s.io/kops/upup/pkg/fi/nodeup/local"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
+
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
+	"k8s.io/kops/upup/pkg/fi/nodeup/local"
+	"k8s.io/kops/upup/pkg/fi/utils"
+
+	"github.com/golang/glog"
 )
 
 const FileType_Symlink = "symlink"
@@ -36,18 +38,15 @@ const FileType_Directory = "directory"
 const FileType_File = "file"
 
 type File struct {
-	Path     string      `json:"path,omitempty"`
-	Contents fi.Resource `json:"contents,omitempty"`
-
-	Mode        *string `json:"mode,omitempty"`
-	IfNotExists bool    `json:"ifNotExists,omitempty"`
-
-	OnChangeExecute []string `json:"onChangeExecute,omitempty"`
-
-	Symlink *string `json:"symlink,omitempty"`
-	Owner   *string `json:"owner,omitempty"`
-	Group   *string `json:"group,omitempty"`
-	Type    string  `json:"type"`
+	Contents        fi.Resource `json:"contents,omitempty"`
+	Group           *string     `json:"group,omitempty"`
+	IfNotExists     bool        `json:"ifNotExists,omitempty"`
+	Mode            *string     `json:"mode,omitempty"`
+	OnChangeExecute [][]string  `json:"onChangeExecute,omitempty"`
+	Owner           *string     `json:"owner,omitempty"`
+	Path            string      `json:"path,omitempty"`
+	Symlink         *string     `json:"symlink,omitempty"`
+	Type            string      `json:"type"`
 }
 
 var _ fi.Task = &File{}
@@ -77,14 +76,17 @@ func NewFileTask(name string, src fi.Resource, destPath string, meta string) (*F
 
 var _ fi.HasDependencies = &File{}
 
-func (f *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+// GetDependencies implements HasDependencies::GetDependencies
+func (e *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
-	if f.Owner != nil {
-		ownerTask := tasks["user/"+*f.Owner]
+	if e.Owner != nil {
+		ownerTask := tasks["user/"+*e.Owner]
 		if ownerTask == nil {
-			glog.Fatalf("Unable to find task %q", "user/"+*f.Owner)
+			// The user might be a pre-existing user (e.g. admin)
+			glog.Warningf("Unable to find task %q", "user/"+*e.Owner)
+		} else {
+			deps = append(deps, ownerTask)
 		}
-		deps = append(deps, ownerTask)
 	}
 
 	// Depend on disk mounts
@@ -94,6 +96,11 @@ func (f *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		if _, ok := v.(*MountDiskTask); ok {
 			deps = append(deps, v)
 		}
+	}
+
+	// Requires parent directories to be created
+	for _, v := range findCreatesDirParents(e.Path, tasks) {
+		deps = append(deps, v)
 	}
 
 	return deps
@@ -111,6 +118,16 @@ func (f *File) SetName(name string) {
 
 func (f *File) String() string {
 	return fmt.Sprintf("File: %q", f.Path)
+}
+
+var _ CreatesDir = &File{}
+
+// Dir implements CreatesDir::Dir
+func (f *File) Dir() string {
+	if f.Type != FileType_Directory {
+		return ""
+	}
+	return f.Path
 }
 
 func findFile(p string) (*File, error) {
@@ -261,15 +278,16 @@ func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
 	}
 
 	if changed && e.OnChangeExecute != nil {
-		args := e.OnChangeExecute
-		human := strings.Join(args, " ")
+		for _, args := range e.OnChangeExecute {
+			human := strings.Join(args, " ")
 
-		glog.Infof("Changed; will execute OnChangeExecute command: %q", human)
+			glog.Infof("Changed; will execute OnChangeExecute command: %q", human)
 
-		cmd := exec.Command(args[0], args[1:]...)
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("error executing command %q: %v\nOutput: %s", human, err, output)
+			cmd := exec.Command(args[0], args[1:]...)
+			output, err := cmd.CombinedOutput()
+			if err != nil {
+				return fmt.Errorf("error executing command %q: %v\nOutput: %s", human, err, output)
+			}
 		}
 	}
 
@@ -303,7 +321,8 @@ func (_ *File) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *File
 	}
 
 	if e.OnChangeExecute != nil {
-		t.AddCommand(cloudinit.Always, e.OnChangeExecute...)
+		return fmt.Errorf("OnChangeExecute not supported with CloudInit")
+		//t.AddCommand(cloudinit.Always, e.OnChangeExecute...)
 	}
 
 	return nil

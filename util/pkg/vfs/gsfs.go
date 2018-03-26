@@ -21,17 +21,20 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"github.com/golang/glog"
-	"golang.org/x/net/context"
-	"google.golang.org/api/googleapi"
-	storage "google.golang.org/api/storage/v1"
-	"io/ioutil"
-	"k8s.io/kops/util/pkg/hashing"
+	"io"
 	"net/http"
 	"os"
 	"path"
 	"strings"
 	"sync"
+	"time"
+
+	"github.com/golang/glog"
+	"golang.org/x/net/context"
+	"google.golang.org/api/googleapi"
+	storage "google.golang.org/api/storage/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 // GSPath is a vfs path for Google Cloud Storage
@@ -44,6 +47,29 @@ type GSPath struct {
 
 var _ Path = &GSPath{}
 var _ HasHash = &GSPath{}
+
+// gcsReadBackoff is the backoff strategy for GCS read retries
+var gcsReadBackoff = wait.Backoff{
+	Duration: time.Second,
+	Factor:   1.5,
+	Jitter:   0.1,
+	Steps:    4,
+}
+
+// GSAcl is an ACL implementation for objects on Google Cloud Storage
+type GSAcl struct {
+	Acl []*storage.ObjectAccessControl
+}
+
+var _ ACL = &GSAcl{}
+
+// gcsWriteBackoff is the backoff strategy for GCS write retries
+var gcsWriteBackoff = wait.Backoff{
+	Duration: time.Second,
+	Factor:   1.5,
+	Jitter:   0.1,
+	Steps:    5,
+}
 
 func NewGSPath(client *storage.Service, bucket string, key string) *GSPath {
 	bucket = strings.TrimSuffix(bucket, "/")
@@ -64,19 +90,38 @@ func (p *GSPath) Bucket() string {
 	return p.bucket
 }
 
+func (p *GSPath) Object() string {
+	return p.key
+}
+
+// Client returns the storage.Service bound to this path
+func (p *GSPath) Client() *storage.Service {
+	return p.client
+}
+
 func (p *GSPath) String() string {
 	return p.Path()
 }
 
 func (p *GSPath) Remove() error {
-	err := p.client.Objects.Delete(p.bucket, p.key).Do()
+	done, err := RetryWithBackoff(gcsWriteBackoff, func() (bool, error) {
+		err := p.client.Objects.Delete(p.bucket, p.key).Do()
+		if err != nil {
+			// TODO: Check for not-exists, return os.NotExist
+
+			return false, fmt.Errorf("error deleting %s: %v", p, err)
+		}
+
+		return true, nil
+	})
 	if err != nil {
-		// TODO: Check for not-exists, return os.NotExist
-
-		return fmt.Errorf("error deleting %s: %v", p, err)
+		return err
+	} else if done {
+		return nil
+	} else {
+		// Shouldn't happen - we always return a non-nil error with false
+		return wait.ErrWaitTimeout
 	}
-
-	return nil
 }
 
 func (p *GSPath) Join(relativePath ...string) Path {
@@ -90,25 +135,47 @@ func (p *GSPath) Join(relativePath ...string) Path {
 	}
 }
 
-func (p *GSPath) WriteFile(data []byte) error {
-	glog.V(4).Infof("Writing file %q", p)
+func (p *GSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
+	done, err := RetryWithBackoff(gcsWriteBackoff, func() (bool, error) {
+		glog.V(4).Infof("Writing file %q", p)
 
-	md5Hash, err := hashing.HashAlgorithmMD5.Hash(bytes.NewReader(data))
+		md5Hash, err := hashing.HashAlgorithmMD5.Hash(data)
+		if err != nil {
+			return false, err
+		}
+
+		obj := &storage.Object{
+			Name:    p.key,
+			Md5Hash: base64.StdEncoding.EncodeToString(md5Hash.HashValue),
+		}
+
+		if acl != nil {
+			gsAcl, ok := acl.(*GSAcl)
+			if !ok {
+				return true, fmt.Errorf("write to %s with ACL of unexpected type %T", p, acl)
+			}
+			obj.Acl = gsAcl.Acl
+		}
+
+		if _, err := data.Seek(0, 0); err != nil {
+			return false, fmt.Errorf("error seeking to start of data stream for write to %s: %v", p, err)
+		}
+
+		_, err = p.client.Objects.Insert(p.bucket, obj).Media(data).Do()
+		if err != nil {
+			return false, fmt.Errorf("error writing %s: %v", p, err)
+		}
+
+		return true, nil
+	})
 	if err != nil {
 		return err
+	} else if done {
+		return nil
+	} else {
+		// Shouldn't happen - we always return a non-nil error with false
+		return wait.ErrWaitTimeout
 	}
-
-	obj := &storage.Object{
-		Name:    p.key,
-		Md5Hash: base64.StdEncoding.EncodeToString(md5Hash.HashValue),
-	}
-	r := bytes.NewReader(data)
-	_, err = p.client.Objects.Insert(p.bucket, obj).Media(r).Do()
-	if err != nil {
-		return fmt.Errorf("error writing %s: %v", p, err)
-	}
-
-	return nil
 }
 
 // To prevent concurrent creates on the same file while maintaining atomicity of writes,
@@ -117,7 +184,7 @@ func (p *GSPath) WriteFile(data []byte) error {
 // TODO: should we enable versioning?
 var createFileLockGCS sync.Mutex
 
-func (p *GSPath) CreateFile(data []byte) error {
+func (p *GSPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 	createFileLockGCS.Lock()
 	defer createFileLockGCS.Unlock()
 
@@ -131,91 +198,139 @@ func (p *GSPath) CreateFile(data []byte) error {
 		return err
 	}
 
-	return p.WriteFile(data)
+	return p.WriteFile(data, acl)
 }
 
+// ReadFile implements Path::ReadFile
 func (p *GSPath) ReadFile() ([]byte, error) {
+	var b bytes.Buffer
+	done, err := RetryWithBackoff(gcsReadBackoff, func() (bool, error) {
+		b.Reset()
+		_, err := p.WriteTo(&b)
+		if err != nil {
+			if os.IsNotExist(err) {
+				// Not recoverable
+				return true, err
+			}
+			return false, err
+		}
+		// Success!
+		return true, nil
+	})
+	if err != nil {
+		return nil, err
+	} else if done {
+		return b.Bytes(), nil
+	} else {
+		// Shouldn't happen - we always return a non-nil error with false
+		return nil, wait.ErrWaitTimeout
+	}
+}
+
+// WriteTo implements io.WriterTo::WriteTo
+func (p *GSPath) WriteTo(out io.Writer) (int64, error) {
 	glog.V(4).Infof("Reading file %q", p)
 
 	response, err := p.client.Objects.Get(p.bucket, p.key).Download()
 	if err != nil {
 		if isGCSNotFound(err) {
-			return nil, os.ErrNotExist
+			return 0, os.ErrNotExist
 		}
-		return nil, fmt.Errorf("error reading %s: %v", p, err)
+		return 0, fmt.Errorf("error reading %s: %v", p, err)
 	}
 	if response == nil {
-		return nil, fmt.Errorf("no response returned from reading %s", p)
+		return 0, fmt.Errorf("no response returned from reading %s", p)
 	}
 	defer response.Body.Close()
 
-	d, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, fmt.Errorf("error reading %s: %v", p, err)
-	}
-	return d, nil
+	return io.Copy(out, response.Body)
 }
 
+// ReadDir implements Path::ReadDir
 func (p *GSPath) ReadDir() ([]Path, error) {
-	prefix := p.key
-	if !strings.HasSuffix(prefix, "/") {
-		prefix += "/"
-	}
-
-	ctx := context.Background()
-	var paths []Path
-	err := p.client.Objects.List(p.bucket).Delimiter("/").Prefix(prefix).Pages(ctx, func(page *storage.Objects) error {
-		for _, o := range page.Items {
-			child := &GSPath{
-				client:  p.client,
-				bucket:  p.bucket,
-				key:     o.Name,
-				md5Hash: o.Md5Hash,
-			}
-			paths = append(paths, child)
+	var ret []Path
+	done, err := RetryWithBackoff(gcsReadBackoff, func() (bool, error) {
+		prefix := p.key
+		if !strings.HasSuffix(prefix, "/") {
+			prefix += "/"
 		}
-		return nil
+
+		ctx := context.Background()
+		var paths []Path
+		err := p.client.Objects.List(p.bucket).Delimiter("/").Prefix(prefix).Pages(ctx, func(page *storage.Objects) error {
+			for _, o := range page.Items {
+				child := &GSPath{
+					client:  p.client,
+					bucket:  p.bucket,
+					key:     o.Name,
+					md5Hash: o.Md5Hash,
+				}
+				paths = append(paths, child)
+			}
+			return nil
+		})
+		if err != nil {
+			if isGCSNotFound(err) {
+				return true, os.ErrNotExist
+			}
+			return false, fmt.Errorf("error listing %s: %v", p, err)
+		}
+		glog.V(8).Infof("Listed files in %v: %v", p, paths)
+		ret = paths
+		return true, nil
 	})
 	if err != nil {
-		if isGCSNotFound(err) {
-			return nil, os.ErrNotExist
-		}
-		return nil, fmt.Errorf("error listing %s: %v", p, err)
+		return nil, err
+	} else if done {
+		return ret, nil
+	} else {
+		// Shouldn't happen - we always return a non-nil error with false
+		return nil, wait.ErrWaitTimeout
 	}
-	glog.V(8).Infof("Listed files in %v: %v", p, paths)
-	return paths, nil
 }
 
+// ReadTree implements Path::ReadTree
 func (p *GSPath) ReadTree() ([]Path, error) {
-	// No delimiter for recursive search
-
-	prefix := p.key
-	if prefix != "" && !strings.HasSuffix(prefix, "/") {
-		prefix += "/"
-	}
-
-	ctx := context.Background()
-	var paths []Path
-	err := p.client.Objects.List(p.bucket).Prefix(prefix).Pages(ctx, func(page *storage.Objects) error {
-		for _, o := range page.Items {
-			key := o.Name
-			child := &GSPath{
-				client:  p.client,
-				bucket:  p.bucket,
-				key:     key,
-				md5Hash: o.Md5Hash,
-			}
-			paths = append(paths, child)
+	var ret []Path
+	done, err := RetryWithBackoff(gcsReadBackoff, func() (bool, error) {
+		// No delimiter for recursive search
+		prefix := p.key
+		if prefix != "" && !strings.HasSuffix(prefix, "/") {
+			prefix += "/"
 		}
-		return nil
+
+		ctx := context.Background()
+		var paths []Path
+		err := p.client.Objects.List(p.bucket).Prefix(prefix).Pages(ctx, func(page *storage.Objects) error {
+			for _, o := range page.Items {
+				key := o.Name
+				child := &GSPath{
+					client:  p.client,
+					bucket:  p.bucket,
+					key:     key,
+					md5Hash: o.Md5Hash,
+				}
+				paths = append(paths, child)
+			}
+			return nil
+		})
+		if err != nil {
+			if isGCSNotFound(err) {
+				return true, os.ErrNotExist
+			}
+			return false, fmt.Errorf("error listing tree %s: %v", p, err)
+		}
+		ret = paths
+		return true, nil
 	})
 	if err != nil {
-		if isGCSNotFound(err) {
-			return nil, os.ErrNotExist
-		}
-		return nil, fmt.Errorf("error listing %s: %v", p, err)
+		return nil, err
+	} else if done {
+		return ret, nil
+	} else {
+		// Shouldn't happen - we always return a non-nil error with false
+		return nil, wait.ErrWaitTimeout
 	}
-	return paths, nil
 }
 
 func (p *GSPath) Base() string {

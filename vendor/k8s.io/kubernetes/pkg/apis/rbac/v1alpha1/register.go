@@ -17,11 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/kubernetes/pkg/api/v1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
-	"k8s.io/kubernetes/pkg/watch/versioned"
+	rbacv1alpha1 "k8s.io/api/rbac/v1alpha1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 const GroupName = "rbac.authorization.k8s.io"
@@ -35,28 +32,13 @@ func Resource(resource string) schema.GroupResource {
 }
 
 var (
-	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes, addDefaultingFuncs)
-	AddToScheme   = SchemeBuilder.AddToScheme
+	localSchemeBuilder = &rbacv1alpha1.SchemeBuilder
+	AddToScheme        = localSchemeBuilder.AddToScheme
 )
 
-// Adds the list of known types to api.Scheme.
-func addKnownTypes(scheme *runtime.Scheme) error {
-	scheme.AddKnownTypes(SchemeGroupVersion,
-		&Role{},
-		&RoleBinding{},
-		&RoleBindingList{},
-		&RoleList{},
-
-		&ClusterRole{},
-		&ClusterRoleBinding{},
-		&ClusterRoleBindingList{},
-		&ClusterRoleList{},
-
-		&v1.ListOptions{},
-		&v1.DeleteOptions{},
-		&metav1.ExportOptions{},
-		&metav1.GetOptions{},
-	)
-	versioned.AddToGroupVersion(scheme, SchemeGroupVersion)
-	return nil
+func init() {
+	// We only register manually written functions here. The registration of the
+	// generated functions takes place in the generated files. The separation
+	// makes the code compile even when the generated files are missing.
+	localSchemeBuilder.Register(addDefaultingFuncs)
 }

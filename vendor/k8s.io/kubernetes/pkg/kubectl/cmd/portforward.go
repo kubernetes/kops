@@ -19,20 +19,22 @@ package cmd
 import (
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
 
 	"github.com/spf13/cobra"
 
-	"k8s.io/kubernetes/pkg/api"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/portforward"
+	"k8s.io/client-go/transport/spdy"
+	api "k8s.io/kubernetes/pkg/apis/core"
 	coreclient "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/internalversion"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/client/unversioned/portforward"
-	"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 // PortForwardOptions contains all the options for running the port-forward cli command.
@@ -49,7 +51,7 @@ type PortForwardOptions struct {
 }
 
 var (
-	portforward_example = templates.Examples(`
+	portforwardExample = templates.Examples(i18n.T(`
 		# Listen on ports 5000 and 6000 locally, forwarding data to/from ports 5000 and 6000 in the pod
 		kubectl port-forward mypod 5000 6000
 
@@ -57,10 +59,7 @@ var (
 		kubectl port-forward mypod 8888:5000
 
 		# Listen on a random port locally, forwarding to 5000 in the pod
-		kubectl port-forward mypod :5000
-
-		# Listen on a random port locally, forwarding to 5000 in the pod
-		kubectl port-forward  mypod 0:5000`)
+		kubectl port-forward mypod :5000`))
 )
 
 func NewCmdPortForward(f cmdutil.Factory, cmdOut, cmdErr io.Writer) *cobra.Command {
@@ -72,15 +71,15 @@ func NewCmdPortForward(f cmdutil.Factory, cmdOut, cmdErr io.Writer) *cobra.Comma
 	}
 	cmd := &cobra.Command{
 		Use:     "port-forward POD [LOCAL_PORT:]REMOTE_PORT [...[LOCAL_PORT_N:]REMOTE_PORT_N]",
-		Short:   "Forward one or more local ports to a pod",
+		Short:   i18n.T("Forward one or more local ports to a pod"),
 		Long:    "Forward one or more local ports to a pod.",
-		Example: portforward_example,
+		Example: portforwardExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			if err := opts.Complete(f, cmd, args, cmdOut, cmdErr); err != nil {
+			if err := opts.Complete(f, cmd, args); err != nil {
 				cmdutil.CheckErr(err)
 			}
 			if err := opts.Validate(); err != nil {
-				cmdutil.CheckErr(cmdutil.UsageError(cmd, err.Error()))
+				cmdutil.CheckErr(cmdutil.UsageErrorf(cmd, "%v", err.Error()))
 			}
 			if err := opts.RunPortForward(); err != nil {
 				cmdutil.CheckErr(err)
@@ -101,10 +100,11 @@ type defaultPortForwarder struct {
 }
 
 func (f *defaultPortForwarder) ForwardPorts(method string, url *url.URL, opts PortForwardOptions) error {
-	dialer, err := remotecommand.NewExecutor(opts.Config, method, url)
+	transport, upgrader, err := spdy.RoundTripperFor(opts.Config)
 	if err != nil {
 		return err
 	}
+	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, method, url)
 	fw, err := portforward.New(dialer, opts.Ports, opts.StopChannel, opts.ReadyChannel, f.cmdOut, f.cmdErr)
 	if err != nil {
 		return err
@@ -113,11 +113,11 @@ func (f *defaultPortForwarder) ForwardPorts(method string, url *url.URL, opts Po
 }
 
 // Complete completes all the required options for port-forward cmd.
-func (o *PortForwardOptions) Complete(f cmdutil.Factory, cmd *cobra.Command, args []string, cmdOut io.Writer, cmdErr io.Writer) error {
+func (o *PortForwardOptions) Complete(f cmdutil.Factory, cmd *cobra.Command, args []string) error {
 	var err error
 	o.PodName = cmdutil.GetFlagString(cmd, "pod")
 	if len(o.PodName) == 0 && len(args) == 0 {
-		return cmdutil.UsageError(cmd, "POD is required for port-forward")
+		return cmdutil.UsageErrorf(cmd, "POD is required for port-forward")
 	}
 
 	if len(o.PodName) != 0 {

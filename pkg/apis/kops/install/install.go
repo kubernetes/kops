@@ -19,33 +19,36 @@ limitations under the License.
 package install
 
 import (
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/apimachinery/announced"
+	"k8s.io/apimachinery/pkg/apimachinery/registered"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
-	"k8s.io/kubernetes/pkg/apimachinery/announced"
 )
 
-func init() {
-	if err := register(); err != nil {
-		panic(err)
-	}
-}
-
-func register() error {
-	return announced.NewGroupMetaFactory(
+// Install registers the API group and adds types to a scheme
+func Install(groupFactoryRegistry announced.APIGroupFactoryRegistry, registry *registered.APIRegistrationManager, scheme *runtime.Scheme) {
+	err := announced.NewGroupMetaFactory(
 		&announced.GroupMetaFactoryArgs{
 			GroupName: kops.GroupName,
 			VersionPreferenceOrder: []string{
 				v1alpha2.SchemeGroupVersion.Version,
 				v1alpha1.SchemeGroupVersion.Version,
 			},
-			ImportPrefix: "k8s.io/kops/pkg/apis/kops",
-			// ?? RootScopedKinds:            sets.NewString("NodeMetrics"),
+			// RootScopedKinds are resources that are not namespaced.
+			RootScopedKinds: sets.NewString(),
+			//ImportPrefix:               "k8s.io/kops/pkg/apis/kops",
 			AddInternalObjectsToScheme: kops.AddToScheme,
 		},
 		announced.VersionToSchemeFunc{
 			v1alpha1.SchemeGroupVersion.Version: v1alpha1.AddToScheme,
 			v1alpha2.SchemeGroupVersion.Version: v1alpha2.AddToScheme,
 		},
-	).Announce().RegisterAndEnable()
+	).Announce(groupFactoryRegistry).RegisterAndEnable(registry, scheme)
+	if err != nil {
+		glog.Fatalf("error registering kops schema: %v", err)
+	}
 }

@@ -17,8 +17,9 @@ limitations under the License.
 package awstasks
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	"sort"
+
+	"github.com/aws/aws-sdk-go/aws"
 )
 
 type cloudformationTag struct {

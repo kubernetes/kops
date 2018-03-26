@@ -15,6 +15,11 @@ To enable a bastion instance group, a user will need to set the `--bastion` flag
 kops create cluster --topology private --networking $provider --bastion $NAME
 ```
 
+To add a bastion instance group to a pre-existing cluster, create a new instance group with the `--role Bastion` flag and one or more subnets (e.g. `utility-us-east-2a,utility-us-east-2b`). 
+```yaml
+kops create instancegroup bastions --role Bastion --subnet $SUBNET
+```
+
 ### Configure the bastion instance group
 
 You can edit the bastion instance group to make changes. By default the name of the bastion instance group will be `bastions` and you can specify the name of the cluster with `--name` as in:
@@ -96,7 +101,7 @@ ssh admin@<master_ip>
 
 The bastion is accessed via an AWS ELB. The ELB is required to gain secure access into the private network and connect the user to the ASG that the bastion lives in. Kops will by default set the bastion ELB idle timeout to 5 minutes. This is important for SSH connections to the bastion that you plan to keep open.
 
-You can increase the ELB idle timeout by editing the main cluster config `kops edit cluster $NAME` and modifyng the following block
+You can increase the ELB idle timeout by editing the main cluster config `kops edit cluster $NAME` and modifying the following block
 
 ```yaml
 spec:
@@ -114,8 +119,8 @@ Once your cluster is setup and you need to SSH into the bastion you can access a
 ```bash
 # Verify you have an SSH agent running. This should match whatever you built your cluster with.
 ssh-add -l
-# If you need to add an agent
-ssh-add path/to/public/key
+# If you need to add the key to your agent:
+ssh-add path/to/private/key
 
 # Now you can SSH into the bastion
 ssh -A admin@<bastion-ELB-address>

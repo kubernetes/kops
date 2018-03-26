@@ -18,8 +18,9 @@ package k8sapi
 
 import (
 	"fmt"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/api/v1"
+
+	"k8s.io/api/core/v1"
+	"k8s.io/kops/pkg/pki"
 )
 
 // KeypairSecret is a wrapper around a k8s Secret object that holds a TLS keypair
@@ -27,8 +28,8 @@ type KeypairSecret struct {
 	Namespace string
 	Name      string
 
-	Certificate *fi.Certificate
-	PrivateKey  *fi.PrivateKey
+	Certificate *pki.Certificate
+	PrivateKey  *pki.PrivateKey
 }
 
 // ParseKeypairSecret parses the secret object, decoding the certificate & private-key, if present
@@ -39,7 +40,7 @@ func ParseKeypairSecret(secret *v1.Secret) (*KeypairSecret, error) {
 
 	certData := secret.Data[v1.TLSCertKey]
 	if certData != nil {
-		cert, err := fi.LoadPEMCertificate(certData)
+		cert, err := pki.ParsePEMCertificate(certData)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing certificate in %s/%s: %q", k.Namespace, k.Name, err)
 		}
@@ -47,7 +48,7 @@ func ParseKeypairSecret(secret *v1.Secret) (*KeypairSecret, error) {
 	}
 	keyData := secret.Data[v1.TLSPrivateKeyKey]
 	if keyData != nil {
-		key, err := fi.ParsePEMPrivateKey(keyData)
+		key, err := pki.ParsePEMPrivateKey(keyData)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing key in %s/%s: %q", k.Namespace, k.Name, err)
 		}

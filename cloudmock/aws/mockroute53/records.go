@@ -18,6 +18,7 @@ package mockroute53
 
 import (
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -29,12 +30,25 @@ func (m *MockRoute53) ListResourceRecordSetsRequest(*route53.ListResourceRecordS
 	return nil, nil
 }
 
+func (m *MockRoute53) ListResourceRecordSetsWithContext(aws.Context, *route53.ListResourceRecordSetsInput, ...request.Option) (*route53.ListResourceRecordSetsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
 func (m *MockRoute53) ListResourceRecordSets(*route53.ListResourceRecordSetsInput) (*route53.ListResourceRecordSetsOutput, error) {
 	panic("MockRoute53 ListResourceRecordSets not implemented")
 	return nil, nil
 }
 
+func (m *MockRoute53) ListResourceRecordSetsPagesWithContext(aws.Context, *route53.ListResourceRecordSetsInput, func(*route53.ListResourceRecordSetsOutput, bool) bool, ...request.Option) error {
+	panic("Not implemented")
+	return nil
+}
+
 func (m *MockRoute53) ListResourceRecordSetsPages(request *route53.ListResourceRecordSetsInput, callback func(*route53.ListResourceRecordSetsOutput, bool) bool) error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("ListResourceRecordSetsPages %v", request)
 
 	if request.HostedZoneId == nil {
@@ -69,7 +83,15 @@ func (m *MockRoute53) ChangeResourceRecordSetsRequest(*route53.ChangeResourceRec
 	return nil, nil
 }
 
+func (m *MockRoute53) ChangeResourceRecordSetsWithContext(aws.Context, *route53.ChangeResourceRecordSetsInput, ...request.Option) (*route53.ChangeResourceRecordSetsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
 func (m *MockRoute53) ChangeResourceRecordSets(request *route53.ChangeResourceRecordSetsInput) (*route53.ChangeResourceRecordSetsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("ChangeResourceRecordSets %v", request)
 
 	if request.HostedZoneId == nil {
@@ -115,6 +137,14 @@ func (m *MockRoute53) ChangeResourceRecordSets(request *route53.ChangeResourceRe
 			} else {
 				// TODO: Use correct error
 				return nil, fmt.Errorf("duplicate record %s %q", changeType, changeName)
+			}
+
+		case "DELETE":
+			if foundIndex == -1 {
+				// TODO: Use correct error
+				return nil, fmt.Errorf("record not found %s %q", changeType, changeName)
+			} else {
+				zone.records = append(zone.records[:foundIndex], zone.records[foundIndex+1:]...)
 			}
 
 		default:

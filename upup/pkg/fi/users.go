@@ -18,10 +18,11 @@ package fi
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
 	"strconv"
 	"strings"
+
+	"github.com/golang/glog"
 )
 
 // This file parses /etc/passwd and /etc/group to get information about users & groups

@@ -16,74 +16,64 @@ limitations under the License.
 
 package systemd
 
-import "bytes"
+import (
+	"bytes"
+	"fmt"
+)
 
+// Manifest defined a systemd unit
 type Manifest struct {
-	Sections []*ManifestSection
+	sections []*section
 }
 
-type ManifestSection struct {
-	Key     string
-	Entries []*ManifestEntry
+// section defines a section of the unit i.e. Unit, Service etc,
+type section struct {
+	key     string
+	content string
+	entries []string
 }
 
-type ManifestEntry struct {
-	Key   string
-	Value string
+// Set adds a key/pair to the a section in the systemd manifest
+func (m *Manifest) Set(name, key, value string) {
+	s := m.getSection(name)
+	s.entries = append(s.entries, fmt.Sprintf("%s=%s\n", key, value))
 }
 
-func (s *Manifest) Set(sectionKey string, key string, value string) {
-	section := s.getOrCreateSection(sectionKey)
-	section.Set(key, value)
+// SetSection sets the raw content of a section
+func (m *Manifest) SetSection(name, content string) {
+	m.getSection(name).content = content
 }
 
-func (s *Manifest) getOrCreateSection(key string) *ManifestSection {
-	for _, section := range s.Sections {
-		if section.Key == key {
-			return section
+// getSection checks if a section already exists
+func (m *Manifest) getSection(key string) *section {
+	for _, s := range m.sections {
+		if s.key == key {
+			return s
 		}
 	}
-	section := &ManifestSection{
-		Key: key,
-	}
-	s.Sections = append(s.Sections, section)
-	return section
+	// create a new section for this manifest
+	s := &section{key: key, entries: make([]string, 0)}
+	m.sections = append(m.sections, s)
+
+	return s
 }
 
-func (s *Manifest) Render() string {
+// Render is responsible for generating the final unit
+func (m *Manifest) Render() string {
 	var b bytes.Buffer
+	size := len(m.sections) - 1
 
-	for i, section := range s.Sections {
-		if i != 0 {
+	for i, section := range m.sections {
+		b.WriteString(fmt.Sprintf("[%s]\n", section.key))
+		if section.content != "" {
+			b.WriteString(section.content)
+		}
+		for _, x := range section.entries {
+			b.WriteString(x)
+		}
+		if i < size {
 			b.WriteString("\n")
 		}
-		b.WriteString(section.Render())
-	}
-
-	return b.String()
-}
-
-func (s *ManifestSection) Set(key string, value string) {
-	for _, entry := range s.Entries {
-		if entry.Key == key {
-			entry.Value = value
-			return
-		}
-	}
-
-	entry := &ManifestEntry{
-		Key:   key,
-		Value: value,
-	}
-	s.Entries = append(s.Entries, entry)
-}
-
-func (s *ManifestSection) Render() string {
-	var b bytes.Buffer
-
-	b.WriteString("[" + s.Key + "]\n")
-	for _, entry := range s.Entries {
-		b.WriteString(entry.Key + "=" + entry.Value + "\n")
 	}
 
 	return b.String()

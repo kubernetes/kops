@@ -18,39 +18,66 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/formatter"
 	"k8s.io/kops/util/pkg/tables"
-	k8sapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
-type GetInstanceGroupsCmd struct {
+var (
+	getInstancegroupsLong = templates.LongDesc(i18n.T(`
+	Display one or many instancegroup resources.`))
+
+	getInstancegroupsExample = templates.Examples(i18n.T(`
+	# Get all instancegroups in a state store
+	kops get ig
+
+	# Get a cluster's instancegroup
+	kops get ig --name k8s-cluster.example.com nodes
+
+	# Save a cluster's instancegroups desired configuration to YAML file
+	kops get ig --name k8s-cluster.example.com -o yaml > instancegroups-desired-config.yaml
+	`))
+
+	getInstancegroupsShort = i18n.T(`Get one or many instancegroups`)
+)
+
+type GetInstanceGroupsOptions struct {
+	*GetOptions
 }
 
-var getInstanceGroupsCmd GetInstanceGroupsCmd
+func NewCmdGetInstanceGroups(f *util.Factory, out io.Writer, getOptions *GetOptions) *cobra.Command {
+	options := GetInstanceGroupsOptions{
+		GetOptions: getOptions,
+	}
 
-func init() {
 	cmd := &cobra.Command{
 		Use:     "instancegroups",
 		Aliases: []string{"instancegroup", "ig"},
-		Short:   "get instancegroups",
-		Long:    `List or get InstanceGroups.`,
+		Short:   getInstancegroupsShort,
+		Long:    getInstancegroupsLong,
+		Example: getInstancegroupsExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := getInstanceGroupsCmd.Run(args)
+			err := RunGetInstanceGroups(&options, args)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	getCmd.cobraCommand.AddCommand(cmd)
+	return cmd
 }
 
-func (c *GetInstanceGroupsCmd) Run(args []string) error {
+func RunGetInstanceGroups(options *GetInstanceGroupsOptions, args []string) error {
 	out := os.Stdout
 
 	clusterName := rootCommand.ClusterName()
@@ -63,23 +90,62 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(clusterName).List(k8sapi.ListOptions{})
+	cluster, err := clientset.GetCluster(clusterName)
+	if err != nil {
+		return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
+	}
+
+	if cluster == nil {
+		return fmt.Errorf("cluster %q was not found", clusterName)
+	}
+
+	list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
 
+	instancegroups, err := buildInstanceGroups(args, list)
+	if err != nil {
+		return err
+	}
+
+	if len(instancegroups) == 0 {
+		return fmt.Errorf("No InstanceGroup objects found")
+	}
+
+	var obj []runtime.Object
+	if options.output != OutputTable {
+		for _, c := range instancegroups {
+			obj = append(obj, c)
+		}
+	}
+
+	switch options.output {
+	case OutputTable:
+		return igOutputTable(cluster, instancegroups, out)
+	case OutputYaml:
+		return fullOutputYAML(out, obj...)
+	case OutputJSON:
+		return fullOutputJSON(out, obj...)
+	default:
+		return fmt.Errorf("Unknown output format: %q", options.output)
+	}
+}
+
+func buildInstanceGroups(args []string, list *api.InstanceGroupList) ([]*api.InstanceGroup, error) {
 	var instancegroups []*api.InstanceGroup
-	if len(args) != 0 {
+	len := len(args)
+	if len != 0 {
 		m := make(map[string]*api.InstanceGroup)
 		for i := range list.Items {
 			ig := &list.Items[i]
 			m[ig.ObjectMeta.Name] = ig
 		}
-		instancegroups = make([]*api.InstanceGroup, 0, len(args))
+		instancegroups = make([]*api.InstanceGroup, 0, len)
 		for _, arg := range args {
 			ig := m[arg]
 			if ig == nil {
-				return fmt.Errorf("instancegroup not found %q", arg)
+				return nil, fmt.Errorf("instancegroup not found %q", arg)
 			}
 
 			instancegroups = append(instancegroups, ig)
@@ -91,57 +157,30 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 		}
 	}
 
-	if len(instancegroups) == 0 {
-		fmt.Fprintf(os.Stderr, "No InstanceGroup objects found\n")
-		return nil
-	}
+	return instancegroups, nil
+}
 
-	switch getCmd.output {
-
-	case OutputTable:
-		t := &tables.Table{}
-		t.AddColumn("NAME", func(c *api.InstanceGroup) string {
-			return c.ObjectMeta.Name
-		})
-		t.AddColumn("ROLE", func(c *api.InstanceGroup) string {
-			return string(c.Spec.Role)
-		})
-		t.AddColumn("MACHINETYPE", func(c *api.InstanceGroup) string {
-			return c.Spec.MachineType
-		})
-		t.AddColumn("SUBNETS", func(c *api.InstanceGroup) string {
-			return strings.Join(c.Spec.Subnets, ",")
-		})
-		t.AddColumn("MIN", func(c *api.InstanceGroup) string {
-			return int32PointerToString(c.Spec.MinSize)
-		})
-		t.AddColumn("MAX", func(c *api.InstanceGroup) string {
-			return int32PointerToString(c.Spec.MaxSize)
-		})
-		return t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "SUBNETS")
-
-	case OutputYaml:
-		for i, ig := range instancegroups {
-			if i != 0 {
-				_, err = out.Write([]byte("\n\n---\n\n"))
-				if err != nil {
-					return fmt.Errorf("error writing to stdout: %v", err)
-				}
-			}
-			if err := marshalToWriter(ig, marshalYaml, out); err != nil {
-				return err
-			}
-		}
-	case OutputJSON:
-		for _, ig := range instancegroups {
-			if err := marshalToWriter(ig, marshalJSON, os.Stdout); err != nil {
-				return err
-			}
-		}
-	default:
-		return fmt.Errorf("Unknown output format: %q", getCmd.output)
-	}
-	return nil
+func igOutputTable(cluster *api.Cluster, instancegroups []*api.InstanceGroup, out io.Writer) error {
+	t := &tables.Table{}
+	t.AddColumn("NAME", func(c *api.InstanceGroup) string {
+		return c.ObjectMeta.Name
+	})
+	t.AddColumn("ROLE", func(c *api.InstanceGroup) string {
+		return string(c.Spec.Role)
+	})
+	t.AddColumn("MACHINETYPE", func(c *api.InstanceGroup) string {
+		return c.Spec.MachineType
+	})
+	t.AddColumn("SUBNETS", formatter.RenderInstanceGroupSubnets(cluster))
+	t.AddColumn("ZONES", formatter.RenderInstanceGroupZones(cluster))
+	t.AddColumn("MIN", func(c *api.InstanceGroup) string {
+		return int32PointerToString(c.Spec.MinSize)
+	})
+	t.AddColumn("MAX", func(c *api.InstanceGroup) string {
+		return int32PointerToString(c.Spec.MaxSize)
+	})
+	// SUBNETS is not not selected by default - not as useful as ZONES
+	return t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
 }
 
 func int32PointerToString(v *int32) string {

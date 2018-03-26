@@ -18,6 +18,18 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+)
+
+var (
+	describeLong = templates.LongDesc(i18n.T(`
+	Get additional information about cloud and cluster resources.
+	`))
+
+	describeExample = templates.Examples(i18n.T(`
+	`))
+	describeShort = i18n.T(`Describe a resource.`)
 )
 
 // DescribeCmd represents the describe command
@@ -27,8 +39,10 @@ type DescribeCmd struct {
 
 var describeCmd = DescribeCmd{
 	cobraCommand: &cobra.Command{
-		Use:   "describe",
-		Short: "describe objects",
+		Use:     "describe",
+		Short:   describeShort,
+		Long:    describeLong,
+		Example: describeExample,
 	},
 }
 

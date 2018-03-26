@@ -27,6 +27,7 @@ import (
 // (SSHAccess, KubernetesAPIAccess)
 type ExternalAccessModelBuilder struct {
 	*KopsModelContext
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &ExternalAccessModelBuilder{}
@@ -50,6 +51,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
 			c.AddTask(&awstasks.SecurityGroupRule{
 				Name:          s("ssh-external-to-master-" + sshAccess),
+				Lifecycle:     b.Lifecycle,
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 				Protocol:      s("tcp"),
 				FromPort:      i64(22),
@@ -59,6 +61,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			c.AddTask(&awstasks.SecurityGroupRule{
 				Name:          s("ssh-external-to-node-" + sshAccess),
+				Lifecycle:     b.Lifecycle,
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 				Protocol:      s("tcp"),
 				FromPort:      i64(22),
@@ -66,6 +69,32 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				CIDR:          s(sshAccess),
 			})
 		}
+	}
+
+	for _, nodePortAccess := range b.Cluster.Spec.NodePortAccess {
+		nodePortRange, err := b.NodePortRange()
+		if err != nil {
+			return err
+		}
+
+		c.AddTask(&awstasks.SecurityGroupRule{
+			Name:          s("nodeport-tcp-external-to-node-" + nodePortAccess),
+			Lifecycle:     b.Lifecycle,
+			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
+			Protocol:      s("tcp"),
+			FromPort:      i64(int64(nodePortRange.Base)),
+			ToPort:        i64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
+			CIDR:          s(nodePortAccess),
+		})
+		c.AddTask(&awstasks.SecurityGroupRule{
+			Name:          s("nodeport-udp-external-to-node-" + nodePortAccess),
+			Lifecycle:     b.Lifecycle,
+			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
+			Protocol:      s("udp"),
+			FromPort:      i64(int64(nodePortRange.Base)),
+			ToPort:        i64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
+			CIDR:          s(nodePortAccess),
+		})
 	}
 
 	if !b.UseLoadBalancerForAPI() {
@@ -77,6 +106,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
 			t := &awstasks.SecurityGroupRule{
 				Name:          s("https-external-to-master-" + apiAccess),
+				Lifecycle:     b.Lifecycle,
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 				Protocol:      s("tcp"),
 				FromPort:      i64(443),

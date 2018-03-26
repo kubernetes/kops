@@ -18,7 +18,7 @@ package aws
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 func stringSetToPointers(in sets.String) []*string {
@@ -38,7 +38,7 @@ func stringSetFromPointers(in []*string) sets.String {
 	}
 	out := sets.NewString()
 	for i := range in {
-		out.Insert(orEmpty(in[i]))
+		out.Insert(aws.StringValue(in[i]))
 	}
 	return out
 }

@@ -1,11 +1,13 @@
 apiVersion: kops/v1alpha2
 kind: Cluster
 metadata:
-  creationTimestamp: "2017-01-01T00:00:00Z"
+  creationTimestamp: 2017-01-01T00:00:00Z
   name: minimal.example.com
 spec:
   api:
     dns: {}
+  authorization:
+    rbac: {}
   channel: stable
   cloudProvider: aws
   configBase: memfs://tests/minimal.example.com
@@ -18,6 +20,9 @@ spec:
     - instanceGroup: master-us-test-1a
       name: a
     name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: v1.4.8
@@ -44,15 +49,17 @@ spec:
 apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: "2017-01-01T00:00:00Z"
+  creationTimestamp: 2017-01-01T00:00:00Z
   labels:
     kops.k8s.io/cluster: minimal.example.com
   name: master-us-test-1a
 spec:
-  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
   machineType: m3.medium
   maxSize: 1
   minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-test-1a
   role: Master
   subnets:
   - us-test-1a
@@ -62,15 +69,17 @@ spec:
 apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: "2017-01-01T00:00:00Z"
+  creationTimestamp: 2017-01-01T00:00:00Z
   labels:
     kops.k8s.io/cluster: minimal.example.com
   name: nodes
 spec:
-  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
   machineType: t2.medium
   maxSize: 2
   minSize: 2
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes
   role: Node
   subnets:
   - us-test-1a

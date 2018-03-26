@@ -17,9 +17,10 @@ limitations under the License.
 package nodetasks
 
 import (
-	"k8s.io/kops/upup/pkg/fi"
 	"reflect"
 	"testing"
+
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestLoadImageTask_Deps(t *testing.T) {

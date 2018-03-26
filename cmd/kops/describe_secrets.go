@@ -17,17 +17,31 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
-
 	"bytes"
 	"crypto/rsa"
-	"github.com/spf13/cobra"
-	"k8s.io/kops/pkg/apis/kops/registry"
-	"k8s.io/kops/upup/pkg/fi"
+	"fmt"
 	"os"
 	"sort"
 	"strings"
 	"text/tabwriter"
+
+	"github.com/spf13/cobra"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+)
+
+var (
+	describeSecretLong = templates.LongDesc(i18n.T(`
+	Get additional information about cluster secrets.
+	`))
+
+	// TODO: what is an example??
+	describeSecretExample = templates.Examples(i18n.T(`
+	
+	`))
+	describeSecretShort = i18n.T(`Describe a cluster secret`)
 )
 
 type DescribeSecretsCommand struct {
@@ -40,8 +54,9 @@ func init() {
 	cmd := &cobra.Command{
 		Use:     "secrets",
 		Aliases: []string{"secret"},
-		Short:   "Describe secrets",
-		Long:    `Describe secrets.`,
+		Short:   describeSecretShort,
+		Long:    describeSecretLong,
+		Example: describeSecretExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := describeSecretsCommand.Run(args)
 			if err != nil {
@@ -61,17 +76,27 @@ func (c *DescribeSecretsCommand) Run(args []string) error {
 		return err
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
+	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
 
-	secretStore, err := registry.SecretStore(cluster)
+	keyStore, err := clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}
 
-	items, err := listSecrets(keyStore, secretStore, c.Type, args)
+	secretStore, err := clientset.SecretStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	items, err := listSecrets(keyStore, secretStore, sshCredentialStore, c.Type, args)
 	if err != nil {
 		return err
 	}
@@ -94,19 +119,19 @@ func (c *DescribeSecretsCommand) Run(args []string) error {
 		fmt.Fprintf(w, "Id:\t%s\n", i.Id)
 
 		switch i.Type {
-		case fi.SecretTypeKeypair:
+		case kops.SecretTypeKeypair:
 			err = describeKeypair(keyStore, i, &b)
 			if err != nil {
 				return err
 			}
 
-		case fi.SecretTypeSSHPublicKey:
+		case SecretTypeSSHPublicKey:
 			err = describeSSHPublicKey(i, &b)
 			if err != nil {
 				return err
 			}
 
-		case fi.SecretTypeSecret:
+		case kops.SecretTypeSecret:
 			err = describeSecret(i, &b)
 			if err != nil {
 				return err

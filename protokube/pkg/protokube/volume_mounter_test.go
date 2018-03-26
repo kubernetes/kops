@@ -20,6 +20,8 @@ import (
 	"sort"
 	"strings"
 	"testing"
+
+	"k8s.io/kops/protokube/pkg/etcd"
 )
 
 func getIDs(volumes []*Volume) string {
@@ -44,16 +46,55 @@ func Test_VolumeSort_ByEtcdClusterName(t *testing.T) {
 		t.Fatalf("Fail at sort 1: %v", getIDs(volumes))
 	}
 
-	v2.Info.EtcdClusters = append(v2.Info.EtcdClusters, &EtcdClusterSpec{ClusterKey: "events"})
+	v2.Info.EtcdClusters = append(v2.Info.EtcdClusters, &etcd.EtcdClusterSpec{ClusterKey: "events"})
 	sort.Stable(ByEtcdClusterName(volumes))
 	if getIDs(volumes) != "2,1,3" {
 		t.Fatalf("Fail at sort 2: %v", getIDs(volumes))
 	}
 
-	v3.Info.EtcdClusters = append(v3.Info.EtcdClusters, &EtcdClusterSpec{ClusterKey: "main"})
+	v3.Info.EtcdClusters = append(v3.Info.EtcdClusters, &etcd.EtcdClusterSpec{ClusterKey: "main"})
 	sort.Stable(ByEtcdClusterName(volumes))
 	if getIDs(volumes) != "3,2,1" {
 		t.Fatalf("Fail at sort 3: %v", getIDs(volumes))
+	}
+
+}
+
+func Test_Mount_Volumes(t *testing.T) {
+	grid := []struct {
+		volume      *Volume
+		doNotMount  bool
+		description string
+	}{
+		{
+			&Volume{
+				LocalDevice: "/dev/xvda",
+			},
+			true,
+			"xda without a etcd cluster, do not mount",
+		},
+		{
+			&Volume{
+				LocalDevice: "/dev/xvdb",
+				Info: VolumeInfo{
+					EtcdClusters: []*etcd.EtcdClusterSpec{
+						{
+							ClusterKey: "foo",
+							NodeName:   "bar",
+						},
+					},
+				},
+			},
+			true,
+			"xdb with a etcd cluster, mount",
+		},
+	}
+
+	for _, g := range grid {
+		d := doNotMountVolume(g.volume)
+		if d && !g.doNotMount {
+			t.Fatalf("volume mount should not have mounted: %s, description: %s", g.volume.LocalDevice, g.description)
+		}
 	}
 
 }

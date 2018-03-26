@@ -14,12 +14,17 @@
 // Adding context to an error
 //
 // The errors.Wrap function returns a new error that adds context to the
-// original error. For example
+// original error by recording a stack trace at the point Wrap is called,
+// and the supplied message. For example
 //
 //     _, err := ioutil.ReadAll(r)
 //     if err != nil {
 //             return errors.Wrap(err, "read failed")
 //     }
+//
+// If additional control is required the errors.WithStack and errors.WithMessage
+// functions destructure errors.Wrap into its component operations of annotating
+// an error with a stack trace and an a message, respectively.
 //
 // Retrieving the cause of an error
 //
@@ -91,68 +96,74 @@ import (
 	"io"
 )
 
-// _error is an error implementation returned by New and Errorf
-// that implements its own fmt.Formatter.
-type _error struct {
-	msg string
-	*stack
-}
-
-func (e _error) Error() string { return e.msg }
-
-func (e _error) Format(s fmt.State, verb rune) {
-	switch verb {
-	case 'v':
-		if s.Flag('+') {
-			io.WriteString(s, e.msg)
-			fmt.Fprintf(s, "%+v", e.StackTrace())
-			return
-		}
-		fallthrough
-	case 's':
-		io.WriteString(s, e.msg)
-	}
-}
-
 // New returns an error with the supplied message.
+// New also records the stack trace at the point it was called.
 func New(message string) error {
-	return _error{
-		message,
-		callers(),
+	return &fundamental{
+		msg:   message,
+		stack: callers(),
 	}
 }
 
 // Errorf formats according to a format specifier and returns the string
 // as a value that satisfies error.
+// Errorf also records the stack trace at the point it was called.
 func Errorf(format string, args ...interface{}) error {
-	return _error{
-		fmt.Sprintf(format, args...),
+	return &fundamental{
+		msg:   fmt.Sprintf(format, args...),
+		stack: callers(),
+	}
+}
+
+// fundamental is an error that has a message and a stack, but no caller.
+type fundamental struct {
+	msg string
+	*stack
+}
+
+func (f *fundamental) Error() string { return f.msg }
+
+func (f *fundamental) Format(s fmt.State, verb rune) {
+	switch verb {
+	case 'v':
+		if s.Flag('+') {
+			io.WriteString(s, f.msg)
+			f.stack.Format(s, verb)
+			return
+		}
+		fallthrough
+	case 's':
+		io.WriteString(s, f.msg)
+	case 'q':
+		fmt.Fprintf(s, "%q", f.msg)
+	}
+}
+
+// WithStack annotates err with a stack trace at the point WithStack was called.
+// If err is nil, WithStack returns nil.
+func WithStack(err error) error {
+	if err == nil {
+		return nil
+	}
+	return &withStack{
+		err,
 		callers(),
 	}
 }
 
-type cause struct {
-	cause error
-	msg   string
-}
-
-func (c cause) Error() string { return fmt.Sprintf("%s: %v", c.msg, c.Cause()) }
-func (c cause) Cause() error  { return c.cause }
-
-// wrapper is an error implementation returned by Wrap and Wrapf
-// that implements its own fmt.Formatter.
-type wrapper struct {
-	cause
+type withStack struct {
+	error
 	*stack
 }
 
-func (w wrapper) Format(s fmt.State, verb rune) {
+func (w *withStack) Cause() error { return w.error }
+
+func (w *withStack) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
-			fmt.Fprintf(s, "%+v\n", w.Cause())
-			io.WriteString(s, w.msg)
-			fmt.Fprintf(s, "%+v", w.StackTrace())
+			fmt.Fprintf(s, "%+v", w.Cause())
+			w.stack.Format(s, verb)
 			return
 		}
 		fallthrough
@@ -163,33 +174,71 @@ func (w wrapper) Format(s fmt.State, verb rune) {
 	}
 }
 
-// Wrap returns an error annotating err with message.
+// Wrap returns an error annotating err with a stack trace
+// at the point Wrap is called, and the supplied message.
 // If err is nil, Wrap returns nil.
 func Wrap(err error, message string) error {
 	if err == nil {
 		return nil
 	}
-	return wrapper{
-		cause: cause{
-			cause: err,
-			msg:   message,
-		},
-		stack: callers(),
+	err = &withMessage{
+		cause: err,
+		msg:   message,
+	}
+	return &withStack{
+		err,
+		callers(),
 	}
 }
 
-// Wrapf returns an error annotating err with the format specifier.
+// Wrapf returns an error annotating err with a stack trace
+// at the point Wrapf is call, and the format specifier.
 // If err is nil, Wrapf returns nil.
 func Wrapf(err error, format string, args ...interface{}) error {
 	if err == nil {
 		return nil
 	}
-	return wrapper{
-		cause: cause{
-			cause: err,
-			msg:   fmt.Sprintf(format, args...),
-		},
-		stack: callers(),
+	err = &withMessage{
+		cause: err,
+		msg:   fmt.Sprintf(format, args...),
+	}
+	return &withStack{
+		err,
+		callers(),
+	}
+}
+
+// WithMessage annotates err with a new message.
+// If err is nil, WithMessage returns nil.
+func WithMessage(err error, message string) error {
+	if err == nil {
+		return nil
+	}
+	return &withMessage{
+		cause: err,
+		msg:   message,
+	}
+}
+
+type withMessage struct {
+	cause error
+	msg   string
+}
+
+func (w *withMessage) Error() string { return w.msg + ": " + w.cause.Error() }
+func (w *withMessage) Cause() error  { return w.cause }
+
+func (w *withMessage) Format(s fmt.State, verb rune) {
+	switch verb {
+	case 'v':
+		if s.Flag('+') {
+			fmt.Fprintf(s, "%+v\n", w.Cause())
+			io.WriteString(s, w.msg)
+			return
+		}
+		fallthrough
+	case 's', 'q':
+		io.WriteString(s, w.Error())
 	}
 }
 

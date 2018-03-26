@@ -17,16 +17,40 @@ limitations under the License.
 package main
 
 import (
+	"io"
+
 	"github.com/spf13/cobra"
+	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
-// exportCmd represents the export command
-var exportCmd = &cobra.Command{
-	Use:   "export",
-	Short: "export clusters/kubecfg",
-	Long:  `export clusters/kubecfg`,
+var (
+	exportLong = templates.LongDesc(i18n.T(`
+	Export configurations from a cluster.`))
+
+	exportExample = templates.Examples(i18n.T(`
+	# export a kubecfg file
+	kops export kubecfg kubernetes-cluster.example.com
+		`))
+
+	exportShort = i18n.T(`Export configuration.`)
+)
+
+type ExportOptions struct {
 }
 
-func init() {
-	rootCommand.AddCommand(exportCmd)
+func NewCmdExport(f *util.Factory, out io.Writer) *cobra.Command {
+
+	cmd := &cobra.Command{
+		Use:     "export",
+		Short:   exportShort,
+		Long:    exportLong,
+		Example: exportExample,
+	}
+
+	// create subcommands
+	cmd.AddCommand(NewCmdExportKubecfg(f, out))
+
+	return cmd
 }

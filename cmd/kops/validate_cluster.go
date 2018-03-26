@@ -17,68 +17,92 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"strings"
 
+	"github.com/ghodss/yaml"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/util/pkg/tables"
-	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/v1"
-	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 )
 
+func init() {
+	if runtime.GOOS == "darwin" {
+		// In order for  net.LookupHost(apiAddr.Host) to lookup our placeholder address on darwin, we have to
+		os.Setenv("GODEBUG", "netdns=go")
+	}
+}
+
 type ValidateClusterOptions struct {
-	// No options yet
+	output string
+}
+
+func (o *ValidateClusterOptions) InitDefaults() {
+	o.output = OutputTable
 }
 
 func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &ValidateClusterOptions{}
+	options.InitDefaults()
 
 	cmd := &cobra.Command{
-		Use: "cluster",
-		//Aliases: []string{"cluster"},
-		Short: "Validate cluster",
-		Long:  `Validate a kubernetes cluster`,
+		Use:     "cluster",
+		Short:   validateShort,
+		Long:    validateLong,
+		Example: validateExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunValidateCluster(f, cmd, args, os.Stdout, options)
+			result, err := RunValidateCluster(f, cmd, args, os.Stdout, options)
 			if err != nil {
 				exitWithError(err)
+			}
+			// We want the validate command to exit non-zero if validation found a problem,
+			// even if we didn't really hit an error during validation.
+			if len(result.Failures) != 0 {
+				os.Exit(2)
 			}
 		},
 	}
 
+	cmd.Flags().StringVarP(&options.output, "output", "o", options.output, "Ouput format. One of json|yaml|table.")
+
 	return cmd
 }
 
-func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *ValidateClusterOptions) error {
+func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *ValidateClusterOptions) (*validation.ValidationCluster, error) {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	cluster, err := rootCommand.Cluster()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	clientSet, err := f.Clientset()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	list, err := clientSet.InstanceGroups(cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
+	list, err := clientSet.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
-		return fmt.Errorf("cannot get InstanceGroups for %q: %v", cluster.ObjectMeta.Name, err)
+		return nil, fmt.Errorf("cannot get InstanceGroups for %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
-	fmt.Fprintf(out, "Validating cluster %v\n\n", cluster.ObjectMeta.Name)
+	if options.output == OutputTable {
+		fmt.Fprintf(out, "Validating cluster %v\n\n", cluster.ObjectMeta.Name)
+	}
 
 	var instanceGroups []api.InstanceGroup
 	for _, ig := range list.Items {
@@ -87,7 +111,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	}
 
 	if len(instanceGroups) == 0 {
-		return fmt.Errorf("no InstanceGroup objects found\n")
+		return nil, fmt.Errorf("no InstanceGroup objects found")
 	}
 
 	// TODO: Refactor into util.Factory
@@ -96,21 +120,51 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		clientcmd.NewDefaultClientConfigLoadingRules(),
 		&clientcmd.ConfigOverrides{CurrentContext: contextName}).ClientConfig()
 	if err != nil {
-		return fmt.Errorf("Cannot load kubecfg settings for %q: %v\n", contextName, err)
+		return nil, fmt.Errorf("Cannot load kubecfg settings for %q: %v", contextName, err)
 	}
 
-	k8sClient, err := k8s_clientset.NewForConfig(config)
+	k8sClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return fmt.Errorf("Cannot build kube api client for %q: %v\n", contextName, err)
+		return nil, fmt.Errorf("Cannot build kubernetes api client for %q: %v", contextName, err)
 	}
 
-	validationCluster, validationFailed := validation.ValidateCluster(cluster.ObjectMeta.Name, list, k8sClient)
-
-	if validationCluster == nil || validationCluster.NodeList == nil || validationCluster.NodeList.Items == nil {
-		// validationFailed error is already formatted
-		return validationFailed
+	result, err := validation.ValidateCluster(cluster, list, k8sClient)
+	if err != nil {
+		return nil, fmt.Errorf("unexpected error during validation: %v", err)
 	}
 
+	switch options.output {
+	case OutputTable:
+		if err := validateClusterOutputTable(result, cluster, instanceGroups, out); err != nil {
+			return nil, err
+		}
+
+	case OutputYaml:
+		y, err := yaml.Marshal(result)
+		if err != nil {
+			return nil, fmt.Errorf("unable to marshal YAML: %v", err)
+		}
+		if _, err := out.Write(y); err != nil {
+			return nil, fmt.Errorf("error writing to output: %v", err)
+		}
+
+	case OutputJSON:
+		j, err := json.Marshal(result)
+		if err != nil {
+			return nil, fmt.Errorf("unable to marshal JSON: %v", err)
+		}
+		if _, err := out.Write(j); err != nil {
+			return nil, fmt.Errorf("error writing to output: %v", err)
+		}
+
+	default:
+		return nil, fmt.Errorf("Unknown output format: %q", options.output)
+	}
+
+	return result, nil
+}
+
+func validateClusterOutputTable(result *validation.ValidationCluster, cluster *api.Cluster, instanceGroups []api.InstanceGroup, out io.Writer) error {
 	t := &tables.Table{}
 	t.AddColumn("NAME", func(c api.InstanceGroup) string {
 		return c.ObjectMeta.Name
@@ -132,76 +186,55 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	})
 
 	fmt.Fprintln(out, "INSTANCE GROUPS")
-	err = t.Render(instanceGroups, out, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "SUBNETS")
+	err := t.Render(instanceGroups, out, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "SUBNETS")
 
 	if err != nil {
-		return fmt.Errorf("cannot render nodes for %q: %v", cluster.ObjectMeta.Name, err)
+		return fmt.Errorf("cannot render nodes for %q: %v", cluster.Name, err)
 	}
 
-	nodeTable := &tables.Table{}
-
-	nodeTable.AddColumn("NAME", func(n v1.Node) string {
-		return n.Name
-	})
-
-	nodeTable.AddColumn("READY", func(n v1.Node) v1.ConditionStatus {
-		return validation.GetNodeConditionStatus(&n)
-	})
-
-	nodeTable.AddColumn("ROLE", func(n v1.Node) string {
-		// TODO: Maybe print the instance group role instead?
-		// TODO: Maybe include the instance group name?
-		role := "node"
-		if val, ok := n.ObjectMeta.Labels[api.RoleLabelName]; ok {
-			role = val
-		}
-		return role
-	})
-
-	fmt.Fprintln(out, "\nNODE STATUS")
-	err = nodeTable.Render(validationCluster.NodeList.Items, out, "NAME", "ROLE", "READY")
-
-	if err != nil {
-		return fmt.Errorf("cannot render nodes for %q: %v", cluster.ObjectMeta.Name, err)
-	}
-
-	if len(validationCluster.ComponentFailures) != 0 {
-		componentFailuresTable := &tables.Table{}
-		componentFailuresTable.AddColumn("NAME", func(s string) string {
-			return s
+	{
+		nodeTable := &tables.Table{}
+		nodeTable.AddColumn("NAME", func(n *validation.ValidationNode) string {
+			return n.Name
 		})
 
-		fmt.Fprintln(out, "\nComponent Failures")
-		err = componentFailuresTable.Render(validationCluster.ComponentFailures, out, "NAME")
-
-		if err != nil {
-			return fmt.Errorf("cannot render components for %q: %v", cluster.ObjectMeta.Name, err)
-		}
-	}
-
-	if len(validationCluster.PodFailures) != 0 {
-		podFailuresTable := &tables.Table{}
-		podFailuresTable.AddColumn("NAME", func(s string) string {
-			return s
+		nodeTable.AddColumn("READY", func(n *validation.ValidationNode) v1.ConditionStatus {
+			return n.Status
 		})
 
-		fmt.Fprintln(out, "\nPod Failures in kube-system")
-		err = podFailuresTable.Render(validationCluster.PodFailures, out, "NAME")
+		nodeTable.AddColumn("ROLE", func(n *validation.ValidationNode) string {
+			return n.Role
+		})
 
-		if err != nil {
-			return fmt.Errorf("cannot render pods for %q: %v", cluster.ObjectMeta.Name, err)
+		fmt.Fprintln(out, "\nNODE STATUS")
+		if err := nodeTable.Render(result.Nodes, out, "NAME", "ROLE", "READY"); err != nil {
+			return fmt.Errorf("cannot render nodes for %q: %v", cluster.Name, err)
 		}
 	}
 
-	if validationFailed == nil {
-		fmt.Fprintf(out, "\nYour cluster %s is ready\n", cluster.ObjectMeta.Name)
-		return nil
+	if len(result.Failures) != 0 {
+		failuresTable := &tables.Table{}
+		failuresTable.AddColumn("KIND", func(e *validation.ValidationError) string {
+			return e.Kind
+		})
+		failuresTable.AddColumn("NAME", func(e *validation.ValidationError) string {
+			return e.Name
+		})
+		failuresTable.AddColumn("MESSAGE", func(e *validation.ValidationError) string {
+			return e.Message
+		})
+
+		fmt.Fprintln(out, "\nVALIDATION ERRORS")
+		if err := failuresTable.Render(result.Failures, out, "KIND", "NAME", "MESSAGE"); err != nil {
+			return fmt.Errorf("error rendering failures table: %v", err)
+		}
+	}
+
+	if len(result.Failures) == 0 {
+		fmt.Fprintf(out, "\nYour cluster %s is ready\n", cluster.Name)
 	} else {
-		// do we need to print which instance group is not ready?
-		// nodes are going to be a pain
 		fmt.Fprint(out, "\nValidation Failed\n")
-		fmt.Fprintf(out, "Ready Master(s) %d out of %d.\n", len(validationCluster.MastersReadyArray), validationCluster.MastersCount)
-		fmt.Fprintf(out, "Ready Node(s) %d out of %d.\n", len(validationCluster.NodesReadyArray), validationCluster.NodesCount)
-		return validationFailed
 	}
+
+	return nil
 }

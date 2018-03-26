@@ -18,10 +18,11 @@ package edit
 
 import (
 	"bytes"
-	"k8s.io/kops/pkg/apis/kops"
+
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kubernetes/pkg/runtime"
 )
 
 // HasExtraFields checks if the yaml has fields that were not mapped to the object
@@ -30,7 +31,7 @@ import (
 // If there are no extra fields it returns an empty string
 func HasExtraFields(yaml string, object runtime.Object) (string, error) {
 	// Convert the cluster back to YAML for comparison purposes
-	newYaml, err := kops.ToVersionedYaml(object)
+	newYaml, err := kopscodecs.ToVersionedYaml(object)
 	if err != nil {
 		return "", err
 	}

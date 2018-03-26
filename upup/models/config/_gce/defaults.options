@@ -1,4 +1,0 @@
-MasterImage: k8s-1-2-debian-jessie-amd64-2016-04-17
-MasterVolumeType: pd-ssd
-
-NodeImage: k8s-1-2-debian-jessie-amd64-2016-04-17

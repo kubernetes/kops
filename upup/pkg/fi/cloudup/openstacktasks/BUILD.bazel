@@ -1,0 +1,22 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "securitygroup.go",
+        "securitygroup_fitask.go",
+        "securitygrouprule.go",
+        "volume.go",
+        "volume_fitask.go",
+    ],
+    importpath = "k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/openstack:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules:go_default_library",
+    ],
+)

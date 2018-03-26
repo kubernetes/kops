@@ -19,16 +19,39 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
-	"io"
-
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+)
+
+var (
+	editInstancegroupLong = templates.LongDesc(i18n.T(`Edit a cluster configuration.
+
+	This command changes the instancegroup desired configuration in the registry.
+
+    	To set your preferred editor, you can define the EDITOR environment variable.
+    	When you have done this, kops will use the editor that you have set.
+
+	kops edit does not update the cloud resources, to apply the changes use "kops update cluster".`))
+
+	editInstancegroupExample = templates.Examples(i18n.T(`
+	# Edit an instancegroup desired configuration.
+	kops edit ig --name k8s-cluster.example.com node --state=s3://kops-state-1234
+	`))
+
+	editInstancegroupShort = i18n.T(`Edit instancegroup.`)
 )
 
 type EditInstanceGroupOptions struct {
@@ -40,12 +63,9 @@ func NewCmdEditInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "instancegroup",
 		Aliases: []string{"instancegroups", "ig"},
-		Short:   "Edit instancegroup",
-		Long: `Edit an instancegroup configuration.
-
-This command changes the cloud specification in the registry.
-
-It does not update the cloud resources, to apply the changes use "kops update cluster".`,
+		Short:   editInstancegroupShort,
+		Long:    editInstancegroupLong,
+		Example: editInstancegroupExample,
 		Run: func(cmd *cobra.Command, args []string) {
 
 			err := RunEditInstanceGroup(f, cmd, args, os.Stdout, options)
@@ -87,7 +107,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return fmt.Errorf("name is required")
 	}
 
-	oldGroup, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Get(groupName)
+	oldGroup, err := clientset.InstanceGroupsFor(cluster).Get(groupName, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("error reading InstanceGroup %q: %v", groupName, err)
 	}
@@ -100,7 +120,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 	)
 
 	ext := "yaml"
-	raw, err := api.ToVersionedYaml(oldGroup)
+	raw, err := kopscodecs.ToVersionedYaml(oldGroup)
 	if err != nil {
 		return err
 	}
@@ -121,7 +141,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return nil
 	}
 
-	newObj, _, err := api.ParseVersionedYaml(edited)
+	newObj, _, err := kopscodecs.ParseVersionedYaml(edited)
 	if err != nil {
 		return fmt.Errorf("error parsing InstanceGroup: %v", err)
 	}
@@ -131,7 +151,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return fmt.Errorf("object was not of expected type: %T", newObj)
 	}
 
-	err = newGroup.Validate()
+	err = validation.ValidateInstanceGroup(newGroup)
 	if err != nil {
 		return err
 	}
@@ -148,18 +168,19 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
 
-	fullCluster, err := cloudup.PopulateClusterSpec(cluster)
+	assetBuilder := assets.NewAssetBuilder(cluster, "")
+	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, assetBuilder)
 	if err != nil {
 		return err
 	}
 
-	err = fullGroup.CrossValidate(fullCluster, true)
+	err = validation.CrossValidateInstanceGroup(fullGroup, fullCluster, true)
 	if err != nil {
 		return err
 	}
 
 	// Note we perform as much validation as we can, before writing a bad config
-	_, err = clientset.InstanceGroups(cluster.ObjectMeta.Name).Update(fullGroup)
+	_, err = clientset.InstanceGroupsFor(cluster).Update(fullGroup)
 	if err != nil {
 		return err
 	}

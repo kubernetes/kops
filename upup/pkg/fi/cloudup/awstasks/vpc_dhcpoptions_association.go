@@ -29,7 +29,8 @@ import (
 
 //go:generate fitask -type=VPCDHCPOptionsAssociation
 type VPCDHCPOptionsAssociation struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	VPC         *VPC
 	DHCPOptions *DHCPOptions
@@ -56,6 +57,7 @@ func (e *VPCDHCPOptionsAssociation) Find(c *fi.Context) (*VPCDHCPOptionsAssociat
 
 	// Prevent spurious changes
 	actual.Name = e.Name
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

@@ -18,18 +18,22 @@ package vfsclientset
 
 import (
 	"fmt"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/validation"
-	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/util/pkg/vfs"
-	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/apis/meta/v1"
-	"os"
-	"strings"
-	"time"
 )
 
 type ClusterVFS struct {
@@ -44,14 +48,22 @@ func newClusterVFS(basePath vfs.Path) *ClusterVFS {
 	return c
 }
 
-var _ simple.ClusterInterface = &ClusterVFS{}
-
-func (c *ClusterVFS) Get(name string) (*api.Cluster, error) {
-	return c.find(name)
+func (c *ClusterVFS) Get(name string, options metav1.GetOptions) (*api.Cluster, error) {
+	if options.ResourceVersion != "" {
+		return nil, fmt.Errorf("ResourceVersion not supported in ClusterVFS::Get")
+	}
+	o, err := c.find(name)
+	if err != nil {
+		return nil, err
+	}
+	if o == nil {
+		return nil, errors.NewNotFound(schema.GroupResource{Group: api.GroupName, Resource: "Cluster"}, name)
+	}
+	return o, nil
 }
 
 // Deprecated, but we need this for now..
-func (c *ClusterVFS) ConfigBase(clusterName string) (vfs.Path, error) {
+func (c *ClusterVFS) configBase(clusterName string) (vfs.Path, error) {
 	if clusterName == "" {
 		return nil, fmt.Errorf("clusterName is required")
 	}
@@ -59,7 +71,7 @@ func (c *ClusterVFS) ConfigBase(clusterName string) (vfs.Path, error) {
 	return configPath, nil
 }
 
-func (c *ClusterVFS) List(options k8sapi.ListOptions) (*api.ClusterList, error) {
+func (c *ClusterVFS) List(options metav1.ListOptions) (*api.ClusterList, error) {
 	names, err := c.listNames()
 	if err != nil {
 		return nil, err
@@ -86,13 +98,12 @@ func (c *ClusterVFS) List(options k8sapi.ListOptions) (*api.ClusterList, error) 
 }
 
 func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
-	err := validation.ValidateCluster(c, false)
-	if err != nil {
+	if err := validation.ValidateCluster(c, false); err != nil {
 		return nil, err
 	}
 
 	if c.ObjectMeta.CreationTimestamp.IsZero() {
-		c.ObjectMeta.CreationTimestamp = v1.NewTime(time.Now().UTC())
+		c.ObjectMeta.CreationTimestamp = metav1.NewTime(time.Now().UTC())
 	}
 
 	clusterName := c.ObjectMeta.Name
@@ -100,8 +111,7 @@ func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 		return nil, fmt.Errorf("clusterName is required")
 	}
 
-	err = r.writeConfig(r.basePath.Join(clusterName, registry.PathCluster), c, vfs.WriteOptionCreate)
-	if err != nil {
+	if err := r.writeConfig(c, r.basePath.Join(clusterName, registry.PathCluster), c, vfs.WriteOptionCreate); err != nil {
 		if os.IsExist(err) {
 			return nil, err
 		}
@@ -111,19 +121,26 @@ func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 	return c, nil
 }
 
-func (r *ClusterVFS) Update(c *api.Cluster) (*api.Cluster, error) {
-	err := validation.ValidateCluster(c, false)
+func (r *ClusterVFS) Update(c *api.Cluster, status *api.ClusterStatus) (*api.Cluster, error) {
+	clusterName := c.ObjectMeta.Name
+	if clusterName == "" {
+		return nil, field.Required(field.NewPath("Name"), "clusterName is required")
+	}
+
+	old, err := r.Get(clusterName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	clusterName := c.ObjectMeta.Name
-	if clusterName == "" {
-		return nil, fmt.Errorf("clusterName is required")
+	if old == nil {
+		return nil, errors.NewNotFound(schema.GroupResource{Group: api.GroupName, Resource: "Cluster"}, clusterName)
 	}
 
-	err = r.writeConfig(r.basePath.Join(clusterName, registry.PathCluster), c, vfs.WriteOptionOnlyIfExists)
-	if err != nil {
+	if err := validation.ValidateClusterUpdate(c, status, old).ToAggregate(); err != nil {
+		return nil, err
+	}
+
+	if err := r.writeConfig(c, r.basePath.Join(clusterName, registry.PathCluster), c, vfs.WriteOptionOnlyIfExists); err != nil {
 		if os.IsNotExist(err) {
 			return nil, err
 		}
@@ -181,7 +198,7 @@ func (r *ClusterVFS) find(clusterName string) (*api.Cluster, error) {
 
 	// TODO: Split this out into real version updates / schema changes
 	if c.Spec.ConfigBase == "" {
-		configBase, err := r.ConfigBase(clusterName)
+		configBase, err := r.configBase(clusterName)
 		if err != nil {
 			return nil, fmt.Errorf("error building ConfigBase for cluster: %v", err)
 		}
@@ -189,4 +206,20 @@ func (r *ClusterVFS) find(clusterName string) (*api.Cluster, error) {
 	}
 
 	return c, nil
+}
+
+func (r *ClusterVFS) Delete(name string, options *metav1.DeleteOptions) error {
+	return fmt.Errorf("cluster Delete not implemented for vfs store")
+}
+
+func (r *ClusterVFS) DeleteCollection(options *metav1.DeleteOptions, listOptions metav1.ListOptions) error {
+	return fmt.Errorf("cluster DeleteCollection not implemented for vfs store")
+}
+
+func (r *ClusterVFS) Watch(opts metav1.ListOptions) (watch.Interface, error) {
+	return nil, fmt.Errorf("cluster Watch not implemented for vfs store")
+}
+
+func (r *ClusterVFS) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *api.Cluster, err error) {
+	return nil, fmt.Errorf("cluster Patch not implemented for vfs store")
 }

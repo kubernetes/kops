@@ -17,8 +17,9 @@ limitations under the License.
 package kops
 
 import (
-	"github.com/blang/semver"
 	"testing"
+
+	"github.com/blang/semver"
 )
 
 // Test_SemverOrdering is a test of semver ordering, but highlights the case that trips everyone one:

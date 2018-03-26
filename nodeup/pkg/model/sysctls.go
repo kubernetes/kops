@@ -19,6 +19,7 @@ package model
 import (
 	"strings"
 
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -96,13 +97,16 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"fs.file-max = 2097152",
 			"",
 
-			"# Increase size of conntrack table size to avoid poor iptables performance",
-			"net.netfilter.nf_conntrack_max = 1000000",
+			"# Max number of inotify instances and watches for a user",
+			"# Since dockerd runs as a single user, the default instances value of 128 per user is too low",
+			"# e.g. uses of inotify: nginx ingress controller, kubectl logs -f",
+			"fs.inotify.max_user_instances = 8192",
+			"fs.inotify.max_user_watches = 524288",
 			"",
 		)
 	}
 
-	if b.Cluster.Spec.CloudProvider == string(fi.CloudProviderAWS) {
+	if b.Cluster.Spec.CloudProvider == string(kops.CloudProviderAWS) {
 		sysctls = append(sysctls,
 			"# AWS settings",
 			"",
@@ -111,19 +115,16 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"")
 	}
 
-	if b.Cluster.Spec.CloudProvider == string(fi.CloudProviderGCE) {
-		sysctls = append(sysctls,
-			"# GCE settings",
-			"",
-			"net.ipv4.ip_forward=1",
-			"")
-	}
+	sysctls = append(sysctls,
+		"# Prevent docker from changing iptables: https://github.com/kubernetes/kubernetes/issues/40182",
+		"net.ipv4.ip_forward=1",
+		"")
 
 	t := &nodetasks.File{
 		Path:            "/etc/sysctl.d/99-k8s-general.conf",
 		Contents:        fi.NewStringResource(strings.Join(sysctls, "\n")),
 		Type:            nodetasks.FileType_File,
-		OnChangeExecute: []string{"sysctl", "--system"},
+		OnChangeExecute: [][]string{{"sysctl", "--system"}},
 	}
 	c.AddTask(t)
 

@@ -17,6 +17,9 @@ limitations under the License.
 package vfs
 
 import (
+	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -53,6 +56,10 @@ func (c *MemFSContext) MarkClusterReadable() {
 	c.clusterReadable = true
 }
 
+func (c *MemFSPath) HasChildren() bool {
+	return len(c.children) != 0
+}
+
 func (c *MemFSPath) IsClusterReadable() bool {
 	return c.context.clusterReadable
 }
@@ -87,26 +94,40 @@ func (p *MemFSPath) Join(relativePath ...string) Path {
 	return current
 }
 
-func (p *MemFSPath) WriteFile(data []byte) error {
+func (p *MemFSPath) WriteFile(r io.ReadSeeker, acl ACL) error {
+	data, err := ioutil.ReadAll(r)
+	if err != nil {
+		return fmt.Errorf("error reading data: %v", err)
+	}
 	p.contents = data
 	return nil
 }
 
-func (p *MemFSPath) CreateFile(data []byte) error {
+func (p *MemFSPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 	// Check if exists
 	if p.contents != nil {
 		return os.ErrExist
 	}
 
-	return p.WriteFile(data)
+	return p.WriteFile(data, acl)
 }
 
+// ReadFile implements Path::ReadFile
 func (p *MemFSPath) ReadFile() ([]byte, error) {
 	if p.contents == nil {
 		return nil, os.ErrNotExist
 	}
 	// TODO: Copy?
 	return p.contents, nil
+}
+
+// WriteTo implements io.WriterTo
+func (p *MemFSPath) WriteTo(out io.Writer) (int64, error) {
+	if p.contents == nil {
+		return 0, os.ErrNotExist
+	}
+	n, err := out.Write(p.contents)
+	return int64(n), err
 }
 
 func (p *MemFSPath) ReadDir() ([]Path, error) {
@@ -125,7 +146,9 @@ func (p *MemFSPath) ReadTree() ([]Path, error) {
 
 func (p *MemFSPath) readTree(dest *[]Path) {
 	for _, f := range p.children {
-		*dest = append(*dest, f)
+		if !f.HasChildren() {
+			*dest = append(*dest, f)
+		}
 		f.readTree(dest)
 	}
 }

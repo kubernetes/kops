@@ -188,7 +188,7 @@ This method provides zero-downtime when migrating a cluster from `kube-up` to `k
 
 Limitations:
 - If you're using the default networking (`kubenet`), there is a account limit of 50 entries in a VPC's route table. If your cluster contains more than ~25 nodes, this strategy, as-is, will not work.
-    + Shifting to a CNI-compatible overlay network like `weave`, `kopeio-vxlan`, `calico`, `canal`, `romana`, and similar. See the [kops networking docs](networking.md) for more information.
+    + Shifting to a CNI-compatible overlay network like `weave`, `kopeio-vxlan` (`kopeio`), `calico`, `canal`, `romana`, and similar. See the [kops networking docs](networking.md) for more information.
     + One solution is to gradually shift traffic from one cluster to the other, scaling down the number of nodes on the old cluster, and scaling up the number of nodes on the new cluster.
 
 ### Steps
@@ -204,7 +204,7 @@ Limitations:
 4. Verify the planned changes with `kops update cluster cluster.example.com`
 5. Create the cluster with `kops update cluster cluster.example.com --yes`
 6. Wait around for the cluster to fully come up and be available. `k get nodes` should return `(master + minions) = 15` available nodes.
-7. (Optional) Create the Dashboard with `kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml`
+7. (Optional) Create the Dashboard with `kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml`
 8. Deploy the existing resource configuration to the new cluster.
 9. Confirm that pods on the new cluster are able to access remote resources.
     - For AWS-hosted services, add the generated `nodes.cluster.example.com` security group to the resources that may need it (i.e. ElastiCache, RDS, etc).
@@ -214,7 +214,7 @@ Limitations:
     - if using a DNS server, update the `CNAME` record for `example.com` to point to the new ELB's DNS name.
     - if using a reverse proxy, update the upstream to point to the new ELB's DNS name. 
     - note that if you're proxying through Cloudflare or similar, changes are instantaneous because it's technically a reverse proxy and not a DNS record.
-    - if not using Cloudflare or similar, you'll want to update you DNS record's TTL to a very low duration about 48 hours in advance of this change (and then change it back to the previous value once the shift has been finalized).
+    - if not using Cloudflare or similar, you'll want to update your DNS record's TTL to a very low duration about 48 hours in advance of this change (and then change it back to the previous value once the shift has been finalized).
 12. Rejoice.
 13. Once traffic has shifted from the old cluster, delete the old resources after confirming that traffic has stabilized and that no new errors are generated.
     - autoscaling groups

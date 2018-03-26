@@ -18,13 +18,13 @@ package fi
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"io"
-	"k8s.io/kops/util/pkg/hashing"
 	"os"
 	"path"
 	"strconv"
-	"syscall"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 func WriteFile(destPath string, contents Resource, fileMode os.FileMode, dirMode os.FileMode) error {
@@ -84,37 +84,6 @@ func EnsureFileMode(destPath string, fileMode os.FileMode) (bool, error) {
 		return changed, fmt.Errorf("error setting file mode for %q: %v", destPath, err)
 	}
 	changed = true
-	return changed, nil
-}
-
-func EnsureFileOwner(destPath string, owner string, groupName string) (bool, error) {
-	changed := false
-	stat, err := os.Lstat(destPath)
-	if err != nil {
-		return changed, fmt.Errorf("error getting file stat for %q: %v", destPath, err)
-	}
-
-	user, err := LookupUser(owner) //user.Lookup(owner)
-	if err != nil {
-		return changed, fmt.Errorf("error looking up user %q: %v", owner, err)
-	}
-
-	group, err := LookupGroup(groupName)
-	if err != nil {
-		return changed, fmt.Errorf("error looking up group %q: %v", groupName, err)
-	}
-
-	if int(stat.Sys().(*syscall.Stat_t).Uid) == user.Uid && int(stat.Sys().(*syscall.Stat_t).Gid) == group.Gid {
-		return changed, nil
-	}
-
-	glog.Infof("Changing file owner/group for %q to %s:%s", destPath, owner, group)
-	err = os.Lchown(destPath, user.Uid, group.Gid)
-	if err != nil {
-		return changed, fmt.Errorf("error setting file owner/group for %q: %v", destPath, err)
-	}
-	changed = true
-
 	return changed, nil
 }
 

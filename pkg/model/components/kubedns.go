@@ -42,8 +42,6 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 	clusterSpec.KubeDNS.ServerIP = ip.String()
 	clusterSpec.KubeDNS.Domain = clusterSpec.ClusterDNSDomain
-	// TODO: Once we start shipping more images, start using them
-	clusterSpec.KubeDNS.Image = "gcr.io/google_containers/kubedns-amd64:1.3"
 
 	return nil
 }

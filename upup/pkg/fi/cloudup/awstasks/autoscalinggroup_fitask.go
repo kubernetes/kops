@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -43,6 +43,18 @@ func (o *AutoscalingGroup) UnmarshalJSON(data []byte) error {
 	}
 	*o = AutoscalingGroup(r)
 	return nil
+}
+
+var _ fi.HasLifecycle = &AutoscalingGroup{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *AutoscalingGroup) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
+// SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
+func (o *AutoscalingGroup) SetLifecycle(lifecycle fi.Lifecycle) {
+	o.Lifecycle = &lifecycle
 }
 
 var _ fi.HasName = &AutoscalingGroup{}

@@ -30,7 +30,9 @@ import (
 
 //go:generate fitask -type=RouteTableAssociation
 type RouteTableAssociation struct {
-	Name       *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID         *string
 	RouteTable *RouteTable
 	Subnet     *Subnet
@@ -78,6 +80,10 @@ func (e *RouteTableAssociation) Find(c *fi.Context) (*RouteTableAssociation, err
 		}
 		glog.V(2).Infof("found matching RouteTableAssociation %q", *actual.ID)
 		e.ID = actual.ID
+
+		// Prevent spurious changes
+		actual.Lifecycle = e.Lifecycle
+
 		return actual, nil
 	}
 

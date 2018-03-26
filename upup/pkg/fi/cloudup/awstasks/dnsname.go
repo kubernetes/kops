@@ -32,7 +32,9 @@ import (
 
 //go:generate fitask -type=DNSName
 type DNSName struct {
-	Name         *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID           *string
 	Zone         *DNSZone
 	ResourceType *string
@@ -102,6 +104,7 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 	actual.Zone = e.Zone
 	actual.Name = e.Name
 	actual.ResourceType = e.ResourceType
+	actual.Lifecycle = e.Lifecycle
 
 	if found.AliasTarget != nil {
 		dnsName := aws.StringValue(found.AliasTarget.DNSName)

@@ -17,8 +17,9 @@ limitations under the License.
 package internalversion
 
 import (
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/client/restclient"
+	restclient "k8s.io/client-go/rest"
+	"k8s.io/kubernetes/pkg/api/legacyscheme"
+	api "k8s.io/kubernetes/pkg/apis/core"
 )
 
 // The PodExpansion interface allows manually adding extra methods to the PodInterface.
@@ -34,5 +35,5 @@ func (c *pods) Bind(binding *api.Binding) error {
 
 // Get constructs a request for getting the logs for a pod
 func (c *pods) GetLogs(name string, opts *api.PodLogOptions) *restclient.Request {
-	return c.client.Get().Namespace(c.ns).Name(name).Resource("pods").SubResource("log").VersionedParams(opts, api.ParameterCodec)
+	return c.client.Get().Namespace(c.ns).Name(name).Resource("pods").SubResource("log").VersionedParams(opts, legacyscheme.ParameterCodec)
 }

@@ -16,20 +16,29 @@ limitations under the License.
 
 package fi
 
-import "k8s.io/kubernetes/federation/pkg/dnsprovider"
-
-type CloudProviderID string
-
-const CloudProviderAWS CloudProviderID = "aws"
-const CloudProviderGCE CloudProviderID = "gce"
+import (
+	"k8s.io/api/core/v1"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/cloudinstances"
+)
 
 type Cloud interface {
-	ProviderID() CloudProviderID
+	ProviderID() kops.CloudProviderID
 
 	DNS() (dnsprovider.Interface, error)
 
 	// FindVPCInfo looks up the specified VPC by id, returning info if found, otherwise (nil, nil)
 	FindVPCInfo(id string) (*VPCInfo, error)
+
+	// DeleteInstance deletes a cloud instance
+	DeleteInstance(instance *cloudinstances.CloudInstanceGroupMember) error
+
+	// DeleteGroup deletes the cloud resources that make up a CloudInstanceGroup, including the instances
+	DeleteGroup(group *cloudinstances.CloudInstanceGroup) error
+
+	// GetCloudGroups returns a map of cloud instances that back a kops cluster
+	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
 }
 
 type VPCInfo struct {
@@ -48,124 +57,162 @@ type SubnetInfo struct {
 
 // zonesToCloud allows us to infer from certain well-known zones to a cloud
 // Note it is safe to "overmap" zones that don't exist: we'll check later if the zones actually exist
-var zonesToCloud = map[string]CloudProviderID{
-	"us-east-1a": CloudProviderAWS,
-	"us-east-1b": CloudProviderAWS,
-	"us-east-1c": CloudProviderAWS,
-	"us-east-1d": CloudProviderAWS,
-	"us-east-1e": CloudProviderAWS,
+var zonesToCloud = map[string]kops.CloudProviderID{
+	"us-east-1a": kops.CloudProviderAWS,
+	"us-east-1b": kops.CloudProviderAWS,
+	"us-east-1c": kops.CloudProviderAWS,
+	"us-east-1d": kops.CloudProviderAWS,
+	"us-east-1e": kops.CloudProviderAWS,
+	"us-east-1f": kops.CloudProviderAWS,
 
-	"us-east-2a": CloudProviderAWS,
-	"us-east-2b": CloudProviderAWS,
-	"us-east-2c": CloudProviderAWS,
-	"us-east-2d": CloudProviderAWS,
-	"us-east-2e": CloudProviderAWS,
+	"us-east-2a": kops.CloudProviderAWS,
+	"us-east-2b": kops.CloudProviderAWS,
+	"us-east-2c": kops.CloudProviderAWS,
+	"us-east-2d": kops.CloudProviderAWS,
+	"us-east-2e": kops.CloudProviderAWS,
+	"us-east-2f": kops.CloudProviderAWS,
 
-	"us-west-1a": CloudProviderAWS,
-	"us-west-1b": CloudProviderAWS,
-	"us-west-1c": CloudProviderAWS,
-	"us-west-1d": CloudProviderAWS,
-	"us-west-1e": CloudProviderAWS,
+	"us-west-1a": kops.CloudProviderAWS,
+	"us-west-1b": kops.CloudProviderAWS,
+	"us-west-1c": kops.CloudProviderAWS,
+	"us-west-1d": kops.CloudProviderAWS,
+	"us-west-1e": kops.CloudProviderAWS,
+	"us-west-1f": kops.CloudProviderAWS,
 
-	"us-west-2a": CloudProviderAWS,
-	"us-west-2b": CloudProviderAWS,
-	"us-west-2c": CloudProviderAWS,
-	"us-west-2d": CloudProviderAWS,
-	"us-west-2e": CloudProviderAWS,
+	"us-west-2a": kops.CloudProviderAWS,
+	"us-west-2b": kops.CloudProviderAWS,
+	"us-west-2c": kops.CloudProviderAWS,
+	"us-west-2d": kops.CloudProviderAWS,
+	"us-west-2e": kops.CloudProviderAWS,
+	"us-west-2f": kops.CloudProviderAWS,
 
-	"ca-central-1a": CloudProviderAWS,
-	"ca-central-1b": CloudProviderAWS,
+	"ca-central-1a": kops.CloudProviderAWS,
+	"ca-central-1b": kops.CloudProviderAWS,
 
-	"eu-west-1a": CloudProviderAWS,
-	"eu-west-1b": CloudProviderAWS,
-	"eu-west-1c": CloudProviderAWS,
-	"eu-west-1d": CloudProviderAWS,
-	"eu-west-1e": CloudProviderAWS,
+	"eu-west-1a": kops.CloudProviderAWS,
+	"eu-west-1b": kops.CloudProviderAWS,
+	"eu-west-1c": kops.CloudProviderAWS,
+	"eu-west-1d": kops.CloudProviderAWS,
+	"eu-west-1e": kops.CloudProviderAWS,
 
-	"eu-central-1a": CloudProviderAWS,
-	"eu-central-1b": CloudProviderAWS,
-	"eu-central-1c": CloudProviderAWS,
-	"eu-central-1d": CloudProviderAWS,
-	"eu-central-1e": CloudProviderAWS,
+	"eu-west-2a": kops.CloudProviderAWS,
+	"eu-west-2b": kops.CloudProviderAWS,
+	"eu-west-2c": kops.CloudProviderAWS,
 
-	"ap-south-1a": CloudProviderAWS,
-	"ap-south-1b": CloudProviderAWS,
-	"ap-south-1c": CloudProviderAWS,
-	"ap-south-1d": CloudProviderAWS,
-	"ap-south-1e": CloudProviderAWS,
+	"eu-west-3a": kops.CloudProviderAWS,
+	"eu-west-3b": kops.CloudProviderAWS,
+	"eu-west-3c": kops.CloudProviderAWS,
 
-	"ap-southeast-1a": CloudProviderAWS,
-	"ap-southeast-1b": CloudProviderAWS,
-	"ap-southeast-1c": CloudProviderAWS,
-	"ap-southeast-1d": CloudProviderAWS,
-	"ap-southeast-1e": CloudProviderAWS,
+	"eu-central-1a": kops.CloudProviderAWS,
+	"eu-central-1b": kops.CloudProviderAWS,
+	"eu-central-1c": kops.CloudProviderAWS,
+	"eu-central-1d": kops.CloudProviderAWS,
+	"eu-central-1e": kops.CloudProviderAWS,
 
-	"ap-southeast-2a": CloudProviderAWS,
-	"ap-southeast-2b": CloudProviderAWS,
-	"ap-southeast-2c": CloudProviderAWS,
-	"ap-southeast-2d": CloudProviderAWS,
-	"ap-southeast-2e": CloudProviderAWS,
+	"ap-south-1a": kops.CloudProviderAWS,
+	"ap-south-1b": kops.CloudProviderAWS,
+	"ap-south-1c": kops.CloudProviderAWS,
+	"ap-south-1d": kops.CloudProviderAWS,
+	"ap-south-1e": kops.CloudProviderAWS,
 
-	"ap-northeast-1a": CloudProviderAWS,
-	"ap-northeast-1b": CloudProviderAWS,
-	"ap-northeast-1c": CloudProviderAWS,
-	"ap-northeast-1d": CloudProviderAWS,
-	"ap-northeast-1e": CloudProviderAWS,
+	"ap-southeast-1a": kops.CloudProviderAWS,
+	"ap-southeast-1b": kops.CloudProviderAWS,
+	"ap-southeast-1c": kops.CloudProviderAWS,
+	"ap-southeast-1d": kops.CloudProviderAWS,
+	"ap-southeast-1e": kops.CloudProviderAWS,
 
-	"ap-northeast-2a": CloudProviderAWS,
-	"ap-northeast-2b": CloudProviderAWS,
-	"ap-northeast-2c": CloudProviderAWS,
-	"ap-northeast-2d": CloudProviderAWS,
-	"ap-northeast-2e": CloudProviderAWS,
+	"ap-southeast-2a": kops.CloudProviderAWS,
+	"ap-southeast-2b": kops.CloudProviderAWS,
+	"ap-southeast-2c": kops.CloudProviderAWS,
+	"ap-southeast-2d": kops.CloudProviderAWS,
+	"ap-southeast-2e": kops.CloudProviderAWS,
 
-	"sa-east-1a": CloudProviderAWS,
-	"sa-east-1b": CloudProviderAWS,
-	"sa-east-1c": CloudProviderAWS,
-	"sa-east-1d": CloudProviderAWS,
-	"sa-east-1e": CloudProviderAWS,
+	"ap-northeast-1a": kops.CloudProviderAWS,
+	"ap-northeast-1b": kops.CloudProviderAWS,
+	"ap-northeast-1c": kops.CloudProviderAWS,
+	"ap-northeast-1d": kops.CloudProviderAWS,
+	"ap-northeast-1e": kops.CloudProviderAWS,
 
-	"cn-north-1a": CloudProviderAWS,
-	"cn-north-1b": CloudProviderAWS,
+	"ap-northeast-2a": kops.CloudProviderAWS,
+	"ap-northeast-2b": kops.CloudProviderAWS,
+	"ap-northeast-2c": kops.CloudProviderAWS,
+	"ap-northeast-2d": kops.CloudProviderAWS,
+	"ap-northeast-2e": kops.CloudProviderAWS,
+
+	"sa-east-1a": kops.CloudProviderAWS,
+	"sa-east-1b": kops.CloudProviderAWS,
+	"sa-east-1c": kops.CloudProviderAWS,
+	"sa-east-1d": kops.CloudProviderAWS,
+	"sa-east-1e": kops.CloudProviderAWS,
+
+	"cn-north-1a": kops.CloudProviderAWS,
+	"cn-north-1b": kops.CloudProviderAWS,
+
+	"cn-northwest-1a": kops.CloudProviderAWS,
+	"cn-northwest-1b": kops.CloudProviderAWS,
+
+	"us-gov-west-1a": kops.CloudProviderAWS,
+	"us-gov-west-1b": kops.CloudProviderAWS,
 
 	// GCE
-	"asia-east1-a": CloudProviderGCE,
-	"asia-east1-b": CloudProviderGCE,
-	"asia-east1-c": CloudProviderGCE,
-	"asia-east1-d": CloudProviderGCE,
+	"asia-east1-a": kops.CloudProviderGCE,
+	"asia-east1-b": kops.CloudProviderGCE,
+	"asia-east1-c": kops.CloudProviderGCE,
+	"asia-east1-d": kops.CloudProviderGCE,
 
-	"asia-northeast1-a": CloudProviderGCE,
-	"asia-northeast1-b": CloudProviderGCE,
-	"asia-northeast1-c": CloudProviderGCE,
-	"asia-northeast1-d": CloudProviderGCE,
+	"asia-northeast1-a": kops.CloudProviderGCE,
+	"asia-northeast1-b": kops.CloudProviderGCE,
+	"asia-northeast1-c": kops.CloudProviderGCE,
+	"asia-northeast1-d": kops.CloudProviderGCE,
 
-	"europe-west1-a": CloudProviderGCE,
-	"europe-west1-b": CloudProviderGCE,
-	"europe-west1-c": CloudProviderGCE,
-	"europe-west1-d": CloudProviderGCE,
-	"europe-west1-e": CloudProviderGCE,
+	"europe-west1-a": kops.CloudProviderGCE,
+	"europe-west1-b": kops.CloudProviderGCE,
+	"europe-west1-c": kops.CloudProviderGCE,
+	"europe-west1-d": kops.CloudProviderGCE,
+	"europe-west1-e": kops.CloudProviderGCE,
 
-	"us-central1-a": CloudProviderGCE,
-	"us-central1-b": CloudProviderGCE,
-	"us-central1-c": CloudProviderGCE,
-	"us-central1-d": CloudProviderGCE,
-	"us-central1-e": CloudProviderGCE,
-	"us-central1-f": CloudProviderGCE,
-	"us-central1-g": CloudProviderGCE,
-	"us-central1-h": CloudProviderGCE,
+	"us-central1-a": kops.CloudProviderGCE,
+	"us-central1-b": kops.CloudProviderGCE,
+	"us-central1-c": kops.CloudProviderGCE,
+	"us-central1-d": kops.CloudProviderGCE,
+	"us-central1-e": kops.CloudProviderGCE,
+	"us-central1-f": kops.CloudProviderGCE,
+	"us-central1-g": kops.CloudProviderGCE,
+	"us-central1-h": kops.CloudProviderGCE,
 
-	"us-east1-a": CloudProviderGCE,
-	"us-east1-b": CloudProviderGCE,
-	"us-east1-c": CloudProviderGCE,
-	"us-east1-d": CloudProviderGCE,
+	"us-east1-a": kops.CloudProviderGCE,
+	"us-east1-b": kops.CloudProviderGCE,
+	"us-east1-c": kops.CloudProviderGCE,
+	"us-east1-d": kops.CloudProviderGCE,
 
-	"us-west1-a": CloudProviderGCE,
-	"us-west1-b": CloudProviderGCE,
-	"us-west1-c": CloudProviderGCE,
-	"us-west1-d": CloudProviderGCE,
+	"us-west1-a": kops.CloudProviderGCE,
+	"us-west1-b": kops.CloudProviderGCE,
+	"us-west1-c": kops.CloudProviderGCE,
+	"us-west1-d": kops.CloudProviderGCE,
+
+	"nyc1": kops.CloudProviderDO,
+	"nyc2": kops.CloudProviderDO,
+	"nyc3": kops.CloudProviderDO,
+
+	"sfo1": kops.CloudProviderDO,
+	"sfo2": kops.CloudProviderDO,
+
+	"ams2": kops.CloudProviderDO,
+	"ams3": kops.CloudProviderDO,
+
+	"tor1": kops.CloudProviderDO,
+
+	"sgp1": kops.CloudProviderDO,
+
+	"lon1": kops.CloudProviderDO,
+
+	"fra1": kops.CloudProviderDO,
+
+	"blr1": kops.CloudProviderDO,
 }
 
 // GuessCloudForZone tries to infer the cloudprovider from the zone name
-func GuessCloudForZone(zone string) (CloudProviderID, bool) {
+func GuessCloudForZone(zone string) (kops.CloudProviderID, bool) {
 	c, found := zonesToCloud[zone]
 	return c, found
 }

@@ -1,0 +1,12 @@
+ClusterName: private-subnets.example.com
+Zones:
+- us-test-1a
+Cloud: aws
+Topology: private
+Networking: kopeio-vxlan
+VPCID: vpc-12345678
+SubnetIDs:
+- subnet-1
+UtilitySubnetIDs:
+- subnet-2
+KubernetesVersion: v1.4.8

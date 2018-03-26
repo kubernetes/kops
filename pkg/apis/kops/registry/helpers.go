@@ -18,6 +18,7 @@ package registry
 
 import (
 	"fmt"
+
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 )
@@ -37,13 +38,13 @@ func CreateClusterConfig(clientset simple.Clientset, cluster *api.Cluster, group
 		}
 	}
 
-	_, err := clientset.Clusters().Create(cluster)
+	_, err := clientset.CreateCluster(cluster)
 	if err != nil {
 		return err
 	}
 
 	for _, ig := range groups {
-		_, err = clientset.InstanceGroups(cluster.ObjectMeta.Name).Create(ig)
+		_, err = clientset.InstanceGroupsFor(cluster).Create(ig)
 		if err != nil {
 			return fmt.Errorf("error writing updated instancegroup configuration: %v", err)
 		}

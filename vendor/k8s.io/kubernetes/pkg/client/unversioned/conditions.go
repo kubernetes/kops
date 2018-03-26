@@ -19,19 +19,20 @@ package unversioned
 import (
 	"fmt"
 
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/kubernetes/pkg/api/pod"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/batch"
+	api "k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/apis/extensions"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	appsclient "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/apps/internalversion"
 	batchclient "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/batch/internalversion"
 	coreclient "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/internalversion"
 	extensionsclient "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/extensions/internalversion"
-	"k8s.io/kubernetes/pkg/runtime/schema"
-	"k8s.io/kubernetes/pkg/util/wait"
-	"k8s.io/kubernetes/pkg/watch"
 )
 
 // ControllerHasDesiredReplicas returns a condition that will be true if and only if
@@ -78,15 +79,23 @@ func ReplicaSetHasDesiredReplicas(rsClient extensionsclient.ReplicaSetsGetter, r
 	}
 }
 
-// StatefulSetHasDesiredPets returns a conditon that checks the number of petset replicas
-func StatefulSetHasDesiredPets(psClient appsclient.StatefulSetsGetter, petset *apps.StatefulSet) wait.ConditionFunc {
-	// TODO: Differentiate between 0 pets and a really quick scale down using generation.
+// StatefulSetHasDesiredReplicas returns a condition that checks the number of StatefulSet replicas
+func StatefulSetHasDesiredReplicas(ssClient appsclient.StatefulSetsGetter, ss *apps.StatefulSet) wait.ConditionFunc {
+	// If we're given a StatefulSet where the status lags the spec, it either means that the
+	// StatefulSet is stale, or that the StatefulSet manager hasn't noticed the update yet.
+	// Polling status.Replicas is not safe in the latter case.
+	desiredGeneration := ss.Generation
 	return func() (bool, error) {
-		ps, err := psClient.StatefulSets(petset.Namespace).Get(petset.Name, metav1.GetOptions{})
+		ss, err := ssClient.StatefulSets(ss.Namespace).Get(ss.Name, metav1.GetOptions{})
 		if err != nil {
 			return false, err
 		}
-		return ps.Status.Replicas == ps.Spec.Replicas, nil
+		// There's a chance a concurrent update modifies the Spec.Replicas causing this check to
+		// pass, or, after this check has passed, a modification causes the StatefulSet manager to
+		// create more pods. This will not be an issue once we've implemented graceful delete for
+		// StatefulSet, but till then concurrent stop operations on the same StatefulSet might have
+		// unintended side effects.
+		return ss.Status.ObservedGeneration != nil && *ss.Status.ObservedGeneration >= desiredGeneration && ss.Status.Replicas == ss.Spec.Replicas, nil
 	}
 }
 
@@ -192,7 +201,7 @@ func PodRunningAndReady(event watch.Event) (bool, error) {
 		case api.PodFailed, api.PodSucceeded:
 			return false, ErrPodCompleted
 		case api.PodRunning:
-			return api.IsPodReady(t), nil
+			return pod.IsPodReady(t), nil
 		}
 	}
 	return false, nil

@@ -19,8 +19,8 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -28,7 +28,8 @@ import (
 )
 
 func up() error {
-	clientset := vfsclientset.NewVFSClientset(registryBase)
+	allowList := true
+	clientset := vfsclientset.NewVFSClientset(registryBase, allowList)
 
 	cluster := &api.Cluster{}
 	cluster.ObjectMeta.Name = clusterName
@@ -67,7 +68,7 @@ func up() error {
 		return err
 	}
 
-	_, err := clientset.Clusters().Create(cluster)
+	_, err := clientset.CreateCluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -80,7 +81,7 @@ func up() error {
 			Role:    api.InstanceGroupRoleMaster,
 			Subnets: masterZones,
 		}
-		_, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Create(ig)
+		_, err := clientset.InstanceGroupsFor(cluster).Create(ig)
 		if err != nil {
 			return err
 		}
@@ -95,13 +96,13 @@ func up() error {
 			Subnets: nodeZones,
 		}
 
-		_, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Create(ig)
+		_, err := clientset.InstanceGroupsFor(cluster).Create(ig)
 		if err != nil {
 			return err
 		}
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
+	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
 	if err != nil {
 		return err
 	}
@@ -113,9 +114,9 @@ func up() error {
 		if err != nil {
 			return fmt.Errorf("error reading SSH key file %q: %v", f, err)
 		}
-		err = keyStore.AddSSHPublicKey(fi.SecretNameSSHPrimary, pubKey)
+		err = sshCredentialStore.AddSSHPublicKey(fi.SecretNameSSHPrimary, pubKey)
 		if err != nil {
-			return fmt.Errorf("error addding SSH public key: %v", err)
+			return fmt.Errorf("error adding SSH public key: %v", err)
 		}
 	}
 

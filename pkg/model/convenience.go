@@ -16,7 +16,9 @@ limitations under the License.
 
 package model
 
-import "k8s.io/kops/upup/pkg/fi"
+import (
+	"k8s.io/kops/upup/pkg/fi"
+)
 
 // s is a helper that builds a *string from a string value
 func s(v string) *string {

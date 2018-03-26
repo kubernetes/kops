@@ -16,7 +16,17 @@ limitations under the License.
 
 package resources
 
-var AWSNodeUpTemplate = `#!/bin/bash
+import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"mime/multipart"
+	"net/textproto"
+
+	"k8s.io/kops/pkg/apis/kops"
+)
+
+var NodeUpTemplate = `#!/bin/bash
 # Copyright 2016 The Kubernetes Authors All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,8 +48,17 @@ set -o pipefail
 NODEUP_URL={{ NodeUpSource }}
 NODEUP_HASH={{ NodeUpSourceHash }}
 
+{{ S3Env }}
+{{ AWS_REGION }}
+
+{{ ProxyEnv }}
+
 function ensure-install-dir() {
   INSTALL_DIR="/var/cache/kubernetes-install"
+  # On ContainerOS, we install to /var/lib/toolbox install (because of noexec)
+  if [[ -d /var/lib/toolbox ]]; then
+    INSTALL_DIR="/var/lib/toolbox/kubernetes-install"
+  fi
   mkdir -p ${INSTALL_DIR}
   cd ${INSTALL_DIR}
 }
@@ -57,9 +76,23 @@ download-or-bust() {
     for url in "${urls[@]}"; do
       local file="${url##*/}"
       rm -f "${file}"
-      if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
-        echo "== Failed to download ${url}. Retrying. =="
-      elif [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
+
+      if [[ $(which curl) ]]; then
+        if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
+          echo "== Failed to curl ${url}. Retrying. =="
+          break
+        fi
+      elif [[ $(which wget ) ]]; then
+        if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
+          echo "== Failed to wget ${url}. Retrying. =="
+          break
+        fi
+      else
+        echo "== Could not find curl or wget. Retrying. =="
+        break
+      fi
+
+      if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
         echo "== Hash validation of ${url} failed. Retrying. =="
       else
         if [[ -n "${hash}" ]]; then
@@ -122,7 +155,7 @@ function download-release() {
 
   echo "Running nodeup"
   # We can't run in the foreground because of https://github.com/docker/docker/issues/23793
-  ( cd ${INSTALL_DIR}; ./nodeup --install-systemd-unit --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8  )
+  ( cd ${INSTALL_DIR}; ./nodeup --install-systemd-unit --conf=${INSTALL_DIR}/kube_env.yaml --v=8  )
 }
 
 ####################################################################################
@@ -132,10 +165,88 @@ function download-release() {
 echo "== nodeup node config starting =="
 ensure-install-dir
 
-cat > kube_env.yaml << __EOF_KUBE_ENV
+cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
+{{ ClusterSpec }}
+__EOF_CLUSTER_SPEC
+
+cat > ig_spec.yaml << '__EOF_IG_SPEC'
+{{ IGSpec }}
+__EOF_IG_SPEC
+
+cat > kube_env.yaml << '__EOF_KUBE_ENV'
 {{ KubeEnv }}
 __EOF_KUBE_ENV
 
 download-release
 echo "== nodeup node config done =="
 `
+
+// AWSNodeUpTemplate returns a Mime Multi Part Archive containing the nodeup (bootstrap) script
+// and any aditional User Data passed to using AdditionalUserData in the IG Spec
+func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
+
+	userDataTemplate := NodeUpTemplate
+
+	if len(ig.Spec.AdditionalUserData) > 0 {
+		/* Create a buffer to hold the user-data*/
+		buffer := bytes.NewBufferString("")
+		writer := bufio.NewWriter(buffer)
+
+		mimeWriter := multipart.NewWriter(writer)
+
+		// we explicitly set the boundary to make testing easier.
+		boundary := "MIMEBOUNDARY"
+		if err := mimeWriter.SetBoundary(boundary); err != nil {
+			return "", err
+		}
+
+		writer.Write([]byte(fmt.Sprintf("Content-Type: multipart/mixed; boundary=\"%s\"\r\n", boundary)))
+		writer.Write([]byte("MIME-Version: 1.0\r\n\r\n"))
+
+		var err error
+		if !ig.IsBastion() {
+			err := writeUserDataPart(mimeWriter, "nodeup.sh", "text/x-shellscript", []byte(userDataTemplate))
+			if err != nil {
+				return "", err
+			}
+		}
+
+		for _, UserDataInfo := range ig.Spec.AdditionalUserData {
+			err = writeUserDataPart(mimeWriter, UserDataInfo.Name, UserDataInfo.Type, []byte(UserDataInfo.Content))
+			if err != nil {
+				return "", err
+			}
+		}
+
+		writer.Write([]byte(fmt.Sprintf("\r\n--%s--\r\n", boundary)))
+
+		writer.Flush()
+		mimeWriter.Close()
+
+		userDataTemplate = buffer.String()
+	}
+
+	return userDataTemplate, nil
+
+}
+
+func writeUserDataPart(mimeWriter *multipart.Writer, fileName string, contentType string, content []byte) error {
+	header := textproto.MIMEHeader{}
+
+	header.Set("Content-Type", contentType)
+	header.Set("MIME-Version", "1.0")
+	header.Set("Content-Transfer-Encoding", "7bit")
+	header.Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, fileName))
+
+	partWriter, err := mimeWriter.CreatePart(header)
+	if err != nil {
+		return err
+	}
+
+	_, err = partWriter.Write(content)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

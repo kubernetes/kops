@@ -20,6 +20,11 @@ package prometheus
 // no type information is implied.
 //
 // To create Untyped instances, use NewUntyped.
+//
+// Deprecated: The Untyped type is deprecated because it doesn't make sense in
+// direct instrumentation. If you need to mirror an external metric of unknown
+// type (usually while writing exporters), Use MustNewConstMetric to create an
+// untyped metric instance on the fly.
 type Untyped interface {
 	Metric
 	Collector
@@ -56,7 +61,7 @@ func NewUntyped(opts UntypedOpts) Untyped {
 // labels. This is used if you want to count the same thing partitioned by
 // various dimensions. Create instances with NewUntypedVec.
 type UntypedVec struct {
-	MetricVec
+	*MetricVec
 }
 
 // NewUntypedVec creates a new UntypedVec based on the provided UntypedOpts and
@@ -70,13 +75,9 @@ func NewUntypedVec(opts UntypedOpts, labelNames []string) *UntypedVec {
 		opts.ConstLabels,
 	)
 	return &UntypedVec{
-		MetricVec: MetricVec{
-			children: map[uint64]Metric{},
-			desc:     desc,
-			newMetric: func(lvs ...string) Metric {
-				return newValue(desc, UntypedValue, 0, lvs...)
-			},
-		},
+		MetricVec: newMetricVec(desc, func(lvs ...string) Metric {
+			return newValue(desc, UntypedValue, 0, lvs...)
+		}),
 	}
 }
 

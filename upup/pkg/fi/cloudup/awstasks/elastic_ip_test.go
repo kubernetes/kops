@@ -18,14 +18,18 @@ package awstasks
 
 import (
 	"bytes"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"k8s.io/kops/cloudmock/aws/mockec2"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"os"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/aws/aws-sdk-go/service/ec2"
+
+	"k8s.io/kops/cloudmock/aws/mockec2"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 const defaultDeadline = 2 * time.Second
@@ -40,11 +44,13 @@ func TestElasticIPCreate(t *testing.T) {
 		vpc1 := &VPC{
 			Name: s("vpc1"),
 			CIDR: s("172.20.0.0/16"),
+			Tags: map[string]string{"Name": "vpc1"},
 		}
 		subnet1 := &Subnet{
 			Name: s("subnet1"),
 			VPC:  vpc1,
 			CIDR: s("172.20.1.0/24"),
+			Tags: map[string]string{"Name": "subnet1"},
 		}
 		eip1 := &ElasticIP{
 			Name:        s("eip1"),
@@ -66,7 +72,7 @@ func TestElasticIPCreate(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(target, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}
@@ -88,7 +94,7 @@ func TestElasticIPCreate(t *testing.T) {
 			Domain:       s("vpc"),
 			PublicIp:     s("192.0.2.1"),
 		}
-		actual := c.Addresses[0]
+		actual := c.Addresses[*eip1.ID]
 		if !reflect.DeepEqual(actual, expected) {
 			t.Fatalf("Unexpected ElasticIP: expected=%v actual=%v", expected, actual)
 		}
@@ -101,8 +107,14 @@ func TestElasticIPCreate(t *testing.T) {
 }
 
 func checkNoChanges(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) {
-	target := fi.NewDryRunTarget(os.Stderr)
-	context, err := fi.NewContext(target, cloud, nil, nil, nil, true, allTasks)
+	cluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			KubernetesVersion: "v1.9.0",
+		},
+	}
+	assetBuilder := assets.NewAssetBuilder(cluster, "")
+	target := fi.NewDryRunTarget(assetBuilder, os.Stderr)
+	context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
 	}

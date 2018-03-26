@@ -20,15 +20,28 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 
-	"github.com/golang/glog"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+
+	"github.com/golang/glog"
 )
 
-// BuildFlags builds flag arguments based on "flag" tags on the structure
+// BuildFlags returns a space separated list arguments
+// @deprecated: please use BuildFlagsList
 func BuildFlags(options interface{}) (string, error) {
+	flags, err := BuildFlagsList(options)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.Join(flags, " "), nil
+}
+
+// BuildFlagsList reflects the options interface and extracts the flags from struct tags
+func BuildFlagsList(options interface{}) ([]string, error) {
 	var flags []string
 
 	walker := func(path string, field *reflect.StructField, val reflect.Value) error {
@@ -46,14 +59,33 @@ func BuildFlags(options interface{}) (string, error) {
 			glog.V(4).Infof("skipping field with %q flag tag: %s", tag, path)
 			return utils.SkipReflection
 		}
-		flagName := tag
+
+		// If we specify the repeat option, we will repeat the flag rather than joining it with commas
+		repeatFlag := false
+
+		tokens := strings.Split(tag, ",")
+		if len(tokens) > 1 {
+			for i, t := range tokens {
+				if i == 0 {
+					continue
+				}
+				if t == "repeat" {
+					repeatFlag = true
+				} else {
+					return fmt.Errorf("cannot parse flag spec: %q", tag)
+				}
+			}
+		}
+		flagName := tokens[0]
 
 		// If the "unset" value is not empty string, by setting this tag we avoid passing spurious flag values
 		flagEmpty := field.Tag.Get("flag-empty")
 
+		flagIncludeEmpty, _ := strconv.ParseBool(field.Tag.Get("flag-include-empty"))
+
 		// We do have to do this, even though the recursive walk will do it for us
 		// because when we descend we won't have `field` set
-		if val.Kind() == reflect.Ptr {
+		if val.Kind() == reflect.Ptr && reflect.TypeOf(val.Interface()).String() != "*string" {
 			if val.IsNil() {
 				return nil
 			}
@@ -72,14 +104,15 @@ func BuildFlags(options interface{}) (string, error) {
 					arg := fmt.Sprintf("%s=%s", k, v)
 					args = append(args, arg)
 				}
+				sort.Strings(args)
 				if len(args) != 0 {
 					flag := fmt.Sprintf("--%s=%s", flagName, strings.Join(args, ","))
 					flags = append(flags, flag)
 				}
 				return utils.SkipReflection
-			} else {
-				return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", val.Interface(), path, val.Interface())
 			}
+
+			return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", val.Interface(), path, val.Interface())
 		}
 
 		if val.Kind() == reflect.Slice {
@@ -89,13 +122,20 @@ func BuildFlags(options interface{}) (string, error) {
 			// We handle a []string like --admission-control=v1,v2 etc
 			if stringSlice, ok := val.Interface().([]string); ok {
 				if len(stringSlice) != 0 {
-					flag := fmt.Sprintf("--%s=%s", flagName, strings.Join(stringSlice, ","))
-					flags = append(flags, flag)
+					if repeatFlag {
+						for _, v := range stringSlice {
+							flag := fmt.Sprintf("--%s=%s", flagName, v)
+							flags = append(flags, flag)
+						}
+					} else {
+						flag := fmt.Sprintf("--%s=%s", flagName, strings.Join(stringSlice, ","))
+						flags = append(flags, flag)
+					}
 				}
 				return utils.SkipReflection
-			} else {
-				return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", val.Interface(), path, val.Interface())
 			}
+
+			return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", val.Interface(), path, val.Interface())
 		}
 
 		var flag string
@@ -104,6 +144,21 @@ func BuildFlags(options interface{}) (string, error) {
 			vString := fmt.Sprintf("%v", v)
 			if vString != "" && vString != flagEmpty {
 				flag = fmt.Sprintf("--%s=%s", flagName, vString)
+			}
+
+		case *string:
+			if v != nil {
+				// If flagIncludeEmpty is specified, include anything, including empty strings. Otherwise, behave
+				// just like the string case above.
+				if flagIncludeEmpty {
+					vString := fmt.Sprintf("%v", *v)
+					flag = fmt.Sprintf("--%s=%s", flagName, vString)
+				} else {
+					vString := fmt.Sprintf("%v", *v)
+					if vString != "" && vString != flagEmpty {
+						flag = fmt.Sprintf("--%s=%s", flagName, vString)
+					}
+				}
 			}
 
 		case bool, int, int32, int64, float32, float64:
@@ -127,20 +182,20 @@ func BuildFlags(options interface{}) (string, error) {
 			}
 
 		default:
-			return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", v, path, v)
+			return fmt.Errorf("BuildFlagsList of value type not handled: %T %s=%v", v, path, v)
 		}
 		if flag != "" {
 			flags = append(flags, flag)
 		}
-		// Nothing more to do here
+
 		return utils.SkipReflection
 	}
 	err := utils.ReflectRecursive(reflect.ValueOf(options), walker)
 	if err != nil {
-		return "", err
+		return nil, fmt.Errorf("BuildFlagsList to reflect value: %s", err)
 	}
 	// Sort so that the order is stable across runs
 	sort.Strings(flags)
 
-	return strings.Join(flags, " "), nil
+	return flags, nil
 }

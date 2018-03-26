@@ -18,14 +18,15 @@ package nodetasks
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
+	"syscall"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
-	"os"
-	"os/exec"
-	"syscall"
 )
 
 type UpdatePackages struct {

@@ -17,12 +17,21 @@ limitations under the License.
 package flagbuilder
 
 import (
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"testing"
 	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 )
+
+func stringPointer(s string) *string {
+	return &s
+}
+
+func int32Pointer(i32 int32) *int32 {
+	return &i32
+}
 
 func TestBuildKCMFlags(t *testing.T) {
 	grid := []struct {
@@ -79,7 +88,53 @@ func TestKubeletConfigSpec(t *testing.T) {
 			Expected: "--eviction-pressure-transition-period=5s",
 		},
 		{
+			Config: &kops.KubeletConfigSpec{
+				LogLevel: new(int32),
+			},
+			Expected: "",
+		},
+		{
+			Config: &kops.KubeletConfigSpec{
+				LogLevel: int32Pointer(2),
+			},
+			Expected: "--v=2",
+		},
+
+		// Test string pointers without the "flag-include-empty" tag
+		{
+			Config: &kops.KubeletConfigSpec{
+				EvictionHard: stringPointer("memory.available<100Mi"),
+			},
+			Expected: "--eviction-hard=memory.available<100Mi",
+		},
+		{
+			Config: &kops.KubeletConfigSpec{
+				EvictionHard: stringPointer(""),
+			},
+			Expected: "",
+		},
+
+		// Test string pointers with the "flag-include-empty" tag
+		{
 			Config:   &kops.KubeletConfigSpec{},
+			Expected: "",
+		},
+		{
+			Config: &kops.KubeletConfigSpec{
+				ResolverConfig: stringPointer("test"),
+			},
+			Expected: "--resolv-conf=test",
+		},
+		{
+			Config: &kops.KubeletConfigSpec{
+				ResolverConfig: stringPointer(""),
+			},
+			Expected: "--resolv-conf=",
+		},
+		{
+			Config: &kops.KubeletConfigSpec{
+				ResolverConfig: nil,
+			},
 			Expected: "",
 		},
 	}

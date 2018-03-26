@@ -17,41 +17,77 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 
-	"bytes"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/vfs"
-	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
-	"k8s.io/kubernetes/pkg/runtime/schema"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 type CreateOptions struct {
 	resource.FilenameOptions
 }
 
+var (
+	createLong = templates.LongDesc(i18n.T(`
+		Create a resource:` + validResources +
+		`
+	Create a cluster, instancegroup or secret using command line parameters
+	or YAML configuration specification files.
+	(Note: secrets cannot be created from YAML config files yet).
+	`))
+
+	createExample = templates.Examples(i18n.T(`
+
+	# Create a cluster from the configuration specification in a YAML file
+	kops create -f my-cluster.yaml
+
+	# Create secret from secret spec file 
+	kops create -f secret.yaml
+
+	# Create a cluster in AWS
+	kops create cluster --name=kubernetes-cluster.example.com \
+		--state=s3://kops-state-1234 --zones=eu-west-1a \
+		--node-count=2 --node-size=t2.micro --master-size=t2.micro \
+		--dns-zone=example.com
+
+	# Create an instancegroup for the k8s-cluster.example.com cluster.
+	kops create ig --name=k8s-cluster.example.com node-example \
+		--role node --subnet my-subnet-name
+
+	# Create an new ssh public key called admin.
+	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
+		--name k8s-cluster.example.com --state s3://example.com
+	`))
+	createShort = i18n.T("Create a resource by command line, filename or stdin.")
+)
+
 func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "create -f FILENAME",
-		Short: "Create a resource by filename or stdin",
+		Use:     "create -f FILENAME",
+		Short:   createShort,
+		Long:    createLong,
+		Example: createExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			if cmdutil.IsFilenameEmpty(options.Filenames) {
+			if cmdutil.IsFilenameSliceEmpty(options.Filenames) {
 				cmd.Help()
 				return
 			}
-			//cmdutil.CheckErr(ValidateArgs(cmd, args))
-			//cmdutil.CheckErr(cmdutil.ValidateOutputArgs(cmd))
 			cmdutil.CheckErr(RunCreate(f, out, options))
 		},
 	}
@@ -80,18 +116,22 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 	}
 
 	// Codecs provides access to encoding and decoding for the scheme
-	codecs := k8sapi.Codecs //serializer.NewCodecFactory(scheme)
+	codecs := kopscodecs.Codecs //serializer.NewCodecFactory(scheme)
 
 	codec := codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
 
+	var clusterName = ""
+	//var cSpec = false
+	var sb bytes.Buffer
+	fmt.Fprintf(&sb, "\n")
 	for _, f := range c.Filenames {
 		contents, err := vfs.Context.ReadFile(f)
 		if err != nil {
 			return fmt.Errorf("error reading file %q: %v", f, err)
 		}
 
+		// TODO: this does not support a JSON array
 		sections := bytes.Split(contents, []byte("\n---\n"))
-
 		for _, section := range sections {
 			defaults := &schema.GroupVersionKind{
 				Group:   v1alpha1.SchemeGroupVersion.Group,
@@ -103,15 +143,6 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 			}
 
 			switch v := o.(type) {
-			case *kopsapi.Federation:
-				_, err = clientset.Federations().Create(v)
-				if err != nil {
-					if errors.IsAlreadyExists(err) {
-						return fmt.Errorf("federation %q already exists", v.ObjectMeta.Name)
-					}
-					return fmt.Errorf("error creating federation: %v", err)
-				}
-
 			case *kopsapi.Cluster:
 				// Adding a PerformAssignments() call here as the user might be trying to use
 				// the new `-f` feature, with an old cluster definition.
@@ -119,34 +150,87 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				if err != nil {
 					return fmt.Errorf("error populating configuration: %v", err)
 				}
-				_, err = clientset.Clusters().Create(v)
+				_, err = clientset.CreateCluster(v)
 				if err != nil {
-					if errors.IsAlreadyExists(err) {
+					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating cluster: %v", err)
+				} else {
+					fmt.Fprintf(&sb, "Created cluster/%s\n", v.ObjectMeta.Name)
+					//cSpec = true
 				}
 
 			case *kopsapi.InstanceGroup:
-				clusterName := v.ObjectMeta.Labels[kopsapi.LabelClusterName]
+				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
 				if clusterName == "" {
 					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
 				}
-				_, err = clientset.InstanceGroups(clusterName).Create(v)
+				cluster, err := clientset.GetCluster(clusterName)
 				if err != nil {
-					if errors.IsAlreadyExists(err) {
+					return fmt.Errorf("error querying cluster %q: %v", clusterName, err)
+				}
+
+				if cluster == nil {
+					return fmt.Errorf("cluster %q not found", clusterName)
+				}
+
+				_, err = clientset.InstanceGroupsFor(cluster).Create(v)
+				if err != nil {
+					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("instanceGroup %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating instanceGroup: %v", err)
+				} else {
+					fmt.Fprintf(&sb, "Created instancegroup/%s\n", v.ObjectMeta.Name)
+				}
+
+			case *kopsapi.SSHCredential:
+				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
+				if clusterName == "" {
+					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
+				}
+				if v.Spec.PublicKey == "" {
+					return fmt.Errorf("spec.PublicKey is required")
+				}
+
+				cluster, err := clientset.GetCluster(clusterName)
+				if err != nil {
+					return err
+				}
+
+				sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+				if err != nil {
+					return err
+				}
+
+				sshKeyArr := []byte(v.Spec.PublicKey)
+				err = sshCredentialStore.AddSSHPublicKey("admin", sshKeyArr)
+				if err != nil {
+					return err
+				} else {
+					fmt.Fprintf(&sb, "Added ssh credential\n")
 				}
 
 			default:
 				glog.V(2).Infof("Type of object was %T", v)
-				return fmt.Errorf("Unhandled kind %q in %q", gvk, f)
+				return fmt.Errorf("Unhandled kind %q in %s", gvk, f)
 			}
 		}
 
 	}
-
+	{
+		// If there is a value in this sb, this should mean that we have something to deploy
+		// so let's advise the user how to engage the cloud provider and deploy
+		if sb.String() != "" {
+			fmt.Fprintf(&sb, "\n")
+			fmt.Fprintf(&sb, "To deploy these resources, run: kops update cluster %s --yes\n", clusterName)
+			fmt.Fprintf(&sb, "\n")
+		}
+		_, err := out.Write(sb.Bytes())
+		if err != nil {
+			return fmt.Errorf("error writing to output: %v", err)
+		}
+	}
 	return nil
 }

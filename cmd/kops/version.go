@@ -21,6 +21,18 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+)
+
+var (
+	versionLong = templates.LongDesc(i18n.T(`
+	Print the kops version and git SHA.`))
+
+	versionExample = templates.Examples(i18n.T(`
+	kops version`))
+
+	versionShort = i18n.T(`Print the kops version information.`)
 )
 
 type VersionCmd struct {
@@ -29,8 +41,10 @@ type VersionCmd struct {
 
 var versionCmd = VersionCmd{
 	cobraCommand: &cobra.Command{
-		Use:   "version",
-		Short: "Print the client version information",
+		Use:     "version",
+		Short:   versionShort,
+		Long:    versionLong,
+		Example: versionExample,
 	},
 }
 

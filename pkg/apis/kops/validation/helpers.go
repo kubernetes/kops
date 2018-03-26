@@ -17,9 +17,10 @@ limitations under the License.
 package validation
 
 import (
-	"k8s.io/kubernetes/pkg/util/validation/field"
 	"net"
 	"net/url"
+
+	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
 // isSubnet checks if child is a subnet of parent

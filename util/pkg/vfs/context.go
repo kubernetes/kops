@@ -18,33 +18,39 @@ package vfs
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"golang.org/x/net/context"
-	"golang.org/x/oauth2/google"
-	storage "google.golang.org/api/storage/v1"
 	"io/ioutil"
-	"k8s.io/kubernetes/pkg/util/wait"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/golang/glog"
+	"github.com/gophercloud/gophercloud"
+	"golang.org/x/net/context"
+	"golang.org/x/oauth2/google"
+	storage "google.golang.org/api/storage/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 // VFSContext is a 'context' for VFS, that is normally a singleton
 // but allows us to configure S3 credentials, for example
 type VFSContext struct {
 	s3Context    *S3Context
+	k8sContext   *KubernetesContext
 	memfsContext *MemFSContext
 	// mutex guards gcsClient
 	mutex sync.Mutex
 	// The google cloud storage client, if initialized
 	gcsClient *storage.Service
+	// swiftClient is the openstack swift client
+	swiftClient *gophercloud.ServiceClient
 }
 
 var Context = VFSContext{
-	s3Context: NewS3Context(),
+	s3Context:  NewS3Context(),
+	k8sContext: NewKubernetesContext(),
 }
 
 // ReadLocation reads a file from a vfs URL
@@ -94,6 +100,11 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 		return NewFSPath(p), nil
 	}
 
+	if strings.HasPrefix(p, "file://") {
+		f := strings.TrimPrefix(p, "file://")
+		return NewFSPath(f), nil
+	}
+
 	if strings.HasPrefix(p, "s3://") {
 		return c.buildS3Path(p)
 	}
@@ -104,6 +115,14 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 
 	if strings.HasPrefix(p, "gs://") {
 		return c.buildGCSPath(p)
+	}
+
+	if strings.HasPrefix(p, "k8s://") {
+		return c.buildKubernetesPath(p)
+	}
+
+	if strings.HasPrefix(p, "swift://") {
+		return c.buildOpenstackSwiftPath(p)
 	}
 
 	return nil, fmt.Errorf("unknown / unhandled path type: %q", p)
@@ -204,19 +223,37 @@ func RetryWithBackoff(backoff wait.Backoff, condition func() (bool, error)) (boo
 func (c *VFSContext) buildS3Path(p string) (*S3Path, error) {
 	u, err := url.Parse(p)
 	if err != nil {
-		return nil, fmt.Errorf("invalid s3 path: %q", err)
+		return nil, fmt.Errorf("invalid s3 path: %q", p)
 	}
 	if u.Scheme != "s3" {
-		return nil, fmt.Errorf("invalid s3 path: %q", err)
+		return nil, fmt.Errorf("invalid s3 path: %q", p)
 	}
 
 	bucket := strings.TrimSuffix(u.Host, "/")
 	if bucket == "" {
-		return nil, fmt.Errorf("invalid s3 path: %q", err)
+		return nil, fmt.Errorf("invalid s3 path: %q", p)
 	}
 
 	s3path := newS3Path(c.s3Context, bucket, u.Path)
 	return s3path, nil
+}
+
+func (c *VFSContext) buildKubernetesPath(p string) (*KubernetesPath, error) {
+	u, err := url.Parse(p)
+	if err != nil {
+		return nil, fmt.Errorf("invalid kubernetes vfs path: %q", p)
+	}
+	if u.Scheme != "k8s" {
+		return nil, fmt.Errorf("invalid kubernetes vfs path: %q", p)
+	}
+
+	bucket := strings.TrimSuffix(u.Host, "/")
+	if bucket == "" {
+		return nil, fmt.Errorf("invalid kubernetes vfs path: %q", p)
+	}
+
+	k8sPath := newKubernetesPath(c.k8sContext, bucket, u.Path)
+	return k8sPath, nil
 }
 
 func (c *VFSContext) buildMemFSPath(p string) (*MemFSPath, error) {
@@ -242,11 +279,11 @@ func (c *VFSContext) ResetMemfsContext(clusterReadable bool) {
 func (c *VFSContext) buildGCSPath(p string) (*GSPath, error) {
 	u, err := url.Parse(p)
 	if err != nil {
-		return nil, fmt.Errorf("invalid google cloud storage path: %q", err)
+		return nil, fmt.Errorf("invalid google cloud storage path: %q", p)
 	}
 
 	if u.Scheme != "gs" {
-		return nil, fmt.Errorf("invalid google cloud storage path: %q", err)
+		return nil, fmt.Errorf("invalid google cloud storage path: %q", p)
 	}
 
 	bucket := strings.TrimSuffix(u.Host, "/")
@@ -260,6 +297,7 @@ func (c *VFSContext) buildGCSPath(p string) (*GSPath, error) {
 	return gcsPath, nil
 }
 
+// getGCSClient returns the google storage.Service client, caching it for future calls
 func (c *VFSContext) getGCSClient() (*storage.Service, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -283,4 +321,30 @@ func (c *VFSContext) getGCSClient() (*storage.Service, error) {
 
 	c.gcsClient = gcsClient
 	return gcsClient, nil
+}
+
+func (c *VFSContext) buildOpenstackSwiftPath(p string) (*SwiftPath, error) {
+	u, err := url.Parse(p)
+	if err != nil {
+		return nil, fmt.Errorf("invalid openstack cloud storage path: %q", p)
+	}
+
+	if u.Scheme != "swift" {
+		return nil, fmt.Errorf("invalid openstack cloud storage path: %q", p)
+	}
+
+	bucket := strings.TrimSuffix(u.Host, "/")
+	if bucket == "" {
+		return nil, fmt.Errorf("invalid swift path: %q", p)
+	}
+
+	if c.swiftClient == nil {
+		swiftClient, err := NewSwiftClient()
+		if err != nil {
+			return nil, err
+		}
+		c.swiftClient = swiftClient
+	}
+
+	return NewSwiftPath(c.swiftClient, bucket, u.Path)
 }

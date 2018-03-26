@@ -20,16 +20,17 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/golang/glog"
-	"io/ioutil"
-	"k8s.io/kops/util/pkg/hashing"
+	"io"
 	"os"
 	"path"
 	"strings"
 	"sync"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/golang/glog"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 type S3Path struct {
@@ -42,6 +43,11 @@ type S3Path struct {
 
 var _ Path = &S3Path{}
 var _ HasHash = &S3Path{}
+
+// S3Acl is an ACL implementation for objects on S3
+type S3Acl struct {
+	RequestACL *string
+}
 
 func newS3Path(s3Context *S3Context, bucket string, key string) *S3Path {
 	bucket = strings.TrimSuffix(bucket, "/")
@@ -76,6 +82,8 @@ func (p *S3Path) Remove() error {
 		return err
 	}
 
+	glog.V(8).Infof("removing file %s", p)
+
 	request := &s3.DeleteObjectInput{}
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)
@@ -101,7 +109,7 @@ func (p *S3Path) Join(relativePath ...string) Path {
 	}
 }
 
-func (p *S3Path) WriteFile(data []byte) error {
+func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 	client, err := p.client()
 	if err != nil {
 		return err
@@ -109,22 +117,39 @@ func (p *S3Path) WriteFile(data []byte) error {
 
 	glog.V(4).Infof("Writing file %q", p)
 
+	// We always use server-side-encryption; it doesn't really cost us anything
+	sse := "AES256"
+
 	request := &s3.PutObjectInput{}
-	request.Body = bytes.NewReader(data)
+	request.Body = data
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)
-	request.ServerSideEncryption = aws.String("AES256")
+	request.ServerSideEncryption = aws.String(sse)
 
 	acl := os.Getenv("KOPS_STATE_S3_ACL")
+	acl = strings.TrimSpace(acl)
 	if acl != "" {
+		glog.Infof("Using KOPS_STATE_S3_ACL=%s", acl)
 		request.ACL = aws.String(acl)
+	} else if aclObj != nil {
+		s3Acl, ok := aclObj.(*S3Acl)
+		if !ok {
+			return fmt.Errorf("write to %s with ACL of unexpected type %T", p, aclObj)
+		}
+		request.ACL = s3Acl.RequestACL
 	}
 
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208
 
+	glog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q SSE=%q ACL=%q", p.bucket, p.key, sse, acl)
+
 	_, err = client.PutObject(request)
 	if err != nil {
-		return fmt.Errorf("error writing %s: %v", p, err)
+		if acl != "" {
+			return fmt.Errorf("error writing %s (with ACL=%q): %v", p, acl, err)
+		} else {
+			return fmt.Errorf("error writing %s: %v", p, err)
+		}
 	}
 
 	return nil
@@ -136,7 +161,7 @@ func (p *S3Path) WriteFile(data []byte) error {
 // TODO: should we enable versioning?
 var createFileLockS3 sync.Mutex
 
-func (p *S3Path) CreateFile(data []byte) error {
+func (p *S3Path) CreateFile(data io.ReadSeeker, acl ACL) error {
 	createFileLockS3.Lock()
 	defer createFileLockS3.Unlock()
 
@@ -150,13 +175,24 @@ func (p *S3Path) CreateFile(data []byte) error {
 		return err
 	}
 
-	return p.WriteFile(data)
+	return p.WriteFile(data, acl)
 }
 
+// ReadFile implements Path::ReadFile
 func (p *S3Path) ReadFile() ([]byte, error) {
-	client, err := p.client()
+	var b bytes.Buffer
+	_, err := p.WriteTo(&b)
 	if err != nil {
 		return nil, err
+	}
+	return b.Bytes(), nil
+}
+
+// WriteTo implements io.WriterTo
+func (p *S3Path) WriteTo(out io.Writer) (int64, error) {
+	client, err := p.client()
+	if err != nil {
+		return 0, err
 	}
 
 	glog.V(4).Infof("Reading file %q", p)
@@ -168,17 +204,17 @@ func (p *S3Path) ReadFile() ([]byte, error) {
 	response, err := client.GetObject(request)
 	if err != nil {
 		if AWSErrorCode(err) == "NoSuchKey" {
-			return nil, os.ErrNotExist
+			return 0, os.ErrNotExist
 		}
-		return nil, fmt.Errorf("error fetching %s: %v", p, err)
+		return 0, fmt.Errorf("error fetching %s: %v", p, err)
 	}
 	defer response.Body.Close()
 
-	d, err := ioutil.ReadAll(response.Body)
+	n, err := io.Copy(out, response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("error reading %s: %v", p, err)
+		return n, fmt.Errorf("error reading %s: %v", p, err)
 	}
-	return d, nil
+	return n, nil
 }
 
 func (p *S3Path) ReadDir() ([]Path, error) {

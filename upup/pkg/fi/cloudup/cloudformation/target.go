@@ -19,13 +19,14 @@ package cloudformation
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
-	"k8s.io/kops/upup/pkg/fi"
 	"os"
 	"path"
 	"strings"
 	"sync"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 type CloudformationTarget struct {
@@ -128,12 +129,12 @@ func (t *CloudformationTarget) Finish(taskMap map[string]fi.Task) error {
 	//}
 
 	//providersByName := make(map[string]map[string]interface{})
-	//if t.Cloud.ProviderID() == fi.CloudProviderGCE {
+	//if t.Cloud.ProviderID() == kops.CloudProviderGCE {
 	//	providerGoogle := make(map[string]interface{})
 	//	providerGoogle["project"] = t.Project
 	//	providerGoogle["region"] = t.Region
 	//	providersByName["google"] = providerGoogle
-	//} else if t.Cloud.ProviderID() == fi.CloudProviderAWS {
+	//} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
 	//	providerAWS := make(map[string]interface{})
 	//	providerAWS["region"] = t.Region
 	//	providersByName["aws"] = providerAWS

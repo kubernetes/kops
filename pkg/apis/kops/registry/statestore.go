@@ -17,11 +17,15 @@ limitations under the License.
 package registry
 
 import (
+	"bytes"
 	"fmt"
-	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kops/util/pkg/vfs"
 	"os"
 	"strings"
+
+	"k8s.io/kops/pkg/acls"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func ReadConfigDeprecated(configPath vfs.Path, config interface{}) error {
@@ -49,7 +53,7 @@ func ReadConfigDeprecated(configPath vfs.Path, config interface{}) error {
 
 // WriteConfigDeprecated writes a config file as yaml.
 // It is deprecated because it is unversioned, but it is still used, in particular for writing the completed config.
-func WriteConfigDeprecated(configPath vfs.Path, config interface{}, writeOptions ...vfs.WriteOption) error {
+func WriteConfigDeprecated(cluster *kops.Cluster, configPath vfs.Path, config interface{}, writeOptions ...vfs.WriteOption) error {
 	data, err := utils.YamlMarshal(config)
 	if err != nil {
 		return fmt.Errorf("error marshalling configuration: %v", err)
@@ -73,10 +77,16 @@ func WriteConfigDeprecated(configPath vfs.Path, config interface{}, writeOptions
 		}
 	}
 
+	acl, err := acls.GetACL(configPath, cluster)
+	if err != nil {
+		return err
+	}
+
+	rs := bytes.NewReader(data)
 	if create {
-		err = configPath.CreateFile(data)
+		err = configPath.CreateFile(rs, acl)
 	} else {
-		err = configPath.WriteFile(data)
+		err = configPath.WriteFile(rs, acl)
 	}
 	if err != nil {
 		return fmt.Errorf("error writing configuration file %s: %v", configPath, err)

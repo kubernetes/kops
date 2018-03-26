@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"reflect"
 
-	"k8s.io/kubernetes/pkg/api/v1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/watch"
+	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/watch"
+	clientset "k8s.io/client-go/kubernetes"
 
 	"hash/fnv"
 	"math/rand"
@@ -32,9 +32,10 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/resource"
-	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 type RecycleEventRecorder func(eventtype, message string)
@@ -46,8 +47,8 @@ type RecycleEventRecorder func(eventtype, message string)
 // attempted before returning.
 //
 // In case there is a pod with the same namespace+name already running, this
-// function assumes it's an older instance of the recycler pod and watches
-// this old pod instead of starting a new one.
+// function deletes it as it is not able to judge if it is an old recycler
+// or user has forged a fake recycler to block Kubernetes from recycling.//
 //
 //  pod - the pod designed by a volume plugin to recycle the volume. pod.Name
 //        will be overwritten with unique name based on PV.Name.
@@ -79,22 +80,49 @@ func internalRecycleVolumeByWatchingPodUntilCompletion(pvName string, pod *v1.Po
 	_, err = recyclerClient.CreatePod(pod)
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			glog.V(5).Infof("old recycler pod %q found for volume", pod.Name)
+			deleteErr := recyclerClient.DeletePod(pod.Name, pod.Namespace)
+			if deleteErr != nil {
+				return fmt.Errorf("failed to delete old recycler pod %s/%s: %s", pod.Namespace, pod.Name, deleteErr)
+			}
+			// Recycler will try again and the old pod will be hopefuly deleted
+			// at that time.
+			return fmt.Errorf("old recycler pod found, will retry later")
 		} else {
 			return fmt.Errorf("unexpected error creating recycler pod:  %+v\n", err)
 		}
 	}
-	defer func(pod *v1.Pod) {
-		glog.V(2).Infof("deleting recycler pod %s/%s", pod.Namespace, pod.Name)
-		if err := recyclerClient.DeletePod(pod.Name, pod.Namespace); err != nil {
-			glog.Errorf("failed to delete recycler pod %s/%s: %v", pod.Namespace, pod.Name, err)
-		}
-	}(pod)
+	err = waitForPod(pod, recyclerClient, podCh)
 
-	// Now only the old pod or the new pod run. Watch it until it finishes
-	// and send all events on the pod to the PV
+	// In all cases delete the recycler pod and log its result.
+	glog.V(2).Infof("deleting recycler pod %s/%s", pod.Namespace, pod.Name)
+	deleteErr := recyclerClient.DeletePod(pod.Name, pod.Namespace)
+	if deleteErr != nil {
+		glog.Errorf("failed to delete recycler pod %s/%s: %v", pod.Namespace, pod.Name, err)
+	}
+
+	// Returning recycler error is preferred, the pod will be deleted again on
+	// the next retry.
+	if err != nil {
+		return fmt.Errorf("failed to recycle volume: %s", err)
+	}
+
+	// Recycle succeeded but we failed to delete the recycler pod. Report it,
+	// the controller will re-try recycling the PV again shortly.
+	if deleteErr != nil {
+		return fmt.Errorf("failed to delete recycler pod: %s", deleteErr)
+	}
+
+	return nil
+}
+
+// waitForPod watches the pod it until it finishes and send all events on the
+// pod to the PV.
+func waitForPod(pod *v1.Pod, recyclerClient recyclerClient, podCh <-chan watch.Event) error {
 	for {
-		event := <-podCh
+		event, ok := <-podCh
+		if !ok {
+			return fmt.Errorf("recycler pod %q watch channel had been closed", pod.Name)
+		}
 		switch event.Object.(type) {
 		case *v1.Pod:
 			// POD changed
@@ -159,15 +187,15 @@ type realRecyclerClient struct {
 }
 
 func (c *realRecyclerClient) CreatePod(pod *v1.Pod) (*v1.Pod, error) {
-	return c.client.Core().Pods(pod.Namespace).Create(pod)
+	return c.client.CoreV1().Pods(pod.Namespace).Create(pod)
 }
 
 func (c *realRecyclerClient) GetPod(name, namespace string) (*v1.Pod, error) {
-	return c.client.Core().Pods(namespace).Get(name, metav1.GetOptions{})
+	return c.client.CoreV1().Pods(namespace).Get(name, metav1.GetOptions{})
 }
 
 func (c *realRecyclerClient) DeletePod(name, namespace string) error {
-	return c.client.Core().Pods(namespace).Delete(name, nil)
+	return c.client.CoreV1().Pods(namespace).Delete(name, nil)
 }
 
 func (c *realRecyclerClient) Event(eventtype, message string) {
@@ -175,19 +203,22 @@ func (c *realRecyclerClient) Event(eventtype, message string) {
 }
 
 func (c *realRecyclerClient) WatchPod(name, namespace string, stopChannel chan struct{}) (<-chan watch.Event, error) {
-	podSelector, _ := fields.ParseSelector("metadata.name=" + name)
-	options := v1.ListOptions{
+	podSelector, err := fields.ParseSelector("metadata.name=" + name)
+	if err != nil {
+		return nil, err
+	}
+	options := metav1.ListOptions{
 		FieldSelector: podSelector.String(),
 		Watch:         true,
 	}
 
-	podWatch, err := c.client.Core().Pods(namespace).Watch(options)
+	podWatch, err := c.client.CoreV1().Pods(namespace).Watch(options)
 	if err != nil {
 		return nil, err
 	}
 
 	eventSelector, _ := fields.ParseSelector("involvedObject.name=" + name)
-	eventWatch, err := c.client.Core().Events(namespace).Watch(v1.ListOptions{
+	eventWatch, err := c.client.CoreV1().Events(namespace).Watch(metav1.ListOptions{
 		FieldSelector: eventSelector.String(),
 		Watch:         true,
 	})
@@ -196,13 +227,14 @@ func (c *realRecyclerClient) WatchPod(name, namespace string, stopChannel chan s
 		return nil, err
 	}
 
-	eventCh := make(chan watch.Event, 0)
+	eventCh := make(chan watch.Event, 30)
 
 	go func() {
 		defer eventWatch.Stop()
 		defer podWatch.Stop()
 		defer close(eventCh)
-
+		var podWatchChannelClosed bool
+		var eventWatchChannelClosed bool
 		for {
 			select {
 			case _ = <-stopChannel:
@@ -210,15 +242,19 @@ func (c *realRecyclerClient) WatchPod(name, namespace string, stopChannel chan s
 
 			case podEvent, ok := <-podWatch.ResultChan():
 				if !ok {
-					return
+					podWatchChannelClosed = true
+				} else {
+					eventCh <- podEvent
 				}
-				eventCh <- podEvent
-
 			case eventEvent, ok := <-eventWatch.ResultChan():
 				if !ok {
-					return
+					eventWatchChannelClosed = true
+				} else {
+					eventCh <- eventEvent
 				}
-				eventCh <- eventEvent
+			}
+			if podWatchChannelClosed && eventWatchChannelClosed {
+				break
 			}
 		}
 	}()
@@ -285,38 +321,7 @@ func GetPath(mounter Mounter) (string, error) {
 func ChooseZoneForVolume(zones sets.String, pvcName string) string {
 	// We create the volume in a zone determined by the name
 	// Eventually the scheduler will coordinate placement into an available zone
-	var hash uint32
-	var index uint32
-
-	if pvcName == "" {
-		// We should always be called with a name; this shouldn't happen
-		glog.Warningf("No name defined during volume create; choosing random zone")
-
-		hash = rand.Uint32()
-	} else {
-		hashString := pvcName
-
-		// Heuristic to make sure that volumes in a StatefulSet are spread across zones
-		// StatefulSet PVCs are (currently) named ClaimName-StatefulSetName-Id,
-		// where Id is an integer index
-		lastDash := strings.LastIndexByte(pvcName, '-')
-		if lastDash != -1 {
-			petIDString := pvcName[lastDash+1:]
-			petID, err := strconv.ParseUint(petIDString, 10, 32)
-			if err == nil {
-				// Offset by the pet id, so we round-robin across zones
-				index = uint32(petID)
-				// We still hash the volume name, but only the base
-				hashString = pvcName[:lastDash]
-				glog.V(2).Infof("Detected StatefulSet-style volume name %q; index=%d", pvcName, index)
-			}
-		}
-
-		// We hash the (base) volume name, so we don't bias towards the first N zones
-		h := fnv.New32()
-		h.Write([]byte(hashString))
-		hash = h.Sum32()
-	}
+	hash, index := getPVCNameHashAndIndexOffset(pvcName)
 
 	// Zones.List returns zones in a consistent order (sorted)
 	// We do have a potential failure case where volumes will not be properly spread,
@@ -331,4 +336,171 @@ func ChooseZoneForVolume(zones sets.String, pvcName string) string {
 
 	glog.V(2).Infof("Creating volume for PVC %q; chose zone=%q from zones=%q", pvcName, zone, zoneSlice)
 	return zone
+}
+
+// ChooseZonesForVolume is identical to ChooseZoneForVolume, but selects a multiple zones, for multi-zone disks.
+func ChooseZonesForVolume(zones sets.String, pvcName string, numZones uint32) sets.String {
+	// We create the volume in a zone determined by the name
+	// Eventually the scheduler will coordinate placement into an available zone
+	hash, index := getPVCNameHashAndIndexOffset(pvcName)
+
+	// Zones.List returns zones in a consistent order (sorted)
+	// We do have a potential failure case where volumes will not be properly spread,
+	// if the set of zones changes during StatefulSet volume creation.  However, this is
+	// probably relatively unlikely because we expect the set of zones to be essentially
+	// static for clusters.
+	// Hopefully we can address this problem if/when we do full scheduler integration of
+	// PVC placement (which could also e.g. avoid putting volumes in overloaded or
+	// unhealthy zones)
+	zoneSlice := zones.List()
+	replicaZones := sets.NewString()
+
+	startingIndex := index * numZones
+	for index = startingIndex; index < startingIndex+numZones; index++ {
+		zone := zoneSlice[(hash+index)%uint32(len(zoneSlice))]
+		replicaZones.Insert(zone)
+	}
+
+	glog.V(2).Infof("Creating volume for replicated PVC %q; chosen zones=%q from zones=%q",
+		pvcName, replicaZones.UnsortedList(), zoneSlice)
+	return replicaZones
+}
+
+func getPVCNameHashAndIndexOffset(pvcName string) (hash uint32, index uint32) {
+	if pvcName == "" {
+		// We should always be called with a name; this shouldn't happen
+		glog.Warningf("No name defined during volume create; choosing random zone")
+
+		hash = rand.Uint32()
+	} else {
+		hashString := pvcName
+
+		// Heuristic to make sure that volumes in a StatefulSet are spread across zones
+		// StatefulSet PVCs are (currently) named ClaimName-StatefulSetName-Id,
+		// where Id is an integer index.
+		// Note though that if a StatefulSet pod has multiple claims, we need them to be
+		// in the same zone, because otherwise the pod will be unable to mount both volumes,
+		// and will be unschedulable.  So we hash _only_ the "StatefulSetName" portion when
+		// it looks like `ClaimName-StatefulSetName-Id`.
+		// We continue to round-robin volume names that look like `Name-Id` also; this is a useful
+		// feature for users that are creating statefulset-like functionality without using statefulsets.
+		lastDash := strings.LastIndexByte(pvcName, '-')
+		if lastDash != -1 {
+			statefulsetIDString := pvcName[lastDash+1:]
+			statefulsetID, err := strconv.ParseUint(statefulsetIDString, 10, 32)
+			if err == nil {
+				// Offset by the statefulsetID, so we round-robin across zones
+				index = uint32(statefulsetID)
+				// We still hash the volume name, but only the prefix
+				hashString = pvcName[:lastDash]
+
+				// In the special case where it looks like `ClaimName-StatefulSetName-Id`,
+				// hash only the StatefulSetName, so that different claims on the same StatefulSet
+				// member end up in the same zone.
+				// Note that StatefulSetName (and ClaimName) might themselves both have dashes.
+				// We actually just take the portion after the final - of ClaimName-StatefulSetName.
+				// For our purposes it doesn't much matter (just suboptimal spreading).
+				lastDash := strings.LastIndexByte(hashString, '-')
+				if lastDash != -1 {
+					hashString = hashString[lastDash+1:]
+				}
+
+				glog.V(2).Infof("Detected StatefulSet-style volume name %q; index=%d", pvcName, index)
+			}
+		}
+
+		// We hash the (base) volume name, so we don't bias towards the first N zones
+		h := fnv.New32()
+		h.Write([]byte(hashString))
+		hash = h.Sum32()
+	}
+
+	return hash, index
+}
+
+// UnmountViaEmptyDir delegates the tear down operation for secret, configmap, git_repo and downwardapi
+// to empty_dir
+func UnmountViaEmptyDir(dir string, host VolumeHost, volName string, volSpec Spec, podUID types.UID) error {
+	glog.V(3).Infof("Tearing down volume %v for pod %v at %v", volName, podUID, dir)
+
+	// Wrap EmptyDir, let it do the teardown.
+	wrapped, err := host.NewWrapperUnmounter(volName, volSpec, podUID)
+	if err != nil {
+		return err
+	}
+	return wrapped.TearDownAt(dir)
+}
+
+// MountOptionFromSpec extracts and joins mount options from volume spec with supplied options
+func MountOptionFromSpec(spec *Spec, options ...string) []string {
+	pv := spec.PersistentVolume
+
+	if pv != nil {
+		// Use beta annotation first
+		if mo, ok := pv.Annotations[v1.MountOptionAnnotation]; ok {
+			moList := strings.Split(mo, ",")
+			return JoinMountOptions(moList, options)
+		}
+
+		if len(pv.Spec.MountOptions) > 0 {
+			return JoinMountOptions(pv.Spec.MountOptions, options)
+		}
+	}
+
+	return options
+}
+
+// JoinMountOptions joins mount options eliminating duplicates
+func JoinMountOptions(userOptions []string, systemOptions []string) []string {
+	allMountOptions := sets.NewString()
+
+	for _, mountOption := range userOptions {
+		if len(mountOption) > 0 {
+			allMountOptions.Insert(mountOption)
+		}
+	}
+
+	for _, mountOption := range systemOptions {
+		allMountOptions.Insert(mountOption)
+	}
+	return allMountOptions.UnsortedList()
+}
+
+// ValidateZone returns:
+// - an error in case zone is an empty string or contains only any combination of spaces and tab characters
+// - nil otherwise
+func ValidateZone(zone string) error {
+	if strings.TrimSpace(zone) == "" {
+		return fmt.Errorf("the provided %q zone is not valid, it's an empty string or contains only spaces and tab characters", zone)
+	}
+	return nil
+}
+
+// AccessModesContains returns whether the requested mode is contained by modes
+func AccessModesContains(modes []v1.PersistentVolumeAccessMode, mode v1.PersistentVolumeAccessMode) bool {
+	for _, m := range modes {
+		if m == mode {
+			return true
+		}
+	}
+	return false
+}
+
+// AccessModesContainedInAll returns whether all of the requested modes are contained by modes
+func AccessModesContainedInAll(indexedModes []v1.PersistentVolumeAccessMode, requestedModes []v1.PersistentVolumeAccessMode) bool {
+	for _, mode := range requestedModes {
+		if !AccessModesContains(indexedModes, mode) {
+			return false
+		}
+	}
+	return true
+}
+
+// GetWindowsPath get a windows path
+func GetWindowsPath(path string) string {
+	windowsPath := strings.Replace(path, "/", "\\", -1)
+	if strings.HasPrefix(windowsPath, "\\") {
+		windowsPath = "c:" + windowsPath
+	}
+	return windowsPath
 }

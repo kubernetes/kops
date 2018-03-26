@@ -2,57 +2,60 @@
 
 Two IAM roles are created for the cluster: one for the masters, and one for the nodes.
 
-> Work is being done on scoping permissions to the minimum required to setup and maintain cluster. 
-> Please note that currently all Pods running on your cluster have access to instance IAM role.
-> Consider using projects such as [kube2iam](https://github.com/jtblin/kube2iam) to prevent that. 
+> Please note that currently all Pods running on your cluster have access to the instance IAM role.
+> Consider using projects such as [kube2iam](https://github.com/jtblin/kube2iam) to prevent that.
 
-Master permissions:
+Work has been done on scoping permissions to the minimum required for a functional Kubernetes Cluster, resulting in a fully revised set of IAM policies for both master & compute nodes.
 
-```
-ec2:*
-elasticloadbalancing:*
-ecr:GetAuthorizationToken
-ecr:BatchCheckLayerAvailability
-ecr:GetDownloadUrlForLayer
-ecr:GetRepositoryPolicy
-ecr:DescribeRepositories
-ecr:ListImages
-ecr:BatchGetImage
-route53:ListHostedZones
-route53:GetChange
-// The following permissions are scoped to AWS Route53 HostedZone used to bootstrap the cluster
-// arn:aws:route53:::hostedzone/$hosted_zone_id
-route53:ChangeResourceRecordSets, ListResourceRecordSets, GetHostedZone
+An example of the new IAM policies can be found here:
+- Master Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_master_strict.json
+- Compute Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_node_strict.json
 
-// The following permissions are only created if you are using etcd volumes with "encrypted: true" and a custom kmsKeyId.
-// They are scoped to the kmsKeyId that you are using.
-kms:Encrypt
-kms:Decrypt
-kms:ReEncrypt*
-kms:GenerateDataKey*
-kms:DescribeKey
-kms:CreateGrant
-kms:ListGrants
-kms:RevokeGrant
+On provisioning a new cluster with Kops v1.8.0 or above, by default you will be using the new stricter IAM policies. Upgrading an existing cluster will use the legacy IAM privileges to reduce risk of potential regression.
+
+In order to update your cluster to use the strict IAM privileges, add the following within your Cluster Spec:
+```yaml
+iam:
+  legacy: false
 ```
 
-Node permissions:
+Following this, run a cluster update to have the changes take effect:
 
 ```
-ec2:Describe*
-ecr:GetAuthorizationToken
-ecr:BatchCheckLayerAvailability
-ecr:GetDownloadUrlForLayer
-ecr:GetRepositoryPolicy
-ecr:DescribeRepositories
-ecr:ListImages
-ecr:BatchGetImage
-route53:ListHostedZones
-route53:GetChange
-// The following permissions are scoped to AWS Route53 HostedZone used to bootstrap the cluster
-// arn:aws:route53:::hostedzone/$hosted_zone_id
-route53:ChangeResourceRecordSets, ListResourceRecordSets, GetHostedZone
+kops update cluster ${CLUSTER_NAME} --yes
 ```
+
+The Strict IAM flag by default will not grant nodes access to the AWS EC2 Container Registry (ECR), as can be seen by the above example policy documents. To grant access to ECR, update your Cluster Spec with the following and then perform a cluster update:
+```yaml
+iam:
+  allowContainerRegistry: true
+  legacy: false
+```
+
+Adding ECR permissions will extend the IAM policy documents as below:
+- Master Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_master_strict_ecr.json
+- Compute Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_node_strict_ecr.json
+
+The additional permissions are:
+```json
+{
+  "Sid": "kopsK8sECR",
+  "Effect": "Allow",
+  "Action": [
+    "ecr:BatchCheckLayerAvailability",
+    "ecr:BatchGetImage",
+    "ecr:DescribeRepositories",
+    "ecr:GetAuthorizationToken",
+    "ecr:GetDownloadUrlForLayer",
+    "ecr:GetRepositoryPolicy",
+    "ecr:ListImages"
+  ],
+  "Resource": [
+    "*"
+  ]
+}
+```
+
 
 ## Adding Additional Policies
 
@@ -109,7 +112,7 @@ spec:
       ]
 ```
 
-Now you can update to have the changes take effect:
+Now you can run a cluster update to have the changes take effect:
 
 ```
 kops update cluster ${CLUSTER_NAME} --yes

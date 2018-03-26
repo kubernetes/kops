@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import (
 // sets.Int64 is a set of int64s, implemented via map[int64]struct{} for minimal memory consumption.
 type Int64 map[int64]Empty
 
-// New creates a Int64 from a list of values.
+// NewInt64 creates a Int64 from a list of values.
 func NewInt64(items ...int64) Int64 {
 	ss := Int64{}
 	ss.Insert(items...)

@@ -9,29 +9,71 @@ spec:
     selector:
       k8s-addon: core.addons.k8s.io
     version: 1.4.0
-  - manifest: kube-dns.addons.k8s.io/v1.5.1.yaml
+  - id: pre-k8s-1.6
+    kubernetesVersion: <1.6.0
+    manifest: kube-dns.addons.k8s.io/pre-k8s-1.6.yaml
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
-    version: 1.5.1
+    version: 1.14.8
+  - id: k8s-1.6
+    kubernetesVersion: '>=1.6.0'
+    manifest: kube-dns.addons.k8s.io/k8s-1.6.yaml
+    name: kube-dns.addons.k8s.io
+    selector:
+      k8s-addon: kube-dns.addons.k8s.io
+    version: 1.14.8
+  - id: k8s-1.8
+    kubernetesVersion: '>=1.8.0'
+    manifest: rbac.addons.k8s.io/k8s-1.8.yaml
+    name: rbac.addons.k8s.io
+    selector:
+      k8s-addon: rbac.addons.k8s.io
+    version: 1.8.0
   - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
     name: limit-range.addons.k8s.io
     selector:
       k8s-addon: limit-range.addons.k8s.io
     version: 1.5.0
-  - manifest: dns-controller.addons.k8s.io/v1.5.2.yaml
+  - id: pre-k8s-1.6
+    kubernetesVersion: <1.6.0
+    manifest: dns-controller.addons.k8s.io/pre-k8s-1.6.yaml
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.5.2
-  - manifest: storage-aws.addons.k8s.io/v1.5.0.yaml
+    version: 1.9.0-alpha.2
+  - id: k8s-1.6
+    kubernetesVersion: '>=1.6.0'
+    manifest: dns-controller.addons.k8s.io/k8s-1.6.yaml
+    name: dns-controller.addons.k8s.io
+    selector:
+      k8s-addon: dns-controller.addons.k8s.io
+    version: 1.9.0-alpha.2
+  - id: v1.7.0
+    kubernetesVersion: '>=1.7.0'
+    manifest: storage-aws.addons.k8s.io/v1.7.0.yaml
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
-    version: 1.5.0
-  - manifest: networking.kope.io/v1.0.20161116.yaml
+    version: 1.7.0
+  - id: v1.6.0
+    kubernetesVersion: <1.7.0
+    manifest: storage-aws.addons.k8s.io/v1.6.0.yaml
+    name: storage-aws.addons.k8s.io
+    selector:
+      k8s-addon: storage-aws.addons.k8s.io
+    version: 1.7.0
+  - id: pre-k8s-1.6
+    kubernetesVersion: <1.6.0
+    manifest: networking.kope.io/pre-k8s-1.6.yaml
     name: networking.kope.io
     selector:
       role.kubernetes.io/networking: "1"
-    version: 1.0.20161116
-
+    version: 1.0.20180319
+  - id: k8s-1.6
+    kubernetesVersion: '>=1.6.0'
+    manifest: networking.kope.io/k8s-1.6.yaml
+    name: networking.kope.io
+    selector:
+      role.kubernetes.io/networking: "1"
+    version: 1.0.20180319

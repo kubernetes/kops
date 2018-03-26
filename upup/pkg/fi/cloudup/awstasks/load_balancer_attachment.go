@@ -31,7 +31,9 @@ import (
 
 //go:generate fitask -type=LoadBalancerAttachment
 type LoadBalancerAttachment struct {
-	Name         *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	LoadBalancer *LoadBalancer
 
 	// LoadBalancerAttachments now support ASGs or direct instances
@@ -82,6 +84,7 @@ func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, e
 
 			// Prevent spurious changes
 			actual.Name = e.Name // ELB attachments don't have tags
+			actual.Lifecycle = e.Lifecycle
 
 			return actual, nil
 		}

@@ -24,16 +24,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/emicklei/go-restful/swagger"
 	"github.com/golang/glog"
+	"github.com/googleapis/gnostic/OpenAPIv2"
 
-	"k8s.io/kubernetes/pkg/api"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/client/typed/discovery"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
-	"k8s.io/kubernetes/pkg/version"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/version"
+	"k8s.io/client-go/discovery"
+	restclient "k8s.io/client-go/rest"
+	"k8s.io/kubernetes/pkg/kubectl/scheme"
 )
 
 // CachedDiscoveryClient implements the functions that discovery server-supported API groups,
@@ -67,14 +66,19 @@ func (d *CachedDiscoveryClient) ServerResourcesForGroupVersion(groupVersion stri
 	// don't fail on errors, we either don't have a file or won't be able to run the cached check. Either way we can fallback.
 	if err == nil {
 		cachedResources := &metav1.APIResourceList{}
-		if err := runtime.DecodeInto(api.Codecs.UniversalDecoder(), cachedBytes, cachedResources); err == nil {
-			glog.V(6).Infof("returning cached discovery info from %v", filename)
+		if err := runtime.DecodeInto(scheme.Codecs.UniversalDecoder(), cachedBytes, cachedResources); err == nil {
+			glog.V(10).Infof("returning cached discovery info from %v", filename)
 			return cachedResources, nil
 		}
 	}
 
 	liveResources, err := d.delegate.ServerResourcesForGroupVersion(groupVersion)
 	if err != nil {
+		glog.V(3).Infof("skipped caching discovery info due to %v", err)
+		return liveResources, err
+	}
+	if liveResources == nil || len(liveResources.APIResources) == 0 {
+		glog.V(3).Infof("skipped caching discovery info, no resources found")
 		return liveResources, err
 	}
 
@@ -109,14 +113,19 @@ func (d *CachedDiscoveryClient) ServerGroups() (*metav1.APIGroupList, error) {
 	// don't fail on errors, we either don't have a file or won't be able to run the cached check. Either way we can fallback.
 	if err == nil {
 		cachedGroups := &metav1.APIGroupList{}
-		if err := runtime.DecodeInto(api.Codecs.UniversalDecoder(), cachedBytes, cachedGroups); err == nil {
-			glog.V(6).Infof("returning cached discovery info from %v", filename)
+		if err := runtime.DecodeInto(scheme.Codecs.UniversalDecoder(), cachedBytes, cachedGroups); err == nil {
+			glog.V(10).Infof("returning cached discovery info from %v", filename)
 			return cachedGroups, nil
 		}
 	}
 
 	liveGroups, err := d.delegate.ServerGroups()
 	if err != nil {
+		glog.V(3).Infof("skipped caching discovery info due to %v", err)
+		return liveGroups, err
+	}
+	if liveGroups == nil || len(liveGroups.Groups) == 0 {
+		glog.V(3).Infof("skipped caching discovery info, no groups found")
 		return liveGroups, err
 	}
 
@@ -141,6 +150,7 @@ func (d *CachedDiscoveryClient) getCachedFile(filename string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	fileInfo, err := file.Stat()
 	if err != nil {
@@ -169,7 +179,7 @@ func (d *CachedDiscoveryClient) writeCachedFile(filename string, obj runtime.Obj
 		return err
 	}
 
-	bytes, err := runtime.Encode(api.Codecs.LegacyCodec(), obj)
+	bytes, err := runtime.Encode(scheme.Codecs.LegacyCodec(), obj)
 	if err != nil {
 		return err
 	}
@@ -184,7 +194,7 @@ func (d *CachedDiscoveryClient) writeCachedFile(filename string, obj runtime.Obj
 		return err
 	}
 
-	err = f.Chmod(0755)
+	err = os.Chmod(f.Name(), 0755)
 	if err != nil {
 		return err
 	}
@@ -221,8 +231,8 @@ func (d *CachedDiscoveryClient) ServerVersion() (*version.Info, error) {
 	return d.delegate.ServerVersion()
 }
 
-func (d *CachedDiscoveryClient) SwaggerSchema(version schema.GroupVersion) (*swagger.ApiDeclaration, error) {
-	return d.delegate.SwaggerSchema(version)
+func (d *CachedDiscoveryClient) OpenAPISchema() (*openapi_v2.Document, error) {
+	return d.delegate.OpenAPISchema()
 }
 
 func (d *CachedDiscoveryClient) Fresh() bool {

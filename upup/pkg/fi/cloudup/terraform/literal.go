@@ -19,6 +19,8 @@ package terraform
 import (
 	"encoding/json"
 	"sort"
+
+	"github.com/golang/glog"
 )
 
 type Literal struct {
@@ -63,7 +65,8 @@ func (a byKey) Less(i, j int) bool {
 	return a[i].key < a[j].key
 }
 
-func sortLiterals(v []*Literal, dedup bool) ([]*Literal, error) {
+// buildSortProxies maps a list of Literals to a list of literalWithJSON
+func buildSortProxies(v []*Literal) ([]*literalWithJSON, error) {
 	var proxies []*literalWithJSON
 	for _, l := range v {
 		k, err := json.Marshal(l)
@@ -76,16 +79,41 @@ func sortLiterals(v []*Literal, dedup bool) ([]*Literal, error) {
 		})
 	}
 
-	sort.Sort(byKey(proxies))
+	return proxies, nil
+}
 
-	var sorted []*Literal
-	for i, p := range proxies {
-		if dedup && i != 0 && proxies[i-1].key == proxies[i].key {
-			continue
-		}
-
-		sorted = append(sorted, p.literal)
+// SortLiterals sorts a list of Literal, by key.  It does so in-place
+func SortLiterals(v []*Literal) {
+	proxies, err := buildSortProxies(v)
+	if err != nil {
+		// Very unexpected
+		glog.Fatalf("error processing terraform Literal: %v", err)
 	}
 
-	return sorted, nil
+	sort.Sort(byKey(proxies))
+
+	for i := range proxies {
+		v[i] = proxies[i].literal
+	}
+}
+
+// DedupLiterals removes any duplicate Literals before returning the slice.
+// As a side-effect, it currently returns the Literals in sorted order.
+func DedupLiterals(v []*Literal) ([]*Literal, error) {
+	proxies, err := buildSortProxies(v)
+	if err != nil {
+		return nil, err
+	}
+
+	sort.Sort(byKey(proxies))
+
+	var deduped []*Literal
+	for i, p := range proxies {
+		if i != 0 && proxies[i-1].key == proxies[i].key {
+			continue
+		}
+		deduped = append(deduped, p.literal)
+	}
+
+	return deduped, nil
 }

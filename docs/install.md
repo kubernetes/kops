@@ -1,59 +1,74 @@
-# Installing Kops (Binaries)
+# Installing kops (Binaries)
 
-## Darwin (MacOS)
+## MacOS
 
 From Homebrew:
 
 ```bash
-brew update && brew install --HEAD kops
+brew update && brew install kops
 ```
 
-# Installing Kops (Source)
+Developers can also easily install [development releases](development/homebrew.md).
 
+From Github:
+
+```bash
+curl -Lo kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-darwin-amd64
+chmod +x ./kops
+sudo mv ./kops /usr/local/bin/
 ```
-go get -d k8s.io/kops
-cd ${GOPATH}/src/k8s.io/kops/
-git checkout release
-make
+
+You can also [install from source](development/building.md).
+
+## Linux
+
+From Github:
+
+```bash
+wget -O kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+chmod +x ./kops
+sudo mv ./kops /usr/local/bin/
 ```
 
-* The `release` branch is where releases are taken from.  This is the stable code branch.
-* The `master` branch  _should_ also be functional, but is where active development happens, so may be less stable.
-
-## Cross Compiling
-
-Cross compiling for things like `nodeup` are now done automatically via `make nodeup`. `make push-aws-run TARGET=admin@$TARGET` will automatically choose the linux amd64 build from your `.build` directory.
-
-## Troubleshooting 
-
- - Make sure `$GOPATH` is set, and your [workspace](https://golang.org/doc/code.html#Workspaces) is configured.
- - kops will not compile with symlinks in `$GOPATH`. See issue go issue [17451](https://github.com/golang/go/issues/17451) for more information
- - kops uses the relatively new Go vendoring, so building requires Go 1.6 or later, or you must export GO15VENDOREXPERIMENT=1 when building with Go 1.5.  The makefile sets GO15VENDOREXPERIMENT for you.  Go code generation does not honor the env var in 1.5, so for development you should use Go 1.6 or later
- - Kops will only compile if the source is checked out in `$GOPATH/src/k8s.io/kops`. If you try to use `$GOPATH/src/github.com/kubernetes/kops` you will run into issues with package imports not working as expected.
+You can also [install from source](development/building.md).
 
 # Installing Other Dependencies
 
-## Installing Kubectl
+## kubectl
 
 `kubectl` is the CLI tool to manage and operate Kubernetes clusters.  You can install it as follows.
 
-### Darwin (MacOS)
+### MacOS
 
+From Homebrew:
 ```
 brew install kubernetes-cli
 ```
 
-### Other Platforms
+From the [official kubernetes kubectl release](https://kubernetes.io/docs/tasks/tools/install-kubectl/):
 
-* [Kubernetes Latest Release](https://github.com/kubernetes/kubernetes/releases/latest)
-* [Installation Guide](http://kubernetes.io/docs/user-guide/prereqs/)
+```
+wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+```
+
+### Linux
+
+From the [official kubernetes kubectl release](https://kubernetes.io/docs/tasks/tools/install-kubectl/):
+
+```
+wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+```
 
 
 ## Installing AWS CLI Tools
 
-### Darwin (MacOS)
+### MacOS
 
-The officially supported way of installing the tool is with `pip` as in
+The officially supported way of installing the tool is with `pip`:
 
 ```bash
 pip install awscli

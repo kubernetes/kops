@@ -1,0 +1,84 @@
+#
+# Basic Check
+#
+- context:
+    hello: world
+  template: |
+    hello {{ .hello }}
+  expected: |
+    hello world
+- template: |
+    {{ upper "hello" }} world its {{ lower "Me" }}
+  expected: |
+    HELLO world its me
+
+#
+# Snippets
+#
+- context:
+    etcd:
+    - name: main
+      members:
+      - a1
+      - b1
+    - name: events
+      members:
+      - a1
+      - b1
+  snippets:
+    cluster: |
+      {{- range .etcd -}}
+      - name: {{ .name }}
+        members: {{ .members | join "," }}
+      {{ end -}}
+  template: |
+    cluster:
+    {{ include "cluster" . -}}
+  expected: |
+    cluster:
+    - name: main
+      members: a1,b1
+    - name: events
+      members: a1,b1
+- snippets:
+    unit: |
+      [Unit]
+      Name: somename
+
+      [Service]
+      This is a service
+  template: |
+    hooks:
+      name: myservice.service
+      manifest: |
+        {{ include "unit" . | indent 4 -}}
+  expected: |
+    hooks:
+      name: myservice.service
+      manifest: |
+        [Unit]
+        Name: somename
+
+        [Service]
+        This is a service
+#
+# Iterations
+#
+- context:
+    etcd:
+    - name: main
+      members: [a1,b1]
+    - name: events
+      members: [a1,b1]
+  template: |
+    cluster:
+    {{- range .etcd }}
+    - name: {{ .name }}
+      members: {{ .members -}}
+    {{ end }}
+  expected: |
+    cluster:
+    - name: main
+      members: [a1 b1]
+    - name: events
+      members: [a1 b1]

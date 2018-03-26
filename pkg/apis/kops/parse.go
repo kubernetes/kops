@@ -18,8 +18,9 @@ package kops
 
 import (
 	"fmt"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"strings"
+
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // ParseInstanceGroupRole converts a string to an InstanceGroupRole

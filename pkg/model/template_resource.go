@@ -20,8 +20,9 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"k8s.io/kops/upup/pkg/fi"
 	"text/template"
+
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 type templateResource struct {

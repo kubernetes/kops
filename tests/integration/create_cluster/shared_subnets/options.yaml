@@ -1,0 +1,8 @@
+ClusterName: subnet.example.com
+Zones:
+- us-test-1a
+Cloud: aws
+VPCID: vpc-12345678
+SubnetIDs:
+- subnet-1
+KubernetesVersion: v1.4.8

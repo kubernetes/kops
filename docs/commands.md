@@ -1,3 +1,6 @@
+# Documentation
+
+Please refer to the [cli](cli) directory for full documentation.
 
 ## `kops create cluster`
 
@@ -33,6 +36,8 @@ when you are happy that it is deleting the right things you run `kops delete clu
 ## Other interesting modes:
 
 * Build a terraform model: `--target=terraform`  The terraform model will be built in `out/terraform`
+
+* Build a Cloudformation model: `--target=cloudformation`  The Cloudformation json file will be built in 'out/cloudformation'
 
 * Specify the k8s build to run: `--kubernetes-version=1.2.2`
 

@@ -18,29 +18,31 @@ package gcetasks
 
 import (
 	"fmt"
+	"reflect"
+	"strings"
+
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"reflect"
-	"strings"
-	"time"
 )
 
 var scopeAliases map[string]string
 
 //go:generate fitask -type=Instance
 type Instance struct {
-	Name        *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	Network     *Network
 	Tags        []string
 	Preemptible *bool
 	Image       *string
-	Disks       map[string]*PersistentDisk
+	Disks       map[string]*Disk
 
 	CanIPForward *bool
-	IPAddress    *IPAddress
+	IPAddress    *Address
 	Subnet       *Subnet
 
 	Scopes []string
@@ -59,9 +61,9 @@ func (e *Instance) CompareWithID() *string {
 }
 
 func (e *Instance) Find(c *fi.Context) (*Instance, error) {
-	cloud := c.Cloud.(*gce.GCECloud)
+	cloud := c.Cloud.(gce.GCECloud)
 
-	r, err := cloud.Compute.Instances.Get(cloud.Project, *e.Zone, *e.Name).Do()
+	r, err := cloud.Compute().Instances.Get(cloud.Project(), *e.Zone, *e.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -87,11 +89,11 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		if len(ni.AccessConfigs) != 0 {
 			ac := ni.AccessConfigs[0]
 			if ac.NatIP != "" {
-				addr, err := cloud.Compute.Addresses.List(cloud.Project, cloud.Region).Filter("address eq " + ac.NatIP).Do()
+				addr, err := cloud.Compute().Addresses.List(cloud.Project(), cloud.Region()).Filter("address eq " + ac.NatIP).Do()
 				if err != nil {
 					return nil, fmt.Errorf("error querying for address %q: %v", ac.NatIP, err)
 				} else if len(addr.Items) != 0 {
-					actual.IPAddress = &IPAddress{Name: &addr.Items[0].Name}
+					actual.IPAddress = &Address{Name: &addr.Items[0].Name}
 				} else {
 					return nil, fmt.Errorf("address not found %q: %v", ac.NatIP, err)
 				}
@@ -105,14 +107,14 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		}
 	}
 
-	actual.Disks = make(map[string]*PersistentDisk)
+	actual.Disks = make(map[string]*Disk)
 	for i, disk := range r.Disks {
 		if i == 0 {
 			source := disk.Source
 
 			// TODO: Parse source URL instead of assuming same project/zone?
 			name := lastComponent(source)
-			d, err := cloud.Compute.Disks.Get(cloud.Project, *e.Zone, name).Do()
+			d, err := cloud.Compute().Disks.Get(cloud.Project(), *e.Zone, name).Do()
 			if err != nil {
 				if gce.IsNotFound(err) {
 					return nil, fmt.Errorf("disk not found %q: %v", source, err)
@@ -120,7 +122,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 				return nil, fmt.Errorf("error querying for disk %q: %v", source, err)
 			}
 
-			image, err := ShortenImageURL(cloud.Project, d.SourceImage)
+			image, err := ShortenImageURL(cloud.Project(), d.SourceImage)
 			if err != nil {
 				return nil, fmt.Errorf("error parsing source image URL: %v", err)
 			}
@@ -131,14 +133,14 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 				return nil, fmt.Errorf("unable to parse disk source URL: %q", disk.Source)
 			}
 
-			actual.Disks[disk.DeviceName] = &PersistentDisk{Name: &url.Name}
+			actual.Disks[disk.DeviceName] = &Disk{Name: &url.Name}
 		}
 	}
 
 	if r.Metadata != nil {
 		actual.Metadata = make(map[string]fi.Resource)
 		for _, i := range r.Metadata.Items {
-			actual.Metadata[i.Key] = fi.NewStringResource(i.Value)
+			actual.Metadata[i.Key] = fi.NewStringResource(fi.StringValue(i.Value))
 		}
 		actual.metadataFingerprint = r.Metadata.Fingerprint
 	}
@@ -183,7 +185,7 @@ func scopeToShortForm(s string) string {
 	return s
 }
 
-func (e *Instance) mapToGCE(project string, ipAddressResolver func(*IPAddress) (*string, error)) (*compute.Instance, error) {
+func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*string, error)) (*compute.Instance, error) {
 	zone := *e.Zone
 
 	var scheduling *compute.Scheduling
@@ -194,7 +196,7 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*IPAddress) (
 		}
 	} else {
 		scheduling = &compute.Scheduling{
-			AutomaticRestart: true,
+			AutomaticRestart: fi.Bool(true),
 			// TODO: Migrate or terminate?
 			OnHostMaintenance: "MIGRATE",
 			Preemptible:       false,
@@ -274,7 +276,7 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*IPAddress) (
 		}
 		metadataItems = append(metadataItems, &compute.MetadataItems{
 			Key:   key,
-			Value: v,
+			Value: fi.String(v),
 		})
 	}
 
@@ -310,11 +312,11 @@ func (i *Instance) isZero() bool {
 
 func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error {
 	cloud := t.Cloud
-	project := cloud.Project
+	project := cloud.Project()
 	zone := *e.Zone
 
-	ipAddressResolver := func(ip *IPAddress) (*string, error) {
-		return ip.Address, nil
+	ipAddressResolver := func(ip *Address) (*string, error) {
+		return ip.IPAddress, nil
 	}
 
 	i, err := e.mapToGCE(project, ipAddressResolver)
@@ -324,7 +326,7 @@ func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error
 
 	if a == nil {
 		glog.V(2).Infof("Creating instance %q", i.Name)
-		_, err := t.Cloud.Compute.Instances.Insert(project, zone, i).Do()
+		_, err := cloud.Compute().Instances.Insert(project, zone, i).Do()
 		if err != nil {
 			return fmt.Errorf("error creating Instance: %v", err)
 		}
@@ -334,13 +336,12 @@ func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error
 
 			i.Metadata.Fingerprint = a.metadataFingerprint
 
-			op, err := cloud.Compute.Instances.SetMetadata(project, zone, i.Name, i.Metadata).Do()
+			op, err := cloud.Compute().Instances.SetMetadata(project, zone, i.Name, i.Metadata).Do()
 			if err != nil {
 				return fmt.Errorf("error setting metadata on instance: %v", err)
 			}
 
-			err = waitCompletion(cloud.Compute, project, op)
-			if err != nil {
+			if err := cloud.WaitForOp(op); err != nil {
 				return fmt.Errorf("error setting metadata on instance: %v", err)
 			}
 
@@ -351,46 +352,6 @@ func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error
 			glog.Errorf("Cannot apply changes to Instance: %v", changes)
 			return fmt.Errorf("Cannot apply changes to Instance: %v", changes)
 		}
-	}
-
-	return nil
-}
-
-func waitCompletion(c *compute.Service, project string, op *compute.Operation) error {
-	zone := lastComponent(op.Zone)
-	var status *compute.Operation
-	for {
-		var err error
-		status, err = c.ZoneOperations.Get(project, zone, op.Name).Do()
-		if err != nil {
-			return fmt.Errorf("error fetching operation status: %v", err)
-		}
-		done := false
-		switch status.Status {
-		case "DONE":
-			done = true
-		case "PENDING", "RUNNING":
-			glog.V(4).Infof("operation status=%v", status.Status)
-		}
-
-		if done {
-			break
-		}
-
-		// TODO: Exponential backoff or similar
-		time.Sleep(1 * time.Second)
-	}
-
-	if status.Error != nil {
-		for _, e := range status.Error.Errors {
-			glog.Warningf("operation failed with error: %v", e)
-		}
-
-		return fmt.Errorf("operation failed: %v", status.Error.Errors[0].Message)
-	}
-
-	if status.Warnings != nil {
-		glog.Warningf("operation completed with warnings: %v", status.Warnings)
 	}
 
 	return nil
@@ -432,11 +393,17 @@ func ShortenImageURL(defaultProject string, imageURL string) (string, error) {
 	}
 }
 
+type terraformInstance struct {
+	terraformInstanceCommon
+
+	Name string `json:"name"`
+}
+
 func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Instance) error {
 	project := t.Project
 
 	// This is a "little" hacky...
-	ipAddressResolver := func(ip *IPAddress) (*string, error) {
+	ipAddressResolver := func(ip *Address) (*string, error) {
 		tf := "${google_compute_address." + *ip.Name + ".address}"
 		return &tf, nil
 	}
@@ -446,13 +413,13 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 		return err
 	}
 
-	tf := &terraformInstanceTemplate{
-		Name:         i.Name,
-		CanIPForward: i.CanIpForward,
-		MachineType:  lastComponent(i.MachineType),
-		Zone:         i.Zone,
-		Tags:         i.Tags.Items,
+	tf := &terraformInstance{
+		Name: i.Name,
 	}
+	tf.CanIPForward = i.CanIpForward
+	tf.MachineType = lastComponent(i.MachineType)
+	tf.Zone = i.Zone
+	tf.Tags = i.Tags.Items
 
 	// TF requires zone
 	if tf.Zone == "" && e.Zone != nil {
@@ -481,7 +448,7 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 
 	tf.AddNetworks(e.Network, e.Subnet, i.NetworkInterfaces)
 
-	tf.AddMetadata(i.Metadata)
+	tf.AddMetadata(t, i.Name, i.Metadata)
 
 	// Using metadata_startup_script is now mandatory (?)
 	{
@@ -494,7 +461,7 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 
 	if i.Scheduling != nil {
 		tf.Scheduling = &terraformScheduling{
-			AutomaticRestart:  i.Scheduling.AutomaticRestart,
+			AutomaticRestart:  fi.BoolValue(i.Scheduling.AutomaticRestart),
 			OnHostMaintenance: i.Scheduling.OnHostMaintenance,
 			Preemptible:       i.Scheduling.Preemptible,
 		}

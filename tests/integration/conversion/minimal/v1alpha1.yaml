@@ -1,13 +1,19 @@
 apiVersion: kops/v1alpha1
 kind: Cluster
 metadata:
-  creationTimestamp: "2016-12-10T22:42:27Z"
+  creationTimestamp: 2016-12-10T22:42:27Z
   name: minimal.example.com
 spec:
+  additionalSans:
+  - proxy.api.minimal.example.com
+  addons:
+  - manifest: s3://somebucket/example.yaml
   adminAccess:
   - 0.0.0.0/0
   api:
     dns: {}
+  authorization:
+    alwaysAllow: {}
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
@@ -20,7 +26,9 @@ spec:
     - name: us-test-1a
       zone: us-test-1a
     name: events
-  kubernetesVersion: v1.4.6
+  iam:
+    legacy: true
+  kubernetesVersion: v1.4.12
   masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
@@ -41,7 +49,7 @@ spec:
 apiVersion: kops/v1alpha1
 kind: InstanceGroup
 metadata:
-  creationTimestamp: "2016-12-10T22:42:28Z"
+  creationTimestamp: 2016-12-10T22:42:28Z
   labels:
     kops.k8s.io/cluster: minimal.example.com
   name: nodes
@@ -60,7 +68,7 @@ spec:
 apiVersion: kops/v1alpha1
 kind: InstanceGroup
 metadata:
-  creationTimestamp: "2016-12-10T22:42:28Z"
+  creationTimestamp: 2016-12-10T22:42:28Z
   labels:
     kops.k8s.io/cluster: minimal.example.com
   name: master-us-test-1a

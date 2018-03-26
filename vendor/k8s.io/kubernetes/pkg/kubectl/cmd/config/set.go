@@ -26,10 +26,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
+	"k8s.io/apiserver/pkg/util/flag"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/util/flag"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 const (
@@ -56,13 +57,10 @@ func NewCmdConfigSet(out io.Writer, configAccess clientcmd.ConfigAccess) *cobra.
 
 	cmd := &cobra.Command{
 		Use:   "set PROPERTY_NAME PROPERTY_VALUE",
-		Short: "Sets an individual value in a kubeconfig file",
+		Short: i18n.T("Sets an individual value in a kubeconfig file"),
 		Long:  set_long,
 		Run: func(cmd *cobra.Command, args []string) {
-			if !options.complete(cmd) {
-				return
-			}
-
+			cmdutil.CheckErr(options.complete(cmd))
 			cmdutil.CheckErr(options.run())
 			fmt.Fprintf(out, "Property %q set.\n", options.propertyName)
 		},
@@ -105,16 +103,15 @@ func (o setOptions) run() error {
 	return nil
 }
 
-func (o *setOptions) complete(cmd *cobra.Command) bool {
+func (o *setOptions) complete(cmd *cobra.Command) error {
 	endingArgs := cmd.Flags().Args()
 	if len(endingArgs) != 2 {
-		cmd.Help()
-		return false
+		return helpErrorf(cmd, "Unexpected args: %v", endingArgs)
 	}
 
 	o.propertyValue = endingArgs[1]
 	o.propertyName = endingArgs[0]
-	return true
+	return nil
 }
 
 func (o setOptions) validate() error {
@@ -155,6 +152,9 @@ func modifyConfig(curr reflect.Value, steps *navigationSteps, propertyValue stri
 
 		needToSetNewMapValue := currMapValue.Kind() == reflect.Invalid
 		if needToSetNewMapValue {
+			if unset {
+				return fmt.Errorf("current map key `%v` is invalid", mapKey.Interface())
+			}
 			currMapValue = reflect.New(mapValueType.Elem()).Elem().Addr()
 			actualCurrValue.SetMapIndex(mapKey, currMapValue)
 		}

@@ -21,12 +21,17 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/types"
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/informers"
+	"k8s.io/kubernetes/pkg/controller"
 )
 
 // Interface is an abstract, pluggable interface for cloud providers.
 type Interface interface {
+	// Initialize provides the cloud with a kubernetes client builder and may spawn goroutines
+	// to perform housekeeping activities within the cloud provider.
+	Initialize(clientBuilder controller.ControllerClientBuilder)
 	// LoadBalancer returns a balancer interface. Also returns true if the interface is supported, false otherwise.
 	LoadBalancer() (LoadBalancer, bool)
 	// Instances returns an instances interface. Also returns true if the interface is supported, false otherwise.
@@ -41,6 +46,13 @@ type Interface interface {
 	ProviderName() string
 	// ScrubDNS provides an opportunity for cloud-provider-specific code to process DNS settings for pods.
 	ScrubDNS(nameservers, searches []string) (nsOut, srchOut []string)
+	// HasClusterID returns true if a ClusterID is required and set
+	HasClusterID() bool
+}
+
+type InformerUser interface {
+	// SetInformers sets the informer on the cloud object.
+	SetInformers(informerFactory informers.SharedInformerFactory)
 }
 
 // Clusters is an abstract, pluggable interface for clusters of containers.
@@ -64,6 +76,7 @@ func GetLoadBalancerName(service *v1.Service) string {
 	return ret
 }
 
+// GetInstanceProviderID builds a ProviderID for a node in a cloud.
 func GetInstanceProviderID(cloud Interface, nodeName types.NodeName) (string, error) {
 	instances, ok := cloud.Instances()
 	if !ok {
@@ -112,6 +125,12 @@ type Instances interface {
 	// returns the address of the calling instance. We should do a rename to
 	// make this clearer.
 	NodeAddresses(name types.NodeName) ([]v1.NodeAddress, error)
+	// NodeAddressesByProviderID returns the addresses of the specified instance.
+	// The instance is specified using the providerID of the node. The
+	// ProviderID is a unique identifier of the node. This will not be called
+	// from the node whose nodeaddresses are being queried. i.e. local metadata
+	// services cannot be used in this method to obtain nodeaddresses
+	NodeAddressesByProviderID(providerID string) ([]v1.NodeAddress, error)
 	// ExternalID returns the cloud provider ID of the node with the specified NodeName.
 	// Note that if the instance does not exist or is no longer running, we must return ("", cloudprovider.InstanceNotFound)
 	ExternalID(nodeName types.NodeName) (string, error)
@@ -119,12 +138,17 @@ type Instances interface {
 	InstanceID(nodeName types.NodeName) (string, error)
 	// InstanceType returns the type of the specified instance.
 	InstanceType(name types.NodeName) (string, error)
+	// InstanceTypeByProviderID returns the type of the specified instance.
+	InstanceTypeByProviderID(providerID string) (string, error)
 	// AddSSHKeyToAllInstances adds an SSH public key as a legal identity for all instances
 	// expected format for the key is standard ssh-keygen format: <protocol> <blob>
 	AddSSHKeyToAllInstances(user string, keyData []byte) error
 	// CurrentNodeName returns the name of the node we are currently running on
 	// On most clouds (e.g. GCE) this is the hostname, so we provide the hostname
 	CurrentNodeName(hostname string) (types.NodeName, error)
+	// InstanceExistsByProviderID returns true if the instance for the given provider id still is running.
+	// If false is returned with no error, the instance will be immediately deleted by the cloud controller manager.
+	InstanceExistsByProviderID(providerID string) (bool, error)
 }
 
 // Route is a representation of an advanced routing rule.
@@ -137,6 +161,9 @@ type Route struct {
 	// DestinationCIDR is the CIDR format IP range that this routing rule
 	// applies to.
 	DestinationCIDR string
+	// Blackhole is set to true if this is a blackhole route
+	// The node controller will delete the route if it is in the managed range.
+	Blackhole bool
 }
 
 // Routes is an abstract, pluggable interface for advanced routing rules.
@@ -152,7 +179,11 @@ type Routes interface {
 	DeleteRoute(clusterName string, route *Route) error
 }
 
-var InstanceNotFound = errors.New("instance not found")
+var (
+	InstanceNotFound = errors.New("instance not found")
+	DiskNotFound     = errors.New("disk is not found")
+	NotImplemented   = errors.New("unimplemented")
+)
 
 // Zone represents the location of a particular machine.
 type Zone struct {
@@ -163,5 +194,23 @@ type Zone struct {
 // Zones is an abstract, pluggable interface for zone enumeration.
 type Zones interface {
 	// GetZone returns the Zone containing the current failure zone and locality region that the program is running in
+	// In most cases, this method is called from the kubelet querying a local metadata service to aquire its zone.
+	// For the case of external cloud providers, use GetZoneByProviderID or GetZoneByNodeName since GetZone
+	// can no longer be called from the kubelets.
 	GetZone() (Zone, error)
+
+	// GetZoneByProviderID returns the Zone containing the current zone and locality region of the node specified by providerId
+	// This method is particularly used in the context of external cloud providers where node initialization must be down
+	// outside the kubelets.
+	GetZoneByProviderID(providerID string) (Zone, error)
+
+	// GetZoneByNodeName returns the Zone containing the current zone and locality region of the node specified by node name
+	// This method is particularly used in the context of external cloud providers where node initialization must be down
+	// outside the kubelets.
+	GetZoneByNodeName(nodeName types.NodeName) (Zone, error)
+}
+
+// PVLabeler is an abstract, pluggable interface for fetching labels for volumes
+type PVLabeler interface {
+	GetLabelsForVolume(pv *v1.PersistentVolume) (map[string]string, error)
 }

@@ -1,12 +1,13 @@
 language: go
+os:
+  - linux
+  - osx
 go:
-  #- 1.5  go test arguments are different in 1.5 :-(
-  #- 1.6 issues with OSX release, and 1.7 is required now by core
-  - 1.7
-  - tip
+  - 1.8
+  - 1.9
 
 go_import_path: k8s.io/kops
 
 script:
   - make ci
-
+  - hack/verify-apimachinery.sh

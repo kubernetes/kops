@@ -19,18 +19,19 @@ package nodetasks
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
-	"k8s.io/kops/upup/pkg/fi/nodeup/local"
-	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
-	"k8s.io/kops/util/pkg/hashing"
 	"os"
 	"os/exec"
 	"path"
 	"reflect"
 	"strings"
 	"sync"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
+	"k8s.io/kops/upup/pkg/fi/nodeup/local"
+	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 type Package struct {
@@ -295,9 +296,10 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			}
 		} else {
 			var args []string
+			env := os.Environ()
 			if t.HasTag(tags.TagOSFamilyDebian) {
 				args = []string{"apt-get", "install", "--yes", e.Name}
-
+				env = append(env, "DEBIAN_FRONTEND=noninteractive")
 			} else if t.HasTag(tags.TagOSFamilyRHEL) {
 				args = []string{"/usr/bin/yum", "install", "-y", e.Name}
 			} else {
@@ -306,6 +308,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 
 			glog.Infof("running command %s", args)
 			cmd := exec.Command(args[0], args[1:]...)
+			cmd.Env = env
 			output, err := cmd.CombinedOutput()
 			if err != nil {
 				return fmt.Errorf("error installing package %q: %v: %s", e.Name, err, string(output))

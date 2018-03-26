@@ -17,13 +17,18 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
+	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
-// LogrotateBuilder install kubectl
+// LogrotateBuilder installs logrotate.d and configures log rotation for kubernetes logs
 type LogrotateBuilder struct {
 	*NodeupModelContext
 }
@@ -31,12 +36,107 @@ type LogrotateBuilder struct {
 var _ fi.ModelBuilder = &LogrotateBuilder{}
 
 func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
-	if b.Distribution == distros.DistributionCoreOS {
+	if b.Distribution == distros.DistributionContainerOS {
+		glog.Infof("Detected ContainerOS; won't install logrotate")
+		return nil
+	} else if b.Distribution == distros.DistributionCoreOS {
 		glog.Infof("Detected CoreOS; won't install logrotate")
+	} else {
+		c.AddTask(&nodetasks.Package{Name: "logrotate"})
+	}
+
+	k8sVersion, err := util.ParseKubernetesVersion(b.Cluster.Spec.KubernetesVersion)
+	if err != nil || k8sVersion == nil {
+		return fmt.Errorf("unable to parse KubernetesVersion %q", b.Cluster.Spec.KubernetesVersion)
+	}
+
+	if k8sVersion.Major == 1 && k8sVersion.Minor < 6 {
+		// In version 1.6, we move log rotation to docker, but prior to that we need a logrotate rule
+		b.addLogRotate(c, "docker-containers", "/var/lib/docker/containers/*/*-json.log", logRotateOptions{MaxSize: "10M"})
+	}
+
+	b.addLogRotate(c, "docker", "/var/log/docker.log", logRotateOptions{})
+	b.addLogRotate(c, "kube-addons", "/var/log/kube-addons.log", logRotateOptions{})
+	b.addLogRotate(c, "kube-apiserver", "/var/log/kube-apiserver.log", logRotateOptions{})
+	b.addLogRotate(c, "kube-controller-manager", "/var/log/kube-controller-manager.log", logRotateOptions{})
+	b.addLogRotate(c, "kube-proxy", "/var/log/kube-proxy.log", logRotateOptions{})
+	b.addLogRotate(c, "kube-scheduler", "/var/log/kube-scheduler.log", logRotateOptions{})
+	b.addLogRotate(c, "kubelet", "/var/log/kubelet.log", logRotateOptions{})
+
+	if err := b.addLogrotateService(c); err != nil {
+		return err
+	}
+
+	// Add timer to run hourly.
+	{
+		unit := &systemd.Manifest{}
+		unit.Set("Unit", "Description", "Hourly Log Rotation")
+		unit.Set("Timer", "OnCalendar", "hourly")
+
+		service := &nodetasks.Service{
+			Name:       "logrotate.timer", // Override (by name) any existing timer
+			Definition: s(unit.Render()),
+		}
+
+		service.InitDefaults()
+
+		c.AddTask(service)
+	}
+
+	return nil
+}
+
+// addLogrotateService creates a logrotate systemd task to act as target for the timer, if one is needed
+func (b *LogrotateBuilder) addLogrotateService(c *fi.ModelBuilderContext) error {
+	switch b.Distribution {
+	case distros.DistributionCoreOS, distros.DistributionContainerOS:
+		// logrotate service already exists
 		return nil
 	}
 
-	c.AddTask(&nodetasks.Package{Name: "logrotate"})
+	manifest := &systemd.Manifest{}
+	manifest.Set("Unit", "Description", "Rotate and Compress System Logs")
+	manifest.Set("Service", "ExecStart", "/usr/sbin/logrotate /etc/logrotate.conf")
+
+	service := &nodetasks.Service{
+		Name:       "logrotate.service",
+		Definition: s(manifest.Render()),
+	}
+	service.InitDefaults()
+	c.AddTask(service)
 
 	return nil
+}
+
+type logRotateOptions struct {
+	MaxSize string
+}
+
+func (b *LogrotateBuilder) addLogRotate(c *fi.ModelBuilderContext, name, path string, options logRotateOptions) {
+	if options.MaxSize == "" {
+		options.MaxSize = "100M"
+	}
+
+	lines := []string{
+		path + "{",
+		"  rotate 5",
+		"  copytruncate",
+		"  missingok",
+		"  notifempty",
+		"  delaycompress",
+		"  maxsize " + options.MaxSize,
+		"  daily",
+		"  create 0644 root root",
+		"}",
+	}
+
+	contents := strings.Join(lines, "\n")
+
+	t := &nodetasks.File{
+		Path:     "/etc/logrotate.d/" + name,
+		Contents: fi.NewStringResource(contents),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("0644"),
+	}
+	c.AddTask(t)
 }

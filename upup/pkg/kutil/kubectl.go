@@ -20,13 +20,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
-	"k8s.io/kops/pkg/kubeconfig"
-	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/golang/glog"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/kops/pkg/kubeconfig"
 )
 
 type Kubectl struct {

@@ -20,22 +20,25 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
+	"strings"
+	"text/template"
+
+	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/util/sets"
-	"strings"
-	"text/template"
+
+	"github.com/golang/glog"
 )
 
 type Loader struct {
 	Builders []fi.ModelBuilder
 
 	templates []*template.Template
-	config    *NodeUpConfig
+	config    *nodeup.Config
 	cluster   *api.Cluster
 
 	assets *fi.AssetStore
@@ -45,7 +48,7 @@ type Loader struct {
 	TemplateFunctions template.FuncMap
 }
 
-func NewLoader(config *NodeUpConfig, cluster *api.Cluster, assets *fi.AssetStore, tags sets.String) *Loader {
+func NewLoader(config *nodeup.Config, cluster *api.Cluster, assets *fi.AssetStore, tags sets.String) *Loader {
 	l := &Loader{}
 	l.assets = assets
 	l.tasks = make(map[string]fi.Task)
@@ -88,6 +91,7 @@ func ignoreHandler(i *loader.TreeWalkItem) error {
 	return nil
 }
 
+// Build is responsible for running the build tasks for nodeup
 func (l *Loader) Build(baseDir vfs.Path) (map[string]fi.Task, error) {
 	// First pass: load options
 	tw := &loader.TreeWalker{
@@ -153,7 +157,7 @@ func (l *Loader) Build(baseDir vfs.Path) (map[string]fi.Task, error) {
 
 type TaskBuilder func(name string, contents string, meta string) (fi.Task, error)
 
-func (r *Loader) newTaskHandler(prefix string, builder TaskBuilder) loader.Handler {
+func (l *Loader) newTaskHandler(prefix string, builder TaskBuilder) loader.Handler {
 	return func(i *loader.TreeWalkItem) error {
 		contents, err := i.ReadString()
 		if err != nil {
@@ -162,7 +166,7 @@ func (r *Loader) newTaskHandler(prefix string, builder TaskBuilder) loader.Handl
 		name := i.Name
 		if strings.HasSuffix(name, ".template") {
 			name = strings.TrimSuffix(name, ".template")
-			expanded, err := r.executeTemplate(name, contents)
+			expanded, err := l.executeTemplate(name, contents)
 			if err != nil {
 				return fmt.Errorf("error executing template %q: %v", i.RelativePath, err)
 			}
@@ -177,13 +181,13 @@ func (r *Loader) newTaskHandler(prefix string, builder TaskBuilder) loader.Handl
 		key := prefix + i.RelativePath
 
 		if task != nil {
-			r.tasks[key] = task
+			l.tasks[key] = task
 		}
 		return nil
 	}
 }
 
-func (r *Loader) handleFile(i *loader.TreeWalkItem) error {
+func (l *Loader) handleFile(i *loader.TreeWalkItem) error {
 	var task *nodetasks.File
 	defaultFileType := nodetasks.FileType_File
 
@@ -196,7 +200,7 @@ func (r *Loader) handleFile(i *loader.TreeWalkItem) error {
 		// TODO: Use template resource here to defer execution?
 		destPath := "/" + strings.TrimSuffix(i.RelativePath, ".template")
 		name := strings.TrimSuffix(i.Name, ".template")
-		expanded, err := r.executeTemplate(name, contents)
+		expanded, err := l.executeTemplate(name, contents)
 		if err != nil {
 			return fmt.Errorf("error executing template %q: %v", i.RelativePath, err)
 		}
@@ -220,7 +224,7 @@ func (r *Loader) handleFile(i *loader.TreeWalkItem) error {
 			return fmt.Errorf("error parsing json for asset %q: %v", name, err)
 		}
 
-		asset, err := r.assets.Find(name, def.AssetPath)
+		asset, err := l.assets.Find(name, def.AssetPath)
 		if err != nil {
 			return fmt.Errorf("error trying to locate asset %q: %v", name, err)
 		}
@@ -254,7 +258,8 @@ func (r *Loader) handleFile(i *loader.TreeWalkItem) error {
 
 	if task != nil {
 		key := "file/" + i.RelativePath
-		r.tasks[key] = task
+		l.tasks[key] = task
 	}
+
 	return nil
 }

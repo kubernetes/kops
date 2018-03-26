@@ -17,8 +17,7 @@ limitations under the License.
 package authentication
 
 import (
-	"k8s.io/kubernetes/pkg/api"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -36,16 +35,17 @@ const (
 	ImpersonateUserExtraHeaderPrefix = "Impersonate-Extra-"
 )
 
-// +genclient=true
-// +nonNamespaced=true
-// +noMethods=true
+// +genclient
+// +genclient:nonNamespaced
+// +genclient:noVerbs
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // TokenReview attempts to authenticate a token to a known user.
 type TokenReview struct {
 	metav1.TypeMeta
-	// ObjectMeta fulfills the meta.ObjectMetaAccessor interface so that the stock
+	// ObjectMeta fulfills the metav1.ObjectMetaAccessor interface so that the stock
 	// REST handler paths work
-	api.ObjectMeta
+	metav1.ObjectMeta
 
 	// Spec holds information about the request being evaluated
 	Spec TokenReviewSpec

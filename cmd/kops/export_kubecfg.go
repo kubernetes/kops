@@ -17,37 +17,63 @@ limitations under the License.
 package main
 
 import (
+	"io"
+
 	"github.com/spf13/cobra"
-	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/commands"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/kutil"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
-type ExportKubecfgCommand struct {
+var (
+	exportKubecfgLong = templates.LongDesc(i18n.T(`
+	Export a kubecfg file for a cluster from the state store. The configuration
+	will be saved into a users $HOME/.kube/config file.
+	To export the kubectl configuration to a specific file set the KUBECONFIG
+	environment variable.`))
+
+	exportKubecfgExample = templates.Examples(i18n.T(`
+	# export a kubecfg file
+	kops export kubecfg kubernetes-cluster.example.com
+		`))
+
+	exportKubecfgShort = i18n.T(`Export kubecfg.`)
+)
+
+type ExportKubecfgOptions struct {
 	tmpdir   string
 	keyStore fi.CAStore
 }
 
-var exportKubecfgCommand ExportKubecfgCommand
+func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &ExportKubecfgOptions{}
 
-func init() {
 	cmd := &cobra.Command{
-		Use:   "kubecfg CLUSTERNAME",
-		Short: "Generate a kubecfg file for a cluster",
-		Long:  `Creates a kubecfg file for a cluster, based on the state`,
+		Use:     "kubecfg CLUSTERNAME",
+		Short:   exportKubecfgShort,
+		Long:    exportKubecfgLong,
+		Example: exportKubecfgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := exportKubecfgCommand.Run(args)
+			err := RunExportKubecfg(f, out, options, args)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	exportCmd.AddCommand(cmd)
+	return cmd
 }
 
-func (c *ExportKubecfgCommand) Run(args []string) error {
+func RunExportKubecfg(f *util.Factory, out io.Writer, options *ExportKubecfgOptions, args []string) error {
 	err := rootCommand.ProcessArgs(args)
+	if err != nil {
+		return err
+	}
+
+	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
@@ -57,29 +83,20 @@ func (c *ExportKubecfgCommand) Run(args []string) error {
 		return err
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
+	keyStore, err := clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}
 
-	secretStore, err := registry.SecretStore(cluster)
+	secretStore, err := clientset.SecretStore(cluster)
 	if err != nil {
 		return err
 	}
 
-	clusterName := cluster.ObjectMeta.Name
-
-	master := cluster.Spec.MasterPublicName
-	if master == "" {
-		master = "api." + clusterName
+	conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{})
+	if err != nil {
+		return err
 	}
 
-	x := &kutil.CreateKubecfg{
-		ContextName:  clusterName,
-		KeyStore:     keyStore,
-		SecretStore:  secretStore,
-		KubeMasterIP: master,
-	}
-
-	return x.WriteKubecfg()
+	return conf.WriteKubecfg()
 }

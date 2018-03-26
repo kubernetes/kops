@@ -1,13 +1,15 @@
-# High Availability (HA)
+High Availability (HA)
+======================
 
-## Introduction
+Introduction
+-------------
 
 Kubernetes has two strategies for high availability:
 
 * Run multiple independent clusters and combine them behind one management plane: [federation](https://kubernetes.io/docs/user-guide/federation/)
 * Run a single cluster in multiple cloud zones, with redundant components
 
-kops has experimental early support for federation, but it already has good support for a cluster than runs
+kops has good support for a cluster than runs
 with redundant components.  kops is able to create multiple kubernetes masters, so in the event of
 a master instance failure, the kubernetes API will continue to operate.
 
@@ -25,12 +27,14 @@ In short:
   replaced.  But the use of EBS binds us to a single AZ, and in the event of a prolonged AZ outage, we might experience
   downtime.
 * A multi-node kops cluster can tolerate the outage of a single AZ
-* Federation will allow you to create "uber-clusters" that can tolerate a regional outage
 
-## Using Kops HA
 
-We can create HA clusters using kops, but only it's important to note that you must plan for this at time of cluster creation.  Currently it is not possible to change
-the etcd cluster size (i.e. we cannot change an HA cluster to be non-HA, or a non-HA cluster to be HA.) [Issue #1512](https://github.com/kubernetes/kops/issues/1512)
+Using Kops HA
+-------------
+
+We can create HA clusters using kops, but only it's important to note that migrating from a single-master
+cluster to a multi-master cluster is a complicated operation (described [here](./single-to-multi-master.md)).
+If possible, try to plan this at time of cluster creation.
 
 When you first call `kops create cluster`, you specify the `--master-zones` flag listing the zones you want your masters
 to run in, for example:
@@ -57,3 +61,36 @@ As a result there are a few considerations that need to be taken into account wh
   If we create 2 (or more) masters in the same AZ, then failure of the AZ will likely cause etcd to lose quorum
   and stop operating (with 3 nodes).  Running in the same AZ therefore increases the risk of cluster disruption,
   though it can be a valid scenario, particularly if combined with [federation](https://kubernetes.io/docs/user-guide/federation/).
+
+
+Advanced Example
+----------------
+
+Another example `create cluster` invocation for HA with [a private network topology](topology.md):
+
+```
+kops create cluster \
+    --node-count 3 \
+    --zones us-west-2a,us-west-2b,us-west-2c \
+    --master-zones us-west-2a,us-west-2b,us-west-2c \
+    --dns-zone example.com \
+    --node-size t2.medium \
+    --master-size t2.medium \
+    --node-security-groups sg-12345678 \
+    --master-security-groups sg-12345678,i-abcd1234 \
+    --topology private \
+    --networking weave \
+    --cloud-labels "Team=Dev,Owner=John Doe" \
+    --image 293135079892/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-11-16 \
+    ${NAME}
+```
+
+Notes (Best Practice)
+----
+* In regions with 2 Availability Zones, deploy the 3 masters in one zone and the nodes can be distributed between the 2
+zones. This can be done by specifying the  flags:
+```
+     --master-count=3
+     --master-zones=$MASTER_ZONE
+     --zones=$NODE_ZONES
+```

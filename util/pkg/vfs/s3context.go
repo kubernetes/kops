@@ -19,15 +19,25 @@ package vfs
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"sync"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/golang/glog"
+)
+
+var (
+	// matches all regional naming conventions of S3:
+	// https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+	// TODO: perhaps make region regex more specific, ie. (us|eu|ap|cn|ca|sa), to prevent catching bucket names that match region format?
+	//       but that will mean updating this list when AWS introduces new regions
+	s3UrlRegexp = regexp.MustCompile(`s3([-.](?P<region>\w{2}-\w+-\d{1})|[-.](?P<bucket>[\w.\-\_]+)|)?.amazonaws.com(.cn)?(?P<path>.*)?`)
 )
 
 type S3Context struct {
@@ -49,16 +59,51 @@ func (s *S3Context) getClient(region string) (*s3.S3, error) {
 
 	s3Client := s.clients[region]
 	if s3Client == nil {
-		config := aws.NewConfig().WithRegion(region)
-		config = config.WithCredentialsChainVerboseErrors(true)
+		var config *aws.Config
+		var err error
+		endpoint := os.Getenv("S3_ENDPOINT")
+		if endpoint == "" {
+			config = aws.NewConfig().WithRegion(region)
+			config = config.WithCredentialsChainVerboseErrors(true)
+		} else {
+			// Use customized S3 storage
+			glog.Infof("Found S3_ENDPOINT=%q, using as non-AWS S3 backend", endpoint)
+			config, err = getCustomS3Config(endpoint, region)
+			if err != nil {
+				return nil, err
+			}
+		}
 
-		session := session.New()
-		s3Client = s3.New(session, config)
+		sess, err := session.NewSession(config)
+		if err != nil {
+			return nil, fmt.Errorf("error starting new AWS session: %v", err)
+		}
+		s3Client = s3.New(sess, config)
+		s.clients[region] = s3Client
 	}
 
-	s.clients[region] = s3Client
-
 	return s3Client, nil
+}
+
+func getCustomS3Config(endpoint string, region string) (*aws.Config, error) {
+	accessKeyID := os.Getenv("S3_ACCESS_KEY_ID")
+	if accessKeyID == "" {
+		return nil, fmt.Errorf("S3_ACCESS_KEY_ID cannot be empty when S3_ENDPOINT is not empty")
+	}
+	secretAccessKey := os.Getenv("S3_SECRET_ACCESS_KEY")
+	if secretAccessKey == "" {
+		return nil, fmt.Errorf("S3_SECRET_ACCESS_KEY cannot be empty when S3_ENDPOINT is not empty")
+	}
+
+	s3Config := &aws.Config{
+		Credentials:      credentials.NewStaticCredentials(accessKeyID, secretAccessKey, ""),
+		Endpoint:         aws.String(endpoint),
+		Region:           aws.String(region),
+		S3ForcePathStyle: aws.Bool(true),
+	}
+	s3Config = s3Config.WithCredentialsChainVerboseErrors(true)
+
+	return s3Config, nil
 }
 
 func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
@@ -73,6 +118,16 @@ func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
 	}
 
 	// Probe to find correct region for bucket
+	endpoint := os.Getenv("S3_ENDPOINT")
+	if endpoint != "" {
+		// If customized S3 storage is set, return user-defined region
+		region = os.Getenv("S3_REGION")
+		if region == "" {
+			region = "us-east-1"
+		}
+		return region, nil
+	}
+
 	awsRegion := os.Getenv("AWS_REGION")
 	if awsRegion == "" {
 		awsRegion = "us-east-1"
@@ -88,12 +143,15 @@ func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
 	var response *s3.GetBucketLocationOutput
 
 	s3Client, err := s.getClient(awsRegion)
-
+	if err != nil {
+		return "", fmt.Errorf("error connecting to S3: %s", err)
+	}
 	// Attempt one GetBucketLocation call the "normal" way (i.e. as the bucket owner)
 	response, err = s3Client.GetBucketLocation(request)
 
 	// and fallback to brute-forcing if it fails
 	if err != nil {
+		glog.V(2).Infof("unable to get bucket location from region %q; scanning all regions: %v", awsRegion, err)
 		response, err = bruteforceBucketLocation(&awsRegion, request)
 	}
 
@@ -133,22 +191,29 @@ out the first result.
 See also: https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/GetBucketLocationRequest
 */
 func bruteforceBucketLocation(region *string, request *s3.GetBucketLocationInput) (*s3.GetBucketLocationOutput, error) {
-	session, _ := session.NewSession(&aws.Config{Region: region})
-	regions, err := ec2.New(session).DescribeRegions(nil)
+	config := &aws.Config{Region: region}
+	config = config.WithCredentialsChainVerboseErrors(true)
 
+	session, err := session.NewSession(config)
+	if err != nil {
+		return nil, fmt.Errorf("error creating aws session: %v", err)
+	}
+
+	regions, err := ec2.New(session).DescribeRegions(nil)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to list AWS regions: %v", err)
 	}
 
 	glog.V(2).Infof("Querying S3 for bucket location for %s", *request.Bucket)
 
-	out := make(chan *s3.GetBucketLocationOutput)
+	out := make(chan *s3.GetBucketLocationOutput, len(regions.Regions))
 	for _, region := range regions.Regions {
 		go func(regionName string) {
+			glog.V(8).Infof("Doing GetBucketLocation in %q", regionName)
 			s3Client := s3.New(session, &aws.Config{Region: aws.String(regionName)})
 			result, bucketError := s3Client.GetBucketLocation(request)
-
 			if bucketError == nil {
+				glog.V(8).Infof("GetBucketLocation succeeded in %q", regionName)
 				out <- result
 			}
 		}(*region.RegionName)
@@ -173,4 +238,26 @@ func validateRegion(region string) error {
 		}
 	}
 	return fmt.Errorf("%s is not a valid region\nPlease check that your region is formatted correctly (i.e. us-east-1)", region)
+}
+
+func VFSPath(url string) (string, error) {
+	if !s3UrlRegexp.MatchString(url) {
+		return "", fmt.Errorf("%s is not a valid S3 URL", url)
+	}
+	groupNames := s3UrlRegexp.SubexpNames()
+	result := s3UrlRegexp.FindAllStringSubmatch(url, -1)[0]
+
+	captured := map[string]string{}
+	for i, value := range result {
+		captured[groupNames[i]] = value
+	}
+	bucket := captured["bucket"]
+	path := captured["path"]
+	if bucket == "" {
+		if path == "" {
+			return "", fmt.Errorf("%s is not a valid S3 URL. No bucket defined.", url)
+		}
+		return fmt.Sprintf("s3:/%s", path), nil
+	}
+	return fmt.Sprintf("s3://%s%s", bucket, path), nil
 }

@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "apitarget.go",
+        "cloud.go",
+    ],
+    importpath = "k8s.io/kops/upup/pkg/fi/cloudup/openstack",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//dnsprovider/pkg/dnsprovider:go_default_library",
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/cloudinstances:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
+    ],
+)

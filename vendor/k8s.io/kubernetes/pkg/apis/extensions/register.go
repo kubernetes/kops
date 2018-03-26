@@ -17,11 +17,10 @@ limitations under the License.
 package extensions
 
 import (
-	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kubernetes/pkg/apis/autoscaling"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
+	"k8s.io/kubernetes/pkg/apis/networking"
 )
 
 // GroupName is the group name use in this package
@@ -45,35 +44,25 @@ var (
 	AddToScheme   = SchemeBuilder.AddToScheme
 )
 
-// Adds the list of known types to api.Scheme.
+// Adds the list of known types to the given scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
 	// TODO this gets cleaned up when the types are fixed
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Deployment{},
 		&DeploymentList{},
 		&DeploymentRollback{},
-		&autoscaling.HorizontalPodAutoscaler{},
-		&autoscaling.HorizontalPodAutoscalerList{},
 		&ReplicationControllerDummy{},
-		&Scale{},
-		&ThirdPartyResource{},
-		&ThirdPartyResourceList{},
 		&DaemonSetList{},
 		&DaemonSet{},
-		&ThirdPartyResourceData{},
-		&ThirdPartyResourceDataList{},
 		&Ingress{},
 		&IngressList{},
-		&api.ListOptions{},
-		&api.DeleteOptions{},
 		&ReplicaSet{},
 		&ReplicaSetList{},
-		&metav1.ExportOptions{},
-		&metav1.GetOptions{},
 		&PodSecurityPolicy{},
 		&PodSecurityPolicyList{},
-		&NetworkPolicy{},
-		&NetworkPolicyList{},
+		&autoscaling.Scale{},
+		&networking.NetworkPolicy{},
+		&networking.NetworkPolicyList{},
 	)
 	return nil
 }

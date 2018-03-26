@@ -23,11 +23,12 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/golang/glog"
 	"hash"
 	"io"
 	"os"
 	"strings"
+
+	"github.com/golang/glog"
 )
 
 type HashAlgorithm string

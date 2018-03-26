@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["interfaces.go"],
+    importpath = "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/interfaces",
+    visibility = ["//dnsprovider/pkg/dnsprovider/providers/google/clouddns:__subpackages__"],
+    deps = [
+        "//dnsprovider/pkg/dnsprovider/rrstype:go_default_library",
+        "//vendor/google.golang.org/api/googleapi:go_default_library",
+    ],
+)

@@ -24,9 +24,13 @@ import (
 	"text/template"
 
 	"github.com/golang/glog"
+
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/models"
@@ -50,6 +54,9 @@ type populateClusterSpec struct {
 
 	// fullCluster holds the built completed cluster spec
 	fullCluster *api.Cluster
+
+	// assetBuilder holds the AssetBuilder, used to store assets we discover / remap
+	assetBuilder *assets.AssetBuilder
 }
 
 func findModelStore() (vfs.Path, error) {
@@ -59,7 +66,7 @@ func findModelStore() (vfs.Path, error) {
 
 // PopulateClusterSpec takes a user-specified cluster spec, and computes the full specification that should be set on the cluster.
 // We do this so that we don't need any real "brains" on the node side.
-func PopulateClusterSpec(cluster *api.Cluster) (*api.Cluster, error) {
+func PopulateClusterSpec(clientset simple.Clientset, cluster *api.Cluster, assetBuilder *assets.AssetBuilder) (*api.Cluster, error) {
 	modelStore, err := findModelStore()
 	if err != nil {
 		return nil, err
@@ -69,8 +76,9 @@ func PopulateClusterSpec(cluster *api.Cluster) (*api.Cluster, error) {
 		InputCluster: cluster,
 		ModelStore:   modelStore,
 		Models:       []string{"config"},
+		assetBuilder: assetBuilder,
 	}
-	err = c.run()
+	err = c.run(clientset)
 	if err != nil {
 		return nil, err
 	}
@@ -87,9 +95,8 @@ func PopulateClusterSpec(cluster *api.Cluster) (*api.Cluster, error) {
 // struct is falling through..
 // @kris-nova
 //
-func (c *populateClusterSpec) run() error {
-	err := validation.ValidateCluster(c.InputCluster, false)
-	if err != nil {
+func (c *populateClusterSpec) run(clientset simple.Clientset) error {
+	if err := validation.ValidateCluster(c.InputCluster, false); err != nil {
 		return err
 	}
 
@@ -98,7 +105,7 @@ func (c *populateClusterSpec) run() error {
 
 	utils.JsonMergeStruct(cluster, c.InputCluster)
 
-	err = c.assignSubnets(cluster)
+	err := c.assignSubnets(cluster)
 	if err != nil {
 		return err
 	}
@@ -170,34 +177,6 @@ func (c *populateClusterSpec) run() error {
 		}
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
-	if err != nil {
-		return err
-	}
-	// Always assume a dry run during this phase
-	keyStore.(*fi.VFSCAStore).DryRun = true
-
-	secretStore, err := registry.SecretStore(cluster)
-	if err != nil {
-		return err
-	}
-
-	if vfs.IsClusterReadable(secretStore.VFSPath()) {
-		vfsPath := secretStore.VFSPath()
-		cluster.Spec.SecretStore = vfsPath.Path()
-	} else {
-		// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
-		return fmt.Errorf("secrets path is not cluster readable: %v", secretStore.VFSPath())
-	}
-
-	if vfs.IsClusterReadable(keyStore.VFSPath()) {
-		vfsPath := keyStore.VFSPath()
-		cluster.Spec.KeyStore = vfsPath.Path()
-	} else {
-		// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
-		return fmt.Errorf("keyStore path is not cluster readable: %v", keyStore.VFSPath())
-	}
-
 	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
 	if err != nil {
 		return fmt.Errorf("error parsing ConfigBase %q: %v", cluster.Spec.ConfigBase, err)
@@ -207,6 +186,46 @@ func (c *populateClusterSpec) run() error {
 	} else {
 		// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
 		return fmt.Errorf("ConfigBase path is not cluster readable: %v", cluster.Spec.ConfigBase)
+	}
+
+	keyStore, err := clientset.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	if cluster.Spec.KeyStore == "" {
+		hasVFSPath, ok := keyStore.(fi.HasVFSPath)
+		if !ok {
+			// We will mirror to ConfigBase
+			basedir := configBase.Join("pki")
+			cluster.Spec.KeyStore = basedir.Path()
+		} else if vfs.IsClusterReadable(hasVFSPath.VFSPath()) {
+			vfsPath := hasVFSPath.VFSPath()
+			cluster.Spec.KeyStore = vfsPath.Path()
+		} else {
+			// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
+			return fmt.Errorf("keyStore path is not cluster readable: %v", hasVFSPath.VFSPath())
+		}
+	}
+
+	secretStore, err := clientset.SecretStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	if cluster.Spec.SecretStore == "" {
+		hasVFSPath, ok := secretStore.(fi.HasVFSPath)
+		if !ok {
+			// We will mirror to ConfigBase
+			basedir := configBase.Join("secrets")
+			cluster.Spec.SecretStore = basedir.Path()
+		} else if vfs.IsClusterReadable(hasVFSPath.VFSPath()) {
+			vfsPath := hasVFSPath.VFSPath()
+			cluster.Spec.SecretStore = vfsPath.Path()
+		} else {
+			// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
+			return fmt.Errorf("secrets path is not cluster readable: %v", hasVFSPath.VFSPath())
+		}
 	}
 
 	// Normalize k8s version
@@ -223,16 +242,22 @@ func (c *populateClusterSpec) run() error {
 		return err
 	}
 
-	if cluster.Spec.DNSZone == "" {
+	if cluster.Spec.DNSZone == "" && !dns.IsGossipHostname(cluster.ObjectMeta.Name) {
 		dns, err := cloud.DNS()
 		if err != nil {
 			return err
 		}
 
-		dnsZone, err := FindDNSHostedZone(dns, cluster.ObjectMeta.Name)
+		dnsType := api.DNSTypePublic
+		if cluster.Spec.Topology != nil && cluster.Spec.Topology.DNS != nil && cluster.Spec.Topology.DNS.Type != "" {
+			dnsType = cluster.Spec.Topology.DNS.Type
+		}
+
+		dnsZone, err := FindDNSHostedZone(dns, cluster.ObjectMeta.Name, dnsType)
 		if err != nil {
 			return fmt.Errorf("error determining default DNS zone: %v", err)
 		}
+
 		glog.V(2).Infof("Defaulting DNS zone to: %s", dnsZone)
 		cluster.Spec.DNSZone = dnsZone
 	}
@@ -256,9 +281,20 @@ func (c *populateClusterSpec) run() error {
 
 	tf.AddTo(templateFunctions)
 
-	optionsContext := &components.OptionsContext{
-		ClusterName: cluster.ObjectMeta.Name,
+	if cluster.Spec.KubernetesVersion == "" {
+		return fmt.Errorf("KubernetesVersion is required")
 	}
+	sv, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return fmt.Errorf("unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
+	}
+
+	optionsContext := &components.OptionsContext{
+		ClusterName:       cluster.ObjectMeta.Name,
+		KubernetesVersion: *sv,
+		AssetBuilder:      c.assetBuilder,
+	}
+
 	var fileModels []string
 	var codeModels []loader.OptionsBuilder
 	for _, m := range c.Models {
@@ -266,13 +302,15 @@ func (c *populateClusterSpec) run() error {
 		case "config":
 			// Note: DefaultOptionsBuilder comes first
 			codeModels = append(codeModels, &components.DefaultsOptionsBuilder{Context: optionsContext})
-
-			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.EtcdOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.DockerOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.NetworkingOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeDnsOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeletOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeControllerManagerOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.KubeSchedulerOptionsBuilder{OptionsContext: optionsContext})
+			codeModels = append(codeModels, &components.KubeProxyOptionsBuilder{Context: optionsContext})
 			fileModels = append(fileModels, m)
 
 		default:
@@ -299,8 +337,7 @@ func (c *populateClusterSpec) run() error {
 	fullCluster.Spec = *completed
 	tf.cluster = fullCluster
 
-	err = validation.ValidateCluster(fullCluster, true)
-	if err != nil {
+	if err := validation.ValidateCluster(fullCluster, true); err != nil {
 		return fmt.Errorf("Completed cluster failed validation: %v", err)
 	}
 

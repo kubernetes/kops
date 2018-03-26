@@ -49,7 +49,7 @@ func TestConfirmation(t *testing.T) {
 	}
 
 	c.Default = "yes"
-	answer, err = ui.GetConfirm(c)
+	_, err = ui.GetConfirm(c)
 	if err != nil {
 		t.Fatal(err)
 	}

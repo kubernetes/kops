@@ -18,12 +18,14 @@ package fitasks
 
 import (
 	"fmt"
+
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 //go:generate fitask -type=Secret
 type Secret struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.HasCheckExisting = &Secret{}
@@ -52,6 +54,9 @@ func (e *Secret) Find(c *fi.Context) (*Secret, error) {
 	actual := &Secret{
 		Name: &name,
 	}
+
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

@@ -17,7 +17,6 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/spf13/cobra"
@@ -25,27 +24,30 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
-	deploymentLong = templates.LongDesc(`
-    Create a deployment with the specified name.`)
+	deploymentLong = templates.LongDesc(i18n.T(`
+	Create a deployment with the specified name.`))
 
-	deploymentExample = templates.Examples(`
-    # Create a new deployment named my-dep that runs the busybox image.
-    kubectl create deployment my-dep --image=busybox`)
+	deploymentExample = templates.Examples(i18n.T(`
+	# Create a new deployment named my-dep that runs the busybox image.
+	kubectl create deployment my-dep --image=busybox`))
 )
 
-// NewCmdCreateDeployment is a macro command to create a new deployment
-func NewCmdCreateDeployment(f cmdutil.Factory, cmdOut io.Writer) *cobra.Command {
+// NewCmdCreateDeployment is a macro command to create a new deployment.
+// This command is better known to users as `kubectl create deployment`.
+// Note that this command overlaps significantly with the `kubectl run` command.
+func NewCmdCreateDeployment(f cmdutil.Factory, cmdOut, cmdErr io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "deployment NAME --image=image [--dry-run]",
 		Aliases: []string{"deploy"},
-		Short:   "Create a deployment with the specified name.",
+		Short:   i18n.T("Create a deployment with the specified name."),
 		Long:    deploymentLong,
 		Example: deploymentExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := CreateDeployment(f, cmdOut, cmd, args)
+			err := createDeployment(f, cmdOut, cmdErr, cmd, args)
 			cmdutil.CheckErr(err)
 		},
 	}
@@ -58,21 +60,72 @@ func NewCmdCreateDeployment(f cmdutil.Factory, cmdOut io.Writer) *cobra.Command 
 	return cmd
 }
 
-// CreateDeployment implements the behavior to run the create deployment command
-func CreateDeployment(f cmdutil.Factory, cmdOut io.Writer, cmd *cobra.Command, args []string) error {
-	name, err := NameFromCommandArgs(cmd, args)
+// generatorFromName returns the appropriate StructuredGenerator based on the
+// generatorName. If the generatorName is unrecognized, then return (nil,
+// false).
+func generatorFromName(
+	generatorName string,
+	imageNames []string,
+	deploymentName string,
+) (kubectl.StructuredGenerator, bool) {
+
+	switch generatorName {
+	case cmdutil.DeploymentBasicAppsV1Beta1GeneratorName:
+		generator := &kubectl.DeploymentBasicAppsGeneratorV1{
+			BaseDeploymentGenerator: kubectl.BaseDeploymentGenerator{
+				Name:   deploymentName,
+				Images: imageNames,
+			},
+		}
+		return generator, true
+
+	case cmdutil.DeploymentBasicV1Beta1GeneratorName:
+		generator := &kubectl.DeploymentBasicGeneratorV1{
+			BaseDeploymentGenerator: kubectl.BaseDeploymentGenerator{
+				Name:   deploymentName,
+				Images: imageNames,
+			},
+		}
+		return generator, true
+	}
+
+	return nil, false
+}
+
+// createDeployment
+// 1. Reads user config values from Cobra.
+// 2. Sets up the correct Generator object.
+// 3. Calls RunCreateSubcommand.
+func createDeployment(f cmdutil.Factory, cmdOut, cmdErr io.Writer,
+	cmd *cobra.Command, args []string) error {
+
+	deploymentName, err := NameFromCommandArgs(cmd, args)
 	if err != nil {
 		return err
 	}
-	var generator kubectl.StructuredGenerator
-	switch generatorName := cmdutil.GetFlagString(cmd, "generator"); generatorName {
-	case cmdutil.DeploymentBasicV1Beta1GeneratorName:
-		generator = &kubectl.DeploymentBasicGeneratorV1{Name: name, Images: cmdutil.GetFlagStringSlice(cmd, "image")}
-	default:
-		return cmdutil.UsageError(cmd, fmt.Sprintf("Generator: %s not supported.", generatorName))
+
+	clientset, err := f.ClientSet()
+	if err != nil {
+		return err
 	}
+
+	generatorName := cmdutil.GetFlagString(cmd, "generator")
+
+	// It is possible we have to modify the user-provided generator name if
+	// the server does not have support for the requested generator.
+	generatorName, err = cmdutil.FallbackGeneratorNameIfNecessary(generatorName, clientset.Discovery(), cmdErr)
+	if err != nil {
+		return err
+	}
+
+	imageNames := cmdutil.GetFlagStringSlice(cmd, "image")
+	generator, ok := generatorFromName(generatorName, imageNames, deploymentName)
+	if !ok {
+		return errUnsupportedGenerator(cmd, generatorName)
+	}
+
 	return RunCreateSubcommand(f, cmd, cmdOut, &CreateSubcommandOptions{
-		Name:                name,
+		Name:                deploymentName,
 		StructuredGenerator: generator,
 		DryRun:              cmdutil.GetDryRunFlag(cmd),
 		OutputFormat:        cmdutil.GetFlagString(cmd, "output"),

@@ -18,8 +18,9 @@ package vfsclientset
 
 import (
 	"fmt"
-	"k8s.io/kops/util/pkg/vfs"
 	"os"
+
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func listChildNames(vfsPath vfs.Path) ([]string, error) {

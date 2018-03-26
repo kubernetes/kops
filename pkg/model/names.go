@@ -18,8 +18,11 @@ package model
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
+
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
 
@@ -27,13 +30,10 @@ func (b *KopsModelContext) SecurityGroupName(role kops.InstanceGroupRole) string
 	switch role {
 	case kops.InstanceGroupRoleBastion:
 		return "bastion." + b.ClusterName()
-
 	case kops.InstanceGroupRoleNode:
 		return "nodes." + b.ClusterName()
-
 	case kops.InstanceGroupRoleMaster:
 		return "masters." + b.ClusterName()
-
 	default:
 		glog.Fatalf("unknown role: %v", role)
 		return ""
@@ -100,23 +100,18 @@ func (b *KopsModelContext) NameForDNSZone() string {
 }
 
 func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
-	var name string
-
 	switch role {
 	case kops.InstanceGroupRoleMaster:
-		name = "masters." + b.ClusterName()
-
+		return "masters." + b.ClusterName()
 	case kops.InstanceGroupRoleBastion:
-		name = "bastions." + b.ClusterName()
-
+		return "bastions." + b.ClusterName()
 	case kops.InstanceGroupRoleNode:
-		name = "nodes." + b.ClusterName()
+		return "nodes." + b.ClusterName()
 
 	default:
 		glog.Fatalf("unknown InstanceGroup Role: %q", role)
+		return ""
 	}
-
-	return name
 }
 
 func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) *awstasks.IAMInstanceProfile {
@@ -124,14 +119,21 @@ func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) *aws
 	return &awstasks.IAMInstanceProfile{Name: &name}
 }
 
-// SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint
+// SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint.
+// If an SSH key name is provided in the cluster configuration, it will use that instead.
 func (c *KopsModelContext) SSHKeyName() (string, error) {
-	fingerprint, err := awstasks.ComputeOpenSSHKeyFingerprint(string(c.SSHPublicKeys[0]))
+	// use configured SSH key name if present
+	name := c.Cluster.Spec.SSHKeyName
+	if name != "" {
+		return name, nil
+	}
+
+	fingerprint, err := pki.ComputeOpenSSHKeyFingerprint(string(c.SSHPublicKeys[0]))
 	if err != nil {
 		return "", err
 	}
 
-	name := "kubernetes." + c.Cluster.ObjectMeta.Name + "-" + fingerprint
+	name = "kubernetes." + c.Cluster.ObjectMeta.Name + "-" + fingerprint
 	return name, nil
 }
 
@@ -202,4 +204,8 @@ func (b *KopsModelContext) NamePrivateRouteTableInZone(zoneName string) string {
 
 func (b *KopsModelContext) LinkToPrivateRouteTableInZone(zoneName string) *awstasks.RouteTable {
 	return &awstasks.RouteTable{Name: s(b.NamePrivateRouteTableInZone(zoneName))}
+}
+
+func (b *KopsModelContext) InstanceName(ig *kops.InstanceGroup, suffix string) string {
+	return b.AutoscalingGroupName(ig) + suffix
 }
