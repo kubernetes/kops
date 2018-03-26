@@ -159,6 +159,14 @@ spec:
 
 ```
 
+### profiling flag
+
+```yaml
+spec:
+  kubeAPIServer:
+    profiling: true
+```
+
 #### audit logging
 
 Read more about this here: https://kubernetes.io/docs/admin/audit
@@ -260,6 +268,7 @@ This block contains configurations for `kube-scheduler`.  See https://kubernetes
  spec:
    kubeScheduler:
      usePolicyConfigMap: true
+     profiling: true
 ```
 
 Will make kube-scheduler use the scheduler policy from configmap "scheduler-policy" in namespace kube-system.
@@ -295,6 +304,7 @@ spec:
     horizontalPodAutoscalerSyncPeriod: 15s
     horizontalPodAutoscalerDownscaleDelay: 5m0s
     horizontalPodAutoscalerUpscaleDelay: 3m0s
+    profiling: true
 ```
 
 For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [Kops guides on how to set it up](horizontal_pod_autoscaling.md).

@@ -164,6 +164,14 @@ type KubeletConfigSpec struct {
 	FailSwapOn *bool `json:"failSwapOn,omitempty" flag:"fail-swap-on"`
 	// ExperimentalAllowedUnsafeSysctls are passed to the kubelet config to whitelist allowable sysctls
 	ExperimentalAllowedUnsafeSysctls []string `json:"experimentalAllowedUnsafeSysctls,omitempty" flag:"experimental-allowed-unsafe-sysctls"`
+	// EventQps If > 0, limit event creations per second to this value. If 0, unlimited.
+	EventQPS *int32 `json:"eventQps,omitempty" flag:"event-qps"`
+	// MakeIptablesUtilChains will ensure iptables utility rules are present on host.
+	MakeIptablesUtilChains *bool `json:"makeIptablesUtilChains,omitempty" flag:"make-iptables-util-chains"`
+	// CAdvisorPort The port of the localhost cAdvisor endpoint (set to 0 to disable) (default 4194)
+	CAdvisorPort *int32 `json:"cadvisorPort,omitempty" flag:"cadvisor-port"`
+	// ProtectKernelDefaults Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults.
+	ProtectKernelDefaults *bool `json:"protectKernelDefaults,omitempty" flag:"protect-kernel-defaults"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
@@ -315,9 +323,14 @@ type KubeAPIServerConfig struct {
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 	// MaxRequestsInflight The maximum number of non-mutating requests in flight at a given time.
 	MaxRequestsInflight int32 `json:"maxRequestsInflight,omitempty" flag:"max-requests-inflight" flag-empty:"0"`
-
 	// EtcdQuorumRead configures the etcd-quorum-read flag, which forces consistent reads from etcd
 	EtcdQuorumRead *bool `json:"etcdQuorumRead,omitempty" flag:"etcd-quorum-read"`
+	// Enable profiling via web interface
+	Profiling *bool `json:"profiling,omitempty" flag:"profiling"`
+	// Verify service account token
+	ServiceAccountLookup *bool `json:"serviceAccountLookup,omitempty" flag:"service-account-lookup"`
+	// Repair malformed requests from clients
+	RepairMalformedUpdates *bool `json:"repairMalformedUpdates,omitempty" flag:"repair-malformed-updates"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
@@ -379,6 +392,8 @@ type KubeControllerManagerConfig struct {
 	HorizontalPodAutoscalerUseRestClients *bool `json:"horizontalPodAutoscalerUseRestClients,omitempty" flag:"horizontal-pod-autoscaler-use-rest-clients"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
+	// Enable profiling via web interface
+	Profiling *bool `json:"profiling,omitempty" flag:"profiling"`
 }
 
 type CloudControllerManagerConfig struct {
@@ -415,6 +430,8 @@ type KubeSchedulerConfig struct {
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v"`
 	// Image is the docker image to use
 	Image string `json:"image,omitempty"`
+	// Enable profiling via web interface
+	Profiling *bool `json:"profiling,omitempty" flag:"profiling"`
 	// LeaderElection defines the configuration of leader election client.
 	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
 	// UsePolicyConfigMap enable setting the scheduler policy from a configmap
