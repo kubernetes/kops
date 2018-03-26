@@ -231,6 +231,8 @@ func newTemplateContext(files []string) (map[string]interface{}, error) {
 }
 
 // Merges source and destination map, preferring values from the source map
+// Copied from the Helm (https://github.com/kubernetes/helm) project:
+// https://github.com/kubernetes/helm/blob/282984e75fd115a0765730efe09d8257c72fa56d/cmd/helm/install.go#L302
 func mergeValues(dest map[string]interface{}, src map[string]interface{}) map[string]interface{} {
 	for k, v := range src {
 		// If the key doesn't exist already, then just set the key to that value
