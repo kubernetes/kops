@@ -32,7 +32,6 @@ import (
 	"k8s.io/kops/pkg/kopscodecs"
 )
 
-
 // TestConversionMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestConversionMinimal(t *testing.T) {
 	runTest(t, "minimal", "v1alpha1", "v1alpha2")
