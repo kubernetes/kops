@@ -75,6 +75,11 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		if b.Cluster.Spec.NetworkCIDR != "" {
 			t.CIDR = s(b.Cluster.Spec.NetworkCIDR)
 		}
+
+		for _, cidr := range b.Cluster.Spec.AdditionalNetworkCIDRs {
+			t.AdditionalCIDR = append(t.AdditionalCIDR, cidr)
+		}
+
 		c.AddTask(t)
 	}
 
