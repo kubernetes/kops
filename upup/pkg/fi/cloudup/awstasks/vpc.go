@@ -37,7 +37,7 @@ type VPC struct {
 
 	ID                 *string
 	CIDR               *string
-	AdditionalCIDR     *[]string
+	AdditionalCIDR     []string
 	EnableDNSHostnames *bool
 	EnableDNSSupport   *bool
 
@@ -77,11 +77,16 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 	}
 	vpc := response.Vpcs[0]
 	actual := &VPC{
-		ID:             vpc.VpcId,
-		CIDR:           vpc.CidrBlock,
-		AdditionalCIDR: getAdditionalCIDR(vpc.CidrBlock, vpc.CidrBlockAssociationSet),
-		Name:           findNameTag(vpc.Tags),
-		Tags:           intersectTags(vpc.Tags, e.Tags),
+		ID:   vpc.VpcId,
+		CIDR: vpc.CidrBlock,
+		Name: findNameTag(vpc.Tags),
+		Tags: intersectTags(vpc.Tags, e.Tags),
+	}
+
+	for _, b := range vpc.CidrBlockAssociationSet {
+		if aws.StringValue(b.CidrBlock) != aws.StringValue(vpc.CidrBlock) {
+			actual.AdditionalCIDR = append(actual.AdditionalCIDR, aws.StringValue(b.CidrBlock))
+		}
 	}
 
 	glog.V(4).Infof("found matching VPC %v", actual)
@@ -192,6 +197,10 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 		}
 	}
 
+	if len(changes.AdditionalCIDR) != 0 {
+		glog.Warningf("AdditionalCIDR changes on a VPC are not currently implemented")
+	}
+
 	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
@@ -212,6 +221,11 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 		// Not terraform owned / managed
 		// We won't apply changes, but our validation (kops update) will still warn
 		return nil
+	}
+
+	if len(e.AdditionalCIDR) != 0 {
+		// https://github.com/terraform-providers/terraform-provider-aws/issues/3403
+		return fmt.Errorf("terraform does not support AdditionalCIDRs on VPCs")
 	}
 
 	tf := &terraformVPC{
@@ -253,6 +267,10 @@ func (_ *VPC) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e,
 		return nil
 	}
 
+	if len(changes.AdditionalCIDR) != 0 {
+		glog.Warningf("AdditionalCIDR changes on a VPC are not currently implemented")
+	}
+
 	tf := &cloudformationVPC{
 		CidrBlock:          e.CIDR,
 		EnableDnsHostnames: e.EnableDNSHostnames,
@@ -275,16 +293,4 @@ func (e *VPC) CloudformationLink() *cloudformation.Literal {
 	}
 
 	return cloudformation.Ref("AWS::EC2::VPC", *e.Name)
-}
-
-func getAdditionalCIDR(CIDR *string, additionalCIDRSet []*ec2.VpcCidrBlockAssociation) *[]string {
-	var additionalCIDRs []string
-
-	for _, CIDRSet := range additionalCIDRSet {
-		if *CIDRSet.CidrBlock != *CIDR {
-			additionalCIDRs = append(additionalCIDRs, *CIDRSet.CidrBlock)
-		}
-	}
-
-	return &additionalCIDRs
 }
