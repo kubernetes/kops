@@ -32,6 +32,8 @@ type EtcdOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &EtcdOptionsBuilder{}
 
+const DefaultEtcdVersion = "2.2.1"
+
 // BuildOptions is responsible for filling in the defaults for the etcd cluster model
 func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 	spec := o.(*kops.ClusterSpec)
@@ -41,7 +43,7 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 		// @TODO if nothing is set, set the defaults. At a late date once we have a way of detecting a 'new' cluster
 		// we can default all clusters to v3
 		if x.Version == "" {
-			x.Version = "2.2.1"
+			x.Version = DefaultEtcdVersion
 		}
 	}
 
