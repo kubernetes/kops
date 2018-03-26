@@ -7,6 +7,7 @@ go_library(
         "elasticip.go",
         "errors.go",
         "filters.go",
+        "natgateway.go",
         "routetable.go",
         "securitygroup.go",
         "tags.go",

@@ -743,22 +743,9 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 				continue
 			}
 
-			resourceTracker := &resources.Resource{
-				Name:    id,
-				ID:      id,
-				Type:    TypeNatGateway,
-				Deleter: DeleteNatGateway,
-				Shared:  sharedNgwIds.Has(id) || !ownedNatGatewayIds.Has(id),
-			}
-
-			// The NAT gateway blocks deletion of any associated Elastic IPs
-			for _, address := range ngw.NatGatewayAddresses {
-				if address.AllocationId != nil {
-					resourceTracker.Blocks = append(resourceTracker.Blocks, TypeElasticIp+":"+aws.StringValue(address.AllocationId))
-				}
-			}
-
-			resourceTrackers = append(resourceTrackers, resourceTracker)
+			forceShared := sharedNgwIds.Has(id) || !ownedNatGatewayIds.Has(id)
+			r := buildNatGatewayResource(ngw, forceShared, clusterName)
+			resourceTrackers = append(resourceTrackers, r)
 		}
 	}
 
@@ -1180,19 +1167,14 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 			return nil, fmt.Errorf("NextToken set from DescribeNatGateways, but pagination not implemented")
 		}
 
-		for _, t := range response.NatGateways {
-			natGatewayId := aws.StringValue(t.NatGatewayId)
-			ngwTracker := &resources.Resource{
-				Name:    natGatewayId,
-				ID:      natGatewayId,
-				Type:    TypeNatGateway,
-				Deleter: DeleteNatGateway,
-				Shared:  !ownedNatGatewayIds.Has(natGatewayId),
-			}
-			resourceTrackers = append(resourceTrackers, ngwTracker)
+		for _, ngw := range response.NatGateways {
+			natGatewayId := aws.StringValue(ngw.NatGatewayId)
+
+			forceShared := !ownedNatGatewayIds.Has(natGatewayId)
+			resourceTrackers = append(resourceTrackers, buildNatGatewayResource(ngw, forceShared, clusterName))
 
 			// If we're deleting the NatGateway, we should delete the ElasticIP also
-			for _, address := range t.NatGatewayAddresses {
+			for _, address := range ngw.NatGatewayAddresses {
 				if address.AllocationId != nil {
 					request := &ec2.DescribeAddressesInput{}
 					request.AllocationIds = []*string{address.AllocationId}
@@ -1204,7 +1186,6 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 					for _, eip := range response.Addresses {
 						eipTracker := buildElasticIPResource(eip, !ownedNatGatewayIds.Has(natGatewayId), clusterName)
 						resourceTrackers = append(resourceTrackers, eipTracker)
-						ngwTracker.Blocks = append(ngwTracker.Blocks, eipTracker.Type+":"+eipTracker.ID)
 					}
 				}
 			}
