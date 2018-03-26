@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "aws.go",
+        "elasticip.go",
         "errors.go",
         "filters.go",
         "routetable.go",

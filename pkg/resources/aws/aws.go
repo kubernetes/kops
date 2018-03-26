@@ -527,15 +527,7 @@ func ListVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 				continue
 			}
 
-			resourceTracker := &resources.Resource{
-				Name:    ip,
-				ID:      aws.StringValue(address.AllocationId),
-				Type:    TypeElasticIp,
-				Deleter: DeleteElasticIP,
-			}
-
-			resourceTrackers = append(resourceTrackers, resourceTracker)
-
+			resourceTrackers = append(resourceTrackers, buildElasticIPResource(address, false, clusterName))
 		}
 	}
 
@@ -709,15 +701,7 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 			if !elasticIPs.Has(ip) {
 				continue
 			}
-
-			resourceTracker := &resources.Resource{
-				Name:    ip,
-				ID:      aws.StringValue(address.AllocationId),
-				Type:    TypeElasticIp,
-				Deleter: DeleteElasticIP,
-				Shared:  !ownedElasticIPs.Has(ip),
-			}
-			resourceTrackers = append(resourceTrackers, resourceTracker)
+			resourceTrackers = append(resourceTrackers, buildElasticIPResource(address, ownedElasticIPs.Has(ip), clusterName))
 		}
 	}
 
@@ -744,7 +728,6 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 					}
 				}
 			}
-
 		}
 
 		glog.V(2).Infof("Querying Nat Gateways")
@@ -1211,14 +1194,6 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 			// If we're deleting the NatGateway, we should delete the ElasticIP also
 			for _, address := range t.NatGatewayAddresses {
 				if address.AllocationId != nil {
-					name := aws.StringValue(address.PublicIp)
-					if name == "" {
-						name = aws.StringValue(address.PrivateIp)
-					}
-					if name == "" {
-						name = aws.StringValue(address.AllocationId)
-					}
-
 					request := &ec2.DescribeAddressesInput{}
 					request.AllocationIds = []*string{address.AllocationId}
 					response, err := c.EC2().DescribeAddresses(request)
@@ -1227,13 +1202,7 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 					}
 
 					for _, eip := range response.Addresses {
-						eipTracker := &resources.Resource{
-							Name:    name,
-							ID:      aws.StringValue(address.AllocationId),
-							Type:    TypeElasticIp,
-							Deleter: DeleteElasticIP,
-							Shared:  HasSharedTag(TypeElasticIp+":"+*eip.AllocationId, eip.Tags, clusterName) || !ownedNatGatewayIds.Has(natGatewayId),
-						}
+						eipTracker := buildElasticIPResource(eip, !ownedNatGatewayIds.Has(natGatewayId), clusterName)
 						resourceTrackers = append(resourceTrackers, eipTracker)
 						ngwTracker.Blocks = append(ngwTracker.Blocks, eipTracker.Type+":"+eipTracker.ID)
 					}
