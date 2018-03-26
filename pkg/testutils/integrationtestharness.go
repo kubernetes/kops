@@ -159,24 +159,36 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 		VpcId:             aws.String("vpc-12345678"),
 	})
 
+	mockEC2.CreateRouteTableWithId(&ec2.CreateRouteTableInput{
+		VpcId: aws.String("vpc-12345678"),
+	}, "rtb-12345678")
+
 	mockEC2.CreateSubnetWithId(&ec2.CreateSubnetInput{
 		VpcId:            aws.String("vpc-12345678"),
 		AvailabilityZone: aws.String("us-test-1a"),
 		CidrBlock:        aws.String("172.20.32.0/19"),
 	}, "subnet-12345678")
+	mockEC2.AssociateRouteTable(&ec2.AssociateRouteTableInput{
+		RouteTableId: aws.String("rtb-12345678"),
+		SubnetId:     aws.String("subnet-12345678"),
+	})
 	mockEC2.CreateSubnetWithId(&ec2.CreateSubnetInput{
 		VpcId:            aws.String("vpc-12345678"),
 		AvailabilityZone: aws.String("us-test-1a"),
 		CidrBlock:        aws.String("172.20.4.0/22"),
 	}, "subnet-abcdef")
+	mockEC2.AssociateRouteTable(&ec2.AssociateRouteTableInput{
+		RouteTableId: aws.String("rtb-12345678"),
+		SubnetId:     aws.String("subnet-abcdef"),
+	})
 
 	mockEC2.AllocateAddressWithId(&ec2.AllocateAddressInput{
 		Address: aws.String("123.45.67.8"),
-	}, "eip-12345678")
+	}, "eipalloc-12345678")
 
 	mockEC2.CreateNatGatewayWithId(&ec2.CreateNatGatewayInput{
 		SubnetId:     aws.String("subnet-12345678"),
-		AllocationId: aws.String("eip-12345678"),
+		AllocationId: aws.String("eipalloc-12345678"),
 	}, "nat-12345678")
 
 	return cloud

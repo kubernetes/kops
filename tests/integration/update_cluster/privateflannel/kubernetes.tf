@@ -158,10 +158,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privateflannel-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privateflannel.example.com"
-    Name                 = "us-test-1a.etcd-events.privateflannel.example.com"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "us-test-1a.etcd-events.privateflannel.example.com"
+    "k8s.io/etcd/events"                               = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                               = "1"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 
@@ -172,15 +173,22 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privateflannel-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privateflannel.example.com"
-    Name                 = "us-test-1a.etcd-main.privateflannel.example.com"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "us-test-1a.etcd-main.privateflannel.example.com"
+    "k8s.io/etcd/main"                                 = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                               = "1"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 
 resource "aws_eip" "us-test-1a-privateflannel-example-com" {
   vpc = true
+
+  tags = {
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "us-test-1a.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+  }
 }
 
 resource "aws_elb" "api-privateflannel-example-com" {
@@ -322,6 +330,8 @@ resource "aws_launch_configuration" "bastion-privateflannel-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-privateflannel-example-com" {
@@ -348,6 +358,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privateflannel-ex
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-privateflannel-example-com" {
@@ -369,6 +381,8 @@ resource "aws_launch_configuration" "nodes-privateflannel-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_nat_gateway" "us-test-1a-privateflannel-example-com" {
@@ -445,8 +459,9 @@ resource "aws_security_group" "api-elb-privateflannel-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "privateflannel.example.com"
-    Name              = "api-elb.privateflannel.example.com"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "api-elb.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 
@@ -456,8 +471,9 @@ resource "aws_security_group" "bastion-elb-privateflannel-example-com" {
   description = "Security group for bastion ELB"
 
   tags = {
-    KubernetesCluster = "privateflannel.example.com"
-    Name              = "bastion-elb.privateflannel.example.com"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "bastion-elb.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 
@@ -467,8 +483,9 @@ resource "aws_security_group" "bastion-privateflannel-example-com" {
   description = "Security group for bastion"
 
   tags = {
-    KubernetesCluster = "privateflannel.example.com"
-    Name              = "bastion.privateflannel.example.com"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "bastion.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 
@@ -478,8 +495,9 @@ resource "aws_security_group" "masters-privateflannel-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "privateflannel.example.com"
-    Name              = "masters.privateflannel.example.com"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "masters.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 
@@ -489,8 +507,9 @@ resource "aws_security_group" "nodes-privateflannel-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "privateflannel.example.com"
-    Name              = "nodes.privateflannel.example.com"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "nodes.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 

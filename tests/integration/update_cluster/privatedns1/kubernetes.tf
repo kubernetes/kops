@@ -158,10 +158,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privatedns1-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privatedns1.example.com"
-    Name                 = "us-test-1a.etcd-events.privatedns1.example.com"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "us-test-1a.etcd-events.privatedns1.example.com"
+    "k8s.io/etcd/events"                            = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                            = "1"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -172,15 +173,22 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatedns1-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privatedns1.example.com"
-    Name                 = "us-test-1a.etcd-main.privatedns1.example.com"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "us-test-1a.etcd-main.privatedns1.example.com"
+    "k8s.io/etcd/main"                              = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                            = "1"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
 resource "aws_eip" "us-test-1a-privatedns1-example-com" {
   vpc = true
+
+  tags = {
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "us-test-1a.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
 }
 
 resource "aws_elb" "api-privatedns1-example-com" {
@@ -322,6 +330,8 @@ resource "aws_launch_configuration" "bastion-privatedns1-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-privatedns1-example-com" {
@@ -348,6 +358,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privatedns1-examp
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-privatedns1-example-com" {
@@ -369,6 +381,8 @@ resource "aws_launch_configuration" "nodes-privatedns1-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_nat_gateway" "us-test-1a-privatedns1-example-com" {
@@ -450,8 +464,9 @@ resource "aws_security_group" "api-elb-privatedns1-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "api-elb.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "api-elb.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -461,8 +476,9 @@ resource "aws_security_group" "bastion-elb-privatedns1-example-com" {
   description = "Security group for bastion ELB"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "bastion-elb.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "bastion-elb.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -472,8 +488,9 @@ resource "aws_security_group" "bastion-privatedns1-example-com" {
   description = "Security group for bastion"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "bastion.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "bastion.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -483,8 +500,9 @@ resource "aws_security_group" "masters-privatedns1-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "masters.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "masters.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -494,8 +512,9 @@ resource "aws_security_group" "nodes-privatedns1-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "nodes.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "nodes.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 

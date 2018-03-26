@@ -137,12 +137,13 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-complex-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "complex.example.com"
-    Name                 = "us-test-1a.etcd-events.complex.example.com"
-    Owner                = "John Doe"
-    "foo/bar"            = "fib+baz"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "us-test-1a.etcd-events.complex.example.com"
+    Owner                                       = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "k8s.io/etcd/events"                        = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                        = "1"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
@@ -153,12 +154,13 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-complex-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "complex.example.com"
-    Name                 = "us-test-1a.etcd-main.complex.example.com"
-    Owner                = "John Doe"
-    "foo/bar"            = "fib+baz"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "us-test-1a.etcd-main.complex.example.com"
+    Owner                                       = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "k8s.io/etcd/main"                          = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                        = "1"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
@@ -262,6 +264,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-complex-example-c
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-complex-example-com" {
@@ -283,6 +287,8 @@ resource "aws_launch_configuration" "nodes-complex-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = true
 }
 
 resource "aws_route" "0-0-0-0--0" {
@@ -326,8 +332,9 @@ resource "aws_security_group" "api-elb-complex-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "complex.example.com"
-    Name              = "api-elb.complex.example.com"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "api-elb.complex.example.com"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
@@ -337,8 +344,9 @@ resource "aws_security_group" "masters-complex-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "complex.example.com"
-    Name              = "masters.complex.example.com"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "masters.complex.example.com"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
@@ -348,8 +356,9 @@ resource "aws_security_group" "nodes-complex-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "complex.example.com"
-    Name              = "nodes.complex.example.com"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "nodes.complex.example.com"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 

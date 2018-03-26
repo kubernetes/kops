@@ -21,6 +21,8 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
 type Factory interface {

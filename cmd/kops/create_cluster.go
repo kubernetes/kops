@@ -290,7 +290,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use for all instances.")
 
-	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni.")
+	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium.")
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
@@ -870,6 +870,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.Networking.Romana = &api.RomanaNetworkingSpec{}
 	case "amazonvpc", "amazon-vpc-routed-eni":
 		cluster.Spec.Networking.AmazonVPC = &api.AmazonVPCNetworkingSpec{}
+	case "cilium":
+		cluster.Spec.Networking.Cilium = &api.CiliumNetworkingSpec{}
 	default:
 		return fmt.Errorf("unknown networking mode %q", c.Networking)
 	}
@@ -1187,7 +1189,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 func supportsPrivateTopology(n *api.NetworkingSpec) bool {
 
-	if n.CNI != nil || n.Kopeio != nil || n.Weave != nil || n.Flannel != nil || n.Calico != nil || n.Canal != nil || n.Kuberouter != nil || n.Romana != nil || n.AmazonVPC != nil {
+	if n.CNI != nil || n.Kopeio != nil || n.Weave != nil || n.Flannel != nil || n.Calico != nil || n.Canal != nil || n.Kuberouter != nil || n.Romana != nil || n.AmazonVPC != nil || n.Cilium != nil {
 		return true
 	}
 	return false

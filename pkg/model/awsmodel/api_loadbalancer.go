@@ -151,6 +151,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Description:      s("Security group for api ELB"),
 			RemoveExtraRules: []string{"port=443"},
 		}
+		t.Tags = b.CloudTags(*t.Name, false)
 		c.AddTask(t)
 	}
 

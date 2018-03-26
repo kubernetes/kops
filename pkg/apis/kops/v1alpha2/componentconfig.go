@@ -158,7 +158,7 @@ type KubeletConfigSpec struct {
 	FailSwapOn *bool `json:"failSwapOn,omitempty" flag:"fail-swap-on"`
 }
 
-// KubeProxyConfig defined the configuration for a proxy
+// KubeProxyConfig defines the configuration for a proxy
 type KubeProxyConfig struct {
 	Image string `json:"image,omitempty"`
 	// TODO: Better type ?
@@ -305,6 +305,9 @@ type KubeAPIServerConfig struct {
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 	// MaxRequestsInflight The maximum number of non-mutating requests in flight at a given time.
 	MaxRequestsInflight int32 `json:"maxRequestsInflight,omitempty" flag:"max-requests-inflight" flag-empty:"0"`
+
+	// EtcdQuorumRead configures the etcd-quorum-read flag, which forces consistent reads from etcd
+	EtcdQuorumRead *bool `json:"etcdQuorumRead,omitempty" flag:"etcd-quorum-read"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
@@ -420,7 +423,7 @@ type LeaderElectionConfiguration struct {
 	LeaderElect *bool `json:"leaderElect,omitempty" flag:"leader-elect"`
 }
 
-// CloudConfiguration is defines the cloud provider configuration
+// CloudConfiguration defines the cloud provider configuration
 type CloudConfiguration struct {
 	// GCE cloud-config options
 	Multizone          *bool   `json:"multizone,omitempty"`

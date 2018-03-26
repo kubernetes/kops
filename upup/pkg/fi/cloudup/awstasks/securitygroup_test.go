@@ -109,6 +109,7 @@ func TestSecurityGroupCreate(t *testing.T) {
 			Name:        s("sg1"),
 			Description: s("Description"),
 			VPC:         vpc1,
+			Tags:        map[string]string{"Name": "sg1"},
 		}
 
 		return map[string]fi.Task{

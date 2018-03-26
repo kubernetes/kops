@@ -4,8 +4,12 @@ go_library(
     name = "go_default_library",
     srcs = [
         "aws.go",
+        "elasticip.go",
         "errors.go",
         "filters.go",
+        "natgateway.go",
+        "routetable.go",
+        "securitygroup.go",
         "tags.go",
         "vpc.go",
     ],

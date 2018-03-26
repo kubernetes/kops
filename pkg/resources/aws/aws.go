@@ -199,7 +199,7 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 			continue
 		}
 
-		if resources["vpc:"+vpcID] == nil {
+		if resources["vpc:"+vpcID] == nil || resources["vpc:"+vpcID].Shared {
 			// Not deleting this VPC; ignore
 			continue
 		}
@@ -449,114 +449,6 @@ func DumpInstance(op *resources.DumpOperation, r *resources.Resource) error {
 	return nil
 }
 
-func DeleteSecurityGroup(cloud fi.Cloud, t *resources.Resource) error {
-	c := cloud.(awsup.AWSCloud)
-
-	id := t.ID
-	// First clear all inter-dependent rules
-	// TODO: Move to a "pre-execute" phase?
-	{
-		request := &ec2.DescribeSecurityGroupsInput{
-			GroupIds: []*string{&id},
-		}
-		response, err := c.EC2().DescribeSecurityGroups(request)
-		if err != nil {
-			if awsup.AWSErrorCode(err) == "InvalidGroup.NotFound" {
-				glog.V(2).Infof("Got InvalidGroup.NotFound error describing SecurityGroup %q; will treat as already-deleted", id)
-				return nil
-			}
-			return fmt.Errorf("error describing SecurityGroup %q: %v", id, err)
-		}
-
-		if len(response.SecurityGroups) == 0 {
-			return nil
-		}
-		if len(response.SecurityGroups) != 1 {
-			return fmt.Errorf("found mutiple SecurityGroups with ID %q", id)
-		}
-		sg := response.SecurityGroups[0]
-
-		if len(sg.IpPermissions) != 0 {
-			revoke := &ec2.RevokeSecurityGroupIngressInput{
-				GroupId:       &id,
-				IpPermissions: sg.IpPermissions,
-			}
-			_, err = c.EC2().RevokeSecurityGroupIngress(revoke)
-			if err != nil {
-				return fmt.Errorf("cannot revoke ingress for ID %q: %v", id, err)
-			}
-		}
-	}
-
-	{
-		glog.V(2).Infof("Deleting EC2 SecurityGroup %q", id)
-		request := &ec2.DeleteSecurityGroupInput{
-			GroupId: &id,
-		}
-		_, err := c.EC2().DeleteSecurityGroup(request)
-		if err != nil {
-			if IsDependencyViolation(err) {
-				return err
-			}
-			return fmt.Errorf("error deleting SecurityGroup %q: %v", id, err)
-		}
-	}
-	return nil
-}
-
-func DumpSecurityGroup(op *resources.DumpOperation, r *resources.Resource) error {
-	data := make(map[string]interface{})
-	data["id"] = r.ID
-	data["type"] = ec2.ResourceTypeSecurityGroup
-	data["raw"] = r.Obj
-	op.Dump.Resources = append(op.Dump.Resources, data)
-	return nil
-}
-
-func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
-	groups, err := DescribeSecurityGroups(cloud)
-	if err != nil {
-		return nil, err
-	}
-
-	var resourceTrackers []*resources.Resource
-
-	for _, sg := range groups {
-		resourceTracker := &resources.Resource{
-			Name:    FindName(sg.Tags),
-			ID:      aws.StringValue(sg.GroupId),
-			Type:    "security-group",
-			Deleter: DeleteSecurityGroup,
-			Dumper:  DumpSecurityGroup,
-			Obj:     sg,
-		}
-
-		var blocks []string
-		blocks = append(blocks, "vpc:"+aws.StringValue(sg.VpcId))
-
-		resourceTracker.Blocks = blocks
-
-		resourceTrackers = append(resourceTrackers, resourceTracker)
-	}
-
-	return resourceTrackers, nil
-}
-
-func DescribeSecurityGroups(cloud fi.Cloud) ([]*ec2.SecurityGroup, error) {
-	c := cloud.(awsup.AWSCloud)
-
-	glog.V(2).Infof("Listing EC2 SecurityGroups")
-	request := &ec2.DescribeSecurityGroupsInput{
-		Filters: BuildEC2Filters(cloud),
-	}
-	response, err := c.EC2().DescribeSecurityGroups(request)
-	if err != nil {
-		return nil, fmt.Errorf("error listing SecurityGroups: %v", err)
-	}
-
-	return response.SecurityGroups, nil
-}
-
 func DeleteVolume(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(awsup.AWSCloud)
 
@@ -635,15 +527,7 @@ func ListVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 				continue
 			}
 
-			resourceTracker := &resources.Resource{
-				Name:    ip,
-				ID:      aws.StringValue(address.AllocationId),
-				Type:    TypeElasticIp,
-				Deleter: DeleteElasticIP,
-			}
-
-			resourceTrackers = append(resourceTrackers, resourceTracker)
-
+			resourceTrackers = append(resourceTrackers, buildElasticIPResource(address, false, clusterName))
 		}
 	}
 
@@ -817,15 +701,7 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 			if !elasticIPs.Has(ip) {
 				continue
 			}
-
-			resourceTracker := &resources.Resource{
-				Name:    ip,
-				ID:      aws.StringValue(address.AllocationId),
-				Type:    TypeElasticIp,
-				Deleter: DeleteElasticIP,
-				Shared:  !ownedElasticIPs.Has(ip),
-			}
-			resourceTrackers = append(resourceTrackers, resourceTracker)
+			resourceTrackers = append(resourceTrackers, buildElasticIPResource(address, ownedElasticIPs.Has(ip), clusterName))
 		}
 	}
 
@@ -852,7 +728,6 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 					}
 				}
 			}
-
 		}
 
 		glog.V(2).Infof("Querying Nat Gateways")
@@ -868,22 +743,9 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 				continue
 			}
 
-			resourceTracker := &resources.Resource{
-				Name:    id,
-				ID:      id,
-				Type:    TypeNatGateway,
-				Deleter: DeleteNatGateway,
-				Shared:  sharedNgwIds.Has(id) || !ownedNatGatewayIds.Has(id),
-			}
-
-			// The NAT gateway blocks deletion of any associated Elastic IPs
-			for _, address := range ngw.NatGatewayAddresses {
-				if address.AllocationId != nil {
-					resourceTracker.Blocks = append(resourceTracker.Blocks, TypeElasticIp+":"+aws.StringValue(address.AllocationId))
-				}
-			}
-
-			resourceTrackers = append(resourceTrackers, resourceTracker)
+			forceShared := sharedNgwIds.Has(id) || !ownedNatGatewayIds.Has(id)
+			r := buildNatGatewayResource(ngw, forceShared, clusterName)
+			resourceTrackers = append(resourceTrackers, r)
 		}
 	}
 
@@ -941,62 +803,6 @@ func DescribeRouteTablesIgnoreTags(cloud fi.Cloud) ([]*ec2.RouteTable, error) {
 	}
 
 	return response.RouteTables, nil
-}
-
-// DescribeRouteTables lists route-tables tagged for the cloud
-func DescribeRouteTables(cloud fi.Cloud) ([]*ec2.RouteTable, error) {
-	c := cloud.(awsup.AWSCloud)
-
-	glog.V(2).Infof("Listing EC2 RouteTables")
-	request := &ec2.DescribeRouteTablesInput{
-		Filters: BuildEC2Filters(cloud),
-	}
-	response, err := c.EC2().DescribeRouteTables(request)
-	if err != nil {
-		return nil, fmt.Errorf("error listing RouteTables: %v", err)
-	}
-
-	return response.RouteTables, nil
-}
-
-func ListRouteTables(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
-	routeTables, err := DescribeRouteTables(cloud)
-	if err != nil {
-		return nil, err
-	}
-
-	var resourceTrackers []*resources.Resource
-
-	for _, rt := range routeTables {
-		resourceTracker := buildTrackerForRouteTable(rt, clusterName)
-		resourceTrackers = append(resourceTrackers, resourceTracker)
-	}
-
-	return resourceTrackers, nil
-}
-
-func buildTrackerForRouteTable(rt *ec2.RouteTable, clusterName string) *resources.Resource {
-	resourceTracker := &resources.Resource{
-		Name:    FindName(rt.Tags),
-		ID:      aws.StringValue(rt.RouteTableId),
-		Type:    ec2.ResourceTypeRouteTable,
-		Deleter: DeleteRouteTable,
-		Shared:  HasSharedTag(ec2.ResourceTypeRouteTable+":"+*rt.RouteTableId, rt.Tags, clusterName),
-	}
-
-	var blocks []string
-	var blocked []string
-
-	blocks = append(blocks, "vpc:"+aws.StringValue(rt.VpcId))
-
-	for _, a := range rt.Associations {
-		blocked = append(blocked, "subnet:"+aws.StringValue(a.SubnetId))
-	}
-
-	resourceTracker.Blocks = blocks
-	resourceTracker.Blocked = blocked
-
-	return resourceTracker
 }
 
 func DeleteDhcpOptions(cloud fi.Cloud, r *resources.Resource) error {
@@ -1361,28 +1167,15 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 			return nil, fmt.Errorf("NextToken set from DescribeNatGateways, but pagination not implemented")
 		}
 
-		for _, t := range response.NatGateways {
-			natGatewayId := aws.StringValue(t.NatGatewayId)
-			ngwTracker := &resources.Resource{
-				Name:    natGatewayId,
-				ID:      natGatewayId,
-				Type:    TypeNatGateway,
-				Deleter: DeleteNatGateway,
-				Shared:  !ownedNatGatewayIds.Has(natGatewayId),
-			}
-			resourceTrackers = append(resourceTrackers, ngwTracker)
+		for _, ngw := range response.NatGateways {
+			natGatewayId := aws.StringValue(ngw.NatGatewayId)
+
+			forceShared := !ownedNatGatewayIds.Has(natGatewayId)
+			resourceTrackers = append(resourceTrackers, buildNatGatewayResource(ngw, forceShared, clusterName))
 
 			// If we're deleting the NatGateway, we should delete the ElasticIP also
-			for _, address := range t.NatGatewayAddresses {
+			for _, address := range ngw.NatGatewayAddresses {
 				if address.AllocationId != nil {
-					name := aws.StringValue(address.PublicIp)
-					if name == "" {
-						name = aws.StringValue(address.PrivateIp)
-					}
-					if name == "" {
-						name = aws.StringValue(address.AllocationId)
-					}
-
 					request := &ec2.DescribeAddressesInput{}
 					request.AllocationIds = []*string{address.AllocationId}
 					response, err := c.EC2().DescribeAddresses(request)
@@ -1391,15 +1184,8 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 					}
 
 					for _, eip := range response.Addresses {
-						eipTracker := &resources.Resource{
-							Name:    name,
-							ID:      aws.StringValue(address.AllocationId),
-							Type:    TypeElasticIp,
-							Deleter: DeleteElasticIP,
-							Shared:  HasSharedTag(TypeElasticIp+":"+*eip.AllocationId, eip.Tags, clusterName) || !ownedNatGatewayIds.Has(natGatewayId),
-						}
+						eipTracker := buildElasticIPResource(eip, !ownedNatGatewayIds.Has(natGatewayId), clusterName)
 						resourceTrackers = append(resourceTrackers, eipTracker)
-						ngwTracker.Blocks = append(ngwTracker.Blocks, eipTracker.Type+":"+eipTracker.ID)
 					}
 				}
 			}

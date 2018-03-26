@@ -162,10 +162,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-private-shared-subnet-example-
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "private-shared-subnet.example.com"
-    Name                 = "us-test-1a.etcd-events.private-shared-subnet.example.com"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                         = "private-shared-subnet.example.com"
+    Name                                                      = "us-test-1a.etcd-events.private-shared-subnet.example.com"
+    "k8s.io/etcd/events"                                      = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                                      = "1"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
 }
 
@@ -176,10 +177,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-private-shared-subnet-example-co
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "private-shared-subnet.example.com"
-    Name                 = "us-test-1a.etcd-main.private-shared-subnet.example.com"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                         = "private-shared-subnet.example.com"
+    Name                                                      = "us-test-1a.etcd-main.private-shared-subnet.example.com"
+    "k8s.io/etcd/main"                                        = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                                      = "1"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
 }
 
@@ -312,6 +314,8 @@ resource "aws_launch_configuration" "bastion-private-shared-subnet-example-com" 
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-private-shared-subnet-example-com" {
@@ -338,6 +342,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-private-shared-su
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-private-shared-subnet-example-com" {
@@ -359,6 +365,8 @@ resource "aws_launch_configuration" "nodes-private-shared-subnet-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_route53_record" "api-private-shared-subnet-example-com" {
@@ -380,8 +388,9 @@ resource "aws_security_group" "api-elb-private-shared-subnet-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "private-shared-subnet.example.com"
-    Name              = "api-elb.private-shared-subnet.example.com"
+    KubernetesCluster                                         = "private-shared-subnet.example.com"
+    Name                                                      = "api-elb.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
 }
 
@@ -391,8 +400,9 @@ resource "aws_security_group" "bastion-elb-private-shared-subnet-example-com" {
   description = "Security group for bastion ELB"
 
   tags = {
-    KubernetesCluster = "private-shared-subnet.example.com"
-    Name              = "bastion-elb.private-shared-subnet.example.com"
+    KubernetesCluster                                         = "private-shared-subnet.example.com"
+    Name                                                      = "bastion-elb.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
 }
 
@@ -402,8 +412,9 @@ resource "aws_security_group" "bastion-private-shared-subnet-example-com" {
   description = "Security group for bastion"
 
   tags = {
-    KubernetesCluster = "private-shared-subnet.example.com"
-    Name              = "bastion.private-shared-subnet.example.com"
+    KubernetesCluster                                         = "private-shared-subnet.example.com"
+    Name                                                      = "bastion.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
 }
 
@@ -413,8 +424,9 @@ resource "aws_security_group" "masters-private-shared-subnet-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "private-shared-subnet.example.com"
-    Name              = "masters.private-shared-subnet.example.com"
+    KubernetesCluster                                         = "private-shared-subnet.example.com"
+    Name                                                      = "masters.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
 }
 
@@ -424,8 +436,9 @@ resource "aws_security_group" "nodes-private-shared-subnet-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "private-shared-subnet.example.com"
-    Name              = "nodes.private-shared-subnet.example.com"
+    KubernetesCluster                                         = "private-shared-subnet.example.com"
+    Name                                                      = "nodes.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
 }
 

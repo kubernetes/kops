@@ -23619,6 +23619,15 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			},
 			Dependencies: []string{},
 		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha1.CiliumNetworkingSpec": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "CiliumNetworkingSpec declares that we want Cilium networking",
+					Properties:  map[string]spec.Schema{},
+				},
+			},
+			Dependencies: []string{},
+		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.ClassicNetworkingSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
@@ -26531,11 +26540,16 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha1.AmazonVPCNetworkingSpec"),
 							},
 						},
+						"cilium": {
+							SchemaProps: spec.SchemaProps{
+								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha1.CiliumNetworkingSpec"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha1.AmazonVPCNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CNINetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CalicoNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CanalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.ClassicNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.ExternalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.FlannelNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KopeioNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubenetNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KuberouterNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.RomanaNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.WeaveNetworkingSpec"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha1.AmazonVPCNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CNINetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CalicoNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CanalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CiliumNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.ClassicNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.ExternalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.FlannelNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KopeioNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubenetNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KuberouterNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.RomanaNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.WeaveNetworkingSpec"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.RBACAuthorizationSpec": {
 			Schema: spec.Schema{
@@ -26978,6 +26992,15 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 							},
 						},
 					},
+				},
+			},
+			Dependencies: []string{},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha2.CiliumNetworkingSpec": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "CiliumNetworkingSpec declares that we want Cilium networking",
+					Properties:  map[string]spec.Schema{},
 				},
 			},
 			Dependencies: []string{},
@@ -30078,11 +30101,16 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha2.AmazonVPCNetworkingSpec"),
 							},
 						},
+						"cilium": {
+							SchemaProps: spec.SchemaProps{
+								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha2.CiliumNetworkingSpec"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha2.AmazonVPCNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CNINetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CalicoNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CanalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.ClassicNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.ExternalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.FlannelNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KopeioNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubenetNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KuberouterNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.RomanaNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.WeaveNetworkingSpec"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha2.AmazonVPCNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CNINetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CalicoNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CanalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CiliumNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.ClassicNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.ExternalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.FlannelNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KopeioNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubenetNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KuberouterNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.RomanaNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.WeaveNetworkingSpec"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.RBACAuthorizationSpec": {
 			Schema: spec.Schema{

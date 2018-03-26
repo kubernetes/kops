@@ -116,6 +116,8 @@ type InstanceGroupSpec struct {
 	AdditionalUserData []UserData `json:"additionalUserData,omitempty"`
 	// SuspendProcesses disables the listed Scaling Policies
 	SuspendProcesses []string `json:"suspendProcesses,omitempty"`
+	// DetailedInstanceMonitoring defines if detailed-monitoring is enabled (AWS only)
+	DetailedInstanceMonitoring *bool `json:"detailedInstanceMonitoring,omitempty"`
 }
 
 // UserData defines a user-data section

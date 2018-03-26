@@ -19,15 +19,18 @@ package main
 import (
 	"bytes"
 	"path"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 	"time"
 
-	"k8s.io/kops/upup/pkg/fi"
-
+	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 type LifecycleTestOptions struct {
@@ -35,6 +38,9 @@ type LifecycleTestOptions struct {
 	SrcDir      string
 	Version     string
 	ClusterName string
+
+	// Shared is a list of resource ids we expect to be tagged as shared
+	Shared []string
 }
 
 func (o *LifecycleTestOptions) AddDefaults() {
@@ -69,6 +75,7 @@ func TestLifecyclePrivateKopeio(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:      t,
 		SrcDir: "privatekopeio",
+		Shared: []string{"nat-12345678"},
 	})
 }
 
@@ -85,6 +92,7 @@ func TestLifecycleSharedSubnet(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:      t,
 		SrcDir: "shared_subnet",
+		Shared: []string{"subnet-12345678"},
 	})
 }
 
@@ -93,10 +101,11 @@ func TestLifecyclePrivateSharedSubnet(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:      t,
 		SrcDir: "private-shared-subnet",
+		Shared: []string{"subnet-12345678", "subnet-abcdef"},
 	})
 }
 
-func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptions) {
+func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptions, cloud *awsup.MockAWSCloud) {
 	t := o.t
 
 	var stdout bytes.Buffer
@@ -107,6 +116,8 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 	factoryOptions.RegistryPath = "memfs://tests"
 
 	factory := util.NewFactory(factoryOptions)
+
+	beforeResources := AllResources(cloud)
 
 	{
 		options := &CreateOptions{}
@@ -168,16 +179,109 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 			t.Fatalf("Target had changes after executing: %v", b.String())
 		}
 	}
+
+	{
+		var ids []string
+		for id := range AllResources(cloud) {
+			ids = append(ids, id)
+		}
+		sort.Strings(ids)
+
+		for _, id := range ids {
+			tags, err := cloud.GetTags(id)
+			if err != nil {
+				t.Fatalf("error getting tags for %q: %v", id, err)
+			}
+
+			dashIndex := strings.Index(id, "-")
+			resource := ""
+			if dashIndex == -1 {
+				t.Errorf("unknown resource type: %q", id)
+			} else {
+				resource = id[:dashIndex]
+			}
+
+			legacy := tags["KubernetesCluster"]
+			if legacy != "" && legacy != o.ClusterName {
+				t.Errorf("unexpected legacy KubernetesCluster tag: actual=%q cluster=%q", legacy, o.ClusterName)
+			}
+
+			ownership := tags["kubernetes.io/cluster/"+o.ClusterName]
+			if beforeResources[id] != nil {
+				expect := ""
+				for _, s := range o.Shared {
+					if id == s {
+						expect = "shared"
+					}
+				}
+				if ownership != expect {
+					t.Errorf("unexpected kubernetes.io/cluster/ tag on %q: actual=%q expected=%q", id, ownership, expect)
+				}
+			} else {
+				switch resource {
+				case "ami":
+				case "sshkey":
+					// ignore
+
+				default:
+					if ownership == "" {
+						t.Errorf("no kubernetes.io/cluster/ tag on %q", id)
+					}
+					if legacy == "" {
+						// We want to deprecate the KubernetesCluster tag, e.g. in IAM
+						// but we should probably keep it around for people that may be using it for other purposes
+						t.Errorf("no (legacy) KubernetesCluster tag on %q", id)
+					}
+				}
+			}
+		}
+	}
+
+	{
+		options := &DeleteClusterOptions{}
+		options.Yes = true
+		options.ClusterName = o.ClusterName
+		if err := RunDeleteCluster(factory, &stdout, options); err != nil {
+			t.Fatalf("error running delete cluster %q: %v", o.ClusterName, err)
+		}
+	}
+}
+
+// AllResources returns all resources
+func AllResources(c *awsup.MockAWSCloud) map[string]interface{} {
+	all := make(map[string]interface{})
+	for k, v := range c.MockEC2.(*mockec2.MockEC2).All() {
+		all[k] = v
+	}
+	return all
 }
 
 func runLifecycleTestAWS(o *LifecycleTestOptions) {
 	o.AddDefaults()
 
+	t := o.t
+
 	h := testutils.NewIntegrationTestHarness(o.t)
 	defer h.Close()
 
 	h.MockKopsVersion("1.8.1")
-	h.SetupMockAWS()
+	cloud := h.SetupMockAWS()
 
-	runLifecycleTest(h, o)
+	var beforeIds []string
+	for id := range AllResources(cloud) {
+		beforeIds = append(beforeIds, id)
+	}
+	sort.Strings(beforeIds)
+
+	runLifecycleTest(h, o, cloud)
+
+	var afterIds []string
+	for id := range AllResources(cloud) {
+		afterIds = append(afterIds, id)
+	}
+	sort.Strings(afterIds)
+
+	if !reflect.DeepEqual(beforeIds, afterIds) {
+		t.Fatalf("resources changed by cluster create / destroy: %v -> %v", beforeIds, afterIds)
+	}
 }

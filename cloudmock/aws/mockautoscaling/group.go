@@ -126,6 +126,9 @@ func (m *MockAutoscaling) EnableMetricsCollection(request *autoscaling.EnableMet
 }
 
 func (m *MockAutoscaling) DescribeAutoScalingGroups(input *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	groups := []*autoscaling.Group{}
 	for _, group := range m.Groups {
 		match := false
@@ -149,6 +152,9 @@ func (m *MockAutoscaling) DescribeAutoScalingGroups(input *autoscaling.DescribeA
 }
 
 func (m *MockAutoscaling) TerminateInstanceInAutoScalingGroup(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	for _, group := range m.Groups {
 		for i := range group.Instances {
 			if aws.StringValue(group.Instances[i].InstanceId) == aws.StringValue(input.InstanceId) {
@@ -194,4 +200,29 @@ func (m *MockAutoscaling) DescribeAutoScalingGroupsPages(request *autoscaling.De
 func (m *MockAutoscaling) DescribeAutoScalingGroupsPagesWithContext(aws.Context, *autoscaling.DescribeAutoScalingGroupsInput, func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool, ...request.Option) error {
 	glog.Fatalf("Not implemented")
 	return nil
+}
+
+func (m *MockAutoscaling) DeleteAutoScalingGroup(request *autoscaling.DeleteAutoScalingGroupInput) (*autoscaling.DeleteAutoScalingGroupOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteAutoScalingGroup: %v", request)
+
+	id := aws.StringValue(request.AutoScalingGroupName)
+	o := m.Groups[id]
+	if o == nil {
+		return nil, fmt.Errorf("AutoScalingGroup %q not found", id)
+	}
+	delete(m.Groups, id)
+
+	return &autoscaling.DeleteAutoScalingGroupOutput{}, nil
+}
+
+func (m *MockAutoscaling) DeleteAutoScalingGroupWithContext(aws.Context, *autoscaling.DeleteAutoScalingGroupInput, ...request.Option) (*autoscaling.DeleteAutoScalingGroupOutput, error) {
+	glog.Fatalf("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DeleteAutoScalingGroupRequest(*autoscaling.DeleteAutoScalingGroupInput) (*request.Request, *autoscaling.DeleteAutoScalingGroupOutput) {
+	glog.Fatalf("Not implemented")
+	return nil, nil
 }

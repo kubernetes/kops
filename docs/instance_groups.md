@@ -120,7 +120,7 @@ So the procedure is:
 * (no instances need to be relaunched, so no rolling-update is needed)
 
 
-## Moving from one instancegroup spanning multiple AZs to one instance group per AZ
+## Moving from one instance group spanning multiple AZs to one instance group per AZ
 
 It may be beneficial to have one IG per AZ rather than one IG spanning multiple AZs. One common example is, when you have a persistent volume claim bound to an AWS EBS Volume this volume is bound to the AZ it has been created in so any resource (e.g. a StatefulSet) depending on that volume is bound to that same AZ. In this case you have to ensure that there is at least one node running in that same AZ, which is not guaruanteed by one IG. This however can be guarantueed by one IG per AZ.
 
@@ -307,4 +307,26 @@ spec:
   role: Node
   suspendProcesses:
   - AZRebalance
+```
+
+## Enabling Detailed-Monitoring on AWS instances
+
+Detailed-Monitoring will cause the monitoring data to be available every 1 minute instead of every 5 minutes. [Enabling Detailed Monitoring](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-cloudwatch-new.html). In production environments you may want to consider to enable detailed monitoring for quicker troubleshooting.
+
+**Note: that enabling detailed monitoring is a subject for [charge](https://aws.amazon.com/cloudwatch)**
+
+```
+# Example for nodes
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: k8s.dev.local
+  name: nodes
+spec:
+  detailedInstanceMonitoring: true
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
 ```

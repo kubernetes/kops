@@ -158,10 +158,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privatekopeio-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privatekopeio.example.com"
-    Name                 = "us-test-1a.etcd-events.privatekopeio.example.com"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "us-test-1a.etcd-events.privatekopeio.example.com"
+    "k8s.io/etcd/events"                              = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                              = "1"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
 }
 
@@ -172,10 +173,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatekopeio-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privatekopeio.example.com"
-    Name                 = "us-test-1a.etcd-main.privatekopeio.example.com"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "us-test-1a.etcd-main.privatekopeio.example.com"
+    "k8s.io/etcd/main"                                = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                              = "1"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
 }
 
@@ -318,6 +320,8 @@ resource "aws_launch_configuration" "bastion-privatekopeio-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-privatekopeio-example-com" {
@@ -344,6 +348,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privatekopeio-exa
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-privatekopeio-example-com" {
@@ -365,6 +371,8 @@ resource "aws_launch_configuration" "nodes-privatekopeio-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_route" "0-0-0-0--0" {
@@ -430,8 +438,9 @@ resource "aws_security_group" "api-elb-privatekopeio-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "privatekopeio.example.com"
-    Name              = "api-elb.privatekopeio.example.com"
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "api-elb.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
 }
 
@@ -441,8 +450,9 @@ resource "aws_security_group" "bastion-elb-privatekopeio-example-com" {
   description = "Security group for bastion ELB"
 
   tags = {
-    KubernetesCluster = "privatekopeio.example.com"
-    Name              = "bastion-elb.privatekopeio.example.com"
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "bastion-elb.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
 }
 
@@ -452,8 +462,9 @@ resource "aws_security_group" "bastion-privatekopeio-example-com" {
   description = "Security group for bastion"
 
   tags = {
-    KubernetesCluster = "privatekopeio.example.com"
-    Name              = "bastion.privatekopeio.example.com"
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "bastion.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
 }
 
@@ -463,8 +474,9 @@ resource "aws_security_group" "masters-privatekopeio-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "privatekopeio.example.com"
-    Name              = "masters.privatekopeio.example.com"
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "masters.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
 }
 
@@ -474,8 +486,9 @@ resource "aws_security_group" "nodes-privatekopeio-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "privatekopeio.example.com"
-    Name              = "nodes.privatekopeio.example.com"
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "nodes.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
 }
 

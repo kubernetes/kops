@@ -107,10 +107,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-minimal-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "minimal.example.com"
-    Name                 = "us-test-1a.etcd-events.minimal.example.com"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                           = "minimal.example.com"
+    Name                                        = "us-test-1a.etcd-events.minimal.example.com"
+    "k8s.io/etcd/events"                        = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                        = "1"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
 }
 
@@ -121,10 +122,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-minimal-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "minimal.example.com"
-    Name                 = "us-test-1a.etcd-main.minimal.example.com"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                           = "minimal.example.com"
+    Name                                        = "us-test-1a.etcd-main.minimal.example.com"
+    "k8s.io/etcd/main"                          = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                        = "1"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
 }
 
@@ -199,6 +201,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-minimal-example-c
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-minimal-example-com" {
@@ -220,6 +224,8 @@ resource "aws_launch_configuration" "nodes-minimal-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_route" "0-0-0-0--0" {
@@ -250,8 +256,9 @@ resource "aws_security_group" "masters-minimal-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "minimal.example.com"
-    Name              = "masters.minimal.example.com"
+    KubernetesCluster                           = "minimal.example.com"
+    Name                                        = "masters.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
 }
 
@@ -261,8 +268,9 @@ resource "aws_security_group" "nodes-minimal-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "minimal.example.com"
-    Name              = "nodes.minimal.example.com"
+    KubernetesCluster                           = "minimal.example.com"
+    Name                                        = "nodes.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
 }
 

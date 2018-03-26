@@ -158,10 +158,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-bastionuserdata-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "bastionuserdata.example.com"
-    Name                 = "us-test-1a.etcd-events.bastionuserdata.example.com"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "us-test-1a.etcd-events.bastionuserdata.example.com"
+    "k8s.io/etcd/events"                                = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                                = "1"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
@@ -172,15 +173,22 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-bastionuserdata-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "bastionuserdata.example.com"
-    Name                 = "us-test-1a.etcd-main.bastionuserdata.example.com"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "us-test-1a.etcd-main.bastionuserdata.example.com"
+    "k8s.io/etcd/main"                                  = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                                = "1"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
 resource "aws_eip" "us-test-1a-bastionuserdata-example-com" {
   vpc = true
+
+  tags = {
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "us-test-1a.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
 }
 
 resource "aws_elb" "api-bastionuserdata-example-com" {
@@ -323,6 +331,8 @@ resource "aws_launch_configuration" "bastion-bastionuserdata-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-bastionuserdata-example-com" {
@@ -349,6 +359,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-bastionuserdata-e
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-bastionuserdata-example-com" {
@@ -370,6 +382,8 @@ resource "aws_launch_configuration" "nodes-bastionuserdata-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_nat_gateway" "us-test-1a-bastionuserdata-example-com" {
@@ -446,8 +460,9 @@ resource "aws_security_group" "api-elb-bastionuserdata-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "api-elb.bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "api-elb.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
@@ -457,8 +472,9 @@ resource "aws_security_group" "bastion-bastionuserdata-example-com" {
   description = "Security group for bastion"
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "bastion.bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "bastion.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
@@ -468,8 +484,9 @@ resource "aws_security_group" "bastion-elb-bastionuserdata-example-com" {
   description = "Security group for bastion ELB"
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "bastion-elb.bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "bastion-elb.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
@@ -479,8 +496,9 @@ resource "aws_security_group" "masters-bastionuserdata-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "masters.bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "masters.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
@@ -490,8 +508,9 @@ resource "aws_security_group" "nodes-bastionuserdata-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "nodes.bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "nodes.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 

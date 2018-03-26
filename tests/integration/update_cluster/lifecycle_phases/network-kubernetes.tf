@@ -16,6 +16,12 @@ provider "aws" {
 
 resource "aws_eip" "us-test-1a-lifecyclephases-example-com" {
   vpc = true
+
+  tags = {
+    KubernetesCluster                                   = "lifecyclephases.example.com"
+    Name                                                = "us-test-1a.lifecyclephases.example.com"
+    "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "lifecyclephases-example-com" {

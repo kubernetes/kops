@@ -125,7 +125,8 @@
             "Ref": "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom"
           }
         ],
-        "UserData": "extracted"
+        "UserData": "extracted",
+        "InstanceMonitoring": false
       }
     },
     "AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom": {
@@ -153,7 +154,8 @@
             "Ref": "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom"
           }
         ],
-        "UserData": "extracted"
+        "UserData": "extracted",
+        "InstanceMonitoring": false
       }
     },
     "AWSEC2DHCPOptionsadditionaluserdataexamplecom": {
@@ -409,6 +411,10 @@
           {
             "Key": "Name",
             "Value": "masters.additionaluserdata.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
+            "Value": "owned"
           }
         ]
       }
@@ -428,6 +434,10 @@
           {
             "Key": "Name",
             "Value": "nodes.additionaluserdata.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
+            "Value": "owned"
           }
         ]
       }
@@ -542,6 +552,10 @@
           {
             "Key": "k8s.io/role/master",
             "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
+            "Value": "owned"
           }
         ]
       }
@@ -569,6 +583,10 @@
           {
             "Key": "k8s.io/role/master",
             "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
+            "Value": "owned"
           }
         ]
       }

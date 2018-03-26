@@ -17,6 +17,7 @@ limitations under the License.
 package mockautoscaling
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -103,6 +104,31 @@ func (m *MockAutoscaling) CreateLaunchConfigurationWithContext(aws.Context, *aut
 	return nil, nil
 }
 func (m *MockAutoscaling) CreateLaunchConfigurationRequest(*autoscaling.CreateLaunchConfigurationInput) (*request.Request, *autoscaling.CreateLaunchConfigurationOutput) {
+	glog.Fatalf("Not implemented")
+	return nil, nil
+}
+
+func (m *MockAutoscaling) DeleteLaunchConfiguration(request *autoscaling.DeleteLaunchConfigurationInput) (*autoscaling.DeleteLaunchConfigurationOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteLaunchConfiguration: %v", request)
+
+	id := aws.StringValue(request.LaunchConfigurationName)
+	o := m.LaunchConfigurations[id]
+	if o == nil {
+		return nil, fmt.Errorf("LaunchConfiguration %q not found", id)
+	}
+	delete(m.LaunchConfigurations, id)
+
+	return &autoscaling.DeleteLaunchConfigurationOutput{}, nil
+}
+
+func (m *MockAutoscaling) DeleteLaunchConfigurationWithContext(aws.Context, *autoscaling.DeleteLaunchConfigurationInput, ...request.Option) (*autoscaling.DeleteLaunchConfigurationOutput, error) {
+	glog.Fatalf("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DeleteLaunchConfigurationRequest(*autoscaling.DeleteLaunchConfigurationInput) (*request.Request, *autoscaling.DeleteLaunchConfigurationOutput) {
 	glog.Fatalf("Not implemented")
 	return nil, nil
 }

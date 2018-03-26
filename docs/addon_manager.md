@@ -96,7 +96,7 @@ will match `>=1.6.0`.  This matches the way kubernetes does pre-releases.
 
 ## Semver is not enough: `id`
 
-However, semver is insufficient here with the kubernetes version selection.  The problem is
+However, semver is insufficient here with the kubernetes version selection.  The problem
 arises in the following scenario:
 
 * Install k8s 1.5, 1.5 version of manifest is installed

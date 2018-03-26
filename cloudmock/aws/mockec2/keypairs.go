@@ -42,6 +42,9 @@ func (m *MockEC2) ImportKeyPairWithContext(aws.Context, *ec2.ImportKeyPairInput,
 	return nil, nil
 }
 func (m *MockEC2) ImportKeyPair(request *ec2.ImportKeyPairInput) (*ec2.ImportKeyPairOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("ImportKeyPair: %v", request)
 
 	fp, err := pki.ComputeAWSKeyFingerprint(string(request.PublicKeyMaterial))
@@ -53,7 +56,10 @@ func (m *MockEC2) ImportKeyPair(request *ec2.ImportKeyPairInput) (*ec2.ImportKey
 		KeyFingerprint: aws.String(fp),
 		KeyName:        request.KeyName,
 	}
-	m.KeyPairs = append(m.KeyPairs, kp)
+	if m.KeyPairs == nil {
+		m.KeyPairs = make(map[string]*ec2.KeyPairInfo)
+	}
+	m.KeyPairs[aws.StringValue(request.KeyName)] = kp
 	response := &ec2.ImportKeyPairOutput{
 		KeyFingerprint: kp.KeyFingerprint,
 		KeyName:        kp.KeyName,
@@ -72,6 +78,9 @@ func (m *MockEC2) CreateKeyPair(*ec2.CreateKeyPairInput) (*ec2.CreateKeyPairOutp
 }
 
 func (m *MockEC2) DescribeKeyPairs(request *ec2.DescribeKeyPairsInput) (*ec2.DescribeKeyPairsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeKeyPairs: %v", request)
 
 	var keypairs []*ec2.KeyPairInfo
@@ -117,4 +126,29 @@ func (m *MockEC2) DescribeKeyPairs(request *ec2.DescribeKeyPairsInput) (*ec2.Des
 	}
 
 	return response, nil
+}
+
+func (m *MockEC2) DeleteKeyPair(request *ec2.DeleteKeyPairInput) (*ec2.DeleteKeyPairOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteKeyPair: %v", request)
+
+	id := aws.StringValue(request.KeyName)
+	o := m.KeyPairs[id]
+	if o == nil {
+		return nil, fmt.Errorf("KeyPairs %q not found", id)
+	}
+	delete(m.KeyPairs, id)
+
+	return &ec2.DeleteKeyPairOutput{}, nil
+}
+
+func (m *MockEC2) DeleteKeyPairWithContext(aws.Context, *ec2.DeleteKeyPairInput, ...request.Option) (*ec2.DeleteKeyPairOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DeleteKeyPairRequest(*ec2.DeleteKeyPairInput) (*request.Request, *ec2.DeleteKeyPairOutput) {
+	panic("Not implemented")
+	return nil, nil
 }
