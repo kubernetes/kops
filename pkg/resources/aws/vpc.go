@@ -53,6 +53,13 @@ func DumpVPC(op *resources.DumpOperation, r *resources.Resource) error {
 	data["type"] = ec2.ResourceTypeVpc
 	data["raw"] = r.Obj
 	op.Dump.Resources = append(op.Dump.Resources, data)
+
+	ec2VPC := r.Obj.(*ec2.Vpc)
+	vpc := &resources.VPC{
+		ID: aws.StringValue(ec2VPC.VpcId),
+	}
+	op.Dump.VPC = vpc
+
 	return nil
 }
 

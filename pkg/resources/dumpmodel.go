@@ -29,9 +29,15 @@ type Subnet struct {
 	Zone string `json:"zone,omitempty"`
 }
 
+// VPC is the type for an VPC in a dump
+type VPC struct {
+	ID string `json:"id,omitempty"`
+}
+
 // Dump is the type for a dump result
 type Dump struct {
 	Resources []interface{} `json:"resources,omitempty"`
 	Instances []*Instance   `json:"instances,omitempty"`
 	Subnets   []*Subnet     `json:"subnets,omitempty"`
+	VPC       *VPC          `json:"vpc,omitempty"`
 }
