@@ -23,8 +23,15 @@ type Instance struct {
 	Roles           []string `json:"roles,omitempty"`
 }
 
+// Subnet is the type for an subnetwork in a dump
+type Subnet struct {
+	ID   string `json:"id,omitempty"`
+	Zone string `json:"zone,omitempty"`
+}
+
 // Dump is the type for a dump result
 type Dump struct {
 	Resources []interface{} `json:"resources,omitempty"`
 	Instances []*Instance   `json:"instances,omitempty"`
+	Subnets   []*Subnet     `json:"subnets,omitempty"`
 }
