@@ -1897,6 +1897,15 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 			(*out)[key] = val
 		}
 	}
+	if in.EtcdQuorumRead != nil {
+		in, out := &in.EtcdQuorumRead, &out.EtcdQuorumRead
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
+			**out = **in
+		}
+	}
 	return
 }
 
