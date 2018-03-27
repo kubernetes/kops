@@ -10,6 +10,7 @@ go_library(
         "natgateway.go",
         "routetable.go",
         "securitygroup.go",
+        "subnet.go",
         "tags.go",
         "vpc.go",
     ],
