@@ -656,6 +656,7 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 			ID:      subnetID,
 			Type:    "subnet",
 			Deleter: DeleteSubnet,
+			Dumper:  DumpSubnet,
 			Shared:  shared,
 		}
 		resourceTracker.Blocks = append(resourceTracker.Blocks, "vpc:"+aws.StringValue(subnet.VpcId))
