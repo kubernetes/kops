@@ -46,3 +46,4 @@ State store configuration must be use with `kops` cli. It will be retrieve in or
 + command line argument `--config $HOME/yourconfig` or `--state s3://yourstatestore`
 + envirornment variable `export KOPS_STATE_STORE=s3://yourstatestore`
 + config file `.kops.yaml`, `$HONE/.kops.yaml`, `$HOME/.kops/config.yaml`
+It assume that $HOME is correctly set.

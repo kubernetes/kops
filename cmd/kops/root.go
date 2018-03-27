@@ -154,7 +154,6 @@ func initConfig() {
 	if os.Getenv("KOPS_STATE_STORE") != "" && rootCommand.RegistryPath == "" {
 		rootCommand.RegistryPath = os.Getenv("KOPS_STATE_STORE")
 		viper.BindEnv("KOPS_STATE_STORE")
-		fmt.Println("From env export, s3 :", rootCommand.RegistryPath)
 		viper.AutomaticEnv()
 	}
 
@@ -164,18 +163,16 @@ func initConfig() {
 		if err := viper.ReadInConfig(); err == nil {
 			viper.BindEnv("KOPS_STATE_STORE")
 			rootCommand.RegistryPath = viper.GetString("KOPS_STATE_STORE")
-			fmt.Println("Read Default config File, s3 :", rootCommand.RegistryPath)
 			viper.AutomaticEnv()
 		}
 	}
 	if rootCommand.configFile == "" && rootCommand.RegistryPath == "" {
 		viper.SetConfigName(".kops") // name of config file (without extension)
-		viper.AddConfigPath("$HOME") // adding home directory as first search path
+		viper.AddConfigPath("$HOME") // adding home directory as first search path. Assume that exist. Need to be fix for windows
 		viper.ReadInConfig()
 		if err := viper.ReadInConfig(); err == nil {
 			viper.BindEnv("KOPS_STATE_STORE")
 			rootCommand.RegistryPath = viper.GetString("KOPS_STATE_STORE")
-			fmt.Println("Read .kops File, s3 :", rootCommand.RegistryPath)
 			viper.AutomaticEnv()
 		}
 		viper.SetConfigName("config")
@@ -184,7 +181,6 @@ func initConfig() {
 		if err := viper.ReadInConfig(); err == nil {
 			viper.BindEnv("KOPS_STATE_STORE")
 			rootCommand.RegistryPath = viper.GetString("KOPS_STATE_STORE")
-			fmt.Println("Read .kops/config File, s3 :", rootCommand.RegistryPath)
 			viper.AutomaticEnv()
 		}
 	}
