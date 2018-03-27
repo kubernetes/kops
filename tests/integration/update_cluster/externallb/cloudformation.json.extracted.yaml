@@ -21,7 +21,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersexternallbexampl
   NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
-
+  export AWS_REGION=us-test-1
 
 
 
@@ -141,7 +141,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersexternallbexampl
   cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig: null
   docker:
-    bridge: ""
     ipMasq: false
     ipTables: false
     logDriver: json-file
@@ -318,7 +317,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesexternallbexamplecom.Properties.
   NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
-
+  export AWS_REGION=us-test-1
 
 
 
@@ -438,7 +437,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodesexternallbexamplecom.Properties.
   cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig: null
   docker:
-    bridge: ""
     ipMasq: false
     ipTables: false
     logDriver: json-file

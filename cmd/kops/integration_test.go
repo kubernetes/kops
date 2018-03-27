@@ -170,8 +170,8 @@ func TestPhaseNetwork(t *testing.T) {
 }
 
 func TestExternalLoadBalancer(t *testing.T) {
-	runTestAWS(t, "externallb.example.com", "externallb", "v1alpha2", false, 1)
-	runTestCloudformation(t, "externallb.example.com", "externallb", "v1alpha2", false)
+	runTestAWS(t, "externallb.example.com", "externallb", "v1alpha2", false, 1, true)
+	runTestCloudformation(t, "externallb.example.com", "externallb", "v1alpha2", false, nil)
 }
 
 // TestPhaseIAM tests the output of tf for the iam phase

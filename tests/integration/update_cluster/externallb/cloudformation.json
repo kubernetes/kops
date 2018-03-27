@@ -134,7 +134,8 @@
             "Ref": "AWSEC2SecurityGroupmastersexternallbexamplecom"
           }
         ],
-        "UserData": "extracted"
+        "UserData": "extracted",
+        "InstanceMonitoring": false
       }
     },
     "AWSAutoScalingLaunchConfigurationnodesexternallbexamplecom": {
@@ -162,7 +163,8 @@
             "Ref": "AWSEC2SecurityGroupnodesexternallbexamplecom"
           }
         ],
-        "UserData": "extracted"
+        "UserData": "extracted",
+        "InstanceMonitoring": false
       }
     },
     "AWSEC2DHCPOptionsexternallbexamplecom": {
@@ -418,6 +420,10 @@
           {
             "Key": "Name",
             "Value": "masters.externallb.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/externallb.example.com",
+            "Value": "owned"
           }
         ]
       }
@@ -437,6 +443,10 @@
           {
             "Key": "Name",
             "Value": "nodes.externallb.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/externallb.example.com",
+            "Value": "owned"
           }
         ]
       }
@@ -551,6 +561,10 @@
           {
             "Key": "k8s.io/role/master",
             "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/externallb.example.com",
+            "Value": "owned"
           }
         ]
       }
@@ -578,6 +592,10 @@
           {
             "Key": "k8s.io/role/master",
             "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/externallb.example.com",
+            "Value": "owned"
           }
         ]
       }
@@ -620,8 +638,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sEC2MasterPermsFullAccess"
+              ]
             },
             {
               "Action": [
@@ -637,8 +654,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sASMasterPerms"
+              ]
             },
             {
               "Action": [
@@ -647,8 +663,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sELBMasterPermsFullAccess"
+              ]
             },
             {
               "Action": [
@@ -658,8 +673,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsMasterCertIAMPerms"
+              ]
             },
             {
               "Action": [
@@ -670,8 +684,7 @@
               "Effect": "Allow",
               "Resource": [
                 "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
-              ],
-              "Sid": "kopsK8sRoute53Change"
+              ]
             },
             {
               "Action": [
@@ -680,8 +693,7 @@
               "Effect": "Allow",
               "Resource": [
                 "arn:aws:route53:::change/*"
-              ],
-              "Sid": "kopsK8sRoute53GetChanges"
+              ]
             },
             {
               "Action": [
@@ -690,8 +702,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sRoute53ListZones"
+              ]
             },
             {
               "Action": [
@@ -700,8 +711,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": ""
+              ]
             },
             {
               "Action": [
@@ -716,8 +726,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sECR"
+              ]
             }
           ],
           "Version": "2012-10-17"
@@ -743,8 +752,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sEC2NodePerms"
+              ]
             },
             {
               "Action": [
@@ -755,8 +763,7 @@
               "Effect": "Allow",
               "Resource": [
                 "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
-              ],
-              "Sid": "kopsK8sRoute53Change"
+              ]
             },
             {
               "Action": [
@@ -765,8 +772,7 @@
               "Effect": "Allow",
               "Resource": [
                 "arn:aws:route53:::change/*"
-              ],
-              "Sid": "kopsK8sRoute53GetChanges"
+              ]
             },
             {
               "Action": [
@@ -775,8 +781,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sRoute53ListZones"
+              ]
             },
             {
               "Action": [
@@ -785,8 +790,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": ""
+              ]
             },
             {
               "Action": [
@@ -801,8 +805,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sECR"
+              ]
             }
           ],
           "Version": "2012-10-17"
