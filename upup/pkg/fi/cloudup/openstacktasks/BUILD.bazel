@@ -3,6 +3,8 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "network.go",
+        "network_fitask.go",
         "securitygroup.go",
         "securitygroup_fitask.go",
         "securitygrouprule.go",
@@ -18,5 +20,6 @@ go_library(
         "//vendor/github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/networks:go_default_library",
     ],
 )
