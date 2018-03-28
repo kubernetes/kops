@@ -17,7 +17,7 @@ Advantages:
 - it does not have routes limitations from AWS
 - you can use managed certificates like ACM, but also use you purchased certificates using IAM certificates
 - it automatically finds the best matching ACM and IAM certifacte for your ingress, but you can also provide hostnames or the ARN to influence the certificate/ALB lookup
-- you are free to use an http router imlementation of your choice, which can implement more features like green-blue deployments
+- you are free to use an http router implementation of your choice, which can implement more features like green-blue deployments
 
 
 For this tutorial I assume you have GNU sed installed, if not read
@@ -213,7 +213,7 @@ aws acm describe-certificate --certificate-arn arn:aws:acm:<snip> | jq '.["Certi
 ```
 
 If this is no "ISSUED", your certificate is not valid and you have to fix it.
-To resend the CSR validation e-mail, you can use
+To resend the CSR validation e-mail, you can use:
 
 ```
 aws acm resend-validation-email
