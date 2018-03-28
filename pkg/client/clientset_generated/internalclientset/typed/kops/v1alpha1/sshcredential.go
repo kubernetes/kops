@@ -71,7 +71,7 @@ func (c *sSHCredentials) Get(name string, options v1.GetOptions) (result *v1alph
 	return
 }
 
-// List takes label and field selectors, and returns the list of SSHCredentials that match those selectors.
+// List takes labels and field selectors, and returns the list of SSHCredentials that match those selectors.
 func (c *sSHCredentials) List(opts v1.ListOptions) (result *v1alpha1.SSHCredentialList, err error) {
 	result = &v1alpha1.SSHCredentialList{}
 	err = c.client.Get().
