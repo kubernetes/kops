@@ -17,7 +17,7 @@
 # This script is intended to be run periodically, to check the health
 # of docker.  If it detects a failure, it will restart docker using systemctl.
 
-if timeout 10 docker ps > /dev/null; then
+if timeout 10 docker ps -n 1 > /dev/null; then
   echo "docker healthy"
   exit 0
 fi
@@ -26,7 +26,7 @@ echo "docker failed"
 echo "Giving docker 30 seconds grace before restarting"
 sleep 30
 
-if timeout 10 docker ps > /dev/null; then
+if timeout 10 docker ps -n 1 > /dev/null; then
   echo "docker recovered"
   exit 0
 fi
@@ -37,7 +37,7 @@ systemctl restart docker
 echo "Waiting 60 seconds to give docker time to start"
 sleep 60
 
-if timeout 10 docker ps > /dev/null; then
+if timeout 10 docker ps -n 1> /dev/null; then
   echo "docker recovered"
   exit 0
 fi
