@@ -71,7 +71,7 @@ func (c *keysets) Get(name string, options v1.GetOptions) (result *kops.Keyset, 
 	return
 }
 
-// List takes label and field selectors, and returns the list of Keysets that match those selectors.
+// List takes labels and field selectors, and returns the list of Keysets that match those selectors.
 func (c *keysets) List(opts v1.ListOptions) (result *kops.KeysetList, err error) {
 	result = &kops.KeysetList{}
 	err = c.client.Get().
