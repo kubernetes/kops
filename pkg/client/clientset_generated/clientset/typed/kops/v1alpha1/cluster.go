@@ -71,7 +71,7 @@ func (c *clusters) Get(name string, options v1.GetOptions) (result *v1alpha1.Clu
 	return
 }
 
-// List takes label and field selectors, and returns the list of Clusters that match those selectors.
+// List takes labels and field selectors, and returns the list of Clusters that match those selectors.
 func (c *clusters) List(opts v1.ListOptions) (result *v1alpha1.ClusterList, err error) {
 	result = &v1alpha1.ClusterList{}
 	err = c.client.Get().
