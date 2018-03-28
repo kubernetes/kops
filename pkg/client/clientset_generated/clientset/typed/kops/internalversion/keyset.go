@@ -44,13 +44,13 @@ type KeysetInterface interface {
 	KeysetExpansion
 }
 
-// keysets implements KeysetInterface
+// keysets implements KeysetInterface.
 type keysets struct {
 	client rest.Interface
 	ns     string
 }
 
-// newKeysets returns a Keysets
+// newKeysets returns a Keysets.
 func newKeysets(c *KopsClient, namespace string) *keysets {
 	return &keysets{
 		client: c.RESTClient(),
