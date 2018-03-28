@@ -71,7 +71,7 @@ func (c *instanceGroups) Get(name string, options v1.GetOptions) (result *v1alph
 	return
 }
 
-// List takes label and field selectors, and returns the list of InstanceGroups that match those selectors.
+// List takes labels and field selectors, and returns the list of InstanceGroups that match those selectors.
 func (c *instanceGroups) List(opts v1.ListOptions) (result *v1alpha1.InstanceGroupList, err error) {
 	result = &v1alpha1.InstanceGroupList{}
 	err = c.client.Get().
