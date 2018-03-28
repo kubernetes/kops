@@ -36,8 +36,8 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-// RewriteManifests controls whether we rewrite manifests
-// Because manifest rewriting converts everything to and from YAML, we normalize everything by doing so
+// RewriteManifests controls whether we rewrite manifests.
+// Because manifest rewriting converts everything to and from YAML, we normalize everything by doing so.
 var RewriteManifests = featureflag.New("RewriteManifests", featureflag.Bool(true))
 
 // AssetBuilder discovers and remaps assets.
