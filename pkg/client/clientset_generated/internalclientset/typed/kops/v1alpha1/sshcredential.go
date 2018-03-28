@@ -44,13 +44,13 @@ type SSHCredentialInterface interface {
 	SSHCredentialExpansion
 }
 
-// sSHCredentials implements SSHCredentialInterface
+// sSHCredentials implements SSHCredentialInterface.
 type sSHCredentials struct {
 	client rest.Interface
 	ns     string
 }
 
-// newSSHCredentials returns a SSHCredentials
+// newSSHCredentials returns a SSHCredentials.
 func newSSHCredentials(c *KopsV1alpha1Client, namespace string) *sSHCredentials {
 	return &sSHCredentials{
 		client: c.RESTClient(),
