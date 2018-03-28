@@ -49,7 +49,7 @@ type RollingUpdateInstanceGroup struct {
 	// TODO - cloudonly
 }
 
-// NewRollingUpdateInstanceGroup create a new struct
+// NewRollingUpdateInstanceGroup creates a new struct
 func NewRollingUpdateInstanceGroup(cloud fi.Cloud, cloudGroup *cloudinstances.CloudInstanceGroup) (*RollingUpdateInstanceGroup, error) {
 	if cloud == nil {
 		return nil, fmt.Errorf("cloud provider is required")
