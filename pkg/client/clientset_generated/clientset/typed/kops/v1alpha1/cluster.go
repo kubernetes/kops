@@ -44,13 +44,13 @@ type ClusterInterface interface {
 	ClusterExpansion
 }
 
-// clusters implements ClusterInterface
+// clusters implements ClusterInterface.
 type clusters struct {
 	client rest.Interface
 	ns     string
 }
 
-// newClusters returns a Clusters
+// newClusters returns a Clusters.
 func newClusters(c *KopsV1alpha1Client, namespace string) *clusters {
 	return &clusters{
 		client: c.RESTClient(),
