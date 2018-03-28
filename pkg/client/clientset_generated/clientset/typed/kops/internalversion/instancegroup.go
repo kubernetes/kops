@@ -44,13 +44,13 @@ type InstanceGroupInterface interface {
 	InstanceGroupExpansion
 }
 
-// instanceGroups implements InstanceGroupInterface
+// instanceGroups implements InstanceGroupInterface.
 type instanceGroups struct {
 	client rest.Interface
 	ns     string
 }
 
-// newInstanceGroups returns a InstanceGroups
+// newInstanceGroups returns a InstanceGroups.
 func newInstanceGroups(c *KopsClient, namespace string) *instanceGroups {
 	return &instanceGroups{
 		client: c.RESTClient(),
