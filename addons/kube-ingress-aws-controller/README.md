@@ -162,7 +162,8 @@ kops rolling-update cluster
 To be able to route traffic from ALB to your nodes you need to create
 an Amazon EC2 security group with Kubernetes tags, that allow ingress
 port 80 and 443 from the internet and everything from ALBs to your
-nodes. Tags are used from Kubernetes components to find AWS components
+nodes. You also need to allow traffic to leave the ALB to the Internet and Kubernetes nodes.
+Tags are used from Kubernetes components to find AWS components
 owned by the cluster. We will do with the AWS cli:
 
 ```
@@ -172,7 +173,7 @@ sgidingress=$(aws ec2 describe-security-groups --filters Name=group-name,Values=
 sgidnode=$(aws ec2 describe-security-groups --filters Name=group-name,Values=nodes.$KOPS_CLUSTER_NAME | jq '.["SecurityGroups"][0]["GroupId"]' -r)
 aws ec2 authorize-security-group-ingress --group-id $sgidingress --protocol tcp --port 443 --cidr 0.0.0.0/0
 aws ec2 authorize-security-group-ingress --group-id $sgidingress --protocol tcp --port 80 --cidr 0.0.0.0/0
-
+aws ec2 authorize-security-group-egress --group-id $sgidingress --protocol all --port -1 --cidr 0.0.0.0/0
 aws ec2 authorize-security-group-ingress --group-id $sgidnode --protocol all --port -1 --source-group $sgidingress
 aws ec2 create-tags --resources $sgidingress --tags '[{"Key": "kubernetes.io/cluster/id", "Value": "owned"}, {"Key": "kubernetes:application", "Value": "kube-ingress-aws-controller"}]'
 ```
