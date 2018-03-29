@@ -89,6 +89,7 @@ kube-ingress-aws-controller, which we will use:
     "acm:ListCertificates",
     "acm:DescribeCertificate",
     "autoscaling:DescribeAutoScalingGroups",
+    "autoscaling:DescribeLoadBalancerTargetGroups",
     "autoscaling:AttachLoadBalancers",
     "autoscaling:DetachLoadBalancers",
     "autoscaling:DetachLoadBalancerTargetGroups",
