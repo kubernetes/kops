@@ -94,6 +94,7 @@ k8s.io/kops/pkg/model/defaults
 k8s.io/kops/pkg/model/domodel
 k8s.io/kops/pkg/model/gcemodel
 k8s.io/kops/pkg/model/iam
+k8s.io/kops/pkg/model/openstackmodel
 k8s.io/kops/pkg/model/resources
 k8s.io/kops/pkg/model/vspheremodel
 k8s.io/kops/pkg/openapi
