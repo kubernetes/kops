@@ -38,6 +38,7 @@ const FileType_Directory = "directory"
 const FileType_File = "file"
 
 type File struct {
+	AfterFiles      []string    `json:"afterfiles,omitempty"`
 	Contents        fi.Resource `json:"contents,omitempty"`
 	Group           *string     `json:"group,omitempty"`
 	IfNotExists     bool        `json:"ifNotExists,omitempty"`
@@ -101,6 +102,17 @@ func (e *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	// Requires parent directories to be created
 	for _, v := range findCreatesDirParents(e.Path, tasks) {
 		deps = append(deps, v)
+	}
+
+	// Requires other files to be created first
+	for _, f := range e.AfterFiles {
+		for _, v := range tasks {
+			if file, ok := v.(*File); ok {
+				if file.Path == f {
+					deps = append(deps, v)
+				}
+			}
+		}
 	}
 
 	return deps
