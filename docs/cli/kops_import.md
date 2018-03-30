@@ -23,6 +23,7 @@ Imports a kubernetes cluster created by kube-up.sh into a state store.  This com
 ```
       --alsologtostderr                  log to standard error as well as files
       --config string                    config file (default is $HOME/.kops.yaml)
+      --kubeconfig string                use a particular kubeconfig file
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
