@@ -16,7 +16,7 @@ Advantages:
 - it uses Cloudformation instead of API calls for safety reasons, because if use Kubernetes in AWS at scale you will get rate limited from AWS sooner or later
 - it does not have routes limitations from AWS
 - you can use managed certificates like ACM, but also use you purchased certificates using IAM certificates
-- it automatically finds the best matching ACM and IAM certifacte for your ingress, but you can also provide hostnames or the ARN to influence the certificate/ALB lookup
+- it automatically finds the best matching ACM and IAM certificate for your ingress, but you can also provide hostnames or the ARN to influence the certificate/ALB lookup
 - you are free to use an http router implementation of your choice, which can implement more features like green-blue deployments
 
 
