@@ -187,8 +187,9 @@ func (k *VolumeMountController) safeFormatAndMount(volume *Volume, mountpoint st
 		}
 
 		if mountedDevice != "" {
-			if mountedDevice != source {
-				return fmt.Errorf("device already mounted at %s, but is %s and we want %s", target, mountedDevice, source)
+			// We check that it is the correct device.  We also tolerate /dev/X as well as /root/dev/X
+			if mountedDevice != source && mountedDevice != device {
+				return fmt.Errorf("device already mounted at %s, but is %s and we want %s or %s", target, mountedDevice, source, device)
 			}
 		} else {
 			glog.Infof("mounting inside container: %s -> %s", source, target)
