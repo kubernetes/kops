@@ -21,12 +21,12 @@ import (
 	"fmt"
 )
 
-// Manifest defined a systemd unit
+// Manifest defines a systemd unit
 type Manifest struct {
 	sections []*section
 }
 
-// section defines a section of the unit i.e. Unit, Service etc,
+// section defines a section of the unit i.e. Unit, Service etc
 type section struct {
 	key     string
 	content string
