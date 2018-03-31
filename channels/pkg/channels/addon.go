@@ -137,7 +137,7 @@ func (a *Addon) EnsureUpdated(k8sClient kubernetes.Interface) (*AddonUpdate, err
 	channel := a.buildChannel()
 	err = channel.SetInstalledVersion(k8sClient, a.ChannelVersion())
 	if err != nil {
-		return nil, fmt.Errorf("error applying annotation to to record addon installation: %v", err)
+		return nil, fmt.Errorf("error applying annotation to record addon installation: %v", err)
 	}
 
 	return required, nil
