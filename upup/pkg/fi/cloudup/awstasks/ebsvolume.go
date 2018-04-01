@@ -37,6 +37,7 @@ type EBSVolume struct {
 	AvailabilityZone *string
 	VolumeType       *string
 	SizeGB           *int64
+	VolumeIops       *int64
 	KmsKeyId         *string
 	Encrypted        *bool
 	Tags             map[string]string
@@ -101,6 +102,7 @@ func (e *EBSVolume) find(cloud awsup.AWSCloud) (*EBSVolume, error) {
 		KmsKeyId:         v.KmsKeyId,
 		Encrypted:        v.Encrypted,
 		Name:             e.Name,
+		VolumeIops:       v.Iops,
 	}
 
 	actual.Tags = mapEC2TagsToMap(v.Tags)
@@ -140,6 +142,7 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 			VolumeType:       e.VolumeType,
 			KmsKeyId:         e.KmsKeyId,
 			Encrypted:        e.Encrypted,
+			Iops:             e.VolumeIops,
 		}
 
 		if len(e.Tags) != 0 {
