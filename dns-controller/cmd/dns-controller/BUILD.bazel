@@ -18,9 +18,11 @@ go_library(
         "//protokube/pkg/gossip/dns/provider:go_default_library",
         "//protokube/pkg/gossip/mesh:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
         "//vendor/github.com/spf13/pflag:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes:go_default_library",
         "//vendor/k8s.io/client-go/rest:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/client/metrics/prometheus:go_default_library",
     ],
 )
 
