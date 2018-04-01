@@ -134,6 +134,14 @@ func (c *MockAWSCloud) BuildTags(name *string) map[string]string {
 	return buildTags(c.tags, name)
 }
 
+func (c *MockAWSCloud) DesiredTags(name *string, taskTags map[string]string) map[string]string {
+	return desiredTags(name, taskTags, c.tags)
+}
+
+func (c *MockAWSCloud) VisibleTags(actualTags []*ec2.Tag, taskTags map[string]string) map[string]string {
+	return visibleTags(actualTags, taskTags, c.tags)
+}
+
 func (c *MockAWSCloud) Tags() map[string]string {
 	tags := make(map[string]string)
 	for k, v := range c.tags {

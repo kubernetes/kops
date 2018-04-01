@@ -96,9 +96,22 @@ type AWSCloud interface {
 	Route53() route53iface.Route53API
 
 	// TODO: Document and rationalize these tags/filters methods
+	// AddTags adds the default tags to the set of tags
 	AddTags(name *string, tags map[string]string)
-	BuildFilters(name *string) []*ec2.Filter
+
+	// BuildTags is like AddTags, but with an empty tag map.
+	// Deprecated: prefer DesiredTags
 	BuildTags(name *string) map[string]string
+
+	// DesiredTags computes the set of desired tags, combining the name tag (if set), any tags managed by the task, and the intrinsic cloud tags
+	DesiredTags(name *string, taskManagedTags map[string]string) map[string]string
+
+	// VisibleTags computes the set of relevant tags, which are well-known tags such as the name, any tags managed by the task, and the intrinsic cloud tags
+	VisibleTags(actualTags []*ec2.Tag, taskManagedTags map[string]string) map[string]string
+
+	BuildFilters(name *string) []*ec2.Filter
+
+	// Tags returns the default tags, that the cloud is filtering on, and automatically adding
 	Tags() map[string]string
 
 	// GetTags will fetch the tags for the specified resource, retrying (up to MaxDescribeTagsAttempts) if it hits an eventual-consistency type error
@@ -107,7 +120,10 @@ type AWSCloud interface {
 	// CreateTags will add tags to the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 	CreateTags(resourceId string, tags map[string]string) error
 
+	// AddAWSTags ensures that the specified tags are present
+	// TODO: Rename to AddEC2Tags
 	AddAWSTags(id string, expected map[string]string) error
+
 	GetELBTags(loadBalancerName string) (map[string]string, error)
 
 	// CreateELBTags will add tags to the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
@@ -802,6 +818,55 @@ func createELBTags(c AWSCloud, loadBalancerName string, tags map[string]string) 
 	}
 }
 
+func (c *awsCloudImplementation) DesiredTags(name *string, taskTags map[string]string) map[string]string {
+	return desiredTags(name, taskTags, c.tags)
+}
+
+func desiredTags(name *string, taskTags map[string]string, cloudManagedTags map[string]string) map[string]string {
+	tags := make(map[string]string)
+	if name != nil {
+		tags["Name"] = *name
+	} else {
+		glog.Warningf("Name not set when filtering by name")
+	}
+	for k, v := range taskTags {
+		tags[k] = v
+	}
+	for k, v := range cloudManagedTags {
+		tags[k] = v
+	}
+	return tags
+}
+
+func (c *awsCloudImplementation) VisibleTags(actualTags []*ec2.Tag, taskTags map[string]string) map[string]string {
+	return visibleTags(actualTags, taskTags, c.tags)
+}
+
+func visibleTags(actualTags []*ec2.Tag, taskTags map[string]string, cloudManagedTags map[string]string) map[string]string {
+	if actualTags == nil {
+		return nil
+	}
+	m := make(map[string]string)
+	for _, t := range actualTags {
+		k := aws.StringValue(t.Key)
+		v := aws.StringValue(t.Value)
+
+		relevant := false
+		if k == "Name" {
+			relevant = true
+		} else if _, found := cloudManagedTags[k]; found {
+			relevant = true
+		} else if _, found := taskTags[k]; found {
+			relevant = true
+		}
+
+		if relevant {
+			m[k] = v
+		}
+	}
+	return m
+}
+
 func (c *awsCloudImplementation) BuildTags(name *string) map[string]string {
 	return buildTags(c.tags, name)
 }
@@ -819,6 +884,7 @@ func buildTags(commonTags map[string]string, name *string) map[string]string {
 	return tags
 }
 
+// AddTags adds the default tags to the set of tags
 func (c *awsCloudImplementation) AddTags(name *string, tags map[string]string) {
 	if name != nil {
 		tags["Name"] = *name
@@ -838,8 +904,6 @@ func buildFilters(commonTags map[string]string, name *string) []*ec2.Filter {
 	merged := make(map[string]string)
 	if name != nil {
 		merged["Name"] = *name
-	} else {
-		glog.Warningf("Name not set when filtering by name")
 	}
 	for k, v := range commonTags {
 		merged[k] = v

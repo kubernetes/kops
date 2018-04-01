@@ -59,6 +59,8 @@ func (a OrderSubnetsById) Less(i, j int) bool {
 }
 
 func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
+	cloud := c.Cloud.(awsup.AWSCloud)
+
 	subnet, err := e.findEc2Subnet(c)
 	if err != nil {
 		return nil, err
@@ -75,7 +77,7 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 		CIDR:             subnet.CidrBlock,
 		Name:             findNameTag(subnet.Tags),
 		Shared:           e.Shared,
-		Tags:             intersectTags(subnet.Tags, e.Tags),
+		Tags:             cloud.VisibleTags(subnet.Tags, e.Tags),
 	}
 
 	glog.V(2).Infof("found matching subnet %q", *actual.ID)
@@ -187,7 +189,7 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 		e.ID = response.Subnet.SubnetId
 	}
 
-	return t.AddAWSTags(*e.ID, e.Tags)
+	return t.AddAWSTags(*e.ID, t.Cloud.DesiredTags(e.Name, e.Tags))
 }
 
 func subnetSlicesEqualIgnoreOrder(l, r []*Subnet) bool {
@@ -229,7 +231,7 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 		VPCID:            e.VPC.TerraformLink(),
 		CIDR:             e.CIDR,
 		AvailabilityZone: e.AvailabilityZone,
-		Tags:             e.Tags,
+		Tags:             cloud.DesiredTags(e.Name, e.Tags),
 	}
 
 	return t.RenderResource("aws_subnet", *e.Name, tf)
@@ -268,7 +270,7 @@ func (_ *Subnet) RenderCloudformation(t *cloudformation.CloudformationTarget, a,
 		VPCID:            e.VPC.CloudformationLink(),
 		CIDR:             e.CIDR,
 		AvailabilityZone: e.AvailabilityZone,
-		Tags:             buildCloudformationTags(e.Tags),
+		Tags:             buildCloudformationTags(cloud.DesiredTags(e.Name, e.Tags)),
 	}
 
 	return t.RenderResource("AWS::EC2::Subnet", *e.Name, cf)
