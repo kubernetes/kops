@@ -51,7 +51,7 @@ type InstanceGroupList struct {
 	Items []InstanceGroup `json:"items"`
 }
 
-// InstanceGroupRole string describes the roles of the nodes in this InstanceGroup (master or nodes)
+// InstanceGroupRole describes the roles of the nodes in this InstanceGroup (master or nodes)
 type InstanceGroupRole string
 
 const (

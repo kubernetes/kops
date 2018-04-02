@@ -26,6 +26,7 @@ import (
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
 	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -58,6 +59,9 @@ var writeBackoff = wait.Backoff{
 type OpenstackCloud interface {
 	fi.Cloud
 
+	// Region returns the region which cloud will run on
+	Region() string
+
 	// SetVolumeTags will set the tags for the Cinder volume
 	SetVolumeTags(id string, tags map[string]string) error
 
@@ -81,12 +85,19 @@ type OpenstackCloud interface {
 
 	//CreateSecurityGroupRule will create a new Neutron security group rule
 	CreateSecurityGroupRule(opt sgr.CreateOpts) (*sgr.SecGroupRule, error)
+
+	//ListNetworks will return the Neutron networks which match the options
+	ListNetworks(opt networks.ListOptsBuilder) ([]networks.Network, error)
+
+	//CreateNetwork will create a new Neutron network
+	CreateNetwork(opt networks.CreateOptsBuilder) (*networks.Network, error)
 }
 
 type openstackCloud struct {
 	cinderClient  *gophercloud.ServiceClient
 	neutronClient *gophercloud.ServiceClient
 	tags          map[string]string
+	region        string
 }
 
 var _ fi.Cloud = &openstackCloud{}
@@ -120,13 +131,19 @@ func NewOpenstackCloud(tags map[string]string) (OpenstackCloud, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error building neutron client: %v", err)
 	}
+	region := endpointOpt.Region
 
 	c := &openstackCloud{
 		cinderClient:  cinderClient,
 		neutronClient: neutronClient,
 		tags:          tags,
+		region:        region,
 	}
 	return c, nil
+}
+
+func (c *openstackCloud) Region() string {
+	return c.region
 }
 
 func (c *openstackCloud) ProviderID() kops.CloudProviderID {
@@ -315,5 +332,50 @@ func (c *openstackCloud) CreateSecurityGroupRule(opt sgr.CreateOpts) (*sgr.SecGr
 		return rule, nil
 	} else {
 		return rule, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) ListNetworks(opt networks.ListOptsBuilder) ([]networks.Network, error) {
+	var ns []networks.Network
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		allPages, err := networks.List(c.neutronClient, opt).AllPages()
+		if err != nil {
+			return false, fmt.Errorf("error listing networks: %v", err)
+		}
+
+		r, err := networks.ExtractNetworks(allPages)
+		if err != nil {
+			return false, fmt.Errorf("error extracting networks from pages: %v", err)
+		}
+		ns = r
+		return true, nil
+	})
+	if err != nil {
+		return ns, err
+	} else if done {
+		return ns, nil
+	} else {
+		return ns, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) CreateNetwork(opt networks.CreateOptsBuilder) (*networks.Network, error) {
+	var n *networks.Network
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		r, err := networks.Create(c.neutronClient, opt).Extract()
+		if err != nil {
+			return false, fmt.Errorf("error creating network: %v", err)
+		}
+		n = r
+		return true, nil
+	})
+	if err != nil {
+		return n, err
+	} else if done {
+		return n, nil
+	} else {
+		return n, wait.ErrWaitTimeout
 	}
 }

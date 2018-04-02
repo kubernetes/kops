@@ -35,6 +35,7 @@ go_test(
     srcs = [
         "archive_test.go",
         "bindmount_test.go",
+        "file_test.go",
         "loadimage_test.go",
         "service_test.go",
     ],

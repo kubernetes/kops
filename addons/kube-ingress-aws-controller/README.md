@@ -16,8 +16,8 @@ Advantages:
 - it uses Cloudformation instead of API calls for safety reasons, because if use Kubernetes in AWS at scale you will get rate limited from AWS sooner or later
 - it does not have routes limitations from AWS
 - you can use managed certificates like ACM, but also use you purchased certificates using IAM certificates
-- it automatically finds the best matching ACM and IAM certifacte for your ingress, but you can also provide hostnames or the ARN to influence the certificate/ALB lookup
-- you are free to use an http router imlementation of your choice, which can implement more features like green-blue deployments
+- it automatically finds the best matching ACM and IAM certificate for your ingress, but you can also provide hostnames or the ARN to influence the certificate/ALB lookup
+- you are free to use an http router implementation of your choice, which can implement more features like green-blue deployments
 
 
 For this tutorial I assume you have GNU sed installed, if not read
@@ -89,6 +89,7 @@ kube-ingress-aws-controller, which we will use:
     "acm:ListCertificates",
     "acm:DescribeCertificate",
     "autoscaling:DescribeAutoScalingGroups",
+    "autoscaling:DescribeLoadBalancerTargetGroups",
     "autoscaling:AttachLoadBalancers",
     "autoscaling:DetachLoadBalancers",
     "autoscaling:DetachLoadBalancerTargetGroups",
@@ -162,7 +163,8 @@ kops rolling-update cluster
 To be able to route traffic from ALB to your nodes you need to create
 an Amazon EC2 security group with Kubernetes tags, that allow ingress
 port 80 and 443 from the internet and everything from ALBs to your
-nodes. Tags are used from Kubernetes components to find AWS components
+nodes. You also need to allow traffic to leave the ALB to the Internet and Kubernetes nodes.
+Tags are used from Kubernetes components to find AWS components
 owned by the cluster. We will do with the AWS cli:
 
 ```
@@ -172,7 +174,7 @@ sgidingress=$(aws ec2 describe-security-groups --filters Name=group-name,Values=
 sgidnode=$(aws ec2 describe-security-groups --filters Name=group-name,Values=nodes.$KOPS_CLUSTER_NAME | jq '.["SecurityGroups"][0]["GroupId"]' -r)
 aws ec2 authorize-security-group-ingress --group-id $sgidingress --protocol tcp --port 443 --cidr 0.0.0.0/0
 aws ec2 authorize-security-group-ingress --group-id $sgidingress --protocol tcp --port 80 --cidr 0.0.0.0/0
-
+aws ec2 authorize-security-group-egress --group-id $sgidingress --protocol all --port -1 --cidr 0.0.0.0/0
 aws ec2 authorize-security-group-ingress --group-id $sgidnode --protocol all --port -1 --source-group $sgidingress
 aws ec2 create-tags --resources $sgidingress --tags '[{"Key": "kubernetes.io/cluster/id", "Value": "owned"}, {"Key": "kubernetes:application", "Value": "kube-ingress-aws-controller"}]'
 ```
@@ -213,7 +215,7 @@ aws acm describe-certificate --certificate-arn arn:aws:acm:<snip> | jq '.["Certi
 ```
 
 If this is no "ISSUED", your certificate is not valid and you have to fix it.
-To resend the CSR validation e-mail, you can use
+To resend the CSR validation e-mail, you can use:
 
 ```
 aws acm resend-validation-email

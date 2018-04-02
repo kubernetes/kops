@@ -620,7 +620,10 @@
 
 [[projects]]
   name = "github.com/prometheus/client_golang"
-  packages = ["prometheus"]
+  packages = [
+    "prometheus",
+    "prometheus/promhttp"
+  ]
   revision = "e7e903064f5e9eb5da98208bae10b475d4db0f8c"
 
 [[projects]]
@@ -1434,6 +1437,7 @@
     "pkg/client/clientset_generated/internalclientset/typed/scheduling/internalversion",
     "pkg/client/clientset_generated/internalclientset/typed/settings/internalversion",
     "pkg/client/clientset_generated/internalclientset/typed/storage/internalversion",
+    "pkg/client/metrics/prometheus",
     "pkg/client/unversioned",
     "pkg/cloudprovider",
     "pkg/cloudprovider/providers/aws",
@@ -1542,6 +1546,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "08b9c9892557af4ea36c5173c564d6aac7cec6cdedd4a149ee74681d93dde51e"
+  inputs-digest = "bd858ef77d1e30c2883d12e8783afccb43334885c756b5910b04524d24d6515d"
   solver-name = "gps-cdcl"
   solver-version = 1

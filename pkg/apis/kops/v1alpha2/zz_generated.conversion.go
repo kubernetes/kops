@@ -1490,6 +1490,7 @@ func autoConvert_v1alpha2_EtcdMemberSpec_To_kops_EtcdMemberSpec(in *EtcdMemberSp
 	out.Name = in.Name
 	out.InstanceGroup = in.InstanceGroup
 	out.VolumeType = in.VolumeType
+	out.VolumeIops = in.VolumeIops
 	out.VolumeSize = in.VolumeSize
 	out.KmsKeyId = in.KmsKeyId
 	out.EncryptedVolume = in.EncryptedVolume
@@ -1505,6 +1506,7 @@ func autoConvert_kops_EtcdMemberSpec_To_v1alpha2_EtcdMemberSpec(in *kops.EtcdMem
 	out.Name = in.Name
 	out.InstanceGroup = in.InstanceGroup
 	out.VolumeType = in.VolumeType
+	out.VolumeIops = in.VolumeIops
 	out.VolumeSize = in.VolumeSize
 	out.KmsKeyId = in.KmsKeyId
 	out.EncryptedVolume = in.EncryptedVolume
@@ -2197,6 +2199,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.RequestheaderAllowedNames = in.RequestheaderAllowedNames
 	out.FeatureGates = in.FeatureGates
 	out.MaxRequestsInflight = in.MaxRequestsInflight
+	out.EtcdQuorumRead = in.EtcdQuorumRead
 	return nil
 }
 
@@ -2260,6 +2263,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.RequestheaderAllowedNames = in.RequestheaderAllowedNames
 	out.FeatureGates = in.FeatureGates
 	out.MaxRequestsInflight = in.MaxRequestsInflight
+	out.EtcdQuorumRead = in.EtcdQuorumRead
 	return nil
 }
 

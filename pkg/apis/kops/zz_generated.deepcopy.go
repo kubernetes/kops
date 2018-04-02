@@ -1305,6 +1305,15 @@ func (in *EtcdMemberSpec) DeepCopyInto(out *EtcdMemberSpec) {
 			**out = **in
 		}
 	}
+	if in.VolumeIops != nil {
+		in, out := &in.VolumeIops, &out.VolumeIops
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(int32)
+			**out = **in
+		}
+	}
 	if in.VolumeSize != nil {
 		in, out := &in.VolumeSize, &out.VolumeSize
 		if *in == nil {
@@ -2182,6 +2191,15 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = make(map[string]string, len(*in))
 		for key, val := range *in {
 			(*out)[key] = val
+		}
+	}
+	if in.EtcdQuorumRead != nil {
+		in, out := &in.EtcdQuorumRead, &out.EtcdQuorumRead
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
+			**out = **in
 		}
 	}
 	return

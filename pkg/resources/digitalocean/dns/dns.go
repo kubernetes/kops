@@ -63,9 +63,9 @@ func (t *TokenSource) Token() (*oauth2.Token, error) {
 }
 
 func newClient() (*godo.Client, error) {
-	accessToken := os.Getenv("DO_ACCESS_TOKEN")
+	accessToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	if accessToken == "" {
-		return nil, errors.New("DO_ACCESS_TOKEN is required")
+		return nil, errors.New("DIGITALOCEAN_ACCESS_TOKEN is required")
 	}
 
 	tokenSource := &TokenSource{
@@ -379,18 +379,29 @@ func (r *resourceRecordChangeset) Apply() error {
 			}
 
 			if !found {
-				return fmt.Errorf("could not find desired record to upsert")
-			}
+				recordCreateRequest := &godo.DomainRecordEditRequest{
+					Name: record.Name(),
+					Data: record.Rrdatas()[0],
+					TTL:  int(record.Ttl()),
+					Type: string(record.Type()),
+				}
+				err := createRecord(r.client, r.zone.Name(), recordCreateRequest)
+				if err != nil {
+					return fmt.Errorf("could not upsert records: %v", err)
+				}
 
-			domainEditRequest := &godo.DomainRecordEditRequest{
-				Name: record.Name(),
-				Data: record.Rrdatas()[0],
-				TTL:  int(record.Ttl()),
-				Type: string(record.Type()),
-			}
-			err := editRecord(r.client, r.zone.Name(), desiredRecord.ID, domainEditRequest)
-			if err != nil {
-				return fmt.Errorf("failed to edit record: %v", err)
+			} else {
+
+				domainEditRequest := &godo.DomainRecordEditRequest{
+					Name: record.Name(),
+					Data: record.Rrdatas()[0],
+					TTL:  int(record.Ttl()),
+					Type: string(record.Type()),
+				}
+				err := editRecord(r.client, r.zone.Name(), desiredRecord.ID, domainEditRequest)
+				if err != nil {
+					return fmt.Errorf("failed to edit record: %v", err)
+				}
 			}
 		}
 

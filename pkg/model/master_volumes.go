@@ -37,6 +37,7 @@ import (
 const (
 	DefaultEtcdVolumeSize    = 20
 	DefaultAWSEtcdVolumeType = "gp2"
+	DefaultAWSEtcdVolumeIops = 100
 	DefaultGCEEtcdVolumeType = "pd-ssd"
 )
 
@@ -112,7 +113,13 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 
 func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
 	volumeType := fi.StringValue(m.VolumeType)
-	if volumeType == "" {
+	volumeIops := fi.Int32Value(m.VolumeIops)
+	switch volumeType {
+	case "io1":
+		if volumeIops <= 0 {
+			volumeIops = DefaultAWSEtcdVolumeIops
+		}
+	default:
 		volumeType = DefaultAWSEtcdVolumeType
 	}
 
@@ -145,6 +152,9 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 		KmsKeyId:         m.KmsKeyId,
 		Encrypted:        fi.Bool(encrypted),
 		Tags:             tags,
+	}
+	if volumeType == "io1" {
+		t.VolumeIops = i64(int64(volumeIops))
 	}
 
 	c.AddTask(t)
