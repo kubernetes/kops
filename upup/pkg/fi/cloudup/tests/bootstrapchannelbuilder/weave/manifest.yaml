@@ -41,14 +41,14 @@ spec:
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.9.0-alpha.3
+    version: 1.9.0-beta.1
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0'
     manifest: dns-controller.addons.k8s.io/k8s-1.6.yaml
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.9.0-alpha.3
+    version: 1.9.0-beta.1
   - id: v1.7.0
     kubernetesVersion: '>=1.7.0'
     manifest: storage-aws.addons.k8s.io/v1.7.0.yaml
