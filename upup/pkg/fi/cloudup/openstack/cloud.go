@@ -24,6 +24,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	os "github.com/gophercloud/gophercloud/openstack"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
@@ -91,6 +92,12 @@ type OpenstackCloud interface {
 
 	//CreateNetwork will create a new Neutron network
 	CreateNetwork(opt networks.CreateOptsBuilder) (*networks.Network, error)
+
+	//ListRouters will return the Neutron routers which match the options
+	ListRouters(opt routers.ListOpts) ([]routers.Router, error)
+
+	//CreateRouter will create a new Neutron router
+	CreateRouter(opt routers.CreateOptsBuilder) (*routers.Router, error)
 }
 
 type openstackCloud struct {
@@ -377,5 +384,50 @@ func (c *openstackCloud) CreateNetwork(opt networks.CreateOptsBuilder) (*network
 		return n, nil
 	} else {
 		return n, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) ListRouters(opt routers.ListOpts) ([]routers.Router, error) {
+	var rs []routers.Router
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		allPages, err := routers.List(c.neutronClient, opt).AllPages()
+		if err != nil {
+			return false, fmt.Errorf("error listing routers: %v", err)
+		}
+
+		r, err := routers.ExtractRouters(allPages)
+		if err != nil {
+			return false, fmt.Errorf("error extracting routers from pages: %v", err)
+		}
+		rs = r
+		return true, nil
+	})
+	if err != nil {
+		return rs, err
+	} else if done {
+		return rs, nil
+	} else {
+		return rs, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) CreateRouter(opt routers.CreateOptsBuilder) (*routers.Router, error) {
+	var r *routers.Router
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		v, err := routers.Create(c.neutronClient, opt).Extract()
+		if err != nil {
+			return false, fmt.Errorf("error creating router: %v", err)
+		}
+		r = v
+		return true, nil
+	})
+	if err != nil {
+		return r, err
+	} else if done {
+		return r, nil
+	} else {
+		return r, wait.ErrWaitTimeout
 	}
 }
