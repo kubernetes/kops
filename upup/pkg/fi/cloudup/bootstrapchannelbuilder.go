@@ -290,6 +290,26 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		}
 	}
 
+	if kops.CloudProviderID(b.cluster.Spec.CloudProvider) == kops.CloudProviderDO {
+		key := "digitalocean-cloud-controller.addons.k8s.io"
+		version := "1.8"
+
+		{
+			id := "k8s-1.8"
+			location := key + "/" + id + ".yaml"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          map[string]string{"k8s-addon": key},
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.8.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
+	}
+
 	if kops.CloudProviderID(b.cluster.Spec.CloudProvider) == kops.CloudProviderGCE {
 		key := "storage-gce.addons.k8s.io"
 		version := "1.7.0"
