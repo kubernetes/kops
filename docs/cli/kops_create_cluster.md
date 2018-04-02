@@ -8,7 +8,7 @@ Create a Kubernetes cluster.
 ### Synopsis
 
 
-Create a kubernetes cluster using command line flags. This command creates cloud based resources such as networks and virtual machines. Once the infrastructure is in place Kubernetes is installed on the virtual machines. 
+Create a Kubernetes cluster using command line flags. This command creates cloud based resources such as networks and virtual machines. Once the infrastructure is in place Kubernetes is installed on the virtual machines. 
 
 These operations are done in parallel and rely on eventual consistency.
 
@@ -95,7 +95,7 @@ kops create cluster
       --node-tenancy string                  The tenancy of the node group on AWS. Can be either default or dedicated.
       --node-volume-size int32               Set instance volume size (in GB) for nodes
       --out string                           Path to write any local output
-  -o, --output string                        Ouput format. One of json|yaml. Used with the --dry-run flag.
+  -o, --output string                        Output format. One of json|yaml. Used with the --dry-run flag.
       --project string                       Project to use (must be set on GCE)
       --ssh-access stringSlice               Restrict SSH access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])
       --ssh-public-key string                SSH public key to use (default "~/.ssh/id_rsa.pub")
