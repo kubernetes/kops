@@ -5,6 +5,8 @@ go_library(
     srcs = [
         "network.go",
         "network_fitask.go",
+        "router.go",
+        "router_fitask.go",
         "securitygroup.go",
         "securitygroup_fitask.go",
         "securitygrouprule.go",
@@ -18,6 +20,7 @@ go_library(
         "//upup/pkg/fi/cloudup/openstack:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/networks:go_default_library",

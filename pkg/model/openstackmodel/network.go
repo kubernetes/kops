@@ -17,6 +17,8 @@ limitations under the License.
 package openstackmodel
 
 import (
+	"strings"
+
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 )
@@ -36,6 +38,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		t := &openstacktasks.Network{
 			Name:      s(clusterName),
 			ID:        s(b.Cluster.Spec.NetworkID),
+			Lifecycle: b.Lifecycle,
+		}
+
+		c.AddTask(t)
+	}
+
+	{
+		t := &openstacktasks.Router{
+			Name:      s(strings.Replace(clusterName, ".", "-", -1)),
 			Lifecycle: b.Lifecycle,
 		}
 

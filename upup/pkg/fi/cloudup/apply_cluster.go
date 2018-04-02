@@ -443,6 +443,7 @@ func (c *ApplyClusterCmd) Run() error {
 			l.AddTypes(map[string]interface{}{
 				// Networking
 				"network": &openstacktasks.Network{},
+				"router":  &openstacktasks.Router{},
 			})
 		}
 	default:
