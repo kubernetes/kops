@@ -116,7 +116,7 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 	volumeIops := fi.Int32Value(m.VolumeIops)
 	switch volumeType {
 	case "io1":
-		if volumeIops == 0 {
+		if volumeIops <= 0 {
 			volumeIops = DefaultAWSEtcdVolumeIops
 		}
 	default:
