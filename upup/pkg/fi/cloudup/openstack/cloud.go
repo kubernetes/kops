@@ -59,6 +59,9 @@ var writeBackoff = wait.Backoff{
 type OpenstackCloud interface {
 	fi.Cloud
 
+	// Region returns the region which cloud will run on
+	Region() string
+
 	// SetVolumeTags will set the tags for the Cinder volume
 	SetVolumeTags(id string, tags map[string]string) error
 
@@ -94,6 +97,7 @@ type openstackCloud struct {
 	cinderClient  *gophercloud.ServiceClient
 	neutronClient *gophercloud.ServiceClient
 	tags          map[string]string
+	region        string
 }
 
 var _ fi.Cloud = &openstackCloud{}
@@ -127,13 +131,19 @@ func NewOpenstackCloud(tags map[string]string) (OpenstackCloud, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error building neutron client: %v", err)
 	}
+	region := endpointOpt.Region
 
 	c := &openstackCloud{
 		cinderClient:  cinderClient,
 		neutronClient: neutronClient,
 		tags:          tags,
+		region:        region,
 	}
 	return c, nil
+}
+
+func (c *openstackCloud) Region() string {
+	return c.region
 }
 
 func (c *openstackCloud) ProviderID() kops.CloudProviderID {
