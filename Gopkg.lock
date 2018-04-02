@@ -189,6 +189,16 @@
   revision = "511bcaf42ccd42c38aba7427b6673277bf19e2a1"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/denverdino/aliyungo"
+  packages = [
+    "common",
+    "oss",
+    "util"
+  ]
+  revision = "2581e433b270014481c9ec66a91368661533febb"
+
+[[projects]]
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
   revision = "01aeca54ebda6e0fbfafd0a524d234159c05ec20"
@@ -414,6 +424,7 @@
     "openstack/identity/v3/tokens",
     "openstack/networking/v2/extensions/security/groups",
     "openstack/networking/v2/extensions/security/rules",
+    "openstack/networking/v2/networks",
     "openstack/objectstorage/v1/accounts",
     "openstack/objectstorage/v1/containers",
     "openstack/objectstorage/v1/objects",
@@ -1546,6 +1557,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bd858ef77d1e30c2883d12e8783afccb43334885c756b5910b04524d24d6515d"
+  inputs-digest = "a0c1b19300e701d8723bb85312e6578003ed0de92dcdd0ac2c3990574af69571"
   solver-name = "gps-cdcl"
   solver-version = 1
