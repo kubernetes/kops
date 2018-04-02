@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func ValidateInstanceGroup(g *kops.InstanceGroup) error {
@@ -43,6 +44,10 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 		if *g.Spec.MaxSize < *g.Spec.MinSize {
 			return field.Invalid(field.NewPath("MaxSize"), *g.Spec.MaxSize, "maxSize must be greater than or equal to minSize.")
 		}
+	}
+
+	if fi.Int32Value(g.Spec.RootVolumeIops) < 0 {
+		return field.Invalid(field.NewPath("RootVolumeIops"), g.Spec.RootVolumeIops, "RootVolumeIops must be greater than 0")
 	}
 
 	switch g.Spec.Role {
