@@ -43,6 +43,7 @@ import (
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/domodel"
 	"k8s.io/kops/pkg/model/gcemodel"
+	"k8s.io/kops/pkg/model/openstackmodel"
 	"k8s.io/kops/pkg/model/vspheremodel"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/templates"
@@ -57,6 +58,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks"
@@ -434,7 +436,15 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 	case kops.CloudProviderOpenstack:
+		{
+			osCloud := cloud.(openstack.OpenstackCloud)
+			region = osCloud.Region()
 
+			l.AddTypes(map[string]interface{}{
+				// Networking
+				"network": &openstacktasks.Network{},
+			})
+		}
 	default:
 		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}
@@ -551,6 +561,13 @@ func (c *ApplyClusterCmd) Run() error {
 				// No special settings (yet!)
 
 			case kops.CloudProviderOpenstack:
+				openstackModelContext := &openstackmodel.OpenstackModelContext{
+					KopsModelContext: modelContext,
+				}
+
+				l.Builders = append(l.Builders,
+					&openstackmodel.NetworkModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &networkLifecycle},
+				)
 
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
