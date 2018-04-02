@@ -94,9 +94,10 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-// ensureSystemdSuffix makes sure that we have a .service suffix on the name, needed on needed versions of systems
+// ensureSystemdSuffix ensures that the hook name ends with a valid systemd unit file extension. If it
+// doesn't, it adds ".service" for backwards-compatibility with older versions of Kops
 func ensureSystemdSuffix(name string) string {
-	if !strings.HasSuffix(name, ".service") && !strings.HasSuffix(name, ".timer") {
+	if !systemd.UnitFileExtensionValid(name) {
 		name += ".service"
 	}
 	return name
