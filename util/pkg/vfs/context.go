@@ -393,11 +393,13 @@ func (c *VFSContext) buildOSSPath(p string) (*OSSPath, error) {
 		return nil, fmt.Errorf("invalid aliyun oss path: %q", p)
 	}
 
-	ossClient, err := NewAliOSSClient()
-	if err != nil {
-		return nil, err
+	if c.ossClient == nil {
+		ossClient, err := NewAliOSSClient()
+		if err != nil {
+			return nil, err
+		}
+		c.ossClient = ossClient
 	}
-	c.ossClient = ossClient
 
 	return NewOSSPath(c.ossClient, bucket, u.Path)
 }
