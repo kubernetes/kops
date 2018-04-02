@@ -180,6 +180,8 @@ type KubeProxyConfig struct {
 	Master string `json:"master,omitempty" flag:"master"`
 	// Enabled allows enabling or disabling kube-proxy
 	Enabled *bool `json:"enabled,omitempty"`
+	// Which proxy mode to use: (userspace, iptables(default), ipvs)
+	ProxyMode string `json:"proxyMode,omitempty" flag:"proxy-mode"`
 	// FeatureGates is a series of key pairs used to switch on features for the proxy
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }
