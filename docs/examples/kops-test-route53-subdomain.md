@@ -283,7 +283,7 @@ A few things to note here:
 - For true HA at the master level, we need to pick a region with at least 3 availability zones. For this practical exercise, we are using "us-east-1" AWS region which contains 5 availability zones (az's for short): us-east-1a, us-east-1b, us-east-1c, us-east-1d and us-east-1e.
 - The "--master-zones=us-east-1a,us-east-1b,us-east-1c" KOPS argument will actually enforce that we want 3 masters here. "--node-count=2" only applies to the worker nodes (not the masters).
 - We are including the arguments "--node-size" and "master-size" to specify the "instance types" for both our masters and worker nodes.
-- Because we are just doing a simple LAB, we are using "t2.micro" machines. Please DONT USE t2.micro on real production systems. Start with "t2.medium" as a minimun realistic/workable machine type.
+- Because we are just doing a simple LAB, we are using "t2.micro" machines. Please DONT USE t2.micro on real production systems. Start with "t2.medium" as a minimum realistic/workable machine type.
 
 With those points clarified, let's deploy our cluster:
 
