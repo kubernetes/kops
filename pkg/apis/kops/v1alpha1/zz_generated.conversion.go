@@ -1389,6 +1389,7 @@ func autoConvert_v1alpha1_EtcdMemberSpec_To_kops_EtcdMemberSpec(in *EtcdMemberSp
 	out.Name = in.Name
 	// WARNING: in.Zone requires manual conversion: does not exist in peer-type
 	out.VolumeType = in.VolumeType
+	out.VolumeIops = in.VolumeIops
 	out.VolumeSize = in.VolumeSize
 	out.KmsKeyId = in.KmsKeyId
 	out.EncryptedVolume = in.EncryptedVolume
@@ -1399,6 +1400,7 @@ func autoConvert_kops_EtcdMemberSpec_To_v1alpha1_EtcdMemberSpec(in *kops.EtcdMem
 	out.Name = in.Name
 	// WARNING: in.InstanceGroup requires manual conversion: does not exist in peer-type
 	out.VolumeType = in.VolumeType
+	out.VolumeIops = in.VolumeIops
 	out.VolumeSize = in.VolumeSize
 	out.KmsKeyId = in.KmsKeyId
 	out.EncryptedVolume = in.EncryptedVolume
