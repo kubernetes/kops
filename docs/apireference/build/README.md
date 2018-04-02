@@ -42,7 +42,7 @@ As a NodeJS program, a valid installation of node is required. Once node is inst
 ```
 node --version
 ```
-Next, depedencies need to be installed via npm from the root of the project directory.
+Next, dependencies need to be installed via npm from the root of the project directory.
 ```
 npm install
 ```
