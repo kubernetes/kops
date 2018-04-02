@@ -135,6 +135,12 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 		buffer.WriteString("\" ")
 	}
 
+	if os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
+		buffer.WriteString("\"DIGITALOCEAN_ACCESS_TOKEN=")
+		buffer.WriteString(os.Getenv("DIGITALOCEAN_ACCESS_TOKEN"))
+		buffer.WriteString("\" ")
+	}
+
 	if buffer.String() != "" {
 		manifest.Set("Service", "Environment", buffer.String())
 	}
