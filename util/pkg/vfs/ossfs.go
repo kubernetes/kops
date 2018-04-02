@@ -297,9 +297,7 @@ func (p *OSSPath) listPath(opt listOption) ([]Path, error) {
 				return false, fmt.Errorf("error listing %s: %v", p, err)
 			}
 
-			conLen := len(resp.Contents)
-			comPrefLen := len(resp.CommonPrefixes)
-			if conLen != 0 || comPrefLen != 0 {
+			if len(resp.Contents) != 0 || len(resp.CommonPrefixes) != 0 {
 				// Contents represent files
 				for _, k := range resp.Contents {
 					child := &OSSPath{
@@ -309,9 +307,9 @@ func (p *OSSPath) listPath(opt listOption) ([]Path, error) {
 					}
 					paths = append(paths, child)
 				}
-				if conLen != 0 {
+				if len(resp.Contents) != 0 {
 					// start with the last key in next iteration of listing.
-					opt.marker = resp.Contents[conLen-1].Key
+					opt.marker = resp.Contents[len(resp.Contents)-1].Key
 				}
 
 				// CommonPrefixes represent directories
@@ -323,8 +321,8 @@ func (p *OSSPath) listPath(opt listOption) ([]Path, error) {
 					}
 					paths = append(paths, child)
 				}
-				if comPrefLen != 0 {
-					lastComPref := resp.CommonPrefixes[comPrefLen-1]
+				if len(resp.CommonPrefixes) != 0 {
+					lastComPref := resp.CommonPrefixes[len(resp.CommonPrefixes)-1]
 					if strings.Compare(lastComPref, opt.marker) == 1 {
 						opt.marker = lastComPref
 					}
