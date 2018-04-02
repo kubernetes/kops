@@ -47,8 +47,8 @@ GITSHA=$(git describe --always)
 
 # These variables need to match the values in our Makefile
 # When we cut a new release we need to increment these accordingly
-KOPS_RELEASE_VERSION=1.9.0-alpha.3
-KOPS_CI_VERSION=1.9.0-alpha.4
+KOPS_RELEASE_VERSION=1.9.0-beta.1
+KOPS_CI_VERSION=1.9.0-beta.2
 
 if [[ -z "${VERSION}" ]]; then
   if [[ -z "${CI}" ]]; then
