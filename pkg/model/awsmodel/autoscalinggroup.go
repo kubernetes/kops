@@ -67,7 +67,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			volumeIops := fi.Int32Value(ig.Spec.RootVolumeIops)
-			if volumeIops == 0 {
+			if volumeIops <= 0 {
 				volumeIops = DefaultVolumeIops
 			}
 
