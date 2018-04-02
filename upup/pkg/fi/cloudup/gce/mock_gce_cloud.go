@@ -61,7 +61,7 @@ func (c *mockGCECloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*k
 
 // Zones is not implemented yet
 func (c *mockGCECloud) Zones() ([]string, error) {
-	return nil, fmt.Errorf("not yet implented")
+	return nil, fmt.Errorf("not yet implemented")
 }
 
 // WithLabels returns a copy of the mockGCECloud bound to the specified labels
