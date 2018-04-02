@@ -346,6 +346,8 @@ type EtcdMemberSpec struct {
 	InstanceGroup *string `json:"instanceGroup,omitempty"`
 	// VolumeType is the underlining cloud storage class
 	VolumeType *string `json:"volumeType,omitempty"`
+	// If volume type is io1, then we need to specify the number of Iops.
+	VolumeIops *int32 `json:"volumeIops,omitempty"`
 	// VolumeSize is the underlining cloud volume size
 	VolumeSize *int32 `json:"volumeSize,omitempty"`
 	// KmsKeyId is a AWS KMS ID used to encrypt the volume
