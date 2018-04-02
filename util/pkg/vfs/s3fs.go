@@ -124,7 +124,10 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 	request.Body = data
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)
-	request.ServerSideEncryption = aws.String(sse)
+	// only support SSE if a custom endpoint is not provided
+	if aws.StringValue(client.Config.Endpoint) == "" {
+		request.ServerSideEncryption = aws.String(sse)
+	}
 
 	acl := os.Getenv("KOPS_STATE_S3_ACL")
 	acl = strings.TrimSpace(acl)
