@@ -197,6 +197,7 @@ type terraformVolume struct {
 	AvailabilityZone *string           `json:"availability_zone,omitempty"`
 	Size             *int64            `json:"size,omitempty"`
 	Type             *string           `json:"type,omitempty"`
+	Iops             *int64            `json:"iops,omitempty"`
 	KmsKeyId         *string           `json:"kms_key_id,omitempty"`
 	Encrypted        *bool             `json:"encrypted,omitempty"`
 	Tags             map[string]string `json:"tags,omitempty"`
@@ -207,6 +208,7 @@ func (_ *EBSVolume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes 
 		AvailabilityZone: e.AvailabilityZone,
 		Size:             e.SizeGB,
 		Type:             e.VolumeType,
+		Iops:             e.VolumeIops,
 		KmsKeyId:         e.KmsKeyId,
 		Encrypted:        e.Encrypted,
 		Tags:             e.Tags,
@@ -223,6 +225,7 @@ type cloudformationVolume struct {
 	AvailabilityZone *string             `json:"AvailabilityZone,omitempty"`
 	Size             *int64              `json:"Size,omitempty"`
 	Type             *string             `json:"VolumeType,omitempty"`
+	Iops             *int64              `json:"Iops,omitempty"`
 	KmsKeyId         *string             `json:"KmsKeyId,omitempty"`
 	Encrypted        *bool               `json:"Encrypted,omitempty"`
 	Tags             []cloudformationTag `json:"Tags,omitempty"`
@@ -233,6 +236,7 @@ func (_ *EBSVolume) RenderCloudformation(t *cloudformation.CloudformationTarget,
 		AvailabilityZone: e.AvailabilityZone,
 		Size:             e.SizeGB,
 		Type:             e.VolumeType,
+		Iops:             e.VolumeIops,
 		KmsKeyId:         e.KmsKeyId,
 		Encrypted:        e.Encrypted,
 		Tags:             buildCloudformationTags(e.Tags),
