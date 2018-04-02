@@ -52,7 +52,7 @@ Some things to note from here:
 
 ## COREOS IMAGE INFORMATION:
 
-CoreOS webpage includes a "json" with the updated list of lattest images: [https://coreos.com/dist/aws/aws-stable.json](https://coreos.com/dist/aws/aws-stable.json)
+CoreOS webpage includes a "json" with the updated list of latest images: [https://coreos.com/dist/aws/aws-stable.json](https://coreos.com/dist/aws/aws-stable.json)
 
 By using "jq" you can obtain the "ami" for a specific region (change the region "-" for "_" in the following command):
 
