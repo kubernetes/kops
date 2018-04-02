@@ -109,6 +109,10 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 		return c.buildS3Path(p)
 	}
 
+	if strings.HasPrefix(p, "do://") {
+		return c.buildDOPath(p)
+	}
+
 	if strings.HasPrefix(p, "memfs://") {
 		return c.buildMemFSPath(p)
 	}
@@ -234,7 +238,25 @@ func (c *VFSContext) buildS3Path(p string) (*S3Path, error) {
 		return nil, fmt.Errorf("invalid s3 path: %q", p)
 	}
 
-	s3path := newS3Path(c.s3Context, bucket, u.Path)
+	s3path := newS3Path(c.s3Context, u.Scheme, bucket, u.Path, true)
+	return s3path, nil
+}
+
+func (c *VFSContext) buildDOPath(p string) (*S3Path, error) {
+	u, err := url.Parse(p)
+	if err != nil {
+		return nil, fmt.Errorf("invalid spaces path: %q", p)
+	}
+	if u.Scheme != "do" {
+		return nil, fmt.Errorf("invalid spaces path: %q", p)
+	}
+
+	bucket := strings.TrimSuffix(u.Host, "/")
+	if bucket == "" {
+		return nil, fmt.Errorf("invalid spaces path: %q", p)
+	}
+
+	s3path := newS3Path(c.s3Context, u.Scheme, bucket, u.Path, false)
 	return s3path, nil
 }
 
