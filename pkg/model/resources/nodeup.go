@@ -51,6 +51,8 @@ NODEUP_HASH={{ NodeUpSourceHash }}
 {{ S3Env }}
 {{ AWS_REGION }}
 
+{{ DO_ENV }}
+
 {{ ProxyEnv }}
 
 function ensure-install-dir() {
