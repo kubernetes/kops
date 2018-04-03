@@ -71,7 +71,7 @@ INSTANCE_ID=$(aws ec2 run-instances --image-id $AMI_ID --instance-type m3.medium
 aws ec2 create-tags --resources ${INSTANCE_ID} --tags Key=k8s.io/role/imagebuilder,Value=1
 ```
 
-Now follow the documentaion of [ImageBuilder][4] in `kube-deploy` to build the image.
+Now follow the documentation of [ImageBuilder][4] in `kube-deploy` to build the image.
 
 ```console
 go get k8s.io/kube-deploy/imagebuilder
