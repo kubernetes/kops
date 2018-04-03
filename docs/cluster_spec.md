@@ -405,7 +405,7 @@ spec:
 
 #### disableSecurityGroupIngress
 If you are using aws as `cloudProvider`, you can disable authorization of ELB security group to Kubernetes Nodes security group. In other words, it will not add security group rule.
-This can be usefull to avoid AWS limit: 50 rules per security group.
+This can be useful to avoid AWS limit: 50 rules per security group.
 ```yaml
 spec:
   cloudConfig:
@@ -431,7 +431,7 @@ It is possible to override Docker daemon options for all masters and nodes in th
 
 #### registryMirrors
 
-If you have a bunch of Docker instances (physicsal or vm) running, each time one of them pulls an image that is not present on the host, it will fetch it from the internet (DockerHub). By caching these images, you can keep the traffic within your local network and avoid egress bandwidth usage.
+If you have a bunch of Docker instances (physical or vm) running, each time one of them pulls an image that is not present on the host, it will fetch it from the internet (DockerHub). By caching these images, you can keep the traffic within your local network and avoid egress bandwidth usage.
 This setting benefits not only cluster provisioning but also image pulling.
 
 @see [Cache-Mirror Dockerhub For Speed](https://hackernoon.com/mirror-cache-dockerhub-locally-for-speed-f4eebd21a5ca)
