@@ -74,7 +74,7 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&options.output, "output", "o", options.output, "Ouput format. One of json|yaml|table.")
+	cmd.Flags().StringVarP(&options.output, "output", "o", options.output, "Output format. One of json|yaml|table.")
 
 	return cmd
 }

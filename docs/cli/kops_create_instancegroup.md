@@ -35,7 +35,7 @@ kops create instancegroup
 ```
       --dry-run              If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
       --edit                 If true, an editor will be opened to edit default values. (default true)
-  -o, --output string        Ouput format. One of json|yaml
+  -o, --output string        Output format. One of json|yaml
       --role string          Type of instance group to create (Node,Master,Bastion) (default "Node")
       --subnet stringSlice   Subnet in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.
 ```
