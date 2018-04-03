@@ -95,7 +95,7 @@ kops create cluster
       --node-tenancy string                  The tenancy of the node group on AWS. Can be either default or dedicated.
       --node-volume-size int32               Set instance volume size (in GB) for nodes
       --out string                           Path to write any local output
-  -o, --output string                        Ouput format. One of json|yaml. Used with the --dry-run flag.
+  -o, --output string                        Output format. One of json|yaml. Used with the --dry-run flag.
       --project string                       Project to use (must be set on GCE)
       --ssh-access stringSlice               Restrict SSH access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])
       --ssh-public-key string                SSH public key to use (default "~/.ssh/id_rsa.pub")
