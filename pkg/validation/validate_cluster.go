@@ -33,7 +33,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 )
 
-// ValidationCluster a cluster to validate.
+// ValidationCluster uses a cluster to validate.
 type ValidationCluster struct {
 	Failures []*ValidationError `json:"failures,omitempty"`
 
@@ -86,7 +86,7 @@ func hasPlaceHolderIP(clusterName string) (bool, error) {
 	return false, nil
 }
 
-// ValidateCluster validate a k8s cluster with a provided instance group list
+// ValidateCluster validates a k8s cluster with a provided instance group list
 func ValidateCluster(cluster *kops.Cluster, instanceGroupList *kops.InstanceGroupList, k8sClient kubernetes.Interface) (*ValidationCluster, error) {
 	clusterName := cluster.Name
 
