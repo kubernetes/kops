@@ -43,7 +43,7 @@ For more information on how to use and modify the configurations see [here](mani
 
 ## Managing instance groups
 
-You can also manage instance groups in separate YAML files as well.  The command `kops get --name $NAME -o yaml > $NAME.yml` exports the entire clsuter.  An option is to have a YAML file for the cluster, and individual YAML files for the instance groups.  This allows you to do stuff like:
+You can also manage instance groups in separate YAML files as well.  The command `kops get --name $NAME -o yaml > $NAME.yml` exports the entire cluster.  An option is to have a YAML file for the cluster, and individual YAML files for the instance groups.  This allows you to do stuff like:
 
 ```shell
 if ! kops get cluster --name "$NAME"; then
