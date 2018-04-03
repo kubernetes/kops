@@ -331,7 +331,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// DryRun mode that will print YAML or JSON
 	cmd.Flags().BoolVar(&options.DryRun, "dry-run", options.DryRun, "If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.")
-	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Ouput format. One of json|yaml. Used with the --dry-run flag.")
+	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Output format. One of json|yaml. Used with the --dry-run flag.")
 
 	if featureflag.SpecOverrideFlag.Enabled() {
 		cmd.Flags().StringSliceVar(&options.Overrides, "override", options.Overrides, "Directly configure values in the spec")
