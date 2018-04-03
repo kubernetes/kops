@@ -180,7 +180,6 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	if dns.IsGossipHostname(tf.cluster.Spec.MasterInternalName) {
 		argv = append(argv, "--dns=gossip")
 		argv = append(argv, "--gossip-seed=127.0.0.1:3999")
-		argv = append(argv, "--metrics-listen-addr=:4040")
 	} else {
 		switch kops.CloudProviderID(tf.cluster.Spec.CloudProvider) {
 		case kops.CloudProviderAWS:
