@@ -102,7 +102,7 @@ CoreOS has been tested enough to be considered ready for production with kops, b
 The following steps are known:
 
 * The latest stable CoreOS AMI can be found using:
-```
+```bash
 aws ec2 describe-images --region=us-east-1 --owner=595879546273 \
     --filters "Name=virtualization-type,Values=hvm" "Name=name,Values=CoreOS-stable*" \
     --query 'sort_by(Images,&CreationDate)[-1].{id:ImageLocation}'
@@ -110,8 +110,8 @@ aws ec2 describe-images --region=us-east-1 --owner=595879546273 \
 
 Also, you can obtain the "AMI ID" from CoreOS web page too. They publish their AMI's using a json file at [https://coreos.com/dist/aws/aws-stable.json](https://coreos.com/dist/aws/aws-stable.json). Using some scripting and a "json" parser (like jq) you can obtain the AMI ID from a specific availability zone:
 
-```
-curl -s https://coreos.com/dist/aws/aws-stable.json|sed -r 's/-/_/g'|jq '.us_east_1.hvm'|sed -r 's/_/-/g'
+```bash
+curl -s https://coreos.com/dist/aws/aws-stable.json | jq -r '.["us-east-1"].hvm'
 "ami-32705b49"
 ```
 
