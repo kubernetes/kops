@@ -67,7 +67,7 @@ The procedure to resize the root volume works the same way:
 
 * Edit the instance group, set `rootVolumeSize` and/or `rootVolumeType` to the desired values: `kops edit ig nodes`
 * `rootVolumeType` must be one of [supported volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html), e.g. `gp2` (default), `io1` (high performance) or `standard` (for testing).
-* If `rootVolumeType` is set to `io1` then you can define the number of Iops by specifing `rootVolumeIops` (defaults to 100 if not defined)
+* If `rootVolumeType` is set to `io1` then you can define the number of Iops by specifying `rootVolumeIops` (defaults to 100 if not defined)
 * Preview changes: `kops update cluster <clustername>`
 * Apply changes: `kops update cluster <clustername> --yes`
 * Rolling update to update existing instances: `kops rolling-update cluster --yes`
