@@ -20,7 +20,7 @@ P2: Rarely occurring issues and features that will bring vSphere support closer 
 |Priority|Task|Type (bug, feature, test|Effort estimate(in days)|Remarks|
 |--- |--- |--- |--- |--- |
 |P0|Kops for vSphere is broken kubernetes/kops#2729|Bug|1||
-|P0|AWS EBS is set as default volume provisioner, instead of vSphere kubernetes/kops#2732|Bug|1|Looks like the fix is available, need to be tested again before commiting https://github.com/vmware/kops/pull/70/files|
+|P0|AWS EBS is set as default volume provisioner, instead of vSphere kubernetes/kops#2732|Bug|1|Looks like the fix is available, need to be tested again before committing https://github.com/vmware/kops/pull/70/files|
 |P0|Package installation through nodeup causing delay in cluster deployment kubernetes/kops#2742|Bug|2|If we get the "Use PhotonOS for vSphere node template" done first, this one may just be avoided. Verification required.|
 |P0|Connection to api.clustername.skydns.local is failing  kubernetes/kops#2744|Bug|1|This might be fixed by Abrar's PR in kubernetes already. Just need to verify.|
 |P0|Make update command, that includes scale up and down, work kubernetes/kops#2738. There are two possible ways to implement this- without auto scaling group (ASG) or with auto scaling group|Feature|4 days Assuming ASG is available. 4 days ASG is not available.|This effort estimation needs more analysis.|
