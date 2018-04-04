@@ -14,7 +14,7 @@ P2: Rarely occurring issues and features that will bring vSphere support closer 
 
 **Notes:**
 
-*   Effort estimation inclues fix for an issue or implementation for a feature, testing and generating a PR.
+*   Effort estimation includes fix for an issue or implementation for a feature, testing and generating a PR.
 *   There are a few issues that are related to startup and base image. If we can resolve "Use PhotonOS for vSphere node template" issue first and replace init-cloud with guestinfo, those issues **might** get resolved automatically. But further investigation is needed and fixed issues will need verifications and testings.
 
 |Priority|Task|Type (bug, feature, test|Effort estimate(in days)|Remarks|
