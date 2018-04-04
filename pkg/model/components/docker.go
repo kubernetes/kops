@@ -19,6 +19,7 @@ package components
 import (
 	"fmt"
 
+	"github.com/blang/semver"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -67,6 +68,11 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 
 		clusterSpec.Docker.Version = &dockerVersion
+	}
+
+	dockerVersion, _ := semver.Parse(fi.StringValue(clusterSpec.Docker.Version))
+	if dockerVersion.Major == 1 && dockerVersion.Minor >= 12 {
+		clusterSpec.Docker.Storage = fi.String("overlay2")
 	}
 
 	if sv.Major == 1 && sv.Minor >= 6 {
