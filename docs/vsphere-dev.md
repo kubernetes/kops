@@ -97,7 +97,7 @@ export S3_REGION=[s3_region]
 export S3_ENDPOINT=http://[s3_server_ip]:9000
 ```
 
-Users can also choose their own S3-compatible storage applications by setting environment varibales similiarly.
+Users can also choose their own S3-compatible storage applications by setting environment variables similarly.
 
 ## Kops with vSphere
 vSphere cloud provider support in kops is a work in progress. To try out deploying kubernetes cluster on vSphere using kops, some extra steps are required.
