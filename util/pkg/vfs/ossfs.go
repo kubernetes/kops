@@ -81,13 +81,13 @@ func (p *OSSPath) WriteTo(out io.Writer) (int64, error) {
 		if isOSSNotFound(err) {
 			return 0, os.ErrNotExist
 		}
-		return 0, fmt.Errorf("error fetching %v: %v", p, err)
+		return 0, fmt.Errorf("error fetching %s: %v", p, err)
 	}
 	defer response.Body.Close()
 
 	n, err := io.Copy(out, response.Body)
 	if err != nil {
-		return n, fmt.Errorf("error reading %v: %v", p, err)
+		return n, fmt.Errorf("error reading %s: %v", p, err)
 	}
 	return n, nil
 }
@@ -139,7 +139,7 @@ func (p *OSSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 		if acl != nil {
 			perm, ok = acl.(oss.ACL)
 			if !ok {
-				return true, fmt.Errorf("write to %v with ACL of unexpected type %v", p, acl)
+				return true, fmt.Errorf("write to %s with ACL of unexpected type %T", p, acl)
 			}
 		} else {
 			// Private currently is the default ACL
@@ -147,7 +147,7 @@ func (p *OSSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 		}
 
 		if _, err := data.Seek(0, 0); err != nil {
-			return false, fmt.Errorf("error seeking to start of data stream for write to %v: %v", p, err)
+			return false, fmt.Errorf("error seeking to start of data stream for write to %s: %v", p, err)
 		}
 
 		bytes, err := ioutil.ReadAll(data)
@@ -158,7 +158,7 @@ func (p *OSSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 		contType := "application/octet-stream"
 		err = b.Put(p.key, bytes, contType, perm, oss.Options{})
 		if err != nil {
-			return false, fmt.Errorf("error writing %v: %v", p, err)
+			return false, fmt.Errorf("error writing %s: %v", p, err)
 		}
 		return true, nil
 	})
@@ -203,7 +203,7 @@ func (p *OSSPath) Remove() error {
 
 		err := b.Del(p.key)
 		if err != nil {
-			return false, fmt.Errorf("error deleting %v: %v", p, err)
+			return false, fmt.Errorf("error deleting %s: %v", p, err)
 		}
 		return true, nil
 	})
@@ -219,6 +219,10 @@ func (p *OSSPath) Remove() error {
 
 func (p *OSSPath) Base() string {
 	return path.Base(p.key)
+}
+
+func (p *OSSPath) String() string {
+	return p.Path()
 }
 
 func (p *OSSPath) Path() string {
@@ -294,7 +298,7 @@ func (p *OSSPath) listPath(opt listOption) ([]Path, error) {
 				if isOSSNotFound(err) {
 					return true, os.ErrNotExist
 				}
-				return false, fmt.Errorf("error listing %v: %v", p, err)
+				return false, fmt.Errorf("error listing %s: %v", p, err)
 			}
 
 			if len(resp.Contents) != 0 || len(resp.CommonPrefixes) != 0 {
