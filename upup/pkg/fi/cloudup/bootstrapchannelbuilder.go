@@ -184,7 +184,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	if externalDNS == nil || !externalDNS.Disable {
 		{
 			key := "dns-controller.addons.k8s.io"
-			version := "1.9.0-beta.1"
+			version := "1.9.0-beta.2"
 
 			{
 				location := key + "/pre-k8s-1.6.yaml"
