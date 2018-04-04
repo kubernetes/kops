@@ -17,6 +17,7 @@ limitations under the License.
 package nodeup
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -337,29 +338,44 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 	k := strings.TrimSpace(hostnameOverride)
 	k = strings.ToLower(k)
 
-	if k != "@aws" {
-		return hostnameOverride, nil
+	if k == "@aws" {
+		// We recognize @aws as meaning "the local-hostname from the aws metadata service"
+		vBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-hostname")
+		if err != nil {
+			return "", fmt.Errorf("error reading local hostname from AWS metadata: %v", err)
+		}
+
+		// The local-hostname gets it's hostname from the AWS DHCP Option Set, which
+		// may provide multiple hostnames separated by spaces. For now just choose
+		// the first one as the hostname.
+		domains := strings.Fields(string(vBytes))
+		if len(domains) == 0 {
+			glog.Warningf("Local hostname from AWS metadata service was empty")
+			return "", nil
+		} else {
+			domain := domains[0]
+			glog.Infof("Using hostname from AWS metadata service: %s", domain)
+
+			return domain, nil
+		}
 	}
 
-	// We recognize @aws as meaning "the local-hostname from the aws metadata service"
-	vBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-hostname")
-	if err != nil {
-		return "", fmt.Errorf("error reading local hostname from AWS metadata: %v", err)
+	if k == "@digitalocean" {
+		// @digitalocean means to use the private ipv4 address of a droplet as the hostname override
+		vBytes, err := vfs.Context.ReadFile("metadata://digitalocean/interfaces/private/0/ipv4/address")
+		if err != nil {
+			return "", fmt.Errorf("error reading droplet private IP from DigitalOcean metadata: %v", err)
+		}
+
+		hostname := string(vBytes)
+		if hostname == "" {
+			return "", errors.New("private IP for digitalocean droplet was empty")
+		}
+
+		return hostname, nil
 	}
 
-	// The local-hostname gets it's hostname from the AWS DHCP Option Set, which
-	// may provide multiple hostnames separated by spaces. For now just choose
-	// the first one as the hostname.
-	domains := strings.Fields(string(vBytes))
-	if len(domains) == 0 {
-		glog.Warningf("Local hostname from AWS metadata service was empty")
-		return "", nil
-	} else {
-		domain := domains[0]
-		glog.Infof("Using hostname from AWS metadata service: %s", domain)
-
-		return domain, nil
-	}
+	return hostnameOverride, nil
 }
 
 // evaluateDockerSpec selects the first supported storage mode, if it is a list

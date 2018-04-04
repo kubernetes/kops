@@ -70,7 +70,7 @@ func main() {
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 	flags.StringVar(&watchNamespace, "watch-namespace", "", "Limits the functionality for pods, services and ingress to specific namespace, by default all")
 	flag.IntVar(&route53.MaxBatchSize, "route53-batch-size", route53.MaxBatchSize, "Maximum number of operations performed per changeset batch")
-	flag.StringVar(&metricsListen, "metrics-listen-addr", ":3999", "The address on which to listen for Prometheus metrics.")
+	flag.StringVar(&metricsListen, "metrics-listen", "", "The address on which to listen for Prometheus metrics.")
 
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
@@ -79,10 +79,12 @@ func main() {
 	flags.AddGoFlagSet(flag.CommandLine)
 	flags.Parse(os.Args)
 
-	go func() {
-		http.Handle("/metrics", promhttp.Handler())
-		log.Fatal(http.ListenAndServe(metricsListen, nil))
-	}()
+	if metricsListen != "" {
+		go func() {
+			http.Handle("/metrics", promhttp.Handler())
+			log.Fatal(http.ListenAndServe(metricsListen, nil))
+		}()
+	}
 
 	zoneRules, err := dns.ParseZoneRules(zones)
 	if err != nil {

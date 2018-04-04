@@ -162,6 +162,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if cloudProvider == kops.CloudProviderDO {
 		clusterSpec.Kubelet.CloudProvider = "external"
+		clusterSpec.Kubelet.HostnameOverride = "@digitalocean"
 	}
 
 	if cloudProvider == kops.CloudProviderGCE {

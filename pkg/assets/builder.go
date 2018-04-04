@@ -172,7 +172,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 // It also returns the SHA hash of the file.
 func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Hash, error) {
 	if fileURL == nil {
-		return nil, nil, fmt.Errorf("unable to remap an nil URL")
+		return nil, nil, fmt.Errorf("unable to remap a nil URL")
 	}
 
 	fileAsset := &FileAsset{

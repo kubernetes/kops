@@ -96,7 +96,7 @@ GO15VENDOREXPERIMENT=1
 export GO15VENDOREXPERIMENT
 
 COMPILERVERSION := $(shell go version | cut -d' ' -f3 | tr -d '\n')
-ifeq ($(COMPILERVERSION),go1.10)
+ifneq (,$(findstring go1.10,$(COMPILERVERSION)))
 LDFLAGS := -ldflags=all=
 else
 LDFLAGS := -ldflags=

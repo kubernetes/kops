@@ -43,7 +43,7 @@ protokube will look for the following tags:
 
 * `KubernetesCluster` containing the cluster name (e.g. `k8s.mycompany.tld`)
 * `Name` containing the volume name (e.g. `eu-central-1a.etcd-main.k8s.mycompany.tld`)
-* `k8s.io/etcd/main` containg the availability zone of the volume (e.g. `eu-central-1a/eu-central-1a`)
+* `k8s.io/etcd/main` containing the availability zone of the volume (e.g. `eu-central-1a/eu-central-1a`)
 * `k8s.io/role/master` with the value `1`
 
 After fully restoring the volume ensure that the old volume is no longer there,
