@@ -44,4 +44,4 @@ They are stored /clustername/secrets/ and contain the secret as a base64 encoded
 
 ```echo -n 'MY_SECRET' | base64```
 
-and replace it in the "Data" field of the file. Verifiy your change with get secrets and perform a rolling update of the cluster.
+and replace it in the "Data" field of the file. Verify your change with get secrets and perform a rolling update of the cluster.
