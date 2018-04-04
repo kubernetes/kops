@@ -30,6 +30,7 @@ import (
 
 	"golang.org/x/oauth2"
 
+	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 )
@@ -188,8 +189,11 @@ func (r *resourceRecordSets) List() ([]dnsprovider.ResourceRecordSet, error) {
 	var rrset *resourceRecordSet
 	var rrsets []dnsprovider.ResourceRecordSet
 	for _, record := range records {
+		// digitalocean API returns the record without the zone
+		// but the consumers of this interface expect the zone to be included
+		recordName := dns.EnsureDotSuffix(record.Name) + r.Zone().Name()
 		rrset = &resourceRecordSet{
-			name:       record.Name,
+			name:       recordName,
 			data:       record.Data,
 			ttl:        record.TTL,
 			recordType: rrstype.RrsType(record.Type),
@@ -318,26 +322,6 @@ func (r *resourceRecordChangeset) Apply() error {
 		return nil
 	}
 
-	if len(r.removals) > 0 {
-		records, err := getRecords(r.client, r.zone.Name())
-		if err != nil {
-			return err
-		}
-
-		for _, record := range r.removals {
-			for _, domainRecord := range records {
-				if domainRecord.Name == record.Name() {
-					err := deleteRecord(r.client, r.zone.Name(), domainRecord.ID)
-					if err != nil {
-						return fmt.Errorf("failed to delete record: %v", err)
-					}
-				}
-			}
-		}
-
-		glog.V(2).Infof("record change set removals complete")
-	}
-
 	if len(r.additions) > 0 {
 		for _, rrset := range r.additions {
 			err := r.applyResourceRecordSet(rrset)
@@ -358,6 +342,26 @@ func (r *resourceRecordChangeset) Apply() error {
 		}
 
 		glog.V(2).Infof("record change set upserts complete")
+	}
+
+	if len(r.removals) > 0 {
+		records, err := getRecords(r.client, r.zone.Name())
+		if err != nil {
+			return err
+		}
+
+		for _, record := range r.removals {
+			for _, domainRecord := range records {
+				if domainRecord.Name == record.Name() {
+					err := deleteRecord(r.client, r.zone.Name(), domainRecord.ID)
+					if err != nil {
+						return fmt.Errorf("failed to delete record: %v", err)
+					}
+				}
+			}
+		}
+
+		glog.V(2).Infof("record change set removals complete")
 	}
 
 	glog.V(2).Infof("record change sets successfully applied")
