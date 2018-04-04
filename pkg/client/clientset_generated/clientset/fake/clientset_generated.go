@@ -47,14 +47,14 @@ func NewSimpleClientset(objects ...runtime.Object) *Clientset {
 	fakePtr.AddReactor("*", "*", testing.ObjectReaction(o))
 	fakePtr.AddWatchReactor("*", testing.DefaultWatchReactor(watch.NewFake(), nil))
 
-	return &Clientset{fakePtr, &fakediscovery.FakeDiscovery{Fake: &fakePtr}}
+	return &Clientset{&fakePtr, &fakediscovery.FakeDiscovery{Fake: &fakePtr}}
 }
 
 // Clientset implements clientset.Interface. Meant to be embedded into a
 // struct to get a default implementation. This makes faking out just the method
 // you want to test easier.
 type Clientset struct {
-	testing.Fake
+	*testing.Fake
 	discovery *fakediscovery.FakeDiscovery
 }
 
@@ -66,15 +66,15 @@ var _ clientset.Interface = &Clientset{}
 
 // Kops retrieves the KopsClient
 func (c *Clientset) Kops() kopsinternalversion.KopsInterface {
-	return &fakekopsinternalversion.FakeKops{Fake: &c.Fake}
+	return &fakekopsinternalversion.FakeKops{Fake: c.Fake}
 }
 
 // KopsV1alpha1 retrieves the KopsV1alpha1Client
 func (c *Clientset) KopsV1alpha1() kopsv1alpha1.KopsV1alpha1Interface {
-	return &fakekopsv1alpha1.FakeKopsV1alpha1{Fake: &c.Fake}
+	return &fakekopsv1alpha1.FakeKopsV1alpha1{Fake: c.Fake}
 }
 
 // KopsV1alpha2 retrieves the KopsV1alpha2Client
 func (c *Clientset) KopsV1alpha2() kopsv1alpha2.KopsV1alpha2Interface {
-	return &fakekopsv1alpha2.FakeKopsV1alpha2{Fake: &c.Fake}
+	return &fakekopsv1alpha2.FakeKopsV1alpha2{Fake: c.Fake}
 }
