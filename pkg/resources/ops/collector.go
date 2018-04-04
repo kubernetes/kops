@@ -36,7 +36,7 @@ func ListResources(cloud fi.Cloud, clusterName string, region string) (map[strin
 	case kops.CloudProviderAWS:
 		return aws.ListResourcesAWS(cloud.(awsup.AWSCloud), clusterName)
 	case kops.CloudProviderDO:
-		return digitalocean.ListResources(cloud, clusterName)
+		return digitalocean.ListResources(cloud.(*digitalocean.Cloud), clusterName)
 	case kops.CloudProviderGCE:
 		return gce.ListResourcesGCE(cloud.(cloudgce.GCECloud), clusterName, region)
 	case kops.CloudProviderVSphere:
