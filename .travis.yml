@@ -3,8 +3,9 @@ os:
   - linux
   - osx
 go:
-  - 1.8
-  - 1.9
+  - "1.8"
+  - "1.9"
+  - "1.10"
 
 go_import_path: k8s.io/kops
 
