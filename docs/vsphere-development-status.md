@@ -73,7 +73,7 @@ List of all kops commands and how they behave for vSphere cloud provider, as of 
 |get|instancesgroups||Yes|-|Gets list of intancegroups. If yaml output is specified, this output can be modified and used for 'kops replace' command.|
 |get|secrets||Yes|-|Gets list of secrets.|
 |import|cluster|kops import cluster --region=us-west-2 --name=v2c1.skydns.local nodes|No. Current implementation is very aws specific. Multiple aws services are queried to construct the api.Cluster object.|Yes|Imports spec for an existing cluster into the object store. While this functionality is good for importing and managing existing k8s clusters using kops, it doesn't seem like a high priority functionality at this point of time.|
-|replace||kops replace -f FILENAME|No|Yes|Outout of `kops get cluster name -oyaml` or `kops get ig name -oyaml` can be updated and passed to 'kops replace' command.|
+|replace||kops replace -f FILENAME|No|Yes|Output of `kops get cluster name -oyaml` or `kops get ig name -oyaml` can be updated and passed to 'kops replace' command.|
 |rolling-update|cluster||No. Current implementation is aws specific.|Yes||
 |secrets|create||-|-|Legacy command, points to 'kops create secrets'.|
 |secrets|describe||-|-|Legacy command, points to 'kops describe secrets'.|
