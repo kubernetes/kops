@@ -187,8 +187,8 @@ func (k *VolumeMountController) safeFormatAndMount(volume *Volume, mountpoint st
 		}
 
 		if mountedDevice != "" {
-			// We check that it is the correct device.  We also tolerate /dev/X as well as /root/dev/X
-			if mountedDevice != source && mountedDevice != device {
+			// We check that it is the correct device.  We also tolerate /dev/X as well as /root/dev/X and any of symlinks to them
+			if mountedDevice != source && mountedDevice != device && pathFor(mountedDevice) != pathForSymlinks(device) {
 				return fmt.Errorf("device already mounted at %s, but is %s and we want %s or %s", target, mountedDevice, source, device)
 			}
 		} else {
