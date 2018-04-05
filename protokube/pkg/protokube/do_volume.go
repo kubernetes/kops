@@ -118,8 +118,7 @@ func (d *DOVolumes) AttachVolume(volume *Volume) error {
 }
 
 func (d *DOVolumes) FindVolumes() ([]*Volume, error) {
-	doVolumes, _, err := d.Cloud.Volumes().ListVolumes(context.TODO(), &godo.ListVolumeParams{Region: d.region})
-
+	doVolumes, err := getAllVolumesByRegion(d.Cloud, d.region)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list volumes: %s", err)
 	}
@@ -154,6 +153,38 @@ func (d *DOVolumes) FindVolumes() ([]*Volume, error) {
 	}
 
 	return volumes, nil
+}
+
+func getAllVolumesByRegion(cloud *digitalocean.Cloud, region string) ([]godo.Volume, error) {
+	allVolumes := []godo.Volume{}
+
+	opt := &godo.ListOptions{}
+	for {
+		volumes, resp, err := cloud.Volumes().ListVolumes(context.TODO(), &godo.ListVolumeParams{
+			Region:      region,
+			ListOptions: opt,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		allVolumes = append(allVolumes, volumes...)
+
+		if resp.Links == nil || resp.Links.IsLastPage() {
+			break
+		}
+
+		page, err := resp.Links.CurrentPage()
+		if err != nil {
+			return nil, err
+		}
+
+		opt.Page = page + 1
+	}
+
+	return allVolumes, nil
+
 }
 
 func (d *DOVolumes) FindMountedVolume(volume *Volume) (string, error) {
