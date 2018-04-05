@@ -188,9 +188,9 @@ spec:
             # Disable IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
               value: "false"
-            # Set Felix logging to "info"
+            # Set Felix logging to the desired level
             - name: FELIX_LOGSEVERITYSCREEN
-              value: "info"
+              value: "{{- or .Networking.Calico.LogSeverityScreen "info" }}"
             # Set to enable the experimental Prometheus metrics server
             - name: FELIX_PROMETHEUSMETRICSENABLED
               value: "{{- or .Networking.Calico.PrometheusMetricsEnabled "false" }}"

@@ -71,6 +71,8 @@ type FlannelNetworkingSpec struct {
 // CalicoNetworkingSpec declares that we want Calico networking
 type CalicoNetworkingSpec struct {
 	CrossSubnet bool `json:"crossSubnet,omitempty"` // Enables Calico's cross-subnet mode when set to true
+	// LogSeverityScreen lets us set the desired log level. (Default: info)
+	LogSeverityScreen string `json:"logSeverityScreen,omitempty"`
 	// PrometheusMetricsEnabled can be set to enable the experimental Prometheus
 	// metrics server (default: false)
 	PrometheusMetricsEnabled bool `json:"prometheusMetricsEnabled,omitempty"`
