@@ -64,7 +64,7 @@ func listDroplets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 
 	clusterTag := "KubernetesCluster:" + strings.Replace(clusterName, ".", "-", -1)
 
-	droplets, _, err := c.Droplets().ListByTag(context.TODO(), clusterTag, &godo.ListOptions{})
+	droplets, err := getAllDropletsByTag(c, clusterTag)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list droplets: %v", err)
 	}
@@ -84,16 +84,40 @@ func listDroplets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 	return resourceTrackers, nil
 }
 
+func getAllDropletsByTag(cloud *Cloud, tag string) ([]godo.Droplet, error) {
+	allDroplets := []godo.Droplet{}
+
+	opt := &godo.ListOptions{}
+	for {
+		droplets, resp, err := cloud.Droplets().ListByTag(context.TODO(), tag, opt)
+		if err != nil {
+			return nil, err
+		}
+
+		allDroplets = append(allDroplets, droplets...)
+
+		if resp.Links == nil || resp.Links.IsLastPage() {
+			break
+		}
+
+		page, err := resp.Links.CurrentPage()
+		if err != nil {
+			return nil, err
+		}
+
+		opt.Page = page + 1
+	}
+
+	return allDroplets, nil
+}
+
 func listVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(*Cloud)
 	var resourceTrackers []*resources.Resource
 
 	volumeMatch := strings.Replace(clusterName, ".", "-", -1)
 
-	volumes, _, err := c.Volumes().ListVolumes(context.TODO(), &godo.ListVolumeParams{
-		Region: c.Region,
-	})
-
+	volumes, err := getAllVolumesByRegion(c, c.Region)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list volumes: %s", err)
 	}
@@ -119,6 +143,38 @@ func listVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 	}
 
 	return resourceTrackers, nil
+}
+
+func getAllVolumesByRegion(cloud *Cloud, region string) ([]godo.Volume, error) {
+	allVolumes := []godo.Volume{}
+
+	opt := &godo.ListOptions{}
+	for {
+		volumes, resp, err := cloud.Volumes().ListVolumes(context.TODO(), &godo.ListVolumeParams{
+			Region:      region,
+			ListOptions: opt,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		allVolumes = append(allVolumes, volumes...)
+
+		if resp.Links == nil || resp.Links.IsLastPage() {
+			break
+		}
+
+		page, err := resp.Links.CurrentPage()
+		if err != nil {
+			return nil, err
+		}
+
+		opt.Page = page + 1
+	}
+
+	return allVolumes, nil
+
 }
 
 func deleteDroplet(cloud fi.Cloud, t *resources.Resource) error {
