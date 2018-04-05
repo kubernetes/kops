@@ -142,7 +142,8 @@ spec:
           successThreshold: 1
           failureThreshold: 5
         args:
-        - --cache-size=1000
+        - --cache-size={{ KubeDNS.CacheMaxSize }}
+        - --dns-forward-max={{ KubeDNS.CacheMaxConcurrent }}
         - --no-resolv
         - --server=127.0.0.1#10053
         - --log-facility=-
