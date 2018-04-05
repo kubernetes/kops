@@ -338,7 +338,7 @@ func TestNewResourceRecordSet(t *testing.T) {
 		t.Errorf("unexpected number of records: %d", len(rrsets))
 	}
 
-	records, err := rrset.Get("test")
+	records, err := rrset.Get("test.example.com")
 	if err != nil {
 		t.Errorf("unexpected error getting resource record set: %v", err)
 	}
@@ -347,7 +347,7 @@ func TestNewResourceRecordSet(t *testing.T) {
 		t.Errorf("unexpected records from resource record set: %d, expected 1 record", len(records))
 	}
 
-	if records[0].Name() != "test" {
+	if records[0].Name() != "test.example.com" {
 		t.Errorf("unexpected record name: %s, expected 'test'", records[0].Name())
 	}
 
