@@ -2357,6 +2357,8 @@ func autoConvert_v1alpha2_KubeDNSConfig_To_kops_KubeDNSConfig(in *KubeDNSConfig,
 	out.Replicas = in.Replicas
 	out.Domain = in.Domain
 	out.ServerIP = in.ServerIP
+	out.CacheMaxSize = in.CacheMaxSize
+	out.CacheMaxConcurrent = in.CacheMaxConcurrent
 	return nil
 }
 
@@ -2370,6 +2372,8 @@ func autoConvert_kops_KubeDNSConfig_To_v1alpha2_KubeDNSConfig(in *kops.KubeDNSCo
 	out.Replicas = in.Replicas
 	out.Domain = in.Domain
 	out.ServerIP = in.ServerIP
+	out.CacheMaxSize = in.CacheMaxSize
+	out.CacheMaxConcurrent = in.CacheMaxConcurrent
 	return nil
 }
 
@@ -2389,6 +2393,7 @@ func autoConvert_v1alpha2_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyC
 	out.HostnameOverride = in.HostnameOverride
 	out.Master = in.Master
 	out.Enabled = in.Enabled
+	out.ProxyMode = in.ProxyMode
 	out.FeatureGates = in.FeatureGates
 	return nil
 }
@@ -2409,6 +2414,7 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha2_KubeProxyConfig(in *kops.KubeP
 	out.HostnameOverride = in.HostnameOverride
 	out.Master = in.Master
 	out.Enabled = in.Enabled
+	out.ProxyMode = in.ProxyMode
 	out.FeatureGates = in.FeatureGates
 	return nil
 }

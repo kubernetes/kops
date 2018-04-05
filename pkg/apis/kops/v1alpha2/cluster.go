@@ -293,6 +293,10 @@ type KubeDNSConfig struct {
 	Replicas int    `json:"replicas,omitempty"`
 	Domain   string `json:"domain,omitempty"`
 	ServerIP string `json:"serverIP,omitempty"`
+	// CacheMaxSize is the maximum entries to keep in dnsmaq
+	CacheMaxSize int `json:"cacheMaxSize,omitempty"`
+	// CacheMaxConcurrent is the maximum number of concurrent queries for dnsmasq
+	CacheMaxConcurrent int `json:"cacheMaxConcurrent,omitempty"`
 }
 
 // ExternalDNSConfig are options of the dns-controller
