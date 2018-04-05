@@ -94,6 +94,7 @@ kube-ingress-aws-controller, which we will use:
     "autoscaling:DetachLoadBalancers",
     "autoscaling:DetachLoadBalancerTargetGroups",
     "autoscaling:AttachLoadBalancerTargetGroups",
+    "autoscaling:DescribeLoadBalancerTargetGroups",
     "cloudformation:*",
     "elasticloadbalancing:*",
     "elasticloadbalancingv2:*",
