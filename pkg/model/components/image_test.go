@@ -42,7 +42,7 @@ func TestImage(t *testing.T) {
 					KubernetesVersion: "v1.9.0",
 				},
 			},
-			Expected: "gcr.io/google_containers/kube-apiserver:v1.9.0",
+			Expected: "k8s.gcr.io/kube-apiserver:v1.9.0",
 		},
 		{
 			Component: "kube-apiserver",
@@ -72,7 +72,7 @@ func TestImage(t *testing.T) {
 			VFS: map[string]string{
 				"memfs://v1.9.0-download/bin/linux/amd64/kube-apiserver.docker_tag": "1-9-0dockertag",
 			},
-			Expected: "gcr.io/google_containers/kube-apiserver:1-9-0dockertag",
+			Expected: "k8s.gcr.io/kube-apiserver:1-9-0dockertag",
 		},
 		{
 			Component: "kube-apiserver",

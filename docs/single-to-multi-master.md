@@ -175,7 +175,7 @@ Reinitialize the etcd instances:
 * Delete the containers and the data directories:
 
 ```bash
-root@ip-172-20-116-230:~# docker stop $(docker ps | grep "gcr.io/google_containers/etcd" | awk '{print $1}')
+root@ip-172-20-116-230:~# docker stop $(docker ps | grep "k8s.gcr.io/etcd" | awk '{print $1}')
 root@ip-172-20-116-230:~# rm -r /mnt/master-vol-03b97b1249caf379a/var/etcd/data-events/member/
 root@ip-172-20-116-230:~# rm -r /mnt/master-vol-0dbfd1f3c60b8c509/var/etcd/data/member/
 ```
@@ -247,7 +247,7 @@ $ kubectl --namespace=kube-system exec etcd-server-ip-172-20-36-161.ec2.internal
  * Delete the containers and the data directories:
 
  ```bash
- root@ip-172-20-139-130:~# docker stop $(docker ps | grep "gcr.io/google_containers/etcd" | awk '{print $1}')
+ root@ip-172-20-139-130:~# docker stop $(docker ps | grep "k8s.gcr.io/etcd" | awk '{print $1}')
  root@ip-172-20-139-130:~# rm -r /mnt/master-vol-019796c3511a91b4f//var/etcd/data-events/member/
  root@ip-172-20-139-130:~# rm -r /mnt/master-vol-0c89fd6f6a256b686/var/etcd/data/member/
  ```

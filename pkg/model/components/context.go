@@ -172,7 +172,7 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 	// This also means that we won't start using the aliased names on existing clusters,
 	// which could otherwise be surprising to users.
 	if !kubernetesVersion.IsGTE("1.10") {
-		image = "gcr.io/google_containers/" + strings.TrimPrefix(image, "k8s.gcr.io/")
+		image = "k8s.gcr.io/" + strings.TrimPrefix(image, "k8s.gcr.io/")
 	}
 
 	return image, nil

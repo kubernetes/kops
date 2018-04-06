@@ -132,7 +132,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 	// This also means that we won't start using the aliased names on existing clusters,
 	// which could otherwise be surprising to users.
 	if !util.IsKubernetesGTE("1.10", a.KubernetesVersion) && strings.HasPrefix(image, "k8s.gcr.io/") {
-		image = "gcr.io/google_containers/" + strings.TrimPrefix(image, "k8s.gcr.io/")
+		image = "k8s.gcr.io/" + strings.TrimPrefix(image, "k8s.gcr.io/")
 	}
 
 	if strings.HasPrefix(image, "kope/dns-controller:") {
