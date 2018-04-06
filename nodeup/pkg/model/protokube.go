@@ -116,7 +116,7 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 
 	// add kubectl only if a master
 	// path changes depending on distro, and always mount it on /opt/kops/bin
-	// kubectl is downloaded an installed by other tasks
+	// kubectl is downloaded and installed by other tasks
 	if t.IsMaster {
 		dockerArgs = append(dockerArgs, []string{
 			"-v", t.KubectlPath() + ":/opt/kops/bin:ro",
