@@ -26,13 +26,15 @@ import (
 
 	"github.com/digitalocean/godo"
 
+	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 const (
-	resourceTypeDroplet = "droplet"
-	resourceTypeVolume  = "volume"
+	resourceTypeDroplet   = "droplet"
+	resourceTypeVolume    = "volume"
+	resourceTypeDNSRecord = "dns-record"
 )
 
 type listFn func(fi.Cloud, string) ([]*resources.Resource, error)
@@ -43,6 +45,7 @@ func ListResources(cloud *Cloud, clusterName string) (map[string]*resources.Reso
 	listFunctions := []listFn{
 		listVolumes,
 		listDroplets,
+		listDNS,
 	}
 
 	for _, fn := range listFunctions {
@@ -174,7 +177,79 @@ func getAllVolumesByRegion(cloud *Cloud, region string) ([]godo.Volume, error) {
 	}
 
 	return allVolumes, nil
+}
 
+func listDNS(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	c := cloud.(*Cloud)
+
+	domains, _, err := c.Client.Domains.List(context.TODO(), &godo.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list domains: %s", err)
+	}
+
+	var domainName string
+	for _, domain := range domains {
+		if strings.HasSuffix(clusterName, domain.Name) {
+			domainName = domain.Name
+		}
+	}
+
+	if domainName == "" {
+		return nil, fmt.Errorf("failed to find domain for cluster: %s", clusterName)
+	}
+
+	records, err := getAllRecordsByDomain(c, domainName)
+	if err != nil {
+		return nil, fmt.Errorf("faile to list records for domain %s: %s", domainName, err)
+	}
+
+	var resourceTrackers []*resources.Resource
+	for _, record := range records {
+		if !strings.HasSuffix(dns.EnsureDotSuffix(record.Name)+domainName, clusterName) {
+			continue
+		}
+
+		resourceTracker := &resources.Resource{
+			Name: record.Name,
+			ID:   strconv.Itoa(record.ID),
+			Type: resourceTypeDNSRecord,
+			Deleter: func(cloud fi.Cloud, resourceTracker *resources.Resource) error {
+				return deleteRecord(cloud, domainName, resourceTracker)
+			},
+			Obj: record,
+		}
+
+		resourceTrackers = append(resourceTrackers, resourceTracker)
+	}
+
+	return resourceTrackers, nil
+}
+
+func getAllRecordsByDomain(cloud *Cloud, domain string) ([]godo.DomainRecord, error) {
+	allRecords := []godo.DomainRecord{}
+
+	opt := &godo.ListOptions{}
+	for {
+		records, resp, err := cloud.Client.Domains.Records(context.TODO(), domain, opt)
+		if err != nil {
+			return nil, err
+		}
+
+		allRecords = append(allRecords, records...)
+
+		if resp.Links == nil || resp.Links.IsLastPage() {
+			break
+		}
+
+		page, err := resp.Links.CurrentPage()
+		if err != nil {
+			return nil, err
+		}
+
+		opt.Page = page + 1
+	}
+
+	return allRecords, nil
 }
 
 func deleteDroplet(cloud fi.Cloud, t *resources.Resource) error {
@@ -210,6 +285,18 @@ func deleteVolume(cloud fi.Cloud, t *resources.Resource) error {
 	_, err := c.Volumes().DeleteVolume(context.TODO(), t.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete volume: %s, err: %s", t.ID, err)
+	}
+
+	return nil
+}
+
+func deleteRecord(cloud fi.Cloud, domain string, t *resources.Resource) error {
+	c := cloud.(*Cloud)
+	record := t.Obj.(godo.DomainRecord)
+
+	_, err := c.Client.Domains.DeleteRecord(context.TODO(), domain, record.ID)
+	if err != nil {
+		return fmt.Errorf("failed to delete record for domain %s: %d", domain, record.ID)
 	}
 
 	return nil
