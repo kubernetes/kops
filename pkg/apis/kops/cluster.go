@@ -304,7 +304,7 @@ type ExternalDNSConfig struct {
 	Disable bool `json:"disable,omitempty"`
 	// WatchIngress indicates you want the dns-controller to watch and create dns entries for ingress resources
 	WatchIngress *bool `json:"watchIngress,omitempty"`
-	// WatchNamespace is namespace to watch, detaults to all (use to control whom can creates dns entries)
+	// WatchNamespace is namespace to watch, defaults to all (use to control whom can creates dns entries)
 	WatchNamespace string `json:"watchNamespace,omitempty"`
 }
 
