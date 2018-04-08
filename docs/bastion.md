@@ -62,7 +62,7 @@ The default bastion name is `bastion.$NAME` as in
 bastion.mycluster.example.com
 ```
 
-Unless a user is using `--dns-zone` which will inherently use the `basion-$ZONE` syntax.
+Unless a user is using `--dns-zone` which will inherently use the `bastion-$ZONE` syntax.
 
 You can define a custom bastion CNAME by editing the main cluster config `kops edit cluster $NAME` and modifying the following block
 
