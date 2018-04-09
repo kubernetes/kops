@@ -16,8 +16,15 @@ limitations under the License.
 
 package openstackmodel
 
-import "k8s.io/kops/pkg/model"
+import (
+	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
+)
 
 type OpenstackModelContext struct {
 	*model.KopsModelContext
+}
+
+func (c *OpenstackModelContext) LinkToNetwork() *openstacktasks.Network {
+	return &openstacktasks.Network{Name: s(c.ClusterName())}
 }

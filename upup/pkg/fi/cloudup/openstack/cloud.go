@@ -28,6 +28,7 @@ import (
 	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -98,6 +99,12 @@ type OpenstackCloud interface {
 
 	//CreateRouter will create a new Neutron router
 	CreateRouter(opt routers.CreateOptsBuilder) (*routers.Router, error)
+
+	//ListSubnets will return the Neutron subnets which match the options
+	ListSubnets(opt subnets.ListOptsBuilder) ([]subnets.Subnet, error)
+
+	//CreateSubnet will create a new Neutron subnet
+	CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.Subnet, error)
 }
 
 type openstackCloud struct {
@@ -429,5 +436,50 @@ func (c *openstackCloud) CreateRouter(opt routers.CreateOptsBuilder) (*routers.R
 		return r, nil
 	} else {
 		return r, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) ListSubnets(opt subnets.ListOptsBuilder) ([]subnets.Subnet, error) {
+	var s []subnets.Subnet
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		allPages, err := subnets.List(c.neutronClient, opt).AllPages()
+		if err != nil {
+			return false, fmt.Errorf("error listing subnets: %v", err)
+		}
+
+		r, err := subnets.ExtractSubnets(allPages)
+		if err != nil {
+			return false, fmt.Errorf("error extracting subnets from pages: %v", err)
+		}
+		s = r
+		return true, nil
+	})
+	if err != nil {
+		return s, err
+	} else if done {
+		return s, nil
+	} else {
+		return s, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.Subnet, error) {
+	var s *subnets.Subnet
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		v, err := subnets.Create(c.neutronClient, opt).Extract()
+		if err != nil {
+			return false, fmt.Errorf("error creating subnet: %v", err)
+		}
+		s = v
+		return true, nil
+	})
+	if err != nil {
+		return s, err
+	} else if done {
+		return s, nil
+	} else {
+		return s, wait.ErrWaitTimeout
 	}
 }
