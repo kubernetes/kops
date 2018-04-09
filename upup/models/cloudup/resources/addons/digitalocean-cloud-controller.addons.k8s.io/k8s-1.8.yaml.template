@@ -52,12 +52,16 @@ spec:
         command:
           - "/bin/digitalocean-cloud-controller-manager"
           - "--cloud-provider=digitalocean"
-          - "--leader-elect=false"
+          - "--leader-elect=true"
         resources:
           requests:
             cpu: 100m
             memory: 50Mi
         env:
+          - name: KUBERNETES_SERVICE_HOST
+            value: "127.0.0.1"
+          - name: KUBERNETES_SERVICE_PORT
+            value: "443"
           - name: DO_ACCESS_TOKEN
             valueFrom:
               secretKeyRef:
