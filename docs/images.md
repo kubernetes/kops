@@ -16,9 +16,9 @@ specifier, if equivalent images have been copied to various regions with the sam
 
 For example, to use Ubuntu 16.04, you could specify:
 
-`image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20160830`
+`image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20180405`
 
-You can find the name for an image using e.g. `aws ec2 describe-images --image-id ami-a3641cb4`
+You can find the name for an image using e.g. `aws ec2 describe-images --image-id ami-493f2f29`
 
 (Please note that ubuntu is currently undergoing validation testing with k8s - use at your own risk!)
 
@@ -60,10 +60,10 @@ Ubuntu 16.04 or later is required (we require systemd).
 
 For example, to use Ubuntu 16.04, you could specify:
 
-`image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20160830`
+`image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20180405`
 
 You can find the name for an image by first consulting [Ubuntu's image finder](https://cloud-images.ubuntu.com/locator/),
-and then using e.g. `aws ec2 describe-images --image-id ami-a3641cb4`
+and then using e.g. `aws ec2 describe-images --image-id ami-493f2f29`
 
 ## CentOS
 
