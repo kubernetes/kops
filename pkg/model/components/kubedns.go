@@ -36,6 +36,15 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	clusterSpec.KubeDNS.Replicas = 2
+
+	if clusterSpec.KubeDNS.CacheMaxSize == 0 {
+		clusterSpec.KubeDNS.CacheMaxSize = 1000
+	}
+
+	if clusterSpec.KubeDNS.CacheMaxConcurrent == 0 {
+		clusterSpec.KubeDNS.CacheMaxConcurrent = 150
+	}
+
 	ip, err := WellKnownServiceIP(clusterSpec, 10)
 	if err != nil {
 		return err
