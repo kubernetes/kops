@@ -85,7 +85,8 @@ func PerformAssignments(c *kops.Cluster) error {
 	}
 
 	// We only assign subnet CIDRs on AWS
-	if cloud.ProviderID() == kops.CloudProviderAWS {
+	pd := cloud.ProviderID()
+	if pd == kops.CloudProviderAWS || pd == kops.CloudProviderOpenstack {
 		// TODO: Use vpcInfo
 		err = assignCIDRsToSubnets(c)
 		if err != nil {
