@@ -74,7 +74,7 @@ func newClient() (*godo.Client, error) {
 		AccessToken: accessToken,
 	}
 
-	oauthClient := oauth2.NewClient(oauth2.NoContext, tokenSource)
+	oauthClient := oauth2.NewClient(context.TODO(), tokenSource)
 	return godo.NewClient(oauthClient), nil
 }
 

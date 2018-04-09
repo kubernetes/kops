@@ -101,19 +101,3 @@ func (a *Addons) wrapInAddons() ([]*Addon, error) {
 	}
 	return addons, nil
 }
-
-func (s *Addon) matches(kubernetesVersion semver.Version) bool {
-	if s.Spec.KubernetesVersion != "" {
-		versionRange, err := semver.ParseRange(s.Spec.KubernetesVersion)
-		if err != nil {
-			glog.Warningf("unable to parse KubernetesVersion %q; skipping", s.Spec.KubernetesVersion)
-			return false
-		}
-		if !versionRange(kubernetesVersion) {
-			glog.V(4).Infof("Skipping version range %q that does not match current version %s", s.Spec.KubernetesVersion, kubernetesVersion)
-			return false
-		}
-	}
-
-	return true
-}

@@ -235,7 +235,7 @@ func sovMesh(x uint64) (n int) {
 	return n
 }
 func sozMesh(x uint64) (n int) {
-	return sovMesh(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+	return sovMesh(uint64((x << 1) ^ uint64(int64(x)>>63)))
 }
 func (this *KVState) String() string {
 	if this == nil {

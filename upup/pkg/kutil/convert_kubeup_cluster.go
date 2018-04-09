@@ -480,7 +480,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}
 
-	oldCACertPool, err := oldKeyStore.CertificatePool(fi.CertificateId_CA, true)
+	oldCACertPool, err := oldKeyStore.FindCertificatePool(fi.CertificateId_CA)
 	if err != nil {
 		return fmt.Errorf("error reading old CA certs: %v", err)
 	}

@@ -25,6 +25,8 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/oauth2"
 
+	"context"
+
 	"k8s.io/api/core/v1"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
@@ -70,7 +72,7 @@ func NewCloud(region string) (*Cloud, error) {
 		AccessToken: accessToken,
 	}
 
-	oauthClient := oauth2.NewClient(oauth2.NoContext, tokenSource)
+	oauthClient := oauth2.NewClient(context.TODO(), tokenSource)
 	client := godo.NewClient(oauthClient)
 
 	return &Cloud{

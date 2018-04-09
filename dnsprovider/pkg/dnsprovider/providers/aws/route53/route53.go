@@ -62,8 +62,11 @@ func newRoute53(config io.Reader) (*Interface, error) {
 	// This avoids a confusing error message when we fail to get credentials
 	// e.g. https://github.com/kubernetes/kops/issues/605
 	awsConfig = awsConfig.WithCredentialsChainVerboseErrors(true)
-
-	svc := route53.New(session.New(), awsConfig)
+	awsSession, err := session.NewSession()
+	if err != nil {
+		return nil, err
+	}
+	svc := route53.New(awsSession, awsConfig)
 
 	// Add our handler that will log requests
 	svc.Handlers.Sign.PushFrontNamed(request.NamedHandler{

@@ -20,8 +20,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"path/filepath"
-	"strings"
-	"text/template"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -104,10 +102,4 @@ func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []
 	}
 
 	return nil
-}
-
-// @perhaps a path finder?
-var templateFuncs = template.FuncMap{
-	"split": strings.Split,
-	"join":  strings.Join,
 }

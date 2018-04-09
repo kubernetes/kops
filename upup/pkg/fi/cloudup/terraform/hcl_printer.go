@@ -124,7 +124,7 @@ func hclPrint(node ast.Node) ([]byte, error) {
 	if err != nil {
 		glog.Errorf("Invalid HCL follows:")
 		for i, line := range strings.Split(s, "\n") {
-			glog.Errorf("%d\t%s", (i + 1), line)
+			glog.Errorf("%d\t%s", i+1, line)
 		}
 		return nil, fmt.Errorf("error formatting HCL: %v", err)
 	}

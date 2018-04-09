@@ -87,7 +87,7 @@ func GetNodeMap(nodes []v1.Node) map[string]*v1.Node {
 	nodeMap := make(map[string]*v1.Node)
 	for i := range nodes {
 		node := &nodes[i]
-		nodeMap[node.Spec.ExternalID] = node
+		nodeMap[node.Spec.ProviderID] = node
 	}
 
 	return nodeMap

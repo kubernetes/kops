@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/kubernetes"
@@ -141,4 +142,20 @@ func (a *Addon) EnsureUpdated(k8sClient kubernetes.Interface) (*AddonUpdate, err
 	}
 
 	return required, nil
+}
+
+func (a *Addon) matches(kubernetesVersion semver.Version) bool {
+	if a.Spec.KubernetesVersion != "" {
+		versionRange, err := semver.ParseRange(a.Spec.KubernetesVersion)
+		if err != nil {
+			glog.Warningf("unable to parse KubernetesVersion %q; skipping", a.Spec.KubernetesVersion)
+			return false
+		}
+		if !versionRange(kubernetesVersion) {
+			glog.V(4).Infof("Skipping version range %q that does not match current version %s", a.Spec.KubernetesVersion, kubernetesVersion)
+			return false
+		}
+	}
+
+	return true
 }

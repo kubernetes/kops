@@ -34,7 +34,7 @@ const CloudConfigFilePath = "/etc/kubernetes/cloud.config"
 const MinimumVersionForVMUUID = "1.5.3"
 
 // VM UUID is set by cloud-init
-const VM_UUID_FILE_PATH = "/etc/vmware/vm_uuid"
+const VMUUIDFilePath = "/etc/vmware/vm_uuid"
 
 // CloudConfigBuilder creates the cloud configuration file
 type CloudConfigBuilder struct {
@@ -73,7 +73,7 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 			lines = append(lines, "ElbSecurityGroup = "+*cloudConfig.ElbSecurityGroup)
 		}
 	case "vsphere":
-		vm_uuid, err := getVMUUID(b.Cluster.Spec.KubernetesVersion)
+		vmUUID, err := getVMUUID(b.Cluster.Spec.KubernetesVersion)
 		if err != nil {
 			return err
 		}
@@ -96,8 +96,8 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		if cloudConfig.VSphereDatastore != nil {
 			lines = append(lines, "datastore = "+*cloudConfig.VSphereDatastore)
 		}
-		if vm_uuid != "" {
-			lines = append(lines, "vm-uuid = "+strings.Trim(vm_uuid, "\n"))
+		if vmUUID != "" {
+			lines = append(lines, "vm-uuid = "+strings.Trim(vmUUID, "\n"))
 		}
 		// Disk Config for vSphere CloudProvider
 		// We need this to support Kubernetes vSphere CloudProvider < v1.5.3
@@ -132,16 +132,16 @@ func getVMUUID(kubernetesVersion string) (string, error) {
 
 	// VM UUID is required only for Kubernetes version greater than 1.5.3
 	if actualKubernetesVersion.GTE(*minimumVersionForUUID) {
-		file, err := os.Open(VM_UUID_FILE_PATH)
+		file, err := os.Open(VMUUIDFilePath)
 		defer file.Close()
 		if err != nil {
 			return "", err
 		}
-		vm_uuid, err := bufio.NewReader(file).ReadString('\n')
+		vmUUID, err := bufio.NewReader(file).ReadString('\n')
 		if err != nil {
 			return "", err
 		}
-		return vm_uuid, err
+		return vmUUID, err
 	}
 
 	return "", err

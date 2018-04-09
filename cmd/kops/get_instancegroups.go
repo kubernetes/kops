@@ -133,31 +133,31 @@ func RunGetInstanceGroups(options *GetInstanceGroupsOptions, args []string) erro
 }
 
 func buildInstanceGroups(args []string, list *api.InstanceGroupList) ([]*api.InstanceGroup, error) {
-	var instancegroups []*api.InstanceGroup
-	len := len(args)
-	if len != 0 {
+	var instanceGroups []*api.InstanceGroup
+	lenOfArgs := len(args)
+	if lenOfArgs != 0 {
 		m := make(map[string]*api.InstanceGroup)
 		for i := range list.Items {
 			ig := &list.Items[i]
 			m[ig.ObjectMeta.Name] = ig
 		}
-		instancegroups = make([]*api.InstanceGroup, 0, len)
+		instanceGroups = make([]*api.InstanceGroup, 0, lenOfArgs)
 		for _, arg := range args {
 			ig := m[arg]
 			if ig == nil {
 				return nil, fmt.Errorf("instancegroup not found %q", arg)
 			}
 
-			instancegroups = append(instancegroups, ig)
+			instanceGroups = append(instanceGroups, ig)
 		}
 	} else {
 		for i := range list.Items {
 			ig := &list.Items[i]
-			instancegroups = append(instancegroups, ig)
+			instanceGroups = append(instanceGroups, ig)
 		}
 	}
 
-	return instancegroups, nil
+	return instanceGroups, nil
 }
 
 func igOutputTable(cluster *api.Cluster, instancegroups []*api.InstanceGroup, out io.Writer) error {

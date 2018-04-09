@@ -28,6 +28,7 @@ import (
 	dns "google.golang.org/api/dns/v1"
 	gcfg "gopkg.in/gcfg.v1"
 
+	"context"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/stubs"
@@ -80,7 +81,7 @@ func CreateInterface(projectID string, tokenSource oauth2.TokenSource) (*Interfa
 	if tokenSource == nil {
 		var err error
 		tokenSource, err = google.DefaultTokenSource(
-			oauth2.NoContext,
+			context.TODO(),
 			compute.CloudPlatformScope,
 			compute.ComputeScope)
 		glog.V(4).Infof("Using DefaultTokenSource %#v", tokenSource)
@@ -91,7 +92,7 @@ func CreateInterface(projectID string, tokenSource oauth2.TokenSource) (*Interfa
 		glog.Infof("Using existing Token Source %#v", tokenSource)
 	}
 
-	oauthClient := oauth2.NewClient(oauth2.NoContext, tokenSource)
+	oauthClient := oauth2.NewClient(context.TODO(), tokenSource)
 
 	service, err := dns.New(oauthClient)
 	if err != nil {
