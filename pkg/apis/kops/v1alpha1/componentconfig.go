@@ -24,6 +24,8 @@ type KubeletConfigSpec struct {
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 	// AnonymousAuth permits you to control auth to the kubelet api
 	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
+	// AuthorizationMode is the authorization mode the kubelet is running in
+	AuthorizationMode string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
 	// ClientCAFile is the path to a CA certificate
 	ClientCAFile string `json:"clientCaFile,omitempty" flag:"client-ca-file"`
 	// KubeconfigPath is the path of kubeconfig for the kubelet
