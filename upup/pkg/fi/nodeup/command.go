@@ -17,8 +17,8 @@ limitations under the License.
 package nodeup
 
 import (
-	"errors"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"

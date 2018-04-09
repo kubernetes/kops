@@ -59,7 +59,7 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Kopeio is based on kubenet / external
 		assetNames = append(assetNames, "bridge", "host-local", "loopback")
 	} else if networking.AmazonVPCIPVlan != nil {
-		assetNames = append(assetNames, "cni-ipvlan-vpc-k8s-ipam", "cni-ipvlan-vpc-k8s-ipvlan", "cni-ipvlan-vpc-k8s-tool", "cni-ipvlan-vpc-k8s-unnumbered-ptp")
+		assetNames = append(assetNames, "cni-ipvlan-vpc-k8s-ipam", "cni-ipvlan-vpc-k8s-ipvlan", "cni-ipvlan-vpc-k8s-tool", "cni-ipvlan-vpc-k8s-unnumbered-ptp", "loopback")
 	} else {
 		return fmt.Errorf("no networking mode set")
 	}
