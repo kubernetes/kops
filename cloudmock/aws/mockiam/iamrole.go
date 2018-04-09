@@ -42,12 +42,10 @@ func (m *MockIAM) GetRole(request *iam.GetRoleInput) (*iam.GetRoleOutput, error)
 
 func (m *MockIAM) GetRoleWithContext(aws.Context, *iam.GetRoleInput, ...request.Option) (*iam.GetRoleOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockIAM) GetRoleRequest(*iam.GetRoleInput) (*request.Request, *iam.GetRoleOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockIAM) CreateRole(request *iam.CreateRoleInput) (*iam.CreateRoleOutput, error) {
@@ -76,11 +74,9 @@ func (m *MockIAM) CreateRole(request *iam.CreateRoleInput) (*iam.CreateRoleOutpu
 
 func (m *MockIAM) CreateRoleWithContext(aws.Context, *iam.CreateRoleInput, ...request.Option) (*iam.CreateRoleOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockIAM) CreateRoleRequest(*iam.CreateRoleInput) (*request.Request, *iam.CreateRoleOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockIAM) ListRoles(request *iam.ListRolesInput) (*iam.ListRolesOutput, error) {
@@ -109,11 +105,9 @@ func (m *MockIAM) ListRoles(request *iam.ListRolesInput) (*iam.ListRolesOutput, 
 
 func (m *MockIAM) ListRolesWithContext(aws.Context, *iam.ListRolesInput, ...request.Option) (*iam.ListRolesOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockIAM) ListRolesRequest(*iam.ListRolesInput) (*request.Request, *iam.ListRolesOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockIAM) ListRolesPages(request *iam.ListRolesInput, callback func(*iam.ListRolesOutput, bool) bool) error {
@@ -130,7 +124,6 @@ func (m *MockIAM) ListRolesPages(request *iam.ListRolesInput, callback func(*iam
 
 func (m *MockIAM) ListRolesPagesWithContext(aws.Context, *iam.ListRolesInput, func(*iam.ListRolesOutput, bool) bool, ...request.Option) error {
 	panic("Not implemented")
-	return nil
 }
 
 func (m *MockIAM) DeleteRole(request *iam.DeleteRoleInput) (*iam.DeleteRoleOutput, error) {
@@ -150,9 +143,7 @@ func (m *MockIAM) DeleteRole(request *iam.DeleteRoleInput) (*iam.DeleteRoleOutpu
 }
 func (m *MockIAM) DeleteRoleWithContext(aws.Context, *iam.DeleteRoleInput, ...request.Option) (*iam.DeleteRoleOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockIAM) DeleteRoleRequest(*iam.DeleteRoleInput) (*request.Request, *iam.DeleteRoleOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
