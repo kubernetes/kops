@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/util/pkg/ui"
 )
 
-// TestConfirmation attempts to test the majority of the ui.GetConfirm function used in the 'kogs delete' commands
+// TestConfirmation attempts to test the majority of the ui.GetConfirm function used in the 'kops delete' commands
 func TestConfirmation(t *testing.T) {
 	var out bytes.Buffer
 	c := &ui.ConfirmArgs{
