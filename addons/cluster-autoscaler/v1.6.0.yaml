@@ -184,6 +184,14 @@ spec:
       containers:
         - name: cluster-autoscaler
           image: {{IMAGE}}
+          livenessProbe:
+            httpGet:
+              path: /health-check
+              port: 8085
+          readinessProbe:
+            httpGet:
+              path: /health-check
+              port: 8085
           resources:
             limits:
               cpu: 100m
