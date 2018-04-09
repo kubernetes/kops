@@ -39,6 +39,8 @@ BAZELUPLOAD=$(BAZELBUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
 TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor" hack/.packages)
+# We need to ignore clientsets because of kubernetes/kubernetes#60584
+GOVETABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor|clientset/fake" hack/.packages)
 BAZEL_OPTIONS?=
 API_OPTIONS?=
 
@@ -479,7 +481,7 @@ verify-goimports:
 
 .PHONY: govet
 govet: ${BINDATA_TARGETS}
-	go vet ${TESTABLE_PACKAGES}
+	go vet ${GOVETABLE_PACKAGES}
 
 # --------------------------------------------------
 # Continuous integration targets
