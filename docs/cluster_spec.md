@@ -74,6 +74,8 @@ etcdClusters:
   version: 3.0.17
 ```
 
+> __Note:__ The images for etcd that kops uses are from the Google Cloud Repository. Google doesn't release every version of etcd to the gcr. Check that the version of etcd you want to use is available [at the gcr](https://console.cloud.google.com/gcr/images/google-containers/GLOBAL/etcd?gcrImageListsize=50) before using it in your cluster spec.
+
 ### sshAccess
 
 This array configures the CIDRs that are able to ssh into nodes. On AWS this is manifested as inbound security group rules on the `nodes` and `master` security groups.
