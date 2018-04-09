@@ -448,12 +448,30 @@ func deleteDomain(c *godo.Client, name string) error {
 
 // getRecords returns a list of godo.DomainRecord given a zone name
 func getRecords(c *godo.Client, zoneName string) ([]godo.DomainRecord, error) {
-	records, _, err := c.Domains.Records(context.TODO(), zoneName, &godo.ListOptions{})
-	if err != nil {
-		return nil, err
+	allRecords := []godo.DomainRecord{}
+
+	opt := &godo.ListOptions{}
+	for {
+		records, resp, err := c.Domains.Records(context.TODO(), zoneName, opt)
+		if err != nil {
+			return nil, err
+		}
+
+		allRecords = append(allRecords, records...)
+
+		if resp.Links == nil || resp.Links.IsLastPage() {
+			break
+		}
+
+		page, err := resp.Links.CurrentPage()
+		if err != nil {
+			return nil, err
+		}
+
+		opt.Page = page + 1
 	}
 
-	return records, nil
+	return allRecords, nil
 }
 
 // getRecordsByName returns a list of godo.DomainRecord based on the provided zone and name

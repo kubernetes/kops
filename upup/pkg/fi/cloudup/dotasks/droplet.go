@@ -52,9 +52,8 @@ func (d *Droplet) CompareWithID() *string {
 
 func (d *Droplet) Find(c *fi.Context) (*Droplet, error) {
 	cloud := c.Cloud.(*digitalocean.Cloud)
-	dropletService := cloud.Droplets()
 
-	droplets, _, err := dropletService.List(context.TODO(), &godo.ListOptions{})
+	droplets, err := listDroplets(cloud)
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +84,33 @@ func (d *Droplet) Find(c *fi.Context) (*Droplet, error) {
 		UserData:  d.UserData, // TODO: get from droplet or ignore change
 		Lifecycle: d.Lifecycle,
 	}, nil
+}
+
+func listDroplets(cloud *digitalocean.Cloud) ([]godo.Droplet, error) {
+	allDroplets := []godo.Droplet{}
+
+	opt := &godo.ListOptions{}
+	for {
+		droplets, resp, err := cloud.Droplets().List(context.TODO(), opt)
+		if err != nil {
+			return nil, err
+		}
+
+		allDroplets = append(allDroplets, droplets...)
+
+		if resp.Links == nil || resp.Links.IsLastPage() {
+			break
+		}
+
+		page, err := resp.Links.CurrentPage()
+		if err != nil {
+			return nil, err
+		}
+
+		opt.Page = page + 1
+	}
+
+	return allDroplets, nil
 }
 
 func (d *Droplet) Run(c *fi.Context) error {
@@ -121,8 +147,7 @@ func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
 		dropletNames = append(dropletNames, fi.StringValue(e.Name))
 	}
 
-	dropletService := t.Cloud.Droplets()
-	_, _, err = dropletService.CreateMultiple(context.TODO(), &godo.DropletMultiCreateRequest{
+	_, _, err = t.Cloud.Droplets().CreateMultiple(context.TODO(), &godo.DropletMultiCreateRequest{
 		Names:             dropletNames,
 		Region:            fi.StringValue(e.Region),
 		Size:              fi.StringValue(e.Size),
