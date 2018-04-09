@@ -41,11 +41,9 @@ func (m *MockIAM) GetInstanceProfile(request *iam.GetInstanceProfileInput) (*iam
 }
 func (m *MockIAM) GetInstanceProfileWithContext(aws.Context, *iam.GetInstanceProfileInput, ...request.Option) (*iam.GetInstanceProfileOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockIAM) GetInstanceProfileRequest(*iam.GetInstanceProfileInput) (*request.Request, *iam.GetInstanceProfileOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockIAM) CreateInstanceProfile(request *iam.CreateInstanceProfileInput) (*iam.CreateInstanceProfileOutput, error) {
@@ -84,11 +82,9 @@ func (m *MockIAM) CreateInstanceProfile(request *iam.CreateInstanceProfileInput)
 }
 func (m *MockIAM) CreateInstanceProfileWithContext(aws.Context, *iam.CreateInstanceProfileInput, ...request.Option) (*iam.CreateInstanceProfileOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockIAM) CreateInstanceProfileRequest(*iam.CreateInstanceProfileInput) (*request.Request, *iam.CreateInstanceProfileOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockIAM) AddRoleToInstanceProfile(request *iam.AddRoleToInstanceProfileInput) (*iam.AddRoleToInstanceProfileOutput, error) {
 	m.mutex.Lock()
@@ -112,12 +108,10 @@ func (m *MockIAM) AddRoleToInstanceProfile(request *iam.AddRoleToInstanceProfile
 
 func (m *MockIAM) AddRoleToInstanceProfileWithContext(aws.Context, *iam.AddRoleToInstanceProfileInput, ...request.Option) (*iam.AddRoleToInstanceProfileOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockIAM) AddRoleToInstanceProfileRequest(*iam.AddRoleToInstanceProfileInput) (*request.Request, *iam.AddRoleToInstanceProfileOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockIAM) RemoveRoleFromInstanceProfile(request *iam.RemoveRoleFromInstanceProfileInput) (*iam.RemoveRoleFromInstanceProfileOutput, error) {
@@ -151,11 +145,9 @@ func (m *MockIAM) RemoveRoleFromInstanceProfile(request *iam.RemoveRoleFromInsta
 
 func (m *MockIAM) RemoveRoleFromInstanceProfileWithContext(aws.Context, *iam.RemoveRoleFromInstanceProfileInput, ...request.Option) (*iam.RemoveRoleFromInstanceProfileOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockIAM) RemoveRoleFromInstanceProfileRequest(*iam.RemoveRoleFromInstanceProfileInput) (*request.Request, *iam.RemoveRoleFromInstanceProfileOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockIAM) ListInstanceProfiles(request *iam.ListInstanceProfilesInput) (*iam.ListInstanceProfilesOutput, error) {
@@ -184,12 +176,10 @@ func (m *MockIAM) ListInstanceProfiles(request *iam.ListInstanceProfilesInput) (
 
 func (m *MockIAM) ListInstanceProfilesWithContext(aws.Context, *iam.ListInstanceProfilesInput, ...request.Option) (*iam.ListInstanceProfilesOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockIAM) ListInstanceProfilesRequest(*iam.ListInstanceProfilesInput) (*request.Request, *iam.ListInstanceProfilesOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockIAM) ListInstanceProfilesPages(request *iam.ListInstanceProfilesInput, callback func(*iam.ListInstanceProfilesOutput, bool) bool) error {
@@ -206,7 +196,6 @@ func (m *MockIAM) ListInstanceProfilesPages(request *iam.ListInstanceProfilesInp
 
 func (m *MockIAM) ListInstanceProfilesPagesWithContext(aws.Context, *iam.ListInstanceProfilesInput, func(*iam.ListInstanceProfilesOutput, bool) bool, ...request.Option) error {
 	panic("Not implemented")
-	return nil
 }
 
 func (m *MockIAM) DeleteInstanceProfile(request *iam.DeleteInstanceProfileInput) (*iam.DeleteInstanceProfileOutput, error) {
@@ -227,9 +216,7 @@ func (m *MockIAM) DeleteInstanceProfile(request *iam.DeleteInstanceProfileInput)
 
 func (m *MockIAM) DeleteInstanceProfileWithContext(aws.Context, *iam.DeleteInstanceProfileInput, ...request.Option) (*iam.DeleteInstanceProfileOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockIAM) DeleteInstanceProfileRequest(*iam.DeleteInstanceProfileInput) (*request.Request, *iam.DeleteInstanceProfileOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
