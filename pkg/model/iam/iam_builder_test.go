@@ -39,18 +39,16 @@ func TestRoundTrip(t *testing.T) {
 				Effect:   StatementEffectAllow,
 				Action:   stringorslice.Of("ec2:DescribeRegions"),
 				Resource: stringorslice.Of("*"),
-				Sid:      "foo",
 			},
-			JSON: "{\"Sid\":\"foo\",\"Effect\":\"Allow\",\"Action\":\"ec2:DescribeRegions\",\"Resource\":\"*\"}",
+			JSON: "{\"Effect\":\"Allow\",\"Action\":\"ec2:DescribeRegions\",\"Resource\":\"*\"}",
 		},
 		{
 			IAM: &Statement{
 				Effect:   StatementEffectDeny,
 				Action:   stringorslice.Of("ec2:DescribeRegions", "ec2:DescribeInstances"),
 				Resource: stringorslice.Of("a", "b"),
-				Sid:      "foo",
 			},
-			JSON: "{\"Sid\":\"foo\",\"Effect\":\"Deny\",\"Action\":[\"ec2:DescribeRegions\",\"ec2:DescribeInstances\"],\"Resource\":[\"a\",\"b\"]}",
+			JSON: "{\"Effect\":\"Deny\",\"Action\":[\"ec2:DescribeRegions\",\"ec2:DescribeInstances\"],\"Resource\":[\"a\",\"b\"]}",
 		},
 	}
 	for _, g := range grid {
