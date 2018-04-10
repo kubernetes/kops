@@ -330,8 +330,7 @@ type KubeControllerManagerConfig struct {
 	ClusterName string `json:"clusterName,omitempty" flag:"cluster-name"`
 	// ClusterCIDR is CIDR Range for Pods in cluster.
 	ClusterCIDR string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
-	// AllocateNodeCIDRs enables CIDRs for Pods to be allocated and, if
-	// ConfigureCloudRoutes is true, to be set on the cloud provider.
+	// AllocateNodeCIDRs enables CIDRs for Pods to be allocated and, if ConfigureCloudRoutes is true, to be set on the cloud provider.
 	AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty" flag:"allocate-node-cidrs"`
 	// ConfigureCloudRoutes enables CIDRs allocated with to be configured on the cloud provider.
 	ConfigureCloudRoutes *bool `json:"configureCloudRoutes,omitempty" flag:"configure-cloud-routes"`
@@ -444,4 +443,15 @@ type CloudConfiguration struct {
 	VSphereResourcePool  *string `json:"vSphereResourcePool,omitempty"`
 	VSphereDatastore     *string `json:"vSphereDatastore,omitempty"`
 	VSphereCoreDNSServer *string `json:"vSphereCoreDNSServer,omitempty"`
+}
+
+// HasAdmissionController checks if a specific admission controller is enabled
+func (c *KubeAPIServerConfig) HasAdmissionController(name string) bool {
+	for _, x := range c.AdmissionControl {
+		if x == name {
+			return true
+		}
+	}
+
+	return false
 }
