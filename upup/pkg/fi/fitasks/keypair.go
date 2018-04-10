@@ -31,7 +31,7 @@ import (
 var wellKnownCertificateTypes = map[string]string{
 	"ca":           "CA,KeyUsageCRLSign,KeyUsageCertSign",
 	"client":       "ExtKeyUsageClientAuth,KeyUsageDigitalSignature",
-	"clientServer": "ExtKeyUsageServerAuth,KeyUsageDigitalSignature,ExtKeyUsageClientAuth,KeyUsageKeyEncipherment",
+	"clientServer": "ExtKeyUsageClientAuth,ExtKeyUsageServerAuth,KeyUsageDigitalSignature,KeyUsageKeyEncipherment",
 	"server":       "ExtKeyUsageServerAuth,KeyUsageDigitalSignature,KeyUsageKeyEncipherment",
 }
 
