@@ -133,15 +133,17 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *etcd.EtcdClusterSpec
 		cluster.DataDirName = "data"
 		cluster.PodName = "etcd-server"
 		cluster.CPURequest = resource.MustParse("200m")
+
+		// Because we can only specify a single EtcdBackupStore at the moment, we only backup main, not events
+		cluster.BackupImage = kubeBoot.EtcdBackupImage
+		cluster.BackupStore = kubeBoot.EtcdBackupStore
+
 	case "events":
 		cluster.ClientPort = 4002
 		cluster.PeerPort = 2381
 	default:
 		return nil, fmt.Errorf("unknown etcd cluster key %q", spec.ClusterKey)
 	}
-
-	cluster.BackupImage = kubeBoot.EtcdBackupImage
-	cluster.BackupStore = kubeBoot.EtcdBackupStore
 
 	k.cluster = cluster
 
