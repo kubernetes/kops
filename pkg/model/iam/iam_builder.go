@@ -30,6 +30,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/golang/glog"
@@ -60,9 +62,6 @@ func (p *Policy) AsJSON() (string, error) {
 	return string(j), nil
 }
 
-// SID (Statement ID) is an optional identifier for the policy statement
-type SID string
-
 // StatementEffect is required and specifies what type of access the statement results in
 type StatementEffect string
 
@@ -78,7 +77,7 @@ type Condition map[string]interface{}
 // Statement is an AWS IAM Policy Statement Object:
 // http://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements.html#Statement
 type Statement struct {
-	Sid       SID
+	Sid       string
 	Effect    StatementEffect
 	Action    stringorslice.StringOrSlice
 	Resource  stringorslice.StringOrSlice
@@ -304,7 +303,9 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 		}
 	}
 
-	for _, root := range roots {
+	sort.Strings(roots)
+
+	for i, root := range roots {
 		vfsPath, err := vfs.Context.BuildVfsPath(root)
 		if err != nil {
 			return nil, fmt.Errorf("cannot parse VFS path %q: %v", root, err)
@@ -314,8 +315,15 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 			iamS3Path := s3Path.Bucket() + "/" + s3Path.Key()
 			iamS3Path = strings.TrimSuffix(iamS3Path, "/")
 
+			sidSuffix := ""
+			if len(roots) > 1 {
+				// Avoid collisions with multiple buckets
+				// Sids are limited to A-Z,a-z,0-9
+				sidSuffix = strconv.Itoa(i)
+			}
+
 			p.Statement = append(p.Statement, &Statement{
-				Sid:    "kopsK8sS3GetListBucket",
+				Sid:    "kopsK8sS3GetListBucket" + sidSuffix,
 				Effect: StatementEffectAllow,
 				Action: stringorslice.Of("s3:GetBucketLocation", "s3:ListBucket"),
 				Resource: stringorslice.Slice([]string{
@@ -325,7 +333,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 
 			if b.Cluster.Spec.IAM.Legacy {
 				p.Statement = append(p.Statement, &Statement{
-					Sid:    "kopsK8sS3BucketFullAccess",
+					Sid:    "kopsK8sS3BucketFullAccess" + sidSuffix,
 					Effect: StatementEffectAllow,
 					Action: stringorslice.Slice([]string{"s3:*"}),
 					Resource: stringorslice.Of(
@@ -335,7 +343,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 			} else {
 				if b.Role == kops.InstanceGroupRoleMaster {
 					p.Statement = append(p.Statement, &Statement{
-						Sid:    "kopsK8sS3MasterBucketFullGet",
+						Sid:    "kopsK8sS3MasterBucketFullGet" + sidSuffix,
 						Effect: StatementEffectAllow,
 						Action: stringorslice.Slice([]string{"s3:Get*"}),
 						Resource: stringorslice.Of(
@@ -344,7 +352,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 					})
 				} else if b.Role == kops.InstanceGroupRoleNode {
 					p.Statement = append(p.Statement, &Statement{
-						Sid:    "kopsK8sS3NodeBucketSelectiveGet",
+						Sid:    "kopsK8sS3NodeBucketSelectiveGet" + sidSuffix,
 						Effect: StatementEffectAllow,
 						Action: stringorslice.Slice([]string{"s3:Get*"}),
 						Resource: stringorslice.Of(
@@ -364,7 +372,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 						// @check if kuberoute is enabled and permit access to the private key
 						if b.Cluster.Spec.Networking.Kuberouter != nil {
 							p.Statement = append(p.Statement, &Statement{
-								Sid:    "kopsK8sS3NodeBucketGetKuberouter",
+								Sid:    "kopsK8sS3NodeBucketGetKuberouter" + sidSuffix,
 								Effect: StatementEffectAllow,
 								Action: stringorslice.Slice([]string{"s3:Get*"}),
 								Resource: stringorslice.Of(
@@ -376,7 +384,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 						// @check if calico is enabled as the CNI provider and permit access to the client TLS certificate by default
 						if b.Cluster.Spec.Networking.Calico != nil {
 							p.Statement = append(p.Statement, &Statement{
-								Sid:    "kopsK8sS3NodeBucketGetCalicoClient",
+								Sid:    "kopsK8sS3NodeBucketGetCalicoClient" + sidSuffix,
 								Effect: StatementEffectAllow,
 								Action: stringorslice.Slice([]string{"s3:Get*"}),
 								Resource: stringorslice.Of(
@@ -416,7 +424,6 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 				iamS3Path = strings.TrimSuffix(iamS3Path, "/")
 
 				p.Statement = append(p.Statement, &Statement{
-					Sid:    "kopsEtcdBackups",
 					Effect: StatementEffectAllow,
 					Action: stringorslice.Slice([]string{"s3:GetObject", "s3:DeleteObject", "s3:PutObject"}),
 					Resource: stringorslice.Of(
