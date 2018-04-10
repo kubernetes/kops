@@ -188,8 +188,8 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPCIPVlan != nil {
-		addAmazonVPCIPVlanPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
+		addLyftVPCPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
 	}
 
 	return p, nil
@@ -225,8 +225,8 @@ func (b *PolicyBuilder) BuildAWSPolicyNode() (*Policy, error) {
 		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPCIPVlan != nil {
-		addAmazonVPCIPVlanPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
+		addLyftVPCPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
 	}
 
 	return p, nil
@@ -828,7 +828,7 @@ func addRomanaCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, le
 	)
 }
 
-func addAmazonVPCIPVlanPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string) {
+func addLyftVPCPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string) {
 	if legacyIAM {
 		// Legacy IAM provides ec2:*, so no additional permissions required
 		return
