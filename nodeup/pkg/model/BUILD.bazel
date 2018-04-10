@@ -27,6 +27,7 @@ go_library(
         "protokube.go",
         "secrets.go",
         "sysctls.go",
+        "update_service.go",
     ],
     importpath = "k8s.io/kops/nodeup/pkg/model",
     visibility = ["//visibility:public"],
