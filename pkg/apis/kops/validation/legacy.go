@@ -192,7 +192,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		}
 
 
-		if networkCIDR != nil && subnet.Overlap(nonMasqueradeCIDR, networkCIDR) && c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC == nil && c.Spec.Networking.AmazonVPCIPVlan == nil {
+		if networkCIDR != nil && subnet.Overlap(nonMasqueradeCIDR, networkCIDR) && c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC == nil && c.Spec.Networking.LyftVPC == nil {
+
 			return field.Invalid(fieldSpec.Child("NonMasqueradeCIDR"), nonMasqueradeCIDRString, fmt.Sprintf("NonMasqueradeCIDR %q cannot overlap with NetworkCIDR %q", nonMasqueradeCIDRString, c.Spec.NetworkCIDR))
 		}
 
@@ -599,7 +600,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	}
 
 
-	if c.Spec.Networking != nil && (c.Spec.Networking.AmazonVPC != nil || c.Spec.Networking.AmazonVPCIPVlan != nil) &&
+	if c.Spec.Networking != nil && (c.Spec.Networking.AmazonVPC != nil || c.Spec.Networking.LyftVPC != nil) &&
 		c.Spec.CloudProvider != "aws" {
 		return field.Invalid(fieldSpec.Child("Networking"), "amazon-vpc-routed-eni", "amazon-vpc-routed-eni networking is supported only in AWS")
 	}
@@ -613,7 +614,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 			return field.Invalid(fieldSpec.Child("Networking"), "amazon-vpc-routed-eni", "amazon-vpc-routed-eni networking is not supported with kubernetes versions 1.6 or lower")
 		}
 
-		if c.Spec.Networking != nil && c.Spec.Networking.AmazonVPCIPVlan != nil {
+		if c.Spec.Networking != nil && c.Spec.Networking.LyftVPC != nil {
 			return field.Invalid(fieldSpec.Child("Networking"), "cni-ipvlan-vpc-k8s", "cni-ipvlan-vpc-k8s networking is not supported with kubernetes versions 1.6 or lower")
 		}
 	}

@@ -102,8 +102,8 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 		return nil, fmt.Errorf("Networking is not set, and should not be nil here")
 	}
 
-	if networking.AmazonVPCIPVlan != nil {
-		tags.Insert("_amazon_vpc_ipvlan")
+	if networking.LyftVPC != nil {
+		tags.Insert("_lyft_vpc_cni")
 	}
 
 	switch fi.StringValue(cluster.Spec.UpdatePolicy) {

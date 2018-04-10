@@ -18,20 +18,20 @@ package v1alpha2
 
 // NetworkingSpec allows selection and configuration of a networking plugin
 type NetworkingSpec struct {
-	Classic         *ClassicNetworkingSpec         `json:"classic,omitempty"`
-	Kubenet         *KubenetNetworkingSpec         `json:"kubenet,omitempty"`
-	External        *ExternalNetworkingSpec        `json:"external,omitempty"`
-	CNI             *CNINetworkingSpec             `json:"cni,omitempty"`
-	Kopeio          *KopeioNetworkingSpec          `json:"kopeio,omitempty"`
-	Weave           *WeaveNetworkingSpec           `json:"weave,omitempty"`
-	Flannel         *FlannelNetworkingSpec         `json:"flannel,omitempty"`
-	Calico          *CalicoNetworkingSpec          `json:"calico,omitempty"`
-	Canal           *CanalNetworkingSpec           `json:"canal,omitempty"`
-	Kuberouter      *KuberouterNetworkingSpec      `json:"kuberouter,omitempty"`
-	Romana          *RomanaNetworkingSpec          `json:"romana,omitempty"`
-	AmazonVPC       *AmazonVPCNetworkingSpec       `json:"amazonvpc,omitempty"`
-	Cilium          *CiliumNetworkingSpec          `json:"cilium,omitempty"`
-	AmazonVPCIPVlan *AmazonVPCIPVlanNetworkingSpec `json:"amazonvpcipvlan,omitempty"`
+	Classic    *ClassicNetworkingSpec    `json:"classic,omitempty"`
+	Kubenet    *KubenetNetworkingSpec    `json:"kubenet,omitempty"`
+	External   *ExternalNetworkingSpec   `json:"external,omitempty"`
+	CNI        *CNINetworkingSpec        `json:"cni,omitempty"`
+	Kopeio     *KopeioNetworkingSpec     `json:"kopeio,omitempty"`
+	Weave      *WeaveNetworkingSpec      `json:"weave,omitempty"`
+	Flannel    *FlannelNetworkingSpec    `json:"flannel,omitempty"`
+	Calico     *CalicoNetworkingSpec     `json:"calico,omitempty"`
+	Canal      *CanalNetworkingSpec      `json:"canal,omitempty"`
+	Kuberouter *KuberouterNetworkingSpec `json:"kuberouter,omitempty"`
+	Romana     *RomanaNetworkingSpec     `json:"romana,omitempty"`
+	AmazonVPC  *AmazonVPCNetworkingSpec  `json:"amazonvpc,omitempty"`
+	Cilium     *CiliumNetworkingSpec     `json:"cilium,omitempty"`
+	LyftVPC    *LyftVPCNetworkingSpec    `json:"lyftvpc,omitempty"`
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes
@@ -189,12 +189,4 @@ type CiliumNetworkingSpec struct {
 }
 
 // LyftIpVlanNetworkingSpec declares that we want to use the cni-ipvlan-vpc-k8s CNI networking
-type AmazonVPCIPVlanNetworkingSpec struct {
-	// Tags that subnets must have to be used for pod IPs
-	SubnetTags      map[string]string `json:"subnetTags,omitempty"`
-	InterfaceIndex  int               `json:"interfaceIndex,omitempty"`
-	RouteToVPCPeers bool              `json:"routeToVPCPeers,omitempty"`
-	// list of security groups to assign to the ENIs for pods
-	SecurityGroupIds    []string `json:"securityGroupIds,omitempty"`
-	BinariesDownloadURL string   `json:"binariesDownloadURL,omitempty"`
-}
+type LyftVPCNetworkingSpec struct{}

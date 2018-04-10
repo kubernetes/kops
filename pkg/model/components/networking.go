@@ -49,7 +49,7 @@ func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
 		return fmt.Errorf("networking not set")
 	}
 
-	if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil || networking.Cilium != nil || networking.AmazonVPCIPVlan != nil {
+	if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil || networking.Cilium != nil || networking.LyftVPC != nil {
 		options.Kubelet.NetworkPluginName = "cni"
 
 		if k8sVersion.Major == 1 && k8sVersion.Minor <= 4 {

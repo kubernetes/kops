@@ -252,12 +252,19 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		loader.Builders = append(loader.Builders, &model.EtcdTLSBuilder{NodeupModelContext: modelContext})
 	}
 
-	loader.TemplateFunctions["MapJson"] = func(m map[string]string) (string, error) {
-		bytes, err := json.Marshal(m)
-		if err != nil {
-			return "", err
+	if c.cluster.Spec.Networking.LyftVPC != nil {
+		loader.TemplateFunctions["NodeSecurityGroups"] = func() (string, error) {
+			// use the same security groups as the node
+			ids, err := evaluateSecurityGroups(c.cluster.Spec.NetworkID)
+			if err != nil {
+				return "", err
+			}
+			bytes, err := json.Marshal(ids)
+			if err != nil {
+				return "", err
+			}
+			return string(bytes), nil
 		}
-		return string(bytes), nil
 	}
 
 	taskMap, err := loader.Build(c.ModelDir)
@@ -351,15 +358,6 @@ func evaluateSpec(c *api.Cluster) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	if c.Spec.Networking.AmazonVPCIPVlan != nil && len(c.Spec.Networking.AmazonVPCIPVlan.SecurityGroupIds) == 0 {
-		// use the same security groups as the node when no alternative has been provided
-		ids, err := evaluateSecurityGroups(c.Spec.NetworkID)
-		if err != nil {
-			return err
-		}
-		c.Spec.Networking.AmazonVPCIPVlan.SecurityGroupIds = ids
 	}
 
 	return nil

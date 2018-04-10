@@ -95,8 +95,8 @@ func usesCNI(c *api.Cluster) bool {
 		return true
 	}
 
-	if networkConfig.AmazonVPCIPVlan != nil {
-		// AmazonVPCIPVlan uses CNI
+	if networkConfig.LyftVPC != nil {
+		// LyftVPC uses CNI
 		return true
 	}
 
