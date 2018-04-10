@@ -226,6 +226,8 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 						vol.Info.EtcdClusters = append(vol.Info.EtcdClusters, spec)
 					} else if strings.HasPrefix(k, awsup.TagNameRolePrefix) {
 						// Ignore
+					} else if strings.HasPrefix(k, awsup.TagNameClusterOwnershipPrefix) {
+						// Ignore
 					} else {
 						glog.Warningf("unknown tag on volume %q: %s=%s", volumeID, k, v)
 					}
