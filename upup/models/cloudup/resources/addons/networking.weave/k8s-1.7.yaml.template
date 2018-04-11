@@ -100,6 +100,8 @@ metadata:
     name: weave-net
     role.kubernetes.io/networking: "1"
 spec:
+  # Wait 5 seconds to let pod connect before rolling next pod
+  minReadySeconds: 5
   template:
     metadata:
       labels:
@@ -128,7 +130,7 @@ spec:
             - name: CONN_LIMIT
               value: "{{ .Networking.Weave.ConnLimit }}"
             {{- end }}
-          image: 'weaveworks/weave-kube:2.2.0'
+          image: 'weaveworks/weave-kube:2.3.0'
           livenessProbe:
             httpGet:
               host: 127.0.0.1
@@ -166,7 +168,7 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: 'weaveworks/weave-npc:2.2.0'
+          image: 'weaveworks/weave-npc:2.3.0'
           resources:
             requests:
               cpu: 50m
