@@ -30,7 +30,7 @@ en alpha, y otras plataformas planeadas.
 
 ## Lanzando un anfitrión de Kubernetes cluster en AWS o GCE
 
-Para reproducir exactamente el demo anterior, visualizalo en el [tutorial](/docs/aws.md) para 
+Para reproducir exactamente el demo anterior, visualizalo en el [tutorial](/docs/aws.md) para
 lanzar un anfitrión de Kubernetes cluster en AWS.
 
 Para instalar un Kubernetes cluster en GCE por fabor siga esta [guide](/docs/tutorial/gce.md).
@@ -67,19 +67,19 @@ kops está destinado a ser compatible con versiones anteriores.  Siempre es reco
 utilize la última versión de kops.
 
 Una excepción, en lo que respecta a la compatibilidad, kops soporta el equivalente a
-un número de versión menor de Kubernetes.  Una versión menor es el segundo dígito en el 
+un número de versión menor de Kubernetes.  Una versión menor es el segundo dígito en el
 número de versión.  la versión de kops 1.8.0 tiene una versión menor de 8. La numeración
 sigue la especificación de versión semántica, MAJOR.MINOR.PATCH.
 
 Por ejemplo kops, 1.8.0 no soporta Kubernetes 1.9.2, pero kops 1.9.0
-soporta Kubernetes 1.9.2 y versiones anteriores de Kubernetes. Sólo cuando coincide la versión 
+soporta Kubernetes 1.9.2 y versiones anteriores de Kubernetes. Sólo cuando coincide la versión
 menor de kops, La versión menor de kubernetes hace que kops soporte oficialmente
-el lanzamiento de kubernetes. kops no impide que un usuario instale versiones 
+el lanzamiento de kubernetes. kops no impide que un usuario instale versiones
 no coincidentes de K8, pero las versiones de Kubernetes siempre requieren kops para instalar
-versiones de componentes como docker, probado contra la versión 
+versiones de componentes como docker, probado contra la versión
 particular de Kubernetes.
 
-#### Compatibilidad Matrix 
+#### Compatibilidad Matrix
 
 | kops version | k8s 1.5.x | k8s 1.6.x | k8s 1.7.x | k8s 1.8.x | k8s 1.9.x |
 |--------------|-----------|-----------|-----------|-----------|-----------|
@@ -125,18 +125,18 @@ sudo mv kops-linux-amd64 /usr/local/bin/kops
 
 ## Historial de Versiones
 
-visualize el [releases](https://github.com/kubernetes/kops/releases) para más 
+visualize el [releases](https://github.com/kubernetes/kops/releases) para más
 información sobre cambios entre lanzamientos.
 
 
 ## Involucrarse y Contribuir
 
 ¿Estás interesado en contribuir con kops? Nosotros, los mantenedores y la comunidad,
-nos encantaría sus sugerencias, contribuciones y ayuda. 
-Tenemos una guía de inicio rápido en [adding a feature](/docs/development/adding_a_feature.md). Además, se 
+nos encantaría sus sugerencias, contribuciones y ayuda.
+Tenemos una guía de inicio rápido en [adding a feature](/docs/development/adding_a_feature.md). Además, se
 puede contactar a los mantenedores en cualquier momento para obtener más información sobre
 cómo involucrarse.
-Con el interés de involucrar a más personas con kops, estamos comenzando a 
+Con el interés de involucrar a más personas con kops, estamos comenzando a
 etiquetar los problemas con `good-starter-issue`. Por lo general, se trata de problemas que tienen
 un alcance menor, pero que son buenas maneras de familiarizarse con la base de código.
 
