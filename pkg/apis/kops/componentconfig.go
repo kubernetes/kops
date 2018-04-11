@@ -24,6 +24,8 @@ type KubeletConfigSpec struct {
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 	// AnonymousAuth permits you to control auth to the kubelet api
 	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
+	// AuthorizationMode is the authorization mode the kubelet is running in
+	AuthorizationMode string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
 	// ClientCAFile is the path to a CA certificate
 	ClientCAFile string `json:"clientCaFile,omitempty" flag:"client-ca-file"`
 	// KubeconfigPath is the path of kubeconfig for the kubelet
@@ -328,8 +330,7 @@ type KubeControllerManagerConfig struct {
 	ClusterName string `json:"clusterName,omitempty" flag:"cluster-name"`
 	// ClusterCIDR is CIDR Range for Pods in cluster.
 	ClusterCIDR string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
-	// AllocateNodeCIDRs enables CIDRs for Pods to be allocated and, if
-	// ConfigureCloudRoutes is true, to be set on the cloud provider.
+	// AllocateNodeCIDRs enables CIDRs for Pods to be allocated and, if ConfigureCloudRoutes is true, to be set on the cloud provider.
 	AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty" flag:"allocate-node-cidrs"`
 	// ConfigureCloudRoutes enables CIDRs allocated with to be configured on the cloud provider.
 	ConfigureCloudRoutes *bool `json:"configureCloudRoutes,omitempty" flag:"configure-cloud-routes"`
@@ -442,4 +443,15 @@ type CloudConfiguration struct {
 	VSphereResourcePool  *string `json:"vSphereResourcePool,omitempty"`
 	VSphereDatastore     *string `json:"vSphereDatastore,omitempty"`
 	VSphereCoreDNSServer *string `json:"vSphereCoreDNSServer,omitempty"`
+}
+
+// HasAdmissionController checks if a specific admission controller is enabled
+func (c *KubeAPIServerConfig) HasAdmissionController(name string) bool {
+	for _, x := range c.AdmissionControl {
+		if x == name {
+			return true
+		}
+	}
+
+	return false
 }

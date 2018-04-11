@@ -28,7 +28,7 @@ need for `&& make`.
 The most common task you will do will be to add a new field.  This is relatively straightforward, because
 it is backwards compatible (you have to make sure that the field is optional).
 
-* Add the field to pkg/apis/kops, and then also to each versioned copy: pkg/apis/kops/v1alpha1, pkg/apis/kops/v1alpah2, etc
+* Add the field to pkg/apis/kops, and then also to each versioned copy: pkg/apis/kops/v1alpha1, pkg/apis/kops/v1alpha2, etc
 * Run the apimachinery update as above (`make apimachinery && make`)
 * You likely want to update the validation logic
 * You likely want to update the defaulting logic

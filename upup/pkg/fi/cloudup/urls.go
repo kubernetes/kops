@@ -66,7 +66,7 @@ func BaseUrl() (*url.URL, error) {
 	} else {
 		kopsBaseUrl, err = url.Parse(baseUrlString)
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse env var KOPS_BASE_URL %q as an url: %v", baseUrlString, err)
+			return nil, fmt.Errorf("unable to parse env var KOPS_BASE_URL %q as a url: %v", baseUrlString, err)
 		}
 		glog.Warningf("Using base url from KOPS_BASE_URL env var: %q", baseUrlString)
 	}
@@ -116,7 +116,7 @@ func NodeUpLocation(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash
 	} else {
 		nodeUpLocation, err = url.Parse(env)
 		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse env var NODEUP_URL %q as an url: %v", env, err)
+			return nil, nil, fmt.Errorf("unable to parse env var NODEUP_URL %q as a url: %v", env, err)
 		}
 
 		nodeUpLocation, nodeUpHash, err = assetsBuilder.RemapFileAndSHA(nodeUpLocation)
@@ -153,7 +153,7 @@ func ProtokubeImageSource(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashin
 	} else {
 		protokubeImageSource, err := url.Parse(env)
 		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse env var PROTOKUBE_IMAGE %q as an url: %v", env, err)
+			return nil, nil, fmt.Errorf("unable to parse env var PROTOKUBE_IMAGE %q as a url: %v", env, err)
 		}
 
 		protokubeLocation, protokubeHash, err = assetsBuilder.RemapFileAndSHA(protokubeImageSource)

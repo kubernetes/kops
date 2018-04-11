@@ -116,7 +116,7 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 
 	// add kubectl only if a master
 	// path changes depending on distro, and always mount it on /opt/kops/bin
-	// kubectl is downloaded an installed by other tasks
+	// kubectl is downloaded and installed by other tasks
 	if t.IsMaster {
 		dockerArgs = append(dockerArgs, []string{
 			"-v", t.KubectlPath() + ":/opt/kops/bin:ro",
@@ -246,6 +246,11 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 	}
 
 	for _, e := range t.Cluster.Spec.EtcdClusters {
+		// Because we can only specify a single EtcdBackupStore at the moment, we only backup main, not events
+		if e.Name != "main" {
+			continue
+		}
+
 		if e.Backups != nil {
 			if f.EtcdBackupImage == "" {
 				f.EtcdBackupImage = e.Backups.Image

@@ -19,6 +19,7 @@ package protokube
 import (
 	"fmt"
 	"net"
+	"path/filepath"
 	"time"
 
 	"github.com/golang/glog"
@@ -193,6 +194,17 @@ func pathFor(hostPath string) string {
 		glog.Fatalf("path was not absolute: %q", hostPath)
 	}
 	return RootFS + hostPath[1:]
+}
+
+func pathForSymlinks(hostPath string) string {
+	path := pathFor(hostPath)
+
+	symlink, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		return path
+	}
+
+	return symlink
 }
 
 func (k *KubeBoot) String() string {

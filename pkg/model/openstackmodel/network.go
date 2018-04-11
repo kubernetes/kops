@@ -53,5 +53,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
+	for _, sp := range b.Cluster.Spec.Subnets {
+		t := &openstacktasks.Subnet{
+			Name:      s(sp.Name),
+			Network:   b.LinkToNetwork(),
+			CIDR:      s(sp.CIDR),
+			Lifecycle: b.Lifecycle,
+		}
+		c.AddTask(t)
+	}
+
 	return nil
 }

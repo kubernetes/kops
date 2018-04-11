@@ -26,7 +26,7 @@ The following is a list of the benefits of using a file to manage instances.
 - Capability to access API values that are not accessible via the command line such as setting the max price for spot instances.
 - Create, replace, update, and delete clusters without entering an interactive editor. This feature is helpful when automating cluster creation.
 - Ability to check-in files to source control that represents an installation.
-- Run commands such as `kops delete -f mycuster.yaml`.
+- Run commands such as `kops delete -f mycluster.yaml`.
 
 ## Exporting a Cluster
 

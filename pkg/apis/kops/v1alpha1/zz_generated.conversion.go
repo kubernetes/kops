@@ -394,6 +394,7 @@ func Convert_kops_CNINetworkingSpec_To_v1alpha1_CNINetworkingSpec(in *kops.CNINe
 
 func autoConvert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *CalicoNetworkingSpec, out *kops.CalicoNetworkingSpec, s conversion.Scope) error {
 	out.CrossSubnet = in.CrossSubnet
+	out.LogSeverityScreen = in.LogSeverityScreen
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
@@ -408,6 +409,7 @@ func Convert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *Cali
 
 func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
 	out.CrossSubnet = in.CrossSubnet
+	out.LogSeverityScreen = in.LogSeverityScreen
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
@@ -2093,6 +2095,8 @@ func autoConvert_v1alpha1_KubeDNSConfig_To_kops_KubeDNSConfig(in *KubeDNSConfig,
 	out.Replicas = in.Replicas
 	out.Domain = in.Domain
 	out.ServerIP = in.ServerIP
+	out.CacheMaxSize = in.CacheMaxSize
+	out.CacheMaxConcurrent = in.CacheMaxConcurrent
 	return nil
 }
 
@@ -2106,6 +2110,8 @@ func autoConvert_kops_KubeDNSConfig_To_v1alpha1_KubeDNSConfig(in *kops.KubeDNSCo
 	out.Replicas = in.Replicas
 	out.Domain = in.Domain
 	out.ServerIP = in.ServerIP
+	out.CacheMaxSize = in.CacheMaxSize
+	out.CacheMaxConcurrent = in.CacheMaxConcurrent
 	return nil
 }
 
@@ -2125,6 +2131,7 @@ func autoConvert_v1alpha1_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyC
 	out.HostnameOverride = in.HostnameOverride
 	out.Master = in.Master
 	out.Enabled = in.Enabled
+	out.ProxyMode = in.ProxyMode
 	out.FeatureGates = in.FeatureGates
 	return nil
 }
@@ -2145,6 +2152,7 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha1_KubeProxyConfig(in *kops.KubeP
 	out.HostnameOverride = in.HostnameOverride
 	out.Master = in.Master
 	out.Enabled = in.Enabled
+	out.ProxyMode = in.ProxyMode
 	out.FeatureGates = in.FeatureGates
 	return nil
 }
@@ -2203,6 +2211,7 @@ func Convert_kops_KubeSchedulerConfig_To_v1alpha1_KubeSchedulerConfig(in *kops.K
 func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *KubeletConfigSpec, out *kops.KubeletConfigSpec, s conversion.Scope) error {
 	out.APIServers = in.APIServers
 	out.AnonymousAuth = in.AnonymousAuth
+	out.AuthorizationMode = in.AuthorizationMode
 	out.ClientCAFile = in.ClientCAFile
 	out.KubeconfigPath = in.KubeconfigPath
 	out.RequireKubeconfig = in.RequireKubeconfig
@@ -2269,6 +2278,7 @@ func Convert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *KubeletCon
 func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.KubeletConfigSpec, out *KubeletConfigSpec, s conversion.Scope) error {
 	out.APIServers = in.APIServers
 	out.AnonymousAuth = in.AnonymousAuth
+	out.AuthorizationMode = in.AuthorizationMode
 	out.ClientCAFile = in.ClientCAFile
 	out.KubeconfigPath = in.KubeconfigPath
 	out.RequireKubeconfig = in.RequireKubeconfig
