@@ -246,6 +246,11 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 	}
 
 	for _, e := range t.Cluster.Spec.EtcdClusters {
+		// Because we can only specify a single EtcdBackupStore at the moment, we only backup main, not events
+		if e.Name != "main" {
+			continue
+		}
+
 		if e.Backups != nil {
 			if f.EtcdBackupImage == "" {
 				f.EtcdBackupImage = e.Backups.Image
