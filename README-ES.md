@@ -81,11 +81,12 @@ particular de Kubernetes.
 
 #### Compatibilidad Matrix 
 
-| kops version | k8s 1.5.x | k8s 1.6.x | k8s 1.7.x | k8s 1.8.x |
-|--------------|-----------|-----------|-----------|-----------|
-| 1.8.x        | Y         | Y         | Y         | Y         |
-| 1.7.x        | Y         | Y         | Y         | N         |
-| 1.6.x        | Y         | Y         | N         | N         |
+| kops version | k8s 1.5.x | k8s 1.6.x | k8s 1.7.x | k8s 1.8.x | k8s 1.9.x |
+|--------------|-----------|-----------|-----------|-----------|-----------|
+| 1.9.x        | Y         | Y         | Y         | Y         | Y         |
+| 1.8.x        | Y         | Y         | Y         | Y         | N         |
+| 1.7.x        | Y         | Y         | Y         | N         | N         |
+| 1.6.x        | Y         | Y         | N         | N         | N         |
 
 Utilice la última versión de kops para todas las versiones de Kubernetes, con la advertencia de que las versiones más altas de Kubernetes no cuentan con el respaldo _oficial_ de kops.
 
