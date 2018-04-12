@@ -46,7 +46,7 @@ type AttachISO struct {
 	VM              *VirtualMachine
 	IG              *kops.InstanceGroup
 	BootstrapScript *model.BootstrapScript
-	Spec            *kops.ClusterSpec
+	Cluster         *kops.Cluster
 }
 
 var _ fi.HasName = &AttachISO{}
@@ -93,7 +93,7 @@ func (_ *AttachISO) CheckChanges(a, e, changes *AttachISO) error {
 
 // RenderVSphere executes the actual task logic, for vSphere cloud.
 func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *AttachISO) error {
-	startupScript, err := changes.BootstrapScript.ResourceNodeUp(changes.IG, changes.Spec)
+	startupScript, err := e.BootstrapScript.ResourceNodeUp(e.IG, e.Cluster)
 	if err != nil {
 		return fmt.Errorf("error on resource nodeup: %v", err)
 	}
@@ -101,7 +101,7 @@ func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *At
 	if err != nil {
 		return fmt.Errorf("error rendering startup script: %v", err)
 	}
-	dir, err := ioutil.TempDir("", *changes.VM.Name)
+	dir, err := ioutil.TempDir("", *e.VM.Name)
 	if err != nil {
 		return fmt.Errorf("error creating tempdir: %v", err)
 	}
@@ -109,18 +109,18 @@ func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *At
 	defer os.RemoveAll(dir)
 
 	// Need this in cloud config file for vSphere CloudProvider
-	vmUUID, err := t.Cloud.FindVMUUID(changes.VM.Name)
+	vmUUID, err := t.Cloud.FindVMUUID(e.VM.Name)
 	if err != nil {
 		return err
 	}
 
-	isoFile, err := createISO(changes, startupStr, dir, t.Cloud.CoreDNSServer, vmUUID)
+	isoFile, err := createISO(e, startupStr, dir, t.Cloud.CoreDNSServer, vmUUID)
 	if err != nil {
 		glog.Errorf("Failed to createISO for vspheretasks, err: %v", err)
 		return err
 	}
 
-	err = t.Cloud.UploadAndAttachISO(changes.VM.Name, isoFile)
+	err = t.Cloud.UploadAndAttachISO(e.VM.Name, isoFile)
 	if err != nil {
 		return err
 	}
@@ -128,7 +128,7 @@ func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *At
 	return nil
 }
 
-func createUserData(changes *AttachISO, startupStr string, dir string, dnsServer string, vmUUID string) error {
+func createUserData(e *AttachISO, startupStr string, dir string, dnsServer string, vmUUID string) error {
 
 	// Populate nodeup initialization script.
 
@@ -163,7 +163,7 @@ func createUserData(changes *AttachISO, startupStr string, dir string, dnsServer
 	data = strings.Replace(data, "$VM_UUID", vmUUIDStr, -1)
 
 	// Populate volume metadata.
-	data, err = createVolumeScript(changes, data)
+	data, err = createVolumeScript(e, data)
 	if err != nil {
 		return err
 	}
@@ -179,12 +179,12 @@ func createUserData(changes *AttachISO, startupStr string, dir string, dnsServer
 	return nil
 }
 
-func createVolumeScript(changes *AttachISO, data string) (string, error) {
-	if changes.IG.Spec.Role != kops.InstanceGroupRoleMaster {
-		return strings.Replace(data, "$VOLUME_SCRIPT", "       No volume metadata needed for "+string(changes.IG.Spec.Role)+".", -1), nil
+func createVolumeScript(e *AttachISO, data string) (string, error) {
+	if e.IG.Spec.Role != kops.InstanceGroupRoleMaster {
+		return strings.Replace(data, "$VOLUME_SCRIPT", "       No volume metadata needed for "+string(e.IG.Spec.Role)+".", -1), nil
 	}
 
-	volsString, err := getVolMetadata(changes)
+	volsString, err := getVolMetadata(e)
 
 	if err != nil {
 		return "", err
@@ -193,11 +193,11 @@ func createVolumeScript(changes *AttachISO, data string) (string, error) {
 	return strings.Replace(data, "$VOLUME_SCRIPT", "       "+volsString, -1), nil
 }
 
-func getVolMetadata(changes *AttachISO) (string, error) {
+func getVolMetadata(e *AttachISO) (string, error) {
 	var volsMetadata []vsphere.VolumeMetadata
 
 	// Creating vsphere.VolumeMetadata using clusters EtcdClusterSpec
-	for i, etcd := range changes.Spec.EtcdClusters {
+	for i, etcd := range e.Cluster.Spec.EtcdClusters {
 		volMetadata := vsphere.VolumeMetadata{}
 		volMetadata.EtcdClusterName = etcd.Name
 		volMetadata.VolumeId = vsphere.GetVolumeId(i + 1)
@@ -205,7 +205,7 @@ func getVolMetadata(changes *AttachISO) (string, error) {
 		var members []vsphere.EtcdMemberSpec
 		var thisNode string
 		for _, member := range etcd.Members {
-			if *member.InstanceGroup == changes.IG.Name {
+			if *member.InstanceGroup == e.IG.Name {
 				thisNode = member.Name
 			}
 			etcdMember := vsphere.EtcdMemberSpec{
@@ -216,7 +216,7 @@ func getVolMetadata(changes *AttachISO) (string, error) {
 		}
 
 		if thisNode == "" {
-			return "", fmt.Errorf("Failed to construct volume metadata for %v InstanceGroup.", changes.IG.Name)
+			return "", fmt.Errorf("Failed to construct volume metadata for %v InstanceGroup.", e.IG.Name)
 		}
 
 		volMetadata.EtcdNodeName = thisNode
@@ -247,18 +247,18 @@ func createMetaData(dir string, vmName string) error {
 	return nil
 }
 
-func createISO(changes *AttachISO, startupStr string, dir string, dnsServer, vmUUID string) (string, error) {
-	err := createUserData(changes, startupStr, dir, dnsServer, vmUUID)
+func createISO(e *AttachISO, startupStr string, dir string, dnsServer, vmUUID string) (string, error) {
+	err := createUserData(e, startupStr, dir, dnsServer, vmUUID)
 
 	if err != nil {
 		return "", err
 	}
-	err = createMetaData(dir, *changes.VM.Name)
+	err = createMetaData(dir, *e.VM.Name)
 	if err != nil {
 		return "", err
 	}
 
-	isoFile := filepath.Join(dir, *changes.VM.Name+".iso")
+	isoFile := filepath.Join(dir, *e.VM.Name+".iso")
 	var commandName string
 
 	switch os := runtime.GOOS; os {

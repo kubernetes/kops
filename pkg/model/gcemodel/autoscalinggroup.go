@@ -43,7 +43,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
 		name := b.SafeObjectName(ig.ObjectMeta.Name)
 
-		startupScript, err := b.BootstrapScript.ResourceNodeUp(ig, &b.Cluster.Spec)
+		startupScript, err := b.BootstrapScript.ResourceNodeUp(ig, b.Cluster)
 		if err != nil {
 			return err
 		}

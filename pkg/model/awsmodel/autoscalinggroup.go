@@ -114,7 +114,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				return err
 			}
 
-			if t.UserData, err = b.BootstrapScript.ResourceNodeUp(ig, &b.Cluster.Spec); err != nil {
+			if t.UserData, err = b.BootstrapScript.ResourceNodeUp(ig, b.Cluster); err != nil {
 				return err
 			}
 

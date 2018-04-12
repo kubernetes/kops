@@ -62,7 +62,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				VM:              createVmTask,
 				IG:              ig,
 				BootstrapScript: b.BootstrapScript,
-				Spec:            &b.Cluster.Spec,
+				Cluster:         b.Cluster,
 			}
 
 			c.AddTask(attachISOTask)

@@ -180,7 +180,7 @@ func (b *Builder) Build(cluster *kops.Cluster, ig *kops.InstanceGroup) (*Data, e
 			return nodeupConfig, err
 		}
 
-		script, err := bootstrapScript.ResourceNodeUp(ig, &cluster.Spec)
+		script, err := bootstrapScript.ResourceNodeUp(ig, cluster)
 		if err != nil {
 			return nil, fmt.Errorf("error building bootstrap script: %v", err)
 		}
