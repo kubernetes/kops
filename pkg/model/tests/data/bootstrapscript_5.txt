@@ -20,9 +20,7 @@ set -o pipefail
 NODEUP_URL=NUSource
 NODEUP_HASH=NUSHash
 
-
-
-
+export AWS_REGION=eu-west-1
 
 
 echo "http_proxy=http://example.com:80" >> /etc/environment

@@ -63,7 +63,7 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 		droplet.SSHKey = fi.String(sshKeyFingerPrint)
 		droplet.Tags = []string{clusterTag}
 
-		userData, err := d.BootstrapScript.ResourceNodeUp(ig, &d.Cluster.Spec)
+		userData, err := d.BootstrapScript.ResourceNodeUp(ig, d.Cluster)
 		if err != nil {
 			return err
 		}

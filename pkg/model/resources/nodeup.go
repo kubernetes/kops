@@ -48,10 +48,7 @@ set -o pipefail
 NODEUP_URL={{ NodeUpSource }}
 NODEUP_HASH={{ NodeUpSourceHash }}
 
-{{ S3Env }}
-{{ AWS_REGION }}
-
-{{ DO_ENV }}
+{{ EnvironmentVariables }}
 
 {{ ProxyEnv }}
 
