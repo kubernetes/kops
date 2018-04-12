@@ -19,9 +19,11 @@ package awsup
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -32,9 +34,31 @@ import (
 
 // allRegions is the list of all regions; tests will set the values
 var allRegions []*ec2.Region
+var allRegionsMutex sync.Mutex
+
+// isRegionCompiledInToAWSSDK checks if the specified region is in the AWS SDK
+func isRegionCompiledInToAWSSDK(region string) bool {
+	resolver := endpoints.DefaultResolver()
+	partitions := resolver.(endpoints.EnumPartitions).Partitions()
+	for _, p := range partitions {
+		for _, r := range p.Regions() {
+			if r.ID() == region {
+				return true
+			}
+		}
+	}
+	return false
+}
 
 // ValidateRegion checks that an AWS region name is valid
 func ValidateRegion(region string) error {
+	if isRegionCompiledInToAWSSDK(region) {
+		return nil
+	}
+
+	allRegionsMutex.Lock()
+	defer allRegionsMutex.Unlock()
+
 	if allRegions == nil {
 		glog.V(2).Infof("Querying EC2 for all valid regions")
 
