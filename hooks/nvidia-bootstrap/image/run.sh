@@ -176,6 +176,7 @@ for (( i=0; i<${length}; i++ )); do
       touch $filepath_installed # Mark successful installation
     else
       echo "Unable to handle file $filepath_host"
+      exit 1
     fi
   fi
 done
