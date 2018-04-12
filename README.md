@@ -200,7 +200,7 @@ You can check your week number using:
 date +%V
 ```
 
-The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community/blob/master/communication.md#social-media) in [#kops](https://kubernetes.slack.com/messages/kops/), so come find and chat with us about how kops can be better for you!
+The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community/blob/master/communication.md#social-media) in [#kops-users](https://kubernetes.slack.com/messages/kops-users/), so come find and chat with us about how kops can be better for you!
 
 
 ## GitHub Issues
