@@ -294,7 +294,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		case kops.CloudProviderGCE:
 			k8sCloudProvider = "gce"
 		case kops.CloudProviderDO:
-			k8sCloudProvider = "external"
+			// cloud provider should be blank since digitalocean uses external cloud controller
+			k8sCloudProvider = ""
 		case kops.CloudProviderVSphere:
 			k8sCloudProvider = "vsphere"
 		case kops.CloudProviderBareMetal:
