@@ -26,6 +26,7 @@ import (
 	ecs "github.com/denverdino/aliyungo/ecs"
 
 	"k8s.io/api/core/v1"
+	prj "k8s.io/kops"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
@@ -33,6 +34,9 @@ import (
 )
 
 const TagClusterName = "KubernetesCluster"
+
+// This is for statistic purpose.
+var KubernetesKopsIdentity = fmt.Sprintf("Kubernetes.Kops/%s", prj.Version)
 
 type ALICloud interface {
 	fi.Cloud
@@ -65,8 +69,8 @@ func NewALICloud(region string, tags map[string]string) (ALICloud, error) {
 		return nil, errors.New("ALIYUN_ACCESS_KEY_SECRET is required")
 	}
 
-	escclient := ecs.NewClient(accessKeyId, accessKeySecret)
-	c.ecsClient = escclient
+	c.ecsClient = ecs.NewClient(accessKeyId, accessKeySecret)
+	c.ecsClient.SetUserAgent(KubernetesKopsIdentity)
 	c.tags = tags
 
 	return c, nil
@@ -103,11 +107,11 @@ func (c *aliCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	}
 	vpcs, _, err := c.EcsClient().DescribeVpcs(request)
 	if err != nil {
-		return nil, fmt.Errorf("Error listing VPCs: %v", err)
+		return nil, fmt.Errorf("error listing VPCs: %v", err)
 	}
 
 	if len(vpcs) != 1 {
-		return nil, fmt.Errorf("Found multiple VPCs for %q", id)
+		return nil, fmt.Errorf("found multiple VPCs for %q", id)
 	} else {
 		vpcInfo := &fi.VPCInfo{
 			CIDR: vpcs[0].CidrBlock,
@@ -119,7 +123,7 @@ func (c *aliCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 		}
 		vswitcheList, _, err := c.EcsClient().DescribeVSwitches(describeVSwitchesArgs)
 		if err != nil {
-			return nil, fmt.Errorf("Error listing VSwitchs: %v", err)
+			return nil, fmt.Errorf("error listing VSwitchs: %v", err)
 		}
 
 		for _, vswitch := range vswitcheList {
@@ -229,7 +233,7 @@ func getRegionByZones(zones []string) (string, error) {
 		}
 
 		if region != "" && zoneRegion != region {
-			return "", fmt.Errorf("Clusters cannot span multiple regions (found zone %q, but region is %q)", zone, region)
+			return "", fmt.Errorf("clusters cannot span multiple regions (found zone %q, but region is %q)", zone, region)
 		}
 		region = zoneRegion
 	}
