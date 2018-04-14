@@ -66,4 +66,4 @@ Apache License Version 2.0
 ## FAQ
 
 Q: Why is it named brodocs?
-A: This project was born out of a collaboration with my brother to create a suitable docs app for his purposes. It was a fun name for the the two of us to use as actual brothers.
+A: This project was born out of a collaboration with my brother to create a suitable docs app for his purposes. It was a fun name for the two of us to use as actual brothers.
