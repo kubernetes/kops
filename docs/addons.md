@@ -30,7 +30,7 @@ The login credentials are:
 
 #### RBAC
 
-For k8s version > 1.6 and [rbac](https://kubernetes.io/docs/admin/authorization/rbac/) enabled it's necessary to add your own permission to the dashboard. Please read the [rbac](https://kubernetes.io/docs/admin/authorization/rbac/) docs before applying permissions. 
+For k8s version > 1.6 and [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) enabled it's necessary to add your own permission to the dashboard. Please read the [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) docs before applying permissions. 
 
 Below you see an example giving **full access** to the dashboard.
 
