@@ -197,6 +197,7 @@
   name = "github.com/denverdino/aliyungo"
   packages = [
     "common",
+    "ecs",
     "oss",
     "util"
   ]
@@ -1679,6 +1680,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2e3d6ddfd1017a940526237cadd8a968d6e8170af9dac833b2a94bd8ffc4646f"
+  inputs-digest = "1710b4a02e47a777e02eae003d93a23aff1dfc6fc4c80ff0778bcf033f864064"
   solver-name = "gps-cdcl"
   solver-version = 1

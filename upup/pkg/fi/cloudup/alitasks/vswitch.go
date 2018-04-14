@@ -65,26 +65,26 @@ func (v *VSwitch) Find(c *fi.Context) (*VSwitch, error) {
 		describeVSwitchesArgs.VSwitchId = fi.StringValue(v.VSwitchId)
 	}
 
-	vswitcheList, _, err := cloud.EcsClient().DescribeVSwitches(describeVSwitchesArgs)
+	vswitchList, _, err := cloud.EcsClient().DescribeVSwitches(describeVSwitchesArgs)
 	if err != nil {
 		return nil, fmt.Errorf("error listing VSwitchs: %v", err)
 	}
 
 	if fi.BoolValue(v.Shared) {
-		if len(vswitcheList) != 1 {
+		if len(vswitchList) != 1 {
 			return nil, fmt.Errorf("found multiple VSwitchs for %q", fi.StringValue(v.VSwitchId))
 		} else {
 			glog.V(2).Infof("found matching VSwitch with name: %q", *v.Name)
 
 			actual := &VSwitch{
-				Name:      fi.String(vswitcheList[0].VSwitchName),
-				VSwitchId: fi.String(vswitcheList[0].VSwitchId),
+				Name:      fi.String(vswitchList[0].VSwitchName),
+				VSwitchId: fi.String(vswitchList[0].VSwitchId),
 				VPC: &VPC{
-					ID: fi.String(vswitcheList[0].VpcId),
+					ID: fi.String(vswitchList[0].VpcId),
 				},
 
-				ZoneId:    fi.String(vswitcheList[0].ZoneId),
-				CidrBlock: fi.String(vswitcheList[0].CidrBlock),
+				ZoneId:    fi.String(vswitchList[0].ZoneId),
+				CidrBlock: fi.String(vswitchList[0].CidrBlock),
 				// Ignore "system" fields
 				Lifecycle: v.Lifecycle,
 			}
@@ -92,11 +92,11 @@ func (v *VSwitch) Find(c *fi.Context) (*VSwitch, error) {
 		}
 	}
 
-	if len(vswitcheList) == 0 {
+	if len(vswitchList) == 0 {
 		return nil, nil
 	}
 
-	for _, vswitch := range vswitcheList {
+	for _, vswitch := range vswitchList {
 		if vswitch.CidrBlock == fi.StringValue(v.CidrBlock) && !fi.BoolValue(v.Shared) {
 
 			glog.V(2).Infof("found matching VSwitch with name: %q", *v.Name)
