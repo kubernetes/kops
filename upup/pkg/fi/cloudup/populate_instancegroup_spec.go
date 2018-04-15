@@ -33,14 +33,14 @@ import (
 const (
 	defaultNodeMachineTypeGCE     = "n1-standard-2"
 	defaultNodeMachineTypeVSphere = "vsphere_node"
-	defaultNodeMachineTypeDO      = "2gb"
+	defaultNodeMachineTypeDO      = "s-2vcpu-4gb"
 
 	defaultBastionMachineTypeGCE     = "f1-micro"
 	defaultBastionMachineTypeVSphere = "vsphere_bastion"
 
 	defaultMasterMachineTypeGCE     = "n1-standard-1"
 	defaultMasterMachineTypeVSphere = "vsphere_master"
-	defaultMasterMachineTypeDO      = "2gb"
+	defaultMasterMachineTypeDO      = "s-2vcpu-2gb"
 
 	defaultVSphereNodeImage = "kops_ubuntu_16_04.ova"
 	defaultDONodeImage      = "coreos-stable"
