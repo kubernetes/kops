@@ -21,9 +21,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
   NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
-
-
-
+  export AWS_REGION=us-test-1
 
 
 
@@ -300,9 +298,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.Use
   NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
-
-
-
+  export AWS_REGION=us-test-1
 
 
 
