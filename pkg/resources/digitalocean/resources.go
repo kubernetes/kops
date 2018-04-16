@@ -209,6 +209,13 @@ func listDNS(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) 
 			continue
 		}
 
+		// kops for digitalocean should only create A records
+		// in the future that may change but for now this provides a safe filter
+		// in case users assign NS records for the cluster subdomain
+		if record.Type != "A" {
+			continue
+		}
+
 		resourceTracker := &resources.Resource{
 			Name: record.Name,
 			ID:   strconv.Itoa(record.ID),
