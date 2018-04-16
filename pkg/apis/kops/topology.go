@@ -37,6 +37,9 @@ type TopologySpec struct {
 
 	// DNS configures options relating to DNS, in particular whether we use a public or a private hosted zone
 	DNS *DNSSpec `json:"dns,omitempty"`
+
+	// AdditionalRoutes specifies additional routes to be attached to created route tables.
+	AdditionalRoutes []RouteSpec `json:"additionalRoutes,omitempty"`
 }
 
 type DNSSpec struct {
@@ -49,3 +52,11 @@ const (
 	DNSTypePublic  DNSType = "Public"
 	DNSTypePrivate DNSType = "Private"
 )
+
+type RouteSpec struct {
+	// The IPv4 CIDR block used for the destination match.
+	CIDR *string `json:"cidr,omitempty"`
+
+	InternetGateway *string `json:"internetGateway,omitempty"`
+	NatGateway      *string `json:"natGateway,omitempty"`
+}

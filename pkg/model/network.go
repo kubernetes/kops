@@ -164,6 +164,25 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				RouteTable:      publicRouteTable,
 				InternetGateway: igw,
 			})
+
+			for i, route := range b.Cluster.Spec.Topology.AdditionalRoutes {
+				if route.InternetGateway != nil {
+					ig := &awstasks.InternetGateway{
+						Name:      route.InternetGateway,
+						Lifecycle: b.Lifecycle,
+						VPC:       b.LinkToVPC(),
+						Shared:    fi.Bool(true),
+					}
+					c.AddTask(ig)
+					c.AddTask(&awstasks.Route{
+						Name:            s(fmt.Sprintf("public-%v-0.0.0.0/0", i)),
+						Lifecycle:       b.Lifecycle,
+						CIDR:            route.CIDR,
+						RouteTable:      publicRouteTable,
+						InternetGateway: ig,
+					})
+				}
+			}
 		}
 	}
 
@@ -335,6 +354,23 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			NatGateway: ngw,
 		})
 
+		for i, route := range b.Cluster.Spec.Topology.AdditionalRoutes {
+			if route.NatGateway != nil {
+				ngw = &awstasks.NatGateway{
+					Name:      route.NatGateway,
+					Lifecycle: b.Lifecycle,
+					Shared:    fi.Bool(true),
+				}
+				c.AddTask(ngw)
+				c.AddTask(&awstasks.Route{
+					Name:       s(fmt.Sprintf("private-%v-%v-0.0.0.0/0", zone, i)),
+					Lifecycle:  b.Lifecycle,
+					CIDR:       route.CIDR,
+					RouteTable: rt,
+					NatGateway: ngw,
+				})
+			}
+		}
 	}
 
 	return nil
