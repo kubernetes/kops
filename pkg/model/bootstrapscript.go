@@ -27,11 +27,13 @@ import (
 	"text/template"
 
 	"github.com/ghodss/yaml"
+	"github.com/golang/glog"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 // BootstrapScript creates the bootstrap script
@@ -56,9 +58,40 @@ func (b *BootstrapScript) KubeEnv(ig *kops.InstanceGroup) (string, error) {
 	return string(data), nil
 }
 
+func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[string]string, error) {
+	env := make(map[string]string)
+	if os.Getenv("S3_ENDPOINT") != "" {
+		env["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
+		env["S3_REGION"] = os.Getenv("S3_REGION")
+		env["S3_ACCESS_KEY_ID"] = os.Getenv("S3_ACCESS_KEY_ID")
+		env["S3_SECRET_ACCESS_KEY"] = os.Getenv("S3_SECRET_ACCESS_KEY")
+	}
+
+	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderDO {
+		doToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+		if doToken != "" {
+			env["DIGITALOCEAN_ACCESS_TOKEN"] = doToken
+		}
+	}
+
+	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
+		region, err := awsup.FindRegion(cluster)
+		if err != nil {
+			return nil, err
+		}
+		if region == "" {
+			glog.Warningf("unable to determine cluster region")
+		} else {
+			env["AWS_REGION"] = region
+		}
+	}
+
+	return env, nil
+}
+
 // ResourceNodeUp generates and returns a nodeup (bootstrap) script from a
 // template file, substituting in specific env vars & cluster spec configuration
-func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.ClusterSpec) (*fi.ResourceHolder, error) {
+func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.Cluster) (*fi.ResourceHolder, error) {
 	// Bastions can have AdditionalUserData, but if there isn't any skip this part
 	if ig.IsBastion() && len(ig.Spec.AdditionalUserData) == 0 {
 		return nil, nil
@@ -75,44 +108,25 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 			return b.KubeEnv(ig)
 		},
 
-		// Pass in extra environment variables for user-defined S3 service
-		"S3Env": func() string {
-			if os.Getenv("S3_ENDPOINT") != "" {
-				return fmt.Sprintf("export S3_ENDPOINT=%s\nexport S3_REGION=%s\nexport S3_ACCESS_KEY_ID=%s\nexport S3_SECRET_ACCESS_KEY=%s\n",
-					os.Getenv("S3_ENDPOINT"),
-					os.Getenv("S3_REGION"),
-					os.Getenv("S3_ACCESS_KEY_ID"),
-					os.Getenv("S3_SECRET_ACCESS_KEY"))
+		"EnvironmentVariables": func() (string, error) {
+			env, err := b.buildEnvironmentVariables(cluster)
+			if err != nil {
+				return "", err
 			}
-			return ""
-		},
-
-		"DO_ENV": func() string {
-			if kops.CloudProviderID(cs.CloudProvider) != kops.CloudProviderDO {
-				return ""
+			var b bytes.Buffer
+			for k, v := range env {
+				b.WriteString(fmt.Sprintf("export %s=%s\n", k, v))
 			}
-
-			doToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
-			if doToken != "" {
-				return fmt.Sprintf("export DIGITALOCEAN_ACCESS_TOKEN=%s\n", doToken)
-			}
-
-			return ""
-
+			return b.String(), nil
 		},
 
 		"ProxyEnv": func() string {
-			return b.createProxyEnv(cs.EgressProxy)
-		},
-		"AWS_REGION": func() string {
-			if os.Getenv("AWS_REGION") != "" {
-				return fmt.Sprintf("export AWS_REGION=%s\n",
-					os.Getenv("AWS_REGION"))
-			}
-			return ""
+			return b.createProxyEnv(cluster.Spec.EgressProxy)
 		},
 
 		"ClusterSpec": func() (string, error) {
+			cs := cluster.Spec
+
 			spec := make(map[string]interface{})
 			spec["cloudConfig"] = cs.CloudConfig
 			spec["docker"] = cs.Docker
