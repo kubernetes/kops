@@ -85,7 +85,7 @@ func main() {
 				if i == 0 {
 					// We could also try to evaluate based on cwd
 					if _, err := os.Stat(procSelfExe); os.IsNotExist(err) {
-						glog.Fatalf("file %v does not exists", procSelfExe)
+						glog.Fatalf("file %v does not exist", procSelfExe)
 					}
 
 					fi, err := os.Lstat(procSelfExe)
