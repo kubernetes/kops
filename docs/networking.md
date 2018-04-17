@@ -71,7 +71,7 @@ The `--networking` option accepts the three different values defined above: `kub
 The following command sets up a cluster, in HA mode, that is ready for a CNI installation.
 
 ```console
-$ export ZONE=mylistofzones
+$ export ZONES=mylistofzones
 $ kops create cluster \
   --zones $ZONES \
   --master-zones $ZONES \
