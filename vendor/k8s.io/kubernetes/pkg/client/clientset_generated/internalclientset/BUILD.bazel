@@ -6,6 +6,7 @@ go_library(
         "clientset.go",
         "doc.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset",
     importpath = "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset",
     visibility = ["//visibility:public"],
     deps = [

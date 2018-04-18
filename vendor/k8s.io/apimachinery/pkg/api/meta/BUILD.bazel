@@ -15,6 +15,7 @@ go_library(
         "restmapper.go",
         "unstructured.go",
     ],
+    importmap = "vendor/k8s.io/apimachinery/pkg/api/meta",
     importpath = "k8s.io/apimachinery/pkg/api/meta",
     visibility = ["//visibility:public"],
     deps = [

@@ -4,42 +4,10 @@ go_library(
     name = "go_default_library",
     srcs = [
         "pass.go",
-    ] + select({
-        "@io_bazel_rules_go//go/platform:android": [
-            "terminal.go",
-        ],
-        "@io_bazel_rules_go//go/platform:darwin": [
-            "terminal.go",
-        ],
-        "@io_bazel_rules_go//go/platform:dragonfly": [
-            "terminal.go",
-        ],
-        "@io_bazel_rules_go//go/platform:freebsd": [
-            "terminal.go",
-        ],
-        "@io_bazel_rules_go//go/platform:linux": [
-            "terminal.go",
-        ],
-        "@io_bazel_rules_go//go/platform:nacl": [
-            "terminal.go",
-        ],
-        "@io_bazel_rules_go//go/platform:netbsd": [
-            "terminal.go",
-        ],
-        "@io_bazel_rules_go//go/platform:openbsd": [
-            "terminal.go",
-        ],
-        "@io_bazel_rules_go//go/platform:plan9": [
-            "terminal.go",
-        ],
-        "@io_bazel_rules_go//go/platform:solaris": [
-            "terminal_solaris.go",
-        ],
-        "@io_bazel_rules_go//go/platform:windows": [
-            "terminal.go",
-        ],
-        "//conditions:default": [],
-    }),
+        "terminal.go",
+        "terminal_solaris.go",
+    ],
+    importmap = "vendor/github.com/howeyc/gopass",
     importpath = "github.com/howeyc/gopass",
     visibility = ["//visibility:public"],
     deps = select({

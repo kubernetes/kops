@@ -19,6 +19,7 @@ go_library(
         "tags.go",
         "volumes.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/cloudprovider/providers/aws",
     importpath = "k8s.io/kubernetes/pkg/cloudprovider/providers/aws",
     visibility = ["//visibility:public"],
     deps = [

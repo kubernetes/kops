@@ -12,6 +12,7 @@ go_library(
         "recursive_fields_printer.go",
         "typename.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/kubectl/explain",
     importpath = "k8s.io/kubernetes/pkg/kubectl/explain",
     visibility = ["//visibility:public"],
     deps = [

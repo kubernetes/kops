@@ -6,6 +6,7 @@ go_library(
         "conditions.go",
         "helper.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/client/unversioned",
     importpath = "k8s.io/kubernetes/pkg/client/unversioned",
     visibility = ["//visibility:public"],
     deps = [

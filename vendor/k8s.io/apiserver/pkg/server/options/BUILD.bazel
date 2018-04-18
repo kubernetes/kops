@@ -15,6 +15,7 @@ go_library(
         "server_run_options.go",
         "serving.go",
     ],
+    importmap = "vendor/k8s.io/apiserver/pkg/server/options",
     importpath = "k8s.io/apiserver/pkg/server/options",
     visibility = ["//visibility:public"],
     deps = [

@@ -13,6 +13,7 @@ go_library(
         "printing.go",
         "shortcut_restmapper.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util",
     importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/util",
     visibility = ["//visibility:public"],
     deps = [

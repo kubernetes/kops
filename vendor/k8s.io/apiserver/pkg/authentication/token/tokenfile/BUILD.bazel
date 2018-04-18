@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["tokenfile.go"],
+    importmap = "vendor/k8s.io/apiserver/pkg/authentication/token/tokenfile",
     importpath = "k8s.io/apiserver/pkg/authentication/token/tokenfile",
     visibility = ["//visibility:public"],
     deps = [
