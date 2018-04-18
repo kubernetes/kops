@@ -75,6 +75,12 @@
   version = "v1.0.1"
 
 [[projects]]
+  name = "github.com/asaskevich/govalidator"
+  packages = ["."]
+  revision = "ccb8e960c48f04d6935e72476ae4a51028f9e22f"
+  version = "v9"
+
+[[projects]]
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -329,6 +335,18 @@
   version = "v1.25.4"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/go-openapi/analysis"
+  packages = ["."]
+  revision = "863ac7f90e00e88e507095639a8457bbbf3c2ec9"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/go-openapi/errors"
+  packages = ["."]
+  revision = "7bcb96a367bac6b76e6e42fa84155bb5581dcff8"
+
+[[projects]]
   name = "github.com/go-openapi/jsonpointer"
   packages = ["."]
   revision = "46af16f9f7b149af66e5d1bd010e3574dc06de98"
@@ -339,14 +357,32 @@
   revision = "13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/go-openapi/loads"
+  packages = ["."]
+  revision = "2a2b323bab96e6b1fdee110e57d959322446e9c9"
+
+[[projects]]
   name = "github.com/go-openapi/spec"
   packages = ["."]
   revision = "1de3e0542de65ad8d75452a595886fdd0befb363"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/go-openapi/strfmt"
+  packages = ["."]
+  revision = "481808443b00a14745fada967cb5eeff0f9b1df2"
+
+[[projects]]
   name = "github.com/go-openapi/swag"
   packages = ["."]
   revision = "f3f9494671f93fcff853e3c6e9e948b3eb71e590"
+
+[[projects]]
+  name = "github.com/gobuffalo/envy"
+  packages = ["."]
+  revision = "ef60bfc50c8f92d1ee64674d8ce7a48f1f67625e"
+  version = "v1.6.2"
 
 [[projects]]
   name = "github.com/gogo/protobuf"
@@ -491,6 +527,12 @@
   revision = "0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74"
 
 [[projects]]
+  name = "github.com/joho/godotenv"
+  packages = ["."]
+  revision = "a79fa1e548e2c689c241d10173efd51e5d689d5b"
+  version = "v1.2.0"
+
+[[projects]]
   name = "github.com/jonboulle/clockwork"
   packages = ["."]
   revision = "72f9bd7c4e0c2a40055ab3d0f09654f730cce982"
@@ -515,6 +557,29 @@
   revision = "2788f0dbd16903de03cb8186e5c7d97b69ad387b"
 
 [[projects]]
+  name = "github.com/kubernetes-incubator/apiserver-builder"
+  packages = [
+    "cmd/apiserver-boot",
+    "cmd/apiserver-boot/boot/build",
+    "cmd/apiserver-boot/boot/create",
+    "cmd/apiserver-boot/boot/init_repo",
+    "cmd/apiserver-boot/boot/run",
+    "cmd/apiserver-boot/boot/update",
+    "cmd/apiserver-boot/boot/util",
+    "cmd/apiserver-boot/boot/version"
+  ]
+  revision = "e809ac2f9f0c238f08d08a876f8b3f499604f941"
+
+[[projects]]
+  name = "github.com/kubernetes-incubator/reference-docs"
+  packages = [
+    "gen-apidocs",
+    "gen-apidocs/generators",
+    "gen-apidocs/generators/api"
+  ]
+  revision = "8fadf91876ccbcfec367b434706a3c449073b0b4"
+
+[[projects]]
   name = "github.com/magiconair/properties"
   packages = ["."]
   revision = "61b492c03cf472e0c6419be5899b8e0dc28b1b88"
@@ -527,6 +592,12 @@
     "jwriter"
   ]
   revision = "2f5df55504ebc322e4d52d34df6a1f5b503bf26d"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/markbates/inflect"
+  packages = ["."]
+  revision = "fbc6b23ce49e2578f572d2e72bb72fa03c7145de"
 
 [[projects]]
   name = "github.com/matttproud/golang_protobuf_extensions"
@@ -919,6 +990,15 @@
   name = "gopkg.in/inf.v0"
   packages = ["."]
   revision = "3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4"
+
+[[projects]]
+  branch = "v2"
+  name = "gopkg.in/mgo.v2"
+  packages = [
+    "bson",
+    "internal/json"
+  ]
+  revision = "3f83fa5005286a7fe593b055f0d7771a7dce4655"
 
 [[projects]]
   name = "gopkg.in/natefinch/lumberjack.v2"
@@ -1599,6 +1679,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a07cf721a3e7e0b73b9fcd398919c3d29dce5b2bc67bb11ddef7193d39df2e12"
+  inputs-digest = "2e3d6ddfd1017a940526237cadd8a968d6e8170af9dac833b2a94bd8ffc4646f"
   solver-name = "gps-cdcl"
   solver-version = 1
