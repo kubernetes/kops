@@ -7,7 +7,6 @@ Edit clusters and other resources.
 
 ### Synopsis
 
-
 Edit a resource configuration. This command changes the desired configuration in the registry. 
 
   To set your preferred editor, you can define the EDITOR environment variable.
@@ -26,6 +25,12 @@ Edit a resource configuration. This command changes the desired configuration in
   --state=s3://kops-state-1234 nodes
 ```
 
+### Options
+
+```
+  -h, --help   help for edit
+```
+
 ### Options inherited from parent commands
 
 ```
@@ -42,6 +47,7 @@ Edit a resource configuration. This command changes the desired configuration in
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops edit cluster](kops_edit_cluster.md)	 - Edit cluster.
 * [kops edit instancegroup](kops_edit_instancegroup.md)	 - Edit instancegroup.

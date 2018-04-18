@@ -7,7 +7,6 @@ Create an instancegroup.
 
 ### Synopsis
 
-
 Create an InstanceGroup configuration. 
 
 An InstanceGroup is a group of similar virtual machines. On AWS, an InstanceGroup maps to an AutoScalingGroup. 
@@ -15,7 +14,7 @@ An InstanceGroup is a group of similar virtual machines. On AWS, an InstanceGrou
 The Role of an InstanceGroup defines whether machines will act as a Kubernetes master or node.
 
 ```
-kops create instancegroup
+kops create instancegroup [flags]
 ```
 
 ### Examples
@@ -33,11 +32,12 @@ kops create instancegroup
 ### Options
 
 ```
-      --dry-run              If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
-      --edit                 If true, an editor will be opened to edit default values. (default true)
-  -o, --output string        Output format. One of json|yaml
-      --role string          Type of instance group to create (Node,Master,Bastion) (default "Node")
-      --subnet stringSlice   Subnet in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.
+      --dry-run          If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
+      --edit             If true, an editor will be opened to edit default values. (default true)
+  -h, --help             help for instancegroup
+  -o, --output string    Output format. One of json|yaml
+      --role string      Type of instance group to create (Node,Master,Bastion) (default "Node")
+      --subnet strings   Subnet in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.
 ```
 
 ### Options inherited from parent commands
@@ -56,5 +56,6 @@ kops create instancegroup
 ```
 
 ### SEE ALSO
+
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
 

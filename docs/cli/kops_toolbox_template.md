@@ -7,11 +7,10 @@ Generate cluster.yaml from template
 
 ### Synopsis
 
-
 Generate cluster.yaml from values input yaml file and apply template.
 
 ```
-kops toolbox template
+kops toolbox template [flags]
 ```
 
 ### Examples
@@ -29,13 +28,14 @@ kops toolbox template
 ### Options
 
 ```
-      --config-value string    Show the value of a specific configuration value
-      --fail-on-missing        Fail on referencing unset variables in templates (default true)
-      --format-yaml            Attempt to format the generated yaml content before output
-      --output string          Path to output file, otherwise defaults to stdout
-      --snippets stringSlice   Path to directory containing snippets used for templating
-      --template stringSlice   Path to template file or directory of templates to render
-      --values stringSlice     Path to a configuration file containing values to include in template
+      --config-value string   Show the value of a specific configuration value
+      --fail-on-missing       Fail on referencing unset variables in templates (default true)
+      --format-yaml           Attempt to format the generated yaml content before output
+  -h, --help                  help for template
+      --output string         Path to output file, otherwise defaults to stdout
+      --snippets strings      Path to directory containing snippets used for templating
+      --template strings      Path to template file or directory of templates to render
+      --values strings        Path to a configuration file containing values to include in template
 ```
 
 ### Options inherited from parent commands
@@ -54,5 +54,6 @@ kops toolbox template
 ```
 
 ### SEE ALSO
+
 * [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands.
 

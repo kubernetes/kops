@@ -7,7 +7,6 @@ Validate a kops cluster.
 
 ### Synopsis
 
-
 This commands validates the following components: 
 
   1. All k8s masters are running and have "Ready" status.  
@@ -22,6 +21,12 @@ This commands validates the following components:
   # This command uses the currently selected kops cluster as
   # set by the kubectl config.
   kops validate cluster
+```
+
+### Options
+
+```
+  -h, --help   help for validate
 ```
 
 ### Options inherited from parent commands
@@ -40,6 +45,7 @@ This commands validates the following components:
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops validate cluster](kops_validate_cluster.md)	 - Validate a kops cluster.
 

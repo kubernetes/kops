@@ -7,11 +7,10 @@ Create a ssh public key.
 
 ### Synopsis
 
-
 Create a new ssh public key, and store the key in the state store.  The key is not updated by this command.
 
 ```
-kops create secret sshpublickey
+kops create secret sshpublickey [flags]
 ```
 
 ### Examples
@@ -25,6 +24,7 @@ kops create secret sshpublickey
 ### Options
 
 ```
+  -h, --help            help for sshpublickey
   -i, --pubkey string   Path to SSH public key
 ```
 
@@ -44,5 +44,6 @@ kops create secret sshpublickey
 ```
 
 ### SEE ALSO
+
 * [kops create secret](kops_create_secret.md)	 - Create a secret.
 

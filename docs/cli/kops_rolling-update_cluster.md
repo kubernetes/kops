@@ -7,7 +7,6 @@ Rolling update a cluster.
 
 ### Synopsis
 
-
 This command updates a kubernetes cluster to match the cloud and kops specifications.
 
 To perform a rolling update, you need to update the cloud resources first with the command
@@ -26,7 +25,7 @@ Note: terraform users will need to run all of the following commands from the sa
 `terraform apply` prior to running `kops rolling-update cluster`.
 
 ```
-kops rolling-update cluster
+kops rolling-update cluster [flags]
 ```
 
 ### Examples
@@ -68,16 +67,17 @@ kops rolling-update cluster
 ### Options
 
 ```
-      --bastion-interval duration    Time to wait between restarting bastions (default 5m0s)
-      --cloudonly                    Perform rolling update without confirming progress with k8s
-      --fail-on-drain-error          The rolling-update will fail if draining a node fails. (default true)
-      --fail-on-validate-error       The rolling-update will fail if the cluster fails to validate. (default true)
-      --force                        Force rolling update, even if no changes
-      --instance-group stringSlice   List of instance groups to update (defaults to all if not specified)
-  -i, --interactive                  Prompt to continue after each instance is updated
-      --master-interval duration     Time to wait between restarting masters (default 5m0s)
-      --node-interval duration       Time to wait between restarting nodes (default 4m0s)
-  -y, --yes                          Perform rolling update immediately, without --yes rolling-update executes a dry-run
+      --bastion-interval duration   Time to wait between restarting bastions (default 5m0s)
+      --cloudonly                   Perform rolling update without confirming progress with k8s
+      --fail-on-drain-error         The rolling-update will fail if draining a node fails. (default true)
+      --fail-on-validate-error      The rolling-update will fail if the cluster fails to validate. (default true)
+      --force                       Force rolling update, even if no changes
+  -h, --help                        help for cluster
+      --instance-group strings      List of instance groups to update (defaults to all if not specified)
+  -i, --interactive                 Prompt to continue after each instance is updated
+      --master-interval duration    Time to wait between restarting masters (default 5m0s)
+      --node-interval duration      Time to wait between restarting nodes (default 4m0s)
+  -y, --yes                         Perform rolling update immediately, without --yes rolling-update executes a dry-run
 ```
 
 ### Options inherited from parent commands
@@ -96,5 +96,6 @@ kops rolling-update cluster
 ```
 
 ### SEE ALSO
+
 * [kops rolling-update](kops_rolling-update.md)	 - Rolling update a cluster.
 
