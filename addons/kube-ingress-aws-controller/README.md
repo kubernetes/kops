@@ -179,6 +179,9 @@ aws ec2 authorize-security-group-ingress --group-id $sgidnode --protocol all --p
 aws ec2 create-tags --resources $sgidingress --tags '[{"Key": "kubernetes.io/cluster/id", "Value": "owned"}, {"Key": "kubernetes:application", "Value": "kube-ingress-aws-controller"}]'
 ```
 
+If you have deployed the cluster into an **existing VPC** please check the [kops.md](https://github.com/zalando-incubator/kube-ingress-aws-controller/blob/master/deploy/kops.md) document in the zalando-incubator repository. 
+There you will find informations regarding needed adjustments for the above AWS cli commands.
+
 ### AWS Certificate Manager (ACM)
 
 To have TLS termination you can use AWS managed certificates.  If you
