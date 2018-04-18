@@ -195,6 +195,10 @@ type terraformRouteTable struct {
 }
 
 func (_ *RouteTable) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *RouteTable) error {
+	if err := t.AddOutputVariable("route_table_"+*e.Name+"_id", e.TerraformLink()); err != nil {
+		return err
+	}
+
 	tf := &terraformRouteTable{
 		VPCID: e.VPC.TerraformLink(),
 		Tags:  e.Tags,

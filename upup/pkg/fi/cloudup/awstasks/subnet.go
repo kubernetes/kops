@@ -225,6 +225,10 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 		return t.AddOutputVariableArray("subnet_ids", terraform.LiteralFromStringValue(*e.ID))
 	}
 
+	if err := t.AddOutputVariable("subnet_"+*e.Name+"_id", e.TerraformLink()); err != nil {
+		return err
+	}
+
 	tf := &terraformSubnet{
 		VPCID:            e.VPC.TerraformLink(),
 		CIDR:             e.CIDR,
