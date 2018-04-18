@@ -13,6 +13,7 @@ go_library(
         "versions.go",
         "zz_generated.deepcopy.go",
     ],
+    importmap = "vendor/k8s.io/client-go/rest",
     importpath = "k8s.io/client-go/rest",
     visibility = ["//visibility:public"],
     deps = [

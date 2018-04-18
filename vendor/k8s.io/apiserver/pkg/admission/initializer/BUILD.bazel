@@ -6,6 +6,7 @@ go_library(
         "initializer.go",
         "interfaces.go",
     ],
+    importmap = "vendor/k8s.io/apiserver/pkg/admission/initializer",
     importpath = "k8s.io/apiserver/pkg/admission/initializer",
     visibility = ["//visibility:public"],
     deps = [

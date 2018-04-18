@@ -15,6 +15,7 @@ go_library(
         "transport.go",
         "unix_listener.go",
     ],
+    importmap = "vendor/github.com/coreos/etcd/pkg/transport",
     importpath = "github.com/coreos/etcd/pkg/transport",
     visibility = ["//visibility:public"],
     deps = [

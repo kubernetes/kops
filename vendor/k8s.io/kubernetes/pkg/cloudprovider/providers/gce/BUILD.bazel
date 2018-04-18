@@ -37,6 +37,7 @@ go_library(
         "metrics.go",
         "token_source.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/cloudprovider/providers/gce",
     importpath = "k8s.io/kubernetes/pkg/cloudprovider/providers/gce",
     visibility = ["//visibility:public"],
     deps = [

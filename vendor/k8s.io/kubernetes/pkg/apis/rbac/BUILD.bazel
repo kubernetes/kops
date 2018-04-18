@@ -9,6 +9,7 @@ go_library(
         "types.go",
         "zz_generated.deepcopy.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/apis/rbac",
     importpath = "k8s.io/kubernetes/pkg/apis/rbac",
     visibility = ["//visibility:public"],
     deps = [

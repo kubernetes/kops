@@ -8,6 +8,7 @@ go_library(
         "types.go",
         "zz_generated.deepcopy.go",
     ],
+    importmap = "vendor/k8s.io/metrics/pkg/apis/metrics",
     importpath = "k8s.io/metrics/pkg/apis/metrics",
     visibility = ["//visibility:public"],
     deps = [

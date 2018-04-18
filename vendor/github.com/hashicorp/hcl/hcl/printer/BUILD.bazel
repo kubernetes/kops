@@ -6,6 +6,7 @@ go_library(
         "nodes.go",
         "printer.go",
     ],
+    importmap = "vendor/github.com/hashicorp/hcl/hcl/printer",
     importpath = "github.com/hashicorp/hcl/hcl/printer",
     visibility = ["//visibility:public"],
     deps = [

@@ -7,6 +7,7 @@ go_library(
         "testutil.go",
         "utils.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/plugin/pkg/scheduler/util",
     importpath = "k8s.io/kubernetes/plugin/pkg/scheduler/util",
     visibility = ["//visibility:public"],
     deps = [

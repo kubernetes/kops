@@ -8,6 +8,7 @@ go_library(
         "types.go",
         "zz_generated.deepcopy.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/plugin/pkg/scheduler/api",
     importpath = "k8s.io/kubernetes/plugin/pkg/scheduler/api",
     visibility = ["//visibility:public"],
     deps = [

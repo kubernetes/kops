@@ -8,6 +8,7 @@ go_library(
         "node_info.go",
         "util.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache",
     importpath = "k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache",
     visibility = ["//visibility:public"],
     deps = [

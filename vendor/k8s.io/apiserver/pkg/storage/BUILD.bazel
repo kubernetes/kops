@@ -12,6 +12,7 @@ go_library(
         "util.go",
         "watch_cache.go",
     ],
+    importmap = "vendor/k8s.io/apiserver/pkg/storage",
     importpath = "k8s.io/apiserver/pkg/storage",
     visibility = ["//visibility:public"],
     deps = [
