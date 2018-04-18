@@ -14,11 +14,11 @@ required = [
   go-tests = true
   unused-packages = true
 
-
-# Note that the older version specified in k8s.io/kubernetes Godeps breaks go dep
-[[override]]
-  name = "github.com/chai2010/gettext-go"
-  revision = "bf70f2a70fb1b1f36d90d671a72795984eab0fcb"
+  # Don't prune helper scripts from code-generator
+  [[prune.project]]
+    name = "k8s.io/code-generator"
+    unused-packages = false
+    non-go = false
 
 # aws-sdk-go is one of our critical dependencies
 [[override]]
@@ -31,30 +31,58 @@ required = [
   name = "github.com/jteeuwen/go-bindata"
   revision = "a0ff2567cfb70903282db057e799fd826784d41d"
 
-# Needed for apimachinery generation
+# Core kubernetes components
 [[override]]
   name = "k8s.io/code-generator"
-  revision = "91d3f6a57905178524105a085085901bb73bd3dc"
+  version = "kubernetes-1.10.1"
+[[override]]
+  name = "k8s.io/apimachinery"
+  version = "kubernetes-1.10.1"
+[[override]]
+  name = "k8s.io/api"
+  version = "kubernetes-1.10.1"
+[[override]]
+  name = "k8s.io/utils"
+  revision = "258e2a2fa64568210fbd6267cf1d8fd87c3cb86e" # Latest as of 1.10.1
+[[override]]
+  name = "k8s.io/kube-openapi"
+  revision = "f442ecb314a3679150c272e2b9713d8deed5955d" # Latest as of 1.10.1
+[[override]]
+  name = "k8s.io/client-go"
+  revision = "23781f4d6632d88e869066eaebb743857aa1ef9b" # 1.10.0 (no 1.10.1)
+[[override]]
+  name = "k8s.io/apiserver"
+  version = "kubernetes-1.10.1"
+[[override]]
+  name = "k8s.io/metrics"
+  version = "kubernetes-1.10.1"
+[[override]]
+  name = "k8s.io/apiextensions-apiserver"
+  version = "kubernetes-1.10.1"
+[[override]]
+  name = "k8s.io/kubernetes"
+  version = "v1.10.1"
+
 
 # These come from godeps.json in kubernetes
+[[override]]
+  name = "k8s.io/gengo"
+  revision = "01a732e01d00cb9a81bb0ca050d3e6d2b947927b"
 [[override]]
   name = "github.com/hashicorp/hcl"
   revision = "d8c773c4cba11b11539e3d45f93daeaa5dcf1fa1"
 [[override]]
   name = "github.com/spf13/cobra"
-  revision = "f62e98d28ab7ad31d707ba837a966378465c7b57"
+  revision = "6644d46b81fa1831979c4cded0106e774e0ef0ab"
 [[override]]
   name = "golang.org/x/crypto"
   revision = "81e90905daefcd6fd217b62423c0908922eadb30"
 [[override]]
   name = "github.com/go-openapi/spec"
-  revision = "7abd5745472fff5eb3685386d5fb8bf38683154d"
+  revision = "1de3e0542de65ad8d75452a595886fdd0befb363"
 [[override]]
   name = "github.com/go-openapi/swag"
   revision = "f3f9494671f93fcff853e3c6e9e948b3eb71e590"
-[[override]]
-  name = "k8s.io/api"
-  revision = "acf347b865f29325eb61f4cd2df11e86e073a5ee"
 [[override]]
   name = "github.com/gogo/protobuf"
   revision = "c0656edd0d9eab7c66d1eb0c568f9039345796f7"
@@ -72,17 +100,11 @@ required = [
   name = "github.com/go-openapi/jsonreference"
   revision = "13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272"
 [[override]]
-  name = "k8s.io/utils"
-  revision = "aedf551cdb8b0119df3a19c65fde413a13b34997"
-[[override]]
   name = "github.com/docker/docker"
   revision = "4f3616fb1c112e206b88cb7a9922bf49067a7756"
 [[override]]
   name = "github.com/fatih/camelcase"
   revision = "f6a740d52f961c60348ebb109adde9f4635d7540"
-[[override]]
-  name = "k8s.io/kube-openapi"
-  revision = "39a7bf85c140f972372c2a0d1ee40adbf0c8bfe1"
 [[override]]
   name = "github.com/NYTimes/gziphandler"
   revision = "56545f4a5d46df9a6648819d1664c3a03a13ffdb"
@@ -91,13 +113,13 @@ required = [
   revision = "020d11c3b9c0c7a3c2efcc8e5cf5b9ef7bcea21f"
 [[override]]
   name = "github.com/gophercloud/gophercloud"
-  revision = "8183543f90d1aef267a5ecc209f2e0715b355acb"
+  revision = "6da026c32e2d622cc242d32984259c77237aefe1"
 [[override]]
   name = "gopkg.in/warnings.v0"
   revision = "8a331561fe74dadba6edfc59f3be66c22c3b065d"
 [[override]]
   name = "github.com/json-iterator/go"
-  revision = "36b14963da70d11297d313183d7e6388c8510e1e"
+  revision = "13f86432b882000a51c6e610c620974462691a97"
 [[override]]
   name = "github.com/PuerkitoBio/purell"
   revision = "8a290539e2e8629dbc4e6bad948158f790ec31f4"
@@ -112,7 +134,7 @@ required = [
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
 [[override]]
   name = "google.golang.org/api"
-  revision = "654f863362977d69086620b5f72f13e911da2410"
+  revision = "7f657476956314fee258816aaf81c0ff65cf8bee"
 # UNKNOWN dep github.com/petar/GoLLRB
 [[override]]
   name = "github.com/Microsoft/go-winio"
@@ -125,7 +147,7 @@ required = [
   revision = "ca53cad383cad2479bbba7f7a1a05797ec1386e4"
 [[override]]
   name = "github.com/vmware/govmomi"
-  revision = "b8b228cfbad7f0a69ed90393ca9aee085d3c6ef1"
+  revision = "0f82f03a2bbf14037d2331cf02f1d4157bbef6cc"
 [[override]]
   name = "github.com/coreos/go-systemd"
   revision = "48702e0da86bd25e76cfef347e2adeb434a0d0a6"
@@ -152,7 +174,7 @@ required = [
   revision = "568e959cd89871e61434c1143528d9162da89ef2"
 [[override]]
   name = "google.golang.org/grpc"
-  revision = "d2e1b51f33ff8c5e4a15560ff049d200e83726c5"
+  revision = "5b3c4e850e90a4cf6a20ebd46c8b32a0a3afcb9e"
 [[override]]
   name = "golang.org/x/oauth2"
   revision = "a6bd8cefa1811bd24b86f8902872e4e8225f74c4"
@@ -183,9 +205,6 @@ required = [
   name = "github.com/golang/glog"
   revision = "44145f04b68cf362d9c4df2182967c2275eaefed"
 [[override]]
-  name = "k8s.io/client-go"
-  revision = "9389c055a838d4f208b699b3c7c51b70f2368861"
-[[override]]
   name = "github.com/docker/go-units"
   revision = "9e638d38cf6977a37a8ea0078f3ee75a7cdb2dd1"
 [[override]]
@@ -193,7 +212,7 @@ required = [
   revision = "19f72df4d05d31cbe1c56bfc8045c96babff6c7e"
 [[override]]
   name = "github.com/Azure/go-autorest"
-  revision = "e14a70c556c8e0db173358d1a903dca345a8e75e"
+  revision = "d4e6b95c12a08b4de2d48b45d5b4d594e5d32fab"
 [[override]]
   name = "golang.org/x/net"
   revision = "1c05540f6879653db88113bc4a2b70aec4bd491f"
@@ -202,13 +221,13 @@ required = [
   revision = "b19bf474d317b857955b12035d2c5acb57ce8b01"
 [[override]]
   name = "gopkg.in/yaml.v2"
-  revision = "53feefa2559fb8dfa8d81baad31be332c97d6c77"
+  revision = "670d4cfef0544295bc27a114dbac37980d83185a"
 [[override]]
   name = "gopkg.in/natefinch/lumberjack.v2"
   revision = "20b71e5b60d756d3d2f80def009790325acc2b23"
 [[override]]
   name = "github.com/google/cadvisor"
-  revision = "1e567c2ac359c3ed1303e0c80b6cf08edefc841d"
+  revision = "2e02d28350c5fbbad9cfb7e5a1733468b75ab3f9"
 [[override]]
   name = "gopkg.in/inf.v0"
   revision = "3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4"
@@ -250,9 +269,6 @@ required = [
   name = "github.com/jonboulle/clockwork"
   revision = "72f9bd7c4e0c2a40055ab3d0f09654f730cce982"
 [[override]]
-  name = "k8s.io/apimachinery"
-  revision = "19e3f5aa3adca672c153d324e6b7d82ff8935f03"
-[[override]]
   name = "github.com/go-openapi/jsonpointer"
   revision = "46af16f9f7b149af66e5d1bd010e3574dc06de98"
 [[override]]
@@ -260,7 +276,7 @@ required = [
   revision = "e7e903064f5e9eb5da98208bae10b475d4db0f8c"
 [[override]]
   name = "github.com/spf13/pflag"
-  revision = "9ff6c6923cfffbcd502984b8e0c80539a94968b7"
+  revision = "4c012f6dcd9546820e378d0bdda4d8fc772cdfea"
 [[override]]
   name = "github.com/jmespath/go-jmespath"
   revision = "0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74"
@@ -287,32 +303,20 @@ required = [
   revision = "3ede32e2033de7505e6500d6c868c2b9ed9f169d"
 # UNKNOWN dep github.com/coredns/coredns
 [[override]]
-  name = "k8s.io/apiserver"
-  revision = "40b00dd493d8fb98c255f0c6427f97fbf865a538"
-[[override]]
   name = "github.com/magiconair/properties"
   revision = "61b492c03cf472e0c6419be5899b8e0dc28b1b88"
 [[override]]
   name = "github.com/golang/groupcache"
   revision = "02826c3e79038b59d737d3b1c0a1d937f71a4433"
 [[override]]
-  name = "k8s.io/metrics"
-  revision = "f3733640389abc59db26dfca07debf6cb31b7e91"
-[[override]]
   name = "cloud.google.com/go"
   revision = "3b1ae45394a234c385be014e9a488f2bb6eef821"
-[[override]]
-  name = "k8s.io/apiextensions-apiserver"
-  revision = "6f29dd12234812844d29f52bd520bb01374619ce"
 [[override]]
   name = "github.com/daviddengcn/go-colortext"
   revision = "511bcaf42ccd42c38aba7427b6673277bf19e2a1"
 [[override]]
   name = "github.com/miekg/dns"
   revision = "5d001d020961ae1c184f9f8152fdc73810481677"
-[[override]]
-  name = "k8s.io/kubernetes"
-  revision = "049d98c78fb6ec4b260c4f9513e2a9fd57cfe009"
 [[override]]
   name = "github.com/juju/ratelimit"
   revision = "5b9ff866471762aa2ab2dced63c9fb6f53921342"
@@ -330,11 +334,10 @@ required = [
   revision = "a0d98a5f288019575c6d1f4bb1573fef2d1fcdc4"
 [[override]]
   name = "github.com/coreos/etcd"
-  revision = "960f4604bc821241b94906da5fe7f66306a77472"
+  revision = "95a726a27e09030f9ccbd9982a1508f5a6d25ada"
 [[override]]
   name = "vbom.ml/util"
   revision = "db5cfe13f5cc80a4990d98e2e1b0707a4d1a5394"
-
 
 
 
@@ -359,7 +362,7 @@ required = [
   revision = "2500245aa6110c562d17020fb31a2c133d737799"
 [[override]]
   name = "github.com/grpc-ecosystem/grpc-gateway"
-  revision = "84398b94e188ee336f307779b57b3aa91af7063c"
+  revision = "8cc3a55af3bcf171a1c23a90c4df9cf591706104"
 [[override]]
   name = "github.com/huandu/xstrings"
   revision = "3959339b333561bf62a38b424fd41517c2c90f40"
@@ -376,9 +379,6 @@ required = [
   name = "github.com/pelletier/go-buffruneio"
   revision = "df1e16fde7fc330a0ca68167c23bf7ed6ac31d6d"
 [[override]]
-  name = "github.com/satori/go.uuid"
-  revision = "5bf94b69c6b68ee1b541973bb8e1144db23a194b"
-[[override]]
   name = "github.com/sergi/go-diff"
   revision = "552b4e9bbdca9e5adafd95ee98c822fdd11b330b"
 [[override]]
@@ -390,3 +390,22 @@ required = [
 [[override]]
   name = "github.com/weaveworks/mesh"
   revision = "1f158d31de55abf9f97bbaa0a260e2b8023a3785"
+
+
+# We have some newer versions than kubernetes/kubernetes godeps
+[[override]]
+  name = "github.com/satori/go.uuid"
+  revision = "5bf94b69c6b68ee1b541973bb8e1144db23a194b"
+[[override]]
+  name = "golang.org/x/time"
+  revision = "fbb02b2291d28baffd63558aa44b4b56f178d650"
+[[override]]
+  name = "golang.org/x/tools"
+  revision = "2382e3994d48b1d22acc2c86bcad0a2aff028e32"
+[[override]]
+  # The older version specified in k8s.io/kubernetes Godeps breaks go dep
+  name = "github.com/chai2010/gettext-go"
+  revision = "bf70f2a70fb1b1f36d90d671a72795984eab0fcb"
+[[override]]
+  name = "gopkg.in/square/go-jose.v2"
+  revision = "76dd09796242edb5b897103a75df2645c028c960"
