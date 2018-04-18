@@ -3,11 +3,13 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "args.go",
         "bash_completions.go",
         "cobra.go",
         "command.go",
         "command_notwin.go",
         "command_win.go",
+        "zsh_completions.go",
     ],
     importmap = "vendor/github.com/spf13/cobra",
     importpath = "github.com/spf13/cobra",

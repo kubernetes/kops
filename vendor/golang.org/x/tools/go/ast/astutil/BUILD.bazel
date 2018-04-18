@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "enclosing.go",
         "imports.go",
-        "rewrite.go",
         "util.go",
     ],
     importmap = "vendor/golang.org/x/tools/go/ast/astutil",

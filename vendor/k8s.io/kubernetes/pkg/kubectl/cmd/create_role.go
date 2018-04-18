@@ -112,7 +112,6 @@ type CreateRoleOptions struct {
 	Mapper       meta.RESTMapper
 	Out          io.Writer
 	PrintObject  func(obj runtime.Object) error
-	PrintSuccess func(mapper meta.RESTMapper, shortOutput bool, out io.Writer, resource, name string, dryRun bool, operation string)
 }
 
 // Role is a command to ease creating Roles.
@@ -121,7 +120,8 @@ func NewCmdCreateRole(f cmdutil.Factory, cmdOut io.Writer) *cobra.Command {
 		Out: cmdOut,
 	}
 	cmd := &cobra.Command{
-		Use:     "role NAME --verb=verb --resource=resource.group/subresource [--resource-name=resourcename] [--dry-run]",
+		Use: "role NAME --verb=verb --resource=resource.group/subresource [--resource-name=resourcename] [--dry-run]",
+		DisableFlagsInUseLine: true,
 		Short:   roleLong,
 		Long:    roleLong,
 		Example: roleExample,
@@ -162,7 +162,6 @@ func (c *CreateRoleOptions) Complete(f cmdutil.Factory, cmd *cobra.Command, args
 		}
 	}
 	c.Verbs = verbs
-	c.PrintSuccess = f.PrintSuccess
 
 	// Support resource.group pattern. If no API Group specified, use "" as core API Group.
 	// e.g. --resource=pods,deployments.extensions
@@ -205,7 +204,7 @@ func (c *CreateRoleOptions) Complete(f cmdutil.Factory, cmd *cobra.Command, args
 	}
 
 	c.PrintObject = func(obj runtime.Object) error {
-		return f.PrintObject(cmd, false, c.Mapper, obj, c.Out)
+		return cmdutil.PrintObject(cmd, obj, c.Out)
 	}
 
 	clientset, err := f.KubernetesClientSet()
@@ -294,7 +293,7 @@ func (c *CreateRoleOptions) RunCreateRole() error {
 	}
 
 	if useShortOutput := c.OutputFormat == "name"; useShortOutput || len(c.OutputFormat) == 0 {
-		c.PrintSuccess(c.Mapper, useShortOutput, c.Out, "roles", c.Name, c.DryRun, "created")
+		cmdutil.PrintSuccess(useShortOutput, c.Out, role, c.DryRun, "created")
 		return nil
 	}
 
