@@ -11,6 +11,8 @@ required = [
 
   # Needed for docs generation
   "k8s.io/code-generator/cmd/openapi-gen",
+  "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot",
+  "github.com/kubernetes-incubator/reference-docs/gen-apidocs",
 ]
 
 [prune]
@@ -65,6 +67,14 @@ required = [
 [[override]]
   name = "k8s.io/kubernetes"
   version = "v1.10.1"
+
+# Needed for docs generation
+[[override]]
+  name = "github.com/kubernetes-incubator/apiserver-builder"
+  revision = "e809ac2f9f0c238f08d08a876f8b3f499604f941"
+[[override]]
+  name = "github.com/kubernetes-incubator/reference-docs"
+  revision = "8fadf91876ccbcfec367b434706a3c449073b0b4"
 
 
 # These come from godeps.json in kubernetes
