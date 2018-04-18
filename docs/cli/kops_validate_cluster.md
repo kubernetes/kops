@@ -7,7 +7,6 @@ Validate a kops cluster.
 
 ### Synopsis
 
-
 This commands validates the following components: 
 
   1. All k8s masters are running and have "Ready" status.  
@@ -16,7 +15,7 @@ This commands validates the following components:
   4. All pods in the kube-system namespace are running and healthy.
 
 ```
-kops validate cluster
+kops validate cluster [flags]
 ```
 
 ### Examples
@@ -31,6 +30,7 @@ kops validate cluster
 ### Options
 
 ```
+  -h, --help            help for cluster
   -o, --output string   Output format. One of json|yaml|table. (default "table")
 ```
 
@@ -50,5 +50,6 @@ kops validate cluster
 ```
 
 ### SEE ALSO
+
 * [kops validate](kops_validate.md)	 - Validate a kops cluster.
 

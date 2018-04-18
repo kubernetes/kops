@@ -7,7 +7,6 @@ Set fields on clusters and other resources.
 
 ### Synopsis
 
-
 Set a configuration field. 
 
 kops set does not update the cloud resources, to apply the changes use "kops update cluster".
@@ -17,6 +16,12 @@ kops set does not update the cloud resources, to apply the changes use "kops upd
 ```
   # Set cluster to run kubernetes version 1.10.0
   kops set cluster k8s-cluster.example.com cluster.spec.kubernetesVersion=1.10.0
+```
+
+### Options
+
+```
+  -h, --help   help for set
 ```
 
 ### Options inherited from parent commands
@@ -35,6 +40,7 @@ kops set does not update the cloud resources, to apply the changes use "kops upd
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops set cluster](kops_set_cluster.md)	 - Set cluster fields.
 

@@ -7,7 +7,6 @@ Misc infrequently used commands.
 
 ### Synopsis
 
-
 Misc infrequently used commands.
 
 ### Examples
@@ -15,6 +14,12 @@ Misc infrequently used commands.
 ```
   # Dump cluster information
   kops toolbox dump --name k8s-cluster.example.com
+```
+
+### Options
+
+```
+  -h, --help   help for toolbox
 ```
 
 ### Options inherited from parent commands
@@ -33,6 +38,7 @@ Misc infrequently used commands.
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops toolbox bundle](kops_toolbox_bundle.md)	 - Bundle cluster information
 * [kops toolbox convert-imported](kops_toolbox_convert-imported.md)	 - Convert an imported cluster into a kops cluster.

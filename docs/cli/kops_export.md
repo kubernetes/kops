@@ -7,7 +7,6 @@ Export configuration.
 
 ### Synopsis
 
-
 Export configurations from a cluster.
 
 ### Examples
@@ -15,6 +14,12 @@ Export configurations from a cluster.
 ```
   # export a kubecfg file
   kops export kubecfg kubernetes-cluster.example.com
+```
+
+### Options
+
+```
+  -h, --help   help for export
 ```
 
 ### Options inherited from parent commands
@@ -33,6 +38,7 @@ Export configurations from a cluster.
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops export kubecfg](kops_export_kubecfg.md)	 - Export kubecfg.
 

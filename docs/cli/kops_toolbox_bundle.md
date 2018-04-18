@@ -7,11 +7,10 @@ Bundle cluster information
 
 ### Synopsis
 
-
 Creates a bundle for enrolling a bare metal machine.
 
 ```
-kops toolbox bundle
+kops toolbox bundle [flags]
 ```
 
 ### Examples
@@ -24,6 +23,7 @@ kops toolbox bundle
 ### Options
 
 ```
+  -h, --help            help for bundle
       --target string   machine to target (IP address)
 ```
 
@@ -43,5 +43,6 @@ kops toolbox bundle
 ```
 
 ### SEE ALSO
+
 * [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands.
 

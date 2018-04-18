@@ -7,7 +7,6 @@ Create a secret keypair.
 
 ### Synopsis
 
-
 Create a secret keypair
 
 ### Examples
@@ -17,6 +16,12 @@ Create a secret keypair
   kops create secret keypair ca \
   --cert ~/ca.pem --key ~/ca-key.pem \
   --name k8s-cluster.example.com --state s3://example.com
+```
+
+### Options
+
+```
+  -h, --help   help for keypair
 ```
 
 ### Options inherited from parent commands
@@ -35,6 +40,7 @@ Create a secret keypair
 ```
 
 ### SEE ALSO
+
 * [kops create secret](kops_create_secret.md)	 - Create a secret.
 * [kops create secret keypair ca](kops_create_secret_keypair_ca.md)	 - Add a ca cert and key
 

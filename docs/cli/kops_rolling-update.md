@@ -7,7 +7,6 @@ Rolling update a cluster.
 
 ### Synopsis
 
-
 This command updates a kubernetes cluster to match the cloud and kops specifications.
 
 To perform a rolling update, you need to update the cloud resources first with the command
@@ -61,6 +60,12 @@ Note: terraform users will need to run all of the following commands from the sa
   --instance-group nodes
 ```
 
+### Options
+
+```
+  -h, --help   help for rolling-update
+```
+
 ### Options inherited from parent commands
 
 ```
@@ -77,6 +82,7 @@ Note: terraform users will need to run all of the following commands from the sa
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops rolling-update cluster](kops_rolling-update_cluster.md)	 - Rolling update a cluster.
 
