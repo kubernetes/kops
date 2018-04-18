@@ -42,6 +42,8 @@ type CreateOptions struct {
 	Selector         string
 	EditBeforeCreate bool
 	Raw              string
+	Out              io.Writer
+	ErrOut           io.Writer
 }
 
 var (
@@ -62,10 +64,14 @@ var (
 )
 
 func NewCmdCreate(f cmdutil.Factory, out, errOut io.Writer) *cobra.Command {
-	var options CreateOptions
+	options := &CreateOptions{
+		Out:    out,
+		ErrOut: errOut,
+	}
 
 	cmd := &cobra.Command{
-		Use:     "create -f FILENAME",
+		Use: "create -f FILENAME",
+		DisableFlagsInUseLine: true,
 		Short:   i18n.T("Create a resource from a file or from stdin."),
 		Long:    createLong,
 		Example: createExample,
@@ -76,7 +82,7 @@ func NewCmdCreate(f cmdutil.Factory, out, errOut io.Writer) *cobra.Command {
 				return
 			}
 			cmdutil.CheckErr(options.ValidateArgs(cmd, args))
-			cmdutil.CheckErr(RunCreate(f, cmd, out, errOut, &options))
+			cmdutil.CheckErr(options.RunCreate(f, cmd))
 		},
 	}
 
@@ -109,6 +115,7 @@ func NewCmdCreate(f cmdutil.Factory, out, errOut io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdCreateRoleBinding(f, out))
 	cmd.AddCommand(NewCmdCreatePodDisruptionBudget(f, out))
 	cmd.AddCommand(NewCmdCreatePriorityClass(f, out))
+	cmd.AddCommand(NewCmdCreateJob(f, out))
 	return cmd
 }
 
@@ -123,7 +130,7 @@ func (o *CreateOptions) ValidateArgs(cmd *cobra.Command, args []string) error {
 		if len(o.FilenameOptions.Filenames) != 1 {
 			return cmdutil.UsageErrorf(cmd, "--raw can only use a single local file or stdin")
 		}
-		if strings.HasPrefix(o.FilenameOptions.Filenames[0], "http") {
+		if strings.Index(o.FilenameOptions.Filenames[0], "http://") == 0 || strings.Index(o.FilenameOptions.Filenames[0], "https://") == 0 {
 			return cmdutil.UsageErrorf(cmd, "--raw cannot read from a url")
 		}
 		if o.FilenameOptions.Recursive {
@@ -143,36 +150,15 @@ func (o *CreateOptions) ValidateArgs(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func RunCreate(f cmdutil.Factory, cmd *cobra.Command, out, errOut io.Writer, options *CreateOptions) error {
+func (o *CreateOptions) RunCreate(f cmdutil.Factory, cmd *cobra.Command) error {
 	// raw only makes sense for a single file resource multiple objects aren't likely to do what you want.
 	// the validator enforces this, so
-	if len(options.Raw) > 0 {
-		restClient, err := f.RESTClient()
-		if err != nil {
-			return err
-		}
-
-		var data io.ReadCloser
-		if options.FilenameOptions.Filenames[0] == "-" {
-			data = os.Stdin
-		} else {
-			data, err = os.Open(options.FilenameOptions.Filenames[0])
-			if err != nil {
-				return err
-			}
-		}
-		// TODO post content with stream.  Right now it ignores body content
-		bytes, err := restClient.Post().RequestURI(options.Raw).Body(data).DoRaw()
-		if err != nil {
-			return err
-		}
-
-		fmt.Fprintf(out, "%v", string(bytes))
-		return nil
+	if len(o.Raw) > 0 {
+		return o.raw(f)
 	}
 
-	if options.EditBeforeCreate {
-		return RunEditOnCreate(f, out, errOut, cmd, &options.FilenameOptions)
+	if o.EditBeforeCreate {
+		return RunEditOnCreate(f, o.Out, o.ErrOut, cmd, &o.FilenameOptions)
 	}
 	schema, err := f.Validator(cmdutil.GetFlagBool(cmd, "validate"))
 	if err != nil {
@@ -189,8 +175,8 @@ func RunCreate(f cmdutil.Factory, cmd *cobra.Command, out, errOut io.Writer, opt
 		Schema(schema).
 		ContinueOnError().
 		NamespaceParam(cmdNamespace).DefaultNamespace().
-		FilenameParam(enforceNamespace, &options.FilenameOptions).
-		LabelSelectorParam(options.Selector).
+		FilenameParam(enforceNamespace, &o.FilenameOptions).
+		LabelSelectorParam(o.Selector).
 		Flatten().
 		Do()
 	err = r.Err()
@@ -198,16 +184,15 @@ func RunCreate(f cmdutil.Factory, cmd *cobra.Command, out, errOut io.Writer, opt
 		return err
 	}
 
-	dryRun := cmdutil.GetFlagBool(cmd, "dry-run")
+	dryRun := cmdutil.GetDryRunFlag(cmd)
 	output := cmdutil.GetFlagString(cmd, "output")
-	mapper := r.Mapper().RESTMapper
 
 	count := 0
 	err = r.Visit(func(info *resource.Info, err error) error {
 		if err != nil {
 			return err
 		}
-		if err := kubectl.CreateOrUpdateAnnotation(cmdutil.GetFlagBool(cmd, cmdutil.ApplyAnnotationsFlag), info, f.JSONEncoder()); err != nil {
+		if err := kubectl.CreateOrUpdateAnnotation(cmdutil.GetFlagBool(cmd, cmdutil.ApplyAnnotationsFlag), info, cmdutil.InternalVersionJSONEncoder()); err != nil {
 			return cmdutil.AddSourceToErr("creating", info.Source, err)
 		}
 
@@ -227,13 +212,10 @@ func RunCreate(f cmdutil.Factory, cmd *cobra.Command, out, errOut io.Writer, opt
 
 		shortOutput := output == "name"
 		if len(output) > 0 && !shortOutput {
-			return f.PrintResourceInfoForCommand(cmd, info, out)
-		}
-		if !shortOutput {
-			f.PrintObjectSpecificMessage(info.Object, out)
+			return cmdutil.PrintObject(cmd, info.Object, o.Out)
 		}
 
-		f.PrintSuccess(mapper, shortOutput, out, info.Mapping.Resource, info.Name, dryRun, "created")
+		cmdutil.PrintSuccess(shortOutput, o.Out, info.Object, dryRun, "created")
 		return nil
 	})
 	if err != nil {
@@ -242,6 +224,33 @@ func RunCreate(f cmdutil.Factory, cmd *cobra.Command, out, errOut io.Writer, opt
 	if count == 0 {
 		return fmt.Errorf("no objects passed to create")
 	}
+	return nil
+}
+
+// raw makes a simple HTTP request to the provided path on the server using the default
+// credentials.
+func (o *CreateOptions) raw(f cmdutil.Factory) error {
+	restClient, err := f.RESTClient()
+	if err != nil {
+		return err
+	}
+
+	var data io.ReadCloser
+	if o.FilenameOptions.Filenames[0] == "-" {
+		data = os.Stdin
+	} else {
+		data, err = os.Open(o.FilenameOptions.Filenames[0])
+		if err != nil {
+			return err
+		}
+	}
+	// TODO post content with stream.  Right now it ignores body content
+	bytes, err := restClient.Post().RequestURI(o.Raw).Body(data).DoRaw()
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(o.Out, "%v", string(bytes))
 	return nil
 }
 
@@ -278,8 +287,8 @@ func createAndRefresh(info *resource.Info) error {
 
 // NameFromCommandArgs is a utility function for commands that assume the first argument is a resource name
 func NameFromCommandArgs(cmd *cobra.Command, args []string) (string, error) {
-	if len(args) == 0 {
-		return "", cmdutil.UsageErrorf(cmd, "NAME is required")
+	if len(args) != 1 {
+		return "", cmdutil.UsageErrorf(cmd, "exactly one NAME is required, got %d", len(args))
 	}
 	return args[0], nil
 }
@@ -328,7 +337,7 @@ func RunCreateSubcommand(f cmdutil.Factory, cmd *cobra.Command, out io.Writer, o
 	if err != nil {
 		return err
 	}
-	if err := kubectl.CreateOrUpdateAnnotation(cmdutil.GetFlagBool(cmd, cmdutil.ApplyAnnotationsFlag), info, f.JSONEncoder()); err != nil {
+	if err := kubectl.CreateOrUpdateAnnotation(cmdutil.GetFlagBool(cmd, cmdutil.ApplyAnnotationsFlag), info, cmdutil.InternalVersionJSONEncoder()); err != nil {
 		return err
 	}
 	obj = info.Object
@@ -345,9 +354,9 @@ func RunCreateSubcommand(f cmdutil.Factory, cmd *cobra.Command, out io.Writer, o
 	}
 
 	if useShortOutput := options.OutputFormat == "name"; useShortOutput || len(options.OutputFormat) == 0 {
-		f.PrintSuccess(mapper, useShortOutput, out, mapping.Resource, info.Name, options.DryRun, "created")
+		cmdutil.PrintSuccess(useShortOutput, out, info.Object, options.DryRun, "created")
 		return nil
 	}
 
-	return f.PrintObject(cmd, false, mapper, obj, out)
+	return cmdutil.PrintObject(cmd, obj, out)
 }
