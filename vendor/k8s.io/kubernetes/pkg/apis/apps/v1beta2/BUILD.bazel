@@ -10,6 +10,7 @@ go_library(
         "zz_generated.conversion.go",
         "zz_generated.defaults.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/apis/apps/v1beta2",
     importpath = "k8s.io/kubernetes/pkg/apis/apps/v1beta2",
     visibility = ["//visibility:public"],
     deps = [

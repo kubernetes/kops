@@ -16,6 +16,7 @@ go_library(
         "errors.go",
         "executor.go",
         "files.go",
+        "files_owner.go",
         "has_address.go",
         "http.go",
         "lifecycle.go",
@@ -29,39 +30,7 @@ go_library(
         "users.go",
         "values.go",
         "vfs_castore.go",
-    ] + select({
-        "@io_bazel_rules_go//go/platform:android": [
-            "files_owner.go",
-        ],
-        "@io_bazel_rules_go//go/platform:darwin": [
-            "files_owner.go",
-        ],
-        "@io_bazel_rules_go//go/platform:dragonfly": [
-            "files_owner.go",
-        ],
-        "@io_bazel_rules_go//go/platform:freebsd": [
-            "files_owner.go",
-        ],
-        "@io_bazel_rules_go//go/platform:linux": [
-            "files_owner.go",
-        ],
-        "@io_bazel_rules_go//go/platform:nacl": [
-            "files_owner.go",
-        ],
-        "@io_bazel_rules_go//go/platform:netbsd": [
-            "files_owner.go",
-        ],
-        "@io_bazel_rules_go//go/platform:openbsd": [
-            "files_owner.go",
-        ],
-        "@io_bazel_rules_go//go/platform:plan9": [
-            "files_owner.go",
-        ],
-        "@io_bazel_rules_go//go/platform:solaris": [
-            "files_owner.go",
-        ],
-        "//conditions:default": [],
-    }),
+    ],
     importpath = "k8s.io/kops/upup/pkg/fi",
     visibility = ["//visibility:public"],
     deps = [

@@ -8,6 +8,7 @@ go_library(
         "rewrite.go",
         "util.go",
     ],
+    importmap = "vendor/golang.org/x/tools/go/ast/astutil",
     importpath = "golang.org/x/tools/go/ast/astutil",
     visibility = ["//visibility:public"],
 )

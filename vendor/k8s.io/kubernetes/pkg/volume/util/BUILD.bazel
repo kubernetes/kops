@@ -5,70 +5,20 @@ go_library(
     srcs = [
         "atomic_writer.go",
         "device_util.go",
+        "device_util_linux.go",
+        "device_util_unsupported.go",
         "doc.go",
         "error.go",
         "finalizer.go",
+        "fs.go",
+        "fs_unsupported.go",
         "io_util.go",
         "metrics.go",
         "util.go",
-    ] + select({
-        "@io_bazel_rules_go//go/platform:android": [
-            "device_util_unsupported.go",
-            "fs_unsupported.go",
-            "util_unsupported.go",
-        ],
-        "@io_bazel_rules_go//go/platform:darwin": [
-            "device_util_unsupported.go",
-            "fs.go",
-            "util_unsupported.go",
-        ],
-        "@io_bazel_rules_go//go/platform:dragonfly": [
-            "device_util_unsupported.go",
-            "fs_unsupported.go",
-            "util_unsupported.go",
-        ],
-        "@io_bazel_rules_go//go/platform:freebsd": [
-            "device_util_unsupported.go",
-            "fs_unsupported.go",
-            "util_unsupported.go",
-        ],
-        "@io_bazel_rules_go//go/platform:linux": [
-            "device_util_linux.go",
-            "fs.go",
-            "util_linux.go",
-        ],
-        "@io_bazel_rules_go//go/platform:nacl": [
-            "device_util_unsupported.go",
-            "fs_unsupported.go",
-            "util_unsupported.go",
-        ],
-        "@io_bazel_rules_go//go/platform:netbsd": [
-            "device_util_unsupported.go",
-            "fs_unsupported.go",
-            "util_unsupported.go",
-        ],
-        "@io_bazel_rules_go//go/platform:openbsd": [
-            "device_util_unsupported.go",
-            "fs_unsupported.go",
-            "util_unsupported.go",
-        ],
-        "@io_bazel_rules_go//go/platform:plan9": [
-            "device_util_unsupported.go",
-            "fs_unsupported.go",
-            "util_unsupported.go",
-        ],
-        "@io_bazel_rules_go//go/platform:solaris": [
-            "device_util_unsupported.go",
-            "fs_unsupported.go",
-            "util_unsupported.go",
-        ],
-        "@io_bazel_rules_go//go/platform:windows": [
-            "device_util_unsupported.go",
-            "fs_unsupported.go",
-            "util_unsupported.go",
-        ],
-        "//conditions:default": [],
-    }),
+        "util_linux.go",
+        "util_unsupported.go",
+    ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/volume/util",
     importpath = "k8s.io/kubernetes/pkg/volume/util",
     visibility = ["//visibility:public"],
     deps = [

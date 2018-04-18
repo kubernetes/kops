@@ -6,6 +6,7 @@ go_library(
         "generated.pb.go",
         "intstr.go",
     ],
+    importmap = "vendor/k8s.io/apimachinery/pkg/util/intstr",
     importpath = "k8s.io/apimachinery/pkg/util/intstr",
     visibility = ["//visibility:public"],
     deps = [

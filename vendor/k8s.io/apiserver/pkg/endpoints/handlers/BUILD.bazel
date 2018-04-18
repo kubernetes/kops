@@ -15,6 +15,7 @@ go_library(
         "update.go",
         "watch.go",
     ],
+    importmap = "vendor/k8s.io/apiserver/pkg/endpoints/handlers",
     importpath = "k8s.io/apiserver/pkg/endpoints/handlers",
     visibility = ["//visibility:public"],
     deps = [

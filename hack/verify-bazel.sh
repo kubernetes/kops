@@ -23,7 +23,7 @@ cd "${KOPS_ROOT}"
 
 "${KOPS_ROOT}/hack/go_install_from_commit.sh" \
   github.com/bazelbuild/bazel-gazelle/cmd/gazelle \
-  578e73e57d6a4054ef933db1553405c9284322c7 \
+  8bc6a862933eaa0d7431e15b308ceadc5729a6f9 \
   "${TMP_GOPATH}"
 
 

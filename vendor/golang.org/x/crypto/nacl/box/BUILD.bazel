@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["box.go"],
+    importmap = "vendor/golang.org/x/crypto/nacl/box",
     importpath = "golang.org/x/crypto/nacl/box",
     visibility = ["//visibility:public"],
     deps = [

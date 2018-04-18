@@ -10,6 +10,7 @@ go_library(
         "types.go",
         "version.go",
     ],
+    importmap = "vendor/github.com/denverdino/aliyungo/common",
     importpath = "github.com/denverdino/aliyungo/common",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/denverdino/aliyungo/util:go_default_library"],

@@ -6,6 +6,7 @@ go_library(
         "admission.go",
         "doc.go",
     ],
+    importmap = "vendor/k8s.io/apiserver/pkg/admission/plugin/webhook/mutating",
     importpath = "k8s.io/apiserver/pkg/admission/plugin/webhook/mutating",
     visibility = ["//visibility:public"],
     deps = [
