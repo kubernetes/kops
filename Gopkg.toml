@@ -8,6 +8,9 @@ required = [
   "k8s.io/code-generator/cmd/conversion-gen",
   "k8s.io/code-generator/cmd/deepcopy-gen",
   "k8s.io/code-generator/cmd/defaulter-gen",
+
+  # Needed for docs generation
+  "k8s.io/code-generator/cmd/openapi-gen",
 ]
 
 [prune]

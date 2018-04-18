@@ -1341,6 +1341,8 @@
     "cmd/deepcopy-gen/args",
     "cmd/defaulter-gen",
     "cmd/defaulter-gen/args",
+    "cmd/openapi-gen",
+    "cmd/openapi-gen/args",
     "pkg/util"
   ]
   revision = "7ead8f38b01cf8653249f5af80ce7b2c8aba12e2"
@@ -1365,6 +1367,7 @@
   packages = [
     "pkg/builder",
     "pkg/common",
+    "pkg/generators",
     "pkg/handler",
     "pkg/util",
     "pkg/util/proto",
@@ -1596,6 +1599,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a6c58d003c2cddfc3c16f1417e2c21ad915e48d465c7b8c28c9199221e9f1e13"
+  inputs-digest = "a07cf721a3e7e0b73b9fcd398919c3d29dce5b2bc67bb11ddef7193d39df2e12"
   solver-name = "gps-cdcl"
   solver-version = 1
