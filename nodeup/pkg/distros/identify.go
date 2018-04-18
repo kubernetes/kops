@@ -89,13 +89,16 @@ func FindDistribution(rootfs string) (Distribution, error) {
 		glog.Warningf("error reading /usr/lib/os-release: %v", err)
 	}
 
-	// ContainerOS uses /etc/os-release
+	// ContainerOS, Amazon Linux 2 uses /etc/os-release
 	osRelease, err := ioutil.ReadFile(path.Join(rootfs, "etc/os-release"))
 	if err == nil {
 		for _, line := range strings.Split(string(osRelease), "\n") {
 			line = strings.TrimSpace(line)
 			if line == "ID=cos" {
 				return DistributionContainerOS, nil
+			}
+			if strings.HasPrefix(line, "PRETTY_NAME=\"Amazon Linux 2") {
+				return DistributionCentos7, nil
 			}
 		}
 		glog.Warningf("unhandled /etc/os-release info %q", string(osRelease))
