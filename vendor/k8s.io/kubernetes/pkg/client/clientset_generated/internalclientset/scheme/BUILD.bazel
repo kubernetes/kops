@@ -7,6 +7,7 @@ go_library(
         "register.go",
         "register_custom.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme",
     importpath = "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme",
     visibility = ["//visibility:public"],
     deps = [

@@ -6,6 +6,7 @@ go_library(
         "describe.go",
         "printers.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/printers/internalversion",
     importpath = "k8s.io/kubernetes/pkg/printers/internalversion",
     visibility = ["//visibility:public"],
     deps = [
