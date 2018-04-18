@@ -18,17 +18,21 @@ get_property() {
 }
 
 @test "license.add" {
+  esx_env
+
   verify_evaluation
 
   run govc license.add -json 00000-00000-00000-00000-00001 00000-00000-00000-00000-00002
   assert_success
 
   # Expect to see an entry for both the first and the second key
-  assert_equal "License is not valid for this product" $(get_key 00000-00000-00000-00000-00001 <<<${output} | get_property diagnostic)
-  assert_equal "License is not valid for this product" $(get_key 00000-00000-00000-00000-00002 <<<${output} | get_property diagnostic)
+  assert_equal "License is not valid for this product" "$(get_key 00000-00000-00000-00000-00001 <<<${output} | get_property diagnostic)"
+  assert_equal "License is not valid for this product" "$(get_key 00000-00000-00000-00000-00002 <<<${output} | get_property diagnostic)"
 }
 
 @test "license.remove" {
+  esx_env
+
   verify_evaluation
 
   run govc license.remove -json 00000-00000-00000-00000-00001
@@ -36,16 +40,20 @@ get_property() {
 }
 
 @test "license.ls" {
+  vcsim_env
+
   verify_evaluation
 
   run govc license.ls -json
   assert_success
 
   # Expect the test instance to run in evaluation mode
-  assert_equal "Evaluation Mode" $(get_key 00000-00000-00000-00000-00000 <<<$output | jq -r ".Name")
+  assert_equal "Evaluation Mode" "$(get_key 00000-00000-00000-00000-00000 <<<$output | jq -r ".Name")"
 }
 
 @test "license.decode" {
+  esx_env
+
   verify_evaluation
 
   key=00000-00000-00000-00000-00000

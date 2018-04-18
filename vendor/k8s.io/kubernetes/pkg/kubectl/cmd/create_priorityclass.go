@@ -42,11 +42,12 @@ var (
 // NewCmdCreatePriorityClass is a macro command to create a new priorityClass.
 func NewCmdCreatePriorityClass(f cmdutil.Factory, cmdOut io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "priorityclass NAME --value=VALUE --global-default=BOOL [--dry-run]",
-		Aliases: []string{"pc"},
-		Short:   i18n.T("Create a priorityclass with the specified name."),
-		Long:    pcLong,
-		Example: pcExample,
+		Use: "priorityclass NAME --value=VALUE --global-default=BOOL [--dry-run]",
+		DisableFlagsInUseLine: true,
+		Aliases:               []string{"pc"},
+		Short:                 i18n.T("Create a priorityclass with the specified name."),
+		Long:                  pcLong,
+		Example:               pcExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			cmdutil.CheckErr(CreatePriorityClass(f, cmdOut, cmd, args))
 		},
@@ -84,7 +85,7 @@ func CreatePriorityClass(f cmdutil.Factory, cmdOut io.Writer, cmd *cobra.Command
 	return RunCreateSubcommand(f, cmd, cmdOut, &CreateSubcommandOptions{
 		Name:                name,
 		StructuredGenerator: generator,
-		DryRun:              cmdutil.GetFlagBool(cmd, "dry-run"),
+		DryRun:              cmdutil.GetDryRunFlag(cmd),
 		OutputFormat:        cmdutil.GetFlagString(cmd, "output"),
 	})
 }
