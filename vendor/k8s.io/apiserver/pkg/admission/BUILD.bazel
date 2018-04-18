@@ -11,6 +11,7 @@ go_library(
         "interfaces.go",
         "plugins.go",
     ],
+    importmap = "vendor/k8s.io/apiserver/pkg/admission",
     importpath = "k8s.io/apiserver/pkg/admission",
     visibility = ["//visibility:public"],
     deps = [

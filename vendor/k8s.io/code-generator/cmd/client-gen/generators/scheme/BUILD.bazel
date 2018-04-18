@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["generator_for_scheme.go"],
+    importmap = "vendor/k8s.io/code-generator/cmd/client-gen/generators/scheme",
     importpath = "k8s.io/code-generator/cmd/client-gen/generators/scheme",
     visibility = ["//visibility:public"],
     deps = [

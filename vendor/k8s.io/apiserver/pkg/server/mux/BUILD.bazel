@@ -6,6 +6,7 @@ go_library(
         "doc.go",
         "pathrecorder.go",
     ],
+    importmap = "vendor/k8s.io/apiserver/pkg/server/mux",
     importpath = "k8s.io/apiserver/pkg/server/mux",
     visibility = ["//visibility:public"],
     deps = [

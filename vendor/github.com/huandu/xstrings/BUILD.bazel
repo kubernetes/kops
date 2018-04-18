@@ -11,6 +11,7 @@ go_library(
         "manipulate.go",
         "translate.go",
     ],
+    importmap = "vendor/github.com/huandu/xstrings",
     importpath = "github.com/huandu/xstrings",
     visibility = ["//visibility:public"],
 )

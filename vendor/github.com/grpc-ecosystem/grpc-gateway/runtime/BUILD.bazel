@@ -17,6 +17,7 @@ go_library(
         "proto2_convert.go",
         "query.go",
     ],
+    importmap = "vendor/github.com/grpc-ecosystem/grpc-gateway/runtime",
     importpath = "github.com/grpc-ecosystem/grpc-gateway/runtime",
     visibility = ["//visibility:public"],
     deps = [

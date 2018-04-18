@@ -19,6 +19,7 @@ go_library(
         "use_context.go",
         "view.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/kubectl/cmd/config",
     importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/config",
     visibility = ["//visibility:public"],
     deps = [

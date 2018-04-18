@@ -8,6 +8,7 @@ go_library(
         "plugins.go",
         "runner.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/kubectl/plugins",
     importpath = "k8s.io/kubernetes/pkg/kubectl/plugins",
     visibility = ["//visibility:public"],
     deps = [

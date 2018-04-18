@@ -7,6 +7,7 @@ go_library(
         "gvpackages.go",
         "gvtype.go",
     ],
+    importmap = "vendor/k8s.io/code-generator/cmd/client-gen/args",
     importpath = "k8s.io/code-generator/cmd/client-gen/args",
     visibility = ["//visibility:public"],
     deps = [

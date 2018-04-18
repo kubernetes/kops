@@ -6,6 +6,7 @@ go_library(
         "well_known_annotations.go",
         "well_known_labels.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/kubelet/apis",
     importpath = "k8s.io/kubernetes/pkg/kubelet/apis",
     visibility = ["//visibility:public"],
 )

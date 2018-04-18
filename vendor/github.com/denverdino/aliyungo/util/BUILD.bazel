@@ -9,6 +9,7 @@ go_library(
         "signature.go",
         "util.go",
     ],
+    importmap = "vendor/github.com/denverdino/aliyungo/util",
     importpath = "github.com/denverdino/aliyungo/util",
     visibility = ["//visibility:public"],
 )

@@ -6,6 +6,7 @@ go_library(
         "admission.go",
         "doc.go",
     ],
+    importmap = "vendor/k8s.io/apiserver/pkg/admission/plugin/webhook/validating",
     importpath = "k8s.io/apiserver/pkg/admission/plugin/webhook/validating",
     visibility = ["//visibility:public"],
     deps = [

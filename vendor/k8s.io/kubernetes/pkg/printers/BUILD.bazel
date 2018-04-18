@@ -15,6 +15,7 @@ go_library(
         "template.go",
         "versioned.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/printers",
     importpath = "k8s.io/kubernetes/pkg/printers",
     visibility = ["//visibility:public"],
     deps = [
