@@ -7,11 +7,10 @@ Delete clusters,instancegroups, or secrets.
 
 ### Synopsis
 
-
 Delete Kubernetes clusters, instancegroups, and secrets, or a combination of the before mentioned.
 
 ```
-kops delete -f FILENAME [--yes]
+kops delete -f FILENAME [--yes] [flags]
 ```
 
 ### Examples
@@ -31,8 +30,9 @@ kops delete -f FILENAME [--yes]
 ### Options
 
 ```
-  -f, --filename stringSlice   Filename to use to delete the resource
-  -y, --yes                    Specify --yes to delete the resource
+  -f, --filename strings   Filename to use to delete the resource
+  -h, --help               help for delete
+  -y, --yes                Specify --yes to delete the resource
 ```
 
 ### Options inherited from parent commands
@@ -51,6 +51,7 @@ kops delete -f FILENAME [--yes]
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops delete cluster](kops_delete_cluster.md)	 - Delete a cluster.
 * [kops delete instancegroup](kops_delete_instancegroup.md)	 - Delete instancegroup

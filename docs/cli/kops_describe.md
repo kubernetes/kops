@@ -7,13 +7,18 @@ Describe a resource.
 
 ### Synopsis
 
-
 Get additional information about cloud and cluster resources.
 
 ### Examples
 
 ```
   
+```
+
+### Options
+
+```
+  -h, --help   help for describe
 ```
 
 ### Options inherited from parent commands
@@ -32,6 +37,7 @@ Get additional information about cloud and cluster resources.
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops describe secrets](kops_describe_secrets.md)	 - Describe a cluster secret
 

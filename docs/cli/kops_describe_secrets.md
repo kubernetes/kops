@@ -7,11 +7,10 @@ Describe a cluster secret
 
 ### Synopsis
 
-
 Get additional information about cluster secrets.
 
 ```
-kops describe secrets
+kops describe secrets [flags]
 ```
 
 ### Examples
@@ -23,6 +22,7 @@ kops describe secrets
 ### Options
 
 ```
+  -h, --help          help for secrets
       --type string   Filter by secret type
 ```
 
@@ -42,5 +42,6 @@ kops describe secrets
 ```
 
 ### SEE ALSO
+
 * [kops describe](kops_describe.md)	 - Describe a resource.
 

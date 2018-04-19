@@ -7,7 +7,6 @@ Set cluster fields.
 
 ### Synopsis
 
-
 Set a cluster field value. 
 
 This command changes the desired cluster configuration in the registry. 
@@ -15,7 +14,7 @@ This command changes the desired cluster configuration in the registry.
 kops set does not update the cloud resources, to apply the changes use "kops update cluster".
 
 ```
-kops set cluster
+kops set cluster [flags]
 ```
 
 ### Examples
@@ -23,6 +22,12 @@ kops set cluster
 ```
   # Set cluster to run kubernetes version 1.10.0
   kops set cluster k8s.cluster.site spec.kubernetesVersion=1.10.0
+```
+
+### Options
+
+```
+  -h, --help   help for cluster
 ```
 
 ### Options inherited from parent commands
@@ -41,5 +46,6 @@ kops set cluster
 ```
 
 ### SEE ALSO
+
 * [kops set](kops_set.md)	 - Set fields on clusters and other resources.
 

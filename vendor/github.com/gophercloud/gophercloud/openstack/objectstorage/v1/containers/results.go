@@ -101,6 +101,7 @@ type GetHeader struct {
 	TransID          string    `json:"X-Trans-Id"`
 	VersionsLocation string    `json:"X-Versions-Location"`
 	Write            []string  `json:"-"`
+	StoragePolicy    string    `json:"X-Storage-Policy"`
 }
 
 func (r *GetHeader) UnmarshalJSON(b []byte) error {

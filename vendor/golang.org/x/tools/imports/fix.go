@@ -32,7 +32,7 @@ var (
 	testMu  sync.RWMutex // guards globals reset by tests; used only if inTests
 )
 
-// LocalPrefix, if set, instructs Process to sort import paths with the given
+// If set, LocalPrefix instructs Process to sort import paths with the given
 // prefix into another group after 3rd-party packages.
 var LocalPrefix string
 
@@ -68,20 +68,9 @@ func importGroup(importPath string) int {
 	return 0
 }
 
-// importInfo is a summary of information about one import.
-type importInfo struct {
-	Path  string // full import path (e.g. "crypto/rand")
-	Alias string // import alias, if present (e.g. "crand")
-}
-
 // packageInfo is a summary of features found in a package.
 type packageInfo struct {
-	Globals map[string]bool       // symbol => true
-	Imports map[string]importInfo // pkg base name or alias => info
-	// refs are a set of package references currently satisfied by imports.
-	// first key: either base package (e.g. "fmt") or renamed package
-	// second key: referenced package symbol (e.g. "Println")
-	Refs map[string]map[string]bool
+	Globals map[string]bool // symbol => true
 }
 
 // dirPackageInfo exposes the dirPackageInfoFile function so that it can be overridden.
@@ -91,19 +80,21 @@ var dirPackageInfo = dirPackageInfoFile
 func dirPackageInfoFile(pkgName, srcDir, filename string) (*packageInfo, error) {
 	considerTests := strings.HasSuffix(filename, "_test.go")
 
+	// Handle file from stdin
+	if _, err := os.Stat(filename); err != nil {
+		if os.IsNotExist(err) {
+			return &packageInfo{}, nil
+		}
+		return nil, err
+	}
+
 	fileBase := filepath.Base(filename)
 	packageFileInfos, err := ioutil.ReadDir(srcDir)
 	if err != nil {
 		return nil, err
 	}
 
-	info := &packageInfo{
-		Globals: make(map[string]bool),
-		Imports: make(map[string]importInfo),
-		Refs:    make(map[string]map[string]bool),
-	}
-
-	visitor := collectReferences(info.Refs)
+	info := &packageInfo{Globals: make(map[string]bool)}
 	for _, fi := range packageFileInfos {
 		if fi.Name() == fileBase || !strings.HasSuffix(fi.Name(), ".go") {
 			continue
@@ -132,53 +123,8 @@ func dirPackageInfoFile(pkgName, srcDir, filename string) (*packageInfo, error) 
 				info.Globals[valueSpec.Names[0].Name] = true
 			}
 		}
-
-		for _, imp := range root.Imports {
-			impInfo := importInfo{Path: strings.Trim(imp.Path.Value, `"`)}
-			name := path.Base(impInfo.Path)
-			if imp.Name != nil {
-				name = strings.Trim(imp.Name.Name, `"`)
-				impInfo.Alias = name
-			}
-			info.Imports[name] = impInfo
-		}
-
-		ast.Walk(visitor, root)
 	}
 	return info, nil
-}
-
-// collectReferences returns a visitor that collects all exported package
-// references
-func collectReferences(refs map[string]map[string]bool) visitFn {
-	var visitor visitFn
-	visitor = func(node ast.Node) ast.Visitor {
-		if node == nil {
-			return visitor
-		}
-		switch v := node.(type) {
-		case *ast.SelectorExpr:
-			xident, ok := v.X.(*ast.Ident)
-			if !ok {
-				break
-			}
-			if xident.Obj != nil {
-				// if the parser can resolve it, it's not a package ref
-				break
-			}
-			pkgName := xident.Name
-			r := refs[pkgName]
-			if r == nil {
-				r = make(map[string]bool)
-				refs[pkgName] = r
-			}
-			if ast.IsExported(v.Sel.Name) {
-				r[v.Sel.Name] = true
-			}
-		}
-		return visitor
-	}
-	return visitor
 }
 
 func fixImports(fset *token.FileSet, f *ast.File, filename string) (added []string, err error) {
@@ -271,16 +217,6 @@ func fixImports(fset *token.FileSet, f *ast.File, filename string) (added []stri
 		}
 	}
 
-	// Fast path, all references already imported.
-	if len(refs) == 0 {
-		return nil, nil
-	}
-
-	// Can assume this will be necessary in all cases now.
-	if !loadedPackageInfo {
-		packageInfo, _ = dirPackageInfo(f.Name.Name, srcDir, filename)
-	}
-
 	// Search for imports matching potential package references.
 	searches := 0
 	type result struct {
@@ -291,18 +227,6 @@ func fixImports(fset *token.FileSet, f *ast.File, filename string) (added []stri
 	results := make(chan result)
 	for pkgName, symbols := range refs {
 		go func(pkgName string, symbols map[string]bool) {
-			if packageInfo != nil {
-				sibling := packageInfo.Imports[pkgName]
-				if sibling.Path != "" {
-					refs := packageInfo.Refs[pkgName]
-					for symbol := range symbols {
-						if refs[symbol] {
-							results <- result{ipath: sibling.Path, name: sibling.Alias}
-							return
-						}
-					}
-				}
-			}
 			ipath, rename, err := findImport(pkgName, symbols, filename)
 			r := result{ipath: ipath, err: err}
 			if rename {
@@ -443,44 +367,19 @@ type pkg struct {
 	dir             string // absolute file path to pkg directory ("/usr/lib/go/src/net/http")
 	importPath      string // full pkg import path ("net/http", "foo/bar/vendor/a/b")
 	importPathShort string // vendorless import path ("net/http", "a/b")
-	distance        int    // relative distance to target
 }
 
-// byDistanceOrImportPathShortLength sorts by relative distance breaking ties
-// on the short import path length and then the import string itself.
-type byDistanceOrImportPathShortLength []*pkg
+// byImportPathShortLength sorts by the short import path length, breaking ties on the
+// import string itself.
+type byImportPathShortLength []*pkg
 
-func (s byDistanceOrImportPathShortLength) Len() int { return len(s) }
-func (s byDistanceOrImportPathShortLength) Less(i, j int) bool {
-	di, dj := s[i].distance, s[j].distance
-	if di == -1 {
-		return false
-	}
-	if dj == -1 {
-		return true
-	}
-	if di != dj {
-		return di < dj
-	}
-
+func (s byImportPathShortLength) Len() int { return len(s) }
+func (s byImportPathShortLength) Less(i, j int) bool {
 	vi, vj := s[i].importPathShort, s[j].importPathShort
-	if len(vi) != len(vj) {
-		return len(vi) < len(vj)
-	}
-	return vi < vj
-}
-func (s byDistanceOrImportPathShortLength) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+	return len(vi) < len(vj) || (len(vi) == len(vj) && vi < vj)
 
-func distance(basepath, targetpath string) int {
-	p, err := filepath.Rel(basepath, targetpath)
-	if err != nil {
-		return -1
-	}
-	if p == "." {
-		return 0
-	}
-	return strings.Count(p, string(filepath.Separator)) + 1
 }
+func (s byImportPathShortLength) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 
 // guarded by populateIgnoreOnce; populates ignoredDirs.
 func populateIgnore() {
@@ -791,12 +690,6 @@ func findImportGoPath(pkgName string, symbols map[string]bool, filename string) 
 		defer testMu.RUnlock()
 	}
 
-	pkgDir, err := filepath.Abs(filename)
-	if err != nil {
-		return "", false, err
-	}
-	pkgDir = filepath.Dir(pkgDir)
-
 	// Fast path for the standard library.
 	// In the common case we hopefully never have to scan the GOPATH, which can
 	// be slow with moving disks.
@@ -838,7 +731,6 @@ func findImportGoPath(pkgName string, symbols map[string]bool, filename string) 
 	var candidates []*pkg
 	for _, pkg := range dirScan {
 		if pkgIsCandidate(filename, pkgName, pkg) {
-			pkg.distance = distance(pkgDir, pkg.dir)
 			candidates = append(candidates, pkg)
 		}
 	}
@@ -847,10 +739,10 @@ func findImportGoPath(pkgName string, symbols map[string]bool, filename string) 
 	// assuming that shorter package names are better than long
 	// ones.  Note that this sorts by the de-vendored name, so
 	// there's no "penalty" for vendoring.
-	sort.Sort(byDistanceOrImportPathShortLength(candidates))
+	sort.Sort(byImportPathShortLength(candidates))
 	if Debug {
 		for i, pkg := range candidates {
-			log.Printf("%s candidate %d/%d: %v in %v", pkgName, i+1, len(candidates), pkg.importPathShort, pkg.dir)
+			log.Printf("%s candidate %d/%d: %v", pkgName, i+1, len(candidates), pkg.importPathShort)
 		}
 	}
 
