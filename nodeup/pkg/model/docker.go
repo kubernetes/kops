@@ -457,6 +457,18 @@ var dockerVersions = []dockerVersion{
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
+	// 17.09.0 - Debian9 (stretch)
+	{
+		DockerVersion: "17.09.0",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionDebian9},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "17.09.0~ce-0~debian",
+		Source:        "http://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_17.09.0~ce-0~debian_amd64.deb",
+		Hash:          "70aa5f96cf00f11374b6593ccf4ed120a65375d2",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
 	// 17.09.0 - Xenial
 	{
 		DockerVersion: "17.09.0",
