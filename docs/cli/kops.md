@@ -7,7 +7,6 @@ kops is Kubernetes ops.
 
 ### Synopsis
 
-
 kops is Kubernetes ops. 
 
 kops is the easiest way to get a production grade Kubernetes cluster up and running. We like to think of it as kubectl for clusters. 
@@ -19,6 +18,7 @@ kops helps you create, destroy, upgrade and maintain production-grade, highly av
 ```
       --alsologtostderr                  log to standard error as well as files
       --config string                    config file (default is $HOME/.kops.yaml)
+  -h, --help                             help for kops
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
@@ -30,6 +30,7 @@ kops helps you create, destroy, upgrade and maintain production-grade, highly av
 ```
 
 ### SEE ALSO
+
 * [kops completion](kops_completion.md)	 - Output shell completion code for the given shell (bash or zsh).
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
 * [kops delete](kops_delete.md)	 - Delete clusters,instancegroups, or secrets.

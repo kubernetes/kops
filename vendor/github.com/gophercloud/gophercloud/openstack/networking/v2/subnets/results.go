@@ -93,6 +93,13 @@ type Subnet struct {
 
 	// Owner of network.
 	TenantID string `json:"tenant_id"`
+
+	// The IPv6 address modes specifies mechanisms for assigning IPv6 IP addresses.
+	IPv6AddressMode string `json:"ipv6_address_mode"`
+
+	// The IPv6 router advertisement specifies whether the networking service
+	// should transmit ICMPv6 packets.
+	IPv6RAMode string `json:"ipv6_ra_mode"`
 }
 
 // SubnetPage is the page returned by a pager when traversing over a collection

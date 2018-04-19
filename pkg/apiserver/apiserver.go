@@ -114,17 +114,34 @@ func (c completedConfig) New() (*KopsServer, error) {
 	apiGroupInfo := server.NewDefaultAPIGroupInfo(kops.GroupName, registry, Scheme, metav1.ParameterCodec, Codecs)
 
 	apiGroupInfo.GroupMeta.GroupVersion = v1alpha2.SchemeGroupVersion
-	v1alpha2storage := map[string]rest.Storage{}
-	v1alpha2storage["clusters"], err = registrycluster.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter)
-	if err != nil {
-		return nil, fmt.Errorf("error initializing clusters: %v", err)
+
+	// {
+	// 	v1alpha1storage := map[string]rest.Storage{}
+	// 	v1alpha1storage["clusters"], err = registrycluster.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("error initializing clusters: %v", err)
+	// 	}
+	// 	//v1alpha2stv1alpha1storageorage["clusters/full"] = registrycluster.NewREST(c.RESTOptionsGetter)
+	// 	v1alpha1storage["instancegroups"], err = registryinstancegroup.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("error initializing instancegroups: %v", err)
+	// 	}
+	// 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
+	// }
+
+	{
+		v1alpha2storage := map[string]rest.Storage{}
+		v1alpha2storage["clusters"], err = registrycluster.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter)
+		if err != nil {
+			return nil, fmt.Errorf("error initializing clusters: %v", err)
+		}
+		//v1alpha2storage["clusters/full"] = registrycluster.NewREST(c.RESTOptionsGetter)
+		v1alpha2storage["instancegroups"], err = registryinstancegroup.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter)
+		if err != nil {
+			return nil, fmt.Errorf("error initializing instancegroups: %v", err)
+		}
+		apiGroupInfo.VersionedResourcesStorageMap["v1alpha2"] = v1alpha2storage
 	}
-	//v1alpha2storage["clusters/full"] = registrycluster.NewREST(c.RESTOptionsGetter)
-	v1alpha2storage["instancegroups"], err = registryinstancegroup.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter)
-	if err != nil {
-		return nil, fmt.Errorf("error initializing instancegroups: %v", err)
-	}
-	apiGroupInfo.VersionedResourcesStorageMap["v1alpha2"] = v1alpha2storage
 
 	if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {
 		return nil, err

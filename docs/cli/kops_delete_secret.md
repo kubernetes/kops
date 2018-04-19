@@ -7,17 +7,22 @@ Delete a secret
 
 ### Synopsis
 
-
 Delete a secret.
 
 ```
-kops delete secret
+kops delete secret [flags]
 ```
 
 ### Examples
 
 ```
   
+```
+
+### Options
+
+```
+  -h, --help   help for secret
 ```
 
 ### Options inherited from parent commands
@@ -36,5 +41,6 @@ kops delete secret
 ```
 
 ### SEE ALSO
+
 * [kops delete](kops_delete.md)	 - Delete clusters,instancegroups, or secrets.
 

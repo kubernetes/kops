@@ -7,7 +7,6 @@ Output shell completion code for the given shell (bash or zsh).
 
 ### Synopsis
 
-
 Output shell completion code for the specified shell (bash or zsh). The shell code must be evaluated to provide interactive completion of kops commands.  This can be done by sourcing it from the .bash _profile. 
 
 Note: this requires the bash-completion framework, which is not installed by default on Mac. Once installed, bash completion must be evaluated.  This can be done by adding the following line to the .bash profile 
@@ -15,7 +14,7 @@ Note: this requires the bash-completion framework, which is not installed by def
 Note for zsh users: zsh completions are only supported in versions of zsh >= 5.2
 
 ```
-kops completion
+kops completion [flags]
 ```
 
 ### Examples
@@ -43,6 +42,7 @@ kops completion
 ### Options
 
 ```
+  -h, --help           help for completion
       --shell string   target shell (bash).
 ```
 
@@ -62,5 +62,6 @@ kops completion
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 

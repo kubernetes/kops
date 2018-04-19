@@ -7,11 +7,10 @@ Add a ca cert and key
 
 ### Synopsis
 
-
 Add a ca certificate and private key.
 
 ```
-kops create secret keypair ca
+kops create secret keypair ca [flags]
 ```
 
 ### Examples
@@ -27,6 +26,7 @@ kops create secret keypair ca
 
 ```
       --cert string   Path to ca cert
+  -h, --help          help for ca
       --key string    Path to ca cert private key
 ```
 
@@ -46,5 +46,6 @@ kops create secret keypair ca
 ```
 
 ### SEE ALSO
+
 * [kops create secret keypair](kops_create_secret_keypair.md)	 - Create a secret keypair.
 

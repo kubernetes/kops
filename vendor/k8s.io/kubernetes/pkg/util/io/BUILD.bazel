@@ -9,5 +9,8 @@ go_library(
     importmap = "vendor/k8s.io/kubernetes/pkg/util/io",
     importpath = "k8s.io/kubernetes/pkg/util/io",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/golang/glog:go_default_library"],
+    deps = [
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/nsenter:go_default_library",
+    ],
 )

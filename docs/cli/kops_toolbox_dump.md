@@ -7,11 +7,10 @@ Dump cluster information
 
 ### Synopsis
 
-
 Displays cluster information.  Includes information about cloud and Kubernetes resources.
 
 ```
-kops toolbox dump
+kops toolbox dump [flags]
 ```
 
 ### Examples
@@ -24,6 +23,7 @@ kops toolbox dump
 ### Options
 
 ```
+  -h, --help            help for dump
   -o, --output string   output format.  One of: yaml, json (default "yaml")
 ```
 
@@ -43,5 +43,6 @@ kops toolbox dump
 ```
 
 ### SEE ALSO
+
 * [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands.
 

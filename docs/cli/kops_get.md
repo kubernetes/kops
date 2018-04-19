@@ -7,7 +7,6 @@ Get one or many resources.
 
 ### Synopsis
 
-
 Display one or many resources. 
 
   * cluster  
@@ -15,7 +14,7 @@ Display one or many resources.
   * secret
 
 ```
-kops get
+kops get [flags]
 ```
 
 ### Examples
@@ -43,6 +42,7 @@ kops get
 ### Options
 
 ```
+  -h, --help            help for get
   -o, --output string   output format.  One of: table, yaml, json (default "table")
 ```
 
@@ -62,6 +62,7 @@ kops get
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops get clusters](kops_get_clusters.md)	 - Get one or many clusters.
 * [kops get instancegroups](kops_get_instancegroups.md)	 - Get one or many instancegroups

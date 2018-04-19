@@ -7,7 +7,6 @@ Create a resource by command line, filename or stdin.
 
 ### Synopsis
 
-
 Create a resource:
   
   * cluster  
@@ -17,7 +16,7 @@ Create a resource:
 Create a cluster, instancegroup or secret using command line parameters or YAML configuration specification files. (Note: secrets cannot be created from YAML config files yet).
 
 ```
-kops create -f FILENAME
+kops create -f FILENAME [flags]
 ```
 
 ### Examples
@@ -47,7 +46,8 @@ kops create -f FILENAME
 ### Options
 
 ```
-  -f, --filename stringSlice   Filename to use to create the resource
+  -f, --filename strings   Filename to use to create the resource
+  -h, --help               help for create
 ```
 
 ### Options inherited from parent commands
@@ -66,6 +66,7 @@ kops create -f FILENAME
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops create cluster](kops_create_cluster.md)	 - Create a Kubernetes cluster.
 * [kops create instancegroup](kops_create_instancegroup.md)	 - Create an instancegroup.
