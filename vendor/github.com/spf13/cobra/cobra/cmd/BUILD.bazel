@@ -2,8 +2,19 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["licenses.go"],
+    srcs = [
+        "license_agpl.go",
+        "license_apache_2.go",
+        "license_bsd_clause_2.go",
+        "license_bsd_clause_3.go",
+        "license_gpl_2.go",
+        "license_gpl_3.go",
+        "license_lgpl.go",
+        "license_mit.go",
+        "licenses.go",
+    ],
     importmap = "vendor/github.com/spf13/cobra/cobra/cmd",
     importpath = "github.com/spf13/cobra/cobra/cmd",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/spf13/viper:go_default_library"],
 )

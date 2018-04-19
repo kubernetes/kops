@@ -86,16 +86,17 @@ type LogsOptions struct {
 }
 
 // NewCmdLogs creates a new pod logs command
-func NewCmdLogs(f cmdutil.Factory, out io.Writer) *cobra.Command {
+func NewCmdLogs(f cmdutil.Factory, out, errOut io.Writer) *cobra.Command {
 	o := &LogsOptions{}
 	cmd := &cobra.Command{
-		Use:     "logs [-f] [-p] (POD | TYPE/NAME) [-c CONTAINER]",
+		Use: "logs [-f] [-p] (POD | TYPE/NAME) [-c CONTAINER]",
+		DisableFlagsInUseLine: true,
 		Short:   i18n.T("Print the logs for a container in a pod"),
 		Long:    "Print the logs for a container in a pod or specified resource. If the pod has only one container, the container name is optional.",
 		Example: logsExample,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			if len(os.Args) > 1 && os.Args[1] == "log" {
-				printDeprecationWarning("logs", "log")
+				printDeprecationWarning(errOut, "logs", "log")
 			}
 		},
 		Run: func(cmd *cobra.Command, args []string) {

@@ -64,7 +64,8 @@ var (
 // NewCmdCp creates a new Copy command.
 func NewCmdCp(f cmdutil.Factory, cmdOut, cmdErr io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "cp <file-spec-src> <file-spec-dest>",
+		Use: "cp <file-spec-src> <file-spec-dest>",
+		DisableFlagsInUseLine: true,
 		Short:   i18n.T("Copy files and directories to and from containers."),
 		Long:    "Copy files and directories to and from containers.",
 		Example: cpExample,
@@ -311,6 +312,12 @@ func recursiveTar(srcBase, srcFile, destBase, destFile string, tw *tar.Writer) e
 	return nil
 }
 
+// clean prevents path traversals by stripping them out.
+// This is adapted from https://golang.org/src/net/http/fs.go#L74
+func clean(fileName string) string {
+	return path.Clean(string(os.PathSeparator) + fileName)
+}
+
 func untarAll(reader io.Reader, destFile, prefix string) error {
 	entrySeq := -1
 
@@ -326,7 +333,7 @@ func untarAll(reader io.Reader, destFile, prefix string) error {
 		}
 		entrySeq++
 		mode := header.FileInfo().Mode()
-		outFileName := path.Join(destFile, header.Name[len(prefix):])
+		outFileName := path.Join(destFile, clean(header.Name[len(prefix):]))
 		baseName := path.Dir(outFileName)
 		if err := os.MkdirAll(baseName, 0755); err != nil {
 			return err
@@ -345,7 +352,7 @@ func untarAll(reader io.Reader, destFile, prefix string) error {
 				return err
 			}
 			if exists {
-				outFileName = filepath.Join(outFileName, path.Base(header.Name))
+				outFileName = filepath.Join(outFileName, path.Base(clean(header.Name)))
 			}
 		}
 
@@ -378,11 +385,8 @@ func untarAll(reader io.Reader, destFile, prefix string) error {
 }
 
 func getPrefix(file string) string {
-	if file[0] == '/' {
-		// tar strips the leading '/' if it's there, so we will too
-		return file[1:]
-	}
-	return file
+	// tar strips the leading '/' if it's there, so we will too
+	return strings.TrimLeft(file, "/")
 }
 
 func execute(f cmdutil.Factory, cmd *cobra.Command, options *ExecOptions) error {
