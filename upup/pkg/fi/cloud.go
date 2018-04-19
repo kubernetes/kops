@@ -165,11 +165,34 @@ var zonesToCloud = map[string]kops.CloudProviderID{
 	"asia-northeast1-c": kops.CloudProviderGCE,
 	"asia-northeast1-d": kops.CloudProviderGCE,
 
+	"asia-south1-a": kops.CloudProviderGCE,
+	"asia-south1-b": kops.CloudProviderGCE,
+	"asia-south1-c": kops.CloudProviderGCE,
+
+	"asia-southeast1-a": kops.CloudProviderGCE,
+	"asia-southeast1-b": kops.CloudProviderGCE,
+
+	"australia-southeast1-a": kops.CloudProviderGCE,
+	"australia-southeast1-b": kops.CloudProviderGCE,
+	"australia-southeast1-c": kops.CloudProviderGCE,
+
 	"europe-west1-a": kops.CloudProviderGCE,
 	"europe-west1-b": kops.CloudProviderGCE,
 	"europe-west1-c": kops.CloudProviderGCE,
 	"europe-west1-d": kops.CloudProviderGCE,
 	"europe-west1-e": kops.CloudProviderGCE,
+
+	"europe-west2-a": kops.CloudProviderGCE,
+	"europe-west2-b": kops.CloudProviderGCE,
+	"europe-west2-c": kops.CloudProviderGCE,
+
+	"europe-west3-a": kops.CloudProviderGCE,
+	"europe-west3-b": kops.CloudProviderGCE,
+	"europe-west3-c": kops.CloudProviderGCE,
+
+	"europe-west4-a": kops.CloudProviderGCE,
+	"europe-west4-b": kops.CloudProviderGCE,
+	"europe-west4-c": kops.CloudProviderGCE,
 
 	"us-central1-a": kops.CloudProviderGCE,
 	"us-central1-b": kops.CloudProviderGCE,
@@ -185,10 +208,22 @@ var zonesToCloud = map[string]kops.CloudProviderID{
 	"us-east1-c": kops.CloudProviderGCE,
 	"us-east1-d": kops.CloudProviderGCE,
 
+	"us-east4-a": kops.CloudProviderGCE,
+	"us-east4-b": kops.CloudProviderGCE,
+	"us-east4-c": kops.CloudProviderGCE,
+
 	"us-west1-a": kops.CloudProviderGCE,
 	"us-west1-b": kops.CloudProviderGCE,
 	"us-west1-c": kops.CloudProviderGCE,
 	"us-west1-d": kops.CloudProviderGCE,
+
+	"northamerica-northeast1-a": kops.CloudProviderGCE,
+	"northamerica-northeast1-b": kops.CloudProviderGCE,
+	"northamerica-northeast1-c": kops.CloudProviderGCE,
+
+	"southamerica-east1-a": kops.CloudProviderGCE,
+	"southamerica-east1-b": kops.CloudProviderGCE,
+	"southamerica-east1-c": kops.CloudProviderGCE,
 
 	"nyc1": kops.CloudProviderDO,
 	"nyc2": kops.CloudProviderDO,
