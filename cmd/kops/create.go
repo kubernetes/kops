@@ -55,7 +55,7 @@ var (
 	# Create a cluster from the configuration specification in a YAML file
 	kops create -f my-cluster.yaml
 
-	# Create secret from secret spec file 
+	# Create secret from secret spec file
 	kops create -f secret.yaml
 
 	# Create a cluster in AWS
@@ -188,7 +188,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 			case *kopsapi.SSHCredential:
 				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
 				if clusterName == "" {
-					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
+					return fmt.Errorf("must specify %q label with cluster name to create SSHCredential", kopsapi.LabelClusterName)
 				}
 				if v.Spec.PublicKey == "" {
 					return fmt.Errorf("spec.PublicKey is required")
