@@ -647,7 +647,8 @@ bazel-crossbuild-kube-discovery-image:
 .PHONY: bazel-push
 # Will always push a linux-based build up to the server
 bazel-push: bazel-crossbuild-nodeup
-	scp -C bazel-bin/cmd/nodeup/nodeup  ${TARGET}:/tmp/
+	ssh ${TARGET} chmod +w /tmp/nodeup
+	scp -C bazel-bin/cmd/nodeup/linux_amd64_pure_stripped/nodeup  ${TARGET}:/tmp/
 
 .PHONY: bazel-push-gce-run
 bazel-push-gce-run: bazel-push
