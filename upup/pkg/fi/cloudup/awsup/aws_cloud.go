@@ -35,6 +35,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go/service/kms/kmsiface"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
@@ -95,6 +97,7 @@ type AWSCloud interface {
 	EC2() ec2iface.EC2API
 	IAM() iamiface.IAMAPI
 	ELB() elbiface.ELBAPI
+	KMS() kmsiface.KMSAPI
 	Autoscaling() autoscalingiface.AutoScalingAPI
 	Route53() route53iface.Route53API
 
@@ -149,6 +152,7 @@ type awsCloudImplementation struct {
 	ec2         *ec2.EC2
 	iam         *iam.IAM
 	elb         *elb.ELB
+	kms         *kms.KMS
 	autoscaling *autoscaling.AutoScaling
 	route53     *route53.Route53
 
@@ -218,6 +222,14 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.ec2 = ec2.New(sess, config)
 		c.ec2.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.ec2.Handlers)
+
+		sess, err = session.NewSession(config)
+		if err != nil {
+			return c, err
+		}
+		c.kms = kms.New(sess, config)
+		c.kms.Handlers.Send.PushFront(requestLogger)
+		c.addHandlers(region, &c.kms.Handlers)
 
 		sess, err = session.NewSession(config)
 		if err != nil {
@@ -1048,6 +1060,10 @@ func (c *awsCloudImplementation) IAM() iamiface.IAMAPI {
 
 func (c *awsCloudImplementation) ELB() elbiface.ELBAPI {
 	return c.elb
+}
+
+func (c *awsCloudImplementation) KMS() kmsiface.KMSAPI {
+	return c.kms
 }
 
 func (c *awsCloudImplementation) Autoscaling() autoscalingiface.AutoScalingAPI {

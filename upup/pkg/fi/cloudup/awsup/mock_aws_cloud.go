@@ -19,6 +19,8 @@ package awsup
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/service/kms/kmsiface"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -74,6 +76,7 @@ type MockCloud struct {
 	MockCloudFormation *cloudformation.CloudFormation
 	MockEC2            ec2iface.EC2API
 	MockIAM            iamiface.IAMAPI
+	MockKMS            kmsiface.KMSAPI
 	MockRoute53        route53iface.Route53API
 	MockELB            elbiface.ELBAPI
 }
@@ -203,6 +206,13 @@ func (c *MockAWSCloud) ELB() elbiface.ELBAPI {
 		glog.Fatalf("MockAWSCloud MockELB not set")
 	}
 	return c.MockELB
+}
+
+func (c *MockAWSCloud) KMS() kmsiface.KMSAPI {
+	if c.MockKMS == nil {
+		glog.Fatalf("MockAWSCloud MockKMS not set")
+	}
+	return c.MockKMS
 }
 
 func (c *MockAWSCloud) Autoscaling() autoscalingiface.AutoScalingAPI {

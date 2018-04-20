@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
@@ -55,23 +56,47 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
-	if b.Cluster.Spec.EncryptionConfig != nil {
-		if *b.Cluster.Spec.EncryptionConfig && b.IsKubernetesGTE("1.7") {
-			b.Cluster.Spec.KubeAPIServer.ExperimentalEncryptionProviderConfig = fi.String(filepath.Join(b.PathSrvKubernetes(), "encryptionconfig.yaml"))
-			key := "encryptionconfig"
-			encryptioncfg, _ := b.SecretStore.Secret(key)
+	if b.Cluster.Spec.EncryptionConfig != nil && *b.Cluster.Spec.EncryptionConfig {
+		var contents string
+		var location string
+
+		if featureflag.EnableKMSPlugin.Enabled() && b.IsKubernetesGTE("1.10") {
+			lines := []string{
+				"kind: EncryptionConfig",
+				"apiVersion: v1",
+				"resources:",
+				"- resources:",
+				"  - secrets",
+				"  providers:",
+				"  - kms:",
+				"     name: aws-kms-provider",
+				"     cachesize: 1000",
+				"     endpoint: unix:///var/run/kmsplugin/socket.sock",
+				"  - identity: {}",
+			}
+			contents = strings.Join(lines, "\n")
+			location = "encryption-provider-config.yaml"
+		} else if b.IsKubernetesGTE("1.7") {
+			encryptioncfg, _ := b.SecretStore.Secret("encryptionconfig")
 			if encryptioncfg != nil {
-				contents := string(encryptioncfg.Data)
-				t := &nodetasks.File{
-					Path:     *b.Cluster.Spec.KubeAPIServer.ExperimentalEncryptionProviderConfig,
-					Contents: fi.NewStringResource(contents),
-					Mode:     fi.String("600"),
-					Type:     nodetasks.FileType_File,
-				}
-				c.AddTask(t)
+				contents = string(encryptioncfg.Data)
+				location = "encryptionconfig.yaml"
 			}
 		}
+
+		if contents != "" && location != "" {
+			location = filepath.Join(b.PathSrvKubernetes(), location)
+			b.Cluster.Spec.KubeAPIServer.ExperimentalEncryptionProviderConfig = fi.String(location)
+			t := &nodetasks.File{
+				Path:     location,
+				Contents: fi.NewStringResource(contents),
+				Mode:     fi.String("600"),
+				Type:     nodetasks.FileType_File,
+			}
+			c.AddTask(t)
+		}
 	}
+
 	{
 		pod, err := b.buildPod()
 		if err != nil {
@@ -314,6 +339,42 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		if b.Cluster.Spec.Authentication.Kopeio != nil {
 			addHostPathMapping(pod, container, "authn-config", PathAuthnConfig)
 		}
+	}
+
+	if featureflag.EnableKMSPlugin.Enabled() && b.Cluster.Spec.EncryptionConfig != nil && *b.Cluster.Spec.EncryptionConfig {
+
+		kmsKeyName := "alias/" + strings.Replace(b.Cluster.Name, ".", "_", -1)
+
+		sideCar := &v1.Container{
+			Name:  "kms-plugin",
+			Image: "sethpollack/kmsplugin:latest",
+			Args: []string{
+				"--key=" + kmsKeyName,
+				"--listen=/var/run/kmsplugin/socket.sock",
+				"--health-port=:10257",
+				"--logtostderr",
+			},
+			LivenessProbe: &v1.Probe{
+				Handler: v1.Handler{
+					HTTPGet: &v1.HTTPGetAction{
+						Host: "127.0.0.1",
+						Path: "/healthz",
+						Port: intstr.FromInt(10257),
+					},
+				},
+				InitialDelaySeconds: 3,
+				TimeoutSeconds:      3,
+			},
+			Resources: v1.ResourceRequirements{
+				Requests: v1.ResourceList{
+					v1.ResourceCPU: resource.MustParse("10m"),
+				},
+			},
+		}
+
+		addEmptyDirMapping(pod, []*v1.Container{container, sideCar}, "kmssocket", "/var/run/kmsplugin")
+
+		pod.Spec.Containers = append(pod.Spec.Containers, *sideCar)
 	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)

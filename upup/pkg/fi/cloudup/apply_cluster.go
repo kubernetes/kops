@@ -362,6 +362,8 @@ func (c *ApplyClusterCmd) Run() error {
 			region = awsCloud.Region()
 
 			l.AddTypes(map[string]interface{}{
+				// Security
+				"cmk": &awstasks.CMK{},
 				// EC2
 				"elasticIP":                   &awstasks.ElasticIP{},
 				"instance":                    &awstasks.Instance{},
@@ -516,6 +518,12 @@ func (c *ApplyClusterCmd) Run() error {
 					&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
 					&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
 				)
+
+				if featureflag.EnableKMSPlugin.Enabled() && c.Cluster.Spec.EncryptionConfig != nil && *c.Cluster.Spec.EncryptionConfig {
+					l.Builders = append(l.Builders,
+						&model.CMKModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+					)
+				}
 
 				l.Builders = append(l.Builders,
 					&model.NetworkModelBuilder{KopsModelContext: modelContext, Lifecycle: &networkLifecycle},

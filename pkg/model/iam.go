@@ -96,6 +96,13 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				},
 			}
 
+			cmkTask, found := c.Tasks["CMK/"+b.Cluster.Name]
+			if found {
+				iamPolicy.CMK = cmkTask.(*awstasks.CMK)
+			} else {
+				glog.V(2).Infof("Task %q not found; won't set KMS permissions in IAM", "CMK/"+b.Cluster.Name)
+			}
+
 			// This is slightly tricky; we need to know the hosted zone id,
 			// but we might be creating the hosted zone dynamically.
 

@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/cloudmock/aws/mockelb"
 	"k8s.io/kops/cloudmock/aws/mockiam"
+	"k8s.io/kops/cloudmock/aws/mockkms"
 	"k8s.io/kops/cloudmock/aws/mockroute53"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -105,6 +106,8 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 	cloud.MockELB = mockELB
 	mockIAM := &mockiam.MockIAM{}
 	cloud.MockIAM = mockIAM
+	mockKMS := &mockkms.MockKMS{}
+	cloud.MockKMS = mockKMS
 	mockAutoscaling := &mockautoscaling.MockAutoscaling{}
 	cloud.MockAutoscaling = mockAutoscaling
 

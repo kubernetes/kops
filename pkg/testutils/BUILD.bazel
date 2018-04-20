@@ -11,6 +11,7 @@ go_library(
         "//cloudmock/aws/mockec2:go_default_library",
         "//cloudmock/aws/mockelb:go_default_library",
         "//cloudmock/aws/mockiam:go_default_library",
+        "//cloudmock/aws/mockkms:go_default_library",
         "//cloudmock/aws/mockroute53:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",

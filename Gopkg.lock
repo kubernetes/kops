@@ -122,6 +122,7 @@
     "service/iam",
     "service/iam/iamiface",
     "service/kms",
+    "service/kms/kmsiface",
     "service/route53",
     "service/route53/route53iface",
     "service/s3",
@@ -1679,6 +1680,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2e3d6ddfd1017a940526237cadd8a968d6e8170af9dac833b2a94bd8ffc4646f"
+  inputs-digest = "897420ee1101a2d91687b151787b733a46275c18480f2fcadba256d1f991be4d"
   solver-name = "gps-cdcl"
   solver-version = 1

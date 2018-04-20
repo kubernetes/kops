@@ -105,6 +105,7 @@ type PolicyBuilder struct {
 	Cluster      *kops.Cluster
 	HostedZoneID string
 	KMSKeys      []string
+	CMKARN       string
 	Region       string
 	ResourceARN  *string
 	Role         kops.InstanceGroupRole
@@ -188,6 +189,10 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
 		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+	}
+
+	if b.CMKARN != "" {
+		addEncryptionProviderCMKPolicies(p, stringorslice.String(b.CMKARN))
 	}
 
 	return p, nil
@@ -446,6 +451,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 type PolicyResource struct {
 	Builder *PolicyBuilder
 	DNSZone *awstasks.DNSZone
+	CMK     *awstasks.CMK
 }
 
 var _ fi.Resource = &PolicyResource{}
@@ -456,6 +462,9 @@ func (b *PolicyResource) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
 	if b.DNSZone != nil {
 		deps = append(deps, b.DNSZone)
+	}
+	if b.CMK != nil {
+		deps = append(deps, b.CMK)
 	}
 	return deps
 }
@@ -472,6 +481,10 @@ func (b *PolicyResource) Open() (io.Reader, error) {
 			return nil, fmt.Errorf("DNS ZoneID not set")
 		}
 		pb.HostedZoneID = hostedZoneID
+	}
+
+	if b.CMK != nil {
+		pb.CMKARN = fi.StringValue(b.CMK.Arn)
 	}
 
 	policy, err := pb.BuildAWSPolicy()
@@ -844,6 +857,18 @@ func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice,
 			},
 		)
 	}
+}
+
+func addEncryptionProviderCMKPolicies(p *Policy, resource stringorslice.StringOrSlice) {
+	p.Statement = append(p.Statement, &Statement{
+		Sid:    "kopsK8sEncryptionProviderCMK",
+		Effect: StatementEffectAllow,
+		Action: stringorslice.Of(
+			"kms:Decrypt",
+			"kms:Encrypt",
+		),
+		Resource: resource,
+	})
 }
 
 func createResource(b *PolicyBuilder) stringorslice.StringOrSlice {

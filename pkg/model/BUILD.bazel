@@ -11,6 +11,7 @@ go_library(
         "external_access.go",
         "firewall.go",
         "iam.go",
+        "kms.go",
         "master_volumes.go",
         "names.go",
         "network.go",

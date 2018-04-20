@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "api.go",
+        "unimplemented.go",
+    ],
+    importpath = "k8s.io/kops/cloudmock/aws/mockkms",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/kms:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/kms/kmsiface:go_default_library",
+    ],
+)

@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/pkg/featureflag"
 )
 
 // +genclient
@@ -484,6 +485,12 @@ func (c *Cluster) FillDefaults() error {
 
 	if c.Spec.MasterPublicName == "" {
 		c.Spec.MasterPublicName = "api." + c.ObjectMeta.Name
+	}
+
+	// temporary for the purpose of getting the e2e test to pass
+	if featureflag.EnableKMSPlugin.Enabled() && c.Spec.EncryptionConfig == nil {
+		defaultValue := true
+		c.Spec.EncryptionConfig = &defaultValue
 	}
 
 	return nil

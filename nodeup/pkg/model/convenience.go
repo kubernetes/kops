@@ -182,6 +182,23 @@ func addHostPathMapping(pod *v1.Pod, container *v1.Container, name, path string)
 	return &container.VolumeMounts[len(container.VolumeMounts)-1]
 }
 
+// addEmptyDirMapping is shorthand for mapping a emptyDir into a list of containers
+func addEmptyDirMapping(pod *v1.Pod, containers []*v1.Container, name, path string) {
+	pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
+		Name: name,
+		VolumeSource: v1.VolumeSource{
+			EmptyDir: &v1.EmptyDirVolumeSource{},
+		},
+	})
+
+	for _, container := range containers {
+		container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
+			Name:      name,
+			MountPath: path,
+		})
+	}
+}
+
 // convEtcdSettingsToMs converts etcd settings to a string rep of int milliseconds
 func convEtcdSettingsToMs(dur *metav1.Duration) string {
 	return strconv.FormatInt(dur.Nanoseconds()/1000000, 10)
