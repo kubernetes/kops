@@ -332,6 +332,8 @@ func (c *ApplyClusterCmd) Run() error {
 				return fmt.Errorf("GCE support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowGCE")
 			}
 
+			modelContext.SSHPublicKeys = sshPublicKeys
+
 			l.AddTypes(map[string]interface{}{
 				"Disk":                 &gcetasks.Disk{},
 				"Instance":             &gcetasks.Instance{},
