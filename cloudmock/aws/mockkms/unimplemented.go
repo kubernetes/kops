@@ -110,10 +110,6 @@ func (_ *MockKMS) DescribeKeyRequest(*kms.DescribeKeyInput) (*request.Request, *
 	panic("Not implemented")
 	return nil, nil
 }
-func (_ *MockKMS) DisableKey(*kms.DisableKeyInput) (*kms.DisableKeyOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
 func (_ *MockKMS) DisableKeyWithContext(aws.Context, *kms.DisableKeyInput, ...request.Option) (*kms.DisableKeyOutput, error) {
 	panic("Not implemented")
 	return nil, nil

@@ -46,4 +46,8 @@ func (_ *MockKMS) DescribeKey(*kms.DescribeKeyInput) (*kms.DescribeKeyOutput, er
 	}, nil
 }
 
+func (_ *MockKMS) DisableKey(*kms.DisableKeyInput) (*kms.DisableKeyOutput, error) {
+	return &kms.DisableKeyOutput{}, nil
+}
+
 var _ kmsiface.KMSAPI = &MockKMS{}

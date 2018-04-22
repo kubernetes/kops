@@ -56,6 +56,9 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 		// CloudFormation
 		//ListCloudFormationStacks,
 
+		// KMS
+		ListCustomerMasterKeys,
+
 		// EC2
 		ListInstances,
 		ListKeypairs,
