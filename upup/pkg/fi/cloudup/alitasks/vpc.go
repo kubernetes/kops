@@ -110,9 +110,7 @@ func (s *VPC) CheckChanges(a, e, changes *VPC) error {
 		if e.Name == nil {
 			return fi.RequiredField("Name")
 		}
-	}
-
-	if a != nil {
+	} else {
 		if changes.CIDR != nil {
 			// TODO: Do we want to destroy & recreate the VPC?
 			return fi.CannotChangeField("CIDR")
@@ -129,9 +127,7 @@ func (e *VPC) Run(c *fi.Context) error {
 func (_ *VPC) RenderALI(t *aliup.ALIAPITarget, a, e, changes *VPC) error {
 
 	if fi.BoolValue(e.Shared) && a == nil {
-		if a == nil {
-			return fmt.Errorf("VPC with id %q not found", fi.StringValue(e.ID))
-		}
+		return fmt.Errorf("VPC with id %q not found", fi.StringValue(e.ID))
 	}
 
 	if a == nil {
