@@ -89,15 +89,15 @@ func (c *aliCloudImplementation) ProviderID() kops.CloudProviderID {
 }
 
 func (c *aliCloudImplementation) DNS() (dnsprovider.Interface, error) {
-	return nil, fmt.Errorf("DNS not implemented on aliCloud")
+	return nil, errors.New("DNS not implemented on aliCloud")
 }
 
 func (c *aliCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
-	return fmt.Errorf("DeleteGroup not implemented on aliCloud")
+	return errors.New("DeleteGroup not implemented on aliCloud")
 }
 
 func (c *aliCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
-	return fmt.Errorf("DeleteInstance not implemented on aliCloud")
+	return errors.New("DeleteInstance not implemented on aliCloud")
 }
 
 func (c *aliCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
@@ -112,31 +112,30 @@ func (c *aliCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 
 	if len(vpcs) != 1 {
 		return nil, fmt.Errorf("found multiple VPCs for %q", id)
-	} else {
-		vpcInfo := &fi.VPCInfo{
-			CIDR: vpcs[0].CidrBlock,
-		}
-
-		describeVSwitchesArgs := &ecs.DescribeVSwitchesArgs{
-			VpcId:    id,
-			RegionId: common.Region(c.Region()),
-		}
-		vswitcheList, _, err := c.EcsClient().DescribeVSwitches(describeVSwitchesArgs)
-		if err != nil {
-			return nil, fmt.Errorf("error listing VSwitchs: %v", err)
-		}
-
-		for _, vswitch := range vswitcheList {
-			s := &fi.SubnetInfo{
-				ID:   vswitch.VSwitchId,
-				Zone: vswitch.ZoneId,
-				CIDR: vswitch.CidrBlock,
-			}
-			vpcInfo.Subnets = append(vpcInfo.Subnets, s)
-		}
-
-		return vpcInfo, nil
 	}
+	vpcInfo := &fi.VPCInfo{
+		CIDR: vpcs[0].CidrBlock,
+	}
+
+	describeVSwitchesArgs := &ecs.DescribeVSwitchesArgs{
+		VpcId:    id,
+		RegionId: common.Region(c.Region()),
+	}
+	vswitcheList, _, err := c.EcsClient().DescribeVSwitches(describeVSwitchesArgs)
+	if err != nil {
+		return nil, fmt.Errorf("error listing VSwitchs: %v", err)
+	}
+
+	for _, vswitch := range vswitcheList {
+		s := &fi.SubnetInfo{
+			ID:   vswitch.VSwitchId,
+			Zone: vswitch.ZoneId,
+			CIDR: vswitch.CidrBlock,
+		}
+		vpcInfo.Subnets = append(vpcInfo.Subnets, s)
+	}
+
+	return vpcInfo, nil
 
 }
 
