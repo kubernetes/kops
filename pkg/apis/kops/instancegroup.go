@@ -112,7 +112,7 @@ type InstanceGroupSpec struct {
 	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
 	// Taints indicates the kubernetes taints for nodes in this group
 	Taints []string `json:"taints,omitempty"`
-	// AdditionalUserData is any aditional user-data to be passed to the host
+	// AdditionalUserData is any additional user-data to be passed to the host
 	AdditionalUserData []UserData `json:"additionalUserData,omitempty"`
 	// SuspendProcesses disables the listed Scaling Policies
 	SuspendProcesses []string `json:"suspendProcesses,omitempty"`

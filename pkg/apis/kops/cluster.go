@@ -70,9 +70,9 @@ type ClusterSpec struct {
 	// This is a real CIDR, not the internal k8s network
 	// On AWS, it maps to the VPC CIDR.  It is not required on GCE.
 	NetworkCIDR string `json:"networkCIDR,omitempty"`
-	// AdditionalNetworkCIDRs is a list of aditional CIDR used for the AWS VPC
+	// AdditionalNetworkCIDRs is a list of additional CIDR used for the AWS VPC
 	// or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network
-	// On AWS, it maps to any aditional CIDRs added to a VPC.
+	// On AWS, it maps to any additional CIDRs added to a VPC.
 	AdditionalNetworkCIDRs []string `json:"additionalNetworkCIDRs,omitempty"`
 	// NetworkID is an identifier of a network, if we want to reuse/share an existing network (e.g. an AWS VPC)
 	NetworkID string `json:"networkID,omitempty"`
