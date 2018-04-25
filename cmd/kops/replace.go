@@ -183,6 +183,30 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 						return fmt.Errorf("error replacing instanceGroup: %v", err)
 					}
 				}
+			case *kopsapi.SSHCredential:
+				clusterName := v.ObjectMeta.Labels[kopsapi.LabelClusterName]
+				if clusterName == "" {
+					return fmt.Errorf("must specify %q label with cluster name to replace SSHCredential", kopsapi.LabelClusterName)
+				}
+				if v.Spec.PublicKey == "" {
+					return fmt.Errorf("spec.PublicKey is required")
+				}
+
+				cluster, err := clientset.GetCluster(clusterName)
+				if err != nil {
+					return err
+				}
+
+				sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+				if err != nil {
+					return err
+				}
+
+				sshKeyArr := []byte(v.Spec.PublicKey)
+				err = sshCredentialStore.AddSSHPublicKey("admin", sshKeyArr)
+				if err != nil {
+					return fmt.Errorf("error replacing SSHCredential: %v", err)
+				}
 			default:
 				glog.V(2).Infof("Type of object was %T", v)
 				return fmt.Errorf("Unhandled kind %q in %q", gvk, f)
