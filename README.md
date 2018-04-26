@@ -82,12 +82,12 @@ Kubernetes version.
 
 #### Compatibility Matrix
 
-| kops version       | k8s 1.5.x | k8s 1.6.x | k8s 1.7.x | k8s 1.8.x | k8s 1.9.x |
-|--------------------|-----------|-----------|-----------|-----------|-----------|
-| 1.9.x (unreleased) | Y         | Y         | Y         | Y         | Y         |
-| 1.8.x              | Y         | Y         | Y         | Y         | N         |
-| 1.7.x              | Y         | Y         | Y         | N         | N         |
-| 1.6.x              | Y         | Y         | N         | N         | N         |
+| kops version | k8s 1.5.x | k8s 1.6.x | k8s 1.7.x | k8s 1.8.x | k8s 1.9.x |
+|--------------|-----------|-----------|-----------|-----------|-----------|
+| 1.9.x        | Y         | Y         | Y         | Y         | Y         |
+| 1.8.x        | Y         | Y         | Y         | Y         | N         |
+| 1.7.x        | Y         | Y         | Y         | N         | N         |
+| 1.6.x        | Y         | Y         | N         | N         | N         |
 
 Use the latest version of kops for all releases of Kubernetes, with the caveat
 that higher versions of Kubernetes are not _officially_ supported by kops.
@@ -201,7 +201,7 @@ You can check your week number using:
 date +%V
 ```
 
-The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community/blob/master/communication.md#social-media) in [#kops](https://kubernetes.slack.com/messages/kops/), so come find and chat with us about how kops can be better for you!
+The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community/blob/master/communication.md#social-media) in [#kops-users](https://kubernetes.slack.com/messages/kops-users/), so come find and chat with us about how kops can be better for you!
 
 
 ## GitHub Issues
