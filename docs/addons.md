@@ -4,8 +4,8 @@ With kops you manage addons by using kubectl.
 
 (For a description of the addon-manager, please see [addon_manager.md](addon_manager.md).)
 
-Addons in kubernetes are traditionally done by copying files to `/etc/kubernetes/addons` on the master.  But this
-doesn't really make sense in HA master configurations.  We also have kubectl available, and addons is just a thin
+Addons in Kubernetes are traditionally done by copying files to `/etc/kubernetes/addons` on the master.  But this
+doesn't really make sense in HA master configurations.  We also have kubectl available, and addons are just a thin
 wrapper over calling kubectl.
 
 This document describes how to install some common addons.
