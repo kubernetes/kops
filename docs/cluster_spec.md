@@ -387,6 +387,28 @@ spec:
       image: busybox
 ```
 
+Install cachefiled
+
+```
+spec:
+  # many sections removed
+  hooks:
+  - before:
+    - kubelet.service
+    manifest: |
+      Type=oneshot
+      ExecStart=/sbin/modprobe cachefiles
+    name: cachefiles.service
+  - execContainer:
+      command:
+      - sh
+      - -c
+      - chroot /rootfs apt-get update && chroot /rootfs apt-get install -y cachefilesd
+        && chroot /rootfs sed -i s/#RUN/RUN/ /etc/default/cachefilesd && chroot /rootfs
+        service cachefilesd restart
+      image: busybox
+```
+
 ### fileAssets
 
 FileAssets is an alpha feature which permits you to place inline file content into the cluster and instanceGroup specification. It's desiginated as alpha as you can probably do this via kubernetes daemonsets as an alternative.
