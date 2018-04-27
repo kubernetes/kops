@@ -233,14 +233,21 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		switch action {
 		case "", "ACCEPT", "DROP", "RETURN":
 		default:
-			return field.Invalid(fieldSpec.Child("Networking", "Canal", "DefaultEndpointToHostAction"), action, fmt.Sprintf("Unsupported value: %s, supports ACCEPT, DROP or RETURN", action))
+			return field.Invalid(fieldSpec.Child("Networking", "Canal", "DefaultEndpointToHostAction"), action, fmt.Sprintf("Unsupported value: %s, supports 'ACCEPT', 'DROP' or 'RETURN'", action))
 		}
 
 		chainInsertMode := c.Spec.Networking.Canal.ChainInsertMode
 		switch chainInsertMode {
 		case "", "insert", "append":
 		default:
-			return field.Invalid(fieldSpec.Child("Networking", "Canal", "ChainInsertMode"), action, fmt.Sprintf("Unsupported value: %s, supports 'insert' or 'append'", chainInsertMode))
+			return field.Invalid(fieldSpec.Child("Networking", "Canal", "ChainInsertMode"), chainInsertMode, fmt.Sprintf("Unsupported value: %s, supports 'insert' or 'append'", chainInsertMode))
+		}
+
+		logSeveritySys := c.Spec.Networking.Canal.LogSeveritySys
+		switch logSeveritySys {
+		case "", "INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL", "NONE":
+		default:
+			return field.Invalid(fieldSpec.Child("Networking", "Canal", "LogSeveritySys"), logSeveritySys, fmt.Sprintf("Unsupported value: %s, supports 'INFO', 'DEBUG', 'WARNING', 'ERROR', 'CRITICAL' or 'NONE'", logSeveritySys))
 		}
 	}
 
