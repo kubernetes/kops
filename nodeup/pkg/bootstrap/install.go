@@ -119,6 +119,12 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 		buffer.WriteString("\" ")
 	}
 
+	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
+		buffer.WriteString("\"GOSSIP_DNS_CONN_LIMIT=")
+		buffer.WriteString(os.Getenv("GOSSIP_DNS_CONN_LIMIT"))
+		buffer.WriteString("\" ")
+	}
+
 	// Pass in required credentials when using user-defined s3 endpoint
 	if os.Getenv("S3_ENDPOINT") != "" {
 		buffer.WriteString("\"S3_ENDPOINT=")
