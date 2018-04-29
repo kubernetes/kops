@@ -1,4 +1,4 @@
-## Node Resource Handling In Kuberenetes
+## Node Resource Handling In Kubernetes
 
 An aspect of Kubernetes clusters that is often overlooked is the resources non-
 pod components require to run, such as:
