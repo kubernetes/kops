@@ -711,3 +711,14 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokub
 .PHONY: bazel-upload
 bazel-upload: bazel-version-dist # Upload kops to S3
 	aws s3 sync --acl public-read ${BAZELUPLOAD}/ ${S3_BUCKET}
+
+#-----------------------------------------------------------  
+# static html documentation  
+
+.PHONY: live-docs
+live-docs:
+	@docker run --rm -it -p 3000:3000 -v ${PWD}:/docs aledbf/mkdocs:0.1
+
+.PHONY: build-docs
+build-docs:
+	@docker run --rm -it -v ${PWD}:/docs aledbf/mkdocs:0.1 build
