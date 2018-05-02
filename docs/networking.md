@@ -61,7 +61,7 @@ different CNI providers but support configuring Kubernetes to run CNI providers.
 ## Specifying network option for cluster creation
 
 You are able to specify your networking type via command line switch or in your yaml file.
-The `--networking` option accepts the three different values defined above: `kubenet`, `cni`,
+The `--networking` option accepts the four different values defined above: `kubenet`, `cni`,
 `classic`, and `external`. If `--networking` is left undefined `kubenet` is installed.
 
 ### Weave Example for CNI
