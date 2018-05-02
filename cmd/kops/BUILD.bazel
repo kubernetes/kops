@@ -139,6 +139,7 @@ go_test(
         "delete_confirm_test.go",
         "integration_test.go",
         "lifecycle_integration_test.go",
+        "toolbox_template_test.go",
     ],
     data = [
         "//channels:channeldata",  # keep
