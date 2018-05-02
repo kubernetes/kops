@@ -46,7 +46,7 @@ func NewMeshGossiper(listen string, channelName string, nodeName string, passwor
 	if gossipDnsConnLimit != "" {
 		limit, err := strconv.Atoi(gossipDnsConnLimit)
 		if err != nil {
-			return nil, fmt.Errorf("cannot parse env GOSSIP_DNS_CONN_LIMIT value: %v", gossipDnsConnLimit)
+			return nil, fmt.Errorf("cannot parse env GOSSIP_DNS_CONN_LIMIT value: %v, err:%v", gossipDnsConnLimit, err)
 		}
 		connLimit = limit
 	}
