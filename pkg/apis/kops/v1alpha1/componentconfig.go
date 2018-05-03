@@ -162,6 +162,8 @@ type KubeletConfigSpec struct {
 	VolumeStatsAggPeriod *metav1.Duration `json:"volumeStatsAggPeriod,omitempty" flag:"volume-stats-agg-period"`
 	// Tells the Kubelet to fail to start if swap is enabled on the node.
 	FailSwapOn *bool `json:"failSwapOn,omitempty" flag:"fail-swap-on"`
+	// ExperimentalAllowedUnsafeSysctls are passed to the kubelet config to whitelist allowable sysctls
+	ExperimentalAllowedUnsafeSysctls []string `json:"experimental_allowed_unsafe_sysctls,omitempty" flag:"experimental-allowed-unsafe-sysctls"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
