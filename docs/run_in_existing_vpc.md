@@ -156,12 +156,14 @@ spec:
   ```
   "kubernetes.io/cluster/<cluster-name>" = "shared"
   "kubernetes.io/role/elb"               = "1"
+  "SubnetType"                           = "Utility"
   ```
 
   Private Subnets:
   ```
   "kubernetes.io/cluster/<cluster-name>" = "shared"
   "kubernetes.io/role/internal-elb"      = "1"
+  "SubnetType"                           = "Private"
   ```
 
 
