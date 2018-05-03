@@ -453,6 +453,7 @@ func autoConvert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
+	out.MajorVersion = in.MajorVersion
 	return nil
 }
 
@@ -469,6 +470,7 @@ func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
+	out.MajorVersion = in.MajorVersion
 	return nil
 }
 
