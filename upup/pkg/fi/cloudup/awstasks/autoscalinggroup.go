@@ -459,6 +459,7 @@ type cloudformationAutoscalingGroup struct {
 	MetricsCollection       []*cloudformationASGMetricsCollection `json:"MetricsCollection,omitempty"`
 
 	LoadBalancerNames []*cloudformation.Literal `json:"LoadBalancerNames,omitempty"`
+	TargetGroupARNs   []*cloudformation.Literal `json:"TargetGroupARNs,omitempty"`
 }
 
 func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *AutoscalingGroup) error {
