@@ -18,11 +18,13 @@ package model
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/golang/glog"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
 
@@ -99,6 +101,7 @@ func (b *KopsModelContext) NameForDNSZone() string {
 	return name
 }
 
+// IAMName determines the name of the IAM Role and Instance Profile to use for the InstanceGroup
 func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
 	switch role {
 	case kops.InstanceGroupRoleMaster:
@@ -114,9 +117,28 @@ func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
 	}
 }
 
-func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) *awstasks.IAMInstanceProfile {
+var roleNamRegExp = regexp.MustCompile(`([^/]+$)`)
+
+// findCustomAuthNameFromArn parses the name of a instance profile from the arn
+func findCustomAuthNameFromArn(arn string) (string, error) {
+	if arn == "" {
+		return "", fmt.Errorf("unable to parse role arn as it is not set")
+	}
+	rs := roleNamRegExp.FindStringSubmatch(arn)
+	if len(rs) >= 2 {
+		return rs[1], nil
+	}
+
+	return "", fmt.Errorf("unable to parse role arn %q", arn)
+}
+
+func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) (*awstasks.IAMInstanceProfile, error) {
+	if ig.Spec.IAM != nil && ig.Spec.IAM.Profile != nil {
+		name, err := findCustomAuthNameFromArn(fi.StringValue(ig.Spec.IAM.Profile))
+		return &awstasks.IAMInstanceProfile{Name: &name}, err
+	}
 	name := b.IAMName(ig.Spec.Role)
-	return &awstasks.IAMInstanceProfile{Name: &name}
+	return &awstasks.IAMInstanceProfile{Name: &name}, nil
 }
 
 // SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint.

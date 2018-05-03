@@ -18,6 +18,7 @@ package validation
 
 import (
 	"fmt"
+	"regexp"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
@@ -84,6 +85,10 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 				return err
 			}
 		}
+	}
+
+	if err := validateInstanceProfile(g.Spec.IAM, field.NewPath("iam")); err != nil {
+		return err
 	}
 
 	return nil
@@ -163,5 +168,20 @@ func validateExtraUserData(userData *kops.UserData) error {
 		return field.Invalid(fieldPath.Child("Type"), userData.Type, "Invalid user-data content type")
 	}
 
+	return nil
+}
+
+// format is arn:aws:iam::123456789012:instance-profile/S3Access
+var validARN = regexp.MustCompile(`^arn:aws:iam::\d+:instance-profile\/\S+$`)
+
+// validateInstanceProfile checks the String values for the AuthProfile
+func validateInstanceProfile(v *kops.IAMProfileSpec, fldPath *field.Path) *field.Error {
+	if v != nil && v.Profile != nil {
+		arn := *v.Profile
+		if !validARN.MatchString(arn) {
+			return field.Invalid(fldPath.Child("Profile"), arn,
+				"Instance Group IAM Instance Profile must be a valid aws arn such as arn:aws:iam::123456789012:instance-profile/KopsExampleRole")
+		}
+	}
 	return nil
 }

@@ -135,8 +135,8 @@ type UserData struct {
 // IAMProfileSpec is the AWS IAM Profile to attach to instances in this instance
 // group. Specify the ARN for the IAM instance profile (AWS only).
 type IAMProfileSpec struct {
-	// Profile of the cloud group iam profile. In aws this is the arn
-	// for the iam instance profile
+	// Profile is the AWS IAM Profile to attach to instances in this instance group.
+	// Specify the ARN for the IAM instance profile. (AWS only)
 	Profile *string `json:"profile,omitempty"`
 }
 
