@@ -176,7 +176,7 @@ func (c *ApplyClusterCmd) Run() error {
 	case Phase(""):
 		// Everything ... the default
 
-		// until we implement finding assets we need to to Ignore them
+		// until we implement finding assets we need to Ignore them
 		stageAssetsLifecycle = fi.LifecycleIgnore
 	case PhaseStageAssets:
 		networkLifecycle = fi.LifecycleIgnore
