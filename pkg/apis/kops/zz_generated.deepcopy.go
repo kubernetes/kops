@@ -2723,6 +2723,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 			**out = **in
 		}
 	}
+	if in.ExperimentalAllowedUnsafeSysctls != nil {
+		in, out := &in.ExperimentalAllowedUnsafeSysctls, &out.ExperimentalAllowedUnsafeSysctls
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
