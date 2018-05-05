@@ -463,10 +463,21 @@ func (c *ApplyClusterCmd) Run() error {
 			region = osCloud.Region()
 
 			l.AddTypes(map[string]interface{}{
+				"sshKey": &openstacktasks.SSHKey{},
 				// Networking
 				"network": &openstacktasks.Network{},
 				"router":  &openstacktasks.Router{},
 			})
+
+			if len(sshPublicKeys) == 0 {
+				return fmt.Errorf("SSH public key must be specified when running with Openstack (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+			}
+
+			modelContext.SSHPublicKeys = sshPublicKeys
+
+			if len(sshPublicKeys) != 1 {
+				return fmt.Errorf("Exactly one 'admin' SSH public key can be specified when running with Openstack; please delete a key using `kops delete secret`")
+			}
 		}
 	default:
 		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
@@ -604,6 +615,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 				l.Builders = append(l.Builders,
 					&openstackmodel.NetworkModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &networkLifecycle},
+					&openstackmodel.SSHKeyModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
 				)
 
 			default:
