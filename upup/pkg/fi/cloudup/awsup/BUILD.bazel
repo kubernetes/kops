@@ -49,10 +49,7 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "aws_topology_test.go",
-        "aws_utils_test.go",
-    ],
+    srcs = ["aws_utils_test.go"],
     embed = [":go_default_library"],
     deps = [
         "//pkg/apis/kops:go_default_library",
