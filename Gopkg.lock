@@ -1477,6 +1477,12 @@
   revision = "01a732e01d00cb9a81bb0ca050d3e6d2b947927b"
 
 [[projects]]
+  name = "k8s.io/helm"
+  packages = ["pkg/strvals"]
+  revision = "f6025bb9ee7daf9fee0026541c90a6f557a3e0bc"
+  version = "v2.9.0"
+
+[[projects]]
   name = "k8s.io/kube-openapi"
   packages = [
     "pkg/builder",
