@@ -34,7 +34,7 @@ has built in support for CNI networking components.
 
 Several different CNI providers are currently built into kops:
 
-* [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/)
+* [Calico](https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/calico#installing-with-the-etcd-datastore)
 * [Canal (Flannel + Calico)](https://github.com/projectcalico/canal)
 * [flannel](https://github.com/coreos/flannel) - use `--networking flannel-vxlan` (recommended) or `--networking flannel-udp` (legacy).  `--networking flannel` now selects `flannel-vxlan`.
 * [kopeio-vxlan](https://github.com/kopeio/networking)
@@ -170,7 +170,8 @@ To enable this mode in a cluster, with Calico as the CNI and Network Policy prov
 
 ```
   networking:
-    calico: {}
+    calico:
+      majorVersion: v3
 ```
 
 You will need to change that block, and add an additional field, to look like this:
@@ -178,6 +179,7 @@ You will need to change that block, and add an additional field, to look like th
 ```
   networking:
     calico:
+      majorVersion: v3
       crossSubnet: true
 ```
 
@@ -193,6 +195,8 @@ Only the masters have the IAM policy (`ec2:*`) to allow k8s-ec2-srcdst to execut
 #### More information about Calico
 
 For Calico specific documentation please visit the [Calico Docs](http://docs.projectcalico.org/latest/getting-started/kubernetes/).
+
+For details on upgrading a Calico v2 deployment see [Calico Version 3](calico-v3.md).
 
 #### Getting help with Calico
 
