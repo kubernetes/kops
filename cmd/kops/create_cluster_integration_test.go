@@ -89,6 +89,12 @@ func TestCreateClusterWithNGWSpecified(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ngwspecified", "v1alpha2")
 }
 
+// TestCreateClusterWithINGWSpecified runs kops create cluster private.example.com --zones us-test-1a --master-zones us-test-1a
+func TestCreateClusterWithINGWSpecified(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ingwspecified", "v1alpha1")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ingwspecified", "v1alpha2")
+}
+
 // TestCreateClusterSharedVPC runs kops create cluster vpc.example.com --zones us-test-1a --master-zones us-test-1a --vpc vpc-12345678
 func TestCreateClusterSharedVPC(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_vpc", "v1alpha1")

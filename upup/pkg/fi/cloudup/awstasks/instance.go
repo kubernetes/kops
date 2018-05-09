@@ -33,7 +33,8 @@ import (
 const MaxUserDataSize = 16384
 
 type Instance struct {
-	ID *string
+	ID        *string
+	Lifecycle *fi.Lifecycle
 
 	UserData fi.Resource
 
@@ -42,6 +43,8 @@ type Instance struct {
 
 	Name *string
 	Tags map[string]string
+
+	Shared *bool
 
 	ImageID            *string
 	InstanceType       *string
@@ -59,11 +62,20 @@ func (s *Instance) CompareWithID() *string {
 
 func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
+	var request *ec2.DescribeInstancesInput
 
-	filters := cloud.BuildFilters(e.Name)
-	filters = append(filters, awsup.NewEC2Filter("instance-state-name", "pending", "running", "stopping", "stopped"))
-	request := &ec2.DescribeInstancesInput{
-		Filters: filters,
+	if fi.BoolValue(e.Shared) {
+		var instanceIds []*string
+		instanceIds = append(instanceIds, e.ID)
+		request = &ec2.DescribeInstancesInput{
+			InstanceIds: instanceIds,
+		}
+	} else {
+		filters := cloud.BuildFilters(e.Name)
+		filters = append(filters, awsup.NewEC2Filter("instance-state-name", "pending", "running", "stopping", "stopped"))
+		request = &ec2.DescribeInstancesInput{
+			Filters: filters,
+		}
 	}
 
 	response, err := cloud.EC2().DescribeInstances(request)
@@ -146,6 +158,9 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 
 	actual.Tags = mapEC2TagsToMap(i.Tags)
 
+	actual.Lifecycle = e.Lifecycle
+	actual.Shared = e.Shared
+
 	e.ID = actual.ID
 
 	// Avoid spurious changes on ImageId
@@ -189,7 +204,7 @@ func (e *Instance) Run(c *fi.Context) error {
 
 func (_ *Instance) CheckChanges(a, e, changes *Instance) error {
 	if a != nil {
-		if e.Name == nil {
+		if !fi.BoolValue(e.Shared) && e.Name == nil {
 			return fi.RequiredField("Name")
 		}
 	}
@@ -198,6 +213,11 @@ func (_ *Instance) CheckChanges(a, e, changes *Instance) error {
 
 func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) error {
 	if a == nil {
+
+		if fi.BoolValue(e.Shared) {
+			return fmt.Errorf("NAT EC2 Instance %q not found", fi.StringValue(e.ID))
+		}
+
 		if e.ImageID == nil {
 			return fi.RequiredField("ImageID")
 		}
@@ -281,5 +301,13 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 }
 
 func (e *Instance) TerraformLink() *terraform.Literal {
+	if fi.BoolValue(e.Shared) {
+		if e.ID == nil {
+			glog.Fatalf("ID must be set, if NAT Instance is shared: %s", e)
+		}
+
+		return terraform.LiteralFromStringValue(*e.ID)
+	}
+
 	return terraform.LiteralSelfLink("aws_instance", *e.Name)
 }
