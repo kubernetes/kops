@@ -217,6 +217,9 @@ type ProtokubeFlags struct {
 	TLSCertFile               *string  `json:"tls-cert,omitempty" flag:"tls-cert"`
 	TLSKeyFile                *string  `json:"tls-key,omitempty" flag:"tls-key"`
 	Zone                      []string `json:"zone,omitempty" flag:"zone"`
+
+	// ManageEtcd is true if protokube should manage etcd; being replaced by etcd-manager
+	ManageEtcd bool `json:"manageEtcd,omitempty" flag:"manage-etcd"`
 }
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
@@ -243,6 +246,12 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		EtcdHearbeatInterval:      s(heartbeatInterval),
 		LogLevel:                  fi.Int32(4),
 		Master:                    b(t.IsMaster),
+	}
+
+	f.ManageEtcd = false
+	if len(t.NodeupConfig.EtcdManifests) == 0 {
+		glog.V(4).Infof("no EtcdManifests; protokube will manage etcd")
+		f.ManageEtcd = true
 	}
 
 	for _, e := range t.Cluster.Spec.EtcdClusters {

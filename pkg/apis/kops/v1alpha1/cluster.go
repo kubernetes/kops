@@ -331,6 +331,8 @@ type EtcdClusterSpec struct {
 	Image string `json:"image,omitempty"`
 	// Backups describes how we do backups of etcd
 	Backups *EtcdBackupSpec `json:"backups,omitempty"`
+	// Manager describes the manager configuration
+	Manager *EtcdManagerSpec `json:"manager,omitempty"`
 }
 
 // EtcdBackupSpec describes how we want to do backups of etcd
@@ -338,6 +340,12 @@ type EtcdBackupSpec struct {
 	// BackupStore is the VFS path where we will read/write backup data
 	BackupStore string `json:"backupStore,omitempty"`
 	// Image is the etcd backup manager image to use.  Setting this will create a sidecar container in the etcd pod with the specified image.
+	Image string `json:"image,omitempty"`
+}
+
+// EtcdManagerSpec describes how we configure the etcd manager
+type EtcdManagerSpec struct {
+	// Image is the etcd manager image to use.
 	Image string `json:"image,omitempty"`
 }
 
