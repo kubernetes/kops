@@ -31,7 +31,7 @@ var (
 
 	1. All k8s masters are running and have "Ready" status.
 	2. All k8s nodes are running and have "Ready" status.
-	3. Componentstatues returns healthly for all components.
+	3. Componentstatues returns healthy for all components.
 	4. All pods in the kube-system namespace are running and healthy.
 	`))
 
