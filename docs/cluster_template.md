@@ -41,6 +41,42 @@ dnsZone: k8s.example.com
 awsRegion: eu-west-1
 ```
 
+When multiple environment files are passed using `--values` Kops performs a deep merge, for example given the following two files:
+```yaml
+# File values-a.yaml
+instanceGroups:
+  foo:
+    ami: ami-1234567
+    type: m4.large
+
+# File values-b.yaml
+instanceGroups:
+  foo:
+    type: t2.large
+```
+
+Would result in the `instanceGroups.foo` object having two properties: `{"ami": "ami-1234567", "type": "t2.large"}`.
+
+Besides specifying values through an environment file it is also possible to pass variables directly on the command line using the `--set` and `--set-string` command line options. The difference between the two options is that `--set-string` will always yield a string value while `--set` will cause the value to be parsed as a YAML value, for example the value `true` would turn into a boolean with `--set` while with `--set-string` it will be the literal string `"true"`. The format for specifying a variable is as follows:
+
+```shell
+kops toolbox template --template mytemplate.tpl --set 'version=1.0,foo.bar=baz' --set-string 'foo.myArray={1,2,3}' --set 'foo.myArray[1]=false,foo.myArray[3]=4'
+```
+
+which would yield the same values as using the `--values` option with the following file
+
+```yaml
+version: 1.0
+foo:
+  bar: baz
+  myArray:
+  - "1"
+  - false
+  - "3"
+  - 4
+```
+
+
 Running `kops toolbox template` replaces the placeholders in the template by values and generates the file output.yaml, which can then be used to replace the desired cluster configuration with `kops replace -f cluster.yaml`.
 
 Note: when creating a cluster desired configuration template, you can
