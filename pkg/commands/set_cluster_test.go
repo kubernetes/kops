@@ -40,8 +40,10 @@ func TestSetClusterFields(t *testing.T) {
 	}
 
 	for _, g := range grid {
+		var igs []*kops.InstanceGroup
 		c := g.Input
-		err := setClusterFields(g.Fields, &c)
+
+		err := SetClusterFields(g.Fields, &c, igs)
 		if err != nil {
 			t.Errorf("unexpected error from setClusterFields %v: %v", g.Fields, err)
 			continue
