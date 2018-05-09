@@ -90,6 +90,7 @@ k8s.io/kops/pkg/kubemanifest
 k8s.io/kops/pkg/model
 k8s.io/kops/pkg/model/awsmodel
 k8s.io/kops/pkg/model/components
+k8s.io/kops/pkg/model/components/etcdmanager
 k8s.io/kops/pkg/model/defaults
 k8s.io/kops/pkg/model/domodel
 k8s.io/kops/pkg/model/gcemodel
@@ -111,6 +112,7 @@ k8s.io/kops/pkg/systemd
 k8s.io/kops/pkg/templates
 k8s.io/kops/pkg/testutils
 k8s.io/kops/pkg/tokens
+k8s.io/kops/pkg/urls
 k8s.io/kops/pkg/util/stringorslice
 k8s.io/kops/pkg/util/templater
 k8s.io/kops/pkg/validation
