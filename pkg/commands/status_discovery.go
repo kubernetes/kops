@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/spotinst"
 )
 
 // CloudDiscoveryStatusStore implements status.Store by inspecting cloud objects.
@@ -67,6 +68,10 @@ func (s *CloudDiscoveryStatusStore) GetApiIngressStatus(cluster *kops.Cluster) (
 		return ingresses, nil
 	}
 
+	if spotinstCloud, ok := cloud.(spotinst.Cloud); ok {
+		return spotinstCloud.GetApiIngressStatus(cluster)
+	}
+
 	return nil, fmt.Errorf("API Ingress Status not implemented for %T", cloud)
 }
 
@@ -83,6 +88,10 @@ func (s *CloudDiscoveryStatusStore) FindClusterStatus(cluster *kops.Cluster) (*k
 
 	if awsCloud, ok := cloud.(awsup.AWSCloud); ok {
 		return awsCloud.FindClusterStatus(cluster)
+	}
+
+	if spotinstCloud, ok := cloud.(spotinst.Cloud); ok {
+		return spotinstCloud.FindClusterStatus(cluster)
 	}
 
 	return nil, fmt.Errorf("Etcd Status not implemented for %T", cloud)

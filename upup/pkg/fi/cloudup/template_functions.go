@@ -41,6 +41,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/spotinst"
 )
 
 // TemplateFunctions provides a collection of methods used throughout the templates
@@ -96,6 +97,11 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	dest["DO_TOKEN"] = func() string {
 		return os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+	}
+
+	if creds, err := spotinst.LoadCredentials(); err == nil {
+		dest["SpotinstToken"] = func() string { return creds.Token }
+		dest["SpotinstAccount"] = func() string { return creds.Account }
 	}
 
 	if tf.cluster.Spec.Networking != nil && tf.cluster.Spec.Networking.Flannel != nil {
@@ -195,6 +201,17 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 		case kops.CloudProviderVSphere:
 			argv = append(argv, "--dns=coredns")
 			argv = append(argv, "--dns-server="+*tf.cluster.Spec.CloudConfig.VSphereCoreDNSServer)
+		case kops.CloudProviderSpotinst:
+			switch spotinst.GuessCloudFromClusterSpec(&tf.cluster.Spec) {
+			case kops.CloudProviderAWS:
+				if strings.HasPrefix(os.Getenv("AWS_REGION"), "cn-") {
+					argv = append(argv, "--dns=gossip")
+				} else {
+					argv = append(argv, "--dns=aws-route53")
+				}
+			case kops.CloudProviderGCE:
+				argv = append(argv, "--dns=google-clouddns")
+			}
 
 		default:
 			return nil, fmt.Errorf("unhandled cloudprovider %q", tf.cluster.Spec.CloudProvider)

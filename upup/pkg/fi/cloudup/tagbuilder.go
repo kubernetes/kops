@@ -31,6 +31,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/spotinst"
 )
 
 func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
@@ -79,6 +80,16 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 		// No tags
 
 	case api.CloudProviderOpenstack:
+
+	case api.CloudProviderSpotinst:
+		{
+			cloud, err := BuildCloud(cluster)
+			if err != nil {
+				return nil, err
+			}
+			cloudTags := cloud.(spotinst.Cloud).Tags()
+			tags.Insert(cloudTags...)
+		}
 
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)

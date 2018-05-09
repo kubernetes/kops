@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/spotinst"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
@@ -201,6 +202,17 @@ func defaultMachineType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, 
 		case kops.InstanceGroupRoleBastion:
 			return defaultBastionMachineTypeVSphere, nil
 		}
+
+	case kops.CloudProviderSpotinst:
+		cloud, err := BuildCloud(cluster)
+		if err != nil {
+			return "", fmt.Errorf("error building cloud: %v", err)
+		}
+		machineType, err := cloud.(spotinst.Cloud).MachineType(cluster, ig)
+		if err != nil {
+			return "", fmt.Errorf("error finding default machine type: %v", err)
+		}
+		return machineType, nil
 	}
 
 	glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q, Role=%q", cluster.Spec.CloudProvider, ig.Spec.Role)
@@ -231,6 +243,9 @@ func defaultImage(cluster *kops.Cluster, channel *kops.Channel) string {
 		return defaultDONodeImage
 	case kops.CloudProviderVSphere:
 		return defaultVSphereNodeImage
+	case kops.CloudProviderSpotinst:
+		cloud, _ := BuildCloud(cluster)
+		return cloud.(spotinst.Cloud).Image(cluster, channel)
 	}
 
 	glog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)

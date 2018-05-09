@@ -50,28 +50,32 @@ func PerformAssignments(c *kops.Cluster) error {
 	}
 
 	// Currently only AWS uses NetworkCIDRs
-	setNetworkCIDR := cloud.ProviderID() == kops.CloudProviderAWS
-	if setNetworkCIDR && c.Spec.NetworkCIDR == "" {
-		if c.SharedVPC() {
-			vpcInfo, err := cloud.FindVPCInfo(c.Spec.NetworkID)
-			if err != nil {
-				return err
-			}
-			if vpcInfo == nil {
-				return fmt.Errorf("unable to find VPC ID %q", c.Spec.NetworkID)
-			}
-			c.Spec.NetworkCIDR = vpcInfo.CIDR
-			if c.Spec.NetworkCIDR == "" {
-				return fmt.Errorf("Unable to infer NetworkCIDR from VPC ID, please specify --network-cidr")
-			}
-		} else {
-			// TODO: Choose non-overlapping networking CIDRs for VPCs, using vpcInfo
-			c.Spec.NetworkCIDR = "172.20.0.0/16"
-		}
+	if c.Spec.NetworkCIDR == "" {
+		switch cloud.ProviderID() {
+		case kops.CloudProviderAWS, kops.CloudProviderSpotinst:
+			{
+				if c.SharedVPC() {
+					vpcInfo, err := cloud.FindVPCInfo(c.Spec.NetworkID)
+					if err != nil {
+						return err
+					}
+					if vpcInfo == nil {
+						return fmt.Errorf("unable to find VPC ID %q", c.Spec.NetworkID)
+					}
+					c.Spec.NetworkCIDR = vpcInfo.CIDR
+					if c.Spec.NetworkCIDR == "" {
+						return fmt.Errorf("Unable to infer NetworkCIDR from VPC ID, please specify --network-cidr")
+					}
+				} else {
+					// TODO: Choose non-overlapping networking CIDRs for VPCs, using vpcInfo
+					c.Spec.NetworkCIDR = "172.20.0.0/16"
+				}
 
-		// Amazon VPC CNI uses the same network
-		if c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC != nil {
-			c.Spec.NonMasqueradeCIDR = c.Spec.NetworkCIDR
+				// Amazon VPC CNI uses the same network
+				if c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC != nil {
+					c.Spec.NonMasqueradeCIDR = c.Spec.NetworkCIDR
+				}
+			}
 		}
 	}
 
@@ -86,7 +90,7 @@ func PerformAssignments(c *kops.Cluster) error {
 
 	// We only assign subnet CIDRs on AWS
 	pd := cloud.ProviderID()
-	if pd == kops.CloudProviderAWS || pd == kops.CloudProviderOpenstack {
+	if pd == kops.CloudProviderAWS || pd == kops.CloudProviderOpenstack || pd == kops.CloudProviderSpotinst {
 		// TODO: Use vpcInfo
 		err = assignCIDRsToSubnets(c)
 		if err != nil {

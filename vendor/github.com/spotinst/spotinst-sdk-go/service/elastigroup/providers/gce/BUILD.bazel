@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "service.go",
+        "tag.go",
+    ],
+    importmap = "vendor/github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/gce",
+    importpath = "github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/gce",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/client:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/session:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil:go_default_library",
+    ],
+)
