@@ -134,6 +134,10 @@ type CreateClusterOptions struct {
 	// We can remove this once we support higher versions.
 	VSphereDatastore string
 
+	// Spotinst options
+	SpotinstProduct     string
+	SpotinstOrientation string
+
 	// ConfigBase is the location where we will store the configuration, it defaults to the state store
 	ConfigBase string
 
@@ -157,6 +161,9 @@ func (o *CreateClusterOptions) InitDefaults() {
 	o.AdminAccess = []string{"0.0.0.0/0"}
 
 	o.Authorization = AuthorizationFlagRBAC
+
+	o.SpotinstProduct = "Linux/UNIX"
+	o.SpotinstOrientation = "balanced"
 }
 
 var (
@@ -345,6 +352,13 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		cmd.Flags().StringVar(&options.VSphereCoreDNSServer, "vsphere-coredns-server", options.VSphereCoreDNSServer, "vsphere-coredns-server is required for vSphere.")
 		cmd.Flags().StringVar(&options.VSphereDatastore, "vsphere-datastore", options.VSphereDatastore, "vsphere-datastore is required for vSphere.  Set a valid datastore in which to store dynamic provision volumes.")
 	}
+
+	if featureflag.SpotinstCloudProvider.Enabled() {
+		// Spotinst flags
+		cmd.Flags().StringVar(&options.SpotinstProduct, "spotinst-product", options.SpotinstProduct, "Sets the product code.")
+		cmd.Flags().StringVar(&options.SpotinstOrientation, "spotinst-orientation", options.SpotinstOrientation, "Sets the group orientation.")
+	}
+
 	return cmd
 }
 
@@ -805,6 +819,23 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				return fmt.Errorf("vsphere-datastore is required for vSphere. Set a valid datastore in which to store dynamic provision volumes.")
 			}
 			cluster.Spec.CloudConfig.VSphereDatastore = fi.String(c.VSphereDatastore)
+		}
+
+		if api.CloudProviderID(c.Cloud) == api.CloudProviderSpotinst {
+			if !featureflag.SpotinstCloudProvider.Enabled() {
+				return fmt.Errorf("feature flag SpotinstCloudProvider is not set. Cloud Spotinst will not be supported.")
+			}
+			if cluster.Spec.CloudConfig == nil {
+				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
+			}
+			if c.SpotinstProduct != "" {
+				glog.V(1).Infof("Using Spotinst product: %s", c.SpotinstProduct)
+				cluster.Spec.CloudConfig.SpotinstProduct = fi.String(c.SpotinstProduct)
+			}
+			if c.SpotinstOrientation != "" {
+				glog.V(1).Infof("Using Spotinst orientation: %s", c.SpotinstOrientation)
+				cluster.Spec.CloudConfig.SpotinstOrientation = fi.String(c.SpotinstOrientation)
+			}
 		}
 	}
 

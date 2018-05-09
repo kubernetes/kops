@@ -779,6 +779,25 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/spotinst/spotinst-sdk-go"
+  packages = [
+    "service/elastigroup",
+    "service/elastigroup/providers/aws",
+    "service/elastigroup/providers/azure",
+    "service/elastigroup/providers/gce",
+    "spotinst",
+    "spotinst/client",
+    "spotinst/credentials",
+    "spotinst/log",
+    "spotinst/session",
+    "spotinst/util/jsonutil",
+    "spotinst/util/stringutil",
+    "spotinst/util/uritemplates"
+  ]
+  revision = "6ad524938db0aa7b36c61e9c51e1f3054ad57ee4"
+
+[[projects]]
+  branch = "master"
   name = "github.com/tent/http-link-go"
   packages = ["."]
   revision = "ac974c61c2f990f4115b119354b5e0b47550e888"
@@ -1679,6 +1698,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2e3d6ddfd1017a940526237cadd8a968d6e8170af9dac833b2a94bd8ffc4646f"
+  inputs-digest = "bca15774bdb8a0c9b1ed56958fd088bdfcd0f57fb699cf6fc7f68df44aa2bc54"
   solver-name = "gps-cdcl"
   solver-version = 1

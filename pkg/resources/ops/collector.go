@@ -24,9 +24,11 @@ import (
 	"k8s.io/kops/pkg/resources/aws"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/resources/gce"
+	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	cloudgce "k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	cloudspotinst "k8s.io/kops/upup/pkg/fi/cloudup/spotinst"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 )
 
@@ -41,6 +43,8 @@ func ListResources(cloud fi.Cloud, clusterName string, region string) (map[strin
 		return gce.ListResourcesGCE(cloud.(cloudgce.GCECloud), clusterName, region)
 	case kops.CloudProviderVSphere:
 		return resources.ListResourcesVSphere(cloud.(*vsphere.VSphereCloud), clusterName)
+	case kops.CloudProviderSpotinst:
+		return spotinst.ListResources(cloud.(cloudspotinst.Cloud), clusterName)
 	default:
 		return nil, fmt.Errorf("delete on clusters on %q not (yet) supported", cloud.ProviderID())
 	}

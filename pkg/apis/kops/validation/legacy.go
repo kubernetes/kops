@@ -21,14 +21,14 @@ import (
 	"net"
 	"strings"
 
+	"github.com/blang/semver"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
-
-	"github.com/blang/semver"
+	"k8s.io/kops/upup/pkg/fi/cloudup/spotinst"
 )
 
 // legacy contains validation functions that don't match the apimachinery style
@@ -104,6 +104,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	case kops.CloudProviderAWS:
 	case kops.CloudProviderVSphere:
 	case kops.CloudProviderOpenstack:
+	case kops.CloudProviderSpotinst:
 		requiresNetworkCIDR = false
 		requiresSubnetCIDR = false
 
@@ -301,28 +302,30 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 			k8sCloudProvider = ""
 		case kops.CloudProviderOpenstack:
 			k8sCloudProvider = "openstack"
+		case kops.CloudProviderSpotinst:
+			k8sCloudProvider = string(spotinst.GuessCloudFromClusterSpec(&c.Spec))
 		default:
 			return field.Invalid(fieldSpec.Child("CloudProvider"), c.Spec.CloudProvider, "unknown cloudprovider")
 		}
 
 		if c.Spec.Kubelet != nil && (strict || c.Spec.Kubelet.CloudProvider != "") {
-			if c.Spec.Kubelet.CloudProvider != "external" && k8sCloudProvider != c.Spec.Kubelet.CloudProvider {
+			if c.Spec.Kubelet.CloudProvider != "external" && k8sCloudProvider != c.Spec.Kubelet.CloudProvider && kops.CloudProviderID(c.Spec.CloudProvider) != kops.CloudProviderSpotinst {
 				return field.Invalid(fieldSpec.Child("Kubelet", "CloudProvider"), c.Spec.Kubelet.CloudProvider, "Did not match cluster CloudProvider")
 			}
 		}
 		if c.Spec.MasterKubelet != nil && (strict || c.Spec.MasterKubelet.CloudProvider != "") {
-			if c.Spec.MasterKubelet.CloudProvider != "external" && k8sCloudProvider != c.Spec.MasterKubelet.CloudProvider {
+			if c.Spec.MasterKubelet.CloudProvider != "external" && k8sCloudProvider != c.Spec.MasterKubelet.CloudProvider && kops.CloudProviderID(c.Spec.CloudProvider) != kops.CloudProviderSpotinst {
 				return field.Invalid(fieldSpec.Child("MasterKubelet", "CloudProvider"), c.Spec.MasterKubelet.CloudProvider, "Did not match cluster CloudProvider")
 
 			}
 		}
 		if c.Spec.KubeAPIServer != nil && (strict || c.Spec.KubeAPIServer.CloudProvider != "") {
-			if c.Spec.KubeAPIServer.CloudProvider != "external" && k8sCloudProvider != c.Spec.KubeAPIServer.CloudProvider {
+			if c.Spec.KubeAPIServer.CloudProvider != "external" && k8sCloudProvider != c.Spec.KubeAPIServer.CloudProvider && kops.CloudProviderID(c.Spec.CloudProvider) != kops.CloudProviderSpotinst {
 				return field.Invalid(fieldSpec.Child("KubeAPIServer", "CloudProvider"), c.Spec.KubeAPIServer.CloudProvider, "Did not match cluster CloudProvider")
 			}
 		}
 		if c.Spec.KubeControllerManager != nil && (strict || c.Spec.KubeControllerManager.CloudProvider != "") {
-			if c.Spec.KubeControllerManager.CloudProvider != "external" && k8sCloudProvider != c.Spec.KubeControllerManager.CloudProvider {
+			if c.Spec.KubeControllerManager.CloudProvider != "external" && k8sCloudProvider != c.Spec.KubeControllerManager.CloudProvider && kops.CloudProviderID(c.Spec.CloudProvider) != kops.CloudProviderSpotinst {
 				return field.Invalid(fieldSpec.Child("KubeControllerManager", "CloudProvider"), c.Spec.KubeControllerManager.CloudProvider, "Did not match cluster CloudProvider")
 			}
 		}

@@ -44,6 +44,7 @@ import (
 	"k8s.io/kops/pkg/model/domodel"
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/openstackmodel"
+	spotinstmodel_aws "k8s.io/kops/pkg/model/spotinstmodel/aws"
 	"k8s.io/kops/pkg/model/vspheremodel"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/templates"
@@ -59,6 +60,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/spotinst"
+	spotinsttasks_aws "k8s.io/kops/upup/pkg/fi/cloudup/spotinsttasks/aws"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks"
@@ -435,6 +438,54 @@ func (c *ApplyClusterCmd) Run() error {
 			// No additional tasks (yet)
 		}
 
+	case kops.CloudProviderSpotinst:
+		{
+			glog.V(2).Infof("Cloud provider detected: %s", kops.CloudProviderSpotinst)
+			spotinstCloud := cloud.(spotinst.Cloud)
+			modelContext.SSHPublicKeys = sshPublicKeys
+
+			glog.V(2).Info("Setting up the region...")
+			region = spotinstCloud.Region()
+
+			cloudProviderID := spotinstCloud.Cloud().ProviderID()
+			glog.V(2).Infof("Adding all types to loader of provider: %s", cloudProviderID)
+			switch cloudProviderID {
+			case kops.CloudProviderAWS:
+				l.AddTypes(map[string]interface{}{
+					// EC2
+					"elasticIP": &spotinsttasks_aws.ElasticIP{},
+					"ebsVolume": &spotinsttasks_aws.EBSVolume{},
+					"sshKey":    &spotinsttasks_aws.SSHKey{},
+
+					// IAM
+					"iamInstanceProfile":     &spotinsttasks_aws.IAMInstanceProfile{},
+					"iamInstanceProfileRole": &spotinsttasks_aws.IAMInstanceProfileRole{},
+					"iamRole":                &spotinsttasks_aws.IAMRole{},
+					"iamRolePolicy":          &spotinsttasks_aws.IAMRolePolicy{},
+
+					// VPC / Networking
+					"dhcpOptions":           &spotinsttasks_aws.DHCPOptions{},
+					"internetGateway":       &spotinsttasks_aws.InternetGateway{},
+					"route":                 &spotinsttasks_aws.Route{},
+					"routeTable":            &spotinsttasks_aws.RouteTable{},
+					"routeTableAssociation": &spotinsttasks_aws.RouteTableAssociation{},
+					"securityGroup":         &spotinsttasks_aws.SecurityGroup{},
+					"securityGroupRule":     &spotinsttasks_aws.SecurityGroupRule{},
+					"subnet":                &spotinsttasks_aws.Subnet{},
+					"vpc":                   &spotinsttasks_aws.VPC{},
+					"ngw":                   &spotinsttasks_aws.NatGateway{},
+					"vpcDHDCPOptionsAssociation": &spotinsttasks_aws.VPCDHCPOptionsAssociation{},
+
+					// ELB
+					"loadBalancer":           &spotinsttasks_aws.LoadBalancer{},
+					"loadBalancerAttachment": &spotinsttasks_aws.LoadBalancerAttachment{},
+
+					// Spotinst
+					"autoscaling": &spotinsttasks_aws.AutoscalingGroup{},
+				})
+			}
+		}
+
 	case kops.CloudProviderOpenstack:
 		{
 			osCloud := cloud.(openstack.OpenstackCloud)
@@ -555,6 +606,33 @@ func (c *ApplyClusterCmd) Run() error {
 					)
 				}
 
+			case kops.CloudProviderSpotinst:
+				spotinstCloud := cloud.(spotinst.Cloud)
+				spotinstModelContext := &spotinstmodel_aws.ModelContext{
+					KopsModelContext: modelContext,
+				}
+
+				switch spotinstCloud.Cloud().ProviderID() {
+				case kops.CloudProviderAWS:
+					{
+						l.Builders = append(l.Builders,
+							&spotinstmodel_aws.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+							&spotinstmodel_aws.BastionModelBuilder{ModelContext: spotinstModelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
+							&spotinstmodel_aws.APILoadBalancerBuilder{ModelContext: spotinstModelContext, Lifecycle: &clusterLifecycle},
+							&spotinstmodel_aws.DNSModelBuilder{ModelContext: spotinstModelContext, Lifecycle: &clusterLifecycle},
+							&spotinstmodel_aws.ExternalAccessModelBuilder{ModelContext: spotinstModelContext, Lifecycle: &clusterLifecycle},
+							&spotinstmodel_aws.FirewallModelBuilder{ModelContext: spotinstModelContext, Lifecycle: &clusterLifecycle},
+							&spotinstmodel_aws.IAMModelBuilder{ModelContext: spotinstModelContext, Lifecycle: &clusterLifecycle},
+							&spotinstmodel_aws.NetworkModelBuilder{ModelContext: spotinstModelContext, Lifecycle: &clusterLifecycle},
+							&spotinstmodel_aws.SSHKeyModelBuilder{ModelContext: spotinstModelContext, Lifecycle: &clusterLifecycle},
+						)
+					}
+				case kops.CloudProviderGCE:
+					{
+						// No special settings (yet!)
+					}
+				}
+
 			case kops.CloudProviderVSphere:
 				// No special settings (yet!)
 
@@ -641,6 +719,27 @@ func (c *ApplyClusterCmd) Run() error {
 			})
 		}
 
+	case kops.CloudProviderSpotinst:
+		{
+			spotinstCloud := cloud.(spotinst.Cloud)
+			spotinstModelContext := &spotinstmodel_aws.ModelContext{
+				KopsModelContext: modelContext,
+			}
+			switch spotinstCloud.Cloud().ProviderID() {
+			case kops.CloudProviderAWS:
+				{
+					l.Builders = append(l.Builders, &spotinstmodel_aws.AutoscalingGroupModelBuilder{
+						BootstrapScript: bootstrapScriptBuilder,
+						ModelContext:    spotinstModelContext,
+					})
+				}
+			case kops.CloudProviderGCE:
+				{
+
+				}
+			}
+		}
+
 	case kops.CloudProviderBareMetal:
 		// BareMetal tasks will go here
 
@@ -680,6 +779,8 @@ func (c *ApplyClusterCmd) Run() error {
 			target = baremetal.NewTarget(cloud.(*baremetal.Cloud))
 		case kops.CloudProviderOpenstack:
 			target = openstack.NewOpenstackAPITarget(cloud.(openstack.OpenstackCloud))
+		case kops.CloudProviderSpotinst:
+			target = spotinst.NewTarget(cloud.(spotinst.Cloud))
 		default:
 			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.CloudProvider)
 		}
