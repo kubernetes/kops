@@ -28,6 +28,10 @@ type KubeletConfigSpec struct {
 	AuthorizationMode string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
 	// ClientCAFile is the path to a CA certificate
 	ClientCAFile string `json:"clientCaFile,omitempty" flag:"client-ca-file"`
+	// TODO: Remove unused TLSCertFile
+	TLSCertFile string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
+	// TODO: Remove unused TLSPrivateKeyFile
+	TLSPrivateKeyFile string `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
 	// KubeconfigPath is the path of kubeconfig for the kubelet
 	KubeconfigPath string `json:"kubeconfigPath,omitempty" flag:"kubeconfig"`
 	// RequireKubeconfig indicates a kubeconfig is required
