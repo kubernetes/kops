@@ -45,10 +45,10 @@ container_repositories()
 container_pull(
     name = "debian_hyperkube_base_amd64",
     # 'tag' is also supported, but digest is encouraged for reproducibility.
-    digest = "sha256:fc1b461367730660ac5a40c1eb2d1b23221829acf8a892981c12361383b3742b",
+    digest = "sha256:cc782ed16599000ca4c85d47ec6264753747ae1e77520894dca84b104a7621e2",
     registry = "k8s.gcr.io",
     repository = "debian-hyperkube-base-amd64",
-    tag = "0.8",
+    tag = "0.10",
 )
 
 git_repository(
