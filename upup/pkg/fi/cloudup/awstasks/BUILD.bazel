@@ -28,6 +28,7 @@ go_library(
         "iamrolepolicy_fitask.go",
         "instance.go",
         "instance_elasticip_attachment.go",
+        "instance_fitask.go",
         "instance_volume_attachment.go",
         "internetgateway.go",
         "internetgateway_fitask.go",
