@@ -47,7 +47,7 @@ output "region" {
 }
 
 output "vpc_id" {
-  value = "${aws_vpc.unmanaged-example-com.id}"
+  value = "vpc-12345678"
 }
 
 provider "aws" {
@@ -287,16 +287,6 @@ resource "aws_iam_role_policy" "nodes-unmanaged-example-com" {
   policy = "${file("${path.module}/data/aws_iam_role_policy_nodes.unmanaged.example.com_policy")}"
 }
 
-resource "aws_internet_gateway" "unmanaged-example-com" {
-  vpc_id = "${aws_vpc.unmanaged-example-com.id}"
-
-  tags = {
-    KubernetesCluster                             = "unmanaged.example.com"
-    Name                                          = "unmanaged.example.com"
-    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
-  }
-}
-
 resource "aws_key_pair" "kubernetes-unmanaged-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {
   key_name   = "kubernetes.unmanaged.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57"
   public_key = "${file("${path.module}/data/aws_key_pair_kubernetes.unmanaged.example.com-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")}"
@@ -375,24 +365,6 @@ resource "aws_launch_configuration" "nodes-unmanaged-example-com" {
   enable_monitoring = false
 }
 
-resource "aws_route" "0-0-0-0--0" {
-  route_table_id         = "${aws_route_table.unmanaged-example-com.id}"
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = "${aws_internet_gateway.unmanaged-example-com.id}"
-}
-
-resource "aws_route" "private-us-test-1a-0-0-0-0--0" {
-  route_table_id         = "${aws_route_table.private-us-test-1a-unmanaged-example-com.id}"
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = "nat-a2345678"
-}
-
-resource "aws_route" "private-us-test-1b-0-0-0-0--0" {
-  route_table_id         = "${aws_route_table.private-us-test-1b-unmanaged-example-com.id}"
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = "nat-b2345678"
-}
-
 resource "aws_route53_record" "api-unmanaged-example-com" {
   name = "api.unmanaged.example.com"
   type = "A"
@@ -406,62 +378,9 @@ resource "aws_route53_record" "api-unmanaged-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
-resource "aws_route_table" "private-us-test-1a-unmanaged-example-com" {
-  vpc_id = "${aws_vpc.unmanaged-example-com.id}"
-
-  tags = {
-    KubernetesCluster                             = "unmanaged.example.com"
-    Name                                          = "private-us-test-1a.unmanaged.example.com"
-    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
-    "kubernetes.io/kops/role"                     = "private-us-test-1a"
-  }
-}
-
-resource "aws_route_table" "private-us-test-1b-unmanaged-example-com" {
-  vpc_id = "${aws_vpc.unmanaged-example-com.id}"
-
-  tags = {
-    KubernetesCluster                             = "unmanaged.example.com"
-    Name                                          = "private-us-test-1b.unmanaged.example.com"
-    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
-    "kubernetes.io/kops/role"                     = "private-us-test-1b"
-  }
-}
-
-resource "aws_route_table" "unmanaged-example-com" {
-  vpc_id = "${aws_vpc.unmanaged-example-com.id}"
-
-  tags = {
-    KubernetesCluster                             = "unmanaged.example.com"
-    Name                                          = "unmanaged.example.com"
-    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
-    "kubernetes.io/kops/role"                     = "public"
-  }
-}
-
-resource "aws_route_table_association" "private-us-test-1a-unmanaged-example-com" {
-  subnet_id      = "${aws_subnet.us-test-1a-unmanaged-example-com.id}"
-  route_table_id = "${aws_route_table.private-us-test-1a-unmanaged-example-com.id}"
-}
-
-resource "aws_route_table_association" "private-us-test-1b-unmanaged-example-com" {
-  subnet_id      = "${aws_subnet.us-test-1b-unmanaged-example-com.id}"
-  route_table_id = "${aws_route_table.private-us-test-1b-unmanaged-example-com.id}"
-}
-
-resource "aws_route_table_association" "utility-us-test-1a-unmanaged-example-com" {
-  subnet_id      = "${aws_subnet.utility-us-test-1a-unmanaged-example-com.id}"
-  route_table_id = "${aws_route_table.unmanaged-example-com.id}"
-}
-
-resource "aws_route_table_association" "utility-us-test-1b-unmanaged-example-com" {
-  subnet_id      = "${aws_subnet.utility-us-test-1b-unmanaged-example-com.id}"
-  route_table_id = "${aws_route_table.unmanaged-example-com.id}"
-}
-
 resource "aws_security_group" "api-elb-unmanaged-example-com" {
   name        = "api-elb.unmanaged.example.com"
-  vpc_id      = "${aws_vpc.unmanaged-example-com.id}"
+  vpc_id      = "vpc-12345678"
   description = "Security group for api ELB"
 
   tags = {
@@ -473,7 +392,7 @@ resource "aws_security_group" "api-elb-unmanaged-example-com" {
 
 resource "aws_security_group" "bastion-elb-unmanaged-example-com" {
   name        = "bastion-elb.unmanaged.example.com"
-  vpc_id      = "${aws_vpc.unmanaged-example-com.id}"
+  vpc_id      = "vpc-12345678"
   description = "Security group for bastion ELB"
 
   tags = {
@@ -485,7 +404,7 @@ resource "aws_security_group" "bastion-elb-unmanaged-example-com" {
 
 resource "aws_security_group" "bastion-unmanaged-example-com" {
   name        = "bastion.unmanaged.example.com"
-  vpc_id      = "${aws_vpc.unmanaged-example-com.id}"
+  vpc_id      = "vpc-12345678"
   description = "Security group for bastion"
 
   tags = {
@@ -497,7 +416,7 @@ resource "aws_security_group" "bastion-unmanaged-example-com" {
 
 resource "aws_security_group" "masters-unmanaged-example-com" {
   name        = "masters.unmanaged.example.com"
-  vpc_id      = "${aws_vpc.unmanaged-example-com.id}"
+  vpc_id      = "vpc-12345678"
   description = "Security group for masters"
 
   tags = {
@@ -509,7 +428,7 @@ resource "aws_security_group" "masters-unmanaged-example-com" {
 
 resource "aws_security_group" "nodes-unmanaged-example-com" {
   name        = "nodes.unmanaged.example.com"
-  vpc_id      = "${aws_vpc.unmanaged-example-com.id}"
+  vpc_id      = "vpc-12345678"
   description = "Security group for nodes"
 
   tags = {
@@ -682,7 +601,7 @@ resource "aws_security_group_rule" "ssh-external-to-bastion-elb-0-0-0-0--0" {
 }
 
 resource "aws_subnet" "us-test-1a-unmanaged-example-com" {
-  vpc_id            = "${aws_vpc.unmanaged-example-com.id}"
+  vpc_id            = "vpc-12345678"
   cidr_block        = "172.20.32.0/19"
   availability_zone = "us-test-1a"
 
@@ -696,7 +615,7 @@ resource "aws_subnet" "us-test-1a-unmanaged-example-com" {
 }
 
 resource "aws_subnet" "us-test-1b-unmanaged-example-com" {
-  vpc_id            = "${aws_vpc.unmanaged-example-com.id}"
+  vpc_id            = "vpc-12345678"
   cidr_block        = "172.20.64.0/19"
   availability_zone = "us-test-1b"
 
@@ -710,7 +629,7 @@ resource "aws_subnet" "us-test-1b-unmanaged-example-com" {
 }
 
 resource "aws_subnet" "utility-us-test-1a-unmanaged-example-com" {
-  vpc_id            = "${aws_vpc.unmanaged-example-com.id}"
+  vpc_id            = "vpc-12345678"
   cidr_block        = "172.20.4.0/22"
   availability_zone = "us-test-1a"
 
@@ -724,7 +643,7 @@ resource "aws_subnet" "utility-us-test-1a-unmanaged-example-com" {
 }
 
 resource "aws_subnet" "utility-us-test-1b-unmanaged-example-com" {
-  vpc_id            = "${aws_vpc.unmanaged-example-com.id}"
+  vpc_id            = "vpc-12345678"
   cidr_block        = "172.20.8.0/22"
   availability_zone = "us-test-1b"
 
@@ -735,34 +654,6 @@ resource "aws_subnet" "utility-us-test-1b-unmanaged-example-com" {
     "kubernetes.io/cluster/unmanaged.example.com" = "owned"
     "kubernetes.io/role/elb"                      = "1"
   }
-}
-
-resource "aws_vpc" "unmanaged-example-com" {
-  cidr_block           = "172.20.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-
-  tags = {
-    KubernetesCluster                             = "unmanaged.example.com"
-    Name                                          = "unmanaged.example.com"
-    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
-  }
-}
-
-resource "aws_vpc_dhcp_options" "unmanaged-example-com" {
-  domain_name         = "us-test-1.compute.internal"
-  domain_name_servers = ["AmazonProvidedDNS"]
-
-  tags = {
-    KubernetesCluster                             = "unmanaged.example.com"
-    Name                                          = "unmanaged.example.com"
-    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
-  }
-}
-
-resource "aws_vpc_dhcp_options_association" "unmanaged-example-com" {
-  vpc_id          = "${aws_vpc.unmanaged-example-com.id}"
-  dhcp_options_id = "${aws_vpc_dhcp_options.unmanaged-example-com.id}"
 }
 
 terraform = {
