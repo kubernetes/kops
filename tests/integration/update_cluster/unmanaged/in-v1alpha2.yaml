@@ -21,6 +21,7 @@ spec:
   kubernetesVersion: v1.8.2
   masterInternalName: api.internal.unmanaged.example.com
   masterPublicName: api.unmanaged.example.com
+  networkID: vpc-12345678
   networkCIDR: 172.20.0.0/16
   networking:
     weave: {}
@@ -32,20 +33,22 @@ spec:
     nodes: private
   subnets:
   - cidr: 172.20.32.0/19
-    egress: nat-a2345678
+    egress: External
     name: us-test-1a
     type: Private
     zone: us-test-1a
   - cidr: 172.20.64.0/19
-    egress: nat-b2345678
+    egress: External
     name: us-test-1b
     type: Private
     zone: us-test-1b
   - cidr: 172.20.4.0/22
+    egress: External
     name: utility-us-test-1a
     type: Utility
     zone: us-test-1a
   - cidr: 172.20.8.0/22
+    egress: External
     name: utility-us-test-1b
     type: Utility
     zone: us-test-1b
