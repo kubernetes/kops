@@ -266,6 +266,26 @@ Will make kube-scheduler use the scheduler policy from configmap "scheduler-poli
 
 Note that as of Kubernetes 1.8.0 kube-scheduler does not reload its configuration from configmap automatically. You will need to ssh into the master instance and restart the Docker container manually.
 
+### kubeDNS
+
+This block contains configurations for `kube-dns`.
+
+ ```yaml
+ spec:
+   kubeDNS:
+     provider: KubeDNS
+```
+
+Specifying KubeDNS will install kube-dns as the default service discovery.
+
+ ```yaml
+ spec:
+   kubeDNS:
+     provider: CoreDNS
+```
+
+This will install [CoreDNS](https://coredns.io/) instead of kube-dns.
+
 ### kubeControllerManager
 This block contains configurations for the `controller-manager`.
 
