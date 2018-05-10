@@ -177,7 +177,7 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 			}
 			formatted, err := yaml.Marshal(&data)
 			if err != nil {
-				return fmt.Errorf("unable to marhshal formated content to yaml: %s", err)
+				return fmt.Errorf("unable to marhshal formatted content to yaml: %s", err)
 			}
 			documents = append(documents, string(formatted))
 		}
