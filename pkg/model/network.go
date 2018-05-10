@@ -270,7 +270,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					Lifecycle: b.Lifecycle,
 					ID:        s(b.Cluster.Spec.Subnets[i].Egress),
 					Shared:    fi.Bool(true),
-					Tags:      b.CloudTags(zone+"."+b.ClusterName(), true),
+					Tags:      nil, // We don't need to add tags here
 				}
 
 				c.AddTask(in)

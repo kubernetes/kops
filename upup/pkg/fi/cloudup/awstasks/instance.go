@@ -156,7 +156,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		actual.IAMInstanceProfile = &IAMInstanceProfile{Name: nameFromIAMARN(i.IamInstanceProfile.Arn)}
 	}
 
-	actual.Tags = mapEC2TagsToMap(i.Tags)
+	actual.Tags = intersectTags(i.Tags, e.Tags)
 
 	actual.Lifecycle = e.Lifecycle
 	actual.Shared = e.Shared
@@ -195,10 +195,6 @@ func nameFromIAMARN(arn *string) *string {
 }
 
 func (e *Instance) Run(c *fi.Context) error {
-	cloud := c.Cloud.(awsup.AWSCloud)
-
-	cloud.AddTags(e.Name, e.Tags)
-
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
