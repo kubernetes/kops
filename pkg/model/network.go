@@ -40,6 +40,10 @@ type zoneInfo struct {
 	PrivateSubnets []*kops.ClusterSubnetSpec
 }
 
+func isUnmanaged(subnet *kops.ClusterSubnetSpec) bool {
+	return subnet.Egress == kops.EgressExternal
+}
+
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	sharedVPC := b.Cluster.SharedVPC()
 	vpcName := b.ClusterName()
@@ -112,6 +116,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// TODO: would be good to create these as shared, to verify them
 	}
 
+	allSubnetsUnmanaged := true
 	allSubnetsShared := true
 	allSubnetsSharedInZone := make(map[string]bool)
 	for i := range b.Cluster.Spec.Subnets {
@@ -126,11 +131,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			allSubnetsShared = false
 			allSubnetsSharedInZone[subnetSpec.Zone] = false
 		}
+
+		if !isUnmanaged(subnetSpec) {
+			allSubnetsUnmanaged = false
+		}
 	}
 
 	// We always have a public route table, though for private networks it is only used for NGWs and ELBs
 	var publicRouteTable *awstasks.RouteTable
-	{
+	if !allSubnetsUnmanaged {
 		// The internet gateway is the main entry point to the cluster.
 		igw := &awstasks.InternetGateway{
 			Name:      s(b.ClusterName()),
@@ -209,7 +218,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		switch subnetSpec.Type {
 		case kops.SubnetTypePublic, kops.SubnetTypeUtility:
-			if !sharedSubnet {
+			if !sharedSubnet && !isUnmanaged(subnetSpec) {
 				c.AddTask(&awstasks.RouteTableAssociation{
 					Name:       s(subnetSpec.Name + "." + b.ClusterName()),
 					Lifecycle:  b.Lifecycle,
@@ -221,7 +230,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		case kops.SubnetTypePrivate:
 			// Private subnets get a Network Gateway, and their own route table to associate them with the network gateway
 
-			if !sharedSubnet {
+			if !sharedSubnet && !isUnmanaged(subnetSpec) {
 				// Private Subnet Route Table Associations
 				//
 				// Map the Private subnet to the Private route table
@@ -256,6 +265,17 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		egress := info.PrivateSubnets[0].Egress
 		publicIP := info.PrivateSubnets[0].PublicIP
+
+		allUnmanaged := true
+		for _, subnetSpec := range info.PrivateSubnets {
+			if !isUnmanaged(subnetSpec) {
+				allUnmanaged = false
+			}
+		}
+		if allUnmanaged {
+			glog.V(4).Infof("skipping network configuration in zone %s - all subnets unmanaged", zone)
+			continue
+		}
 
 		// Verify we don't have mixed values for egress/publicIP - the code doesn't handle it
 		for _, subnet := range info.PrivateSubnets {

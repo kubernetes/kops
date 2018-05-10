@@ -372,6 +372,9 @@ const (
 	SubnetTypeUtility SubnetType = "Utility"
 )
 
+// EgressExternal means that egress configuration is done externally (preconfigured)
+const EgressExternal = "External"
+
 // ClusterSubnetSpec defines a subnet
 type ClusterSubnetSpec struct {
 	// Name is the name of the subnet
