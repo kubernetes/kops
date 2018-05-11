@@ -137,6 +137,10 @@ type RollingUpdateOptions struct {
 	// InstanceGroups is the list of instance groups to rolling-update;
 	// if not specified, all instance groups will be updated
 	InstanceGroups []string
+
+	// InstanceGroupRoles is the list of roles we should rolling-update
+	// if not specified, all instance groups will be updated
+	InstanceGroupRoles []string
 }
 
 func (o *RollingUpdateOptions) InitDefaults() {
@@ -177,6 +181,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
 	cmd.Flags().BoolVarP(&options.Interactive, "interactive", "i", options.Interactive, "Prompt to continue after each instance is updated")
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
+	cmd.Flags().StringSliceVar(&options.InstanceGroupRoles, "instance-group-roles", options.InstanceGroupRoles, "If specified, only instance groups of the specified role will be updated")
 
 	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 		cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The rolling-update will fail if draining a node fails.")
@@ -277,6 +282,24 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 			}
 
 			filtered = append(filtered, found)
+		}
+
+		instanceGroups = filtered
+
+		// Don't warn if we find more ASGs than IGs
+		warnUnmatched = false
+	}
+
+	if len(options.InstanceGroupRoles) != 0 {
+		var filtered []*api.InstanceGroup
+
+		for _, ig := range instanceGroups {
+			for _, role := range options.InstanceGroupRoles {
+				if ig.Spec.Role == api.InstanceGroupRole(role) {
+					filtered = append(filtered, ig)
+					continue
+				}
+			}
 		}
 
 		instanceGroups = filtered
