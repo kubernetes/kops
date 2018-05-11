@@ -47,6 +47,7 @@ go_library(
         "//pkg/systemd:go_default_library",
         "//pkg/tokens:go_default_library",
         "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/spotinst:go_default_library",
         "//upup/pkg/fi/nodeup/nodetasks:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
         "//util/pkg/exec:go_default_library",

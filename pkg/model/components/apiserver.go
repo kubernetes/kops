@@ -20,13 +20,13 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/spotinst"
 	"k8s.io/kops/upup/pkg/fi/loader"
-
-	"github.com/blang/semver"
-	"github.com/golang/glog"
 )
 
 // KubeAPIServerOptionsBuilder adds options for the apiserver to the model
@@ -152,6 +152,8 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		// for baremetal, we don't specify a cloudprovider to apiserver
 	case kops.CloudProviderOpenstack:
 		c.CloudProvider = "openstack"
+	case kops.CloudProviderSpotinst:
+		c.CloudProvider = string(spotinst.GuessCloudFromClusterSpec(clusterSpec))
 	default:
 		return fmt.Errorf("unknown cloudprovider %q", clusterSpec.CloudProvider)
 	}

@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/spotinst"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
 	"github.com/blang/semver"
@@ -324,6 +325,9 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 
 	if t.Cluster.Spec.CloudProvider != "" {
 		f.Cloud = fi.String(t.Cluster.Spec.CloudProvider)
+		if kops.CloudProviderID(t.Cluster.Spec.CloudProvider) == kops.CloudProviderSpotinst {
+			f.Cloud = fi.String(string(spotinst.GuessCloudFromClusterSpec(&t.Cluster.Spec)))
+		}
 
 		if f.DNSProvider == nil {
 			switch kops.CloudProviderID(t.Cluster.Spec.CloudProvider) {

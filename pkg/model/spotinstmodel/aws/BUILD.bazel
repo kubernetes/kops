@@ -1,0 +1,32 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "api_loadbalancer.go",
+        "autoscaling.go",
+        "bastion.go",
+        "context.go",
+        "dns.go",
+        "external_access.go",
+        "firewall.go",
+        "iam.go",
+        "master_volumes.go",
+        "network.go",
+        "sshkey.go",
+    ],
+    importpath = "k8s.io/kops/pkg/model/spotinstmodel/aws",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/dns:go_default_library",
+        "//pkg/model:go_default_library",
+        "//pkg/model/iam:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/awsup:go_default_library",
+        "//upup/pkg/fi/cloudup/spotinsttasks/aws:go_default_library",
+        "//upup/pkg/fi/fitasks:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+    ],
+)
