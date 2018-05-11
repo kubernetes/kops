@@ -178,7 +178,7 @@ https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
 ## Office Hours
 
-Kops maintainers set aside one hour every other week for **public** office hours. Office hours are hosted on a [zoom video chat](https://zoom.us/my/k8ssigaws) on Fridays at [5 pm UTC/12 noon ET/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12), on odd week numbered weeks. We strive to get to know and help developers either working on `kops` or interested in getting to know more about the project.
+Kops maintainers set aside one hour every other week for **public** office hours. Office hours are hosted on a [zoom video chat](https://zoom.us/my/k8ssigaws) on Fridays at [12 noon (Eastern Time)/9 am (Pacific Time)](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12), on odd week numbered weeks. We strive to get to know and help developers either working on `kops` or interested in getting to know more about the project.
 
 
 ### Open Office Hours Topics
@@ -195,7 +195,7 @@ This time is focused on developers, although we will never turn a courteous part
 
 We encourage you to reach out **beforehand** if you plan on attending. You're welcome to join any session, and please feel free to add an item to the  [agenda](https://docs.google.com/document/d/12QkyL0FkNbWPcLFxxRGSPt_tNPBHbmni3YLY-lHny7E/edit) where we track notes from office hours.
 
-Office hours are hosted on [Zoom](https://zoom.us/my/k8ssigaws) video conference, held on Fridays at [5 pm UTC/12 noon ET/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) every other odd numbered week.
+Office hours are hosted on [Zoom](https://zoom.us/my/k8ssigaws) video conference, held on Fridays at [12 noon (Eastern Time)/9 am (Pacific Time)](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) every other odd numbered week.
 
 You can check your week number using:
 
