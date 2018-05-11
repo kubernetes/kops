@@ -303,12 +303,13 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 	errOut := os.Stderr
 
 	options := &cmd.DrainOptions{
-		Factory:          f,
-		Out:              out,
-		IgnoreDaemonsets: true,
-		Force:            true,
-		DeleteLocalData:  true,
-		ErrOut:           errOut,
+		Factory:            f,
+		Out:                out,
+		IgnoreDaemonsets:   true,
+		Force:              true,
+		DeleteLocalData:    true,
+		ErrOut:             errOut,
+		GracePeriodSeconds: -1,
 	}
 
 	cmd := cmd.NewCmdDrain(f, out, errOut)
