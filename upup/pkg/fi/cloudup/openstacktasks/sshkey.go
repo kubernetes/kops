@@ -87,9 +87,16 @@ func (e *SSHKey) Run(c *fi.Context) error {
 }
 
 func (s *SSHKey) CheckChanges(a, e, changes *SSHKey) error {
-	if a != nil {
+	if a == nil {
+		if e.Name == nil {
+			return fi.RequiredField("Name")
+		}
+	} else {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
+		}
+		if changes.KeyFingerprint != nil {
+			return fi.CannotChangeField("KeyFingerprint")
 		}
 	}
 	return nil
