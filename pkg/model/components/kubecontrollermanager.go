@@ -105,7 +105,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		kcm.ClusterName = gce.SafeClusterName(b.Context.ClusterName)
 
 	case kops.CloudProviderDO:
-		kcm.CloudProvider = "external"
+		// cloud provider is specified by digitalocean-cloud-controller-manager
 
 	case kops.CloudProviderVSphere:
 		kcm.CloudProvider = "vsphere"
