@@ -26,24 +26,34 @@ import (
 // FindRegion determines the region from the zones specified in the cluster
 func FindRegion(cluster *kops.Cluster) (string, error) {
 
-	region := ""
+	zones := []string{}
 	for _, subnet := range cluster.Spec.Subnets {
-		zoneSplit := strings.Split(subnet.Zone, "-")
+		zones = append(zones, subnet.Zone)
+	}
+	return getRegionByZones(zones)
+
+}
+
+func getRegionByZones(zones []string) (string, error) {
+	region := ""
+
+	for _, zone := range zones {
+		zoneSplit := strings.Split(zone, "-")
 		zoneRegion := ""
 		if len(zoneSplit) != 3 {
-			return "", fmt.Errorf("invalid ALI zone: %q in subnet %q", subnet.Zone, subnet.Name)
+			return "", fmt.Errorf("invalid ALI zone: %q ", zone)
 		}
 
 		if len(zoneSplit[2]) == 1 {
 			zoneRegion = zoneSplit[0] + "-" + zoneSplit[1]
 		} else if len(zoneSplit[2]) == 2 {
-			zoneRegion = subnet.Zone[:len(subnet.Zone)-1]
+			zoneRegion = zone[:len(zone)-1]
 		} else {
-			return "", fmt.Errorf("invalid ALI zone: %q in subnet %q", subnet.Zone, subnet.Name)
+			return "", fmt.Errorf("invalid ALI zone: %q ", zone)
 		}
 
 		if region != "" && zoneRegion != region {
-			return "", fmt.Errorf("Clusters cannot span multiple regions (found zone %q, but region is %q)", subnet.Zone, region)
+			return "", fmt.Errorf("clusters cannot span multiple regions (found zone %q, but region is %q)", zone, region)
 		}
 		region = zoneRegion
 	}
