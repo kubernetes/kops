@@ -106,7 +106,7 @@ spec:
 ## Creating a new instance group
 
 Suppose you want to add a new group of nodes, perhaps with a different instance type.  You do this using `kops create ig <InstanceGroupName> --subnet <zone(s)>`. Currently the
-`--subnet` flag is required, and it recieves the zone(s) of the subnet(s) in which the instance group will be. The command opens an editor with a skeleton configuration, allowing you to edit it before creation.
+`--subnet` flag is required, and it receives the zone(s) of the subnet(s) in which the instance group will be. The command opens an editor with a skeleton configuration, allowing you to edit it before creation.
 
 So the procedure is:
 
