@@ -167,9 +167,11 @@ spec:
   ```
 
 
-### Shared NAT Gateways
+### Shared NAT Egress
 
 On AWS in private [topology](topology.md), `kops` creates one NAT Gateway (NGW) per AZ. If your shared VPC is already set up with an NGW in the subnet that `kops` deploys private resources to, it is possible to specify the ID and have `kops`/`kubernetes` use it.
+
+If you don't want to use NAT Gateways but have setup [EC2 NAT Instances](https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_NAT_Instance.html) in your VPC that you can share, it's possible to specify the IDs of said instances and have `kops`/`kubernetes` use them.
 
 After creating a basic cluster spec, edit your cluster to specify NGW:
 
@@ -181,6 +183,11 @@ spec:
   - cidr: 10.20.64.0/21
     name: us-east-1a
     egress: nat-987654321
+    type: Private
+    zone: us-east-1a
+  - cidr: 10.20.96.0/21
+    name: us-east-1b
+    egress: i-987654321
     type: Private
     zone: us-east-1a
   - cidr: 10.20.32.0/21
@@ -197,6 +204,8 @@ Please note:
   in their route table.  Private subnets should not have public IPs, and will typically have a NAT gateway
   configured as their default route.
 * kops won't create a route-table at all if we're not creating subnets.
+* In the example above the first subnet is using a shared NAT Gateway while the
+  second one is using a shared NAT Instance
 
 ### Proxy VPC Egress
 
