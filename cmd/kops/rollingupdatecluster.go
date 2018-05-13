@@ -461,6 +461,4 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 			return nil
 		}
 	}
-
-	return nil
 }

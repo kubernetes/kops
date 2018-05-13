@@ -261,6 +261,14 @@ func (c *aliCloudImplementation) GetClusterTags() map[string]string {
 	return c.tags
 }
 
+func (c *aliCloudImplementation) GetCloudGroupStatus(*kops.Cluster, string) (int, int, error) {
+	return 0, 0, fmt.Errorf("aliCloudImplementation::GetCloudGroupStatus not implemented")
+}
+
+func (c *aliCloudImplementation) SetTerminationPolicy(*kops.Cluster, string, []cloudinstances.TerminationPolicy) error {
+	return fmt.Errorf("aliCloudImplementation::SetTerminationPolicy not implemented")
+}
+
 func ZoneToVSwitchID(VPCID string, zones []string, vswitchIDs []string) (map[string]string, error) {
 	regionId, err := getRegionByZones(zones)
 	if err != nil {
