@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -45,8 +46,8 @@ var (
 	createLong = templates.LongDesc(i18n.T(`
 		Create a resource:` + validResources +
 		`
-	Create a cluster, instancegroup or secret using command line parameters
-	or YAML configuration specification files.
+	Create a cluster, instancegroup or secret using command line parameters, 
+	YAML configuration specification files, or stdin.
 	(Note: secrets cannot be created from YAML config files yet).
 	`))
 
@@ -57,6 +58,9 @@ var (
 
 	# Create secret from secret spec file
 	kops create -f secret.yaml
+
+	# Create an instancegroup based on the YAML passed into stdin.
+	cat instancegroup.yaml | kops create -f -
 
 	# Create a cluster in AWS
 	kops create cluster --name=kubernetes-cluster.example.com \
@@ -125,11 +129,19 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 	var sb bytes.Buffer
 	fmt.Fprintf(&sb, "\n")
 	for _, f := range c.Filenames {
-		contents, err := vfs.Context.ReadFile(f)
-		if err != nil {
-			return fmt.Errorf("error reading file %q: %v", f, err)
+		var contents []byte
+		if f == "-" {
+			file := os.Stdin
+			defer file.Close()
+			buf := new(bytes.Buffer)
+			buf.ReadFrom(file)
+			contents = buf.Bytes()
+		} else {
+			contents, err = vfs.Context.ReadFile(f)
+			if err != nil {
+				return fmt.Errorf("error reading file %q: %v", f, err)
+			}
 		}
-
 		// TODO: this does not support a JSON array
 		sections := bytes.Split(contents, []byte("\n---\n"))
 		for _, section := range sections {
