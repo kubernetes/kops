@@ -2549,6 +2549,15 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.StreamingConnectionIdleTimeout != nil {
+		in, out := &in.StreamingConnectionIdleTimeout, &out.StreamingConnectionIdleTimeout
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
 	return
 }
 
