@@ -390,7 +390,7 @@ type ClusterSubnetSpec struct {
 	Egress string `json:"egress,omitempty"`
 	// Type define which one if the internal types (public, utility, private) the network is
 	Type SubnetType `json:"type,omitempty"`
-	// PublicIP to attatch to NatGateway
+	// PublicIP to attach to NatGateway
 	PublicIP string `json:"publicIP,omitempty"`
 }
 
