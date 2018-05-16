@@ -28,9 +28,9 @@ spec:
         env:
           - name: ECS_CNI_LOGLEVEL
             value: DEBUG
-          {{- if .Networking.AmazonVPC.vethprefix }}
+          {{- if .Networking.AmazonVPC.Vethprefix }}
           - name: EKS_CNI_VETHPREFIX
-            value: "{{ .Networking.AmazonVPC.vethprefix }}"
+            value: "{{ .Networking.AmazonVPC.Vethprefix }}"
           {{- end }}
         resources:
           requests:
