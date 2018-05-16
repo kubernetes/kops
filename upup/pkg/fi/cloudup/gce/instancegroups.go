@@ -100,7 +100,7 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 
 	project := c.Project()
 	ctx := context.Background()
-	nodesByExternalID := cloudinstances.GetNodeMap(nodes)
+       nodesByProviderID := cloudinstances.GetNodeMap(nodes, cluster)
 
 	// There is some code duplication with resources/gce.go here, but more in the structure than a straight copy-paste
 
@@ -171,7 +171,7 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 						CloudInstanceGroup: g,
 					}
 
-					node := nodesByExternalID[strconv.FormatUint(i.Id, 10)]
+                                       node := nodesByProviderID[strconv.FormatUint(i.Id, 10)]
 					if node != nil {
 						cm.Node = node
 					} else {
