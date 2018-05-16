@@ -123,9 +123,9 @@ type RomanaNetworkingSpec struct {
 }
 
 // AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking
-type AmazonVPCNetworkingSpec struct{
+type AmazonVPCNetworkingSpec struct {
 	// Allow passing the vethprefix to work with calico networking policies
-        // https://aws.amazon.com/blogs/opensource/networking-foundation-eks-aws-cni-calico
+	// https://aws.amazon.com/blogs/opensource/networking-foundation-eks-aws-cni-calico
 	vethprefix string `json:"vethprefix,omitempty"`
 }
 
