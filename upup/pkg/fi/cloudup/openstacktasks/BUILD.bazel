@@ -20,7 +20,6 @@ go_library(
     importpath = "k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/pki:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/openstack:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
