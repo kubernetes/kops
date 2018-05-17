@@ -23,7 +23,11 @@ spec:
       - key: CriticalAddonsOnly
         operator: Exists
       containers:
+      {{- if .Networking.AmazonVPC.Version }}
+      - image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:{{ .Networking.AmazonVPC.Version }}
+      {{- else }}
       - image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:0.1.2
+      {{- end }}
         name: aws-node
         env:
           - name: ECS_CNI_LOGLEVEL

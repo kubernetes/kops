@@ -127,6 +127,8 @@ type AmazonVPCNetworkingSpec struct {
 	// Allow passing the vethprefix to work with calico networking policies
 	// https://aws.amazon.com/blogs/opensource/networking-foundation-eks-aws-cni-calico
 	Vethprefix string `json:"vethprefix,omitempty"`
+	// Allow specifying the desired version
+	Version string `json:"version,omitempty"`
 }
 
 // CiliumNetworkingSpec declares that we want Cilium networking
