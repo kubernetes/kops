@@ -617,7 +617,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Kuberouter != nil {
 		key := "networking.kuberouter"
-		version := "0.1.2-kops.1"
+		version := "0.1.1-kops.1"
 
 		{
 			location := key + "/k8s-1.6.yaml"
@@ -657,7 +657,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.AmazonVPC != nil {
 		key := "networking.amazon-vpc-routed-eni"
-		version := "0.1.1-kops.1"
+		version := "0.1.2-kops.1"
 
 		{
 			location := fmt.Sprintf("%v/%v.yaml", key, version)
