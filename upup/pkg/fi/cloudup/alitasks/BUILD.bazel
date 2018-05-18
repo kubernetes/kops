@@ -3,6 +3,8 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "disk.go",
+        "disk_fitask.go",
         "vpc.go",
         "vpc_fitask.go",
         "vswitch.go",
