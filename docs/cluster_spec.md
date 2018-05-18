@@ -252,6 +252,23 @@ spec:
     enableCustomMetrics: true
 ```
 
+#### Setting kubelet configurations together with the Amazon VPC backend
+Setting kubelet configurations together with the networking Amazon VPC backend requires to also set the `cloudProvider: aws` setting in this block. Example:
+
+```yaml
+spec:
+  kubelet:
+    enableCustomMetrics: true
+    cloudProvider: aws
+...
+...
+  cloudProvider: aws
+...
+...
+  networking:
+    amazonvpc: {}
+```
+
 ### kubeScheduler
 
 This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/
