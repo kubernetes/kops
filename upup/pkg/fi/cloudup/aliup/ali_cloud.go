@@ -20,10 +20,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 
-	common "github.com/denverdino/aliyungo/common"
-	ecs "github.com/denverdino/aliyungo/ecs"
+	"github.com/golang/glog"
+
+	"github.com/denverdino/aliyungo/common"
+	"github.com/denverdino/aliyungo/ecs"
 
 	"k8s.io/api/core/v1"
 	prj "k8s.io/kops"
@@ -43,6 +44,11 @@ type ALICloud interface {
 
 	EcsClient() *ecs.Client
 	Region() string
+	AddClusterTags(tags map[string]string)
+	GetTags(resourceId string, resourceType string) (map[string]string, error)
+	CreateTags(resourceId string, resourceType string, tags map[string]string) error
+	RemoveTags(resourceId string, resourceType string, tags map[string]string) error
+	GetClusterTags() map[string]string
 }
 
 type aliCloudImplementation struct {
@@ -121,12 +127,12 @@ func (c *aliCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 		VpcId:    id,
 		RegionId: common.Region(c.Region()),
 	}
-	vswitcheList, _, err := c.EcsClient().DescribeVSwitches(describeVSwitchesArgs)
+	vswitchList, _, err := c.EcsClient().DescribeVSwitches(describeVSwitchesArgs)
 	if err != nil {
 		return nil, fmt.Errorf("error listing VSwitchs: %v", err)
 	}
 
-	for _, vswitch := range vswitcheList {
+	for _, vswitch := range vswitchList {
 		s := &fi.SubnetInfo{
 			ID:   vswitch.VSwitchId,
 			Zone: vswitch.ZoneId,
@@ -140,7 +146,100 @@ func (c *aliCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 }
 
 func (c *aliCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return nil, fmt.Errorf("GetCloudGroups not implemented on aliCloud")
+	return nil, errors.New("GetCloudGroups not implemented on aliCloud")
+}
+
+// GetTags will get the specified resource's tags.
+func (c *aliCloudImplementation) GetTags(resourceId string, resourceType string) (map[string]string, error) {
+	if resourceId == "" {
+		return nil, errors.New("resourceId not provided to GetTags")
+	}
+	tags := map[string]string{}
+
+	request := &ecs.DescribeTagsArgs{
+		RegionId:     common.Region(c.Region()),
+		ResourceType: ecs.TagResourceType(resourceType), //image, instance, snapshot or disk
+		ResourceId:   resourceId,
+	}
+	responseTags, _, err := c.EcsClient().DescribeTags(request)
+	if err != nil {
+		return tags, fmt.Errorf("error getting tags on %v: %v", resourceId, err)
+	}
+
+	for _, tag := range responseTags {
+		tags[tag.TagKey] = tag.TagValue
+	}
+	return tags, nil
+
+}
+
+// AddClusterTags will add ClusterTags to resources (in ALI, only disk, instance, snapshot or image can be tagged )
+func (c *aliCloudImplementation) AddClusterTags(tags map[string]string) {
+
+	if c.tags != nil && len(c.tags) != 0 && tags != nil {
+		for k, v := range c.tags {
+			tags[k] = v
+		}
+	}
+}
+
+// CreateTags will add tags to the specified resource.
+func (c *aliCloudImplementation) CreateTags(resourceId string, resourceType string, tags map[string]string) error {
+	if len(tags) == 0 {
+		return nil
+	} else if len(tags) > 10 {
+		glog.V(4).Info("The number of specified resource's tags exceeds 10, resourceId:%q", resourceId)
+	}
+	if resourceId == "" {
+		return errors.New("resourceId not provided to CreateTags")
+	}
+	if resourceType == "" {
+		return errors.New("resourceType not provided to CreateTags")
+	}
+
+	request := &ecs.AddTagsArgs{
+		ResourceId:   resourceId,
+		ResourceType: ecs.TagResourceType(resourceType), //image, instance, snapshot or disk
+		RegionId:     common.Region(c.Region()),
+		Tag:          tags,
+	}
+	err := c.EcsClient().AddTags(request)
+	if err != nil {
+		return fmt.Errorf("error creating tags on %v: %v", resourceId, err)
+	}
+
+	return nil
+}
+
+// RemoveTags will remove tags from the specified resource.
+func (c *aliCloudImplementation) RemoveTags(resourceId string, resourceType string, tags map[string]string) error {
+	if len(tags) == 0 {
+		return nil
+	}
+	if resourceId == "" {
+		return errors.New("resourceId not provided to RemoveTags")
+	}
+	if resourceType == "" {
+		return errors.New("resourceType not provided to RemoveTags")
+	}
+
+	request := &ecs.RemoveTagsArgs{
+		ResourceId:   resourceId,
+		ResourceType: ecs.TagResourceType(resourceType), //image, instance, snapshot or disk
+		RegionId:     common.Region(c.Region()),
+		Tag:          tags,
+	}
+	err := c.EcsClient().RemoveTags(request)
+	if err != nil {
+		return fmt.Errorf("error removing tags on %v: %v", resourceId, err)
+	}
+
+	return nil
+}
+
+// GetClusterTags will get the ClusterTags
+func (c *aliCloudImplementation) GetClusterTags() map[string]string {
+	return c.tags
 }
 
 func ZoneToVSwitchID(VPCID string, zones []string, vswitchIDs []string) (map[string]string, error) {
@@ -190,52 +289,25 @@ func ZoneToVSwitchID(VPCID string, zones []string, vswitchIDs []string) (map[str
 			VSwitchId: VSwitchId,
 		}
 
-		vswitcheList, _, err := aliCloud.EcsClient().DescribeVSwitches(describeVSwitchesArgs)
+		vswitchList, _, err := aliCloud.EcsClient().DescribeVSwitches(describeVSwitchesArgs)
 		if err != nil {
 			return nil, fmt.Errorf("error listing VSwitchs: %v", err)
 		}
 
-		if len(vswitcheList) == 0 {
+		if len(vswitchList) == 0 {
 			return nil, fmt.Errorf("VSwitch %q not found", VSwitchId)
 		}
 
-		if len(vswitcheList) != 1 {
+		if len(vswitchList) != 1 {
 			return nil, fmt.Errorf("found multiple VSwitchs for %q", VSwitchId)
 		}
 
-		zone := vswitcheList[0].ZoneId
+		zone := vswitchList[0].ZoneId
 		if res[zone] != "" {
-			return res, fmt.Errorf("vswitch %s and %s have the same zone", vswitcheList[0].VSwitchId, zone)
+			return res, fmt.Errorf("vswitch %s and %s have the same zone", vswitchList[0].VSwitchId, zone)
 		}
-		res[zone] = vswitcheList[0].VSwitchId
+		res[zone] = vswitchList[0].VSwitchId
 
 	}
 	return res, nil
-}
-
-func getRegionByZones(zones []string) (string, error) {
-	region := ""
-
-	for _, zone := range zones {
-		zoneSplit := strings.Split(zone, "-")
-		zoneRegion := ""
-		if len(zoneSplit) != 3 {
-			return "", fmt.Errorf("invalid ALI zone: %q ", zone)
-		}
-
-		if len(zoneSplit[2]) == 1 {
-			zoneRegion = zoneSplit[0] + "-" + zoneSplit[1]
-		} else if len(zoneSplit[2]) == 2 {
-			zoneRegion = zone[:len(zone)-1]
-		} else {
-			return "", fmt.Errorf("invalid ALI zone: %q ", zone)
-		}
-
-		if region != "" && zoneRegion != region {
-			return "", fmt.Errorf("clusters cannot span multiple regions (found zone %q, but region is %q)", zone, region)
-		}
-		region = zoneRegion
-	}
-
-	return region, nil
 }
