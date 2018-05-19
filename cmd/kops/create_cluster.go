@@ -40,6 +40,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
@@ -1068,7 +1069,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.SSHAccess = c.SSHAccess
 	}
 
-	if err := setOverrides(c.Overrides, cluster, instanceGroups); err != nil {
+	if err := commands.SetClusterFields(c.Overrides, cluster, instanceGroups); err != nil {
 		return err
 	}
 
@@ -1271,29 +1272,6 @@ func parseCloudLabels(s string) (map[string]string, error) {
 		m[pair[0]] = pair[1]
 	}
 	return m, nil
-}
-
-// setOverrides sets override values in the spec
-func setOverrides(overrides []string, cluster *api.Cluster, instanceGroups []*api.InstanceGroup) error {
-	for _, override := range overrides {
-		kv := strings.SplitN(override, "=", 2)
-		if len(kv) != 2 {
-			return fmt.Errorf("unhandled override: %q", override)
-		}
-
-		// For now we have hard-code the values we want to support; we'll get test coverage and then do this properly...
-		switch kv[0] {
-		case "cluster.spec.nodePortAccess":
-			cluster.Spec.NodePortAccess = append(cluster.Spec.NodePortAccess, kv[1])
-		case "cluster.spec.etcdClusters[*].version":
-			for _, etcd := range cluster.Spec.EtcdClusters {
-				etcd.Version = kv[1]
-			}
-		default:
-			return fmt.Errorf("unhandled override: %q", override)
-		}
-	}
-	return nil
 }
 
 func getZoneToSubnetProviderID(VPCID string, region string, subnetIDs []string) (map[string]string, error) {
