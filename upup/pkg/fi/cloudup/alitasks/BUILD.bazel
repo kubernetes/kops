@@ -5,6 +5,8 @@ go_library(
     srcs = [
         "disk.go",
         "disk_fitask.go",
+        "sshkey.go",
+        "sshkey_fitask.go",
         "vpc.go",
         "vpc_fitask.go",
         "vswitch.go",
