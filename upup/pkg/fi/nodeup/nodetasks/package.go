@@ -318,7 +318,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 		if changes.Healthy != nil {
 			if t.HasTag(tags.TagOSFamilyDebian) {
 				args := []string{"dpkg", "--configure", "-a"}
-				glog.Infof("package is not healthy; runnning command %s", args)
+				glog.Infof("package is not healthy; running command %s", args)
 				cmd := exec.Command(args[0], args[1:]...)
 				output, err := cmd.CombinedOutput()
 				if err != nil {
