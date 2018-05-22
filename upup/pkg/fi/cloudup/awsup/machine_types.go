@@ -567,6 +567,13 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          64,
 		EphemeralDisks: []int{1900, 1900, 1900, 1900, 1900, 1900, 1900, 1900},
 	},
+	{
+		Name:           "i3.metal",
+		MemoryGB:       512,
+		ECU:            208,
+		Cores:          72,
+		EphemeralDisks: []int{1900, 1900, 1900, 1900, 1900, 1900, 1900, 1900},
+	},
 
 	// r3 family
 	{
