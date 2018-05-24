@@ -2,16 +2,19 @@
 
 Upgrading kubernetes is very easy with kops, as long as you are using a compatible version of kops.
 The kops `1.8.x` series (for example) supports the kubernetes 1.6, 1.7 and 1.8 series,
-as per the kubernetes deprecation policy.  Older versions of kubernetes will likely still work, but these
-are on a best-effort basis and will have little if any testing.  kops `1.8` will not support the kubernetes
-`1.9` series, and for full support of kubernetes `1.9` it is best to wait for the kops `1.9` series release.
+as per the kubernetes deprecation policy.
+
+Older versions of kubernetes will likely still work, but these
+are on a best-effort basis and will have little if any testing.  kops `1.9` will not support the kubernetes
+`1.10` series, and for full support of kubernetes `1.10` it is best to wait for the kops `1.10` series release. See the [compatibility matrix](../../README.md#compatibility-matrix).
+
 We aim to release the next major version of kops within a few weeks of the equivalent major release of kubernetes,
-so kops `1.9.0` will be released within a few weeks of kubernetes `1.9.0`.  We try to ensure that a 1.9 pre-release
+so kops `1.10.0` will be released within a few weeks of kubernetes `1.10.0`.  We try to ensure that a 1.10 pre-release
 (alpha or beta) is available at the kubernetes release, for early adopters.
 
 Upgrading kubernetes is similar to changing the image on an InstanceGroup, except that the kubernetes version is
 controlled at the cluster level.  So instead of `kops edit ig <name>`, we `kops edit cluster`, and change the
-`kubernetesVersion` field.  `kops edit cluster` will open your editor with the cluster, similar to:
+`kubernetesVersion` field.  `kops edit cluster` will open your editor with the cluster spec loaded, similar to this with a kubernetesVersion of 1.9.0:
 
 ```
 # Please edit the object below. Lines beginning with a '#' will be ignored,
@@ -24,48 +27,14 @@ metadata:
   creationTimestamp: 2017-10-04T03:52:25Z
   name: simple.k8s.local
 spec:
-  api:
-    loadBalancer:
-      type: Public
-  authorization:
-    alwaysAllow: {}
-  channel: stable
-  cloudProvider: gce
-  configBase: gs://kubernetes-clusters/simple.k8s.local
-  etcdClusters:
-  - etcdMembers:
-    - instanceGroup: master-us-central1-a
-      name: a
-    name: main
-  - etcdMembers:
-    - instanceGroup: master-us-central1-a
-      name: a
-    name: events
-  iam:
-    legacy: false
-  kubernetesApiAccess:
-  - 0.0.0.0/0
-  kubernetesVersion: 1.7.2
-  masterInternalName: api.internal.simple.k8s.local
-  masterPublicName: api.simple.k8s.local
-  networking:
-    kubenet: {}
-  nonMasqueradeCIDR: 100.64.0.0/10
-  project: gce-project
-  sshAccess:
-  - 0.0.0.0/0
-  subnets:
-  - name: us-central1
-    region: us-central1
-    type: Public
-  topology:
-    dns:
-      type: Public
-    masters: public
-    nodes: public
+  ...
+  ...
+  kubernetesVersion: 1.9.0
+  ...
+  ...
 ```
 
-Edit `kubernetesVersion`, changing it to `1.7.7` for example.
+Edit `kubernetesVersion`, changing it to `1.9.7` for example.
 
 
 Apply the changes to the cloud infrastructure using `kops update cluster` and `kops update cluster --yes`:
@@ -118,10 +87,10 @@ Restart the instances with `kops rolling-update cluster --yes`.
 ```
 > kubectl get nodes -owide
 NAME                        STATUS    AGE       VERSION   EXTERNAL-IP     OS-IMAGE                             KERNEL-VERSION
-master-us-central1-a-8fcc   Ready     26m       v1.7.7    35.194.56.129   Container-Optimized OS from Google   4.4.35+
-nodes-9cml                  Ready     16m       v1.7.7    35.193.12.73    Ubuntu 16.04.3 LTS                   4.10.0-35-generic
-nodes-km98                  Ready     10m       v1.7.7    35.194.25.144   Ubuntu 16.04.3 LTS                   4.10.0-35-generic
-nodes-wbb2                  Ready     2m        v1.7.7    35.188.177.16   Ubuntu 16.04.3 LTS                   4.10.0-35-generic
+master-us-central1-a-8fcc   Ready     26m       v1.9.7    35.194.56.129   Container-Optimized OS from Google   4.4.35+
+nodes-9cml                  Ready     16m       v1.9.7    35.193.12.73    Ubuntu 16.04.3 LTS                   4.10.0-35-generic
+nodes-km98                  Ready     10m       v1.9.7    35.194.25.144   Ubuntu 16.04.3 LTS                   4.10.0-35-generic
+nodes-wbb2                  Ready     2m        v1.9.7    35.188.177.16   Ubuntu 16.04.3 LTS                   4.10.0-35-generic
 ```
 
 <!-- TODO: Do we drain, validate and then restart -->
