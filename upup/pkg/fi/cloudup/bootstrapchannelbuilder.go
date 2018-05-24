@@ -723,23 +723,44 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	authenticationSelector := map[string]string{"role.kubernetes.io/authentication": "1"}
 
-	if b.cluster.Spec.Authentication != nil && b.cluster.Spec.Authentication.Kopeio != nil {
-		key := "authentication.kope.io"
-		version := "1.0.20171125"
+	if b.cluster.Spec.Authentication != nil {
+		if b.cluster.Spec.Authentication.Kopeio != nil {
+			key := "authentication.kope.io"
+			version := "1.0.20171125"
 
-		{
-			location := key + "/k8s-1.8.yaml"
-			id := "k8s-1.8"
+			{
+				location := key + "/k8s-1.8.yaml"
+				id := "k8s-1.8"
 
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Selector:          authenticationSelector,
-				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.8.0",
-				Id:                id,
-			})
-			manifests[key+"-"+id] = "addons/" + location
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          authenticationSelector,
+					Manifest:          fi.String(location),
+					KubernetesVersion: ">=1.8.0",
+					Id:                id,
+				})
+				manifests[key+"-"+id] = "addons/" + location
+			}
+		}
+		if b.cluster.Spec.Authentication.Heptio != nil {
+			key := "authentication.hept.io"
+			version := "0.1.0"
+
+			{
+				location := key + "/k8s-1.10.yaml"
+				id := "k8s-1.10"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          authenticationSelector,
+					Manifest:          fi.String(location),
+					KubernetesVersion: ">=1.10.0",
+					Id:                id,
+				})
+				manifests[key+"-"+id] = "addons/" + location
+			}
 		}
 	}
 
