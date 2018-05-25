@@ -703,7 +703,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Cilium != nil {
 		key := "networking.cilium.io"
-		version := "v1.0.0-rc3"
+		version := "v1.0-kops.1"
 
 		{
 			id := "k8s-1.7"
