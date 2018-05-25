@@ -5,6 +5,12 @@ go_library(
     srcs = [
         "disk.go",
         "disk_fitask.go",
+        "loadbalancer.go",
+        "loadbalancer_fitask.go",
+        "loadbalancerlistener.go",
+        "loadbalancerlistener_fitask.go",
+        "loadbalancerwhitelist.go",
+        "loadbalancerwhitelist_fitask.go",
         "sshkey.go",
         "sshkey_fitask.go",
         "vpc.go",
@@ -20,6 +26,7 @@ go_library(
         "//upup/pkg/fi/cloudup/terraform:go_default_library",
         "//vendor/github.com/denverdino/aliyungo/common:go_default_library",
         "//vendor/github.com/denverdino/aliyungo/ecs:go_default_library",
+        "//vendor/github.com/denverdino/aliyungo/slb:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
     ],
 )

@@ -228,6 +228,7 @@
     "common",
     "ecs",
     "oss",
+    "slb",
     "util"
   ]
   revision = "2581e433b270014481c9ec66a91368661533febb"
