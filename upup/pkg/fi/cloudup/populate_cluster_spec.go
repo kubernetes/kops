@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/pkg/model/components/etcdmanager"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -303,6 +304,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 			// Note: DefaultOptionsBuilder comes first
 			codeModels = append(codeModels, &components.DefaultsOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.EtcdOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &etcdmanager.EtcdManagerOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.DockerOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.NetworkingOptionsBuilder{Context: optionsContext})
