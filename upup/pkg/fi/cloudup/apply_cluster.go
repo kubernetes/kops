@@ -42,6 +42,7 @@ import (
 	"k8s.io/kops/pkg/model/alimodel"
 	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/pkg/model/components/etcdmanager"
 	"k8s.io/kops/pkg/model/domodel"
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/openstackmodel"
@@ -518,6 +519,11 @@ func (c *ApplyClusterCmd) Run() error {
 					assetBuilder: assetBuilder,
 				},
 				&model.PKIModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+				&etcdmanager.EtcdManagerBuilder{
+					KopsModelContext: modelContext,
+					Lifecycle:        &clusterLifecycle,
+					AssetBuilder:     assetBuilder,
+				},
 			)
 
 			switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -1156,6 +1162,15 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 			Name:   kopsbase.DefaultProtokubeImageName(),
 			Source: location.String(),
 			Hash:   hash.Hex(),
+		}
+	}
+
+	if role == kops.InstanceGroupRoleMaster {
+		for _, etcdCluster := range cluster.Spec.EtcdClusters {
+			if etcdCluster.Manager != nil {
+				p := configBase.Join("manifests/etcd/" + etcdCluster.Name + ".yaml").Path()
+				config.EtcdManifests = append(config.EtcdManifests, p)
+			}
 		}
 	}
 

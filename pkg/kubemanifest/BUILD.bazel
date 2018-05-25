@@ -7,6 +7,7 @@ go_library(
         "images.go",
         "manifest.go",
         "visitor.go",
+        "volumes.go",
     ],
     importpath = "k8s.io/kops/pkg/kubemanifest",
     visibility = ["//visibility:public"],

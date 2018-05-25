@@ -226,6 +226,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.KubectlBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.EtcdBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.LogrotateBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.ManifestsBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.PackagesBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.SecretBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.FirewallBuilder{NodeupModelContext: modelContext})
