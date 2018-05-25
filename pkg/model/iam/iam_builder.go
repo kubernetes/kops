@@ -836,7 +836,6 @@ func addLyftVPCPermissions(p *Policy, resource stringorslice.StringOrSlice, lega
 
 	p.Statement = append(p.Statement,
 		&Statement{
-			Sid:    "cniIpvlanVpcK8s",
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Slice([]string{
 				"ec2:DescribeSubnets",
