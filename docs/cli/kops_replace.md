@@ -19,6 +19,9 @@ kops replace -f FILENAME [flags]
   # Replace a cluster desired configuration using a YAML file
   kops replace -f my-cluster.yaml
   
+  # Replace an instancegroup using YAML passed into stdin.
+  cat instancegroup.yaml | kops replace -f -
+  
   # Note, if the resource does not exist the command will error, use --force to provision resource
   kops replace -f my-cluster.yaml --force
 ```
