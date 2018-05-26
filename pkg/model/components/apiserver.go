@@ -26,7 +26,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 
 	"github.com/blang/semver"
-	"github.com/golang/glog"
 )
 
 // KubeAPIServerOptionsBuilder adds options for the apiserver to the model
@@ -245,14 +244,8 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		c.AnonymousAuth = fi.Bool(false)
 	}
 
-	// We disable the insecure port from 1.6 onwards
-	if b.IsKubernetesGTE("1.6") {
-		c.InsecurePort = 0
-		glog.V(4).Infof("Enabling apiserver insecure port, for healthchecks (issue #43784)")
-		c.InsecurePort = 8080
-	} else {
-		c.InsecurePort = 8080
-	}
+	// FIXME : Disable the insecure port when kubernetes issue #43784 is fixed
+	c.InsecurePort = 8080
 
 	return nil
 }
