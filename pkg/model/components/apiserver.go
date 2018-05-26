@@ -162,6 +162,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	c.LogLevel = 2
 	c.SecurePort = 443
+	c.InsecurePort = 8080
 	c.Address = "127.0.0.1"
 	c.AllowPrivileged = fi.Bool(true)
 	c.ServiceClusterIPRange = clusterSpec.ServiceClusterIPRange
@@ -245,13 +246,12 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		c.AnonymousAuth = fi.Bool(false)
 	}
 
-	// We disable the insecure port from 1.6 onwards
-	if b.IsKubernetesGTE("1.6") {
-		c.InsecurePort = 0
-		glog.V(4).Infof("Enabling apiserver insecure port, for healthchecks (issue #43784)")
-		c.InsecurePort = 8080
-	} else {
-		c.InsecurePort = 8080
+	// We disable the insecure port and address from 1.10 onwards
+	// https://github.com/kubernetes/kubernetes/issues/58951
+	if b.IsKubernetesGTE("1.10") {
+		glog.V(4).Infof("disable apiserver insecure port and address")
+		c.InsecurePort = -1
+		c.Address = "255.255.255.255"
 	}
 
 	return nil
