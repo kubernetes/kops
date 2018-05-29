@@ -465,5 +465,16 @@ func (c *KubeAPIServerConfig) HasAdmissionController(name string) bool {
 		}
 	}
 
+	for _, x := range c.DisableAdmissionPlugins {
+		if x == name {
+			return false
+		}
+	}
+	for _, x := range c.EnableAdmissionPlugins {
+		if x == name {
+			return true
+		}
+	}
+
 	return false
 }
