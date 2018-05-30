@@ -81,3 +81,4 @@ default.etcd
 
 # Ignore awesome_bot markdown links check output
 ab-results-*.json
+addons/prometheus-operator/tmp # cloned git repo
