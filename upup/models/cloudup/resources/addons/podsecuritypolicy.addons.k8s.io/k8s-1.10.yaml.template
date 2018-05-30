@@ -30,7 +30,7 @@ metadata:
   name: kops:kube-system:psp
 rules:
 - apiGroups:
-  - extensions
+  - policy
   resources:
   - podsecuritypolicies
   resourceNames:
