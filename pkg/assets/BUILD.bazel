@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["builder.go"],
+    srcs = [
+        "builder.go",
+        "cache.go",
+    ],
     importpath = "k8s.io/kops/pkg/assets",
     visibility = ["//visibility:public"],
     deps = [

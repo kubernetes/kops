@@ -260,6 +260,11 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 
 	for _, ext := range []string{".sha1"} {
 		hashURL := u.String() + ext
+		hash := getCachedHash(hashURL)
+		if hash != nil {
+			return hash, nil
+		}
+
 		b, err := vfs.Context.ReadFile(hashURL)
 		if err != nil {
 			glog.Infof("error reading hash file %q: %v", hashURL, err)
@@ -268,7 +273,12 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 		hashString := strings.TrimSpace(string(b))
 		glog.V(2).Infof("Found hash %q for %q", hashString, u)
 
-		return hashing.FromString(hashString)
+		if hash, err := hashing.FromString(hashString); err != nil {
+			return nil, err
+		} else {
+			setCachedHash(hashURL, hash)
+			return hash, nil
+		}
 	}
 
 	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
