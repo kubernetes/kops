@@ -210,8 +210,12 @@ type KubeAPIServerConfig struct {
 	InsecurePort int32 `json:"insecurePort,omitempty" flag:"insecure-port"`
 	// Address is the binding address for the kube api
 	Address string `json:"address,omitempty" flag:"address"`
-	// AdmissionControl is a list of admission controllers to user
+	// Deprecated: AdmissionControl is a list of admission controllers to user
 	AdmissionControl []string `json:"admissionControl,omitempty" flag:"admission-control"`
+	// EnableAdmissionPlugins is a list of enabled admission plugins
+	EnableAdmissionPlugins []string `json:"enableAdmissionPlugins,omitempty" flag:"enable-admission-plugins"`
+	// DisableAdmissionPlugins is a list of disabled admission plugins
+	DisableAdmissionPlugins []string `json:"disableAdmissionPlugins,omitempty" flag:"disable-admission-plugins"`
 	// ServiceClusterIPRange is the service address range
 	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty" flag:"service-cluster-ip-range"`
 	// Passed as --service-node-port-range to kube-apiserver. Expects 'startPort-endPort' format. Eg. 30000-33000
@@ -456,6 +460,17 @@ type CloudConfiguration struct {
 // HasAdmissionController checks if a specific admission controller is enabled
 func (c *KubeAPIServerConfig) HasAdmissionController(name string) bool {
 	for _, x := range c.AdmissionControl {
+		if x == name {
+			return true
+		}
+	}
+
+	for _, x := range c.DisableAdmissionPlugins {
+		if x == name {
+			return false
+		}
+	}
+	for _, x := range c.EnableAdmissionPlugins {
 		if x == name {
 			return true
 		}
