@@ -26721,7 +26721,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"admissionControl": {
 							SchemaProps: spec.SchemaProps{
-								Description: "AdmissionControl is a list of admission controllers to user",
+								Description: "AdmissionControl is a list of admission controllers to use",
 								Type:        []string{"array"},
 								Items: &spec.SchemaOrArray{
 									Schema: &spec.Schema{
@@ -30556,7 +30556,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"admissionControl": {
 							SchemaProps: spec.SchemaProps{
-								Description: "AdmissionControl is a list of admission controllers to user",
+								Description: "AdmissionControl is a list of admission controllers to use",
 								Type:        []string{"array"},
 								Items: &spec.SchemaOrArray{
 									Schema: &spec.Schema{
