@@ -142,6 +142,10 @@ func runCompletionBash(out io.Writer, cmd *cobra.Command) error {
 }
 
 func runCompletionZsh(out io.Writer, cmd *cobra.Command) error {
+	zsh_head := "#compdef kops\n"
+
+	out.Write([]byte(zsh_head))
+
 	zsh_initialization := `
 __kops_bash_source() {
 	alias shopt=':'
@@ -284,6 +288,7 @@ __kops_convert_bash_to_zsh() {
 BASH_COMPLETION_EOF
 }
 __kops_bash_source <(__kops_convert_bash_to_zsh)
+_complete kops 2>/dev/null
 `
 	out.Write([]byte(zsh_tail))
 	return nil
