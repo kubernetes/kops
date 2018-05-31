@@ -210,7 +210,7 @@ type KubeAPIServerConfig struct {
 	InsecurePort int32 `json:"insecurePort,omitempty" flag:"insecure-port"`
 	// Address is the binding address for the kube api
 	Address string `json:"address,omitempty" flag:"address"`
-	// Deprecated: AdmissionControl is a list of admission controllers to user
+	// Deprecated: AdmissionControl is a list of admission controllers to use
 	AdmissionControl []string `json:"admissionControl,omitempty" flag:"admission-control"`
 	// EnableAdmissionPlugins is a list of enabled admission plugins
 	EnableAdmissionPlugins []string `json:"enableAdmissionPlugins,omitempty" flag:"enable-admission-plugins"`
