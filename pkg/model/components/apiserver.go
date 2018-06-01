@@ -161,7 +161,14 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	c.LogLevel = 2
 	c.SecurePort = 443
-	c.Address = "127.0.0.1"
+
+	if b.IsKubernetesGTE("1.10") {
+		c.BindAddress = "0.0.0.0"
+		c.InsecureBindAddress = "127.0.0.1"
+	} else {
+		c.Address = "127.0.0.1"
+	}
+
 	c.AllowPrivileged = fi.Bool(true)
 	c.ServiceClusterIPRange = clusterSpec.ServiceClusterIPRange
 	c.EtcdServers = []string{"http://127.0.0.1:4001"}
