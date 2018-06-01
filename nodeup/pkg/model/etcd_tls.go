@@ -22,15 +22,15 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-// CalicoBuilder configures the calico CNI provider
-type CalicoBuilder struct {
+// EtcdTLSBuilder configures the etcd TLS support
+type EtcdTLSBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &CalicoBuilder{}
+var _ fi.ModelBuilder = &EtcdTLSBuilder{}
 
-// Build is responsible for performing any setup to the calico CNI provider
-func (b *CalicoBuilder) Build(c *fi.ModelBuilderContext) error {
+// Build is responsible for performing setup for CNIs that need etcd TLS support
+func (b *EtcdTLSBuilder) Build(c *fi.ModelBuilderContext) error {
 	// @check if tls is enabled and if so, we need to download the client certificates
 	if b.UseEtcdTLS() {
 		name := "calico-client"
