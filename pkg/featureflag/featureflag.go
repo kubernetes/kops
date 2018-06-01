@@ -36,6 +36,9 @@ func Bool(b bool) *bool {
 	return &b
 }
 
+// KeepLaunchConfigurations can be set to prevent garbage collection of old launch configurations
+var KeepLaunchConfigurations = New("KeepLaunchConfigurations", Bool(false))
+
 // DNSPreCreate controls whether we pre-create DNS records.
 var DNSPreCreate = New("DNSPreCreate", Bool(true))
 
