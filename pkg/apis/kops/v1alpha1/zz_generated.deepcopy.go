@@ -1834,6 +1834,15 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 			**out = **in
 		}
 	}
+	if in.AuthenticationTokenWebhook != nil {
+		in, out := &in.AuthenticationTokenWebhook, &out.AuthenticationTokenWebhook
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
+			**out = **in
+		}
+	}
 	if in.AuthenticationTokenWebhookConfigFile != nil {
 		in, out := &in.AuthenticationTokenWebhookConfigFile, &out.AuthenticationTokenWebhookConfigFile
 		if *in == nil {
