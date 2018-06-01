@@ -248,7 +248,7 @@ func (c *NodeupModelContext) UsesCNI() bool {
 	return true
 }
 
-// UseSecureKubelet checks if the kubelet api should be protected by a client certificate. Note: the settings are be
+// UseSecureKubelet checks if the kubelet api should be protected by a client certificate. Note: the settings are
 // in one of three section, master specific kubelet, cluster wide kubelet or the InstanceGroup. Though arguably is
 // doesn't make much sense to unset this on a per InstanceGroup level, but hey :)
 func (c *NodeupModelContext) UseSecureKubelet() bool {
