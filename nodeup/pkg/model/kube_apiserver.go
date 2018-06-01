@@ -250,6 +250,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 				Path:     "/srv/kubernetes/heptio-authenticator-aws/key.pem",
 				Contents: fi.NewBytesResource(keyData),
 				Type:     nodetasks.FileType_File,
+				Mode:     fi.String("600"),
 			})
 		}
 
