@@ -242,7 +242,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		loader.Builders = append(loader.Builders, &model.KubeRouterBuilder{NodeupModelContext: modelContext})
 	}
 	if c.cluster.Spec.Networking.Calico != nil || c.cluster.Spec.Networking.Cilium != nil {
-		loader.Builders = append(loader.Builders, &model.CalicoBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.EtcdTLSBuilder{NodeupModelContext: modelContext})
 	}
 
 	taskMap, err := loader.Build(c.ModelDir)
