@@ -382,7 +382,7 @@ func findInternalIP() (net.IP, error) {
 
 		addrs, err := networkInterface.Addrs()
 		if err != nil {
-			return nil, fmt.Errorf("error querying network interface %s for IP adddresses: %v", name, err)
+			return nil, fmt.Errorf("error querying network interface %s for IP addresses: %v", name, err)
 		}
 
 		for _, addr := range addrs {
@@ -406,7 +406,7 @@ func findInternalIP() (net.IP, error) {
 	}
 
 	if len(ips) == 0 {
-		return nil, fmt.Errorf("unable to determine internal ip (no adddresses found)")
+		return nil, fmt.Errorf("unable to determine internal ip (no addresses found)")
 	}
 
 	if len(ips) == 1 {
