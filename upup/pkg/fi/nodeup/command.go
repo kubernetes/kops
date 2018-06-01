@@ -241,7 +241,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	} else {
 		loader.Builders = append(loader.Builders, &model.KubeRouterBuilder{NodeupModelContext: modelContext})
 	}
-	if c.cluster.Spec.Networking.Calico != nil {
+	if c.cluster.Spec.Networking.Calico != nil || c.cluster.Spec.Networking.Cilium != nil {
 		loader.Builders = append(loader.Builders, &model.CalicoBuilder{NodeupModelContext: modelContext})
 	}
 
