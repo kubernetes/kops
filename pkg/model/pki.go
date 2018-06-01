@@ -260,6 +260,25 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
+	if b.Cluster.Spec.Authentication != nil {
+		if b.KopsModelContext.Cluster.Spec.Authentication.Heptio != nil {
+			alternateNames := []string{
+				"localhost",
+				"127.0.0.1",
+			}
+
+			t := &fitasks.Keypair{
+				Name:           fi.String("heptio-authenticator-aws"),
+				Subject:        "cn=heptio-authenticator-aws",
+				Type:           "server",
+				AlternateNames: alternateNames,
+				Signer:         defaultCA,
+				Format:         format,
+			}
+			c.AddTask(t)
+		}
+	}
+
 	// Create auth tokens (though this is deprecated)
 	for _, x := range tokens.GetKubernetesAuthTokens_Deprecated() {
 		t := &fitasks.Secret{Name: fi.String(x), Lifecycle: b.Lifecycle}

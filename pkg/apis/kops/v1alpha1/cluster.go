@@ -229,13 +229,17 @@ type ExecContainerAction struct {
 
 type AuthenticationSpec struct {
 	Kopeio *KopeioAuthenticationSpec `json:"kopeio,omitempty"`
+	Heptio *HeptioAuthenticationSpec `json:"heptio,omitempty"`
 }
 
 func (s *AuthenticationSpec) IsEmpty() bool {
-	return s.Kopeio == nil
+	return s.Kopeio == nil && s.Heptio == nil
 }
 
 type KopeioAuthenticationSpec struct {
+}
+
+type HeptioAuthenticationSpec struct {
 }
 
 type AuthorizationSpec struct {

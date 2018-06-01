@@ -157,6 +157,105 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 		return nil
 	}
 
+	if b.Cluster.Spec.Authentication.Heptio != nil {
+		id := "heptio-authenticator-aws"
+		b.Cluster.Spec.KubeAPIServer.AuthenticationTokenWebhookConfigFile = fi.String(PathAuthnConfig)
+
+		{
+			caCertificate, err := b.NodeupModelContext.KeyStore.FindCert(fi.CertificateId_CA)
+			if err != nil {
+				return fmt.Errorf("error fetching Heptio Authentication CA certificate from keystore: %v", err)
+			}
+			if caCertificate == nil {
+				return fmt.Errorf("Heptio Authentication CA certificate %q not found", fi.CertificateId_CA)
+			}
+
+			cluster := kubeconfig.KubectlCluster{
+				Server: "https://127.0.0.1:21362/authenticate",
+			}
+			context := kubeconfig.KubectlContext{
+				Cluster: "heptio-authenticator-aws",
+				User:    "kube-apiserver",
+			}
+
+			cluster.CertificateAuthorityData, err = caCertificate.AsBytes()
+			if err != nil {
+				return fmt.Errorf("error encoding Heptio Authentication CA certificate: %v", err)
+			}
+
+			config := kubeconfig.KubectlConfig{}
+			config.Clusters = append(config.Clusters, &kubeconfig.KubectlClusterWithName{
+				Name:    "heptio-authenticator-aws",
+				Cluster: cluster,
+			})
+			config.Users = append(config.Users, &kubeconfig.KubectlUserWithName{
+				Name: "kube-apiserver",
+			})
+			config.CurrentContext = "webhook"
+			config.Contexts = append(config.Contexts, &kubeconfig.KubectlContextWithName{
+				Name:    "webhook",
+				Context: context,
+			})
+
+			manifest, err := kops.ToRawYaml(config)
+			if err != nil {
+				return fmt.Errorf("error marshalling authentication config to yaml: %v", err)
+			}
+
+			c.AddTask(&nodetasks.File{
+				Path:     PathAuthnConfig,
+				Contents: fi.NewBytesResource(manifest),
+				Type:     nodetasks.FileType_File,
+				Mode:     fi.String("600"),
+			})
+		}
+
+		{
+			certificate, err := b.NodeupModelContext.KeyStore.FindCert(id)
+			if err != nil {
+				return fmt.Errorf("error fetching %q certificate from keystore: %v", id, err)
+			}
+			if certificate == nil {
+				return fmt.Errorf("certificate %q not found", id)
+			}
+
+			certificateData, err := certificate.AsBytes()
+			if err != nil {
+				return fmt.Errorf("error encoding %q certificate: %v", id, err)
+			}
+
+			c.AddTask(&nodetasks.File{
+				Path:     "/srv/kubernetes/heptio-authenticator-aws/cert.pem",
+				Contents: fi.NewBytesResource(certificateData),
+				Type:     nodetasks.FileType_File,
+				Mode:     fi.String("600"),
+			})
+		}
+
+		{
+			privateKey, err := b.NodeupModelContext.KeyStore.FindPrivateKey(id)
+			if err != nil {
+				return fmt.Errorf("error fetching %q private key from keystore: %v", id, err)
+			}
+			if privateKey == nil {
+				return fmt.Errorf("private key %q not found", id)
+			}
+
+			keyData, err := privateKey.AsBytes()
+			if err != nil {
+				return fmt.Errorf("error encoding %q private key: %v", id, err)
+			}
+
+			c.AddTask(&nodetasks.File{
+				Path:     "/srv/kubernetes/heptio-authenticator-aws/key.pem",
+				Contents: fi.NewBytesResource(keyData),
+				Type:     nodetasks.FileType_File,
+			})
+		}
+
+		return nil
+	}
+
 	return fmt.Errorf("Unrecognized authentication config %v", b.Cluster.Spec.Authentication)
 }
 
@@ -311,7 +410,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	if b.Cluster.Spec.Authentication != nil {
-		if b.Cluster.Spec.Authentication.Kopeio != nil {
+		if b.Cluster.Spec.Authentication.Kopeio != nil || b.Cluster.Spec.Authentication.Heptio != nil {
 			addHostPathMapping(pod, container, "authn-config", PathAuthnConfig)
 		}
 	}
