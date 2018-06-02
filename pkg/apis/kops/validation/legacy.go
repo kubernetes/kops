@@ -434,6 +434,12 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 			}
 		}
 
+		if c.Spec.Kubelet.BootstrapKubeconfig != "" {
+			if c.Spec.KubeAPIServer == nil {
+				return field.Required(fieldSpec.Child("KubeAPIServer"), "bootstrap token require the NodeRestriction admissions controller")
+			}
+		}
+
 		if c.Spec.Kubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.Kubelet.APIServers) {
 			return field.Invalid(kubeletPath.Child("APIServers"), c.Spec.Kubelet.APIServers, "Not a valid APIServer URL")
 		}

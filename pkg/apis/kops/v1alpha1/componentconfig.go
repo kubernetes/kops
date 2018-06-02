@@ -26,6 +26,8 @@ type KubeletConfigSpec struct {
 	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
 	// AuthorizationMode is the authorization mode the kubelet is running in
 	AuthorizationMode string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
+	// BootstrapKubeconfig is the path to a kubeconfig file that will be used to get client certificate for kube
+	BootstrapKubeconfig string `json:"bootstrapKubeconfig,omitempty" flag:"bootstrap-kubeconfig"`
 	// ClientCAFile is the path to a CA certificate
 	ClientCAFile string `json:"clientCaFile,omitempty" flag:"client-ca-file"`
 	// TODO: Remove unused TLSCertFile
@@ -395,6 +397,7 @@ type KubeControllerManagerConfig struct {
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }
 
+// CloudControllerManagerConfig is the configuration of the cloud controller
 type CloudControllerManagerConfig struct {
 	// Master is the url for the kube api master.
 	Master string `json:"master,omitempty" flag:"master"`
