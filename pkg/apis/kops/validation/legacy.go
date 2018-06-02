@@ -382,6 +382,24 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		}
 	}
 
+	// KubeAPIServer
+	if c.Spec.KubeAPIServer != nil {
+		if kubernetesRelease.GTE(semver.MustParse("1.10.0")) {
+			if len(c.Spec.KubeAPIServer.AdmissionControl) > 0 {
+				if len(c.Spec.KubeAPIServer.EnableAdmissionPlugins) > 0 {
+					return field.Invalid(fieldSpec.Child("KubeAPIServer").Child("EnableAdmissionPlugins"),
+						strings.Join(c.Spec.KubeAPIServer.EnableAdmissionPlugins, ","),
+						"EnableAdmissionPlugins is mutually exclusive, you cannot use both AdmissionControl and EnableAdmissionPlugins together")
+				}
+				if len(c.Spec.KubeAPIServer.DisableAdmissionPlugins) > 0 {
+					return field.Invalid(fieldSpec.Child("KubeAPIServer").Child("DisableAdmissionPlugins"),
+						strings.Join(c.Spec.KubeAPIServer.DisableAdmissionPlugins, ","),
+						"DisableAdmissionPlugins is mutually exclusive, you cannot use both AdmissionControl and DisableAdmissionPlugins together")
+				}
+			}
+		}
+	}
+
 	// Kubelet
 	if c.Spec.Kubelet != nil {
 		kubeletPath := fieldSpec.Child("Kubelet")
@@ -650,6 +668,7 @@ func validateCilium(c *kops.Cluster) *field.Error {
 	return nil
 }
 
+// DeepValidate is responsible for validating the instancegroups within the cluster spec
 func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool) error {
 	if err := ValidateCluster(c, strict); err != nil {
 		return err
