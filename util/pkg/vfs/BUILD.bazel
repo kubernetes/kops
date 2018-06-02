@@ -45,6 +45,7 @@ go_library(
         "//vendor/google.golang.org/api/googleapi:go_default_library",
         "//vendor/google.golang.org/api/storage/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
+        "//vendor/k8s.io/client-go/util/homedir:go_default_library",
     ],
 )
 
