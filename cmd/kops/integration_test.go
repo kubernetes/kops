@@ -256,6 +256,7 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 		if err != nil {
 			t.Fatalf("unexpected error reading expected terraform output: %v", err)
 		}
+		testDataTF = bytes.Replace(testDataTF, []byte("\r\n"), []byte("\n"), -1)
 
 		if !bytes.Equal(actualTF, testDataTF) {
 			diffString := diff.FormatDiff(string(testDataTF), string(actualTF))
@@ -548,7 +549,7 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 		}
 		actualCF = buf.Bytes()
 
-		expectedCFTrimmed := strings.TrimSpace(string(expectedCF))
+		expectedCFTrimmed := strings.Replace(strings.TrimSpace(string(expectedCF)), "\r\n", "\n", -1)
 		actualCFTrimmed := strings.TrimSpace(string(actualCF))
 		if actualCFTrimmed != expectedCFTrimmed {
 			diffString := diff.FormatDiff(expectedCFTrimmed, actualCFTrimmed)
