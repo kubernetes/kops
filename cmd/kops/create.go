@@ -143,7 +143,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 			}
 		}
 		// TODO: this does not support a JSON array
-		sections := bytes.Split(contents, []byte("\n---\n"))
+		sections := bytes.Split(bytes.Replace(contents, []byte("\r\n"), []byte("\n"), -1), []byte("\n---\n"))
 		for _, section := range sections {
 			defaults := &schema.GroupVersionKind{
 				Group:   v1alpha1.SchemeGroupVersion.Group,
