@@ -42,16 +42,15 @@ const (
 
 var UseLegacyELBName = featureflag.New("UseLegacyELBName", featureflag.Bool(false))
 
+// KopsModelContext is the kops model
 type KopsModelContext struct {
-	Cluster *kops.Cluster
-
-	Region         string
+	Cluster        *kops.Cluster
 	InstanceGroups []*kops.InstanceGroup
-
-	SSHPublicKeys [][]byte
+	Region         string
+	SSHPublicKeys  [][]byte
 }
 
-// Will attempt to calculate a meaningful name for an ELB given a prefix
+// GetELBName32 will attempt to calculate a meaningful name for an ELB given a prefix
 // Will never return a string longer than 32 chars
 // Note this is _not_ the primary identifier for the ELB - we use the Name tag for that.
 func (m *KopsModelContext) GetELBName32(prefix string) string {
@@ -248,6 +247,12 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 	return tags
 }
 
+// UseBootstrapTokens checks if bootstrap tokens are enabled
+func (m *KopsModelContext) UseBootstrapTokens() bool {
+	return m.Cluster.Spec.Kubelet.BootstrapKubeconfig != ""
+}
+
+// UsesBastionDns checks if we should use a specific name for the bastion dns
 func (m *KopsModelContext) UsesBastionDns() bool {
 	if m.Cluster.Spec.Topology.Bastion != nil && m.Cluster.Spec.Topology.Bastion.BastionPublicName != "" {
 		return true
@@ -255,6 +260,7 @@ func (m *KopsModelContext) UsesBastionDns() bool {
 	return false
 }
 
+// UsesSSHBastion checks if we have a Bastion in the cluster
 func (m *KopsModelContext) UsesSSHBastion() bool {
 	for _, ig := range m.InstanceGroups {
 		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
@@ -265,6 +271,7 @@ func (m *KopsModelContext) UsesSSHBastion() bool {
 	return false
 }
 
+// UseLoadBalancerForAPI checks if we are using a load balancer for the kubeapi
 func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 	if m.Cluster.Spec.API == nil {
 		return false
@@ -272,6 +279,7 @@ func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 	return m.Cluster.Spec.API.LoadBalancer != nil
 }
 
+// UsePrivateDNS checks if we are using private DNS
 func (m *KopsModelContext) UsePrivateDNS() bool {
 	topology := m.Cluster.Spec.Topology
 	if topology != nil && topology.DNS != nil {

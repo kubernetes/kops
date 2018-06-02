@@ -17,25 +17,34 @@ limitations under the License.
 package model
 
 import (
+	"context"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"fmt"
 	"path"
 	"path/filepath"
+	"time"
+
+	"k8s.io/kops/nodeup/pkg/distros"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/pkg/systemd"
+	"k8s.io/kops/pkg/util/fs"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/upup/pkg/fi/utils"
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
-	"k8s.io/kops/nodeup/pkg/distros"
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/flagbuilder"
-	"k8s.io/kops/pkg/systemd"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
-// containerizedMounterHome is the path where we install the containerized mounter (on ContainerOS)
-const containerizedMounterHome = "/home/kubernetes/containerized_mounter"
+const (
+	// containerizedMounterHome is the path where we install the containerized mounter (on ContainerOS)
+	containerizedMounterHome = "/home/kubernetes/containerized_mounter"
+)
 
 // KubeletBuilder installs kubelet
 type KubeletBuilder struct {
@@ -72,36 +81,66 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("unable to locate asset %q", assetName)
 		}
 
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path:     b.kubeletPath(),
 			Contents: asset,
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0755"),
-		}
-		c.AddTask(t)
+		})
 	}
 
 	{
-		// @TODO Change kubeconfig to be https
-		kubeconfig, err := b.buildPKIKubeconfig("kubelet")
-		if err != nil {
-			return err
+		if b.UseBootstrapTokens() {
+			glog.V(3).Info("kubelet bootstrap tokens are enabled")
+
+			nodename, err := b.NodeName()
+			if err != nil {
+				return err
+			}
+
+			// @check if a master and if so, we bypass the token strapping and instead generate our own kubeconfig
+			if b.IsMaster {
+				task, err := b.buildMasterKubeletKubeconfig()
+				if err != nil {
+					return err
+				}
+				c.AddTask(task)
+			} else {
+				timeout := 5 * time.Minute
+
+				ctx, cancel := context.WithTimeout(context.Background(), timeout)
+				defer cancel()
+				// @step: we are a Node, lets wait for the bootstrap file to appear. This is being performed
+				// an external process for now
+				glog.V(3).Infof("node: %s waiting for bootstrap: %s (%s) to be available", nodename, timeout.String(), b.KubeletBootstrapConfig())
+
+				if err := fs.WaitForFile(ctx, b.KubeletBootstrapConfig()); err != nil {
+					glog.Errorf("node: %s has timed out waiting for bootstrap: %s", nodename, b.KubeletBootstrapConfig())
+					return err
+				}
+
+				glog.V(3).Info("kubelet bootstrap configuration is available, continuing")
+			}
+		} else {
+			kubeconfig, err := b.BuildPKIKubeconfig("kubelet")
+			if err != nil {
+				return err
+			}
+
+			c.AddTask(&nodetasks.File{
+				Path:     b.KubeletKubeConfig(),
+				Contents: fi.NewStringResource(kubeconfig),
+				Type:     nodetasks.FileType_File,
+				Mode:     s("0400"),
+			})
 		}
-		t := &nodetasks.File{
-			Path:     "/var/lib/kubelet/kubeconfig",
-			Contents: fi.NewStringResource(kubeconfig),
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0400"),
-		}
-		c.AddTask(t)
 	}
 
 	if b.UsesCNI() {
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path: b.CNIConfDir(),
 			Type: nodetasks.FileType_Directory,
-		}
-		c.AddTask(t)
+		})
 	}
 
 	if err := b.addStaticUtils(c); err != nil {
@@ -445,4 +484,89 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	}
 
 	return c, nil
+}
+
+// BuildMasterKubeletKubeconfig builds a kubeconfig for the master kubelet, self-signing the kubelet cert
+func (b *KubeletBuilder) buildMasterKubeletKubeconfig() (*nodetasks.File, error) {
+	nodeName, err := b.NodeName()
+	if err != nil {
+		return nil, fmt.Errorf("error getting NodeName: %v", err)
+	}
+
+	caCert, err := b.KeyStore.FindCert(fi.CertificateId_CA)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching CA certificate from keystore: %v", err)
+	}
+	if caCert == nil {
+		return nil, fmt.Errorf("unable to find CA certificate %q in keystore", fi.CertificateId_CA)
+	}
+
+	caKey, err := b.KeyStore.FindPrivateKey(fi.CertificateId_CA)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching CA certificate from keystore: %v", err)
+	}
+	if caKey == nil {
+		return nil, fmt.Errorf("unable to find CA key %q in keystore", fi.CertificateId_CA)
+	}
+
+	privateKey, err := pki.GeneratePrivateKey()
+	if err != nil {
+		return nil, err
+	}
+
+	template := &x509.Certificate{
+		BasicConstraintsValid: true,
+		IsCA: false,
+	}
+
+	template.Subject = pkix.Name{
+		CommonName:   fmt.Sprintf("system:node:%s", nodeName),
+		Organization: []string{"system:nodes"},
+	}
+
+	// https://tools.ietf.org/html/rfc5280#section-4.2.1.3
+	//
+	// Digital signature allows the certificate to be used to verify
+	// digital signatures used during TLS negotiation.
+	template.KeyUsage = template.KeyUsage | x509.KeyUsageDigitalSignature
+	// KeyEncipherment allows the cert/key pair to be used to encrypt
+	// keys, including the symmetric keys negotiated during TLS setup
+	// and used for data transfer.
+	template.KeyUsage = template.KeyUsage | x509.KeyUsageKeyEncipherment
+	// ClientAuth allows the cert to be used by a TLS client to
+	// authenticate itself to the TLS server.
+	template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageClientAuth)
+
+	t := time.Now().UnixNano()
+	template.SerialNumber = pki.BuildPKISerial(t)
+
+	certificate, err := pki.SignNewCertificate(privateKey, template, caCert.Certificate, caKey)
+	if err != nil {
+		return nil, fmt.Errorf("error signing certificate for master kubelet: %v", err)
+	}
+
+	caBytes, err := caCert.AsBytes()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get certificate authority data: %s", err)
+	}
+	certBytes, err := certificate.AsBytes()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get certificate data: %s", err)
+	}
+	keyBytes, err := privateKey.AsBytes()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get private key data: %s", err)
+	}
+
+	content, err := b.BuildKubeConfig("kubelet", caBytes, certBytes, keyBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return &nodetasks.File{
+		Path:     b.KubeletKubeConfig(),
+		Contents: fi.NewStringResource(content),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("600"),
+	}, nil
 }

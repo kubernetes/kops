@@ -19,11 +19,12 @@ package model
 import (
 	"fmt"
 
-	"k8s.io/apiserver/pkg/authentication/user"
 	"k8s.io/kops/pkg/tokens"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/vfs"
+
+	"k8s.io/apiserver/pkg/authentication/user"
 )
 
 // PKIModelBuilder configures PKI keypairs, as well as tokens
@@ -279,10 +280,40 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	// @TODO this is VERY presumptuous, i'm going on the basis we can make it configurable in the future.
+	// But I'm conscious not to do too much work on bootstrap tokens as it might overlay further down the
+	// line with the machines api
+	if b.UseBootstrapTokens() {
+		alternateNames := []string{
+			"127.0.0.1",
+			"localhost",
+			"node-bootstrap-internal",
+			"node-bootstrap-internal." + b.Cluster.Spec.DNSZone,
+		}
+
+		// @note: the certificate used by the node authorizers
+		c.AddTask(&fitasks.Keypair{
+			Name:           fi.String("node-bootstrap"),
+			Subject:        "cn=node-bootstrap",
+			Type:           "server",
+			AlternateNames: alternateNames,
+			Signer:         defaultCA,
+			Format:         format,
+		})
+
+		// @note: we use this for mutual tls between between node and authorizer
+		c.AddTask(&fitasks.Keypair{
+			Name:    fi.String("node-bootstrap-client"),
+			Subject: "cn=node-bootstrap-client",
+			Type:    "client",
+			Signer:  defaultCA,
+			Format:  format,
+		})
+	}
+
 	// Create auth tokens (though this is deprecated)
 	for _, x := range tokens.GetKubernetesAuthTokens_Deprecated() {
-		t := &fitasks.Secret{Name: fi.String(x), Lifecycle: b.Lifecycle}
-		c.AddTask(t)
+		c.AddTask(&fitasks.Secret{Name: fi.String(x), Lifecycle: b.Lifecycle})
 	}
 
 	{

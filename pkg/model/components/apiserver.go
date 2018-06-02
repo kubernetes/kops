@@ -90,7 +90,15 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	} else if clusterSpec.Authorization.AlwaysAllow != nil {
 		clusterSpec.KubeAPIServer.AuthorizationMode = fi.String("AlwaysAllow")
 	} else if clusterSpec.Authorization.RBAC != nil {
-		clusterSpec.KubeAPIServer.AuthorizationMode = fi.String("RBAC")
+		var modes []string
+
+		if b.IsKubernetesGTE("1.9") {
+			// Enable the Node authorizer, used for special per-node RBAC policies
+			modes = append(modes, "Node")
+		}
+		modes = append(modes, "RBAC")
+
+		clusterSpec.KubeAPIServer.AuthorizationMode = fi.String(strings.Join(modes, ","))
 	}
 
 	if clusterSpec.KubeAPIServer.EtcdQuorumRead == nil {
