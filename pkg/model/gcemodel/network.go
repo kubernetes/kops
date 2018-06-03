@@ -45,7 +45,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		subnet := b.Cluster.Spec.Subnets[0]
 		if subnet.CIDR == "" {
-			return fmt.Errorf("subnet CIDR must be set of IPAlias mode")
+			return fmt.Errorf("subnet CIDR must be set for IPAlias mode")
 		}
 
 		t := &gcetasks.Subnet{
