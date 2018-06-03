@@ -66,6 +66,19 @@ func TestDockerBuilder_BuildFlags(t *testing.T) {
 			},
 			"--log-driver=json-file --log-opt=max-file=5 --log-opt=max-size=10m",
 		},
+		// nil bridge & empty bridge are the same
+		{
+			kops.DockerConfig{Bridge: nil},
+			"",
+		},
+		{
+			kops.DockerConfig{Bridge: fi.String("")},
+			"",
+		},
+		{
+			kops.DockerConfig{Bridge: fi.String("br0")},
+			"--bridge=br0",
+		},
 	}
 
 	for _, g := range grid {
