@@ -36,26 +36,6 @@ import (
 func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 	tags := sets.NewString()
 
-	networking := cluster.Spec.Networking
-
-	if networking == nil || networking.Classic != nil {
-		tags.Insert("_networking_classic")
-	} else if networking.Kubenet != nil {
-		tags.Insert("_networking_kubenet")
-	} else if networking.External != nil {
-		// external is based on kubenet
-		tags.Insert("_networking_kubenet", "_networking_external")
-	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil || networking.Cilium != nil {
-		tags.Insert("_networking_cni")
-	} else if networking.Kopeio != nil {
-		// TODO combine with the External
-		// Kopeio is based on kubenet / external
-		// TODO combine with External
-		tags.Insert("_networking_kubenet", "_networking_external")
-	} else {
-		return nil, fmt.Errorf("no networking mode set")
-	}
-
 	switch api.CloudProviderID(cluster.Spec.CloudProvider) {
 	case api.CloudProviderGCE:
 		{
@@ -115,17 +95,6 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 
 func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTags sets.String) (sets.String, error) {
 	tags := sets.NewString()
-
-	networking := cluster.Spec.Networking
-
-	if networking == nil {
-		return nil, fmt.Errorf("Networking is not set, and should not be nil here")
-	}
-
-	if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil || networking.Cilium != nil {
-		// external is based on cni, weave, flannel, calico, etc
-		tags.Insert("_networking_cni")
-	}
 
 	switch role {
 	case api.InstanceGroupRoleNode:

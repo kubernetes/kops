@@ -141,7 +141,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
   cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig: null
   docker:
-    bridge: ""
     ipMasq: false
     ipTables: false
     logLevel: warn
@@ -418,7 +417,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.Use
   cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig: null
   docker:
-    bridge: ""
     ipMasq: false
     ipTables: false
     logLevel: warn
