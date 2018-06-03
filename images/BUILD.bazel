@@ -61,7 +61,7 @@ container_image(
 container_bundle(
     name = "protokube",
     images = {
-        "protokube:{PROTOKUBE_TAG}": "protokube-image",
+        "protokube:{STABLE_PROTOKUBE_TAG}": "protokube-image",
     },
     stamp = True,
 )
