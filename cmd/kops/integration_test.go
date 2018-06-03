@@ -418,6 +418,7 @@ func runTestGCE(t *testing.T, clusterName string, srcDir string, version string,
 	expectedFilenames := []string{
 		"google_compute_instance_template_nodes-" + gce.SafeClusterName(clusterName) + "_metadata_cluster-name",
 		"google_compute_instance_template_nodes-" + gce.SafeClusterName(clusterName) + "_metadata_startup-script",
+		"google_compute_instance_template_nodes-" + gce.SafeClusterName(clusterName) + "_metadata_ssh-keys",
 	}
 
 	for i := 0; i < zones; i++ {
@@ -426,6 +427,7 @@ func runTestGCE(t *testing.T, clusterName string, srcDir string, version string,
 
 		expectedFilenames = append(expectedFilenames, prefix+"cluster-name")
 		expectedFilenames = append(expectedFilenames, prefix+"startup-script")
+		expectedFilenames = append(expectedFilenames, prefix+"ssh-keys")
 	}
 
 	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, "", nil)
