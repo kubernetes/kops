@@ -2,6 +2,8 @@
 apiVersion: extensions/v1beta1
 kind: PodSecurityPolicy
 metadata:
+  annotations:
+    k8s-addon: podsecuritypolicy.addons.k8s.io
   name: kube-system
 spec:
   allowedCapabilities:
@@ -27,6 +29,8 @@ spec:
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
+  annotations:
+    k8s-addon: podsecuritypolicy.addons.k8s.io
   name: kops:kube-system:psp
 rules:
 - apiGroups:
@@ -47,18 +51,21 @@ roleRef:
   name: kops:kube-system:psp
   apiGroup: rbac.authorization.k8s.io
 subjects:
-# permit the cluster wise admin to use this policy
 - kind: Group
   name: system:masters
   apiGroup: rbac.authorization.k8s.io
+{{- if not UseBootstrapTokens }}
 # permit the kubelets to access this policy (used for manifests)
 - kind: User
   name: kubelet
   apiGroup: rbac.authorization.k8s.io
+{{- end }}
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  annotations:
+    k8s-addon: podsecuritypolicy.addons.k8s.io
   name: kops:kube-system:psp
   namespace: kube-system
 roleRef:
@@ -70,3 +77,8 @@ subjects:
 - kind: Group
   name: system:serviceaccounts:kube-system
   apiGroup: rbac.authorization.k8s.io
+{{- if UseBootstrapTokens }}
+- kind: Group
+  name: system:nodes
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
