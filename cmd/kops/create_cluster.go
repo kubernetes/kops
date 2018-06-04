@@ -23,6 +23,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/user"
 	"strconv"
 	"strings"
 
@@ -222,7 +223,13 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateClusterOptions{}
 	options.InitDefaults()
 
-	sshPublicKey := "~/.ssh/id_rsa.pub"
+	// Find the users home directory in an os independent manner
+	usr, err := user.Current()
+	if err != nil {
+		glog.Fatalf("unable to find users home directory: %v", err)
+	}
+
+	sshPublicKey := fmt.Sprintf("%s/.ssh/id_rsa.pub", usr.HomeDir)
 	associatePublicIP := false
 
 	cmd := &cobra.Command{
@@ -272,7 +279,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
 	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", options.KubernetesVersion, "Version of kubernetes to run (defaults to version in channel)")
 
-	cmd.Flags().StringVar(&sshPublicKey, "ssh-public-key", sshPublicKey, "SSH public key to use")
+	cmd.Flags().StringVar(&sshPublicKey, "ssh-public-key", "~/.ssh/id_rsa.pub", "SSH public key to use")
 
 	cmd.Flags().StringVar(&options.NodeSize, "node-size", options.NodeSize, "Set instance size for nodes")
 
