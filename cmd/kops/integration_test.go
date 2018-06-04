@@ -166,7 +166,7 @@ func TestPhaseCluster(t *testing.T) {
 	runTestPhase(t, "lifecyclephases.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseCluster)
 }
 
-func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedFilenames []string, tfFileName string, phase *cloudup.Phase) {
+func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedDataFilenames []string, tfFileName string, phase *cloudup.Phase) {
 	var stdout bytes.Buffer
 
 	srcDir = updateClusterTestBase + srcDir
@@ -238,28 +238,28 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 		sort.Strings(fileNames)
 
 		actualFilenames := strings.Join(fileNames, ",")
-		expected := "kubernetes.tf"
+		expectedFilenames := "kubernetes.tf"
 
-		if len(expectedFilenames) > 0 {
-			expected = "data,kubernetes.tf"
+		if len(expectedDataFilenames) > 0 {
+			expectedFilenames = "data,kubernetes.tf"
 		}
 
-		if actualFilenames != expected {
-			t.Fatalf("unexpected files.  actual=%q, expected=%q, test=%q", actualFilenames, expected, testDataTFPath)
+		if actualFilenames != expectedFilenames {
+			t.Fatalf("unexpected files.  actual=%q, expected=%q, test=%q", actualFilenames, expectedFilenames, testDataTFPath)
 		}
 
 		actualTF, err := ioutil.ReadFile(path.Join(h.TempDir, "out", actualTFPath))
 		if err != nil {
 			t.Fatalf("unexpected error reading actual terraform output: %v", err)
 		}
-		testDataTF, err := ioutil.ReadFile(path.Join(srcDir, testDataTFPath))
+		expectedTF, err := ioutil.ReadFile(path.Join(srcDir, testDataTFPath))
 		if err != nil {
 			t.Fatalf("unexpected error reading expected terraform output: %v", err)
 		}
-		testDataTF = bytes.Replace(testDataTF, []byte("\r\n"), []byte("\n"), -1)
+		expectedTF = bytes.Replace(expectedTF, []byte("\r\n"), []byte("\n"), -1)
 
-		if !bytes.Equal(actualTF, testDataTF) {
-			diffString := diff.FormatDiff(string(testDataTF), string(actualTF))
+		if !bytes.Equal(actualTF, expectedTF) {
+			diffString := diff.FormatDiff(string(expectedTF), string(actualTF))
 			t.Logf("diff:\n%s\n", diffString)
 
 			t.Fatalf("terraform output differed from expected")
@@ -267,21 +267,21 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 	}
 
 	// Compare data files if they are provided
-	if len(expectedFilenames) > 0 {
+	if len(expectedDataFilenames) > 0 {
 		actualDataPath := path.Join(h.TempDir, "out", "data")
 		files, err := ioutil.ReadDir(actualDataPath)
 		if err != nil {
 			t.Fatalf("failed to read data dir: %v", err)
 		}
 
-		var actualFilenames []string
+		var actualDataFilenames []string
 		for _, f := range files {
-			actualFilenames = append(actualFilenames, f.Name())
+			actualDataFilenames = append(actualDataFilenames, f.Name())
 		}
 
-		sort.Strings(expectedFilenames)
-		if !reflect.DeepEqual(actualFilenames, expectedFilenames) {
-			t.Fatalf("unexpected data files.  actual=%q, expected=%q", actualFilenames, expectedFilenames)
+		sort.Strings(expectedDataFilenames)
+		if !reflect.DeepEqual(actualDataFilenames, expectedDataFilenames) {
+			t.Fatalf("unexpected data files.  actual=%q, expected=%q", actualDataFilenames, expectedDataFilenames)
 		}
 
 		// Some tests might provide _some_ tf data files (not necessarilly all that
