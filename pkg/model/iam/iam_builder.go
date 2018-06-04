@@ -348,11 +348,29 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 							strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/instancegroup/*"}, ""),
 							strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/issued/*"}, ""),
 							strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/kube-proxy/*"}, ""),
-							strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/kubelet/*"}, ""),
 							strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/ssh/*"}, ""),
 							strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/secrets/dockerconfig"}, ""),
 						),
 					})
+
+					// @check if bootstrap tokens are enabled and if so, we disable access for the nodes
+					if !b.UseBootstrapTokens() {
+						p.Statement = append(p.Statement, &Statement{
+							Effect: StatementEffectAllow,
+							Action: stringorslice.Slice([]string{"s3:Get*"}),
+							Resource: stringorslice.Of(
+								strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/kubelet/*"}, ""),
+							),
+						})
+					} else {
+						p.Statement = append(p.Statement, &Statement{
+							Effect: StatementEffectAllow,
+							Action: stringorslice.Slice([]string{"s3:Get*"}),
+							Resource: stringorslice.Of(
+								strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/node-authorizer-client/*"}, ""),
+							),
+						})
+					}
 
 					if b.Cluster.Spec.Networking != nil {
 						// @check if kuberoute is enabled and permit access to the private key
@@ -467,6 +485,19 @@ func (b *PolicyResource) Open() (io.Reader, error) {
 		return nil, fmt.Errorf("error building IAM policy: %v", err)
 	}
 	return bytes.NewReader([]byte(j)), nil
+}
+
+// UseBootstrapTokens check if we are using bootstrap tokens - @TODO, i don't like this we should probably pass in
+// the kops model into the builder rather than duplicating the code. I'll leave for anothe PR
+func (b *PolicyBuilder) UseBootstrapTokens() bool {
+	if b.Cluster.Spec.Kubelet != nil && b.Cluster.Spec.Kubelet.BootstrapKubeconfig != "" {
+		return true
+	}
+	if b.Cluster.Spec.MasterKubelet != nil && b.Cluster.Spec.MasterKubelet.BootstrapKubeconfig != "" {
+		return true
+	}
+
+	return false
 }
 
 func addECRPermissions(p *Policy) {
@@ -755,59 +786,59 @@ func addRomanaCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, le
 	if legacyIAM {
 		// Legacy IAM provides ec2:*, so no additional permissions required
 		return
-	} else {
-		// Romana requires additional Describe permissions
-		// Comments are which Romana component makes the call
-		p.Statement = append(p.Statement,
-			&Statement{
-				Effect: StatementEffectAllow,
-				Action: stringorslice.Slice([]string{
-					"ec2:DescribeAvailabilityZones", // vpcrouter
-					"ec2:DescribeVpcs",              // vpcrouter
-				}),
-				Resource: resource,
-			},
-			&Statement{
-				Effect: StatementEffectAllow,
-				Action: stringorslice.Slice([]string{
-					"ec2:CreateRoute",  // vpcrouter
-					"ec2:DeleteRoute",  // vpcrouter
-					"ec2:ReplaceRoute", // vpcrouter
-				}),
-				Resource: resource,
-				Condition: Condition{
-					"StringEquals": map[string]string{
-						"ec2:ResourceTag/KubernetesCluster": clusterName,
-					},
+	}
+
+	// Romana requires additional Describe permissions
+	// Comments are which Romana component makes the call
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:DescribeAvailabilityZones", // vpcrouter
+				"ec2:DescribeVpcs",              // vpcrouter
+			}),
+			Resource: resource,
+		},
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:CreateRoute",  // vpcrouter
+				"ec2:DeleteRoute",  // vpcrouter
+				"ec2:ReplaceRoute", // vpcrouter
+			}),
+			Resource: resource,
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"ec2:ResourceTag/KubernetesCluster": clusterName,
 				},
 			},
-		)
-	}
+		},
+	)
 }
 
 func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string) {
 	if legacyIAM {
 		// Legacy IAM provides ec2:*, so no additional permissions required
 		return
-	} else {
-		p.Statement = append(p.Statement,
-			&Statement{
-				Effect: StatementEffectAllow,
-				Action: stringorslice.Slice([]string{
-					"ec2:CreateNetworkInterface",
-					"ec2:AttachNetworkInterface",
-					"ec2:DeleteNetworkInterface",
-					"ec2:DetachNetworkInterface",
-					"ec2:DescribeNetworkInterfaces",
-					"ec2:DescribeInstances",
-					"ec2:ModifyNetworkInterfaceAttribute",
-					"ec2:AssignPrivateIpAddresses",
-					"tag:TagResources",
-				}),
-				Resource: resource,
-			},
-		)
 	}
+
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:CreateNetworkInterface",
+				"ec2:AttachNetworkInterface",
+				"ec2:DeleteNetworkInterface",
+				"ec2:DetachNetworkInterface",
+				"ec2:DescribeNetworkInterfaces",
+				"ec2:DescribeInstances",
+				"ec2:ModifyNetworkInterfaceAttribute",
+				"ec2:AssignPrivateIpAddresses",
+				"tag:TagResources",
+			}),
+			Resource: resource,
+		},
+	)
 }
 
 func createResource(b *PolicyBuilder) stringorslice.StringOrSlice {

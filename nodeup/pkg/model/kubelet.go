@@ -17,7 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"context"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
@@ -30,7 +29,6 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/systemd"
-	"k8s.io/kops/pkg/util/fs"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -39,6 +37,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
+	"k8s.io/apiserver/pkg/authentication/user"
 )
 
 const (
@@ -93,11 +92,6 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		if b.UseBootstrapTokens() {
 			glog.V(3).Info("kubelet bootstrap tokens are enabled")
 
-			nodename, err := b.NodeName()
-			if err != nil {
-				return err
-			}
-
 			// @check if a master and if so, we bypass the token strapping and instead generate our own kubeconfig
 			if b.IsMaster {
 				task, err := b.buildMasterKubeletKubeconfig()
@@ -105,21 +99,21 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 					return err
 				}
 				c.AddTask(task)
-			} else {
-				timeout := 5 * time.Minute
 
-				ctx, cancel := context.WithTimeout(context.Background(), timeout)
-				defer cancel()
-				// @step: we are a Node, lets wait for the bootstrap file to appear. This is being performed
-				// an external process for now
-				glog.V(3).Infof("node: %s waiting for bootstrap: %s (%s) to be available", nodename, timeout.String(), b.KubeletBootstrapConfig())
-
-				if err := fs.WaitForFile(ctx, b.KubeletBootstrapConfig()); err != nil {
-					glog.Errorf("node: %s has timed out waiting for bootstrap: %s", nodename, b.KubeletBootstrapConfig())
+				name := "node-authorizer"
+				if err := b.BuildCertificatePairTask(c, name, "node-authorizer/", "tls"); err != nil {
 					return err
 				}
 
-				glog.V(3).Info("kubelet bootstrap configuration is available, continuing")
+			} else {
+				name := "node-authorizer-client"
+				if err := b.BuildCertificatePairTask(c, name, "node-authorizer/", "tls"); err != nil {
+					return err
+				}
+				glog.V(3).Info("kubelet service will wait for bootstrap configuration: %s", b.KubeletBootstrapConfig())
+			}
+			if err := b.BuildCertificateTask(c, fi.CertificateId_CA, "node-authorizer/ca.pem"); err != nil {
+				return err
 			}
 		} else {
 			kubeconfig, err := b.BuildPKIKubeconfig("kubelet")
@@ -234,6 +228,10 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Unit", "Description", "Kubernetes Kubelet Server")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kubernetes")
 	manifest.Set("Unit", "After", "docker.service")
+
+	if b.UseBootstrapTokens() && !b.IsMaster {
+		manifest.Set("Unit", "ConditionPathExists", b.KubeletBootstrapConfig())
+	}
 
 	if b.Distribution == distros.DistributionCoreOS {
 		// We add /opt/kubernetes/bin for our utilities (socat)
@@ -521,7 +519,7 @@ func (b *KubeletBuilder) buildMasterKubeletKubeconfig() (*nodetasks.File, error)
 
 	template.Subject = pkix.Name{
 		CommonName:   fmt.Sprintf("system:node:%s", nodeName),
-		Organization: []string{"system:nodes"},
+		Organization: []string{user.NodesGroup},
 	}
 
 	// https://tools.ietf.org/html/rfc5280#section-4.2.1.3

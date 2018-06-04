@@ -249,7 +249,14 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 
 // UseBootstrapTokens checks if bootstrap tokens are enabled
 func (m *KopsModelContext) UseBootstrapTokens() bool {
-	return m.Cluster.Spec.Kubelet.BootstrapKubeconfig != ""
+	if m.Cluster.Spec.Kubelet.BootstrapKubeconfig != "" {
+		return true
+	}
+	if m.Cluster.Spec.MasterKubelet != nil && m.Cluster.Spec.MasterKubelet.BootstrapKubeconfig != "" {
+		return true
+	}
+
+	return false
 }
 
 // UsesBastionDns checks if we should use a specific name for the bastion dns
