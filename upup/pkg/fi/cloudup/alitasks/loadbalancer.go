@@ -85,8 +85,9 @@ func (l *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	}
 	tags, _, err := cloud.SlbClient().DescribeTags(describeTagsArgs)
 	if err != nil {
-		glog.V(4).Info("Error getting tags on loadbalancerID:%q", *actual.LoadbalancerId)
+		return nil, fmt.Errorf("error getting tags on loadbalancer: %v", err)
 	}
+
 	if len(tags) != 0 {
 		actual.Tags = make(map[string]string)
 		for _, tag := range tags {
