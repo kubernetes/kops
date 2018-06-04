@@ -519,7 +519,7 @@ verify-bazel:
 # verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendoc generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-boilerplate verify-bazel nodeup examples test | verify-gendocs verify-packages
+ci: govet verify-gofmt verify-boilerplate verify-bazel nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 # --------------------------------------------------
@@ -580,6 +580,9 @@ apimachinery-codegen:
 	${GOPATH}/bin/client-gen  ${API_OPTIONS} --clientset-name="clientset" --input-base k8s.io/kops/pkg/apis/ --input="kops/,kops/v1alpha1,kops/v1alpha2" --clientset-path k8s.io/kops/pkg/client/clientset_generated/ \
 		 --go-header-file "hack/boilerplate/boilerplate.go.txt"
 
+.PHONY: verify-apimachinery
+verify-apimachinery:
+	hack/verify-apimachinery.sh
 
 # -----------------------------------------------------
 # kops-server
