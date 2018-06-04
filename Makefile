@@ -97,8 +97,12 @@ KOPS_SERVER_TAG := $(subst +,-,${VERSION})
 GO15VENDOREXPERIMENT=1
 export GO15VENDOREXPERIMENT
 
-COMPILERVERSION := $(shell go version | cut -d' ' -f3 | tr -d '\n')
-ifneq (,$(findstring go1.10,$(COMPILERVERSION)))
+COMPILERVERSION := $(shell go version | cut -d' ' -f3 | sed 's/go//g' | tr -d '\n')
+COMPILER_VER_MAJOR := $(shell echo $(COMPILERVERSION) | cut -f1 -d.)
+COMPILER_VER_MINOR := $(shell echo $(COMPILERVERSION) | cut -f2 -d.)
+COMPILER_GT_1_10 := $(shell [ $(COMPILER_VER_MAJOR) -gt 1 -o \( $(COMPILER_VER_MAJOR) -eq 1 -a $(COMPILER_VER_MINOR) -ge 10 \) ] && echo true)
+
+ifeq ($(COMPILER_GT_1_10), true)
 LDFLAGS := -ldflags=all=
 else
 LDFLAGS := -ldflags=
