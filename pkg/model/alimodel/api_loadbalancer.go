@@ -19,6 +19,7 @@ package alimodel
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
@@ -104,11 +105,13 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 
 		sourceItems := ""
+		var cidrs []string
 		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
 			if cidr != "0.0.0.0" && cidr != "0.0.0.0/0" {
-				sourceItems = sourceItems + cidr + ","
+				cidrs = append(cidrs, cidr)
 			}
 		}
+		sourceItems = strings.Join(cidrs, ",")
 
 		loadbalancerwhiteList = &alitasks.LoadBalancerWhiteList{
 			Name:                 s("api." + b.ClusterName()),
