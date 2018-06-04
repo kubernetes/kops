@@ -28,8 +28,7 @@ required = [
 # aws-sdk-go is one of our critical dependencies
 [[override]]
   name = "github.com/aws/aws-sdk-go"
-  revision = "bff41fb23b7550368282029f6478819d6a99ae0f"
-  #version = "v1.12.79"
+  version = "v1.13.60"
 
 # We need this for our build
 [[override]]
