@@ -216,15 +216,16 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 		return err
 	}
 
-	if err := t.AddOutputVariable("vpc_cidr_block", terraform.LiteralProperty("aws_vpc", *e.Name, "cidr_block")); err != nil {
-		return err
-	}
-
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not terraform owned / managed
 		// We won't apply changes, but our validation (kops update) will still warn
 		return nil
+	}
+
+	if err := t.AddOutputVariable("vpc_cidr_block", terraform.LiteralProperty("aws_vpc", *e.Name, "cidr_block")); err != nil {
+		// TODO: Should we try to output vpc_cidr_block for shared vpcs?
+		return err
 	}
 
 	if len(e.AdditionalCIDR) != 0 {
