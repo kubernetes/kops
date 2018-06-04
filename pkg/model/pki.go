@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/kops/pkg/tokens"
 	"k8s.io/kops/upup/pkg/fi"
@@ -53,17 +54,18 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	c.AddTask(defaultCA)
 
 	{
-
-		t := &fitasks.Keypair{
-			Name:      fi.String("kubelet"),
-			Lifecycle: b.Lifecycle,
-
-			Subject: "o=" + user.NodesGroup + ",cn=kubelet",
-			Type:    "client",
-			Signer:  defaultCA,
-			Format:  format,
+		// @check of bootstrap tokens are enable if so, disable the creation of the kubelet certificate - we also
+		// block at the IAM level for AWS cluster for pre-existing clusters.
+		if !b.UseBootstrapTokens() {
+			c.AddTask(&fitasks.Keypair{
+				Name:      fi.String("kubelet"),
+				Lifecycle: b.Lifecycle,
+				Subject:   "o=" + user.NodesGroup + ",cn=kubelet",
+				Type:      "client",
+				Signer:    defaultCA,
+				Format:    format,
+			})
 		}
-		c.AddTask(t)
 	}
 	{
 		// Generate a kubelet client certificate for api to speak securely to kubelets. This change was first
@@ -284,17 +286,20 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// But I'm conscious not to do too much work on bootstrap tokens as it might overlay further down the
 	// line with the machines api
 	if b.UseBootstrapTokens() {
+		serviceName := "node-authorizer-internal"
+
 		alternateNames := []string{
 			"127.0.0.1",
 			"localhost",
-			"node-bootstrap-internal",
-			"node-bootstrap-internal." + b.Cluster.Spec.DNSZone,
+			serviceName,
+			strings.Join([]string{serviceName, b.Cluster.Name}, "."),
+			strings.Join([]string{serviceName, b.Cluster.Spec.DNSZone}, "."),
 		}
 
 		// @note: the certificate used by the node authorizers
 		c.AddTask(&fitasks.Keypair{
-			Name:           fi.String("node-bootstrap"),
-			Subject:        "cn=node-bootstrap",
+			Name:           fi.String("node-authorizer"),
+			Subject:        "cn=node-authorizaer",
 			Type:           "server",
 			AlternateNames: alternateNames,
 			Signer:         defaultCA,
@@ -303,8 +308,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// @note: we use this for mutual tls between between node and authorizer
 		c.AddTask(&fitasks.Keypair{
-			Name:    fi.String("node-bootstrap-client"),
-			Subject: "cn=node-bootstrap-client",
+			Name:    fi.String("node-authorizer-client"),
+			Subject: "cn=node-authorizer-client",
 			Type:    "client",
 			Signer:  defaultCA,
 			Format:  format,

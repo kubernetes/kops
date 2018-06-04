@@ -115,7 +115,19 @@ func (c *NodeupModelContext) CNIBinDir() string {
 
 // KubeletBootstrapConfig is the path the bootstrap config file
 func (c *NodeupModelContext) KubeletBootstrapConfig() string {
-	return c.Cluster.Spec.Kubelet.BootstrapKubeconfig
+	path := c.Cluster.Spec.Kubelet.BootstrapKubeconfig
+
+	if c.IsMaster {
+		if c.Cluster.Spec.MasterKubelet != nil && c.Cluster.Spec.MasterKubelet.BootstrapKubeconfig != "" {
+			path = c.Cluster.Spec.MasterKubelet.BootstrapKubeconfig
+		}
+	}
+
+	if path != "" {
+		return path
+	}
+
+	return "/var/lib/kubelet/bootstrap-kubeconfig"
 }
 
 // KubeletKubeConfig is the path of the kubelet kubeconfig file
@@ -252,7 +264,14 @@ func (c *NodeupModelContext) UsesCNI() bool {
 
 // UseBootstrapTokens checks if we are using bootstrap tokens
 func (c *NodeupModelContext) UseBootstrapTokens() bool {
-	return c.Cluster.Spec.Kubelet.BootstrapKubeconfig != ""
+	if c.Cluster.Spec.Kubelet.BootstrapKubeconfig != "" {
+		return true
+	}
+	if c.Cluster.Spec.MasterKubelet != nil && c.Cluster.Spec.MasterKubelet.BootstrapKubeconfig != "" {
+		return true
+	}
+
+	return false
 }
 
 // UseSecureKubelet checks if the kubelet api should be protected by a client certificate. Note: the settings are
@@ -295,15 +314,15 @@ func (c *NodeupModelContext) KubectlPath() string {
 }
 
 // BuildCertificatePairTask creates the tasks to pull down the certificate and private key
-func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContext, name, path string) error {
-	certificate := fmt.Sprintf("%s/%s.pem", path, name)
-	key := fmt.Sprintf("%s/%s-key.pem", path, name)
+func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContext, key, path, filename string) error {
+	certificateName := fmt.Sprintf("%s/%s.pem", strings.TrimSuffix(path, "/"), filename)
+	keyName := fmt.Sprintf("%s/%s-key.pem", strings.TrimSuffix(path, "/"), filename)
 
-	if err := c.BuildCertificateTask(ctx, name, certificate); err != nil {
+	if err := c.BuildCertificateTask(ctx, key, certificateName); err != nil {
 		return err
 	}
 
-	return c.BuildPrivateKeyTask(ctx, name, key)
+	return c.BuildPrivateKeyTask(ctx, key, keyName)
 }
 
 // BuildCertificateTask is responsible for build a certificate request task
@@ -326,7 +345,7 @@ func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, n
 		Path:     filepath.Join(c.PathSrvKubernetes(), filename),
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
-		Mode:     s("0400"),
+		Mode:     s("0600"),
 	})
 
 	return nil
@@ -352,7 +371,7 @@ func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, na
 		Path:     filepath.Join(c.PathSrvKubernetes(), filename),
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
-		Mode:     s("0400"),
+		Mode:     s("0600"),
 	})
 
 	return nil
