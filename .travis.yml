@@ -11,4 +11,3 @@ go_import_path: k8s.io/kops
 
 script:
   - make ci
-  - hack/verify-apimachinery.sh
