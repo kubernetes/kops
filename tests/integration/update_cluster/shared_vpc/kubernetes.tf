@@ -34,6 +34,14 @@ output "region" {
   value = "us-test-1"
 }
 
+output "route_table_public_id" {
+  value = "${aws_route_table.sharedvpc-example-com.id}"
+}
+
+output "subnet_us-test-1a-public_id" {
+  value = "${aws_subnet.us-test-1a-sharedvpc-example-com.id}"
+}
+
 output "vpc_id" {
   value = "vpc-12345678"
 }

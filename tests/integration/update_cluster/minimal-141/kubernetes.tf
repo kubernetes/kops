@@ -34,6 +34,18 @@ output "region" {
   value = "us-test-1"
 }
 
+output "route_table_public_id" {
+  value = "${aws_route_table.minimal-141-example-com.id}"
+}
+
+output "subnet_us-test-1a-public_id" {
+  value = "${aws_subnet.us-test-1a-minimal-141-example-com.id}"
+}
+
+output "vpc_cidr_block" {
+  value = "${aws_vpc.minimal-141-example-com.cidr_block}"
+}
+
 output "vpc_id" {
   value = "${aws_vpc.minimal-141-example-com.id}"
 }
