@@ -59,6 +59,13 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 		return field.Invalid(field.NewPath("Role"), g.Spec.Role, "Unknown role")
 	}
 
+	// @check the fileAssets for this instancegroup are valid
+	for i := range g.Spec.FileAssets {
+		if errs := validateFileAssetSpec(&g.Spec.FileAssets[i], field.NewPath("fileAssets").Index(i)); len(errs) > 0 {
+			return errs.ToAggregate()
+		}
+	}
+
 	if g.IsMaster() {
 		if len(g.Spec.Subnets) == 0 {
 			return fmt.Errorf("Master InstanceGroup %s did not specify any Subnets", g.ObjectMeta.Name)
