@@ -499,6 +499,15 @@ verify-gofmt:
 verify-packages: ${BINDATA_TARGETS}
 	hack/verify-packages.sh
 
+.PHONY: verify-misspelling
+verify-misspelling:
+	@which misspell 2>/dev/null ; if [ $$? -eq 1 ]; then \
+		go get -u github.com/client9/misspell/cmd/misspell; \
+	fi
+	@find . -type f \( -name "*.go*" -o -name "*.md*" \) -a \( -not -path "./vendor/*" -not -path "./_vendor/*" \) | \
+		sed -e /README-ES.md/d -e /node_modules/d | \
+		xargs misspell -error
+
 .PHONY: verify-gendocs
 verify-gendocs: ${KOPS}
 	@TMP_DOCS="$$(mktemp -d)"; \
@@ -519,7 +528,7 @@ verify-bazel:
 # verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendoc generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-boilerplate verify-bazel nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+ci: govet verify-gofmt verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 # --------------------------------------------------
