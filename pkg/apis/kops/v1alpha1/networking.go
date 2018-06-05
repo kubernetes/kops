@@ -123,7 +123,11 @@ type RomanaNetworkingSpec struct {
 }
 
 // AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking
-type AmazonVPCNetworkingSpec struct{}
+type AmazonVPCNetworkingSpec struct {
+	// The container image name to use, which by default is:
+	// 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:0.1.1
+	ImageName string `json:"imageName,omitempty"`
+}
 
 // CiliumNetworkingSpec declares that we want Cilium networking
 type CiliumNetworkingSpec struct {
