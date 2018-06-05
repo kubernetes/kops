@@ -13,6 +13,9 @@ required = [
   "k8s.io/code-generator/cmd/openapi-gen",
   "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot",
   "github.com/kubernetes-incubator/reference-docs/gen-apidocs",
+
+  # Needed for bazel generation / verification
+  "github.com/bazelbuild/bazel-gazelle/cmd/gazelle",
 ]
 
 [prune]
@@ -24,6 +27,10 @@ required = [
     name = "k8s.io/code-generator"
     unused-packages = false
     non-go = false
+
+[[override]]
+  name = "github.com/bazelbuild/bazel-gazelle"
+  version = "0.11.0"
 
 # aws-sdk-go is one of our critical dependencies
 [[override]]
@@ -270,7 +277,7 @@ required = [
   revision = "e31f36ffc91a2ba9ddb72a4b6a607ff9b3d3cb63"
 [[override]]
   name = "github.com/pelletier/go-toml"
-  revision = "0049ab3dc4c4c70a9eee23087437b69c0dde2130"
+  revision = "16398bac157da96aa88f98a2df640c7f32af1da2"
 [[override]]
   name = "github.com/google/gofuzz"
   revision = "44d81051d367757e1c7c6a5a86423ece9afcf63c"

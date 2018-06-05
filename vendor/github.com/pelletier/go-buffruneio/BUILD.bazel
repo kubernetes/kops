@@ -1,9 +1,0 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
-
-go_library(
-    name = "go_default_library",
-    srcs = ["buffruneio.go"],
-    importmap = "vendor/github.com/pelletier/go-buffruneio",
-    importpath = "github.com/pelletier/go-buffruneio",
-    visibility = ["//visibility:public"],
-)
