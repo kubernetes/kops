@@ -45,7 +45,6 @@ import (
 func FixFile(c *config.Config, f *bf.File) {
 	migrateLibraryEmbed(c, f)
 	migrateGrpcCompilers(c, f)
-	removeBinaryImportPath(c, f)
 	flattenSrcs(c, f)
 	squashCgoLibrary(c, f)
 	squashXtest(c, f)
@@ -90,22 +89,6 @@ func migrateGrpcCompilers(c *config.Config, f *bf.File) {
 		rule.SetAttr("compilers", &bf.ListExpr{
 			List: []bf.Expr{&bf.StringExpr{Value: config.GrpcCompilerLabel}},
 		})
-	}
-}
-
-// removeBinaryImportPath removes "importpath" attributes from "go_binary"
-// and "go_test" rules. These are now deprecated.
-func removeBinaryImportPath(c *config.Config, f *bf.File) {
-	for _, stmt := range f.Stmt {
-		call, ok := stmt.(*bf.CallExpr)
-		if !ok {
-			continue
-		}
-		rule := bf.Rule{Call: call}
-		if rule.Kind() != "go_binary" && rule.Kind() != "go_test" {
-			continue
-		}
-		rule.DelAttr("importpath")
 	}
 }
 
