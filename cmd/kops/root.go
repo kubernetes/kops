@@ -126,7 +126,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	if strings.HasSuffix(defaultStateStore, "/") {
 		defaultStateStore = strings.TrimSuffix(defaultStateStore, "/")
 	}
-	cmd.PersistentFlags().StringVarP(&rootCommand.RegistryPath, "state", "", defaultStateStore, "Location of state storage. Overrides KOPS_STATE_STORE environment variable")
+	cmd.PersistentFlags().StringVarP(&rootCommand.RegistryPath, "state", "", defaultStateStore, "Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable")
 
 	defaultClusterName := os.Getenv("KOPS_CLUSTER_NAME")
 	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", defaultClusterName, "Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable")
