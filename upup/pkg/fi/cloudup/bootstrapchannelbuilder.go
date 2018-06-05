@@ -699,11 +699,11 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.AmazonVPC != nil {
 		key := "networking.amazon-vpc-routed-eni"
-		version := "0.1.1-kops.1"
+		version := "1.0.0-kops.1"
 
 		{
-			location := fmt.Sprintf("%v/%v.yaml", key, version)
 			id := "k8s-1.7"
+			location := key + "/" + id + ".yaml"
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
