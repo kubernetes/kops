@@ -148,6 +148,11 @@ func TestSharedVPC(t *testing.T) {
 	runTestAWS(t, "sharedvpc.example.com", "shared_vpc", "v1alpha2", false, 1)
 }
 
+// TestAdditionalCIDR runs the test on a configuration with a shared VPC
+func TestAdditionalCIDR(t *testing.T) {
+	runTestCloudformation(t, "additionalcidr.example.com", "additional_cidr", "v1alpha2", false)
+}
+
 // TestPhaseNetwork tests the output of tf for the network phase
 func TestPhaseNetwork(t *testing.T) {
 	runTestPhase(t, "lifecyclephases.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseNetwork)
