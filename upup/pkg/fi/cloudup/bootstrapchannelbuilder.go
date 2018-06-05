@@ -761,7 +761,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		}
 		if b.cluster.Spec.Authentication.Heptio != nil {
 			key := "authentication.hept.io"
-			version := "0.1.0"
+			version := "0.3.0"
 
 			{
 				location := key + "/k8s-1.10.yaml"
