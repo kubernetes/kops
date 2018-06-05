@@ -8,8 +8,8 @@ go_library(
         "generator.go",
         "sort_labels.go",
     ],
-    importmap = "vendor/github.com/bazelbuild/bazel-gazelle/internal/rules",
-    importpath = "github.com/bazelbuild/bazel-gazelle/internal/rules",
+    importmap = "vendor/github.com/bazelbuild/bazel-gazelle/internal/generator",
+    importpath = "github.com/bazelbuild/bazel-gazelle/internal/generator",
     visibility = ["//vendor/github.com/bazelbuild/bazel-gazelle:__subpackages__"],
     deps = [
         "//vendor/github.com/bazelbuild/bazel-gazelle/internal/config:go_default_library",

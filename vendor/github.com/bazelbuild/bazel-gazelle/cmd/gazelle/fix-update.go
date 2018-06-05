@@ -26,12 +26,12 @@ import (
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/internal/config"
+	"github.com/bazelbuild/bazel-gazelle/internal/generator"
 	"github.com/bazelbuild/bazel-gazelle/internal/label"
 	"github.com/bazelbuild/bazel-gazelle/internal/merger"
 	"github.com/bazelbuild/bazel-gazelle/internal/packages"
 	"github.com/bazelbuild/bazel-gazelle/internal/repos"
 	"github.com/bazelbuild/bazel-gazelle/internal/resolve"
-	"github.com/bazelbuild/bazel-gazelle/internal/rules"
 	"github.com/bazelbuild/bazel-gazelle/internal/wspace"
 	bf "github.com/bazelbuild/buildtools/build"
 )
@@ -118,7 +118,7 @@ func runFixUpdate(cmd command, args []string) error {
 
 		// Generate new rules and merge them into the existing file (if present).
 		if pkg != nil {
-			g := rules.NewGenerator(c, l, file)
+			g := generator.NewGenerator(c, l, file)
 			rules, empty, err := g.GenerateRules(pkg)
 			if err != nil {
 				log.Print(err)
@@ -161,7 +161,7 @@ func runFixUpdate(cmd command, args []string) error {
 
 	// Emit merged files.
 	for _, v := range visits {
-		rules.SortLabels(v.file)
+		generator.SortLabels(v.file)
 		merger.FixLoads(v.file)
 		bf.Rewrite(v.file, nil) // have buildifier 'format' our rules.
 

@@ -234,12 +234,8 @@ func (r *Resolver) resolveGo(imp string, from label.Label) (label.Label, error) 
 		return label.NoLabel, standardImportError{imp}
 	}
 
-	if isWellKnownGo(imp) {
-		return label.Label{
-			Repo: config.RulesGoRepoName,
-			Pkg:  config.WellKnownTypesPkg,
-			Name: path.Base(imp) + "_go_proto",
-		}, nil
+	if l := resolveWellKnownGo(imp); !l.Equal(label.NoLabel) {
+		return l, nil
 	}
 
 	if l, err := r.ix.findLabelByImport(importSpec{config.GoLang, imp}, config.GoLang, from); err != nil {
@@ -340,6 +336,42 @@ func IsStandard(imp string) bool {
 
 func isWellKnownProto(imp string) bool {
 	return pathtools.HasPrefix(imp, config.WellKnownTypesProtoPrefix) && pathtools.TrimPrefix(imp, config.WellKnownTypesProtoPrefix) == path.Base(imp)
+}
+
+func resolveWellKnownGo(imp string) label.Label {
+	// keep in sync with @io_bazel_rules_go//proto/wkt:well_known_types.bzl
+	// TODO(jayconrod): in well_known_types.bzl, write the import paths and
+	// targets in a public dict. Import it here, and use it to generate this code.
+	switch imp {
+	case "github.com/golang/protobuf/ptypes/any",
+		"github.com/golang/protobuf/ptypes/api",
+		"github.com/golang/protobuf/protoc-gen-go/descriptor",
+		"github.com/golang/protobuf/ptypes/duration",
+		"github.com/golang/protobuf/ptypes/empty",
+		"google.golang.org/genproto/protobuf/field_mask",
+		"google.golang.org/genproto/protobuf/source_context",
+		"github.com/golang/protobuf/ptypes/struct",
+		"github.com/golang/protobuf/ptypes/timestamp",
+		"github.com/golang/protobuf/ptypes/wrappers":
+		return label.Label{
+			Repo: config.RulesGoRepoName,
+			Pkg:  config.WellKnownTypesPkg,
+			Name: path.Base(imp) + "_go_proto",
+		}
+	case "github.com/golang/protobuf/protoc-gen-go/plugin":
+		return label.Label{
+			Repo: config.RulesGoRepoName,
+			Pkg:  config.WellKnownTypesPkg,
+			Name: "compiler_plugin_go_proto",
+		}
+	case "google.golang.org/genproto/protobuf/ptype":
+		return label.Label{
+			Repo: config.RulesGoRepoName,
+			Pkg:  config.WellKnownTypesPkg,
+			Name: "type_go_proto",
+		}
+	}
+	return label.NoLabel
 }
 
 func isWellKnownGo(imp string) bool {
