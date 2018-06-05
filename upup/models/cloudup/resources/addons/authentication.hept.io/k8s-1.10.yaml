@@ -34,7 +34,7 @@ spec:
       # - output (output kubeconfig to plug into your apiserver configuration, mounted from the host)
       containers:
       - name: heptio-authenticator-aws
-        image: gcr.io/heptio-images/authenticator:v0.1.0
+        image: gcr.io/heptio-images/authenticator:v0.3.0
         args:
         - server
         - --config=/etc/heptio-authenticator-aws/config.yaml
