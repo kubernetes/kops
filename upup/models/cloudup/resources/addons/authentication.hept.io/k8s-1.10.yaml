@@ -39,6 +39,7 @@ spec:
         - server
         - --config=/etc/heptio-authenticator-aws/config.yaml
         - --state-dir=/var/heptio-authenticator-aws
+        - --kubeconfig-pregenerated=true
 
         resources:
           requests:
