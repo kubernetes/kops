@@ -25,13 +25,20 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
+// ValidateInstanceGroup is responsible for validating the configuration of a instancegroup
 func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 	if g.ObjectMeta.Name == "" {
 		return field.Required(field.NewPath("Name"), "")
 	}
 
-	if g.Spec.Role == "" {
-		return field.Required(field.NewPath("Role"), "Role must be set")
+	switch g.Spec.Role {
+	case "":
+		field.Required(field.NewPath("Role"), "Role must be set")
+	case kops.InstanceGroupRoleMaster:
+	case kops.InstanceGroupRoleNode:
+	case kops.InstanceGroupRoleBastion:
+	default:
+		return field.Invalid(field.NewPath("Role"), g.Spec.Role, "Unknown role")
 	}
 
 	if g.Spec.Tenancy != "" {
@@ -50,13 +57,11 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 		return field.Invalid(field.NewPath("RootVolumeIops"), g.Spec.RootVolumeIops, "RootVolumeIops must be greater than 0")
 	}
 
-	switch g.Spec.Role {
-	case kops.InstanceGroupRoleMaster:
-	case kops.InstanceGroupRoleNode:
-	case kops.InstanceGroupRoleBastion:
-
-	default:
-		return field.Invalid(field.NewPath("Role"), g.Spec.Role, "Unknown role")
+	// @check all the hooks are valid in this instancegroup
+	for i := range g.Spec.Hooks {
+		if errs := validateHookSpec(&g.Spec.Hooks[i], field.NewPath("hooks").Index(i)); len(errs) > 0 {
+			return errs.ToAggregate()
+		}
 	}
 
 	if g.IsMaster() {
