@@ -83,6 +83,7 @@ func init() {
 			},
 			attrs: []string{
 				"importpath",
+				"importmap",
 			},
 		}, {
 			mergeableAttrs: PreResolveAttrs,

@@ -30,7 +30,7 @@ required = [
 
 [[override]]
   name = "github.com/bazelbuild/bazel-gazelle"
-  version = "0.11.0"
+  version = "0.12.0"
 
 # aws-sdk-go is one of our critical dependencies
 [[override]]
