@@ -33,7 +33,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 
 	switch g.Spec.Role {
 	case "":
-		field.Required(field.NewPath("Role"), "Role must be set")
+		return field.Required(field.NewPath("Role"), "Role must be set")
 	case kops.InstanceGroupRoleMaster:
 	case kops.InstanceGroupRoleNode:
 	case kops.InstanceGroupRoleBastion:
