@@ -262,6 +262,13 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 			diffString := diff.FormatDiff(string(expectedTF), string(actualTF))
 			t.Logf("diff:\n%s\n", diffString)
 
+			if os.Getenv("HACK_UPDATE_TF_IN_PLACE") != "" {
+				if err := ioutil.WriteFile(path.Join(srcDir, testDataTFPath), actualTF, 0644); err != nil {
+					t.Errorf("error writing terraform output: %v", err)
+				}
+				t.Errorf("terraform output differed from expected")
+				return // Avoid Fatalf as we want to keep going and update all files
+			}
 			t.Fatalf("terraform output differed from expected")
 		}
 	}
