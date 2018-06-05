@@ -76,11 +76,19 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			t.CIDR = s(b.Cluster.Spec.NetworkCIDR)
 		}
 
-		for _, cidr := range b.Cluster.Spec.AdditionalNetworkCIDRs {
-			t.AdditionalCIDR = append(t.AdditionalCIDR, cidr)
-		}
-
 		c.AddTask(t)
+	}
+
+	if !sharedVPC {
+		for _, cidr := range b.Cluster.Spec.AdditionalNetworkCIDRs {
+			c.AddTask(&awstasks.VPCCIDRBlock{
+				Name:      s(cidr),
+				Lifecycle: b.Lifecycle,
+				VPC:       b.LinkToVPC(),
+				Shared:    fi.Bool(sharedVPC),
+				CIDRBlock: &cidr,
+			})
+		}
 	}
 
 	if !sharedVPC {
