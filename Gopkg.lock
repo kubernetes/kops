@@ -132,6 +132,33 @@
   version = "v1.13.60"
 
 [[projects]]
+  name = "github.com/bazelbuild/bazel-gazelle"
+  packages = [
+    "cmd/gazelle",
+    "internal/config",
+    "internal/label",
+    "internal/merger",
+    "internal/packages",
+    "internal/pathtools",
+    "internal/repos",
+    "internal/resolve",
+    "internal/rules",
+    "internal/version",
+    "internal/wspace"
+  ]
+  revision = "8bc6a862933eaa0d7431e15b308ceadc5729a6f9"
+  version = "0.11.0"
+
+[[projects]]
+  name = "github.com/bazelbuild/buildtools"
+  packages = [
+    "build",
+    "tables"
+  ]
+  revision = "a05406a1a855c6d8ebfc368555ace7638d83c0d9"
+  version = "0.6.0"
+
+[[projects]]
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
   revision = "3ac7bf7a47d159a033b107610db8a1b6575507a4"
@@ -653,14 +680,9 @@
   revision = "ca53cad383cad2479bbba7f7a1a05797ec1386e4"
 
 [[projects]]
-  name = "github.com/pelletier/go-buffruneio"
-  packages = ["."]
-  revision = "df1e16fde7fc330a0ca68167c23bf7ed6ac31d6d"
-
-[[projects]]
   name = "github.com/pelletier/go-toml"
   packages = ["."]
-  revision = "0049ab3dc4c4c70a9eee23087437b69c0dde2130"
+  revision = "16398bac157da96aa88f98a2df640c7f32af1da2"
 
 [[projects]]
   branch = "master"
@@ -908,6 +930,7 @@
   name = "golang.org/x/tools"
   packages = [
     "go/ast/astutil",
+    "go/vcs",
     "imports"
   ]
   revision = "2382e3994d48b1d22acc2c86bcad0a2aff028e32"
@@ -1682,6 +1705,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3d38ca7b82642506ef66da3ad14ca8c4c21dc1946a4e50e26764ef97f1f8d36c"
+  inputs-digest = "58d32a6c6135648fdf5892a72201aa53b98de7de1727318b9bc262af1301785b"
   solver-name = "gps-cdcl"
   solver-version = 1
