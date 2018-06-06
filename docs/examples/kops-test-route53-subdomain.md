@@ -1,6 +1,6 @@
 # USING KOPS WITH A ROUTE53 BASED SUBDOMAIN AND SCALING UP THE CLUSTER
 
-## WHAT WE WANT TO ACOMPLISH HERE/
+## WHAT WE WANT TO ACCOMPLISH HERE/
 
 The exercise described in this document will focus on the following goals:
 

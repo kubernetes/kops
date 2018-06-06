@@ -54,7 +54,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	// @question: should the question every be able to set this?
 	if c.StorageBackend == nil {
 		// @note: we can use the first version as we enforce both running the same versions.
-		// albeit feels a little wierd to do this
+		// albeit feels a little weird to do this
 		sem, err := semver.Parse(strings.TrimPrefix(clusterSpec.EtcdClusters[0].Version, "v"))
 		if err != nil {
 			return err

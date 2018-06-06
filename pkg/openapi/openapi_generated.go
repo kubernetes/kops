@@ -25960,7 +25960,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"enableTLSAuth": {
 							SchemaProps: spec.SchemaProps{
-								Description: "EnableTLSAuth indicats client and peer TLS auth should be enforced",
+								Description: "EnableTLSAuth indicates client and peer TLS auth should be enforced",
 								Type:        []string{"boolean"},
 								Format:      "",
 							},
