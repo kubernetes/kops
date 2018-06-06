@@ -6,7 +6,7 @@ Static compilation of html from markdown including processing for grouping code 
 
 \> bdocs-tab:kubectl Deployment Config to run 3 nginx instances (max rollback set to 10 revisions).
 
-bdocs-tab:tab will be stripped during rendering and utilized to with CSS to show or hide the prefered tab. kubectl indicates the desired tab, since blockquotes have no specific syntax highlighting.
+bdocs-tab:tab will be stripped during rendering and utilized to with CSS to show or hide the preferred tab. kubectl indicates the desired tab, since blockquotes have no specific syntax highlighting.
 
 \`\`\`bdocs-tab:kubectl_yaml
 apiVersion: extensions/v1beta1
@@ -42,7 +42,7 @@ As a NodeJS program, a valid installation of node is required. Once node is inst
 ```
 node --version
 ```
-Next, depedencies need to be installed via npm from the root of the project directory.
+Next, dependencies need to be installed via npm from the root of the project directory.
 ```
 npm install
 ```

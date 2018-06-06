@@ -296,7 +296,7 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 			t.Fatalf("unexpected data files.  actual=%q, expected=%q", actualDataFilenames, expectedDataFilenames)
 		}
 
-		// Some tests might provide _some_ tf data files (not necessarilly all that
+		// Some tests might provide _some_ tf data files (not necessarily all that
 		// are actually produced), validate that the provided expected data file
 		// contents match actual data file content
 		expectedDataPath := path.Join(srcDir, "data")
