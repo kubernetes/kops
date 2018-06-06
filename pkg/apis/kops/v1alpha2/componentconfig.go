@@ -186,6 +186,8 @@ type KubeProxyConfig struct {
 	ClusterCIDR string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
 	// HostnameOverride, if non-empty, will be used as the identity instead of the actual hostname.
 	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
+	// BindAddress is IP address for the proxy server to serve on
+	BindAddress string `json:"bindAddress,omitempty" flag:"bind-address"`
 	// Master is the address of the Kubernetes API server (overrides any value in kubeconfig)
 	Master string `json:"master,omitempty" flag:"master"`
 	// Enabled allows enabling or disabling kube-proxy

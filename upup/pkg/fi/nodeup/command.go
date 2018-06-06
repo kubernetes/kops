@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -321,6 +322,10 @@ func evaluateSpec(c *api.Cluster) error {
 		if err != nil {
 			return err
 		}
+		c.Spec.KubeProxy.BindAddress, err = evaluateBindAddress(c.Spec.KubeProxy.BindAddress)
+		if err != nil {
+			return err
+		}
 	}
 
 	if c.Spec.Docker != nil {
@@ -378,6 +383,36 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 	}
 
 	return hostnameOverride, nil
+}
+
+func evaluateBindAddress(bindAddress string) (string, error) {
+	if bindAddress == "" {
+		return "", nil
+	}
+	if bindAddress == "@aws" {
+		vBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-ipv4")
+		if err != nil {
+			return "", fmt.Errorf("error reading local IP from AWS metadata: %v", err)
+		}
+
+		// The local-ipv4 gets it's IP from the AWS.
+		// For now just choose the first one.
+		ips := strings.Fields(string(vBytes))
+		if len(ips) == 0 {
+			glog.Warningf("Local IP from AWS metadata service was empty")
+			return "", nil
+		} else {
+			ip := ips[0]
+			glog.Infof("Using IP from AWS metadata service: %s", ip)
+
+			return ip, nil
+		}
+	}
+
+	if net.ParseIP(bindAddress) == nil {
+		return "", fmt.Errorf("bindAddress is not valid IP address")
+	}
+	return bindAddress, nil
 }
 
 // evaluateDockerSpec selects the first supported storage mode, if it is a list
