@@ -283,7 +283,7 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 			t.Fatalf("unexpected data files.  actual=%q, expected=%q", actualFilenames, expectedFilenames)
 		}
 
-		// Some tests might provide _some_ tf data files (not necessarilly all that
+		// Some tests might provide _some_ tf data files (not necessarily all that
 		// are actually produced), validate that the provided expected data file
 		// contents match actual data file content
 		expectedDataPath := path.Join(srcDir, "data")
@@ -584,8 +584,8 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 				t.Fatalf("unexpected error expected cloudformation not found for k: %v", key)
 			}
 
-			// Strip cariage return as expectedValue is stored in a yaml string literal
-			// and golang will automaticaly strip CR from any string literal
+			// Strip carriage return as expectedValue is stored in a yaml string literal
+			// and golang will automatically strip CR from any string literal
 			extractedValueTrimmed := strings.Replace(extractedValue, "\r", "", -1)
 			if expectedValue != extractedValueTrimmed {
 
