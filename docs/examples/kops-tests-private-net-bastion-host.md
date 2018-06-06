@@ -1,6 +1,6 @@
 # USING KOPS WITH PRIVATE NETWORKING AND A BASTION HOST IN A HIGLY-AVAILABLE SETUP
 
-## WHAT WE WANT TO ACOMPLISH HERE?
+## WHAT WE WANT TO ACCOMPLISH HERE?
 
 The exercise described in this document will focus on the following goals:
 

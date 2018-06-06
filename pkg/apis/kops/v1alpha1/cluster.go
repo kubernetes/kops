@@ -323,7 +323,7 @@ type EtcdClusterSpec struct {
 	Name string `json:"name,omitempty"`
 	// Members stores the configurations for each member of the cluster (including the data volume)
 	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
-	// EnableTLSAuth indicats client and peer TLS auth should be enforced
+	// EnableTLSAuth indicates client and peer TLS auth should be enforced
 	EnableTLSAuth bool `json:"enableTLSAuth,omitempty"`
 	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients
 	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
