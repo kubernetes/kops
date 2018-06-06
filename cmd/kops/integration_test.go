@@ -599,8 +599,8 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 				t.Fatalf("unexpected error expected cloudformation not found for k: %v", key)
 			}
 
-			// Strip cariage return as expectedValue is stored in a yaml string literal
-			// and golang will automaticaly strip CR from any string literal
+			// Strip carriage return as expectedValue is stored in a yaml string literal
+			// and golang will automatically strip CR from any string literal
 			extractedValueTrimmed := strings.Replace(extractedValue, "\r", "", -1)
 			if expectedValue != extractedValueTrimmed {
 
