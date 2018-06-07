@@ -151,6 +151,14 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 		request.ACL = s3Acl.RequestACL
 	}
 
+	sseKMSKey := os.Getenv("KOPS_STATE_S3_SSEKMSKEY")
+	sseKMSKey = strings.TrimSpace(sseKMSKey)
+	if sseKMSKey != "" {
+		glog.Infof("Using KOPS_STATE_S3_SSEKMSKEY=%s", sseKMSKey)
+		request.SSEKMSKeyId = aws.String(sseKMSKey)
+		request.ServerSideEncryption = aws.String("aws:kms")
+	}
+
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208
 
 	glog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q SSE=%q ACL=%q", p.bucket, p.key, sse, acl)
