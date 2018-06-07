@@ -87,7 +87,7 @@ var (
 	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha
 	AlphaAllowALI = featureflag.New("AlphaAllowALI", featureflag.Bool(false))
 	// CloudupModels a list of supported models
-	CloudupModels = []string{"config", "proto", "cloudup"}
+	CloudupModels = []string{"proto", "cloudup"}
 )
 
 type ApplyClusterCmd struct {

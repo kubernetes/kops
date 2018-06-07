@@ -86,7 +86,7 @@ kops create cluster [flags]
       --master-tenancy string            The tenancy of the master group on AWS. Can either be default or dedicated.
       --master-volume-size int32         Set instance volume size (in GB) for masters
       --master-zones strings             Zones in which to run masters (must be an odd number)
-      --model string                     Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
+      --model string                     Models to apply (separate multiple models with commas) (default "proto,cloudup")
       --network-cidr string              Set to override the default network CIDR
       --networking string                Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium. (default "kubenet")
       --node-count int32                 Set the number of nodes

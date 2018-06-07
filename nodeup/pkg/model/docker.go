@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model/resources"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -764,7 +765,17 @@ func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderCo
 
 // buildSysconfig is responsible for extracting the docker configuration and writing the sysconfig file
 func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
-	flagsString, err := flagbuilder.BuildFlags(b.Cluster.Spec.Docker)
+	var docker kops.DockerConfig
+	if b.Cluster.Spec.Docker != nil {
+		docker = *b.Cluster.Spec.Docker
+	}
+
+	// ContainerOS now sets the storage flag in /etc/docker/daemon.json, and it is an error to set it twice
+	if b.Distribution == distros.DistributionContainerOS {
+		docker.Storage = nil
+	}
+
+	flagsString, err := flagbuilder.BuildFlags(&docker)
 	if err != nil {
 		return fmt.Errorf("error building docker flags: %v", err)
 	}
