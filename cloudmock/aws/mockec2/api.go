@@ -26,6 +26,9 @@ import (
 )
 
 type MockEC2 struct {
+	// Stub out interface
+	ec2iface.EC2API
+
 	mutex sync.Mutex
 
 	addressNumber int

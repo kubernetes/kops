@@ -40,7 +40,6 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 	"k8s.io/kubernetes/pkg/kubectl/scheme"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
-	"k8s.io/kubernetes/pkg/printers"
 )
 
 var patchTypes = map[string]types.PatchType{"json": types.JSONPatchType, "merge": types.MergePatchType, "strategic": types.StrategicMergePatchType}
@@ -82,20 +81,11 @@ var (
 
 func NewCmdPatch(f cmdutil.Factory, out io.Writer) *cobra.Command {
 	options := &PatchOptions{}
-
-	// retrieve a list of handled resources from printer as valid args
-	validArgs, argAliases := []string{}, []string{}
-	p, err := f.Printer(nil, printers.PrintOptions{
-		ColumnLabels: []string{},
-	})
-	cmdutil.CheckErr(err)
-	if p != nil {
-		validArgs = p.HandledResources()
-		argAliases = kubectl.ResourceAliases(validArgs)
-	}
+	validArgs := cmdutil.ValidArgList(f)
 
 	cmd := &cobra.Command{
-		Use:     "patch (-f FILENAME | TYPE NAME) -p PATCH",
+		Use: "patch (-f FILENAME | TYPE NAME) -p PATCH",
+		DisableFlagsInUseLine: true,
 		Short:   i18n.T("Update field(s) of a resource using strategic merge patch"),
 		Long:    patchLong,
 		Example: patchExample,
@@ -105,7 +95,7 @@ func NewCmdPatch(f cmdutil.Factory, out io.Writer) *cobra.Command {
 			cmdutil.CheckErr(err)
 		},
 		ValidArgs:  validArgs,
-		ArgAliases: argAliases,
+		ArgAliases: kubectl.ResourceAliases(validArgs),
 	}
 	cmd.Flags().StringP("patch", "p", "", "The patch to be applied to the resource JSON file.")
 	cmd.MarkFlagRequired("patch")
@@ -117,7 +107,7 @@ func NewCmdPatch(f cmdutil.Factory, out io.Writer) *cobra.Command {
 	usage := "identifying the resource to update"
 	cmdutil.AddFilenameOptionFlags(cmd, &options.FilenameOptions, usage)
 
-	cmd.Flags().BoolVar(&options.Local, "local", false, "If true, patch will operate on the content of the file, not the server-side resource.")
+	cmd.Flags().BoolVar(&options.Local, "local", options.Local, "If true, patch will operate on the content of the file, not the server-side resource.")
 
 	return cmd
 }
@@ -220,9 +210,9 @@ func RunPatch(f cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []strin
 			}
 
 			if len(options.OutputFormat) > 0 && options.OutputFormat != "name" {
-				return f.PrintResourceInfoForCommand(cmd, info, out)
+				return cmdutil.PrintObject(cmd, info.Object, out)
 			}
-			f.PrintSuccess(r.Mapper().RESTMapper, options.OutputFormat == "name", out, info.Mapping.Resource, info.Name, false, dataChangedMsg)
+			cmdutil.PrintSuccess(options.OutputFormat == "name", out, info.Object, false, dataChangedMsg)
 
 			// if object was not successfully patched, exit with error code 1
 			if !didPatch {
@@ -256,7 +246,7 @@ func RunPatch(f cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []strin
 		if err := info.Refresh(targetObj, true); err != nil {
 			return err
 		}
-		return f.PrintResourceInfoForCommand(cmd, info, out)
+		return cmdutil.PrintObject(cmd, info.Object, out)
 	})
 	if err != nil {
 		return err

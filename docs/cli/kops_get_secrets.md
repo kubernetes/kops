@@ -7,11 +7,10 @@ Get one or many secrets.
 
 ### Synopsis
 
-
 Display one or many secrets.
 
 ```
-kops get secrets
+kops get secrets [flags]
 ```
 
 ### Examples
@@ -27,6 +26,7 @@ kops get secrets
 ### Options
 
 ```
+  -h, --help          help for secrets
       --type string   Filter by secret type
 ```
 
@@ -40,12 +40,13 @@ kops get secrets
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
   -o, --output string                    output format.  One of: table, yaml, json (default "table")
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops get](kops_get.md)	 - Get one or many resources.
 

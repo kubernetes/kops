@@ -76,11 +76,19 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			t.CIDR = s(b.Cluster.Spec.NetworkCIDR)
 		}
 
-		for _, cidr := range b.Cluster.Spec.AdditionalNetworkCIDRs {
-			t.AdditionalCIDR = append(t.AdditionalCIDR, cidr)
-		}
-
 		c.AddTask(t)
+	}
+
+	if !sharedVPC {
+		for _, cidr := range b.Cluster.Spec.AdditionalNetworkCIDRs {
+			c.AddTask(&awstasks.VPCCIDRBlock{
+				Name:      s(cidr),
+				Lifecycle: b.Lifecycle,
+				VPC:       b.LinkToVPC(),
+				Shared:    fi.Bool(sharedVPC),
+				CIDRBlock: &cidr,
+			})
+		}
 	}
 
 	if !sharedVPC {
@@ -246,6 +254,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		var ngw *awstasks.NatGateway
+		var in *awstasks.Instance
 		if b.Cluster.Spec.Subnets[i].Egress != "" {
 			if strings.HasPrefix(b.Cluster.Spec.Subnets[i].Egress, "nat-") {
 
@@ -262,8 +271,20 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				c.AddTask(ngw)
 
+			} else if strings.HasPrefix(b.Cluster.Spec.Subnets[i].Egress, "i-") {
+
+				in = &awstasks.Instance{
+					Name:      s(b.Cluster.Spec.Subnets[i].Egress),
+					Lifecycle: b.Lifecycle,
+					ID:        s(b.Cluster.Spec.Subnets[i].Egress),
+					Shared:    fi.Bool(true),
+					Tags:      nil, // We don't need to add tags here
+				}
+
+				c.AddTask(in)
+
 			} else {
-				return fmt.Errorf("kops currently only supports re-use of NAT Gateways. We will support more eventually! Please see https://github.com/kubernetes/kops/issues/1530")
+				return fmt.Errorf("kops currently only supports re-use of either NAT EC2 Instances or NAT Gateways. We will support more eventually! Please see https://github.com/kubernetes/kops/issues/1530")
 			}
 
 		} else {
@@ -327,13 +348,28 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		//
 		// Routes for the private route table.
 		// Will route to the NAT Gateway
-		c.AddTask(&awstasks.Route{
-			Name:       s("private-" + zone + "-0.0.0.0/0"),
-			Lifecycle:  b.Lifecycle,
-			CIDR:       s("0.0.0.0/0"),
-			RouteTable: rt,
-			NatGateway: ngw,
-		})
+		var r *awstasks.Route
+		if in != nil {
+
+			r = &awstasks.Route{
+				Name:       s("private-" + zone + "-0.0.0.0/0"),
+				Lifecycle:  b.Lifecycle,
+				CIDR:       s("0.0.0.0/0"),
+				RouteTable: rt,
+				Instance:   in,
+			}
+
+		} else {
+
+			r = &awstasks.Route{
+				Name:       s("private-" + zone + "-0.0.0.0/0"),
+				Lifecycle:  b.Lifecycle,
+				CIDR:       s("0.0.0.0/0"),
+				RouteTable: rt,
+				NatGateway: ngw,
+			}
+		}
+		c.AddTask(r)
 
 	}
 

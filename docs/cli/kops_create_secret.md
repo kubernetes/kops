@@ -7,7 +7,6 @@ Create a secret.
 
 ### Synopsis
 
-
 Create a secret
 
 ### Examples
@@ -24,6 +23,12 @@ Create a secret
   --name k8s-cluster.example.com --state s3://example.com
 ```
 
+### Options
+
+```
+  -h, --help   help for secret
+```
+
 ### Options inherited from parent commands
 
 ```
@@ -33,13 +38,14 @@ Create a secret
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
 * [kops create secret dockerconfig](kops_create_secret_dockerconfig.md)	 - Create a docker config.
 * [kops create secret encryptionconfig](kops_create_secret_encryptionconfig.md)	 - Create an encryption config.

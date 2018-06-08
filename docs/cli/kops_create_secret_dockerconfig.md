@@ -7,11 +7,10 @@ Create a docker config.
 
 ### Synopsis
 
-
 Create a new docker config, and store it in the state store. Used to configure docker on each master or node (ie. for auth) Use update to modify it, this command will only create a new entry.
 
 ```
-kops create secret dockerconfig
+kops create secret dockerconfig [flags]
 ```
 
 ### Examples
@@ -30,6 +29,7 @@ kops create secret dockerconfig
 ```
   -f, -- string   Path to docker config JSON file
       --force     Force replace the kops secret if it already exists
+  -h, --help      help for dockerconfig
 ```
 
 ### Options inherited from parent commands
@@ -41,12 +41,13 @@ kops create secret dockerconfig
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops create secret](kops_create_secret.md)	 - Create a secret.
 

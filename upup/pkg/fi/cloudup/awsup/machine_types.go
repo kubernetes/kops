@@ -250,6 +250,50 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: nil,
 	},
 
+	// m5d family
+	{
+		Name:           "m5d.large",
+		MemoryGB:       8,
+		ECU:            10,
+		Cores:          2,
+		EphemeralDisks: []int{75},
+	},
+	{
+		Name:           "m5d.xlarge",
+		MemoryGB:       16,
+		ECU:            15,
+		Cores:          4,
+		EphemeralDisks: []int{150},
+	},
+	{
+		Name:           "m5d.2xlarge",
+		MemoryGB:       32,
+		ECU:            31,
+		Cores:          8,
+		EphemeralDisks: []int{300},
+	},
+	{
+		Name:           "m5d.4xlarge",
+		MemoryGB:       64,
+		ECU:            61,
+		Cores:          16,
+		EphemeralDisks: []int{300, 300},
+	},
+	{
+		Name:           "m5d.12xlarge",
+		MemoryGB:       192,
+		ECU:            173,
+		Cores:          48,
+		EphemeralDisks: []int{900, 900},
+	},
+	{
+		Name:           "m5d.24xlarge",
+		MemoryGB:       384,
+		ECU:            345,
+		Cores:          96,
+		EphemeralDisks: []int{900, 900, 900, 900},
+	},
+
 	// c3 family
 	{
 		Name:           "c3.large",
@@ -366,6 +410,50 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            278,
 		Cores:          72,
 		EphemeralDisks: nil,
+	},
+
+	// c5d family
+	{
+		Name:           "c5d.large",
+		MemoryGB:       4,
+		ECU:            8,
+		Cores:          2,
+		EphemeralDisks: []int{50},
+	},
+	{
+		Name:           "c5d.xlarge",
+		MemoryGB:       8,
+		ECU:            16,
+		Cores:          4,
+		EphemeralDisks: []int{100},
+	},
+	{
+		Name:           "c5d.2xlarge",
+		MemoryGB:       16,
+		ECU:            31,
+		Cores:          8,
+		EphemeralDisks: []int{200},
+	},
+	{
+		Name:           "c5d.4xlarge",
+		MemoryGB:       32,
+		ECU:            62,
+		Cores:          16,
+		EphemeralDisks: []int{400},
+	},
+	{
+		Name:           "c5d.9xlarge",
+		MemoryGB:       72,
+		ECU:            139,
+		Cores:          36,
+		EphemeralDisks: []int{900},
+	},
+	{
+		Name:           "c5d.18xlarge",
+		MemoryGB:       144,
+		ECU:            278,
+		Cores:          72,
+		EphemeralDisks: []int{900, 900},
 	},
 
 	// cc2 family
@@ -565,6 +653,13 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		MemoryGB:       488,
 		ECU:            208,
 		Cores:          64,
+		EphemeralDisks: []int{1900, 1900, 1900, 1900, 1900, 1900, 1900, 1900},
+	},
+	{
+		Name:           "i3.metal",
+		MemoryGB:       512,
+		ECU:            208,
+		Cores:          72,
 		EphemeralDisks: []int{1900, 1900, 1900, 1900, 1900, 1900, 1900, 1900},
 	},
 

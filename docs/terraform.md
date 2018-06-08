@@ -88,6 +88,8 @@ $ terraform apply
 
 Ps: You aren't limited to cluster edits i.e. `kops edit cluster`. You can also edit instances groups e.g. `kops edit instancegroup nodes|bastions` etc.
 
+Keep in mind that some changes will require a `kops rolling-update` to be applied. When in doubt, run the command and check if any nodes needs to be updated. For more information see the [caveats](#caveats) section below.
+
 #### Teardown the cluster
 
 When you eventually `terraform destroy` the cluster, you should still run `kops delete cluster`, to remove the kops cluster specification and any dynamically created Kubernetes resources (ELBs or volumes). To do this, run:
@@ -104,6 +106,12 @@ Ps: You don't have to `kops delete cluster` if you just want to recreate from sc
 
 
 ### Caveats
+
+#### `kops rolling-update` might be needed after editing the cluster
+
+Changes made with `kops edit` (like enabling RBAC and / or feature gates) will result in changes to the launch configuration of your cluster nodes. After a `terraform apply`, they won't be applied right away since terraform will not launch new instances as part of that.
+
+In order to see your changes applied to the cluster you'll also need to run `kops rolling-update` after running `terraform apply`, this will ensure that all nodes changes have the desired settings configured with `kops edit`.
 
 #### Workaround for Terraform <0.7
 

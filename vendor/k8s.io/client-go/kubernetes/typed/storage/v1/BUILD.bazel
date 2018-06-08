@@ -8,6 +8,7 @@ go_library(
         "storage_client.go",
         "storageclass.go",
     ],
+    importmap = "vendor/k8s.io/client-go/kubernetes/typed/storage/v1",
     importpath = "k8s.io/client-go/kubernetes/typed/storage/v1",
     visibility = ["//visibility:public"],
     deps = [

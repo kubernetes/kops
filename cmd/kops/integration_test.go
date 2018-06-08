@@ -148,6 +148,11 @@ func TestSharedVPC(t *testing.T) {
 	runTestAWS(t, "sharedvpc.example.com", "shared_vpc", "v1alpha2", false, 1)
 }
 
+// TestAdditionalCIDR runs the test on a configuration with a shared VPC
+func TestAdditionalCIDR(t *testing.T) {
+	runTestCloudformation(t, "additionalcidr.example.com", "additional_cidr", "v1alpha2", false)
+}
+
 // TestPhaseNetwork tests the output of tf for the network phase
 func TestPhaseNetwork(t *testing.T) {
 	runTestPhase(t, "lifecyclephases.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseNetwork)
@@ -166,7 +171,7 @@ func TestPhaseCluster(t *testing.T) {
 	runTestPhase(t, "lifecyclephases.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseCluster)
 }
 
-func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedFilenames []string, tfFileName string, phase *cloudup.Phase) {
+func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedDataFilenames []string, tfFileName string, phase *cloudup.Phase) {
 	var stdout bytes.Buffer
 
 	srcDir = updateClusterTestBase + srcDir
@@ -238,52 +243,60 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 		sort.Strings(fileNames)
 
 		actualFilenames := strings.Join(fileNames, ",")
-		expected := "kubernetes.tf"
+		expectedFilenames := "kubernetes.tf"
 
-		if len(expectedFilenames) > 0 {
-			expected = "data,kubernetes.tf"
+		if len(expectedDataFilenames) > 0 {
+			expectedFilenames = "data,kubernetes.tf"
 		}
 
-		if actualFilenames != expected {
-			t.Fatalf("unexpected files.  actual=%q, expected=%q, test=%q", actualFilenames, expected, testDataTFPath)
+		if actualFilenames != expectedFilenames {
+			t.Fatalf("unexpected files.  actual=%q, expected=%q, test=%q", actualFilenames, expectedFilenames, testDataTFPath)
 		}
 
 		actualTF, err := ioutil.ReadFile(path.Join(h.TempDir, "out", actualTFPath))
 		if err != nil {
 			t.Fatalf("unexpected error reading actual terraform output: %v", err)
 		}
-		testDataTF, err := ioutil.ReadFile(path.Join(srcDir, testDataTFPath))
+		expectedTF, err := ioutil.ReadFile(path.Join(srcDir, testDataTFPath))
 		if err != nil {
 			t.Fatalf("unexpected error reading expected terraform output: %v", err)
 		}
+		expectedTF = bytes.Replace(expectedTF, []byte("\r\n"), []byte("\n"), -1)
 
-		if !bytes.Equal(actualTF, testDataTF) {
-			diffString := diff.FormatDiff(string(testDataTF), string(actualTF))
+		if !bytes.Equal(actualTF, expectedTF) {
+			diffString := diff.FormatDiff(string(expectedTF), string(actualTF))
 			t.Logf("diff:\n%s\n", diffString)
 
+			if os.Getenv("HACK_UPDATE_TF_IN_PLACE") != "" {
+				if err := ioutil.WriteFile(path.Join(srcDir, testDataTFPath), actualTF, 0644); err != nil {
+					t.Errorf("error writing terraform output: %v", err)
+				}
+				t.Errorf("terraform output differed from expected")
+				return // Avoid Fatalf as we want to keep going and update all files
+			}
 			t.Fatalf("terraform output differed from expected")
 		}
 	}
 
 	// Compare data files if they are provided
-	if len(expectedFilenames) > 0 {
+	if len(expectedDataFilenames) > 0 {
 		actualDataPath := path.Join(h.TempDir, "out", "data")
 		files, err := ioutil.ReadDir(actualDataPath)
 		if err != nil {
 			t.Fatalf("failed to read data dir: %v", err)
 		}
 
-		var actualFilenames []string
+		var actualDataFilenames []string
 		for _, f := range files {
-			actualFilenames = append(actualFilenames, f.Name())
+			actualDataFilenames = append(actualDataFilenames, f.Name())
 		}
 
-		sort.Strings(expectedFilenames)
-		if !reflect.DeepEqual(actualFilenames, expectedFilenames) {
-			t.Fatalf("unexpected data files.  actual=%q, expected=%q", actualFilenames, expectedFilenames)
+		sort.Strings(expectedDataFilenames)
+		if !reflect.DeepEqual(actualDataFilenames, expectedDataFilenames) {
+			t.Fatalf("unexpected data files.  actual=%q, expected=%q", actualDataFilenames, expectedDataFilenames)
 		}
 
-		// Some tests might provide _some_ tf data files (not necessarilly all that
+		// Some tests might provide _some_ tf data files (not necessarily all that
 		// are actually produced), validate that the provided expected data file
 		// contents match actual data file content
 		expectedDataPath := path.Join(srcDir, "data")
@@ -417,6 +430,7 @@ func runTestGCE(t *testing.T, clusterName string, srcDir string, version string,
 	expectedFilenames := []string{
 		"google_compute_instance_template_nodes-" + gce.SafeClusterName(clusterName) + "_metadata_cluster-name",
 		"google_compute_instance_template_nodes-" + gce.SafeClusterName(clusterName) + "_metadata_startup-script",
+		"google_compute_instance_template_nodes-" + gce.SafeClusterName(clusterName) + "_metadata_ssh-keys",
 	}
 
 	for i := 0; i < zones; i++ {
@@ -425,6 +439,7 @@ func runTestGCE(t *testing.T, clusterName string, srcDir string, version string,
 
 		expectedFilenames = append(expectedFilenames, prefix+"cluster-name")
 		expectedFilenames = append(expectedFilenames, prefix+"startup-script")
+		expectedFilenames = append(expectedFilenames, prefix+"ssh-keys")
 	}
 
 	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, "", nil)
@@ -548,7 +563,7 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 		}
 		actualCF = buf.Bytes()
 
-		expectedCFTrimmed := strings.TrimSpace(string(expectedCF))
+		expectedCFTrimmed := strings.Replace(strings.TrimSpace(string(expectedCF)), "\r\n", "\n", -1)
 		actualCFTrimmed := strings.TrimSpace(string(actualCF))
 		if actualCFTrimmed != expectedCFTrimmed {
 			diffString := diff.FormatDiff(expectedCFTrimmed, actualCFTrimmed)
@@ -584,8 +599,8 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 				t.Fatalf("unexpected error expected cloudformation not found for k: %v", key)
 			}
 
-			// Strip cariage return as expectedValue is stored in a yaml string literal
-			// and golang will automaticaly strip CR from any string literal
+			// Strip carriage return as expectedValue is stored in a yaml string literal
+			// and golang will automatically strip CR from any string literal
 			extractedValueTrimmed := strings.Replace(extractedValue, "\r", "", -1)
 			if expectedValue != extractedValueTrimmed {
 

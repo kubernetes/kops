@@ -131,7 +131,7 @@ spec:
           name: metrics
           protocol: TCP
       - name: dnsmasq
-        image: k8s.gcr.io/k8s-dns-dnsmasq-{{Arch}}:1.14.9
+        image: k8s.gcr.io/k8s-dns-dnsmasq-{{Arch}}:1.14.10
         livenessProbe:
           httpGet:
             path: /healthz-dnsmasq

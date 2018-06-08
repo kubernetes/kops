@@ -71,7 +71,7 @@ The `--networking` option accepts the three different values defined above: `kub
 The following command sets up a cluster, in HA mode, that is ready for a CNI installation.
 
 ```console
-$ export $ZONE=mylistofzones
+$ export ZONES=mylistofzones
 $ kops create cluster \
   --zones $ZONES \
   --master-zones $ZONES \
@@ -117,7 +117,7 @@ spec:
 The following command sets up a cluster, in HA mode, with Calico as the CNI and Network Policy provider.
 
 ```console
-$ export $ZONES=mylistofzones
+$ export ZONES=mylistofzones
 $ kops create cluster \
   --zones $ZONES \
   --master-zones $ZONES \
@@ -208,7 +208,7 @@ Canal is a project that combines [Flannel](https://github.com/coreos/flannel) an
 The following command sets up a cluster, in HA mode, with Canal as the CNI and networking policy provider
 
 ```console
-$ export $ZONES=mylistofzones
+$ export ZONES=mylistofzones
 $ kops create cluster \
   --zones $ZONES \
   --master-zones $ZONES \
@@ -268,7 +268,7 @@ No additional configurations are required to be done by user. Kube-router automa
 The following command sets up a cluster with Romana as the CNI.
 
 ```console
-$ export $ZONES=mylistofzones
+$ export ZONES=mylistofzones
 $ kops create cluster \
   --zones $ZONES \
   --master-zones $ZONES \
@@ -300,7 +300,28 @@ The etcd port (4001) is opened between masters and nodes when using this network
 #### Amazon VPC Backend
 
 The [Amazon VPC CNI](https://github.com/aws/amazon-vpc-cni-k8s) plugin
-requires no additional configurations to be done by user. 
+requires no additional configurations to be done by user.
+
+To use the Amazon VPC CNI plugin you specify
+
+```
+  networking:
+    amazonvpc: {}
+```
+
+in the cluster spec file or pass the `--networking amazon-vpc-routed-eni` option on the command line to kops:
+
+```console
+$ export ZONES=mylistofzones
+$ kops create cluster \
+  --zones $ZONES \
+  --master-zones $ZONES \
+  --master-size m4.large \
+  --node-size m4.large \
+  --networking amazon-vpc-routed-eni \
+  --yes \
+  --name myclustername.mydns.io
+```
 
 **Important:** the pods uses the VPC CIDR, i.e. there is no isolation between the master, node/s and the internal k8s network.
 

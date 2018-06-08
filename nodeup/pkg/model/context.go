@@ -224,7 +224,7 @@ func (c *NodeupModelContext) UseEtcdTLS() bool {
 
 // UseTLSAuth checks the peer-auth is set in both cluster
 // @NOTE: in retrospect i think we should have consolidated the common config in the wrapper struct; it
-// feels wierd we set things like version, tls etc per cluster since they both have to be the same.
+// feels weird we set things like version, tls etc per cluster since they both have to be the same.
 func (c *NodeupModelContext) UseTLSAuth() bool {
 	if !c.UseEtcdTLS() {
 		return false
@@ -248,7 +248,7 @@ func (c *NodeupModelContext) UsesCNI() bool {
 	return true
 }
 
-// UseSecureKubelet checks if the kubelet api should be protected by a client certificate. Note: the settings are be
+// UseSecureKubelet checks if the kubelet api should be protected by a client certificate. Note: the settings are
 // in one of three section, master specific kubelet, cluster wide kubelet or the InstanceGroup. Though arguably is
 // doesn't make much sense to unset this on a per InstanceGroup level, but hey :)
 func (c *NodeupModelContext) UseSecureKubelet() bool {

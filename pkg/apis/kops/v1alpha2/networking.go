@@ -87,22 +87,25 @@ type CalicoNetworkingSpec struct {
 
 // CanalNetworkingSpec declares that we want Canal networking
 type CanalNetworkingSpec struct {
-	// DefaultEndpointToHostAction allows users to configure the default behaviour
-	// for traffic between pod to host after calico rules have been processed.
-	// Default: ACCEPT (other options: DROP, RETURN)
-	DefaultEndpointToHostAction string `json:"defaultEndpointToHostAction,omitempty"`
 	// ChainInsertMode controls whether Felix inserts rules to the top of iptables chains, or
 	// appends to the bottom. Leaving the default option is safest to prevent accidentally
 	// breaking connectivity. Default: 'insert' (other options: 'append')
 	ChainInsertMode string `json:"chainInsertMode,omitempty"`
+	// DefaultEndpointToHostAction allows users to configure the default behaviour
+	// for traffic between pod to host after calico rules have been processed.
+	// Default: ACCEPT (other options: DROP, RETURN)
+	DefaultEndpointToHostAction string `json:"defaultEndpointToHostAction,omitempty"`
+	// LogSeveritySys the severity to set for logs which are sent to syslog
+	// Default: INFO (other options: DEBUG, WARNING, ERROR, CRITICAL, NONE)
+	LogSeveritySys string `json:"logSeveritySys,omitempty"`
+	// PrometheusGoMetricsEnabled enables Prometheus Go runtime metrics collection
+	PrometheusGoMetricsEnabled bool `json:"prometheusGoMetricsEnabled,omitempty"`
 	// PrometheusMetricsEnabled can be set to enable the experimental Prometheus
 	// metrics server (default: false)
 	PrometheusMetricsEnabled bool `json:"prometheusMetricsEnabled,omitempty"`
 	// PrometheusMetricsPort is the TCP port that the experimental Prometheus
 	// metrics server should bind to (default: 9091)
 	PrometheusMetricsPort int32 `json:"prometheusMetricsPort,omitempty"`
-	// PrometheusGoMetricsEnabled enables Prometheus Go runtime metrics collection
-	PrometheusGoMetricsEnabled bool `json:"prometheusGoMetricsEnabled,omitempty"`
 	// PrometheusProcessMetricsEnabled enables Prometheus process metrics collection
 	PrometheusProcessMetricsEnabled bool `json:"prometheusProcessMetricsEnabled,omitempty"`
 }

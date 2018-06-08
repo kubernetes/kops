@@ -10,6 +10,7 @@ go_library(
         "poddisruptionbudget.go",
         "policy_client.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/policy/internalversion",
     importpath = "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/policy/internalversion",
     visibility = ["//visibility:public"],
     deps = [

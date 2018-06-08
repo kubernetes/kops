@@ -40,10 +40,12 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -529,6 +531,32 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
 		}
 		zoneToSubnetMap[region] = subnet
+	} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderALI {
+		var zoneToSubnetSwitchID map[string]string
+		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderALI {
+			zoneToSubnetSwitchID, err = aliup.ZoneToVSwitchID(cluster.Spec.NetworkID, c.Zones, c.SubnetIDs)
+			if err != nil {
+				return err
+			}
+		}
+		for _, zoneName := range allZones.List() {
+			// We create default subnets named the same as the zones
+			subnetName := zoneName
+
+			subnet := model.FindSubnet(cluster, subnetName)
+			if subnet == nil {
+				subnet = &api.ClusterSubnetSpec{
+					Name:   subnetName,
+					Zone:   subnetName,
+					Egress: c.Egress,
+				}
+				if vswitchID, ok := zoneToSubnetSwitchID[zoneName]; ok {
+					subnet.ProviderID = vswitchID
+				}
+				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
+			}
+			zoneToSubnetMap[zoneName] = subnet
+		}
 	} else {
 		var zoneToSubnetProviderID map[string]string
 		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
@@ -1041,7 +1069,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.SSHAccess = c.SSHAccess
 	}
 
-	if err := setOverrides(c.Overrides, cluster, instanceGroups); err != nil {
+	if err := commands.SetClusterFields(c.Overrides, cluster, instanceGroups); err != nil {
 		return err
 	}
 
@@ -1132,7 +1160,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 
-	// Can we acutally get to this if??
+	// Can we actually get to this if??
 	if targetName != "" {
 		if isDryrun {
 			fmt.Fprintf(out, "Previewing changes that will be made:\n\n")
@@ -1244,29 +1272,6 @@ func parseCloudLabels(s string) (map[string]string, error) {
 		m[pair[0]] = pair[1]
 	}
 	return m, nil
-}
-
-// setOverrides sets override values in the spec
-func setOverrides(overrides []string, cluster *api.Cluster, instanceGroups []*api.InstanceGroup) error {
-	for _, override := range overrides {
-		kv := strings.SplitN(override, "=", 2)
-		if len(kv) != 2 {
-			return fmt.Errorf("unhandled override: %q", override)
-		}
-
-		// For now we have hard-code the values we want to support; we'll get test coverage and then do this properly...
-		switch kv[0] {
-		case "cluster.spec.nodePortAccess":
-			cluster.Spec.NodePortAccess = append(cluster.Spec.NodePortAccess, kv[1])
-		case "cluster.spec.etcdClusters[*].version":
-			for _, etcd := range cluster.Spec.EtcdClusters {
-				etcd.Version = kv[1]
-			}
-		default:
-			return fmt.Errorf("unhandled override: %q", override)
-		}
-	}
-	return nil
 }
 
 func getZoneToSubnetProviderID(VPCID string, region string, subnetIDs []string) (map[string]string, error) {

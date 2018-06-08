@@ -7,6 +7,7 @@ go_library(
         "events.go",
         "validation.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/apis/core/validation",
     importpath = "k8s.io/kubernetes/pkg/apis/core/validation",
     visibility = ["//visibility:public"],
     deps = [
@@ -36,6 +37,7 @@ go_library(
         "//vendor/k8s.io/kubernetes/pkg/capabilities:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/features:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/fieldpath:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/master/ports:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/security/apparmor:go_default_library",
     ],
 )

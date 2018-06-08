@@ -7,7 +7,6 @@ Misc infrequently used commands.
 
 ### Synopsis
 
-
 Misc infrequently used commands.
 
 ### Examples
@@ -15,6 +14,12 @@ Misc infrequently used commands.
 ```
   # Dump cluster information
   kops toolbox dump --name k8s-cluster.example.com
+```
+
+### Options
+
+```
+  -h, --help   help for toolbox
 ```
 
 ### Options inherited from parent commands
@@ -26,13 +31,14 @@ Misc infrequently used commands.
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops toolbox bundle](kops_toolbox_bundle.md)	 - Bundle cluster information
 * [kops toolbox convert-imported](kops_toolbox_convert-imported.md)	 - Convert an imported cluster into a kops cluster.

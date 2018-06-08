@@ -7,11 +7,10 @@ Get one or many clusters.
 
 ### Synopsis
 
-
 Display one or many cluster resources.
 
 ```
-kops get clusters
+kops get clusters [flags]
 ```
 
 ### Examples
@@ -34,6 +33,7 @@ kops get clusters
 
 ```
       --full   Show fully populated configuration
+  -h, --help   help for clusters
 ```
 
 ### Options inherited from parent commands
@@ -46,12 +46,13 @@ kops get clusters
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
   -o, --output string                    output format.  One of: table, yaml, json (default "table")
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops get](kops_get.md)	 - Get one or many resources.
 
