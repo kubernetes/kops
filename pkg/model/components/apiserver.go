@@ -144,7 +144,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	case kops.CloudProviderGCE:
 		c.CloudProvider = "gce"
 	case kops.CloudProviderDO:
-		// not required for digitalocean since it is managed by digitalocean-cloud-controller-manager
+		c.CloudProvider = "external"
 	case kops.CloudProviderVSphere:
 		c.CloudProvider = "vsphere"
 	case kops.CloudProviderBareMetal:
