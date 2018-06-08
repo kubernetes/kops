@@ -211,15 +211,10 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 		// We won't apply changes, but our validation (kops update) will still warn
 		return nil
 	}
-  
+
 	if err := t.AddOutputVariable("vpc_cidr_block", terraform.LiteralProperty("aws_vpc", *e.Name, "cidr_block")); err != nil {
 		// TODO: Should we try to output vpc_cidr_block for shared vpcs?
 		return err
-	}
-
-	if len(e.AdditionalCIDR) != 0 {
-		// https://github.com/terraform-providers/terraform-provider-aws/issues/3403
-		return fmt.Errorf("terraform does not support AdditionalCIDRs on VPCs")
 	}
 
 	tf := &terraformVPC{
