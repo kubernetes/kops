@@ -6,6 +6,7 @@ go_library(
         "metrics_client.go",
         "metrics_printer.go",
     ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/kubectl/metricsutil",
     importpath = "k8s.io/kubernetes/pkg/kubectl/metricsutil",
     visibility = ["//visibility:public"],
     deps = [
@@ -18,6 +19,7 @@ go_library(
         "//vendor/k8s.io/kubernetes/pkg/api/legacyscheme:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/apis/core/validation:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/printers:go_default_library",
+        "//vendor/k8s.io/metrics/pkg/apis/metrics:go_default_library",
         "//vendor/k8s.io/metrics/pkg/apis/metrics/v1alpha1:go_default_library",
     ],
 )

@@ -11,6 +11,7 @@ go_library(
         "scale.go",
         "statefulset.go",
     ],
+    importmap = "vendor/k8s.io/client-go/kubernetes/typed/apps/v1beta1",
     importpath = "k8s.io/client-go/kubernetes/typed/apps/v1beta1",
     visibility = ["//visibility:public"],
     deps = [

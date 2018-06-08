@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model/resources"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -457,6 +458,18 @@ var dockerVersions = []dockerVersion{
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
+	// 17.09.0 - Debian9 (stretch)
+	{
+		DockerVersion: "17.09.0",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionDebian9},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "17.09.0~ce-0~debian",
+		Source:        "http://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_17.09.0~ce-0~debian_amd64.deb",
+		Hash:          "70aa5f96cf00f11374b6593ccf4ed120a65375d2",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
 	// 17.09.0 - Xenial
 	{
 		DockerVersion: "17.09.0",
@@ -681,6 +694,10 @@ func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int64, dockerVers
 	//# Uncomment TasksMax if your systemd version supports it.
 	//# Only systemd 226 and above support this version.
 	//#TasksMax=infinity
+	if b.IsKubernetesGTE("1.10") {
+		// Equivalent of https://github.com/kubernetes/kubernetes/pull/51986
+		manifest.Set("Service", "TasksMax", "infinity")
+	}
 
 	manifest.Set("Service", "Restart", "always")
 	manifest.Set("Service", "RestartSec", "2s")
@@ -715,6 +732,12 @@ func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderCo
 		"EnvironmentFile=/etc/sysconfig/docker",
 		"EnvironmentFile=/etc/environment",
 	}
+
+	if b.IsKubernetesGTE("1.10") {
+		// Equivalent of https://github.com/kubernetes/kubernetes/pull/51986
+		lines = append(lines, "TasksMax=infinity")
+	}
+
 	contents := strings.Join(lines, "\n")
 
 	c.AddTask(&nodetasks.File{
@@ -742,7 +765,17 @@ func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderCo
 
 // buildSysconfig is responsible for extracting the docker configuration and writing the sysconfig file
 func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
-	flagsString, err := flagbuilder.BuildFlags(b.Cluster.Spec.Docker)
+	var docker kops.DockerConfig
+	if b.Cluster.Spec.Docker != nil {
+		docker = *b.Cluster.Spec.Docker
+	}
+
+	// ContainerOS now sets the storage flag in /etc/docker/daemon.json, and it is an error to set it twice
+	if b.Distribution == distros.DistributionContainerOS {
+		docker.Storage = nil
+	}
+
+	flagsString, err := flagbuilder.BuildFlags(&docker)
 	if err != nil {
 		return fmt.Errorf("error building docker flags: %v", err)
 	}

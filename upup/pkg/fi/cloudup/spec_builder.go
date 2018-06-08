@@ -23,7 +23,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 type SpecBuilder struct {
@@ -32,25 +31,7 @@ type SpecBuilder struct {
 	Tags sets.String
 }
 
-func (l *SpecBuilder) BuildCompleteSpec(clusterSpec *api.ClusterSpec, modelStore vfs.Path, models []string) (*api.ClusterSpec, error) {
-	// First pass over models: load options
-	tw := &loader.TreeWalker{
-		DefaultHandler: ignoreHandler,
-		Contexts: map[string]loader.Handler{
-			"resources": ignoreHandler,
-		},
-		Extensions: map[string]loader.Handler{
-			".options": l.OptionsLoader.HandleOptions,
-		},
-		Tags: l.Tags,
-	}
-	for _, model := range models {
-		modelDir := modelStore.Join(model)
-		err := tw.Walk(modelDir)
-		if err != nil {
-			return nil, err
-		}
-	}
+func (l *SpecBuilder) BuildCompleteSpec(clusterSpec *api.ClusterSpec) (*api.ClusterSpec, error) {
 
 	loaded, err := l.OptionsLoader.Build(clusterSpec)
 	if err != nil {

@@ -2,7 +2,6 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "kopsK8sEC2NodePerms",
       "Effect": "Allow",
       "Action": [
         "ec2:DescribeInstances",
@@ -13,7 +12,6 @@
       ]
     },
     {
-      "Sid": "kopsK8sS3GetListBucket",
       "Effect": "Allow",
       "Action": [
         "s3:GetBucketLocation",
@@ -24,7 +22,6 @@
       ]
     },
     {
-      "Sid": "kopsK8sS3NodeBucketSelectiveGet",
       "Effect": "Allow",
       "Action": [
         "s3:Get*"
@@ -42,7 +39,6 @@
       ]
     },
     {
-      "Sid": "kopsK8sECR",
       "Effect": "Allow",
       "Action": [
         "ecr:GetAuthorizationToken",

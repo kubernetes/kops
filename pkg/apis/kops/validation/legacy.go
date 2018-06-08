@@ -33,7 +33,7 @@ import (
 
 // legacy contains validation functions that don't match the apimachinery style
 
-// ValidateCluster is responsible for checking the validitity of the Cluster spec
+// ValidateCluster is responsible for checking the validity of the Cluster spec
 func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	fieldSpec := field.NewPath("Spec")
 	var err error
@@ -233,14 +233,21 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		switch action {
 		case "", "ACCEPT", "DROP", "RETURN":
 		default:
-			return field.Invalid(fieldSpec.Child("Networking", "Canal", "DefaultEndpointToHostAction"), action, fmt.Sprintf("Unsupported value: %s, supports ACCEPT, DROP or RETURN", action))
+			return field.Invalid(fieldSpec.Child("Networking", "Canal", "DefaultEndpointToHostAction"), action, fmt.Sprintf("Unsupported value: %s, supports 'ACCEPT', 'DROP' or 'RETURN'", action))
 		}
 
 		chainInsertMode := c.Spec.Networking.Canal.ChainInsertMode
 		switch chainInsertMode {
 		case "", "insert", "append":
 		default:
-			return field.Invalid(fieldSpec.Child("Networking", "Canal", "ChainInsertMode"), action, fmt.Sprintf("Unsupported value: %s, supports 'insert' or 'append'", chainInsertMode))
+			return field.Invalid(fieldSpec.Child("Networking", "Canal", "ChainInsertMode"), chainInsertMode, fmt.Sprintf("Unsupported value: %s, supports 'insert' or 'append'", chainInsertMode))
+		}
+
+		logSeveritySys := c.Spec.Networking.Canal.LogSeveritySys
+		switch logSeveritySys {
+		case "", "INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL", "NONE":
+		default:
+			return field.Invalid(fieldSpec.Child("Networking", "Canal", "LogSeveritySys"), logSeveritySys, fmt.Sprintf("Unsupported value: %s, supports 'INFO', 'DEBUG', 'WARNING', 'ERROR', 'CRITICAL' or 'NONE'", logSeveritySys))
 		}
 	}
 
@@ -294,7 +301,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		case kops.CloudProviderGCE:
 			k8sCloudProvider = "gce"
 		case kops.CloudProviderDO:
-			k8sCloudProvider = "external"
+			// cloud provider should be blank since digitalocean uses external cloud controller
+			k8sCloudProvider = ""
 		case kops.CloudProviderVSphere:
 			k8sCloudProvider = "vsphere"
 		case kops.CloudProviderBareMetal:
@@ -450,8 +458,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	{
 		for i, s := range c.Spec.Subnets {
 			fieldSubnet := fieldSpec.Child("Subnets").Index(i)
-			if s.Egress != "" && !strings.HasPrefix(s.Egress, "nat-") {
-				return field.Invalid(fieldSubnet.Child("Egress"), s.Egress, "egress must be of type NAT Gateway")
+			if s.Egress != "" && !strings.HasPrefix(s.Egress, "nat-") && !strings.HasPrefix(s.Egress, "i-") {
+				return field.Invalid(fieldSubnet.Child("Egress"), s.Egress, "egress must be of type NAT Gateway or NAT EC2 Instance")
 			}
 			if s.Egress != "" && !(s.Type == "Private") {
 				return field.Invalid(fieldSubnet.Child("Egress"), s.Egress, "egress can only be specified for Private subnets")

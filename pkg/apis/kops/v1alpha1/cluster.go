@@ -69,9 +69,9 @@ type ClusterSpec struct {
 	// This is a real CIDR, not the internal k8s network
 	// On AWS, it maps to the VPC CIDR.  It is not required on GCE.
 	NetworkCIDR string `json:"networkCIDR,omitempty"`
-	// AdditionalNetworkCIDRs is a list of aditional CIDR used for the AWS VPC
+	// AdditionalNetworkCIDRs is a list of additional CIDR used for the AWS VPC
 	// or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network
-	// On AWS, it maps to any aditional CIDRs added to a VPC.
+	// On AWS, it maps to any additional CIDRs added to a VPC.
 	AdditionalNetworkCIDRs []string `json:"additionalNetworkCIDRs,omitempty"`
 	// NetworkID is an identifier of a network, if we want to reuse/share an existing network (e.g. an AWS VPC)
 	NetworkID string `json:"networkID,omitempty"`
@@ -229,13 +229,17 @@ type ExecContainerAction struct {
 
 type AuthenticationSpec struct {
 	Kopeio *KopeioAuthenticationSpec `json:"kopeio,omitempty"`
+	Heptio *HeptioAuthenticationSpec `json:"heptio,omitempty"`
 }
 
 func (s *AuthenticationSpec) IsEmpty() bool {
-	return s.Kopeio == nil
+	return s.Kopeio == nil && s.Heptio == nil
 }
 
 type KopeioAuthenticationSpec struct {
+}
+
+type HeptioAuthenticationSpec struct {
 }
 
 type AuthorizationSpec struct {
@@ -255,7 +259,7 @@ type AlwaysAllowAuthorizationSpec struct {
 
 // AccessSpec provides configuration details related to kubeapi dns and ELB access
 type AccessSpec struct {
-	// DNS wil be used to provide config on kube-apiserver elb dns
+	// DNS will be used to provide config on kube-apiserver elb dns
 	DNS *DNSAccessSpec `json:"dns,omitempty"`
 	// LoadBalancer is the configuration for the kube-apiserver ELB
 	LoadBalancer *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
@@ -299,6 +303,8 @@ type KubeDNSConfig struct {
 	CacheMaxSize int `json:"cacheMaxSize,omitempty"`
 	// CacheMaxConcurrent is the maximum number of concurrent queries for dnsmasq
 	CacheMaxConcurrent int `json:"cacheMaxConcurrent,omitempty"`
+	// Provider indicates whether CoreDNS or kube-dns will be the default service discovery.
+	Provider string `json:"provider,omitempty"`
 }
 
 // ExternalDNSConfig are options of the dns-controller
@@ -307,7 +313,7 @@ type ExternalDNSConfig struct {
 	Disable bool `json:"disable,omitempty"`
 	// WatchIngress indicates you want the dns-controller to watch and create dns entries for ingress resources
 	WatchIngress *bool `json:"watchIngress,omitempty"`
-	// WatchNamespace is namespace to watch, detaults to all (use to control whom can creates dns entries)
+	// WatchNamespace is namespace to watch, defaults to all (use to control whom can creates dns entries)
 	WatchNamespace string `json:"watchNamespace,omitempty"`
 }
 
@@ -317,7 +323,7 @@ type EtcdClusterSpec struct {
 	Name string `json:"name,omitempty"`
 	// Members stores the configurations for each member of the cluster (including the data volume)
 	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
-	// EnableTLSAuth indicats client and peer TLS auth should be enforced
+	// EnableTLSAuth indicates client and peer TLS auth should be enforced
 	EnableTLSAuth bool `json:"enableTLSAuth,omitempty"`
 	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients
 	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
@@ -331,6 +337,8 @@ type EtcdClusterSpec struct {
 	Image string `json:"image,omitempty"`
 	// Backups describes how we do backups of etcd
 	Backups *EtcdBackupSpec `json:"backups,omitempty"`
+	// Manager describes the manager configuration
+	Manager *EtcdManagerSpec `json:"manager,omitempty"`
 }
 
 // EtcdBackupSpec describes how we want to do backups of etcd
@@ -338,6 +346,12 @@ type EtcdBackupSpec struct {
 	// BackupStore is the VFS path where we will read/write backup data
 	BackupStore string `json:"backupStore,omitempty"`
 	// Image is the etcd backup manager image to use.  Setting this will create a sidecar container in the etcd pod with the specified image.
+	Image string `json:"image,omitempty"`
+}
+
+// EtcdManagerSpec describes how we configure the etcd manager
+type EtcdManagerSpec struct {
+	// Image is the etcd manager image to use.
 	Image string `json:"image,omitempty"`
 }
 

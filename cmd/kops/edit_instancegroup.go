@@ -48,7 +48,7 @@ var (
 
 	editInstancegroupExample = templates.Examples(i18n.T(`
 	# Edit an instancegroup desired configuration.
-	kops edit ig --name k8s-cluster.example.com node --state=s3://kops-state-1234
+	kops edit ig --name k8s-cluster.example.com nodes --state=s3://kops-state-1234
 	`))
 
 	editInstancegroupShort = i18n.T(`Edit instancegroup.`)

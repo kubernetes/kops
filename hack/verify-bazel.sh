@@ -18,16 +18,16 @@ set -o nounset
 set -o pipefail
 
 KOPS_ROOT=$(git rev-parse --show-toplevel)
-TMP_GOPATH=$(mktemp -d)
-cd "${KOPS_ROOT}"
+cd ${KOPS_ROOT}
 
-"${KOPS_ROOT}/hack/go_install_from_commit.sh" \
-  github.com/bazelbuild/bazel-gazelle/cmd/gazelle \
-  578e73e57d6a4054ef933db1553405c9284322c7 \
-  "${TMP_GOPATH}"
+export GOPATH=${KOPS_ROOT}/../../../
 
+TMP_OUT=$(mktemp -d)
+trap "{ rm -rf ${TMP_OUT}; }" EXIT
 
-gazelle_diff=$("${TMP_GOPATH}/bin/gazelle" fix \
+GOBIN="${TMP_OUT}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
+
+gazelle_diff=$("${TMP_OUT}/gazelle" fix \
   -external=vendored \
   -mode=diff \
   -proto=disable \

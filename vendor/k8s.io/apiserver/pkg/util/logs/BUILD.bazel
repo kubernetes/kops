@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["logs.go"],
+    importmap = "vendor/k8s.io/apiserver/pkg/util/logs",
     importpath = "k8s.io/apiserver/pkg/util/logs",
     visibility = ["//visibility:public"],
     deps = [

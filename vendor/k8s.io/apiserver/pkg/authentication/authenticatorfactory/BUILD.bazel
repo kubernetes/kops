@@ -7,6 +7,7 @@ go_library(
         "loopback.go",
         "requestheader.go",
     ],
+    importmap = "vendor/k8s.io/apiserver/pkg/authentication/authenticatorfactory",
     importpath = "k8s.io/apiserver/pkg/authentication/authenticatorfactory",
     visibility = ["//visibility:public"],
     deps = [

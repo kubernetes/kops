@@ -49,6 +49,14 @@ type KubeBoot struct {
 	DNS DNSProvider
 	// ModelDir is the model directory
 	ModelDir string
+	// Kubernetes is the context methods for kubernetes
+	Kubernetes *KubernetesContext
+	// Master indicates we are a master node
+	Master bool
+
+	// ManageEtcd is true if we should manage etcd.
+	// Deprecated in favor of etcd-manager.
+	ManageEtcd bool
 	// EtcdBackupImage is the image to use for backing up etcd
 	EtcdBackupImage string
 	// EtcdBackupStore is the VFS path to which we should backup etcd
@@ -73,10 +81,6 @@ type KubeBoot struct {
 	PeerCert string
 	// PeerKey is the path to a peer private key for etcd
 	PeerKey string
-	// Kubernetes is the context methods for kubernetes
-	Kubernetes *KubernetesContext
-	// Master indicates we are a master node
-	Master bool
 
 	volumeMounter   *VolumeMountController
 	etcdControllers map[string]*EtcdController
@@ -100,7 +104,7 @@ func (k *KubeBoot) RunSyncLoop() {
 }
 
 func (k *KubeBoot) syncOnce() error {
-	if k.Master {
+	if k.Master && k.ManageEtcd {
 		// attempt to mount the volumes
 		volumes, err := k.volumeMounter.mountMasterVolumes()
 		if err != nil {
@@ -123,8 +127,10 @@ func (k *KubeBoot) syncOnce() error {
 				}
 			}
 		}
-	} else {
+	} else if k.ManageEtcd {
 		glog.V(4).Infof("Not in role master; won't scan for volumes")
+	} else {
+		glog.V(4).Infof("protokube management of etcd not enabled; won't scan for volumes")
 	}
 
 	// Ensure kubelet is running. We avoid doing this automatically so

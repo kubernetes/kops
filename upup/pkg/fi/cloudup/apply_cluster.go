@@ -39,8 +39,10 @@ import (
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/alimodel"
 	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/pkg/model/components/etcdmanager"
 	"k8s.io/kops/pkg/model/domodel"
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/openstackmodel"
@@ -49,6 +51,8 @@ import (
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/alitasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/baremetal"
@@ -80,8 +84,10 @@ var (
 	AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
 	// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
 	AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
+	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha
+	AlphaAllowALI = featureflag.New("AlphaAllowALI", featureflag.Bool(false))
 	// CloudupModels a list of supported models
-	CloudupModels = []string{"config", "proto", "cloudup"}
+	CloudupModels = []string{"proto", "cloudup"}
 )
 
 type ApplyClusterCmd struct {
@@ -176,7 +182,7 @@ func (c *ApplyClusterCmd) Run() error {
 	case Phase(""):
 		// Everything ... the default
 
-		// until we implement finding assets we need to to Ignore them
+		// until we implement finding assets we need to Ignore them
 		stageAssetsLifecycle = fi.LifecycleIgnore
 	case PhaseStageAssets:
 		networkLifecycle = fi.LifecycleIgnore
@@ -332,6 +338,8 @@ func (c *ApplyClusterCmd) Run() error {
 				return fmt.Errorf("GCE support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowGCE")
 			}
 
+			modelContext.SSHPublicKeys = sshPublicKeys
+
 			l.AddTypes(map[string]interface{}{
 				"Disk":                 &gcetasks.Disk{},
 				"Instance":             &gcetasks.Instance{},
@@ -409,6 +417,20 @@ func (c *ApplyClusterCmd) Run() error {
 			}
 
 			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
+		}
+
+	case kops.CloudProviderALI:
+		{
+			if !AlphaAllowALI.Enabled() {
+				return fmt.Errorf("Aliyun support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowALI")
+			}
+
+			aliCloud := cloud.(aliup.ALICloud)
+			region = aliCloud.Region()
+			l.AddTypes(map[string]interface{}{
+				"Vpc":     &alitasks.VPC{},
+				"VSwitch": &alitasks.VSwitch{},
+			})
 		}
 
 	case kops.CloudProviderVSphere:
@@ -499,6 +521,11 @@ func (c *ApplyClusterCmd) Run() error {
 					assetBuilder: assetBuilder,
 				},
 				&model.PKIModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+				&etcdmanager.EtcdManagerBuilder{
+					KopsModelContext: modelContext,
+					Lifecycle:        &clusterLifecycle,
+					AssetBuilder:     assetBuilder,
+				},
 			)
 
 			switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -554,6 +581,15 @@ func (c *ApplyClusterCmd) Run() error {
 						&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: &storageAclLifecycle},
 					)
 				}
+
+			case kops.CloudProviderALI:
+				aliModelContext := &alimodel.ALIModelContext{
+					KopsModelContext: modelContext,
+				}
+				l.Builders = append(l.Builders,
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+					&alimodel.NetWorkModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+				)
 
 			case kops.CloudProviderVSphere:
 				// No special settings (yet!)
@@ -628,6 +664,7 @@ func (c *ApplyClusterCmd) Run() error {
 				Lifecycle:       &clusterLifecycle,
 			})
 		}
+
 	case kops.CloudProviderVSphere:
 		{
 			vsphereModelContext := &vspheremodel.VSphereModelContext{
@@ -680,6 +717,8 @@ func (c *ApplyClusterCmd) Run() error {
 			target = baremetal.NewTarget(cloud.(*baremetal.Cloud))
 		case kops.CloudProviderOpenstack:
 			target = openstack.NewOpenstackAPITarget(cloud.(openstack.OpenstackCloud))
+		case kops.CloudProviderALI:
+			target = aliup.NewALIAPITarget(cloud.(aliup.ALICloud))
 		default:
 			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.CloudProvider)
 		}
@@ -1125,6 +1164,15 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 			Name:   kopsbase.DefaultProtokubeImageName(),
 			Source: location.String(),
 			Hash:   hash.Hex(),
+		}
+	}
+
+	if role == kops.InstanceGroupRoleMaster {
+		for _, etcdCluster := range cluster.Spec.EtcdClusters {
+			if etcdCluster.Manager != nil {
+				p := configBase.Join("manifests/etcd/" + etcdCluster.Name + ".yaml").Path()
+				config.EtcdManifests = append(config.EtcdManifests, p)
+			}
 		}
 	}
 

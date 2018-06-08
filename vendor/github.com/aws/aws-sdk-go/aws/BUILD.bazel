@@ -17,11 +17,13 @@ go_library(
         "url_1_7.go",
         "version.go",
     ],
+    importmap = "vendor/github.com/aws/aws-sdk-go/aws",
     importpath = "github.com/aws/aws-sdk-go/aws",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/credentials:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/endpoints:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/internal/sdkio:go_default_library",
     ],
 )

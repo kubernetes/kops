@@ -7,12 +7,11 @@ Validate a kops cluster.
 
 ### Synopsis
 
-
 This commands validates the following components: 
 
   1. All k8s masters are running and have "Ready" status.  
   2. All k8s nodes are running and have "Ready" status.  
-  3. Componentstatues returns healthly for all components.  
+  3. Componentstatues returns healthy for all components.  
   4. All pods in the kube-system namespace are running and healthy.
 
 ### Examples
@@ -24,6 +23,12 @@ This commands validates the following components:
   kops validate cluster
 ```
 
+### Options
+
+```
+  -h, --help   help for validate
+```
+
 ### Options inherited from parent commands
 
 ```
@@ -33,13 +38,14 @@ This commands validates the following components:
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops validate cluster](kops_validate_cluster.md)	 - Validate a kops cluster.
 

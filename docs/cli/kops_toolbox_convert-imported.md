@@ -7,11 +7,10 @@ Convert an imported cluster into a kops cluster.
 
 ### Synopsis
 
-
 Convert an imported cluster into a kops cluster.
 
 ```
-kops toolbox convert-imported
+kops toolbox convert-imported [flags]
 ```
 
 ### Examples
@@ -29,6 +28,7 @@ kops toolbox convert-imported
 
 ```
       --channel string   Channel to use for upgrade (default "stable")
+  -h, --help             help for convert-imported
       --newname string   new cluster name
 ```
 
@@ -41,12 +41,13 @@ kops toolbox convert-imported
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands.
 

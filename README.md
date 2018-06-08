@@ -1,3 +1,5 @@
+<img src="/docs/img/logo.jpg" width="500px" alt="kops logo">
+
 # kops - Kubernetes Operations
 
 [![Build Status](https://travis-ci.org/kubernetes/kops.svg?branch=master)](https://travis-ci.org/kubernetes/kops) [![Go Report Card](https://goreportcard.com/badge/k8s.io/kops)](https://goreportcard.com/report/k8s.io/kops)  [![GoDoc Widget]][GoDoc]
@@ -82,12 +84,12 @@ Kubernetes version.
 
 #### Compatibility Matrix
 
-| kops version       | k8s 1.5.x | k8s 1.6.x | k8s 1.7.x | k8s 1.8.x | k8s 1.9.x |
-|--------------------|-----------|-----------|-----------|-----------|-----------|
-| 1.9.x (unreleased) | Y         | Y         | Y         | Y         | Y         |
-| 1.8.x              | Y         | Y         | Y         | Y         | N         |
-| 1.7.x              | Y         | Y         | Y         | N         | N         |
-| 1.6.x              | Y         | Y         | N         | N         | N         |
+| kops version | k8s 1.5.x | k8s 1.6.x | k8s 1.7.x | k8s 1.8.x | k8s 1.9.x |
+|--------------|-----------|-----------|-----------|-----------|-----------|
+| 1.9.x        | Y         | Y         | Y         | Y         | Y         |
+| 1.8.x        | Y         | Y         | Y         | Y         | N         |
+| 1.7.x        | Y         | Y         | Y         | N         | N         |
+| 1.6.x        | Y         | Y         | N         | N         | N         |
 
 Use the latest version of kops for all releases of Kubernetes, with the caveat
 that higher versions of Kubernetes are not _officially_ supported by kops.
@@ -176,7 +178,7 @@ https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
 ## Office Hours
 
-Kops maintainers set aside one hour every other week for **public** office hours. Office hours are hosted on a [zoom video chat](https://zoom.us/my/k8ssigaws) on Fridays at [5 pm UTC/12 noon ET/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12), on odd week numbered weeks. We strive to get to know and help developers either working on `kops` or interested in getting to know more about the project.
+Kops maintainers set aside one hour every other week for **public** office hours. Office hours are hosted on a [zoom video chat](https://zoom.us/my/k8ssigaws) on Fridays at [12 noon (Eastern Time)/9 am (Pacific Time)](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12), on odd week numbered weeks. We strive to get to know and help developers either working on `kops` or interested in getting to know more about the project.
 
 
 ### Open Office Hours Topics
@@ -193,7 +195,7 @@ This time is focused on developers, although we will never turn a courteous part
 
 We encourage you to reach out **beforehand** if you plan on attending. You're welcome to join any session, and please feel free to add an item to the  [agenda](https://docs.google.com/document/d/12QkyL0FkNbWPcLFxxRGSPt_tNPBHbmni3YLY-lHny7E/edit) where we track notes from office hours.
 
-Office hours are hosted on [Zoom](https://zoom.us/my/k8ssigaws) video conference, held on Fridays at [5 pm UTC/12 noon ET/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) every other odd numbered week.
+Office hours are hosted on [Zoom](https://zoom.us/my/k8ssigaws) video conference, held on Fridays at [12 noon (Eastern Time)/9 am (Pacific Time)](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) every other odd numbered week.
 
 You can check your week number using:
 
@@ -201,7 +203,7 @@ You can check your week number using:
 date +%V
 ```
 
-The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community/blob/master/communication.md#social-media) in [#kops](https://kubernetes.slack.com/messages/kops/), so come find and chat with us about how kops can be better for you!
+The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community/blob/master/communication.md#social-media) in [#kops-users](https://kubernetes.slack.com/messages/kops-users/), so come find and chat with us about how kops can be better for you!
 
 
 ## GitHub Issues

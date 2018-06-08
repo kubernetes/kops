@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Sadly we can't update to 0.3 (stretch), because that version FTBFS statically
 FROM k8s.gcr.io/debian-base-amd64:0.2
 
 RUN echo "deb-src http://security.debian.org/ jessie/updates main" >> /etc/apt/sources.list

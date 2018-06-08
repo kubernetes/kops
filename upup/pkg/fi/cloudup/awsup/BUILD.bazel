@@ -26,6 +26,7 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/client:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/endpoints:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/autoscaling:go_default_library",
@@ -48,10 +49,7 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "aws_topology_test.go",
-        "aws_utils_test.go",
-    ],
+    srcs = ["aws_utils_test.go"],
     embed = [":go_default_library"],
     deps = [
         "//pkg/apis/kops:go_default_library",

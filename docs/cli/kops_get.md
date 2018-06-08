@@ -7,7 +7,6 @@ Get one or many resources.
 
 ### Synopsis
 
-
 Display one or many resources. 
 
   * cluster  
@@ -15,7 +14,7 @@ Display one or many resources.
   * secret
 
 ```
-kops get
+kops get [flags]
 ```
 
 ### Examples
@@ -43,6 +42,7 @@ kops get
 ### Options
 
 ```
+  -h, --help            help for get
   -o, --output string   output format.  One of: table, yaml, json (default "table")
 ```
 
@@ -55,13 +55,14 @@ kops get
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops get clusters](kops_get_clusters.md)	 - Get one or many clusters.
 * [kops get instancegroups](kops_get_instancegroups.md)	 - Get one or many instancegroups

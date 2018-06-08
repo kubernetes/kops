@@ -7,11 +7,10 @@ Create a ssh public key.
 
 ### Synopsis
 
-
 Create a new ssh public key, and store the key in the state store.  The key is not updated by this command.
 
 ```
-kops create secret sshpublickey
+kops create secret sshpublickey [flags]
 ```
 
 ### Examples
@@ -25,6 +24,7 @@ kops create secret sshpublickey
 ### Options
 
 ```
+  -h, --help            help for sshpublickey
   -i, --pubkey string   Path to SSH public key
 ```
 
@@ -37,12 +37,13 @@ kops create secret sshpublickey
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops create secret](kops_create_secret.md)	 - Create a secret.
 

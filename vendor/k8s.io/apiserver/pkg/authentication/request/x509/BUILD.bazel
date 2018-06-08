@@ -6,6 +6,7 @@ go_library(
         "doc.go",
         "x509.go",
     ],
+    importmap = "vendor/k8s.io/apiserver/pkg/authentication/request/x509",
     importpath = "k8s.io/apiserver/pkg/authentication/request/x509",
     visibility = ["//visibility:public"],
     deps = [
