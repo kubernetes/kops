@@ -18,6 +18,7 @@ package awstasks
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
@@ -214,6 +215,17 @@ type terraformSubnet struct {
 }
 
 func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
+	if fi.StringValue(e.AvailabilityZone) != "" {
+		name := fi.StringValue(e.AvailabilityZone)
+		if e.Tags["SubnetType"] != "" {
+			name += "-" + strings.ToLower(e.Tags["SubnetType"])
+		}
+
+		if err := t.AddOutputVariable("subnet_"+name+"_id", e.TerraformLink()); err != nil {
+			return err
+		}
+	}
+
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not terraform owned / managed
@@ -223,10 +235,6 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 		// but removing it now might break people.  We could always output subnet_ids though, if we
 		// ever get a request for that.
 		return t.AddOutputVariableArray("subnet_ids", terraform.LiteralFromStringValue(*e.ID))
-	}
-
-	if err := t.AddOutputVariable("subnet_"+*e.Name+"_id", e.TerraformLink()); err != nil {
-		return err
 	}
 
 	tf := &terraformSubnet{

@@ -34,6 +34,26 @@ output "region" {
   value = "us-test-1"
 }
 
+output "route_table_public_id" {
+  value = "${aws_route_table.ha-example-com.id}"
+}
+
+output "subnet_us-test-1a-public_id" {
+  value = "${aws_subnet.us-test-1a-ha-example-com.id}"
+}
+
+output "subnet_us-test-1b-public_id" {
+  value = "${aws_subnet.us-test-1b-ha-example-com.id}"
+}
+
+output "subnet_us-test-1c-public_id" {
+  value = "${aws_subnet.us-test-1c-ha-example-com.id}"
+}
+
+output "vpc_cidr_block" {
+  value = "${aws_vpc.ha-example-com.cidr_block}"
+}
+
 output "vpc_id" {
   value = "${aws_vpc.ha-example-com.id}"
 }
