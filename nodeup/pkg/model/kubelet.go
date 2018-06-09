@@ -164,6 +164,11 @@ func (b *KubeletBuilder) kubeletPath() string {
 
 // buildSystemdEnvironmentFile renders the environment file for the kubelet
 func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
+	// @step: ensure the masters do not get a bootstrap configuration
+	if b.UseBootstrapTokens() && b.IsMaster {
+		kubeletConfig.BootstrapKubeconfig = ""
+	}
+
 	// TODO: Dump the separate file for flags - just complexity!
 	flags, err := flagbuilder.BuildFlags(kubeletConfig)
 	if err != nil {
@@ -217,6 +222,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		Contents: fi.NewStringResource(sysconfig),
 		Type:     nodetasks.FileType_File,
 	}
+
 	return t, nil
 }
 
@@ -229,16 +235,18 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kubernetes")
 	manifest.Set("Unit", "After", "docker.service")
 
-	if b.UseBootstrapTokens() && !b.IsMaster {
-		manifest.Set("Unit", "ConditionPathExists", b.KubeletBootstrapConfig())
-	}
-
 	if b.Distribution == distros.DistributionCoreOS {
 		// We add /opt/kubernetes/bin for our utilities (socat)
 		manifest.Set("Service", "Environment", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kubernetes/bin")
 	}
-
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/kubelet")
+
+	// @check if we are using bootstrap tokens and file checker
+	if !b.IsMaster && b.UseBootstrapTokens() {
+		manifest.Set("Service", "ExecStartPre",
+			fmt.Sprintf("/usr/bin/bash -c 'while [ ! -f %s ]; do sleep 5; done;'", b.KubeletBootstrapConfig()))
+	}
+
 	manifest.Set("Service", "ExecStart", kubeletCommand+" \"$DAEMON_ARGS\"")
 	manifest.Set("Service", "Restart", "always")
 	manifest.Set("Service", "RestartSec", "2s")
@@ -264,10 +272,12 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	return service
 }
 
+// buildKubeletConfig is responsible for creating the kubelet configuration
 func (b *KubeletBuilder) buildKubeletConfig() (*kops.KubeletConfigSpec, error) {
 	if b.InstanceGroup == nil {
 		glog.Fatalf("InstanceGroup was not set")
 	}
+
 	kubeletConfigSpec, err := b.buildKubeletConfigSpec()
 	if err != nil {
 		return nil, fmt.Errorf("error building kubelet config: %v", err)
@@ -438,6 +448,10 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		c.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 	}
 
+	if b.IsMaster {
+		c.BootstrapKubeconfig = ""
+	}
+
 	if b.InstanceGroup.Spec.Kubelet != nil {
 		utils.JsonMergeStruct(c, b.InstanceGroup.Spec.Kubelet)
 	}
@@ -484,7 +498,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	return c, nil
 }
 
-// BuildMasterKubeletKubeconfig builds a kubeconfig for the master kubelet, self-signing the kubelet cert
+// buildMasterKubeletKubeconfig builds a kubeconfig for the master kubelet, self-signing the kubelet cert
 func (b *KubeletBuilder) buildMasterKubeletKubeconfig() (*nodetasks.File, error) {
 	nodeName, err := b.NodeName()
 	if err != nil {

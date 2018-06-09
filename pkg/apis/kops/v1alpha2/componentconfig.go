@@ -218,6 +218,8 @@ type KubeAPIServerConfig struct {
 	BindAddress string `json:"bindAddress,omitempty" flag:"bind-address"`
 	// InsecureBindAddress is the binding address for the InsecurePort for the insecure kubernetes API
 	InsecureBindAddress string `json:"insecureBindAddress,omitempty" flag:"insecure-bind-address"`
+	// EnableBootstrapAuthToken enables 'bootstrap.kubernetes.io/token' in the 'kube-system' namespace to be used for TLS bootstrapping authentication
+	EnableBootstrapAuthToken *bool `json:"enableBootstrapTokenAuth,omitempty" flag:"enable-bootstrap-token-auth"`
 	// Deprecated: AdmissionControl is a list of admission controllers to use
 	AdmissionControl []string `json:"admissionControl,omitempty" flag:"admission-control"`
 	// EnableAdmissionPlugins is a list of enabled admission plugins

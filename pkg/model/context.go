@@ -23,16 +23,18 @@ import (
 	"net"
 	"strings"
 
-	"github.com/blang/semver"
-	"github.com/golang/glog"
-	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+
+	"github.com/blang/semver"
+	"github.com/golang/glog"
+	utilnet "k8s.io/apimachinery/pkg/util/net"
 )
 
 const (
@@ -249,14 +251,11 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 
 // UseBootstrapTokens checks if bootstrap tokens are enabled
 func (m *KopsModelContext) UseBootstrapTokens() bool {
-	if m.Cluster.Spec.Kubelet.BootstrapKubeconfig != "" {
-		return true
-	}
-	if m.Cluster.Spec.MasterKubelet != nil && m.Cluster.Spec.MasterKubelet.BootstrapKubeconfig != "" {
-		return true
+	if m.Cluster.Spec.KubeAPIServer == nil {
+		return false
 	}
 
-	return false
+	return fi.BoolValue(m.Cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken)
 }
 
 // UsesBastionDns checks if we should use a specific name for the bastion dns
