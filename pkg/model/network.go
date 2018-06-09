@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -36,6 +35,10 @@ type NetworkModelBuilder struct {
 }
 
 var _ fi.ModelBuilder = &NetworkModelBuilder{}
+
+type zoneInfo struct {
+	PrivateSubnets []*kops.ClusterSubnetSpec
+}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	sharedVPC := b.Cluster.SharedVPC()
@@ -175,7 +178,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	privateZones := sets.NewString()
+	infoByZone := make(map[string]*zoneInfo)
 
 	for i := range b.Cluster.Spec.Subnets {
 		subnetSpec := &b.Cluster.Spec.Subnets[i]
@@ -238,31 +241,50 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				})
 
 				// TODO: validate even if shared?
-				privateZones.Insert(subnetSpec.Zone)
+				if infoByZone[subnetSpec.Zone] == nil {
+					infoByZone[subnetSpec.Zone] = &zoneInfo{}
+				}
+				infoByZone[subnetSpec.Zone].PrivateSubnets = append(infoByZone[subnetSpec.Zone].PrivateSubnets, subnetSpec)
 			}
 		default:
 			return fmt.Errorf("subnet %q has unknown type %q", subnetSpec.Name, subnetSpec.Type)
 		}
 	}
 
-	// Loop over zones
-	for i, zone := range privateZones.List() {
+	// Set up private route tables & egress
+	for zone, info := range infoByZone {
+		if len(info.PrivateSubnets) == 0 {
+			continue
+		}
 
 		utilitySubnet, err := b.LinkToUtilitySubnetInZone(zone)
 		if err != nil {
 			return err
 		}
 
+		egress := info.PrivateSubnets[0].Egress
+		publicIP := info.PrivateSubnets[0].PublicIP
+
+		// Verify we don't have mixed values for egress/publicIP - the code doesn't handle it
+		for _, subnet := range info.PrivateSubnets {
+			if subnet.Egress != egress {
+				return fmt.Errorf("cannot mix egress values in private subnets")
+			}
+			if subnet.PublicIP != publicIP {
+				return fmt.Errorf("cannot mix publicIP values in private subnets")
+			}
+		}
+
 		var ngw *awstasks.NatGateway
 		var in *awstasks.Instance
-		if b.Cluster.Spec.Subnets[i].Egress != "" {
-			if strings.HasPrefix(b.Cluster.Spec.Subnets[i].Egress, "nat-") {
+		if egress != "" {
+			if strings.HasPrefix(egress, "nat-") {
 
 				ngw = &awstasks.NatGateway{
 					Name:                 s(zone + "." + b.ClusterName()),
 					Lifecycle:            b.Lifecycle,
 					Subnet:               utilitySubnet,
-					ID:                   s(b.Cluster.Spec.Subnets[i].Egress),
+					ID:                   s(egress),
 					AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 					// If we're here, it means this NatGateway was specified, so we are Shared
 					Shared: fi.Bool(true),
@@ -271,12 +293,12 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				c.AddTask(ngw)
 
-			} else if strings.HasPrefix(b.Cluster.Spec.Subnets[i].Egress, "i-") {
+			} else if strings.HasPrefix(egress, "i-") {
 
 				in = &awstasks.Instance{
-					Name:      s(b.Cluster.Spec.Subnets[i].Egress),
+					Name:      s(egress),
 					Lifecycle: b.Lifecycle,
-					ID:        s(b.Cluster.Spec.Subnets[i].Egress),
+					ID:        s(egress),
 					Shared:    fi.Bool(true),
 					Tags:      nil, // We don't need to add tags here
 				}
@@ -298,8 +320,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 			}
 
-			if b.Cluster.Spec.Subnets[i].PublicIP != "" {
-				eip.PublicIP = s(b.Cluster.Spec.Subnets[i].PublicIP)
+			if publicIP != "" {
+				eip.PublicIP = s(publicIP)
 				eip.Tags = b.CloudTags(*eip.Name, true)
 			} else {
 				eip.Tags = b.CloudTags(*eip.Name, false)

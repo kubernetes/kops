@@ -36,7 +36,7 @@ spec:
     id: subnet-12345678
     name: us-test-1a
     type: Private
-    egress: nat-12345678
+    egress: nat-a2345678
     zone: us-test-1a
   - cidr: 172.20.4.0/22
     id: subnet-abcdef
