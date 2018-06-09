@@ -32,6 +32,7 @@ type KubeletOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &KubeletOptionsBuilder{}
 
+// BuildOptions is responsible for filling the defaults for the kubelet
 func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
@@ -50,6 +51,14 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	ip, err := WellKnownServiceIP(clusterSpec, 10)
 	if err != nil {
 		return err
+	}
+
+	if clusterSpec.KubeAPIServer != nil && clusterSpec.KubeAPIServer.EnableBootstrapAuthToken != nil {
+		if *clusterSpec.KubeAPIServer.EnableBootstrapAuthToken {
+			if clusterSpec.Kubelet.BootstrapKubeconfig == "" {
+				clusterSpec.Kubelet.BootstrapKubeconfig = "/var/lib/kubelet/bootstrap-kubeconfig"
+			}
+		}
 	}
 
 	// Standard options

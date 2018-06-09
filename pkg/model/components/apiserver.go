@@ -93,8 +93,10 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		var modes []string
 
 		if b.IsKubernetesGTE("1.10") {
-			// Enable the Node authorizer, used for special per-node RBAC policies
-			modes = append(modes, "Node")
+			if fi.BoolValue(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) {
+				// Enable the Node authorizer, used for special per-node RBAC policies
+				modes = append(modes, "Node")
+			}
 		}
 		modes = append(modes, "RBAC")
 

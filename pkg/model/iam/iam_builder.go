@@ -353,13 +353,13 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 						),
 					})
 
-					// @check if bootstrap tokens are enabled and if so, we disable access for the nodes
-					if !b.UseBootstrapTokens() {
+					// @check if bootstrap tokens are enabled and if so enable access to client certificate
+					if b.UseBootstrapTokens() {
 						p.Statement = append(p.Statement, &Statement{
 							Effect: StatementEffectAllow,
 							Action: stringorslice.Slice([]string{"s3:Get*"}),
 							Resource: stringorslice.Of(
-								strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/kubelet/*"}, ""),
+								strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/node-authorizer-client/*"}, ""),
 							),
 						})
 					} else {
@@ -367,7 +367,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 							Effect: StatementEffectAllow,
 							Action: stringorslice.Slice([]string{"s3:Get*"}),
 							Resource: stringorslice.Of(
-								strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/node-authorizer-client/*"}, ""),
+								strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/kubelet/*"}, ""),
 							),
 						})
 					}
@@ -490,14 +490,11 @@ func (b *PolicyResource) Open() (io.Reader, error) {
 // UseBootstrapTokens check if we are using bootstrap tokens - @TODO, i don't like this we should probably pass in
 // the kops model into the builder rather than duplicating the code. I'll leave for anothe PR
 func (b *PolicyBuilder) UseBootstrapTokens() bool {
-	if b.Cluster.Spec.Kubelet != nil && b.Cluster.Spec.Kubelet.BootstrapKubeconfig != "" {
-		return true
-	}
-	if b.Cluster.Spec.MasterKubelet != nil && b.Cluster.Spec.MasterKubelet.BootstrapKubeconfig != "" {
-		return true
+	if b.Cluster.Spec.KubeAPIServer == nil {
+		return false
 	}
 
-	return false
+	return fi.BoolValue(b.Cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken)
 }
 
 func addECRPermissions(p *Policy) {

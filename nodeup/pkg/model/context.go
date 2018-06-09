@@ -22,8 +22,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/blang/semver"
-	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -32,6 +30,9 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/vfs"
+
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 )
 
 // NodeupModelContext is the context supplied the nodeup tasks
@@ -160,7 +161,7 @@ func (c *NodeupModelContext) BuildPKIKubeconfig(name string) (string, error) {
 	return c.BuildKubeConfig(name, ca, cert, key)
 }
 
-// BuildKubeConfig is responisble for building a kubeconfig
+// BuildKubeConfig is responsible for building a kubeconfig
 func (c *NodeupModelContext) BuildKubeConfig(username string, ca, certificate, privateKey []byte) (string, error) {
 	user := kubeconfig.KubectlUser{
 		ClientCertificateData: certificate,
@@ -264,14 +265,11 @@ func (c *NodeupModelContext) UsesCNI() bool {
 
 // UseBootstrapTokens checks if we are using bootstrap tokens
 func (c *NodeupModelContext) UseBootstrapTokens() bool {
-	if c.Cluster.Spec.Kubelet.BootstrapKubeconfig != "" {
-		return true
-	}
-	if c.Cluster.Spec.MasterKubelet != nil && c.Cluster.Spec.MasterKubelet.BootstrapKubeconfig != "" {
-		return true
+	if c.IsMaster {
+		return fi.BoolValue(c.Cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken)
 	}
 
-	return false
+	return c.Cluster.Spec.Kubelet != nil && c.Cluster.Spec.Kubelet.BootstrapKubeconfig != ""
 }
 
 // UseSecureKubelet checks if the kubelet api should be protected by a client certificate. Note: the settings are
