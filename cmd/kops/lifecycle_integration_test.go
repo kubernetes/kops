@@ -75,7 +75,7 @@ func TestLifecyclePrivateKopeio(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:      t,
 		SrcDir: "privatekopeio",
-		Shared: []string{"nat-12345678"},
+		Shared: []string{"nat-a2345678", "nat-b2345678"},
 	})
 }
 
