@@ -118,6 +118,8 @@ type InstanceGroupSpec struct {
 	SuspendProcesses []string `json:"suspendProcesses,omitempty"`
 	// DetailedInstanceMonitoring defines if detailed-monitoring is enabled (AWS only)
 	DetailedInstanceMonitoring *bool `json:"detailedInstanceMonitoring,omitempty"`
+	// IAMProfileSpec defines the identity of the cloud group iam profile (AWS only).
+	IAM *IAMProfileSpec `json:"iam,omitempty"`
 }
 
 // UserData defines a user-data section
@@ -128,6 +130,14 @@ type UserData struct {
 	Type string `json:"type,omitempty"`
 	// Content is the user-data content
 	Content string `json:"content,omitempty"`
+}
+
+// IAMProfileSpec is the AWS IAM Profile to attach to instances in this instance
+// group. Specify the ARN for the IAM instance profile (AWS only).
+type IAMProfileSpec struct {
+	// Profile is the AWS IAM Profile to attach to instances in this instance group.
+	// Specify the ARN for the IAM instance profile. (AWS only)
+	Profile *string `json:"profile,omitempty"`
 }
 
 // PerformAssignmentsInstanceGroups populates InstanceGroups with default values
