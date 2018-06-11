@@ -228,6 +228,7 @@
     "common",
     "ecs",
     "oss",
+    "slb",
     "util"
   ]
   revision = "2581e433b270014481c9ec66a91368661533febb"
@@ -1705,6 +1706,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b95fc289fe7e03db1bec2d6df9aebe32671415696e260086f5ce1f4f14be9920"
+  inputs-digest = "33c4809d9ffb5425549fab80b4edb6a9fa84726ca461e8caa314b12b27f61a8d"
   solver-name = "gps-cdcl"
   solver-version = 1
