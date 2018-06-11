@@ -99,6 +99,7 @@
     "aws/request",
     "aws/session",
     "aws/signer/v4",
+    "internal/sdkio",
     "internal/sdkrand",
     "internal/shareddefaults",
     "private/protocol",
@@ -127,7 +128,35 @@
     "service/s3",
     "service/sts"
   ]
-  revision = "bff41fb23b7550368282029f6478819d6a99ae0f"
+  revision = "5197757a58a794d49d2d0c50a932997157734100"
+  version = "v1.13.60"
+
+[[projects]]
+  name = "github.com/bazelbuild/bazel-gazelle"
+  packages = [
+    "cmd/gazelle",
+    "internal/config",
+    "internal/generator",
+    "internal/label",
+    "internal/merger",
+    "internal/packages",
+    "internal/pathtools",
+    "internal/repos",
+    "internal/resolve",
+    "internal/version",
+    "internal/wspace"
+  ]
+  revision = "7f30ba724af9495b221e2df0f5ac58511179485f"
+  version = "0.12.0"
+
+[[projects]]
+  name = "github.com/bazelbuild/buildtools"
+  packages = [
+    "build",
+    "tables"
+  ]
+  revision = "a05406a1a855c6d8ebfc368555ace7638d83c0d9"
+  version = "0.6.0"
 
 [[projects]]
   name = "github.com/beorn7/perks"
@@ -197,7 +226,9 @@
   name = "github.com/denverdino/aliyungo"
   packages = [
     "common",
+    "ecs",
     "oss",
+    "slb",
     "util"
   ]
   revision = "2581e433b270014481c9ec66a91368661533febb"
@@ -452,6 +483,10 @@
     ".",
     "openstack",
     "openstack/blockstorage/v2/volumes",
+    "openstack/compute/v2/extensions/keypairs",
+    "openstack/compute/v2/flavors",
+    "openstack/compute/v2/images",
+    "openstack/compute/v2/servers",
     "openstack/identity/v2/tenants",
     "openstack/identity/v2/tokens",
     "openstack/identity/v3/tokens",
@@ -650,14 +685,9 @@
   revision = "ca53cad383cad2479bbba7f7a1a05797ec1386e4"
 
 [[projects]]
-  name = "github.com/pelletier/go-buffruneio"
-  packages = ["."]
-  revision = "df1e16fde7fc330a0ca68167c23bf7ed6ac31d6d"
-
-[[projects]]
   name = "github.com/pelletier/go-toml"
   packages = ["."]
-  revision = "0049ab3dc4c4c70a9eee23087437b69c0dde2130"
+  revision = "16398bac157da96aa88f98a2df640c7f32af1da2"
 
 [[projects]]
   branch = "master"
@@ -905,6 +935,7 @@
   name = "golang.org/x/tools"
   packages = [
     "go/ast/astutil",
+    "go/vcs",
     "imports"
   ]
   revision = "2382e3994d48b1d22acc2c86bcad0a2aff028e32"
@@ -1679,6 +1710,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2e3d6ddfd1017a940526237cadd8a968d6e8170af9dac833b2a94bd8ffc4646f"
+  inputs-digest = "f032b5357d53130f8adac38b7595b2920df27b34fd311be7845f3c15c263da4b"
   solver-name = "gps-cdcl"
   solver-version = 1

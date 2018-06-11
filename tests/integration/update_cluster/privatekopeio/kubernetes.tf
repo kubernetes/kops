@@ -31,7 +31,7 @@ output "node_security_group_ids" {
 }
 
 output "node_subnet_ids" {
-  value = ["${aws_subnet.us-test-1a-privatekopeio-example-com.id}"]
+  value = ["${aws_subnet.us-test-1a-privatekopeio-example-com.id}", "${aws_subnet.us-test-1b-privatekopeio-example-com.id}"]
 }
 
 output "nodes_role_arn" {
@@ -44,6 +44,38 @@ output "nodes_role_name" {
 
 output "region" {
   value = "us-test-1"
+}
+
+output "route_table_private-us-test-1a_id" {
+  value = "${aws_route_table.private-us-test-1a-privatekopeio-example-com.id}"
+}
+
+output "route_table_private-us-test-1b_id" {
+  value = "${aws_route_table.private-us-test-1b-privatekopeio-example-com.id}"
+}
+
+output "route_table_public_id" {
+  value = "${aws_route_table.privatekopeio-example-com.id}"
+}
+
+output "subnet_us-test-1a-private_id" {
+  value = "${aws_subnet.us-test-1a-privatekopeio-example-com.id}"
+}
+
+output "subnet_us-test-1a-utility_id" {
+  value = "${aws_subnet.utility-us-test-1a-privatekopeio-example-com.id}"
+}
+
+output "subnet_us-test-1b-private_id" {
+  value = "${aws_subnet.us-test-1b-privatekopeio-example-com.id}"
+}
+
+output "subnet_us-test-1b-utility_id" {
+  value = "${aws_subnet.utility-us-test-1b-privatekopeio-example-com.id}"
+}
+
+output "vpc_cidr_block" {
+  value = "${aws_vpc.privatekopeio-example-com.cidr_block}"
 }
 
 output "vpc_id" {
@@ -127,7 +159,7 @@ resource "aws_autoscaling_group" "nodes-privatekopeio-example-com" {
   launch_configuration = "${aws_launch_configuration.nodes-privatekopeio-example-com.id}"
   max_size             = 2
   min_size             = 2
-  vpc_zone_identifier  = ["${aws_subnet.us-test-1a-privatekopeio-example-com.id}"]
+  vpc_zone_identifier  = ["${aws_subnet.us-test-1a-privatekopeio-example-com.id}", "${aws_subnet.us-test-1b-privatekopeio-example-com.id}"]
 
   tag = {
     key                 = "KubernetesCluster"
@@ -192,7 +224,7 @@ resource "aws_elb" "api-privatekopeio-example-com" {
   }
 
   security_groups = ["${aws_security_group.api-elb-privatekopeio-example-com.id}"]
-  subnets         = ["${aws_subnet.utility-us-test-1a-privatekopeio-example-com.id}"]
+  subnets         = ["${aws_subnet.utility-us-test-1a-privatekopeio-example-com.id}", "${aws_subnet.utility-us-test-1b-privatekopeio-example-com.id}"]
 
   health_check = {
     target              = "SSL:443"
@@ -384,7 +416,13 @@ resource "aws_route" "0-0-0-0--0" {
 resource "aws_route" "private-us-test-1a-0-0-0-0--0" {
   route_table_id         = "${aws_route_table.private-us-test-1a-privatekopeio-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = "nat-12345678"
+  nat_gateway_id         = "nat-a2345678"
+}
+
+resource "aws_route" "private-us-test-1b-0-0-0-0--0" {
+  route_table_id         = "${aws_route_table.private-us-test-1b-privatekopeio-example-com.id}"
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = "nat-b2345678"
 }
 
 resource "aws_route53_record" "api-privatekopeio-example-com" {
@@ -411,6 +449,17 @@ resource "aws_route_table" "private-us-test-1a-privatekopeio-example-com" {
   }
 }
 
+resource "aws_route_table" "private-us-test-1b-privatekopeio-example-com" {
+  vpc_id = "${aws_vpc.privatekopeio-example-com.id}"
+
+  tags = {
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "private-us-test-1b.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+    "kubernetes.io/kops/role"                         = "private-us-test-1b"
+  }
+}
+
 resource "aws_route_table" "privatekopeio-example-com" {
   vpc_id = "${aws_vpc.privatekopeio-example-com.id}"
 
@@ -427,8 +476,18 @@ resource "aws_route_table_association" "private-us-test-1a-privatekopeio-example
   route_table_id = "${aws_route_table.private-us-test-1a-privatekopeio-example-com.id}"
 }
 
+resource "aws_route_table_association" "private-us-test-1b-privatekopeio-example-com" {
+  subnet_id      = "${aws_subnet.us-test-1b-privatekopeio-example-com.id}"
+  route_table_id = "${aws_route_table.private-us-test-1b-privatekopeio-example-com.id}"
+}
+
 resource "aws_route_table_association" "utility-us-test-1a-privatekopeio-example-com" {
   subnet_id      = "${aws_subnet.utility-us-test-1a-privatekopeio-example-com.id}"
+  route_table_id = "${aws_route_table.privatekopeio-example-com.id}"
+}
+
+resource "aws_route_table_association" "utility-us-test-1b-privatekopeio-example-com" {
+  subnet_id      = "${aws_subnet.utility-us-test-1b-privatekopeio-example-com.id}"
   route_table_id = "${aws_route_table.privatekopeio-example-com.id}"
 }
 
@@ -668,6 +727,20 @@ resource "aws_subnet" "us-test-1a-privatekopeio-example-com" {
   }
 }
 
+resource "aws_subnet" "us-test-1b-privatekopeio-example-com" {
+  vpc_id            = "${aws_vpc.privatekopeio-example-com.id}"
+  cidr_block        = "172.20.64.0/19"
+  availability_zone = "us-test-1b"
+
+  tags = {
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "us-test-1b.privatekopeio.example.com"
+    SubnetType                                        = "Private"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+    "kubernetes.io/role/internal-elb"                 = "1"
+  }
+}
+
 resource "aws_subnet" "utility-us-test-1a-privatekopeio-example-com" {
   vpc_id            = "${aws_vpc.privatekopeio-example-com.id}"
   cidr_block        = "172.20.4.0/22"
@@ -676,6 +749,20 @@ resource "aws_subnet" "utility-us-test-1a-privatekopeio-example-com" {
   tags = {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "utility-us-test-1a.privatekopeio.example.com"
+    SubnetType                                        = "Utility"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+    "kubernetes.io/role/elb"                          = "1"
+  }
+}
+
+resource "aws_subnet" "utility-us-test-1b-privatekopeio-example-com" {
+  vpc_id            = "${aws_vpc.privatekopeio-example-com.id}"
+  cidr_block        = "172.20.8.0/22"
+  availability_zone = "us-test-1b"
+
+  tags = {
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "utility-us-test-1b.privatekopeio.example.com"
     SubnetType                                        = "Utility"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
     "kubernetes.io/role/elb"                          = "1"

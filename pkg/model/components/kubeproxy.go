@@ -69,7 +69,10 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 	cloudProvider := kops.CloudProviderID(clusterSpec.CloudProvider)
 	if cloudProvider == kops.CloudProviderAWS {
 		// Use the hostname from the AWS metadata service
-		config.HostnameOverride = "@aws"
+		// if hostnameOverride is not set.
+		if config.HostnameOverride == "" {
+			config.HostnameOverride = "@aws"
+		}
 	}
 
 	return nil

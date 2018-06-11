@@ -47,7 +47,7 @@ mechanism available to us right now is the flags mechanism, so protokube will bu
 
 * Volume discovery, mounting & spawning manifests could be done by kubelet.  It might even be possible to do so
   today by simply creating a manifest that includes a volume mount, although
-  kubelet would likely consider a volume that cannot be mounted as a failure state, wheras this is not unexpected
+  kubelet would likely consider a volume that cannot be mounted as a failure state, whereas this is not unexpected
   in available clusters where you might have multiple masters ready to mount the same etcd volume.
   
 * DNS configuration should be done by kubelet.

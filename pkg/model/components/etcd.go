@@ -38,44 +38,71 @@ const DefaultEtcdVersion = "2.2.1"
 func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 	spec := o.(*kops.ClusterSpec)
 
-	// @check the version are set and if not preset the defaults
-	for _, x := range spec.EtcdClusters {
-		// @TODO if nothing is set, set the defaults. At a late date once we have a way of detecting a 'new' cluster
-		// we can default all clusters to v3
-		if x.Version == "" {
-			x.Version = DefaultEtcdVersion
-		}
-	}
-
-	// remap image
 	for _, c := range spec.EtcdClusters {
-		image := c.Image
-		if image == "" {
-			image = fmt.Sprintf("k8s.gcr.io/etcd:%s", c.Version)
+		// Ensure the version is set
+		// @TODO once we have a way of detecting a 'new' cluster we can default all clusters to v3
+		if c.Version == "" {
+			c.Version = DefaultEtcdVersion
 		}
 
-		image, err := b.Context.AssetBuilder.RemapImage(image)
-		if err != nil {
-			return fmt.Errorf("unable to remap container %q: %v", image, err)
-		}
-		c.Image = image
-	}
-
-	// remap backup manager images
-	for _, c := range spec.EtcdClusters {
-		if c.Backups == nil {
-			continue
-		}
-		image := c.Backups.Image
-		if image == "" {
-			image = fmt.Sprintf(DefaultBackupImage)
+		useEtcdManager := false
+		if c.Manager != nil {
+			useEtcdManager = true
 		}
 
-		image, err := b.Context.AssetBuilder.RemapImage(image)
-		if err != nil {
-			return fmt.Errorf("unable to remap container %q: %v", image, err)
+		// remap etcd image
+		{
+			image := c.Image
+			if image == "" {
+				if !useEtcdManager {
+					image = fmt.Sprintf("k8s.gcr.io/etcd:%s", c.Version)
+				}
+			}
+
+			if image != "" {
+				image, err := b.Context.AssetBuilder.RemapImage(image)
+				if err != nil {
+					return fmt.Errorf("unable to remap container %q: %v", image, err)
+				}
+				c.Image = image
+			}
 		}
-		c.Backups.Image = image
+
+		// remap backup manager image
+		if c.Backups != nil {
+			image := c.Backups.Image
+			if image == "" {
+				if !useEtcdManager {
+					image = fmt.Sprintf(DefaultBackupImage)
+				}
+			}
+
+			if image != "" {
+				image, err := b.Context.AssetBuilder.RemapImage(image)
+				if err != nil {
+					return fmt.Errorf("unable to remap container %q: %v", image, err)
+				}
+				c.Backups.Image = image
+			}
+		}
+
+		// remap etcd manager image
+		if useEtcdManager {
+			image := c.Manager.Image
+			if image == "" {
+				// We can make this easier later - maybe put it into the channel?  Or an addon?
+				//image = fmt.Sprintf(DefaultManagerImage)
+				return fmt.Errorf("EtcdManager.Image must be specified (currently)")
+			}
+
+			if image != "" {
+				image, err := b.Context.AssetBuilder.RemapImage(image)
+				if err != nil {
+					return fmt.Errorf("unable to remap container %q: %v", image, err)
+				}
+				c.Manager.Image = image
+			}
+		}
 	}
 
 	return nil

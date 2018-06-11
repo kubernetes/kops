@@ -25960,7 +25960,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"enableTLSAuth": {
 							SchemaProps: spec.SchemaProps{
-								Description: "EnableTLSAuth indicats client and peer TLS auth should be enforced",
+								Description: "EnableTLSAuth indicates client and peer TLS auth should be enforced",
 								Type:        []string{"boolean"},
 								Format:      "",
 							},
@@ -26721,7 +26721,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"admissionControl": {
 							SchemaProps: spec.SchemaProps{
-								Description: "AdmissionControl is a list of admission controllers to user",
+								Description: "AdmissionControl is a list of admission controllers to use",
 								Type:        []string{"array"},
 								Items: &spec.SchemaOrArray{
 									Schema: &spec.Schema{
@@ -30556,7 +30556,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"admissionControl": {
 							SchemaProps: spec.SchemaProps{
-								Description: "AdmissionControl is a list of admission controllers to user",
+								Description: "AdmissionControl is a list of admission controllers to use",
 								Type:        []string{"array"},
 								Items: &spec.SchemaOrArray{
 									Schema: &spec.Schema{

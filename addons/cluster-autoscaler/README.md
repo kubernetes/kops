@@ -10,8 +10,9 @@ IMAGE=k8s.gcr.io/cluster-autoscaler:v1.1.0
 MIN_NODES=1
 MAX_NODES=5
 AWS_REGION=us-east-1
+# For AWS GROUP_NAME should be the name of ASG as seen on AWS console
 GROUP_NAME="nodes.k8s.example.com"
-SSL_CERT_PATH="/etc/ssl/certs/ca-certificates.crt" # (/etc/ssl/certs for gce)
+SSL_CERT_PATH="/etc/ssl/certs/ca-certificates.crt" # (/etc/ssl/certs for gce, /etc/ssl/certs/ca-bundle.crt for RHEL7.X)
 
 addon=cluster-autoscaler.yml
 wget -O ${addon} https://raw.githubusercontent.com/kubernetes/kops/master/addons/cluster-autoscaler/v1.8.0.yaml

@@ -17,6 +17,6 @@ Appears In:
 
 Field        | Description
 ------------ | -----------
-dns <br /> *[DNSAccessSpec](#dnsaccessspec-v1alpha2-kops)*    | DNS wil be used to provide config on kube-apiserver elb dns
+dns <br /> *[DNSAccessSpec](#dnsaccessspec-v1alpha2-kops)*    | DNS will be used to provide config on kube-apiserver elb dns
 loadBalancer <br /> *[LoadBalancerAccessSpec](#loadbalanceraccessspec-v1alpha2-kops)*    | LoadBalancer is the configuration for the kube-apiserver ELB
 

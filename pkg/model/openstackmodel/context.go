@@ -28,3 +28,11 @@ type OpenstackModelContext struct {
 func (c *OpenstackModelContext) LinkToNetwork() *openstacktasks.Network {
 	return &openstacktasks.Network{Name: s(c.ClusterName())}
 }
+
+func (c *OpenstackModelContext) LinkToRouter(name *string) *openstacktasks.Router {
+	return &openstacktasks.Router{Name: name}
+}
+
+func (c *OpenstackModelContext) LinkToSubnet(name *string) *openstacktasks.Subnet {
+	return &openstacktasks.Subnet{Name: name}
+}

@@ -17,7 +17,7 @@ This document also applies to using the `kops` API to customize a Kubernetes clu
 
 > We like to think of it as `kubectl` for Clusters.
 
-Because of the above statement `kops` includes an API which provides a feature for users to utilize YAML or JSON manifests for managing their `kops` created Kubernetes installations. In the same way that you can use a YAML manifest to deploy a Job, you can deploy and manage a `kops` Kuberenetes instance with a manifest. All of these values are also usable via the interactive editor with `kops edit`.
+Because of the above statement `kops` includes an API which provides a feature for users to utilize YAML or JSON manifests for managing their `kops` created Kubernetes installations. In the same way that you can use a YAML manifest to deploy a Job, you can deploy and manage a `kops` Kubernetes instance with a manifest. All of these values are also usable via the interactive editor with `kops edit`.
 
 > You can see all the options that are currently supported in Kops [here](https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/componentconfig.go) or [more prettily here](https://godoc.org/k8s.io/kops/pkg/apis/kops#ClusterSpec)
 

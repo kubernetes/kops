@@ -67,6 +67,7 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(&nodetasks.File{
 			Path:     filepath.Join(b.PathSrvKubernetes(), "ca.key"),
 			Contents: fi.NewStringResource(serialized),
+			Mode:     fi.String("600"),
 			Type:     nodetasks.FileType_File,
 		})
 	}

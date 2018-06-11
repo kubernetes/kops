@@ -30,6 +30,7 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/pkg/sshcredentials"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
@@ -141,6 +142,23 @@ func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 				}
 
 				err := RunDeleteInstanceGroup(factory, out, options)
+				if err != nil {
+					exitWithError(err)
+				}
+			case *kopsapi.SSHCredential:
+				fingerprint, err := sshcredentials.Fingerprint(v.Spec.PublicKey)
+				if err != nil {
+					glog.Error("unable to compute fingerprint for public key")
+				}
+
+				options := &DeleteSecretOptions{
+					ClusterName: v.ObjectMeta.Labels[kopsapi.LabelClusterName],
+					SecretType:  "SSHPublicKey",
+					SecretName:  "admin",
+					SecretID:    fingerprint,
+				}
+
+				err = RunDeleteSecret(factory, out, options)
 				if err != nil {
 					exitWithError(err)
 				}

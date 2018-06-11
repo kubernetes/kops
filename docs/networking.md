@@ -300,7 +300,28 @@ The etcd port (4001) is opened between masters and nodes when using this network
 #### Amazon VPC Backend
 
 The [Amazon VPC CNI](https://github.com/aws/amazon-vpc-cni-k8s) plugin
-requires no additional configurations to be done by user. 
+requires no additional configurations to be done by user.
+
+To use the Amazon VPC CNI plugin you specify
+
+```
+  networking:
+    amazonvpc: {}
+```
+
+in the cluster spec file or pass the `--networking amazon-vpc-routed-eni` option on the command line to kops:
+
+```console
+$ export ZONES=mylistofzones
+$ kops create cluster \
+  --zones $ZONES \
+  --master-zones $ZONES \
+  --master-size m4.large \
+  --node-size m4.large \
+  --networking amazon-vpc-routed-eni \
+  --yes \
+  --name myclustername.mydns.io
+```
 
 **Important:** the pods uses the VPC CIDR, i.e. there is no isolation between the master, node/s and the internal k8s network.
 

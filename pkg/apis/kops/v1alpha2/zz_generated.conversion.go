@@ -85,6 +85,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_EtcdBackupSpec_To_v1alpha2_EtcdBackupSpec,
 		Convert_v1alpha2_EtcdClusterSpec_To_kops_EtcdClusterSpec,
 		Convert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec,
+		Convert_v1alpha2_EtcdManagerSpec_To_kops_EtcdManagerSpec,
+		Convert_kops_EtcdManagerSpec_To_v1alpha2_EtcdManagerSpec,
 		Convert_v1alpha2_EtcdMemberSpec_To_kops_EtcdMemberSpec,
 		Convert_kops_EtcdMemberSpec_To_v1alpha2_EtcdMemberSpec,
 		Convert_v1alpha2_ExecContainerAction_To_kops_ExecContainerAction,
@@ -99,8 +101,12 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec,
 		Convert_v1alpha2_HTTPProxy_To_kops_HTTPProxy,
 		Convert_kops_HTTPProxy_To_v1alpha2_HTTPProxy,
+		Convert_v1alpha2_HeptioAuthenticationSpec_To_kops_HeptioAuthenticationSpec,
+		Convert_kops_HeptioAuthenticationSpec_To_v1alpha2_HeptioAuthenticationSpec,
 		Convert_v1alpha2_HookSpec_To_kops_HookSpec,
 		Convert_kops_HookSpec_To_v1alpha2_HookSpec,
+		Convert_v1alpha2_IAMProfileSpec_To_kops_IAMProfileSpec,
+		Convert_kops_IAMProfileSpec_To_v1alpha2_IAMProfileSpec,
 		Convert_v1alpha2_IAMSpec_To_kops_IAMSpec,
 		Convert_kops_IAMSpec_To_v1alpha2_IAMSpec,
 		Convert_v1alpha2_InstanceGroup_To_kops_InstanceGroup,
@@ -259,6 +265,7 @@ func Convert_kops_AlwaysAllowAuthorizationSpec_To_v1alpha2_AlwaysAllowAuthorizat
 }
 
 func autoConvert_v1alpha2_AmazonVPCNetworkingSpec_To_kops_AmazonVPCNetworkingSpec(in *AmazonVPCNetworkingSpec, out *kops.AmazonVPCNetworkingSpec, s conversion.Scope) error {
+	out.ImageName = in.ImageName
 	return nil
 }
 
@@ -268,6 +275,7 @@ func Convert_v1alpha2_AmazonVPCNetworkingSpec_To_kops_AmazonVPCNetworkingSpec(in
 }
 
 func autoConvert_kops_AmazonVPCNetworkingSpec_To_v1alpha2_AmazonVPCNetworkingSpec(in *kops.AmazonVPCNetworkingSpec, out *AmazonVPCNetworkingSpec, s conversion.Scope) error {
+	out.ImageName = in.ImageName
 	return nil
 }
 
@@ -308,6 +316,15 @@ func autoConvert_v1alpha2_AuthenticationSpec_To_kops_AuthenticationSpec(in *Auth
 	} else {
 		out.Kopeio = nil
 	}
+	if in.Heptio != nil {
+		in, out := &in.Heptio, &out.Heptio
+		*out = new(kops.HeptioAuthenticationSpec)
+		if err := Convert_v1alpha2_HeptioAuthenticationSpec_To_kops_HeptioAuthenticationSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Heptio = nil
+	}
 	return nil
 }
 
@@ -325,6 +342,15 @@ func autoConvert_kops_AuthenticationSpec_To_v1alpha2_AuthenticationSpec(in *kops
 		}
 	} else {
 		out.Kopeio = nil
+	}
+	if in.Heptio != nil {
+		in, out := &in.Heptio, &out.Heptio
+		*out = new(HeptioAuthenticationSpec)
+		if err := Convert_kops_HeptioAuthenticationSpec_To_v1alpha2_HeptioAuthenticationSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Heptio = nil
 	}
 	return nil
 }
@@ -459,11 +485,12 @@ func Convert_kops_CalicoNetworkingSpec_To_v1alpha2_CalicoNetworkingSpec(in *kops
 }
 
 func autoConvert_v1alpha2_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *CanalNetworkingSpec, out *kops.CanalNetworkingSpec, s conversion.Scope) error {
-	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
 	out.ChainInsertMode = in.ChainInsertMode
+	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
+	out.LogSeveritySys = in.LogSeveritySys
+	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
-	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
 	return nil
 }
@@ -474,11 +501,12 @@ func Convert_v1alpha2_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *CanalN
 }
 
 func autoConvert_kops_CanalNetworkingSpec_To_v1alpha2_CanalNetworkingSpec(in *kops.CanalNetworkingSpec, out *CanalNetworkingSpec, s conversion.Scope) error {
-	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
 	out.ChainInsertMode = in.ChainInsertMode
+	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
+	out.LogSeveritySys = in.LogSeveritySys
+	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
-	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
 	return nil
 }
@@ -1443,6 +1471,15 @@ func autoConvert_v1alpha2_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdCluste
 	} else {
 		out.Backups = nil
 	}
+	if in.Manager != nil {
+		in, out := &in.Manager, &out.Manager
+		*out = new(kops.EtcdManagerSpec)
+		if err := Convert_v1alpha2_EtcdManagerSpec_To_kops_EtcdManagerSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Manager = nil
+	}
 	return nil
 }
 
@@ -1480,12 +1517,41 @@ func autoConvert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec(in *kops.EtcdC
 	} else {
 		out.Backups = nil
 	}
+	if in.Manager != nil {
+		in, out := &in.Manager, &out.Manager
+		*out = new(EtcdManagerSpec)
+		if err := Convert_kops_EtcdManagerSpec_To_v1alpha2_EtcdManagerSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Manager = nil
+	}
 	return nil
 }
 
 // Convert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec is an autogenerated conversion function.
 func Convert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec(in *kops.EtcdClusterSpec, out *EtcdClusterSpec, s conversion.Scope) error {
 	return autoConvert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec(in, out, s)
+}
+
+func autoConvert_v1alpha2_EtcdManagerSpec_To_kops_EtcdManagerSpec(in *EtcdManagerSpec, out *kops.EtcdManagerSpec, s conversion.Scope) error {
+	out.Image = in.Image
+	return nil
+}
+
+// Convert_v1alpha2_EtcdManagerSpec_To_kops_EtcdManagerSpec is an autogenerated conversion function.
+func Convert_v1alpha2_EtcdManagerSpec_To_kops_EtcdManagerSpec(in *EtcdManagerSpec, out *kops.EtcdManagerSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha2_EtcdManagerSpec_To_kops_EtcdManagerSpec(in, out, s)
+}
+
+func autoConvert_kops_EtcdManagerSpec_To_v1alpha2_EtcdManagerSpec(in *kops.EtcdManagerSpec, out *EtcdManagerSpec, s conversion.Scope) error {
+	out.Image = in.Image
+	return nil
+}
+
+// Convert_kops_EtcdManagerSpec_To_v1alpha2_EtcdManagerSpec is an autogenerated conversion function.
+func Convert_kops_EtcdManagerSpec_To_v1alpha2_EtcdManagerSpec(in *kops.EtcdManagerSpec, out *EtcdManagerSpec, s conversion.Scope) error {
+	return autoConvert_kops_EtcdManagerSpec_To_v1alpha2_EtcdManagerSpec(in, out, s)
 }
 
 func autoConvert_v1alpha2_EtcdMemberSpec_To_kops_EtcdMemberSpec(in *EtcdMemberSpec, out *kops.EtcdMemberSpec, s conversion.Scope) error {
@@ -1672,6 +1738,24 @@ func Convert_kops_HTTPProxy_To_v1alpha2_HTTPProxy(in *kops.HTTPProxy, out *HTTPP
 	return autoConvert_kops_HTTPProxy_To_v1alpha2_HTTPProxy(in, out, s)
 }
 
+func autoConvert_v1alpha2_HeptioAuthenticationSpec_To_kops_HeptioAuthenticationSpec(in *HeptioAuthenticationSpec, out *kops.HeptioAuthenticationSpec, s conversion.Scope) error {
+	return nil
+}
+
+// Convert_v1alpha2_HeptioAuthenticationSpec_To_kops_HeptioAuthenticationSpec is an autogenerated conversion function.
+func Convert_v1alpha2_HeptioAuthenticationSpec_To_kops_HeptioAuthenticationSpec(in *HeptioAuthenticationSpec, out *kops.HeptioAuthenticationSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha2_HeptioAuthenticationSpec_To_kops_HeptioAuthenticationSpec(in, out, s)
+}
+
+func autoConvert_kops_HeptioAuthenticationSpec_To_v1alpha2_HeptioAuthenticationSpec(in *kops.HeptioAuthenticationSpec, out *HeptioAuthenticationSpec, s conversion.Scope) error {
+	return nil
+}
+
+// Convert_kops_HeptioAuthenticationSpec_To_v1alpha2_HeptioAuthenticationSpec is an autogenerated conversion function.
+func Convert_kops_HeptioAuthenticationSpec_To_v1alpha2_HeptioAuthenticationSpec(in *kops.HeptioAuthenticationSpec, out *HeptioAuthenticationSpec, s conversion.Scope) error {
+	return autoConvert_kops_HeptioAuthenticationSpec_To_v1alpha2_HeptioAuthenticationSpec(in, out, s)
+}
+
 func autoConvert_v1alpha2_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec, s conversion.Scope) error {
 	out.Name = in.Name
 	out.Disabled = in.Disabled
@@ -1734,6 +1818,26 @@ func autoConvert_kops_HookSpec_To_v1alpha2_HookSpec(in *kops.HookSpec, out *Hook
 // Convert_kops_HookSpec_To_v1alpha2_HookSpec is an autogenerated conversion function.
 func Convert_kops_HookSpec_To_v1alpha2_HookSpec(in *kops.HookSpec, out *HookSpec, s conversion.Scope) error {
 	return autoConvert_kops_HookSpec_To_v1alpha2_HookSpec(in, out, s)
+}
+
+func autoConvert_v1alpha2_IAMProfileSpec_To_kops_IAMProfileSpec(in *IAMProfileSpec, out *kops.IAMProfileSpec, s conversion.Scope) error {
+	out.Profile = in.Profile
+	return nil
+}
+
+// Convert_v1alpha2_IAMProfileSpec_To_kops_IAMProfileSpec is an autogenerated conversion function.
+func Convert_v1alpha2_IAMProfileSpec_To_kops_IAMProfileSpec(in *IAMProfileSpec, out *kops.IAMProfileSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha2_IAMProfileSpec_To_kops_IAMProfileSpec(in, out, s)
+}
+
+func autoConvert_kops_IAMProfileSpec_To_v1alpha2_IAMProfileSpec(in *kops.IAMProfileSpec, out *IAMProfileSpec, s conversion.Scope) error {
+	out.Profile = in.Profile
+	return nil
+}
+
+// Convert_kops_IAMProfileSpec_To_v1alpha2_IAMProfileSpec is an autogenerated conversion function.
+func Convert_kops_IAMProfileSpec_To_v1alpha2_IAMProfileSpec(in *kops.IAMProfileSpec, out *IAMProfileSpec, s conversion.Scope) error {
+	return autoConvert_kops_IAMProfileSpec_To_v1alpha2_IAMProfileSpec(in, out, s)
 }
 
 func autoConvert_v1alpha2_IAMSpec_To_kops_IAMSpec(in *IAMSpec, out *kops.IAMSpec, s conversion.Scope) error {
@@ -1889,6 +1993,15 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	}
 	out.SuspendProcesses = in.SuspendProcesses
 	out.DetailedInstanceMonitoring = in.DetailedInstanceMonitoring
+	if in.IAM != nil {
+		in, out := &in.IAM, &out.IAM
+		*out = new(kops.IAMProfileSpec)
+		if err := Convert_v1alpha2_IAMProfileSpec_To_kops_IAMProfileSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.IAM = nil
+	}
 	return nil
 }
 
@@ -1960,6 +2073,15 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 	}
 	out.SuspendProcesses = in.SuspendProcesses
 	out.DetailedInstanceMonitoring = in.DetailedInstanceMonitoring
+	if in.IAM != nil {
+		in, out := &in.IAM, &out.IAM
+		*out = new(IAMProfileSpec)
+		if err := Convert_kops_IAMProfileSpec_To_v1alpha2_IAMProfileSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.IAM = nil
+	}
 	return nil
 }
 
@@ -2153,7 +2275,11 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.SecurePort = in.SecurePort
 	out.InsecurePort = in.InsecurePort
 	out.Address = in.Address
+	out.BindAddress = in.BindAddress
+	out.InsecureBindAddress = in.InsecureBindAddress
 	out.AdmissionControl = in.AdmissionControl
+	out.EnableAdmissionPlugins = in.EnableAdmissionPlugins
+	out.DisableAdmissionPlugins = in.DisableAdmissionPlugins
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.ServiceNodePortRange = in.ServiceNodePortRange
 	out.EtcdServers = in.EtcdServers
@@ -2189,6 +2315,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AuditLogMaxBackups = in.AuditLogMaxBackups
 	out.AuditLogMaxSize = in.AuditLogMaxSize
 	out.AuditPolicyFile = in.AuditPolicyFile
+	out.AuthenticationTokenWebhook = in.AuthenticationTokenWebhook
 	out.AuthenticationTokenWebhookConfigFile = in.AuthenticationTokenWebhookConfigFile
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
 	out.AuthorizationMode = in.AuthorizationMode
@@ -2217,7 +2344,11 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.SecurePort = in.SecurePort
 	out.InsecurePort = in.InsecurePort
 	out.Address = in.Address
+	out.BindAddress = in.BindAddress
+	out.InsecureBindAddress = in.InsecureBindAddress
 	out.AdmissionControl = in.AdmissionControl
+	out.EnableAdmissionPlugins = in.EnableAdmissionPlugins
+	out.DisableAdmissionPlugins = in.DisableAdmissionPlugins
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.ServiceNodePortRange = in.ServiceNodePortRange
 	out.EtcdServers = in.EtcdServers
@@ -2253,6 +2384,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.AuditLogMaxBackups = in.AuditLogMaxBackups
 	out.AuditLogMaxSize = in.AuditLogMaxSize
 	out.AuditPolicyFile = in.AuditPolicyFile
+	out.AuthenticationTokenWebhook = in.AuthenticationTokenWebhook
 	out.AuthenticationTokenWebhookConfigFile = in.AuthenticationTokenWebhookConfigFile
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
 	out.AuthorizationMode = in.AuthorizationMode
@@ -2355,12 +2487,15 @@ func Convert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerManagerC
 }
 
 func autoConvert_v1alpha2_KubeDNSConfig_To_kops_KubeDNSConfig(in *KubeDNSConfig, out *kops.KubeDNSConfig, s conversion.Scope) error {
-	out.Image = in.Image
-	out.Replicas = in.Replicas
-	out.Domain = in.Domain
-	out.ServerIP = in.ServerIP
 	out.CacheMaxSize = in.CacheMaxSize
 	out.CacheMaxConcurrent = in.CacheMaxConcurrent
+	out.Domain = in.Domain
+	out.Image = in.Image
+	out.Replicas = in.Replicas
+	out.Provider = in.Provider
+	out.ServerIP = in.ServerIP
+	out.StubDomains = in.StubDomains
+	out.UpstreamNameservers = in.UpstreamNameservers
 	return nil
 }
 
@@ -2370,12 +2505,15 @@ func Convert_v1alpha2_KubeDNSConfig_To_kops_KubeDNSConfig(in *KubeDNSConfig, out
 }
 
 func autoConvert_kops_KubeDNSConfig_To_v1alpha2_KubeDNSConfig(in *kops.KubeDNSConfig, out *KubeDNSConfig, s conversion.Scope) error {
-	out.Image = in.Image
-	out.Replicas = in.Replicas
-	out.Domain = in.Domain
-	out.ServerIP = in.ServerIP
 	out.CacheMaxSize = in.CacheMaxSize
 	out.CacheMaxConcurrent = in.CacheMaxConcurrent
+	out.Domain = in.Domain
+	out.Image = in.Image
+	out.Replicas = in.Replicas
+	out.Provider = in.Provider
+	out.ServerIP = in.ServerIP
+	out.StubDomains = in.StubDomains
+	out.UpstreamNameservers = in.UpstreamNameservers
 	return nil
 }
 
@@ -2393,6 +2531,7 @@ func autoConvert_v1alpha2_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyC
 	out.LogLevel = in.LogLevel
 	out.ClusterCIDR = in.ClusterCIDR
 	out.HostnameOverride = in.HostnameOverride
+	out.BindAddress = in.BindAddress
 	out.Master = in.Master
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
@@ -2414,6 +2553,7 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha2_KubeProxyConfig(in *kops.KubeP
 	out.LogLevel = in.LogLevel
 	out.ClusterCIDR = in.ClusterCIDR
 	out.HostnameOverride = in.HostnameOverride
+	out.BindAddress = in.BindAddress
 	out.Master = in.Master
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
@@ -2477,6 +2617,8 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.AnonymousAuth = in.AnonymousAuth
 	out.AuthorizationMode = in.AuthorizationMode
 	out.ClientCAFile = in.ClientCAFile
+	out.TLSCertFile = in.TLSCertFile
+	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
 	out.KubeconfigPath = in.KubeconfigPath
 	out.RequireKubeconfig = in.RequireKubeconfig
 	out.LogLevel = in.LogLevel
@@ -2531,6 +2673,8 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.RuntimeRequestTimeout = in.RuntimeRequestTimeout
 	out.VolumeStatsAggPeriod = in.VolumeStatsAggPeriod
 	out.FailSwapOn = in.FailSwapOn
+	out.ExperimentalAllowedUnsafeSysctls = in.ExperimentalAllowedUnsafeSysctls
+	out.StreamingConnectionIdleTimeout = in.StreamingConnectionIdleTimeout
 	return nil
 }
 
@@ -2544,6 +2688,8 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.AnonymousAuth = in.AnonymousAuth
 	out.AuthorizationMode = in.AuthorizationMode
 	out.ClientCAFile = in.ClientCAFile
+	out.TLSCertFile = in.TLSCertFile
+	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
 	out.KubeconfigPath = in.KubeconfigPath
 	out.RequireKubeconfig = in.RequireKubeconfig
 	out.LogLevel = in.LogLevel
@@ -2598,6 +2744,8 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.RuntimeRequestTimeout = in.RuntimeRequestTimeout
 	out.VolumeStatsAggPeriod = in.VolumeStatsAggPeriod
 	out.FailSwapOn = in.FailSwapOn
+	out.ExperimentalAllowedUnsafeSysctls = in.ExperimentalAllowedUnsafeSysctls
+	out.StreamingConnectionIdleTimeout = in.StreamingConnectionIdleTimeout
 	return nil
 }
 

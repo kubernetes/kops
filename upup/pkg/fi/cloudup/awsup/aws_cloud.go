@@ -383,7 +383,7 @@ func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceg
 }
 
 func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	nodeMap := cloudinstances.GetNodeMap(nodes)
+	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	asgs, err := FindAutoscalingGroups(c, c.Tags())

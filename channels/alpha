@@ -4,38 +4,44 @@ spec:
     - name: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
       providerID: aws
       kubernetesVersion: ">=1.4.0 <1.5.0"
-    - name: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2018-03-11
+    - name: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2018-05-27
       providerID: aws
       kubernetesVersion: ">=1.5.0 <1.6.0"
-    - name: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2018-03-11
+    - name: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2018-05-27
       providerID: aws
       kubernetesVersion: ">=1.6.0 <1.7.0"
-    - name: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2018-03-11
+    - name: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2018-05-27
       providerID: aws
       kubernetesVersion: ">=1.7.0 <1.8.0"
-    - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-03-11
+    - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-05-27
       providerID: aws
       kubernetesVersion: ">=1.8.0 <1.9.0"
-    - name: kope.io/k8s-1.9-debian-jessie-amd64-hvm-ebs-2018-03-11
+    - name: kope.io/k8s-1.9-debian-jessie-amd64-hvm-ebs-2018-05-27
       providerID: aws
       kubernetesVersion: ">=1.9.0 <1.10.0"
     # Need stretch as default in 1.10 (for nvme)
     # BUT... this is causing the submit queue to block, so back to jessie temporarily: https://github.com/kubernetes/kubernetes/issues/56763
-    - name: kope.io/k8s-1.9-debian-jessie-amd64-hvm-ebs-2018-03-11
+    - name: kope.io/k8s-1.10-debian-jessie-amd64-hvm-ebs-2018-05-27
       providerID: aws
-      kubernetesVersion: ">=1.10.0"
+      kubernetesVersion: ">=1.10.0 <1.11.0"
+    - name: kope.io/k8s-1.11-debian-jessie-amd64-hvm-ebs-2018-05-27
+      providerID: aws
+      kubernetesVersion: ">=1.11.0"
     - providerID: gce
-      name: "cos-cloud/cos-stable-64-10176-62-0"
+      name: "cos-cloud/cos-stable-65-10323-64-0"
   cluster:
     kubernetesVersion: v1.5.8
     networking:
       kubenet: {}
   kubernetesVersions:
+  - range: ">=1.10.0"
+    recommendedVersion: 1.10.3
+    requiredVersion: 1.10.0
   - range: ">=1.9.0"
-    recommendedVersion: 1.9.6
+    recommendedVersion: 1.9.8
     requiredVersion: 1.9.0
   - range: ">=1.8.0"
-    recommendedVersion: 1.8.11
+    recommendedVersion: 1.8.13
     requiredVersion: 1.8.0
   - range: ">=1.7.0"
     recommendedVersion: 1.7.16
@@ -51,13 +57,13 @@ spec:
     requiredVersion: 1.4.2
   kopsVersions:
   - range: ">=1.9.0-alpha.1"
-    recommendedVersion: 1.9.0
+    recommendedVersion: 1.9.1
     #requiredVersion: 1.9.0
-    kubernetesVersion: 1.9.6
+    kubernetesVersion: 1.9.8
   - range: ">=1.8.0-alpha.1"
     recommendedVersion: 1.8.1
     requiredVersion: 1.7.1
-    kubernetesVersion: 1.8.11
+    kubernetesVersion: 1.8.13
   - range: ">=1.7.0-alpha.1"
     recommendedVersion: 1.8.1
     requiredVersion: 1.7.1

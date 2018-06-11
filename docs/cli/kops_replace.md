@@ -19,6 +19,9 @@ kops replace -f FILENAME [flags]
   # Replace a cluster desired configuration using a YAML file
   kops replace -f my-cluster.yaml
   
+  # Replace an instancegroup using YAML passed into stdin.
+  cat instancegroup.yaml | kops replace -f -
+  
   # Note, if the resource does not exist the command will error, use --force to provision resource
   kops replace -f my-cluster.yaml --force
 ```
@@ -40,7 +43,7 @@ kops replace -f FILENAME [flags]
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
