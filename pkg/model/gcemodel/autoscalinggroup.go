@@ -17,6 +17,9 @@ limitations under the License.
 package gcemodel
 
 import (
+	"fmt"
+	"strings"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
@@ -92,6 +95,15 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					//"config": resources/config.yaml $nodeset.Name
 					"cluster-name": fi.WrapResource(fi.NewStringResource(b.ClusterName())),
 				},
+			}
+
+			if len(b.SSHPublicKeys) > 0 {
+				var gFmtKeys []string
+				for _, key := range b.SSHPublicKeys {
+					gFmtKeys = append(gFmtKeys, fmt.Sprintf("%s: %s", fi.SecretNameSSHPrimary, key))
+				}
+
+				t.Metadata["ssh-keys"] = fi.WrapResource(fi.NewStringResource(strings.Join(gFmtKeys, "\n")))
 			}
 
 			switch ig.Spec.Role {

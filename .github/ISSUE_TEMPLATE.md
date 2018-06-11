@@ -19,7 +19,7 @@ you can.
 6. What did you expect to happen?
 
 7. Please provide your cluster manifest. Execute
-  `kops get --name my.example.com -oyaml` to display your cluster manifest.
+  `kops get --name my.example.com -o yaml` to display your cluster manifest.
   You may want to remove your cluster name and other sensitive information.
 
 8. Please run the commands with most verbose logging by adding the `-v 10` flag.

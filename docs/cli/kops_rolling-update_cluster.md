@@ -67,17 +67,18 @@ kops rolling-update cluster [flags]
 ### Options
 
 ```
-      --bastion-interval duration   Time to wait between restarting bastions (default 5m0s)
-      --cloudonly                   Perform rolling update without confirming progress with k8s
-      --fail-on-drain-error         The rolling-update will fail if draining a node fails. (default true)
-      --fail-on-validate-error      The rolling-update will fail if the cluster fails to validate. (default true)
-      --force                       Force rolling update, even if no changes
-  -h, --help                        help for cluster
-      --instance-group strings      List of instance groups to update (defaults to all if not specified)
-  -i, --interactive                 Prompt to continue after each instance is updated
-      --master-interval duration    Time to wait between restarting masters (default 5m0s)
-      --node-interval duration      Time to wait between restarting nodes (default 4m0s)
-  -y, --yes                         Perform rolling update immediately, without --yes rolling-update executes a dry-run
+      --bastion-interval duration      Time to wait between restarting bastions (default 5m0s)
+      --cloudonly                      Perform rolling update without confirming progress with k8s
+      --fail-on-drain-error            The rolling-update will fail if draining a node fails. (default true)
+      --fail-on-validate-error         The rolling-update will fail if the cluster fails to validate. (default true)
+      --force                          Force rolling update, even if no changes
+  -h, --help                           help for cluster
+      --instance-group strings         List of instance groups to update (defaults to all if not specified)
+      --instance-group-roles strings   If specified, only instance groups of the specified role will be updated
+  -i, --interactive                    Prompt to continue after each instance is updated
+      --master-interval duration       Time to wait between restarting masters (default 5m0s)
+      --node-interval duration         Time to wait between restarting nodes (default 4m0s)
+  -y, --yes                            Perform rolling update immediately, without --yes rolling-update executes a dry-run
 ```
 
 ### Options inherited from parent commands
@@ -89,7 +90,7 @@ kops rolling-update cluster [flags]
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging

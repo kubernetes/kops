@@ -59,7 +59,7 @@ func RunSetCluster(f *util.Factory, cmd *cobra.Command, out io.Writer, options *
 		return err
 	}
 
-	if err := setClusterFields(options.Fields, cluster); err != nil {
+	if err := SetClusterFields(options.Fields, cluster, instanceGroups); err != nil {
 		return err
 	}
 
@@ -70,8 +70,8 @@ func RunSetCluster(f *util.Factory, cmd *cobra.Command, out io.Writer, options *
 	return nil
 }
 
-// setClusterFields sets field values in the cluster
-func setClusterFields(fields []string, cluster *api.Cluster) error {
+// SetClusterFields sets field values in the cluster
+func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*api.InstanceGroup) error {
 	for _, field := range fields {
 		kv := strings.SplitN(field, "=", 2)
 		if len(kv) != 2 {
@@ -80,8 +80,21 @@ func setClusterFields(fields []string, cluster *api.Cluster) error {
 
 		// For now we have hard-code the values we want to support; we'll get test coverage and then do this properly...
 		switch kv[0] {
+		case "cluster.spec.nodePortAccess":
+			cluster.Spec.NodePortAccess = append(cluster.Spec.NodePortAccess, kv[1])
 		case "spec.kubernetesVersion":
 			cluster.Spec.KubernetesVersion = kv[1]
+		case "cluster.spec.etcdClusters[*].version":
+			for _, c := range cluster.Spec.EtcdClusters {
+				c.Version = kv[1]
+			}
+		case "cluster.spec.etcdClusters[*].manager.image":
+			for _, etcd := range cluster.Spec.EtcdClusters {
+				if etcd.Manager == nil {
+					etcd.Manager = &api.EtcdManagerSpec{}
+				}
+				etcd.Manager.Image = kv[1]
+			}
 		default:
 			return fmt.Errorf("unhandled field: %q", field)
 		}

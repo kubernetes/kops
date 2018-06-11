@@ -90,6 +90,9 @@ func run() error {
 	flags.StringVar(&etcdHeartbeatInterval, "etcd-heartbeat-interval", etcdHeartbeatInterval, "time in ms of a heartbeat interval")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 
+	manageEtcd := false
+	flag.BoolVar(&manageEtcd, "manage-etcd", manageEtcd, "Set to manage etcd (deprecated in favor of etcd-manager)")
+
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
 
@@ -320,6 +323,7 @@ func run() error {
 		ApplyTaints:           applyTaints,
 		Channels:              channels,
 		DNS:                   dnsProvider,
+		ManageEtcd:            manageEtcd,
 		EtcdBackupImage:       etcdBackupImage,
 		EtcdBackupStore:       etcdBackupStore,
 		EtcdImageSource:       etcdImageSource,
@@ -378,7 +382,7 @@ func findInternalIP() (net.IP, error) {
 
 		addrs, err := networkInterface.Addrs()
 		if err != nil {
-			return nil, fmt.Errorf("error querying network interface %s for IP adddresses: %v", name, err)
+			return nil, fmt.Errorf("error querying network interface %s for IP addresses: %v", name, err)
 		}
 
 		for _, addr := range addrs {
@@ -402,7 +406,7 @@ func findInternalIP() (net.IP, error) {
 	}
 
 	if len(ips) == 0 {
-		return nil, fmt.Errorf("unable to determine internal ip (no adddresses found)")
+		return nil, fmt.Errorf("unable to determine internal ip (no addresses found)")
 	}
 
 	if len(ips) == 1 {

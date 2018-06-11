@@ -1,6 +1,6 @@
 # USING KOPS WITH COREOS - A MULTI-MASTER/MULTI-NODE PRACTICAL EXAMPLE
 
-## WHAT WE WANT TO ACOMPLISH HERE?
+## WHAT WE WANT TO ACCOMPLISH HERE?
 
 The exercise described in this document will focus on the following goals:
 

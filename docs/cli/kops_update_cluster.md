@@ -28,7 +28,7 @@ kops update cluster [flags]
       --create-kube-config            Will control automatically creating the kube config file on your local filesystem (default true)
   -h, --help                          help for cluster
       --lifecycle-overrides strings   comma separated list of phase overrides, example: SecurityGroups=Ignore,InternetGateway=ExistsAndWarnIfChanges
-      --model string                  Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
+      --model string                  Models to apply (separate multiple models with commas) (default "proto,cloudup")
       --out string                    Path to write any local output
       --phase string                  Subset of tasks to run: assets, cluster, network, security
       --ssh-public-key string         SSH public key to use (deprecated: use kops create secret instead)
@@ -45,7 +45,7 @@ kops update cluster [flags]
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging

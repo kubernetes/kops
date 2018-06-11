@@ -31,7 +31,6 @@ import (
 	"fmt"
 	"io"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/golang/glog"
@@ -77,7 +76,6 @@ type Condition map[string]interface{}
 // Statement is an AWS IAM Policy Statement Object:
 // http://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements.html#Statement
 type Statement struct {
-	Sid       string
 	Effect    StatementEffect
 	Action    stringorslice.StringOrSlice
 	Resource  stringorslice.StringOrSlice
@@ -237,7 +235,6 @@ func (b *PolicyBuilder) BuildAWSPolicyBastion() (*Policy, error) {
 	// Bastion hosts currently don't require any specific permissions.
 	// A trivial permission is granted, because empty policies are not allowed.
 	p.Statement = append(p.Statement, &Statement{
-		Sid:      "kopsK8sBastion",
 		Effect:   StatementEffectAllow,
 		Action:   stringorslice.Slice([]string{"ec2:DescribeRegions"}),
 		Resource: resource,
@@ -305,7 +302,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 
 	sort.Strings(roots)
 
-	for i, root := range roots {
+	for _, root := range roots {
 		vfsPath, err := vfs.Context.BuildVfsPath(root)
 		if err != nil {
 			return nil, fmt.Errorf("cannot parse VFS path %q: %v", root, err)
@@ -315,15 +312,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 			iamS3Path := s3Path.Bucket() + "/" + s3Path.Key()
 			iamS3Path = strings.TrimSuffix(iamS3Path, "/")
 
-			sidSuffix := ""
-			if len(roots) > 1 {
-				// Avoid collisions with multiple buckets
-				// Sids are limited to A-Z,a-z,0-9
-				sidSuffix = strconv.Itoa(i)
-			}
-
 			p.Statement = append(p.Statement, &Statement{
-				Sid:    "kopsK8sS3GetListBucket" + sidSuffix,
 				Effect: StatementEffectAllow,
 				Action: stringorslice.Of("s3:GetBucketLocation", "s3:ListBucket"),
 				Resource: stringorslice.Slice([]string{
@@ -333,7 +322,6 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 
 			if b.Cluster.Spec.IAM.Legacy {
 				p.Statement = append(p.Statement, &Statement{
-					Sid:    "kopsK8sS3BucketFullAccess" + sidSuffix,
 					Effect: StatementEffectAllow,
 					Action: stringorslice.Slice([]string{"s3:*"}),
 					Resource: stringorslice.Of(
@@ -343,7 +331,6 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 			} else {
 				if b.Role == kops.InstanceGroupRoleMaster {
 					p.Statement = append(p.Statement, &Statement{
-						Sid:    "kopsK8sS3MasterBucketFullGet" + sidSuffix,
 						Effect: StatementEffectAllow,
 						Action: stringorslice.Slice([]string{"s3:Get*"}),
 						Resource: stringorslice.Of(
@@ -352,7 +339,6 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 					})
 				} else if b.Role == kops.InstanceGroupRoleNode {
 					p.Statement = append(p.Statement, &Statement{
-						Sid:    "kopsK8sS3NodeBucketSelectiveGet" + sidSuffix,
 						Effect: StatementEffectAllow,
 						Action: stringorslice.Slice([]string{"s3:Get*"}),
 						Resource: stringorslice.Of(
@@ -372,7 +358,6 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 						// @check if kuberoute is enabled and permit access to the private key
 						if b.Cluster.Spec.Networking.Kuberouter != nil {
 							p.Statement = append(p.Statement, &Statement{
-								Sid:    "kopsK8sS3NodeBucketGetKuberouter" + sidSuffix,
 								Effect: StatementEffectAllow,
 								Action: stringorslice.Slice([]string{"s3:Get*"}),
 								Resource: stringorslice.Of(
@@ -384,7 +369,6 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 						// @check if calico is enabled as the CNI provider and permit access to the client TLS certificate by default
 						if b.Cluster.Spec.Networking.Calico != nil {
 							p.Statement = append(p.Statement, &Statement{
-								Sid:    "kopsK8sS3NodeBucketGetCalicoClient" + sidSuffix,
 								Effect: StatementEffectAllow,
 								Action: stringorslice.Slice([]string{"s3:Get*"}),
 								Resource: stringorslice.Of(
@@ -494,7 +478,6 @@ func addECRPermissions(p *Policy) {
 	// a private logging pod or similar.
 	// At this point we allow all regions with ECR, since ECR is region specific.
 	p.Statement = append(p.Statement, &Statement{
-		Sid:    "kopsK8sECR",
 		Effect: StatementEffectAllow,
 		Action: stringorslice.Of(
 			"ecr:GetAuthorizationToken",
@@ -518,7 +501,6 @@ func addRoute53Permissions(p *Policy, hostedZoneID string) {
 	hostedZoneID = strings.TrimPrefix(hostedZoneID, "hostedzone/")
 
 	p.Statement = append(p.Statement, &Statement{
-		Sid:    "kopsK8sRoute53Change",
 		Effect: StatementEffectAllow,
 		Action: stringorslice.Of("route53:ChangeResourceRecordSets",
 			"route53:ListResourceRecordSets",
@@ -527,7 +509,6 @@ func addRoute53Permissions(p *Policy, hostedZoneID string) {
 	})
 
 	p.Statement = append(p.Statement, &Statement{
-		Sid:      "kopsK8sRoute53GetChanges",
 		Effect:   StatementEffectAllow,
 		Action:   stringorslice.Slice([]string{"route53:GetChange"}),
 		Resource: stringorslice.Slice([]string{"arn:aws:route53:::change/*"}),
@@ -535,7 +516,6 @@ func addRoute53Permissions(p *Policy, hostedZoneID string) {
 
 	wildcard := stringorslice.Slice([]string{"*"})
 	p.Statement = append(p.Statement, &Statement{
-		Sid:      "kopsK8sRoute53ListZones",
 		Effect:   StatementEffectAllow,
 		Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
 		Resource: wildcard,
@@ -545,7 +525,6 @@ func addRoute53Permissions(p *Policy, hostedZoneID string) {
 func addKMSIAMPolicies(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool) {
 	if legacyIAM {
 		p.Statement = append(p.Statement, &Statement{
-			Sid:    "kopsK8sKMSEncryptedVolumesLegacyPerms",
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Of(
 				"kms:ListGrants",
@@ -557,7 +536,6 @@ func addKMSIAMPolicies(p *Policy, resource stringorslice.StringOrSlice, legacyIA
 
 	// TODO could use "kms:ViaService" Condition Key here?
 	p.Statement = append(p.Statement, &Statement{
-		Sid:    "kopsK8sKMSEncryptedVolumes",
 		Effect: StatementEffectAllow,
 		Action: stringorslice.Of(
 			"kms:CreateGrant",
@@ -572,9 +550,8 @@ func addKMSIAMPolicies(p *Policy, resource stringorslice.StringOrSlice, legacyIA
 }
 
 func addNodeEC2Policies(p *Policy, resource stringorslice.StringOrSlice) {
-	// Protokube makes a DescribeInstances call
+	// Protokube makes a DescribeInstances call, DescribeRegions when finding S3 State Bucket
 	p.Statement = append(p.Statement, &Statement{
-		Sid:      "kopsK8sEC2NodePerms",
 		Effect:   StatementEffectAllow,
 		Action:   stringorslice.Slice([]string{"ec2:DescribeInstances", "ec2:DescribeRegions"}),
 		Resource: resource,
@@ -582,10 +559,10 @@ func addNodeEC2Policies(p *Policy, resource stringorslice.StringOrSlice) {
 }
 
 func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string) {
+	// The legacy IAM policy grants full ec2 API access
 	if legacyIAM {
 		p.Statement = append(p.Statement,
 			&Statement{
-				Sid:      "kopsK8sEC2MasterPermsFullAccess",
 				Effect:   StatementEffectAllow,
 				Action:   stringorslice.Slice([]string{"ec2:*"}),
 				Resource: resource,
@@ -606,7 +583,6 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, legac
 		// Comments are which cloudprovider code file makes the call
 		p.Statement = append(p.Statement,
 			&Statement{
-				Sid:    "kopsK8sEC2MasterPermsDescribeResources",
 				Effect: StatementEffectAllow,
 				Action: stringorslice.Slice([]string{
 					"ec2:DescribeInstances",      // aws.go
@@ -619,7 +595,6 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, legac
 				Resource: resource,
 			},
 			&Statement{
-				Sid:    "kopsK8sEC2MasterPermsAllResources",
 				Effect: StatementEffectAllow,
 				Action: stringorslice.Slice([]string{
 					"ec2:CreateSecurityGroup",     // aws.go
@@ -630,7 +605,6 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, legac
 				Resource: resource,
 			},
 			&Statement{
-				Sid:    "kopsK8sEC2MasterPermsTaggedResources",
 				Effect: StatementEffectAllow,
 				Action: stringorslice.Of(
 					"ec2:AttachVolume",                  // aws.go
@@ -656,7 +630,6 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, legac
 func addMasterELBPolicies(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool) {
 	if legacyIAM {
 		p.Statement = append(p.Statement, &Statement{
-			Sid:      "kopsK8sELBMasterPermsFullAccess",
 			Effect:   StatementEffectAllow,
 			Action:   stringorslice.Slice([]string{"elasticloadbalancing:*"}),
 			Resource: resource,
@@ -664,7 +637,6 @@ func addMasterELBPolicies(p *Policy, resource stringorslice.StringOrSlice, legac
 	} else {
 		// Comments are which cloudprovider code file makes the call
 		p.Statement = append(p.Statement, &Statement{
-			Sid:    "kopsK8sELBMasterPermsRestrictive",
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Of(
 				"elasticloadbalancing:AddTags",                                 // aws_loadbalancer.go
@@ -688,7 +660,6 @@ func addMasterELBPolicies(p *Policy, resource stringorslice.StringOrSlice, legac
 		})
 
 		p.Statement = append(p.Statement, &Statement{
-			Sid:    "kopsK8sNLBMasterPermsRestrictive",
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Of(
 				"ec2:DescribeVpcs",                                       // aws_loadbalancer.go
@@ -714,7 +685,6 @@ func addMasterELBPolicies(p *Policy, resource stringorslice.StringOrSlice, legac
 func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string) {
 	if legacyIAM {
 		p.Statement = append(p.Statement, &Statement{
-			Sid:    "kopsK8sASMasterPerms",
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Slice([]string{
 				"autoscaling:DescribeAutoScalingGroups",
@@ -733,7 +703,6 @@ func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, legacy
 		// TODO: Make optional only if using autoscalers
 		p.Statement = append(p.Statement,
 			&Statement{
-				Sid:    "kopsK8sASMasterPermsAllResources",
 				Effect: StatementEffectAllow,
 				Action: stringorslice.Of(
 					"autoscaling:DescribeAutoScalingGroups",    // aws_instancegroups.go
@@ -744,7 +713,6 @@ func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, legacy
 				Resource: resource,
 			},
 			&Statement{
-				Sid:    "kopsK8sASMasterPermsTaggedResources",
 				Effect: StatementEffectAllow,
 				Action: stringorslice.Of(
 					"autoscaling:SetDesiredCapacity",                  // aws_manager.go
@@ -765,7 +733,6 @@ func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, legacy
 func addCertIAMPolicies(p *Policy, resource stringorslice.StringOrSlice) {
 	// TODO: Make optional only if using IAM SSL Certs on ELBs
 	p.Statement = append(p.Statement, &Statement{
-		Sid:    "kopsMasterCertIAMPerms",
 		Effect: StatementEffectAllow,
 		Action: stringorslice.Of(
 			"iam:ListServerCertificates",
@@ -793,7 +760,6 @@ func addRomanaCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, le
 		// Comments are which Romana component makes the call
 		p.Statement = append(p.Statement,
 			&Statement{
-				Sid:    "kopsK8sEC2RomanaCNIMasterPermsAllResources",
 				Effect: StatementEffectAllow,
 				Action: stringorslice.Slice([]string{
 					"ec2:DescribeAvailabilityZones", // vpcrouter
@@ -802,7 +768,6 @@ func addRomanaCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, le
 				Resource: resource,
 			},
 			&Statement{
-				Sid:    "kopsK8sEC2RomanaCNIMasterPermsTaggedResources",
 				Effect: StatementEffectAllow,
 				Action: stringorslice.Slice([]string{
 					"ec2:CreateRoute",  // vpcrouter
@@ -827,7 +792,6 @@ func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice,
 	} else {
 		p.Statement = append(p.Statement,
 			&Statement{
-				Sid:    "kopsK8sEC2NodeAmazonVPCPerms",
 				Effect: StatementEffectAllow,
 				Action: stringorslice.Slice([]string{
 					"ec2:CreateNetworkInterface",

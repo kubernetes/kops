@@ -26,7 +26,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 
 	"github.com/blang/semver"
-	"github.com/golang/glog"
 )
 
 // KubeAPIServerOptionsBuilder adds options for the apiserver to the model
@@ -55,7 +54,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	// @question: should the question every be able to set this?
 	if c.StorageBackend == nil {
 		// @note: we can use the first version as we enforce both running the same versions.
-		// albeit feels a little wierd to do this
+		// albeit feels a little weird to do this
 		sem, err := semver.Parse(strings.TrimPrefix(clusterSpec.EtcdClusters[0].Version, "v"))
 		if err != nil {
 			return err
@@ -162,7 +161,14 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	c.LogLevel = 2
 	c.SecurePort = 443
-	c.Address = "127.0.0.1"
+
+	if b.IsKubernetesGTE("1.10") {
+		c.BindAddress = "0.0.0.0"
+		c.InsecureBindAddress = "127.0.0.1"
+	} else {
+		c.Address = "127.0.0.1"
+	}
+
 	c.AllowPrivileged = fi.Bool(true)
 	c.ServiceClusterIPRange = clusterSpec.ServiceClusterIPRange
 	c.EtcdServers = []string{"http://127.0.0.1:4001"}
@@ -222,10 +228,25 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 			"ResourceQuota",
 		}
 	}
+	if b.IsKubernetesGTE("1.9") && b.IsKubernetesLT("1.10") {
+		c.AdmissionControl = []string{
+			"Initializers",
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"DefaultTolerationSeconds",
+			"MutatingAdmissionWebhook",
+			"ValidatingAdmissionWebhook",
+			"NodeRestriction",
+			"ResourceQuota",
+		}
+	}
 	// Based on recommendations from:
 	// https://kubernetes.io/docs/admin/admission-controllers/#is-there-a-recommended-set-of-admission-controllers-to-use
-	if b.IsKubernetesGTE("1.9") {
-		c.AdmissionControl = []string{
+	if b.IsKubernetesGTE("1.10") {
+		c.EnableAdmissionPlugins = []string{
 			"Initializers",
 			"NamespaceLifecycle",
 			"LimitRanger",
@@ -245,14 +266,8 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		c.AnonymousAuth = fi.Bool(false)
 	}
 
-	// We disable the insecure port from 1.6 onwards
-	if b.IsKubernetesGTE("1.6") {
-		c.InsecurePort = 0
-		glog.V(4).Infof("Enabling apiserver insecure port, for healthchecks (issue #43784)")
-		c.InsecurePort = 8080
-	} else {
-		c.InsecurePort = 8080
-	}
+	// FIXME : Disable the insecure port when kubernetes issue #43784 is fixed
+	c.InsecurePort = 8080
 
 	return nil
 }

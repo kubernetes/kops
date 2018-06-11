@@ -123,7 +123,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	viper.BindPFlag("config", cmd.PersistentFlags().Lookup("config"))
 	viper.SetDefault("config", "$HOME/.kops.yaml")
 
-	cmd.PersistentFlags().StringVar(&rootCommand.RegistryPath, "state", "", "Location of state storage. Overrides KOPS_STATE_STORE environment variable")
+	cmd.PersistentFlags().StringVar(&rootCommand.RegistryPath, "state", "", "Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable")
 	viper.BindPFlag("KOPS_STATE_STORE", cmd.PersistentFlags().Lookup("state"))
 
 	defaultClusterName := os.Getenv("KOPS_CLUSTER_NAME")

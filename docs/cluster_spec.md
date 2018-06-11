@@ -177,7 +177,7 @@ spec:
 
 You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#fileassets)  feature to push an advanced audit policy file on the master nodes.
 
-Example policy file can be found [here]( https://raw.githubusercontent.com/kubernetes/website/master/docs/tasks/debug-application-cluster/audit-policy.yaml)
+Example policy file can be found [here](https://github.com/kubernetes/website/blob/master/content/en/docs/tasks/debug-application-cluster/audit-policy.yaml)
 
 #### Max Requests Inflight 
 
@@ -252,6 +252,23 @@ spec:
     enableCustomMetrics: true
 ```
 
+#### Setting kubelet configurations together with the Amazon VPC backend
+Setting kubelet configurations together with the networking Amazon VPC backend requires to also set the `cloudProvider: aws` setting in this block. Example:
+
+```yaml
+spec:
+  kubelet:
+    enableCustomMetrics: true
+    cloudProvider: aws
+...
+...
+  cloudProvider: aws
+...
+...
+  networking:
+    amazonvpc: {}
+```
+
 ### kubeScheduler
 
 This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/
@@ -265,6 +282,26 @@ This block contains configurations for `kube-scheduler`.  See https://kubernetes
 Will make kube-scheduler use the scheduler policy from configmap "scheduler-policy" in namespace kube-system.
 
 Note that as of Kubernetes 1.8.0 kube-scheduler does not reload its configuration from configmap automatically. You will need to ssh into the master instance and restart the Docker container manually.
+
+### kubeDNS
+
+This block contains configurations for `kube-dns`.
+
+ ```yaml
+ spec:
+   kubeDNS:
+     provider: KubeDNS
+```
+
+Specifying KubeDNS will install kube-dns as the default service discovery.
+
+ ```yaml
+ spec:
+   kubeDNS:
+     provider: CoreDNS
+```
+
+This will install [CoreDNS](https://coredns.io/) instead of kube-dns.
 
 ### kubeControllerManager
 This block contains configurations for the `controller-manager`.
@@ -384,6 +421,28 @@ spec:
       - sh
       - -c
       - chroot /rootfs apt-get update && chroot /rootfs apt-get install -y ceph-common
+      image: busybox
+```
+
+Install cachefiled
+
+```
+spec:
+  # many sections removed
+  hooks:
+  - before:
+    - kubelet.service
+    manifest: |
+      Type=oneshot
+      ExecStart=/sbin/modprobe cachefiles
+    name: cachefiles.service
+  - execContainer:
+      command:
+      - sh
+      - -c
+      - chroot /rootfs apt-get update && chroot /rootfs apt-get install -y cachefilesd
+        && chroot /rootfs sed -i s/#RUN/RUN/ /etc/default/cachefilesd && chroot /rootfs
+        service cachefilesd restart
       image: busybox
 ```
 

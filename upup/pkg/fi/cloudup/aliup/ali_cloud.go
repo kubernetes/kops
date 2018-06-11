@@ -1,0 +1,320 @@
+/*
+Copyright 2018 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package aliup
+
+import (
+	"errors"
+	"fmt"
+	"os"
+
+	"github.com/golang/glog"
+
+	"github.com/denverdino/aliyungo/common"
+	"github.com/denverdino/aliyungo/ecs"
+	"github.com/denverdino/aliyungo/slb"
+
+	"k8s.io/api/core/v1"
+	prj "k8s.io/kops"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/upup/pkg/fi"
+)
+
+const TagClusterName = "KubernetesCluster"
+
+// This is for statistic purpose.
+var KubernetesKopsIdentity = fmt.Sprintf("Kubernetes.Kops/%s", prj.Version)
+
+type ALICloud interface {
+	fi.Cloud
+
+	EcsClient() *ecs.Client
+	SlbClient() *slb.Client
+	Region() string
+	AddClusterTags(tags map[string]string)
+	GetTags(resourceId string, resourceType string) (map[string]string, error)
+	CreateTags(resourceId string, resourceType string, tags map[string]string) error
+	RemoveTags(resourceId string, resourceType string, tags map[string]string) error
+	GetClusterTags() map[string]string
+}
+
+type aliCloudImplementation struct {
+	ecsClient *ecs.Client
+	slbClient *slb.Client
+
+	region string
+	tags   map[string]string
+}
+
+var _ fi.Cloud = &aliCloudImplementation{}
+
+// NewALICloud returns a Cloud, expecting the env vars ALIYUN_ACCESS_KEY_ID && ALIYUN_ACCESS_KEY_SECRET
+// NewALICloud will return an err if env vars are not defined
+func NewALICloud(region string, tags map[string]string) (ALICloud, error) {
+
+	c := &aliCloudImplementation{region: region}
+
+	accessKeyId := os.Getenv("ALIYUN_ACCESS_KEY_ID")
+	if accessKeyId == "" {
+		return nil, errors.New("ALIYUN_ACCESS_KEY_ID is required")
+	}
+	accessKeySecret := os.Getenv("ALIYUN_ACCESS_KEY_SECRET")
+	if accessKeySecret == "" {
+		return nil, errors.New("ALIYUN_ACCESS_KEY_SECRET is required")
+	}
+
+	c.ecsClient = ecs.NewClient(accessKeyId, accessKeySecret)
+	c.ecsClient.SetUserAgent(KubernetesKopsIdentity)
+	c.tags = tags
+
+	return c, nil
+}
+
+func (c *aliCloudImplementation) EcsClient() *ecs.Client {
+	return c.ecsClient
+}
+
+func (c *aliCloudImplementation) SlbClient() *slb.Client {
+	return c.slbClient
+}
+
+func (c *aliCloudImplementation) Region() string {
+	return c.region
+}
+
+func (c *aliCloudImplementation) ProviderID() kops.CloudProviderID {
+	return kops.CloudProviderALI
+}
+
+func (c *aliCloudImplementation) DNS() (dnsprovider.Interface, error) {
+	return nil, errors.New("DNS not implemented on aliCloud")
+}
+
+func (c *aliCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
+	return errors.New("DeleteGroup not implemented on aliCloud")
+}
+
+func (c *aliCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return errors.New("DeleteInstance not implemented on aliCloud")
+}
+
+func (c *aliCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
+	request := &ecs.DescribeVpcsArgs{
+		RegionId: common.Region(c.Region()),
+		VpcId:    id,
+	}
+	vpcs, _, err := c.EcsClient().DescribeVpcs(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing VPCs: %v", err)
+	}
+
+	if len(vpcs) != 1 {
+		return nil, fmt.Errorf("found multiple VPCs for %q", id)
+	}
+	vpcInfo := &fi.VPCInfo{
+		CIDR: vpcs[0].CidrBlock,
+	}
+
+	describeVSwitchesArgs := &ecs.DescribeVSwitchesArgs{
+		VpcId:    id,
+		RegionId: common.Region(c.Region()),
+	}
+	vswitchList, _, err := c.EcsClient().DescribeVSwitches(describeVSwitchesArgs)
+	if err != nil {
+		return nil, fmt.Errorf("error listing VSwitchs: %v", err)
+	}
+
+	for _, vswitch := range vswitchList {
+		s := &fi.SubnetInfo{
+			ID:   vswitch.VSwitchId,
+			Zone: vswitch.ZoneId,
+			CIDR: vswitch.CidrBlock,
+		}
+		vpcInfo.Subnets = append(vpcInfo.Subnets, s)
+	}
+
+	return vpcInfo, nil
+
+}
+
+func (c *aliCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	return nil, errors.New("GetCloudGroups not implemented on aliCloud")
+}
+
+// GetTags will get the specified resource's tags.
+func (c *aliCloudImplementation) GetTags(resourceId string, resourceType string) (map[string]string, error) {
+	if resourceId == "" {
+		return nil, errors.New("resourceId not provided to GetTags")
+	}
+	tags := map[string]string{}
+
+	request := &ecs.DescribeTagsArgs{
+		RegionId:     common.Region(c.Region()),
+		ResourceType: ecs.TagResourceType(resourceType), //image, instance, snapshot or disk
+		ResourceId:   resourceId,
+	}
+	responseTags, _, err := c.EcsClient().DescribeTags(request)
+	if err != nil {
+		return tags, fmt.Errorf("error getting tags on %v: %v", resourceId, err)
+	}
+
+	for _, tag := range responseTags {
+		tags[tag.TagKey] = tag.TagValue
+	}
+	return tags, nil
+
+}
+
+// AddClusterTags will add ClusterTags to resources (in ALI, only disk, instance, snapshot or image can be tagged )
+func (c *aliCloudImplementation) AddClusterTags(tags map[string]string) {
+
+	if c.tags != nil && len(c.tags) != 0 && tags != nil {
+		for k, v := range c.tags {
+			tags[k] = v
+		}
+	}
+}
+
+// CreateTags will add tags to the specified resource.
+func (c *aliCloudImplementation) CreateTags(resourceId string, resourceType string, tags map[string]string) error {
+	if len(tags) == 0 {
+		return nil
+	} else if len(tags) > 10 {
+		glog.V(4).Info("The number of specified resource's tags exceeds 10, resourceId:%q", resourceId)
+	}
+	if resourceId == "" {
+		return errors.New("resourceId not provided to CreateTags")
+	}
+	if resourceType == "" {
+		return errors.New("resourceType not provided to CreateTags")
+	}
+
+	request := &ecs.AddTagsArgs{
+		ResourceId:   resourceId,
+		ResourceType: ecs.TagResourceType(resourceType), //image, instance, snapshot or disk
+		RegionId:     common.Region(c.Region()),
+		Tag:          tags,
+	}
+	err := c.EcsClient().AddTags(request)
+	if err != nil {
+		return fmt.Errorf("error creating tags on %v: %v", resourceId, err)
+	}
+
+	return nil
+}
+
+// RemoveTags will remove tags from the specified resource.
+func (c *aliCloudImplementation) RemoveTags(resourceId string, resourceType string, tags map[string]string) error {
+	if len(tags) == 0 {
+		return nil
+	}
+	if resourceId == "" {
+		return errors.New("resourceId not provided to RemoveTags")
+	}
+	if resourceType == "" {
+		return errors.New("resourceType not provided to RemoveTags")
+	}
+
+	request := &ecs.RemoveTagsArgs{
+		ResourceId:   resourceId,
+		ResourceType: ecs.TagResourceType(resourceType), //image, instance, snapshot or disk
+		RegionId:     common.Region(c.Region()),
+		Tag:          tags,
+	}
+	err := c.EcsClient().RemoveTags(request)
+	if err != nil {
+		return fmt.Errorf("error removing tags on %v: %v", resourceId, err)
+	}
+
+	return nil
+}
+
+// GetClusterTags will get the ClusterTags
+func (c *aliCloudImplementation) GetClusterTags() map[string]string {
+	return c.tags
+}
+
+func ZoneToVSwitchID(VPCID string, zones []string, vswitchIDs []string) (map[string]string, error) {
+	regionId, err := getRegionByZones(zones)
+	if err != nil {
+		return nil, err
+	}
+
+	res := make(map[string]string)
+	cloudTags := map[string]string{}
+	aliCloud, err := NewALICloud(regionId, cloudTags)
+	if err != nil {
+		return res, fmt.Errorf("error loading cloud: %v", err)
+	}
+
+	describeVpcsArgs := &ecs.DescribeVpcsArgs{
+		RegionId: common.Region(regionId),
+		VpcId:    VPCID,
+	}
+
+	vpc, _, err := aliCloud.EcsClient().DescribeVpcs(describeVpcsArgs)
+	if err != nil {
+		return res, fmt.Errorf("error describing VPC: %v", err)
+	}
+
+	if vpc == nil || len(vpc) == 0 {
+		return res, fmt.Errorf("VPC %q not found", VPCID)
+	}
+
+	if len(vpc) != 1 {
+		return nil, fmt.Errorf("found multiple VPCs for %q", VPCID)
+	}
+	subnetByID := make(map[string]string)
+	for _, VSId := range vpc[0].VSwitchIds.VSwitchId {
+		subnetByID[VSId] = VSId
+	}
+
+	for _, VSwitchId := range vswitchIDs {
+
+		_, ok := subnetByID[VSwitchId]
+		if !ok {
+			return res, fmt.Errorf("vswitch %s not found in VPC %s", VSwitchId, VPCID)
+		}
+		describeVSwitchesArgs := &ecs.DescribeVSwitchesArgs{
+			VpcId:     vpc[0].VpcId,
+			RegionId:  common.Region(regionId),
+			VSwitchId: VSwitchId,
+		}
+
+		vswitchList, _, err := aliCloud.EcsClient().DescribeVSwitches(describeVSwitchesArgs)
+		if err != nil {
+			return nil, fmt.Errorf("error listing VSwitchs: %v", err)
+		}
+
+		if len(vswitchList) == 0 {
+			return nil, fmt.Errorf("VSwitch %q not found", VSwitchId)
+		}
+
+		if len(vswitchList) != 1 {
+			return nil, fmt.Errorf("found multiple VSwitchs for %q", VSwitchId)
+		}
+
+		zone := vswitchList[0].ZoneId
+		if res[zone] != "" {
+			return res, fmt.Errorf("vswitch %s and %s have the same zone", vswitchList[0].VSwitchId, zone)
+		}
+		res[zone] = vswitchList[0].VSwitchId
+
+	}
+	return res, nil
+}
