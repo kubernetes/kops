@@ -2221,13 +2221,15 @@ func Convert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerManagerC
 }
 
 func autoConvert_v1alpha1_KubeDNSConfig_To_kops_KubeDNSConfig(in *KubeDNSConfig, out *kops.KubeDNSConfig, s conversion.Scope) error {
-	out.Image = in.Image
-	out.Replicas = in.Replicas
-	out.Domain = in.Domain
-	out.ServerIP = in.ServerIP
 	out.CacheMaxSize = in.CacheMaxSize
 	out.CacheMaxConcurrent = in.CacheMaxConcurrent
+	out.Domain = in.Domain
+	out.Image = in.Image
+	out.Replicas = in.Replicas
 	out.Provider = in.Provider
+	out.ServerIP = in.ServerIP
+	out.StubDomains = in.StubDomains
+	out.UpstreamNameservers = in.UpstreamNameservers
 	return nil
 }
 
@@ -2237,13 +2239,15 @@ func Convert_v1alpha1_KubeDNSConfig_To_kops_KubeDNSConfig(in *KubeDNSConfig, out
 }
 
 func autoConvert_kops_KubeDNSConfig_To_v1alpha1_KubeDNSConfig(in *kops.KubeDNSConfig, out *KubeDNSConfig, s conversion.Scope) error {
-	out.Image = in.Image
-	out.Replicas = in.Replicas
-	out.Domain = in.Domain
-	out.ServerIP = in.ServerIP
 	out.CacheMaxSize = in.CacheMaxSize
 	out.CacheMaxConcurrent = in.CacheMaxConcurrent
+	out.Domain = in.Domain
+	out.Image = in.Image
+	out.Replicas = in.Replicas
 	out.Provider = in.Provider
+	out.ServerIP = in.ServerIP
+	out.StubDomains = in.StubDomains
+	out.UpstreamNameservers = in.UpstreamNameservers
 	return nil
 }
 
