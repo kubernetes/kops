@@ -271,6 +271,8 @@ to revert or recover a previous state store.
 aws s3api put-bucket-versioning --bucket prefix-example-com-state-store  --versioning-configuration Status=Enabled
 ```
 
+Information regarding cluster state store location must be set when using `kops` cli see [state store](state.md) for further information.
+
 ### Using S3 default bucket encryption
 
 kops supports [default bucket encryption](https://aws.amazon.com/de/blogs/aws/new-amazon-s3-encryption-security-features/) to encrypt the kops state in an S3 bucket. In this way, whatever default server side encryption is set for your bucket, it will be used for the kops state, too. You may want to use this AWS feature e.g. for easily encrypting every written object by default or when for compliance reasons you need to use specific encryption keys (KMS, CMK).
