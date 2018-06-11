@@ -45,5 +45,5 @@ Repeat for each cluster needing to be moved.
 State store configuration must be use with `kops` cli. It will be retrieve in order through:
 + command line argument `--config $HOME/yourconfig` or `--state s3://yourstatestore`
 + envirornment variable `export KOPS_STATE_STORE=s3://yourstatestore`
-+ config file `.kops.yaml`, `$HONE/.kops.yaml`, `$HOME/.kops/config.yaml`
++ config file `.kops.yaml`, `$HOME/.kops.yaml`, `$HOME/.kops/config.yaml`
 It assume that $HOME is correctly set.
