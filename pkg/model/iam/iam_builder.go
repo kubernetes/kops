@@ -338,39 +338,31 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 						),
 					})
 				} else if b.Role == kops.InstanceGroupRoleNode {
-					p.Statement = append(p.Statement, &Statement{
-						Effect: StatementEffectAllow,
-						Action: stringorslice.Slice([]string{"s3:Get*"}),
-						Resource: stringorslice.Of(
-							strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/addons/*"}, ""),
-							strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/cluster.spec"}, ""),
-							strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/config"}, ""),
-							strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/instancegroup/*"}, ""),
-							strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/issued/*"}, ""),
-							strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/kube-proxy/*"}, ""),
-							strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/ssh/*"}, ""),
-							strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/secrets/dockerconfig"}, ""),
-						),
-					})
+					resources := []string{
+						strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/addons/*"}, ""),
+						strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/cluster.spec"}, ""),
+						strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/config"}, ""),
+						strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/instancegroup/*"}, ""),
+						strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/issued/*"}, ""),
+						strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/kube-proxy/*"}, ""),
+						strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/ssh/*"}, ""),
+						strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/secrets/dockerconfig"}, ""),
+					}
 
 					// @check if bootstrap tokens are enabled and if so enable access to client certificate
 					if b.UseBootstrapTokens() {
-						p.Statement = append(p.Statement, &Statement{
-							Effect: StatementEffectAllow,
-							Action: stringorslice.Slice([]string{"s3:Get*"}),
-							Resource: stringorslice.Of(
-								strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/node-authorizer-client/*"}, ""),
-							),
-						})
+						resources = append(resources, strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/node-authorizer-client/*"}, ""))
 					} else {
-						p.Statement = append(p.Statement, &Statement{
-							Effect: StatementEffectAllow,
-							Action: stringorslice.Slice([]string{"s3:Get*"}),
-							Resource: stringorslice.Of(
-								strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/kubelet/*"}, ""),
-							),
-						})
+						resources = append(resources, strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/kubelet/*"}, ""))
 					}
+
+					sort.Strings(resources)
+
+					p.Statement = append(p.Statement, &Statement{
+						Effect:   StatementEffectAllow,
+						Action:   stringorslice.Slice([]string{"s3:Get*"}),
+						Resource: stringorslice.Of(resources...),
+					})
 
 					if b.Cluster.Spec.Networking != nil {
 						// @check if kuberoute is enabled and permit access to the private key
