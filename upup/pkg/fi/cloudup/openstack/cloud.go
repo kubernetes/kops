@@ -29,6 +29,7 @@ import (
 	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -115,6 +116,12 @@ type OpenstackCloud interface {
 
 	// CreateKeypair will create a new Nova Keypair
 	CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error)
+
+  //ListPorts will return the Neutron ports which match the options
+	ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error)
+
+	//CreateRouterInterface will create a new Neutron router interface
+	CreateRouterInterface(routerID string, opt routers.AddInterfaceOptsBuilder) (*routers.InterfaceInfo, error)
 }
 
 type openstackCloud struct {
@@ -545,5 +552,50 @@ func (c *openstackCloud) CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypair
 		return k, nil
 	} else {
 		return k, wait.ErrWaitTimeout
+  }
+}
+
+func (c *openstackCloud) ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error) {
+	var p []ports.Port
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		allPages, err := ports.List(c.neutronClient, opt).AllPages()
+		if err != nil {
+			return false, fmt.Errorf("error listing ports: %v", err)
+		}
+
+		r, err := ports.ExtractPorts(allPages)
+		if err != nil {
+			return false, fmt.Errorf("error extracting ports from pages: %v", err)
+		}
+		p = r
+		return true, nil
+	})
+	if err != nil {
+		return p, err
+	} else if done {
+		return p, nil
+	} else {
+		return p, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) CreateRouterInterface(routerID string, opt routers.AddInterfaceOptsBuilder) (*routers.InterfaceInfo, error) {
+	var i *routers.InterfaceInfo
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		v, err := routers.AddInterface(c.neutronClient, routerID, opt).Extract()
+		if err != nil {
+			return false, fmt.Errorf("error creating router interface: %v", err)
+		}
+		i = v
+		return true, nil
+	})
+	if err != nil {
+		return i, err
+	} else if done {
+		return i, nil
+	} else {
+		return i, wait.ErrWaitTimeout
 	}
 }

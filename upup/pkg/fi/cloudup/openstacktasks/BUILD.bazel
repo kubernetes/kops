@@ -7,6 +7,8 @@ go_library(
         "network_fitask.go",
         "router.go",
         "router_fitask.go",
+        "routerinterface.go",
+        "routerinterface_fitask.go",
         "securitygroup.go",
         "securitygroup_fitask.go",
         "securitygrouprule.go",
@@ -30,6 +32,7 @@ go_library(
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/networks:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/ports:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/subnets:go_default_library",
     ],
 )
