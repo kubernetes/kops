@@ -61,7 +61,7 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		kubeconfig, err := b.buildPKIKubeconfig("kubecfg")
+		kubeconfig, err := b.BuildPKIKubeconfig("kubecfg")
 		if err != nil {
 			return err
 		}

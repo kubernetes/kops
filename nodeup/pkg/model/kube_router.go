@@ -32,7 +32,7 @@ func (b *KubeRouterBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Add kubeconfig
 	{
-		kubeconfig, err := b.buildPKIKubeconfig("kube-router")
+		kubeconfig, err := b.BuildPKIKubeconfig("kube-router")
 		if err != nil {
 			return err
 		}

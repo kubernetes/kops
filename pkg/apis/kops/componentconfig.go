@@ -26,6 +26,8 @@ type KubeletConfigSpec struct {
 	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
 	// AuthorizationMode is the authorization mode the kubelet is running in
 	AuthorizationMode string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
+	// BootstrapKubeconfig is the path to a kubeconfig file that will be used to get client certificate for kubelet
+	BootstrapKubeconfig string `json:"bootstrapKubeconfig,omitempty" flag:"bootstrap-kubeconfig"`
 	// ClientCAFile is the path to a CA certificate
 	ClientCAFile string `json:"clientCaFile,omitempty" flag:"client-ca-file"`
 	// TODO: Remove unused TLSCertFile
@@ -216,6 +218,8 @@ type KubeAPIServerConfig struct {
 	BindAddress string `json:"bindAddress,omitempty" flag:"bind-address"`
 	// InsecureBindAddress is the binding address for the InsecurePort for the insecure kubernetes API
 	InsecureBindAddress string `json:"insecureBindAddress,omitempty" flag:"insecure-bind-address"`
+	// EnableBootstrapAuthToken enables 'bootstrap.kubernetes.io/token' in the 'kube-system' namespace to be used for TLS bootstrapping authentication
+	EnableBootstrapAuthToken *bool `json:"enableBootstrapTokenAuth,omitempty" flag:"enable-bootstrap-token-auth"`
 	// Deprecated: AdmissionControl is a list of admission controllers to use
 	AdmissionControl []string `json:"admissionControl,omitempty" flag:"admission-control"`
 	// EnableAdmissionPlugins is a list of enabled admission plugins
@@ -395,6 +399,7 @@ type KubeControllerManagerConfig struct {
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }
 
+// CloudControllerManagerConfig is the configuration of the cloud controller
 type CloudControllerManagerConfig struct {
 	// Master is the url for the kube api master.
 	Master string `json:"master,omitempty" flag:"master"`

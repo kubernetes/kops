@@ -77,7 +77,7 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		kubeconfig, err := b.buildPKIKubeconfig("kube-proxy")
+		kubeconfig, err := b.BuildPKIKubeconfig("kube-proxy")
 		if err != nil {
 			return err
 		}

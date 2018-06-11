@@ -104,7 +104,7 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Add kubeconfig
 	{
 		// @TODO: Change kubeconfig to be https
-		kubeconfig, err := b.buildPKIKubeconfig("kube-controller-manager")
+		kubeconfig, err := b.BuildPKIKubeconfig("kube-controller-manager")
 		if err != nil {
 			return err
 		}
