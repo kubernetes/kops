@@ -50,6 +50,10 @@ output "route_table_private-us-test-1a_id" {
   value = "${aws_route_table.private-us-test-1a-privatekopeio-example-com.id}"
 }
 
+output "route_table_private-us-test-1b_id" {
+  value = "${aws_route_table.private-us-test-1b-privatekopeio-example-com.id}"
+}
+
 output "route_table_public_id" {
   value = "${aws_route_table.privatekopeio-example-com.id}"
 }
@@ -60,6 +64,14 @@ output "subnet_us-test-1a-private_id" {
 
 output "subnet_us-test-1a-utility_id" {
   value = "${aws_subnet.utility-us-test-1a-privatekopeio-example-com.id}"
+}
+
+output "subnet_us-test-1b-private_id" {
+  value = "${aws_subnet.us-test-1b-privatekopeio-example-com.id}"
+}
+
+output "subnet_us-test-1b-utility_id" {
+  value = "${aws_subnet.utility-us-test-1b-privatekopeio-example-com.id}"
 }
 
 output "vpc_cidr_block" {
