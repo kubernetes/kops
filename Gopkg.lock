@@ -483,6 +483,10 @@
     ".",
     "openstack",
     "openstack/blockstorage/v2/volumes",
+    "openstack/compute/v2/extensions/keypairs",
+    "openstack/compute/v2/flavors",
+    "openstack/compute/v2/images",
+    "openstack/compute/v2/servers",
     "openstack/identity/v2/tenants",
     "openstack/identity/v2/tokens",
     "openstack/identity/v3/tokens",
@@ -1706,6 +1710,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "33c4809d9ffb5425549fab80b4edb6a9fa84726ca461e8caa314b12b27f61a8d"
+  inputs-digest = "f032b5357d53130f8adac38b7595b2920df27b34fd311be7845f3c15c263da4b"
   solver-name = "gps-cdcl"
   solver-version = 1

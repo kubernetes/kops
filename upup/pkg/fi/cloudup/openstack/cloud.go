@@ -24,6 +24,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	os "github.com/gophercloud/gophercloud/openstack"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
@@ -42,6 +43,9 @@ import (
 const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
 const TagNameRolePrefix = "k8s.io/role/"
 const TagClusterName = "KubernetesCluster"
+
+// ErrNotFound is used to inform that the object is not found
+var ErrNotFound = "Resource not found"
 
 // readBackoff is the backoff strategy for openstack read retries.
 var readBackoff = wait.Backoff{
@@ -107,7 +111,13 @@ type OpenstackCloud interface {
 	//CreateSubnet will create a new Neutron subnet
 	CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.Subnet, error)
 
-	//ListPorts will return the Neutron ports which match the options
+	// ListKeypair will return the Nova keypairs
+	ListKeypair(name string) (*keypairs.KeyPair, error)
+
+	// CreateKeypair will create a new Nova Keypair
+	CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error)
+
+  //ListPorts will return the Neutron ports which match the options
 	ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error)
 
 	//CreateRouterInterface will create a new Neutron router interface
@@ -117,6 +127,7 @@ type OpenstackCloud interface {
 type openstackCloud struct {
 	cinderClient  *gophercloud.ServiceClient
 	neutronClient *gophercloud.ServiceClient
+	novaClient    *gophercloud.ServiceClient
 	tags          map[string]string
 	region        string
 }
@@ -152,11 +163,22 @@ func NewOpenstackCloud(tags map[string]string) (OpenstackCloud, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error building neutron client: %v", err)
 	}
+
+	endpointOpt, err = config.GetServiceConfig("Nova")
+	if err != nil {
+		return nil, err
+	}
+	novaClient, err := os.NewComputeV2(provider, endpointOpt)
+	if err != nil {
+		return nil, fmt.Errorf("error building nova client: %v", err)
+	}
+
 	region := endpointOpt.Region
 
 	c := &openstackCloud{
 		cinderClient:  cinderClient,
 		neutronClient: neutronClient,
+		novaClient:    novaClient,
 		tags:          tags,
 		region:        region,
 	}
@@ -489,6 +511,48 @@ func (c *openstackCloud) CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.S
 	} else {
 		return s, wait.ErrWaitTimeout
 	}
+}
+
+func (c *openstackCloud) ListKeypair(name string) (*keypairs.KeyPair, error) {
+	var k *keypairs.KeyPair
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		rs, err := keypairs.Get(c.novaClient, name).Extract()
+		if err != nil {
+			if err.Error() == ErrNotFound {
+				return true, nil
+			}
+			return false, fmt.Errorf("error listing keypair: %v", err)
+		}
+		k = rs
+		return true, nil
+	})
+	if err != nil {
+		return k, err
+	} else if done {
+		return k, nil
+	} else {
+		return k, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error) {
+	var k *keypairs.KeyPair
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		v, err := keypairs.Create(c.novaClient, opt).Extract()
+		if err != nil {
+			return false, fmt.Errorf("error creating keypair: %v", err)
+		}
+		k = v
+		return true, nil
+	})
+	if err != nil {
+		return k, err
+	} else if done {
+		return k, nil
+	} else {
+		return k, wait.ErrWaitTimeout
+  }
 }
 
 func (c *openstackCloud) ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error) {
