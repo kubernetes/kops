@@ -12,6 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+{{- if or (.KubeDNS.UpstreamNameservers) (.KubeDNS.StubDomains) }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kube-dns
+  namespace: kube-system
+data:
+  {{- if .KubeDNS.UpstreamNameservers }}
+  upstreamNameservers: |
+    {{ ToJSON .KubeDNS.UpstreamNameservers }}
+  {{- end }}
+  {{- if .KubeDNS.StubDomains }}
+  stubDomains: |
+    {{ ToJSON .KubeDNS.StubDomains }}
+  {{- end }}
+{{- end }}
+
+---
+
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -126,9 +146,9 @@ spec:
           initialDelaySeconds: 3
           timeoutSeconds: 5
         args:
-        - --domain={{ KubeDNS.Domain }}.
-        - --dns-port=10053
         - --config-dir=/kube-dns-config
+        - --dns-port=10053
+        - --domain={{ KubeDNS.Domain }}.
         - --v=2
         env:
         - name: PROMETHEUS_PORT
