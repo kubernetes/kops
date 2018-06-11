@@ -212,6 +212,11 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 		return nil
 	}
 
+	if err := t.AddOutputVariable("vpc_cidr_block", terraform.LiteralProperty("aws_vpc", *e.Name, "cidr_block")); err != nil {
+		// TODO: Should we try to output vpc_cidr_block for shared vpcs?
+		return err
+	}
+
 	tf := &terraformVPC{
 		CIDR:               e.CIDR,
 		Tags:               e.Tags,
