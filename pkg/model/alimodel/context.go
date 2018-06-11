@@ -37,3 +37,7 @@ func (c *ALIModelContext) GetNameForVPC() string {
 func (c *ALIModelContext) GetNameForVSwitch(subnetName string) string {
 	return subnetName + "." + c.ClusterName()
 }
+
+func (c *ALIModelContext) GetNameForLoadBalancer() string {
+	return "api." + c.ClusterName()
+}
