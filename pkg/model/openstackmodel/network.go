@@ -33,6 +33,7 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	clusterName := b.ClusterName()
+	routerName := strings.Replace(clusterName, ".", "-", -1)
 
 	{
 		t := &openstacktasks.Network{
@@ -46,7 +47,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	{
 		t := &openstacktasks.Router{
-			Name:      s(strings.Replace(clusterName, ".", "-", -1)),
+			Name:      s(routerName),
 			Lifecycle: b.Lifecycle,
 		}
 
@@ -61,6 +62,14 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 		}
 		c.AddTask(t)
+
+		t1 := &openstacktasks.RouterInterface{
+			Name:      s("ri-" + sp.Name),
+			Subnet:    b.LinkToSubnet(s(sp.Name)),
+			Router:    b.LinkToRouter(s(routerName)),
+			Lifecycle: b.Lifecycle,
+		}
+		c.AddTask(t1)
 	}
 
 	return nil

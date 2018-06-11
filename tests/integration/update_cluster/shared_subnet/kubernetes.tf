@@ -38,6 +38,10 @@ output "subnet_ids" {
   value = ["subnet-12345678"]
 }
 
+output "subnet_us-test-1a-public_id" {
+  value = "subnet-12345678"
+}
+
 output "vpc_id" {
   value = "vpc-12345678"
 }
