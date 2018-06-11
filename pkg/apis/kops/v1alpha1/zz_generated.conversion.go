@@ -251,6 +251,7 @@ func Convert_kops_AlwaysAllowAuthorizationSpec_To_v1alpha1_AlwaysAllowAuthorizat
 }
 
 func autoConvert_v1alpha1_AmazonVPCNetworkingSpec_To_kops_AmazonVPCNetworkingSpec(in *AmazonVPCNetworkingSpec, out *kops.AmazonVPCNetworkingSpec, s conversion.Scope) error {
+	out.ImageName = in.ImageName
 	return nil
 }
 
@@ -260,6 +261,7 @@ func Convert_v1alpha1_AmazonVPCNetworkingSpec_To_kops_AmazonVPCNetworkingSpec(in
 }
 
 func autoConvert_kops_AmazonVPCNetworkingSpec_To_v1alpha1_AmazonVPCNetworkingSpec(in *kops.AmazonVPCNetworkingSpec, out *AmazonVPCNetworkingSpec, s conversion.Scope) error {
+	out.ImageName = in.ImageName
 	return nil
 }
 
