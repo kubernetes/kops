@@ -2013,6 +2013,7 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.Address = in.Address
 	out.BindAddress = in.BindAddress
 	out.InsecureBindAddress = in.InsecureBindAddress
+	out.EnableBootstrapAuthToken = in.EnableBootstrapAuthToken
 	out.AdmissionControl = in.AdmissionControl
 	out.EnableAdmissionPlugins = in.EnableAdmissionPlugins
 	out.DisableAdmissionPlugins = in.DisableAdmissionPlugins
@@ -2082,6 +2083,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.Address = in.Address
 	out.BindAddress = in.BindAddress
 	out.InsecureBindAddress = in.InsecureBindAddress
+	out.EnableBootstrapAuthToken = in.EnableBootstrapAuthToken
 	out.AdmissionControl = in.AdmissionControl
 	out.EnableAdmissionPlugins = in.EnableAdmissionPlugins
 	out.DisableAdmissionPlugins = in.DisableAdmissionPlugins
@@ -2352,6 +2354,7 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.APIServers = in.APIServers
 	out.AnonymousAuth = in.AnonymousAuth
 	out.AuthorizationMode = in.AuthorizationMode
+	out.BootstrapKubeconfig = in.BootstrapKubeconfig
 	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
@@ -2423,6 +2426,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.APIServers = in.APIServers
 	out.AnonymousAuth = in.AnonymousAuth
 	out.AuthorizationMode = in.AuthorizationMode
+	out.BootstrapKubeconfig = in.BootstrapKubeconfig
 	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile

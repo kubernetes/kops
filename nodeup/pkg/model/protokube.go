@@ -55,7 +55,7 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if t.IsMaster {
-		kubeconfig, err := t.buildPKIKubeconfig("kops")
+		kubeconfig, err := t.BuildPKIKubeconfig("kops")
 		if err != nil {
 			return err
 		}
@@ -75,7 +75,7 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 				}
 			}
 			for _, x := range []string{"etcd", "etcd-client"} {
-				if err := t.BuildPrivateTask(c, x, fmt.Sprintf("%s-key.pem", x)); err != nil {
+				if err := t.BuildPrivateKeyTask(c, x, fmt.Sprintf("%s-key.pem", x)); err != nil {
 					return err
 				}
 			}
@@ -281,10 +281,9 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 	remapped, err := assets.RemapImage(image)
 	if err != nil {
 		return nil, fmt.Errorf("unable to remap container %q: %v", image, err)
-	} else {
-		image = remapped
 	}
 
+	image = remapped
 	f.EtcdImage = s(image)
 
 	// initialize rbac on Kubernetes >= 1.6 and master

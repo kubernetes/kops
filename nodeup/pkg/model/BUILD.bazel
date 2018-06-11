@@ -45,6 +45,7 @@ go_library(
         "//pkg/k8scodecs:go_default_library",
         "//pkg/kubeconfig:go_default_library",
         "//pkg/kubemanifest:go_default_library",
+        "//pkg/pki:go_default_library",
         "//pkg/systemd:go_default_library",
         "//pkg/tokens:go_default_library",
         "//upup/pkg/fi:go_default_library",
@@ -60,6 +61,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/authentication/user:go_default_library",
     ],
 )
 
