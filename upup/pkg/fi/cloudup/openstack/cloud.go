@@ -117,7 +117,7 @@ type OpenstackCloud interface {
 	// CreateKeypair will create a new Nova Keypair
 	CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error)
 
-  //ListPorts will return the Neutron ports which match the options
+	//ListPorts will return the Neutron ports which match the options
 	ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error)
 
 	//CreateRouterInterface will create a new Neutron router interface
@@ -552,7 +552,7 @@ func (c *openstackCloud) CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypair
 		return k, nil
 	} else {
 		return k, wait.ErrWaitTimeout
-  }
+	}
 }
 
 func (c *openstackCloud) ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error) {
