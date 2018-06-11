@@ -114,8 +114,8 @@ func (c *NodeupModelContext) CNIBinDir() string {
 	}
 }
 
-// KubeletBootstrapConfig is the path the bootstrap config file
-func (c *NodeupModelContext) KubeletBootstrapConfig() string {
+// KubeletBootstrapKubeconfig is the path the bootstrap config file
+func (c *NodeupModelContext) KubeletBootstrapKubeconfig() string {
 	path := c.Cluster.Spec.Kubelet.BootstrapKubeconfig
 
 	if c.IsMaster {
