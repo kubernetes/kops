@@ -110,7 +110,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 				if err := b.BuildCertificatePairTask(c, name, "node-authorizer/", "tls"); err != nil {
 					return err
 				}
-				glog.V(3).Info("kubelet service will wait for bootstrap configuration: %s", b.KubeletBootstrapConfig())
+				glog.V(3).Info("kubelet service will wait for bootstrap configuration: %s", b.KubeletBootstrapKubeconfig())
 			}
 			if err := b.BuildCertificateTask(c, fi.CertificateId_CA, "node-authorizer/ca.pem"); err != nil {
 				return err
@@ -244,7 +244,7 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	// @check if we are using bootstrap tokens and file checker
 	if !b.IsMaster && b.UseBootstrapTokens() {
 		manifest.Set("Service", "ExecStartPre",
-			fmt.Sprintf("/usr/bin/bash -c 'while [ ! -f %s ]; do sleep 5; done;'", b.KubeletBootstrapConfig()))
+			fmt.Sprintf("/usr/bin/bash -c 'while [ ! -f %s ]; do sleep 5; done;'", b.KubeletBootstrapKubeconfig()))
 	}
 
 	manifest.Set("Service", "ExecStart", kubeletCommand+" \"$DAEMON_ARGS\"")
