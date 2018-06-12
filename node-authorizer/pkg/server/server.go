@@ -58,12 +58,12 @@ func New(config *Config, authorizer Authorizer) (*NodeAuthorizer, error) {
 		zap.String("listen", config.Listen),
 		zap.String("version", Version))
 
-	if err := config.IsValid(); err != nil {
-		return nil, fmt.Errorf("configuration error: %s", err)
-	}
-
 	if authorizer == nil {
 		return nil, errors.New("no authorizer")
+	}
+
+	if err := config.IsValid(); err != nil {
+		return nil, fmt.Errorf("configuration error: %s", err)
 	}
 
 	return &NodeAuthorizer{
@@ -109,7 +109,7 @@ func (n *NodeAuthorizer) Run() error {
 	r.Handle("/authorize/{name}", authorized(n.authorizeHandler, n.config.ClientCommonName, n.useMutualTLS())).Methods(http.MethodPost)
 	r.Handle("/metrics", prometheus.Handler()).Methods(http.MethodGet)
 	r.HandleFunc("/health", n.healthHandler).Methods(http.MethodGet)
-	server.Handler = r
+	server.Handler = recovery(r)
 
 	// @step: wait for either an error or a termination signal
 	errs := make(chan error, 2)

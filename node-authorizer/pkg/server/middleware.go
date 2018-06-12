@@ -17,12 +17,29 @@ limitations under the License.
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"k8s.io/kops/node-authorizer/pkg/utils"
 
 	"go.uber.org/zap"
 )
+
+// recovery is responsible for ensuring we don't exit on a panic
+func recovery(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+
+				utils.Logger.Error("failed to handle request, threw exception",
+					zap.String("error", fmt.Sprintf("%v", err)))
+			}
+		}()
+
+		next.ServeHTTP(w, req)
+	})
+}
 
 // authorized is responsible for validating the client certificate
 func authorized(next http.HandlerFunc, commonName string, requireAuth bool) http.Handler {
