@@ -228,6 +228,7 @@
     "common",
     "ecs",
     "oss",
+    "ram",
     "slb",
     "util"
   ]
@@ -494,6 +495,7 @@
     "openstack/networking/v2/extensions/security/groups",
     "openstack/networking/v2/extensions/security/rules",
     "openstack/networking/v2/networks",
+    "openstack/networking/v2/ports",
     "openstack/networking/v2/subnets",
     "openstack/objectstorage/v1/accounts",
     "openstack/objectstorage/v1/containers",
@@ -1710,6 +1712,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f032b5357d53130f8adac38b7595b2920df27b34fd311be7845f3c15c263da4b"
+  inputs-digest = "466d4f729f9b42c133774b443359841aa56e918db97a9adf33e609df9be4cee9"
   solver-name = "gps-cdcl"
   solver-version = 1
