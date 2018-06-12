@@ -223,6 +223,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.CloudConfigBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.FileAssetsBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.HookBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.NodeAuthorizationBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeletBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubectlBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.EtcdBuilder{NodeupModelContext: modelContext})

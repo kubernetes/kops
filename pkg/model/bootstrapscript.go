@@ -130,16 +130,20 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 			spec := make(map[string]interface{})
 			spec["cloudConfig"] = cs.CloudConfig
 			spec["docker"] = cs.Docker
-			spec["kubelet"] = cs.Kubelet
 			spec["kubeProxy"] = cs.KubeProxy
+			spec["kubelet"] = cs.Kubelet
+			spec["nodeAuthorization"] = cs.NodeAuthorization
+			spec["kubeAPIServer"] = map[string]interface{}{
+				"enableBootstrapTokenAuth": cs.KubeAPIServer.EnableBootstrapAuthToken,
+			}
 
 			if ig.IsMaster() {
 				spec["encryptionConfig"] = cs.EncryptionConfig
+				spec["etcdClusters"] = make(map[string]kops.EtcdClusterSpec, 0)
 				spec["kubeAPIServer"] = cs.KubeAPIServer
 				spec["kubeControllerManager"] = cs.KubeControllerManager
 				spec["kubeScheduler"] = cs.KubeScheduler
 				spec["masterKubelet"] = cs.MasterKubelet
-				spec["etcdClusters"] = make(map[string]kops.EtcdClusterSpec, 0)
 
 				for _, etcdCluster := range cs.EtcdClusters {
 					spec["etcdClusters"].(map[string]kops.EtcdClusterSpec)[etcdCluster.Name] = kops.EtcdClusterSpec{

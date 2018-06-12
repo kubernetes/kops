@@ -24,6 +24,7 @@ go_library(
         "logrotate.go",
         "manifests.go",
         "network.go",
+        "node_authorizer.go",
         "packages.go",
         "protokube.go",
         "secrets.go",

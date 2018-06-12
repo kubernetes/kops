@@ -260,7 +260,22 @@ func (c *NodeupModelContext) UsesCNI() bool {
 	if networking == nil || networking.Classic != nil {
 		return false
 	}
+
 	return true
+}
+
+// UseNodeAuthorization checks if have a node authorization policy
+func (c *NodeupModelContext) UseNodeAuthorization() bool {
+	return c.Cluster.Spec.NodeAuthorization != nil
+}
+
+// UseNodeAuthorizer checks if node authorization is enabled
+func (c *NodeupModelContext) UseNodeAuthorizer() bool {
+	if !c.UseNodeAuthorization() || !c.UseBootstrapTokens() {
+		return false
+	}
+
+	return c.Cluster.Spec.NodeAuthorization.NodeAuthorizer != nil
 }
 
 // UseBootstrapTokens checks if we are using bootstrap tokens
