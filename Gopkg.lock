@@ -357,6 +357,12 @@
   revision = "f12c6236fe7b5cf6bcf30e5935d08cb079d78334"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/fullsailor/pkcs7"
+  packages = ["."]
+  revision = "ae226422660e5ca10db350d33f81c6608f3fbcdd"
+
+[[projects]]
   name = "github.com/ghodss/yaml"
   packages = ["."]
   revision = "73d445a93680fa1a78ae23a5839bad48f32ba1ee"
@@ -507,6 +513,18 @@
   revision = "6da026c32e2d622cc242d32984259c77237aefe1"
 
 [[projects]]
+  name = "github.com/gorilla/context"
+  packages = ["."]
+  revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
+  version = "v1.1.1"
+
+[[projects]]
+  name = "github.com/gorilla/mux"
+  packages = ["."]
+  revision = "e3702bed27f0d39777b0b37b664b6280e8ef8fbf"
+  version = "v1.6.2"
+
+[[projects]]
   name = "github.com/gregjones/httpcache"
   packages = [
     ".",
@@ -574,6 +592,12 @@
   name = "github.com/jonboulle/clockwork"
   packages = ["."]
   revision = "72f9bd7c4e0c2a40055ab3d0f09654f730cce982"
+
+[[projects]]
+  name = "github.com/jpillora/backoff"
+  packages = ["."]
+  revision = "8eab2debe79d12b7bd3d10653910df25fa9552ba"
+  version = "1.0.0"
 
 [[projects]]
   name = "github.com/json-iterator/go"
@@ -714,6 +738,12 @@
   revision = "4d0e916071f68db74f8a73926335f809396d6b42"
 
 [[projects]]
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/prometheus/client_golang"
   packages = [
     "prometheus",
@@ -811,6 +841,12 @@
   revision = "7fb2782df3d83e0036cc89f461ed0422628776f4"
 
 [[projects]]
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
+  version = "v1.2.2"
+
+[[projects]]
   branch = "master"
   name = "github.com/tent/http-link-go"
   packages = ["."]
@@ -820,6 +856,12 @@
   name = "github.com/ugorji/go"
   packages = ["codec"]
   revision = "ded73eae5db7e7a0ef6f55aace87a2873c5d2b74"
+
+[[projects]]
+  name = "github.com/urfave/cli"
+  packages = ["."]
+  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
+  version = "v1.20.0"
 
 [[projects]]
   name = "github.com/vmware/govmomi"
@@ -847,6 +889,31 @@
   name = "github.com/weaveworks/mesh"
   packages = ["."]
   revision = "1f158d31de55abf9f97bbaa0a260e2b8023a3785"
+
+[[projects]]
+  name = "go.uber.org/atomic"
+  packages = ["."]
+  revision = "1ea20fb1cbb1cc08cbd0d913a96dead89aa18289"
+  version = "v1.3.2"
+
+[[projects]]
+  name = "go.uber.org/multierr"
+  packages = ["."]
+  revision = "3c4937480c32f4c13a875a1829af76c98ca3d40a"
+  version = "v1.1.0"
+
+[[projects]]
+  name = "go.uber.org/zap"
+  packages = [
+    ".",
+    "buffer",
+    "internal/bufferpool",
+    "internal/color",
+    "internal/exit",
+    "zapcore"
+  ]
+  revision = "eeedf312bc6c57391d84767a4cd413f02a917974"
+  version = "v1.8.0"
 
 [[projects]]
   name = "golang.org/x/crypto"
@@ -1713,6 +1780,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1debbbe03ce960a107f0c1d9a965dd32e6e3bb6cc75b07d3cd52cb5527ead016"
+  inputs-digest = "e9ebcceccb4d3d444a6762fe9dc7bf0bad5f662facaa2bf52c2cbfb190d92861"
   solver-name = "gps-cdcl"
   solver-version = 1
