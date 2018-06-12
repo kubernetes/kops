@@ -79,10 +79,10 @@ metadata:
     kubernetes.io/cluster-service: "true"
 spec:
   replicas: 2
-    strategy:
-      type: RollingUpdate
-      rollingUpdate:
-        maxUnavailable: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
   selector:
     matchLabels:
       k8s-app: kube-dns
