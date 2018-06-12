@@ -35,13 +35,14 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // TemplateFunctions provides a collection of methods used throughout the templates

@@ -132,9 +132,14 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 			spec["docker"] = cs.Docker
 			spec["kubeProxy"] = cs.KubeProxy
 			spec["kubelet"] = cs.Kubelet
-			spec["nodeAuthorization"] = cs.NodeAuthorization
-			spec["kubeAPIServer"] = map[string]interface{}{
-				"enableBootstrapTokenAuth": cs.KubeAPIServer.EnableBootstrapAuthToken,
+
+			if cs.NodeAuthorization != nil {
+				spec["nodeAuthorization"] = cs.NodeAuthorization
+			}
+			if cs.KubeAPIServer.EnableBootstrapAuthToken != nil {
+				spec["kubeAPIServer"] = map[string]interface{}{
+					"enableBootstrapTokenAuth": cs.KubeAPIServer.EnableBootstrapAuthToken,
+				}
 			}
 
 			if ig.IsMaster() {
