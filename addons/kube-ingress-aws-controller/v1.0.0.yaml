@@ -65,6 +65,7 @@ spec:
           - "-experimental-upgrade"
           - "-metrics-exp-decay-sample"
           - "-kubernetes-https-redirect=true"
+#          - "-whitelisted-healthcheck-cidr=<CIDR_BLOCK>"
         resources:
           limits:
             cpu: 200m
