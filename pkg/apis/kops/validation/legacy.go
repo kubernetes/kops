@@ -402,11 +402,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	if c.Spec.KubeAPIServer != nil {
 		if kubernetesRelease.GTE(semver.MustParse("1.10.0")) {
 			if len(c.Spec.KubeAPIServer.AdmissionControl) > 0 {
-				if len(c.Spec.KubeAPIServer.EnableAdmissionPlugins) > 0 {
-					return field.Invalid(fieldSpec.Child("KubeAPIServer").Child("EnableAdmissionPlugins"),
-						strings.Join(c.Spec.KubeAPIServer.EnableAdmissionPlugins, ","),
-						"EnableAdmissionPlugins is mutually exclusive, you cannot use both AdmissionControl and EnableAdmissionPlugins together")
-				}
 				if len(c.Spec.KubeAPIServer.DisableAdmissionPlugins) > 0 {
 					return field.Invalid(fieldSpec.Child("KubeAPIServer").Child("DisableAdmissionPlugins"),
 						strings.Join(c.Spec.KubeAPIServer.DisableAdmissionPlugins, ","),
