@@ -17,6 +17,7 @@ go_library(
         "//upup/pkg/fi:go_default_library",
         "//vendor/github.com/denverdino/aliyungo/common:go_default_library",
         "//vendor/github.com/denverdino/aliyungo/ecs:go_default_library",
+        "//vendor/github.com/denverdino/aliyungo/ram:go_default_library",
         "//vendor/github.com/denverdino/aliyungo/slb:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
