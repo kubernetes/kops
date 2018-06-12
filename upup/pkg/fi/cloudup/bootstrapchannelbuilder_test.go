@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/models"
@@ -42,6 +43,7 @@ func TestBootstrapChannelBuilder_BuildTasks(t *testing.T) {
 	runChannelBuilderTest(t, "simple")
 	runChannelBuilderTest(t, "kopeio-vxlan")
 	runChannelBuilderTest(t, "weave")
+	runChannelBuilderTest(t, "cilium")
 }
 
 func runChannelBuilderTest(t *testing.T, key string) {
@@ -72,7 +74,7 @@ func runChannelBuilderTest(t *testing.T, key string) {
 	if err != nil {
 		t.Fatalf("error building templates: %v", err)
 	}
-	tf := &TemplateFunctions{cluster: cluster}
+	tf := &TemplateFunctions{cluster: cluster, modelContext: &model.KopsModelContext{Cluster: cluster}}
 	tf.AddTo(templates.TemplateFunctions)
 
 	bcb := BootstrapChannelBuilder{
