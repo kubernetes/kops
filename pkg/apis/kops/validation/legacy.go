@@ -373,6 +373,38 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		}
 	}
 
+	// NodeAuthorization
+	if c.Spec.NodeAuthorization != nil {
+		if c.Spec.NodeAuthorization.NodeAuthorizer == nil {
+			return field.Invalid(field.NewPath("nodeAuthorization"), nil, "no node authorization policy has been set")
+		}
+		// NodeAuthorizer
+		if c.Spec.NodeAuthorization.NodeAuthorizer != nil {
+			path := field.NewPath("nodeAuthorization").Child("nodeAuthorizer")
+			if c.Spec.NodeAuthorization.NodeAuthorizer.Port < 0 || c.Spec.NodeAuthorization.NodeAuthorizer.Port >= 65535 {
+				return field.Invalid(path.Child("port"), c.Spec.NodeAuthorization.NodeAuthorizer.Port, "invalid port")
+			}
+			if c.Spec.NodeAuthorization.NodeAuthorizer.Timeout != nil && c.Spec.NodeAuthorization.NodeAuthorizer.Timeout.Duration <= 0 {
+				return field.Invalid(path.Child("timeout"), c.Spec.NodeAuthorization.NodeAuthorizer.Timeout, "must be greater than zero")
+			}
+			if c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL != nil && c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL.Duration < 0 {
+				return field.Invalid(path.Child("tokenTTL"), c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL, "must be greater than or equal to zero")
+			}
+
+			// @question: we could probably just default theses settings in the model when the node-authorizer is enabled??
+			if c.Spec.KubeAPIServer == nil {
+				return field.Invalid(field.NewPath("kubeAPIServer"), c.Spec.KubeAPIServer, "bootstrap token authentication is not enabled in the kube-apiserver")
+			}
+			if c.Spec.KubeAPIServer.EnableBootstrapAuthToken == nil {
+				return field.Invalid(field.NewPath("kubeAPIServer").Child("enableBootstrapAuthToken"), nil, "kube-apiserver has not been configured to use bootstrap tokens")
+			}
+			if !fi.BoolValue(c.Spec.KubeAPIServer.EnableBootstrapAuthToken) {
+				return field.Invalid(field.NewPath("kubeAPIServer").Child("enableBootstrapAuthToken"),
+					c.Spec.KubeAPIServer.EnableBootstrapAuthToken, "bootstrap tokens in the kube-apiserver has been disabled")
+			}
+		}
+	}
+
 	// UpdatePolicy
 	if c.Spec.UpdatePolicy != nil {
 		switch *c.Spec.UpdatePolicy {
