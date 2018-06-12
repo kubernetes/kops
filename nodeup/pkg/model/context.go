@@ -313,8 +313,8 @@ func (c *NodeupModelContext) KubectlPath() string {
 
 // BuildCertificatePairTask creates the tasks to pull down the certificate and private key
 func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContext, key, path, filename string) error {
-	certificateName := strings.Join([]string{path, filename + ".pem"}, "/")
-	keyName := strings.Join([]string{path, filename + "-key.pem"}, "/")
+	certificateName := filepath.Join(path, filename+".pem")
+	keyName := filepath.Join(path, filename+"-key.pem")
 
 	if err := c.BuildCertificateTask(ctx, key, certificateName); err != nil {
 		return err
