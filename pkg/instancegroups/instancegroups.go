@@ -330,7 +330,7 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 	}
 
 	if rollingUpdateData.PostDrainDelay > 0 {
-		glog.V(3).Infof("Waiting for %s for pods to stabilize after draining.", rollingUpdateData.PostDrainDelay)
+		glog.Infof("Waiting for %s for pods to stabilize after draining.", rollingUpdateData.PostDrainDelay)
 		time.Sleep(rollingUpdateData.PostDrainDelay)
 	}
 
