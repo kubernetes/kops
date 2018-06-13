@@ -41,13 +41,13 @@ import (
 
 const (
 	// the default tag used to indicates a kubernetes cluster name
-	kubenetesClusterTag = "KubernetesCluster"
+	kubernetesClusterTag = "KubernetesCluster"
 )
 
 // a collection of aws public signing certificates
 var publicCertificates []*x509.Certificate
 
-// awsNodeAuthorizer is the implementation for a node authozier
+// awsNodeAuthorizer is the implementation for a node authorizer
 type awsNodeAuthorizer struct {
 	// client is the ec2 interface
 	client ec2iface.EC2API
@@ -157,7 +157,7 @@ func (a *awsNodeAuthorizer) validateNodeInstance(ctx context.Context, doc *ec2me
 	}
 
 	// @check the instance is tagged with our kubernetes cluster id
-	if !hasInstanceTags(kubenetesClusterTag, a.config.ClusterName, instance.Tags) {
+	if !hasInstanceTags(kubernetesClusterTag, a.config.ClusterName, instance.Tags) {
 		return "missing cluster tag", nil
 	}
 

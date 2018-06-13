@@ -25,19 +25,19 @@ import (
 // alwaysAllowAuth is the implementation for a node authozier
 type alwaysAllowAuth struct{}
 
-// NewAuthorizer creates and returns a aws node authorizer
+// NewAuthorizer creates and returns a alwaysAllow node authorizer
 func NewAuthorizer() (server.Authorizer, error) {
 	return &alwaysAllowAuth{}, nil
 }
 
-// Admit is responsible for accepting the request
+// Authorize is responsible for accepting the request
 func (a *alwaysAllowAuth) Authorize(_ context.Context, req *server.NodeRegistration) error {
 	req.Status.Allowed = true
 
 	return nil
 }
 
-// Name returns the name of of the authozier
+// Name returns the name of the authorizer
 func (a *alwaysAllowAuth) Name() string {
 	return "alwaysAllow"
 }

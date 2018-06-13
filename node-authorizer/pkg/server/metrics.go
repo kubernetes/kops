@@ -30,7 +30,7 @@ var (
 	authorizeRequestLatencyMetric = prometheus.NewSummary(
 		prometheus.SummaryOpts{
 			Name: "node_request_latency_seconds",
-			Help: "A summary of the latency for incoming node authoriation requests",
+			Help: "A summary of the latency for incoming node authorization requests",
 		},
 	)
 	authorizerLatencyMetric = prometheus.NewSummary(
