@@ -270,9 +270,9 @@ func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInsta
 		nodeName = u.Node.Name
 	}
 	if nodeName != "" {
-		glog.Infof("Stopping instance %q, node %q, in group %q.", id, nodeName, r.CloudGroup.HumanName)
+		glog.Infof("Stopping instance %q, node %q, in group %q (this may take a while).", id, nodeName, r.CloudGroup.HumanName)
 	} else {
-		glog.Infof("Stopping instance %q, in group %q.", id, r.CloudGroup.HumanName)
+		glog.Infof("Stopping instance %q, in group %q (this may take a while).", id, r.CloudGroup.HumanName)
 	}
 
 	if err := r.Cloud.DeleteInstance(u); err != nil {
