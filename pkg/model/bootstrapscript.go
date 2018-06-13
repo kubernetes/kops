@@ -138,7 +138,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 			}
 			if cs.KubeAPIServer.EnableBootstrapAuthToken != nil {
 				spec["kubeAPIServer"] = map[string]interface{}{
-					"enableBootstrapTokenAuth": cs.KubeAPIServer.EnableBootstrapAuthToken,
+					"enableBootstrapAuthToken": cs.KubeAPIServer.EnableBootstrapAuthToken,
 				}
 			}
 

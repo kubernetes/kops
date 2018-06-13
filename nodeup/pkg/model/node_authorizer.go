@@ -92,7 +92,7 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 	glog.V(3).Infof("bootstrap: %t, node authorization: %t, node authorizer: %t", b.UseBootstrapTokens(),
 		b.UseNodeAuthorization(), b.UseNodeAuthorizer())
 
-	// @check if the NodeAuhtorizer provision the client service for nodes
+	// @check if the NodeAuthorizer provision the client service for nodes
 	if b.UseNodeAuthorizer() && !b.IsMaster {
 		na := b.Cluster.Spec.NodeAuthorization.NodeAuthorizer
 

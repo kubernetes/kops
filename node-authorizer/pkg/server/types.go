@@ -115,7 +115,7 @@ type Token struct {
 type NodeRegistrationSpec struct {
 	// NodeName is the name of the node
 	NodeName string
-	// RemoteaAddr is the address of the requester
+	// RemoteAddr is the address of the requester
 	RemoteAddr string
 	// Request is the request body
 	Request []byte
@@ -160,9 +160,6 @@ func (c *Config) IsValid() error {
 	}
 	if c.TLSPrivateKeyPath == "" {
 		return errors.New("no private key")
-	}
-	if c.Port <= 0 && c.Port >= 65535 {
-		return errors.New("invalid port")
 	}
 
 	return nil
