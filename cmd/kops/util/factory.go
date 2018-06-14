@@ -65,7 +65,7 @@ Trailing slash will be trimmed.`
 func (f *Factory) Clientset() (simple.Clientset, error) {
 	if f.clientset == nil {
 		registryPath := f.options.RegistryPath
-		fmt.Println("Config S3:", registryPath)
+		glog.V(2).Infof("state store %s", registryPath)
 		if registryPath == "" {
 			return nil, field.Required(field.NewPath("State Store"), STATE_ERROR)
 		}
