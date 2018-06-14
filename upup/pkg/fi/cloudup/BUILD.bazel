@@ -106,6 +106,7 @@ go_test(
         "//pkg/client/simple/vfsclientset:go_default_library",
         "//pkg/diff:go_default_library",
         "//pkg/kopscodecs:go_default_library",
+        "//pkg/model:go_default_library",
         "//pkg/templates:go_default_library",
         "//pkg/testutils:go_default_library",
         "//upup/models:go_default_library",
