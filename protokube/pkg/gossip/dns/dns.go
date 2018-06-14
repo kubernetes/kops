@@ -128,9 +128,24 @@ func (v *DNSView) RemoveZone(info DNSZoneInfo) error {
 	return fmt.Errorf("zone deletion is implicit")
 }
 
-// AddZone adds the specified zone, though this is currently not supported and returns an error.
+// AddZone adds the specified zone; this creates a fake NS record just so that the zone has records
 func (v *DNSView) AddZone(info DNSZoneInfo) (*DNSZoneInfo, error) {
-	return nil, fmt.Errorf("zone creation is implicit")
+	createRecords := []*DNSRecord{
+		{
+			RrsType: "NS",
+			Name:    info.Name,
+			Rrdatas: []string{"gossip"},
+		},
+	}
+
+	err := v.ApplyChangeset(info, nil, createRecords)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DNSZoneInfo{
+		Name: info.Name,
+	}, nil
 }
 
 // ApplyChangeset applies a DNS changeset to the records.
