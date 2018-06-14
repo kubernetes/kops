@@ -254,55 +254,57 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		f.ManageEtcd = true
 	}
 
-	for _, e := range t.Cluster.Spec.EtcdClusters {
-		// Because we can only specify a single EtcdBackupStore at the moment, we only backup main, not events
-		if e.Name != "main" {
-			continue
-		}
-
-		if e.Backups != nil {
-			if f.EtcdBackupImage == "" {
-				f.EtcdBackupImage = e.Backups.Image
+	if f.ManageEtcd {
+		for _, e := range t.Cluster.Spec.EtcdClusters {
+			// Because we can only specify a single EtcdBackupStore at the moment, we only backup main, not events
+			if e.Name != "main" {
+				continue
 			}
 
-			if f.EtcdBackupStore == "" {
-				f.EtcdBackupStore = e.Backups.BackupStore
+			if e.Backups != nil {
+				if f.EtcdBackupImage == "" {
+					f.EtcdBackupImage = e.Backups.Image
+				}
+
+				if f.EtcdBackupStore == "" {
+					f.EtcdBackupStore = e.Backups.BackupStore
+				}
 			}
 		}
-	}
 
-	// TODO this is duplicate code with etcd model
-	image := fmt.Sprintf("k8s.gcr.io/etcd:%s", imageVersion)
-	// override image if set as API value
-	if etcdContainerImage != "" {
-		image = etcdContainerImage
-	}
-	assets := assets.NewAssetBuilder(t.Cluster, "")
-	remapped, err := assets.RemapImage(image)
-	if err != nil {
-		return nil, fmt.Errorf("unable to remap container %q: %v", image, err)
-	}
+		// TODO this is duplicate code with etcd model
+		image := fmt.Sprintf("k8s.gcr.io/etcd:%s", imageVersion)
+		// override image if set as API value
+		if etcdContainerImage != "" {
+			image = etcdContainerImage
+		}
+		assets := assets.NewAssetBuilder(t.Cluster, "")
+		remapped, err := assets.RemapImage(image)
+		if err != nil {
+			return nil, fmt.Errorf("unable to remap container %q: %v", image, err)
+		}
 
-	image = remapped
-	f.EtcdImage = s(image)
+		image = remapped
+		f.EtcdImage = s(image)
+
+		// check if we are using tls and add the options to protokube
+		if t.UseEtcdTLS() {
+			f.PeerTLSCaFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
+			f.PeerTLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))
+			f.PeerTLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-key.pem"))
+			f.TLSCAFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
+			f.TLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))
+			f.TLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-key.pem"))
+		}
+		if t.UseEtcdTLSAuth() {
+			enableAuth := true
+			f.TLSAuth = b(enableAuth)
+		}
+	}
 
 	// initialize rbac on Kubernetes >= 1.6 and master
 	if k8sVersion.Major == 1 && k8sVersion.Minor >= 6 {
 		f.InitializeRBAC = fi.Bool(true)
-	}
-
-	// check if we are using tls and add the options to protokube
-	if t.UseEtcdTLS() {
-		f.PeerTLSCaFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
-		f.PeerTLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))
-		f.PeerTLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-key.pem"))
-		f.TLSCAFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
-		f.TLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))
-		f.TLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-key.pem"))
-	}
-	if t.UseTLSAuth() {
-		enableAuth := true
-		f.TLSAuth = b(enableAuth)
 	}
 
 	zone := t.Cluster.Spec.DNSZone
