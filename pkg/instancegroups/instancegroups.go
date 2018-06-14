@@ -270,9 +270,9 @@ func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInsta
 		nodeName = u.Node.Name
 	}
 	if nodeName != "" {
-		glog.Infof("Stopping instance %q, node %q, in group %q.", id, nodeName, r.CloudGroup.HumanName)
+		glog.Infof("Stopping instance %q, node %q, in group %q (this may take a while).", id, nodeName, r.CloudGroup.HumanName)
 	} else {
-		glog.Infof("Stopping instance %q, in group %q.", id, r.CloudGroup.HumanName)
+		glog.Infof("Stopping instance %q, in group %q (this may take a while).", id, r.CloudGroup.HumanName)
 	}
 
 	if err := r.Cloud.DeleteInstance(u); err != nil {
@@ -330,7 +330,7 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 	}
 
 	if rollingUpdateData.PostDrainDelay > 0 {
-		glog.V(3).Infof("Waiting for %s for pods to stabilize after draining.", rollingUpdateData.PostDrainDelay)
+		glog.Infof("Waiting for %s for pods to stabilize after draining.", rollingUpdateData.PostDrainDelay)
 		time.Sleep(rollingUpdateData.PostDrainDelay)
 	}
 
