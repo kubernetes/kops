@@ -21,12 +21,15 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
@@ -125,6 +128,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.PersistentFlags().StringVar(&rootCommand.RegistryPath, "state", "", "Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable")
 	viper.BindPFlag("KOPS_STATE_STORE", cmd.PersistentFlags().Lookup("state"))
+	viper.BindEnv("KOPS_STATE_STORE")
 
 	defaultClusterName := os.Getenv("KOPS_CLUSTER_NAME")
 	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", defaultClusterName, "Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable")
@@ -148,42 +152,38 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-
-	// Take in order Flag --state, ENV, .kops.yaml, .kops/config
-
-	if os.Getenv("KOPS_STATE_STORE") != "" && rootCommand.RegistryPath == "" {
-		rootCommand.RegistryPath = os.Getenv("KOPS_STATE_STORE")
-		viper.BindEnv("KOPS_STATE_STORE")
-		viper.AutomaticEnv()
-	}
-
-	if rootCommand.configFile != "" {
-		// enable ability to specify config file via flag
-		viper.SetConfigFile(rootCommand.configFile)
-		if err := viper.ReadInConfig(); err == nil {
-			viper.BindEnv("KOPS_STATE_STORE")
-			rootCommand.RegistryPath = viper.GetString("KOPS_STATE_STORE")
-			viper.AutomaticEnv()
+	// Config file precedence: --config flag, ${HOME}/.kops.yaml ${HOME}/.kops/config
+	configFile := rootCommand.configFile
+	if configFile == "" {
+		home := homedir.HomeDir()
+		configPaths := []string{
+			filepath.Join(home, ".kops.yaml"),
+			filepath.Join(home, ".kops", "config"),
+		}
+		for _, p := range configPaths {
+			_, err := os.Stat(p)
+			if err == nil {
+				configFile = p
+				break
+			} else if !os.IsNotExist(err) {
+				glog.V(2).Infof("error checking for file %s: %v", p, err)
+			}
 		}
 	}
-	if rootCommand.configFile == "" && rootCommand.RegistryPath == "" {
-		viper.SetConfigName(".kops") // name of config file (without extension)
-		viper.AddConfigPath("$HOME") // adding home directory as first search path. Assume that exist. Need to be fix for windows
-		viper.ReadInConfig()
-		if err := viper.ReadInConfig(); err == nil {
-			viper.BindEnv("KOPS_STATE_STORE")
-			rootCommand.RegistryPath = viper.GetString("KOPS_STATE_STORE")
-			viper.AutomaticEnv()
-		}
-		viper.SetConfigName("config")
-		viper.AddConfigPath("$HOME/.kops") // adding home/.kops/config directory as second search path
-		viper.ReadInConfig()
-		if err := viper.ReadInConfig(); err == nil {
-			viper.BindEnv("KOPS_STATE_STORE")
-			rootCommand.RegistryPath = viper.GetString("KOPS_STATE_STORE")
-			viper.AutomaticEnv()
+
+	if configFile != "" {
+		viper.SetConfigFile(configFile)
+		viper.SetConfigType("yaml")
+
+		if err := viper.ReadInConfig(); err != nil {
+			glog.Warningf("error reading config: %v", err)
 		}
 	}
+
+	rootCommand.RegistryPath = viper.GetString("KOPS_STATE_STORE")
+
+	// Tolerate multiple slashes at end
+	rootCommand.RegistryPath = strings.TrimSuffix(rootCommand.RegistryPath, "/")
 }
 
 func (c *RootCmd) AddCommand(cmd *cobra.Command) {
