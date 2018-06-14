@@ -67,7 +67,7 @@ func NewCmdSetCluster(f *util.Factory, out io.Writer) *cobra.Command {
 			}
 
 			if options.ClusterName == "" {
-				options.ClusterName = ClusterNameFromKubecfg()
+				options.ClusterName = rootCommand.ClusterName()
 			}
 
 			if err := commands.RunSetCluster(f, cmd, out, options); err != nil {
