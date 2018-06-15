@@ -258,14 +258,18 @@ func run() error {
 		}()
 
 		dnsView := gossipdns.NewDNSView(gossipState)
+		zoneInfo := gossipdns.DNSZoneInfo{
+			Name: gossipdns.DefaultZoneName,
+		}
+		if _, err := dnsView.AddZone(zoneInfo); err != nil {
+			glog.Fatalf("error creating zone: %v", err)
+		}
+
 		go func() {
 			gossipdns.RunDNSUpdates(dnsTarget, dnsView)
 			glog.Fatalf("RunDNSUpdates exited unexpectedly")
 		}()
 
-		zoneInfo := gossipdns.DNSZoneInfo{
-			Name: gossipdns.DefaultZoneName,
-		}
 		dnsProvider = &protokube.GossipDnsProvider{DNSView: dnsView, Zone: zoneInfo}
 	} else {
 		var dnsScope dns.Scope
