@@ -92,18 +92,206 @@ spec:
         prometheus.io/port: "9090"
     spec:
       serviceAccountName: cilium
+{{ with .Networking.Cilium }}
       containers:
-      - image: cilium/cilium:v1.0-stable
+      - image: "cilium/cilium:{{ .Version }}"
         imagePullPolicy: Always
         name: cilium-agent
         command: [ "cilium-agent" ]
         args:
-{{ if .Networking.Cilium.Debug }}
+{{ if .Debug }}
           - "--debug=true"
 {{ end }}
-{{ if ne .Networking.Cilium.Tunnel "" }}
+{{ if .DebugVerbose}}
+  {{ range $j, $group:= .DebugVerbose}}
+          - "--debug-verbose"
+          - "{{ $group}}"
+  {{ end }}
+{{ end }}
+{{ if ne .AccessLog "" }}
+          - "--access-log"
+          - "{{ .AccessLog}}"
+{{ end }}
+{{ if .AgentLabels }}
+  {{ range $j, $label := .AgentLabels }}
+          - "--agent-labels"
+          - "{{ $label }}"
+  {{ end }}
+{{ end }}
+{{ if ne .AllowLocalhost "" }}
+          - "--allow-localhost"
+          - "{{ .AllowLocalhost}}"
+{{ end }}
+{{ if .AutoIpv6NodeRoutes }}
+          - "--auto-ipv6-node-routes"
+{{ end }}
+{{ if ne .BPFRoot "" }}
+          - "--bpf-root"
+          - "{{ .BPFRoot }}"
+{{ end }}
+{{ if .ContainerRuntime }}
+  {{ range $j, $runtime:= .ContainerRuntime }}
+          - "--container-runtime"
+          - "{{ $runtime}}"
+  {{ end }}
+{{ end }}
+{{ if .ContainerRuntimeEndpoint }}
+  {{ range $runtime, $endpoint:= .ContainerRuntimeEndpoint }}
+          - "--container-runtime-endpoint={{ $runtime }}={{ $endpoint }}"
+  {{ end }}
+{{ end }}
+{{ if ne .Device "" }}
+          - "--device"
+          - "{{ .Device }}"
+{{ end }}
+{{ if .DisableConntrack }}
+          - "--disable-conntrack"
+{{ end }}
+{{ if .DisableIpv4 }}
+          - "--disable-ipv4"
+{{ end }}
+{{ if .DisableK8sServices }}
+          - "--disable-k8s-services"
+{{ end }}
+{{ if ne .EnablePolicy "" }}
+          - "--enable-policy"
+          - "{{ .EnablePolicy }}"
+{{ end }}
+{{ if .EnableTracing }}
+          - "--enable-tracing"
+{{ end }}
+{{ if ne .EnvoyLog "" }}
+          - "--envoy-log"
+          - "{{ .EnvoyLog }}"
+{{ end }}
+{{ if ne .Ipv4ClusterCIDRMaskSize 0 }}
+          - "--ipv4-cluster-cidr-mask-size"
+          - "{{ .Ipv4ClusterCIDRMaskSize }}"
+{{ end }}
+{{ if ne .Ipv4Node "" }}
+          - "--ipv4-node"
+          - "{{ .Ipv4Node }}"
+{{ end }}
+{{ if ne .Ipv4Range "" }}
+          - "--ipv4-range"
+          - "{{ .Ipv4Range }}"
+{{ end }}
+{{ if ne .Ipv4ServiceRange "" }}
+          - "--ipv4-service-range"
+          - "{{ .Ipv4ServiceRange }}"
+{{ end }}
+{{ if ne .Ipv6ClusterAllocCidr "" }}
+          - "--ipv6-cluster-alloc-cidr"
+          - "{{ .Ipv6ClusterAllocCidr }}"
+{{ end }}
+{{ if ne .Ipv6Node "" }}
+          - "--ipv6-node"
+          - "{{ .Ipv6Node }}"
+{{ end }}
+{{ if ne .Ipv6Range "" }}
+          - "--ipv6-range"
+          - "{{ .Ipv6Range }}"
+{{ end }}
+{{ if ne .Ipv6ServiceRange "" }}
+          - "--ipv6-service-range"
+          - "{{ .Ipv6ServiceRange }}"
+{{ end }}
+{{ if ne .K8sAPIServer "" }}
+          - "--k8s-api-server"
+          - "{{ .K8sAPIServer }}"
+{{ end }}
+{{ if ne .K8sKubeconfigPath "" }}
+          - "--k8s-kubeconfig-path"
+          - "{{ .K8sKubeconfigPath }}"
+{{ end }}
+{{ if .KeepBPFTemplates }}
+          - "--keep-bpf-templates"
+{{ end }}
+{{ if .KeepConfig }}
+          - "--keep-config"
+{{ end }}
+{{ if ne .LabelPrefixFile "" }}
+          - "--label-prefix-file"
+          - "{{ .LabelPrefixFile }}"
+{{ end }}
+{{ if .Labels }}
+  {{ range $j, $label := .Labels }}
+          - "--labels"
+          - "{{ $label }}"
+  {{ end }}
+{{ end }}
+{{ if ne .LB "" }}
+          - "--lb"
+          - "{{ .LB }}"
+{{ end }}
+{{ if ne .LibDir "" }}
+          - "--lib-dir"
+          - "{{ .LibDir }}"
+{{ end }}
+{{ if .LogDrivers }}
+  {{ range $j, $driver := .LogDrivers }}
+          - "--log-driver"
+          - "{{ $driver}}"
+  {{ end }}
+{{ end }}
+{{ if .LogOpt }}
+  {{ range $option, $value := .LogOpt }}
+          - "--log-opt={{ $option }}={{ $value }}"
+  {{ end }}
+{{ end }}
+{{ if .Logstash }}
+          - "--logstash"
+{{ end }}
+{{ if ne .LogstashAgent "" }}
+          - "--logstash-agent"
+          - "{{ .LogstashAgent }}"
+{{ end }}
+{{ if ne .LogstashProbeTimer 0 }}
+          - "--logstash-probe-timer"
+          - "{{ .LogstashProbeTimer }}"
+{{ end }}
+{{ if eq .DisableMasquerade true }}
+          - "--masquerade"
+          - "false"
+{{ end }}
+{{ if ne .Nat46Range "" }}
+          - "--nat46-range"
+          - "{{ .Nat46Range }}"
+{{ end }}
+{{ if .Pprof}}
+          - "--pprof"
+{{ end }}
+{{ if ne .PrefilterDevice "" }}
+          - "--prefilter-device"
+          - "{{ .PrefilterDevice }}"
+{{ end }}
+{{ if ne .PrometheusServeAddr "" }}
+          - "--prefilter-device"
+          - "{{ .PrometheusServeAddr }}"
+{{ end }}
+{{ if .Restore}}
+          - "--restore"
+{{ end }}
+{{ if .SingleClusterRoute}}
+          - "--single-cluster-route"
+{{ end }}
+{{ if ne .SocketPath "" }}
+          - "--socket-path"
+          - "{{ .SocketPath }}"
+{{ end }}
+{{ if ne .StateDir "" }}
+          - "--state-dir"
+          - "{{ .StateDir }}"
+{{ end }}
+{{ if ne .TracePayloadLen 0 }}
+          - "--trace-payloadlen"
+          - "{{ .TracePayloadLen}}"
+{{ end }}
+{{ if ne .Tunnel "" }}
           - "--tunnel"
-          - "{{ .Networking.Cilium.Tunnel }}"
+          - "{{ .Tunnel }}"
+{{ end }}
+# end of `with .Networking.Cilium`
 {{ end }}
           - "--kvstore"
           - "etcd"

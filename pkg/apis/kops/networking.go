@@ -129,8 +129,58 @@ type AmazonVPCNetworkingSpec struct {
 	ImageName string `json:"imageName,omitempty"`
 }
 
+const CiliumDefaultVersion = "v1.0-stable"
+
 // CiliumNetworkingSpec declares that we want Cilium networking
 type CiliumNetworkingSpec struct {
-	Debug  bool   `json:"debug,omitempty"`
-	Tunnel string `json:"tunnel,omitempty"`
+	Version string `json:"version,omitempty"`
+
+	AccessLog                string            `json:"accessLog,omitempty"`
+	AgentLabels              []string          `json:"agentLabels,omitempty"`
+	AllowLocalhost           string            `json:"allowLocalhost,omitempty"`
+	AutoIpv6NodeRoutes       bool              `json:"autoIpv6NodeRoutes,omitempty"`
+	BPFRoot                  string            `json:"bpfRoot,omitempty"`
+	ContainerRuntime         []string          `json:"containerRuntime,omitempty"`
+	ContainerRuntimeEndpoint map[string]string `json:"containerRuntimeEndpoint,omitempty"`
+	Debug                    bool              `json:"debug,omitempty"`
+	DebugVerbose             []string          `json:"debugVerbose,omitempty"`
+	Device                   string            `json:"device,omitempty"`
+	DisableConntrack         bool              `json:"disableConntrack,omitempty"`
+	DisableIpv4              bool              `json:"disableIpv4,omitempty"`
+	DisableK8sServices       bool              `json:"disableK8sServices,omitempty"`
+	EnablePolicy             string            `json:"enablePolicy,omitempty"`
+	EnableTracing            bool              `json:"enableTracing,omitempty"`
+	EnvoyLog                 string            `json:"envoyLog,omitempty"`
+	Ipv4ClusterCIDRMaskSize  int               `json:"ipv4ClusterCidrMaskSize,omitempty"`
+	Ipv4Node                 string            `json:"ipv4Node,omitempty"`
+	Ipv4Range                string            `json:"ipv4Range,omitempty"`
+	Ipv4ServiceRange         string            `json:"ipv4ServiceRange,omitempty"`
+	Ipv6ClusterAllocCidr     string            `json:"ipv6ClusterAllocCidr,omitempty"`
+	Ipv6Node                 string            `json:"ipv6Node,omitempty"`
+	Ipv6Range                string            `json:"ipv6Range,omitempty"`
+	Ipv6ServiceRange         string            `json:"ipv6ServiceRange,omitempty"`
+	K8sAPIServer             string            `json:"k8sApiServer,omitempty"`
+	K8sKubeconfigPath        string            `json:"k8sKubeconfigPath,omitempty"`
+	KeepBPFTemplates         bool              `json:"keepBpfTemplates,omitempty"`
+	KeepConfig               bool              `json:"keepConfig,omitempty"`
+	LabelPrefixFile          string            `json:"labelPrefixFile,omitempty"`
+	Labels                   []string          `json:"labels,omitempty"`
+	LB                       string            `json:"lb,omitempty"`
+	LibDir                   string            `json:"libDir,omitempty"`
+	LogDrivers               []string          `json:"logDriver,omitempty"`
+	LogOpt                   map[string]string `json:"logOpt,omitempty"`
+	Logstash                 bool              `json:"logstash,omitempty"`
+	LogstashAgent            string            `json:"logstashAgent,omitempty"`
+	LogstashProbeTimer       uint32            `json:"logstashProbeTimer,omitempty"`
+	DisableMasquerade        bool              `json:"disableMasquerade,omitempty"`
+	Nat46Range               string            `json:"nat46Range,omitempty"`
+	Pprof                    bool              `json:"pprof,omitempty"`
+	PrefilterDevice          string            `json:"prefilterDevice,omitempty"`
+	PrometheusServeAddr      string            `json:"prometheusServeAddr,omitempty"`
+	Restore                  bool              `json:"restore,omitempty"`
+	SingleClusterRoute       bool              `json:"singleClusterRoute,omitempty"`
+	SocketPath               string            `json:"socketPath,omitempty"`
+	StateDir                 string            `json:"stateDir,omitempty"`
+	TracePayloadLen          int               `json:"tracePayloadlen,omitempty"`
+	Tunnel                   string            `json:"tunnel,omitempty"`
 }
