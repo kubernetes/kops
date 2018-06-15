@@ -195,6 +195,8 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		DNSSuffix:     dnsInternalSuffix,
 	}
 
+	config.LogVerbosity = 8
+
 	var envs []v1.EnvVar
 
 	{
@@ -323,6 +325,9 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 
 // EtcdManagerConfig are the flags for etcd-manager
 type EtcdManagerConfig struct {
+	// LogVerbosity sets the log verbosity level
+	LogVerbosity int `flag:"v"`
+
 	// Containerized is set if etcd-manager is running in a container
 	Containerized bool `flag:"containerized"`
 
