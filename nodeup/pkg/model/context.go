@@ -237,10 +237,10 @@ func (c *NodeupModelContext) UseEtcdTLS() bool {
 	return false
 }
 
-// UseTLSAuth checks the peer-auth is set in both cluster
+// UseEtcdTLSAuth checks the peer-auth is set in both cluster
 // @NOTE: in retrospect i think we should have consolidated the common config in the wrapper struct; it
 // feels weird we set things like version, tls etc per cluster since they both have to be the same.
-func (c *NodeupModelContext) UseTLSAuth() bool {
+func (c *NodeupModelContext) UseEtcdTLSAuth() bool {
 	if !c.UseEtcdTLS() {
 		return false
 	}
