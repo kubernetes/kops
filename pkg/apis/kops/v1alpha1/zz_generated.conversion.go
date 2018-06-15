@@ -481,7 +481,54 @@ func Convert_kops_CanalNetworkingSpec_To_v1alpha1_CanalNetworkingSpec(in *kops.C
 }
 
 func autoConvert_v1alpha1_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *CiliumNetworkingSpec, out *kops.CiliumNetworkingSpec, s conversion.Scope) error {
+	out.Version = in.Version
+	out.AccessLog = in.AccessLog
+	out.AgentLabels = in.AgentLabels
+	out.AllowLocalhost = in.AllowLocalhost
+	out.AutoIpv6NodeRoutes = in.AutoIpv6NodeRoutes
+	out.BPFRoot = in.BPFRoot
+	out.ContainerRuntime = in.ContainerRuntime
+	out.ContainerRuntimeEndpoint = in.ContainerRuntimeEndpoint
 	out.Debug = in.Debug
+	out.DebugVerbose = in.DebugVerbose
+	out.Device = in.Device
+	out.DisableConntrack = in.DisableConntrack
+	out.DisableIpv4 = in.DisableIpv4
+	out.DisableK8sServices = in.DisableK8sServices
+	out.EnablePolicy = in.EnablePolicy
+	out.EnableTracing = in.EnableTracing
+	out.EnvoyLog = in.EnvoyLog
+	out.Ipv4ClusterCIDRMaskSize = in.Ipv4ClusterCIDRMaskSize
+	out.Ipv4Node = in.Ipv4Node
+	out.Ipv4Range = in.Ipv4Range
+	out.Ipv4ServiceRange = in.Ipv4ServiceRange
+	out.Ipv6ClusterAllocCidr = in.Ipv6ClusterAllocCidr
+	out.Ipv6Node = in.Ipv6Node
+	out.Ipv6Range = in.Ipv6Range
+	out.Ipv6ServiceRange = in.Ipv6ServiceRange
+	out.K8sAPIServer = in.K8sAPIServer
+	out.K8sKubeconfigPath = in.K8sKubeconfigPath
+	out.KeepBPFTemplates = in.KeepBPFTemplates
+	out.KeepConfig = in.KeepConfig
+	out.LabelPrefixFile = in.LabelPrefixFile
+	out.Labels = in.Labels
+	out.LB = in.LB
+	out.LibDir = in.LibDir
+	out.LogDrivers = in.LogDrivers
+	out.LogOpt = in.LogOpt
+	out.Logstash = in.Logstash
+	out.LogstashAgent = in.LogstashAgent
+	out.LogstashProbeTimer = in.LogstashProbeTimer
+	out.DisableMasquerade = in.DisableMasquerade
+	out.Nat46Range = in.Nat46Range
+	out.Pprof = in.Pprof
+	out.PrefilterDevice = in.PrefilterDevice
+	out.PrometheusServeAddr = in.PrometheusServeAddr
+	out.Restore = in.Restore
+	out.SingleClusterRoute = in.SingleClusterRoute
+	out.SocketPath = in.SocketPath
+	out.StateDir = in.StateDir
+	out.TracePayloadLen = in.TracePayloadLen
 	out.Tunnel = in.Tunnel
 	return nil
 }
@@ -492,7 +539,54 @@ func Convert_v1alpha1_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *Cili
 }
 
 func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha1_CiliumNetworkingSpec(in *kops.CiliumNetworkingSpec, out *CiliumNetworkingSpec, s conversion.Scope) error {
+	out.Version = in.Version
+	out.AccessLog = in.AccessLog
+	out.AgentLabels = in.AgentLabels
+	out.AllowLocalhost = in.AllowLocalhost
+	out.AutoIpv6NodeRoutes = in.AutoIpv6NodeRoutes
+	out.BPFRoot = in.BPFRoot
+	out.ContainerRuntime = in.ContainerRuntime
+	out.ContainerRuntimeEndpoint = in.ContainerRuntimeEndpoint
 	out.Debug = in.Debug
+	out.DebugVerbose = in.DebugVerbose
+	out.Device = in.Device
+	out.DisableConntrack = in.DisableConntrack
+	out.DisableIpv4 = in.DisableIpv4
+	out.DisableK8sServices = in.DisableK8sServices
+	out.EnablePolicy = in.EnablePolicy
+	out.EnableTracing = in.EnableTracing
+	out.EnvoyLog = in.EnvoyLog
+	out.Ipv4ClusterCIDRMaskSize = in.Ipv4ClusterCIDRMaskSize
+	out.Ipv4Node = in.Ipv4Node
+	out.Ipv4Range = in.Ipv4Range
+	out.Ipv4ServiceRange = in.Ipv4ServiceRange
+	out.Ipv6ClusterAllocCidr = in.Ipv6ClusterAllocCidr
+	out.Ipv6Node = in.Ipv6Node
+	out.Ipv6Range = in.Ipv6Range
+	out.Ipv6ServiceRange = in.Ipv6ServiceRange
+	out.K8sAPIServer = in.K8sAPIServer
+	out.K8sKubeconfigPath = in.K8sKubeconfigPath
+	out.KeepBPFTemplates = in.KeepBPFTemplates
+	out.KeepConfig = in.KeepConfig
+	out.LabelPrefixFile = in.LabelPrefixFile
+	out.Labels = in.Labels
+	out.LB = in.LB
+	out.LibDir = in.LibDir
+	out.LogDrivers = in.LogDrivers
+	out.LogOpt = in.LogOpt
+	out.Logstash = in.Logstash
+	out.LogstashAgent = in.LogstashAgent
+	out.LogstashProbeTimer = in.LogstashProbeTimer
+	out.DisableMasquerade = in.DisableMasquerade
+	out.Nat46Range = in.Nat46Range
+	out.Pprof = in.Pprof
+	out.PrefilterDevice = in.PrefilterDevice
+	out.PrometheusServeAddr = in.PrometheusServeAddr
+	out.Restore = in.Restore
+	out.SingleClusterRoute = in.SingleClusterRoute
+	out.SocketPath = in.SocketPath
+	out.StateDir = in.StateDir
+	out.TracePayloadLen = in.TracePayloadLen
 	out.Tunnel = in.Tunnel
 	return nil
 }
