@@ -17,31 +17,26 @@ limitations under the License.
 package alimodel
 
 import (
-	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/alitasks"
 )
 
-type ALIModelContext struct {
-	*model.KopsModelContext
+// SSHKeyModelBuilder configures SSH objects
+type SSHKeyModelBuilder struct {
+	*ALIModelContext
+	Lifecycle *fi.Lifecycle
 }
 
-// LinkToVPC returns the VPC object the cluster is located in
-func (c *ALIModelContext) LinkToVPC() *alitasks.VPC {
-	return &alitasks.VPC{Name: s(c.GetNameForVPC())}
-}
+var _ fi.ModelBuilder = &SSHKeyModelBuilder{}
 
-func (c *ALIModelContext) GetNameForVPC() string {
-	return c.ClusterName()
-}
+func (b *SSHKeyModelBuilder) Build(c *fi.ModelBuilderContext) error {
+	name := b.GetNameForSSHKey()
+	t := &alitasks.SSHKey{
+		Name:      s(name),
+		Lifecycle: b.Lifecycle,
+		PublicKey: fi.WrapResource(fi.NewStringResource(string(b.SSHPublicKeys[0]))),
+	}
+	c.AddTask(t)
 
-func (c *ALIModelContext) GetNameForVSwitch(subnetName string) string {
-	return subnetName + "." + c.ClusterName()
-}
-
-func (c *ALIModelContext) GetNameForLoadBalancer() string {
-	return "api." + c.ClusterName()
-}
-
-func (c *ALIModelContext) GetNameForSSHKey() string {
-	return "k8s.sshkey." + c.ClusterName()
+	return nil
 }
