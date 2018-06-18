@@ -40,11 +40,16 @@ func (n *NodeAuthorizer) authorizeHandler(w http.ResponseWriter, r *http.Request
 			return err
 		}
 
+		address, err := getClientAddress(r.RemoteAddr)
+		if err != nil {
+			return err
+		}
+
 		// @step: construct the node registration request
 		req := &NodeRegistration{
 			Spec: NodeRegistrationSpec{
 				NodeName:   mux.Vars(r)["name"],
-				RemoteAddr: getClientAddress(r.RemoteAddr),
+				RemoteAddr: address,
 				Request:    content,
 			},
 		}

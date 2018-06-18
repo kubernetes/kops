@@ -54,9 +54,9 @@ func addClientCommand() cli.Command {
 				Value:  "/var/run/kubelet/kubelet-bootstrap.yml",
 			},
 			cli.StringFlag{
-				Name:   "tls-ca",
-				Usage:  "file containing the certificate authority `PATH`",
-				EnvVar: "TLS_CA",
+				Name:   "tls-client-ca",
+				Usage:  "file containing the certificate authority used to verify node endpoint `PATH`",
+				EnvVar: "TLS_CLIENT_CA",
 			},
 			cli.StringFlag{
 				Name:   "tls-cert",
@@ -96,8 +96,8 @@ func actionClientCommand(ctx *cli.Context) error {
 		KubeAPI:           ctx.String("kubeapi-url"),
 		KubeConfigPath:    ctx.String("kubeconfig"),
 		NodeURL:           ctx.String("node-url"),
-		TLSCaPath:         ctx.String("tls-ca"),
 		TLSCertPath:       ctx.String("tls-cert"),
+		TLSClientCAPath:   ctx.String("tls-client-ca"),
 		TLSPrivateKeyPath: ctx.String("tls-private-key"),
 		Timeout:           ctx.Duration("timeout"),
 	})

@@ -42,8 +42,8 @@ import (
 func makeHTTPClient(config *Config) (*http.Client, error) {
 	tlsConfig := &tls.Config{}
 
-	if config.TLSCaPath != "" {
-		ca, err := ioutil.ReadFile(config.TLSCaPath)
+	if config.TLSClientCAPath != "" {
+		ca, err := ioutil.ReadFile(config.TLSClientCAPath)
 		if err != nil {
 			return nil, err
 		}
@@ -74,7 +74,7 @@ func makeHTTPClient(config *Config) (*http.Client, error) {
 // makeKubeconfig is responsible for generating a bootstrap config
 func makeKubeconfig(ctx context.Context, config *Config, token string) ([]byte, error) {
 	// @step: load the certificate authority
-	content, err := ioutil.ReadFile(config.TLSCaPath)
+	content, err := ioutil.ReadFile(config.TLSClientCAPath)
 	if err != nil {
 		return []byte{}, err
 	}

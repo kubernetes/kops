@@ -24,6 +24,7 @@ type Request struct {
 
 var (
 	// awsCertificates is a collection of AWS public certificates used to sign the identity documents
+	// https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-identity-documents.html
 	awsCertificates = []string{
 		// AWS Public Certificate
 		`-----BEGIN CERTIFICATE-----

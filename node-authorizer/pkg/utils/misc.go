@@ -17,7 +17,7 @@ limitations under the License.
 package utils
 
 import (
-	"crypto/rand"
+	crypto_rand "crypto/rand"
 	"encoding/hex"
 
 	"k8s.io/client-go/kubernetes"
@@ -37,7 +37,7 @@ func GetKubernetesClient() (kubernetes.Interface, error) {
 // RandomBytes generates some random bytes
 func RandomBytes(length int) (string, error) {
 	b := make([]byte, length)
-	_, err := rand.Read(b)
+	_, err := crypto_rand.Read(b)
 	if err != nil {
 		return "", err
 	}

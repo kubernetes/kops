@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"k8s.io/kops/node-authorizer/pkg/server"
+	"k8s.io/kops/node-authorizer/pkg/utils"
 )
 
 // alwaysAllowAuth is the implementation for a node authozier
@@ -27,6 +28,8 @@ type alwaysAllowAuth struct{}
 
 // NewAuthorizer creates and returns a alwaysAllow node authorizer
 func NewAuthorizer() (server.Authorizer, error) {
+	utils.Logger.Warn("note the alwaysallow authorizer performs no authoritive checks and should only be used in test environments")
+
 	return &alwaysAllowAuth{}, nil
 }
 
