@@ -26,11 +26,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidateIdentityDocument(t *testing.T) {
+func newTestAuthorizer(t *testing.T, config *server.Config) *awsNodeAuthorizer {
+	if config == nil {
+		config = &server.Config{}
+	}
 	c := &awsNodeAuthorizer{
 		config: &server.Config{},
 		vpcID:  "test",
 	}
+	if err := GetPublicCertificates(); err != nil {
+		t.Errorf("unable to parse public certificates: %s", err)
+		t.FailNow()
+	}
+
+	return c
+}
+
+func TestValidateIdentityDocument(t *testing.T) {
+	c := newTestAuthorizer(t, nil)
 
 	request := &Request{
 		Document: []byte(`MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAaCAJIAEggHUewog

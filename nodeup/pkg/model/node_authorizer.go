@@ -17,11 +17,10 @@ limitations under the License.
 package model
 
 import (
-	"bytes"
 	"fmt"
 	"path"
 	"path/filepath"
-	"text/template"
+	"strings"
 	"time"
 
 	"k8s.io/kops/pkg/systemd"
@@ -38,34 +37,10 @@ type NodeAuthorizationBuilder struct {
 
 var _ fi.ModelBuilder = &NodeAuthorizationBuilder{}
 
-// nodeAuthorizationServiceTemplate is the template used by the node client
-var nodeAuthorizationServiceTemplate = `
-Type=oneshot
-EnvironmentFile=/etc/environment
-{{- if .client_file }}
-ExecStartPre=/usr/bin/bash -c 'while [ ! -f {{ .client_cert }} ]; do sleep 5; done; sleep 5'
-{{- end }}
-ExecStartPre=/usr/bin/mkdir -p /var/lib/kubelet
-ExecStart=/usr/bin/docker run --rm --net=host \
-	--volume={{ .kube_config_dir }}:/var/lib/kubelet \
-	--volume={{ .tls_path }}:/config:ro \
-	{{ .image }} \
-	client \
-	--authorizer={{ .authorizer }} \
-	--interval={{ .interval }} \
-	--kubeapi-url={{ .kubeapi_url }} \
-	--kubeconfig={{ .kube_config }} \
-	--node-url={{ .node_url }} \
-	--timeout={{ .timeout }} \
-	--tls-ca=/config/ca.pem \
-	--tls-cert=/config/tls.pem \
-	--tls-private-key=/config/tls-key.pem
-`
-
 // Build is responsible for handling the node authorization client
 func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 	// @check if we are a master and download the certificates for the node-authozier
-	if b.UseNodeAuthorizer() && b.IsMaster {
+	if b.UseBootstrapTokens() && b.IsMaster {
 		name := "node-authorizer"
 		// creates /src/kubernetes/node-authorizer/{tls,tls-key}.pem
 		if err := b.BuildCertificatePairTask(c, name, name, "tls"); err != nil {
@@ -78,7 +53,6 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	authorizerDir := "node-authorizer"
-
 	// @check if bootstrap tokens are enabled and download client certificates for nodes
 	if b.UseBootstrapTokens() && !b.IsMaster {
 		if err := b.BuildCertificatePairTask(c, "node-authorizer-client", authorizerDir, "tls"); err != nil {
@@ -106,32 +80,37 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 		man.Set("Unit", "After", "docker.service")
 		man.Set("Unit", "Before", "kubelet.service")
 
-		tp, err := template.New("service").Parse(nodeAuthorizationServiceTemplate)
-		if err != nil {
-			return fmt.Errorf("failed to create node authorization client template: %s", err)
-		}
+		clientCert := filepath.Join(b.PathSrvKubernetes(), authorizerDir, "tls.pem")
+		man.Set("Service", "Type", "oneshot")
+		man.Set("Service", "EnvironmentFile", "/etc/environment")
+		man.Set("Service", "ExecStartPre", "/usr/bin/mkdir -p /var/lib/kubelet")
+		man.Set("Service", "ExecStartPre", "/usr/bin/docker pull "+na.Image)
+		man.Set("Service", "ExecStartPre", "/usr/bin/bash -c 'while [ ! -f "+clientCert+" ]; do sleep 5; done; sleep 5'")
 
 		interval := 10 * time.Second
 		timeout := 5 * time.Minute
 
-		model := map[string]string{
-			"authorizer":      na.Authorizer,
-			"client_cert":     filepath.Join(b.PathSrvKubernetes(), authorizerDir, "tls.pem"),
-			"image":           na.Image,
-			"interval":        interval.String(),
-			"kube_config":     b.KubeletBootstrapKubeconfig(),
-			"kube_config_dir": path.Dir(b.KubeletBootstrapKubeconfig()),
-			"kubeapi_url":     fmt.Sprintf("https://%s", b.Cluster.Spec.MasterInternalName),
-			"node_url":        na.NodeURL,
-			"timeout":         timeout.String(),
-			"tls_path":        filepath.Join(b.PathSrvKubernetes(), authorizerDir),
+		// @node: using a string array just to make it easier to read
+		dockerCmd := []string{
+			"/usr/bin/docker",
+			"run",
+			"--rm",
+			"--net=host",
+			"--volume=" + path.Dir(b.KubeletBootstrapKubeconfig()) + ":/var/lib/kubelet",
+			"--volume=" + filepath.Join(b.PathSrvKubernetes(), authorizerDir) + ":/config:ro",
+			na.Image,
+			"client",
+			"--authorizer=" + na.Authorizer,
+			"--interval=" + interval.String(),
+			"--kubeapi-url=" + fmt.Sprintf("https://%s", b.Cluster.Spec.MasterInternalName),
+			"--kubeconfig=" + b.KubeletBootstrapKubeconfig(),
+			"--node-url=" + na.NodeURL,
+			"--timeout=" + timeout.String(),
+			"--tls-client-ca=/config/ca.pem",
+			"--tls-cert=/config/tls.pem",
+			"--tls-private-key=/config/tls-key.pem",
 		}
-
-		content := &bytes.Buffer{}
-		if err := tp.ExecuteTemplate(content, "service", model); err != nil {
-			return fmt.Errorf("failed to render node authorization client template: %s", err)
-		}
-		man.SetSection("Service", content.String())
+		man.Set("Service", "ExecStart", strings.Join(dockerCmd, " "))
 
 		// @step: add the service task
 		c.AddTask(&nodetasks.Service{
