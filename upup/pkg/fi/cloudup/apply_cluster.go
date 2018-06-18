@@ -22,7 +22,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"time"
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
@@ -71,8 +70,7 @@ import (
 )
 
 const (
-	DefaultMaxTaskDuration = 10 * time.Minute
-	starline               = "*********************************************************************************\n"
+	starline = "*********************************************************************************\n"
 )
 
 var (
@@ -124,7 +122,8 @@ type ApplyClusterCmd struct {
 	// DryRun is true if this is only a dry run
 	DryRun bool
 
-	MaxTaskDuration time.Duration
+	// RunTasksOptions defines parameters for task execution, e.g. retry interval
+	RunTasksOptions *fi.RunTasksOptions
 
 	// The channel we are using
 	channel *kops.Channel
@@ -142,10 +141,6 @@ type ApplyClusterCmd struct {
 }
 
 func (c *ApplyClusterCmd) Run() error {
-	if c.MaxTaskDuration == 0 {
-		c.MaxTaskDuration = DefaultMaxTaskDuration
-	}
-
 	if c.InstanceGroups == nil {
 		list, err := c.Clientset.InstanceGroupsFor(c.Cluster).List(metav1.ListOptions{})
 		if err != nil {
@@ -808,7 +803,14 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 	defer context.Close()
 
-	err = context.RunTasks(c.MaxTaskDuration)
+	var options fi.RunTasksOptions
+	if c.RunTasksOptions != nil {
+		options = *c.RunTasksOptions
+	} else {
+		options.InitDefaults()
+	}
+
+	err = context.RunTasks(options)
 	if err != nil {
 		return fmt.Errorf("error running tasks: %v", err)
 	}

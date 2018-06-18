@@ -39,8 +39,6 @@ import (
 // keep, we delete older ones
 var defaultRetainLaunchConfigurationCount = 3
 
-// TODO: Release note , including featureflag
-
 // RetainLaunchConfigurationCount returns the number of launch configurations to keep
 func RetainLaunchConfigurationCount() int {
 	if featureflag.KeepLaunchConfigurations.Enabled() {

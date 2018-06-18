@@ -19,7 +19,6 @@ package awstasks
 import (
 	"strconv"
 	"testing"
-
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -77,10 +76,16 @@ func TestLaunchConfigurationGarbageCollection(t *testing.T) {
 				t.Fatalf("error building context: %v", err)
 			}
 
-			time.Sleep(time.Second)
-			// TODO: Remove sleep, find out why we don't retry
-
-			if err := context.RunTasks(defaultDeadline); err != nil {
+			// We use a longer deadline because we know we often need to
+			// retry here, because we create different versions of
+			// launchconfigurations using the timestamp, but only to
+			// per-second granularity.  This normally works out because we
+			// retry for O(minutes), so after a few retries the clock has
+			// advanced.  But if we use too short a deadline in our tests we
+			// don't get this behaviour.
+			options := testRunTasksOptions
+			options.MaxTaskDuration = 5 * time.Second
+			if err := context.RunTasks(options); err != nil {
 				t.Fatalf("unexpected error during Run: %v", err)
 			}
 
