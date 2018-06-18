@@ -235,6 +235,11 @@ func (c *RollingUpdateCluster) DetermineGroupStratergy(group *cloudinstances.Clo
 	// @check if rollout options overrides the ig strategy
 	if c.Strategy != "" {
 		strategy.Name = c.Strategy
+		switch strategy.Name {
+		case api.DefaultRollout, api.ScaleUpRollout, api.DuplicateRollout:
+		default:
+			return fmt.Errorf("unknown stratergy: %s", strategy.Name)
+		}
 		c.Infof("using rollout strategy: %s on instancegroup: %s", strategy.Name, groupName)
 	}
 
