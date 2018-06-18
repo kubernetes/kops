@@ -25,6 +25,7 @@ import (
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
+	"github.com/denverdino/aliyungo/ess"
 	"github.com/denverdino/aliyungo/ram"
 	"github.com/denverdino/aliyungo/slb"
 
@@ -47,6 +48,7 @@ type ALICloud interface {
 	EcsClient() *ecs.Client
 	SlbClient() *slb.Client
 	RamClient() *ram.RamClient
+	EssClient() *ess.Client
 
 	Region() string
 	AddClusterTags(tags map[string]string)
@@ -60,6 +62,7 @@ type aliCloudImplementation struct {
 	ecsClient *ecs.Client
 	slbClient *slb.Client
 	ramClient *ram.RamClient
+	essClient *ess.Client
 
 	region string
 	tags   map[string]string
@@ -87,6 +90,7 @@ func NewALICloud(region string, tags map[string]string) (ALICloud, error) {
 	c.slbClient = slb.NewClient(accessKeyId, accessKeySecret)
 	ramclient := ram.NewClient(accessKeyId, accessKeySecret)
 	c.ramClient = ramclient.(*ram.RamClient)
+	c.essClient = ess.NewClient(accessKeyId, accessKeySecret)
 
 	c.tags = tags
 
@@ -103,6 +107,10 @@ func (c *aliCloudImplementation) SlbClient() *slb.Client {
 
 func (c *aliCloudImplementation) RamClient() *ram.RamClient {
 	return c.ramClient
+}
+
+func (c *aliCloudImplementation) EssClient() *ess.Client {
+	return c.essClient
 }
 
 func (c *aliCloudImplementation) Region() string {
