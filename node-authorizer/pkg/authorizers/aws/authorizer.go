@@ -56,16 +56,9 @@ type awsNodeAuthorizer struct {
 
 // NewAuthorizer creates and returns a aws node authorizer
 func NewAuthorizer(config *server.Config) (server.Authorizer, error) {
-	// @step: load and parse certificates
-	for i := range awsCertificates {
-		block, _ := pem.Decode([]byte(awsCertificates[i]))
-
-		c, err := x509.ParseCertificate(block.Bytes)
-		if err != nil {
-			return nil, err
-		}
-
-		publicCertificates = append(publicCertificates, c)
+	// @step: load the public certificates
+	if err := GetPublicCertificates(); err != nil {
+		return nil, err
 	}
 
 	// @step: get the identity document for the instance we are running
@@ -294,4 +287,20 @@ func getInstance(client ec2iface.EC2API, instanceID string) (*ec2.Instance, erro
 	}
 
 	return instance, nil
+}
+
+// GetPublicCertificates loads the certificates
+func GetPublicCertificates() error {
+	for i := range awsCertificates {
+		block, _ := pem.Decode([]byte(awsCertificates[i]))
+
+		c, err := x509.ParseCertificate(block.Bytes)
+		if err != nil {
+			return err
+		}
+
+		publicCertificates = append(publicCertificates, c)
+	}
+
+	return nil
 }

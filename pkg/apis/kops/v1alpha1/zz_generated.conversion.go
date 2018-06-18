@@ -2986,8 +2986,8 @@ func Convert_kops_NodeAuthorizationSpec_To_v1alpha1_NodeAuthorizationSpec(in *ko
 
 func autoConvert_v1alpha1_NodeAuthorizerSpec_To_kops_NodeAuthorizerSpec(in *NodeAuthorizerSpec, out *kops.NodeAuthorizerSpec, s conversion.Scope) error {
 	out.Authorizer = in.Authorizer
-	out.DisableAddressCheck = in.DisableAddressCheck
-	out.DisableRegistrationCheck = in.DisableRegistrationCheck
+	out.EnableAddressCheck = in.EnableAddressCheck
+	out.EnableRegistrationCheck = in.EnableRegistrationCheck
 	out.Image = in.Image
 	out.NodeURL = in.NodeURL
 	out.Port = in.Port
@@ -3003,8 +3003,8 @@ func Convert_v1alpha1_NodeAuthorizerSpec_To_kops_NodeAuthorizerSpec(in *NodeAuth
 
 func autoConvert_kops_NodeAuthorizerSpec_To_v1alpha1_NodeAuthorizerSpec(in *kops.NodeAuthorizerSpec, out *NodeAuthorizerSpec, s conversion.Scope) error {
 	out.Authorizer = in.Authorizer
-	out.DisableAddressCheck = in.DisableAddressCheck
-	out.DisableRegistrationCheck = in.DisableRegistrationCheck
+	out.EnableAddressCheck = in.EnableAddressCheck
+	out.EnableRegistrationCheck = in.EnableRegistrationCheck
 	out.Image = in.Image
 	out.NodeURL = in.NodeURL
 	out.Port = in.Port

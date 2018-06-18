@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -80,7 +81,12 @@ func (b *OptionsBuilder) BuildOptions(o interface{}) error {
 			if na.NodeAuthorizer.TokenTTL == nil {
 				na.NodeAuthorizer.TokenTTL = DefaultTokenTTL
 			}
-
+			if na.NodeAuthorizer.EnableAddressCheck == nil {
+				na.NodeAuthorizer.EnableAddressCheck = fi.Bool(true)
+			}
+			if na.NodeAuthorizer.EnableRegistrationCheck == nil {
+				na.NodeAuthorizer.EnableRegistrationCheck = fi.Bool(true)
+			}
 			// @check if the node url is set, @TODO this should probably be set in a global somewhere
 			if na.NodeAuthorizer.NodeURL == "" {
 				na.NodeAuthorizer.NodeURL = fmt.Sprintf("https://node-authorizer-internal.%s:%d", b.Context.ClusterName, na.NodeAuthorizer.Port)

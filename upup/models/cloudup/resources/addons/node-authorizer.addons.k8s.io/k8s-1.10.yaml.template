@@ -154,11 +154,11 @@ spec:
           - --authorization-timeout={{ $na.Timeout.Duration }}
           - --authorizer={{ $na.Authorizer }}
           - --cluster-name={{ ClusterName }}
-          - --enable-address-check={{ or $na.DisableAddressCheck true }}
-          - --enable-registration-check={{ or $na.DisableRegistrationCheck true }}
+          - --enable-address-check={{ $na.EnableAddressCheck }}
+          - --enable-registration-check={{ $na.EnableRegistrationCheck }}
           - --listen=0.0.0.0:{{ $na.Port }}
-          - --tls-ca=/config/ca.pem
           - --tls-cert=/config/tls.pem
+          - --tls-client-ca=/config/ca.pem
           - --tls-private-key=/config/tls-key.pem
           - --token-ttl={{ $na.TokenTTL.Duration }}
           resources:
