@@ -31,9 +31,7 @@ func Retry(ctx context.Context, interval, timeout time.Duration, fn func() error
 	to := time.NewTimer(timeout)
 	defer to.Stop()
 
-	// @step: give it a go once before jumping in
 	for {
-		// @step: call the function
 		if err = fn(); err == nil {
 			return nil
 		}

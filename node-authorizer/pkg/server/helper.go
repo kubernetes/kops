@@ -19,7 +19,7 @@ package server
 import (
 	"context"
 	"fmt"
-	"strings"
+	"net"
 	"time"
 
 	"k8s.io/kops/node-authorizer/pkg/utils"
@@ -29,12 +29,10 @@ import (
 )
 
 // getClientAddress returns the client address
-func getClientAddress(address string) string {
-	if strings.Contains(address, ":") {
-		return address[:strings.Index(address, ":")]
-	}
+func getClientAddress(address string) (string, error) {
+	host, _, err := net.SplitHostPort(address)
 
-	return address
+	return host, err
 }
 
 // isNodeRegistered checks if the node is already registered with kubernetes

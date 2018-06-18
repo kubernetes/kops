@@ -60,6 +60,8 @@ const (
 type Config struct {
 	// AuthorizationTimeout is the max duration for a authorization
 	AuthorizationTimeout time.Duration
+	// ClusterTag is the cloud tag key used to identity the cluster
+	ClusterTag string
 	// EnableAddressCheck indicates we should validate the request against the expected address
 	EnableAddressCheck bool
 	// EnableRegistration indicates nodes can register multiple times
@@ -76,10 +78,10 @@ type Config struct {
 	Port int
 	// TokenDuration is the expiration of a bootstrap token
 	TokenDuration time.Duration
-	// TLSCaPath is the path to a certificate authority
-	TLSCaPath string
 	// TLSCertPath is the path to the server TLS certificate
 	TLSCertPath string
+	// TLSClientCAPath is the path to a certificate authority
+	TLSClientCAPath string
 	// TLSPrivateKeyPath is the path to the private key
 	TLSPrivateKeyPath string
 }

@@ -47,9 +47,9 @@ func addServerCommand() cli.Command {
 				Value:  ":10443",
 			},
 			cli.StringFlag{
-				Name:   "tls-ca",
-				Usage:  "file containing the certiicate authority, required for mutual tls `PATH`",
-				EnvVar: "TLS_CA",
+				Name:   "tls-client-ca",
+				Usage:  "file containing the client certifcate authority, required for mutual tls `PATH`",
+				EnvVar: "TLS_CLIENT_CA",
 			},
 			cli.StringFlag{
 				Name:   "tls-cert",
@@ -67,6 +67,12 @@ func addServerCommand() cli.Command {
 				Name:   "cluster-name",
 				Usage:  "name of the kubernetes cluster we are provisioning `NAME`",
 				EnvVar: "CLUSTER_NAME",
+			},
+			cli.StringFlag{
+				Name:   "cluster-tag",
+				Usage:  "name of the cloud tag used to identify the cluster name `NAME`",
+				EnvVar: "CLUSTER_TAG",
+				Value:  "KubernetesCluster",
 			},
 			cli.BoolFlag{
 				Name:   "enable-registration-check",
@@ -110,11 +116,12 @@ func actionServerCommand(ctx *cli.Context) error {
 		AuthorizationTimeout:    ctx.Duration("authorization-timeout"),
 		ClientCommonName:        ctx.String("client-common-name"),
 		ClusterName:             ctx.String("cluster-name"),
+		ClusterTag:              ctx.String("cluster-tag"),
 		EnableAddressCheck:      ctx.Bool("enable-address-check"),
 		EnableRegistrationCheck: ctx.Bool("enable-registration-check"),
 		Listen:                  ctx.String("listen"),
-		TLSCaPath:               ctx.String("tls-ca"),
 		TLSCertPath:             ctx.String("tls-cert"),
+		TLSClientCAPath:         ctx.String("tls-client-ca"),
 		TLSPrivateKeyPath:       ctx.String("tls-private-key"),
 		TokenDuration:           ctx.Duration("token-ttl"),
 	}

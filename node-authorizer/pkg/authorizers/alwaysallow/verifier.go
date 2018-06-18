@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"k8s.io/kops/node-authorizer/pkg/server"
+	"k8s.io/kops/node-authorizer/pkg/utils"
 )
 
 // alwaysallowVerifier implements the verifier
@@ -27,6 +28,8 @@ type alwaysallowVerifier struct{}
 
 // NewVerifier creates and returns a new Verifier
 func NewVerifier() (server.Verifier, error) {
+	utils.Logger.Warn("note the alwaysallow authorizer performs no authoritive checks and should only be used in test environments")
+
 	return &alwaysallowVerifier{}, nil
 }
 

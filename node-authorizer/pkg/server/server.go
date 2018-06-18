@@ -91,10 +91,10 @@ func (n *NodeAuthorizer) Run() error {
 	}
 
 	// @step: are we using mutual tls?
-	if n.config.TLSCaPath != "" {
+	if n.config.TLSClientCAPath != "" {
 		// a client certificate is not required, but if given we need to verify it
 		server.TLSConfig.ClientAuth = tls.VerifyClientCertIfGiven
-		caCert, err := ioutil.ReadFile(n.config.TLSCaPath)
+		caCert, err := ioutil.ReadFile(n.config.TLSClientCAPath)
 		if err != nil {
 			return err
 		}
@@ -128,5 +128,5 @@ func (n *NodeAuthorizer) Run() error {
 
 // useMutualTLS checks if we are using mutual tls
 func (n *NodeAuthorizer) useMutualTLS() bool {
-	return n.config.TLSCaPath != ""
+	return n.config.TLSClientCAPath != ""
 }

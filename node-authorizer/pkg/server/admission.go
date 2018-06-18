@@ -44,7 +44,7 @@ func (n *NodeAuthorizer) authorizeNodeRequest(ctx context.Context, request *Node
 				return err
 			}
 			if request.IsAllowed() {
-				return n.salelyProvisionBootstrapToken(ctx, request)
+				return n.safelyProvisionBootstrapToken(ctx, request)
 			}
 
 			return nil
@@ -114,8 +114,8 @@ func (n *NodeAuthorizer) safelyAuthorizeNode(ctx context.Context, request *NodeR
 	return nil
 }
 
-// salelyProvisionBootstrapToken is responsible for generating a bootstrap token for us
-func (n *NodeAuthorizer) salelyProvisionBootstrapToken(ctx context.Context, request *NodeRegistration) error {
+// safelyProvisionBootstrapToken is responsible for generating a bootstrap token for us
+func (n *NodeAuthorizer) safelyProvisionBootstrapToken(ctx context.Context, request *NodeRegistration) error {
 	maxInterval := 500 * time.Millisecond
 	maxTime := 10 * time.Second
 	usages := []string{"authentication", "signing"}

@@ -32,10 +32,10 @@ type Config struct {
 	NodeURL string
 	// Timeout is the time will are willing to wait
 	Timeout time.Duration
-	// TLSCaPath is the path to a certificate authority
-	TLSCaPath string
 	// TLSCertPath is the path to the server TLS certificate
 	TLSCertPath string
+	// TLSClientCAPath is the path to a certificate authority
+	TLSClientCAPath string
 	// TLSPrivateKeyPath is the path to the private key
 	TLSPrivateKeyPath string
 	// Verbose indicate verbose logging

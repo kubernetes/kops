@@ -39,13 +39,10 @@ import (
 	"go.uber.org/zap"
 )
 
-const (
-	// the default tag used to indicates a kubernetes cluster name
-	kubernetesClusterTag = "KubernetesCluster"
+var (
+	// a collection of aws public signing certificates
+	publicCertificates []*x509.Certificate
 )
-
-// a collection of aws public signing certificates
-var publicCertificates []*x509.Certificate
 
 // awsNodeAuthorizer is the implementation for a node authorizer
 type awsNodeAuthorizer struct {
@@ -57,21 +54,20 @@ type awsNodeAuthorizer struct {
 	vpcID string
 }
 
-func init() {
+// NewAuthorizer creates and returns a aws node authorizer
+func NewAuthorizer(config *server.Config) (server.Authorizer, error) {
+	// @step: load and parse certificates
 	for i := range awsCertificates {
 		block, _ := pem.Decode([]byte(awsCertificates[i]))
 
 		c, err := x509.ParseCertificate(block.Bytes)
 		if err != nil {
-			panic("failed to parse the embedded aws certificate")
+			return nil, err
 		}
 
 		publicCertificates = append(publicCertificates, c)
 	}
-}
 
-// NewAuthorizer creates and returns a aws node authorizer
-func NewAuthorizer(config *server.Config) (server.Authorizer, error) {
 	// @step: get the identity document for the instance we are running
 	document, err := getInstanceIdentityDocument()
 	if err != nil {
@@ -153,11 +149,11 @@ func (a *awsNodeAuthorizer) validateNodeInstance(ctx context.Context, doc *ec2me
 
 	// @check the instance is running in our vpc
 	if aws.StringValue(instance.VpcId) != a.vpcID {
-		return "instance not running in vpc", nil
+		return "instance is not running in our VPC", nil
 	}
 
 	// @check the instance is tagged with our kubernetes cluster id
-	if !hasInstanceTags(kubernetesClusterTag, a.config.ClusterName, instance.Tags) {
+	if !hasInstanceTags(a.config.ClusterTag, a.config.ClusterName, instance.Tags) {
 		return "missing cluster tag", nil
 	}
 
@@ -188,7 +184,11 @@ func (a *awsNodeAuthorizer) validateIdentityDocument(_ context.Context, signed [
 		}
 
 		parsed.Certificates = []*x509.Certificate{x}
-		if err := parsed.Verify(); err == nil {
+		if err := parsed.Verify(); err != nil {
+			utils.Logger.Warn("identity document not validated by certificates",
+				zap.String("common-name", x.Subject.CommonName),
+				zap.Error(err))
+		} else {
 			return "", json.NewDecoder(bytes.NewReader(parsed.Content)).Decode(document)
 		}
 	}
