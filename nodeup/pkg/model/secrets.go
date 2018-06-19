@@ -45,27 +45,9 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("KeyStore not set")
 	}
 
-	// retrieve the platform ca
-	{
-		ca, err := b.KeyStore.FindCertificatePool(fi.CertificateId_CA)
-		if err != nil {
-			return err
-		}
-		if ca == nil {
-			return fmt.Errorf("certificate %q not found", fi.CertificateId_CA)
-		}
-
-		serialized, err := ca.Primary.AsString()
-		if err != nil {
-			return err
-		}
-
-		t := &nodetasks.File{
-			Path:     filepath.Join(b.PathSrvKubernetes(), "ca.crt"),
-			Contents: fi.NewStringResource(serialized),
-			Type:     nodetasks.FileType_File,
-		}
-		c.AddTask(t)
+	// @step: retrieve the platform ca
+	if err := b.BuildCertificateTask(c, fi.CertificateId_CA, "ca.crt"); err != nil {
+		return err
 	}
 
 	if b.SecretStore != nil {
@@ -89,105 +71,36 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		cert, err := b.KeyStore.FindCert("master")
-		if err != nil {
+		name := "master"
+		if err := b.BuildCertificateTask(c, name, "server.cert"); err != nil {
 			return err
 		}
-		if cert == nil {
-			return fmt.Errorf("certificate %q not found", "master")
-		}
-
-		serialized, err := cert.AsString()
-		if err != nil {
+		if err := b.BuildPrivateKeyTask(c, name, "server.key"); err != nil {
 			return err
 		}
-
-		t := &nodetasks.File{
-			Path:     filepath.Join(b.PathSrvKubernetes(), "server.cert"),
-			Contents: fi.NewStringResource(serialized),
-			Type:     nodetasks.FileType_File,
-		}
-		c.AddTask(t)
-	}
-
-	{
-		k, err := b.KeyStore.FindPrivateKey("master")
-		if err != nil {
-			return err
-		}
-		if k == nil {
-			return fmt.Errorf("private key %q not found", "master")
-		}
-		serialized, err := k.AsString()
-		if err != nil {
-			return err
-		}
-
-		t := &nodetasks.File{
-			Path:     filepath.Join(b.PathSrvKubernetes(), "server.key"),
-			Contents: fi.NewStringResource(serialized),
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0600"),
-		}
-		c.AddTask(t)
 	}
 
 	if b.IsKubernetesGTE("1.7") {
 		// TODO: Remove - we use the apiserver-aggregator keypair instead (which is signed by a different CA)
-		cert, err := b.KeyStore.FindCert("apiserver-proxy-client")
-		if err != nil {
-			return fmt.Errorf("apiserver proxy client cert lookup failed: %v", err.Error())
-		}
-		if cert == nil {
-			return fmt.Errorf("certificate %q not found", "apiserver-proxy-client")
-		}
-
-		serialized, err := cert.AsString()
-		if err != nil {
+		if err := b.BuildCertificateTask(c, "apiserver-proxy-client", "proxy-client.cert"); err != nil {
 			return err
 		}
-
-		t := &nodetasks.File{
-			Path:     filepath.Join(b.PathSrvKubernetes(), "proxy-client.cert"),
-			Contents: fi.NewStringResource(serialized),
-			Type:     nodetasks.FileType_File,
-		}
-		c.AddTask(t)
-
-		key, err := b.KeyStore.FindPrivateKey("apiserver-proxy-client")
-		if err != nil {
-			return fmt.Errorf("apiserver proxy client private key lookup failed: %v", err.Error())
-		}
-		if key == nil {
-			return fmt.Errorf("private key %q not found", "apiserver-proxy-client")
-		}
-
-		serialized, err = key.AsString()
-		if err != nil {
-			return err
-		}
-
-		t = &nodetasks.File{
-			Path:     filepath.Join(b.PathSrvKubernetes(), "proxy-client.key"),
-			Contents: fi.NewStringResource(serialized),
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0600"),
-		}
-		c.AddTask(t)
-	}
-
-	if b.IsKubernetesGTE("1.7") {
-		if err := b.writeCertificate(c, "apiserver-aggregator"); err != nil {
-			return err
-		}
-
-		if err := b.writePrivateKey(c, "apiserver-aggregator"); err != nil {
+		if err := b.BuildPrivateKeyTask(c, "apiserver-proxy-client", "proxy-client.key"); err != nil {
 			return err
 		}
 	}
 
 	if b.IsKubernetesGTE("1.7") {
-		if err := b.writeCertificate(c, "apiserver-aggregator-ca"); err != nil {
+		if err := b.BuildCertificateTask(c, "apiserver-aggregator", "apiserver-aggregator.cert"); err != nil {
+			return err
+		}
+		if err := b.BuildPrivateKeyTask(c, "apiserver-aggregator", "apiserver-aggregator.key"); err != nil {
+			return err
+		}
+	}
+
+	if b.IsKubernetesGTE("1.7") {
+		if err := b.BuildCertificateTask(c, "apiserver-aggregator-ca", "apiserver-aggregator-ca.cert"); err != nil {
 			return err
 		}
 	}
@@ -233,60 +146,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 			Contents: fi.NewStringResource(csv),
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0600"),
-		}
-		c.AddTask(t)
-	}
-
-	return nil
-}
-
-// writeCertificate writes the specified certificate to the local filesystem, under PathSrvKubernetes()
-func (b *SecretBuilder) writeCertificate(c *fi.ModelBuilderContext, id string) error {
-	cert, err := b.KeyStore.FindCert(id)
-	if err != nil {
-		return fmt.Errorf("cert lookup failed for %q: %v", id, err)
-	}
-
-	if cert != nil {
-		serialized, err := cert.AsString()
-		if err != nil {
-			return err
-		}
-
-		t := &nodetasks.File{
-			Path:     filepath.Join(b.PathSrvKubernetes(), id+".cert"),
-			Contents: fi.NewStringResource(serialized),
-			Type:     nodetasks.FileType_File,
-		}
-		c.AddTask(t)
-	} else {
-		// TODO: Make this an error?
-		glog.Warningf("certificate %q not found", id)
-	}
-
-	return nil
-}
-
-// writePrivateKey writes the specified private key to the local filesystem, under PathSrvKubernetes()
-func (b *SecretBuilder) writePrivateKey(c *fi.ModelBuilderContext, id string) error {
-	key, err := b.KeyStore.FindPrivateKey(id)
-	if err != nil {
-		return fmt.Errorf("private key lookup failed for %q: %v", id, err)
-	}
-	if key == nil {
-		return fmt.Errorf("private key %q not found", id)
-	}
-
-	serialized, err := key.AsString()
-	if err != nil {
-		return err
-	}
-
-	t := &nodetasks.File{
-		Path:     filepath.Join(b.PathSrvKubernetes(), id+".key"),
-		Contents: fi.NewStringResource(serialized),
-		Type:     nodetasks.FileType_File,
-		Mode:     s("0600"),
+		})
 	}
 	c.AddTask(t)
 
