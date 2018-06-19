@@ -186,7 +186,7 @@ type FileAssetSpec struct {
 	IsBase64 bool `json:"isBase64,omitempty"`
 }
 
-// Assets defined the privately hosted assets
+// Assets defines the privately hosted assets
 type Assets struct {
 	// ContainerRegistry is a url for to a docker registry
 	ContainerRegistry *string `json:"containerRegistry,omitempty"`
