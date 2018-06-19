@@ -22,6 +22,8 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/k8scodecs"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/exec"
@@ -30,8 +32,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/kops/pkg/k8scodecs"
-	"k8s.io/kops/pkg/kubemanifest"
 )
 
 // KubeControllerManagerBuilder install kube-controller-manager (just the manifest at the moment)
@@ -66,12 +66,11 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("error marshalling pod to yaml: %v", err)
 		}
 
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path:     "/etc/kubernetes/manifests/kube-controller-manager.manifest",
 			Contents: fi.NewBytesResource(manifest),
 			Type:     nodetasks.FileType_File,
-		}
-		c.AddTask(t)
+		})
 	}
 
 	{
@@ -102,12 +101,15 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
+// useCertificateSigner checks to see if we need to use the certificate signer for the controller manager
 func (b *KubeControllerManagerBuilder) useCertificateSigner() bool {
 	// For now, we enable this on 1.6 and later
 	return b.IsKubernetesGTE("1.6")
 }
 
+// buildPod is responsible for building the kubernetes manifest for the controller-manager
 func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
+
 	kcm := b.Cluster.Spec.KubeControllerManager
 	kcm.RootCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 	kcm.ServiceAccountPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
