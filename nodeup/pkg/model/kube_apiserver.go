@@ -94,10 +94,10 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	// @check if we are using secure client certificates for kubelet and grab the certificates
 	if b.UseSecureKubelet() {
 		name := "kubelet-api"
-		if err := buildCertificateRequest(c, b.NodeupModelContext, name, ""); err != nil {
+		if err := b.BuildCertificateTask(c, name, name+".pem"); err != nil {
 			return err
 		}
-		if err := buildPrivateKeyRequest(c, b.NodeupModelContext, name, ""); err != nil {
+		if err := b.BuildPrivateKeyTask(c, name, name+"-key.pem"); err != nil {
 			return err
 		}
 	}
