@@ -50,26 +50,9 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 	// If we're using the CertificateSigner, include the CA Key
 	// @TODO: use a per-machine key?  use KMS?
 	if b.useCertificateSigner() {
-		ca, err := b.KeyStore.FindPrivateKey(fi.CertificateId_CA)
-		if err != nil {
+		if err := b.BuildPrivateKeyTask(c, fi.CertificateId_CA, "ca.key"); err != nil {
 			return err
 		}
-
-		if ca == nil {
-			return fmt.Errorf("CA private key %q not found", fi.CertificateId_CA)
-		}
-
-		serialized, err := ca.AsString()
-		if err != nil {
-			return err
-		}
-
-		c.AddTask(&nodetasks.File{
-			Path:     filepath.Join(b.PathSrvKubernetes(), "ca.key"),
-			Contents: fi.NewStringResource(serialized),
-			Mode:     fi.String("600"),
-			Type:     nodetasks.FileType_File,
-		})
 	}
 
 	{
