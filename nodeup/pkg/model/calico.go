@@ -17,7 +17,7 @@ limitations under the License.
 package model
 
 import (
-	"fmt"
+	"path/filepath"
 
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -35,9 +35,9 @@ func (b *CalicoBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.UseEtcdTLS() {
 		name := "calico-client"
 		dirname := "calico"
-		ca := fmt.Sprintf("%s/ca.pem", dirname)
-		certificate := fmt.Sprintf("%s/%s.pem", dirname, name)
-		key := fmt.Sprintf("%s/%s-key.pem", dirname, name)
+		ca := filepath.Join(dirname, "ca.pem")
+		certificate := filepath.Join(dirname, name+".pem")
+		key := filepath.Join(dirname, name+"-key.pem")
 
 		if err := b.BuildCertificateTask(c, name, certificate); err != nil {
 			return err
