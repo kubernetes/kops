@@ -19,13 +19,15 @@ package nodeauthorizer
 import (
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // OptionsBuilder fills in the default options for the node-authorizer
@@ -55,7 +57,6 @@ func (b *OptionsBuilder) BuildOptions(o interface{}) error {
 		na := cs.NodeAuthorization
 		// NodeAuthorizerSpec
 		if na.NodeAuthorizer != nil {
-			// @check the authorizer method is set
 			if na.NodeAuthorizer.Authorizer == "" {
 				switch kops.CloudProviderID(cs.CloudProvider) {
 				case kops.CloudProviderAWS:
@@ -64,14 +65,9 @@ func (b *OptionsBuilder) BuildOptions(o interface{}) error {
 					na.NodeAuthorizer.Authorizer = "alwaysallow"
 				}
 			}
-
-			// @check the image is set
 			if na.NodeAuthorizer.Image == "" {
-				// @TODO !!!!NEEDS TO BE CHANGED!!!!
-				na.NodeAuthorizer.Image = "quay.io/gambol99/node-authorizer:latest"
+				na.NodeAuthorizer.Image = GetNodeAuthorizerImage()
 			}
-
-			// @check the port, authorization time and tokenttl
 			if na.NodeAuthorizer.Port == 0 {
 				na.NodeAuthorizer.Port = DefaultPort
 			}
@@ -87,7 +83,6 @@ func (b *OptionsBuilder) BuildOptions(o interface{}) error {
 			if na.NodeAuthorizer.EnableRegistrationCheck == nil {
 				na.NodeAuthorizer.EnableRegistrationCheck = fi.Bool(true)
 			}
-			// @check if the node url is set, @TODO this should probably be set in a global somewhere
 			if na.NodeAuthorizer.NodeURL == "" {
 				na.NodeAuthorizer.NodeURL = fmt.Sprintf("https://node-authorizer-internal.%s:%d", b.Context.ClusterName, na.NodeAuthorizer.Port)
 			}
@@ -95,4 +90,13 @@ func (b *OptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	return nil
+}
+
+// GetNodeAuthorizerImage returns the image to use for the node-authorizer
+func GetNodeAuthorizerImage() string {
+	if v := os.Getenv("NODE_AUTHORIZER_IMAGE"); v != "" {
+		return v
+	}
+
+	return "quay.io/gambol99/node-authorizer:v0.0.1@sha256:b3ac87042a61ad62f3b95236654b85016343eac18a2a6cc9020465bd095a31e1"
 }
