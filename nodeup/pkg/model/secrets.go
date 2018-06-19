@@ -21,7 +21,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/golang/glog"
 	"k8s.io/kops/pkg/tokens"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -55,13 +54,12 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		dockercfg, _ := b.SecretStore.Secret(key)
 		if dockercfg != nil {
 			contents := string(dockercfg.Data)
-			t := &nodetasks.File{
+			c.AddTask(&nodetasks.File{
 				Path:     filepath.Join("root", ".docker", "config.json"),
 				Contents: fi.NewStringResource(contents),
 				Type:     nodetasks.FileType_File,
 				Mode:     s("0600"),
-			}
-			c.AddTask(t)
+			})
 		}
 	}
 
@@ -141,14 +139,13 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		csv := strings.Join(lines, "\n")
 
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path:     filepath.Join(b.PathSrvKubernetes(), "known_tokens.csv"),
 			Contents: fi.NewStringResource(csv),
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0600"),
 		})
 	}
-	c.AddTask(t)
 
 	return nil
 }
