@@ -399,10 +399,38 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 		}
 	}
 
+	writeablePaths, err := WriteableVFSPaths(b.Cluster, b.Role)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, vfsPath := range writeablePaths {
+		if s3Path, ok := vfsPath.(*vfs.S3Path); ok {
+			iamS3Path := s3Path.Bucket() + "/" + s3Path.Key()
+			iamS3Path = strings.TrimSuffix(iamS3Path, "/")
+
+			p.Statement = append(p.Statement, &Statement{
+				Effect: StatementEffectAllow,
+				Action: stringorslice.Slice([]string{"s3:GetObject", "s3:DeleteObject", "s3:PutObject"}),
+				Resource: stringorslice.Of(
+					strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/*"}, ""),
+				),
+			})
+		} else {
+			glog.Warningf("unknown writeable path, can't apply IAM policy: %q", vfsPath)
+		}
+	}
+
+	return p, nil
+}
+
+func WriteableVFSPaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]vfs.Path, error) {
+	var paths []vfs.Path
+
 	// On the master, grant IAM permissions to the backup store, if it is configured
-	if b.Role == kops.InstanceGroupRoleMaster {
+	if role == kops.InstanceGroupRoleMaster {
 		backupStores := sets.NewString()
-		for _, c := range b.Cluster.Spec.EtcdClusters {
+		for _, c := range cluster.Spec.EtcdClusters {
 			if c.Backups == nil || c.Backups.BackupStore == "" || backupStores.Has(c.Backups.BackupStore) {
 				continue
 			}
@@ -413,26 +441,12 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 				return nil, fmt.Errorf("cannot parse VFS path %q: %v", backupStore, err)
 			}
 
-			if s3Path, ok := vfsPath.(*vfs.S3Path); ok {
-				iamS3Path := s3Path.Bucket() + "/" + s3Path.Key()
-				iamS3Path = strings.TrimSuffix(iamS3Path, "/")
-
-				p.Statement = append(p.Statement, &Statement{
-					Effect: StatementEffectAllow,
-					Action: stringorslice.Slice([]string{"s3:GetObject", "s3:DeleteObject", "s3:PutObject"}),
-					Resource: stringorslice.Of(
-						strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/*"}, ""),
-					),
-				})
-			} else {
-				glog.Warningf("unknown backup store, can't apply IAM policy: %q", backupStore)
-			}
+			paths = append(paths, vfsPath)
 
 			backupStores.Insert(backupStore)
 		}
 	}
-
-	return p, nil
+	return paths, nil
 }
 
 // PolicyResource defines the PolicyBuilder and DNSZone to use when building the

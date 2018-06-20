@@ -20,9 +20,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
@@ -87,7 +89,6 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					"compute-rw",
 					"monitoring",
 					"logging-write",
-					"storage-ro",
 				},
 
 				Metadata: map[string]*fi.ResourceHolder{
@@ -95,6 +96,17 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					//"config": resources/config.yaml $nodeset.Name
 					"cluster-name": fi.WrapResource(fi.NewStringResource(b.ClusterName())),
 				},
+			}
+
+			storagePaths, err := iam.WriteableVFSPaths(b.Cluster, ig.Spec.Role)
+			if err != nil {
+				return err
+			}
+			if len(storagePaths) == 0 {
+				t.Scopes = append(t.Scopes, "storage-ro")
+			} else {
+				glog.Warningf("enabling storage-rw for etcd backups")
+				t.Scopes = append(t.Scopes, "storage-rw")
 			}
 
 			if len(b.SSHPublicKeys) > 0 {
