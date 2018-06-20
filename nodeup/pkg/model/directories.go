@@ -29,19 +29,19 @@ type DirectoryBuilder struct {
 
 var _ fi.ModelBuilder = &DirectoryBuilder{}
 
-// Build is ensures an number of directories
+// Build is responsible for specific directories are created - os dependent
 func (b *DirectoryBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.Distribution == distros.DistributionContainerOS {
-		dir := "/home/kubernetes/bin"
+		dirname := "/home/kubernetes/bin"
 
 		c.AddTask(&nodetasks.File{
-			Path: dir,
+			Path: dirname,
 			Type: nodetasks.FileType_Directory,
 			Mode: s("0755"),
 
 			OnChangeExecute: [][]string{
-				{"/bin/mount", "--bind", "/home/kubernetes/bin", "/home/kubernetes/bin"},
-				{"/bin/mount", "-o", "remount,exec", "/home/kubernetes/bin"},
+				{"/bin/mount", "--bind", dirname, dirname},
+				{"/bin/mount", "-o", "remount,exec", dirname},
 			},
 		})
 	}

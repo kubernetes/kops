@@ -35,7 +35,7 @@ var _ fi.ModelBuilder = &NetworkBuilder{}
 func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 	var assetNames []string
 
-	// @TODO need to clean up the code section isn't not easier to read
+	// @TODO need to clean up this code, it isn't the easiest to read
 	networking := b.Cluster.Spec.Networking
 	if networking == nil || networking.Classic != nil {
 	} else if networking.Kubenet != nil {

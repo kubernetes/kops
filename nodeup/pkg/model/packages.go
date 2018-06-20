@@ -30,7 +30,7 @@ type PackagesBuilder struct {
 
 var _ fi.ModelBuilder = &DockerBuilder{}
 
-// Build is responsible for installing packahes
+// Build is responsible for installing packages
 func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 	// kubelet needs:
 	//   ebtables - kops #1711
