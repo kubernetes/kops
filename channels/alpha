@@ -29,6 +29,9 @@ spec:
       kubernetesVersion: ">=1.11.0"
     - providerID: gce
       name: "cos-cloud/cos-stable-60-9592-90-0"
+      kopsVersion: "<1.10.0-alpha.1"
+    - providerID: gce
+      name: "cos-cloud/cos-stable-65-10323-64-0"
   cluster:
     kubernetesVersion: v1.5.8
     networking:

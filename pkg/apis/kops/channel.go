@@ -24,6 +24,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -79,7 +80,14 @@ type ChannelImageSpec struct {
 
 	Name string `json:"name,omitempty"`
 
+	// KubernetesVersion is a semver version range; if specified the
+	// image will only be selected if we're installing a kubernetes
+	// version in the range
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
+
+	// KopsVersion is a semver version range; if specified the image
+	// will only be selected if our kops version is in the range
+	KopsVersion string `json:"kopsVersion,omitempty"`
 }
 
 // LoadChannel loads a Channel object from the specified VFS location
@@ -276,6 +284,26 @@ func (c *Channel) FindImage(provider CloudProviderID, kubernetesVersion semver.V
 				continue
 			}
 		}
+
+		if image.KopsVersion != "" {
+			kopsVersionRange, err := semver.ParseRange(image.KopsVersion)
+			if err != nil {
+				glog.Warningf("cannot parse image.KopsVersion=%q", image.KopsVersion)
+				continue
+			}
+
+			kopsVersion, err := semver.ParseTolerant(kops.Version)
+			if err != nil {
+				glog.Warningf("cannot parse kops version %q", kops.Version)
+				continue
+			}
+
+			if !kopsVersionRange(kopsVersion) {
+				glog.V(2).Infof("Kops version %q does not match range: %s", kopsVersion, image.KopsVersion)
+				continue
+			}
+		}
+
 		matches = append(matches, image)
 	}
 
