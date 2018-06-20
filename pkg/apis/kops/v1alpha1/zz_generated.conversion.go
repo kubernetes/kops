@@ -2108,6 +2108,7 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.BindAddress = in.BindAddress
 	out.InsecureBindAddress = in.InsecureBindAddress
 	out.EnableBootstrapAuthToken = in.EnableBootstrapAuthToken
+	out.EnableAggregatorRouting = in.EnableAggregatorRouting
 	out.AdmissionControl = in.AdmissionControl
 	out.EnableAdmissionPlugins = in.EnableAdmissionPlugins
 	out.DisableAdmissionPlugins = in.DisableAdmissionPlugins
@@ -2178,6 +2179,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.BindAddress = in.BindAddress
 	out.InsecureBindAddress = in.InsecureBindAddress
 	out.EnableBootstrapAuthToken = in.EnableBootstrapAuthToken
+	out.EnableAggregatorRouting = in.EnableAggregatorRouting
 	out.AdmissionControl = in.AdmissionControl
 	out.EnableAdmissionPlugins = in.EnableAdmissionPlugins
 	out.DisableAdmissionPlugins = in.DisableAdmissionPlugins
