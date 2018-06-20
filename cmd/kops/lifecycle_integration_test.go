@@ -144,7 +144,7 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 	{
 		options := &UpdateClusterOptions{}
 		options.InitDefaults()
-		options.MaxTaskDuration = 10 * time.Second
+		options.RunTasksOptions.MaxTaskDuration = 10 * time.Second
 		options.Yes = true
 
 		// We don't test it here, and it adds a dependency on kubectl
@@ -160,7 +160,7 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 		options := &UpdateClusterOptions{}
 		options.InitDefaults()
 		options.Target = cloudup.TargetDryRun
-		options.MaxTaskDuration = 10 * time.Second
+		options.RunTasksOptions.MaxTaskDuration = 10 * time.Second
 
 		// We don't test it here, and it adds a dependency on kubectl
 		options.CreateKubecfg = false

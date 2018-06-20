@@ -226,7 +226,7 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 		options.InitDefaults()
 		options.Target = "terraform"
 		options.OutDir = path.Join(h.TempDir, "out")
-		options.MaxTaskDuration = 30 * time.Second
+		options.RunTasksOptions.MaxTaskDuration = 30 * time.Second
 		if phase != nil {
 			options.Phase = string(*phase)
 		}
@@ -514,7 +514,7 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 		options.InitDefaults()
 		options.Target = "cloudformation"
 		options.OutDir = path.Join(h.TempDir, "out")
-		options.MaxTaskDuration = 30 * time.Second
+		options.RunTasksOptions.MaxTaskDuration = 30 * time.Second
 
 		// We don't test it here, and it adds a dependency on kubectl
 		options.CreateKubecfg = false

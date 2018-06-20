@@ -27,6 +27,8 @@ import (
 
 type executor struct {
 	context *Context
+
+	options RunTasksOptions
 }
 
 type taskState struct {
@@ -38,9 +40,19 @@ type taskState struct {
 	dependencies []*taskState
 }
 
+type RunTasksOptions struct {
+	MaxTaskDuration         time.Duration
+	WaitAfterAllTasksFailed time.Duration
+}
+
+func (o *RunTasksOptions) InitDefaults() {
+	o.MaxTaskDuration = 10 * time.Minute
+	o.WaitAfterAllTasksFailed = 10 * time.Second
+}
+
 // RunTasks executes all the tasks, considering their dependencies
 // It will perform some re-execution on error, retrying as long as progress is still being made
-func (e *executor) RunTasks(taskMap map[string]Task, maxTaskDuration time.Duration) error {
+func (e *executor) RunTasks(taskMap map[string]Task) error {
 	dependencies := FindTaskDependencies(taskMap)
 
 	taskStates := make(map[string]*taskState)
@@ -80,7 +92,7 @@ func (e *executor) RunTasks(taskMap map[string]Task, maxTaskDuration time.Durati
 			}
 			if ready {
 				if ts.deadline.IsZero() {
-					ts.deadline = time.Now().Add(maxTaskDuration)
+					ts.deadline = time.Now().Add(e.options.MaxTaskDuration)
 				} else if time.Now().After(ts.deadline) {
 					return fmt.Errorf("deadline exceeded executing task %v. Example error: %v", ts.key, ts.lastError)
 				}
@@ -131,7 +143,7 @@ func (e *executor) RunTasks(taskMap map[string]Task, maxTaskDuration time.Durati
 				panic("did not make progress executing tasks; but no errors reported")
 			}
 			glog.Infof("No progress made, sleeping before retrying %d failed task(s)", len(errors))
-			time.Sleep(10 * time.Second)
+			time.Sleep(e.options.WaitAfterAllTasksFailed)
 		}
 	}
 
