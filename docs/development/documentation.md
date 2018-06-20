@@ -17,5 +17,5 @@ This command changes the cloud specification in the registry.
 It does not update the cloud resources, to apply the changes use "kops update cluster".
 ```
 
-* `Example`: Example(s) of how to use the command. This field is formatted as a code snippet in the docs, so make sure if you have comments that are written as a bash comment (e.g. `# this is a comment`).
+* `Example`: Example(s) of how to use the command. This field is formatted as a code snippet in the docs, so make sure if you have comments that these are written as a bash comment (e.g. `# this is a comment`).
 
