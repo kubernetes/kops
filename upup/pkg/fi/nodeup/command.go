@@ -291,7 +291,10 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 	defer context.Close()
 
-	err = context.RunTasks(MaxTaskDuration)
+	var options fi.RunTasksOptions
+	options.InitDefaults()
+
+	err = context.RunTasks(options)
 	if err != nil {
 		glog.Exitf("error running tasks: %v", err)
 	}

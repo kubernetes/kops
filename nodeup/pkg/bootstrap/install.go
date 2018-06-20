@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -36,7 +35,7 @@ import (
 type Installation struct {
 	FSRoot          string
 	CacheDir        string
-	MaxTaskDuration time.Duration
+	RunTasksOptions fi.RunTasksOptions
 	Command         []string
 }
 
@@ -86,7 +85,7 @@ func (i *Installation) Run() error {
 	}
 	defer context.Close()
 
-	err = context.RunTasks(i.MaxTaskDuration)
+	err = context.RunTasks(i.RunTasksOptions)
 	if err != nil {
 		return fmt.Errorf("error running tasks: %v", err)
 	}

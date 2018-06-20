@@ -23,7 +23,6 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -63,7 +62,7 @@ type UpdateClusterOptions struct {
 	Models          string
 	OutDir          string
 	SSHPublicKey    string
-	MaxTaskDuration time.Duration
+	RunTasksOptions fi.RunTasksOptions
 	CreateKubecfg   bool
 
 	Phase string
@@ -79,8 +78,8 @@ func (o *UpdateClusterOptions) InitDefaults() {
 	o.Models = strings.Join(cloudup.CloudupModels, ",")
 	o.SSHPublicKey = ""
 	o.OutDir = ""
-	o.MaxTaskDuration = cloudup.DefaultMaxTaskDuration
 	o.CreateKubecfg = true
+	o.RunTasksOptions.InitDefaults()
 }
 
 func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -246,7 +245,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		Cluster:            cluster,
 		DryRun:             isDryrun,
 		InstanceGroups:     instanceGroups,
-		MaxTaskDuration:    c.MaxTaskDuration,
+		RunTasksOptions:    &c.RunTasksOptions,
 		Models:             strings.Split(c.Models, ","),
 		OutDir:             c.OutDir,
 		Phase:              phase,
