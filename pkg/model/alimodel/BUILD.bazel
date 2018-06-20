@@ -6,6 +6,8 @@ go_library(
         "api_loadbalancer.go",
         "context.go",
         "convenience.go",
+        "external_access.go",
+        "firewall.go",
         "network.go",
         "sshkey.go",
     ],
@@ -18,5 +20,6 @@ go_library(
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/alitasks:go_default_library",
         "//upup/pkg/fi/fitasks:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
     ],
 )
