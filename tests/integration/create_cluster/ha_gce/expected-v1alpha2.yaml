@@ -61,7 +61,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: master-us-test1-a
 spec:
-  image: cos-cloud/cos-stable-64-10176-62-0
+  image: cos-cloud/cos-stable-60-9592-90-0
   machineType: n1-standard-1
   maxSize: 1
   minSize: 1
@@ -83,7 +83,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: master-us-test1-b
 spec:
-  image: cos-cloud/cos-stable-64-10176-62-0
+  image: cos-cloud/cos-stable-60-9592-90-0
   machineType: n1-standard-1
   maxSize: 1
   minSize: 1
@@ -105,7 +105,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: master-us-test1-c
 spec:
-  image: cos-cloud/cos-stable-64-10176-62-0
+  image: cos-cloud/cos-stable-60-9592-90-0
   machineType: n1-standard-1
   maxSize: 1
   minSize: 1
@@ -127,7 +127,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: nodes
 spec:
-  image: cos-cloud/cos-stable-64-10176-62-0
+  image: cos-cloud/cos-stable-60-9592-90-0
   machineType: n1-standard-2
   maxSize: 2
   minSize: 2
