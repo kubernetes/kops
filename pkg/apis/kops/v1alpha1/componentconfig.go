@@ -220,6 +220,8 @@ type KubeAPIServerConfig struct {
 	InsecureBindAddress string `json:"insecureBindAddress,omitempty" flag:"insecure-bind-address"`
 	// EnableBootstrapAuthToken enables 'bootstrap.kubernetes.io/token' in the 'kube-system' namespace to be used for TLS bootstrapping authentication
 	EnableBootstrapAuthToken *bool `json:"enableBootstrapTokenAuth,omitempty" flag:"enable-bootstrap-token-auth"`
+	// EnableAggregatorRouting enables aggregator routing requests to endpoints IP rather than cluster IP
+	EnableAggregatorRouting *bool `json:"enableAggregatorRouting,omitempty" flag:"enable-aggregator-routing"`
 	// Deprecated: AdmissionControl is a list of admission controllers to use
 	AdmissionControl []string `json:"admissionControl,omitempty" flag:"admission-control"`
 	// EnableAdmissionPlugins is a list of enabled admission plugins

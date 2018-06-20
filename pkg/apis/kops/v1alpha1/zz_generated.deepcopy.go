@@ -1804,6 +1804,15 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 			**out = **in
 		}
 	}
+	if in.EnableAggregatorRouting != nil {
+		in, out := &in.EnableAggregatorRouting, &out.EnableAggregatorRouting
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
+			**out = **in
+		}
+	}
 	if in.AdmissionControl != nil {
 		in, out := &in.AdmissionControl, &out.AdmissionControl
 		*out = make([]string, len(*in))
