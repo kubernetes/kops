@@ -17,6 +17,8 @@ limitations under the License.
 package alimodel
 
 import (
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
@@ -66,4 +68,23 @@ func (c *ALIModelContext) GetNameForSecurityGroup(role kops.InstanceGroupRole) s
 		glog.Fatalf("unknown InstanceGroup Role: %q", role)
 		return ""
 	}
+}
+
+func (c *ALIModelContext) GetNameForRAM(role kops.InstanceGroupRole) string {
+	name := ""
+	switch role {
+	case kops.InstanceGroupRoleMaster:
+		name = "masters." + c.ClusterName()
+	case kops.InstanceGroupRoleBastion:
+		name = "bastions." + c.ClusterName()
+	case kops.InstanceGroupRoleNode:
+		name = "nodes." + c.ClusterName()
+
+	default:
+		glog.Fatalf("unknown InstanceGroup Role: %q", role)
+		return ""
+	}
+
+	name = strings.Replace(name, ".", "-", -1)
+	return name
 }
