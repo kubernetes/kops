@@ -587,11 +587,9 @@ func (c *ApplyClusterCmd) Run() error {
 					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &networkLifecycle},
 				)
 
-				if featureflag.GoogleCloudBucketAcl.Enabled() {
-					l.Builders = append(l.Builders,
-						&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: &storageAclLifecycle},
-					)
-				}
+				l.Builders = append(l.Builders,
+					&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: &storageAclLifecycle},
+				)
 
 			case kops.CloudProviderALI:
 				aliModelContext := &alimodel.ALIModelContext{
