@@ -9,6 +9,7 @@ go_library(
         "external_access.go",
         "firewall.go",
         "network.go",
+        "ram.go",
         "sshkey.go",
     ],
     importpath = "k8s.io/kops/pkg/model/alimodel",
@@ -20,6 +21,7 @@ go_library(
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/alitasks:go_default_library",
         "//upup/pkg/fi/fitasks:go_default_library",
+        "//vendor/github.com/denverdino/aliyungo/ram:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
     ],
 )
