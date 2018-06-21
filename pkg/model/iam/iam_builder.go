@@ -377,7 +377,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 						}
 
 						// @check if calico is enabled as the CNI provider and permit access to the client TLS certificate by default
-						if b.Cluster.Spec.Networking.Calico != nil {
+						if b.Cluster.Spec.Networking.Calico != nil || b.Cluster.Spec.Networking.Cilium != nil {
 							p.Statement = append(p.Statement, &Statement{
 								Effect: StatementEffectAllow,
 								Action: stringorslice.Slice([]string{"s3:Get*"}),
