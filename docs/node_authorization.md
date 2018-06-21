@@ -33,7 +33,7 @@ Assuming all the conditions are met a secret token is generated and returned to 
 
 #### **Enabling the Node Authorization Service**
 
-Enabling the node authorization service is as follows;
+Enabling the node authorization service is as follows; firstly you must enable the feature flag as node authorization is still experimental; export KOPS_FEATURE_FLAGS=EnableNodeAuthorization
 
 ```
 # in the cluster spec
