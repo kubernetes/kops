@@ -1,29 +1,22 @@
+{{- $etcd_scheme := EtcdScheme }}
 kind: ConfigMap
 apiVersion: v1
 metadata:
   name: cilium-config
   namespace: kube-system
 data:
-  # This etcd-config contains the etcd endpoints of your cluster. If you use
-  # TLS please make sure you uncomment the ca-file line and add the respective
-  # certificate has a k8s secret, see explanation bellow in the comment labeled
-  # "ETCD-CERT"
   etcd-config: |-
     ---
     endpoints: [{{ $cluster := index .EtcdClusters 0 -}}
                       {{- range $j, $member := $cluster.Members -}}
                           {{- if $j }},{{ end -}}
-                          "http://etcd-{{ $member.Name }}.internal.{{ ClusterName }}:4001"
+                          "{{ $etcd_scheme }}://etcd-{{ $member.Name }}.internal.{{ ClusterName }}:4001"
                       {{- end }}]
-    #
-    # In case you want to use TLS in etcd, uncomment the following line
-    # and add the certificate as explained in the comment labeled "ETCD-CERT"
-    #ca-file: '/var/lib/etcd-secrets/etcd-ca'
-    #
-    # In case you want client to server authentication, uncomment the following
-    # lines and add the certificate and key in cilium-etcd-secrets bellow
-    #key-file: '/var/lib/etcd-secrets/etcd-client-key'
-    #cert-file: '/var/lib/etcd-secrets/etcd-client-crt'
+    {{- if eq $etcd_scheme "https" }}
+    ca-file: '/var/lib/etcd-secrets/ca.pem'
+    key-file: '/var/lib/etcd-secrets/calico-client-key.pem'
+    cert-file: '/var/lib/etcd-secrets/calico-client.pem'
+    {{- end }}
 
   # If you want to run cilium in debug mode change this value to true
   debug: "false"
@@ -31,22 +24,6 @@ data:
   sidecar-http-proxy: "false"
   # If you want to clean cilium state; change this value to true
   clean-cilium-state: "false"
----
-# The etcd secrets can be populated in kubernetes.
-# For more information see: https://kubernetes.io/docs/concepts/configuration/secret
-apiVersion: v1
-kind: Secret
-type: Opaque
-metadata:
-  name: cilium-etcd-secrets
-  namespace: kube-system
-data:
-  # ETCD-CERT: Each value should contain the whole certificate in base64, on a
-  # single line. You can generate the base64 with: $ base64 -w 0 ./ca.pem
-  # (the "-w 0" generates the output on a single line)
-  etcd-ca: ""
-  etcd-client-key: ""
-  etcd-client-crt: ""
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -365,9 +342,11 @@ spec:
           - name: etcd-config-path
             mountPath: /var/lib/etcd-config
             readOnly: true
+        {{- if eq $etcd_scheme "https" }}
           - name: etcd-secrets
             mountPath: /var/lib/etcd-secrets
             readOnly: true
+        {{- end }}
         securityContext:
           capabilities:
             add:
@@ -402,10 +381,11 @@ spec:
             items:
             - key: etcd-config
               path: etcd.config
-          # To read the k8s etcd secrets in case the user might want to use TLS
+        {{- if eq $etcd_scheme "https" }}
         - name: etcd-secrets
-          secret:
-            secretName: cilium-etcd-secrets
+          hostPath:
+            path: /srv/kubernetes/calico
+        {{- end }}
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
