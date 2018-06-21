@@ -177,10 +177,8 @@ type NodeAuthorizationSpec struct {
 type NodeAuthorizerSpec struct {
 	// Authorizer is the authorizer to use
 	Authorizer string `json:"authorizer,omitempty"`
-	// EnableAddressCheck indicates we should not check the ip address of the requestor
-	EnableAddressCheck *bool `json:"enableAddressCheck,omitempty"`
-	// EnableRegistrationCheck indicates we not deny nodes already registered
-	EnableRegistrationCheck *bool `json:"enableRegistrationCheck,omitempty"`
+	// Features is a series of authorizer features to enable or disable
+	Features *[]string `json:"features,omitempty"`
 	// Image is the location of container
 	Image string `json:"image,omitempty"`
 	// NodeURL is the node authorization service url

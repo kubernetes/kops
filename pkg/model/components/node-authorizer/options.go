@@ -24,7 +24,6 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/components"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -77,14 +76,17 @@ func (b *OptionsBuilder) BuildOptions(o interface{}) error {
 			if na.NodeAuthorizer.TokenTTL == nil {
 				na.NodeAuthorizer.TokenTTL = DefaultTokenTTL
 			}
-			if na.NodeAuthorizer.EnableAddressCheck == nil {
-				na.NodeAuthorizer.EnableAddressCheck = fi.Bool(true)
-			}
-			if na.NodeAuthorizer.EnableRegistrationCheck == nil {
-				na.NodeAuthorizer.EnableRegistrationCheck = fi.Bool(true)
-			}
 			if na.NodeAuthorizer.NodeURL == "" {
 				na.NodeAuthorizer.NodeURL = fmt.Sprintf("https://node-authorizer-internal.%s:%d", b.Context.ClusterName, na.NodeAuthorizer.Port)
+			}
+			if na.NodeAuthorizer.Features == nil {
+				features := []string{"verify-registration", "verify-ip"}
+
+				switch kops.CloudProviderID(cs.CloudProvider) {
+				case kops.CloudProviderAWS:
+					features = append(features, "verify-signature")
+				}
+				na.NodeAuthorizer.Features = &features
 			}
 		}
 	}
@@ -98,5 +100,5 @@ func GetNodeAuthorizerImage() string {
 		return v
 	}
 
-	return "quay.io/gambol99/node-authorizer:v0.0.1@sha256:b3ac87042a61ad62f3b95236654b85016343eac18a2a6cc9020465bd095a31e1"
+	return "quay.io/gambol99/node-authorizer:v0.0.1@sha256:3ff243f5af76a73b6faaa6a0b0be8e3882dd1e7ffea6bacda9bede2273446059"
 }

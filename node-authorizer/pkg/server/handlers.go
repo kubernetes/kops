@@ -21,6 +21,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"go.uber.org/zap"
+	"k8s.io/kops/node-authorizer/pkg/utils"
+
 	"github.com/gorilla/mux"
 )
 
@@ -68,6 +71,8 @@ func (n *NodeAuthorizer) authorizeHandler(w http.ResponseWriter, r *http.Request
 		return json.NewEncoder(w).Encode(req)
 	}()
 	if err != nil {
+		utils.Logger.Info("failed to handle node request", zap.Error(err))
+
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

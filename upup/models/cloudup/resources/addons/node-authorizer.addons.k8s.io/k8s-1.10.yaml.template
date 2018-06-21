@@ -154,8 +154,9 @@ spec:
           - --authorization-timeout={{ $na.Timeout.Duration }}
           - --authorizer={{ $na.Authorizer }}
           - --cluster-name={{ ClusterName }}
-          - --enable-address-check={{ $na.EnableAddressCheck }}
-          - --enable-registration-check={{ $na.EnableRegistrationCheck }}
+          {{- range $na.Features }}
+          - --feature={{ . }}
+          {{- end }}
           - --listen=0.0.0.0:{{ $na.Port }}
           - --tls-cert=/config/tls.pem
           - --tls-client-ca=/config/ca.pem

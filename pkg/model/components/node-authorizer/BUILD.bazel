@@ -8,7 +8,6 @@ go_library(
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/model/components:go_default_library",
-        "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/loader:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
