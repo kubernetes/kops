@@ -21,28 +21,27 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
-// KubeProxyBuilder installs kube-proxy
+// KubeRouterBuilder installs kube-router
 type KubeRouterBuilder struct {
 	*NodeupModelContext
 }
 
 var _ fi.ModelBuilder = &KubeRouterBuilder{}
 
+// Build is responsible for configuring the kube-router
 func (b *KubeRouterBuilder) Build(c *fi.ModelBuilderContext) error {
-
-	// Add kubeconfig
 	{
 		kubeconfig, err := b.BuildPKIKubeconfig("kube-router")
 		if err != nil {
 			return err
 		}
-		t := &nodetasks.File{
+
+		c.AddTask(&nodetasks.File{
 			Path:     "/var/lib/kube-router/kubeconfig",
 			Contents: fi.NewStringResource(kubeconfig),
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
-		}
-		c.AddTask(t)
+		})
 	}
 
 	return nil

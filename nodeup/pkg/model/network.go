@@ -31,9 +31,11 @@ type NetworkBuilder struct {
 
 var _ fi.ModelBuilder = &NetworkBuilder{}
 
+// Build is responsible for configuring the network cni
 func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 	var assetNames []string
 
+	// @TODO need to clean up this code, it isn't the easiest to read
 	networking := b.Cluster.Spec.Networking
 	if networking == nil || networking.Classic != nil {
 	} else if networking.Kubenet != nil {
@@ -74,13 +76,12 @@ func (b *NetworkBuilder) addCNIBinAsset(c *fi.ModelBuilderContext, assetName str
 		return fmt.Errorf("unable to locate asset %q", assetName)
 	}
 
-	t := &nodetasks.File{
+	c.AddTask(&nodetasks.File{
 		Path:     filepath.Join(b.CNIBinDir(), assetName),
 		Contents: asset,
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0755"),
-	}
-	c.AddTask(t)
+	})
 
 	return nil
 }

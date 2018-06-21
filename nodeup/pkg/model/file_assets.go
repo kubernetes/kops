@@ -35,16 +35,23 @@ type FileAssetsBuilder struct {
 
 var _ fi.ModelBuilder = &FileAssetsBuilder{}
 
+var templateFuncs = template.FuncMap{
+	"split": strings.Split,
+	"join":  strings.Join,
+}
+
 // Build is responsible for writing out the file assets from cluster and instanceGroup
 func (f *FileAssetsBuilder) Build(c *fi.ModelBuilderContext) error {
 	// used to keep track of previous file, so a instanceGroup can override a cluster wide one
 	tracker := make(map[string]bool, 0)
+
 	// ensure the default path exists
 	c.EnsureTask(&nodetasks.File{
 		Path: f.FileAssetsDefaultPath(),
 		Type: nodetasks.FileType_Directory,
 		Mode: s("0755"),
 	})
+
 	// do we have any instanceGroup file assets
 	if f.InstanceGroup.Spec.FileAssets != nil {
 		if err := f.buildFileAssets(c, f.InstanceGroup.Spec.FileAssets, tracker); err != nil {
@@ -104,10 +111,4 @@ func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []
 	}
 
 	return nil
-}
-
-// @perhaps a path finder?
-var templateFuncs = template.FuncMap{
-	"split": strings.Split,
-	"join":  strings.Join,
 }
