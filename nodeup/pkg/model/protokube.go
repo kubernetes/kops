@@ -26,6 +26,7 @@ import (
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
@@ -34,7 +35,6 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
-	"k8s.io/kops/pkg/assets"
 )
 
 // ProtokubeBuilder configures protokube
