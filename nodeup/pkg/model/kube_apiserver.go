@@ -441,8 +441,8 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 
 func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	annotations := make(map[string]string)
-	annotations["dns.alpha.kubernetes.io/internal"] = b.Cluster.Spec.MasterInternalName
 	if b.Cluster.Spec.API != nil && b.Cluster.Spec.API.DNS != nil {
+		annotations["dns.alpha.kubernetes.io/internal"] = b.Cluster.Spec.MasterInternalName
 		annotations["dns.alpha.kubernetes.io/external"] = b.Cluster.Spec.MasterPublicName
 	}
 
