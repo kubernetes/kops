@@ -17,7 +17,10 @@ limitations under the License.
 package model
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 
@@ -772,7 +775,24 @@ func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 
 	// ContainerOS now sets the storage flag in /etc/docker/daemon.json, and it is an error to set it twice
 	if b.Distribution == distros.DistributionContainerOS {
-		docker.Storage = nil
+		// So that we can support older COS images though, we do check for /etc/docker/daemon.json
+		if b, err := ioutil.ReadFile("/etc/docker/daemon.json"); err != nil {
+			if os.IsNotExist(err) {
+				glog.V(2).Infof("/etc/docker/daemon.json not found")
+			} else {
+				glog.Warningf("error reading /etc/docker/daemon.json: %v", err)
+			}
+		} else {
+			// Maybe we get smarter here?
+			data := make(map[string]interface{})
+			if err := json.Unmarshal(b, &data); err != nil {
+				glog.Warningf("error deserializing /etc/docker/daemon.json: %v", err)
+			} else {
+				storageDriver := data["storage-driver"]
+				glog.Infof("/etc/docker/daemon.json has storage-driver: %q", storageDriver)
+			}
+			docker.Storage = nil
+		}
 	}
 
 	flagsString, err := flagbuilder.BuildFlags(&docker)
