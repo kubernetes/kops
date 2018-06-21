@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 
@@ -375,6 +376,10 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 
 	// NodeAuthorization
 	if c.Spec.NodeAuthorization != nil {
+		// @check the feature gate is enabled for this
+		if !featureflag.EnableNodeAuthorization.Enabled() {
+			return field.Invalid(field.NewPath("nodeAuthorization"), nil, "node authorization is experimental feature; set `export KOPS_FEATURE_FLAGS=EnableNodeAuthorization`")
+		}
 		if c.Spec.NodeAuthorization.NodeAuthorizer == nil {
 			return field.Invalid(field.NewPath("nodeAuthorization"), nil, "no node authorization policy has been set")
 		}
