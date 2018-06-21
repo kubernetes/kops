@@ -74,15 +74,9 @@ func addServerCommand() cli.Command {
 				EnvVar: "CLUSTER_TAG",
 				Value:  "KubernetesCluster",
 			},
-			cli.BoolFlag{
-				Name:   "enable-registration-check",
-				Usage:  "indicates you want to check for multiple registrations from nodes `BOOL`",
-				EnvVar: "ENABLE_REGISTRATION_CHECK",
-			},
-			cli.BoolTFlag{
-				Name:   "enable-address-check",
-				Usage:  "indicates we should the request comes from the expected instance address `BOOL`",
-				EnvVar: "ENABLE_ADDRESS_CHECK",
+			cli.StringSliceFlag{
+				Name:  "feature",
+				Usage: "enables or disables a feature in the chosen authorizer `NAME`",
 			},
 			cli.DurationFlag{
 				Name:   "token-ttl",
@@ -113,17 +107,16 @@ func addServerCommand() cli.Command {
 // actionServerCommand is responsible for performing the server action
 func actionServerCommand(ctx *cli.Context) error {
 	config := &server.Config{
-		AuthorizationTimeout:    ctx.Duration("authorization-timeout"),
-		ClientCommonName:        ctx.String("client-common-name"),
-		ClusterName:             ctx.String("cluster-name"),
-		ClusterTag:              ctx.String("cluster-tag"),
-		EnableAddressCheck:      ctx.Bool("enable-address-check"),
-		EnableRegistrationCheck: ctx.Bool("enable-registration-check"),
-		Listen:                  ctx.String("listen"),
-		TLSCertPath:             ctx.String("tls-cert"),
-		TLSClientCAPath:         ctx.String("tls-client-ca"),
-		TLSPrivateKeyPath:       ctx.String("tls-private-key"),
-		TokenDuration:           ctx.Duration("token-ttl"),
+		AuthorizationTimeout: ctx.Duration("authorization-timeout"),
+		ClientCommonName:     ctx.String("client-common-name"),
+		ClusterName:          ctx.String("cluster-name"),
+		ClusterTag:           ctx.String("cluster-tag"),
+		Features:             ctx.StringSlice("feature"),
+		Listen:               ctx.String("listen"),
+		TLSCertPath:          ctx.String("tls-cert"),
+		TLSClientCAPath:      ctx.String("tls-client-ca"),
+		TLSPrivateKeyPath:    ctx.String("tls-private-key"),
+		TokenDuration:        ctx.Duration("token-ttl"),
 	}
 
 	if ctx.String("authorizer") == "" {

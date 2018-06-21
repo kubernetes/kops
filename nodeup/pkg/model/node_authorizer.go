@@ -82,6 +82,7 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		clientCert := filepath.Join(b.PathSrvKubernetes(), authorizerDir, "tls.pem")
 		man.Set("Service", "Type", "oneshot")
+		man.Set("Service", "RemainAfterExit", "yes")
 		man.Set("Service", "EnvironmentFile", "/etc/environment")
 		man.Set("Service", "ExecStartPre", "/usr/bin/mkdir -p /var/lib/kubelet")
 		man.Set("Service", "ExecStartPre", "/usr/bin/docker pull "+na.Image)

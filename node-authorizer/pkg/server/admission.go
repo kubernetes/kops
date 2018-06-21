@@ -28,6 +28,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+var (
+	// CheckRegistration indicates we should validate the node is not regestered
+	CheckRegistration = "verify-registration"
+)
+
 // authorizeNodeRequest is responsible for handling the incoming authorization request
 func (n *NodeAuthorizer) authorizeNodeRequest(ctx context.Context, request *NodeRegistration) error {
 	doneCh := make(chan error, 0)
@@ -103,7 +108,7 @@ func (n *NodeAuthorizer) safelyAuthorizeNode(ctx context.Context, request *NodeR
 	authorizerLatencyMetric.Observe(time.Since(now).Seconds())
 
 	// @check if the node is registered already
-	if n.config.EnableRegistrationCheck {
+	if n.config.UseFeature(CheckRegistration) {
 		if found, err := isNodeRegistered(ctx, n.client, request.Spec.NodeName); err != nil {
 			return fmt.Errorf("unable to check node registration status: %s", err)
 		} else if found {

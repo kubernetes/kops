@@ -19,6 +19,8 @@ package server
 import (
 	"context"
 	"errors"
+	"strconv"
+	"strings"
 	"time"
 
 	"k8s.io/api/core/v1"
@@ -62,10 +64,8 @@ type Config struct {
 	AuthorizationTimeout time.Duration
 	// ClusterTag is the cloud tag key used to identity the cluster
 	ClusterTag string
-	// EnableAddressCheck indicates we should validate the request against the expected address
-	EnableAddressCheck bool
-	// EnableRegistration indicates nodes can register multiple times
-	EnableRegistrationCheck bool
+	// Features is arbitrary feature set for a authorizer
+	Features []string
 	// EnableVerbose indicate verbose logging
 	EnableVerbose bool
 	// ClientCommonName is the common name on the client certiicate if mutual tls is enabled
@@ -74,8 +74,6 @@ type Config struct {
 	ClusterName string
 	// Listen is the interacted to bind to
 	Listen string
-	// Port the is the service is listening
-	Port int
 	// TokenDuration is the expiration of a bootstrap token
 	TokenDuration time.Duration
 	// TLSCertPath is the path to the server TLS certificate
@@ -84,6 +82,31 @@ type Config struct {
 	TLSClientCAPath string
 	// TLSPrivateKeyPath is the path to the private key
 	TLSPrivateKeyPath string
+}
+
+// UseFeature indicates a feature is in use
+func (c *Config) UseFeature(name string) bool {
+	if len(c.Features) <= 0 {
+		return false
+	}
+
+	for _, x := range c.Features {
+		items := strings.Split(x, "=")
+		if items[0] != name {
+			continue
+		}
+		if len(items) == 1 {
+			return true
+		}
+
+		v, err := strconv.ParseBool(items[1])
+		if err != nil {
+			return false
+		}
+		return v
+	}
+
+	return false
 }
 
 // NodeRegistration is an incomming request

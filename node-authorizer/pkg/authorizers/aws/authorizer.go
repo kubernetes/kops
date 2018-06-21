@@ -33,6 +33,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/fullsailor/pkcs7"
@@ -44,12 +46,27 @@ var (
 	publicCertificates []*x509.Certificate
 )
 
+var (
+	// CheckIAMProfile indicates we should validate the iam profile
+	CheckIAMProfile = "verify-iam-profile"
+	// CheckIPAddress indicates we should validate the client ip address
+	CheckIPAddress = "verify-ip"
+	// CheckSignature indicates we validate the signature of the document
+	CheckSignature = "verify-signature"
+)
+
 // awsNodeAuthorizer is the implementation for a node authorizer
 type awsNodeAuthorizer struct {
 	// client is the ec2 interface
 	client ec2iface.EC2API
+	// asgc is the autoscaling client
+	asgc autoscalingiface.AutoScalingAPI
 	// config is the service configuration
 	config *server.Config
+	// identity is the identity document for the instance we are running on
+	identity ec2metadata.EC2InstanceIdentityDocument
+	// instance is the ec2 instance we are running on
+	instance *ec2.Instance
 	// vpcID is our vpc id
 	vpcID string
 }
@@ -71,8 +88,11 @@ func NewAuthorizer(config *server.Config) (server.Authorizer, error) {
 		zap.String("instance-id", document.InstanceID),
 		zap.String("region", document.Region))
 
-	// @step: we create a ec2 client
+	// @step: we create a ec2 and autoscaling client
 	client := ec2.New(session.New(&aws.Config{
+		Region: aws.String(document.Region),
+	}))
+	asgc := autoscaling.New(session.New(&aws.Config{
 		Region: aws.String(document.Region),
 	}))
 
@@ -83,9 +103,12 @@ func NewAuthorizer(config *server.Config) (server.Authorizer, error) {
 	}
 
 	return &awsNodeAuthorizer{
-		client: client,
-		config: config,
-		vpcID:  aws.StringValue(instance.VpcId),
+		client:   client,
+		asgc:     asgc,
+		config:   config,
+		identity: document,
+		instance: instance,
+		vpcID:    aws.StringValue(instance.VpcId),
 	}, nil
 }
 
@@ -101,10 +124,12 @@ func (a *awsNodeAuthorizer) Authorize(ctx context.Context, r *server.NodeRegistr
 
 	// @step: extract and validate the document
 	if reason, err := func() (string, error) {
-		if reason, err := a.validateIdentityDocument(ctx, request.Document, identity); err != nil {
-			return "", err
-		} else if reason != "" {
-			return reason, nil
+		if a.config.UseFeature(CheckSignature) {
+			if reason, err := a.validateIdentityDocument(ctx, request.Document, identity); err != nil {
+				return "", err
+			} else if reason != "" {
+				return reason, nil
+			}
 		}
 
 		if reason, err := a.validateNodeInstance(ctx, identity, r); err != nil {
@@ -126,11 +151,12 @@ func (a *awsNodeAuthorizer) Authorize(ctx context.Context, r *server.NodeRegistr
 }
 
 // validateNodeInstance is responsible for checking the instance exists and it part of the cluster
-// - check instance exists
-// - check the instance is running
-// - check the instance is running in our vpc
-// - check the instance run tagged with our kubernetes cluster
 func (a *awsNodeAuthorizer) validateNodeInstance(ctx context.Context, doc *ec2metadata.EC2InstanceIdentityDocument, spec *server.NodeRegistration) (string, error) {
+	// @check we are in the same account
+	if a.identity.AccountID != doc.AccountID {
+		return "instance running in different account id", nil
+	}
+
 	// @check we found some instances
 	instance, err := getInstance(a.client, doc.InstanceID)
 	if err != nil {
@@ -150,11 +176,24 @@ func (a *awsNodeAuthorizer) validateNodeInstance(ctx context.Context, doc *ec2me
 		return "missing cluster tag", nil
 	}
 
+	// @check the instance has access to the nodes iam profile
+	if a.config.UseFeature(CheckIAMProfile) {
+		if instance.IamInstanceProfile == nil {
+			return "instance does not have an instance profile", nil
+		}
+		if aws.StringValue(instance.IamInstanceProfile.Arn) == "" {
+			return "instance profile arn is empty", nil
+		}
+		expectedArn := fmt.Sprintf("arn:aws:iam::%s:role/nodes.%s", a.identity.AccountID, a.config.ClusterName)
+		if expectedArn != aws.StringValue(instance.IamInstanceProfile.Arn) {
+			return fmt.Sprintf("invalid iam instance role, expected: %s, found: %s", expectedArn, aws.StringValue(instance.IamInstanceProfile.Arn)), nil
+		}
+	}
+
 	// @check the requester is as expected
-	if a.config.EnableAddressCheck {
+	if a.config.UseFeature(CheckIPAddress) {
 		if spec.Spec.RemoteAddr != aws.StringValue(instance.PrivateIpAddress) {
-			return fmt.Sprintf("ip address conflict, expected: %s, got: %s",
-				aws.StringValue(instance.PrivateIpAddress), spec.Spec.RemoteAddr), nil
+			return fmt.Sprintf("ip address conflict, expected: %s, got: %s", aws.StringValue(instance.PrivateIpAddress), spec.Spec.RemoteAddr), nil
 		}
 	}
 
