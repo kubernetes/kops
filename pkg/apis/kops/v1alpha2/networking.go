@@ -189,4 +189,6 @@ type CiliumNetworkingSpec struct {
 }
 
 // LyftIpVlanNetworkingSpec declares that we want to use the cni-ipvlan-vpc-k8s CNI networking
-type LyftVPCNetworkingSpec struct{}
+type LyftVPCNetworkingSpec struct {
+	SubnetTags map[string]string `json:"subnetTags,omitempty"`
+}
