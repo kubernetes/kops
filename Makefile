@@ -38,7 +38,7 @@ BAZELIMAGES=$(BAZELDIST)/images
 BAZELUPLOAD=$(BAZELBUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
-TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor" hack/.packages)
+TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/vendor" hack/.packages)
 # We need to ignore clientsets because of kubernetes/kubernetes#60584
 GOVETABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor|clientset/fake" hack/.packages)
 BAZEL_OPTIONS?=
@@ -192,15 +192,19 @@ upup/models/bindata.go: ${GOBINDATA} ${UPUP_MODELS_BINDATA_SOURCES}
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
-# 1.8 is preferred, 1.9 is coming soon so we have a target for it
+# 1.9 is preferred, 1.10 is likely to be the default soon.  1.8 is best-effort
 .PHONY: check-builds-in-go18
 check-builds-in-go18:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.8 make -C /go/src/k8s.io/kops ci
+	# Note we only check that kops builds; we know the tests don't compile because of type aliasing in uber zap
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.8 make -C /go/src/k8s.io/kops kops
 
 .PHONY: check-builds-in-go19
 check-builds-in-go19:
 	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.9 make -C /go/src/k8s.io/kops ci
 
+.PHONY: check-builds-in-go110
+check-builds-in-go110:
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.10 make -C /go/src/k8s.io/kops ci
 
 .PHONY: codegen
 codegen: kops-gobindata
