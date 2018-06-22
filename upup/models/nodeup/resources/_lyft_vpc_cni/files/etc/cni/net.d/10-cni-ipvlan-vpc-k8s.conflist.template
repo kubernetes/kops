@@ -10,9 +10,7 @@
       "ipam": {
           "type": "cni-ipvlan-vpc-k8s-ipam",
           "interfaceIndex": 1,
-          "subnetTags":  {
-              "Type": "pod"
-          },
+          "subnetTags":  {{ SubnetTags }},
      	  "routeToVpcPeers": true,
 	      "secGroupIds": {{ NodeSecurityGroups }}
 	  }

@@ -253,6 +253,22 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	if c.cluster.Spec.Networking.LyftVPC != nil {
+
+		loader.TemplateFunctions["SubnetTags"] = func() (string, error) {
+			tags := map[string]string{
+				"Type": "pod",
+			}
+			if len(c.cluster.Spec.Networking.LyftVPC.SubnetTags) > 0 {
+				tags = c.cluster.Spec.Networking.LyftVPC.SubnetTags
+			}
+
+			bytes, err := json.Marshal(tags)
+			if err != nil {
+				return "", err
+			}
+			return string(bytes), nil
+		}
+
 		loader.TemplateFunctions["NodeSecurityGroups"] = func() (string, error) {
 			// use the same security groups as the node
 			ids, err := evaluateSecurityGroups(c.cluster.Spec.NetworkID)
