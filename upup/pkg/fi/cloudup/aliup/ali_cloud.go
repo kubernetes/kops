@@ -38,6 +38,8 @@ import (
 )
 
 const TagClusterName = "KubernetesCluster"
+const TagNameRolePrefix = "k8s.io/role/"
+const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
 
 // This is for statistic purpose.
 var KubernetesKopsIdentity = fmt.Sprintf("Kubernetes.Kops/%s", prj.Version)
