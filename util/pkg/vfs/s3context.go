@@ -207,7 +207,7 @@ func (s *S3Context) checkDefaultEncryption(region string, bucket string) bool {
 		// the following cases might lead to the operation failing:
 		// 1. A deny policy on s3:GetEncryptionConfiguration
 		// 2. No default encryption policy set
-		glog.Warningf("Unable to read bucket encryption policy: will encrypt using AES256")
+		glog.V(8).Infof("Unable to read bucket encryption policy: will encrypt using AES256")
 		return false
 	}
 
