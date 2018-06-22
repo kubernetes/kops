@@ -208,6 +208,12 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+      initContainers:
+      - image: alpine:3.6
+        command: ["/sbin/sysctl", "-w", "vm.max_map_count=262144"]
+        name: elasticsearch-logging-init
+        securityContext:
+          privileged: true
   volumeClaimTemplates:
   - metadata:
       name: es-persistent-storage
