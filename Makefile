@@ -53,12 +53,12 @@ unexport KOPS_BASE_URL KOPS_CLUSTER_NAME KOPS_RUN_OBSOLETE_VERSION KOPS_STATE_ST
 unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCESS_KEY VSPHERE_USERNAME VSPHERE_PASSWORD
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.9.0
+DNS_CONTROLLER_TAG=1.10.0-alpha.1
 
 # Keep in sync with logic in get_workspace_status
-# Update variables in tools/get_workplace_status.sh for the bazel build
-KOPS_RELEASE_VERSION = 1.9.0
-KOPS_CI_VERSION      = 1.9.1-alpha.1
+# TODO: just invoke tools/get_workspace_status.sh?
+KOPS_RELEASE_VERSION:=$(shell grep 'KOPS_RELEASE_VERSION\s*=' version.go | awk '{print $$3}' | sed -e 's_"__g')
+KOPS_CI_VERSION:=$(shell grep 'KOPS_CI_VERSION\s*=' version.go | awk '{print $$3}' | sed -e 's_"__g')
 
 # kops local location
 KOPS                 = ${LOCAL}/kops
