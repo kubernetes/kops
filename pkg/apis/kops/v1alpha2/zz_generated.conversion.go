@@ -1451,6 +1451,7 @@ func autoConvert_v1alpha2_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.RegistryMirrors = in.RegistryMirrors
 	out.Storage = in.Storage
 	out.StorageOpts = in.StorageOpts
+	out.UserNamespaceRemap = in.UserNamespaceRemap
 	out.Version = in.Version
 	return nil
 }
@@ -1479,6 +1480,7 @@ func autoConvert_kops_DockerConfig_To_v1alpha2_DockerConfig(in *kops.DockerConfi
 	out.RegistryMirrors = in.RegistryMirrors
 	out.Storage = in.Storage
 	out.StorageOpts = in.StorageOpts
+	out.UserNamespaceRemap = in.UserNamespaceRemap
 	out.Version = in.Version
 	return nil
 }

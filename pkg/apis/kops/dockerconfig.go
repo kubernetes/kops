@@ -50,6 +50,8 @@ type DockerConfig struct {
 	Storage *string `json:"storage,omitempty" flag:"storage-driver"`
 	// StorageOpts is a series of options passed to the storage driver
 	StorageOpts []string `json:"storageOpts,omitempty" flag:"storage-opt,repeat"`
+	// UserNamespaceRemap sets the user namespace remapping option for the docker daemon
+	UserNamespaceRemap string `json:"userNamespaceRemap,omitempty" flag:"userns-remap"`
 	// Version is consumed by the nodeup and used to pick the docker version
 	Version *string `json:"version,omitempty"`
 }
