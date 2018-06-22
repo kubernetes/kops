@@ -2,7 +2,7 @@
 
 ## CLI commands
 
-`kops` uses cobra for it's CLI implementation. Each command should have the following help fields defined where possible:
+`kops` uses cobra for its CLI implementation. Each command should have the following help fields defined where possible:
 
 * `Short`: A short statement describing the command in the third person present, starting with a capital letter and ending without a period.
   * Example: "Edits a cluster"
