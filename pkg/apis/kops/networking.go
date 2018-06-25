@@ -83,6 +83,8 @@ type CalicoNetworkingSpec struct {
 	PrometheusGoMetricsEnabled bool `json:"prometheusGoMetricsEnabled,omitempty"`
 	// PrometheusProcessMetricsEnabled enables Prometheus process metrics collection
 	PrometheusProcessMetricsEnabled bool `json:"prometheusProcessMetricsEnabled,omitempty"`
+	// MTU to be set in the cni-network-config for calico.
+	MTU *int32 `json:"mtu,omitempty"`
 }
 
 // CanalNetworkingSpec declares that we want Canal networking
