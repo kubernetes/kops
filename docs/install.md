@@ -70,7 +70,7 @@ https://aws.amazon.com/cli/
  
  The officially supported way of installing the tool is with `pip`:
  
-```python
+```bash
 pip install awscli
 ```
 
