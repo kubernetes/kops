@@ -25,7 +25,7 @@ export S3_ACCESS_KEY_ID=<access-key-id>  # where <access-key-id> is the Spaces A
 export S3_SECRET_ACCESS_KEY=<secret-key>  # where <secret-key> is the Spaces API Secret Key for your bucket
 
 # this is required since DigitalOcean support is currently in alpha so it is feature gated
-export KOPS_FEATURE_FLAGS="AlphaAllowDO" # this is required since
+export KOPS_FEATURE_FLAGS="AlphaAllowDO"
 ```
 
 ## Creating a Cluster
