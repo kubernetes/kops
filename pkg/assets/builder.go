@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/pkg/values"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
+	"regexp"
 )
 
 // RewriteManifests controls whether we rewrite manifests
@@ -143,6 +144,20 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		override := os.Getenv("DNSCONTROLLER_IMAGE")
 		if override != "" {
 			image = override
+		}
+	}
+
+	if a.AssetsLocation != nil && a.AssetsLocation.ContainerProxy != nil {
+		containerProxy := *a.AssetsLocation.ContainerProxy
+		normalized := image
+
+		// If the image name contains only a single / we can assume ot is an image pulled from the docker hub. eg. "weaveworks/weave-kube"
+		// In these cases it should be sufficient to just prepend the proxy url, producing eg docker-proxy/weaveworks/weave-kube
+		if strings.Count(normalized, "/") == 1 {
+			normalized = containerProxy + "/" + normalized
+		} else {
+			var re = regexp.MustCompile(`^[^/]+`)
+			normalized = re.ReplaceAllString(normalized, containerProxy)
 		}
 	}
 
