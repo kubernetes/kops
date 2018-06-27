@@ -74,7 +74,7 @@ kops rolling-update cluster [flags]
       --force                          Force rolling update, even if no changes
   -h, --help                           help for cluster
       --instance-group strings         List of instance groups to update (defaults to all if not specified)
-      --instance-group-roles strings   If specified, only instance groups of the specified role will be updated
+      --instance-group-roles strings   If specified, only instance groups of the specified role will be updated (e.g. Master,Node,Bastion)
   -i, --interactive                    Prompt to continue after each instance is updated
       --master-interval duration       Time to wait between restarting masters (default 5m0s)
       --node-interval duration         Time to wait between restarting nodes (default 4m0s)
