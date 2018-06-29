@@ -103,6 +103,7 @@ k8s.io/kops/pkg/openapi
 k8s.io/kops/pkg/pki
 k8s.io/kops/pkg/pretty
 k8s.io/kops/pkg/resources
+k8s.io/kops/pkg/resources/ali
 k8s.io/kops/pkg/resources/aws
 k8s.io/kops/pkg/resources/digitalocean
 k8s.io/kops/pkg/resources/digitalocean/dns
