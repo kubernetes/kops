@@ -32,7 +32,9 @@ data:
           "etcd_scheme": "https",
           {{- end }}
           "log_level": "info",
-          "mtu": {{- or .Networking.Calico.MTU 8981 }},
+          {{- if .Networking.Calico.MTU }}
+          "mtu": {{- or .Networking.Calico.MTU }},
+          {{- end }}
           "ipam": {
             "type": "calico-ipam"
           },
@@ -217,8 +219,10 @@ spec:
               value: "{{- or .Networking.Calico.PrometheusProcessMetricsEnabled "true" }}"
             - name: FELIX_HEALTHENABLED
               value: "true"
+            {{- if .Networking.Calico.MTU }}
             - name: FELIX_IPINIPMTU
-              value: "{{- or .Networking.Calico.MTU 8981 }}"
+              value: "{{- or .Networking.Calico.MTU }}"
+            {{- end}}
           securityContext:
             privileged: true
           volumeMounts:
