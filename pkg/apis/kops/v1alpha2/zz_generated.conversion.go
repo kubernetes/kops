@@ -287,6 +287,7 @@ func Convert_kops_AmazonVPCNetworkingSpec_To_v1alpha2_AmazonVPCNetworkingSpec(in
 func autoConvert_v1alpha2_Assets_To_kops_Assets(in *Assets, out *kops.Assets, s conversion.Scope) error {
 	out.ContainerRegistry = in.ContainerRegistry
 	out.FileRepository = in.FileRepository
+	out.ContainerProxy = in.ContainerProxy
 	return nil
 }
 
@@ -298,6 +299,7 @@ func Convert_v1alpha2_Assets_To_kops_Assets(in *Assets, out *kops.Assets, s conv
 func autoConvert_kops_Assets_To_v1alpha2_Assets(in *kops.Assets, out *Assets, s conversion.Scope) error {
 	out.ContainerRegistry = in.ContainerRegistry
 	out.FileRepository = in.FileRepository
+	out.ContainerProxy = in.ContainerProxy
 	return nil
 }
 
