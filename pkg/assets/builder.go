@@ -151,9 +151,9 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		containerProxy := *a.AssetsLocation.ContainerProxy
 		normalized := image
 
-		// If the image name contains only a single / we can assume ot is an image pulled from the docker hub. eg. "weaveworks/weave-kube"
-		// In these cases it should be sufficient to just prepend the proxy url, producing eg docker-proxy/weaveworks/weave-kube
-		if strings.Count(normalized, "/") == 1 {
+		// If the image name contains only a single / we need to determine if the image is located on docker-hub or if it's using a convenient URL like k8s.gcr.io/<image-name>
+		// In case of a hub image it should be sufficient to just prepend the proxy url, producing eg docker-proxy.example.com/weaveworks/weave-kube
+		if strings.Count(normalized, "/") == 1 && !strings.ContainsAny(strings.Split(normalized, "/")[0], ".:"){
 			normalized = containerProxy + "/" + normalized
 		} else {
 			var re = regexp.MustCompile(`^[^/]+`)
