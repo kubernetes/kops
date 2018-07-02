@@ -304,7 +304,6 @@ type cloudformationElasticIP struct {
 func (_ *ElasticIP) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *ElasticIP) error {
 	tf := &cloudformationElasticIP{
 		Domain: aws.String("vpc"),
-		Tags:   buildCloudformationTags(e.Tags),
 	}
 
 	return t.RenderResource("AWS::EC2::EIP", *e.Name, tf)

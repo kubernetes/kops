@@ -399,7 +399,7 @@ func (e *NatGateway) TerraformLink() *terraform.Literal {
 type cloudformationNATGateway struct {
 	AllocationID *cloudformation.Literal `json:"AllocationId,omitempty"`
 	SubnetID     *cloudformation.Literal `json:"SubnetId,omitempty"`
-	Tag          map[string]string       `json:"tags,omitempty"`
+	Tags          []cloudformationTag      `json:"Tags,omitempty"`
 }
 
 func (_ *NatGateway) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *NatGateway) error {
