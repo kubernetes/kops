@@ -285,6 +285,14 @@ func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 	return m.Cluster.Spec.API.LoadBalancer != nil
 }
 
+// If true then we will use the created loadbalancer for internal kubelet
+// connections.  The intention here is to make connections to apiserver more
+// HA - see https://github.com/kubernetes/kops/issues/4252
+func (m *KopsModelContext) UseLoadBalancerForInternalAPI() bool {
+	return m.UseLoadBalancerForAPI() &&
+		m.Cluster.Spec.API.LoadBalancer.UseApiInternal == true
+}
+
 // UsePrivateDNS checks if we are using private DNS
 func (m *KopsModelContext) UsePrivateDNS() bool {
 	topology := m.Cluster.Spec.Topology
