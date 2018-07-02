@@ -441,8 +441,13 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 
 func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	annotations := make(map[string]string)
-	if b.Cluster.Spec.API != nil && b.Cluster.Spec.API.DNS != nil {
+
+	// DNS should only be managed for the internal record if a load balancer is not used
+	if b.UseLoadBalancerForInternalAPI() == false {
 		annotations["dns.alpha.kubernetes.io/internal"] = b.Cluster.Spec.MasterInternalName
+	}
+
+	if b.Cluster.Spec.API != nil && b.Cluster.Spec.API.DNS != nil {
 		annotations["dns.alpha.kubernetes.io/external"] = b.Cluster.Spec.MasterPublicName
 	}
 
