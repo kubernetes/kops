@@ -13,7 +13,7 @@ You'll also need to [configure default credentials](https://developers.google.co
 
 # Creating a state store
 
-kops needs a state store, to hold the configuration for your Clusters.  The simplest configuration
+kops needs a state store, to hold the configuration for your clusters.  The simplest configuration
 for Google Cloud is to store it in a Google Cloud Storage bucket in the same account, so that's how we'll
 start.
 
