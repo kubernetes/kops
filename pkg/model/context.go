@@ -289,7 +289,6 @@ func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 // connections.  The intention here is to make connections to apiserver more
 // HA - see https://github.com/kubernetes/kops/issues/4252
 func (m *KopsModelContext) UseLoadBalancerForInternalAPI() bool {
-	glog.Warningf("LB API IS %q", m.Cluster.Spec.API.LoadBalancer.UseApiInternal)
 	return m.UseLoadBalancerForAPI() &&
 		m.Cluster.Spec.API.LoadBalancer.UseApiInternal == true
 }
