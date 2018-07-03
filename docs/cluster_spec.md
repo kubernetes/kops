@@ -179,7 +179,7 @@ You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/do
 
 Example policy file can be found [here](https://github.com/kubernetes/website/blob/master/content/en/docs/tasks/debug-application-cluster/audit-policy.yaml)
 
-#### Max Requests Inflight 
+#### Max Requests Inflight
 
 The maximum number of non-mutating requests in flight at a given time. When the server exceeds this, it rejects requests. Zero for no limit. (default 400)
 
@@ -338,17 +338,17 @@ spec:
     kubeReserved:
         cpu: "100m"
         memory: "100Mi"
-        storage: "1Gi"
+        ephemeral-storage: "1Gi"
     kubeReservedCgroup: "/kube-reserved"
     systemReserved:
         cpu: "100m"
         memory: "100Mi"
-        storage: "1Gi"
+        ephemeral-storage: "1Gi"
     systemReservedCgroup: "/system-reserved"
     enforceNodeAllocatable: "pods,system-reserved,kube-reserved"
 ```
 
-Will result in the flag `--kube-reserved=cpu=100m,memory=100Mi,storage=1Gi --kube-reserved-cgroup=/kube-reserved --system-reserved=cpu=100mi,memory=100Mi,storage=1Gi --system-reserved-cgroup=/system-reserved --enforce-node-allocatable=pods,system-reserved,kube-reserved`
+Will result in the flag `--kube-reserved=cpu=100m,memory=100Mi,ephemeral-storage=1Gi --kube-reserved-cgroup=/kube-reserved --system-reserved=cpu=100mi,memory=100Mi,ephemeral-storage=1Gi --system-reserved-cgroup=/system-reserved --enforce-node-allocatable=pods,system-reserved,kube-reserved`
 
 Learn [more about reserving compute resources](https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/).
 
