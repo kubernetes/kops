@@ -71,6 +71,10 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		}
 	}
 
+	if c.Spec.Assets != nil && c.Spec.Assets.ContainerProxy != nil && c.Spec.Assets.ContainerRegistry != nil {
+		return field.Forbidden(fieldSpec.Child("Assets", "ContainerProxy"), "ContainerProxy cannot be used in conjunction with ContainerRegistry as represent mutually exclusive concepts. Please consult the documentation for details.")
+	}
+
 	if c.Spec.CloudProvider == "" {
 		return field.Required(fieldSpec.Child("CloudProvider"), "")
 	}
