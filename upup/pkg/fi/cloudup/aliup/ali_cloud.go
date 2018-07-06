@@ -29,7 +29,6 @@ import (
 	"github.com/denverdino/aliyungo/ram"
 	"github.com/denverdino/aliyungo/slb"
 
-	"k8s.io/api/core/v1"
 	prj "k8s.io/kops"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
@@ -40,6 +39,7 @@ import (
 const TagClusterName = "KubernetesCluster"
 const TagNameRolePrefix = "k8s.io/role/"
 const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+const TagRoleMaster = "master"
 
 // This is for statistic purpose.
 var KubernetesKopsIdentity = fmt.Sprintf("Kubernetes.Kops/%s", prj.Version)
@@ -58,6 +58,8 @@ type ALICloud interface {
 	CreateTags(resourceId string, resourceType string, tags map[string]string) error
 	RemoveTags(resourceId string, resourceType string, tags map[string]string) error
 	GetClusterTags() map[string]string
+	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
+	GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
 }
 
 type aliCloudImplementation struct {
@@ -174,10 +176,6 @@ func (c *aliCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 
 }
 
-func (c *aliCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return nil, errors.New("GetCloudGroups not implemented on aliCloud")
-}
-
 // GetTags will get the specified resource's tags.
 func (c *aliCloudImplementation) GetTags(resourceId string, resourceType string) (map[string]string, error) {
 	if resourceId == "" {
@@ -269,6 +267,33 @@ func (c *aliCloudImplementation) RemoveTags(resourceId string, resourceType stri
 // GetClusterTags will get the ClusterTags
 func (c *aliCloudImplementation) GetClusterTags() map[string]string {
 	return c.tags
+}
+
+func (c *aliCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+	var ingresses []kops.ApiIngressStatus
+	name := "api." + cluster.Name
+
+	describeLoadBalancersArgs := &slb.DescribeLoadBalancersArgs{
+		RegionId:         common.Region(c.Region()),
+		LoadBalancerName: name,
+	}
+
+	responseLoadBalancers, err := c.SlbClient().DescribeLoadBalancers(describeLoadBalancersArgs)
+	if err != nil {
+		return nil, fmt.Errorf("error finding LoadBalancers: %v", err)
+	}
+	// Don't exist loadbalancer with specified ClusterTags or Name.
+	if len(responseLoadBalancers) == 0 {
+		return nil, nil
+	}
+	if len(responseLoadBalancers) > 1 {
+		glog.V(4).Info("The number of specified loadbalancer with the same name exceeds 1, loadbalancerName:%q", name)
+	}
+
+	address := responseLoadBalancers[0].Address
+	ingresses = append(ingresses, kops.ApiIngressStatus{IP: address})
+
+	return ingresses, nil
 }
 
 func ZoneToVSwitchID(VPCID string, zones []string, vswitchIDs []string) (map[string]string, error) {
