@@ -42,6 +42,7 @@ Several different CNI providers are currently built into kops:
 * [romana](https://github.com/romana/romana)
 * [weave](https://github.com/weaveworks/weave-kube)
 * [amazon-vpc-routed-eni](./networking.md#amazon-vpc-backend)
+* [Cilium](http://docs.cilium.io)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
 Replace the provider name with the names listed above with you `kops cluster create`.  For instance
@@ -349,6 +350,73 @@ $ kops create cluster \
 ```
 
 In case of any issues the directory `/var/log/aws-routed-eni` contains the log files of the CNI plugin. This directory is located in all the nodes in the cluster.
+
+### Cilium Example for CNI and Network Policy
+
+Cilium is open source software for transparently securing the network connectivity between application services deployed using Linux container management platforms like Docker and Kubernetes.
+
+#### Installing Cilium on a new Cluster
+
+The following command sets up a cluster, in HA mode, with Cilium as the CNI and networking policy provider
+
+```console
+$ export ZONES=mylistofzones
+$ kops create cluster \
+  --zones $ZONES \
+  --master-zones $ZONES \
+  --networking cilium\
+  --yes \
+  --name cilium.example.com
+```
+
+The above will deploy a daemonset installation which requires K8s 1.7.x or above.
+
+#### Configuring Cilium
+
+The following command registers a cluster, but doesn't create it yet
+
+```console
+$ export ZONES=mylistofzones
+$ kops create cluster \
+  --zones $ZONES \
+  --master-zones $ZONES \
+  --networking cilium\
+  --name cilium.example.com
+```
+
+`kops edit cluster`  will show you a block like this:
+
+```
+  networking:
+    cilium: {}
+```
+
+You can adjust Cilium agent configuration with most options that are available in [cilium-agent command reference](http://cilium.readthedocs.io/en/stable/cmdref/cilium-agent/).
+
+E.g enabling logstash integration would require you to change above block to
+
+```
+  networking:
+    cilium:
+      logstash: true
+```
+
+The following command will create your cluster with desired Cilium configuration
+
+```console
+$ kops update cluster myclustername.mydns.io --yes
+```
+
+#### Getting help with Cilium
+
+For problems with deploying Cilium please post an issue to Github:
+
+- [Cilium Issues](https://github.com/cilium/cilium/issues)
+
+For support with Cilium Network Policies you can reach out on Slack or Github:
+
+- [Cilium Github](https://github.com/cilium/cilium)
+- [Cilium Slack](https://cilium.io/slack)
 
 ### Validating CNI Installation
 
