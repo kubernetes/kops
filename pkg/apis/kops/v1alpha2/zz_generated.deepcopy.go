@@ -2735,6 +2735,15 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 			**out = **in
 		}
 	}
+	if in.DockerDisableSharedPID != nil {
+		in, out := &in.DockerDisableSharedPID, &out.DockerDisableSharedPID
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
+			**out = **in
+		}
+	}
 	return
 }
 
