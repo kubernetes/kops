@@ -21,7 +21,8 @@
         "ec2:CreateSecurityGroup",
         "ec2:CreateTags",
         "ec2:CreateVolume",
-        "ec2:ModifyInstanceAttribute"
+        "ec2:ModifyInstanceAttribute",
+        "ec2:ModifyVolume"
       ],
       "Resource": [
         "*"
