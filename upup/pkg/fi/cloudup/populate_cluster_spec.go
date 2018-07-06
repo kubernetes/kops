@@ -268,7 +268,10 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 
 	templateFunctions := make(template.FuncMap)
 
-	tf.AddTo(templateFunctions)
+	err = tf.AddTo(templateFunctions, secretStore)
+	if err != nil {
+		return err
+	}
 
 	if cluster.Spec.KubernetesVersion == "" {
 		return fmt.Errorf("KubernetesVersion is required")

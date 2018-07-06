@@ -14,6 +14,7 @@ go_library(
         "create_secret_keypair_ca.go",
         "create_secret_sshpublickey.go",
         "create_secret_tls.go",
+        "create_secret_weave_encryptionconfig.go",
         "delete.go",
         "delete_cluster.go",
         "delete_instancegroup.go",
