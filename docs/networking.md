@@ -10,7 +10,7 @@ Kubernetes Operations (kops) currently supports 4 networking modes:
 ### kops Default Networking
 
 Kubernetes Operations (kops) uses `kubenet` networking by default. This sets up networking on AWS using VPC
-networking, where the  master allocates a /24 CIDR to each Node, drawing from the Node network.  
+networking, where the  master allocates a /24 CIDR to each Node, drawing from the Node network.
 Using `kubenet` mode routes for  each node are then configured in the AWS VPC routing tables.
 
 One important limitation when using `kubenet` networking is that an AWS routing table cannot have more than
@@ -110,6 +110,18 @@ spec:
       mtu: 8912
 ```
 
+### Configuring Weave network encryption
+
+The Weave network encryption is configurable by creating a weave network secret password.
+Weaveworks recommends choosing a secret with [at least 50 bits of entropy](https://www.weave.works/docs/net/latest/tasks/manage/security-untrusted-networks/).
+
+```console
+$ cat /dev/urandom | tr -dc A-Za-z0-9 | head -c9 > password
+$ kops create secret weavepassword -f password
+$ kops update cluster
+```
+
+Since unencrypted nodes will not be able to connect to nodes configured with encryption enabled, this configuration cannot be changed easily without downtime. 
 
 ### Calico Example for CNI and Network Policy
 
@@ -138,7 +150,7 @@ when it’s destined to subnets with intermediate infrastructure lacking Calico 
 
 With this mode, IP-in-IP encapsulation is only performed selectively. This provides better performance in AWS
 multi-AZ deployments, and in general when deploying on networks where pools of nodes with L2 connectivity
-are connected via a router. 
+are connected via a router.
 
 Reference: [Calico 2.1 Release Notes](https://www.projectcalico.org/project-calico-2-1-released/)
 
@@ -260,7 +272,7 @@ $ kops create cluster \
 
 Currently kube-router supports 1.6 and above. Please note that kube-router will also provide service proxy, so kube-proxy will not be deployed in to the cluster.
 
-No additional configurations are required to be done by user. Kube-router automatically disables source-destination check on all AWS EC2 instances. For the traffic within a subnet there is no overlay or tunneling used. For cross-subnet pod traffic ip-ip tunneling is used implicitly and no configuration is required. 
+No additional configurations are required to be done by user. Kube-router automatically disables source-destination check on all AWS EC2 instances. For the traffic within a subnet there is no overlay or tunneling used. For cross-subnet pod traffic ip-ip tunneling is used implicitly and no configuration is required.
 
 ### Romana Example for CNI
 

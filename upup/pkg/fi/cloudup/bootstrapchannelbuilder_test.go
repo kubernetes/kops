@@ -24,6 +24,7 @@ import (
 
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/model"
@@ -32,6 +33,7 @@ import (
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func TestBootstrapChannelBuilder_BuildTasks(t *testing.T) {
@@ -74,8 +76,22 @@ func runChannelBuilderTest(t *testing.T, key string) {
 	if err != nil {
 		t.Fatalf("error building templates: %v", err)
 	}
+
+	vfs.Context.ResetMemfsContext(true)
+
+	basePath, err := vfs.Context.BuildVfsPath("memfs://tests")
+	if err != nil {
+		t.Errorf("error building vfspath: %v", err)
+	}
+	clientset := vfsclientset.NewVFSClientset(basePath, true)
+
+	secretStore, err := clientset.SecretStore(cluster)
+	if err != nil {
+		t.Error(err)
+	}
+
 	tf := &TemplateFunctions{cluster: cluster, modelContext: &model.KopsModelContext{Cluster: cluster}}
-	tf.AddTo(templates.TemplateFunctions)
+	tf.AddTo(templates.TemplateFunctions, secretStore)
 
 	bcb := BootstrapChannelBuilder{
 		cluster:      cluster,
