@@ -22,6 +22,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 
 	"github.com/blang/semver"
@@ -34,7 +35,6 @@ import (
 	"k8s.io/kops/pkg/values"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
-	"regexp"
 )
 
 // RewriteManifests controls whether we rewrite manifests
@@ -153,7 +153,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 
 		// If the image name contains only a single / we need to determine if the image is located on docker-hub or if it's using a convenient URL like k8s.gcr.io/<image-name>
 		// In case of a hub image it should be sufficient to just prepend the proxy url, producing eg docker-proxy.example.com/weaveworks/weave-kube
-		if strings.Count(normalized, "/") == 1 && !strings.ContainsAny(strings.Split(normalized, "/")[0], ".:"){
+		if strings.Count(normalized, "/") == 1 && !strings.ContainsAny(strings.Split(normalized, "/")[0], ".:") {
 			normalized = containerProxy + "/" + normalized
 		} else {
 			var re = regexp.MustCompile(`^[^/]+`)
