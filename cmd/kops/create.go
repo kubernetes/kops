@@ -158,6 +158,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 			case *kopsapi.Cluster:
 				// Adding a PerformAssignments() call here as the user might be trying to use
 				// the new `-f` feature, with an old cluster definition.
+
 				err = cloudup.PerformAssignments(v)
 				if err != nil {
 					return fmt.Errorf("error populating configuration: %v", err)
