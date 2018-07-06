@@ -635,6 +635,7 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, legac
 					"ec2:CreateTags",              // aws.go, tag.go
 					"ec2:CreateVolume",            // aws.go
 					"ec2:ModifyInstanceAttribute", // aws.go
+					"ec2:ModifyVolume",            // aws.go
 				}),
 				Resource: resource,
 			},
