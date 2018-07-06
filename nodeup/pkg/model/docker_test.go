@@ -38,6 +38,7 @@ func TestDockerBuilder_LogFlags(t *testing.T) {
 }
 
 func TestDockerBuilder_BuildFlags(t *testing.T) {
+	logDriver := "json-file"
 	grid := []struct {
 		config   kops.DockerConfig
 		expected string
@@ -48,20 +49,20 @@ func TestDockerBuilder_BuildFlags(t *testing.T) {
 		},
 		{
 			kops.DockerConfig{
-				LogDriver: "json-file",
+				LogDriver: &logDriver,
 			},
 			"--log-driver=json-file",
 		},
 		{
 			kops.DockerConfig{
-				LogDriver: "json-file",
+				LogDriver: &logDriver,
 				LogOpt:    []string{"max-size=10m"},
 			},
 			"--log-driver=json-file --log-opt=max-size=10m",
 		},
 		{
 			kops.DockerConfig{
-				LogDriver: "json-file",
+				LogDriver: &logDriver,
 				LogOpt:    []string{"max-size=10m", "max-file=5"},
 			},
 			"--log-driver=json-file --log-opt=max-file=5 --log-opt=max-size=10m",
