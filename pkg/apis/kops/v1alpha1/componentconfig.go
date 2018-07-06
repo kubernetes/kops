@@ -168,6 +168,8 @@ type KubeletConfigSpec struct {
 	ExperimentalAllowedUnsafeSysctls []string `json:"experimental_allowed_unsafe_sysctls,omitempty" flag:"experimental-allowed-unsafe-sysctls"`
 	// StreamingConnectionIdleTimeout is the maximum time a streaming connection can be idle before the connection is automatically closed
 	StreamingConnectionIdleTimeout *metav1.Duration `json:"streamingConnectionIdleTimeout,omitempty" flag:"streaming-connection-idle-timeout"`
+	// DockerDisableSharedPID uses a shared PID namespace for containers in a pod.
+	DockerDisableSharedPID *bool `json:"dockerDisableSharedPID,omitempty" flag:"docker-disable-shared-pid"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
