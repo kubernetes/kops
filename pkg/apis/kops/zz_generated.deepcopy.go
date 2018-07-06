@@ -1152,6 +1152,15 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 			**out = **in
 		}
 	}
+	if in.LogDriver != nil {
+		in, out := &in.LogDriver, &out.LogDriver
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
 	if in.LogLevel != nil {
 		in, out := &in.LogLevel, &out.LogLevel
 		if *in == nil {
