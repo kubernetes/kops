@@ -32,14 +32,14 @@ spec:
     rbac: {}
 ```
 
-## Heptio Authenticator for AWS
+## AWS IAM Authenticator
 
-If you want to turn on Heptio Authenticator for AWS, you can add this block 
+If you want to turn on AWS IAM Authenticator, you can add this block 
 to your cluster:
 
 ```
 authentication:
-  heptio: {}
+  aws: {}
 ```
 
 For example:
@@ -51,14 +51,14 @@ metadata:
   name: cluster.example.com
 spec:
   authentication:
-    heptio: {}
+    aws: {}
   authorization:
     rbac: {}
 ```
 
-Once the cluster is up you will need to create the heptio authenticator
+Once the cluster is up you will need to create the AWS IAM authenticator
 config as a config map. (This can also be done when boostrapping a cluster using addons)
-For more details on heptio authenticator please visit (heptio/authenticator)[https://github.com/heptio/authenticator]
+For more details on AWS IAM authenticator please visit (kubernetes-sigs/aws-iam-authenticator)[https://github.com/kubernetes-sigs/aws-iam-authenticator]
 Example config:
 
 ```
@@ -67,9 +67,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   namespace: kube-system
-  name: heptio-authenticator-aws
+  name: aws-iam-authenticator
   labels:
-    k8s-app: heptio-authenticator-aws
+    k8s-app: aws-iam-authenticator
 data:
   config.yaml: |
     # a unique-per-cluster identifier to prevent replay attacks
