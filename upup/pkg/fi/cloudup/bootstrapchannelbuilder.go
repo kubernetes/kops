@@ -759,8 +759,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				manifests[key+"-"+id] = "addons/" + location
 			}
 		}
-		if b.cluster.Spec.Authentication.Heptio != nil {
-			key := "authentication.hept.io"
+		if b.cluster.Spec.Authentication.Aws != nil {
+			key := "authentication.aws"
 			version := "0.3.0"
 
 			{
