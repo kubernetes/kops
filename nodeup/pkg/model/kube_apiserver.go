@@ -226,7 +226,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 			}
 
 			c.AddTask(&nodetasks.File{
-				Path:     "/srv/kubernetes/heptio-authenticator-aws/cert.pem",
+				Path:     "/srv/kubernetes/aws-iam-authenticator/cert.pem",
 				Contents: fi.NewBytesResource(certificateData),
 				Type:     nodetasks.FileType_File,
 				Mode:     fi.String("600"),
@@ -248,7 +248,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 			}
 
 			c.AddTask(&nodetasks.File{
-				Path:     "/srv/kubernetes/heptio-authenticator-aws/key.pem",
+				Path:     "/srv/kubernetes/aws-iam-authenticator/key.pem",
 				Contents: fi.NewBytesResource(keyData),
 				Type:     nodetasks.FileType_File,
 				Mode:     fi.String("600"),
