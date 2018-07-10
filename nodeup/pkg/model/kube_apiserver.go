@@ -211,6 +211,9 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 			})
 		}
 
+		// We create user aws-iam-authenticator and hardcode its UID to 10000 as
+		// that is the ID used inside the aws-iam-authenticator container.
+		// The owner/group for the keypair to aws-iam-authenticator
 		{
 			c.AddTask(&nodetasks.UserTask{
 				Name:  "aws-iam-authenticator",
