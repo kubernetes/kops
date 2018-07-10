@@ -101,7 +101,7 @@ kops create cluster [flags]
       --ssh-public-key string            SSH public key to use (defaults to ~/.ssh/id_rsa.pub on AWS)
       --subnets strings                  Set to use shared subnets
       --target string                    Valid targets: direct, terraform, cloudformation. Set this flag to terraform if you want kops to generate terraform (default "direct")
-  -t, --topology string                  Controls network topology for the cluster. public|private. Default is 'public'. (default "public")
+  -t, --topology string                  Controls network topology for the cluster. public|private (default "public")
       --utility-subnets strings          Set to use shared utility subnets
       --vpc string                       Set to use a shared VPC
   -y, --yes                              Specify --yes to immediately create the cluster
