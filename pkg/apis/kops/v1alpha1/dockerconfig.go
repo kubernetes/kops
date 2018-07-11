@@ -24,8 +24,12 @@ type DockerConfig struct {
 	Bridge *string `json:"bridge,omitempty" flag:"bridge"`
 	// BridgeIP is a specific IP address and netmask for the docker0 bridge, using standard CIDR notation
 	BridgeIP *string `json:"bridgeIP,omitempty" flag:"bip"`
+	// DataRoot is the root directory of persistent docker state (default "/var/lib/docker")
+	DataRoot *string `json:"dataRoot,omitempty" flag:"data-root"`
 	// DefaultUlimit is the ulimits for containers
 	DefaultUlimit []string `json:"defaultUlimit,omitempty" flag:"default-ulimit,repeat"`
+	// ExecRoot is the root directory for execution state files (default "/var/run/docker")
+	ExecRoot *string `json:"execRoot,omitempty" flag:"exec-root"`
 	// Hosts enables you to configure the endpoints the docker daemon listens on i.e tcp://0.0.0.0.2375 or unix:///var/run/docker.sock etc
 	Hosts []string `json:"hosts,omitempty" flag:"host,repeat"`
 	// IPMasq enables ip masquerading for containers

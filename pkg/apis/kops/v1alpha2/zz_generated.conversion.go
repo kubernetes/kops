@@ -1436,7 +1436,9 @@ func autoConvert_v1alpha2_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.AuthorizationPlugins = in.AuthorizationPlugins
 	out.Bridge = in.Bridge
 	out.BridgeIP = in.BridgeIP
+	out.DataRoot = in.DataRoot
 	out.DefaultUlimit = in.DefaultUlimit
+	out.ExecRoot = in.ExecRoot
 	out.Hosts = in.Hosts
 	out.IPMasq = in.IPMasq
 	out.IPTables = in.IPTables
@@ -1465,7 +1467,9 @@ func autoConvert_kops_DockerConfig_To_v1alpha2_DockerConfig(in *kops.DockerConfi
 	out.AuthorizationPlugins = in.AuthorizationPlugins
 	out.Bridge = in.Bridge
 	out.BridgeIP = in.BridgeIP
+	out.DataRoot = in.DataRoot
 	out.DefaultUlimit = in.DefaultUlimit
+	out.ExecRoot = in.ExecRoot
 	out.Hosts = in.Hosts
 	out.IPMasq = in.IPMasq
 	out.IPTables = in.IPTables
