@@ -271,8 +271,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			t := &fitasks.Keypair{
-				Name:           fi.String("heptio-authenticator-aws"),
-				Subject:        "cn=heptio-authenticator-aws",
+				Name:           fi.String("aws-iam-authenticator"),
+				Subject:        "cn=aws-iam-authenticator",
 				Type:           "server",
 				AlternateNames: alternateNames,
 				Signer:         defaultCA,
