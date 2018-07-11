@@ -37,7 +37,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      application: skipper-ingress
+      component: ingress
   updateStrategy:
     type: RollingUpdate
   template:
