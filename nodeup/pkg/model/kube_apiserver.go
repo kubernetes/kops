@@ -211,6 +211,18 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 			})
 		}
 
+		// We create user aws-iam-authenticator and hardcode its UID to 10000 as
+		// that is the ID used inside the aws-iam-authenticator container.
+		// The owner/group for the keypair to aws-iam-authenticator
+		{
+			c.AddTask(&nodetasks.UserTask{
+				Name:  "aws-iam-authenticator",
+				UID:   10000,
+				Shell: "/sbin/nologin",
+				Home:  "/srv/kubernetes/aws-iam-authenticator",
+			})
+		}
+
 		{
 			certificate, err := b.NodeupModelContext.KeyStore.FindCert(id)
 			if err != nil {
@@ -230,6 +242,8 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 				Contents: fi.NewBytesResource(certificateData),
 				Type:     nodetasks.FileType_File,
 				Mode:     fi.String("600"),
+				Owner:    fi.String("aws-iam-authenticator"),
+				Group:    fi.String("aws-iam-authenticator"),
 			})
 		}
 
@@ -252,6 +266,8 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 				Contents: fi.NewBytesResource(keyData),
 				Type:     nodetasks.FileType_File,
 				Mode:     fi.String("600"),
+				Owner:    fi.String("aws-iam-authenticator"),
+				Group:    fi.String("aws-iam-authenticator"),
 			})
 		}
 
