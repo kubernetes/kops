@@ -244,7 +244,7 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	// @check if we are using bootstrap tokens and file checker
 	if !b.IsMaster && b.UseBootstrapTokens() {
 		manifest.Set("Service", "ExecStartPre",
-			fmt.Sprintf("/usr/bin/bash -c 'while [ ! -f %s ]; do sleep 5; done;'", b.KubeletBootstrapKubeconfig()))
+			fmt.Sprintf("/bin/bash -c 'while [ ! -f %s ]; do sleep 5; done;'", b.KubeletBootstrapKubeconfig()))
 	}
 
 	manifest.Set("Service", "ExecStart", kubeletCommand+" \"$DAEMON_ARGS\"")
