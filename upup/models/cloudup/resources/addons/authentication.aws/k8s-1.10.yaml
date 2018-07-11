@@ -3,9 +3,9 @@ apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   namespace: kube-system
-  name: heptio-authenticator-aws
+  name: aws-iam-authenticator
   labels:
-    k8s-app: heptio-authenticator-aws
+    k8s-app: aws-iam-authenticator
 spec:
   updateStrategy:
     type: RollingUpdate
@@ -14,7 +14,7 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
       labels:
-        k8s-app: heptio-authenticator-aws
+        k8s-app: aws-iam-authenticator
     spec:
       # run on the host network (don't depend on CNI)
       hostNetwork: true
@@ -28,17 +28,17 @@ spec:
       - key: CriticalAddonsOnly
         operator: Exists
 
-      # run `heptio-authenticator-aws server` with three volumes
-      # - config (mounted from the ConfigMap at /etc/heptio-authenticator-aws/config.yaml)
+      # run `aws-iam-authenticator server` with three volumes
+      # - config (mounted from the ConfigMap at /etc/aws-iam-authenticator/config.yaml)
       # - state (persisted TLS certificate and keys, mounted from the host)
       # - output (output kubeconfig to plug into your apiserver configuration, mounted from the host)
       containers:
-      - name: heptio-authenticator-aws
+      - name: aws-iam-authenticator
         image: gcr.io/heptio-images/authenticator:v0.3.0
         args:
         - server
-        - --config=/etc/heptio-authenticator-aws/config.yaml
-        - --state-dir=/var/heptio-authenticator-aws
+        - --config=/etc/aws-iam-authenticator/config.yaml
+        - --state-dir=/var/aws-iam-authenticator
         - --kubeconfig-pregenerated=true
 
         resources:
@@ -51,19 +51,19 @@ spec:
 
         volumeMounts:
         - name: config
-          mountPath: /etc/heptio-authenticator-aws/
+          mountPath: /etc/aws-iam-authenticator/
         - name: state
-          mountPath: /var/heptio-authenticator-aws/
+          mountPath: /var/aws-iam-authenticator/
         - name: output
-          mountPath: /etc/kubernetes/heptio-authenticator-aws/
+          mountPath: /etc/kubernetes/aws-iam-authenticator/
 
       volumes:
       - name: config
         configMap:
-          name: heptio-authenticator-aws
+          name: aws-iam-authenticator
       - name: output
         hostPath:
-          path: /srv/kubernetes/heptio-authenticator-aws/
+          path: /srv/kubernetes/aws-iam-authenticator/
       - name: state
         hostPath:
-          path: /srv/kubernetes/heptio-authenticator-aws/
+          path: /srv/kubernetes/aws-iam-authenticator/
