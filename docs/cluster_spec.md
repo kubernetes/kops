@@ -177,7 +177,7 @@ spec:
 
 You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#fileassets)  feature to push an advanced audit policy file on the master nodes.
 
-Example policy file can be found [here](https://github.com/kubernetes/website/blob/master/content/en/docs/tasks/debug-application-cluster/audit-policy.yaml)
+Example policy file can be found [here](https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/audit/audit-policy.yaml)
 
 #### Max Requests Inflight
 
