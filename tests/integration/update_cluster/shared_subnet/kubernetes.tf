@@ -1,3 +1,18 @@
+locals = {
+  cluster_name                = "sharedsubnet.example.com"
+  master_security_group_ids   = ["${aws_security_group.masters-sharedsubnet-example-com.id}"]
+  masters_role_arn            = "${aws_iam_role.masters-sharedsubnet-example-com.arn}"
+  masters_role_name           = "${aws_iam_role.masters-sharedsubnet-example-com.name}"
+  node_security_group_ids     = ["${aws_security_group.nodes-sharedsubnet-example-com.id}"]
+  node_subnet_ids             = ["subnet-12345678"]
+  nodes_role_arn              = "${aws_iam_role.nodes-sharedsubnet-example-com.arn}"
+  nodes_role_name             = "${aws_iam_role.nodes-sharedsubnet-example-com.name}"
+  region                      = "us-test-1"
+  subnet_ids                  = ["subnet-12345678"]
+  subnet_us-test-1a-public_id = "subnet-12345678"
+  vpc_id                      = "vpc-12345678"
+}
+
 output "cluster_name" {
   value = "sharedsubnet.example.com"
 }
