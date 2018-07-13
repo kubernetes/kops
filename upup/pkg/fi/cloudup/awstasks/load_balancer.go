@@ -544,6 +544,20 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		}
 
 		if changes.Listeners != nil {
+
+			elbDescription, err := findLoadBalancerByLoadBalancerName(t.Cloud, loadBalancerName)
+			if err != nil {
+				return fmt.Errorf("error getting load balancer by name: %v", err)
+			}
+
+			if elbDescription != nil {
+				// deleting the listener before recreating it
+				t.Cloud.ELB().DeleteLoadBalancerListeners(&elb.DeleteLoadBalancerListenersInput{
+					LoadBalancerName: aws.String(loadBalancerName),
+					LoadBalancerPorts: []*int64{aws.Int64(443)},
+				})
+			}
+
 			request := &elb.CreateLoadBalancerListenersInput{}
 			request.LoadBalancerName = aws.String(loadBalancerName)
 
@@ -558,7 +572,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 
 			glog.V(2).Infof("Creating LoadBalancer listeners")
 
-			_, err := t.Cloud.ELB().CreateLoadBalancerListeners(request)
+			_, err = t.Cloud.ELB().CreateLoadBalancerListeners(request)
 			if err != nil {
 				return fmt.Errorf("error creating LoadBalancerListeners: %v", err)
 			}
