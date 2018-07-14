@@ -242,8 +242,13 @@ func (r *RollingUpdateInstanceGroup) ValidateClusterWithDuration(rollingUpdateDa
 }
 
 func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster, instanceGroupList *api.InstanceGroupList, duration time.Duration, tickDuration time.Duration) bool {
-	if _, err := validation.ValidateCluster(cluster, instanceGroupList, rollingUpdateData.K8sClient); err != nil {
+	result, err := validation.ValidateCluster(cluster, instanceGroupList, rollingUpdateData.K8sClient)
+
+	if err != nil {
 		glog.Infof("Cluster did not validate, will try again in %q until duration %q expires: %v.", tickDuration, duration, err)
+		return false
+	} else if len(result.Failures) > 0 {
+		glog.Infof("Cluster did not pass validation, will try again in %q until duration %q expires: %v.", tickDuration, duration, result.Failures[0].Message)
 		return false
 	} else {
 		glog.Infof("Cluster validated.")
