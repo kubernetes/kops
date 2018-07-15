@@ -659,7 +659,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Kuberouter != nil {
 		key := "networking.kuberouter"
-		version := "0.1.1-kops.1"
+		version := "0.1.1-kops.2"
 
 		{
 			location := key + "/k8s-1.6.yaml"
