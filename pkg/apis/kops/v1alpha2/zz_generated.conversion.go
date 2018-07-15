@@ -2433,6 +2433,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.FeatureGates = in.FeatureGates
 	out.MaxRequestsInflight = in.MaxRequestsInflight
 	out.EtcdQuorumRead = in.EtcdQuorumRead
+	out.MinRequestTimeout = in.MinRequestTimeout
 	return nil
 }
 
@@ -2504,6 +2505,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.FeatureGates = in.FeatureGates
 	out.MaxRequestsInflight = in.MaxRequestsInflight
 	out.EtcdQuorumRead = in.EtcdQuorumRead
+	out.MinRequestTimeout = in.MinRequestTimeout
 	return nil
 }
 
