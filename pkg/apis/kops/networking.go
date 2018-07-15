@@ -73,6 +73,8 @@ type CalicoNetworkingSpec struct {
 	CrossSubnet bool `json:"crossSubnet,omitempty"` // Enables Calico's cross-subnet mode when set to true
 	// LogSeverityScreen lets us set the desired log level. (Default: info)
 	LogSeverityScreen string `json:"logSeverityScreen,omitempty"`
+	// MTU to be set in the cni-network-config for calico.
+	MTU *int32 `json:"mtu,omitempty"`
 	// PrometheusMetricsEnabled can be set to enable the experimental Prometheus
 	// metrics server (default: false)
 	PrometheusMetricsEnabled bool `json:"prometheusMetricsEnabled,omitempty"`
