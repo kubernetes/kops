@@ -1036,10 +1036,28 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 			**out = **in
 		}
 	}
+	if in.DataRoot != nil {
+		in, out := &in.DataRoot, &out.DataRoot
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
 	if in.DefaultUlimit != nil {
 		in, out := &in.DefaultUlimit, &out.DefaultUlimit
 		*out = make([]string, len(*in))
 		copy(*out, *in)
+	}
+	if in.ExecRoot != nil {
+		in, out := &in.ExecRoot, &out.ExecRoot
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
 	}
 	if in.Hosts != nil {
 		in, out := &in.Hosts, &out.Hosts
