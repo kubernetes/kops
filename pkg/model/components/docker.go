@@ -73,9 +73,10 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if sv.Major == 1 && sv.Minor >= 6 {
-		if len(clusterSpec.Docker.LogOpt) == 0 && clusterSpec.Docker.LogDriver == "" {
+		if len(clusterSpec.Docker.LogOpt) == 0 && clusterSpec.Docker.LogDriver == nil {
 			// Use built-in docker logging, if not configured otherwise (by the user)
-			clusterSpec.Docker.LogDriver = "json-file"
+			logDriver := "json-file"
+			clusterSpec.Docker.LogDriver = &logDriver
 			clusterSpec.Docker.LogOpt = append(clusterSpec.Docker.LogOpt, "max-size=10m")
 			clusterSpec.Docker.LogOpt = append(clusterSpec.Docker.LogOpt, "max-file=5")
 		}
