@@ -111,6 +111,13 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 		wg.Wait()
 	}
 
+	// Do not continue update if bastion(s) failed
+	for _, err := range results {
+		if err != nil {
+			return err
+		}
+	}
+
 	// Upgrade master next
 	{
 		var wg sync.WaitGroup
@@ -135,15 +142,35 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 					err = g.RollingUpdate(c, cluster, instanceGroups, false, c.MasterInterval, c.ValidationTimeout)
 				}
 
+				if err != nil {
+					// Remove function panic errors if an actual error occurred, otherwise that would be displayed
+					for k := range masterGroups {
+						resultsMutex.Lock()
+						results[k] = nil
+						resultsMutex.Unlock()
+					}
+				}
+
 				resultsMutex.Lock()
 				results[k] = err
 				resultsMutex.Unlock()
 
-				// TODO: Bail on error?
+				if err != nil {
+					// Stop before all masters are updated if an error occurs,
+					// to prevent more masters from failing and causing an outage
+					return
+				}
 			}
 		}()
 
 		wg.Wait()
+	}
+
+	// Do not continue update if master(s) failed, cluster is potentially in an unhealthy state
+	for _, err := range results {
+		if err != nil {
+			return err
+		}
 	}
 
 	// Upgrade nodes, with greater parallelism
