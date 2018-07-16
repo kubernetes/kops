@@ -553,7 +553,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 			if elbDescription != nil {
 				// deleting the listener before recreating it
 				t.Cloud.ELB().DeleteLoadBalancerListeners(&elb.DeleteLoadBalancerListenersInput{
-					LoadBalancerName: aws.String(loadBalancerName),
+					LoadBalancerName:  aws.String(loadBalancerName),
 					LoadBalancerPorts: []*int64{aws.Int64(443)},
 				})
 			}
