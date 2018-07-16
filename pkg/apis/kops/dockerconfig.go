@@ -41,7 +41,7 @@ type DockerConfig struct {
 	// LiveRestore enables live restore of docker when containers are still running
 	LiveRestore *bool `json:"liveRestore,omitempty" flag:"live-restore"`
 	// LogDriver is the default driver for container logs (default "json-file")
-	LogDriver string `json:"logDriver,omitempty" flag:"log-driver"`
+	LogDriver *string `json:"logDriver,omitempty" flag:"log-driver"`
 	// LogLevel is the logging level ("debug", "info", "warn", "error", "fatal") (default "info")
 	LogLevel *string `json:"logLevel,omitempty" flag:"log-level"`
 	// Logopt is a series of options given to the log driver options for containers

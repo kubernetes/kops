@@ -21,7 +21,6 @@ limitations under the License.
 package v1alpha2
 
 import (
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	kops "k8s.io/kops/pkg/apis/kops"
@@ -1464,9 +1463,7 @@ func autoConvert_v1alpha2_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.IPTables = in.IPTables
 	out.InsecureRegistry = in.InsecureRegistry
 	out.LiveRestore = in.LiveRestore
-	if err := v1.Convert_Pointer_string_To_string(&in.LogDriver, &out.LogDriver, s); err != nil {
-		return err
-	}
+	out.LogDriver = in.LogDriver
 	out.LogLevel = in.LogLevel
 	out.LogOpt = in.LogOpt
 	out.MTU = in.MTU
@@ -1495,9 +1492,7 @@ func autoConvert_kops_DockerConfig_To_v1alpha2_DockerConfig(in *kops.DockerConfi
 	out.IPTables = in.IPTables
 	out.InsecureRegistry = in.InsecureRegistry
 	out.LiveRestore = in.LiveRestore
-	if err := v1.Convert_string_To_Pointer_string(&in.LogDriver, &out.LogDriver, s); err != nil {
-		return err
-	}
+	out.LogDriver = in.LogDriver
 	out.LogLevel = in.LogLevel
 	out.LogOpt = in.LogOpt
 	out.MTU = in.MTU
