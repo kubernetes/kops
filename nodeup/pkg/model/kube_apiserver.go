@@ -434,7 +434,9 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	auditLogPath := b.Cluster.Spec.KubeAPIServer.AuditLogPath
-	if auditLogPath != nil {
+	// Don't mount a volume if the mount path is set to '-' for stdout logging
+	// See https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#audit-backends
+	if auditLogPath != nil && *auditLogPath != "-" {
 		// Mount the directory of the path instead, as kube-apiserver rotates the log by renaming the file.
 		// Renaming is not possible when the file is mounted as the host path, and will return a
 		// 'Device or resource busy' error
