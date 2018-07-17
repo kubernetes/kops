@@ -114,7 +114,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 	// Do not continue update if bastion(s) failed
 	for _, err := range results {
 		if err != nil {
-			return err
+			return fmt.Errorf("bastion not healthy after update, stopping rolling-update: %q", err)
 		}
 	}
 
@@ -169,7 +169,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 	// Do not continue update if master(s) failed, cluster is potentially in an unhealthy state
 	for _, err := range results {
 		if err != nil {
-			return err
+			return fmt.Errorf("master not healthy after update, stopping rolling-update: %q", err)
 		}
 	}
 
