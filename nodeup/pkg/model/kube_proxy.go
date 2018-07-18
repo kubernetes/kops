@@ -158,6 +158,11 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		resourceLimits["memory"] = memoryLimit
 	}
 
+	if c.ConntrackMaxPerCore == nil {
+		defaultConntrackMaxPerCore := int32(131072)
+		c.ConntrackMaxPerCore = &defaultConntrackMaxPerCore
+	}
+
 	flags, err := flagbuilder.BuildFlagsList(c)
 	if err != nil {
 		return nil, fmt.Errorf("error building kubeproxy flags: %v", err)
@@ -165,7 +170,6 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	image := c.Image
 
 	flags = append(flags, []string{
-		"--conntrack-max-per-core=131072",
 		"--kubeconfig=/var/lib/kube-proxy/kubeconfig",
 		"--oom-score-adj=-998",
 		`--resource-container=""`}...)
