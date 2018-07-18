@@ -538,7 +538,11 @@ func (c *ApplyClusterCmd) Run() error {
 			if err != nil {
 				return fmt.Errorf("error loading templates: %v", err)
 			}
-			tf.AddTo(templates.TemplateFunctions)
+
+			err = tf.AddTo(templates.TemplateFunctions, secretStore)
+			if err != nil {
+				return err
+			}
 
 			l.Builders = append(l.Builders,
 				&BootstrapChannelBuilder{
@@ -733,7 +737,10 @@ func (c *ApplyClusterCmd) Run() error {
 
 	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
 
-	tf.AddTo(l.TemplateFunctions)
+	err = tf.AddTo(l.TemplateFunctions, secretStore)
+	if err != nil {
+		return err
+	}
 
 	taskMap, err := l.BuildTasks(modelStore, fileModels, assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
 	if err != nil {
