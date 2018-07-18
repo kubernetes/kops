@@ -20,7 +20,7 @@ spec:
   kubernetesVersion: {{.kubernetesVersion}
   machineType: m4.large
   maxPrice: "0.5"
-  maxSize: 2
+  maxSize: 20
   minSize: 15
   role: Node
   rootVolumeSize: 100
