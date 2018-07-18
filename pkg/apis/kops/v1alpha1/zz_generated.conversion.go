@@ -2135,6 +2135,8 @@ func autoConvert_v1alpha1_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyC
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
 	out.FeatureGates = in.FeatureGates
+	out.ConntrackMaxPerCore = in.ConntrackMaxPerCore
+	out.ConntrackMin = in.ConntrackMin
 	return nil
 }
 
@@ -2156,6 +2158,8 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha1_KubeProxyConfig(in *kops.KubeP
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
 	out.FeatureGates = in.FeatureGates
+	out.ConntrackMaxPerCore = in.ConntrackMaxPerCore
+	out.ConntrackMin = in.ConntrackMin
 	return nil
 }
 
