@@ -2433,6 +2433,24 @@ func (in *KubeProxyConfig) DeepCopyInto(out *KubeProxyConfig) {
 			(*out)[key] = val
 		}
 	}
+	if in.ConntrackMaxPerCore != nil {
+		in, out := &in.ConntrackMaxPerCore, &out.ConntrackMaxPerCore
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(int32)
+			**out = **in
+		}
+	}
+	if in.ConntrackMin != nil {
+		in, out := &in.ConntrackMin, &out.ConntrackMin
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(int32)
+			**out = **in
+		}
+	}
 	return
 }
 
