@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 
 	"github.com/spf13/cobra"
+
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
@@ -34,10 +34,15 @@ var (
 	Create a new weave encryption secret, and store it in the state store.
 	Used to weave networking to use encrypted communication between nodes.
 
+	If no password is provided, kops will generate one at random.
+
 	WARNING: cannot be enabled on a running cluster without downtime.`))
 
 	createSecretWeaveEncryptionconfigExample = templates.Examples(i18n.T(`
-	# Create an new weave password.
+	# Create a new random weave password.
+	kops create secret weavepassword \
+		--name k8s-cluster.example.com --state s3://example.com
+	# Install a specific weave password.
 	kops create secret weavepassword -f /path/to/weavepassword \
 		--name k8s-cluster.example.com --state s3://example.com
 	# Replace an existing weavepassword secret.
@@ -63,9 +68,6 @@ func NewCmdCreateSecretWeaveEncryptionConfig(f *util.Factory, out io.Writer) *co
 		Long:    createSecretWeaveEncryptionconfigLong,
 		Example: createSecretWeaveEncryptionconfigExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) != 0 {
-				exitWithError(fmt.Errorf("syntax: -f <WeavePasswordFile>"))
-			}
 
 			err := rootCommand.ProcessArgs(args[0:])
 			if err != nil {
@@ -74,23 +76,21 @@ func NewCmdCreateSecretWeaveEncryptionConfig(f *util.Factory, out io.Writer) *co
 
 			options.ClusterName = rootCommand.ClusterName()
 
-			err = RunCreateSecretWeaveEncryptionConfig(f, os.Stdout, options)
+			err = RunCreateSecretWeaveEncryptionConfig(f, options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	cmd.Flags().StringVarP(&options.WeavePasswordFilePath, "", "f", "", "Path to the weave password file")
+	cmd.Flags().StringVarP(&options.WeavePasswordFilePath, "", "f", "", "Path to the weave password file (optional)")
 	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force replace the kops secret if it already exists")
 
 	return cmd
 }
 
-func RunCreateSecretWeaveEncryptionConfig(f *util.Factory, out io.Writer, options *CreateSecretWeaveEncryptionConfigOptions) error {
-	if options.WeavePasswordFilePath == "" {
-		return fmt.Errorf("weave password file path is required (use -f)")
-	}
+func RunCreateSecretWeaveEncryptionConfig(f *util.Factory, options *CreateSecretWeaveEncryptionConfigOptions) error {
+
 	secret, err := fi.CreateSecret()
 	if err != nil {
 		return fmt.Errorf("error creating encryption secret: %v", err)
@@ -111,12 +111,14 @@ func RunCreateSecretWeaveEncryptionConfig(f *util.Factory, out io.Writer, option
 		return err
 	}
 
-	data, err := ioutil.ReadFile(options.WeavePasswordFilePath)
-	if err != nil {
-		return fmt.Errorf("error reading weave password file %v: %v", options.WeavePasswordFilePath, err)
-	}
+	if options.WeavePasswordFilePath != "" {
+		data, err := ioutil.ReadFile(options.WeavePasswordFilePath)
+		if err != nil {
+			return fmt.Errorf("error reading weave password file %v: %v", options.WeavePasswordFilePath, err)
+		}
 
-	secret.Data = data
+		secret.Data = data
+	}
 
 	if !options.Force {
 		_, created, err := secretStore.GetOrCreateSecret("weavepassword", secret)
@@ -124,7 +126,7 @@ func RunCreateSecretWeaveEncryptionConfig(f *util.Factory, out io.Writer, option
 			return fmt.Errorf("error adding weavepassword secret: %v", err)
 		}
 		if !created {
-			return fmt.Errorf("failed to create the weavepassword secret as it already exists. The `--force` flag can be passed to replace an existing secret.")
+			return fmt.Errorf("failed to create the weavepassword secret as it already exists. The `--force` flag can be passed to replace an existing secret")
 		}
 	} else {
 		_, err := secretStore.ReplaceSecret("weavepassword", secret)
