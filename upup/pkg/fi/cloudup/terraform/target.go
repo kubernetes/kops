@@ -237,6 +237,26 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 		outputVariables[tfName] = tfVar
 	}
 
+	localVariables := make(map[string]interface{})
+	for _, v := range t.outputs {
+		tfName := tfSanitize(v.Key)
+
+		if localVariables[tfName] != nil {
+			return fmt.Errorf("duplicate variable found: %s", tfName)
+		}
+
+		if v.Value != nil {
+			localVariables[tfName] = v.Value
+		} else {
+			SortLiterals(v.ValueArray)
+			deduped, err := DedupLiterals(v.ValueArray)
+			if err != nil {
+				return err
+			}
+			localVariables[tfName] = deduped
+		}
+	}
+
 	// See https://github.com/kubernetes/kops/pull/2424 for why we require 0.9.3
 	terraformConfiguration := make(map[string]interface{})
 	terraformConfiguration["required_version"] = ">= 0.9.3"
@@ -249,6 +269,9 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 	}
 	if len(outputVariables) != 0 {
 		data["output"] = outputVariables
+	}
+	if len(localVariables) != 0 {
+		data["locals"] = localVariables
 	}
 
 	jsonBytes, err := json.MarshalIndent(data, "", "  ")
@@ -272,7 +295,6 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 		}
 
 		t.files["kubernetes.tf"] = b
-
 	}
 
 	for relativePath, contents := range t.files {

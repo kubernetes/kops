@@ -1,3 +1,27 @@
+locals = {
+  bastion_security_group_ids        = ["${aws_security_group.bastion-privatekopeio-example-com.id}"]
+  bastions_role_arn                 = "${aws_iam_role.bastions-privatekopeio-example-com.arn}"
+  bastions_role_name                = "${aws_iam_role.bastions-privatekopeio-example-com.name}"
+  cluster_name                      = "privatekopeio.example.com"
+  master_security_group_ids         = ["${aws_security_group.masters-privatekopeio-example-com.id}"]
+  masters_role_arn                  = "${aws_iam_role.masters-privatekopeio-example-com.arn}"
+  masters_role_name                 = "${aws_iam_role.masters-privatekopeio-example-com.name}"
+  node_security_group_ids           = ["${aws_security_group.nodes-privatekopeio-example-com.id}"]
+  node_subnet_ids                   = ["${aws_subnet.us-test-1a-privatekopeio-example-com.id}", "${aws_subnet.us-test-1b-privatekopeio-example-com.id}"]
+  nodes_role_arn                    = "${aws_iam_role.nodes-privatekopeio-example-com.arn}"
+  nodes_role_name                   = "${aws_iam_role.nodes-privatekopeio-example-com.name}"
+  region                            = "us-test-1"
+  route_table_private-us-test-1a_id = "${aws_route_table.private-us-test-1a-privatekopeio-example-com.id}"
+  route_table_private-us-test-1b_id = "${aws_route_table.private-us-test-1b-privatekopeio-example-com.id}"
+  route_table_public_id             = "${aws_route_table.privatekopeio-example-com.id}"
+  subnet_us-test-1a-private_id      = "${aws_subnet.us-test-1a-privatekopeio-example-com.id}"
+  subnet_us-test-1a-utility_id      = "${aws_subnet.utility-us-test-1a-privatekopeio-example-com.id}"
+  subnet_us-test-1b-private_id      = "${aws_subnet.us-test-1b-privatekopeio-example-com.id}"
+  subnet_us-test-1b-utility_id      = "${aws_subnet.utility-us-test-1b-privatekopeio-example-com.id}"
+  vpc_cidr_block                    = "${aws_vpc.privatekopeio-example-com.cidr_block}"
+  vpc_id                            = "${aws_vpc.privatekopeio-example-com.id}"
+}
+
 output "bastion_security_group_ids" {
   value = ["${aws_security_group.bastion-privatekopeio-example-com.id}"]
 }

@@ -1,3 +1,16 @@
+locals = {
+  cluster_name              = "k8s-iam.us-west-2.td.priv"
+  master_security_group_ids = "${aws_security_group.masters-k8s-iam-us-west-2-td-priv.id}"
+  masters_role_arn          = "${aws_iam_role.masters-k8s-iam-us-west-2-td-priv.arn}"
+  masters_role_name         = "${aws_iam_role.masters-k8s-iam-us-west-2-td-priv.name}"
+  node_security_group_ids   = "${aws_security_group.nodes-k8s-iam-us-west-2-td-priv.id}"
+  node_subnet_ids           = ["${aws_subnet.us-west-2a-k8s-iam-us-west-2-td-priv.id}", "${aws_subnet.us-west-2b-k8s-iam-us-west-2-td-priv.id}", "${aws_subnet.us-west-2c-k8s-iam-us-west-2-td-priv.id}"]
+  nodes_role_arn            = "${aws_iam_role.nodes-k8s-iam-us-west-2-td-priv.arn}"
+  nodes_role_name           = "${aws_iam_role.nodes-k8s-iam-us-west-2-td-priv.name}"
+  region                    = "us-west-2"
+  vpc_id                    = "${aws_vpc.k8s-iam-us-west-2-td-priv.id}"
+}
+
 output "cluster_name" {
   value = "k8s-iam.us-west-2.td.priv"
 }

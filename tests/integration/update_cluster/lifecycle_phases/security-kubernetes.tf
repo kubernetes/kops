@@ -1,3 +1,14 @@
+locals = {
+  bastions_role_arn  = "${aws_iam_role.bastions-lifecyclephases-example-com.arn}"
+  bastions_role_name = "${aws_iam_role.bastions-lifecyclephases-example-com.name}"
+  cluster_name       = "lifecyclephases.example.com"
+  masters_role_arn   = "${aws_iam_role.masters-lifecyclephases-example-com.arn}"
+  masters_role_name  = "${aws_iam_role.masters-lifecyclephases-example-com.name}"
+  nodes_role_arn     = "${aws_iam_role.nodes-lifecyclephases-example-com.arn}"
+  nodes_role_name    = "${aws_iam_role.nodes-lifecyclephases-example-com.name}"
+  region             = "us-test-1"
+}
+
 output "bastions_role_arn" {
   value = "${aws_iam_role.bastions-lifecyclephases-example-com.arn}"
 }
