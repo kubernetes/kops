@@ -12,6 +12,15 @@ By default, a cluster has:
   because we need to force the cloud to run an instance in every zone, so we can mount the master volumes - we
   cannot do that across zones.
 
+## Instance Groups Disclaimer
+
+* When there is only one availability zone in a region (eu-central-1) and you would like to run multiple masters, 
+  you have to define multiple instance groups for each of those masters. (e.g. `master-eu-central-1-a` and 
+  `master-eu-central-1-b` and so on...)
+* If instance groups are not defined correctly (particularly when there are an even number of master or multiple 
+  groups of masters into one availability zone in a single region), etcd servers will not start and master nodes will not check in. This is because etcd servers are configured per availability zone. DNS and Route53 would be the first places to check when these problems are happening.
+
+
 ## Listing instance groups
 
 `kops get instancegroups`
