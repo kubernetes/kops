@@ -1,3 +1,24 @@
+locals = {
+  bastion_security_group_ids        = ["${aws_security_group.bastion-privatecanal-example-com.id}"]
+  bastions_role_arn                 = "${aws_iam_role.bastions-privatecanal-example-com.arn}"
+  bastions_role_name                = "${aws_iam_role.bastions-privatecanal-example-com.name}"
+  cluster_name                      = "privatecanal.example.com"
+  master_security_group_ids         = ["${aws_security_group.masters-privatecanal-example-com.id}"]
+  masters_role_arn                  = "${aws_iam_role.masters-privatecanal-example-com.arn}"
+  masters_role_name                 = "${aws_iam_role.masters-privatecanal-example-com.name}"
+  node_security_group_ids           = ["${aws_security_group.nodes-privatecanal-example-com.id}"]
+  node_subnet_ids                   = ["${aws_subnet.us-test-1a-privatecanal-example-com.id}"]
+  nodes_role_arn                    = "${aws_iam_role.nodes-privatecanal-example-com.arn}"
+  nodes_role_name                   = "${aws_iam_role.nodes-privatecanal-example-com.name}"
+  region                            = "us-test-1"
+  route_table_private-us-test-1a_id = "${aws_route_table.private-us-test-1a-privatecanal-example-com.id}"
+  route_table_public_id             = "${aws_route_table.privatecanal-example-com.id}"
+  subnet_us-test-1a-private_id      = "${aws_subnet.us-test-1a-privatecanal-example-com.id}"
+  subnet_us-test-1a-utility_id      = "${aws_subnet.utility-us-test-1a-privatecanal-example-com.id}"
+  vpc_cidr_block                    = "${aws_vpc.privatecanal-example-com.cidr_block}"
+  vpc_id                            = "${aws_vpc.privatecanal-example-com.id}"
+}
+
 output "bastion_security_group_ids" {
   value = ["${aws_security_group.bastion-privatecanal-example-com.id}"]
 }

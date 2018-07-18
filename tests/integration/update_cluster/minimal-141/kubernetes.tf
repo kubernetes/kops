@@ -1,3 +1,19 @@
+locals = {
+  cluster_name                = "minimal-141.example.com"
+  master_security_group_ids   = ["${aws_security_group.masters-minimal-141-example-com.id}"]
+  masters_role_arn            = "${aws_iam_role.masters-minimal-141-example-com.arn}"
+  masters_role_name           = "${aws_iam_role.masters-minimal-141-example-com.name}"
+  node_security_group_ids     = ["${aws_security_group.nodes-minimal-141-example-com.id}"]
+  node_subnet_ids             = ["${aws_subnet.us-test-1a-minimal-141-example-com.id}"]
+  nodes_role_arn              = "${aws_iam_role.nodes-minimal-141-example-com.arn}"
+  nodes_role_name             = "${aws_iam_role.nodes-minimal-141-example-com.name}"
+  region                      = "us-test-1"
+  route_table_public_id       = "${aws_route_table.minimal-141-example-com.id}"
+  subnet_us-test-1a-public_id = "${aws_subnet.us-test-1a-minimal-141-example-com.id}"
+  vpc_cidr_block              = "${aws_vpc.minimal-141-example-com.cidr_block}"
+  vpc_id                      = "${aws_vpc.minimal-141-example-com.id}"
+}
+
 output "cluster_name" {
   value = "minimal-141.example.com"
 }
