@@ -2642,7 +2642,11 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.ExperimentalAllowedUnsafeSysctls = in.ExperimentalAllowedUnsafeSysctls
 	out.StreamingConnectionIdleTimeout = in.StreamingConnectionIdleTimeout
 	out.DockerDisableSharedPID = in.DockerDisableSharedPID
+<<<<<<< HEAD
 	out.RootDir = in.RootDir
+=======
+	out.BindPrimaryIP = in.BindPrimaryIP
+>>>>>>> api machinery
 	return nil
 }
 
