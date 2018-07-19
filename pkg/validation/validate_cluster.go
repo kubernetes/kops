@@ -71,7 +71,6 @@ func hasPlaceHolderIP(clusterName string) (bool, error) {
 	if err != nil {
 		return true, fmt.Errorf("unable to parse Kubernetes cluster API URL: %v", err)
 	}
-
 	hostAddrs, err := net.LookupHost(apiAddr.Hostname())
 	if err != nil {
 		return true, fmt.Errorf("unable to resolve Kubernetes cluster API URL dns: %v", err)
