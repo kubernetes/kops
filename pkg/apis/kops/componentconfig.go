@@ -170,6 +170,8 @@ type KubeletConfigSpec struct {
 	StreamingConnectionIdleTimeout *metav1.Duration `json:"streamingConnectionIdleTimeout,omitempty" flag:"streaming-connection-idle-timeout"`
 	// DockerDisableSharedPID uses a shared PID namespace for containers in a pod.
 	DockerDisableSharedPID *bool `json:"dockerDisableSharedPID,omitempty" flag:"docker-disable-shared-pid"`
+	// RootDir is the directory path for managing kubelet files (volume mounts,etc)
+	RootDir string `json:"rootDir,omitempty" flag:"root-dir"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
