@@ -280,8 +280,10 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 			diffString := diff.FormatDiff(string(expectedTF), string(actualTF))
 			t.Logf("diff:\n%s\n", diffString)
 
-			if os.Getenv("HACK_UPDATE_TF_IN_PLACE") != "" {
-				if err := ioutil.WriteFile(path.Join(srcDir, testDataTFPath), actualTF, 0644); err != nil {
+			if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
+				fp := path.Join(srcDir, testDataTFPath)
+				t.Logf("HACK_UPDATE_EXPECTED_IN_PLACE: writing expected output %s", fp)
+				if err := ioutil.WriteFile(fp, actualTF, 0644); err != nil {
 					t.Errorf("error writing terraform output: %v", err)
 				}
 				t.Errorf("terraform output differed from expected")
@@ -603,7 +605,8 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 			t.Fatalf("cloudformation output differed from expected. Test file: %s", path.Join(srcDir, expectedCfPath))
 		}
 
-		expectedExtracted, err := ioutil.ReadFile(path.Join(srcDir, expectedCfPath+".extracted.yaml"))
+		fp := path.Join(srcDir, expectedCfPath+".extracted.yaml")
+		expectedExtracted, err := ioutil.ReadFile(fp)
 		if err != nil {
 			t.Fatalf("unexpected error reading expected extracted cloudformation output: %v", err)
 		}
@@ -618,22 +621,42 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 			t.Fatalf("error differed number of cloudformation in expected and extracted: %v", err)
 		}
 
+		actual := make(map[string]string)
+
 		for key, expectedValue := range expected {
 			extractedValue, ok := extracted[key]
 			if !ok {
 				t.Fatalf("unexpected error expected cloudformation not found for k: %v", key)
 			}
 
+			actual[key] = extractedValue
+
 			// Strip carriage return as expectedValue is stored in a yaml string literal
 			// and golang will automatically strip CR from any string literal
 			extractedValueTrimmed := strings.Replace(extractedValue, "\r", "", -1)
 			if expectedValue != extractedValueTrimmed {
+				if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
+					t.Errorf("cloudformation output differed from expected")
+					continue // Avoid Fatalf as we want to keep going and update all files
+				}
 
 				diffString := diff.FormatDiff(expectedValue, extractedValueTrimmed)
 				t.Logf("diff for key %s:\n%s\n\n\n\n\n\n", key, diffString)
 				t.Fatalf("cloudformation output differed from expected. Test file: %s", path.Join(srcDir, expectedCfPath+".extracted.yaml"))
 			}
 		}
+
+		if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
+			t.Logf("HACK_UPDATE_EXPECTED_IN_PLACE: writing expected output %s", fp)
+			b, err := yaml.Marshal(actual)
+			if err != nil {
+				t.Errorf("error serializing cloudformation output: %v", err)
+			}
+			if err := ioutil.WriteFile(fp, b, 0644); err != nil {
+				t.Errorf("error writing cloudformation output: %v", err)
+			}
+		}
+
 	}
 }
 
