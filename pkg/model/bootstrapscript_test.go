@@ -18,6 +18,7 @@ package model
 
 import (
 	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -148,6 +149,13 @@ func TestBootstrapUserData(t *testing.T) {
 		}
 
 		if actual != string(expectedBytes) {
+			if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
+				t.Logf("HACK_UPDATE_EXPECTED_IN_PLACE: writing expected output %s", x.ExpectedFilePath)
+				if err := ioutil.WriteFile(x.ExpectedFilePath, []byte(actual), 0644); err != nil {
+					t.Errorf("error writing expected output: %v", err)
+				}
+			}
+
 			diffString := diff.FormatDiff(string(expectedBytes), actual)
 			t.Errorf("case %d failed, actual output differed from expected (%s).", i, x.ExpectedFilePath)
 			t.Logf("diff:\n%s\n", diffString)
