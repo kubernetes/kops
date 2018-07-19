@@ -200,6 +200,10 @@ type KubeProxyConfig struct {
 	ProxyMode string `json:"proxyMode,omitempty" flag:"proxy-mode"`
 	// FeatureGates is a series of key pairs used to switch on features for the proxy
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
+	// Maximum number of NAT connections to track per CPU core (default: 131072)
+	ConntrackMaxPerCore *int32 `json:"conntrackMaxPerCore,omitempty" flag:"conntrack-max-per-core"`
+	// Minimum number of conntrack entries to allocate, regardless of conntrack-max-per-core
+	ConntrackMin *int32 `json:"conntrackMin,omitempty" flag:"conntrack-min"`
 }
 
 // KubeAPIServerConfig defines the configuration for the kube api
