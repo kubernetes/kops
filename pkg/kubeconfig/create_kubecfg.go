@@ -86,7 +86,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	b.Context = clusterName
 
 	// add the CA Cert to the kubeconfig only if we didn't specify a SSL cert for the LB
-	if cluster.Spec.API.LoadBalancer.SSLCertificate == "" {
+	if cluster.Spec.API == nil || cluster.Spec.API.LoadBalancer == nil || cluster.Spec.API.LoadBalancer.SSLCertificate == "" {
 		cert, _, _, err := keyStore.FindKeypair(fi.CertificateId_CA)
 		if err != nil {
 			return nil, fmt.Errorf("error fetching CA keypair: %v", err)
