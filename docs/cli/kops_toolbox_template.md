@@ -20,6 +20,7 @@ kops toolbox template [flags]
   
   kops toolbox template \
   --values values.yaml --values=another.yaml \
+  --set var=value --set-string othervar=true \
   --snippets file_or_directory --snippets=another.dir \
   --template file_or_directory --template=directory  \
   --output cluster.yaml
@@ -28,14 +29,16 @@ kops toolbox template [flags]
 ### Options
 
 ```
-      --config-value string   Show the value of a specific configuration value
-      --fail-on-missing       Fail on referencing unset variables in templates (default true)
-      --format-yaml           Attempt to format the generated yaml content before output
-  -h, --help                  help for template
-      --output string         Path to output file, otherwise defaults to stdout
-      --snippets strings      Path to directory containing snippets used for templating
-      --template strings      Path to template file or directory of templates to render
-      --values strings        Path to a configuration file containing values to include in template
+      --config-value string      Show the value of a specific configuration value
+      --fail-on-missing          Fail on referencing unset variables in templates (default true)
+      --format-yaml              Attempt to format the generated yaml content before output
+  -h, --help                     help for template
+      --output string            Path to output file, otherwise defaults to stdout
+      --set stringArray          Set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)
+      --set-string stringArray   Set STRING values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)
+      --snippets strings         Path to directory containing snippets used for templating
+      --template strings         Path to template file or directory of templates to render
+      --values strings           Path to a configuration file containing values to include in template
 ```
 
 ### Options inherited from parent commands
