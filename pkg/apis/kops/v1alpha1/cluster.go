@@ -311,6 +311,7 @@ type LoadBalancerAccessSpec struct {
 	Type                     LoadBalancerType `json:"type,omitempty"`
 	IdleTimeoutSeconds       *int64           `json:"idleTimeoutSeconds,omitempty"`
 	AdditionalSecurityGroups []string         `json:"additionalSecurityGroups,omitempty"`
+	SSLCertificate           string           `json:"sslCertificate,omitempty"`
 }
 
 // KubeDNSConfig defines the kube dns configuration
