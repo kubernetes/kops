@@ -665,6 +665,10 @@ bazel-crossbuild-protokube-image:
 bazel-crossbuild-kube-discovery-image:
 	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:kube-discovery.tar
 
+.PHONY: bazel-crossbuild-node-authorizer-image
+bazel-crossbuild-node-authorizer-image:
+	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:node-authorizer.tar
+
 .PHONY: bazel-push
 # Will always push a linux-based build up to the server
 bazel-push: bazel-crossbuild-nodeup
@@ -702,6 +706,12 @@ push-kube-discovery:
 	bazel run //kube-discovery/images:kube-discovery
 	docker tag bazel/kube-discovery/images:kube-discovery ${DOCKER_REGISTRY}/kube-discovery:${DOCKER_TAG}
 	docker push ${DOCKER_REGISTRY}/kube-discovery:${DOCKER_TAG}
+
+.PHONY: push-node-authorizer
+push-node-authorizer:
+	bazel run //node-authorizer/images:node-authorizer
+	docker tag bazel/node-authorizer/images:node-authorizer ${DOCKER_REGISTRY}/node-authorizer:${DOCKER_TAG}
+	docker push ${DOCKER_REGISTRY}/node-authorizer:${DOCKER_TAG}
 
 .PHONY: bazel-protokube-export
 bazel-protokube-export:

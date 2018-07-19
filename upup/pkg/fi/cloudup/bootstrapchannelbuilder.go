@@ -113,7 +113,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	// @check if podsecuritypolicies are enabled and if so, push the default kube-system policy
 	if b.cluster.Spec.KubeAPIServer != nil && b.cluster.Spec.KubeAPIServer.HasAdmissionController("PodSecurityPolicy") {
 		key := "podsecuritypolicy.addons.k8s.io"
-		version := "0.0.3"
+		version := "0.0.4"
 
 		{
 			location := key + "/k8s-1.9.yaml"
@@ -144,6 +144,28 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				Id:                id,
 			})
 			manifests[key+"-"+id] = "addons/" + location
+		}
+	}
+
+	if b.cluster.Spec.NodeAuthorization != nil {
+		{
+			key := "node-authorizer.addons.k8s.io"
+			version := "v0.0.1"
+
+			{
+				location := key + "/k8s-1.10.yaml"
+				id := "k8s-1.10.yaml"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          map[string]string{"k8s-addon": key},
+					Manifest:          fi.String(location),
+					KubernetesVersion: ">=1.10.0",
+					Id:                id,
+				})
+				manifests[key+"-"+id] = "addons/" + location
+			}
 		}
 	}
 
