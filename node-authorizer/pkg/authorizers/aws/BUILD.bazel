@@ -1,0 +1,36 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "authorizer.go",
+        "types.go",
+        "verifier.go",
+    ],
+    importpath = "k8s.io/kops/node-authorizer/pkg/authorizers/aws",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//node-authorizer/pkg/server:go_default_library",
+        "//node-authorizer/pkg/utils:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/ec2metadata:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/autoscaling:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2/ec2iface:go_default_library",
+        "//vendor/github.com/fullsailor/pkcs7:go_default_library",
+        "//vendor/go.uber.org/zap:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["authorizer_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//node-authorizer/pkg/server:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/ec2metadata:go_default_library",
+        "//vendor/github.com/stretchr/testify/assert:go_default_library",
+    ],
+)

@@ -152,6 +152,8 @@ type ClusterSpec struct {
 	Authentication *AuthenticationSpec `json:"authentication,omitempty"`
 	// Authorization field controls how the cluster is configured for authorization
 	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
+	// NodeAuthorization defined the custom node authorization configuration
+	NodeAuthorization *NodeAuthorizationSpec `json:"nodeAuthorization,omitempty"`
 	// Tags for AWS resources
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
 	// Hooks for custom actions e.g. on first installation
@@ -164,6 +166,30 @@ type ClusterSpec struct {
 	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
 	// Target allows for us to nest extra config for targets such as terraform
 	Target *TargetSpec `json:"target,omitempty"`
+}
+
+// NodeAuthorizationSpec is used to node authorization
+type NodeAuthorizationSpec struct {
+	// NodeAuthorizer defined the configuration for the node authorizer
+	NodeAuthorizer *NodeAuthorizerSpec `json:"nodeAuthorizer,omitempty"`
+}
+
+// NodeAuthorizerSpec defines the configuration for a node authorizer
+type NodeAuthorizerSpec struct {
+	// Authorizer is the authorizer to use
+	Authorizer string `json:"authorizer,omitempty"`
+	// Features is a series of authorizer features to enable or disable
+	Features *[]string `json:"features,omitempty"`
+	// Image is the location of container
+	Image string `json:"image,omitempty"`
+	// NodeURL is the node authorization service url
+	NodeURL string `json:"nodeURL,omitempty"`
+	// Port is the port the service is running on the master
+	Port int `json:"port,omitempty"`
+	// Timeout the max time for authorization request
+	Timeout *metav1.Duration `json:"timeout,omitempty"`
+	// TokenTTL is the max ttl for an issued token
+	TokenTTL *metav1.Duration `json:"tokenTTL,omitempty"`
 }
 
 // AddonSpec defines an addon that we want to install in the cluster

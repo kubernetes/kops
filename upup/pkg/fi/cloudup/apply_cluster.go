@@ -546,16 +546,19 @@ func (c *ApplyClusterCmd) Run() error {
 
 			l.Builders = append(l.Builders,
 				&BootstrapChannelBuilder{
-					cluster:      cluster,
 					Lifecycle:    &clusterLifecycle,
-					templates:    templates,
 					assetBuilder: assetBuilder,
+					cluster:      cluster,
+					templates:    templates,
 				},
-				&model.PKIModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
-				&etcdmanager.EtcdManagerBuilder{
+				&model.PKIModelBuilder{
 					KopsModelContext: modelContext,
 					Lifecycle:        &clusterLifecycle,
+				},
+				&etcdmanager.EtcdManagerBuilder{
 					AssetBuilder:     assetBuilder,
+					KopsModelContext: modelContext,
+					Lifecycle:        &clusterLifecycle,
 				},
 			)
 

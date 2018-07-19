@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "admission.go",
+        "handlers.go",
+        "helper.go",
+        "metrics.go",
+        "middleware.go",
+        "server.go",
+        "token.go",
+        "types.go",
+    ],
+    importpath = "k8s.io/kops/node-authorizer/pkg/server",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//node-authorizer/pkg/utils:go_default_library",
+        "//vendor/github.com/gorilla/mux:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
+        "//vendor/go.uber.org/zap:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes:go_default_library",
+    ],
+)

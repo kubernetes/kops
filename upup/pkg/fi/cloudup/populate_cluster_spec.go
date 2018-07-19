@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/components/etcdmanager"
+	nodeauthorizer "k8s.io/kops/pkg/model/components/node-authorizer"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -41,6 +42,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
+// EtcdClusters is a list of the etcd clusters kops creates
 var EtcdClusters = []string{"main", "events"}
 
 type populateClusterSpec struct {
@@ -160,7 +162,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 
 				if (len(etcdInstanceGroups) % 2) == 0 {
 					// Not technically a requirement, but doesn't really make sense to allow
-					return fmt.Errorf("There should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zones and --master-zones to declare node zones and master zones separately.")
+					return fmt.Errorf("there should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zones and --master-zones to declare node zones and master zones separately")
 				}
 			}
 		}
@@ -294,6 +296,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 			codeModels = append(codeModels, &components.DefaultsOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.EtcdOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &etcdmanager.EtcdManagerOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &nodeauthorizer.OptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.DockerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.NetworkingOptionsBuilder{Context: optionsContext})

@@ -89,31 +89,17 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
+		// @check if bootstrap tokens are enabled and create the appropreiate certificates
 		if b.UseBootstrapTokens() {
-			glog.V(3).Info("kubelet bootstrap tokens are enabled")
-
 			// @check if a master and if so, we bypass the token strapping and instead generate our own kubeconfig
 			if b.IsMaster {
+				glog.V(3).Info("kubelet bootstrap tokens are enabled and running on a master")
+
 				task, err := b.buildMasterKubeletKubeconfig()
 				if err != nil {
 					return err
 				}
 				c.AddTask(task)
-
-				name := "node-authorizer"
-				if err := b.BuildCertificatePairTask(c, name, "node-authorizer/", "tls"); err != nil {
-					return err
-				}
-
-			} else {
-				name := "node-authorizer-client"
-				if err := b.BuildCertificatePairTask(c, name, "node-authorizer/", "tls"); err != nil {
-					return err
-				}
-				glog.V(3).Info("kubelet service will wait for bootstrap configuration: %s", b.KubeletBootstrapKubeconfig())
-			}
-			if err := b.BuildCertificateTask(c, fi.CertificateId_CA, "node-authorizer/ca.pem"); err != nil {
-				return err
 			}
 		} else {
 			kubeconfig, err := b.BuildPKIKubeconfig("kubelet")
