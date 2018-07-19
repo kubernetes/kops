@@ -114,6 +114,7 @@ spec:
 
 The Weave network encryption is configurable by creating a weave network secret password.
 Weaveworks recommends choosing a secret with [at least 50 bits of entropy](https://www.weave.works/docs/net/latest/tasks/manage/security-untrusted-networks/).
+If no password is supplied, kops will generate one at random.
 
 ```console
 $ cat /dev/urandom | tr -dc A-Za-z0-9 | head -c9 > password

@@ -9,6 +9,8 @@ Create a weave encryption config.
 
 Create a new weave encryption secret, and store it in the state store. Used to weave networking to use encrypted communication between nodes. 
 
+If no password is provided, kops will generate one at random. 
+
 WARNING: cannot be enabled on a running cluster without downtime.
 
 ```
@@ -18,7 +20,10 @@ kops create secret weavepassword [flags]
 ### Examples
 
 ```
-  # Create an new weave password.
+  # Create a new random weave password.
+  kops create secret weavepassword \
+  --name k8s-cluster.example.com --state s3://example.com
+  # Install a specific weave password.
   kops create secret weavepassword -f /path/to/weavepassword \
   --name k8s-cluster.example.com --state s3://example.com
   # Replace an existing weavepassword secret.
@@ -29,7 +34,7 @@ kops create secret weavepassword [flags]
 ### Options
 
 ```
-  -f, -- string   Path to the weave password file
+  -f, -- string   Path to the weave password file (optional)
       --force     Force replace the kops secret if it already exists
   -h, --help      help for weavepassword
 ```
