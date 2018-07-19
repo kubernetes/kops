@@ -50,6 +50,7 @@ k8s.io/kops/pkg/apiserver/cmd/server
 k8s.io/kops/pkg/apiserver/registry/cluster
 k8s.io/kops/pkg/apiserver/registry/instancegroup
 k8s.io/kops/pkg/assets
+k8s.io/kops/pkg/backoff
 k8s.io/kops/pkg/bundle
 k8s.io/kops/pkg/client/clientset_generated/clientset
 k8s.io/kops/pkg/client/clientset_generated/clientset/fake
