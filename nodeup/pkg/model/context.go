@@ -278,6 +278,15 @@ func (c *NodeupModelContext) UseNodeAuthorizer() bool {
 	return c.Cluster.Spec.NodeAuthorization.NodeAuthorizer != nil
 }
 
+// UsesSecondaryIP checks if the CNI in use attaches secondary interfaces to the host.
+func (c *NodeupModelContext) UsesSecondaryIP() bool {
+	if (c.Cluster.Spec.Networking.CNI != nil && c.Cluster.Spec.Networking.CNI.UsesSecondaryIP) || c.Cluster.Spec.Networking.AmazonVPC != nil {
+		return true
+	}
+
+	return false
+}
+
 // UseBootstrapTokens checks if we are using bootstrap tokens
 func (c *NodeupModelContext) UseBootstrapTokens() bool {
 	if c.IsMaster {
