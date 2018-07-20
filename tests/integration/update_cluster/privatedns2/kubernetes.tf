@@ -1,11 +1,14 @@
 locals = {
+  bastion_autoscaling_group_ids     = ["${aws_autoscaling_group.bastion-privatedns2-example-com.id}"]
   bastion_security_group_ids        = ["${aws_security_group.bastion-privatedns2-example-com.id}"]
   bastions_role_arn                 = "${aws_iam_role.bastions-privatedns2-example-com.arn}"
   bastions_role_name                = "${aws_iam_role.bastions-privatedns2-example-com.name}"
   cluster_name                      = "privatedns2.example.com"
+  master_autoscaling_group_ids      = ["${aws_autoscaling_group.master-us-test-1a-masters-privatedns2-example-com.id}"]
   master_security_group_ids         = ["${aws_security_group.masters-privatedns2-example-com.id}"]
   masters_role_arn                  = "${aws_iam_role.masters-privatedns2-example-com.arn}"
   masters_role_name                 = "${aws_iam_role.masters-privatedns2-example-com.name}"
+  node_autoscaling_group_ids        = ["${aws_autoscaling_group.nodes-privatedns2-example-com.id}"]
   node_security_group_ids           = ["${aws_security_group.nodes-privatedns2-example-com.id}"]
   node_subnet_ids                   = ["${aws_subnet.us-test-1a-privatedns2-example-com.id}"]
   nodes_role_arn                    = "${aws_iam_role.nodes-privatedns2-example-com.arn}"
@@ -16,6 +19,10 @@ locals = {
   subnet_us-test-1a-private_id      = "${aws_subnet.us-test-1a-privatedns2-example-com.id}"
   subnet_us-test-1a-utility_id      = "${aws_subnet.utility-us-test-1a-privatedns2-example-com.id}"
   vpc_id                            = "vpc-12345678"
+}
+
+output "bastion_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.bastion-privatedns2-example-com.id}"]
 }
 
 output "bastion_security_group_ids" {
@@ -34,6 +41,10 @@ output "cluster_name" {
   value = "privatedns2.example.com"
 }
 
+output "master_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.master-us-test-1a-masters-privatedns2-example-com.id}"]
+}
+
 output "master_security_group_ids" {
   value = ["${aws_security_group.masters-privatedns2-example-com.id}"]
 }
@@ -44,6 +55,10 @@ output "masters_role_arn" {
 
 output "masters_role_name" {
   value = "${aws_iam_role.masters-privatedns2-example-com.name}"
+}
+
+output "node_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.nodes-privatedns2-example-com.id}"]
 }
 
 output "node_security_group_ids" {
