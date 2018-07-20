@@ -462,6 +462,7 @@ func Convert_kops_BastionSpec_To_v1alpha2_BastionSpec(in *kops.BastionSpec, out 
 }
 
 func autoConvert_v1alpha2_CNINetworkingSpec_To_kops_CNINetworkingSpec(in *CNINetworkingSpec, out *kops.CNINetworkingSpec, s conversion.Scope) error {
+	out.UsesSecondaryIP = in.UsesSecondaryIP
 	return nil
 }
 
@@ -471,6 +472,7 @@ func Convert_v1alpha2_CNINetworkingSpec_To_kops_CNINetworkingSpec(in *CNINetwork
 }
 
 func autoConvert_kops_CNINetworkingSpec_To_v1alpha2_CNINetworkingSpec(in *kops.CNINetworkingSpec, out *CNINetworkingSpec, s conversion.Scope) error {
+	out.UsesSecondaryIP = in.UsesSecondaryIP
 	return nil
 }
 
@@ -2906,11 +2908,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.ExperimentalAllowedUnsafeSysctls = in.ExperimentalAllowedUnsafeSysctls
 	out.StreamingConnectionIdleTimeout = in.StreamingConnectionIdleTimeout
 	out.DockerDisableSharedPID = in.DockerDisableSharedPID
-<<<<<<< HEAD
 	out.RootDir = in.RootDir
-=======
-	out.BindPrimaryIP = in.BindPrimaryIP
->>>>>>> api machinery
 	return nil
 }
 
