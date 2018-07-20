@@ -128,6 +128,15 @@ func (in *Assets) DeepCopyInto(out *Assets) {
 			**out = **in
 		}
 	}
+	if in.ContainerProxy != nil {
+		in, out := &in.ContainerProxy, &out.ContainerProxy
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
 	return
 }
 
