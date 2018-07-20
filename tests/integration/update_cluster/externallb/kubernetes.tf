@@ -1,3 +1,19 @@
+locals = {
+  cluster_name                = "externallb.example.com"
+  master_security_group_ids   = ["${aws_security_group.masters-externallb-example-com.id}"]
+  masters_role_arn            = "${aws_iam_role.masters-externallb-example-com.arn}"
+  masters_role_name           = "${aws_iam_role.masters-externallb-example-com.name}"
+  node_security_group_ids     = ["${aws_security_group.nodes-externallb-example-com.id}"]
+  node_subnet_ids             = ["${aws_subnet.us-test-1a-externallb-example-com.id}"]
+  nodes_role_arn              = "${aws_iam_role.nodes-externallb-example-com.arn}"
+  nodes_role_name             = "${aws_iam_role.nodes-externallb-example-com.name}"
+  region                      = "us-test-1"
+  route_table_public_id       = "${aws_route_table.externallb-example-com.id}"
+  subnet_us-test-1a-public_id = "${aws_subnet.us-test-1a-externallb-example-com.id}"
+  vpc_cidr_block              = "${aws_vpc.externallb-example-com.cidr_block}"
+  vpc_id                      = "${aws_vpc.externallb-example-com.id}"
+}
+
 output "cluster_name" {
   value = "externallb.example.com"
 }
