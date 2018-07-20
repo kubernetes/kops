@@ -413,6 +413,9 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 					return err
 				}
 			}
+			if err := t.AddOutputVariableArray(role+"_autoscaling_group_ids", e.TerraformLink()); err != nil {
+				return err
+			}
 		}
 
 		if role == "node" {

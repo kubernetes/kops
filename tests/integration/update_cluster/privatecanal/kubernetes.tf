@@ -1,11 +1,14 @@
 locals = {
+  bastion_autoscaling_group_ids     = ["${aws_autoscaling_group.bastion-privatecanal-example-com.id}"]
   bastion_security_group_ids        = ["${aws_security_group.bastion-privatecanal-example-com.id}"]
   bastions_role_arn                 = "${aws_iam_role.bastions-privatecanal-example-com.arn}"
   bastions_role_name                = "${aws_iam_role.bastions-privatecanal-example-com.name}"
   cluster_name                      = "privatecanal.example.com"
+  master_autoscaling_group_ids      = ["${aws_autoscaling_group.master-us-test-1a-masters-privatecanal-example-com.id}"]
   master_security_group_ids         = ["${aws_security_group.masters-privatecanal-example-com.id}"]
   masters_role_arn                  = "${aws_iam_role.masters-privatecanal-example-com.arn}"
   masters_role_name                 = "${aws_iam_role.masters-privatecanal-example-com.name}"
+  node_autoscaling_group_ids        = ["${aws_autoscaling_group.nodes-privatecanal-example-com.id}"]
   node_security_group_ids           = ["${aws_security_group.nodes-privatecanal-example-com.id}"]
   node_subnet_ids                   = ["${aws_subnet.us-test-1a-privatecanal-example-com.id}"]
   nodes_role_arn                    = "${aws_iam_role.nodes-privatecanal-example-com.arn}"
@@ -17,6 +20,10 @@ locals = {
   subnet_us-test-1a-utility_id      = "${aws_subnet.utility-us-test-1a-privatecanal-example-com.id}"
   vpc_cidr_block                    = "${aws_vpc.privatecanal-example-com.cidr_block}"
   vpc_id                            = "${aws_vpc.privatecanal-example-com.id}"
+}
+
+output "bastion_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.bastion-privatecanal-example-com.id}"]
 }
 
 output "bastion_security_group_ids" {
@@ -35,6 +42,10 @@ output "cluster_name" {
   value = "privatecanal.example.com"
 }
 
+output "master_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.master-us-test-1a-masters-privatecanal-example-com.id}"]
+}
+
 output "master_security_group_ids" {
   value = ["${aws_security_group.masters-privatecanal-example-com.id}"]
 }
@@ -45,6 +56,10 @@ output "masters_role_arn" {
 
 output "masters_role_name" {
   value = "${aws_iam_role.masters-privatecanal-example-com.name}"
+}
+
+output "node_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.nodes-privatecanal-example-com.id}"]
 }
 
 output "node_security_group_ids" {
