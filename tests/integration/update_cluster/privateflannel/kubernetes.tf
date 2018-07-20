@@ -1,11 +1,14 @@
 locals = {
+  bastion_autoscaling_group_ids     = ["${aws_autoscaling_group.bastion-privateflannel-example-com.id}"]
   bastion_security_group_ids        = ["${aws_security_group.bastion-privateflannel-example-com.id}"]
   bastions_role_arn                 = "${aws_iam_role.bastions-privateflannel-example-com.arn}"
   bastions_role_name                = "${aws_iam_role.bastions-privateflannel-example-com.name}"
   cluster_name                      = "privateflannel.example.com"
+  master_autoscaling_group_ids      = ["${aws_autoscaling_group.master-us-test-1a-masters-privateflannel-example-com.id}"]
   master_security_group_ids         = ["${aws_security_group.masters-privateflannel-example-com.id}"]
   masters_role_arn                  = "${aws_iam_role.masters-privateflannel-example-com.arn}"
   masters_role_name                 = "${aws_iam_role.masters-privateflannel-example-com.name}"
+  node_autoscaling_group_ids        = ["${aws_autoscaling_group.nodes-privateflannel-example-com.id}"]
   node_security_group_ids           = ["${aws_security_group.nodes-privateflannel-example-com.id}"]
   node_subnet_ids                   = ["${aws_subnet.us-test-1a-privateflannel-example-com.id}"]
   nodes_role_arn                    = "${aws_iam_role.nodes-privateflannel-example-com.arn}"
@@ -17,6 +20,10 @@ locals = {
   subnet_us-test-1a-utility_id      = "${aws_subnet.utility-us-test-1a-privateflannel-example-com.id}"
   vpc_cidr_block                    = "${aws_vpc.privateflannel-example-com.cidr_block}"
   vpc_id                            = "${aws_vpc.privateflannel-example-com.id}"
+}
+
+output "bastion_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.bastion-privateflannel-example-com.id}"]
 }
 
 output "bastion_security_group_ids" {
@@ -35,6 +42,10 @@ output "cluster_name" {
   value = "privateflannel.example.com"
 }
 
+output "master_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.master-us-test-1a-masters-privateflannel-example-com.id}"]
+}
+
 output "master_security_group_ids" {
   value = ["${aws_security_group.masters-privateflannel-example-com.id}"]
 }
@@ -45,6 +56,10 @@ output "masters_role_arn" {
 
 output "masters_role_name" {
   value = "${aws_iam_role.masters-privateflannel-example-com.name}"
+}
+
+output "node_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.nodes-privateflannel-example-com.id}"]
 }
 
 output "node_security_group_ids" {
