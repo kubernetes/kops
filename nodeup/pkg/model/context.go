@@ -280,7 +280,7 @@ func (c *NodeupModelContext) UseNodeAuthorizer() bool {
 
 // UsesSecondaryIP checks if the CNI in use attaches secondary interfaces to the host.
 func (c *NodeupModelContext) UsesSecondaryIP() bool {
-	if c.Cluster.Spec.Networking.CNI.UsesSecondaryIP || c.Cluster.Spec.Networking.AmazonVPC != nil {
+	if (c.Cluster.Spec.Networking.CNI != nil && c.Cluster.Spec.Networking.CNI.UsesSecondaryIP) || c.Cluster.Spec.Networking.AmazonVPC != nil {
 		return true
 	}
 
