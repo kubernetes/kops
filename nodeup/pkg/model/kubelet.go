@@ -174,7 +174,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		flags += " --cni-conf-dir=" + b.CNIConfDir()
 	}
 
-	if kubeletConfig.BindPrimaryIP {
+	if b.UsesSecondaryIP() {
 		sess := session.Must(session.NewSession())
 		metadata := ec2metadata.New(sess)
 		localIpv4, err := metadata.GetMetadata("local-ipv4")

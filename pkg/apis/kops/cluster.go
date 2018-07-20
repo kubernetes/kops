@@ -507,9 +507,7 @@ func (c *Cluster) FillDefaults() error {
 	} else if c.Spec.Networking.Romana != nil {
 		// OK
 	} else if c.Spec.Networking.AmazonVPC != nil {
-		// If we are using the AmazonVPC plugin we need to bind the kubelet to the local ipv4 address
-		c.Spec.Kubelet.BindPrimaryIP = true
-		c.Spec.MasterKubelet.BindPrimaryIP = true
+		// OK
 	} else if c.Spec.Networking.Cilium != nil {
 		if c.Spec.Networking.Cilium.Version == "" {
 			c.Spec.Networking.Cilium.Version = CiliumDefaultVersion
