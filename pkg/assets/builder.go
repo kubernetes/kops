@@ -262,20 +262,9 @@ func (a *AssetBuilder) RemapFileAndSHAValue(fileURL *url.URL, shaValue string) (
 // FindHash returns the hash value of a FileAsset.
 func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 
-	// If the phase is "assets" we use the CanonicalFileURL,
-	// but during other phases we use the hash from the FileRepository or the base kops path.
-	// We do not want to just test for CanonicalFileURL as it is defined in
-	// other phases, but is not used to test for the SHA.
-	// This prevents a chicken and egg problem where the file is not yet in the FileRepository.
-	//
-	// assets phase -> get the sha file from the source / CanonicalFileURL
-	// any other phase -> get the sha file from the kops base location or the FileRepository
-	//
-	// TLDR; we use the file.CanonicalFileURL during assets phase, and use file.FileUrl the
-	// rest of the time. If not we get a chicken and the egg problem where we are reading the sha file
-	// before it exists.
+	// The source file is in CanonicalFileURL if it is set, otherwise it is in FileURL
 	u := file.FileURL
-	if a.Phase == "assets" && file.CanonicalFileURL != nil {
+	if file.CanonicalFileURL != nil {
 		u = file.CanonicalFileURL
 	}
 
@@ -296,9 +285,6 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 		return hashing.FromString(hashString)
 	}
 
-	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
-		return nil, fmt.Errorf("you may have not staged your files correctly, please execute kops update cluster using the assets phase")
-	}
 	return nil, fmt.Errorf("cannot determine hash for %q (have you specified a valid file location?)", u)
 }
 
