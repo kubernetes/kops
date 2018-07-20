@@ -130,3 +130,45 @@ func TestValidate_RemapImage_ContainerProxy_AppliesToImagesWithTags(t *testing.T
 		t.Errorf("Error remapping image (Expecting: %s, got %s)", expected, remapped)
 	}
 }
+
+func TestValidate_RemapImage_ContainerProxy_DoesNotApplyToSimplifiedDockerHubIfRegistryMirrorIsSet(t *testing.T) {
+	builder := buildAssetBuilder(t)
+
+	proxyURL := "proxy.example.com/"
+	image := "debian"
+	expected := image
+
+	builder.AssetsLocation.ContainerProxy = &proxyURL
+	builder.UseDockerRegistryMirror = true
+
+	remapped, err := builder.RemapImage(image)
+	if err != nil {
+		t.Error("Error remapping image", err)
+	}
+
+	if remapped != expected {
+		t.Errorf("Error remapping image (Expecting: %s, got %s)", expected, remapped)
+	}
+}
+
+func TestValidate_RemapImage_ContainerProxy_AppliesToSimplifiedKubernetesURLIfRegistryMirrorIsSet(t *testing.T) {
+	builder := buildAssetBuilder(t)
+
+	proxyURL := "proxy.example.com/"
+	image := "k8s.gcr.io/kube-apiserver"
+	expected := "proxy.example.com/kube-apiserver"
+	version, _ := util.ParseKubernetesVersion("1.10")
+
+	builder.AssetsLocation.ContainerProxy = &proxyURL
+	builder.UseDockerRegistryMirror = true
+	builder.KubernetesVersion = *version
+
+	remapped, err := builder.RemapImage(image)
+	if err != nil {
+		t.Error("Error remapping image", err)
+	}
+
+	if remapped != expected {
+		t.Errorf("Error remapping image (Expecting: %s, got %s)", expected, remapped)
+	}
+}

@@ -51,6 +51,8 @@ type AssetBuilder struct {
 
 	// KubernetesVersion is the version of kubernetes we are installing
 	KubernetesVersion semver.Version
+
+	UseDockerRegistryMirror bool
 }
 
 // ContainerAsset models a container's location.
@@ -85,6 +87,9 @@ func NewAssetBuilder(cluster *kops.Cluster, phase string) *AssetBuilder {
 		glog.Fatalf("unexpected error from ParseKubernetesVersion %s: %v", cluster.Spec.KubernetesVersion, err)
 	}
 	a.KubernetesVersion = *version
+	if cluster.Spec.Docker != nil && cluster.Spec.Docker.RegistryMirrors != nil {
+		a.UseDockerRegistryMirror = len(cluster.Spec.Docker.RegistryMirrors) > 0
+	}
 
 	return a
 }
@@ -154,7 +159,9 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		// If the image name contains only a single / we need to determine if the image is located on docker-hub or if it's using a convenient URL like k8s.gcr.io/<image-name>
 		// In case of a hub image it should be sufficient to just prepend the proxy url, producing eg docker-proxy.example.com/weaveworks/weave-kube
 		if strings.Count(normalized, "/") <= 1 && !strings.ContainsAny(strings.Split(normalized, "/")[0], ".:") {
-			normalized = containerProxy + "/" + normalized
+			if !a.UseDockerRegistryMirror {
+				normalized = containerProxy + "/" + normalized
+			}
 		} else {
 			var re = regexp.MustCompile(`^[^/]+`)
 			normalized = re.ReplaceAllString(normalized, containerProxy)

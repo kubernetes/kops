@@ -589,3 +589,22 @@ spec:
   assets:
     containerProxy: proxy.example.com
 ```
+
+###### Using containerProxy in conjunction with docker.mirrorRegistry
+
+The containerProxy setting can be used in conjunction with the docker.mirrorRegistry.
+If set, kops will not remap images that are supposed to be pulled from the Docker Hub
+to be pulled through the proxy but will instead configure docker to handle these
+through the mirror.
+
+This is useful in cases where the proxy cannot or should not handle pulling Docker Hub
+images as well as Kubernets private registry images.
+
+```yaml
+spec:
+  assets:
+    containerProxy: proxy.example.com
+  docker:
+    registryMirrors:
+    - https://registry.example.com
+```
