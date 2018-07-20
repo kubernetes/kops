@@ -166,19 +166,23 @@
   packages = [
     "cmd/gazelle",
     "internal/config",
-    "internal/generator",
+    "internal/flag",
     "internal/label",
+    "internal/language",
+    "internal/language/go",
+    "internal/language/proto",
     "internal/merger",
-    "internal/packages",
     "internal/pathtools",
     "internal/repos",
     "internal/resolve",
+    "internal/rule",
     "internal/version",
-    "internal/wspace",
+    "internal/walk",
+    "internal/wspace"
   ]
   pruneopts = "UT"
-  revision = "7f30ba724af9495b221e2df0f5ac58511179485f"
-  version = "0.12.0"
+  revision = "b10e7beac17436852ab4e2249b94eb3c9c9f2ef1"
+  version = "0.13.0"
 
 [[projects]]
   digest = "1:331f668c3b6315145093a3b104c1da6be2835a3b1e7c873ad5fba82667330d44"
