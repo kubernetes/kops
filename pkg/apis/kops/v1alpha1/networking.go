@@ -50,6 +50,7 @@ type ExternalNetworkingSpec struct {
 // Networking is not managed by kops - we can create options here that directly configure e.g. weave
 // but this is useful for arbitrary network modes or for modes that don't need additional configuration.
 type CNINetworkingSpec struct {
+	UsesSecondaryIP bool `json:"usesSecondaryIP,omitempty"`
 }
 
 // KopeioNetworkingSpec declares that we want Kopeio networking
