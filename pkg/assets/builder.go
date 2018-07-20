@@ -178,10 +178,17 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 			normalized = strings.TrimPrefix(normalized, "k8s.gcr.io/")
 		}
 
-		// We can't nest arbitrarily
-		// Some risk of collisions, but also -- and __ in the names appear to be blocked by docker hub
-		normalized = strings.Replace(normalized, "/", "-", -1)
-		asset.DockerImage = registryMirror + "/" + normalized
+		// When assembling the cluster spec, kops may call the option more then once until the config converges
+		// This means that this function may me called more than once on the same image
+		// It this is pass is the second one, the image will already have been normalized with the containerRegistry settings
+		// If this is the case, passing though the process again will re-prepend the container registry again
+		// and again, causing the spec to never converge and the config build to fail.
+		if !strings.HasPrefix(normalized, registryMirror+"/") {
+			// We can't nest arbitrarily
+			// Some risk of collisions, but also -- and __ in the names appear to be blocked by docker hub
+			normalized = strings.Replace(normalized, "/", "-", -1)
+			asset.DockerImage = registryMirror + "/" + normalized
+		}
 
 		asset.CanonicalLocation = image
 

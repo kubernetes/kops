@@ -17,6 +17,7 @@ limitations under the License.
 package assets
 
 import (
+	"errors"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -129,4 +130,31 @@ func TestValidate_RemapImage_ContainerProxy_AppliesToImagesWithTags(t *testing.T
 	if remapped != expected {
 		t.Errorf("Error remapping image (Expecting: %s, got %s)", expected, remapped)
 	}
+}
+
+func TestValidate_RemapImage_ContainerRegistry_MappingMultipleTimesConverges(t *testing.T) {
+	builder := buildAssetBuilder(t)
+
+	mirrorUrl := "proxy.example.com"
+	image := "kube-apiserver:1.2.3"
+	expected := "proxy.example.com/kube-apiserver:1.2.3"
+	version, _ := util.ParseKubernetesVersion("1.10")
+
+	builder.KubernetesVersion = *version
+	builder.AssetsLocation.ContainerRegistry = &mirrorUrl
+
+	remapped := image
+	err := errors.New("")
+	iterations := make([]map[int]int, 2)
+	for i := range iterations {
+		remapped, err = builder.RemapImage(remapped)
+		if err != nil {
+			t.Errorf("Error remapping image (iteration %d): %s", i, err)
+		}
+
+		if remapped != expected {
+			t.Errorf("Error remapping image (Expecting: %s, got %s, iteration: %d)", expected, remapped, i)
+		}
+	}
+
 }
