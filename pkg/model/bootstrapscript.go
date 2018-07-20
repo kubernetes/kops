@@ -60,6 +60,11 @@ func (b *BootstrapScript) KubeEnv(ig *kops.InstanceGroup) (string, error) {
 
 func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[string]string, error) {
 	env := make(map[string]string)
+
+	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
+		env["GOSSIP_DNS_CONN_LIMIT"] = os.Getenv("GOSSIP_DNS_CONN_LIMIT")
+	}
+
 	if os.Getenv("S3_ENDPOINT") != "" {
 		env["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
 		env["S3_REGION"] = os.Getenv("S3_REGION")
