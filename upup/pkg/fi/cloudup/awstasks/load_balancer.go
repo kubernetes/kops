@@ -78,13 +78,21 @@ type LoadBalancerListener struct {
 }
 
 func (e *LoadBalancerListener) mapToAWS(loadBalancerPort int64) *elb.Listener {
-	return &elb.Listener{
+	l := &elb.Listener{
 		LoadBalancerPort: aws.Int64(loadBalancerPort),
-		Protocol:         aws.String("SSL"),
-		InstanceProtocol: aws.String("SSL"),
 		InstancePort:     aws.Int64(int64(e.InstancePort)),
-		SSLCertificateId: aws.String(e.SSLCertificateID),
 	}
+
+	if e.SSLCertificateID != "" {
+		l.Protocol = aws.String("SSL")
+		l.InstanceProtocol = aws.String("SSL")
+		l.SSLCertificateId = aws.String(e.SSLCertificateID)
+	} else {
+		l.Protocol = aws.String("TCP")
+		l.InstanceProtocol = aws.String("TCP")
+	}
+
+	return l
 }
 
 var _ fi.HasDependencies = &LoadBalancerListener{}
