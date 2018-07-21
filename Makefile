@@ -539,6 +539,11 @@ verify-bazel:
 ci: govet verify-gofmt verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
+.PHONY: pr
+pr:
+	@echo "Test passed!"
+	@echo "Feel free to open your pr at https://github.com/kubernetes/kops/compare"
+
 # --------------------------------------------------
 # channel tool
 
