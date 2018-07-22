@@ -256,18 +256,19 @@ func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 
 		err := k.provider.AttachVolume(v)
 		if err != nil {
-			// We are racing with other instances here; this can happen
-			glog.Warningf("Error attaching volume %q: %v", v.ID, err)
-		} else {
-			if v.LocalDevice == "" {
-				glog.Fatalf("AttachVolume did not set LocalDevice")
-			}
-			attached = append(attached, v)
+			// Another instances can still have the volume mounted or the mount failed
+			// for other reasons, we need to retry mounting the volume
+			return nil, fmt.Errorf("error attaching volume %q: %v", v.ID, err)
+		}
 
-			// Mark this cluster as attached now
-			for _, etcdCluster := range v.Info.EtcdClusters {
-				attachedClusters.Insert(etcdCluster.ClusterKey)
-			}
+		if v.LocalDevice == "" {
+			glog.Fatalf("AttachVolume did not set LocalDevice")
+		}
+		attached = append(attached, v)
+
+		// Mark this cluster as attached now
+		for _, etcdCluster := range v.Info.EtcdClusters {
+			attachedClusters.Insert(etcdCluster.ClusterKey)
 		}
 	}
 
