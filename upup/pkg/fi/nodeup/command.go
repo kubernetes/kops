@@ -215,6 +215,10 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return err
 	}
 
+	if err := loadKernelModules(modelContext); err != nil {
+		return err
+	}
+
 	loader := NewLoader(c.config, c.cluster, assetStore, nodeTags)
 	loader.Builders = append(loader.Builders, &model.DirectoryBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.UpdateServiceBuilder{NodeupModelContext: modelContext})
@@ -500,5 +504,17 @@ func modprobe(module string) error {
 	if outString != "" {
 		glog.Infof("Output from modprobe %s:\n%s", module, outString)
 	}
+	return nil
+}
+
+// loadKernelModules is a hack to force br_netfilter to be loaded
+// TODO: Move to tasks architecture
+func loadKernelModules(context *model.NodeupModelContext) error {
+	err := modprobe("br_netfilter")
+	if err != nil {
+		// TODO: Return error in 1.11 (too risky for 1.10)
+		glog.Warningf("error loading br_netfilter module: %v", err)
+	}
+	// TODO: Add to /etc/modules-load.d/ ?
 	return nil
 }
