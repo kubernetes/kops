@@ -118,58 +118,22 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 		}
 	}
 
-	// Upgrade master next
+	// Upgrade masters next
 	{
-		var wg sync.WaitGroup
-
 		// We run master nodes in series, even if they are in separate instance groups
 		// typically they will be in separate instance groups, so we can force the zones,
 		// and we don't want to roll all the masters at the same time.  See issue #284
-		wg.Add(1)
 
-		go func() {
-			for k := range masterGroups {
-				resultsMutex.Lock()
-				results[k] = fmt.Errorf("function panic masters")
-				resultsMutex.Unlock()
+		for _, group := range masterGroups {
+			g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
+			if err == nil {
+				err = g.RollingUpdate(c, cluster, instanceGroups, false, c.MasterInterval, c.ValidationTimeout)
 			}
 
-			defer wg.Done()
-
-			for k, group := range masterGroups {
-				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
-				if err == nil {
-					err = g.RollingUpdate(c, cluster, instanceGroups, false, c.MasterInterval, c.ValidationTimeout)
-				}
-
-				if err != nil {
-					// Remove function panic errors if an actual error occurred, otherwise that would be displayed
-					for k := range masterGroups {
-						resultsMutex.Lock()
-						results[k] = nil
-						resultsMutex.Unlock()
-					}
-				}
-
-				resultsMutex.Lock()
-				results[k] = err
-				resultsMutex.Unlock()
-
-				if err != nil {
-					// Stop before all masters are updated if an error occurs,
-					// to prevent more masters from failing and causing an outage
-					return
-				}
+			// Do not continue update if master(s) failed, cluster is potentially in an unhealthy state
+			if err != nil {
+				return fmt.Errorf("master not healthy after update, stopping rolling-update: %q", err)
 			}
-		}()
-
-		wg.Wait()
-	}
-
-	// Do not continue update if master(s) failed, cluster is potentially in an unhealthy state
-	for _, err := range results {
-		if err != nil {
-			return fmt.Errorf("master not healthy after update, stopping rolling-update: %q", err)
 		}
 	}
 
