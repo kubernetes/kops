@@ -35,10 +35,10 @@ spec:
     recommendedVersion: 1.10.3
     requiredVersion: 1.10.0
   - range: ">=1.9.0"
-    recommendedVersion: 1.9.6
+    recommendedVersion: 1.9.8
     requiredVersion: 1.9.0
   - range: ">=1.8.0"
-    recommendedVersion: 1.8.11
+    recommendedVersion: 1.8.13
     requiredVersion: 1.8.0
   - range: ">=1.7.0"
     recommendedVersion: 1.7.16
