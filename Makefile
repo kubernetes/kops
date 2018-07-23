@@ -38,7 +38,7 @@ BAZELIMAGES=$(BAZELDIST)/images
 BAZELUPLOAD=$(BAZELBUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
-TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor" hack/.packages)
+TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/vendor" hack/.packages)
 # We need to ignore clientsets because of kubernetes/kubernetes#60584
 GOVETABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor|clientset/fake" hack/.packages)
 BAZEL_OPTIONS?=
@@ -53,12 +53,12 @@ unexport KOPS_BASE_URL KOPS_CLUSTER_NAME KOPS_RUN_OBSOLETE_VERSION KOPS_STATE_ST
 unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCESS_KEY VSPHERE_USERNAME VSPHERE_PASSWORD
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.9.0
+DNS_CONTROLLER_TAG=1.10.0-alpha.1
 
 # Keep in sync with logic in get_workspace_status
-# Update variables in tools/get_workplace_status.sh for the bazel build
-KOPS_RELEASE_VERSION = 1.9.0
-KOPS_CI_VERSION      = 1.9.1-alpha.1
+# TODO: just invoke tools/get_workspace_status.sh?
+KOPS_RELEASE_VERSION:=$(shell grep 'KOPS_RELEASE_VERSION\s*=' version.go | awk '{print $$3}' | sed -e 's_"__g')
+KOPS_CI_VERSION:=$(shell grep 'KOPS_CI_VERSION\s*=' version.go | awk '{print $$3}' | sed -e 's_"__g')
 
 # kops local location
 KOPS                 = ${LOCAL}/kops
@@ -192,15 +192,19 @@ upup/models/bindata.go: ${GOBINDATA} ${UPUP_MODELS_BINDATA_SOURCES}
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
-# 1.8 is preferred, 1.9 is coming soon so we have a target for it
+# 1.9 is preferred, 1.10 is likely to be the default soon.  1.8 is best-effort
 .PHONY: check-builds-in-go18
 check-builds-in-go18:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.8 make -C /go/src/k8s.io/kops ci
+	# Note we only check that kops builds; we know the tests don't compile because of type aliasing in uber zap
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.8 make -C /go/src/k8s.io/kops kops
 
 .PHONY: check-builds-in-go19
 check-builds-in-go19:
 	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.9 make -C /go/src/k8s.io/kops ci
 
+.PHONY: check-builds-in-go110
+check-builds-in-go110:
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.10 make -C /go/src/k8s.io/kops ci
 
 .PHONY: codegen
 codegen: kops-gobindata
@@ -535,6 +539,11 @@ verify-bazel:
 ci: govet verify-gofmt verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
+.PHONY: pr
+pr:
+	@echo "Test passed!"
+	@echo "Feel free to open your pr at https://github.com/kubernetes/kops/compare"
+
 # --------------------------------------------------
 # channel tool
 
@@ -661,6 +670,10 @@ bazel-crossbuild-protokube-image:
 bazel-crossbuild-kube-discovery-image:
 	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:kube-discovery.tar
 
+.PHONY: bazel-crossbuild-node-authorizer-image
+bazel-crossbuild-node-authorizer-image:
+	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:node-authorizer.tar
+
 .PHONY: bazel-push
 # Will always push a linux-based build up to the server
 bazel-push: bazel-crossbuild-nodeup
@@ -698,6 +711,12 @@ push-kube-discovery:
 	bazel run //kube-discovery/images:kube-discovery
 	docker tag bazel/kube-discovery/images:kube-discovery ${DOCKER_REGISTRY}/kube-discovery:${DOCKER_TAG}
 	docker push ${DOCKER_REGISTRY}/kube-discovery:${DOCKER_TAG}
+
+.PHONY: push-node-authorizer
+push-node-authorizer:
+	bazel run //node-authorizer/images:node-authorizer
+	docker tag bazel/node-authorizer/images:node-authorizer ${DOCKER_REGISTRY}/node-authorizer:${DOCKER_TAG}
+	docker push ${DOCKER_REGISTRY}/node-authorizer:${DOCKER_TAG}
 
 .PHONY: bazel-protokube-export
 bazel-protokube-export:

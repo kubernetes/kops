@@ -238,6 +238,33 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			c.AddTask(t)
 		}
+
+		// External Load Balancer/TargetGroup Attachments
+		{
+			for _, lb := range ig.Spec.ExternalLoadBalancers {
+				if lb.LoadBalancerName != nil {
+					t := &awstasks.ExternalLoadBalancerAttachment{
+						Name:             s("extlb-" + *lb.LoadBalancerName + "-" + ig.Name),
+						Lifecycle:        b.Lifecycle,
+						LoadBalancerName: *lb.LoadBalancerName,
+						AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+					}
+
+					c.AddTask(t)
+				}
+
+				if lb.TargetGroupARN != nil {
+					t := &awstasks.ExternalTargetGroupAttachment{
+						Name:             s("exttg-" + *lb.TargetGroupARN + "-" + ig.Name),
+						Lifecycle:        b.Lifecycle,
+						TargetGroupARN:   *lb.TargetGroupARN,
+						AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+					}
+
+					c.AddTask(t)
+				}
+			}
+		}
 	}
 
 	return nil

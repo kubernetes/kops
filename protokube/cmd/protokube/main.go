@@ -32,6 +32,7 @@ import (
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
 	"k8s.io/kops/protokube/pkg/gossip/mesh"
 	"k8s.io/kops/protokube/pkg/protokube"
+
 	// Load DNS plugins
 	"github.com/golang/glog"
 	"github.com/spf13/pflag"

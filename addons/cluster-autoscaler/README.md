@@ -27,3 +27,11 @@ sed -i -e "s@{{SSL_CERT_PATH}}@${SSL_CERT_PATH}@g" "${addon}"
 
 kubectl apply -f ${addon}
 ```
+An enhanced script which also adds the IAM policies is included here [cluster-autoscaler.sh](cluster-autoscaler.sh) 
+
+Question: Which ASG group should be autoscaled?  
+Answer: By default, kops creates a "nodes" instancegroup and a corresponding ASG group which will have a name such as "nodes.$CLUSTER_NAME", visible in the AWS Console. That ASG is a good choice to begin with. Optionally, you may also create a new instancegroup "kops create ig _newgroupname_", and configure that instead. Set the maxSize of the kops instancesgroup, and update the cluster so the maxSize propagates to the ASG.
+  
+Question: The cluster-autoscaler [documentation](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/aws) mentions an IAM Policy. Which IAM Role should the Policy be attached to?    
+Answer: Kops creates two Roles, nodes.$CLUSTER_NAME and masters.$CLUSTER_NAME. Currently the example scripts run the autoscaler process on the k8s master node, so the IAM Policy should be assigned to masters.$CLUSTER_NAME (substituting that variable for your actual cluster name).
+

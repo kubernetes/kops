@@ -21,7 +21,6 @@ limitations under the License.
 package v1alpha2
 
 import (
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	kops "k8s.io/kops/pkg/apis/kops"
@@ -49,6 +48,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_AuthenticationSpec_To_v1alpha2_AuthenticationSpec,
 		Convert_v1alpha2_AuthorizationSpec_To_kops_AuthorizationSpec,
 		Convert_kops_AuthorizationSpec_To_v1alpha2_AuthorizationSpec,
+		Convert_v1alpha2_AwsAuthenticationSpec_To_kops_AwsAuthenticationSpec,
+		Convert_kops_AwsAuthenticationSpec_To_v1alpha2_AwsAuthenticationSpec,
 		Convert_v1alpha2_BastionSpec_To_kops_BastionSpec,
 		Convert_kops_BastionSpec_To_v1alpha2_BastionSpec,
 		Convert_v1alpha2_CNINetworkingSpec_To_kops_CNINetworkingSpec,
@@ -101,8 +102,6 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec,
 		Convert_v1alpha2_HTTPProxy_To_kops_HTTPProxy,
 		Convert_kops_HTTPProxy_To_v1alpha2_HTTPProxy,
-		Convert_v1alpha2_HeptioAuthenticationSpec_To_kops_HeptioAuthenticationSpec,
-		Convert_kops_HeptioAuthenticationSpec_To_v1alpha2_HeptioAuthenticationSpec,
 		Convert_v1alpha2_HookSpec_To_kops_HookSpec,
 		Convert_kops_HookSpec_To_v1alpha2_HookSpec,
 		Convert_v1alpha2_IAMProfileSpec_To_kops_IAMProfileSpec,
@@ -145,10 +144,16 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_KuberouterNetworkingSpec_To_v1alpha2_KuberouterNetworkingSpec,
 		Convert_v1alpha2_LeaderElectionConfiguration_To_kops_LeaderElectionConfiguration,
 		Convert_kops_LeaderElectionConfiguration_To_v1alpha2_LeaderElectionConfiguration,
+		Convert_v1alpha2_LoadBalancer_To_kops_LoadBalancer,
+		Convert_kops_LoadBalancer_To_v1alpha2_LoadBalancer,
 		Convert_v1alpha2_LoadBalancerAccessSpec_To_kops_LoadBalancerAccessSpec,
 		Convert_kops_LoadBalancerAccessSpec_To_v1alpha2_LoadBalancerAccessSpec,
 		Convert_v1alpha2_NetworkingSpec_To_kops_NetworkingSpec,
 		Convert_kops_NetworkingSpec_To_v1alpha2_NetworkingSpec,
+		Convert_v1alpha2_NodeAuthorizationSpec_To_kops_NodeAuthorizationSpec,
+		Convert_kops_NodeAuthorizationSpec_To_v1alpha2_NodeAuthorizationSpec,
+		Convert_v1alpha2_NodeAuthorizerSpec_To_kops_NodeAuthorizerSpec,
+		Convert_kops_NodeAuthorizerSpec_To_v1alpha2_NodeAuthorizerSpec,
 		Convert_v1alpha2_RBACAuthorizationSpec_To_kops_RBACAuthorizationSpec,
 		Convert_kops_RBACAuthorizationSpec_To_v1alpha2_RBACAuthorizationSpec,
 		Convert_v1alpha2_RomanaNetworkingSpec_To_kops_RomanaNetworkingSpec,
@@ -287,6 +292,7 @@ func Convert_kops_AmazonVPCNetworkingSpec_To_v1alpha2_AmazonVPCNetworkingSpec(in
 func autoConvert_v1alpha2_Assets_To_kops_Assets(in *Assets, out *kops.Assets, s conversion.Scope) error {
 	out.ContainerRegistry = in.ContainerRegistry
 	out.FileRepository = in.FileRepository
+	out.ContainerProxy = in.ContainerProxy
 	return nil
 }
 
@@ -298,6 +304,7 @@ func Convert_v1alpha2_Assets_To_kops_Assets(in *Assets, out *kops.Assets, s conv
 func autoConvert_kops_Assets_To_v1alpha2_Assets(in *kops.Assets, out *Assets, s conversion.Scope) error {
 	out.ContainerRegistry = in.ContainerRegistry
 	out.FileRepository = in.FileRepository
+	out.ContainerProxy = in.ContainerProxy
 	return nil
 }
 
@@ -316,14 +323,14 @@ func autoConvert_v1alpha2_AuthenticationSpec_To_kops_AuthenticationSpec(in *Auth
 	} else {
 		out.Kopeio = nil
 	}
-	if in.Heptio != nil {
-		in, out := &in.Heptio, &out.Heptio
-		*out = new(kops.HeptioAuthenticationSpec)
-		if err := Convert_v1alpha2_HeptioAuthenticationSpec_To_kops_HeptioAuthenticationSpec(*in, *out, s); err != nil {
+	if in.Aws != nil {
+		in, out := &in.Aws, &out.Aws
+		*out = new(kops.AwsAuthenticationSpec)
+		if err := Convert_v1alpha2_AwsAuthenticationSpec_To_kops_AwsAuthenticationSpec(*in, *out, s); err != nil {
 			return err
 		}
 	} else {
-		out.Heptio = nil
+		out.Aws = nil
 	}
 	return nil
 }
@@ -343,14 +350,14 @@ func autoConvert_kops_AuthenticationSpec_To_v1alpha2_AuthenticationSpec(in *kops
 	} else {
 		out.Kopeio = nil
 	}
-	if in.Heptio != nil {
-		in, out := &in.Heptio, &out.Heptio
-		*out = new(HeptioAuthenticationSpec)
-		if err := Convert_kops_HeptioAuthenticationSpec_To_v1alpha2_HeptioAuthenticationSpec(*in, *out, s); err != nil {
+	if in.Aws != nil {
+		in, out := &in.Aws, &out.Aws
+		*out = new(AwsAuthenticationSpec)
+		if err := Convert_kops_AwsAuthenticationSpec_To_v1alpha2_AwsAuthenticationSpec(*in, *out, s); err != nil {
 			return err
 		}
 	} else {
-		out.Heptio = nil
+		out.Aws = nil
 	}
 	return nil
 }
@@ -414,6 +421,24 @@ func Convert_kops_AuthorizationSpec_To_v1alpha2_AuthorizationSpec(in *kops.Autho
 	return autoConvert_kops_AuthorizationSpec_To_v1alpha2_AuthorizationSpec(in, out, s)
 }
 
+func autoConvert_v1alpha2_AwsAuthenticationSpec_To_kops_AwsAuthenticationSpec(in *AwsAuthenticationSpec, out *kops.AwsAuthenticationSpec, s conversion.Scope) error {
+	return nil
+}
+
+// Convert_v1alpha2_AwsAuthenticationSpec_To_kops_AwsAuthenticationSpec is an autogenerated conversion function.
+func Convert_v1alpha2_AwsAuthenticationSpec_To_kops_AwsAuthenticationSpec(in *AwsAuthenticationSpec, out *kops.AwsAuthenticationSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha2_AwsAuthenticationSpec_To_kops_AwsAuthenticationSpec(in, out, s)
+}
+
+func autoConvert_kops_AwsAuthenticationSpec_To_v1alpha2_AwsAuthenticationSpec(in *kops.AwsAuthenticationSpec, out *AwsAuthenticationSpec, s conversion.Scope) error {
+	return nil
+}
+
+// Convert_kops_AwsAuthenticationSpec_To_v1alpha2_AwsAuthenticationSpec is an autogenerated conversion function.
+func Convert_kops_AwsAuthenticationSpec_To_v1alpha2_AwsAuthenticationSpec(in *kops.AwsAuthenticationSpec, out *AwsAuthenticationSpec, s conversion.Scope) error {
+	return autoConvert_kops_AwsAuthenticationSpec_To_v1alpha2_AwsAuthenticationSpec(in, out, s)
+}
+
 func autoConvert_v1alpha2_BastionSpec_To_kops_BastionSpec(in *BastionSpec, out *kops.BastionSpec, s conversion.Scope) error {
 	out.BastionPublicName = in.BastionPublicName
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
@@ -437,6 +462,7 @@ func Convert_kops_BastionSpec_To_v1alpha2_BastionSpec(in *kops.BastionSpec, out 
 }
 
 func autoConvert_v1alpha2_CNINetworkingSpec_To_kops_CNINetworkingSpec(in *CNINetworkingSpec, out *kops.CNINetworkingSpec, s conversion.Scope) error {
+	out.UsesSecondaryIP = in.UsesSecondaryIP
 	return nil
 }
 
@@ -446,6 +472,7 @@ func Convert_v1alpha2_CNINetworkingSpec_To_kops_CNINetworkingSpec(in *CNINetwork
 }
 
 func autoConvert_kops_CNINetworkingSpec_To_v1alpha2_CNINetworkingSpec(in *kops.CNINetworkingSpec, out *CNINetworkingSpec, s conversion.Scope) error {
+	out.UsesSecondaryIP = in.UsesSecondaryIP
 	return nil
 }
 
@@ -457,6 +484,7 @@ func Convert_kops_CNINetworkingSpec_To_v1alpha2_CNINetworkingSpec(in *kops.CNINe
 func autoConvert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *CalicoNetworkingSpec, out *kops.CalicoNetworkingSpec, s conversion.Scope) error {
 	out.CrossSubnet = in.CrossSubnet
 	out.LogSeverityScreen = in.LogSeverityScreen
+	out.MTU = in.MTU
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
@@ -472,6 +500,7 @@ func Convert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *Cali
 func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha2_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
 	out.CrossSubnet = in.CrossSubnet
 	out.LogSeverityScreen = in.LogSeverityScreen
+	out.MTU = in.MTU
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
@@ -1040,6 +1069,15 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.Authorization = nil
 	}
+	if in.NodeAuthorization != nil {
+		in, out := &in.NodeAuthorization, &out.NodeAuthorization
+		*out = new(kops.NodeAuthorizationSpec)
+		if err := Convert_v1alpha2_NodeAuthorizationSpec_To_kops_NodeAuthorizationSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.NodeAuthorization = nil
+	}
 	out.CloudLabels = in.CloudLabels
 	if in.Hooks != nil {
 		in, out := &in.Hooks, &out.Hooks
@@ -1312,6 +1350,15 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.Authorization = nil
 	}
+	if in.NodeAuthorization != nil {
+		in, out := &in.NodeAuthorization, &out.NodeAuthorization
+		*out = new(NodeAuthorizationSpec)
+		if err := Convert_kops_NodeAuthorizationSpec_To_v1alpha2_NodeAuthorizationSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.NodeAuthorization = nil
+	}
 	out.CloudLabels = in.CloudLabels
 	if in.Hooks != nil {
 		in, out := &in.Hooks, &out.Hooks
@@ -1436,21 +1483,22 @@ func autoConvert_v1alpha2_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.AuthorizationPlugins = in.AuthorizationPlugins
 	out.Bridge = in.Bridge
 	out.BridgeIP = in.BridgeIP
+	out.DataRoot = in.DataRoot
 	out.DefaultUlimit = in.DefaultUlimit
+	out.ExecRoot = in.ExecRoot
 	out.Hosts = in.Hosts
 	out.IPMasq = in.IPMasq
 	out.IPTables = in.IPTables
 	out.InsecureRegistry = in.InsecureRegistry
 	out.LiveRestore = in.LiveRestore
-	if err := v1.Convert_Pointer_string_To_string(&in.LogDriver, &out.LogDriver, s); err != nil {
-		return err
-	}
+	out.LogDriver = in.LogDriver
 	out.LogLevel = in.LogLevel
 	out.LogOpt = in.LogOpt
 	out.MTU = in.MTU
 	out.RegistryMirrors = in.RegistryMirrors
 	out.Storage = in.Storage
 	out.StorageOpts = in.StorageOpts
+	out.UserNamespaceRemap = in.UserNamespaceRemap
 	out.Version = in.Version
 	return nil
 }
@@ -1464,21 +1512,22 @@ func autoConvert_kops_DockerConfig_To_v1alpha2_DockerConfig(in *kops.DockerConfi
 	out.AuthorizationPlugins = in.AuthorizationPlugins
 	out.Bridge = in.Bridge
 	out.BridgeIP = in.BridgeIP
+	out.DataRoot = in.DataRoot
 	out.DefaultUlimit = in.DefaultUlimit
+	out.ExecRoot = in.ExecRoot
 	out.Hosts = in.Hosts
 	out.IPMasq = in.IPMasq
 	out.IPTables = in.IPTables
 	out.InsecureRegistry = in.InsecureRegistry
 	out.LiveRestore = in.LiveRestore
-	if err := v1.Convert_string_To_Pointer_string(&in.LogDriver, &out.LogDriver, s); err != nil {
-		return err
-	}
+	out.LogDriver = in.LogDriver
 	out.LogLevel = in.LogLevel
 	out.LogOpt = in.LogOpt
 	out.MTU = in.MTU
 	out.RegistryMirrors = in.RegistryMirrors
 	out.Storage = in.Storage
 	out.StorageOpts = in.StorageOpts
+	out.UserNamespaceRemap = in.UserNamespaceRemap
 	out.Version = in.Version
 	return nil
 }
@@ -1832,24 +1881,6 @@ func Convert_kops_HTTPProxy_To_v1alpha2_HTTPProxy(in *kops.HTTPProxy, out *HTTPP
 	return autoConvert_kops_HTTPProxy_To_v1alpha2_HTTPProxy(in, out, s)
 }
 
-func autoConvert_v1alpha2_HeptioAuthenticationSpec_To_kops_HeptioAuthenticationSpec(in *HeptioAuthenticationSpec, out *kops.HeptioAuthenticationSpec, s conversion.Scope) error {
-	return nil
-}
-
-// Convert_v1alpha2_HeptioAuthenticationSpec_To_kops_HeptioAuthenticationSpec is an autogenerated conversion function.
-func Convert_v1alpha2_HeptioAuthenticationSpec_To_kops_HeptioAuthenticationSpec(in *HeptioAuthenticationSpec, out *kops.HeptioAuthenticationSpec, s conversion.Scope) error {
-	return autoConvert_v1alpha2_HeptioAuthenticationSpec_To_kops_HeptioAuthenticationSpec(in, out, s)
-}
-
-func autoConvert_kops_HeptioAuthenticationSpec_To_v1alpha2_HeptioAuthenticationSpec(in *kops.HeptioAuthenticationSpec, out *HeptioAuthenticationSpec, s conversion.Scope) error {
-	return nil
-}
-
-// Convert_kops_HeptioAuthenticationSpec_To_v1alpha2_HeptioAuthenticationSpec is an autogenerated conversion function.
-func Convert_kops_HeptioAuthenticationSpec_To_v1alpha2_HeptioAuthenticationSpec(in *kops.HeptioAuthenticationSpec, out *HeptioAuthenticationSpec, s conversion.Scope) error {
-	return autoConvert_kops_HeptioAuthenticationSpec_To_v1alpha2_HeptioAuthenticationSpec(in, out, s)
-}
-
 func autoConvert_v1alpha2_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec, s conversion.Scope) error {
 	out.Name = in.Name
 	out.Disabled = in.Disabled
@@ -2086,6 +2117,17 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 		out.AdditionalUserData = nil
 	}
 	out.SuspendProcesses = in.SuspendProcesses
+	if in.ExternalLoadBalancers != nil {
+		in, out := &in.ExternalLoadBalancers, &out.ExternalLoadBalancers
+		*out = make([]kops.LoadBalancer, len(*in))
+		for i := range *in {
+			if err := Convert_v1alpha2_LoadBalancer_To_kops_LoadBalancer(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.ExternalLoadBalancers = nil
+	}
 	out.DetailedInstanceMonitoring = in.DetailedInstanceMonitoring
 	if in.IAM != nil {
 		in, out := &in.IAM, &out.IAM
@@ -2166,6 +2208,17 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 		out.AdditionalUserData = nil
 	}
 	out.SuspendProcesses = in.SuspendProcesses
+	if in.ExternalLoadBalancers != nil {
+		in, out := &in.ExternalLoadBalancers, &out.ExternalLoadBalancers
+		*out = make([]LoadBalancer, len(*in))
+		for i := range *in {
+			if err := Convert_kops_LoadBalancer_To_v1alpha2_LoadBalancer(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.ExternalLoadBalancers = nil
+	}
 	out.DetailedInstanceMonitoring = in.DetailedInstanceMonitoring
 	if in.IAM != nil {
 		in, out := &in.IAM, &out.IAM
@@ -2425,6 +2478,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.FeatureGates = in.FeatureGates
 	out.MaxRequestsInflight = in.MaxRequestsInflight
 	out.EtcdQuorumRead = in.EtcdQuorumRead
+	out.MinRequestTimeout = in.MinRequestTimeout
 	return nil
 }
 
@@ -2496,6 +2550,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.FeatureGates = in.FeatureGates
 	out.MaxRequestsInflight = in.MaxRequestsInflight
 	out.EtcdQuorumRead = in.EtcdQuorumRead
+	out.MinRequestTimeout = in.MinRequestTimeout
 	return nil
 }
 
@@ -2634,6 +2689,8 @@ func autoConvert_v1alpha2_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyC
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
 	out.FeatureGates = in.FeatureGates
+	out.ConntrackMaxPerCore = in.ConntrackMaxPerCore
+	out.ConntrackMin = in.ConntrackMin
 	return nil
 }
 
@@ -2656,6 +2713,8 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha2_KubeProxyConfig(in *kops.KubeP
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
 	out.FeatureGates = in.FeatureGates
+	out.ConntrackMaxPerCore = in.ConntrackMaxPerCore
+	out.ConntrackMin = in.ConntrackMin
 	return nil
 }
 
@@ -2774,6 +2833,8 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.FailSwapOn = in.FailSwapOn
 	out.ExperimentalAllowedUnsafeSysctls = in.ExperimentalAllowedUnsafeSysctls
 	out.StreamingConnectionIdleTimeout = in.StreamingConnectionIdleTimeout
+	out.DockerDisableSharedPID = in.DockerDisableSharedPID
+	out.RootDir = in.RootDir
 	return nil
 }
 
@@ -2846,6 +2907,8 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.FailSwapOn = in.FailSwapOn
 	out.ExperimentalAllowedUnsafeSysctls = in.ExperimentalAllowedUnsafeSysctls
 	out.StreamingConnectionIdleTimeout = in.StreamingConnectionIdleTimeout
+	out.DockerDisableSharedPID = in.DockerDisableSharedPID
+	out.RootDir = in.RootDir
 	return nil
 }
 
@@ -2910,11 +2973,34 @@ func Convert_kops_LeaderElectionConfiguration_To_v1alpha2_LeaderElectionConfigur
 	return autoConvert_kops_LeaderElectionConfiguration_To_v1alpha2_LeaderElectionConfiguration(in, out, s)
 }
 
+func autoConvert_v1alpha2_LoadBalancer_To_kops_LoadBalancer(in *LoadBalancer, out *kops.LoadBalancer, s conversion.Scope) error {
+	out.LoadBalancerName = in.LoadBalancerName
+	out.TargetGroupARN = in.TargetGroupARN
+	return nil
+}
+
+// Convert_v1alpha2_LoadBalancer_To_kops_LoadBalancer is an autogenerated conversion function.
+func Convert_v1alpha2_LoadBalancer_To_kops_LoadBalancer(in *LoadBalancer, out *kops.LoadBalancer, s conversion.Scope) error {
+	return autoConvert_v1alpha2_LoadBalancer_To_kops_LoadBalancer(in, out, s)
+}
+
+func autoConvert_kops_LoadBalancer_To_v1alpha2_LoadBalancer(in *kops.LoadBalancer, out *LoadBalancer, s conversion.Scope) error {
+	out.LoadBalancerName = in.LoadBalancerName
+	out.TargetGroupARN = in.TargetGroupARN
+	return nil
+}
+
+// Convert_kops_LoadBalancer_To_v1alpha2_LoadBalancer is an autogenerated conversion function.
+func Convert_kops_LoadBalancer_To_v1alpha2_LoadBalancer(in *kops.LoadBalancer, out *LoadBalancer, s conversion.Scope) error {
+	return autoConvert_kops_LoadBalancer_To_v1alpha2_LoadBalancer(in, out, s)
+}
+
 func autoConvert_v1alpha2_LoadBalancerAccessSpec_To_kops_LoadBalancerAccessSpec(in *LoadBalancerAccessSpec, out *kops.LoadBalancerAccessSpec, s conversion.Scope) error {
 	out.Type = kops.LoadBalancerType(in.Type)
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.UseForInternalApi = in.UseForInternalApi
+	out.SSLCertificate = in.SSLCertificate
 	return nil
 }
 
@@ -2928,6 +3014,7 @@ func autoConvert_kops_LoadBalancerAccessSpec_To_v1alpha2_LoadBalancerAccessSpec(
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.UseForInternalApi = in.UseForInternalApi
+	out.SSLCertificate = in.SSLCertificate
 	return nil
 }
 
@@ -3186,6 +3273,74 @@ func autoConvert_kops_NetworkingSpec_To_v1alpha2_NetworkingSpec(in *kops.Network
 // Convert_kops_NetworkingSpec_To_v1alpha2_NetworkingSpec is an autogenerated conversion function.
 func Convert_kops_NetworkingSpec_To_v1alpha2_NetworkingSpec(in *kops.NetworkingSpec, out *NetworkingSpec, s conversion.Scope) error {
 	return autoConvert_kops_NetworkingSpec_To_v1alpha2_NetworkingSpec(in, out, s)
+}
+
+func autoConvert_v1alpha2_NodeAuthorizationSpec_To_kops_NodeAuthorizationSpec(in *NodeAuthorizationSpec, out *kops.NodeAuthorizationSpec, s conversion.Scope) error {
+	if in.NodeAuthorizer != nil {
+		in, out := &in.NodeAuthorizer, &out.NodeAuthorizer
+		*out = new(kops.NodeAuthorizerSpec)
+		if err := Convert_v1alpha2_NodeAuthorizerSpec_To_kops_NodeAuthorizerSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.NodeAuthorizer = nil
+	}
+	return nil
+}
+
+// Convert_v1alpha2_NodeAuthorizationSpec_To_kops_NodeAuthorizationSpec is an autogenerated conversion function.
+func Convert_v1alpha2_NodeAuthorizationSpec_To_kops_NodeAuthorizationSpec(in *NodeAuthorizationSpec, out *kops.NodeAuthorizationSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha2_NodeAuthorizationSpec_To_kops_NodeAuthorizationSpec(in, out, s)
+}
+
+func autoConvert_kops_NodeAuthorizationSpec_To_v1alpha2_NodeAuthorizationSpec(in *kops.NodeAuthorizationSpec, out *NodeAuthorizationSpec, s conversion.Scope) error {
+	if in.NodeAuthorizer != nil {
+		in, out := &in.NodeAuthorizer, &out.NodeAuthorizer
+		*out = new(NodeAuthorizerSpec)
+		if err := Convert_kops_NodeAuthorizerSpec_To_v1alpha2_NodeAuthorizerSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.NodeAuthorizer = nil
+	}
+	return nil
+}
+
+// Convert_kops_NodeAuthorizationSpec_To_v1alpha2_NodeAuthorizationSpec is an autogenerated conversion function.
+func Convert_kops_NodeAuthorizationSpec_To_v1alpha2_NodeAuthorizationSpec(in *kops.NodeAuthorizationSpec, out *NodeAuthorizationSpec, s conversion.Scope) error {
+	return autoConvert_kops_NodeAuthorizationSpec_To_v1alpha2_NodeAuthorizationSpec(in, out, s)
+}
+
+func autoConvert_v1alpha2_NodeAuthorizerSpec_To_kops_NodeAuthorizerSpec(in *NodeAuthorizerSpec, out *kops.NodeAuthorizerSpec, s conversion.Scope) error {
+	out.Authorizer = in.Authorizer
+	out.Features = in.Features
+	out.Image = in.Image
+	out.NodeURL = in.NodeURL
+	out.Port = in.Port
+	out.Timeout = in.Timeout
+	out.TokenTTL = in.TokenTTL
+	return nil
+}
+
+// Convert_v1alpha2_NodeAuthorizerSpec_To_kops_NodeAuthorizerSpec is an autogenerated conversion function.
+func Convert_v1alpha2_NodeAuthorizerSpec_To_kops_NodeAuthorizerSpec(in *NodeAuthorizerSpec, out *kops.NodeAuthorizerSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha2_NodeAuthorizerSpec_To_kops_NodeAuthorizerSpec(in, out, s)
+}
+
+func autoConvert_kops_NodeAuthorizerSpec_To_v1alpha2_NodeAuthorizerSpec(in *kops.NodeAuthorizerSpec, out *NodeAuthorizerSpec, s conversion.Scope) error {
+	out.Authorizer = in.Authorizer
+	out.Features = in.Features
+	out.Image = in.Image
+	out.NodeURL = in.NodeURL
+	out.Port = in.Port
+	out.Timeout = in.Timeout
+	out.TokenTTL = in.TokenTTL
+	return nil
+}
+
+// Convert_kops_NodeAuthorizerSpec_To_v1alpha2_NodeAuthorizerSpec is an autogenerated conversion function.
+func Convert_kops_NodeAuthorizerSpec_To_v1alpha2_NodeAuthorizerSpec(in *kops.NodeAuthorizerSpec, out *NodeAuthorizerSpec, s conversion.Scope) error {
+	return autoConvert_kops_NodeAuthorizerSpec_To_v1alpha2_NodeAuthorizerSpec(in, out, s)
 }
 
 func autoConvert_v1alpha2_RBACAuthorizationSpec_To_kops_RBACAuthorizationSpec(in *RBACAuthorizationSpec, out *kops.RBACAuthorizationSpec, s conversion.Scope) error {

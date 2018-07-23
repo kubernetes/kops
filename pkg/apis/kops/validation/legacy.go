@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 
@@ -69,6 +70,10 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 				return field.Invalid(field.NewPath("Name"), c.ObjectMeta.Name, "Cluster Name must be a fully-qualified DNS name (e.g. --name=mycluster.myzone.com)")
 			}
 		}
+	}
+
+	if c.Spec.Assets != nil && c.Spec.Assets.ContainerProxy != nil && c.Spec.Assets.ContainerRegistry != nil {
+		return field.Forbidden(fieldSpec.Child("Assets", "ContainerProxy"), "ContainerProxy cannot be used in conjunction with ContainerRegistry as represent mutually exclusive concepts. Please consult the documentation for details.")
 	}
 
 	if c.Spec.CloudProvider == "" {
@@ -369,6 +374,42 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 				if networkCIDR != nil && !validateSubnetCIDR(networkCIDR, additionalNetworkCIDRs, subnetCIDR) {
 					return field.Invalid(fieldSubnet.Child("CIDR"), s.CIDR, fmt.Sprintf("Subnet %q had a CIDR %q that was not a subnet of the NetworkCIDR %q", s.Name, s.CIDR, c.Spec.NetworkCIDR))
 				}
+			}
+		}
+	}
+
+	// NodeAuthorization
+	if c.Spec.NodeAuthorization != nil {
+		// @check the feature gate is enabled for this
+		if !featureflag.EnableNodeAuthorization.Enabled() {
+			return field.Invalid(field.NewPath("nodeAuthorization"), nil, "node authorization is experimental feature; set `export KOPS_FEATURE_FLAGS=EnableNodeAuthorization`")
+		}
+		if c.Spec.NodeAuthorization.NodeAuthorizer == nil {
+			return field.Invalid(field.NewPath("nodeAuthorization"), nil, "no node authorization policy has been set")
+		}
+		// NodeAuthorizer
+		if c.Spec.NodeAuthorization.NodeAuthorizer != nil {
+			path := field.NewPath("nodeAuthorization").Child("nodeAuthorizer")
+			if c.Spec.NodeAuthorization.NodeAuthorizer.Port < 0 || c.Spec.NodeAuthorization.NodeAuthorizer.Port >= 65535 {
+				return field.Invalid(path.Child("port"), c.Spec.NodeAuthorization.NodeAuthorizer.Port, "invalid port")
+			}
+			if c.Spec.NodeAuthorization.NodeAuthorizer.Timeout != nil && c.Spec.NodeAuthorization.NodeAuthorizer.Timeout.Duration <= 0 {
+				return field.Invalid(path.Child("timeout"), c.Spec.NodeAuthorization.NodeAuthorizer.Timeout, "must be greater than zero")
+			}
+			if c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL != nil && c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL.Duration < 0 {
+				return field.Invalid(path.Child("tokenTTL"), c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL, "must be greater than or equal to zero")
+			}
+
+			// @question: we could probably just default theses settings in the model when the node-authorizer is enabled??
+			if c.Spec.KubeAPIServer == nil {
+				return field.Invalid(field.NewPath("kubeAPIServer"), c.Spec.KubeAPIServer, "bootstrap token authentication is not enabled in the kube-apiserver")
+			}
+			if c.Spec.KubeAPIServer.EnableBootstrapAuthToken == nil {
+				return field.Invalid(field.NewPath("kubeAPIServer").Child("enableBootstrapAuthToken"), nil, "kube-apiserver has not been configured to use bootstrap tokens")
+			}
+			if !fi.BoolValue(c.Spec.KubeAPIServer.EnableBootstrapAuthToken) {
+				return field.Invalid(field.NewPath("kubeAPIServer").Child("enableBootstrapAuthToken"),
+					c.Spec.KubeAPIServer.EnableBootstrapAuthToken, "bootstrap tokens in the kube-apiserver has been disabled")
 			}
 		}
 	}

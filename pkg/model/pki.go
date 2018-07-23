@@ -264,15 +264,15 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if b.Cluster.Spec.Authentication != nil {
-		if b.KopsModelContext.Cluster.Spec.Authentication.Heptio != nil {
+		if b.KopsModelContext.Cluster.Spec.Authentication.Aws != nil {
 			alternateNames := []string{
 				"localhost",
 				"127.0.0.1",
 			}
 
 			t := &fitasks.Keypair{
-				Name:           fi.String("heptio-authenticator-aws"),
-				Subject:        "cn=heptio-authenticator-aws",
+				Name:           fi.String("aws-iam-authenticator"),
+				Subject:        "cn=aws-iam-authenticator",
 				Type:           "server",
 				AlternateNames: alternateNames,
 				Signer:         defaultCA,

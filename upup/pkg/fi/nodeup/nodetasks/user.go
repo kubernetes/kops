@@ -19,6 +19,7 @@ package nodetasks
 import (
 	"fmt"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"github.com/golang/glog"
@@ -32,6 +33,7 @@ import (
 type UserTask struct {
 	Name string
 
+	UID   int    `json:"uid"`
 	Shell string `json:"shell"`
 	Home  string `json:"home"`
 }
@@ -74,6 +76,7 @@ func (e *UserTask) Find(c *fi.Context) (*UserTask, error) {
 
 	actual := &UserTask{
 		Name:  e.Name,
+		UID:   info.Uid,
 		Shell: info.Shell,
 		Home:  info.Home,
 	}
@@ -91,6 +94,9 @@ func (_ *UserTask) CheckChanges(a, e, changes *UserTask) error {
 
 func buildUseraddArgs(e *UserTask) []string {
 	var args []string
+	if e.UID != 0 {
+		args = append(args, "-u", strconv.Itoa(e.UID))
+	}
 	if e.Shell != "" {
 		args = append(args, "-s", e.Shell)
 	}
@@ -114,6 +120,9 @@ func (_ *UserTask) RenderLocal(t *local.LocalTarget, a, e, changes *UserTask) er
 	} else {
 		var args []string
 
+		if changes.UID != 0 {
+			args = append(args, "-u", strconv.Itoa(e.UID))
+		}
 		if changes.Shell != "" {
 			args = append(args, "-s", e.Shell)
 		}

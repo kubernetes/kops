@@ -32,6 +32,7 @@ import (
 	"github.com/golang/glog"
 )
 
+// Bool returns a pointer to the boolean value
 func Bool(b bool) *bool {
 	return &b
 }
@@ -68,6 +69,9 @@ var SpecOverrideFlag = New("SpecOverrideFlag", Bool(false))
 // In particular, this is the only (?) way to grant the bucket.list permission
 // However we should no longer need it, with the keyset.yaml fix
 var GoogleCloudBucketAcl = New("GoogleCloudBucketAcl", Bool(false))
+
+// EnableNodeAuthorization enables the node authorization features
+var EnableNodeAuthorization = New("EnableNodeAuthorization", Bool(false))
 
 var flags = make(map[string]*FeatureFlag)
 var flagsMutex sync.Mutex

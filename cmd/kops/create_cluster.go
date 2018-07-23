@@ -123,6 +123,9 @@ type CreateClusterOptions struct {
 	// Specify API loadbalancer as public or internal
 	APILoadBalancerType string
 
+	// Specify the SSL certificate to use for the API loadbalancer. Currently only supported in AWS.
+	APISSLCertificate string
+
 	// Allow custom public master name
 	MasterPublicName string
 
@@ -329,6 +332,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
 
 	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Sets the API loadbalancer type to either 'public' or 'internal'")
+	cmd.Flags().StringVar(&options.APISSLCertificate, "api-ssl-certificate", options.APISSLCertificate, "Currently only supported in AWS. Sets the ARN of the SSL Certificate to use for the API server loadbalancer.")
 
 	// Allow custom public master name
 	cmd.Flags().StringVar(&options.MasterPublicName, "master-public-name", options.MasterPublicName, "Sets the public master public name")
@@ -1052,6 +1056,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		default:
 			return fmt.Errorf("unknown api-loadbalancer-type: %q", c.APILoadBalancerType)
 		}
+	}
+
+	if c.APISSLCertificate != "" {
+		cluster.Spec.API.LoadBalancer.SSLCertificate = c.APISSLCertificate
 	}
 
 	// Use Strict IAM policy and allow AWS ECR by default when creating a new cluster

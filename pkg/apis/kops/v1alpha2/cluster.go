@@ -152,6 +152,8 @@ type ClusterSpec struct {
 	Authentication *AuthenticationSpec `json:"authentication,omitempty"`
 	// Authorization field controls how the cluster is configured for authorization
 	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
+	// NodeAuthorization defined the custom node authorization configuration
+	NodeAuthorization *NodeAuthorizationSpec `json:"nodeAuthorization,omitempty"`
 	// Tags for AWS resources
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
 	// Hooks for custom actions e.g. on first installation
@@ -164,6 +166,30 @@ type ClusterSpec struct {
 	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
 	// Target allows for us to nest extra config for targets such as terraform
 	Target *TargetSpec `json:"target,omitempty"`
+}
+
+// NodeAuthorizationSpec is used to node authorization
+type NodeAuthorizationSpec struct {
+	// NodeAuthorizer defined the configuration for the node authorizer
+	NodeAuthorizer *NodeAuthorizerSpec `json:"nodeAuthorizer,omitempty"`
+}
+
+// NodeAuthorizerSpec defines the configuration for a node authorizer
+type NodeAuthorizerSpec struct {
+	// Authorizer is the authorizer to use
+	Authorizer string `json:"authorizer,omitempty"`
+	// Features is a series of authorizer features to enable or disable
+	Features *[]string `json:"features,omitempty"`
+	// Image is the location of container
+	Image string `json:"image,omitempty"`
+	// NodeURL is the node authorization service url
+	NodeURL string `json:"nodeURL,omitempty"`
+	// Port is the port the service is running on the master
+	Port int `json:"port,omitempty"`
+	// Timeout the max time for authorization request
+	Timeout *metav1.Duration `json:"timeout,omitempty"`
+	// TokenTTL is the max ttl for an issued token
+	TokenTTL *metav1.Duration `json:"tokenTTL,omitempty"`
 }
 
 // AddonSpec defines an addon that we want to install in the cluster
@@ -192,6 +218,8 @@ type Assets struct {
 	ContainerRegistry *string `json:"containerRegistry,omitempty"`
 	// FileRepository is the url for a private file serving repository
 	FileRepository *string `json:"fileRepository,omitempty"`
+	// ContainerProxy is a url for a pull-through proxy of a docker registry
+	ContainerProxy *string `json:"containerProxy,omitempty"`
 }
 
 // IAMSpec adds control over the IAM security policies applied to resources
@@ -230,17 +258,17 @@ type ExecContainerAction struct {
 
 type AuthenticationSpec struct {
 	Kopeio *KopeioAuthenticationSpec `json:"kopeio,omitempty"`
-	Heptio *HeptioAuthenticationSpec `json:"heptio,omitempty"`
+	Aws    *AwsAuthenticationSpec    `json:"aws,omitempty"`
 }
 
 func (s *AuthenticationSpec) IsEmpty() bool {
-	return s.Kopeio == nil && s.Heptio == nil
+	return s.Kopeio == nil && s.Aws == nil
 }
 
 type KopeioAuthenticationSpec struct {
 }
 
-type HeptioAuthenticationSpec struct {
+type AwsAuthenticationSpec struct {
 }
 
 type AuthorizationSpec struct {
@@ -287,6 +315,7 @@ type LoadBalancerAccessSpec struct {
 	IdleTimeoutSeconds       *int64           `json:"idleTimeoutSeconds,omitempty"`
 	AdditionalSecurityGroups []string         `json:"additionalSecurityGroups,omitempty"`
 	UseForInternalApi        bool             `json:"useForInternalApi,omitempty"`
+	SSLCertificate           string           `json:"sslCertificate,omitempty"`
 }
 
 // KubeDNSConfig defines the kube dns configuration

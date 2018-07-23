@@ -423,9 +423,30 @@ func (c *ApplyClusterCmd) Run() error {
 			aliCloud := cloud.(aliup.ALICloud)
 			region = aliCloud.Region()
 			l.AddTypes(map[string]interface{}{
-				"Vpc":     &alitasks.VPC{},
-				"VSwitch": &alitasks.VSwitch{},
+				"Vpc":                   &alitasks.VPC{},
+				"VSwitch":               &alitasks.VSwitch{},
+				"Disk":                  &alitasks.Disk{},
+				"SecurityGroup":         &alitasks.SecurityGroup{},
+				"SecurityGroupRule":     &alitasks.SecurityGroupRule{},
+				"LoadBalancer":          &alitasks.LoadBalancer{},
+				"LoadBalancerListener":  &alitasks.LoadBalancerListener{},
+				"LoadBalancerWhiteList": &alitasks.LoadBalancerWhiteList{},
+				"AutoscalingGroup":      &alitasks.ScalingGroup{},
+				"LaunchConfiguration":   &alitasks.LaunchConfiguration{},
+				"RAMPolicy":             &alitasks.RAMPolicy{},
+				"RAMRole":               &alitasks.RAMRole{},
+				"SSHKey":                &alitasks.SSHKey{},
 			})
+
+			if len(sshPublicKeys) == 0 {
+				return fmt.Errorf("SSH public key must be specified when running with ALICloud (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+			}
+
+			modelContext.SSHPublicKeys = sshPublicKeys
+
+			if len(sshPublicKeys) != 1 {
+				return fmt.Errorf("Exactly one 'admin' SSH public key can be specified when running with ALICloud; please delete a key using `kops delete secret`")
+			}
 		}
 
 	case kops.CloudProviderVSphere:
@@ -517,20 +538,27 @@ func (c *ApplyClusterCmd) Run() error {
 			if err != nil {
 				return fmt.Errorf("error loading templates: %v", err)
 			}
-			tf.AddTo(templates.TemplateFunctions)
+
+			err = tf.AddTo(templates.TemplateFunctions, secretStore)
+			if err != nil {
+				return err
+			}
 
 			l.Builders = append(l.Builders,
 				&BootstrapChannelBuilder{
-					cluster:      cluster,
 					Lifecycle:    &clusterLifecycle,
-					templates:    templates,
 					assetBuilder: assetBuilder,
+					cluster:      cluster,
+					templates:    templates,
 				},
-				&model.PKIModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
-				&etcdmanager.EtcdManagerBuilder{
+				&model.PKIModelBuilder{
 					KopsModelContext: modelContext,
 					Lifecycle:        &clusterLifecycle,
+				},
+				&etcdmanager.EtcdManagerBuilder{
 					AssetBuilder:     assetBuilder,
+					KopsModelContext: modelContext,
+					Lifecycle:        &clusterLifecycle,
 				},
 			)
 
@@ -592,7 +620,12 @@ func (c *ApplyClusterCmd) Run() error {
 				}
 				l.Builders = append(l.Builders,
 					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+					&alimodel.APILoadBalancerModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
 					&alimodel.NetWorkModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+					&alimodel.RAMModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+					&alimodel.SSHKeyModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+					&alimodel.FirewallModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+					&alimodel.ExternalAccessModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
 				)
 
 			case kops.CloudProviderVSphere:
@@ -670,6 +703,19 @@ func (c *ApplyClusterCmd) Run() error {
 			})
 		}
 
+	case kops.CloudProviderALI:
+		{
+			aliModelContext := &alimodel.ALIModelContext{
+				KopsModelContext: modelContext,
+			}
+
+			l.Builders = append(l.Builders, &alimodel.ScalingGroupModelBuilder{
+				ALIModelContext: aliModelContext,
+				BootstrapScript: bootstrapScriptBuilder,
+				Lifecycle:       &clusterLifecycle,
+			})
+		}
+
 	case kops.CloudProviderVSphere:
 		{
 			vsphereModelContext := &vspheremodel.VSphereModelContext{
@@ -694,7 +740,10 @@ func (c *ApplyClusterCmd) Run() error {
 
 	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
 
-	tf.AddTo(l.TemplateFunctions)
+	err = tf.AddTo(l.TemplateFunctions, secretStore)
+	if err != nil {
+		return err
+	}
 
 	taskMap, err := l.BuildTasks(modelStore, fileModels, assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
 	if err != nil {

@@ -29,6 +29,12 @@ k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype
 k8s.io/kops/dnsprovider/pkg/dnsprovider/tests
 k8s.io/kops/examples/kops-api-example
 k8s.io/kops/kube-discovery/cmd/kube-discovery
+k8s.io/kops/node-authorizer/cmd/node-authorizer
+k8s.io/kops/node-authorizer/pkg/authorizers/alwaysallow
+k8s.io/kops/node-authorizer/pkg/authorizers/aws
+k8s.io/kops/node-authorizer/pkg/client
+k8s.io/kops/node-authorizer/pkg/server
+k8s.io/kops/node-authorizer/pkg/utils
 k8s.io/kops/nodeup/pkg/bootstrap
 k8s.io/kops/nodeup/pkg/distros
 k8s.io/kops/nodeup/pkg/model
@@ -50,6 +56,7 @@ k8s.io/kops/pkg/apiserver/cmd/server
 k8s.io/kops/pkg/apiserver/registry/cluster
 k8s.io/kops/pkg/apiserver/registry/instancegroup
 k8s.io/kops/pkg/assets
+k8s.io/kops/pkg/backoff
 k8s.io/kops/pkg/bundle
 k8s.io/kops/pkg/client/clientset_generated/clientset
 k8s.io/kops/pkg/client/clientset_generated/clientset/fake
@@ -92,6 +99,7 @@ k8s.io/kops/pkg/model/alimodel
 k8s.io/kops/pkg/model/awsmodel
 k8s.io/kops/pkg/model/components
 k8s.io/kops/pkg/model/components/etcdmanager
+k8s.io/kops/pkg/model/components/node-authorizer
 k8s.io/kops/pkg/model/defaults
 k8s.io/kops/pkg/model/domodel
 k8s.io/kops/pkg/model/gcemodel
@@ -103,6 +111,7 @@ k8s.io/kops/pkg/openapi
 k8s.io/kops/pkg/pki
 k8s.io/kops/pkg/pretty
 k8s.io/kops/pkg/resources
+k8s.io/kops/pkg/resources/ali
 k8s.io/kops/pkg/resources/aws
 k8s.io/kops/pkg/resources/digitalocean
 k8s.io/kops/pkg/resources/digitalocean/dns
