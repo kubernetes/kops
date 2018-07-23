@@ -313,6 +313,7 @@ type LoadBalancerAccessSpec struct {
 	Type                     LoadBalancerType `json:"type,omitempty"`
 	IdleTimeoutSeconds       *int64           `json:"idleTimeoutSeconds,omitempty"`
 	AdditionalSecurityGroups []string         `json:"additionalSecurityGroups,omitempty"`
+	UseForInternalApi        bool             `json:"useForInternalApi,omitempty"`
 	SSLCertificate           string           `json:"sslCertificate,omitempty"`
 }
 
