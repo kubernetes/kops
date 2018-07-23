@@ -290,7 +290,7 @@ func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 // HA - see https://github.com/kubernetes/kops/issues/4252
 func (m *KopsModelContext) UseLoadBalancerForInternalAPI() bool {
 	return m.UseLoadBalancerForAPI() &&
-		m.Cluster.Spec.API.LoadBalancer.UseApiInternal == true
+		m.Cluster.Spec.API.LoadBalancer.UseForInternalApi == true
 }
 
 // UsePrivateDNS checks if we are using private DNS

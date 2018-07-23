@@ -301,11 +301,3 @@ func Convert_kops_TopologySpec_To_v1alpha1_TopologySpec(in *kops.TopologySpec, o
 	}
 	return nil
 }
-
-func Convert_kops_LoadBalancerAccessSpec_To_v1alpha1_LoadBalancerAccessSpec(in *kops.LoadBalancerAccessSpec, out *LoadBalancerAccessSpec, s conversion.Scope) error {
-	out.Type = LoadBalancerType(in.Type)
-	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
-	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
-
-	return nil
-}

@@ -443,7 +443,7 @@ func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	annotations := make(map[string]string)
 
 	if b.Cluster.Spec.API != nil {
-		if b.Cluster.Spec.API.LoadBalancer == nil || b.Cluster.Spec.API.LoadBalancer.UseApiInternal != true {
+		if b.Cluster.Spec.API.LoadBalancer == nil || b.Cluster.Spec.API.LoadBalancer.UseForInternalApi != true {
 			annotations["dns.alpha.kubernetes.io/internal"] = b.Cluster.Spec.MasterInternalName
 		}
 
