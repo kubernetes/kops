@@ -1,3 +1,9 @@
+locals = {
+  cluster_name = "ha-gce.example.com"
+  project      = "us-test1"
+  region       = "us-test1"
+}
+
 output "cluster_name" {
   value = "ha-gce.example.com"
 }

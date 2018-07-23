@@ -168,6 +168,10 @@ type KubeletConfigSpec struct {
 	ExperimentalAllowedUnsafeSysctls []string `json:"experimental_allowed_unsafe_sysctls,omitempty" flag:"experimental-allowed-unsafe-sysctls"`
 	// StreamingConnectionIdleTimeout is the maximum time a streaming connection can be idle before the connection is automatically closed
 	StreamingConnectionIdleTimeout *metav1.Duration `json:"streamingConnectionIdleTimeout,omitempty" flag:"streaming-connection-idle-timeout"`
+	// DockerDisableSharedPID uses a shared PID namespace for containers in a pod.
+	DockerDisableSharedPID *bool `json:"dockerDisableSharedPID,omitempty" flag:"docker-disable-shared-pid"`
+	// RootDir is the directory path for managing kubelet files (volume mounts,etc)
+	RootDir string `json:"rootDir,omitempty" flag:"root-dir"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
@@ -198,6 +202,10 @@ type KubeProxyConfig struct {
 	ProxyMode string `json:"proxyMode,omitempty" flag:"proxy-mode"`
 	// FeatureGates is a series of key pairs used to switch on features for the proxy
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
+	// Maximum number of NAT connections to track per CPU core (default: 131072)
+	ConntrackMaxPerCore *int32 `json:"conntrackMaxPerCore,omitempty" flag:"conntrack-max-per-core"`
+	// Minimum number of conntrack entries to allocate, regardless of conntrack-max-per-core
+	ConntrackMin *int32 `json:"conntrackMin,omitempty" flag:"conntrack-min"`
 }
 
 // KubeAPIServerConfig defines the configuration for the kube api
@@ -338,6 +346,10 @@ type KubeAPIServerConfig struct {
 
 	// EtcdQuorumRead configures the etcd-quorum-read flag, which forces consistent reads from etcd
 	EtcdQuorumRead *bool `json:"etcdQuorumRead,omitempty" flag:"etcd-quorum-read"`
+
+	// MinRequestTimeout configures the minimum number of seconds a handler must keep a request open before timing it out.
+	// Currently only honored by the watch request handler
+	MinRequestTimeout *int32 `json:"minRequestTimeout,omitempty" flag:"min-request-timeout"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller

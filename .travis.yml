@@ -3,7 +3,8 @@ os:
   - linux
   - osx
 go:
-  - 1.8
+  # 1.8 is now best-effort; we recommend 1.9; we are starting to use type aliases in libraries
+  # - 1.8
   - 1.9
   - "1.10"
 

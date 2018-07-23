@@ -10,7 +10,7 @@ Kubernetes Operations (kops) currently supports 4 networking modes:
 ### kops Default Networking
 
 Kubernetes Operations (kops) uses `kubenet` networking by default. This sets up networking on AWS using VPC
-networking, where the  master allocates a /24 CIDR to each Node, drawing from the Node network.  
+networking, where the  master allocates a /24 CIDR to each Node, drawing from the Node network.
 Using `kubenet` mode routes for  each node are then configured in the AWS VPC routing tables.
 
 One important limitation when using `kubenet` networking is that an AWS routing table cannot have more than
@@ -42,6 +42,7 @@ Several different CNI providers are currently built into kops:
 * [romana](https://github.com/romana/romana)
 * [weave](https://github.com/weaveworks/weave-kube)
 * [amazon-vpc-routed-eni](./networking.md#amazon-vpc-backend)
+* [Cilium](http://docs.cilium.io)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
 Replace the provider name with the names listed above with you `kops cluster create`.  For instance
@@ -109,6 +110,19 @@ spec:
       mtu: 8912
 ```
 
+### Configuring Weave network encryption
+
+The Weave network encryption is configurable by creating a weave network secret password.
+Weaveworks recommends choosing a secret with [at least 50 bits of entropy](https://www.weave.works/docs/net/latest/tasks/manage/security-untrusted-networks/).
+If no password is supplied, kops will generate one at random.
+
+```console
+$ cat /dev/urandom | tr -dc A-Za-z0-9 | head -c9 > password
+$ kops create secret weavepassword -f password
+$ kops update cluster
+```
+
+Since unencrypted nodes will not be able to connect to nodes configured with encryption enabled, this configuration cannot be changed easily without downtime. 
 
 ### Calico Example for CNI and Network Policy
 
@@ -137,7 +151,7 @@ when it’s destined to subnets with intermediate infrastructure lacking Calico 
 
 With this mode, IP-in-IP encapsulation is only performed selectively. This provides better performance in AWS
 multi-AZ deployments, and in general when deploying on networks where pools of nodes with L2 connectivity
-are connected via a router. 
+are connected via a router.
 
 Reference: [Calico 2.1 Release Notes](https://www.projectcalico.org/project-calico-2-1-released/)
 
@@ -259,7 +273,7 @@ $ kops create cluster \
 
 Currently kube-router supports 1.6 and above. Please note that kube-router will also provide service proxy, so kube-proxy will not be deployed in to the cluster.
 
-No additional configurations are required to be done by user. Kube-router automatically disables source-destination check on all AWS EC2 instances. For the traffic within a subnet there is no overlay or tunneling used. For cross-subnet pod traffic ip-ip tunneling is used implicitly and no configuration is required. 
+No additional configurations are required to be done by user. Kube-router automatically disables source-destination check on all AWS EC2 instances. For the traffic within a subnet there is no overlay or tunneling used. For cross-subnet pod traffic ip-ip tunneling is used implicitly and no configuration is required.
 
 ### Romana Example for CNI
 
@@ -349,6 +363,73 @@ $ kops create cluster \
 ```
 
 In case of any issues the directory `/var/log/aws-routed-eni` contains the log files of the CNI plugin. This directory is located in all the nodes in the cluster.
+
+### Cilium Example for CNI and Network Policy
+
+Cilium is open source software for transparently securing the network connectivity between application services deployed using Linux container management platforms like Docker and Kubernetes.
+
+#### Installing Cilium on a new Cluster
+
+The following command sets up a cluster, in HA mode, with Cilium as the CNI and networking policy provider
+
+```console
+$ export ZONES=mylistofzones
+$ kops create cluster \
+  --zones $ZONES \
+  --master-zones $ZONES \
+  --networking cilium\
+  --yes \
+  --name cilium.example.com
+```
+
+The above will deploy a daemonset installation which requires K8s 1.7.x or above.
+
+#### Configuring Cilium
+
+The following command registers a cluster, but doesn't create it yet
+
+```console
+$ export ZONES=mylistofzones
+$ kops create cluster \
+  --zones $ZONES \
+  --master-zones $ZONES \
+  --networking cilium\
+  --name cilium.example.com
+```
+
+`kops edit cluster`  will show you a block like this:
+
+```
+  networking:
+    cilium: {}
+```
+
+You can adjust Cilium agent configuration with most options that are available in [cilium-agent command reference](http://cilium.readthedocs.io/en/stable/cmdref/cilium-agent/).
+
+E.g enabling logstash integration would require you to change above block to
+
+```
+  networking:
+    cilium:
+      logstash: true
+```
+
+The following command will create your cluster with desired Cilium configuration
+
+```console
+$ kops update cluster myclustername.mydns.io --yes
+```
+
+#### Getting help with Cilium
+
+For problems with deploying Cilium please post an issue to Github:
+
+- [Cilium Issues](https://github.com/cilium/cilium/issues)
+
+For support with Cilium Network Policies you can reach out on Slack or Github:
+
+- [Cilium Github](https://github.com/cilium/cilium)
+- [Cilium Slack](https://cilium.io/slack)
 
 ### Validating CNI Installation
 

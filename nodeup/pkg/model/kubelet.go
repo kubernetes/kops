@@ -89,31 +89,17 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
+		// @check if bootstrap tokens are enabled and create the appropreiate certificates
 		if b.UseBootstrapTokens() {
-			glog.V(3).Info("kubelet bootstrap tokens are enabled")
-
 			// @check if a master and if so, we bypass the token strapping and instead generate our own kubeconfig
 			if b.IsMaster {
+				glog.V(3).Info("kubelet bootstrap tokens are enabled and running on a master")
+
 				task, err := b.buildMasterKubeletKubeconfig()
 				if err != nil {
 					return err
 				}
 				c.AddTask(task)
-
-				name := "node-authorizer"
-				if err := b.BuildCertificatePairTask(c, name, "node-authorizer/", "tls"); err != nil {
-					return err
-				}
-
-			} else {
-				name := "node-authorizer-client"
-				if err := b.BuildCertificatePairTask(c, name, "node-authorizer/", "tls"); err != nil {
-					return err
-				}
-				glog.V(3).Info("kubelet service will wait for bootstrap configuration: %s", b.KubeletBootstrapKubeconfig())
-			}
-			if err := b.BuildCertificateTask(c, fi.CertificateId_CA, "node-authorizer/ca.pem"); err != nil {
-				return err
 			}
 		} else {
 			kubeconfig, err := b.BuildPKIKubeconfig("kubelet")
@@ -186,16 +172,16 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	if b.UsesCNI() {
 		flags += " --cni-bin-dir=" + b.CNIBinDir()
 		flags += " --cni-conf-dir=" + b.CNIConfDir()
-		// If we are using the AmazonVPC plugin we need to bind the kubelet to the local ipv4 address
-		if b.Cluster.Spec.Networking.AmazonVPC != nil {
-			sess := session.Must(session.NewSession())
-			metadata := ec2metadata.New(sess)
-			localIpv4, err := metadata.GetMetadata("local-ipv4")
-			if err != nil {
-				return nil, fmt.Errorf("error fetching the local-ipv4 address from the ec2 meta-data: %v", err)
-			}
-			flags += " --node-ip=" + localIpv4
+	}
+
+	if b.UsesSecondaryIP() {
+		sess := session.Must(session.NewSession())
+		metadata := ec2metadata.New(sess)
+		localIpv4, err := metadata.GetMetadata("local-ipv4")
+		if err != nil {
+			return nil, fmt.Errorf("error fetching the local-ipv4 address from the ec2 meta-data: %v", err)
 		}
+		flags += " --node-ip=" + localIpv4
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Kubenet != nil {
@@ -244,7 +230,7 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	// @check if we are using bootstrap tokens and file checker
 	if !b.IsMaster && b.UseBootstrapTokens() {
 		manifest.Set("Service", "ExecStartPre",
-			fmt.Sprintf("/usr/bin/bash -c 'while [ ! -f %s ]; do sleep 5; done;'", b.KubeletBootstrapKubeconfig()))
+			fmt.Sprintf("/bin/bash -c 'while [ ! -f %s ]; do sleep 5; done;'", b.KubeletBootstrapKubeconfig()))
 	}
 
 	manifest.Set("Service", "ExecStart", kubeletCommand+" \"$DAEMON_ARGS\"")

@@ -21,7 +21,7 @@ So, just create an empty bucket - you can use any name: `gsutil mb gs://kubernet
 
 # Creating our first cluster
 
-`kops create cluster` creates the Cluster and InstanceGroup objects you'll be working with in kops:
+`kops create cluster` creates the Cluster object and InstanceGroup object you'll be working with in kops:
 
 ```
 PROJECT=`gcloud config get-value project`
@@ -29,7 +29,7 @@ export KOPS_FEATURE_FLAGS=AlphaAllowGCE # to unlock the GCE features
 kops create cluster simple.k8s.local --zones us-central1-a --state gs://kubernetes-clusters/ --project=${PROJECT}
 ```
 
-You can now list the clusters in your kops state store (the GCS bucket we created):
+You can now list the Cluster objects in your kops state store (the GCS bucket we created):
 
 `kops get cluster --state gs://kubernetes-clusters/`
 
@@ -40,14 +40,14 @@ simple.k8s.local    gce          us-central1-a
 
 <!-- TODO: Fix bug where zones not showing up -->
 
-This shows that you have one Cluster configured, named `simple.k8s.local`.  The Cluster holds the cluster-wide configuration for
+This shows that you have one Cluster object configured, named `simple.k8s.local`.  The cluster holds the cluster-wide configuration for
 a kubernetes cluster - things like the kubernetes version, and the authorization policy in use.
 
 The `kops` tool should feel a lot like `kubectl` - kops uses the same API machinery as kubernetes,
 so it should behave similarly, although now you are managing kubernetes clusters, instead of managing
 objects on a kubernetes cluster.
 
-You can see the details of your Cluster by doing:
+You can see the details of your Cluster object by doing:
 
 `> kops get cluster --state gs://kubernetes-clusters/ simple.k8s.local -oyaml`
 ```
@@ -113,7 +113,7 @@ which then are registered in kubernetes as Nodes.  You have multiple InstanceGro
 of instances / Nodes - in our simple example we have one for our master (which only has a single member),
 and one for our nodes (and we have two nodes configured).
 
-We'll see a lot more of Clusters and InstanceGroups as we use kops to reconfigure clusters.  But let's get
+We'll see a lot more of Cluster objects and InstanceGroups as we use kops to reconfigure clusters.  But let's get
 on with our first cluster.
 
 # Export KOPS_STATE_STORE
@@ -129,7 +129,7 @@ You can also put this in your `~/.bashrc` or similar.
 
 # Creating a cluster
 
-`kops create cluster` created the Cluster & InstanceGroup objects in our state store,
+`kops create cluster` created the Cluster object & InstanceGroup object in our state store,
 but didn't actually create any instances or other cloud objects in GCE.  To do that, we'll use
 `kops update cluster`.
 

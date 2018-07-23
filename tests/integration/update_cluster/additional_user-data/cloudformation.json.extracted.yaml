@@ -57,9 +57,10 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
     while true; do
       for url in "${urls[@]}"; do
         local file="${url##*/}"
-        rm -f "${file}"
 
-        if [[ $(which curl) ]]; then
+        if [[ -e "${file}" ]]; then
+          echo "== File exists for ${url} =="
+        elif [[ $(which curl) ]]; then
           if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
             echo "== Failed to curl ${url}. Retrying. =="
             break
@@ -76,6 +77,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
 
         if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
           echo "== Hash validation of ${url} failed. Retrying. =="
+          rm -f "${file}"
         else
           if [[ -n "${hash}" ]]; then
             echo "== Downloaded ${url} (SHA1 = ${hash}) =="
@@ -354,9 +356,10 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
     while true; do
       for url in "${urls[@]}"; do
         local file="${url##*/}"
-        rm -f "${file}"
 
-        if [[ $(which curl) ]]; then
+        if [[ -e "${file}" ]]; then
+          echo "== File exists for ${url} =="
+        elif [[ $(which curl) ]]; then
           if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
             echo "== Failed to curl ${url}. Retrying. =="
             break
@@ -373,6 +376,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
 
         if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
           echo "== Hash validation of ${url} failed. Retrying. =="
+          rm -f "${file}"
         else
           if [[ -n "${hash}" ]]; then
             echo "== Downloaded ${url} (SHA1 = ${hash}) =="

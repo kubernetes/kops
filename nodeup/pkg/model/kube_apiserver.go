@@ -158,35 +158,35 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 		return nil
 	}
 
-	if b.Cluster.Spec.Authentication.Heptio != nil {
-		id := "heptio-authenticator-aws"
+	if b.Cluster.Spec.Authentication.Aws != nil {
+		id := "aws-iam-authenticator"
 		b.Cluster.Spec.KubeAPIServer.AuthenticationTokenWebhookConfigFile = fi.String(PathAuthnConfig)
 
 		{
 			caCertificate, err := b.NodeupModelContext.KeyStore.FindCert(fi.CertificateId_CA)
 			if err != nil {
-				return fmt.Errorf("error fetching Heptio Authentication CA certificate from keystore: %v", err)
+				return fmt.Errorf("error fetching AWS IAM Authentication CA certificate from keystore: %v", err)
 			}
 			if caCertificate == nil {
-				return fmt.Errorf("Heptio Authentication CA certificate %q not found", fi.CertificateId_CA)
+				return fmt.Errorf("AWS IAM  Authentication CA certificate %q not found", fi.CertificateId_CA)
 			}
 
 			cluster := kubeconfig.KubectlCluster{
 				Server: "https://127.0.0.1:21362/authenticate",
 			}
 			context := kubeconfig.KubectlContext{
-				Cluster: "heptio-authenticator-aws",
+				Cluster: "aws-iam-authenticator",
 				User:    "kube-apiserver",
 			}
 
 			cluster.CertificateAuthorityData, err = caCertificate.AsBytes()
 			if err != nil {
-				return fmt.Errorf("error encoding Heptio Authentication CA certificate: %v", err)
+				return fmt.Errorf("error encoding AWS IAM Authentication CA certificate: %v", err)
 			}
 
 			config := kubeconfig.KubectlConfig{}
 			config.Clusters = append(config.Clusters, &kubeconfig.KubectlClusterWithName{
-				Name:    "heptio-authenticator-aws",
+				Name:    "aws-iam-authenticator",
 				Cluster: cluster,
 			})
 			config.Users = append(config.Users, &kubeconfig.KubectlUserWithName{
@@ -211,6 +211,18 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 			})
 		}
 
+		// We create user aws-iam-authenticator and hardcode its UID to 10000 as
+		// that is the ID used inside the aws-iam-authenticator container.
+		// The owner/group for the keypair to aws-iam-authenticator
+		{
+			c.AddTask(&nodetasks.UserTask{
+				Name:  "aws-iam-authenticator",
+				UID:   10000,
+				Shell: "/sbin/nologin",
+				Home:  "/srv/kubernetes/aws-iam-authenticator",
+			})
+		}
+
 		{
 			certificate, err := b.NodeupModelContext.KeyStore.FindCert(id)
 			if err != nil {
@@ -226,10 +238,12 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 			}
 
 			c.AddTask(&nodetasks.File{
-				Path:     "/srv/kubernetes/heptio-authenticator-aws/cert.pem",
+				Path:     "/srv/kubernetes/aws-iam-authenticator/cert.pem",
 				Contents: fi.NewBytesResource(certificateData),
 				Type:     nodetasks.FileType_File,
 				Mode:     fi.String("600"),
+				Owner:    fi.String("aws-iam-authenticator"),
+				Group:    fi.String("aws-iam-authenticator"),
 			})
 		}
 
@@ -248,10 +262,12 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 			}
 
 			c.AddTask(&nodetasks.File{
-				Path:     "/srv/kubernetes/heptio-authenticator-aws/key.pem",
+				Path:     "/srv/kubernetes/aws-iam-authenticator/key.pem",
 				Contents: fi.NewBytesResource(keyData),
 				Type:     nodetasks.FileType_File,
 				Mode:     fi.String("600"),
+				Owner:    fi.String("aws-iam-authenticator"),
+				Group:    fi.String("aws-iam-authenticator"),
 			})
 		}
 
@@ -418,7 +434,9 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	auditLogPath := b.Cluster.Spec.KubeAPIServer.AuditLogPath
-	if auditLogPath != nil {
+	// Don't mount a volume if the mount path is set to '-' for stdout logging
+	// See https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#audit-backends
+	if auditLogPath != nil && *auditLogPath != "-" {
 		// Mount the directory of the path instead, as kube-apiserver rotates the log by renaming the file.
 		// Renaming is not possible when the file is mounted as the host path, and will return a
 		// 'Device or resource busy' error
@@ -427,7 +445,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	if b.Cluster.Spec.Authentication != nil {
-		if b.Cluster.Spec.Authentication.Kopeio != nil || b.Cluster.Spec.Authentication.Heptio != nil {
+		if b.Cluster.Spec.Authentication.Kopeio != nil || b.Cluster.Spec.Authentication.Aws != nil {
 			addHostPathMapping(pod, container, "authn-config", PathAuthnConfig)
 		}
 	}

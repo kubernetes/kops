@@ -60,6 +60,11 @@ func (b *BootstrapScript) KubeEnv(ig *kops.InstanceGroup) (string, error) {
 
 func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[string]string, error) {
 	env := make(map[string]string)
+
+	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
+		env["GOSSIP_DNS_CONN_LIMIT"] = os.Getenv("GOSSIP_DNS_CONN_LIMIT")
+	}
+
 	if os.Getenv("S3_ENDPOINT") != "" {
 		env["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
 		env["S3_REGION"] = os.Getenv("S3_REGION")
@@ -130,16 +135,25 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 			spec := make(map[string]interface{})
 			spec["cloudConfig"] = cs.CloudConfig
 			spec["docker"] = cs.Docker
-			spec["kubelet"] = cs.Kubelet
 			spec["kubeProxy"] = cs.KubeProxy
+			spec["kubelet"] = cs.Kubelet
+
+			if cs.NodeAuthorization != nil {
+				spec["nodeAuthorization"] = cs.NodeAuthorization
+			}
+			if cs.KubeAPIServer.EnableBootstrapAuthToken != nil {
+				spec["kubeAPIServer"] = map[string]interface{}{
+					"enableBootstrapAuthToken": cs.KubeAPIServer.EnableBootstrapAuthToken,
+				}
+			}
 
 			if ig.IsMaster() {
 				spec["encryptionConfig"] = cs.EncryptionConfig
+				spec["etcdClusters"] = make(map[string]kops.EtcdClusterSpec, 0)
 				spec["kubeAPIServer"] = cs.KubeAPIServer
 				spec["kubeControllerManager"] = cs.KubeControllerManager
 				spec["kubeScheduler"] = cs.KubeScheduler
 				spec["masterKubelet"] = cs.MasterKubelet
-				spec["etcdClusters"] = make(map[string]kops.EtcdClusterSpec, 0)
 
 				for _, etcdCluster := range cs.EtcdClusters {
 					spec["etcdClusters"].(map[string]kops.EtcdClusterSpec)[etcdCluster.Name] = kops.EtcdClusterSpec{

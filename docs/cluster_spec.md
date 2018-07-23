@@ -177,9 +177,25 @@ spec:
 
 You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#fileassets)  feature to push an advanced audit policy file on the master nodes.
 
-Example policy file can be found [here](https://github.com/kubernetes/website/blob/master/content/en/docs/tasks/debug-application-cluster/audit-policy.yaml)
+Example policy file can be found [here](https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/audit/audit-policy.yaml)
 
-#### Max Requests Inflight 
+#### bootstrap tokens
+
+Read more about this here: https://kubernetes.io/docs/reference/access-authn-authz/bootstrap-tokens/
+
+```yaml
+spec:
+  kubeAPIServer:
+    enableBootstrapTokenAuth: true
+```
+
+By enabling this feature you instructing two things;
+- master nodes will bypass the bootstrap token but they _will_ build kubeconfigs with unique usernames in the system:nodes group _(this ensure's the master nodes confirm with the node authorization mode https://kubernetes.io/docs/reference/access-authn-authz/node/)_
+- secondly the nodes will be configured to use a bootstrap token located by default at `/var/lib/kubelet/bootstrap-kubeconfig` _(though this can be override in the kubelet spec)_. The nodes will sit the until a bootstrap file is created and once available attempt to provision the node.
+
+**Note** enabling bootstrap tokens does not provision bootstrap tokens for the worker nodes. Under this configuration it is assumed a third-party process is provisioning the tokens on behalf of the worker nodes. For the full setup please read [Node Authorizer Service](https://github.com/kubernetes/kops/blob/master/docs/node_authorization.md)
+
+#### Max Requests Inflight
 
 The maximum number of non-mutating requests in flight at a given time. When the server exceeds this, it rejects requests. Zero for no limit. (default 400)
 
@@ -338,17 +354,17 @@ spec:
     kubeReserved:
         cpu: "100m"
         memory: "100Mi"
-        storage: "1Gi"
+        ephemeral-storage: "1Gi"
     kubeReservedCgroup: "/kube-reserved"
     systemReserved:
         cpu: "100m"
         memory: "100Mi"
-        storage: "1Gi"
+        ephemeral-storage: "1Gi"
     systemReservedCgroup: "/system-reserved"
     enforceNodeAllocatable: "pods,system-reserved,kube-reserved"
 ```
 
-Will result in the flag `--kube-reserved=cpu=100m,memory=100Mi,storage=1Gi --kube-reserved-cgroup=/kube-reserved --system-reserved=cpu=100mi,memory=100Mi,storage=1Gi --system-reserved-cgroup=/system-reserved --enforce-node-allocatable=pods,system-reserved,kube-reserved`
+Will result in the flag `--kube-reserved=cpu=100m,memory=100Mi,ephemeral-storage=1Gi --kube-reserved-cgroup=/kube-reserved --system-reserved=cpu=100mi,memory=100Mi,ephemeral-storage=1Gi --system-reserved-cgroup=/system-reserved --enforce-node-allocatable=pods,system-reserved,kube-reserved`
 
 Learn [more about reserving compute resources](https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/).
 
@@ -538,4 +554,38 @@ spec:
     terraform:
       providerExtraConfig:
         alias: foo
+```
+
+### assets
+
+Assets define alernative locations from where to retrieve static files and containers
+
+#### containerRegistry
+
+The container registry enables kops / kubernets to pull containers from a managed registry.
+This is useful when pulling containers from the internet is not an option, eg. because the
+deployment is offline / internet restricted or because of special requirements that apply
+for deployed artifacts, eg. auditing of containers.
+
+For a use case example, see [How to use kops in AWS China Region](https://github.com/kubernetes/kops/blob/master/docs/aws-china.md)
+
+```yaml
+spec:
+  assets:
+    containerRegistry: example.com/registry
+```
+
+
+#### containerProxy
+
+The container proxy is designed to acts as a [pull through cache](https://docs.docker.com/registry/recipes/mirror/) for docker container assets.
+Basically, what it does is it remaps the Kubernets image URL to point to you cache so that the docker daemon will pull the image from that location.
+If, for example, the containerProxy is set to `proxy.example.com`, the image `k8s.gcr.io/kube-apiserver` will be pulled from `proxy.example.com/kube-apiserver` instead.
+Note that the proxy you use has to support this feature for private registries.
+
+
+```yaml
+spec:
+  assets:
+    containerProxy: proxy.example.com
 ```

@@ -66,6 +66,7 @@ kops create cluster [flags]
 ```
       --admin-access strings             Restrict API access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])
       --api-loadbalancer-type string     Sets the API loadbalancer type to either 'public' or 'internal'
+      --api-ssl-certificate string       Currently only supported in AWS. Sets the ARN of the SSL Certificate to use for the API server loadbalancer.
       --associate-public-ip              Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.
       --authorization string             Authorization mode to use: AlwaysAllow or RBAC (default "RBAC")
       --bastion                          Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.

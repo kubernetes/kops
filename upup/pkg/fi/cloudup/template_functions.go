@@ -35,13 +35,14 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // TemplateFunctions provides a collection of methods used throughout the templates
@@ -56,7 +57,7 @@ type TemplateFunctions struct {
 // This will define the available functions we can use in our YAML models
 // If we are trying to get a new function implemented it MUST
 // be defined here.
-func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
+func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretStore) (err error) {
 	dest["EtcdScheme"] = tf.EtcdScheme
 	dest["SharedVPC"] = tf.SharedVPC
 	dest["ToJSON"] = tf.ToJSON
@@ -109,6 +110,22 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 		}
 		dest["FlannelBackendType"] = func() string { return flannelBackendType }
 	}
+
+	if tf.cluster.Spec.Networking != nil && tf.cluster.Spec.Networking.Weave != nil {
+		weavesecretString := ""
+		weavesecret, _ := secretStore.Secret("weavepassword")
+		if weavesecret != nil {
+			weavesecretString, err = weavesecret.AsString()
+			if err != nil {
+				return err
+			}
+			glog.V(4).Info("Weave secret function successfully registered")
+		}
+
+		dest["WeaveSecret"] = func() string { return weavesecretString }
+	}
+
+	return nil
 }
 
 // ToJSON returns a json representation of the struct or on error an empty string
