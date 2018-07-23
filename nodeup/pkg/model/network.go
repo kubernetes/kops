@@ -47,6 +47,10 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 		assetNames = append(assetNames, "bridge", "host-local", "loopback", "ptp")
 		// Do we need tuning?
 
+		if b.IsKubernetesGTE("1.9") {
+			assetNames = append(assetNames, "portmap")
+		}
+
 		// TODO: Only when using flannel ?
 		assetNames = append(assetNames, "flannel")
 	} else if networking.Kopeio != nil {
