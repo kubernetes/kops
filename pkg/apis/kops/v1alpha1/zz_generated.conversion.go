@@ -2735,6 +2735,7 @@ func autoConvert_v1alpha1_LoadBalancerAccessSpec_To_kops_LoadBalancerAccessSpec(
 	out.Type = kops.LoadBalancerType(in.Type)
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
+	out.UseForInternalApi = in.UseForInternalApi
 	out.SSLCertificate = in.SSLCertificate
 	return nil
 }
@@ -2748,6 +2749,7 @@ func autoConvert_kops_LoadBalancerAccessSpec_To_v1alpha1_LoadBalancerAccessSpec(
 	out.Type = LoadBalancerType(in.Type)
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
+	out.UseForInternalApi = in.UseForInternalApi
 	out.SSLCertificate = in.SSLCertificate
 	return nil
 }
