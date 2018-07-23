@@ -57,8 +57,8 @@ DNS_CONTROLLER_TAG=1.9.1
 
 # Keep in sync with logic in get_workspace_status
 # Update variables in tools/get_workplace_status.sh for the bazel build
-KOPS_RELEASE_VERSION = 1.9.1
-KOPS_CI_VERSION      = 1.9.2-alpha.1
+KOPS_RELEASE_VERSION = 1.9.2
+KOPS_CI_VERSION      = 1.9.3-alpha.1
 
 # kops local location
 KOPS                 = ${LOCAL}/kops
