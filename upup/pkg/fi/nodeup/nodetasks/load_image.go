@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/backoff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -82,6 +83,8 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 	localFile := path.Join(t.CacheDir, hash.String()+"_"+utils.SanitizeString(url))
 	_, err = fi.DownloadURL(url, localFile, hash)
 	if err != nil {
+		// Hack to try to avoid failed downloads causing massive bandwidth bills
+		backoff.DoGlobalBackoff(fmt.Errorf("failed to download image %s: %v", url, err))
 		return err
 	}
 
