@@ -12,6 +12,7 @@ required = [
   # Needed for docs generation
   "k8s.io/code-generator/cmd/openapi-gen",
   "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot",
+  "github.com/kubernetes-incubator/apiserver-builder/cmd/apiregister-gen",
   "github.com/kubernetes-incubator/reference-docs/gen-apidocs",
 
   # Needed for bazel generation / verification
