@@ -35,7 +35,7 @@ in alpha, and other platforms planned.
 To replicate the above demo, check out our [tutorial](/docs/aws.md) for
 launching a Kubernetes cluster hosted on AWS.
 
-To install a Kubernetes cluster on GCE please follow this [guide](/docs/tutorial/gce.md).
+To install a Kubernetes cluster on GCE please follow this [guide](/docs/tutorial/gce.md)..
 
 To install a Kubernetes cluster on DigitalOcean, follow this [guide](/docs/tutorial/digitalocean.md).
 
