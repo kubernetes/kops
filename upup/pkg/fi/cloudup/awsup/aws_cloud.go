@@ -85,6 +85,7 @@ const (
 	WellKnownAccountRedhat             = "309956199498"
 	WellKnownAccountCoreOS             = "595879546273"
 	WellKnownAccountAmazonSystemLinux2 = "137112412989"
+	WellKnownAccountUbuntu             = "099720109477"
 )
 
 type AWSCloud interface {
