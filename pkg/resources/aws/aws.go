@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
@@ -417,6 +418,69 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*resources.Resource, e
 	return resourceTrackers, nil
 }
 
+// getDumpState gets the dumpState from the dump context, or creates one if not yet initialized
+func getDumpState(dumpContext *resources.DumpOperation) *dumpState {
+	if dumpContext.CloudState == nil {
+		dumpContext.CloudState = &dumpState{
+			cloud: dumpContext.Cloud.(awsup.AWSCloud),
+		}
+	}
+	return dumpContext.CloudState.(*dumpState)
+}
+
+type imageInfo struct {
+	SSHUser string
+}
+
+type dumpState struct {
+	cloud  awsup.AWSCloud
+	mutex  sync.Mutex
+	images map[string]*imageInfo
+}
+
+func (s *dumpState) getImageInfo(imageID string) (*imageInfo, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if s.images == nil {
+		s.images = make(map[string]*imageInfo)
+	}
+
+	info := s.images[imageID]
+	if info == nil {
+		image, err := s.cloud.ResolveImage(imageID)
+		if err != nil {
+			return nil, err
+		}
+		info = &imageInfo{}
+
+		if image != nil {
+			sshUser := guessSSHUser(image)
+			if sshUser == "" {
+				glog.Warningf("unable to guess SSH user for image: %+v", image)
+			}
+			info.SSHUser = sshUser
+		}
+
+		s.images[imageID] = info
+	}
+
+	return info, nil
+}
+
+func guessSSHUser(image *ec2.Image) string {
+	owner := aws.StringValue(image.OwnerId)
+	switch owner {
+	case awsup.WellKnownAccountAmazonSystemLinux2:
+		return "ec2-user"
+	case awsup.WellKnownAccountCoreOS:
+		return "core"
+	case awsup.WellKnownAccountKopeio:
+		return "admin"
+	}
+	return ""
+}
+
 func DumpInstance(op *resources.DumpOperation, r *resources.Resource) error {
 	data := make(map[string]interface{})
 	data["id"] = r.ID
@@ -444,6 +508,15 @@ func DumpInstance(op *resources.DumpOperation, r *resources.Resource) error {
 		role := strings.TrimPrefix(key, awsup.TagNameRolePrefix)
 		i.Roles = append(i.Roles, role)
 	}
+
+	imageID := aws.StringValue(ec2Instance.ImageId)
+	imageInfo, err := getDumpState(op).getImageInfo(imageID)
+	if err != nil {
+		glog.Warningf("unable to fetch image %q: %v", imageID, err)
+	} else if imageInfo != nil {
+		i.SSHUser = imageInfo.SSHUser
+	}
+
 	op.Dump.Instances = append(op.Dump.Instances, i)
 
 	return nil
