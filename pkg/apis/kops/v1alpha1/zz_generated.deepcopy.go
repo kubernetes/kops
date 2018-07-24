@@ -1834,15 +1834,6 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 			**out = **in
 		}
 	}
-	if in.AuthenticationTokenWebhook != nil {
-		in, out := &in.AuthenticationTokenWebhook, &out.AuthenticationTokenWebhook
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(bool)
-			**out = **in
-		}
-	}
 	if in.AuthenticationTokenWebhookConfigFile != nil {
 		in, out := &in.AuthenticationTokenWebhookConfigFile, &out.AuthenticationTokenWebhookConfigFile
 		if *in == nil {
@@ -2442,6 +2433,24 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 			*out = nil
 		} else {
 			*out = new(bool)
+			**out = **in
+		}
+	}
+	if in.AuthenticationTokenWebhook != nil {
+		in, out := &in.AuthenticationTokenWebhook, &out.AuthenticationTokenWebhook
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
+			**out = **in
+		}
+	}
+	if in.AuthenticationTokenWebhookCacheTTL != nil {
+		in, out := &in.AuthenticationTokenWebhookCacheTTL, &out.AuthenticationTokenWebhookCacheTTL
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
 			**out = **in
 		}
 	}
