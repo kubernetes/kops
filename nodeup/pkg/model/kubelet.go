@@ -37,6 +37,7 @@ import (
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
@@ -457,6 +458,21 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 
 	if b.IsMaster {
 		c.BootstrapKubeconfig = ""
+	}
+
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
+		instanceType, err := awsup.GetMachineTypeInfo(b.InstanceGroup.Spec.MachineType)
+		if err != nil {
+			return c, err
+		}
+
+		maxPods := int32(instanceType.MaxPods)
+		c.MaxPods = &maxPods
+		if b.InstanceGroup.Spec.Kubelet != nil {
+			if b.InstanceGroup.Spec.Kubelet.MaxPods == nil {
+				b.InstanceGroup.Spec.Kubelet.MaxPods = &maxPods
+			}
+		}
 	}
 
 	if b.InstanceGroup.Spec.Kubelet != nil {
