@@ -33,6 +33,7 @@ type AWSMachineTypeInfo struct {
 	EphemeralDisks []int
 	Burstable      bool
 	GPU            bool
+	MaxPods        int
 }
 
 type EphemeralDevice struct {
@@ -82,6 +83,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          1,
 		EphemeralDisks: nil,
 		Burstable:      true,
+		MaxPods:        4,
 	},
 	{
 		Name:           "t2.micro",
@@ -90,6 +92,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          1,
 		EphemeralDisks: nil,
 		Burstable:      true,
+		MaxPods:        4,
 	},
 	{
 		Name:           "t2.small",
@@ -98,6 +101,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          1,
 		EphemeralDisks: nil,
 		Burstable:      true,
+		MaxPods:        8,
 	},
 	{
 		Name:           "t2.medium",
@@ -106,6 +110,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          2,
 		EphemeralDisks: nil,
 		Burstable:      true,
+		MaxPods:        17,
 	},
 	{
 		Name:           "t2.large",
@@ -114,6 +119,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          2,
 		EphemeralDisks: nil,
 		Burstable:      true,
+		MaxPods:        35,
 	},
 	{
 		Name:           "t2.xlarge",
@@ -122,6 +128,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          4,
 		EphemeralDisks: nil,
 		Burstable:      true,
+		MaxPods:        44,
 	},
 	{
 		Name:           "t2.2xlarge",
@@ -130,6 +137,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          8,
 		EphemeralDisks: nil,
 		Burstable:      true,
+		MaxPods:        44,
 	},
 
 	// m3 family
@@ -139,6 +147,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            3,
 		Cores:          1,
 		EphemeralDisks: []int{4},
+		MaxPods:        12,
 	},
 	{
 		Name:           "m3.large",
@@ -146,6 +155,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            6.5,
 		Cores:          2,
 		EphemeralDisks: []int{32},
+		MaxPods:        29,
 	},
 	{
 		Name:           "m3.xlarge",
@@ -153,6 +163,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            13,
 		Cores:          4,
 		EphemeralDisks: []int{40, 40},
+		MaxPods:        58,
 	},
 	{
 		Name:           "m3.2xlarge",
@@ -160,6 +171,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            26,
 		Cores:          8,
 		EphemeralDisks: []int{80, 80},
+		MaxPods:        118,
 	},
 
 	// m4 family
@@ -169,6 +181,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            6.5,
 		Cores:          2,
 		EphemeralDisks: nil,
+		MaxPods:        20,
 	},
 	{
 		Name:           "m4.xlarge",
@@ -176,6 +189,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            13,
 		Cores:          4,
 		EphemeralDisks: nil,
+		MaxPods:        58,
 	},
 	{
 		Name:           "m4.2xlarge",
@@ -183,6 +197,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            26,
 		Cores:          8,
 		EphemeralDisks: nil,
+		MaxPods:        58,
 	},
 	{
 		Name:           "m4.4xlarge",
@@ -190,6 +205,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            53.5,
 		Cores:          16,
 		EphemeralDisks: nil,
+		MaxPods:        234,
 	},
 	{
 		Name:           "m4.10xlarge",
@@ -197,6 +213,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            124.5,
 		Cores:          40,
 		EphemeralDisks: nil,
+		MaxPods:        234,
 	},
 	{
 		Name:           "m4.16xlarge",
@@ -204,6 +221,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            188,
 		Cores:          64,
 		EphemeralDisks: nil,
+		MaxPods:        234,
 	},
 
 	// m5 family
@@ -213,6 +231,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            10,
 		Cores:          2,
 		EphemeralDisks: nil,
+		MaxPods:        29,
 	},
 	{
 		Name:           "m5.xlarge",
@@ -220,6 +239,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            15,
 		Cores:          4,
 		EphemeralDisks: nil,
+		MaxPods:        58,
 	},
 	{
 		Name:           "m5.2xlarge",
@@ -227,6 +247,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            31,
 		Cores:          8,
 		EphemeralDisks: nil,
+		MaxPods:        58,
 	},
 	{
 		Name:           "m5.4xlarge",
@@ -234,6 +255,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            61,
 		Cores:          16,
 		EphemeralDisks: nil,
+		MaxPods:        234,
 	},
 	{
 		Name:           "m5.12xlarge",
@@ -241,6 +263,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            173,
 		Cores:          48,
 		EphemeralDisks: nil,
+		MaxPods:        234,
 	},
 	{
 		Name:           "m5.24xlarge",
@@ -248,6 +271,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            345,
 		Cores:          96,
 		EphemeralDisks: nil,
+		MaxPods:        737,
 	},
 
 	// m5d family
@@ -257,6 +281,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            10,
 		Cores:          2,
 		EphemeralDisks: []int{75},
+		MaxPods:        29,
 	},
 	{
 		Name:           "m5d.xlarge",
@@ -264,6 +289,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            15,
 		Cores:          4,
 		EphemeralDisks: []int{150},
+		MaxPods:        58,
 	},
 	{
 		Name:           "m5d.2xlarge",
@@ -271,6 +297,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            31,
 		Cores:          8,
 		EphemeralDisks: []int{300},
+		MaxPods:        58,
 	},
 	{
 		Name:           "m5d.4xlarge",
@@ -278,6 +305,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            61,
 		Cores:          16,
 		EphemeralDisks: []int{300, 300},
+		MaxPods:        234,
 	},
 	{
 		Name:           "m5d.12xlarge",
@@ -285,6 +313,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            173,
 		Cores:          48,
 		EphemeralDisks: []int{900, 900},
+		MaxPods:        234,
 	},
 	{
 		Name:           "m5d.24xlarge",
@@ -292,6 +321,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            345,
 		Cores:          96,
 		EphemeralDisks: []int{900, 900, 900, 900},
+		MaxPods:        737,
 	},
 
 	// c3 family
@@ -301,6 +331,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            7,
 		Cores:          2,
 		EphemeralDisks: []int{16, 16},
+		MaxPods:        29,
 	},
 	{
 		Name:           "c3.xlarge",
@@ -308,6 +339,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            14,
 		Cores:          4,
 		EphemeralDisks: []int{40, 40},
+		MaxPods:        58,
 	},
 	{
 		Name:           "c3.2xlarge",
@@ -315,6 +347,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            28,
 		Cores:          8,
 		EphemeralDisks: []int{80, 80},
+		MaxPods:        58,
 	},
 	{
 		Name:           "c3.4xlarge",
@@ -322,6 +355,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            55,
 		Cores:          16,
 		EphemeralDisks: []int{160, 160},
+		MaxPods:        234,
 	},
 	{
 		Name:           "c3.8xlarge",
@@ -329,6 +363,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            108,
 		Cores:          32,
 		EphemeralDisks: []int{320, 320},
+		MaxPods:        234,
 	},
 
 	// c4 family
@@ -338,6 +373,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            8,
 		Cores:          2,
 		EphemeralDisks: nil,
+		MaxPods:        29,
 	},
 	{
 		Name:           "c4.xlarge",
@@ -345,6 +381,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            16,
 		Cores:          4,
 		EphemeralDisks: nil,
+		MaxPods:        58,
 	},
 	{
 		Name:           "c4.2xlarge",
@@ -352,6 +389,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            31,
 		Cores:          8,
 		EphemeralDisks: nil,
+		MaxPods:        58,
 	},
 	{
 		Name:           "c4.4xlarge",
@@ -359,6 +397,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            62,
 		Cores:          16,
 		EphemeralDisks: nil,
+		MaxPods:        234,
 	},
 	{
 		Name:           "c4.8xlarge",
@@ -366,6 +405,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            132,
 		Cores:          32,
 		EphemeralDisks: nil,
+		MaxPods:        234,
 	},
 
 	// c5 family
@@ -375,6 +415,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            8,
 		Cores:          2,
 		EphemeralDisks: nil,
+		MaxPods:        29,
 	},
 	{
 		Name:           "c5.xlarge",
@@ -382,6 +423,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            16,
 		Cores:          4,
 		EphemeralDisks: nil,
+		MaxPods:        58,
 	},
 	{
 		Name:           "c5.2xlarge",
@@ -389,6 +431,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            31,
 		Cores:          8,
 		EphemeralDisks: nil,
+		MaxPods:        58,
 	},
 	{
 		Name:           "c5.4xlarge",
@@ -396,6 +439,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            62,
 		Cores:          16,
 		EphemeralDisks: nil,
+		MaxPods:        234,
 	},
 	{
 		Name:           "c5.9xlarge",
@@ -403,6 +447,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            139,
 		Cores:          36,
 		EphemeralDisks: nil,
+		MaxPods:        234,
 	},
 	{
 		Name:           "c5.18xlarge",
@@ -410,6 +455,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            278,
 		Cores:          72,
 		EphemeralDisks: nil,
+		MaxPods:        737,
 	},
 
 	// c5d family
@@ -419,6 +465,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            8,
 		Cores:          2,
 		EphemeralDisks: []int{50},
+		MaxPods:        29,
 	},
 	{
 		Name:           "c5d.xlarge",
@@ -426,6 +473,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            16,
 		Cores:          4,
 		EphemeralDisks: []int{100},
+		MaxPods:        58,
 	},
 	{
 		Name:           "c5d.2xlarge",
@@ -433,6 +481,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            31,
 		Cores:          8,
 		EphemeralDisks: []int{200},
+		MaxPods:        58,
 	},
 	{
 		Name:           "c5d.4xlarge",
@@ -440,6 +489,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            62,
 		Cores:          16,
 		EphemeralDisks: []int{400},
+		MaxPods:        234,
 	},
 	{
 		Name:           "c5d.9xlarge",
@@ -447,6 +497,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            139,
 		Cores:          36,
 		EphemeralDisks: []int{900},
+		MaxPods:        234,
 	},
 	{
 		Name:           "c5d.18xlarge",
@@ -454,6 +505,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            278,
 		Cores:          72,
 		EphemeralDisks: []int{900, 900},
+		MaxPods:        737,
 	},
 
 	// cc2 family
@@ -463,6 +515,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            88,
 		Cores:          32,
 		EphemeralDisks: []int{840, 840, 840, 840},
+		MaxPods:        234,
 	},
 
 	// cg1 family
@@ -482,6 +535,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            88,
 		Cores:          32,
 		EphemeralDisks: []int{120, 120},
+		MaxPods:        234,
 	},
 
 	// d2 family
@@ -491,6 +545,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            14,
 		Cores:          4,
 		EphemeralDisks: []int{2000, 2000, 2000},
+		MaxPods:        58,
 	},
 	{
 		Name:           "d2.2xlarge",
@@ -498,6 +553,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            28,
 		Cores:          8,
 		EphemeralDisks: []int{2000, 2000, 2000, 2000, 2000, 2000},
+		MaxPods:        58,
 	},
 	{
 		Name:     "d2.4xlarge",
@@ -508,6 +564,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 			2000, 2000, 2000, 2000, 2000, 2000,
 			2000, 2000, 2000, 2000, 2000, 2000,
 		},
+		MaxPods: 234,
 	},
 	{
 		Name:     "d2.8xlarge",
@@ -520,6 +577,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 			2000, 2000, 2000, 2000, 2000, 2000,
 			2000, 2000, 2000, 2000, 2000, 2000,
 		},
+		MaxPods: 234,
 	},
 
 	// h1 family
@@ -529,6 +587,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            26,
 		Cores:          8,
 		EphemeralDisks: []int{2000},
+		MaxPods:        58,
 	},
 	{
 		Name:           "h1.4xlarge",
@@ -536,6 +595,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            53.5,
 		Cores:          16,
 		EphemeralDisks: []int{2000, 2000},
+		MaxPods:        234,
 	},
 	{
 		Name:           "h1.8xlarge",
@@ -543,6 +603,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            99,
 		Cores:          32,
 		EphemeralDisks: []int{2000, 2000, 2000, 2000},
+		MaxPods:        234,
 	},
 	{
 		Name:     "h1.16xlarge",
@@ -553,6 +614,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 			2000, 2000, 2000, 2000,
 			2000, 2000, 2000, 2000,
 		},
+		MaxPods: 737,
 	},
 
 	// g2 family
@@ -563,6 +625,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          8,
 		EphemeralDisks: []int{60},
 		GPU:            true,
+		MaxPods:        58,
 	},
 	{
 		Name:           "g2.8xlarge",
@@ -571,6 +634,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          32,
 		EphemeralDisks: []int{120, 120},
 		GPU:            true,
+		MaxPods:        234,
 	},
 
 	// hi1 family
@@ -589,6 +653,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            14,
 		Cores:          4,
 		EphemeralDisks: []int{800},
+		MaxPods:        58,
 	},
 	{
 		Name:           "i2.2xlarge",
@@ -596,6 +661,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            27,
 		Cores:          8,
 		EphemeralDisks: []int{800, 800},
+		MaxPods:        58,
 	},
 	{
 		Name:           "i2.4xlarge",
@@ -603,6 +669,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            53,
 		Cores:          16,
 		EphemeralDisks: []int{800, 800, 800, 800},
+		MaxPods:        234,
 	},
 	{
 		Name:           "i2.8xlarge",
@@ -610,6 +677,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            104,
 		Cores:          32,
 		EphemeralDisks: []int{800, 800, 800, 800, 800, 800, 800, 800},
+		MaxPods:        234,
 	},
 
 	// i3 family
@@ -619,6 +687,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            9,
 		Cores:          2,
 		EphemeralDisks: []int{475},
+		MaxPods:        29,
 	},
 	{
 		Name:           "i3.xlarge",
@@ -626,6 +695,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            14,
 		Cores:          4,
 		EphemeralDisks: []int{950},
+		MaxPods:        58,
 	},
 	{
 		Name:           "i3.2xlarge",
@@ -633,6 +703,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            27,
 		Cores:          8,
 		EphemeralDisks: []int{1900},
+		MaxPods:        58,
 	},
 	{
 		Name:           "i3.4xlarge",
@@ -640,6 +711,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            53,
 		Cores:          16,
 		EphemeralDisks: []int{1900, 1900},
+		MaxPods:        234,
 	},
 	{
 		Name:           "i3.8xlarge",
@@ -647,6 +719,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            104,
 		Cores:          32,
 		EphemeralDisks: []int{1900, 1900, 1900, 1900},
+		MaxPods:        234,
 	},
 	{
 		Name:           "i3.16xlarge",
@@ -654,6 +727,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            208,
 		Cores:          64,
 		EphemeralDisks: []int{1900, 1900, 1900, 1900, 1900, 1900, 1900, 1900},
+		MaxPods:        737,
 	},
 	{
 		Name:           "i3.metal",
@@ -661,6 +735,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            208,
 		Cores:          72,
 		EphemeralDisks: []int{1900, 1900, 1900, 1900, 1900, 1900, 1900, 1900},
+		MaxPods:        737,
 	},
 
 	// r3 family
@@ -670,6 +745,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            6.5,
 		Cores:          2,
 		EphemeralDisks: []int{32},
+		MaxPods:        29,
 	},
 	{
 		Name:           "r3.xlarge",
@@ -677,6 +753,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            13,
 		Cores:          4,
 		EphemeralDisks: []int{80},
+		MaxPods:        58,
 	},
 	{
 		Name:           "r3.2xlarge",
@@ -684,6 +761,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            26,
 		Cores:          8,
 		EphemeralDisks: []int{160},
+		MaxPods:        58,
 	},
 	{
 		Name:           "r3.4xlarge",
@@ -691,6 +769,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            52,
 		Cores:          16,
 		EphemeralDisks: []int{320},
+		MaxPods:        234,
 	},
 	{
 		Name:           "r3.8xlarge",
@@ -698,6 +777,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            104,
 		Cores:          32,
 		EphemeralDisks: []int{320, 320},
+		MaxPods:        234,
 	},
 
 	// x1e family
@@ -708,6 +788,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            12,
 		Cores:          4,
 		EphemeralDisks: []int{120},
+		MaxPods:        29,
 	},
 	{
 		Name:           "x1e.2xlarge",
@@ -715,6 +796,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            23,
 		Cores:          8,
 		EphemeralDisks: []int{240},
+		MaxPods:        58,
 	},
 	{
 		Name:           "x1e.4xlarge",
@@ -722,6 +804,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            47,
 		Cores:          16,
 		EphemeralDisks: []int{480},
+		MaxPods:        58,
 	},
 	{
 		Name:           "x1e.8xlarge",
@@ -729,6 +812,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            91,
 		Cores:          32,
 		EphemeralDisks: []int{960},
+		MaxPods:        58,
 	},
 	{
 		Name:           "x1e.16xlarge",
@@ -736,6 +820,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            179,
 		Cores:          64,
 		EphemeralDisks: []int{1920},
+		MaxPods:        234,
 	},
 	{
 		Name:           "x1e.32xlarge",
@@ -743,6 +828,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            340,
 		Cores:          128,
 		EphemeralDisks: []int{1920, 1920},
+		MaxPods:        234,
 	},
 
 	// x1 family
@@ -752,6 +838,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            174.5,
 		Cores:          64,
 		EphemeralDisks: []int{1920},
+		MaxPods:        234,
 	},
 	{
 		Name:           "x1.32xlarge",
@@ -759,6 +846,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            349,
 		Cores:          128,
 		EphemeralDisks: []int{1920, 1920},
+		MaxPods:        234,
 	},
 
 	// r4 family
@@ -768,6 +856,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            7,
 		Cores:          2,
 		EphemeralDisks: nil,
+		MaxPods:        29,
 	},
 	{
 		Name:           "r4.xlarge",
@@ -775,6 +864,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            13.5,
 		Cores:          4,
 		EphemeralDisks: nil,
+		MaxPods:        58,
 	},
 	{
 		Name:           "r4.2xlarge",
@@ -782,6 +872,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            27,
 		Cores:          8,
 		EphemeralDisks: nil,
+		MaxPods:        58,
 	},
 	{
 		Name:           "r4.4xlarge",
@@ -789,6 +880,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            53,
 		Cores:          16,
 		EphemeralDisks: nil,
+		MaxPods:        234,
 	},
 	{
 		Name:           "r4.8xlarge",
@@ -796,6 +888,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            99,
 		Cores:          32,
 		EphemeralDisks: nil,
+		MaxPods:        234,
 	},
 	{
 		Name:           "r4.16xlarge",
@@ -803,6 +896,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            195,
 		Cores:          64,
 		EphemeralDisks: nil,
+		MaxPods:        737,
 	},
 
 	// p2 family
@@ -813,6 +907,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          4,
 		EphemeralDisks: nil,
 		GPU:            true,
+		MaxPods:        58,
 	},
 	{
 		Name:           "p2.8xlarge",
@@ -821,6 +916,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          32,
 		EphemeralDisks: nil,
 		GPU:            true,
+		MaxPods:        234,
 	},
 	{
 		Name:           "p2.16xlarge",
@@ -829,6 +925,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          64,
 		EphemeralDisks: nil,
 		GPU:            true,
+		MaxPods:        234,
 	},
 
 	// p3 family
@@ -839,6 +936,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          8,
 		EphemeralDisks: nil,
 		GPU:            true,
+		MaxPods:        58,
 	},
 	{
 		Name:           "p3.8xlarge",
@@ -847,6 +945,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          32,
 		EphemeralDisks: nil,
 		GPU:            true,
+		MaxPods:        234,
 	},
 	{
 		Name:           "p3.16xlarge",
@@ -855,6 +954,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          64,
 		EphemeralDisks: nil,
 		GPU:            true,
+		MaxPods:        234,
 	},
 
 	// g3 family
@@ -865,6 +965,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            47,
 		EphemeralDisks: nil,
 		GPU:            true,
+		MaxPods:        234,
 	},
 	{
 		Name:           "g3.8xlarge",
@@ -873,6 +974,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          32,
 		EphemeralDisks: nil,
 		GPU:            true,
+		MaxPods:        234,
 	},
 	{
 		Name:           "g3.16xlarge",
@@ -881,6 +983,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          64,
 		EphemeralDisks: nil,
 		GPU:            true,
+		MaxPods:        737,
 	},
 
 	// f1 family
@@ -890,6 +993,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            94,
 		Cores:          8,
 		EphemeralDisks: nil,
+		MaxPods:        58,
 	},
 	{
 		Name:           "f1.16xlarge",
@@ -897,5 +1001,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            376,
 		Cores:          64,
 		EphemeralDisks: nil,
+		MaxPods:        394,
 	},
 }

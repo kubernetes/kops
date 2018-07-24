@@ -38,6 +38,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
 	"k8s.io/apiserver/pkg/authentication/user"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 const (
@@ -436,6 +437,23 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 
 	if b.IsMaster {
 		c.BootstrapKubeconfig = ""
+	}
+
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
+		instanceType, err := awsup.GetMachineTypeInfo(b.InstanceGroup.Spec.MachineType)
+		if err != nil {
+			return c, err
+		}
+
+		maxPods := int32(instanceType.MaxPods)
+		c.MaxPods = &maxPods
+		if b.InstanceGroup.Spec.Kubelet != nil {
+			if b.InstanceGroup.Spec.Kubelet.MaxPods == nil {
+				b.InstanceGroup.Spec.Kubelet.MaxPods = &maxPods
+			}
+		} else {
+			c.MaxPods = &maxPods
+		}
 	}
 
 	if b.InstanceGroup.Spec.Kubelet != nil {
