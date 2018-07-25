@@ -15,7 +15,7 @@ kops set does not update the cloud resources, to apply the changes use "kops upd
 
 ```
   # Set cluster to run kubernetes version 1.10.0
-  kops set cluster k8s-cluster.example.com cluster.spec.kubernetesVersion=1.10.0
+  kops set cluster k8s-cluster.example.com spec.kubernetesVersion=1.10.0
 ```
 
 ### Options
