@@ -8,7 +8,7 @@ spec:
   - 0.0.0.0/0
   api:
     loadBalancer:
-      type: Public
+      type: Internal
   authorization:
     rbac: {}
   channel: stable

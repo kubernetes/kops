@@ -1049,7 +1049,16 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == "" {
 		switch c.APILoadBalancerType {
-		case "", "public":
+		case "":
+			if cluster.Spec.Topology.Masters == api.TopologyPrivate {
+				cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypeInternal
+			} else {
+				cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
+			}
+		case "public":
+			if cluster.Spec.Topology.Masters == api.TopologyPrivate {
+				return fmt.Errorf("Private topology supports --api-loadbalancer-type='internal' only")
+			}
 			cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
 		case "internal":
 			cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypeInternal

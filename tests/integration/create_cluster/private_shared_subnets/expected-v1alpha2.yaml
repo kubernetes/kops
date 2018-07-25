@@ -6,7 +6,7 @@ metadata:
 spec:
   api:
     loadBalancer:
-      type: Public
+      type: Internal
   authorization:
     rbac: {}
   channel: stable
