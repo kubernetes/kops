@@ -642,35 +642,35 @@ bazel-build-cli:
 
 .PHONY: bazel-crossbuild-kops
 bazel-crossbuild-kops:
-	bazel build --features=pure --experimental_platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64 --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 --experimental_platforms=@io_bazel_rules_go//go/toolchain:windows_amd64 //cmd/kops/...
+	bazel build --features=pure --platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64 --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 --platforms=@io_bazel_rules_go//go/toolchain:windows_amd64 //cmd/kops/...
 
 .PHONY: bazel-crossbuild-nodeup
 bazel-crossbuild-nodeup:
-	bazel build --features=pure --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/nodeup/...
+	bazel build --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/nodeup/...
 
 .PHONY: bazel-crossbuild-protokube
 bazel-crossbuild-protokube:
-	bazel build --features=pure --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/...
+	bazel build --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/...
 
 .PHONY: bazel-crossbuild-dns-controller
 bazel-crossbuild-dns-controller:
-	bazel build --features=pure --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/...
+	bazel build --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/...
 
 .PHONY: bazel-crossbuild-dns-controller-image
 bazel-crossbuild-dns-controller-image:
-	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:dns-controller.tar
+	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:dns-controller.tar
 
 .PHONY: bazel-crossbuild-protokube-image
 bazel-crossbuild-protokube-image:
-	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar
+	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar
 
 .PHONY: bazel-crossbuild-kube-discovery-image
 bazel-crossbuild-kube-discovery-image:
-	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:kube-discovery.tar
+	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:kube-discovery.tar
 
 .PHONY: bazel-crossbuild-node-authorizer-image
 bazel-crossbuild-node-authorizer-image:
-	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:node-authorizer.tar
+	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:node-authorizer.tar
 
 .PHONY: bazel-push
 # Will always push a linux-based build up to the server
@@ -721,7 +721,7 @@ push-node-authorizer:
 .PHONY: bazel-protokube-export
 bazel-protokube-export:
 	mkdir -p ${BAZELIMAGES}
-	bazel build --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar
+	bazel build --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar
 	cp bazel-bin/images/protokube.tar ${BAZELIMAGES}/protokube.tar
 	gzip --force --fast ${BAZELIMAGES}/protokube.tar
 	(${SHASUMCMD} ${BAZELIMAGES}/protokube.tar.gz | cut -d' ' -f1) > ${BAZELIMAGES}/protokube.tar.gz.sha1
