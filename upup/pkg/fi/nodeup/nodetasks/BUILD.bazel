@@ -8,6 +8,7 @@ go_library(
         "bindmount.go",
         "createsdir.go",
         "file.go",
+        "group.go",
         "load_image.go",
         "mount_disk.go",
         "package.go",
