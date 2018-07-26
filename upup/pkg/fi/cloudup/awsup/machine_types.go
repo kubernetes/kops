@@ -805,6 +805,138 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: nil,
 	},
 
+	// r5 family
+	{
+		Name:           "r5.large",
+		MemoryGB:       16,
+		ECU:            8,
+		Cores:          2,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "r5.xlarge",
+		MemoryGB:       32,
+		ECU:            16,
+		Cores:          4,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "r5.2xlarge",
+		MemoryGB:       64,
+		ECU:            31,
+		Cores:          8,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "r5.4xlarge",
+		MemoryGB:       128,
+		ECU:            61,
+		Cores:          16,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "r5.12xlarge",
+		MemoryGB:       384,
+		ECU:            172,
+		Cores:          48,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "r5.24xlarge",
+		MemoryGB:       768,
+		ECU:            345,
+		Cores:          96,
+		EphemeralDisks: nil,
+	},
+
+	// r5d family
+	{
+		Name:           "r5d.large",
+		MemoryGB:       16,
+		ECU:            8,
+		Cores:          2,
+		EphemeralDisks: []int{75},
+	},
+	{
+		Name:           "r5d.xlarge",
+		MemoryGB:       32,
+		ECU:            16,
+		Cores:          4,
+		EphemeralDisks: []int{150},
+	},
+	{
+		Name:           "r5d.2xlarge",
+		MemoryGB:       64,
+		ECU:            31,
+		Cores:          8,
+		EphemeralDisks: []int{300},
+	},
+	{
+		Name:           "r5d.4xlarge",
+		MemoryGB:       128,
+		ECU:            61,
+		Cores:          16,
+		EphemeralDisks: []int{300, 300},
+	},
+	{
+		Name:           "r5d.12xlarge",
+		MemoryGB:       384,
+		ECU:            172,
+		Cores:          48,
+		EphemeralDisks: []int{900, 900},
+	},
+	{
+		Name:           "r5d.24xlarge",
+		MemoryGB:       768,
+		ECU:            345,
+		Cores:          96,
+		EphemeralDisks: []int{900, 900, 900, 900},
+	},
+
+	// z1d family
+	{
+		Name:           "z1d.large",
+		MemoryGB:       16,
+		ECU:            11,
+		Cores:          2,
+		EphemeralDisks: []int{75},
+	},
+	{
+		Name:           "z1d.xlarge",
+		MemoryGB:       32,
+		ECU:            21,
+		Cores:          4,
+		EphemeralDisks: []int{150},
+	},
+	{
+		Name:           "z1d.2xlarge",
+		MemoryGB:       64,
+		ECU:            42,
+		Cores:          8,
+		EphemeralDisks: []int{300},
+	},
+	{
+		Name:           "z1d.3xlarge",
+		MemoryGB:       96,
+		ECU:            62,
+		Cores:          12,
+		EphemeralDisks: []int{450},
+	},
+	{
+		Name:           "z1d.6xlarge",
+		MemoryGB:       128,
+		ECU:            122,
+		Cores:          24,
+		EphemeralDisks: []int{900},
+	},
+	{
+		Name:           "z1d.12xlarge",
+		MemoryGB:       235,
+		ECU:            243,
+		Cores:          48,
+		EphemeralDisks: []int{900, 900},
+	},
+
 	// p2 family
 	{
 		Name:           "p2.xlarge",
