@@ -607,6 +607,14 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 				t.Logf("actual terraform output in %s", actualPath)
 			}
 
+			if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
+				fp := path.Join(srcDir, expectedCfPath)
+				t.Logf("HACK_UPDATE_EXPECTED_IN_PLACE: writing expected output %s", fp)
+				if err := ioutil.WriteFile(fp, actualCF, 0644); err != nil {
+					t.Errorf("error writing expected output file %q: %v", fp, err)
+				}
+			}
+
 			t.Fatalf("cloudformation output differed from expected. Test file: %s", path.Join(srcDir, expectedCfPath))
 		}
 
