@@ -4,6 +4,15 @@ metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
   name: additionaluserdata.example.com
 spec:
+  additionalPolicies:
+    master: |
+      [
+        {
+          "Action": [ "s3:GetObject" ],
+          "Resource": [ "arn:aws:s3:::somebucket/someobject" ],
+          "Effect": "Allow"
+        }
+      ]
   kubernetesApiAccess:
   - 0.0.0.0/0
   channel: stable
