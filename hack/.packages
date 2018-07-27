@@ -122,6 +122,7 @@ k8s.io/kops/pkg/systemd
 k8s.io/kops/pkg/templates
 k8s.io/kops/pkg/testutils
 k8s.io/kops/pkg/tokens
+k8s.io/kops/pkg/try
 k8s.io/kops/pkg/urls
 k8s.io/kops/pkg/util/stringorslice
 k8s.io/kops/pkg/util/templater

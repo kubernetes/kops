@@ -83,6 +83,7 @@ go_library(
         "//pkg/resources:go_default_library",
         "//pkg/resources/ops:go_default_library",
         "//pkg/sshcredentials:go_default_library",
+        "//pkg/try:go_default_library",
         "//pkg/util/templater:go_default_library",
         "//pkg/validation:go_default_library",
         "//upup/pkg/fi:go_default_library",
