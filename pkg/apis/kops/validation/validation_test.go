@@ -241,3 +241,53 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
+
+func Test_Validate_AdditionalPolicies(t *testing.T) {
+	grid := []struct {
+		Input          map[string]string
+		ExpectedErrors []string
+	}{
+		{
+			Input: map[string]string{},
+		},
+		{
+			Input: map[string]string{
+				"master": `[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ], "Effect": "Allow" } ]`,
+			},
+		},
+		{
+			Input: map[string]string{
+				"notarole": `[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ], "Effect": "Allow" } ]`,
+			},
+			ExpectedErrors: []string{"Invalid value::spec.additionalPolicies"},
+		},
+		{
+			Input: map[string]string{
+				"master": `badjson`,
+			},
+			ExpectedErrors: []string{"Invalid value::spec.additionalPolicies[master]"},
+		},
+		{
+			Input: map[string]string{
+				"master": `[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ] } ]`,
+			},
+			ExpectedErrors: []string{"Required value::spec.additionalPolicies[master][0].Effect"},
+		},
+		{
+			Input: map[string]string{
+				"master": `[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ], "Effect": "allow" } ]`,
+			},
+			ExpectedErrors: []string{"Invalid value::spec.additionalPolicies[master][0].Effect"},
+		},
+	}
+	for _, g := range grid {
+		clusterSpec := &kops.ClusterSpec{
+			AdditionalPolicies: &g.Input,
+			Subnets: []kops.ClusterSubnetSpec{
+				{Name: "subnet1"},
+			},
+		}
+		errs := validateClusterSpec(clusterSpec, field.NewPath("spec"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
