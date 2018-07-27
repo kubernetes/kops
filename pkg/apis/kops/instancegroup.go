@@ -60,6 +60,7 @@ const (
 	InstanceGroupRoleBastion InstanceGroupRole = "Bastion"
 )
 
+// AllInstanceGroupRoles is a slice of all valid InstanceGroupRole values
 var AllInstanceGroupRoles = []InstanceGroupRole{
 	InstanceGroupRoleNode,
 	InstanceGroupRoleMaster,
