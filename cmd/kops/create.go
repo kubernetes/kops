@@ -131,11 +131,10 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 	for _, f := range c.Filenames {
 		var contents []byte
 		if f == "-" {
-			file := os.Stdin
-			defer file.Close()
-			buf := new(bytes.Buffer)
-			buf.ReadFrom(file)
-			contents = buf.Bytes()
+			contents, err = ConsumeStdin()
+			if err != nil {
+				return err
+			}
 		} else {
 			contents, err = vfs.Context.ReadFile(f)
 			if err != nil {
@@ -245,4 +244,16 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 		}
 	}
 	return nil
+}
+
+// ConsumeStdin reads all the bytes available from stdin
+func ConsumeStdin() ([]byte, error) {
+	file := os.Stdin
+	buf := new(bytes.Buffer)
+	_, err := buf.ReadFrom(file)
+	if err != nil {
+		return nil, fmt.Errorf("error reading stdin: %v", err)
+	}
+
+	return buf.Bytes(), nil
 }
