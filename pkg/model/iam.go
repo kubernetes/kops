@@ -19,7 +19,6 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strings"
 	"text/template"
 
@@ -168,10 +167,9 @@ func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName s
 		{
 			additionalPolicy := ""
 			if b.Cluster.Spec.AdditionalPolicies != nil {
-				roleAsString := reflect.ValueOf(igRole).String()
 				additionalPolicies := *(b.Cluster.Spec.AdditionalPolicies)
 
-				additionalPolicy = additionalPolicies[strings.ToLower(roleAsString)]
+				additionalPolicy = additionalPolicies[strings.ToLower(string(igRole))]
 			}
 
 			additionalPolicyName := "additional." + iamName
