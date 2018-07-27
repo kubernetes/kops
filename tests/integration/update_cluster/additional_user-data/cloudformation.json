@@ -611,6 +611,31 @@
         ]
       }
     },
+    "AWSIAMPolicyadditionalmastersadditionaluserdataexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "additional.masters.additionaluserdata.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemastersadditionaluserdataexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::somebucket/someobject"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
     "AWSIAMPolicymastersadditionaluserdataexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
