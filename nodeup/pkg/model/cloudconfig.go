@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -133,10 +134,12 @@ func getVMUUID(kubernetesVersion string) (string, error) {
 	// VM UUID is required only for Kubernetes version greater than 1.5.3
 	if actualKubernetesVersion.GTE(*minimumVersionForUUID) {
 		file, err := os.Open(VM_UUID_FILE_PATH)
-		defer file.Close()
 		if err != nil {
 			return "", err
 		}
+
+		defer try.CloseFile(file)
+
 		vm_uuid, err := bufio.NewReader(file).ReadString('\n')
 		if err != nil {
 			return "", err

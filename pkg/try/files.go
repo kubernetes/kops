@@ -28,3 +28,10 @@ func RemoveFile(fp string) {
 		glog.Warningf("unable to remove file %s: %v", fp, err)
 	}
 }
+
+// CloseFile will try to call close on the file, logging an error if it fails
+func CloseFile(f *os.File) {
+	if err := f.Close(); err != nil {
+		glog.Warningf("unable to close file %s: %v", f.Name(), err)
+	}
+}

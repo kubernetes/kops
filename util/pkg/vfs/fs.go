@@ -25,6 +25,7 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -120,7 +121,7 @@ func (p *FSPath) WriteTo(out io.Writer) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer f.Close()
+	defer try.CloseFile(f)
 
 	return io.Copy(out, f)
 }
