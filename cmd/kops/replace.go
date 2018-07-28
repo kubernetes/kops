@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -103,11 +102,10 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 	for _, f := range c.Filenames {
 		var contents []byte
 		if f == "-" {
-			file := os.Stdin
-			defer file.Close()
-			buf := new(bytes.Buffer)
-			buf.ReadFrom(file)
-			contents = buf.Bytes()
+			contents, err = ConsumeStdin()
+			if err != nil {
+				return err
+			}
 		} else {
 			contents, err = vfs.Context.ReadFile(f)
 			if err != nil {
