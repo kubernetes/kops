@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model/iam"
 )
 
 var validDockerConfigStorageValues = []string{"aufs", "btrfs", "devicemapper", "overlay", "overlay2", "zfs"}
@@ -54,7 +55,7 @@ func newValidateCluster(cluster *kops.Cluster) field.ErrorList {
 func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	allErrs = append(allErrs, validateSubnets(spec.Subnets, field.NewPath("spec"))...)
+	allErrs = append(allErrs, validateSubnets(spec.Subnets, fieldPath.Child("subnets"))...)
 
 	// SSHAccess
 	for i, cidr := range spec.SSHAccess {
@@ -93,6 +94,13 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 
 	if spec.Networking != nil {
 		allErrs = append(allErrs, validateNetworking(spec.Networking, fieldPath.Child("networking"))...)
+	}
+
+	// IAM additionalPolicies
+	if spec.AdditionalPolicies != nil {
+		for k, v := range *spec.AdditionalPolicies {
+			allErrs = append(allErrs, validateAdditionalPolicy(k, v, fieldPath.Child("additionalPolicies"))...)
+		}
 	}
 
 	return allErrs
@@ -249,4 +257,40 @@ func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, fldPath *field.Pat
 	}
 
 	return allErrs
+}
+
+func validateAdditionalPolicy(role string, policy string, fldPath *field.Path) field.ErrorList {
+	errs := field.ErrorList{}
+
+	valid := sets.NewString()
+	for _, r := range kops.AllInstanceGroupRoles {
+		k := strings.ToLower(string(r))
+		valid.Insert(k)
+	}
+	if !valid.Has(role) {
+		message := fmt.Sprintf("role is not known (valid values: %s)", strings.Join(valid.List(), ","))
+		errs = append(errs, field.Invalid(fldPath, role, message))
+	}
+
+	statements, err := iam.ParseStatements(policy)
+	if err != nil {
+		errs = append(errs, field.Invalid(fldPath.Key(role), policy, "policy was not valid JSON: "+err.Error()))
+	}
+
+	// Trivial validation of policy, mostly to make sure it isn't some other random object
+	for i, statement := range statements {
+		fldEffect := fldPath.Key(role).Index(i).Child("Effect")
+		switch statement.Effect {
+		case "Allow", "Deny":
+			//valid
+
+		case "":
+			errs = append(errs, field.Required(fldEffect, "Effect must be specified for IAM policy"))
+
+		default:
+			errs = append(errs, field.Invalid(fldEffect, statement.Effect, "Effect must be 'Allow' or 'Deny'"))
+		}
+	}
+
+	return errs
 }
