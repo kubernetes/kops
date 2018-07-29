@@ -29,6 +29,8 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+
+	"k8s.io/kops/pkg/try"
 )
 
 type HashAlgorithm string
@@ -132,7 +134,7 @@ func (ha HashAlgorithm) HashFile(p string) (*Hash, error) {
 		}
 		return nil, fmt.Errorf("error opening file %q: %v", p, err)
 	}
-	defer f.Close()
+	defer try.CloseFile(f)
 	return ha.Hash(f)
 }
 

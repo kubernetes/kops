@@ -32,6 +32,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/pkg/util/templater"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
@@ -198,7 +199,7 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 		if err != nil {
 			return fmt.Errorf("unable to open file: %s, error: %v", options.outputPath, err)
 		}
-		defer w.Close()
+		defer try.CloseFile(w)
 		iowriter = w
 	}
 
