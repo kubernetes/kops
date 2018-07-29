@@ -477,7 +477,7 @@ dep-ensure: dep-prereqs
 	# Remove all bazel build files that were vendored and regenerate (we assume they are go-gettable)
 	find vendor/ -name "BUILD" -delete
 	find vendor/ -name "BUILD.bazel" -delete
-	bazel run //:gazelle -- -proto disable
+	make bazel-gazelle
 
 
 .PHONY: gofmt
@@ -713,7 +713,7 @@ bazel-push-aws-run: bazel-push
 
 .PHONY: bazel-gazelle
 bazel-gazelle:
-	bazel run //:gazelle -- -proto disable
+	hack/update-bazel.sh
 
 .PHONY: check-markdown-links
 check-markdown-links:
