@@ -139,6 +139,12 @@ type BytesResource struct {
 	data []byte
 }
 
+// MarshalJSON is a custom marshaller so this will be printed as a string (instead of nothing)
+// This is used in tests to verify the expected output.
+func (b *BytesResource) MarshalJSON() ([]byte, error) {
+	return json.Marshal(string(b.data))
+}
+
 var _ Resource = &BytesResource{}
 
 func NewBytesResource(data []byte) *BytesResource {

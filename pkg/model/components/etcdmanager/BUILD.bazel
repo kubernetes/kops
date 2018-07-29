@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -26,5 +26,18 @@ go_library(
         "//util/pkg/exec:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["model_test.go"],
+    data = glob(["tests/**"]),  #keep
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/assets:go_default_library",
+        "//pkg/model:go_default_library",
+        "//pkg/testutils:go_default_library",
+        "//upup/pkg/fi:go_default_library",
     ],
 )
