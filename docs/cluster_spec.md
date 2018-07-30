@@ -562,7 +562,7 @@ Assets define alernative locations from where to retrieve static files and conta
 
 #### containerRegistry
 
-The container registry enables kops / kubernets to pull containers from a managed registry.
+The container registry enables kops / kubernetes to pull containers from a managed registry.
 This is useful when pulling containers from the internet is not an option, eg. because the
 deployment is offline / internet restricted or because of special requirements that apply
 for deployed artifacts, eg. auditing of containers.
@@ -579,7 +579,7 @@ spec:
 #### containerProxy
 
 The container proxy is designed to acts as a [pull through cache](https://docs.docker.com/registry/recipes/mirror/) for docker container assets.
-Basically, what it does is it remaps the Kubernets image URL to point to you cache so that the docker daemon will pull the image from that location.
+Basically, what it does is it remaps the Kubernetes image URL to point to you cache so that the docker daemon will pull the image from that location.
 If, for example, the containerProxy is set to `proxy.example.com`, the image `k8s.gcr.io/kube-apiserver` will be pulled from `proxy.example.com/kube-apiserver` instead.
 Note that the proxy you use has to support this feature for private registries.
 
