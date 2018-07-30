@@ -19,10 +19,10 @@ import (
 	"os"
 
 	"github.com/bazelbuild/bazel-gazelle/internal/config"
-	bf "github.com/bazelbuild/buildtools/build"
+	bzl "github.com/bazelbuild/buildtools/build"
 )
 
-func printFile(c *config.Config, f *bf.File, _ string) error {
-	_, err := os.Stdout.Write(bf.Format(f))
+func printFile(c *config.Config, f *bzl.File, _ string) error {
+	_, err := os.Stdout.Write(bzl.Format(f))
 	return err
 }

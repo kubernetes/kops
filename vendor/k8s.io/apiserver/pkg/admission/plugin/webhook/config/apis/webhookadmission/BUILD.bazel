@@ -8,7 +8,7 @@ go_library(
         "types.go",
         "zz_generated.deepcopy.go",
     ],
-    importmap = "vendor/k8s.io/apiserver/pkg/admission/plugin/webhook/config/apis/webhookadmission",
+    importmap = "k8s.io/kops/vendor/k8s.io/apiserver/pkg/admission/plugin/webhook/config/apis/webhookadmission",
     importpath = "k8s.io/apiserver/pkg/admission/plugin/webhook/config/apis/webhookadmission",
     visibility = ["//visibility:public"],
     deps = [

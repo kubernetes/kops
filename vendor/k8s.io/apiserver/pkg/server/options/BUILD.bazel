@@ -17,7 +17,7 @@ go_library(
         "serving.go",
         "serving_with_loopback.go",
     ],
-    importmap = "vendor/k8s.io/apiserver/pkg/server/options",
+    importmap = "k8s.io/kops/vendor/k8s.io/apiserver/pkg/server/options",
     importpath = "k8s.io/apiserver/pkg/server/options",
     visibility = ["//visibility:public"],
     deps = [

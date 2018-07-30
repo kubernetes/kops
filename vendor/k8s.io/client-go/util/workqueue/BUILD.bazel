@@ -11,7 +11,7 @@ go_library(
         "queue.go",
         "rate_limitting_queue.go",
     ],
-    importmap = "vendor/k8s.io/client-go/util/workqueue",
+    importmap = "k8s.io/kops/vendor/k8s.io/client-go/util/workqueue",
     importpath = "k8s.io/client-go/util/workqueue",
     visibility = ["//visibility:public"],
     deps = [

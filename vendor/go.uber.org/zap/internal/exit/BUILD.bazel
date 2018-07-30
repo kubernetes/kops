@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["exit.go"],
-    importmap = "vendor/go.uber.org/zap/internal/exit",
+    importmap = "k8s.io/kops/vendor/go.uber.org/zap/internal/exit",
     importpath = "go.uber.org/zap/internal/exit",
     visibility = ["//vendor/go.uber.org/zap:__subpackages__"],
 )

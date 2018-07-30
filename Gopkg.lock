@@ -161,7 +161,7 @@
   version = "v1.13.60"
 
 [[projects]]
-  digest = "1:ea54f769068039601b42373c98d6d07793dfdffc5baa52f1aaae3d6c86c71007"
+  digest = "1:80afda78bcbc7b4ead06091dda175edba827d9880885cce5896d9356a3ace565"
   name = "github.com/bazelbuild/bazel-gazelle"
   packages = [
     "cmd/gazelle",
@@ -178,7 +178,7 @@
     "internal/rule",
     "internal/version",
     "internal/walk",
-    "internal/wspace"
+    "internal/wspace",
   ]
   pruneopts = "UT"
   revision = "b10e7beac17436852ab4e2249b94eb3c9c9f2ef1"
