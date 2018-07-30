@@ -7,7 +7,7 @@ go_library(
         "doc.go",
         "register.go",
     ],
-    importmap = "vendor/k8s.io/client-go/kubernetes/fake",
+    importmap = "k8s.io/kops/vendor/k8s.io/client-go/kubernetes/fake",
     importpath = "k8s.io/client-go/kubernetes/fake",
     visibility = ["//visibility:public"],
     deps = [

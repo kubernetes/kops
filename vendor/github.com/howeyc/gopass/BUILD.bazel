@@ -7,7 +7,7 @@ go_library(
         "terminal.go",
         "terminal_solaris.go",
     ],
-    importmap = "vendor/github.com/howeyc/gopass",
+    importmap = "k8s.io/kops/vendor/github.com/howeyc/gopass",
     importpath = "github.com/howeyc/gopass",
     visibility = ["//visibility:public"],
     deps = select({

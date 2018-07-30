@@ -8,7 +8,7 @@ go_library(
         "mutating_webhook_manager.go",
         "validating_webhook_manager.go",
     ],
-    importmap = "vendor/k8s.io/apiserver/pkg/admission/configuration",
+    importmap = "k8s.io/kops/vendor/k8s.io/apiserver/pkg/admission/configuration",
     importpath = "k8s.io/apiserver/pkg/admission/configuration",
     visibility = ["//visibility:public"],
     deps = [

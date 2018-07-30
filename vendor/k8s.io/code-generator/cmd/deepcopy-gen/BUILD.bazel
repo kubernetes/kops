@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importmap = "vendor/k8s.io/code-generator/cmd/deepcopy-gen",
+    importmap = "k8s.io/kops/vendor/k8s.io/code-generator/cmd/deepcopy-gen",
     importpath = "k8s.io/code-generator/cmd/deepcopy-gen",
     visibility = ["//visibility:private"],
     deps = [

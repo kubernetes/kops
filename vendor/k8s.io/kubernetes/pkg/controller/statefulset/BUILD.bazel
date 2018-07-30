@@ -9,7 +9,7 @@ go_library(
         "stateful_set_status_updater.go",
         "stateful_set_utils.go",
     ],
-    importmap = "vendor/k8s.io/kubernetes/pkg/controller/statefulset",
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/controller/statefulset",
     importpath = "k8s.io/kubernetes/pkg/controller/statefulset",
     visibility = ["//visibility:public"],
     deps = [

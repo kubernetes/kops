@@ -7,7 +7,7 @@ go_library(
         "pod_util.go",
         "replicaset_util.go",
     ],
-    importmap = "vendor/k8s.io/kubernetes/pkg/controller/deployment/util",
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/controller/deployment/util",
     importpath = "k8s.io/kubernetes/pkg/controller/deployment/util",
     visibility = ["//visibility:public"],
     deps = [

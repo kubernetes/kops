@@ -10,7 +10,7 @@ go_library(
         "util.go",
         "version.go",
     ],
-    importmap = "vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/create",
+    importmap = "k8s.io/kops/vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/create",
     importpath = "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/create",
     visibility = ["//visibility:public"],
     deps = [

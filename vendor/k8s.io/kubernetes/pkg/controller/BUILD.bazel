@@ -9,7 +9,7 @@ go_library(
         "doc.go",
         "lookup_cache.go",
     ],
-    importmap = "vendor/k8s.io/kubernetes/pkg/controller",
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/controller",
     importpath = "k8s.io/kubernetes/pkg/controller",
     visibility = ["//visibility:public"],
     deps = [

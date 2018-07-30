@@ -6,7 +6,7 @@ go_library(
         "json.go",
         "meta.go",
     ],
-    importmap = "vendor/k8s.io/apimachinery/pkg/runtime/serializer/json",
+    importmap = "k8s.io/kops/vendor/k8s.io/apimachinery/pkg/runtime/serializer/json",
     importpath = "k8s.io/apimachinery/pkg/runtime/serializer/json",
     visibility = ["//visibility:public"],
     deps = [

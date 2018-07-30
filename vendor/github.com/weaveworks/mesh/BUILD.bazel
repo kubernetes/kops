@@ -21,7 +21,7 @@ go_library(
         "surrogate_gossiper.go",
         "token_bucket.go",
     ],
-    importmap = "vendor/github.com/weaveworks/mesh",
+    importmap = "k8s.io/kops/vendor/github.com/weaveworks/mesh",
     importpath = "github.com/weaveworks/mesh",
     visibility = ["//visibility:public"],
     deps = [
