@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/bundles"
 	"k8s.io/kops/pkg/k8sversion"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/vfs"
@@ -180,4 +181,22 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 
 func GCETagForRole(clusterName string, role kops.InstanceGroupRole) string {
 	return gce.SafeClusterName(clusterName) + "-" + gce.GceLabelNameRolePrefix + strings.ToLower(string(role))
+}
+
+func (c *OptionsContext) DetermineComponentBundle(clusterSpec *kops.ClusterSpec, componentName string) (string, error) {
+	bundleName := clusterSpec.Bundle
+	if bundleName == "" {
+		return "", fmt.Errorf("bundle not set; cannot assign bundle to %s", componentName)
+	}
+
+	bundle, err := bundles.LoadBundle(clusterSpec, clusterSpec.Bundle)
+	if err != nil {
+		return "", fmt.Errorf("error loading bundle set %s: %v", bundleName, err)
+	}
+
+	component := bundle.FindComponent(componentName, c.KubernetesVersion)
+	if component == nil {
+		return "", fmt.Errorf("cannot find %q component in bundle %s", componentName, bundleName)
+	}
+	return component.Location(), nil
 }

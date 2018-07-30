@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "assign.go",
+        "manifest.go",
+        "store.go",
+        "types.go",
+    ],
+    importpath = "k8s.io/kops/pkg/bundles",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/apis/kops/util:go_default_library",
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/blang/semver:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
+    ],
+)

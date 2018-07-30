@@ -80,6 +80,7 @@ go_library(
         "//pkg/kubeconfig:go_default_library",
         "//pkg/pki:go_default_library",
         "//pkg/pretty:go_default_library",
+        "//pkg/bundles:go_default_library",
         "//pkg/resources:go_default_library",
         "//pkg/resources/ops:go_default_library",
         "//pkg/sshcredentials:go_default_library",

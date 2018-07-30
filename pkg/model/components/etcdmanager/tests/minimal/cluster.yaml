@@ -16,17 +16,13 @@ spec:
     name: main
     backups:
       backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd-main
-    manager:
-      image: kopeio/etcd-manager:latest
   - etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
     backups:
       backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd-events
-    manager:
-      image: kopeio/etcd-manager:latest
-  kubernetesVersion: v1.8.0
+  kubernetesVersion: v1.11.0
   masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16

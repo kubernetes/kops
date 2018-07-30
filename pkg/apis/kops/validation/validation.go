@@ -103,6 +103,13 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 		}
 	}
 
+	// EtcdClusters
+	{
+		for i, etcdCluster := range spec.EtcdClusters {
+			allErrs = append(allErrs, validateEtcdClusterSpec(etcdCluster, fieldPath.Child("etcdClusters").Index(i))...)
+		}
+	}
+
 	return allErrs
 }
 
@@ -290,6 +297,25 @@ func validateAdditionalPolicy(role string, policy string, fldPath *field.Path) f
 		default:
 			errs = append(errs, field.Invalid(fldEffect, statement.Effect, "Effect must be 'Allow' or 'Deny'"))
 		}
+	}
+
+	return errs
+}
+
+func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
+	errs := field.ErrorList{}
+
+	switch spec.Provider {
+	case kops.EtcdProviderTypeManager:
+		// ok
+	case kops.EtcdProviderTypeStandalone:
+		// ok
+
+	case "":
+		// TODO: strict mode?
+
+	default:
+		errs = append(errs, field.Invalid(fieldPath.Child("provider"), spec.Provider, "Provider must be Manager or Standalone"))
 	}
 
 	return errs

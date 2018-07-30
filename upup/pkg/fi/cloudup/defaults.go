@@ -22,10 +22,10 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/util/pkg/vfs"
-
 	kopsversion "k8s.io/kops"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/bundles"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 // PerformAssignments populates values that are required and immutable
@@ -103,7 +103,15 @@ func PerformAssignments(c *kops.Cluster) error {
 		return err
 	}
 
-	return ensureKubernetesVersion(c)
+	if err := ensureKubernetesVersion(c); err != nil {
+		return err
+	}
+
+	if err := bundles.AssignBundle(c); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // ensureKubernetesVersion populates KubernetesVersion, if it is not already set

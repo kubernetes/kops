@@ -50,6 +50,9 @@ type ChannelSpec struct {
 
 	// KubernetesVersions allows us to recommend/requires kubernetes versions
 	KubernetesVersions []KubernetesVersionSpec `json:"kubernetesVersions,omitempty"`
+
+	// Bundles specifies the bundles we recommend
+	Bundles []BundleVersionSpec `json:"bundles,omitempty"`
 }
 
 type KopsVersionSpec struct {
@@ -78,6 +81,12 @@ type ChannelImageSpec struct {
 	ProviderID string `json:"providerID,omitempty"`
 
 	Name string `json:"name,omitempty"`
+
+	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
+}
+
+type BundleVersionSpec struct {
+	Bundle string `json:"bundle,omitempty"`
 
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 }
@@ -288,6 +297,39 @@ func (c *Channel) FindImage(provider CloudProviderID, kubernetesVersion semver.V
 
 	if len(matches) != 1 {
 		glog.Warningf("Multiple matching images in channel for cloudprovider %q", provider)
+	}
+	return matches[0]
+}
+
+// FindBundleVersion returns the recommended release for the kubernetes version, or nil if not found
+func (c *Channel) FindBundleVersion(kubernetesVersion semver.Version) *BundleVersionSpec {
+	var matches []*BundleVersionSpec
+
+	for i := range c.Spec.Bundles {
+		release := &c.Spec.Bundles[i]
+
+		if release.KubernetesVersion != "" {
+			versionRange, err := semver.ParseRange(release.KubernetesVersion)
+			if err != nil {
+				glog.Warningf("cannot parse KubernetesVersion=%q", release.KubernetesVersion)
+				continue
+			}
+
+			if !versionRange(kubernetesVersion) {
+				glog.V(2).Infof("kubernetes version %q does not match range: %s", kubernetesVersion, release.KubernetesVersion)
+				continue
+			}
+		}
+		matches = append(matches, release)
+	}
+
+	if len(matches) == 0 {
+		glog.V(2).Infof("no matching releases for %v", kubernetesVersion)
+		return nil
+	}
+
+	if len(matches) != 1 {
+		glog.Warningf("multiple matching releases for %v", kubernetesVersion)
 	}
 	return matches[0]
 }

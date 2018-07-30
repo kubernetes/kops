@@ -131,7 +131,7 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, st
 	if k8sVersion.Major == 1 && k8sVersion.Minor <= 5 {
 		if len(g.Spec.Taints) > 0 {
 			if !(g.IsMaster() && g.Spec.Taints[0] == kops.TaintNoScheduleMaster15 && len(g.Spec.Taints) == 1) {
-				allErrs = append(allErrs, field.Invalid(fieldPath.Child("Spec").Child("Taints"), g.Spec.Taints, "User-specified taints are not supported before kubernetes version 1.6.0"))
+				allErrs = append(allErrs, field.Invalid(fieldPath.Child("spec").Child("taints"), g.Spec.Taints, "User-specified taints are not supported before kubernetes version 1.6.0"))
 			}
 		}
 	}

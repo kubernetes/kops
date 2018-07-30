@@ -32,7 +32,7 @@ const PathClusterCompleted = "cluster.spec"
 
 func ConfigBase(c *api.Cluster) (vfs.Path, error) {
 	if c.Spec.ConfigBase == "" {
-		return nil, field.Required(field.NewPath("Spec", "ConfigBase"), "")
+		return nil, field.Required(field.NewPath("spec", "configBase"), "")
 	}
 	configBase, err := vfs.Context.BuildVfsPath(c.Spec.ConfigBase)
 	if err != nil {

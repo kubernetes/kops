@@ -131,7 +131,7 @@ func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (in
 
 		err := t.BuildOptions(next)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error from builder %T: %v", t, err)
 		}
 	}
 

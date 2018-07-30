@@ -847,6 +847,7 @@ func Convert_kops_ClusterList_To_v1alpha2_ClusterList(in *kops.ClusterList, out 
 
 func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops.ClusterSpec, s conversion.Scope) error {
 	out.Channel = in.Channel
+	out.Bundle = in.Bundle
 	if in.Addons != nil {
 		in, out := &in.Addons, &out.Addons
 		*out = make([]kops.AddonSpec, len(*in))
@@ -1128,6 +1129,7 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 
 func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out *ClusterSpec, s conversion.Scope) error {
 	out.Channel = in.Channel
+	out.Bundle = in.Bundle
 	if in.Addons != nil {
 		in, out := &in.Addons, &out.Addons
 		*out = make([]AddonSpec, len(*in))
@@ -1587,6 +1589,7 @@ func Convert_kops_EtcdBackupSpec_To_v1alpha2_EtcdBackupSpec(in *kops.EtcdBackupS
 
 func autoConvert_v1alpha2_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpec, out *kops.EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
+	out.Provider = kops.EtcdProviderType(in.Provider)
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
 		*out = make([]*kops.EtcdMemberSpec, len(*in))
@@ -1633,6 +1636,7 @@ func Convert_v1alpha2_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpe
 
 func autoConvert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec(in *kops.EtcdClusterSpec, out *EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
+	out.Provider = EtcdProviderType(in.Provider)
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
 		*out = make([]*EtcdMemberSpec, len(*in))
@@ -1679,6 +1683,7 @@ func Convert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec(in *kops.EtcdClust
 
 func autoConvert_v1alpha2_EtcdManagerSpec_To_kops_EtcdManagerSpec(in *EtcdManagerSpec, out *kops.EtcdManagerSpec, s conversion.Scope) error {
 	out.Image = in.Image
+	out.Bundle = in.Bundle
 	return nil
 }
 
@@ -1689,6 +1694,7 @@ func Convert_v1alpha2_EtcdManagerSpec_To_kops_EtcdManagerSpec(in *EtcdManagerSpe
 
 func autoConvert_kops_EtcdManagerSpec_To_v1alpha2_EtcdManagerSpec(in *kops.EtcdManagerSpec, out *EtcdManagerSpec, s conversion.Scope) error {
 	out.Image = in.Image
+	out.Bundle = in.Bundle
 	return nil
 }
 

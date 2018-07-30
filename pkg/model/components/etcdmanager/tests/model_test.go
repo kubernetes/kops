@@ -14,20 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package etcdmanager
+package tests
 
 import (
 	"fmt"
 	"testing"
 
+	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/components/etcdmanager"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 )
 
 func Test_RunEtcdManagerBuilder(t *testing.T) {
-	basedir := "tests/minimal"
+	basedir := "minimal"
+
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.SetupMockAWS()
 
 	context := &fi.ModelBuilderContext{
 		Tasks: make(map[string]fi.Task),
@@ -35,10 +43,9 @@ func Test_RunEtcdManagerBuilder(t *testing.T) {
 	kopsModelContext, err := LoadKopsModelContext(basedir)
 	if err != nil {
 		t.Fatalf("error loading model %q: %v", basedir, err)
-		return
 	}
 
-	builder := EtcdManagerBuilder{
+	builder := etcdmanager.EtcdManagerBuilder{
 		KopsModelContext: kopsModelContext,
 		AssetBuilder:     assets.NewAssetBuilder(kopsModelContext.Cluster, ""),
 	}
@@ -65,8 +72,25 @@ func LoadKopsModelContext(basedir string) (*model.KopsModelContext, error) {
 		return nil, fmt.Errorf("no instance groups found in %s", basedir)
 	}
 
+	factoryOptions := &util.FactoryOptions{}
+	factoryOptions.RegistryPath = "memfs://tests"
+
+	factory := util.NewFactory(factoryOptions)
+
+	clientset, err := factory.Clientset()
+	if err != nil {
+		return nil, err
+	}
+
+	assetBuilder := assets.NewAssetBuilder(spec.Cluster, "")
+
+	fullCluster, err := cloudup.PopulateClusterSpec(clientset, spec.Cluster, assetBuilder)
+	if err != nil {
+		return nil, err
+	}
+
 	kopsContext := &model.KopsModelContext{
-		Cluster:        spec.Cluster,
+		Cluster:        fullCluster,
 		InstanceGroups: spec.InstanceGroups,
 	}
 

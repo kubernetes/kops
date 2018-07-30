@@ -241,6 +241,8 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		}
 	}
 
+	actions = append(actions, maybeUpgradeRelease(cluster, channel, *proposedKubernetesVersion)...)
+
 	if len(actions) == 0 {
 		// TODO: Allow --force option to force even if not needed?
 		// Note stderr - we try not to print to stdout if no update is needed
@@ -295,4 +297,28 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 	}
 
 	return nil
+}
+
+func maybeUpgradeRelease(cluster *api.Cluster, channel *api.Channel, kubernetesVersion semver.Version) []*upgradeAction {
+	var actions []*upgradeAction
+
+	bundle := channel.FindBundleVersion(kubernetesVersion)
+	if bundle == nil {
+		glog.Warningf("unable to find release for %s", kubernetesVersion)
+		return nil
+	}
+
+	if cluster.Spec.Bundle != bundle.Bundle {
+		actions = append(actions, &upgradeAction{
+			Item:     "Cluster",
+			Property: "Release",
+			Old:      cluster.Spec.Bundle,
+			New:      bundle.Bundle,
+			apply: func() {
+				cluster.Spec.Bundle = bundle.Bundle
+			},
+		})
+	}
+
+	return actions
 }

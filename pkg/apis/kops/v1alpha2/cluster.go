@@ -44,6 +44,8 @@ type ClusterList struct {
 type ClusterSpec struct {
 	// The Channel we are following
 	Channel string `json:"channel,omitempty"`
+	// Bundle is the release we are currently pinned to; Channel recommends updates to our bundle
+	Bundle string `json:"bundle,omitempty"`
 	// Additional addons that should be installed on the cluster
 	Addons []AddonSpec `json:"addons,omitempty"`
 	// ConfigBase is the path where we store configuration for the cluster
@@ -350,10 +352,21 @@ type ExternalDNSConfig struct {
 	WatchNamespace string `json:"watchNamespace,omitempty"`
 }
 
+// EtcdProviderType describes etcd cluster provisioning types (Standalone, Manager)
+type EtcdProviderType string
+
+const (
+	EtcdProviderTypeManager    EtcdProviderType = "Manager"
+	EtcdProviderTypeStandalone EtcdProviderType = "Standalone"
+)
+
 // EtcdClusterSpec is the etcd cluster specification
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)
 	Name string `json:"name,omitempty"`
+	// Provider is the provider used to run etcd: standalone, manager.
+	// We default to manager for kubernetes 1.11 or if the manager is configured; otherwise standalone.
+	Provider EtcdProviderType `json:"provider,omitempty"`
 	// Members stores the configurations for each member of the cluster (including the data volume)
 	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
 	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients
@@ -386,6 +399,8 @@ type EtcdBackupSpec struct {
 type EtcdManagerSpec struct {
 	// Image is the etcd manager image to use.
 	Image string `json:"image,omitempty"`
+	// Bundle is the path to a bundle version to use; it specifies a full manifest so image need not be specified.  If image is specified, it will override the version in the bundle.
+	Bundle string `json:"bundle,omitempty"`
 }
 
 // EtcdMemberSpec is a specification for a etcd member

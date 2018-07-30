@@ -116,13 +116,13 @@ func (a *Addon) EnsureUpdated(k8sClient kubernetes.Interface) (*AddonUpdate, err
 	}
 
 	if a.Spec.Manifest == nil || *a.Spec.Manifest == "" {
-		return nil, field.Required(field.NewPath("Spec", "Manifest"), "")
+		return nil, field.Required(field.NewPath("spec", "Manifest"), "")
 	}
 
 	manifest := *a.Spec.Manifest
 	manifestURL, err := url.Parse(manifest)
 	if err != nil {
-		return nil, field.Invalid(field.NewPath("Spec", "Manifest"), manifest, "Not a valid URL")
+		return nil, field.Invalid(field.NewPath("spec", "Manifest"), manifest, "Not a valid URL")
 	}
 	if !manifestURL.IsAbs() {
 		manifestURL = a.ChannelLocation.ResolveReference(manifestURL)

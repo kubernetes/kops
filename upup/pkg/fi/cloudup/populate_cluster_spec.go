@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/bundles"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
@@ -283,6 +284,10 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		return fmt.Errorf("unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
 	}
 
+	if err := bundles.AssignComponentVersions(cluster); err != nil {
+		return err
+	}
+
 	optionsContext := &components.OptionsContext{
 		ClusterName:       cluster.ObjectMeta.Name,
 		KubernetesVersion: *sv,
@@ -294,8 +299,8 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		{
 			// Note: DefaultOptionsBuilder comes first
 			codeModels = append(codeModels, &components.DefaultsOptionsBuilder{Context: optionsContext})
-			codeModels = append(codeModels, &components.EtcdOptionsBuilder{Context: optionsContext})
-			codeModels = append(codeModels, &etcdmanager.EtcdManagerOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.EtcdOptionsBuilder{OptionsContext: optionsContext})
+			codeModels = append(codeModels, &etcdmanager.EtcdManagerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &nodeauthorizer.OptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.DockerOptionsBuilder{OptionsContext: optionsContext})

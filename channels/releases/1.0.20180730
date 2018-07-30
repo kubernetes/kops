@@ -1,0 +1,4 @@
+components:
+- name: etcdmanager
+  release: etcdmanager/1.0.20180729
+

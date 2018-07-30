@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
+
+go_test(
+    name = "go_default_test",
+    srcs = ["model_test.go"],
+    deps = [
+        "//cmd/kops/util:go_default_library",
+        "//pkg/assets:go_default_library",
+        "//pkg/model:go_default_library",
+        "//pkg/model/components/etcdmanager:go_default_library",
+        "//pkg/testutils:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup:go_default_library",
+    ],
+)

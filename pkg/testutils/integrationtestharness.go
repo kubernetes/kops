@@ -19,7 +19,6 @@ package testutils
 import (
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"testing"
 
@@ -62,15 +61,27 @@ func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
 
 	// Replace the default channel path with a local filesystem path, so we don't try to retrieve it from a server
 	{
-		channelPath, err := filepath.Abs(path.Join("../../channels/"))
+		p, err := filepath.Abs(".")
 		if err != nil {
-			t.Fatalf("error resolving stable channel path: %v", err)
+			t.Fatalf("error resolving absolute path: %v", err)
 		}
-		channelPath += "/"
-		h.originalDefaultChannelBase = kops.DefaultChannelBase
 
-		// Make sure any platform-specific separators that aren't /, are converted to / for use in a file: protocol URL
-		kops.DefaultChannelBase = "file://" + filepath.ToSlash(channelPath)
+		for {
+			channelPath, err := filepath.Abs(filepath.Join(p, "channels"))
+			if err != nil {
+				t.Fatalf("error resolving stable channel path: %v", err)
+			}
+			if _, err := os.Stat(filepath.Join(channelPath, "alpha")); err == nil {
+				channelPath += "/"
+				h.originalDefaultChannelBase = kops.DefaultChannelBase
+
+				// Make sure any platform-specific separators that aren't /, are converted to / for use in a file: protocol URL
+				kops.DefaultChannelBase = "file://" + filepath.ToSlash(channelPath)
+
+				break
+			}
+			p = filepath.Dir(p)
+		}
 	}
 
 	return h

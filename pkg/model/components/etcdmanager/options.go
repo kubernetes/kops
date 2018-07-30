@@ -25,27 +25,46 @@ import (
 
 // EtcdManagerOptionsBuilder adds options for the etcd-manager to the model.
 type EtcdManagerOptionsBuilder struct {
-	Context *components.OptionsContext
+	*components.OptionsContext
 }
 
 var _ loader.OptionsBuilder = &EtcdManagerOptionsBuilder{}
 
-// BuildOptions generates the configurations used to create kubernetes controller manager manifest
+// BuildOptions generates the configurations used to create etcd manager manifest
 func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
 	for _, etcdCluster := range clusterSpec.EtcdClusters {
-		if etcdCluster.Version == "" {
-			etcdCluster.Version = "2.2.1"
+		if etcdCluster.Provider != kops.EtcdProviderTypeManager {
+			continue
 		}
 
-		if etcdCluster.Manager != nil {
-			if etcdCluster.Backups == nil {
-				etcdCluster.Backups = &kops.EtcdBackupSpec{}
+		if etcdCluster.Manager == nil {
+			etcdCluster.Manager = &kops.EtcdManagerSpec{}
+		}
+
+		if etcdCluster.Manager.Bundle == "" {
+			bundle, err := b.DetermineComponentBundle(clusterSpec, "etcdmanager")
+			if err != nil {
+				return err
 			}
-			if etcdCluster.Backups.BackupStore == "" {
-				base := clusterSpec.ConfigBase
-				etcdCluster.Backups.BackupStore = urls.Join(base, "backups", "etcd", etcdCluster.Name)
+			etcdCluster.Manager.Bundle = bundle
+		}
+
+		if etcdCluster.Backups == nil {
+			etcdCluster.Backups = &kops.EtcdBackupSpec{}
+		}
+		if etcdCluster.Backups.BackupStore == "" {
+			base := clusterSpec.ConfigBase
+			etcdCluster.Backups.BackupStore = urls.Join(base, "backups", "etcd", etcdCluster.Name)
+		}
+
+		if etcdCluster.Version == "" {
+			if b.IsKubernetesGTE("1.11") {
+				etcdCluster.Version = "3.2.18"
+			} else {
+				// Preserve existing default etcd version
+				etcdCluster.Version = "2.2.1"
 			}
 		}
 	}

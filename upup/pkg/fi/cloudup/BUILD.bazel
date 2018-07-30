@@ -49,6 +49,7 @@ go_library(
         "//pkg/model/gcemodel:go_default_library",
         "//pkg/model/openstackmodel:go_default_library",
         "//pkg/model/vspheremodel:go_default_library",
+        "//pkg/bundles:go_default_library",
         "//pkg/resources/digitalocean:go_default_library",
         "//pkg/templates:go_default_library",
         "//upup/models:go_default_library",
