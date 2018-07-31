@@ -768,3 +768,9 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokub
 .PHONY: bazel-upload
 bazel-upload: bazel-version-dist # Upload kops to S3
 	aws s3 sync --acl public-read ${BAZELUPLOAD}/ ${S3_BUCKET}
+
+.PHONY: update-machine-types
+update-machine-types: #Update machine_types.go
+	go build -o hack/machine_types/machine_types  ${KOPS_ROOT}/hack/machine_types/machine_types.go
+	hack/machine_types/machine_types
+	go fmt upup/pkg/fi/cloudup/awsup/machine_types.go
