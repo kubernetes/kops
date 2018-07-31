@@ -107,7 +107,7 @@
   version = "v9"
 
 [[projects]]
-  digest = "1:f2bce9137130ed14d0b50a8ba5cef3b9d8829c304c97d164eb35421644cc746e"
+  digest = "1:9b9aa0e8cd09203c6f105eeccb15da48c707d4827d21810dfe6bd718935f917e"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -150,6 +150,7 @@
     "service/iam",
     "service/iam/iamiface",
     "service/kms",
+    "service/pricing",
     "service/route53",
     "service/route53/route53iface",
     "service/s3",
@@ -2120,6 +2121,7 @@
     "github.com/aws/aws-sdk-go/service/elb/elbiface",
     "github.com/aws/aws-sdk-go/service/iam",
     "github.com/aws/aws-sdk-go/service/iam/iamiface",
+    "github.com/aws/aws-sdk-go/service/pricing",
     "github.com/aws/aws-sdk-go/service/route53",
     "github.com/aws/aws-sdk-go/service/route53/route53iface",
     "github.com/aws/aws-sdk-go/service/s3",
