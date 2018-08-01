@@ -1,6 +1,8 @@
-# Vendored from https://github.com/aws/amazon-vpc-cni-k8s/blob/release-1.0/config/v1.0/aws-k8s-cni.yaml
+# Vendored from https://github.com/aws/amazon-vpc-cni-k8s/blob/release-1.1/config/v1.1/aws-k8s-cni.yaml
 
-apiVersion: rbac.authorization.k8s.io/v1beta1
+---
+apiVersion: rbac.authorization.k8s.io/v1
+# kubernetes versions before 1.8.0 should use rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
   name: aws-node
@@ -14,17 +16,15 @@ rules:
   resources:
   - daemonsets
   verbs: ["list", "watch"]
-
 ---
-
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: aws-node
   namespace: kube-system
-
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
+# kubernetes versions before 1.8.0 should use rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
   name: aws-node
@@ -36,9 +36,7 @@ subjects:
 - kind: ServiceAccount
   name: aws-node
   namespace: kube-system
-
 ---
-
 kind: DaemonSet
 apiVersion: extensions/v1beta1
 metadata:
@@ -67,7 +65,7 @@ spec:
       - key: CriticalAddonsOnly
         operator: Exists
       containers:
-      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:1.0.0" }}"
+      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:1.1.0" }}"
         name: aws-node
         env:
           - name: AWS_VPC_K8S_CNI_LOGLEVEL
@@ -201,4 +199,3 @@ spec:
             path: "/etc/ssl/certs/ca-certificates.crt"
       nodeSelector:
         node-role.kubernetes.io/master: ""
-
