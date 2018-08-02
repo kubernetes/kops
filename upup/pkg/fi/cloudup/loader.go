@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/assettasks"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/reflectutils"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -260,8 +261,8 @@ func (l *Loader) processDeferrals() error {
 	for taskKey, task := range l.tasks {
 		taskValue := reflect.ValueOf(task)
 
-		err := utils.ReflectRecursive(taskValue, func(path string, f *reflect.StructField, v reflect.Value) error {
-			if utils.IsPrimitiveValue(v) {
+		err := reflectutils.ReflectRecursive(taskValue, func(path string, f *reflect.StructField, v reflect.Value) error {
+			if reflectutils.IsPrimitiveValue(v) {
 				return nil
 			}
 
@@ -299,7 +300,7 @@ func (l *Loader) processDeferrals() error {
 							glog.V(11).Infof("Replacing task %q at %s:%s", *name, taskKey, path)
 							v.Set(reflect.ValueOf(primary))
 						}
-						return utils.SkipReflection
+						return reflectutils.SkipReflection
 					} else if rh, ok := intf.(*fi.ResourceHolder); ok {
 						if rh.Resource == nil {
 							//Resources can contain template 'arguments', separated by spaces
@@ -324,7 +325,7 @@ func (l *Loader) processDeferrals() error {
 								return fmt.Errorf("error setting resource value: %v", err)
 							}
 						}
-						return utils.SkipReflection
+						return reflectutils.SkipReflection
 					}
 				}
 			}

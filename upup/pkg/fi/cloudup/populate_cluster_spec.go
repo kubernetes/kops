@@ -38,7 +38,7 @@ import (
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
-	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/reflectutils"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -94,7 +94,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	// Copy cluster & instance groups, so we can modify them freely
 	cluster := &api.Cluster{}
 
-	utils.JsonMergeStruct(cluster, c.InputCluster)
+	reflectutils.JsonMergeStruct(cluster, c.InputCluster)
 
 	err := c.assignSubnets(cluster)
 	if err != nil {
