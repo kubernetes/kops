@@ -726,7 +726,6 @@ func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, legacy
 				"autoscaling:DescribeAutoScalingInstances",
 				"autoscaling:DescribeLaunchConfigurations",
 				"autoscaling:DescribeTags",
-				"autoscaling:GetAsgForInstance",
 				"autoscaling:SetDesiredCapacity",
 				"autoscaling:TerminateInstanceInAutoScalingGroup",
 				"autoscaling:UpdateAutoScalingGroup",
@@ -743,7 +742,6 @@ func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, legacy
 					"autoscaling:DescribeAutoScalingGroups",    // aws_instancegroups.go
 					"autoscaling:DescribeLaunchConfigurations", // aws.go
 					"autoscaling:DescribeTags",                 // auto_scaling.go
-					"autoscaling:GetAsgForInstance",            // aws_manager.go
 				),
 				Resource: resource,
 			},
