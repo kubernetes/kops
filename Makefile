@@ -43,6 +43,7 @@ TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/vendor" hack/.packages)
 GOVETABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor|clientset/fake" hack/.packages)
 BAZEL_OPTIONS?=
 API_OPTIONS?=
+OS=$(shell uname -s | tr '[:upper:]' '[:lower:]')
 
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
@@ -337,10 +338,12 @@ gcs-publish-ci: gcs-upload
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
 
 .PHONY: gen-cli-docs
-gen-cli-docs: ${KOPS} # Regenerate CLI docs
-	KOPS_STATE_STORE= \
-	KOPS_FEATURE_FLAGS= \
+gen-cli-docs: ${KOPS} # Generate CLI docs
 	${KOPS} genhelpdocs --out docs/cli
+
+.PHONY: gen-cli-docs-bazel
+gen-cli-docs-bazel: # Generate CLI docs using bazel
+	bazel run //cmd/kops:kops -- genhelpdocs --out ${KOPS_ROOT}/docs/cli
 
 .PHONY: gen-api-docs
 gen-api-docs:
@@ -527,6 +530,15 @@ verify-gendocs: ${KOPS}
 	     exit 1; \
 	fi
 	@echo "cli docs up-to-date"
+
+.PHONY: verify-gendocs-bazel
+verify-gendocs-bazel: bazel-build-cli
+	@TMP_DOCS="$$(mktemp -d)"; \
+	${KOPS_ROOT}/bazel-bin/cmd/kops/${OS}_amd64_pure_stripped/kops genhelpdocs --out "$$TMP_DOCS"; \
+	\
+	if ! diff -r "$$TMP_DOCS" '${KOPS_ROOT}/docs/cli'; then \
+	     exit 1; \
+	fi
 
 .PHONY: verify-bazel
 verify-bazel:
