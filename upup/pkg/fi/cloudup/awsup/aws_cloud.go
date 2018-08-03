@@ -948,6 +948,8 @@ func resolveImage(ec2Client ec2iface.EC2API, name string) (*ec2.Image, error) {
 				owner = WellKnownAccountCoreOS
 			case "redhat.com":
 				owner = WellKnownAccountRedhat
+			case "amazon.com":
+				owner = WellKnownAccountAmazonSystemLinux2
 			}
 
 			request.Owners = []*string{&owner}
