@@ -2163,6 +2163,7 @@ func Convert_kops_KopeioNetworkingSpec_To_v1alpha1_KopeioNetworkingSpec(in *kops
 
 func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *KubeAPIServerConfig, out *kops.KubeAPIServerConfig, s conversion.Scope) error {
 	out.Image = in.Image
+	out.DisableBasicAuth = in.DisableBasicAuth
 	out.LogLevel = in.LogLevel
 	out.CloudProvider = in.CloudProvider
 	out.SecurePort = in.SecurePort
@@ -2236,6 +2237,7 @@ func Convert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *KubeAP
 
 func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *kops.KubeAPIServerConfig, out *KubeAPIServerConfig, s conversion.Scope) error {
 	out.Image = in.Image
+	out.DisableBasicAuth = in.DisableBasicAuth
 	out.LogLevel = in.LogLevel
 	out.CloudProvider = in.CloudProvider
 	out.SecurePort = in.SecurePort

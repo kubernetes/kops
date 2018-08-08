@@ -264,6 +264,16 @@ spec:
     serviceNodePortRange: 30000-33000
 ```
 
+#### Disable Basic Auth
+
+This will disable the passing of the `--basic-auth-file` flag.
+
+```yaml
+spec:
+  kubeAPIServer:
+    disableBasicAuth: true
+```
+
 #### targetRamMb
 
 Memory limit for apiserver in MB (used to configure sizes of caches, etc.)
