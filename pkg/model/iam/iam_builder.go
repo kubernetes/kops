@@ -631,11 +631,12 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, legac
 			&Statement{
 				Effect: StatementEffectAllow,
 				Action: stringorslice.Slice([]string{
-					"ec2:CreateSecurityGroup",     // aws.go
-					"ec2:CreateTags",              // aws.go, tag.go
-					"ec2:CreateVolume",            // aws.go
-					"ec2:ModifyInstanceAttribute", // aws.go
-					"ec2:ModifyVolume",            // aws.go
+					"ec2:CreateSecurityGroup",          // aws.go
+					"ec2:CreateTags",                   // aws.go, tag.go
+					"ec2:CreateVolume",                 // aws.go
+					"ec2:DescribeVolumesModifications", // aws.go
+					"ec2:ModifyInstanceAttribute",      // aws.go
+					"ec2:ModifyVolume",                 // aws.go
 				}),
 				Resource: resource,
 			},
