@@ -1,3 +1,12 @@
+{{- if WeaveSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: weave-net
+  namespace: kube-system
+stringData:
+  network-password: {{ WeaveSecret }}
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -127,6 +136,13 @@ spec:
             {{- if .Networking.Weave.ConnLimit }}
             - name: CONN_LIMIT
               value: "{{ .Networking.Weave.ConnLimit }}"
+            {{- end }}
+            {{- if WeaveSecret }}
+            - name: WEAVE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: weave-net
+                  key: network-password
             {{- end }}
           image: 'weaveworks/weave-kube:2.3.0'
           livenessProbe:
