@@ -2448,6 +2448,15 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 			**out = **in
 		}
 	}
+	if in.NodeCIDRMaskSize != nil {
+		in, out := &in.NodeCIDRMaskSize, &out.NodeCIDRMaskSize
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(int32)
+			**out = **in
+		}
+	}
 	if in.ConfigureCloudRoutes != nil {
 		in, out := &in.ConfigureCloudRoutes, &out.ConfigureCloudRoutes
 		if *in == nil {

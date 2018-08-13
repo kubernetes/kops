@@ -2566,6 +2566,7 @@ func autoConvert_v1alpha2_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.ClusterName = in.ClusterName
 	out.ClusterCIDR = in.ClusterCIDR
 	out.AllocateNodeCIDRs = in.AllocateNodeCIDRs
+	out.NodeCIDRMaskSize = in.NodeCIDRMaskSize
 	out.ConfigureCloudRoutes = in.ConfigureCloudRoutes
 	out.CIDRAllocatorType = in.CIDRAllocatorType
 	out.RootCAFile = in.RootCAFile
@@ -2606,6 +2607,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerMana
 	out.ClusterName = in.ClusterName
 	out.ClusterCIDR = in.ClusterCIDR
 	out.AllocateNodeCIDRs = in.AllocateNodeCIDRs
+	out.NodeCIDRMaskSize = in.NodeCIDRMaskSize
 	out.ConfigureCloudRoutes = in.ConfigureCloudRoutes
 	out.CIDRAllocatorType = in.CIDRAllocatorType
 	out.RootCAFile = in.RootCAFile

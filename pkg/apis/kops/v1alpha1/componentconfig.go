@@ -372,6 +372,8 @@ type KubeControllerManagerConfig struct {
 	ClusterCIDR string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
 	// AllocateNodeCIDRs enables CIDRs for Pods to be allocated and, if ConfigureCloudRoutes is true, to be set on the cloud provider.
 	AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty" flag:"allocate-node-cidrs"`
+	// NodeCIDRMaskSize set the size for the mask of the nodes.
+	NodeCIDRMaskSize *int32 `json:"nodeCIDRMaskSize,omitempty" flag:"node-cidr-mask-size"`
 	// ConfigureCloudRoutes enables CIDRs allocated with to be configured on the cloud provider.
 	ConfigureCloudRoutes *bool `json:"configureCloudRoutes,omitempty" flag:"configure-cloud-routes"`
 	// CIDRAllocatorType specifies the type of CIDR allocator to use.
