@@ -456,8 +456,12 @@ utils-dist:
 # --------------------------------------------------
 # development targets
 
+.PHONY: dep-prereqs
+dep-prereqs:
+	(which hg > /dev/null) || (echo "dep requires that mercurial is installed"; exit 1)
+
 .PHONY: dep-ensure
-dep-ensure:
+dep-ensure: dep-prereqs
 	dep ensure -v
 	find vendor/ -name "BUILD" -delete
 	find vendor/ -name "BUILD.bazel" -delete
