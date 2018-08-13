@@ -202,6 +202,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		subnet := &awstasks.Subnet{
 			Name:             s(subnetName),
+			ShortName:        s(subnetSpec.Name),
 			Lifecycle:        b.Lifecycle,
 			VPC:              b.LinkToVPC(),
 			AvailabilityZone: s(subnetSpec.Zone),
