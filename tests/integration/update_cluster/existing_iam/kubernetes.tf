@@ -7,9 +7,9 @@ locals = {
   node_subnet_ids              = ["${aws_subnet.us-test-1a-existing-iam-example-com.id}"]
   region                       = "us-test-1"
   route_table_public_id        = "${aws_route_table.existing-iam-example-com.id}"
-  subnet_us-test-1a-public_id  = "${aws_subnet.us-test-1a-existing-iam-example-com.id}"
-  subnet_us-test-1b-public_id  = "${aws_subnet.us-test-1b-existing-iam-example-com.id}"
-  subnet_us-test-1c-public_id  = "${aws_subnet.us-test-1c-existing-iam-example-com.id}"
+  subnet_us-test-1a_id         = "${aws_subnet.us-test-1a-existing-iam-example-com.id}"
+  subnet_us-test-1b_id         = "${aws_subnet.us-test-1b-existing-iam-example-com.id}"
+  subnet_us-test-1c_id         = "${aws_subnet.us-test-1c-existing-iam-example-com.id}"
   vpc_cidr_block               = "${aws_vpc.existing-iam-example-com.cidr_block}"
   vpc_id                       = "${aws_vpc.existing-iam-example-com.id}"
 }
@@ -46,15 +46,15 @@ output "route_table_public_id" {
   value = "${aws_route_table.existing-iam-example-com.id}"
 }
 
-output "subnet_us-test-1a-public_id" {
+output "subnet_us-test-1a_id" {
   value = "${aws_subnet.us-test-1a-existing-iam-example-com.id}"
 }
 
-output "subnet_us-test-1b-public_id" {
+output "subnet_us-test-1b_id" {
   value = "${aws_subnet.us-test-1b-existing-iam-example-com.id}"
 }
 
-output "subnet_us-test-1c-public_id" {
+output "subnet_us-test-1c_id" {
   value = "${aws_subnet.us-test-1c-existing-iam-example-com.id}"
 }
 
