@@ -11,7 +11,7 @@ locals = {
   nodes_role_name              = "${aws_iam_role.nodes-sharedvpc-example-com.name}"
   region                       = "us-test-1"
   route_table_public_id        = "${aws_route_table.sharedvpc-example-com.id}"
-  subnet_us-test-1a-public_id  = "${aws_subnet.us-test-1a-sharedvpc-example-com.id}"
+  subnet_us-test-1a_id         = "${aws_subnet.us-test-1a-sharedvpc-example-com.id}"
   vpc_id                       = "vpc-12345678"
 }
 
@@ -63,7 +63,7 @@ output "route_table_public_id" {
   value = "${aws_route_table.sharedvpc-example-com.id}"
 }
 
-output "subnet_us-test-1a-public_id" {
+output "subnet_us-test-1a_id" {
   value = "${aws_subnet.us-test-1a-sharedvpc-example-com.id}"
 }
 

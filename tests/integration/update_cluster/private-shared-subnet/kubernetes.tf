@@ -15,8 +15,8 @@ locals = {
   nodes_role_name               = "${aws_iam_role.nodes-private-shared-subnet-example-com.name}"
   region                        = "us-test-1"
   subnet_ids                    = ["subnet-12345678", "subnet-abcdef"]
-  subnet_us-test-1a-private_id  = "subnet-12345678"
-  subnet_us-test-1a-utility_id  = "subnet-abcdef"
+  subnet_us-test-1a_id          = "subnet-12345678"
+  subnet_utility-us-test-1a_id  = "subnet-abcdef"
   vpc_id                        = "vpc-12345678"
 }
 
@@ -84,11 +84,11 @@ output "subnet_ids" {
   value = ["subnet-12345678", "subnet-abcdef"]
 }
 
-output "subnet_us-test-1a-private_id" {
+output "subnet_us-test-1a_id" {
   value = "subnet-12345678"
 }
 
-output "subnet_us-test-1a-utility_id" {
+output "subnet_utility-us-test-1a_id" {
   value = "subnet-abcdef"
 }
 

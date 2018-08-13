@@ -11,7 +11,7 @@ locals = {
   nodes_role_name              = "${aws_iam_role.nodes-minimal-example-com.name}"
   region                       = "us-test-1"
   route_table_public_id        = "${aws_route_table.minimal-example-com.id}"
-  subnet_us-test-1a-public_id  = "${aws_subnet.us-test-1a-minimal-example-com.id}"
+  subnet_us-test-1a_id         = "${aws_subnet.us-test-1a-minimal-example-com.id}"
   vpc_cidr_block               = "${aws_vpc.minimal-example-com.cidr_block}"
   vpc_id                       = "${aws_vpc.minimal-example-com.id}"
 }
@@ -64,7 +64,7 @@ output "route_table_public_id" {
   value = "${aws_route_table.minimal-example-com.id}"
 }
 
-output "subnet_us-test-1a-public_id" {
+output "subnet_us-test-1a_id" {
   value = "${aws_subnet.us-test-1a-minimal-example-com.id}"
 }
 
