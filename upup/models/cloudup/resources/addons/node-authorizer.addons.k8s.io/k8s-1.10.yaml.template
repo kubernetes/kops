@@ -147,7 +147,7 @@ spec:
         - name: config
           hostPath:
             path: /srv/kubernetes/node-authorizer
-            type: Directory
+            type: DirectoryOrCreate
       containers:
         - name: {{ $name }}
           image: {{ $na.Image }}
