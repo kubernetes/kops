@@ -189,7 +189,10 @@ func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName s
 				}
 
 				statements := make([]*iam.Statement, 0)
-				json.Unmarshal([]byte(additionalPolicy), &statements)
+				if err := json.Unmarshal([]byte(additionalPolicy), &statements); err != nil {
+					return fmt.Errorf("additionalPolicy %q is invalid: %v", strings.ToLower(string(igRole)), err)
+				}
+
 				p.Statement = append(p.Statement, statements...)
 
 				policy, err := p.AsJSON()
