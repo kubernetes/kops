@@ -238,5 +238,6 @@ spec:
         - name: xtables-lock
           hostPath:
             path: /run/xtables.lock
+            type: FileOrCreate
   updateStrategy:
     type: RollingUpdate
