@@ -196,7 +196,7 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: "demo-app-v1"
+          serviceName: "demo-app-v2"
           servicePort: 80
 
 ---
