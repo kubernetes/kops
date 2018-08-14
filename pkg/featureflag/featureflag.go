@@ -37,6 +37,10 @@ func Bool(b bool) *bool {
 	return &b
 }
 
+// ExperimentalClusterDNS allows for setting the kubelet dns flag to experimental values.
+// It allows for experiments with alternative DNS configurations - in particular local proxies.
+var ExperimentalClusterDNS = New("ExperimentalClusterDNS", Bool(false))
+
 // KeepLaunchConfigurations can be set to prevent garbage collection of old launch configurations
 var KeepLaunchConfigurations = New("KeepLaunchConfigurations", Bool(false))
 
