@@ -3,8 +3,8 @@ locals = {
   region                            = "us-test-1"
   route_table_private-us-test-1a_id = "${aws_route_table.private-us-test-1a-lifecyclephases-example-com.id}"
   route_table_public_id             = "${aws_route_table.lifecyclephases-example-com.id}"
-  subnet_us-test-1a-private_id      = "${aws_subnet.us-test-1a-lifecyclephases-example-com.id}"
-  subnet_us-test-1a-utility_id      = "${aws_subnet.utility-us-test-1a-lifecyclephases-example-com.id}"
+  subnet_us-test-1a_id              = "${aws_subnet.us-test-1a-lifecyclephases-example-com.id}"
+  subnet_utility-us-test-1a_id      = "${aws_subnet.utility-us-test-1a-lifecyclephases-example-com.id}"
   vpc_cidr_block                    = "${aws_vpc.lifecyclephases-example-com.cidr_block}"
   vpc_id                            = "${aws_vpc.lifecyclephases-example-com.id}"
 }
@@ -25,11 +25,11 @@ output "route_table_public_id" {
   value = "${aws_route_table.lifecyclephases-example-com.id}"
 }
 
-output "subnet_us-test-1a-private_id" {
+output "subnet_us-test-1a_id" {
   value = "${aws_subnet.us-test-1a-lifecyclephases-example-com.id}"
 }
 
-output "subnet_us-test-1a-utility_id" {
+output "subnet_utility-us-test-1a_id" {
   value = "${aws_subnet.utility-us-test-1a-lifecyclephases-example-com.id}"
 }
 
