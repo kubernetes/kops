@@ -472,6 +472,16 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 			}
 		}
 
+		if kubernetesRelease.GTE(semver.MustParse("1.10.0")) {
+			// Flag removed in 1.10
+			if c.Spec.Kubelet.RequireKubeconfig != nil {
+				return field.Invalid(
+					kubeletPath.Child("requireKubeconfig"),
+					*c.Spec.Kubelet.RequireKubeconfig,
+					"require-kubeconfig flag was removed in 1.10.  (Please be sure you are not using a cluster config from `kops get cluster --full`)")
+			}
+		}
+
 		if c.Spec.Kubelet.BootstrapKubeconfig != "" {
 			if c.Spec.KubeAPIServer == nil {
 				return field.Required(fieldSpec.Child("KubeAPIServer"), "bootstrap token require the NodeRestriction admissions controller")
@@ -498,6 +508,16 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		} else {
 			if strict && c.Spec.MasterKubelet.APIServers == "" {
 				return field.Required(masterKubeletPath.Child("APIServers"), "")
+			}
+		}
+
+		if kubernetesRelease.GTE(semver.MustParse("1.10.0")) {
+			// Flag removed in 1.10
+			if c.Spec.MasterKubelet.RequireKubeconfig != nil {
+				return field.Invalid(
+					masterKubeletPath.Child("requireKubeconfig"),
+					*c.Spec.MasterKubelet.RequireKubeconfig,
+					"require-kubeconfig flag was removed in 1.10.  (Please be sure you are not using a cluster config from `kops get cluster --full`)")
 			}
 		}
 
