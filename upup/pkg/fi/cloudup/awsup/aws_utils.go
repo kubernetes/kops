@@ -28,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
+	elbv2 "github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 )
@@ -144,6 +145,16 @@ func FindASGTag(tags []*autoscaling.TagDescription, key string) (string, bool) {
 
 // FindELBTag find the value of the tag with the specified key
 func FindELBTag(tags []*elb.Tag, key string) (string, bool) {
+	for _, tag := range tags {
+		if key == aws.StringValue(tag.Key) {
+			return aws.StringValue(tag.Value), true
+		}
+	}
+	return "", false
+}
+
+// FindELBV2Tag find the value of the tag with the specified key
+func FindELBV2Tag(tags []*elbv2.Tag, key string) (string, bool) {
 	for _, tag := range tags {
 		if key == aws.StringValue(tag.Key) {
 			return aws.StringValue(tag.Value), true
