@@ -93,6 +93,7 @@
     "aws/credentials/ec2rolecreds",
     "aws/credentials/endpointcreds",
     "aws/credentials/stscreds",
+    "aws/csm",
     "aws/defaults",
     "aws/ec2metadata",
     "aws/endpoints",
@@ -101,9 +102,12 @@
     "aws/signer/v4",
     "internal/sdkio",
     "internal/sdkrand",
+    "internal/sdkuri",
     "internal/shareddefaults",
     "private/protocol",
     "private/protocol/ec2query",
+    "private/protocol/eventstream",
+    "private/protocol/eventstream/eventstreamapi",
     "private/protocol/json/jsonutil",
     "private/protocol/jsonrpc",
     "private/protocol/query",
@@ -120,6 +124,7 @@
     "service/elb",
     "service/elb/elbiface",
     "service/elbv2",
+    "service/elbv2/elbv2iface",
     "service/iam",
     "service/iam/iamiface",
     "service/kms",
@@ -128,8 +133,8 @@
     "service/s3",
     "service/sts"
   ]
-  revision = "5197757a58a794d49d2d0c50a932997157734100"
-  version = "v1.13.60"
+  revision = "1825bc12edc3cd682594909d6386f7fcb957c99c"
+  version = "v1.14.30"
 
 [[projects]]
   name = "github.com/bazelbuild/bazel-gazelle"
@@ -1788,6 +1793,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c083db22a03ca0fe3ccc11361c91a444e674aa1ec6fb0aba6447b4b4982c0355"
+  inputs-digest = "beec19a74f2c84d0145bc939f8ba818026636435f1407cfac67dcda528df9f96"
   solver-name = "gps-cdcl"
   solver-version = 1
