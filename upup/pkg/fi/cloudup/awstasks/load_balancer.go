@@ -551,6 +551,19 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 			}
 		}
 
+		if changes.SecurityGroups != nil {
+			request := &elb.ApplySecurityGroupsToLoadBalancerInput{}
+			request.LoadBalancerName = aws.String(loadBalancerName)
+			for _, sg := range e.SecurityGroups {
+				request.SecurityGroups = append(request.SecurityGroups, sg.ID)
+			}
+
+			glog.V(2).Infof("Updating Load Balancer Security Groups")
+			if _, err := t.Cloud.ELB().ApplySecurityGroupsToLoadBalancer(request); err != nil {
+				return fmt.Errorf("Error updating security groups on Load Balancer: %v", err)
+			}
+		}
+
 		if changes.Listeners != nil {
 
 			elbDescription, err := findLoadBalancerByLoadBalancerName(t.Cloud, loadBalancerName)
