@@ -69,14 +69,14 @@ spec:
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"
-    version: 2.3.0-kops.1
+    version: 2.3.0-kops.2
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0 <1.7.0'
     manifest: networking.weave/k8s-1.6.yaml
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"
-    version: 2.3.0-kops.1
+    version: 2.3.0-kops.2
   - id: k8s-1.7
     kubernetesVersion: '>=1.7.0 <1.8.0'
     manifest: networking.weave/k8s-1.7.yaml

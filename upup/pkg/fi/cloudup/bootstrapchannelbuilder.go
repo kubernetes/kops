@@ -487,8 +487,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	if b.cluster.Spec.Networking.Weave != nil {
 		key := "networking.weave"
 		versions := map[string]string{
-			"pre-k8s-1.6": "2.3.0-kops.1",
-			"k8s-1.6":     "2.3.0-kops.1",
+			"pre-k8s-1.6": "2.3.0-kops.2",
+			"k8s-1.6":     "2.3.0-kops.2",
 			"k8s-1.7":     "2.4.0-kops.1",
 			"k8s-1.8":     "2.4.0-kops.1",
 		}
