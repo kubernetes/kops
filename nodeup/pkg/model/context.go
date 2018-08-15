@@ -42,10 +42,12 @@ type NodeupModelContext struct {
 	Cluster       *kops.Cluster
 	Distribution  distros.Distribution
 	InstanceGroup *kops.InstanceGroup
-	IsMaster      bool
 	KeyStore      fi.CAStore
 	NodeupConfig  *nodeup.Config
 	SecretStore   fi.SecretStore
+
+	// IsMaster is true if the InstanceGroup has a role of master (populated by Init)
+	IsMaster bool
 
 	kubernetesVersion semver.Version
 }
@@ -57,6 +59,12 @@ func (c *NodeupModelContext) Init() error {
 		return fmt.Errorf("unable to parse KubernetesVersion %q", c.Cluster.Spec.KubernetesVersion)
 	}
 	c.kubernetesVersion = *k8sVersion
+
+	if c.InstanceGroup == nil {
+		glog.Warningf("cannot determine role, InstanceGroup not set")
+	} else if c.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {
+		c.IsMaster = true
+	}
 
 	return nil
 }
