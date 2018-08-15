@@ -24,7 +24,6 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -1376,14 +1375,13 @@ func DeleteELB(cloud fi.Cloud, r *resources.Resource) error {
 
 func DeleteELBV2(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(awsup.AWSCloud)
-	svc := elbv2.New(session.New(&aws.Config{Region: aws.String(c.Region())}))
 	id := r.ID
 
 	glog.V(2).Infof("Deleting ELBV2 %q", id)
 	request := &elbv2.DeleteLoadBalancerInput{
 		LoadBalancerArn: aws.String(id),
 	}
-	_, err := svc.DeleteLoadBalancer(request)
+	_, err := c.ELBV2().DeleteLoadBalancer(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
@@ -1395,14 +1393,13 @@ func DeleteELBV2(cloud fi.Cloud, r *resources.Resource) error {
 
 func DeleteTargetGroup(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(awsup.AWSCloud)
-	svc := elbv2.New(session.New(&aws.Config{Region: aws.String(c.Region())}))
 	id := r.ID
 
 	glog.V(2).Infof("Deleting TargetGroup %q", id)
 	request := &elbv2.DeleteTargetGroupInput{
 		TargetGroupArn: aws.String(id),
 	}
-	_, err := svc.DeleteTargetGroup(request)
+	_, err := c.ELBV2().DeleteTargetGroup(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
@@ -1550,10 +1547,7 @@ func ListELBV2s(cloud fi.Cloud, clusterName string) ([]*resources.Resource, erro
 }
 
 func DescribeELBV2s(cloud fi.Cloud) ([]*elbv2.LoadBalancer, map[string][]*elbv2.Tag, error) {
-	c, ok := cloud.(awsup.AWSCloud)
-	if ok {
-		fmt.Printf("ok")
-	}
+	c := cloud.(awsup.AWSCloud)
 	tags := c.Tags()
 
 	glog.V(2).Infof("Listing all NLBs and ALBs")
@@ -1566,8 +1560,7 @@ func DescribeELBV2s(cloud fi.Cloud) ([]*elbv2.LoadBalancer, map[string][]*elbv2.
 	elbv2Tags := make(map[string][]*elbv2.Tag)
 
 	var innerError error
-	svc := elbv2.New(session.New(&aws.Config{Region: aws.String(c.Region())}))
-	err := svc.DescribeLoadBalancersPages(request, func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) bool {
+	err := c.ELBV2().DescribeLoadBalancersPages(request, func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) bool {
 		if len(p.LoadBalancers) == 0 {
 			return true
 		}
@@ -1582,7 +1575,7 @@ func DescribeELBV2s(cloud fi.Cloud) ([]*elbv2.LoadBalancer, map[string][]*elbv2.
 			tagRequest.ResourceArns = append(tagRequest.ResourceArns, elb.LoadBalancerArn)
 		}
 
-		tagResponse, err := svc.DescribeTags(tagRequest)
+		tagResponse, err := c.ELBV2().DescribeTags(tagRequest)
 		if err != nil {
 			innerError = fmt.Errorf("error listing elb Tags: %v", err)
 			return false
@@ -1649,8 +1642,7 @@ func DescribeTargetGroups(cloud fi.Cloud) ([]*elbv2.TargetGroup, map[string][]*e
 	targetgroupTags := make(map[string][]*elbv2.Tag)
 
 	var innerError error
-	svc := elbv2.New(session.New(&aws.Config{Region: aws.String(c.Region())}))
-	err := svc.DescribeTargetGroupsPages(request, func(p *elbv2.DescribeTargetGroupsOutput, lastPage bool) bool {
+	err := c.ELBV2().DescribeTargetGroupsPages(request, func(p *elbv2.DescribeTargetGroupsOutput, lastPage bool) bool {
 		if len(p.TargetGroups) == 0 {
 			return true
 		}
@@ -1665,7 +1657,7 @@ func DescribeTargetGroups(cloud fi.Cloud) ([]*elbv2.TargetGroup, map[string][]*e
 			tagRequest.ResourceArns = append(tagRequest.ResourceArns, tg.TargetGroupArn)
 		}
 
-		tagResponse, err := svc.DescribeTags(tagRequest)
+		tagResponse, err := c.ELBV2().DescribeTags(tagRequest)
 		if err != nil {
 			innerError = fmt.Errorf("error listing TargetGroup Tags: %v", err)
 			return false
