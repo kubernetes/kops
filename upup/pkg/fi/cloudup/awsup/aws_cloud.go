@@ -81,9 +81,10 @@ const TagNameKopsRole = "kubernetes.io/kops/role"
 const TagNameClusterOwnershipPrefix = "kubernetes.io/cluster/"
 
 const (
-	WellKnownAccountKopeio = "383156758163"
-	WellKnownAccountRedhat = "309956199498"
-	WellKnownAccountCoreOS = "595879546273"
+	WellKnownAccountKopeio             = "383156758163"
+	WellKnownAccountRedhat             = "309956199498"
+	WellKnownAccountCoreOS             = "595879546273"
+	WellKnownAccountAmazonSystemLinux2 = "137112412989"
 )
 
 type AWSCloud interface {
