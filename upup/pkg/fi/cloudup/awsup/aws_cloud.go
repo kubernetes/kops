@@ -244,6 +244,14 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		if err != nil {
 			return c, err
 		}
+		c.elbv2 = elbv2.New(sess, config)
+		c.elbv2.Handlers.Send.PushFront(requestLogger)
+		c.addHandlers(region, &c.elbv2.Handlers)
+
+		sess, err = session.NewSession(config)
+		if err != nil {
+			return c, err
+		}
 		c.autoscaling = autoscaling.New(sess, config)
 		c.autoscaling.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.autoscaling.Handlers)
