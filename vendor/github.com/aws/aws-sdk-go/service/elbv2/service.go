@@ -3,6 +3,8 @@
 package elbv2
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/client/metadata"
@@ -29,8 +31,9 @@ var initRequest func(*request.Request)
 
 // Service information constants
 const (
-	ServiceName = "elasticloadbalancing" // Service endpoint prefix API calls made to.
-	EndpointsID = ServiceName            // Service ID for Regions and Endpoints metadata.
+	ServiceName = "elasticloadbalancing"      // Name of service.
+	EndpointsID = ServiceName                 // ID to lookup a service endpoint with.
+	ServiceID   = "Elastic Load Balancing v2" // ServiceID is a unique identifer of a specific service.
 )
 
 // New creates a new instance of the ELBV2 client with a session.
@@ -55,6 +58,7 @@ func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegio
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   ServiceName,
+				ServiceID:     ServiceID,
 				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
@@ -82,6 +86,9 @@ func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegio
 // newRequest creates a new request for a ELBV2 operation and runs any
 // custom request initialization.
 func (c *ELBV2) newRequest(op *request.Operation, params, data interface{}) *request.Request {
+	if c == nil {
+		fmt.Printf("\n******* nil\n")
+	}
 	req := c.NewRequest(op, params, data)
 
 	// Run custom request initialization if present
