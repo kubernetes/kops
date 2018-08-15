@@ -273,7 +273,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
   Tags:
   - _automatic_upgrades
   - _aws
-  - _kubernetes_master
   channels:
   - memfs://clusters.example.com/additionaluserdata.example.com/addons/bootstrap-channel.yaml
   protokubeImage:
