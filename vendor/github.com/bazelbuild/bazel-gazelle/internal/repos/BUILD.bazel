@@ -9,7 +9,7 @@ go_library(
     ],
     importmap = "vendor/github.com/bazelbuild/bazel-gazelle/internal/repos",
     importpath = "github.com/bazelbuild/bazel-gazelle/internal/repos",
-    visibility = ["//vendor/github.com/bazelbuild/bazel-gazelle:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/bazelbuild/bazel-gazelle/internal/generator:go_default_library",
         "//vendor/github.com/bazelbuild/bazel-gazelle/internal/label:go_default_library",
