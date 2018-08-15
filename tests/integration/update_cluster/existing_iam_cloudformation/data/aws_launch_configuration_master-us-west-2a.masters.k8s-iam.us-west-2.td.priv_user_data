@@ -281,7 +281,6 @@ InstanceGroupName: master-us-west-2a
 Tags:
 - _automatic_upgrades
 - _aws
-- _kubernetes_master
 - _networking_cni
 channels:
 - s3://tune-k8s-kops-test/k8s-iam.us-west-2.td.priv/addons/bootstrap-channel.yaml
