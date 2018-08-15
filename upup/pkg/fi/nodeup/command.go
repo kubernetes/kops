@@ -48,8 +48,6 @@ import (
 // MaxTaskDuration is the amount of time to keep trying for; we retry for a long time - there is not really any great fallback
 const MaxTaskDuration = 365 * 24 * time.Hour
 
-const TagMaster = "_kubernetes_master"
-
 // NodeUpCommand the configiruation for nodeup
 type NodeUpCommand struct {
 	CacheDir       string
@@ -183,7 +181,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		Cluster:       c.cluster,
 		Distribution:  distribution,
 		InstanceGroup: c.instanceGroup,
-		IsMaster:      nodeTags.Has(TagMaster),
 		NodeupConfig:  c.config,
 	}
 

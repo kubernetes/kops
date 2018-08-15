@@ -96,20 +96,6 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTags sets.String) (sets.String, error) {
 	tags := sets.NewString()
 
-	switch role {
-	case api.InstanceGroupRoleNode:
-		// No tags
-
-	case api.InstanceGroupRoleMaster:
-		tags.Insert("_kubernetes_master")
-
-	case api.InstanceGroupRoleBastion:
-		// No tags
-
-	default:
-		return nil, fmt.Errorf("Unrecognized role: %v", role)
-	}
-
 	switch fi.StringValue(cluster.Spec.UpdatePolicy) {
 	case "": // default
 		tags.Insert("_automatic_upgrades")

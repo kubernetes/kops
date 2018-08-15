@@ -264,7 +264,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
   Tags:
   - _automatic_upgrades
   - _aws
-  - _kubernetes_master
   channels:
   - memfs://clusters.example.com/additionalcidr.example.com/addons/bootstrap-channel.yaml
   protokubeImage:

@@ -264,7 +264,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
   Tags:
   - _automatic_upgrades
   - _aws
-  - _kubernetes_master
   channels:
   - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
   protokubeImage:
