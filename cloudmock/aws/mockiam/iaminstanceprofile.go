@@ -68,7 +68,7 @@ func (m *MockIAM) CreateInstanceProfile(request *iam.CreateInstanceProfileInput)
 	// // CreateDate is a required field
 	// CreateDate *time.Time `type:"timestamp" timestampFormat:"iso8601" required:"true"`
 	// // The stable and unique string identifying the instance profile. For more information
-	// 	// about IDs, see IAM Identifiers (http://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html)
+	// 	// about IDs, see IAM Identifiers (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html)
 	// 	// in the Using IAM guide.
 	// 	//
 	// 	// InstanceProfileId is a required field
