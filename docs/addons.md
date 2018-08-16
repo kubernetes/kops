@@ -57,7 +57,7 @@ Monitoring supports the horizontal pod autoscaler.
 
 Install using:
 ```
-kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/monitoring-standalone/v1.9.0.yaml
+kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/monitoring-standalone/v1.11.0.yaml
 ```
 Please note that [heapster is deprecated](https://github.com/kubernetes/heapster/blob/master/docs/deprecation.md). Consider using [metrics-server](https://github.com/kubernetes-incubator/metrics-server] and a third party metrics pipeline to gather Prometheus-format metrics instead.
 
