@@ -3,7 +3,7 @@
 [Kube AWS Ingress Controller](https://github.com/zalando-incubator/kubernetes-on-aws)
 creates AWS Application Load Balancer (ALB) that is used to terminate TLS connections and use
 [AWS Certificate Manager (ACM)](https://aws.amazon.com/certificate-manager/) or
-[AWS Identity and Access Management (IAM)](http://docs.aws.amazon.com/IAM/latest/APIReference/Welcome.html)
+[AWS Identity and Access Management (IAM)](https://docs.aws.amazon.com/IAM/latest/APIReference/Welcome.html)
 certificates. ALBs are used to route traffic to an Ingress http router for example
 [skipper](https://github.com/zalando/skipper/), which routes
 traffic to Kubernetes services and implements
