@@ -182,7 +182,6 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 			continue
 		} else if rollingUpdateData.CloudOnly {
 			glog.Warningf("Not validating cluster as cloudonly flag is set.")
-			continue
 
 		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 			glog.Infof("Validating the cluster.")
@@ -196,15 +195,16 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 
 				glog.Warningf("Cluster validation failed after removing instance, proceeding since fail-on-validate is set to false: %v", err)
 			}
-			if rollingUpdateData.Interactive {
-				stopPrompting, err := promptInteractive(nodeName)
-				if err != nil {
-					return err
-				}
-				if stopPrompting {
-					// Is a pointer to a struct, changes here push back into the original
-					rollingUpdateData.Interactive = false
-				}
+		}
+
+		if rollingUpdateData.Interactive {
+			stopPrompting, err := promptInteractive(nodeName)
+			if err != nil {
+				return err
+			}
+			if stopPrompting {
+				// Is a pointer to a struct, changes here push back into the original
+				rollingUpdateData.Interactive = false
 			}
 		}
 	}
