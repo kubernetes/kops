@@ -67,10 +67,14 @@ func NewRollingUpdateInstanceGroup(cloud fi.Cloud, cloudGroup *cloudinstances.Cl
 }
 
 // promptInteractive asks the user to continue, mostly copied from vendor/google.golang.org/api/examples/gmail.go.
-func promptInteractive(upgradedHost string) (stopPrompting bool, err error) {
+func promptInteractive(upgradedHostId, upgradedHostName string) (stopPrompting bool, err error) {
 	stopPrompting = false
 	scanner := bufio.NewScanner(os.Stdin)
-	glog.Infof("Pausing after finished %q", upgradedHost)
+	if upgradedHostName != "" {
+		glog.Infof("Pausing after finished %q, node %q", upgradedHostId, upgradedHostName)
+	} else {
+		glog.Infof("Pausing after finished %q", upgradedHostId)
+	}
 	fmt.Print("Continue? (Y)es, (N)o, (A)lwaysYes: [Y] ")
 	scanner.Scan()
 	err = scanner.Err()
@@ -198,7 +202,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		}
 
 		if rollingUpdateData.Interactive {
-			stopPrompting, err := promptInteractive(nodeName)
+			stopPrompting, err := promptInteractive(u.ID, nodeName)
 			if err != nil {
 				return err
 			}
