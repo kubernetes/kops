@@ -21,6 +21,5 @@ go_library(
 go_binary(
     name = "apiserver-boot",
     embed = [":go_default_library"],
-    importpath = "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot",
     visibility = ["//visibility:public"],
 )

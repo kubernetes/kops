@@ -5,5 +5,5 @@ go_library(
     srcs = ["path.go"],
     importmap = "vendor/github.com/bazelbuild/bazel-gazelle/internal/pathtools",
     importpath = "github.com/bazelbuild/bazel-gazelle/internal/pathtools",
-    visibility = ["//:__subpackages__"],
+    visibility = ["//vendor/github.com/bazelbuild/bazel-gazelle:__subpackages__"],
 )

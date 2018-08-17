@@ -135,7 +135,6 @@ var requiredSignedHeaders = rules{
 			"X-Amz-Server-Side-Encryption-Customer-Key-Md5":               struct{}{},
 			"X-Amz-Storage-Class":                                         struct{}{},
 			"X-Amz-Website-Redirect-Location":                             struct{}{},
-			"X-Amz-Content-Sha256":                                        struct{}{},
 		},
 	},
 	patterns{"X-Amz-Meta-"},
@@ -672,15 +671,8 @@ func (ctx *signingCtx) buildSignature() {
 func (ctx *signingCtx) buildBodyDigest() error {
 	hash := ctx.Request.Header.Get("X-Amz-Content-Sha256")
 	if hash == "" {
-		includeSHA256Header := ctx.unsignedPayload ||
-			ctx.ServiceName == "s3" ||
-			ctx.ServiceName == "glacier"
-
-		s3Presign := ctx.isPresign && ctx.ServiceName == "s3"
-
-		if ctx.unsignedPayload || s3Presign {
+		if ctx.unsignedPayload || (ctx.isPresign && ctx.ServiceName == "s3") {
 			hash = "UNSIGNED-PAYLOAD"
-			includeSHA256Header = !s3Presign
 		} else if ctx.Body == nil {
 			hash = emptyStringSHA256
 		} else {
@@ -689,8 +681,7 @@ func (ctx *signingCtx) buildBodyDigest() error {
 			}
 			hash = hex.EncodeToString(makeSha256Reader(ctx.Body))
 		}
-
-		if includeSHA256Header {
+		if ctx.unsignedPayload || ctx.ServiceName == "s3" || ctx.ServiceName == "glacier" {
 			ctx.Request.Header.Set("X-Amz-Content-Sha256", hash)
 		}
 	}

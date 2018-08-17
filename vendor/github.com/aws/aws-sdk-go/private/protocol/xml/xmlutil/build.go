@@ -13,13 +13,9 @@ import (
 	"github.com/aws/aws-sdk-go/private/protocol"
 )
 
-// BuildXML will serialize params into an xml.Encoder. Error will be returned
-// if the serialization of any of the params or nested values fails.
+// BuildXML will serialize params into an xml.Encoder.
+// Error will be returned if the serialization of any of the params or nested values fails.
 func BuildXML(params interface{}, e *xml.Encoder) error {
-	return buildXML(params, e, false)
-}
-
-func buildXML(params interface{}, e *xml.Encoder, sorted bool) error {
 	b := xmlBuilder{encoder: e, namespaces: map[string]string{}}
 	root := NewXMLElement(xml.Name{})
 	if err := b.buildValue(reflect.ValueOf(params), root, ""); err != nil {
@@ -27,7 +23,7 @@ func buildXML(params interface{}, e *xml.Encoder, sorted bool) error {
 	}
 	for _, c := range root.Children {
 		for _, v := range c {
-			return StructToXML(e, v, sorted)
+			return StructToXML(e, v, false)
 		}
 	}
 	return nil

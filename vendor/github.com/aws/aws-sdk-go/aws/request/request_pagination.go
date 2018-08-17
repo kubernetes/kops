@@ -1,7 +1,6 @@
 package request
 
 import (
-	"fmt"
 	"reflect"
 	"sync/atomic"
 
@@ -89,9 +88,7 @@ func (p *Pagination) Next() bool {
 	if !p.HasNextPage() {
 		return false
 	}
-	if p == nil {
-		fmt.Printf("\n***** p is nil /Users/namrutham/go/src/k8s.io/kops/vendor/github.com/aws/aws-sdk-go/aws/request/request_pagination.go \n")
-	}
+
 	req, err := p.NewRequest()
 	if err != nil {
 		p.err = err

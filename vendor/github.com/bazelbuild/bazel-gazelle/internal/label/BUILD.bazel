@@ -8,7 +8,7 @@ go_library(
     ],
     importmap = "vendor/github.com/bazelbuild/bazel-gazelle/internal/label",
     importpath = "github.com/bazelbuild/bazel-gazelle/internal/label",
-    visibility = ["//:__subpackages__"],
+    visibility = ["//vendor/github.com/bazelbuild/bazel-gazelle:__subpackages__"],
     deps = [
         "//vendor/github.com/bazelbuild/bazel-gazelle/internal/config:go_default_library",
         "//vendor/github.com/bazelbuild/bazel-gazelle/internal/pathtools:go_default_library",

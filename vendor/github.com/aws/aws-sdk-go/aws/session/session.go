@@ -15,7 +15,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/corehandlers"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
-	"github.com/aws/aws-sdk-go/aws/csm"
 	"github.com/aws/aws-sdk-go/aws/defaults"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -82,16 +81,10 @@ func New(cfgs ...*aws.Config) *Session {
 				r.Error = err
 			})
 		}
-
 		return s
 	}
 
-	s := deprecatedNewSession(cfgs...)
-	if envCfg.CSMEnabled {
-		enableCSM(&s.Handlers, envCfg.CSMClientID, envCfg.CSMPort, s.Config.Logger)
-	}
-
-	return s
+	return deprecatedNewSession(cfgs...)
 }
 
 // NewSession returns a new Session created from SDK defaults, config files,
@@ -307,20 +300,8 @@ func deprecatedNewSession(cfgs ...*aws.Config) *Session {
 	}
 
 	initHandlers(s)
+
 	return s
-}
-
-func enableCSM(handlers *request.Handlers, clientID string, port string, logger aws.Logger) {
-	logger.Log("Enabling CSM")
-	if len(port) == 0 {
-		port = csm.DefaultPort
-	}
-
-	r, err := csm.Start(clientID, "127.0.0.1:"+port)
-	if err != nil {
-		return
-	}
-	r.InjectHandlers(handlers)
 }
 
 func newSession(opts Options, envCfg envConfig, cfgs ...*aws.Config) (*Session, error) {
@@ -362,9 +343,6 @@ func newSession(opts Options, envCfg envConfig, cfgs ...*aws.Config) (*Session, 
 	}
 
 	initHandlers(s)
-	if envCfg.CSMEnabled {
-		enableCSM(&s.Handlers, envCfg.CSMClientID, envCfg.CSMPort, s.Config.Logger)
-	}
 
 	// Setup HTTP client with custom cert bundle if enabled
 	if opts.CustomCABundle != nil {
