@@ -63,7 +63,7 @@ const perTypeDef = `
 // JSON marshalling boilerplate
 type real{{.Name}} {{.Name}}
 
-// UnmarshalJSON implements conversion to JSON, supporitng an alternate specification of the object as a string
+// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
 func (o *{{.Name}}) UnmarshalJSON(data []byte) error {
 	var jsonName string
 	if err := json.Unmarshal(data, &jsonName); err == nil {
