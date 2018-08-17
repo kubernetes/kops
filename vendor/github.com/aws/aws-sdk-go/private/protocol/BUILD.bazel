@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "idempotency.go",
         "jsonvalue.go",
-        "payload.go",
         "unmarshal.go",
     ],
     importmap = "vendor/github.com/aws/aws-sdk-go/private/protocol",
@@ -13,7 +12,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws/client/metadata:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
     ],
 )

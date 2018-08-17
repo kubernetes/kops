@@ -17,6 +17,5 @@ go_library(
 go_binary(
     name = "apiregister-gen",
     embed = [":go_default_library"],
-    importpath = "github.com/kubernetes-incubator/apiserver-builder/cmd/apiregister-gen",
     visibility = ["//visibility:public"],
 )

@@ -5,5 +5,5 @@ go_library(
     srcs = ["finder.go"],
     importmap = "vendor/github.com/bazelbuild/bazel-gazelle/internal/wspace",
     importpath = "github.com/bazelbuild/bazel-gazelle/internal/wspace",
-    visibility = ["//visibility:public"],
+    visibility = ["//vendor/github.com/bazelbuild/bazel-gazelle:__subpackages__"],
 )

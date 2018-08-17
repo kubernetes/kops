@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "helpers.go",
+        "util.go",
+    ],
+    importmap = "vendor/k8s.io/kubernetes/pkg/apis/storage/util",
+    importpath = "k8s.io/kubernetes/pkg/apis/storage/util",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/util/feature:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/storage:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/features:go_default_library",
+    ],
+)

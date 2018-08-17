@@ -11,7 +11,7 @@ go_library(
     ],
     importmap = "vendor/github.com/bazelbuild/bazel-gazelle/internal/resolve",
     importpath = "github.com/bazelbuild/bazel-gazelle/internal/resolve",
-    visibility = ["//visibility:public"],
+    visibility = ["//vendor/github.com/bazelbuild/bazel-gazelle:__subpackages__"],
     deps = [
         "//vendor/github.com/bazelbuild/bazel-gazelle/internal/config:go_default_library",
         "//vendor/github.com/bazelbuild/bazel-gazelle/internal/label:go_default_library",
@@ -19,15 +19,4 @@ go_library(
         "//vendor/github.com/bazelbuild/bazel-gazelle/internal/repos:go_default_library",
         "//vendor/github.com/bazelbuild/buildtools/build:go_default_library",
     ],
-)
-
-# TODO(jayconrod): test that the checked-in static file matches the generated
-# file. The generated code is checked in so that Gazelle can still be built
-# with "go get".
-genrule(
-    name = "std_package_list",
-    srcs = ["@go_sdk//:packages.txt"],
-    outs = ["std_package_list.go"],
-    cmd = "$(location //internal/resolve/gen_std_package_list) $< $@",
-    tools = ["//internal/resolve/gen_std_package_list"],
 )
