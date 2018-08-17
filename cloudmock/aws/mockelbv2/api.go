@@ -25,8 +25,6 @@ import (
 	"github.com/golang/glog"
 )
 
-const elbZoneID = "FAKEZONE-CLOUDMOCK-ELBV2"
-
 type MockELBV2 struct {
 	elbv2iface.ELBV2API
 
@@ -144,70 +142,3 @@ func (m *MockELBV2) DescribeTargetGroupsPages(request *elbv2.DescribeTargetGroup
 
 	return nil
 }
-
-/*
-func (m *MockELBV2) CreateLoadBalancer(request *elbv2.CreateLoadBalancerInput) (*elbv2.CreateLoadBalancerOutput, error) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-
-	glog.V(2).Infof("CreateLoadBalancer v2 %v", request)
-	createdTime := time.Now().UTC()
-
-	dnsName := *request.Name + ".elbv2.cloudmock.com"
-
-	lb := &loadBalancer{
-		description: elbv2.LoadBalancer{
-			//AvailabilityZones: request.AvailabilityZones,
-			CreatedTime:      &createdTime,
-			LoadBalancerName: request.Name,
-			Scheme:           request.Scheme,
-			//Subnets:          request.Subnets,
-			DNSName: aws.String(dnsName),
-			Type:    request.Type,
-
-			CanonicalHostedZoneId: aws.String(elbZoneID),
-		},
-		tags: make(map[string]string),
-	}
-
-	//for _, listener := range request.Listeners {
-	//	lb.description.ListenerDescriptions = append(lb.description.ListenerDescriptions, &elbv2.ListenerDescription{
-	//		Listener: listener,
-	//	})
-	//}
-
-	// for _, tag := range input.Tags {
-	// 	g.Tags = append(g.Tags, &autoscaling.TagDescription{
-	// 		Key:               tag.Key,
-	// 		PropagateAtLaunch: tag.PropagateAtLaunch,
-	// 		ResourceId:        tag.ResourceId,
-	// 		ResourceType:      tag.ResourceType,
-	// 		Value:             tag.Value,
-	// 	})
-	// }
-
-	if m.LoadBalancers == nil {
-		m.LoadBalancers = make(map[string]*loadBalancer)
-	}
-	m.LoadBalancers[*request.Name] = lb
-
-	return &elbv2.CreateLoadBalancerOutput{}, nil
-}
-
-func (m *MockELBV2) DeleteLoadBalancer(request *elbv2.DeleteLoadBalancerInput) (*elbv2.DeleteLoadBalancerOutput, error) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-
-	glog.Infof("DeleteLoadBalancer: %v", request)
-
-	id := aws.StringValue(request.LoadBalancerArn)
-	o := m.LoadBalancers[id]
-	if o == nil {
-		return nil, fmt.Errorf("LoadBalancer %q not found", id)
-	}
-	delete(m.LoadBalancers, id)
-
-	return &elbv2.DeleteLoadBalancerOutput{}, nil
-}
-
-*/
