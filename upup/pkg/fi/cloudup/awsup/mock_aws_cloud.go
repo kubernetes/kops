@@ -160,6 +160,14 @@ func (c *MockAWSCloud) CreateELBTags(loadBalancerName string, tags map[string]st
 	return createELBTags(c, loadBalancerName, tags)
 }
 
+func (c *MockAWSCloud) GetELBV2Tags(ResourceArn string) (map[string]string, error) {
+	return getELBV2Tags(c, ResourceArn)
+}
+
+func (c *MockAWSCloud) CreateELBV2Tags(ResourceArn string, tags map[string]string) error {
+	return createELBV2Tags(c, ResourceArn, tags)
+}
+
 func (c *MockAWSCloud) DescribeInstance(instanceID string) (*ec2.Instance, error) {
 	return nil, fmt.Errorf("MockAWSCloud DescribeInstance not implemented")
 }

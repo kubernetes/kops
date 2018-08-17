@@ -818,6 +818,68 @@ func createELBTags(c AWSCloud, loadBalancerName string, tags map[string]string) 
 	}
 }
 
+func (c *awsCloudImplementation) GetELBV2Tags(ResourceArn string) (map[string]string, error) {
+	return getELBV2Tags(c, ResourceArn)
+}
+
+func getELBV2Tags(c AWSCloud, ResourceArn string) (map[string]string, error) {
+	tags := map[string]string{}
+
+	request := &elbv2.DescribeTagsInput{
+		ResourceArns: []*string{&ResourceArn},
+	}
+
+	attempt := 0
+	for {
+		attempt++
+
+		response, err := c.ELBV2().DescribeTags(request)
+		if err != nil {
+			return nil, fmt.Errorf("error listing tags on %v: %v", ResourceArn, err)
+		}
+
+		for _, tagset := range response.TagDescriptions {
+			for _, tag := range tagset.Tags {
+				tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
+			}
+		}
+
+		return tags, nil
+	}
+}
+
+func (c *awsCloudImplementation) CreateELBV2Tags(ResourceArn string, tags map[string]string) error {
+	return createELBV2Tags(c, ResourceArn, tags)
+}
+
+func createELBV2Tags(c AWSCloud, ResourceArn string, tags map[string]string) error {
+	if len(tags) == 0 {
+		return nil
+	}
+
+	elbv2Tags := []*elbv2.Tag{}
+	for k, v := range tags {
+		elbv2Tags = append(elbv2Tags, &elbv2.Tag{Key: aws.String(k), Value: aws.String(v)})
+	}
+
+	attempt := 0
+	for {
+		attempt++
+
+		request := &elbv2.AddTagsInput{
+			Tags:         elbv2Tags,
+			ResourceArns: []*string{&ResourceArn},
+		}
+
+		_, err := c.ELBV2().AddTags(request)
+		if err != nil {
+			return fmt.Errorf("error creating tags on %v: %v", ResourceArn, err)
+		}
+
+		return nil
+	}
+}
+
 func (c *awsCloudImplementation) BuildTags(name *string) map[string]string {
 	return buildTags(c.tags, name)
 }
