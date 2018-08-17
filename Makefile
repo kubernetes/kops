@@ -632,7 +632,7 @@ kops-server-build:
 	# Compile the API binary in linux, and copy to local filesystem
 	docker pull golang:${GOVERSION}
 	docker run --name=kops-server-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH}/src:/go/src -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ kops-server-docker-compile
-	docker cp kops-server-build-${UNIQUE}:/go/.build .
+	docker cp kops-server-build-${UNIQUE}:/go/src/k8s.io/kops/.build .
 	docker build -t ${DOCKER_REGISTRY}/kops-server:${KOPS_SERVER_TAG} -f images/kops-server/Dockerfile .
 
 .PHONY: kops-server-push
