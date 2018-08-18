@@ -23,9 +23,12 @@ spec:
     # BUT... this is causing the submit queue to block, so back to jessie temporarily: https://github.com/kubernetes/kubernetes/issues/56763
     - name: kope.io/k8s-1.9-debian-jessie-amd64-hvm-ebs-2018-03-11
       providerID: aws
-      kubernetesVersion: ">=1.10.0"
+      kubernetesVersion: ">=1.10.0 <1.11.0"
+    - name: kope.io/k8s-1.11-debian-jessie-amd64-hvm-ebs-2018-08-17
+      providerID: aws
+      kubernetesVersion: ">=1.11.0"
     - providerID: gce
-      name: "cos-cloud/cos-stable-60-9592-90-0"
+      name: "cos-cloud/cos-stable-65-10323-99-0"
   cluster:
     kubernetesVersion: v1.5.8
     networking:
