@@ -29,7 +29,7 @@ import (
 // JSON marshalling boilerplate
 type realIAMRolePolicy IAMRolePolicy
 
-// UnmarshalJSON implements conversion to JSON, supporitng an alternate specification of the object as a string
+// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
 func (o *IAMRolePolicy) UnmarshalJSON(data []byte) error {
 	var jsonName string
 	if err := json.Unmarshal(data, &jsonName); err == nil {
