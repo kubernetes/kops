@@ -133,7 +133,7 @@ required = [
   revision = "020d11c3b9c0c7a3c2efcc8e5cf5b9ef7bcea21f"
 [[override]]
   name = "github.com/gophercloud/gophercloud"
-  revision = "6da026c32e2d622cc242d32984259c77237aefe1"
+  revision = "f29afc2cceca860199ee88cd355a4d0a37b3fad2"
 [[override]]
   name = "gopkg.in/warnings.v0"
   revision = "8a331561fe74dadba6edfc59f3be66c22c3b065d"
