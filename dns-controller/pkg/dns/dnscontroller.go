@@ -600,7 +600,7 @@ func (s *DNSControllerScope) Replace(recordName string, records []Record) {
 		delete(s.Records, recordName)
 	} else {
 		if recordsSliceEquals(existing, records) {
-			glog.V(6).Infof("skipping spurious update of record %s/%s=%s", s.ScopeName, recordName, records)
+			glog.V(6).Infof("skipping spurious update of record %s/%s=%+v", s.ScopeName, recordName, records)
 			return
 		}
 
