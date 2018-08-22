@@ -45,6 +45,13 @@ const (
 	TypeLoadBalancer            = "load-balancer"
 )
 
+type elbDNSName struct {
+	Apiserver string
+	Bastion   string
+}
+
+var elbDNSNames elbDNSName
+
 type listFn func(fi.Cloud, string) ([]*resources.Resource, error)
 
 func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*resources.Resource, error) {
@@ -273,6 +280,23 @@ func matchesElbTags(tags map[string]string, actual []*elb.Tag) bool {
 		if !found {
 			return false
 		}
+	}
+	return true
+}
+
+func matchELBNameTag(tag string, actual []*elb.Tag) bool {
+
+	found := false
+	for _, a := range actual {
+		if aws.StringValue(a.Key) == "Name" {
+			if aws.StringValue(a.Value) == tag {
+				found = true
+				break
+			}
+		}
+	}
+	if !found {
+		return false
 	}
 	return true
 }
@@ -1415,11 +1439,14 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 		}
 
 		tagRequest := &elb.DescribeTagsInput{}
+		var apielbname string
 
 		nameToELB := make(map[string]*elb.LoadBalancerDescription)
+		elbNameToDNS := make(map[string]string)
 		for _, elb := range p.LoadBalancerDescriptions {
 			name := aws.StringValue(elb.LoadBalancerName)
 			nameToELB[name] = elb
+			elbNameToDNS[name] = aws.StringValue(elb.DNSName)
 
 			tagRequest.LoadBalancerNames = append(tagRequest.LoadBalancerNames, elb.LoadBalancerName)
 		}
@@ -1432,7 +1459,6 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 
 		for _, t := range tagResponse.TagDescriptions {
 			elbName := aws.StringValue(t.LoadBalancerName)
-
 			if !matchesElbTags(tags, t.Tags) {
 				continue
 			}
@@ -1442,6 +1468,21 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 			elb := nameToELB[elbName]
 			elbs = append(elbs, elb)
 		}
+
+		// get ELB DNS names by matching tags
+		for _, t := range tagResponse.TagDescriptions {
+			if matchELBNameTag("api."+tags["KubernetesCluster"], t.Tags) {
+				apielbname = aws.StringValue(t.LoadBalancerName)
+				elbDNSNames.Apiserver = elbNameToDNS[apielbname] + "."
+			} else if matchELBNameTag("bastion."+tags["KubernetesCluster"], t.Tags) {
+				apielbname = aws.StringValue(t.LoadBalancerName)
+				elbDNSNames.Bastion = elbNameToDNS[apielbname] + "."
+			} else {
+				continue
+			}
+
+		}
+
 		return true
 	})
 	if err != nil {
@@ -1585,8 +1626,13 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*resources.Resour
 				prefix := strings.TrimSuffix(name, clusterName)
 
 				remove := false
-				// TODO: Compute the actual set of names?
-				if prefix == ".api" || prefix == ".api.internal" || prefix == ".bastion" {
+				// TODO: Compute the actual set of names for internal records?
+				// aws console prefixes dualstack. to support IPv4 and IPV6 for internet facing records
+				if rrs.AliasTarget != nil && strings.TrimPrefix(aws.StringValue(rrs.AliasTarget.DNSName), "dualstack.") == elbDNSNames.Apiserver {
+					remove = true
+				} else if rrs.AliasTarget != nil && strings.TrimPrefix(aws.StringValue(rrs.AliasTarget.DNSName), "dualstack.") == elbDNSNames.Bastion {
+					remove = true
+				} else if prefix == ".api.internal" {
 					remove = true
 				} else if strings.HasPrefix(prefix, ".etcd-") {
 					remove = true
