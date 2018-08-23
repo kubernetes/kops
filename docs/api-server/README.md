@@ -1,5 +1,9 @@
 # Kops HTTP API Server
 
+# NOTE:
+
+The kops-apiserver work is stalled and not useable at the moment.
+
 # Building the kops API server
 
 Set your docker registry
