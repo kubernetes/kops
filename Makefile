@@ -469,9 +469,14 @@ dep-prereqs:
 .PHONY: dep-ensure
 dep-ensure: dep-prereqs
 	dep ensure -v
+	# Switch weavemesh to use peer_name_hash - bazel rule-go doesn't support build tags yet
+	rm vendor/github.com/weaveworks/mesh/peer_name_mac.go
+	sed -i -e 's/peer_name_hash/!peer_name_mac/g' vendor/github.com/weaveworks/mesh/peer_name_hash.go
+	# Remove all bazel build files that were vendored and regenerate (we assume they are go-gettable)
 	find vendor/ -name "BUILD" -delete
 	find vendor/ -name "BUILD.bazel" -delete
 	bazel run //:gazelle -- -proto disable
+
 
 .PHONY: gofmt
 gofmt:
