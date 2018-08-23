@@ -76,6 +76,22 @@ etcdClusters:
 
 > __Note:__ The images for etcd that kops uses are from the Google Cloud Repository. Google doesn't release every version of etcd to the gcr. Check that the version of etcd you want to use is available [at the gcr](https://console.cloud.google.com/gcr/images/google-containers/GLOBAL/etcd?gcrImageListsize=50) before using it in your cluster spec.
 
+By default, the Volumes created for the etcd clusters are 20GB each.  They can be adjusted via the `volumeSize` parameter.
+
+```yaml
+etcdClusters:
+- etcdMembers:
+  - instanceGroup: master-us-east-1a
+    name: a
+    volumeSize: 5
+  name: main
+- etcdMembers:
+  - instanceGroup: master-us-east-1a
+    name: a
+    volumeSize: 5
+  name: events
+```
+
 ### sshAccess
 
 This array configures the CIDRs that are able to ssh into nodes. On AWS this is manifested as inbound security group rules on the `nodes` and `master` security groups.
