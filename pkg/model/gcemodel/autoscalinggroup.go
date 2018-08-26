@@ -68,6 +68,16 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				volumeType = DefaultVolumeType
 			}
 
+			// GCP does not have "private networks". We can achieve this by
+			// creating internal-only instances (instances
+			// with no external IP) and setting up a NAT Gateway at a later point.
+			// https://cloud.google.com/vpc/docs/special-configurations#natgateway
+			// TODO: improve topology action code. What to do if Masters != Nodes?
+			internalOnly := false
+			if b.Cluster.Spec.Topology.Masters == "private" {
+				internalOnly = true
+			}
+
 			namePrefix := gce.LimitedLengthName(name, gcetasks.InstanceTemplateNamePrefixMaxLength)
 
 			t := &gcetasks.InstanceTemplate{
@@ -80,6 +90,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				BootDiskSizeGB: i64(int64(volumeSize)),
 				BootDiskImage:  s(ig.Spec.Image),
 
+				InternalOnly: fi.Bool(internalOnly),
 				CanIPForward: fi.Bool(true),
 
 				// TODO: Support preemptible nodes?

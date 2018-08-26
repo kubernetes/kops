@@ -63,6 +63,9 @@ type InstanceTemplate struct {
 	Metadata    map[string]*fi.ResourceHolder
 	MachineType *string
 
+	// InternalOnly disables assigning an external IP to instances
+	InternalOnly *bool
+
 	// ID is the actual name
 	ID *string
 }
@@ -237,16 +240,25 @@ func (e *InstanceTemplate) mapToGCE(project string) (*compute.InstanceTemplate, 
 	}
 
 	var networkInterfaces []*compute.NetworkInterface
-	ni := &compute.NetworkInterface{
-		Kind: "compute#networkInterface",
-		AccessConfigs: []*compute.AccessConfig{{
-			Kind: "compute#accessConfig",
-			//NatIP: *e.IPAddress.Address,
-			Type:        "ONE_TO_ONE_NAT",
-			NetworkTier: "PREMIUM",
-		}},
-		Network: e.Network.URL(project),
+	var ni *compute.NetworkInterface
+	if fi.BoolValue(e.InternalOnly) {
+		ni = &compute.NetworkInterface{
+			Kind:    "compute#networkInterface",
+			Network: e.Network.URL(project),
+		}
+	} else {
+		ni = &compute.NetworkInterface{
+			Kind: "compute#networkInterface",
+			AccessConfigs: []*compute.AccessConfig{{
+				Kind: "compute#accessConfig",
+				//NatIP: *e.IPAddress.Address,
+				Type:        "ONE_TO_ONE_NAT",
+				NetworkTier: "PREMIUM",
+			}},
+			Network: e.Network.URL(project),
+		}
 	}
+
 	if e.Subnet != nil {
 		ni.Subnetwork = *e.Subnet.Name
 	}
@@ -390,6 +402,7 @@ type terraformInstanceTemplate struct {
 }
 
 type terraformInstanceCommon struct {
+	InternalOnly          bool                          `json:"internal_only"`
 	CanIPForward          bool                          `json:"can_ip_forward"`
 	MachineType           string                        `json:"machine_type,omitempty"`
 	ServiceAccount        *terraformServiceAccount      `json:"service_account,omitempty"`
