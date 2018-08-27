@@ -1095,7 +1095,7 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 	if c.Cluster.Spec.Networking.LyftVPC != nil {
 		lyftVPCDownloadURL := os.Getenv("LYFT_VPC_DOWNLOAD_URL")
 		if lyftVPCDownloadURL == "" {
-			lyftVPCDownloadURL = "818c50109eb6fb5bf2206426c4ceb1d48bab9ca52e1447335a9ce0788810d78c@https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.3.1/cni-ipvlan-vpc-k8s-v0.3.1.tar.gz"
+			lyftVPCDownloadURL = "bfdc65028a3bf8ffe14388fca28ede3600e7e2dee4e781908b6a23f9e79f86ad@https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.4.2/cni-ipvlan-vpc-k8s-v0.4.2.tar.gz"
 		} else {
 			glog.Warningf("Using url from LYFT_VPC_DOWNLOAD_URL env var: %q", lyftVPCDownloadURL)
 		}
