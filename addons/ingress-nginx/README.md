@@ -1,4 +1,14 @@
 
+## Deployment
+### AWS
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/ingress-nginx/v1.6.0.yaml
+```
+
+### GCE
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/ingress-nginx/v1.6.0-gce.yaml
+```
 
 ## Creating a simple ingress
 
