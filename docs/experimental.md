@@ -13,3 +13,4 @@ The following experimental features are currently available:
 * `+EnableExternalCloudController` - Enables the use of cloud-controller-manager introduced in v1.7.
 * `+EnableSeparateConfigBase` - Allow a config-base that is different from the state store.
 * `+SpecOverrideFlag` - Allow setting spec values on `kops create`.
+* `+ExperimentalClusterDNS` - Turns off validation of the kubelet cluster dns flag.
