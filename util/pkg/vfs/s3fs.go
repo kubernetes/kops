@@ -150,7 +150,7 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 	acl := os.Getenv("KOPS_STATE_S3_ACL")
 	acl = strings.TrimSpace(acl)
 	if acl != "" {
-		glog.Infof("Using KOPS_STATE_S3_ACL=%s", acl)
+		glog.V(8).Infof("Using KOPS_STATE_S3_ACL=%s", acl)
 		request.ACL = aws.String(acl)
 	} else if aclObj != nil {
 		s3Acl, ok := aclObj.(*S3Acl)
