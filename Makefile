@@ -465,6 +465,8 @@ utils-dist:
 .PHONY: dep-prereqs
 dep-prereqs:
 	(which hg > /dev/null) || (echo "dep requires that mercurial is installed"; exit 1)
+	(which dep > /dev/null) || (echo "dep-ensure requires that dep is installed"; exit 1)
+	(which bazel > /dev/null) || (echo "dep-ensure requires that bazel is installed"; exit 1)
 
 .PHONY: dep-ensure
 dep-ensure: dep-prereqs

@@ -25,6 +25,7 @@ import (
 	os "github.com/gophercloud/gophercloud/openstack"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
@@ -122,6 +123,9 @@ type OpenstackCloud interface {
 
 	//CreateRouterInterface will create a new Neutron router interface
 	CreateRouterInterface(routerID string, opt routers.AddInterfaceOptsBuilder) (*routers.InterfaceInfo, error)
+
+	// CreateServerGroup will create a new server group.
+	CreateServerGroup(opt servergroups.CreateOpts) (*servergroups.ServerGroup, error)
 }
 
 type openstackCloud struct {
@@ -598,4 +602,8 @@ func (c *openstackCloud) CreateRouterInterface(routerID string, opt routers.AddI
 	} else {
 		return i, wait.ErrWaitTimeout
 	}
+}
+
+func (c *openstackCloud) CreateServerGroup(opt servergroups.CreateOpts) (*servergroups.ServerGroup, error) {
+	return nil, fmt.Errorf("openstackCloud::CreateServerGroup not implemented")
 }
