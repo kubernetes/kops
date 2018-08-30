@@ -116,6 +116,7 @@ k8s.io/kops/pkg/resources/aws
 k8s.io/kops/pkg/resources/digitalocean
 k8s.io/kops/pkg/resources/digitalocean/dns
 k8s.io/kops/pkg/resources/gce
+k8s.io/kops/pkg/resources/openstack
 k8s.io/kops/pkg/resources/ops
 k8s.io/kops/pkg/sshcredentials
 k8s.io/kops/pkg/systemd
