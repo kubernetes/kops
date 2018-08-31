@@ -610,13 +610,14 @@
   revision = "0c5108395e2debce0d731cf0287ddf7242066aba"
 
 [[projects]]
-  digest = "1:5df55e3834b01308cf93fdaf6118fc1ad8418a3bb954bcfaa4b060545a94d4ca"
+  digest = "1:dc8be055c0a43584d2b728953be6d507c8a48a9b6e055c2dffdb8d8414eb703b"
   name = "github.com/gophercloud/gophercloud"
   packages = [
     ".",
     "openstack",
     "openstack/blockstorage/v2/volumes",
     "openstack/compute/v2/extensions/keypairs",
+    "openstack/compute/v2/extensions/schedulerhints",
     "openstack/compute/v2/extensions/servergroups",
     "openstack/compute/v2/flavors",
     "openstack/compute/v2/images",
@@ -2150,6 +2151,7 @@
     "github.com/gophercloud/gophercloud/openstack",
     "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes",
     "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs",
+    "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints",
     "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups",
     "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers",
     "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups",
