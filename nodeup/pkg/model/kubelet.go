@@ -222,7 +222,7 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Unit", "After", "docker.service")
 
 	if b.Distribution == distros.DistributionCoreOS {
-		// We add /opt/kubernetes/bin for our utilities (socat)
+		// We add /opt/kubernetes/bin for our utilities (socat, conntrack)
 		manifest.Set("Service", "Environment", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kubernetes/bin")
 	}
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/kubelet")
@@ -275,25 +275,27 @@ func (b *KubeletBuilder) buildKubeletConfig() (*kops.KubeletConfigSpec, error) {
 
 func (b *KubeletBuilder) addStaticUtils(c *fi.ModelBuilderContext) error {
 	if b.Distribution == distros.DistributionCoreOS {
-		// CoreOS does not ship with socat.  Install our own (statically linked) version
+		// CoreOS does not ship with socat or conntrack.  Install our own (statically linked) version
 		// TODO: Extract to common function?
-		assetName := "socat"
-		assetPath := ""
-		asset, err := b.Assets.Find(assetName, assetPath)
-		if err != nil {
-			return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
-		}
-		if asset == nil {
-			return fmt.Errorf("unable to locate asset %q", assetName)
-		}
+		for _, binary := range []string{"socat", "conntrack"} {
+			assetName := binary
+			assetPath := ""
+			asset, err := b.Assets.Find(assetName, assetPath)
+			if err != nil {
+				return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
+			}
+			if asset == nil {
+				return fmt.Errorf("unable to locate asset %q", assetName)
+			}
 
-		t := &nodetasks.File{
-			Path:     "/opt/kubernetes/bin/socat",
-			Contents: asset,
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0755"),
+			t := &nodetasks.File{
+				Path:     "/opt/kubernetes/bin/" + binary,
+				Contents: asset,
+				Type:     nodetasks.FileType_File,
+				Mode:     s("0755"),
+			}
+			c.AddTask(t)
 		}
-		c.AddTask(t)
 	}
 
 	return nil
