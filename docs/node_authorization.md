@@ -11,7 +11,7 @@ The [node authorization service] is an experimental service which in the absence
 
 #### **Integretion with Kops**
 
-The node authorization service is run on the master as a daemonset, by default dns is _node-authorizer-interanl.dns_zone_:10443 and added via same mechanism at the internal kube-apiserver i.e. annotations on the kube-apiserver pods which is picked up the dns-controller and added to the dns zone.
+The node authorization service is run on the master as a daemonset, by default dns is _node-authorizer-internal.dns_zone_:10443 and added via same mechanism at the internal kube-apiserver i.e. annotations on the kube-apiserver pods which is picked up the dns-controller and added to the dns zone.
 
 When the node authorization service is enabled a systemd _(node-authorizer.service)_ unit is added on the worker nodes. This runs the node-authorizer in client mode and connects to the authorization service requesting a bootstrap token.
 
