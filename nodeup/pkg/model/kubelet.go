@@ -24,6 +24,13 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/golang/glog"
+
+	"k8s.io/api/core/v1"
+	"k8s.io/apiserver/pkg/authentication/user"
+
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
@@ -31,13 +38,7 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/upup/pkg/fi/utils"
-
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/golang/glog"
-	"k8s.io/api/core/v1"
-	"k8s.io/apiserver/pkg/authentication/user"
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 const (
@@ -423,9 +424,9 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	// Merge KubeletConfig for NodeLabels
 	c := &kops.KubeletConfigSpec{}
 	if b.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {
-		utils.JsonMergeStruct(c, b.Cluster.Spec.MasterKubelet)
+		reflectutils.JsonMergeStruct(c, b.Cluster.Spec.MasterKubelet)
 	} else {
-		utils.JsonMergeStruct(c, b.Cluster.Spec.Kubelet)
+		reflectutils.JsonMergeStruct(c, b.Cluster.Spec.Kubelet)
 	}
 
 	// @check if we are using secure kubelet <-> api settings
@@ -439,7 +440,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	}
 
 	if b.InstanceGroup.Spec.Kubelet != nil {
-		utils.JsonMergeStruct(c, b.InstanceGroup.Spec.Kubelet)
+		reflectutils.JsonMergeStruct(c, b.InstanceGroup.Spec.Kubelet)
 	}
 
 	if b.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {
