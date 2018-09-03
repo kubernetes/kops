@@ -179,6 +179,7 @@ k8s.io/kops/upup/tools/generators/fitask
 k8s.io/kops/upup/tools/generators/pkg/codegen
 k8s.io/kops/util/pkg/exec
 k8s.io/kops/util/pkg/hashing
+k8s.io/kops/util/pkg/reflectutils
 k8s.io/kops/util/pkg/slice
 k8s.io/kops/util/pkg/tables
 k8s.io/kops/util/pkg/ui
