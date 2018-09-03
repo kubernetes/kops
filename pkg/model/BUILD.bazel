@@ -59,6 +59,7 @@ go_test(
     srcs = [
         "bootstrapscript_test.go",
         "context_test.go",
+        "firewall_test.go",
     ],
     data = glob(["tests/**"]),  #keep
     embed = [":go_default_library"],
