@@ -29,7 +29,7 @@ The node authorizer currently supports two authorizers; aws and alwaysallow. The
 - we check the ip address of the client requesting the document is the same the instance document.
 - we check that the node has not already registered.
 
-Assuming all the conditions are met a secret token is generated and returned to the client to continue the provising of the worker node.
+Assuming all the conditions are met a secret token is generated and returned to the client to continue the providing of the worker node.
 
 #### **Enabling the Node Authorization Service**
 
