@@ -252,7 +252,7 @@ For support with Flannel you can submit an issue on Github:
 
 ### Kube-router example for CNI, IPVS based service proxy and Network Policy enforcer
 
-[Kube-router](https://github.com/cloudnativelabs/kube-router) is project that provides one cohesive soltion that provides CNI networking for pods, an IPVS based network service proxy and iptables based network policy enforcement.
+[Kube-router](https://github.com/cloudnativelabs/kube-router) is project that provides one cohesive solution that provides CNI networking for pods, an IPVS based network service proxy and iptables based network policy enforcement.
 
 #### Installing kube-router on a new Cluster
 
