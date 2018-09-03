@@ -267,7 +267,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersexternallbexampl
   cat > ig_spec.yaml << '__EOF_IG_SPEC'
   kubelet: null
   nodeLabels: null
-  suspendProcesses: null
   taints: null
 
   __EOF_IG_SPEC
@@ -480,7 +479,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodesexternallbexamplecom.Properties.
   cat > ig_spec.yaml << '__EOF_IG_SPEC'
   kubelet: null
   nodeLabels: null
-  suspendProcesses: null
   taints: null
 
   __EOF_IG_SPEC
