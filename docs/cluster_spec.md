@@ -480,13 +480,13 @@ spec:
 
 ### fileAssets
 
-FileAssets is an alpha feature which permits you to place inline file content into the cluster and instanceGroup specification. It's desiginated as alpha as you can probably do this via kubernetes daemonsets as an alternative.
+FileAssets is an alpha feature which permits you to place inline file content into the cluster and instanceGroup specification. It's designated as alpha as you can probably do this via kubernetes daemonsets as an alternative.
 
 ```yaml
 spec:
   fileAssets:
   - name: iptable-restore
-    # Note if not path is specificied the default path it /srv/kubernetes/assets/<name>
+    # Note if not path is specified the default path it /srv/kubernetes/assets/<name>
     path: /var/lib/iptables/rules-save
     roles: [Master,Node,Bastion] # a list of roles to apply the asset to, zero defaults to all
     content: |
