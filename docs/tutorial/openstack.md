@@ -36,9 +36,8 @@ It is important to set the following environment variables:
 export OPENSTACK_CREDENTIAL_FILE=<config-file> # where <config-file> is the path of the config file
 export KOPS_STATE_STORE=swift://<bucket-name> # where <bucket-name> is the name of the Swift container to use for kops state
 
-# TODO(lmb): Add a feature gate for OpenStack
 # this is required since OpenStack support is currently in alpha so it is feature gated
-# export KOPS_FEATURE_FLAGS="AlphaAllowOpenStack"
+export KOPS_FEATURE_FLAGS="AlphaAllowOpenStack"
 ```
 
 ## Creating a Cluster

@@ -80,6 +80,8 @@ var (
 	AlphaAllowDO = featureflag.New("AlphaAllowDO", featureflag.Bool(false))
 	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
 	AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
+	// AlphaAllowOpenstack is a feature flag that gates OpenStack support while it is alpha
+	AlphaAllowOpenstack = featureflag.New("AlphaAllowOpenstack", featureflag.Bool(false))
 	// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
 	AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
 	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha
@@ -380,16 +382,16 @@ func (c *ApplyClusterCmd) Run() error {
 				"iamRolePolicy":          &awstasks.IAMRolePolicy{},
 
 				// VPC / Networking
-				"dhcpOptions":           &awstasks.DHCPOptions{},
-				"internetGateway":       &awstasks.InternetGateway{},
-				"route":                 &awstasks.Route{},
-				"routeTable":            &awstasks.RouteTable{},
-				"routeTableAssociation": &awstasks.RouteTableAssociation{},
-				"securityGroup":         &awstasks.SecurityGroup{},
-				"securityGroupRule":     &awstasks.SecurityGroupRule{},
-				"subnet":                &awstasks.Subnet{},
-				"vpc":                   &awstasks.VPC{},
-				"ngw":                   &awstasks.NatGateway{},
+				"dhcpOptions":                &awstasks.DHCPOptions{},
+				"internetGateway":            &awstasks.InternetGateway{},
+				"route":                      &awstasks.Route{},
+				"routeTable":                 &awstasks.RouteTable{},
+				"routeTableAssociation":      &awstasks.RouteTableAssociation{},
+				"securityGroup":              &awstasks.SecurityGroup{},
+				"securityGroupRule":          &awstasks.SecurityGroupRule{},
+				"subnet":                     &awstasks.Subnet{},
+				"vpc":                        &awstasks.VPC{},
+				"ngw":                        &awstasks.NatGateway{},
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
 
 				// ELB
