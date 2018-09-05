@@ -310,7 +310,7 @@ func (_ *File) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *File
 	dirMode := os.FileMode(0755)
 	fileMode, err := fi.ParseFileMode(fi.StringValue(e.Mode), 0644)
 	if err != nil {
-		return fmt.Errorf("invalid file mode for %q: %q", e.Path, e.Mode)
+		return fmt.Errorf("invalid file mode for %s: %q", e.Path, *e.Mode)
 	}
 
 	if e.Type == FileType_Symlink {

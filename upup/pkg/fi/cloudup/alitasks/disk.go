@@ -73,7 +73,7 @@ func (d *Disk) Find(c *fi.Context) (*Disk, error) {
 		return nil, nil
 	}
 	if len(responseDisks) > 1 {
-		glog.V(4).Info("The number of specified disk with the same name and ClusterTags exceeds 1, diskName:%q", *d.Name)
+		glog.V(4).Infof("The number of specified disk with the same name and ClusterTags exceeds 1, diskName:%q", *d.Name)
 	}
 
 	glog.V(2).Infof("found matching Disk with name: %q", *d.Name)
@@ -88,7 +88,7 @@ func (d *Disk) Find(c *fi.Context) (*Disk, error) {
 	tags, err := cloud.GetTags(fi.StringValue(actual.DiskId), DiskResource)
 
 	if err != nil {
-		glog.V(4).Info("Error getting tags on resourceId:%q", *actual.DiskId)
+		glog.V(4).Infof("Error getting tags on resourceId:%q", *actual.DiskId)
 	}
 	actual.Tags = tags
 
