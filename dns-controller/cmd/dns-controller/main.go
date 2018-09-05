@@ -181,7 +181,7 @@ func main() {
 
 // initializeWatchers is responsible for creating the watchers
 func initializeWatchers(client kubernetes.Interface, dnsctl *dns.DNSController, namespace string, watchIngress bool) error {
-	glog.V(1).Info("initializing the watch controllers, namespace: %q", namespace)
+	glog.V(1).Infof("initializing the watch controllers, namespace: %q", namespace)
 
 	nodeController, err := watchers.NewNodeController(client, dnsctl)
 	if err != nil {

@@ -68,7 +68,7 @@ func (l *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 		return nil, nil
 	}
 	if len(responseLoadBalancers) > 1 {
-		glog.V(4).Info("The number of specified loadbalancer with the same name exceeds 1, loadbalancerName:%q", *l.Name)
+		glog.V(4).Infof("The number of specified loadbalancer with the same name exceeds 1, loadbalancerName:%q", *l.Name)
 	}
 
 	glog.V(2).Infof("found matching LoadBalancer: %q", *l.Name)
@@ -122,7 +122,7 @@ func (l *LoadBalancer) FindIPAddress(context *fi.Context) (*string, error) {
 		return nil, nil
 	}
 	if len(responseLoadBalancers) > 1 {
-		glog.V(4).Info("The number of specified loadbalancer with the same name exceeds 1, loadbalancerName:%q", *l.Name)
+		glog.V(4).Infof("The number of specified loadbalancer with the same name exceeds 1, loadbalancerName:%q", *l.Name)
 	}
 
 	address := responseLoadBalancers[0].Address
