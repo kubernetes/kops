@@ -526,10 +526,10 @@ var dockerVersions = []dockerVersion{
 		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
-	
+
 	// 18.06.1 - Debian Stretch
 	{
-		
+
 		DockerVersion: "18.06.1",
 		Name:          "docker-ce",
 		Distros:       []distros.Distribution{distros.DistributionDebian9},
