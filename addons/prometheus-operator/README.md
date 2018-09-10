@@ -11,7 +11,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons
 ```
 ### Updating the addon
 
-Run the script bellow.
+Run the script below.
 
 ```console
 addons/prometheus-operator/sync-repo.sh "v0.19.0"
