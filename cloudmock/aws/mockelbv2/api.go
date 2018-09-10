@@ -36,14 +36,12 @@ type MockELBV2 struct {
 
 type loadBalancer struct {
 	description elbv2.LoadBalancer
-	//attributes  elbv2.LoadBalancerAttribute
-	tags map[string]string
+	tags        map[string]string
 }
 
 type targetGroup struct {
 	description elbv2.TargetGroup
-	//attributes  elbv2.LoadBalancerAttribute
-	tags map[string]string
+	tags        map[string]string
 }
 
 func (m *MockELBV2) DescribeLoadBalancers(request *elbv2.DescribeLoadBalancersInput) (*elbv2.DescribeLoadBalancersOutput, error) {
