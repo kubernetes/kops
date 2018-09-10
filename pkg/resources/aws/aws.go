@@ -1553,7 +1553,7 @@ func DescribeELBV2s(cloud fi.Cloud) ([]*elbv2.LoadBalancer, map[string][]*elbv2.
 	glog.V(2).Infof("Listing all NLBs and ALBs")
 
 	request := &elbv2.DescribeLoadBalancersInput{}
-	// ELB DescribeTags has a limit of 20 names, so we set the page size here to 20 also
+	// ELBV2 DescribeTags has a limit of 20 names, so we set the page size here to 20 also
 	request.PageSize = aws.Int64(20)
 
 	var elbv2s []*elbv2.LoadBalancer
