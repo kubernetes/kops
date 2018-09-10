@@ -304,7 +304,7 @@ func (p *SwiftPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 
 func (p *SwiftPath) createBucket() error {
 	done, err := RetryWithBackoff(swiftWriteBackoff, func() (bool, error) {
-		_, err := swiftcontainer.Get(p.client, p.bucket).Extract()
+		_, err := swiftcontainer.Get(p.client, p.bucket, swiftcontainer.GetOpts{}).Extract()
 		if err == nil {
 			return true, nil
 		}

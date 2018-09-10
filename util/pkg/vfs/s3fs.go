@@ -127,23 +127,30 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 
 	glog.V(4).Infof("Writing file %q", p)
 
-	// We always use server-side-encryption; it doesn't really cost us anything
-	sse := "AES256"
-
 	request := &s3.PutObjectInput{}
 	request.Body = data
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)
 
-	// only support SSE if a custom endpoint is not provided
-	if !p.bucketDetails.defaultEncryption {
-		request.ServerSideEncryption = aws.String(sse)
+	// If we are on an S3 implementation that supports SSE (i.e. not
+	// DO), we use server-side-encryption, it doesn't really cost us
+	// anything.  But if the bucket has a defaultEncryption policy
+	// instead, we honor that - it is likely to be a higher encryption
+	// standard.
+	sseLog := "-"
+	if p.sse {
+		if p.bucketDetails.defaultEncryption {
+			sseLog = "DefaultBucketEncryption"
+		} else {
+			sseLog = "AES256"
+			request.ServerSideEncryption = aws.String("AES256")
+		}
 	}
 
 	acl := os.Getenv("KOPS_STATE_S3_ACL")
 	acl = strings.TrimSpace(acl)
 	if acl != "" {
-		glog.Infof("Using KOPS_STATE_S3_ACL=%s", acl)
+		glog.V(8).Infof("Using KOPS_STATE_S3_ACL=%s", acl)
 		request.ACL = aws.String(acl)
 	} else if aclObj != nil {
 		s3Acl, ok := aclObj.(*S3Acl)
@@ -155,11 +162,7 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208
 
-	if p.bucketDetails.defaultEncryption {
-		glog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q ACL=%q with DefaultBucketEncryption", p.bucket, p.key, acl)
-	} else {
-		glog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q SSE=%q ACL=%q", p.bucket, p.key, sse, acl)
-	}
+	glog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q SSE=%q ACL=%q", p.bucket, p.key, sseLog, acl)
 
 	_, err = client.PutObject(request)
 	if err != nil {

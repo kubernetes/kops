@@ -68,7 +68,7 @@ func (s *ScalingGroup) Find(c *fi.Context) (*ScalingGroup, error) {
 	}
 
 	if len(groupList) > 1 {
-		glog.V(4).Info("The number of specified scalingGroup with the same name and ClusterTags exceeds 1, diskName:%q", *s.Name)
+		glog.V(4).Infof("The number of specified scalingGroup with the same name and ClusterTags exceeds 1, diskName:%q", *s.Name)
 	}
 
 	glog.V(2).Infof("found matching ScalingGroup with Name: %q", *s.Name)

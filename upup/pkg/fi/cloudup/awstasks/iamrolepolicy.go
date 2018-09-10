@@ -75,7 +75,7 @@ func (e *IAMRolePolicy) Find(c *fi.Context) (*IAMRolePolicy, error) {
 		policy := *p.PolicyDocument
 		policy, err = url.QueryUnescape(policy)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing PolicyDocument for IAMRolePolicy %q: %v", e.Name, err)
+			return nil, fmt.Errorf("error parsing PolicyDocument for IAMRolePolicy %q: %v", aws.StringValue(e.Name), err)
 		}
 		actual.PolicyDocument = fi.WrapResource(fi.NewStringResource(policy))
 	}

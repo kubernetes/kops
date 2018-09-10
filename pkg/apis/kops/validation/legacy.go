@@ -283,11 +283,13 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 			if !serviceClusterIPRange.Contains(ip) {
 				return field.Invalid(fieldSpec.Child("kubeDNS", "serverIP"), address, fmt.Sprintf("ServiceClusterIPRange %q must contain the DNS Server IP %q", c.Spec.ServiceClusterIPRange, address))
 			}
-			if c.Spec.Kubelet != nil && c.Spec.Kubelet.ClusterDNS != c.Spec.KubeDNS.ServerIP {
-				return field.Invalid(fieldSpec.Child("kubeDNS", "serverIP"), address, "Kubelet ClusterDNS did not match cluster kubeDNS.serverIP")
-			}
-			if c.Spec.MasterKubelet != nil && c.Spec.MasterKubelet.ClusterDNS != c.Spec.KubeDNS.ServerIP {
-				return field.Invalid(fieldSpec.Child("kubeDNS", "serverIP"), address, "MasterKubelet ClusterDNS did not match cluster kubeDNS.serverIP")
+			if !featureflag.ExperimentalClusterDNS.Enabled() {
+				if c.Spec.Kubelet != nil && c.Spec.Kubelet.ClusterDNS != c.Spec.KubeDNS.ServerIP {
+					return field.Invalid(fieldSpec.Child("kubeDNS", "serverIP"), address, "Kubelet ClusterDNS did not match cluster kubeDNS.serverIP")
+				}
+				if c.Spec.MasterKubelet != nil && c.Spec.MasterKubelet.ClusterDNS != c.Spec.KubeDNS.ServerIP {
+					return field.Invalid(fieldSpec.Child("kubeDNS", "serverIP"), address, "MasterKubelet ClusterDNS did not match cluster kubeDNS.serverIP")
+				}
 			}
 		}
 
@@ -470,6 +472,16 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 			}
 		}
 
+		if kubernetesRelease.GTE(semver.MustParse("1.10.0")) {
+			// Flag removed in 1.10
+			if c.Spec.Kubelet.RequireKubeconfig != nil {
+				return field.Invalid(
+					kubeletPath.Child("requireKubeconfig"),
+					*c.Spec.Kubelet.RequireKubeconfig,
+					"require-kubeconfig flag was removed in 1.10.  (Please be sure you are not using a cluster config from `kops get cluster --full`)")
+			}
+		}
+
 		if c.Spec.Kubelet.BootstrapKubeconfig != "" {
 			if c.Spec.KubeAPIServer == nil {
 				return field.Required(fieldSpec.Child("KubeAPIServer"), "bootstrap token require the NodeRestriction admissions controller")
@@ -496,6 +508,16 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		} else {
 			if strict && c.Spec.MasterKubelet.APIServers == "" {
 				return field.Required(masterKubeletPath.Child("APIServers"), "")
+			}
+		}
+
+		if kubernetesRelease.GTE(semver.MustParse("1.10.0")) {
+			// Flag removed in 1.10
+			if c.Spec.MasterKubelet.RequireKubeconfig != nil {
+				return field.Invalid(
+					masterKubeletPath.Child("requireKubeconfig"),
+					*c.Spec.MasterKubelet.RequireKubeconfig,
+					"require-kubeconfig flag was removed in 1.10.  (Please be sure you are not using a cluster config from `kops get cluster --full`)")
 			}
 		}
 

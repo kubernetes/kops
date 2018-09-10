@@ -80,6 +80,9 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 
 			cloudTags := map[string]string{awsup.TagClusterName: cluster.ObjectMeta.Name}
+			for k, v := range cluster.Spec.CloudLabels {
+				cloudTags[k] = v
+			}
 
 			awsCloud, err := awsup.NewAWSCloud(region, cloudTags)
 			if err != nil {
