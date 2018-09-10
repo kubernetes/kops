@@ -4,7 +4,6 @@ go_library(
     name = "go_default_library",
     srcs = [
         "equals.go",
-        "reflect.go",
         "sanitize.go",
         "yaml.go",
     ],
@@ -12,7 +11,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/ghodss/yaml:go_default_library",
-        "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/client-go/util/homedir:go_default_library",
     ],
 )

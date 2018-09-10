@@ -267,7 +267,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersexternallbexampl
   cat > ig_spec.yaml << '__EOF_IG_SPEC'
   kubelet: null
   nodeLabels: null
-  suspendProcesses: null
   taints: null
 
   __EOF_IG_SPEC
@@ -284,7 +283,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersexternallbexampl
   Tags:
   - _automatic_upgrades
   - _aws
-  - _kubernetes_master
   channels:
   - memfs://clusters.example.com/externallb.example.com/addons/bootstrap-channel.yaml
   protokubeImage:
@@ -481,7 +479,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodesexternallbexamplecom.Properties.
   cat > ig_spec.yaml << '__EOF_IG_SPEC'
   kubelet: null
   nodeLabels: null
-  suspendProcesses: null
   taints: null
 
   __EOF_IG_SPEC

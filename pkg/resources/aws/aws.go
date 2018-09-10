@@ -1325,14 +1325,14 @@ func extractClusterName(userData string) string {
 		line = strings.TrimSpace(line)
 		line = strings.Trim(line, "'\"")
 		if clusterName != "" && clusterName != line {
-			glog.Warning("cannot uniquely determine cluster-name, found %q and %q", line, clusterName)
+			glog.Warningf("cannot uniquely determine cluster-name, found %q and %q", line, clusterName)
 			return ""
 		}
 		clusterName = line
 
 	}
 	if err := scanner.Err(); err != nil {
-		glog.Warning("error scanning UserData: %v", err)
+		glog.Warningf("error scanning UserData: %v", err)
 		return ""
 	}
 

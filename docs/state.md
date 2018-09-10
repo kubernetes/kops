@@ -56,3 +56,31 @@ There are a few ways to configure your state store.  In priority order:
 ```
 kops_state_store: s3://yourstatestore
 ```
+
+## Cross Account State-store (AWS)
+
+There are situations in which the entity executing kops to create the cluster is not in the same account as the owner of the state store bucket. In this case, you must explicitly grant the permission: `s3:getBucketLocation` to the ARN that is running kops.
+
+You can use the following policy to guide your implementation:
+
+```
+{
+    "Id": "123",
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "123",
+            "Action": [
+                "s3:GetBucketLocation"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:s3:::state-store-bucket",
+            "Principal": {
+                "AWS": [
+                    "arn:aws:iam::123456789:user/kopsuser"
+                ]
+            }
+        }
+    ]
+}
+```

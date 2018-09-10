@@ -76,6 +76,22 @@ etcdClusters:
 
 > __Note:__ The images for etcd that kops uses are from the Google Cloud Repository. Google doesn't release every version of etcd to the gcr. Check that the version of etcd you want to use is available [at the gcr](https://console.cloud.google.com/gcr/images/google-containers/GLOBAL/etcd?gcrImageListsize=50) before using it in your cluster spec.
 
+By default, the Volumes created for the etcd clusters are 20GB each.  They can be adjusted via the `volumeSize` parameter.
+
+```yaml
+etcdClusters:
+- etcdMembers:
+  - instanceGroup: master-us-east-1a
+    name: a
+    volumeSize: 5
+  name: main
+- etcdMembers:
+  - instanceGroup: master-us-east-1a
+    name: a
+    volumeSize: 5
+  name: events
+```
+
 ### sshAccess
 
 This array configures the CIDRs that are able to ssh into nodes. On AWS this is manifested as inbound security group rules on the `nodes` and `master` security groups.
@@ -464,13 +480,13 @@ spec:
 
 ### fileAssets
 
-FileAssets is an alpha feature which permits you to place inline file content into the cluster and instanceGroup specification. It's desiginated as alpha as you can probably do this via kubernetes daemonsets as an alternative.
+FileAssets is an alpha feature which permits you to place inline file content into the cluster and instanceGroup specification. It's designated as alpha as you can probably do this via kubernetes daemonsets as an alternative.
 
 ```yaml
 spec:
   fileAssets:
   - name: iptable-restore
-    # Note if not path is specificied the default path it /srv/kubernetes/assets/<name>
+    # Note if not path is specified the default path it /srv/kubernetes/assets/<name>
     path: /var/lib/iptables/rules-save
     roles: [Master,Node,Bastion] # a list of roles to apply the asset to, zero defaults to all
     content: |

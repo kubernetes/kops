@@ -132,6 +132,64 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Burstable:      true,
 	},
 
+	// t3 family
+	{
+		Name:           "t3.nano",
+		MemoryGB:       0.5,
+		ECU:            6 * BurstableCreditsToECUS,
+		Cores:          2,
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+	{
+		Name:           "t3.micro",
+		MemoryGB:       1,
+		ECU:            12 * BurstableCreditsToECUS,
+		Cores:          2,
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+	{
+		Name:           "t3.small",
+		MemoryGB:       2,
+		ECU:            24 * BurstableCreditsToECUS,
+		Cores:          2,
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+	{
+		Name:           "t3.medium",
+		MemoryGB:       4,
+		ECU:            24 * BurstableCreditsToECUS,
+		Cores:          2,
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+	{
+		Name:           "t3.large",
+		MemoryGB:       8,
+		ECU:            36 * BurstableCreditsToECUS,
+		Cores:          2,
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+	{
+		Name:           "t3.xlarge",
+		MemoryGB:       16,
+		ECU:            96 * BurstableCreditsToECUS,
+		Cores:          4,
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+	{
+		Name:           "t3.2xlarge",
+		MemoryGB:       32,
+		ECU:            192 * BurstableCreditsToECUS,
+		Cores:          8,
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+
 	// m3 family
 	{
 		Name:           "m3.medium",

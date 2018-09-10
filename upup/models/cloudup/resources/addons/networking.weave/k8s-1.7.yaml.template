@@ -44,6 +44,13 @@ rules:
       - get
       - list
       - watch
+  - apiGroups:
+      - ''
+    resources:
+      - nodes/status
+    verbs:
+      - patch
+      - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
@@ -148,7 +155,7 @@ spec:
                   name: weave-net
                   key: network-password
             {{- end }}
-          image: 'weaveworks/weave-kube:2.3.0'
+          image: 'weaveworks/weave-kube:2.4.0'
           livenessProbe:
             httpGet:
               host: 127.0.0.1
@@ -186,7 +193,7 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: 'weaveworks/weave-npc:2.3.0'
+          image: 'weaveworks/weave-npc:2.4.0'
           resources:
             requests:
               cpu: 50m

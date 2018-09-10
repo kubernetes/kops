@@ -117,6 +117,7 @@ k8s.io/kops/pkg/resources/aws
 k8s.io/kops/pkg/resources/digitalocean
 k8s.io/kops/pkg/resources/digitalocean/dns
 k8s.io/kops/pkg/resources/gce
+k8s.io/kops/pkg/resources/openstack
 k8s.io/kops/pkg/resources/ops
 k8s.io/kops/pkg/sshcredentials
 k8s.io/kops/pkg/systemd
@@ -179,6 +180,7 @@ k8s.io/kops/upup/tools/generators/fitask
 k8s.io/kops/upup/tools/generators/pkg/codegen
 k8s.io/kops/util/pkg/exec
 k8s.io/kops/util/pkg/hashing
+k8s.io/kops/util/pkg/reflectutils
 k8s.io/kops/util/pkg/slice
 k8s.io/kops/util/pkg/tables
 k8s.io/kops/util/pkg/ui

@@ -1092,11 +1092,11 @@ func ValidateZones(zones []string, cloud AWSCloud) error {
 		}
 
 		for _, message := range z.Messages {
-			glog.Warningf("Zone %q has message: %q", aws.StringValue(message.Message))
+			glog.Warningf("Zone %q has message: %q", zone, aws.StringValue(message.Message))
 		}
 
 		if aws.StringValue(z.State) != "available" {
-			glog.Warningf("Zone %q has state %q", aws.StringValue(z.State))
+			glog.Warningf("Zone %q has state %q", zone, aws.StringValue(z.State))
 		}
 	}
 
