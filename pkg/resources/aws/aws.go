@@ -284,21 +284,18 @@ func matchesElbTags(tags map[string]string, actual []*elb.Tag) bool {
 	return true
 }
 
+// In addition to KubernetesCluster aws tag kops also includes a Name tag for ELBs, for instance: Name => api.clustername.com.
+// matchELBNameTag validates if a given ELB is either api.clustername.com or bastion.clustername.com.
 func matchELBNameTag(tag string, actual []*elb.Tag) bool {
 
-	found := false
 	for _, a := range actual {
 		if aws.StringValue(a.Key) == "Name" {
 			if aws.StringValue(a.Value) == tag {
-				found = true
-				break
+				return true
 			}
 		}
 	}
-	if !found {
-		return false
-	}
-	return true
+	return false
 }
 
 //type DeletableResource interface {
@@ -1467,10 +1464,8 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 
 			elb := nameToELB[elbName]
 			elbs = append(elbs, elb)
-		}
 
-		// get ELB DNS names by matching tags
-		for _, t := range tagResponse.TagDescriptions {
+			// get ELB DNS names by matching tags
 			if matchELBNameTag("api."+tags["KubernetesCluster"], t.Tags) {
 				apielbname = aws.StringValue(t.LoadBalancerName)
 				elbDNSNames.Apiserver = elbNameToDNS[apielbname] + "."
