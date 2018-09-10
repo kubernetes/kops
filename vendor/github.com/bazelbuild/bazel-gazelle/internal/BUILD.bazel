@@ -1,0 +1,35 @@
+load("@io_bazel_rules_go//tests:bazel_tests.bzl", "bazel_test")
+
+_REPOSITORY_RULES_TEST_WORKSPACE = """
+load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
+go_rules_dependencies()
+go_register_toolchains()
+
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+gazelle_dependencies()
+
+load("@bazel_gazelle//:def.bzl", "go_repository", "git_repository", "http_archive")
+
+go_repository(
+    name = "errors_go",
+    importpath = "github.com/pkg/errors",
+    commit = "30136e27e2ac8d167177e8a583aa4c3fea5be833",
+)
+"""
+
+bazel_test(
+    name = "repository_rules_test",
+    command = "build",
+    externals = ["@bazel_gazelle//:WORKSPACE"],
+    targets = ["@errors_go//:go_default_library"],
+    workspace = _REPOSITORY_RULES_TEST_WORKSPACE,
+)
+
+# TODO(jayconrod): test git_repository and http_archive with overlays here.
+# We'll probably want to extend bazel_test to copy data files into the
+# workspace directory so we can have overlay build files.
+
+exports_files(
+    ["gazelle.bash.in"],
+    visibility = ["//visibility:public"],
+)

@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -6,11 +6,20 @@ go_library(
         "label.go",
         "labeler.go",
     ],
-    importmap = "vendor/github.com/bazelbuild/bazel-gazelle/internal/label",
     importpath = "github.com/bazelbuild/bazel-gazelle/internal/label",
-    visibility = ["//vendor/github.com/bazelbuild/bazel-gazelle:__subpackages__"],
+    visibility = ["//:__subpackages__"],
     deps = [
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/config:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/pathtools:go_default_library",
+        "//internal/config:go_default_library",
+        "//internal/pathtools:go_default_library",
     ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "label_test.go",
+        "labeler_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = ["//internal/config:go_default_library"],
 )

@@ -1,0 +1,23 @@
+language: go
+
+go:
+- 1.8.3
+
+go_import_path: github.com/kubernetes-incubator/apiserver-builder
+
+cache:
+  directories:
+  - $HOME/.glide
+
+git:
+  depth: 3
+
+env:
+  - TEST=example
+  - TEST=test
+
+install:
+  - scripts/install_etcd.sh
+
+script:
+        ./test/travis.sh

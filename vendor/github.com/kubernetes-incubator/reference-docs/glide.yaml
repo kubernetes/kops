@@ -1,0 +1,17 @@
+package: github.com/kubernetes-incubator/reference-docs
+import:
+- package: gopkg.in/yaml.v2
+- package: k8s.io/kubernetes/pkg/kubectl/cmd
+  version: release-1.8
+- package: github.com/go-openapi/analysis
+  version: 7222828b8ce19afee3c595aef6643b9e42150120
+- package: github.com/go-openapi/jsonpointer
+  version: 46af16f9f7b149af66e5d1bd010e3574dc06de98
+- package: github.com/go-openapi/jsonreference
+  version: 13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272
+- package: github.com/go-openapi/loads
+  version: 18441dfa706d924a39a030ee2c3b1d8d81917b38
+- package: github.com/go-openapi/spec
+  version: 8f2b3d0e3aa15100eea0ab61dc6fa02f00f5e713
+- package: github.com/go-openapi/swag
+  version: c98c5a1cc708d9860aeeceea6391da6f223d479c

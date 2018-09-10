@@ -10,11 +10,10 @@ go_library(
         "util.go",
         "version.go",
     ],
-    importmap = "vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/create",
     importpath = "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/create",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/util:go_default_library",
+        "//cmd/apiserver-boot/boot/util:go_default_library",
         "//vendor/github.com/markbates/inflect:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
     ],

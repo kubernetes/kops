@@ -1,0 +1,50 @@
+package: github.com/kubernetes-incubator/apiserver-builder/cmd
+ignore:
+- github.com/kubernetes-incubator/apiserver-builder
+import:
+- package: github.com/go-openapi/analysis
+  version: b44dc874b601d9e4e2f6e19140e794ba24bead3b
+- package: github.com/go-openapi/jsonpointer
+  version: 46af16f9f7b149af66e5d1bd010e3574dc06de98
+- package: github.com/go-openapi/jsonreference
+  version: 13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272
+- package: github.com/go-openapi/loads
+  version: 18441dfa706d924a39a030ee2c3b1d8d81917b38
+- package: github.com/go-openapi/runtime
+  version: 11e322eeecc1032d5a0a96c566ed53f2b5c26e22
+- package: github.com/go-openapi/spec
+  version: 6aced65f8501fe1217321abf0749d354824ba2ff
+- package: github.com/go-openapi/strfmt
+  version: d65c7fdb29eca313476e529628176fe17e58c488
+- package: github.com/go-openapi/swag
+  version: 1d0bd113de87027671077d3c71eb3ac5d7dbba72
+- package: github.com/go-openapi/validate
+  version: deaf2c9013bc1a7f4c774662259a506ba874d80f
+- package: github.com/golang/glog
+  version: 44145f04b68cf362d9c4df2182967c2275eaefed
+- package: github.com/spf13/cobra
+  version: f62e98d28ab7ad31d707ba837a966378465c7b57
+- package: github.com/spf13/cobra/doc
+  version: f62e98d28ab7ad31d707ba837a966378465c7b57
+- package: github.com/spf13/pflag
+  version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
+- package: github.com/spf13/viper
+  version: 7fb2782df3d83e0036cc89f461ed0422628776f4
+- package: k8s.io/apimachinery
+  version: release-1.9
+- package: k8s.io/apiserver
+  version: release-1.9
+- package: k8s.io/client-go
+  version: release-6.0
+- package: k8s.io/api
+  version: release-1.9
+- package: k8s.io/kube-openapi
+- package: k8s.io/gengo
+  version: 9e661e9308f078838e266cca1c673922088c0ea4
+- package: github.com/onsi/ginkgo
+  version: v1.4.0
+- package: github.com/onsi/gomega
+  version: v1.2.0
+- package: k8s.io/code-generator
+  version: release-1.9 
+- package: github.com/kubernetes-incubator/reference-docs/gen-apidocs

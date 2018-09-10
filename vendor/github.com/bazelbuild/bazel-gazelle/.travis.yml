@@ -1,0 +1,34 @@
+# trusty beta image has jdk8, gcc4.8.4
+dist: trusty
+sudo: required
+# Not technically required but suppresses 'Ruby' in Job status message.
+language: java
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - wget
+      - pkg-config
+
+before_install:
+  - |
+    wget https://github.com/bazelbuild/bazel/releases/download/0.8.0/bazel_0.8.0-linux-x86_64.deb
+    sha256sum -c <<<'4881f4f2a48d7c841c02788f460104534b6e9b6f44f4593844234a5765240fab  bazel_0.8.0-linux-x86_64.deb'
+    sudo dpkg -i bazel_0.8.0-linux-x86_64.deb
+
+script:
+  - |
+    bazel \
+      --output_base=$HOME/.cache/bazel \
+      --batch \
+      --host_jvm_args=-Xmx500m \
+      --host_jvm_args=-Xms500m \
+      test \
+      --config=ci \
+      --local_resources=400,1,1.0 \
+      //...
+
+notifications:
+  email: false

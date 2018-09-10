@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -8,8 +8,18 @@ go_library(
         "directives.go",
         "platform.go",
     ],
-    importmap = "vendor/github.com/bazelbuild/bazel-gazelle/internal/config",
     importpath = "github.com/bazelbuild/bazel-gazelle/internal/config",
-    visibility = ["//vendor/github.com/bazelbuild/bazel-gazelle:__subpackages__"],
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/bazelbuild/buildtools/build:go_default_library"],
+)
+
+go_test(
+    name = "go_default_test",
+    size = "small",
+    srcs = [
+        "config_test.go",
+        "directives_test.go",
+    ],
+    embed = [":go_default_library"],
     deps = ["//vendor/github.com/bazelbuild/buildtools/build:go_default_library"],
 )

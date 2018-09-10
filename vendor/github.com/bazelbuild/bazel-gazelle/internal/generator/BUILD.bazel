@@ -1,4 +1,6 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+# gazelle:exclude testdata
+
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -8,15 +10,29 @@ go_library(
         "generator.go",
         "sort_labels.go",
     ],
-    importmap = "vendor/github.com/bazelbuild/bazel-gazelle/internal/generator",
     importpath = "github.com/bazelbuild/bazel-gazelle/internal/generator",
-    visibility = ["//vendor/github.com/bazelbuild/bazel-gazelle:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/config:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/label:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/packages:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/pathtools:go_default_library",
+        "//internal/config:go_default_library",
+        "//internal/label:go_default_library",
+        "//internal/packages:go_default_library",
+        "//internal/pathtools:go_default_library",
         "//vendor/github.com/bazelbuild/buildtools/build:go_default_library",
         "//vendor/github.com/bazelbuild/buildtools/tables:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    size = "small",
+    srcs = ["generator_test.go"],
+    data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
+    deps = [
+        "//internal/config:go_default_library",
+        "//internal/label:go_default_library",
+        "//internal/merger:go_default_library",
+        "//internal/packages:go_default_library",
+        "//vendor/github.com/bazelbuild/buildtools/build:go_default_library",
     ],
 )

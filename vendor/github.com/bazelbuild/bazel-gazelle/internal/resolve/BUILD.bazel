@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -9,14 +9,41 @@ go_library(
         "resolve_vendored.go",
         "std_package_list.go",
     ],
-    importmap = "vendor/github.com/bazelbuild/bazel-gazelle/internal/resolve",
     importpath = "github.com/bazelbuild/bazel-gazelle/internal/resolve",
-    visibility = ["//vendor/github.com/bazelbuild/bazel-gazelle:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/config:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/label:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/pathtools:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/repos:go_default_library",
+        "//internal/config:go_default_library",
+        "//internal/label:go_default_library",
+        "//internal/pathtools:go_default_library",
+        "//internal/repos:go_default_library",
         "//vendor/github.com/bazelbuild/buildtools/build:go_default_library",
     ],
+)
+
+go_test(
+    name = "go_default_test",
+    size = "small",
+    srcs = [
+        "resolve_external_test.go",
+        "resolve_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//internal/config:go_default_library",
+        "//internal/label:go_default_library",
+        "//internal/repos:go_default_library",
+        "//vendor/github.com/bazelbuild/buildtools/build:go_default_library",
+        "@org_golang_x_tools//go/vcs:go_default_library",
+    ],
+)
+
+# TODO(jayconrod): test that the checked-in static file matches the generated
+# file. The generated code is checked in so that Gazelle can still be built
+# with "go get".
+genrule(
+    name = "std_package_list",
+    srcs = ["@go_sdk//:packages.txt"],
+    outs = ["std_package_list.go"],
+    cmd = "$(location //internal/resolve/gen_std_package_list) $< $@",
+    tools = ["//internal/resolve/gen_std_package_list"],
 )

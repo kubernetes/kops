@@ -1,0 +1,14 @@
+# gazelle:proto disable
+load("@io_bazel_rules_go//go:def.bzl", "gazelle")
+
+gazelle(
+    name = "gazelle",
+    command = "fix",
+    prefix = "github.com/kubernetes-incubator/apiserver-builder",
+    external = "vendored",
+    args = [
+        "-build_file_name",
+        "BUILD,BUILD.bazel",
+    ],
+)
+
