@@ -17,26 +17,31 @@ limitations under the License.
 package openstackmodel
 
 import (
-	"k8s.io/kops/pkg/model"
+	"fmt"
+
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 )
 
-type OpenstackModelContext struct {
-	*model.KopsModelContext
+// ServerGroupModelBuilder configures server group objects
+type ServerGroupModelBuilder struct {
+	*OpenstackModelContext
+	Lifecycle *fi.Lifecycle
 }
 
-func (c *OpenstackModelContext) LinkToNetwork() *openstacktasks.Network {
-	return &openstacktasks.Network{Name: s(c.ClusterName())}
-}
+var _ fi.ModelBuilder = &ServerGroupModelBuilder{}
 
-func (c *OpenstackModelContext) LinkToRouter(name *string) *openstacktasks.Router {
-	return &openstacktasks.Router{Name: name}
-}
+func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
+	clusterName := b.ClusterName()
 
-func (c *OpenstackModelContext) LinkToSubnet(name *string) *openstacktasks.Subnet {
-	return &openstacktasks.Subnet{Name: name}
-}
+	for _, ig := range b.InstanceGroups {
+		t := &openstacktasks.ServerGroup{
+			Name:      s(fmt.Sprintf("%s-%s", clusterName, ig.Spec.Role)),
+			Policies:  []string{"anti-affinity"},
+			Lifecycle: b.Lifecycle,
+		}
+		c.AddTask(t)
+	}
 
-func (c *OpenstackModelContext) LinkToPort(name *string) *openstacktasks.Port {
-	return &openstacktasks.Port{Name: name}
+	return nil
 }

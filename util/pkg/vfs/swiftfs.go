@@ -18,9 +18,11 @@ package vfs
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/hex"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -47,16 +49,32 @@ func NewSwiftClient() (*gophercloud.ServiceClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	provider, err := openstack.AuthenticatedClient(authOption)
+
+	pc, err := openstack.NewClient(authOption.IdentityEndpoint)
+	if err != nil {
+		return nil, fmt.Errorf("error building openstack provider client: %v", err)
+	}
+
+	tlsconfig := &tls.Config{}
+	tlsconfig.InsecureSkipVerify = true
+	transport := &http.Transport{TLSClientConfig: tlsconfig}
+	pc.HTTPClient = http.Client{
+		Transport: transport,
+	}
+
+	glog.V(2).Info("authenticating to keystone")
+
+	err = openstack.Authenticate(pc, authOption)
 	if err != nil {
 		return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
 	}
+
 	endpointOpt, err := config.GetServiceConfig("Swift")
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := openstack.NewObjectStorageV1(provider, endpointOpt)
+	client, err := openstack.NewObjectStorageV1(pc, endpointOpt)
 	if err != nil {
 		return nil, fmt.Errorf("error building swift client: %v", err)
 	}
