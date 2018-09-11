@@ -1,23 +1,48 @@
 # ROADMAP
 
-The kops 1.N.x version officially supports kubernetes 1.N.x and earlier.  While kubernetes 1.99 will likely run with kops 1.98,
-the configuration will probably not be correct (for example docker versions, CNI versions etc).
+kops 1.N.x _officially_ supports Kubernetes 1.N.x and earlier. Sometimes you can get lucky and kops 1.N.x manages Kubernetes 1.N+1.x perfectly. We cannot guarantee that this will always be the case and we recommend waiting for an official release of kops with minor version >= the version of Kubernetes you wish to install. Please see the []compatibility matrix](README.md#Compatibility_Matrix) for further questions.
 
-kops 1.N.0 is released when it is believed that kubernetes 1.N.x is stable, along with all the core addons (e.g. networking).
-This can mean that kops can release months after the release of kubernetes.  It's also not a deterministic release criteria,
-particularly with some networking plugins that are supported by kops but themselves still under development.  We discussed
-this challenge in kops office hours in March 2018, and the consensus was that we want to keep this, but that we should release
-alphas & betas much earlier so that users can try out new kubernetes versions on release day.
+There is a natural lag between the release of the next Kubernetes version and when kops supports it. While the first patch versions of a minor Kubernetes release are burning in, we finalize support. And then when we feel that Kubernetes 1.N.x has become reasonably stable, that's when we will release the corresponding version of kops with version specific configuration and a selection of add-ons to match.
 
-For the next few releases this means that:
 
-* 1.9.0 release target April 7th
-* 1.10 alpha.1 with release of kops 1.9.0 (April 7th)
-* 1.10 release target April 28th
-* 1.11 alpha.1 at release of kops 1.10
-* 1.11 beta.1 at release of k8s 1.11
-* 1.12 alpha.1 at release of kops 1.11 etc
+In practive, sometimes this means that kops can release months after the release of Kubernetes. We sincerely hope that is not the case, but it happens. We also realize that this is not an entirely determininstic release process, particularly with respect to networking plugins that are continually in development. We understand this is in some ways not ideal, but the community decided to continue down this path and in lieu of quickly releasing and iterating on patch versions, to release alpha and beta versions early and often. We are still working on improving this process as seen below. 
 
+Our goal will be to have an official kops release less than a month after the corresponding Kubernetes version is released. 
+A rough outline of our envisioned timeline/release cycle with respect to the Kubernetes release follows. Our release process for alphas and betas will be getting some attention so that we can get these alpha and beta releases out to the community and other developers to help close out open items. 
+
+July 1: Kubernetes 1.W.0 is released.
+July 7: kops 1.W.beta1
+July 21: kops 1.W.0 released
+August 15: kops 1.W+1alpha1
+August 31: kops 1.W+1alpha2
+etc...
+September 25: Kubernetes1.W+1.RC-X
+Oct 1: Kubernetes 1.W+1.0
+Oct 7: kops 1.W+1beta1
+Oct 21: kops 1.W+1.0
+
+
+# CURRENT ROADMAP
+
+## kops 1.11
+
+* support for Kubernetes 1.11
+* greatly improved automated release process that helps us to get kops into more people's hands, earlier
+* etcd3 default
+* more sophisticated networking, iam, security group options
+* add ons
+* cluster/machines API support?
+
+## kops 1.12
+
+* support for Kubernetes 1.12
+* networking spec
+* documentation revamp
+* update recommendations and defaults for instances, disks, etc, with respect to performance tuning
+* etcd3 improvements
+
+
+# HISTORICAL Roadmap Items
 
 ### _kops 1.10_
 
@@ -34,8 +59,6 @@ For the next few releases this means that:
 * Make the etcd-manager the default, deprecate the protokube-integrated approach
 * kops-server
 * Machines API support (including bare-metal)
-
-# HISTORICAL
 
 # 1.9
 
