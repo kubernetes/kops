@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
-	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	cinderv2 "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -44,9 +44,9 @@ func (c *Volume) CompareWithID() *string {
 
 func (c *Volume) Find(context *fi.Context) (*Volume, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
-	opt := cinder.ListOpts{
+	opt := cinderv2.ListOpts{
 		Name:     fi.StringValue(c.Name),
-		Metadata: cloud.GetCloudTags(),
+		Metadata: c.Tags,
 	}
 	volumes, err := cloud.ListVolumes(opt)
 	if err != nil {
@@ -115,7 +115,7 @@ func (_ *Volume) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 	if a == nil {
 		glog.V(2).Infof("Creating PersistentVolume with Name:%q", fi.StringValue(e.Name))
 
-		opt := cinder.CreateOpts{
+		opt := cinderv2.CreateOpts{
 			Size:             int(*e.SizeGB),
 			AvailabilityZone: fi.StringValue(e.AvailabilityZone),
 			Metadata:         e.Tags,

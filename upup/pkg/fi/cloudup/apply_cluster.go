@@ -481,10 +481,20 @@ func (c *ApplyClusterCmd) Run() error {
 			region = osCloud.Region()
 
 			l.AddTypes(map[string]interface{}{
-				"sshKey": &openstacktasks.SSHKey{},
+				// Compute
+				"sshKey":      &openstacktasks.SSHKey{},
+				"serverGroup": &openstacktasks.ServerGroup{},
+				"instance":    &openstacktasks.Instance{},
 				// Networking
-				"network": &openstacktasks.Network{},
-				"router":  &openstacktasks.Router{},
+				"network":           &openstacktasks.Network{},
+				"subnet":            &openstacktasks.Subnet{},
+				"router":            &openstacktasks.Router{},
+				"securityGroup":     &openstacktasks.SecurityGroup{},
+				"securityGroupRule": &openstacktasks.SecurityGroupRule{},
+				// BlockStorage
+				"volume": &openstacktasks.Volume{},
+				// LB
+				"lb": &openstacktasks.LB{},
 			})
 
 			if len(sshPublicKeys) == 0 {
@@ -642,8 +652,10 @@ func (c *ApplyClusterCmd) Run() error {
 				}
 
 				l.Builders = append(l.Builders,
+					&openstackmodel.APILBModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &clusterLifecycle},
 					&openstackmodel.NetworkModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &networkLifecycle},
 					&openstackmodel.SSHKeyModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
+					&openstackmodel.ServerGroupModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &clusterLifecycle},
 				)
 
 			default:
@@ -735,6 +747,15 @@ func (c *ApplyClusterCmd) Run() error {
 		// BareMetal tasks will go here
 
 	case kops.CloudProviderOpenstack:
+		openstackModelContext := &openstackmodel.OpenstackModelContext{
+			KopsModelContext: modelContext,
+		}
+
+		l.Builders = append(l.Builders, &openstackmodel.InstanceModelBuilder{
+			OpenstackModelContext: openstackModelContext,
+			//BootstrapScript:       bootstrapScriptBuilder,
+			Lifecycle: &clusterLifecycle,
+		})
 
 	default:
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
