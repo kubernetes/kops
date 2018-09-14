@@ -772,5 +772,5 @@ bazel-upload: bazel-version-dist # Upload kops to S3
 .PHONY: update-machine-types
 update-machine-types: #Update machine_types.go
 	go build -o hack/machine_types/machine_types  ${KOPS_ROOT}/hack/machine_types/machine_types.go
-	hack/machine_types/machine_types
+	hack/machine_types/machine_types --out upup/pkg/fi/cloudup/awsup/machine_types.go
 	go fmt upup/pkg/fi/cloudup/awsup/machine_types.go
