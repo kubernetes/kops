@@ -22,9 +22,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
-	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -37,12 +35,26 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
+var outputPath = ""
+
 func init() {
+	flag.StringVar(&outputPath, "out", outputPath, "file to write")
+
 	flag.Parse()
 	flag.Lookup("logtostderr").Value.Set("true")
 }
 
 func main() {
+	if err := run(); err != nil {
+		fmt.Fprintf(os.Stderr, "must specify output file with --out\n")
+		os.Exit(1)
+	}
+}
+
+func run() error {
+	if outputPath == "" {
+		return fmt.Errorf("must specify output file with --out\n")
+	}
 
 	glog.Info("Beginning AWS Machine Refresh")
 
@@ -55,7 +67,14 @@ func main() {
 		"t2.medium":  24,
 		"t2.large":   36,
 		"t2.xlarge":  54,
-		"t2.2xlarge": 81,
+		"t2.2xlarge": 81.6,
+		"t3.nano":    6,
+		"t3.micro":   12,
+		"t3.small":   24,
+		"t3.medium":  24,
+		"t3.large":   36,
+		"t3.xlarge":  96,
+		"t3.2xlarge": 192,
 	}
 
 	machines := []awsup.AWSMachineTypeInfo{}
@@ -63,7 +82,13 @@ func main() {
 
 	prices := []aws.JSONValue{}
 
-	svc := pricing.New(session.New(), aws.NewConfig().WithRegion("us-east-1"))
+	config := aws.NewConfig()
+	// Give verbose errors on auth problems
+	config = config.WithCredentialsChainVerboseErrors(true)
+	// Default to us-east-1
+	config = config.WithRegion("us-east-1")
+
+	svc := pricing.New(session.New(), config)
 	typeTerm := pricing.FilterTypeTermMatch
 	input := &pricing.GetProductsInput{
 		Filters: []*pricing.Filter{
@@ -99,24 +124,23 @@ func main() {
 			if aerr, ok := err.(awserr.Error); ok {
 				switch aerr.Code() {
 				case pricing.ErrCodeInternalErrorException:
-					glog.Errorf(pricing.ErrCodeInternalErrorException, aerr.Error())
+					return fmt.Errorf("%s: %v", pricing.ErrCodeInternalErrorException, aerr)
 				case pricing.ErrCodeInvalidParameterException:
-					glog.Errorf(pricing.ErrCodeInvalidParameterException, aerr.Error())
+					return fmt.Errorf("%s: %v", pricing.ErrCodeInvalidParameterException, aerr)
 				case pricing.ErrCodeNotFoundException:
-					glog.Errorf(pricing.ErrCodeNotFoundException, aerr.Error())
+					return fmt.Errorf("%s: %v", pricing.ErrCodeNotFoundException, aerr)
 				case pricing.ErrCodeInvalidNextTokenException:
-					glog.Errorf(pricing.ErrCodeInvalidNextTokenException, aerr.Error())
+					return fmt.Errorf("%s: %v", pricing.ErrCodeInvalidNextTokenException, aerr)
 				case pricing.ErrCodeExpiredNextTokenException:
-					glog.Errorf(pricing.ErrCodeExpiredNextTokenException, aerr.Error())
+					return fmt.Errorf("%s: %v", pricing.ErrCodeExpiredNextTokenException, aerr)
 				default:
-					glog.Errorf(aerr.Error())
+					return aerr
 				}
 			} else {
 				// Print the error, cast err to awserr.Error to get the Code and
 				// Message from an error.
-				glog.Errorf(err.Error())
+				return err
 			}
-			return
 		}
 
 		for _, p := range result.PriceList {
@@ -186,7 +210,23 @@ func main() {
 	}
 	sort.Strings(sortedFamilies)
 
-	sort.Slice(machines, func(i, j int) bool { return machines[i].Name < machines[j].Name })
+	sort.Slice(machines, func(i, j int) bool {
+		// Sort first by family
+		tokensI := strings.Split(machines[i].Name, ".")
+		tokensJ := strings.Split(machines[j].Name, ".")
+
+		if tokensI[0] != tokensJ[0] {
+			return tokensI[0] < tokensJ[0]
+		}
+
+		// Then sort by size within the family
+		if machines[i].MemoryGB != machines[j].MemoryGB {
+			return machines[i].MemoryGB < machines[j].MemoryGB
+		}
+
+		// Fallback: sort by name
+		return machines[i].Name < machines[j].Name
+	})
 
 	var output string
 
@@ -200,32 +240,42 @@ func main() {
 				} else {
 					ecu = fmt.Sprint(m.ECU)
 				}
+
 				body := fmt.Sprintf(`
 	{
 		Name: "%s",
 		MemoryGB: %v,
 		ECU: %v,
 		Cores: %v,
-		EphemeralDisks: %#v,
-	},`, m.Name, m.MemoryGB, ecu, m.Cores, m.EphemeralDisks)
+	`, m.Name, m.MemoryGB, ecu, m.Cores)
 				output = output + body
+
+				// Avoid awkward []int(nil) syntax
+				if len(m.EphemeralDisks) == 0 {
+					output = output + "EphemeralDisks: nil,\n"
+				} else {
+					output = output + fmt.Sprintf("EphemeralDisks: %#v,\n", m.EphemeralDisks)
+				}
+
+				if m.Burstable {
+					output = output + "Burstable: true,\n"
+				}
+
+				if m.GPU {
+					output = output + "GPU: true,\n"
+				}
+
+				output = output + "},\n"
 			}
 		}
 		output = output + "\n"
 	}
 
-	ex, err := os.Executable()
-	if err != nil {
-		glog.Error(err)
-	}
-	exPath := filepath.Dir(ex)
-	path := exPath + "/../../upup/pkg/fi/cloudup/awsup/machine_types.go"
+	glog.Infof("Writing changes to %v", outputPath)
 
-	glog.Infof("Writing changes to %v", path)
-
-	fileInput, err := ioutil.ReadFile(path)
+	fileInput, err := ioutil.ReadFile(outputPath)
 	if err != nil {
-		log.Fatalln(err)
+		return fmt.Errorf("error reading %s: %v", outputPath, err)
 	}
 	scanner := bufio.NewScanner(bytes.NewReader(fileInput))
 
@@ -233,11 +283,13 @@ func main() {
 
 	var newfile string
 	flag := false
+	done := false
 	for scanner.Scan() {
 		line := scanner.Text()
 
 		if strings.Contains(line, "END GENERATED CONTENT") {
 			flag = false
+			done = true
 		}
 		if !flag {
 			newfile = newfile + line + "\n"
@@ -248,13 +300,19 @@ func main() {
 		}
 	}
 
-	err = ioutil.WriteFile(path, []byte(newfile), 0644)
+	if !done {
+		return fmt.Errorf("BEGIN GENERATED CONTENT / END GENERATED CONTENT markers not found")
+	}
+
+	err = ioutil.WriteFile(outputPath, []byte(newfile), 0644)
 	if err != nil {
-		glog.Error(err)
+		return fmt.Errorf("error writing %s: %v", outputPath, err)
 	}
 
 	glog.Info("Done.")
 	glog.Flush()
+
+	return nil
 }
 
 func stringToFloat32(s string) float32 {
