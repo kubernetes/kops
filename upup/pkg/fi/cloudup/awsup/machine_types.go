@@ -85,6 +85,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          2,
 		EphemeralDisks: []int{350},
 	},
+
 	{
 		Name:           "c1.xlarge",
 		MemoryGB:       7,
@@ -95,33 +96,13 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 
 	// c3 family
 	{
-		Name:           "c3.2xlarge",
-		MemoryGB:       15,
-		ECU:            28,
-		Cores:          8,
-		EphemeralDisks: []int{80, 80},
-	},
-	{
-		Name:           "c3.4xlarge",
-		MemoryGB:       30,
-		ECU:            55,
-		Cores:          16,
-		EphemeralDisks: []int{160, 160},
-	},
-	{
-		Name:           "c3.8xlarge",
-		MemoryGB:       60,
-		ECU:            108,
-		Cores:          32,
-		EphemeralDisks: []int{320, 320},
-	},
-	{
 		Name:           "c3.large",
 		MemoryGB:       3.75,
 		ECU:            7,
 		Cores:          2,
 		EphemeralDisks: []int{16, 16},
 	},
+
 	{
 		Name:           "c3.xlarge",
 		MemoryGB:       7.5,
@@ -130,116 +111,121 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: []int{40, 40},
 	},
 
-	// c4 family
 	{
-		Name:           "c4.2xlarge",
+		Name:           "c3.2xlarge",
 		MemoryGB:       15,
-		ECU:            31,
+		ECU:            28,
 		Cores:          8,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: []int{80, 80},
 	},
+
 	{
-		Name:           "c4.4xlarge",
+		Name:           "c3.4xlarge",
 		MemoryGB:       30,
-		ECU:            62,
+		ECU:            55,
 		Cores:          16,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: []int{160, 160},
 	},
+
 	{
-		Name:           "c4.8xlarge",
+		Name:           "c3.8xlarge",
 		MemoryGB:       60,
-		ECU:            132,
-		Cores:          36,
-		EphemeralDisks: []int(nil),
+		ECU:            108,
+		Cores:          32,
+		EphemeralDisks: []int{320, 320},
 	},
+
+	// c4 family
 	{
 		Name:           "c4.large",
 		MemoryGB:       3.75,
 		ECU:            8,
 		Cores:          2,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
 	},
+
 	{
 		Name:           "c4.xlarge",
 		MemoryGB:       7.5,
 		ECU:            16,
 		Cores:          4,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "c4.2xlarge",
+		MemoryGB:       15,
+		ECU:            31,
+		Cores:          8,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "c4.4xlarge",
+		MemoryGB:       30,
+		ECU:            62,
+		Cores:          16,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "c4.8xlarge",
+		MemoryGB:       60,
+		ECU:            132,
+		Cores:          36,
+		EphemeralDisks: nil,
 	},
 
 	// c5 family
-	{
-		Name:           "c5.18xlarge",
-		MemoryGB:       144,
-		ECU:            281,
-		Cores:          72,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "c5.2xlarge",
-		MemoryGB:       16,
-		ECU:            34,
-		Cores:          8,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "c5.4xlarge",
-		MemoryGB:       32,
-		ECU:            68,
-		Cores:          16,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "c5.9xlarge",
-		MemoryGB:       72,
-		ECU:            141,
-		Cores:          36,
-		EphemeralDisks: []int(nil),
-	},
 	{
 		Name:           "c5.large",
 		MemoryGB:       4,
 		ECU:            9,
 		Cores:          2,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
 	},
+
 	{
 		Name:           "c5.xlarge",
 		MemoryGB:       8,
 		ECU:            17,
 		Cores:          4,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
 	},
 
-	// c5d family
 	{
-		Name:           "c5d.18xlarge",
-		MemoryGB:       144,
-		ECU:            281,
-		Cores:          72,
-		EphemeralDisks: []int{1800},
-	},
-	{
-		Name:           "c5d.2xlarge",
+		Name:           "c5.2xlarge",
 		MemoryGB:       16,
 		ECU:            34,
 		Cores:          8,
-		EphemeralDisks: []int{200},
+		EphemeralDisks: nil,
 	},
+
 	{
-		Name:           "c5d.4xlarge",
+		Name:           "c5.4xlarge",
 		MemoryGB:       32,
 		ECU:            68,
 		Cores:          16,
-		EphemeralDisks: []int{400},
+		EphemeralDisks: nil,
 	},
+
 	{
-		Name:           "c5d.9xlarge",
+		Name:           "c5.9xlarge",
 		MemoryGB:       72,
 		ECU:            141,
 		Cores:          36,
-		EphemeralDisks: []int{900},
+		EphemeralDisks: nil,
 	},
+
+	{
+		Name:           "c5.18xlarge",
+		MemoryGB:       144,
+		ECU:            281,
+		Cores:          72,
+		EphemeralDisks: nil,
+	},
+
+	// c5d family
 	{
 		Name:           "c5d.large",
 		MemoryGB:       4,
@@ -247,12 +233,45 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          2,
 		EphemeralDisks: []int{50},
 	},
+
 	{
 		Name:           "c5d.xlarge",
 		MemoryGB:       8,
 		ECU:            17,
 		Cores:          4,
 		EphemeralDisks: []int{100},
+	},
+
+	{
+		Name:           "c5d.2xlarge",
+		MemoryGB:       16,
+		ECU:            34,
+		Cores:          8,
+		EphemeralDisks: []int{200},
+	},
+
+	{
+		Name:           "c5d.4xlarge",
+		MemoryGB:       32,
+		ECU:            68,
+		Cores:          16,
+		EphemeralDisks: []int{400},
+	},
+
+	{
+		Name:           "c5d.9xlarge",
+		MemoryGB:       72,
+		ECU:            141,
+		Cores:          36,
+		EphemeralDisks: []int{900},
+	},
+
+	{
+		Name:           "c5d.18xlarge",
+		MemoryGB:       144,
+		ECU:            281,
+		Cores:          72,
+		EphemeralDisks: []int{1800},
 	},
 
 	// cc2 family
@@ -275,27 +294,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 
 	// d2 family
 	{
-		Name:           "d2.2xlarge",
-		MemoryGB:       61,
-		ECU:            28,
-		Cores:          8,
-		EphemeralDisks: []int{2000, 2000, 2000, 2000, 2000, 2000},
-	},
-	{
-		Name:           "d2.4xlarge",
-		MemoryGB:       122,
-		ECU:            56,
-		Cores:          16,
-		EphemeralDisks: []int{2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000},
-	},
-	{
-		Name:           "d2.8xlarge",
-		MemoryGB:       244,
-		ECU:            116,
-		Cores:          36,
-		EphemeralDisks: []int{2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000},
-	},
-	{
 		Name:           "d2.xlarge",
 		MemoryGB:       30.5,
 		ECU:            14,
@@ -303,20 +301,45 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: []int{2000, 2000, 2000},
 	},
 
-	// f1 family
 	{
-		Name:           "f1.16xlarge",
-		MemoryGB:       976,
-		ECU:            188,
-		Cores:          64,
-		EphemeralDisks: []int(nil),
+		Name:           "d2.2xlarge",
+		MemoryGB:       61,
+		ECU:            28,
+		Cores:          8,
+		EphemeralDisks: []int{2000, 2000, 2000, 2000, 2000, 2000},
 	},
+
+	{
+		Name:           "d2.4xlarge",
+		MemoryGB:       122,
+		ECU:            56,
+		Cores:          16,
+		EphemeralDisks: []int{2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000},
+	},
+
+	{
+		Name:           "d2.8xlarge",
+		MemoryGB:       244,
+		ECU:            116,
+		Cores:          36,
+		EphemeralDisks: []int{2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000},
+	},
+
+	// f1 family
 	{
 		Name:           "f1.2xlarge",
 		MemoryGB:       122,
 		ECU:            26,
 		Cores:          8,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "f1.16xlarge",
+		MemoryGB:       976,
+		ECU:            188,
+		Cores:          64,
+		EphemeralDisks: nil,
 	},
 
 	// g2 family
@@ -326,46 +349,47 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            26,
 		Cores:          8,
 		EphemeralDisks: []int{60},
+		GPU:            true,
 	},
+
 	{
 		Name:           "g2.8xlarge",
 		MemoryGB:       60,
 		ECU:            104,
 		Cores:          32,
 		EphemeralDisks: []int{120, 120},
+		GPU:            true,
 	},
 
 	// g3 family
-	{
-		Name:           "g3.16xlarge",
-		MemoryGB:       488,
-		ECU:            188,
-		Cores:          64,
-		EphemeralDisks: []int(nil),
-	},
 	{
 		Name:           "g3.4xlarge",
 		MemoryGB:       122,
 		ECU:            47,
 		Cores:          16,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+		GPU:            true,
 	},
+
 	{
 		Name:           "g3.8xlarge",
 		MemoryGB:       244,
 		ECU:            94,
 		Cores:          32,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+		GPU:            true,
+	},
+
+	{
+		Name:           "g3.16xlarge",
+		MemoryGB:       488,
+		ECU:            188,
+		Cores:          64,
+		EphemeralDisks: nil,
+		GPU:            true,
 	},
 
 	// h1 family
-	{
-		Name:           "h1.16xlarge",
-		MemoryGB:       256,
-		ECU:            188,
-		Cores:          64,
-		EphemeralDisks: []int{2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000},
-	},
 	{
 		Name:           "h1.2xlarge",
 		MemoryGB:       32,
@@ -373,6 +397,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          8,
 		EphemeralDisks: []int{2000},
 	},
+
 	{
 		Name:           "h1.4xlarge",
 		MemoryGB:       64,
@@ -380,12 +405,21 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          16,
 		EphemeralDisks: []int{2000, 2000},
 	},
+
 	{
 		Name:           "h1.8xlarge",
 		MemoryGB:       128,
 		ECU:            99,
 		Cores:          32,
 		EphemeralDisks: []int{2000, 2000, 2000, 2000},
+	},
+
+	{
+		Name:           "h1.16xlarge",
+		MemoryGB:       256,
+		ECU:            188,
+		Cores:          64,
+		EphemeralDisks: []int{2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000},
 	},
 
 	// hs1 family
@@ -399,27 +433,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 
 	// i2 family
 	{
-		Name:           "i2.2xlarge",
-		MemoryGB:       61,
-		ECU:            27,
-		Cores:          8,
-		EphemeralDisks: []int{800, 800},
-	},
-	{
-		Name:           "i2.4xlarge",
-		MemoryGB:       122,
-		ECU:            53,
-		Cores:          16,
-		EphemeralDisks: []int{800, 800, 800, 800},
-	},
-	{
-		Name:           "i2.8xlarge",
-		MemoryGB:       244,
-		ECU:            104,
-		Cores:          32,
-		EphemeralDisks: []int{800, 800, 800, 800, 800, 800, 800, 800},
-	},
-	{
 		Name:           "i2.xlarge",
 		MemoryGB:       30.5,
 		ECU:            14,
@@ -427,35 +440,31 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: []int{800},
 	},
 
-	// i3 family
 	{
-		Name:           "i3.16xlarge",
-		MemoryGB:       488,
-		ECU:            200,
-		Cores:          64,
-		EphemeralDisks: []int{1900, 1900, 1900, 1900, 1900, 1900, 1900, 1900},
-	},
-	{
-		Name:           "i3.2xlarge",
+		Name:           "i2.2xlarge",
 		MemoryGB:       61,
 		ECU:            27,
 		Cores:          8,
-		EphemeralDisks: []int{1900},
+		EphemeralDisks: []int{800, 800},
 	},
+
 	{
-		Name:           "i3.4xlarge",
+		Name:           "i2.4xlarge",
 		MemoryGB:       122,
 		ECU:            53,
 		Cores:          16,
-		EphemeralDisks: []int{1900, 1900},
+		EphemeralDisks: []int{800, 800, 800, 800},
 	},
+
 	{
-		Name:           "i3.8xlarge",
+		Name:           "i2.8xlarge",
 		MemoryGB:       244,
-		ECU:            99,
+		ECU:            104,
 		Cores:          32,
-		EphemeralDisks: []int{1900, 1900, 1900, 1900},
+		EphemeralDisks: []int{800, 800, 800, 800, 800, 800, 800, 800},
 	},
+
+	// i3 family
 	{
 		Name:           "i3.large",
 		MemoryGB:       15.25,
@@ -463,13 +472,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          2,
 		EphemeralDisks: []int{475},
 	},
-	{
-		Name:           "i3.metal",
-		MemoryGB:       512,
-		ECU:            208,
-		Cores:          72,
-		EphemeralDisks: []int{1900, 1900, 1900, 1900, 1900, 1900, 1900, 1900},
-	},
+
 	{
 		Name:           "i3.xlarge",
 		MemoryGB:       30.5,
@@ -478,21 +481,47 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: []int{950},
 	},
 
+	{
+		Name:           "i3.2xlarge",
+		MemoryGB:       61,
+		ECU:            27,
+		Cores:          8,
+		EphemeralDisks: []int{1900},
+	},
+
+	{
+		Name:           "i3.4xlarge",
+		MemoryGB:       122,
+		ECU:            53,
+		Cores:          16,
+		EphemeralDisks: []int{1900, 1900},
+	},
+
+	{
+		Name:           "i3.8xlarge",
+		MemoryGB:       244,
+		ECU:            99,
+		Cores:          32,
+		EphemeralDisks: []int{1900, 1900, 1900, 1900},
+	},
+
+	{
+		Name:           "i3.16xlarge",
+		MemoryGB:       488,
+		ECU:            200,
+		Cores:          64,
+		EphemeralDisks: []int{1900, 1900, 1900, 1900, 1900, 1900, 1900, 1900},
+	},
+
+	{
+		Name:           "i3.metal",
+		MemoryGB:       512,
+		ECU:            208,
+		Cores:          72,
+		EphemeralDisks: []int{1900, 1900, 1900, 1900, 1900, 1900, 1900, 1900},
+	},
+
 	// m1 family
-	{
-		Name:           "m1.large",
-		MemoryGB:       7.5,
-		ECU:            4,
-		Cores:          2,
-		EphemeralDisks: []int{420, 420},
-	},
-	{
-		Name:           "m1.medium",
-		MemoryGB:       3.75,
-		ECU:            2,
-		Cores:          1,
-		EphemeralDisks: []int{410},
-	},
 	{
 		Name:           "m1.small",
 		MemoryGB:       1.7,
@@ -500,6 +529,23 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          1,
 		EphemeralDisks: []int{160},
 	},
+
+	{
+		Name:           "m1.medium",
+		MemoryGB:       3.75,
+		ECU:            2,
+		Cores:          1,
+		EphemeralDisks: []int{410},
+	},
+
+	{
+		Name:           "m1.large",
+		MemoryGB:       7.5,
+		ECU:            4,
+		Cores:          2,
+		EphemeralDisks: []int{420, 420},
+	},
+
 	{
 		Name:           "m1.xlarge",
 		MemoryGB:       15,
@@ -510,20 +556,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 
 	// m2 family
 	{
-		Name:           "m2.2xlarge",
-		MemoryGB:       34.2,
-		ECU:            13,
-		Cores:          4,
-		EphemeralDisks: []int{850},
-	},
-	{
-		Name:           "m2.4xlarge",
-		MemoryGB:       68.4,
-		ECU:            26,
-		Cores:          8,
-		EphemeralDisks: []int{840, 840},
-	},
-	{
 		Name:           "m2.xlarge",
 		MemoryGB:       17.1,
 		ECU:            6.5,
@@ -531,21 +563,23 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: []int{420},
 	},
 
-	// m3 family
 	{
-		Name:           "m3.2xlarge",
-		MemoryGB:       30,
+		Name:           "m2.2xlarge",
+		MemoryGB:       34.2,
+		ECU:            13,
+		Cores:          4,
+		EphemeralDisks: []int{850},
+	},
+
+	{
+		Name:           "m2.4xlarge",
+		MemoryGB:       68.4,
 		ECU:            26,
 		Cores:          8,
-		EphemeralDisks: []int{80, 80},
+		EphemeralDisks: []int{840, 840},
 	},
-	{
-		Name:           "m3.large",
-		MemoryGB:       7.5,
-		ECU:            6.5,
-		Cores:          2,
-		EphemeralDisks: []int{32},
-	},
+
+	// m3 family
 	{
 		Name:           "m3.medium",
 		MemoryGB:       3.75,
@@ -553,6 +587,15 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          1,
 		EphemeralDisks: []int{4},
 	},
+
+	{
+		Name:           "m3.large",
+		MemoryGB:       7.5,
+		ECU:            6.5,
+		Cores:          2,
+		EphemeralDisks: []int{32},
+	},
+
 	{
 		Name:           "m3.xlarge",
 		MemoryGB:       15,
@@ -561,123 +604,113 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: []int{40, 40},
 	},
 
-	// m4 family
 	{
-		Name:           "m4.10xlarge",
-		MemoryGB:       160,
-		ECU:            124.5,
-		Cores:          40,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "m4.16xlarge",
-		MemoryGB:       256,
-		ECU:            188,
-		Cores:          64,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "m4.2xlarge",
-		MemoryGB:       32,
+		Name:           "m3.2xlarge",
+		MemoryGB:       30,
 		ECU:            26,
 		Cores:          8,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: []int{80, 80},
 	},
-	{
-		Name:           "m4.4xlarge",
-		MemoryGB:       64,
-		ECU:            53.5,
-		Cores:          16,
-		EphemeralDisks: []int(nil),
-	},
+
+	// m4 family
 	{
 		Name:           "m4.large",
 		MemoryGB:       8,
 		ECU:            6.5,
 		Cores:          2,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
 	},
+
 	{
 		Name:           "m4.xlarge",
 		MemoryGB:       16,
 		ECU:            13,
 		Cores:          4,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "m4.2xlarge",
+		MemoryGB:       32,
+		ECU:            26,
+		Cores:          8,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "m4.4xlarge",
+		MemoryGB:       64,
+		ECU:            53.5,
+		Cores:          16,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "m4.10xlarge",
+		MemoryGB:       160,
+		ECU:            124.5,
+		Cores:          40,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "m4.16xlarge",
+		MemoryGB:       256,
+		ECU:            188,
+		Cores:          64,
+		EphemeralDisks: nil,
 	},
 
 	// m5 family
-	{
-		Name:           "m5.12xlarge",
-		MemoryGB:       192,
-		ECU:            173,
-		Cores:          48,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "m5.24xlarge",
-		MemoryGB:       384,
-		ECU:            345,
-		Cores:          96,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "m5.2xlarge",
-		MemoryGB:       32,
-		ECU:            31,
-		Cores:          8,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "m5.4xlarge",
-		MemoryGB:       64,
-		ECU:            60,
-		Cores:          16,
-		EphemeralDisks: []int(nil),
-	},
 	{
 		Name:           "m5.large",
 		MemoryGB:       8,
 		ECU:            8,
 		Cores:          2,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
 	},
+
 	{
 		Name:           "m5.xlarge",
 		MemoryGB:       16,
 		ECU:            16,
 		Cores:          4,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
 	},
 
-	// m5d family
 	{
-		Name:           "m5d.12xlarge",
-		MemoryGB:       192,
-		ECU:            173,
-		Cores:          48,
-		EphemeralDisks: []int{900, 900},
-	},
-	{
-		Name:           "m5d.24xlarge",
-		MemoryGB:       384,
-		ECU:            345,
-		Cores:          96,
-		EphemeralDisks: []int{900, 900, 900, 900},
-	},
-	{
-		Name:           "m5d.2xlarge",
+		Name:           "m5.2xlarge",
 		MemoryGB:       32,
 		ECU:            31,
 		Cores:          8,
-		EphemeralDisks: []int{300},
+		EphemeralDisks: nil,
 	},
+
 	{
-		Name:           "m5d.4xlarge",
+		Name:           "m5.4xlarge",
 		MemoryGB:       64,
 		ECU:            60,
 		Cores:          16,
-		EphemeralDisks: []int{300, 300},
+		EphemeralDisks: nil,
 	},
+
+	{
+		Name:           "m5.12xlarge",
+		MemoryGB:       192,
+		ECU:            173,
+		Cores:          48,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "m5.24xlarge",
+		MemoryGB:       384,
+		ECU:            345,
+		Cores:          96,
+		EphemeralDisks: nil,
+	},
+
+	// m5d family
 	{
 		Name:           "m5d.large",
 		MemoryGB:       8,
@@ -685,6 +718,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          2,
 		EphemeralDisks: []int{75},
 	},
+
 	{
 		Name:           "m5d.xlarge",
 		MemoryGB:       16,
@@ -693,74 +727,95 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: []int{150},
 	},
 
+	{
+		Name:           "m5d.2xlarge",
+		MemoryGB:       32,
+		ECU:            31,
+		Cores:          8,
+		EphemeralDisks: []int{300},
+	},
+
+	{
+		Name:           "m5d.4xlarge",
+		MemoryGB:       64,
+		ECU:            60,
+		Cores:          16,
+		EphemeralDisks: []int{300, 300},
+	},
+
+	{
+		Name:           "m5d.12xlarge",
+		MemoryGB:       192,
+		ECU:            173,
+		Cores:          48,
+		EphemeralDisks: []int{900, 900},
+	},
+
+	{
+		Name:           "m5d.24xlarge",
+		MemoryGB:       384,
+		ECU:            345,
+		Cores:          96,
+		EphemeralDisks: []int{900, 900, 900, 900},
+	},
+
 	// p2 family
-	{
-		Name:           "p2.16xlarge",
-		MemoryGB:       768,
-		ECU:            188,
-		Cores:          64,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "p2.8xlarge",
-		MemoryGB:       488,
-		ECU:            94,
-		Cores:          32,
-		EphemeralDisks: []int(nil),
-	},
 	{
 		Name:           "p2.xlarge",
 		MemoryGB:       61,
 		ECU:            12,
 		Cores:          4,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+		GPU:            true,
+	},
+
+	{
+		Name:           "p2.8xlarge",
+		MemoryGB:       488,
+		ECU:            94,
+		Cores:          32,
+		EphemeralDisks: nil,
+		GPU:            true,
+	},
+
+	{
+		Name:           "p2.16xlarge",
+		MemoryGB:       768,
+		ECU:            188,
+		Cores:          64,
+		EphemeralDisks: nil,
+		GPU:            true,
 	},
 
 	// p3 family
-	{
-		Name:           "p3.16xlarge",
-		MemoryGB:       488,
-		ECU:            188,
-		Cores:          64,
-		EphemeralDisks: []int(nil),
-	},
 	{
 		Name:           "p3.2xlarge",
 		MemoryGB:       61,
 		ECU:            26,
 		Cores:          8,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+		GPU:            true,
 	},
+
 	{
 		Name:           "p3.8xlarge",
 		MemoryGB:       244,
 		ECU:            94,
 		Cores:          32,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+		GPU:            true,
+	},
+
+	{
+		Name:           "p3.16xlarge",
+		MemoryGB:       488,
+		ECU:            188,
+		Cores:          64,
+		EphemeralDisks: nil,
+		GPU:            true,
 	},
 
 	// r3 family
-	{
-		Name:           "r3.2xlarge",
-		MemoryGB:       61,
-		ECU:            26,
-		Cores:          8,
-		EphemeralDisks: []int{160},
-	},
-	{
-		Name:           "r3.4xlarge",
-		MemoryGB:       122,
-		ECU:            52,
-		Cores:          16,
-		EphemeralDisks: []int{320},
-	},
-	{
-		Name:           "r3.8xlarge",
-		MemoryGB:       244,
-		ECU:            104,
-		Cores:          32,
-		EphemeralDisks: []int{320, 320},
-	},
 	{
 		Name:           "r3.large",
 		MemoryGB:       15.25,
@@ -768,6 +823,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          2,
 		EphemeralDisks: []int{32},
 	},
+
 	{
 		Name:           "r3.xlarge",
 		MemoryGB:       30.5,
@@ -776,123 +832,129 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: []int{80},
 	},
 
-	// r4 family
 	{
-		Name:           "r4.16xlarge",
-		MemoryGB:       488,
-		ECU:            195,
-		Cores:          64,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "r4.2xlarge",
+		Name:           "r3.2xlarge",
 		MemoryGB:       61,
-		ECU:            27,
+		ECU:            26,
 		Cores:          8,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: []int{160},
 	},
+
 	{
-		Name:           "r4.4xlarge",
+		Name:           "r3.4xlarge",
 		MemoryGB:       122,
-		ECU:            53,
+		ECU:            52,
 		Cores:          16,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: []int{320},
 	},
+
 	{
-		Name:           "r4.8xlarge",
+		Name:           "r3.8xlarge",
 		MemoryGB:       244,
-		ECU:            99,
+		ECU:            104,
 		Cores:          32,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: []int{320, 320},
 	},
+
+	// r4 family
 	{
 		Name:           "r4.large",
 		MemoryGB:       15.25,
 		ECU:            7,
 		Cores:          2,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
 	},
+
 	{
 		Name:           "r4.xlarge",
 		MemoryGB:       30.5,
 		ECU:            13.5,
 		Cores:          4,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "r4.2xlarge",
+		MemoryGB:       61,
+		ECU:            27,
+		Cores:          8,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "r4.4xlarge",
+		MemoryGB:       122,
+		ECU:            53,
+		Cores:          16,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "r4.8xlarge",
+		MemoryGB:       244,
+		ECU:            99,
+		Cores:          32,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "r4.16xlarge",
+		MemoryGB:       488,
+		ECU:            195,
+		Cores:          64,
+		EphemeralDisks: nil,
 	},
 
 	// r5 family
-	{
-		Name:           "r5.12xlarge",
-		MemoryGB:       384,
-		ECU:            173,
-		Cores:          48,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "r5.24xlarge",
-		MemoryGB:       768,
-		ECU:            345,
-		Cores:          96,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "r5.2xlarge",
-		MemoryGB:       64,
-		ECU:            31,
-		Cores:          8,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "r5.4xlarge",
-		MemoryGB:       128,
-		ECU:            60,
-		Cores:          16,
-		EphemeralDisks: []int(nil),
-	},
 	{
 		Name:           "r5.large",
 		MemoryGB:       16,
 		ECU:            8,
 		Cores:          2,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
 	},
+
 	{
 		Name:           "r5.xlarge",
 		MemoryGB:       32,
 		ECU:            16,
 		Cores:          4,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
 	},
 
-	// r5d family
 	{
-		Name:           "r5d.12xlarge",
-		MemoryGB:       384,
-		ECU:            173,
-		Cores:          48,
-		EphemeralDisks: []int{900, 900},
-	},
-	{
-		Name:           "r5d.24xlarge",
-		MemoryGB:       768,
-		ECU:            345,
-		Cores:          96,
-		EphemeralDisks: []int{900, 900, 900, 900},
-	},
-	{
-		Name:           "r5d.2xlarge",
+		Name:           "r5.2xlarge",
 		MemoryGB:       64,
 		ECU:            31,
 		Cores:          8,
-		EphemeralDisks: []int{300},
+		EphemeralDisks: nil,
 	},
+
 	{
-		Name:           "r5d.4xlarge",
+		Name:           "r5.4xlarge",
 		MemoryGB:       128,
 		ECU:            60,
 		Cores:          16,
-		EphemeralDisks: []int{300, 300},
+		EphemeralDisks: nil,
 	},
+
+	{
+		Name:           "r5.12xlarge",
+		MemoryGB:       384,
+		ECU:            173,
+		Cores:          48,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "r5.24xlarge",
+		MemoryGB:       768,
+		ECU:            345,
+		Cores:          96,
+		EphemeralDisks: nil,
+	},
+
+	// r5d family
 	{
 		Name:           "r5d.large",
 		MemoryGB:       16,
@@ -900,6 +962,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          2,
 		EphemeralDisks: []int{75},
 	},
+
 	{
 		Name:           "r5d.xlarge",
 		MemoryGB:       32,
@@ -908,115 +971,174 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: []int{150},
 	},
 
+	{
+		Name:           "r5d.2xlarge",
+		MemoryGB:       64,
+		ECU:            31,
+		Cores:          8,
+		EphemeralDisks: []int{300},
+	},
+
+	{
+		Name:           "r5d.4xlarge",
+		MemoryGB:       128,
+		ECU:            60,
+		Cores:          16,
+		EphemeralDisks: []int{300, 300},
+	},
+
+	{
+		Name:           "r5d.12xlarge",
+		MemoryGB:       384,
+		ECU:            173,
+		Cores:          48,
+		EphemeralDisks: []int{900, 900},
+	},
+
+	{
+		Name:           "r5d.24xlarge",
+		MemoryGB:       768,
+		ECU:            345,
+		Cores:          96,
+		EphemeralDisks: []int{900, 900, 900, 900},
+	},
+
 	// t1 family
 	{
 		Name:           "t1.micro",
 		MemoryGB:       0.613,
 		ECU:            1 * BurstableCreditsToECUS,
 		Cores:          1,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+		Burstable:      true,
 	},
 
 	// t2 family
-	{
-		Name:           "t2.2xlarge",
-		MemoryGB:       32,
-		ECU:            81 * BurstableCreditsToECUS,
-		Cores:          8,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "t2.large",
-		MemoryGB:       8,
-		ECU:            36 * BurstableCreditsToECUS,
-		Cores:          2,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "t2.medium",
-		MemoryGB:       4,
-		ECU:            24 * BurstableCreditsToECUS,
-		Cores:          2,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "t2.micro",
-		MemoryGB:       1,
-		ECU:            6 * BurstableCreditsToECUS,
-		Cores:          1,
-		EphemeralDisks: []int(nil),
-	},
 	{
 		Name:           "t2.nano",
 		MemoryGB:       0.5,
 		ECU:            3 * BurstableCreditsToECUS,
 		Cores:          1,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+		Burstable:      true,
 	},
+
+	{
+		Name:           "t2.micro",
+		MemoryGB:       1,
+		ECU:            6 * BurstableCreditsToECUS,
+		Cores:          1,
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+
 	{
 		Name:           "t2.small",
 		MemoryGB:       2,
 		ECU:            12 * BurstableCreditsToECUS,
 		Cores:          1,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+		Burstable:      true,
 	},
+
+	{
+		Name:           "t2.medium",
+		MemoryGB:       4,
+		ECU:            24 * BurstableCreditsToECUS,
+		Cores:          2,
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+
+	{
+		Name:           "t2.large",
+		MemoryGB:       8,
+		ECU:            36 * BurstableCreditsToECUS,
+		Cores:          2,
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+
 	{
 		Name:           "t2.xlarge",
 		MemoryGB:       16,
 		ECU:            54 * BurstableCreditsToECUS,
 		Cores:          4,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+
+	{
+		Name:           "t2.2xlarge",
+		MemoryGB:       32,
+		ECU:            81.6 * BurstableCreditsToECUS,
+		Cores:          8,
+		EphemeralDisks: nil,
+		Burstable:      true,
 	},
 
 	// t3 family
 	{
-		Name:           "t3.2xlarge",
-		MemoryGB:       32,
-		ECU:            0 * BurstableCreditsToECUS,
-		Cores:          8,
-		EphemeralDisks: []int(nil),
-	},
-	{
-		Name:           "t3.large",
-		MemoryGB:       8,
-		ECU:            0 * BurstableCreditsToECUS,
+		Name:           "t3.nano",
+		MemoryGB:       0.5,
+		ECU:            6 * BurstableCreditsToECUS,
 		Cores:          2,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+		Burstable:      true,
 	},
-	{
-		Name:           "t3.medium",
-		MemoryGB:       4,
-		ECU:            0 * BurstableCreditsToECUS,
-		Cores:          2,
-		EphemeralDisks: []int(nil),
-	},
+
 	{
 		Name:           "t3.micro",
 		MemoryGB:       1,
-		ECU:            0 * BurstableCreditsToECUS,
+		ECU:            12 * BurstableCreditsToECUS,
 		Cores:          2,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+		Burstable:      true,
 	},
-	{
-		Name:           "t3.nano",
-		MemoryGB:       0.5,
-		ECU:            0 * BurstableCreditsToECUS,
-		Cores:          2,
-		EphemeralDisks: []int(nil),
-	},
+
 	{
 		Name:           "t3.small",
 		MemoryGB:       2,
-		ECU:            0 * BurstableCreditsToECUS,
+		ECU:            24 * BurstableCreditsToECUS,
 		Cores:          2,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+		Burstable:      true,
 	},
+
+	{
+		Name:           "t3.medium",
+		MemoryGB:       4,
+		ECU:            24 * BurstableCreditsToECUS,
+		Cores:          2,
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+
+	{
+		Name:           "t3.large",
+		MemoryGB:       8,
+		ECU:            36 * BurstableCreditsToECUS,
+		Cores:          2,
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+
 	{
 		Name:           "t3.xlarge",
 		MemoryGB:       16,
-		ECU:            0 * BurstableCreditsToECUS,
+		ECU:            96 * BurstableCreditsToECUS,
 		Cores:          4,
-		EphemeralDisks: []int(nil),
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+
+	{
+		Name:           "t3.2xlarge",
+		MemoryGB:       32,
+		ECU:            192 * BurstableCreditsToECUS,
+		Cores:          8,
+		EphemeralDisks: nil,
+		Burstable:      true,
 	},
 
 	// x1 family
@@ -1027,6 +1149,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          64,
 		EphemeralDisks: []int{1920},
 	},
+
 	{
 		Name:           "x1.32xlarge",
 		MemoryGB:       1952,
@@ -1037,41 +1160,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 
 	// x1e family
 	{
-		Name:           "x1e.16xlarge",
-		MemoryGB:       1952,
-		ECU:            179,
-		Cores:          64,
-		EphemeralDisks: []int{1920},
-	},
-	{
-		Name:           "x1e.2xlarge",
-		MemoryGB:       244,
-		ECU:            23,
-		Cores:          8,
-		EphemeralDisks: []int{240},
-	},
-	{
-		Name:           "x1e.32xlarge",
-		MemoryGB:       3904,
-		ECU:            340,
-		Cores:          128,
-		EphemeralDisks: []int{1920, 1920},
-	},
-	{
-		Name:           "x1e.4xlarge",
-		MemoryGB:       488,
-		ECU:            47,
-		Cores:          16,
-		EphemeralDisks: []int{480},
-	},
-	{
-		Name:           "x1e.8xlarge",
-		MemoryGB:       976,
-		ECU:            91,
-		Cores:          32,
-		EphemeralDisks: []int{960},
-	},
-	{
 		Name:           "x1e.xlarge",
 		MemoryGB:       122,
 		ECU:            12,
@@ -1079,35 +1167,47 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: []int{120},
 	},
 
-	// z1d family
 	{
-		Name:           "z1d.12xlarge",
-		MemoryGB:       384,
-		ECU:            235,
-		Cores:          48,
-		EphemeralDisks: []int{900, 900},
-	},
-	{
-		Name:           "z1d.2xlarge",
-		MemoryGB:       64,
-		ECU:            43,
+		Name:           "x1e.2xlarge",
+		MemoryGB:       244,
+		ECU:            23,
 		Cores:          8,
-		EphemeralDisks: []int{300},
+		EphemeralDisks: []int{240},
 	},
+
 	{
-		Name:           "z1d.3xlarge",
-		MemoryGB:       96,
-		ECU:            65,
-		Cores:          12,
-		EphemeralDisks: []int{450},
+		Name:           "x1e.4xlarge",
+		MemoryGB:       488,
+		ECU:            47,
+		Cores:          16,
+		EphemeralDisks: []int{480},
 	},
+
 	{
-		Name:           "z1d.6xlarge",
-		MemoryGB:       192,
-		ECU:            128,
-		Cores:          24,
-		EphemeralDisks: []int{900},
+		Name:           "x1e.8xlarge",
+		MemoryGB:       976,
+		ECU:            91,
+		Cores:          32,
+		EphemeralDisks: []int{960},
 	},
+
+	{
+		Name:           "x1e.16xlarge",
+		MemoryGB:       1952,
+		ECU:            179,
+		Cores:          64,
+		EphemeralDisks: []int{1920},
+	},
+
+	{
+		Name:           "x1e.32xlarge",
+		MemoryGB:       3904,
+		ECU:            340,
+		Cores:          128,
+		EphemeralDisks: []int{1920, 1920},
+	},
+
+	// z1d family
 	{
 		Name:           "z1d.large",
 		MemoryGB:       16,
@@ -1115,6 +1215,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          2,
 		EphemeralDisks: []int{75},
 	},
+
 	{
 		Name:           "z1d.xlarge",
 		MemoryGB:       32,
@@ -1122,5 +1223,38 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          4,
 		EphemeralDisks: []int{150},
 	},
+
+	{
+		Name:           "z1d.2xlarge",
+		MemoryGB:       64,
+		ECU:            43,
+		Cores:          8,
+		EphemeralDisks: []int{300},
+	},
+
+	{
+		Name:           "z1d.3xlarge",
+		MemoryGB:       96,
+		ECU:            65,
+		Cores:          12,
+		EphemeralDisks: []int{450},
+	},
+
+	{
+		Name:           "z1d.6xlarge",
+		MemoryGB:       192,
+		ECU:            128,
+		Cores:          24,
+		EphemeralDisks: []int{900},
+	},
+
+	{
+		Name:           "z1d.12xlarge",
+		MemoryGB:       384,
+		ECU:            235,
+		Cores:          48,
+		EphemeralDisks: []int{900, 900},
+	},
+
 	// END GENERATED CONTENT
 }
