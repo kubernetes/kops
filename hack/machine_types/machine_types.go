@@ -22,7 +22,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"sort"
 	"strconv"
@@ -46,9 +45,15 @@ func init() {
 }
 
 func main() {
-	if outputPath == "" {
+	if err := run(); err != nil {
 		fmt.Fprintf(os.Stderr, "must specify output file with --out\n")
 		os.Exit(1)
+	}
+}
+
+func run() error {
+	if outputPath == "" {
+		return fmt.Errorf("must specify output file with --out\n")
 	}
 
 	glog.Info("Beginning AWS Machine Refresh")
@@ -119,24 +124,23 @@ func main() {
 			if aerr, ok := err.(awserr.Error); ok {
 				switch aerr.Code() {
 				case pricing.ErrCodeInternalErrorException:
-					glog.Errorf(pricing.ErrCodeInternalErrorException, aerr.Error())
+					return fmt.Errorf("%s: %v", pricing.ErrCodeInternalErrorException, aerr)
 				case pricing.ErrCodeInvalidParameterException:
-					glog.Errorf(pricing.ErrCodeInvalidParameterException, aerr.Error())
+					return fmt.Errorf("%s: %v", pricing.ErrCodeInvalidParameterException, aerr)
 				case pricing.ErrCodeNotFoundException:
-					glog.Errorf(pricing.ErrCodeNotFoundException, aerr.Error())
+					return fmt.Errorf("%s: %v", pricing.ErrCodeNotFoundException, aerr)
 				case pricing.ErrCodeInvalidNextTokenException:
-					glog.Errorf(pricing.ErrCodeInvalidNextTokenException, aerr.Error())
+					return fmt.Errorf("%s: %v", pricing.ErrCodeInvalidNextTokenException, aerr)
 				case pricing.ErrCodeExpiredNextTokenException:
-					glog.Errorf(pricing.ErrCodeExpiredNextTokenException, aerr.Error())
+					return fmt.Errorf("%s: %v", pricing.ErrCodeExpiredNextTokenException, aerr)
 				default:
-					glog.Errorf(aerr.Error())
+					return aerr
 				}
 			} else {
 				// Print the error, cast err to awserr.Error to get the Code and
 				// Message from an error.
-				glog.Errorf(err.Error())
+				return err
 			}
-			return
 		}
 
 		for _, p := range result.PriceList {
@@ -271,7 +275,7 @@ func main() {
 
 	fileInput, err := ioutil.ReadFile(outputPath)
 	if err != nil {
-		log.Fatalln(err)
+		return fmt.Errorf("error reading %s: %v", outputPath, err)
 	}
 	scanner := bufio.NewScanner(bytes.NewReader(fileInput))
 
@@ -297,16 +301,18 @@ func main() {
 	}
 
 	if !done {
-		glog.Fatalf("BEGIN GENERATED CONTENT / END GENERATED CONTENT markers not found")
+		return fmt.Errorf("BEGIN GENERATED CONTENT / END GENERATED CONTENT markers not found")
 	}
 
 	err = ioutil.WriteFile(outputPath, []byte(newfile), 0644)
 	if err != nil {
-		glog.Error(err)
+		return fmt.Errorf("error writing %s: %v", outputPath, err)
 	}
 
 	glog.Info("Done.")
 	glog.Flush()
+
+	return nil
 }
 
 func stringToFloat32(s string) float32 {
