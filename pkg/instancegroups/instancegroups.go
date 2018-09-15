@@ -67,10 +67,14 @@ func NewRollingUpdateInstanceGroup(cloud fi.Cloud, cloudGroup *cloudinstances.Cl
 }
 
 // promptInteractive asks the user to continue, mostly copied from vendor/google.golang.org/api/examples/gmail.go.
-func promptInteractive(upgradedHost string) (stopPrompting bool, err error) {
+func promptInteractive(upgradedHostId, upgradedHostName string) (stopPrompting bool, err error) {
 	stopPrompting = false
 	scanner := bufio.NewScanner(os.Stdin)
-	glog.Infof("Pausing after finished %q", upgradedHost)
+	if upgradedHostName != "" {
+		glog.Infof("Pausing after finished %q, node %q", upgradedHostId, upgradedHostName)
+	} else {
+		glog.Infof("Pausing after finished %q", upgradedHostId)
+	}
 	fmt.Print("Continue? (Y)es, (N)o, (A)lwaysYes: [Y] ")
 	scanner.Scan()
 	err = scanner.Err()
@@ -182,7 +186,6 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 			continue
 		} else if rollingUpdateData.CloudOnly {
 			glog.Warningf("Not validating cluster as cloudonly flag is set.")
-			continue
 
 		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 			glog.Infof("Validating the cluster.")
@@ -196,15 +199,16 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 
 				glog.Warningf("Cluster validation failed after removing instance, proceeding since fail-on-validate is set to false: %v", err)
 			}
-			if rollingUpdateData.Interactive {
-				stopPrompting, err := promptInteractive(nodeName)
-				if err != nil {
-					return err
-				}
-				if stopPrompting {
-					// Is a pointer to a struct, changes here push back into the original
-					rollingUpdateData.Interactive = false
-				}
+		}
+
+		if rollingUpdateData.Interactive {
+			stopPrompting, err := promptInteractive(u.ID, nodeName)
+			if err != nil {
+				return err
+			}
+			if stopPrompting {
+				// Is a pointer to a struct, changes here push back into the original
+				rollingUpdateData.Interactive = false
 			}
 		}
 	}
