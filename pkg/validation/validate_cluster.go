@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"strings"
 
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
@@ -185,14 +186,27 @@ func (v *ValidationCluster) collectPodFailures(client kubernetes.Interface) erro
 		if pod.Status.Phase == v1.PodSucceeded {
 			continue
 		}
-		for _, status := range pod.Status.ContainerStatuses {
-			if !status.Ready {
-				v.addError(&ValidationError{
-					Kind:    "Pod",
-					Name:    "kube-system/" + pod.Name,
-					Message: fmt.Sprintf("kube-system pod %q is not healthy", pod.Name),
-				})
+		if pod.Status.Phase == v1.PodPending {
+			v.addError(&ValidationError{
+				Kind:    "Pod",
+				Name:    "kube-system/" + pod.Name,
+				Message: fmt.Sprintf("kube-system pod %q is pending", pod.Name),
+			})
+			continue
+		}
+		var notready []string
+		for _, container := range pod.Status.ContainerStatuses {
+			if !container.Ready {
+				notready = append(notready, container.Name)
 			}
+		}
+		if len(notready) != 0 {
+			v.addError(&ValidationError{
+				Kind:    "Pod",
+				Name:    "kube-system/" + pod.Name,
+				Message: fmt.Sprintf("kube-system pod %q is not ready (%s)", pod.Name, strings.Join(notready, ",")),
+			})
+
 		}
 	}
 	return nil
