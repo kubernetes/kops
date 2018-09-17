@@ -24,6 +24,9 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/featureflag"
@@ -172,12 +175,26 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 			}
 		}
 
+		// We unregister the node before deleting it; if the replacement comes up with the same name it would otherwise still be cordoned
+		// (It often seems like GCE tries to re-use names)
+		if !isBastion && !rollingUpdateData.CloudOnly {
+			if u.Node == nil {
+				glog.Warningf("no kubernetes Node associated with %s, skipping node deletion", instanceId)
+			} else {
+				glog.Infof("deleting node %q from kubernetes", nodeName)
+				if err := r.deleteNode(u.Node, rollingUpdateData); err != nil {
+					return fmt.Errorf("error deleting node %q: %v", nodeName, err)
+				}
+			}
+		}
+
 		if err = r.DeleteInstance(u); err != nil {
-			glog.Errorf("Error deleting aws instance %q, node %q: %v", instanceId, nodeName, err)
+			glog.Errorf("error deleting instance %q, node %q: %v", instanceId, nodeName, err)
 			return err
 		}
 
 		// Wait for the minimum interval
+		glog.Infof("waiting for %v after terminating instance", sleepAfterTerminate)
 		time.Sleep(sleepAfterTerminate)
 
 		if isBastion {
@@ -272,7 +289,6 @@ func (r *RollingUpdateInstanceGroup) ValidateCluster(rollingUpdateData *RollingU
 
 // DeleteInstance deletes an Cloud Instance.
 func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInstanceGroupMember) error {
-
 	id := u.ID
 	nodeName := ""
 	if u.Node != nil {
@@ -341,6 +357,22 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 	if rollingUpdateData.PostDrainDelay > 0 {
 		glog.Infof("Waiting for %s for pods to stabilize after draining.", rollingUpdateData.PostDrainDelay)
 		time.Sleep(rollingUpdateData.PostDrainDelay)
+	}
+
+	return nil
+}
+
+// DeleteNode deletes a node from the k8s API.  It does not delete the underlying instance.
+func (r *RollingUpdateInstanceGroup) deleteNode(node *corev1.Node, rollingUpdateData *RollingUpdateCluster) error {
+	k8sclient := rollingUpdateData.K8sClient
+	var options metav1.DeleteOptions
+	err := k8sclient.CoreV1().Nodes().Delete(node.Name, &options)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil
+		}
+
+		return fmt.Errorf("error deleting node: %v", err)
 	}
 
 	return nil
