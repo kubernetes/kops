@@ -17,6 +17,9 @@ required = [
 
   # Needed for bazel generation / verification
   "github.com/bazelbuild/bazel-gazelle/cmd/gazelle",
+
+  # Needed for spell checking
+  "github.com/client9/misspell/cmd/misspell",
 ]
 
 [prune]
