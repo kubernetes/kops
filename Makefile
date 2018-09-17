@@ -527,15 +527,7 @@ verify-packages: ${BINDATA_TARGETS}
 # find release notes, remove PR titles and output the rest to .build, then run misspell on all files
 .PHONY: verify-misspelling
 verify-misspelling:
-	@which misspell 2>/dev/null ; if [ $$? -eq 1 ]; then \
-		go get -u github.com/client9/misspell/cmd/misspell; \
-	fi
-	@mkdir -p .build/docs
-	@find . -type f \( -name "*.go*" -o -name "*.md*" \) -a -path "./docs/releases/*" -exec basename {} \; | \
-		xargs -I{} sh -c 'sed -e "/^\* .*github.com\/kubernetes\/kops\/pull/d" docs/releases/{} > .build/docs/$(basename {})'
-	@find . -type f \( -name "*.go*" -o -name "*.md*" \) -a \( -not -path "./vendor/*" -not -path "./_vendor/*" -not -path "./docs/releases/*" \) | \
-		sed -e /README-ES.md/d -e /node_modules/d | \
-		xargs misspell -error
+	hack/verify-spelling.sh
 
 .PHONY: verify-gendocs
 verify-gendocs: ${KOPS}
