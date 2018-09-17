@@ -477,6 +477,8 @@ func guessSSHUser(image *ec2.Image) string {
 		return "core"
 	case awsup.WellKnownAccountKopeio:
 		return "admin"
+	case awsup.WellKnownAccountUbuntu:
+		return "ubuntu"
 	}
 	return ""
 }
