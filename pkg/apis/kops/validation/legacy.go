@@ -233,7 +233,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	}
 
 	// Check Canal Networking Spec if used
-	if c.Spec.Networking.Canal != nil {
+	if c.Spec.Networking != nil && c.Spec.Networking.Canal != nil {
 		action := c.Spec.Networking.Canal.DefaultEndpointToHostAction
 		switch action {
 		case "", "ACCEPT", "DROP", "RETURN":
@@ -730,7 +730,7 @@ func validateEtcdMemberSpec(spec *kops.EtcdMemberSpec, fieldPath *field.Path) *f
 }
 
 func validateCilium(c *kops.Cluster) *field.Error {
-	if c.Spec.Networking.Cilium != nil {
+	if c.Spec.Networking != nil && c.Spec.Networking.Cilium != nil {
 		specPath := field.NewPath("Spec")
 
 		minimalKubeVersion := semver.MustParse("1.7.0")
