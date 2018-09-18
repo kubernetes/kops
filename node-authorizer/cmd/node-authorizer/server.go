@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/node-authorizer/pkg/authorizers/aws"
 	"k8s.io/kops/node-authorizer/pkg/server"
 
+	"github.com/gambol99/aws-sso/pkg/utils"
 	"github.com/urfave/cli"
 )
 
@@ -91,6 +92,12 @@ func addServerCommand() cli.Command {
 				Value:  "node-authorizer-client",
 			},
 			cli.DurationFlag{
+				Name:   "certificate-ttl",
+				Usage:  "check the certificates exist and if not wait for x period `DURATION`",
+				EnvVar: "CERTIFICATE_TTL",
+				Value:  10 * time.Minute,
+			},
+			cli.DurationFlag{
 				Name:   "authorization-timeout",
 				Usage:  "max time permitted for a authorization `DURATION`",
 				EnvVar: "AUTHORIZATION_TIMEOUT",
@@ -122,6 +129,16 @@ func actionServerCommand(ctx *cli.Context) error {
 	if ctx.String("authorizer") == "" {
 		return errors.New("no authorizer specified")
 	}
+
+	// @step: should we wait for the certificates to appear
+	if ctx.Duration("certificate-ttl") > 0 {
+		var files = []string{ctx.String("tls-cert"), ctx.String("tls-client-ca"), ctx.String("tls-private-key")}
+		var timeout = ctx.Duration("certificate-ttl")
+		if err := waitForCertificates(files, timeout); err != nil {
+			return err
+		}
+	}
+
 	// @step: create the authorizers
 	auth, err := createAuthorizer(ctx.String("authorizer"), config)
 	if err != nil {
@@ -134,6 +151,38 @@ func actionServerCommand(ctx *cli.Context) error {
 	}
 
 	return svc.Run()
+}
+
+// waitForCertificates is responisble for waiting for the certificates to appear
+func waitForCertificates(files []string, timeout time.Duration) error {
+	doneCh := make(chan struct{}, 0)
+
+	go func() {
+		expires := time.Now().Add(timeout)
+
+		// @step: iterate the file we are looking for
+		for _, x := range files {
+			if x == "" {
+				continue
+			}
+			// @step: iterate until we find the file
+			for {
+				if utils.FileExists(x) {
+					break
+				}
+				fmt.Printf("waiting for file: %s to appear, timeouts in %s", x, expires.Sub(time.Now()))
+				time.Sleep(5 * time.Second)
+			}
+		}
+		doneCh <- struct{}{}
+	}()
+
+	select {
+	case <-doneCh:
+		return nil
+	case <-time.After(timeout):
+		return fmt.Errorf("unable to find the certificates after %s timeout", timeout)
+	}
 }
 
 // createAuthorizer creates and returns a authorizer

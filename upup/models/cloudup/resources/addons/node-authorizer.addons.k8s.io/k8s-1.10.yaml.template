@@ -152,18 +152,18 @@ spec:
         - name: {{ $name }}
           image: {{ $na.Image }}
           args:
-          - server
-          - --authorization-timeout={{ $na.Timeout.Duration }}
-          - --authorizer={{ $na.Authorizer }}
-          - --cluster-name={{ ClusterName }}
-          {{- range $na.Features }}
-          - --feature={{ . }}
-          {{- end }}
-          - --listen=0.0.0.0:{{ $na.Port }}
-          - --tls-cert=/config/tls.pem
-          - --tls-client-ca=/config/ca.pem
-          - --tls-private-key=/config/tls-key.pem
-          - --token-ttl={{ $na.TokenTTL.Duration }}
+            - server
+            - --authorization-timeout={{ $na.Timeout.Duration }}
+            - --authorizer={{ $na.Authorizer }}
+            - --cluster-name={{ ClusterName }}
+            {{- range $na.Features }}
+            - --feature={{ . }}
+            {{- end }}
+            - --listen=0.0.0.0:{{ $na.Port }}
+            - --tls-cert=/config/tls.pem
+            - --tls-client-ca=/config/ca.pem
+            - --tls-private-key=/config/tls-key.pem
+            - --token-ttl={{ $na.TokenTTL.Duration }}
           resources:
             limits:
               cpu: 100m
