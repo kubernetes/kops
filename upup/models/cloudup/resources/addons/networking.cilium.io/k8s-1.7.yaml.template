@@ -388,13 +388,17 @@ spec:
         {{- end }}
       tolerations:
       - effect: NoSchedule
-        key: node-role.kubernetes.io/master
-      - effect: NoSchedule
         key: node.cloudprovider.kubernetes.io/uninitialized
         value: "true"
       # Mark cilium's pod as critical for rescheduling
       - key: CriticalAddonsOnly
         operator: "Exists"
+      - effect: NoExecute
+        operator: Exists
+      # Allow the pod to run on all nodes.  This is required
+      # for cluster communication
+      - effect: NoSchedule
+        operator: Exists
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
