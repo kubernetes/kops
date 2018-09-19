@@ -166,6 +166,8 @@ type ClusterSpec struct {
 	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
 	// Target allows for us to nest extra config for targets such as terraform
 	Target *TargetSpec `json:"target,omitempty"`
+	// If set true, do not include SSH key
+	NoSSHKey bool `json:"noSSHKey,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization

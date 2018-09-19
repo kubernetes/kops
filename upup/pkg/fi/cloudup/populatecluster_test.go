@@ -529,3 +529,19 @@ func TestPopulateCluster_KubeController_Fail(t *testing.T) {
 		t.Fatalf("AttachDetachReconcileSyncPeriodh is not supported in 1.4.7")
 	}
 }
+
+func TestPopulateCluster_NoSSHKey(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.NoSSHKey = true
+
+	err := PerformAssignments(c)
+	if err != nil {
+		t.Fatalf("error from PerformAssignments: %v", err)
+	}
+
+	full, err := build(c)
+
+	if full.Spec.NoSSHKey != true {
+		t.Fatalf("Unexpected NoSSHKey: %v", full.Spec.NoSSHKey)
+	}
+}

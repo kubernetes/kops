@@ -103,6 +103,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 		}
 	}
 
+	if spec.NoSSHKey {
+		//?
+	}
+
 	return allErrs
 }
 

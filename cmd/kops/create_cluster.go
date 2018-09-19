@@ -89,6 +89,9 @@ type CreateClusterOptions struct {
 	MasterSecurityGroups []string
 	AssociatePublicIP    *bool
 
+	// Set true to not include SSH keys in instance configuration
+	NoSSHKey bool
+
 	// SSHPublicKeys is a map of the SSH public keys we should configure; required on AWS, not required on GCE
 	SSHPublicKeys map[string][]byte
 
@@ -276,6 +279,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
 	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", options.KubernetesVersion, "Version of kubernetes to run (defaults to version in channel)")
+
+	cmd.Flags().BoolVar(&options.NoSSHKey, "no-ssh-key", false, "Set true to not include SSH key in instance configuration")
 
 	cmd.Flags().StringVar(&sshPublicKey, "ssh-public-key", sshPublicKey, "SSH public key to use (defaults to ~/.ssh/id_rsa.pub on AWS)")
 
@@ -1079,6 +1084,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.SSHAccess = c.SSHAccess
 	}
 
+	if c.NoSSHKey {
+		cluster.Spec.NoSSHKey = c.NoSSHKey
+	}
+
 	if err := commands.SetClusterFields(c.Overrides, cluster, instanceGroups); err != nil {
 		return err
 	}
@@ -1156,43 +1165,44 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}
 
-	if len(c.SSHPublicKeys) == 0 {
-		autoloadSSHPublicKeys := true
-		switch c.Cloud {
-		case "gce":
-			// We don't normally use SSH keys on GCE
-			autoloadSSHPublicKeys = false
+	if !c.NoSSHKey {
+		if len(c.SSHPublicKeys) == 0 {
+			autoloadSSHPublicKeys := true
+			switch c.Cloud {
+			case "gce":
+				// We don't normally use SSH keys on GCE
+				autoloadSSHPublicKeys = false
+			}
+
+			if autoloadSSHPublicKeys {
+				// Load from default location, if found
+				sshPublicKeyPath := "~/.ssh/id_rsa.pub"
+				c.SSHPublicKeys, err = loadSSHPublicKeys(sshPublicKeyPath)
+				if err != nil {
+					// Don't wrap file-not-found
+					if os.IsNotExist(err) {
+						glog.V(2).Infof("ssh key not found at %s", sshPublicKeyPath)
+					} else {
+						return fmt.Errorf("error reading SSH key file %q: %v", sshPublicKeyPath, err)
+					}
+				}
+			}
 		}
 
-		if autoloadSSHPublicKeys {
-			// Load from default location, if found
-			sshPublicKeyPath := "~/.ssh/id_rsa.pub"
-			c.SSHPublicKeys, err = loadSSHPublicKeys(sshPublicKeyPath)
+		if len(c.SSHPublicKeys) != 0 {
+			sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
 			if err != nil {
-				// Don't wrap file-not-found
-				if os.IsNotExist(err) {
-					glog.V(2).Infof("ssh key not found at %s", sshPublicKeyPath)
-				} else {
-					return fmt.Errorf("error reading SSH key file %q: %v", sshPublicKeyPath, err)
+				return err
+			}
+
+			for k, data := range c.SSHPublicKeys {
+				err = sshCredentialStore.AddSSHPublicKey(k, data)
+				if err != nil {
+					return fmt.Errorf("error adding SSH public key: %v", err)
 				}
 			}
 		}
 	}
-
-	if len(c.SSHPublicKeys) != 0 {
-		sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
-		if err != nil {
-			return err
-		}
-
-		for k, data := range c.SSHPublicKeys {
-			err = sshCredentialStore.AddSSHPublicKey(k, data)
-			if err != nil {
-				return fmt.Errorf("error adding SSH public key: %v", err)
-			}
-		}
-	}
-
 	// Can we actually get to this if??
 	if targetName != "" {
 		if isDryrun {
@@ -1207,6 +1217,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		updateClusterOptions.Target = c.Target
 		updateClusterOptions.Models = c.Models
 		updateClusterOptions.OutDir = c.OutDir
+		updateClusterOptions.NoSSHKey = c.NoSSHKey
 
 		// SSHPublicKey has already been mapped
 		updateClusterOptions.SSHPublicKey = ""

@@ -62,6 +62,7 @@ type UpdateClusterOptions struct {
 	Models          string
 	OutDir          string
 	SSHPublicKey    string
+	NoSSHKey        bool
 	RunTasksOptions fi.RunTasksOptions
 	CreateKubecfg   bool
 
@@ -79,6 +80,8 @@ func (o *UpdateClusterOptions) InitDefaults() {
 	o.SSHPublicKey = ""
 	o.OutDir = ""
 	o.CreateKubecfg = true
+	o.NoSSHKey = false
+
 	o.RunTasksOptions.InitDefaults()
 }
 
@@ -108,6 +111,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Create cloud resources, without --yes update is in dry run mode")
 	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform, cloudformation")
 	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
+	cmd.Flags().BoolVar(&options.NoSSHKey, "no-ssh-key", options.NoSSHKey, "Enable to not incude ssh key")
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
@@ -178,7 +182,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		return results, err
 	}
 
-	if c.SSHPublicKey != "" {
+	if c.SSHPublicKey != "" && !c.NoSSHKey {
 		fmt.Fprintf(out, "--ssh-public-key on update is deprecated - please use `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub` instead\n", cluster.ObjectMeta.Name)
 
 		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
@@ -339,15 +343,21 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 
 		// More suggestions on first run
 		if firstRun {
+
+			var sshCmdArgs string
+			if !cluster.Spec.NoSSHKey {
+				sshCmdArgs = "-i ~/.ssh/id_rsa admin@"
+			}
+
 			fmt.Fprintf(sb, "Suggestions:\n")
 			fmt.Fprintf(sb, " * validate cluster: kops validate cluster\n")
 			fmt.Fprintf(sb, " * list nodes: kubectl get nodes --show-labels\n")
 			if !usesBastion(instanceGroups) {
-				fmt.Fprintf(sb, " * ssh to the master: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
+				fmt.Fprintf(sb, " * ssh to the master: ssh %s%s\n", sshCmdArgs, cluster.Spec.MasterPublicName)
 			} else {
 				bastionPublicName := findBastionPublicName(cluster)
 				if bastionPublicName != "" {
-					fmt.Fprintf(sb, " * ssh to the bastion: ssh -A -i ~/.ssh/id_rsa admin@%s\n", bastionPublicName)
+					fmt.Fprintf(sb, " * ssh to the bastion: ssh -A %s%s\n", sshCmdArgs, bastionPublicName)
 				} else {
 					fmt.Fprintf(sb, " * to ssh to the bastion, you probably want to configure a bastionPublicName.\n")
 				}
