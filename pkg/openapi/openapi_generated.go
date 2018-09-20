@@ -26980,6 +26980,20 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								},
 							},
 						},
+						"igSecurityGroups": {
+							SchemaProps: spec.SchemaProps{
+								Description: "IgSecurityGroups replaces default security groups (e.g. i-123456)",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
 						"cloudLabels": {
 							SchemaProps: spec.SchemaProps{
 								Description: "CloudLabels indicates the labels for instances in this group, at the AWS level",
@@ -31449,6 +31463,20 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						"additionalSecurityGroups": {
 							SchemaProps: spec.SchemaProps{
 								Description: "AdditionalSecurityGroups attaches additional security groups (e.g. i-123456)",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"IGSecurityGroups": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Instance Group specific SecurityGroups; replaces default security groups (e.g. nodes/master) with defined security groups",
 								Type:        []string{"array"},
 								Items: &spec.SchemaOrArray{
 									Schema: &spec.Schema{

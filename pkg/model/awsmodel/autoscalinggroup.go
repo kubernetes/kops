@@ -101,6 +101,22 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				t.Tenancy = s(ig.Spec.Tenancy)
 			}
 
+			if ig.Spec.IgSecurityGroups != nil {
+				t.SecurityGroups = nil
+				for _, id := range ig.Spec.IgSecurityGroups {
+					sgTask := &awstasks.SecurityGroup{
+						Name:      fi.String(id),
+						ID:        fi.String(id),
+						Shared:    fi.Bool(true),
+						Lifecycle: b.SecurityLifecycle,
+					}
+					if err := c.EnsureTask(sgTask); err != nil {
+						return err
+					}
+					t.SecurityGroups = append(t.SecurityGroups, sgTask)
+				}
+			}
+
 			for _, id := range ig.Spec.AdditionalSecurityGroups {
 				sgTask := &awstasks.SecurityGroup{
 					Name:   fi.String(id),
