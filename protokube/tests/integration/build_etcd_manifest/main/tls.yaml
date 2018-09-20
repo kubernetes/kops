@@ -6,7 +6,7 @@ clusterName: etcd-main
 clusterToken: token-main
 cpuRequest: "200m"
 dataDirName: data-main
-imageSource: k8s.gcr.io/etcd:2.2.1
+imageSource: k8s.gcr.io/etcd:3.2.18
 logFile: /var/log/etcd.log
 peerCA: /srv/kubernetes/ca.crt
 peerCert: /srv/kubernetes/etcd.pem
@@ -74,7 +74,7 @@ spec:
       value: /srv/kubernetes/etcd-key.pem
     - name: ETCD_INITIAL_CLUSTER
       value: node0=https://node0.internal:2380,node1=https://node1.internal:2380,node2=https://node2.internal:2380
-    image: k8s.gcr.io/etcd:2.2.1
+    image: k8s.gcr.io/etcd:3.2.18
     livenessProbe:
       initialDelaySeconds: 15
       tcpSocket:

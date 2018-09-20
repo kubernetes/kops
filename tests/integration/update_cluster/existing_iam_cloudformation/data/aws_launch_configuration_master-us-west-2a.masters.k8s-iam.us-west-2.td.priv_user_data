@@ -154,9 +154,9 @@ docker:
 encryptionConfig: null
 etcdClusters:
   events:
-    version: 2.2.1
+    version: 3.2.18
   main:
-    version: 2.2.1
+    version: 3.2.18
 kubeAPIServer:
   address: 127.0.0.1
   admissionControl:

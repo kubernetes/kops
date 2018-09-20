@@ -86,7 +86,7 @@ func run() error {
 	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, coredns, digitalocean)")
 	flags.StringVar(&etcdBackupImage, "etcd-backup-image", "", "Set to override the image for (experimental) etcd backups")
 	flags.StringVar(&etcdBackupStore, "etcd-backup-store", "", "Set to enable (experimental) etcd backups")
-	flags.StringVar(&etcdImageSource, "etcd-image", "k8s.gcr.io/etcd:2.2.1", "Etcd Source Container Registry")
+	flags.StringVar(&etcdImageSource, "etcd-image", "k8s.gcr.io/etcd:3.2.18", "Etcd Source Container Registry")
 	flags.StringVar(&etcdElectionTimeout, "etcd-election-timeout", etcdElectionTimeout, "time in ms for an election to timeout")
 	flags.StringVar(&etcdHeartbeatInterval, "etcd-heartbeat-interval", etcdHeartbeatInterval, "time in ms of a heartbeat interval")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")

@@ -151,11 +151,11 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
   encryptionConfig: null
   etcdClusters:
     events:
-      image: gcr.io/google_containers/etcd:2.2.1
-      version: 2.2.1
+      image: gcr.io/google_containers/etcd:3.2.18
+      version: 3.2.18
     main:
-      image: gcr.io/google_containers/etcd:2.2.1
-      version: 2.2.1
+      image: gcr.io/google_containers/etcd:3.2.18
+      version: 3.2.18
   kubeAPIServer:
     address: 127.0.0.1
     admissionControl:
