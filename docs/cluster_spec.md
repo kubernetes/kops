@@ -408,22 +408,26 @@ More information about running in an existing VPC is [here](run_in_existing_vpc.
 
 Hooks allow for the execution of an action before the installation of Kubernetes on every node in a cluster.  For instance you can install Nvidia drivers for using GPUs. This hooks can be in the form of Docker images or manifest files (systemd units). Hooks can be placed in either the cluster spec, meaning they will be globally deployed, or they can be placed into the instanceGroup specification. Note: service names on the instanceGroup which overlap with the cluster spec take precedence and ignore the cluster spec definition, i.e. if you have a unit file 'myunit.service' in cluster and then one in the instanceGroup, only the instanceGroup is applied.
 
+When creating a systemd unit hook using the `manifest` field, the hook system will construct a systemd unit file for you. It creates the `[Unit]` section, adding an automated description and setting `Before` and `Requires` values based on the `before` and `requires` fields. The value of the `manifest` field is used as the `[Service]` section of the unit file. To override this behavior, and instead specify the entire unit file yourself, you may specify `useRawManifest: true`. In this case, the contents of the `manifest` field will be used as a systemd unit, unmodified. The `before` and `requires` fields may not be used together with `useRawManifest`.
+
 ```
 spec:
   # many sections removed
+
+  # run a docker container as a hook
   hooks:
   - before:
     - some_service.service
     requires:
     - docker.service
-      execContainer:
+    execContainer:
       image: kopeio/nvidia-bootstrap:1.6
       # these are added as -e to the docker environment
       environment:
         AWS_REGION: eu-west-1
         SOME_VAR: SOME_VALUE
 
-  # or a raw systemd unit
+  # or construct a systemd unit
   hooks:
   - name: iptable-restore.service
     roles:
@@ -432,6 +436,20 @@ spec:
     before:
     - kubelet.service
     manifest: |
+      EnvironmentFile=/etc/environment
+      # do some stuff
+
+  # or use a raw systemd unit
+  hooks:
+  - name: iptable-restore.service
+    roles:
+    - Node
+    - Master
+    useRawManifest: true
+    manifest: |
+      [Unit]
+      Description=Restore iptables rules
+      Before=kubelet.service
       [Service]
       EnvironmentFile=/etc/environment
       # do some stuff
