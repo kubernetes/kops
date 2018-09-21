@@ -33,6 +33,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
+	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -97,6 +99,7 @@ type AWSCloud interface {
 	EC2() ec2iface.EC2API
 	IAM() iamiface.IAMAPI
 	ELB() elbiface.ELBAPI
+	ELBV2() elbv2iface.ELBV2API
 	Autoscaling() autoscalingiface.AutoScalingAPI
 	Route53() route53iface.Route53API
 
@@ -151,6 +154,7 @@ type awsCloudImplementation struct {
 	ec2         *ec2.EC2
 	iam         *iam.IAM
 	elb         *elb.ELB
+	elbv2       *elbv2.ELBV2
 	autoscaling *autoscaling.AutoScaling
 	route53     *route53.Route53
 
@@ -236,6 +240,14 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.elb = elb.New(sess, config)
 		c.elb.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.elb.Handlers)
+
+		sess, err = session.NewSession(config)
+		if err != nil {
+			return c, err
+		}
+		c.elbv2 = elbv2.New(sess, config)
+		c.elbv2.Handlers.Send.PushFront(requestLogger)
+		c.addHandlers(region, &c.elbv2.Handlers)
 
 		sess, err = session.NewSession(config)
 		if err != nil {
@@ -807,6 +819,68 @@ func createELBTags(c AWSCloud, loadBalancerName string, tags map[string]string) 
 	}
 }
 
+func (c *awsCloudImplementation) GetELBV2Tags(ResourceArn string) (map[string]string, error) {
+	return getELBV2Tags(c, ResourceArn)
+}
+
+func getELBV2Tags(c AWSCloud, ResourceArn string) (map[string]string, error) {
+	tags := map[string]string{}
+
+	request := &elbv2.DescribeTagsInput{
+		ResourceArns: []*string{&ResourceArn},
+	}
+
+	attempt := 0
+	for {
+		attempt++
+
+		response, err := c.ELBV2().DescribeTags(request)
+		if err != nil {
+			return nil, fmt.Errorf("error listing tags on %v: %v", ResourceArn, err)
+		}
+
+		for _, tagset := range response.TagDescriptions {
+			for _, tag := range tagset.Tags {
+				tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
+			}
+		}
+
+		return tags, nil
+	}
+}
+
+func (c *awsCloudImplementation) CreateELBV2Tags(ResourceArn string, tags map[string]string) error {
+	return createELBV2Tags(c, ResourceArn, tags)
+}
+
+func createELBV2Tags(c AWSCloud, ResourceArn string, tags map[string]string) error {
+	if len(tags) == 0 {
+		return nil
+	}
+
+	elbv2Tags := []*elbv2.Tag{}
+	for k, v := range tags {
+		elbv2Tags = append(elbv2Tags, &elbv2.Tag{Key: aws.String(k), Value: aws.String(v)})
+	}
+
+	attempt := 0
+	for {
+		attempt++
+
+		request := &elbv2.AddTagsInput{
+			Tags:         elbv2Tags,
+			ResourceArns: []*string{&ResourceArn},
+		}
+
+		_, err := c.ELBV2().AddTags(request)
+		if err != nil {
+			return fmt.Errorf("error creating tags on %v: %v", ResourceArn, err)
+		}
+
+		return nil
+	}
+}
+
 func (c *awsCloudImplementation) BuildTags(name *string) map[string]string {
 	return buildTags(c.tags, name)
 }
@@ -1052,6 +1126,10 @@ func (c *awsCloudImplementation) IAM() iamiface.IAMAPI {
 
 func (c *awsCloudImplementation) ELB() elbiface.ELBAPI {
 	return c.elb
+}
+
+func (c *awsCloudImplementation) ELBV2() elbv2iface.ELBV2API {
+	return c.elbv2
 }
 
 func (c *awsCloudImplementation) Autoscaling() autoscalingiface.AutoScalingAPI {

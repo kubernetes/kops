@@ -6,6 +6,7 @@ k8s.io/kops/channels/pkg/cmd
 k8s.io/kops/cloudmock/aws/mockautoscaling
 k8s.io/kops/cloudmock/aws/mockec2
 k8s.io/kops/cloudmock/aws/mockelb
+k8s.io/kops/cloudmock/aws/mockelbv2
 k8s.io/kops/cloudmock/aws/mockiam
 k8s.io/kops/cloudmock/aws/mockroute53
 k8s.io/kops/cmd/kops
