@@ -57,6 +57,7 @@ func main() {
 	var dnsServer, dnsProviderID, gossipListen, gossipSecret, watchNamespace, metricsListen string
 	var gossipSeeds, zones []string
 	var watchIngress bool
+	var updateInterval int
 
 	// Be sure to get the glog flags
 	glog.Flush()
@@ -71,6 +72,7 @@ func main() {
 	flags.StringVar(&watchNamespace, "watch-namespace", "", "Limits the functionality for pods, services and ingress to specific namespace, by default all")
 	flag.IntVar(&route53.MaxBatchSize, "route53-batch-size", route53.MaxBatchSize, "Maximum number of operations performed per changeset batch")
 	flag.StringVar(&metricsListen, "metrics-listen", "", "The address on which to listen for Prometheus metrics.")
+	flags.IntVar(&updateInterval, "update-interval", 5, "Configure interval at which to update DNS records.")
 
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
@@ -163,7 +165,7 @@ func main() {
 		dnsProviders = append(dnsProviders, dnsProvider)
 	}
 
-	dnsController, err := dns.NewDNSController(dnsProviders, zoneRules)
+	dnsController, err := dns.NewDNSController(dnsProviders, zoneRules, updateInterval)
 	if err != nil {
 		glog.Errorf("Error building DNS controller: %v", err)
 		os.Exit(1)
