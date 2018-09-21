@@ -1724,6 +1724,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.IgSecurityGroups != nil {
+		in, out := &in.IgSecurityGroups, &out.IgSecurityGroups
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.CloudLabels != nil {
 		in, out := &in.CloudLabels, &out.CloudLabels
 		*out = make(map[string]string, len(*in))

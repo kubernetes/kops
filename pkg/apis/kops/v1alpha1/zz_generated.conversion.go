@@ -1970,6 +1970,7 @@ func autoConvert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	out.MaxPrice = in.MaxPrice
 	out.AssociatePublicIP = in.AssociatePublicIP
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
+	out.IgSecurityGroups = in.IgSecurityGroups
 	out.CloudLabels = in.CloudLabels
 	out.NodeLabels = in.NodeLabels
 	if in.FileAssets != nil {
@@ -2057,6 +2058,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha1_InstanceGroupSpec(in *kops.I
 	out.MaxPrice = in.MaxPrice
 	out.AssociatePublicIP = in.AssociatePublicIP
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
+	out.IgSecurityGroups = in.IgSecurityGroups
 	out.CloudLabels = in.CloudLabels
 	out.NodeLabels = in.NodeLabels
 	if in.FileAssets != nil {
