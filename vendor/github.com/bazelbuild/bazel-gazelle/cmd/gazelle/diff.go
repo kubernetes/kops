@@ -22,15 +22,15 @@ import (
 	"os/exec"
 
 	"github.com/bazelbuild/bazel-gazelle/internal/config"
-	bf "github.com/bazelbuild/buildtools/build"
+	bzl "github.com/bazelbuild/buildtools/build"
 )
 
-func diffFile(c *config.Config, file *bf.File, path string) error {
+func diffFile(c *config.Config, file *bzl.File, path string) error {
 	oldContents, err := ioutil.ReadFile(file.Path)
 	if err != nil {
 		oldContents = nil
 	}
-	newContents := bf.Format(file)
+	newContents := bzl.Format(file)
 	if bytes.Equal(oldContents, newContents) {
 		return nil
 	}

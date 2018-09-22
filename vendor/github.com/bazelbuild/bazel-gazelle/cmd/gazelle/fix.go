@@ -21,14 +21,14 @@ import (
 	"path/filepath"
 
 	"github.com/bazelbuild/bazel-gazelle/internal/config"
-	bf "github.com/bazelbuild/buildtools/build"
+	bzl "github.com/bazelbuild/buildtools/build"
 )
 
-func fixFile(c *config.Config, file *bf.File, path string) error {
+func fixFile(c *config.Config, file *bzl.File, path string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0777); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(path, bf.Format(file), 0666); err != nil {
+	if err := ioutil.WriteFile(path, bzl.Format(file), 0666); err != nil {
 		return err
 	}
 	return nil

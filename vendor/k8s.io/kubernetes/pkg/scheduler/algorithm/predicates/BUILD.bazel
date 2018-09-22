@@ -9,7 +9,7 @@ go_library(
         "testing_helper.go",
         "utils.go",
     ],
-    importmap = "vendor/k8s.io/kubernetes/pkg/scheduler/algorithm/predicates",
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/scheduler/algorithm/predicates",
     importpath = "k8s.io/kubernetes/pkg/scheduler/algorithm/predicates",
     visibility = ["//visibility:public"],
     deps = [

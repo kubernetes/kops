@@ -6,7 +6,7 @@ go_library(
         "doc.go",
         "waitgroup.go",
     ],
-    importmap = "vendor/k8s.io/apimachinery/pkg/util/waitgroup",
+    importmap = "k8s.io/kops/vendor/k8s.io/apimachinery/pkg/util/waitgroup",
     importpath = "k8s.io/apimachinery/pkg/util/waitgroup",
     visibility = ["//visibility:public"],
 )

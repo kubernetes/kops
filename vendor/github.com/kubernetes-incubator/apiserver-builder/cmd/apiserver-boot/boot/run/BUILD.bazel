@@ -8,7 +8,7 @@ go_library(
         "local_aggregated.go",
         "run.go",
     ],
-    importmap = "vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/run",
+    importmap = "k8s.io/kops/vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/run",
     importpath = "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/run",
     visibility = ["//visibility:public"],
     deps = [

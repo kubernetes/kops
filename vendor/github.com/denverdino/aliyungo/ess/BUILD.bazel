@@ -9,7 +9,7 @@ go_library(
         "rule.go",
         "schedule.go",
     ],
-    importmap = "vendor/github.com/denverdino/aliyungo/ess",
+    importmap = "k8s.io/kops/vendor/github.com/denverdino/aliyungo/ess",
     importpath = "github.com/denverdino/aliyungo/ess",
     visibility = ["//visibility:public"],
     deps = [

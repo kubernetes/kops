@@ -7,7 +7,7 @@ go_library(
         "policy_comparator.go",
         "rule.go",
     ],
-    importmap = "vendor/k8s.io/kubernetes/pkg/registry/rbac/validation",
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/registry/rbac/validation",
     importpath = "k8s.io/kubernetes/pkg/registry/rbac/validation",
     visibility = ["//visibility:public"],
     deps = [

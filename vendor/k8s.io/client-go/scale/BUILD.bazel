@@ -8,7 +8,7 @@ go_library(
         "interfaces.go",
         "util.go",
     ],
-    importmap = "vendor/k8s.io/client-go/scale",
+    importmap = "k8s.io/kops/vendor/k8s.io/client-go/scale",
     importpath = "k8s.io/client-go/scale",
     visibility = ["//visibility:public"],
     deps = [

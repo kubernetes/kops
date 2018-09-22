@@ -6,7 +6,7 @@ go_library(
         "code.go",
         "gen.go",
     ],
-    importmap = "vendor/golang.org/x/text/internal/gen",
+    importmap = "k8s.io/kops/vendor/golang.org/x/text/internal/gen",
     importpath = "golang.org/x/text/internal/gen",
     visibility = ["//vendor/golang.org/x/text:__subpackages__"],
     deps = ["//vendor/golang.org/x/text/unicode/cldr:go_default_library"],

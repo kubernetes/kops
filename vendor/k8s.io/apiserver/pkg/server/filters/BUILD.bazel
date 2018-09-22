@@ -12,7 +12,7 @@ go_library(
         "waitgroup.go",
         "wrap.go",
     ],
-    importmap = "vendor/k8s.io/apiserver/pkg/server/filters",
+    importmap = "k8s.io/kops/vendor/k8s.io/apiserver/pkg/server/filters",
     importpath = "k8s.io/apiserver/pkg/server/filters",
     visibility = ["//visibility:public"],
     deps = [
