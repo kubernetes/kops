@@ -48,7 +48,7 @@ func addServerCommand() cli.Command {
 			},
 			cli.StringFlag{
 				Name:   "tls-client-ca",
-				Usage:  "file containing the client certifcate authority, required for mutual tls `PATH`",
+				Usage:  "file containing the client certificate authority, required for mutual tls `PATH`",
 				EnvVar: "TLS_CLIENT_CA",
 			},
 			cli.StringFlag{
