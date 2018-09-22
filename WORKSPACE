@@ -18,7 +18,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_too
 go_rules_dependencies()
 
 go_register_toolchains(
-    go_version = "1.9.3",
+    go_version = "1.10.3",
 )
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
