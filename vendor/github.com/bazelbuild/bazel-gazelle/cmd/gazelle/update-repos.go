@@ -93,7 +93,7 @@ func updateRepos(args []string) error {
 	uc := getUpdateReposConfig(c)
 
 	workspacePath := filepath.Join(c.RepoRoot, "WORKSPACE")
-	f, err := rule.LoadFile(workspacePath)
+	f, err := rule.LoadFile(workspacePath, "")
 	if err != nil {
 		return fmt.Errorf("error loading %q: %v", workspacePath, err)
 	}
@@ -106,7 +106,7 @@ func updateRepos(args []string) error {
 	if err := merger.CheckGazelleLoaded(f); err != nil {
 		return err
 	}
-	if err := f.Save(); err != nil {
+	if err := f.Save(f.Path); err != nil {
 		return fmt.Errorf("error writing %q: %v", f.Path, err)
 	}
 	return nil
@@ -124,7 +124,7 @@ func newUpdateReposConfiguration(args []string, cexts []config.Configurer) (*con
 	if err := fs.Parse(args); err != nil {
 		if err == flag.ErrHelp {
 			updateReposUsage(fs)
-			os.Exit(0)
+			return nil, err
 		}
 		// flag already prints the error; don't print it again.
 		return nil, errors.New("Try -help for more information")

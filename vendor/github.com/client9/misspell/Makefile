@@ -4,14 +4,24 @@ install:  ## install misspell into GOPATH/bin
 	go install ./cmd/misspell
 
 build: hooks  ## build and lint misspell
-	./scripts/build.sh
+	go install ./cmd/misspell
+	gometalinter \
+		 --vendor \
+		 --deadline=60s \
+	         --disable-all \
+		 --enable=vet \
+		 --enable=golint \
+		 --enable=gofmt \
+		 --enable=goimports \
+		 --enable=gosimple \
+		 --enable=staticcheck \
+		 --enable=ineffassign \
+		 --exclude=/usr/local/go/src/net/lookup_unix.go \
+		 ./...
+	go test .
 
 test:  ## run all tests
 	go test .
-
-# real publishing is done only by travis
-publish:  ## test goreleaser
-	./scripts/goreleaser-dryrun.sh
 
 # the grep in line 2 is to remove misspellings in the spelling dictionary
 # that trigger false positives!!
