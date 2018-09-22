@@ -1231,7 +1231,7 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 
 	if role == kops.InstanceGroupRoleMaster {
 		for _, etcdCluster := range cluster.Spec.EtcdClusters {
-			if etcdCluster.Manager != nil {
+			if etcdCluster.Provider == kops.EtcdProviderTypeManager {
 				p := configBase.Join("manifests/etcd/" + etcdCluster.Name + ".yaml").Path()
 				config.EtcdManifests = append(config.EtcdManifests, p)
 			}
