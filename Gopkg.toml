@@ -12,7 +12,14 @@ required = [
   # Needed for docs generation
   "k8s.io/code-generator/cmd/openapi-gen",
   "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot",
+  "github.com/kubernetes-incubator/apiserver-builder/cmd/apiregister-gen",
   "github.com/kubernetes-incubator/reference-docs/gen-apidocs",
+
+  # Needed for bazel generation / verification
+  "github.com/bazelbuild/bazel-gazelle/cmd/gazelle",
+
+  # Needed for spell checking
+  "github.com/client9/misspell/cmd/misspell",
 ]
 
 [prune]
@@ -25,11 +32,14 @@ required = [
     unused-packages = false
     non-go = false
 
+[[override]]
+  name = "github.com/bazelbuild/bazel-gazelle"
+  version = "0.12.0"
+
 # aws-sdk-go is one of our critical dependencies
 [[override]]
   name = "github.com/aws/aws-sdk-go"
-  revision = "bff41fb23b7550368282029f6478819d6a99ae0f"
-  #version = "v1.12.79"
+  version = "v1.13.60"
 
 # We need this for our build
 [[override]]
@@ -126,7 +136,7 @@ required = [
   revision = "020d11c3b9c0c7a3c2efcc8e5cf5b9ef7bcea21f"
 [[override]]
   name = "github.com/gophercloud/gophercloud"
-  revision = "6da026c32e2d622cc242d32984259c77237aefe1"
+  revision = "f29afc2cceca860199ee88cd355a4d0a37b3fad2"
 [[override]]
   name = "gopkg.in/warnings.v0"
   revision = "8a331561fe74dadba6edfc59f3be66c22c3b065d"
@@ -271,7 +281,7 @@ required = [
   revision = "e31f36ffc91a2ba9ddb72a4b6a607ff9b3d3cb63"
 [[override]]
   name = "github.com/pelletier/go-toml"
-  revision = "0049ab3dc4c4c70a9eee23087437b69c0dde2130"
+  revision = "16398bac157da96aa88f98a2df640c7f32af1da2"
 [[override]]
   name = "github.com/google/gofuzz"
   revision = "44d81051d367757e1c7c6a5a86423ece9afcf63c"

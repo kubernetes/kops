@@ -1,3 +1,5 @@
+<img src="/docs/img/logo.jpg" width="500px" alt="kops logo">
+
 # kops - Kubernetes Operations
 
 [![Build Status](https://travis-ci.org/kubernetes/kops.svg?branch=master)](https://travis-ci.org/kubernetes/kops) [![Go Report Card](https://goreportcard.com/badge/k8s.io/kops)](https://goreportcard.com/report/k8s.io/kops)  [![GoDoc Widget]][GoDoc]
@@ -82,12 +84,13 @@ Kubernetes version.
 
 #### Compatibility Matrix
 
-| kops version | k8s 1.5.x | k8s 1.6.x | k8s 1.7.x | k8s 1.8.x | k8s 1.9.x |
-|--------------|-----------|-----------|-----------|-----------|-----------|
-| 1.9.x        | Y         | Y         | Y         | Y         | Y         |
-| 1.8.x        | Y         | Y         | Y         | Y         | N         |
-| 1.7.x        | Y         | Y         | Y         | N         | N         |
-| 1.6.x        | Y         | Y         | N         | N         | N         |
+| kops version | k8s 1.5.x | k8s 1.6.x | k8s 1.7.x | k8s 1.8.x | k8s 1.9.x | k8s 1.10.x |
+|--------------|-----------|-----------|-----------|-----------|-----------|------------|
+| 1.10.x       | Y         | Y         | Y         | Y         | Y         | Y          |
+| 1.9.x        | Y         | Y         | Y         | Y         | Y         | N          |
+| 1.8.x        | Y         | Y         | Y         | Y         | N         | N          |
+| 1.7.x        | Y         | Y         | Y         | N         | N         | N          |
+| 1.6.x        | Y         | Y         | N         | N         | N         | N          |
 
 Use the latest version of kops for all releases of Kubernetes, with the caveat
 that higher versions of Kubernetes are not _officially_ supported by kops.
@@ -176,33 +179,33 @@ https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
 ## Office Hours
 
-Kops maintainers set aside one hour every other week for **public** office hours. Office hours are hosted on a [zoom video chat](https://zoom.us/my/k8ssigaws) on Fridays at [5 pm UTC/12 noon ET/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12), on odd week numbered weeks. We strive to get to know and help developers either working on `kops` or interested in getting to know more about the project.
+Kops maintainers set aside one hour every other week for **public** office hours. This time is used to gather with community members interested in kops. This session is open to both developers and users.
+
+Office hours are hosted on a [zoom video chat](https://zoom.us/my/k8ssigaws) on Fridays at [12 noon (Eastern Time)/9 am (Pacific Time)](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) during weeks with odd "numbers". To check this weeks' number, run: `date +%V`. If the response is odd, join us on Friday for office hours!
+
+### Office Hours Topics
+
+We do maintain an [agenda](https://docs.google.com/document/d/12QkyL0FkNbWPcLFxxRGSPt_tNPBHbmni3YLY-lHny7E/edit) and stick to it as much as possible. If you want to hold the floor, put your item in this doc. Bullet/note form is fine. Even if your topic gets in late, we do our best to cover it.
+
+Our office hours call is recorded, but the tone tends to be casual. First-timers are always welcome. Typical areas of discussion can include:
+- Contributors with a feature proposal seeking feedback, assistance, etc
+- Members planning for what we want to get done for the next release
+- Strategizing for larger initiatives, such as those that involve more than one sig or potentially more moving pieces
+- Help wanted requests
+- Demonstrations of cool stuff. PoCs. Fresh ideas. Show us how you use kops to go beyond the norm- help us define the future!
+
+Office hours are designed for ALL of those contributing to kops or the community. Contributions are not limited to those who commit source code. There are so many important ways to be involved- 
+ - helping in the slack channels
+ - triaging/writing issues 
+ - thinking about the topics raised at office hours and forming and advocating for your good ideas  forming opinions
+ - testing pre-(and official) releases
+
+Although not exhaustive, the above activities are extremely important to our continued success and are all worth contributions. If you want to talk about kops and you have doubt, just come.
 
 
-### Open Office Hours Topics
+### Other Ways to Communicate with the Contributors
 
-Include but not limited to:
-
-- Help and guide to those who attend, who are interested in contributing.
-- Discuss the current state of the kops project, including releases.
-- Strategize about how to move `kops` forward.
-- Collaborate about open and upcoming PRs.
-- Present demos.
-
-This time is focused on developers, although we will never turn a courteous participant away. Please swing by, even if you've never actually installed kops.
-
-We encourage you to reach out **beforehand** if you plan on attending. You're welcome to join any session, and please feel free to add an item to the  [agenda](https://docs.google.com/document/d/12QkyL0FkNbWPcLFxxRGSPt_tNPBHbmni3YLY-lHny7E/edit) where we track notes from office hours.
-
-Office hours are hosted on [Zoom](https://zoom.us/my/k8ssigaws) video conference, held on Fridays at [5 pm UTC/12 noon ET/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) every other odd numbered week.
-
-You can check your week number using:
-
-```bash
-date +%V
-```
-
-The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community/blob/master/communication.md#social-media) in [#kops-users](https://kubernetes.slack.com/messages/kops-users/), so come find and chat with us about how kops can be better for you!
-
+Please check in with us in the [#kops-users](https://kubernetes.slack.com/messages/kops-users/) or [#kops-dev](https://kubernetes.slack.com/messages/kops-dev/) channel. Often-times, a well crafted question or potential bug report in slack will catch the attention of the right folks and help quickly get the ship righted. 
 
 ## GitHub Issues
 

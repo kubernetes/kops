@@ -27,6 +27,22 @@ make
 
 Cross compiling for things like `nodeup` are now done automatically via `make nodeup`. `make push-aws-run TARGET=admin@$TARGET` will automatically choose the linux amd64 build from your `.build` directory.
 
+## Debugging
+
+To enable interactive debugging, the kops binary needs to be specially compiled to include debugging symbols.
+Add `DEBUGGING=true` to the `make` invocation to set the compile flags appropriately.
+
+For example, `DEBUGGING=true make` will produce a kops binary that can be interactively debugged.
+
+### Interactive debugging with Delve
+
+[Delve](https://github.com/derekparker/delve) can be used to interactively debug the kops binary.
+After installing Delve, you can use it directly, or run it in headless mode for use with an
+Interactive Development Environment (IDE).
+
+For example, run `dlv --listen=:2345 --headless=true --api-version=2 exec ${GOPATH}/bin/kops -- <kops command>`,
+and then configure your IDE to connect its debugger to port 2345 on localhost.
+
 ## Troubleshooting
 
  - Make sure `$GOPATH` is set, and your [workspace](https://golang.org/doc/code.html#Workspaces) is configured.

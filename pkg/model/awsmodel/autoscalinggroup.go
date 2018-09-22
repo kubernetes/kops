@@ -71,6 +71,11 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				volumeIops = DefaultVolumeIops
 			}
 
+			link, err := b.LinkToIAMInstanceProfile(ig)
+			if err != nil {
+				return fmt.Errorf("unable to find iam profile link for instance group %q: %v", ig.ObjectMeta.Name, err)
+			}
+
 			t := &awstasks.LaunchConfiguration{
 				Name:      s(name),
 				Lifecycle: b.Lifecycle,
@@ -78,7 +83,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				SecurityGroups: []*awstasks.SecurityGroup{
 					b.LinkToSecurityGroup(ig.Spec.Role),
 				},
-				IAMInstanceProfile: b.LinkToIAMInstanceProfile(ig),
+				IAMInstanceProfile: link,
 				ImageID:            s(ig.Spec.Image),
 				InstanceType:       s(ig.Spec.MachineType),
 				InstanceMonitoring: ig.Spec.DetailedInstanceMonitoring,
@@ -225,13 +230,40 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			t.Tags = tags
 
-			if ig.Spec.SuspendProcesses != nil {
-				for _, p := range ig.Spec.SuspendProcesses {
-					t.SuspendProcesses = append(t.SuspendProcesses, p)
-				}
+			processes := []string{}
+			for _, p := range ig.Spec.SuspendProcesses {
+				processes = append(processes, p)
 			}
+			t.SuspendProcesses = &processes
 
 			c.AddTask(t)
+		}
+
+		// External Load Balancer/TargetGroup Attachments
+		{
+			for _, lb := range ig.Spec.ExternalLoadBalancers {
+				if lb.LoadBalancerName != nil {
+					t := &awstasks.ExternalLoadBalancerAttachment{
+						Name:             s("extlb-" + *lb.LoadBalancerName + "-" + ig.Name),
+						Lifecycle:        b.Lifecycle,
+						LoadBalancerName: *lb.LoadBalancerName,
+						AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+					}
+
+					c.AddTask(t)
+				}
+
+				if lb.TargetGroupARN != nil {
+					t := &awstasks.ExternalTargetGroupAttachment{
+						Name:             s("exttg-" + *lb.TargetGroupARN + "-" + ig.Name),
+						Lifecycle:        b.Lifecycle,
+						TargetGroupARN:   *lb.TargetGroupARN,
+						AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+					}
+
+					c.AddTask(t)
+				}
+			}
 		}
 	}
 

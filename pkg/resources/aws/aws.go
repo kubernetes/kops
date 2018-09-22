@@ -21,12 +21,14 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
@@ -42,6 +44,7 @@ const (
 	TypeNatGateway              = "nat-gateway"
 	TypeElasticIp               = "elastic-ip"
 	TypeLoadBalancer            = "load-balancer"
+	TypeTargetGroup             = "target-group"
 )
 
 type listFn func(fi.Cloud, string) ([]*resources.Resource, error)
@@ -69,6 +72,8 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 		ListVPCs,
 		// ELBs
 		ListELBs,
+		ListELBV2s,
+		ListTargetGroups,
 		// ASG
 		ListAutoScalingGroups,
 
@@ -276,6 +281,24 @@ func matchesElbTags(tags map[string]string, actual []*elb.Tag) bool {
 	return true
 }
 
+func matchesElbV2Tags(tags map[string]string, actual []*elbv2.Tag) bool {
+	for k, v := range tags {
+		found := false
+		for _, a := range actual {
+			if aws.StringValue(a.Key) == k {
+				if aws.StringValue(a.Value) == v {
+					found = true
+					break
+				}
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
 //type DeletableResource interface {
 //	Delete(cloud fi.Cloud) error
 //}
@@ -417,6 +440,71 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*resources.Resource, e
 	return resourceTrackers, nil
 }
 
+// getDumpState gets the dumpState from the dump context, or creates one if not yet initialized
+func getDumpState(dumpContext *resources.DumpOperation) *dumpState {
+	if dumpContext.CloudState == nil {
+		dumpContext.CloudState = &dumpState{
+			cloud: dumpContext.Cloud.(awsup.AWSCloud),
+		}
+	}
+	return dumpContext.CloudState.(*dumpState)
+}
+
+type imageInfo struct {
+	SSHUser string
+}
+
+type dumpState struct {
+	cloud  awsup.AWSCloud
+	mutex  sync.Mutex
+	images map[string]*imageInfo
+}
+
+func (s *dumpState) getImageInfo(imageID string) (*imageInfo, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if s.images == nil {
+		s.images = make(map[string]*imageInfo)
+	}
+
+	info := s.images[imageID]
+	if info == nil {
+		image, err := s.cloud.ResolveImage(imageID)
+		if err != nil {
+			return nil, err
+		}
+		info = &imageInfo{}
+
+		if image != nil {
+			sshUser := guessSSHUser(image)
+			if sshUser == "" {
+				glog.Warningf("unable to guess SSH user for image: %+v", image)
+			}
+			info.SSHUser = sshUser
+		}
+
+		s.images[imageID] = info
+	}
+
+	return info, nil
+}
+
+func guessSSHUser(image *ec2.Image) string {
+	owner := aws.StringValue(image.OwnerId)
+	switch owner {
+	case awsup.WellKnownAccountAmazonSystemLinux2:
+		return "ec2-user"
+	case awsup.WellKnownAccountCoreOS:
+		return "core"
+	case awsup.WellKnownAccountKopeio:
+		return "admin"
+	case awsup.WellKnownAccountUbuntu:
+		return "ubuntu"
+	}
+	return ""
+}
+
 func DumpInstance(op *resources.DumpOperation, r *resources.Resource) error {
 	data := make(map[string]interface{})
 	data["id"] = r.ID
@@ -444,6 +532,15 @@ func DumpInstance(op *resources.DumpOperation, r *resources.Resource) error {
 		role := strings.TrimPrefix(key, awsup.TagNameRolePrefix)
 		i.Roles = append(i.Roles, role)
 	}
+
+	imageID := aws.StringValue(ec2Instance.ImageId)
+	imageInfo, err := getDumpState(op).getImageInfo(imageID)
+	if err != nil {
+		glog.Warningf("unable to fetch image %q: %v", imageID, err)
+	} else if imageInfo != nil {
+		i.SSHUser = imageInfo.SSHUser
+	}
+
 	op.Dump.Instances = append(op.Dump.Instances, i)
 
 	return nil
@@ -1230,14 +1327,14 @@ func extractClusterName(userData string) string {
 		line = strings.TrimSpace(line)
 		line = strings.Trim(line, "'\"")
 		if clusterName != "" && clusterName != line {
-			glog.Warning("cannot uniquely determine cluster-name, found %q and %q", line, clusterName)
+			glog.Warningf("cannot uniquely determine cluster-name, found %q and %q", line, clusterName)
 			return ""
 		}
 		clusterName = line
 
 	}
 	if err := scanner.Err(); err != nil {
-		glog.Warning("error scanning UserData: %v", err)
+		glog.Warningf("error scanning UserData: %v", err)
 		return ""
 	}
 
@@ -1274,6 +1371,42 @@ func DeleteELB(cloud fi.Cloud, r *resources.Resource) error {
 			return err
 		}
 		return fmt.Errorf("error deleting LoadBalancer %q: %v", id, err)
+	}
+	return nil
+}
+
+func DeleteELBV2(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(awsup.AWSCloud)
+	id := r.ID
+
+	glog.V(2).Infof("Deleting ELBV2 %q", id)
+	request := &elbv2.DeleteLoadBalancerInput{
+		LoadBalancerArn: aws.String(id),
+	}
+	_, err := c.ELBV2().DeleteLoadBalancer(request)
+	if err != nil {
+		if IsDependencyViolation(err) {
+			return err
+		}
+		return fmt.Errorf("error deleting V2 LoadBalancer %q: %v", id, err)
+	}
+	return nil
+}
+
+func DeleteTargetGroup(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(awsup.AWSCloud)
+	id := r.ID
+
+	glog.V(2).Infof("Deleting TargetGroup %q", id)
+	request := &elbv2.DeleteTargetGroupInput{
+		TargetGroupArn: aws.String(id),
+	}
+	_, err := c.ELBV2().DeleteTargetGroup(request)
+	if err != nil {
+		if IsDependencyViolation(err) {
+			return err
+		}
+		return fmt.Errorf("error deleting TargetGroup %q: %v", id, err)
 	}
 	return nil
 }
@@ -1369,6 +1502,99 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 			elb := nameToELB[elbName]
 			elbs = append(elbs, elb)
 		}
+
+		return true
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("error describing LoadBalancers: %v", err)
+	}
+	if innerError != nil {
+		return nil, nil, fmt.Errorf("error describing LoadBalancers: %v", innerError)
+	}
+	return elbs, elbTags, nil
+}
+
+// For NLBs and ALBs
+func ListELBV2s(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	elbv2s, _, err := DescribeELBV2s(cloud)
+	if err != nil {
+		return nil, err
+	}
+
+	var resourceTrackers []*resources.Resource
+	for _, elb := range elbv2s {
+		id := aws.StringValue(elb.LoadBalancerName)
+		resourceTracker := &resources.Resource{
+			Name:    id,
+			ID:      string(*elb.LoadBalancerArn),
+			Type:    TypeLoadBalancer,
+			Deleter: DeleteELBV2,
+			Dumper:  DumpELB,
+			Obj:     elb,
+		}
+
+		var blocks []string
+		for _, sg := range elb.SecurityGroups {
+			blocks = append(blocks, "security-group:"+aws.StringValue(sg))
+		}
+
+		blocks = append(blocks, "vpc:"+aws.StringValue(elb.VpcId))
+
+		resourceTracker.Blocks = blocks
+
+		resourceTrackers = append(resourceTrackers, resourceTracker)
+	}
+
+	return resourceTrackers, nil
+}
+
+func DescribeELBV2s(cloud fi.Cloud) ([]*elbv2.LoadBalancer, map[string][]*elbv2.Tag, error) {
+	c := cloud.(awsup.AWSCloud)
+	tags := c.Tags()
+
+	glog.V(2).Infof("Listing all NLBs and ALBs")
+
+	request := &elbv2.DescribeLoadBalancersInput{}
+	// ELBV2 DescribeTags has a limit of 20 names, so we set the page size here to 20 also
+	request.PageSize = aws.Int64(20)
+
+	var elbv2s []*elbv2.LoadBalancer
+	elbv2Tags := make(map[string][]*elbv2.Tag)
+
+	var innerError error
+	err := c.ELBV2().DescribeLoadBalancersPages(request, func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) bool {
+		if len(p.LoadBalancers) == 0 {
+			return true
+		}
+
+		tagRequest := &elbv2.DescribeTagsInput{}
+
+		nameToELB := make(map[string]*elbv2.LoadBalancer)
+		for _, elb := range p.LoadBalancers {
+			name := aws.StringValue(elb.LoadBalancerArn)
+			nameToELB[name] = elb
+
+			tagRequest.ResourceArns = append(tagRequest.ResourceArns, elb.LoadBalancerArn)
+		}
+
+		tagResponse, err := c.ELBV2().DescribeTags(tagRequest)
+		if err != nil {
+			innerError = fmt.Errorf("error listing elb Tags: %v", err)
+			return false
+		}
+
+		for _, t := range tagResponse.TagDescriptions {
+
+			elbARN := aws.StringValue(t.ResourceArn)
+			if !matchesElbV2Tags(tags, t.Tags) {
+				continue
+			}
+
+			elbv2Tags[elbARN] = t.Tags
+			elb := nameToELB[elbARN]
+			elbv2s = append(elbv2s, elb)
+		}
+
 		return true
 	})
 	if err != nil {
@@ -1378,7 +1604,88 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 		return nil, nil, fmt.Errorf("error describing LoadBalancers: %v", innerError)
 	}
 
-	return elbs, elbTags, nil
+	return elbv2s, elbv2Tags, nil
+}
+
+func ListTargetGroups(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	targetgroups, _, err := DescribeTargetGroups(cloud)
+	if err != nil {
+		return nil, err
+	}
+
+	var resourceTrackers []*resources.Resource
+	for _, tg := range targetgroups {
+		id := aws.StringValue(tg.TargetGroupName)
+		resourceTracker := &resources.Resource{
+			Name:    id,
+			ID:      string(*tg.TargetGroupArn),
+			Type:    TypeTargetGroup,
+			Deleter: DeleteTargetGroup,
+			Dumper:  DumpELB,
+			Obj:     tg,
+		}
+
+		resourceTrackers = append(resourceTrackers, resourceTracker)
+	}
+	return resourceTrackers, nil
+}
+
+func DescribeTargetGroups(cloud fi.Cloud) ([]*elbv2.TargetGroup, map[string][]*elbv2.Tag, error) {
+	c := cloud.(awsup.AWSCloud)
+	tags := c.Tags()
+
+	glog.V(2).Infof("Listing all TargetGroups")
+
+	request := &elbv2.DescribeTargetGroupsInput{}
+	// DescribeTags has a limit of 20 names, so we set the page size here to 20 also
+	request.PageSize = aws.Int64(20)
+
+	var targetgroups []*elbv2.TargetGroup
+	targetgroupTags := make(map[string][]*elbv2.Tag)
+
+	var innerError error
+	err := c.ELBV2().DescribeTargetGroupsPages(request, func(p *elbv2.DescribeTargetGroupsOutput, lastPage bool) bool {
+		if len(p.TargetGroups) == 0 {
+			return true
+		}
+
+		tagRequest := &elbv2.DescribeTagsInput{}
+
+		nameToTargetGroup := make(map[string]*elbv2.TargetGroup)
+		for _, tg := range p.TargetGroups {
+			name := aws.StringValue(tg.TargetGroupArn)
+			nameToTargetGroup[name] = tg
+
+			tagRequest.ResourceArns = append(tagRequest.ResourceArns, tg.TargetGroupArn)
+		}
+
+		tagResponse, err := c.ELBV2().DescribeTags(tagRequest)
+		if err != nil {
+			innerError = fmt.Errorf("error listing TargetGroup Tags: %v", err)
+			return false
+		}
+
+		for _, t := range tagResponse.TagDescriptions {
+			tgARN := aws.StringValue(t.ResourceArn)
+			if !matchesElbV2Tags(tags, t.Tags) {
+				continue
+			}
+			targetgroupTags[tgARN] = t.Tags
+
+			tg := nameToTargetGroup[tgARN]
+			targetgroups = append(targetgroups, tg)
+		}
+
+		return true
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("error describing TargetGroups: %v", err)
+	}
+	if innerError != nil {
+		return nil, nil, fmt.Errorf("error describing TargetGroups: %v", innerError)
+	}
+
+	return targetgroups, targetgroupTags, nil
 }
 
 func DeleteElasticIP(cloud fi.Cloud, t *resources.Resource) error {
@@ -1733,6 +2040,13 @@ func FindASGName(tags []*autoscaling.TagDescription) string {
 
 func FindELBName(tags []*elb.Tag) string {
 	if name, found := awsup.FindELBTag(tags, "Name"); found {
+		return name
+	}
+	return ""
+}
+
+func FindELBV2Name(tags []*elbv2.Tag) string {
+	if name, found := awsup.FindELBV2Tag(tags, "Name"); found {
 		return name
 	}
 	return ""

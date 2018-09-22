@@ -102,6 +102,14 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			idleTimeout = time.Second * time.Duration(*lbSpec.IdleTimeoutSeconds)
 		}
 
+		listeners := map[string]*awstasks.LoadBalancerListener{
+			"443": {InstancePort: 443},
+		}
+
+		if lbSpec.SSLCertificate != "" {
+			listeners["443"] = &awstasks.LoadBalancerListener{InstancePort: 443, SSLCertificateID: lbSpec.SSLCertificate}
+		}
+
 		elb = &awstasks.LoadBalancer{
 			Name:      s("api." + b.ClusterName()),
 			Lifecycle: b.Lifecycle,
@@ -110,10 +118,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			SecurityGroups: []*awstasks.SecurityGroup{
 				b.LinkToELBSecurityGroup("api"),
 			},
-			Subnets: elbSubnets,
-			Listeners: map[string]*awstasks.LoadBalancerListener{
-				"443": {InstancePort: 443},
-			},
+			Subnets:   elbSubnets,
+			Listeners: listeners,
 
 			// Configure fast-recovery health-checks
 			HealthCheck: &awstasks.LoadBalancerHealthCheck{

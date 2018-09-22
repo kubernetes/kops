@@ -14,6 +14,7 @@ go_library(
         "create_secret_keypair_ca.go",
         "create_secret_sshpublickey.go",
         "create_secret_tls.go",
+        "create_secret_weave_encryptionconfig.go",
         "delete.go",
         "delete_cluster.go",
         "delete_instancegroup.go",
@@ -82,10 +83,12 @@ go_library(
         "//pkg/resources:go_default_library",
         "//pkg/resources/ops:go_default_library",
         "//pkg/sshcredentials:go_default_library",
+        "//pkg/try:go_default_library",
         "//pkg/util/templater:go_default_library",
         "//pkg/validation:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup:go_default_library",
+        "//upup/pkg/fi/cloudup/aliup:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
@@ -110,7 +113,10 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/validation/field:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes:go_default_library",
+        "//vendor/k8s.io/client-go/plugin/pkg/client/auth:go_default_library",
         "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",
+        "//vendor/k8s.io/client-go/util/homedir:go_default_library",
+        "//vendor/k8s.io/helm/pkg/strvals:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd/templates:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util/editor:go_default_library",
@@ -124,7 +130,7 @@ go_binary(
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
     x_defs = {
-        "k8s.io/kops.Version": "{KOPS_VERSION}",  # keep
+        "k8s.io/kops.Version": "{STABLE_KOPS_VERSION}",  # keep
         "k8s.io/kops.GitVersion": "{BUILD_SCM_REVISION}",  # keep
     },
 )
@@ -139,6 +145,7 @@ go_test(
         "delete_confirm_test.go",
         "integration_test.go",
         "lifecycle_integration_test.go",
+        "toolbox_template_test.go",
     ],
     data = [
         "//channels:channeldata",  # keep

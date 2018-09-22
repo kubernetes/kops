@@ -20,6 +20,8 @@ import (
 	"fmt"
 
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/k8scodecs"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/exec"
@@ -28,8 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/kops/pkg/k8scodecs"
-	"k8s.io/kops/pkg/kubemanifest"
 )
 
 // KubeSchedulerBuilder install kube-scheduler
@@ -64,7 +64,7 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		kubeconfig, err := b.buildPKIKubeconfig("kube-scheduler")
+		kubeconfig, err := b.BuildPKIKubeconfig("kube-scheduler")
 		if err != nil {
 			return err
 		}

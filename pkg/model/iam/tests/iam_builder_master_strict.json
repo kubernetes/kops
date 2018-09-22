@@ -2,7 +2,6 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "kopsK8sEC2MasterPermsDescribeResources",
       "Effect": "Allow",
       "Action": [
         "ec2:DescribeInstances",
@@ -17,20 +16,20 @@
       ]
     },
     {
-      "Sid": "kopsK8sEC2MasterPermsAllResources",
       "Effect": "Allow",
       "Action": [
         "ec2:CreateSecurityGroup",
         "ec2:CreateTags",
         "ec2:CreateVolume",
-        "ec2:ModifyInstanceAttribute"
+        "ec2:DescribeVolumesModifications",
+        "ec2:ModifyInstanceAttribute",
+        "ec2:ModifyVolume"
       ],
       "Resource": [
         "*"
       ]
     },
     {
-      "Sid": "kopsK8sEC2MasterPermsTaggedResources",
       "Effect": "Allow",
       "Action": [
         "ec2:AttachVolume",
@@ -52,20 +51,17 @@
       }
     },
     {
-      "Sid": "kopsK8sASMasterPermsAllResources",
       "Effect": "Allow",
       "Action": [
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeLaunchConfigurations",
-        "autoscaling:DescribeTags",
-        "autoscaling:GetAsgForInstance"
+        "autoscaling:DescribeTags"
       ],
       "Resource": [
         "*"
       ]
     },
     {
-      "Sid": "kopsK8sASMasterPermsTaggedResources",
       "Effect": "Allow",
       "Action": [
         "autoscaling:SetDesiredCapacity",
@@ -82,7 +78,6 @@
       }
     },
     {
-      "Sid": "kopsK8sELBMasterPermsRestrictive",
       "Effect": "Allow",
       "Action": [
         "elasticloadbalancing:AddTags",
@@ -107,7 +102,6 @@
       ]
     },
     {
-      "Sid": "kopsK8sNLBMasterPermsRestrictive",
       "Effect": "Allow",
       "Action": [
         "ec2:DescribeVpcs",
@@ -116,6 +110,7 @@
         "elasticloadbalancing:CreateTargetGroup",
         "elasticloadbalancing:DeleteListener",
         "elasticloadbalancing:DeleteTargetGroup",
+        "elasticloadbalancing:DeregisterTargets",
         "elasticloadbalancing:DescribeListeners",
         "elasticloadbalancing:DescribeLoadBalancerPolicies",
         "elasticloadbalancing:DescribeTargetGroups",
@@ -130,7 +125,6 @@
       ]
     },
     {
-      "Sid": "kopsMasterCertIAMPerms",
       "Effect": "Allow",
       "Action": [
         "iam:ListServerCertificates",
@@ -141,7 +135,6 @@
       ]
     },
     {
-      "Sid": "kopsK8sS3GetListBucket",
       "Effect": "Allow",
       "Action": [
         "s3:GetBucketLocation",
@@ -152,7 +145,6 @@
       ]
     },
     {
-      "Sid": "kopsK8sS3MasterBucketFullGet",
       "Effect": "Allow",
       "Action": [
         "s3:Get*"
@@ -160,7 +152,6 @@
       "Resource": "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/*"
     },
     {
-      "Sid": "kopsK8sKMSEncryptedVolumes",
       "Effect": "Allow",
       "Action": [
         "kms:CreateGrant",

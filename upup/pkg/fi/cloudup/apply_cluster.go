@@ -22,7 +22,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"time"
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
@@ -39,8 +38,10 @@ import (
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/alimodel"
 	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/pkg/model/components/etcdmanager"
 	"k8s.io/kops/pkg/model/domodel"
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/openstackmodel"
@@ -49,6 +50,8 @@ import (
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/alitasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/baremetal"
@@ -67,8 +70,7 @@ import (
 )
 
 const (
-	DefaultMaxTaskDuration = 10 * time.Minute
-	starline               = "*********************************************************************************\n"
+	starline = "*********************************************************************************\n"
 )
 
 var (
@@ -80,8 +82,10 @@ var (
 	AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
 	// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
 	AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
+	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha
+	AlphaAllowALI = featureflag.New("AlphaAllowALI", featureflag.Bool(false))
 	// CloudupModels a list of supported models
-	CloudupModels = []string{"config", "proto", "cloudup"}
+	CloudupModels = []string{"proto", "cloudup"}
 )
 
 type ApplyClusterCmd struct {
@@ -118,7 +122,8 @@ type ApplyClusterCmd struct {
 	// DryRun is true if this is only a dry run
 	DryRun bool
 
-	MaxTaskDuration time.Duration
+	// RunTasksOptions defines parameters for task execution, e.g. retry interval
+	RunTasksOptions *fi.RunTasksOptions
 
 	// The channel we are using
 	channel *kops.Channel
@@ -136,10 +141,6 @@ type ApplyClusterCmd struct {
 }
 
 func (c *ApplyClusterCmd) Run() error {
-	if c.MaxTaskDuration == 0 {
-		c.MaxTaskDuration = DefaultMaxTaskDuration
-	}
-
 	if c.InstanceGroups == nil {
 		list, err := c.Clientset.InstanceGroupsFor(c.Cluster).List(metav1.ListOptions{})
 		if err != nil {
@@ -176,7 +177,7 @@ func (c *ApplyClusterCmd) Run() error {
 	case Phase(""):
 		// Everything ... the default
 
-		// until we implement finding assets we need to to Ignore them
+		// until we implement finding assets we need to Ignore them
 		stageAssetsLifecycle = fi.LifecycleIgnore
 	case PhaseStageAssets:
 		networkLifecycle = fi.LifecycleIgnore
@@ -332,6 +333,8 @@ func (c *ApplyClusterCmd) Run() error {
 				return fmt.Errorf("GCE support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowGCE")
 			}
 
+			modelContext.SSHPublicKeys = sshPublicKeys
+
 			l.AddTypes(map[string]interface{}{
 				"Disk":                 &gcetasks.Disk{},
 				"Instance":             &gcetasks.Instance{},
@@ -411,6 +414,41 @@ func (c *ApplyClusterCmd) Run() error {
 			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
 		}
 
+	case kops.CloudProviderALI:
+		{
+			if !AlphaAllowALI.Enabled() {
+				return fmt.Errorf("Aliyun support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowALI")
+			}
+
+			aliCloud := cloud.(aliup.ALICloud)
+			region = aliCloud.Region()
+			l.AddTypes(map[string]interface{}{
+				"Vpc":                   &alitasks.VPC{},
+				"VSwitch":               &alitasks.VSwitch{},
+				"Disk":                  &alitasks.Disk{},
+				"SecurityGroup":         &alitasks.SecurityGroup{},
+				"SecurityGroupRule":     &alitasks.SecurityGroupRule{},
+				"LoadBalancer":          &alitasks.LoadBalancer{},
+				"LoadBalancerListener":  &alitasks.LoadBalancerListener{},
+				"LoadBalancerWhiteList": &alitasks.LoadBalancerWhiteList{},
+				"AutoscalingGroup":      &alitasks.ScalingGroup{},
+				"LaunchConfiguration":   &alitasks.LaunchConfiguration{},
+				"RAMPolicy":             &alitasks.RAMPolicy{},
+				"RAMRole":               &alitasks.RAMRole{},
+				"SSHKey":                &alitasks.SSHKey{},
+			})
+
+			if len(sshPublicKeys) == 0 {
+				return fmt.Errorf("SSH public key must be specified when running with ALICloud (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+			}
+
+			modelContext.SSHPublicKeys = sshPublicKeys
+
+			if len(sshPublicKeys) != 1 {
+				return fmt.Errorf("Exactly one 'admin' SSH public key can be specified when running with ALICloud; please delete a key using `kops delete secret`")
+			}
+		}
+
 	case kops.CloudProviderVSphere:
 		{
 			if !AlphaAllowVsphere.Enabled() {
@@ -441,10 +479,21 @@ func (c *ApplyClusterCmd) Run() error {
 			region = osCloud.Region()
 
 			l.AddTypes(map[string]interface{}{
+				"sshKey": &openstacktasks.SSHKey{},
 				// Networking
 				"network": &openstacktasks.Network{},
 				"router":  &openstacktasks.Router{},
 			})
+
+			if len(sshPublicKeys) == 0 {
+				return fmt.Errorf("SSH public key must be specified when running with Openstack (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+			}
+
+			modelContext.SSHPublicKeys = sshPublicKeys
+
+			if len(sshPublicKeys) != 1 {
+				return fmt.Errorf("Exactly one 'admin' SSH public key can be specified when running with Openstack; please delete a key using `kops delete secret`")
+			}
 		}
 	default:
 		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
@@ -489,16 +538,28 @@ func (c *ApplyClusterCmd) Run() error {
 			if err != nil {
 				return fmt.Errorf("error loading templates: %v", err)
 			}
-			tf.AddTo(templates.TemplateFunctions)
+
+			err = tf.AddTo(templates.TemplateFunctions, secretStore)
+			if err != nil {
+				return err
+			}
 
 			l.Builders = append(l.Builders,
 				&BootstrapChannelBuilder{
-					cluster:      cluster,
 					Lifecycle:    &clusterLifecycle,
-					templates:    templates,
 					assetBuilder: assetBuilder,
+					cluster:      cluster,
+					templates:    templates,
 				},
-				&model.PKIModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+				&model.PKIModelBuilder{
+					KopsModelContext: modelContext,
+					Lifecycle:        &clusterLifecycle,
+				},
+				&etcdmanager.EtcdManagerBuilder{
+					AssetBuilder:     assetBuilder,
+					KopsModelContext: modelContext,
+					Lifecycle:        &clusterLifecycle,
+				},
 			)
 
 			switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -549,11 +610,23 @@ func (c *ApplyClusterCmd) Run() error {
 					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &networkLifecycle},
 				)
 
-				if featureflag.GoogleCloudBucketAcl.Enabled() {
-					l.Builders = append(l.Builders,
-						&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: &storageAclLifecycle},
-					)
+				l.Builders = append(l.Builders,
+					&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: &storageAclLifecycle},
+				)
+
+			case kops.CloudProviderALI:
+				aliModelContext := &alimodel.ALIModelContext{
+					KopsModelContext: modelContext,
 				}
+				l.Builders = append(l.Builders,
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+					&alimodel.APILoadBalancerModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+					&alimodel.NetWorkModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+					&alimodel.RAMModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+					&alimodel.SSHKeyModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+					&alimodel.FirewallModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+					&alimodel.ExternalAccessModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+				)
 
 			case kops.CloudProviderVSphere:
 				// No special settings (yet!)
@@ -568,6 +641,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 				l.Builders = append(l.Builders,
 					&openstackmodel.NetworkModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &networkLifecycle},
+					&openstackmodel.SSHKeyModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
 				)
 
 			default:
@@ -628,6 +702,20 @@ func (c *ApplyClusterCmd) Run() error {
 				Lifecycle:       &clusterLifecycle,
 			})
 		}
+
+	case kops.CloudProviderALI:
+		{
+			aliModelContext := &alimodel.ALIModelContext{
+				KopsModelContext: modelContext,
+			}
+
+			l.Builders = append(l.Builders, &alimodel.ScalingGroupModelBuilder{
+				ALIModelContext: aliModelContext,
+				BootstrapScript: bootstrapScriptBuilder,
+				Lifecycle:       &clusterLifecycle,
+			})
+		}
+
 	case kops.CloudProviderVSphere:
 		{
 			vsphereModelContext := &vspheremodel.VSphereModelContext{
@@ -652,7 +740,10 @@ func (c *ApplyClusterCmd) Run() error {
 
 	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
 
-	tf.AddTo(l.TemplateFunctions)
+	err = tf.AddTo(l.TemplateFunctions, secretStore)
+	if err != nil {
+		return err
+	}
 
 	taskMap, err := l.BuildTasks(modelStore, fileModels, assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
 	if err != nil {
@@ -680,6 +771,8 @@ func (c *ApplyClusterCmd) Run() error {
 			target = baremetal.NewTarget(cloud.(*baremetal.Cloud))
 		case kops.CloudProviderOpenstack:
 			target = openstack.NewOpenstackAPITarget(cloud.(openstack.OpenstackCloud))
+		case kops.CloudProviderALI:
+			target = aliup.NewALIAPITarget(cloud.(aliup.ALICloud))
 		default:
 			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.CloudProvider)
 		}
@@ -757,7 +850,14 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 	defer context.Close()
 
-	err = context.RunTasks(c.MaxTaskDuration)
+	var options fi.RunTasksOptions
+	if c.RunTasksOptions != nil {
+		options = *c.RunTasksOptions
+	} else {
+		options.InitDefaults()
+	}
+
+	err = context.RunTasks(options)
 	if err != nil {
 		return fmt.Errorf("error running tasks: %v", err)
 	}
@@ -981,8 +1081,9 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 
 	// TODO figure out if we can only do this for CoreOS only and GCE Container OS
 	// TODO It is very difficult to pre-determine what OS an ami is, and if that OS needs socat
-	// At this time we just copy the socat binary to all distros.  Most distros will be there own
-	// socat binary.  Container operating systems like CoreOS need to have socat added to them.
+	// At this time we just copy the socat and conntrack binaries to all distros.
+	// Most distros will have there own socat and conntrack binary.
+	// Container operating systems like CoreOS need to have socat and conntrack added to them.
 	{
 		utilsLocation, hash, err := KopsFileUrl("linux/amd64/utils.tar.gz", assetBuilder)
 		if err != nil {
@@ -1125,6 +1226,15 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 			Name:   kopsbase.DefaultProtokubeImageName(),
 			Source: location.String(),
 			Hash:   hash.Hex(),
+		}
+	}
+
+	if role == kops.InstanceGroupRoleMaster {
+		for _, etcdCluster := range cluster.Spec.EtcdClusters {
+			if etcdCluster.Manager != nil {
+				p := configBase.Join("manifests/etcd/" + etcdCluster.Name + ".yaml").Path()
+				config.EtcdManifests = append(config.EtcdManifests, p)
+			}
 		}
 	}
 

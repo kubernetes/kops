@@ -4,8 +4,8 @@ go_library(
     name = "go_default_library",
     srcs = [
         "api.go",
+        "body_hash.go",
         "bucket_location.go",
-        "content_md5.go",
         "customizations.go",
         "doc.go",
         "doc_custom.go",
@@ -30,6 +30,7 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/aws/client/metadata:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/signer/v4:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/internal/sdkio:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/restxml:go_default_library",
     ],

@@ -126,6 +126,36 @@ func (client *ProviderClient) SetToken(t string) {
 	client.TokenID = t
 }
 
+//Reauthenticate calls client.ReauthFunc in a thread-safe way. If this is
+//called because of a 401 response, the caller may pass the previous token. In
+//this case, the reauthentication can be skipped if another thread has already
+//reauthenticated in the meantime. If no previous token is known, an empty
+//string should be passed instead to force unconditional reauthentication.
+func (client *ProviderClient) Reauthenticate(previousToken string) (err error) {
+	if client.ReauthFunc == nil {
+		return nil
+	}
+
+	if client.mut == nil {
+		return client.ReauthFunc()
+	}
+	client.mut.Lock()
+	defer client.mut.Unlock()
+
+	client.reauthmut.Lock()
+	client.reauthmut.reauthing = true
+	client.reauthmut.Unlock()
+
+	if previousToken == "" || client.TokenID == previousToken {
+		err = client.ReauthFunc()
+	}
+
+	client.reauthmut.Lock()
+	client.reauthmut.reauthing = false
+	client.reauthmut.Unlock()
+	return
+}
+
 // RequestOpts customizes the behavior of the provider.Request() method.
 type RequestOpts struct {
 	// JSONBody, if provided, will be encoded as JSON and used as the body of the HTTP request. The
@@ -254,21 +284,7 @@ func (client *ProviderClient) Request(method, url string, options *RequestOpts) 
 			}
 		case http.StatusUnauthorized:
 			if client.ReauthFunc != nil {
-				if client.mut != nil {
-					client.mut.Lock()
-					client.reauthmut.Lock()
-					client.reauthmut.reauthing = true
-					client.reauthmut.Unlock()
-					if curtok := client.TokenID; curtok == prereqtok {
-						err = client.ReauthFunc()
-					}
-					client.reauthmut.Lock()
-					client.reauthmut.reauthing = false
-					client.reauthmut.Unlock()
-					client.mut.Unlock()
-				} else {
-					err = client.ReauthFunc()
-				}
+				err = client.Reauthenticate(prereqtok)
 				if err != nil {
 					e := &ErrUnableToReauthenticate{}
 					e.ErrOriginal = respErr
@@ -279,7 +295,11 @@ func (client *ProviderClient) Request(method, url string, options *RequestOpts) 
 						seeker.Seek(0, 0)
 					}
 				}
+				// make a new call to request with a nil reauth func in order to avoid infinite loop
+				reauthFunc := client.ReauthFunc
+				client.ReauthFunc = nil
 				resp, err = client.Request(method, url, options)
+				client.ReauthFunc = reauthFunc
 				if err != nil {
 					switch err.(type) {
 					case *ErrUnexpectedResponseCode:
@@ -297,6 +317,11 @@ func (client *ProviderClient) Request(method, url string, options *RequestOpts) 
 			err = ErrDefault401{respErr}
 			if error401er, ok := errType.(Err401er); ok {
 				err = error401er.Error401(respErr)
+			}
+		case http.StatusForbidden:
+			err = ErrDefault403{respErr}
+			if error403er, ok := errType.(Err403er); ok {
+				err = error403er.Error403(respErr)
 			}
 		case http.StatusNotFound:
 			err = ErrDefault404{respErr}
@@ -357,7 +382,7 @@ func defaultOkCodes(method string) []int {
 	case method == "PUT":
 		return []int{201, 202}
 	case method == "PATCH":
-		return []int{200, 204}
+		return []int{200, 202, 204}
 	case method == "DELETE":
 		return []int{202, 204}
 	}

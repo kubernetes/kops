@@ -611,6 +611,31 @@
         ]
       }
     },
+    "AWSIAMPolicyadditionalmastersadditionaluserdataexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "additional.masters.additionaluserdata.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemastersadditionaluserdataexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::somebucket/someobject"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
     "AWSIAMPolicymastersadditionaluserdataexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
@@ -629,8 +654,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sEC2MasterPermsFullAccess"
+              ]
             },
             {
               "Action": [
@@ -638,7 +662,6 @@
                 "autoscaling:DescribeAutoScalingInstances",
                 "autoscaling:DescribeLaunchConfigurations",
                 "autoscaling:DescribeTags",
-                "autoscaling:GetAsgForInstance",
                 "autoscaling:SetDesiredCapacity",
                 "autoscaling:TerminateInstanceInAutoScalingGroup",
                 "autoscaling:UpdateAutoScalingGroup"
@@ -646,8 +669,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sASMasterPerms"
+              ]
             },
             {
               "Action": [
@@ -656,8 +678,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sELBMasterPermsFullAccess"
+              ]
             },
             {
               "Action": [
@@ -667,8 +688,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsMasterCertIAMPerms"
+              ]
             },
             {
               "Action": [
@@ -679,8 +699,7 @@
               "Effect": "Allow",
               "Resource": [
                 "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
-              ],
-              "Sid": "kopsK8sRoute53Change"
+              ]
             },
             {
               "Action": [
@@ -689,8 +708,7 @@
               "Effect": "Allow",
               "Resource": [
                 "arn:aws:route53:::change/*"
-              ],
-              "Sid": "kopsK8sRoute53GetChanges"
+              ]
             },
             {
               "Action": [
@@ -699,8 +717,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sRoute53ListZones"
+              ]
             },
             {
               "Action": [
@@ -709,8 +726,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": ""
+              ]
             },
             {
               "Action": [
@@ -725,8 +741,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sECR"
+              ]
             }
           ],
           "Version": "2012-10-17"
@@ -752,8 +767,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sEC2NodePerms"
+              ]
             },
             {
               "Action": [
@@ -764,8 +778,7 @@
               "Effect": "Allow",
               "Resource": [
                 "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
-              ],
-              "Sid": "kopsK8sRoute53Change"
+              ]
             },
             {
               "Action": [
@@ -774,8 +787,7 @@
               "Effect": "Allow",
               "Resource": [
                 "arn:aws:route53:::change/*"
-              ],
-              "Sid": "kopsK8sRoute53GetChanges"
+              ]
             },
             {
               "Action": [
@@ -784,8 +796,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sRoute53ListZones"
+              ]
             },
             {
               "Action": [
@@ -794,8 +805,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": ""
+              ]
             },
             {
               "Action": [
@@ -810,8 +820,7 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ],
-              "Sid": "kopsK8sECR"
+              ]
             }
           ],
           "Version": "2012-10-17"

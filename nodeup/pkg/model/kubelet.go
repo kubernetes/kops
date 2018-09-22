@@ -17,25 +17,34 @@ limitations under the License.
 package model
 
 import (
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"fmt"
 	"path"
 	"path/filepath"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/golang/glog"
+
 	"k8s.io/api/core/v1"
+	"k8s.io/apiserver/pkg/authentication/user"
+
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
-// containerizedMounterHome is the path where we install the containerized mounter (on ContainerOS)
-const containerizedMounterHome = "/home/kubernetes/containerized_mounter"
+const (
+	// containerizedMounterHome is the path where we install the containerized mounter (on ContainerOS)
+	containerizedMounterHome = "/home/kubernetes/containerized_mounter"
+)
 
 // KubeletBuilder installs kubelet
 type KubeletBuilder struct {
@@ -72,36 +81,47 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("unable to locate asset %q", assetName)
 		}
 
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path:     b.kubeletPath(),
 			Contents: asset,
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0755"),
-		}
-		c.AddTask(t)
+		})
 	}
 
 	{
-		// @TODO Change kubeconfig to be https
-		kubeconfig, err := b.buildPKIKubeconfig("kubelet")
-		if err != nil {
-			return err
+		// @check if bootstrap tokens are enabled and create the appropreiate certificates
+		if b.UseBootstrapTokens() {
+			// @check if a master and if so, we bypass the token strapping and instead generate our own kubeconfig
+			if b.IsMaster {
+				glog.V(3).Info("kubelet bootstrap tokens are enabled and running on a master")
+
+				task, err := b.buildMasterKubeletKubeconfig()
+				if err != nil {
+					return err
+				}
+				c.AddTask(task)
+			}
+		} else {
+			kubeconfig, err := b.BuildPKIKubeconfig("kubelet")
+			if err != nil {
+				return err
+			}
+
+			c.AddTask(&nodetasks.File{
+				Path:     b.KubeletKubeConfig(),
+				Contents: fi.NewStringResource(kubeconfig),
+				Type:     nodetasks.FileType_File,
+				Mode:     s("0400"),
+			})
 		}
-		t := &nodetasks.File{
-			Path:     "/var/lib/kubelet/kubeconfig",
-			Contents: fi.NewStringResource(kubeconfig),
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0400"),
-		}
-		c.AddTask(t)
 	}
 
 	if b.UsesCNI() {
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path: b.CNIConfDir(),
 			Type: nodetasks.FileType_Directory,
-		}
-		c.AddTask(t)
+		})
 	}
 
 	if err := b.addStaticUtils(c); err != nil {
@@ -131,6 +151,11 @@ func (b *KubeletBuilder) kubeletPath() string {
 
 // buildSystemdEnvironmentFile renders the environment file for the kubelet
 func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
+	// @step: ensure the masters do not get a bootstrap configuration
+	if b.UseBootstrapTokens() && b.IsMaster {
+		kubeletConfig.BootstrapKubeconfig = ""
+	}
+
 	// TODO: Dump the separate file for flags - just complexity!
 	flags, err := flagbuilder.BuildFlags(kubeletConfig)
 	if err != nil {
@@ -148,16 +173,16 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	if b.UsesCNI() {
 		flags += " --cni-bin-dir=" + b.CNIBinDir()
 		flags += " --cni-conf-dir=" + b.CNIConfDir()
-		// If we are using the AmazonVPC plugin we need to bind the kubelet to the local ipv4 address
-		if b.Cluster.Spec.Networking.AmazonVPC != nil {
-			sess := session.Must(session.NewSession())
-			metadata := ec2metadata.New(sess)
-			localIpv4, err := metadata.GetMetadata("local-ipv4")
-			if err != nil {
-				return nil, fmt.Errorf("error fetching the local-ipv4 address from the ec2 meta-data: %v", err)
-			}
-			flags += " --node-ip=" + localIpv4
+	}
+
+	if b.UsesSecondaryIP() {
+		sess := session.Must(session.NewSession())
+		metadata := ec2metadata.New(sess)
+		localIpv4, err := metadata.GetMetadata("local-ipv4")
+		if err != nil {
+			return nil, fmt.Errorf("error fetching the local-ipv4 address from the ec2 meta-data: %v", err)
 		}
+		flags += " --node-ip=" + localIpv4
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Kubenet != nil {
@@ -184,6 +209,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		Contents: fi.NewStringResource(sysconfig),
 		Type:     nodetasks.FileType_File,
 	}
+
 	return t, nil
 }
 
@@ -197,11 +223,17 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Unit", "After", "docker.service")
 
 	if b.Distribution == distros.DistributionCoreOS {
-		// We add /opt/kubernetes/bin for our utilities (socat)
+		// We add /opt/kubernetes/bin for our utilities (socat, conntrack)
 		manifest.Set("Service", "Environment", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kubernetes/bin")
 	}
-
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/kubelet")
+
+	// @check if we are using bootstrap tokens and file checker
+	if !b.IsMaster && b.UseBootstrapTokens() {
+		manifest.Set("Service", "ExecStartPre",
+			fmt.Sprintf("/bin/bash -c 'while [ ! -f %s ]; do sleep 5; done;'", b.KubeletBootstrapKubeconfig()))
+	}
+
 	manifest.Set("Service", "ExecStart", kubeletCommand+" \"$DAEMON_ARGS\"")
 	manifest.Set("Service", "Restart", "always")
 	manifest.Set("Service", "RestartSec", "2s")
@@ -227,10 +259,12 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	return service
 }
 
+// buildKubeletConfig is responsible for creating the kubelet configuration
 func (b *KubeletBuilder) buildKubeletConfig() (*kops.KubeletConfigSpec, error) {
 	if b.InstanceGroup == nil {
 		glog.Fatalf("InstanceGroup was not set")
 	}
+
 	kubeletConfigSpec, err := b.buildKubeletConfigSpec()
 	if err != nil {
 		return nil, fmt.Errorf("error building kubelet config: %v", err)
@@ -242,25 +276,27 @@ func (b *KubeletBuilder) buildKubeletConfig() (*kops.KubeletConfigSpec, error) {
 
 func (b *KubeletBuilder) addStaticUtils(c *fi.ModelBuilderContext) error {
 	if b.Distribution == distros.DistributionCoreOS {
-		// CoreOS does not ship with socat.  Install our own (statically linked) version
+		// CoreOS does not ship with socat or conntrack.  Install our own (statically linked) version
 		// TODO: Extract to common function?
-		assetName := "socat"
-		assetPath := ""
-		asset, err := b.Assets.Find(assetName, assetPath)
-		if err != nil {
-			return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
-		}
-		if asset == nil {
-			return fmt.Errorf("unable to locate asset %q", assetName)
-		}
+		for _, binary := range []string{"socat", "conntrack"} {
+			assetName := binary
+			assetPath := ""
+			asset, err := b.Assets.Find(assetName, assetPath)
+			if err != nil {
+				return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
+			}
+			if asset == nil {
+				return fmt.Errorf("unable to locate asset %q", assetName)
+			}
 
-		t := &nodetasks.File{
-			Path:     "/opt/kubernetes/bin/socat",
-			Contents: asset,
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0755"),
+			t := &nodetasks.File{
+				Path:     "/opt/kubernetes/bin/" + binary,
+				Contents: asset,
+				Type:     nodetasks.FileType_File,
+				Mode:     s("0755"),
+			}
+			c.AddTask(t)
 		}
-		c.AddTask(t)
 	}
 
 	return nil
@@ -390,9 +426,9 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	// Merge KubeletConfig for NodeLabels
 	c := &kops.KubeletConfigSpec{}
 	if b.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {
-		utils.JsonMergeStruct(c, b.Cluster.Spec.MasterKubelet)
+		reflectutils.JsonMergeStruct(c, b.Cluster.Spec.MasterKubelet)
 	} else {
-		utils.JsonMergeStruct(c, b.Cluster.Spec.Kubelet)
+		reflectutils.JsonMergeStruct(c, b.Cluster.Spec.Kubelet)
 	}
 
 	// @check if we are using secure kubelet <-> api settings
@@ -401,8 +437,12 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		c.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 	}
 
+	if b.IsMaster {
+		c.BootstrapKubeconfig = ""
+	}
+
 	if b.InstanceGroup.Spec.Kubelet != nil {
-		utils.JsonMergeStruct(c, b.InstanceGroup.Spec.Kubelet)
+		reflectutils.JsonMergeStruct(c, b.InstanceGroup.Spec.Kubelet)
 	}
 
 	if b.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {
@@ -445,4 +485,89 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	}
 
 	return c, nil
+}
+
+// buildMasterKubeletKubeconfig builds a kubeconfig for the master kubelet, self-signing the kubelet cert
+func (b *KubeletBuilder) buildMasterKubeletKubeconfig() (*nodetasks.File, error) {
+	nodeName, err := b.NodeName()
+	if err != nil {
+		return nil, fmt.Errorf("error getting NodeName: %v", err)
+	}
+
+	caCert, err := b.KeyStore.FindCert(fi.CertificateId_CA)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching CA certificate from keystore: %v", err)
+	}
+	if caCert == nil {
+		return nil, fmt.Errorf("unable to find CA certificate %q in keystore", fi.CertificateId_CA)
+	}
+
+	caKey, err := b.KeyStore.FindPrivateKey(fi.CertificateId_CA)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching CA certificate from keystore: %v", err)
+	}
+	if caKey == nil {
+		return nil, fmt.Errorf("unable to find CA key %q in keystore", fi.CertificateId_CA)
+	}
+
+	privateKey, err := pki.GeneratePrivateKey()
+	if err != nil {
+		return nil, err
+	}
+
+	template := &x509.Certificate{
+		BasicConstraintsValid: true,
+		IsCA: false,
+	}
+
+	template.Subject = pkix.Name{
+		CommonName:   fmt.Sprintf("system:node:%s", nodeName),
+		Organization: []string{user.NodesGroup},
+	}
+
+	// https://tools.ietf.org/html/rfc5280#section-4.2.1.3
+	//
+	// Digital signature allows the certificate to be used to verify
+	// digital signatures used during TLS negotiation.
+	template.KeyUsage = template.KeyUsage | x509.KeyUsageDigitalSignature
+	// KeyEncipherment allows the cert/key pair to be used to encrypt
+	// keys, including the symmetric keys negotiated during TLS setup
+	// and used for data transfer.
+	template.KeyUsage = template.KeyUsage | x509.KeyUsageKeyEncipherment
+	// ClientAuth allows the cert to be used by a TLS client to
+	// authenticate itself to the TLS server.
+	template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageClientAuth)
+
+	t := time.Now().UnixNano()
+	template.SerialNumber = pki.BuildPKISerial(t)
+
+	certificate, err := pki.SignNewCertificate(privateKey, template, caCert.Certificate, caKey)
+	if err != nil {
+		return nil, fmt.Errorf("error signing certificate for master kubelet: %v", err)
+	}
+
+	caBytes, err := caCert.AsBytes()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get certificate authority data: %s", err)
+	}
+	certBytes, err := certificate.AsBytes()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get certificate data: %s", err)
+	}
+	keyBytes, err := privateKey.AsBytes()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get private key data: %s", err)
+	}
+
+	content, err := b.BuildKubeConfig("kubelet", caBytes, certBytes, keyBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return &nodetasks.File{
+		Path:     b.KubeletKubeConfig(),
+		Contents: fi.NewStringResource(content),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("600"),
+	}, nil
 }

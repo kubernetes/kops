@@ -5,7 +5,7 @@
 * A majority of maintainers must agree on a single commit SHA for the release. The agreement should be documented in the release notes.
 * The maintainers will match the commit SHA to the release `major.minor.patch` in the release notes
 * The maintainers will agree on a changelog proposal that MUST be in a PR prior to the release.
-* The main `REAMDE.md` must also reflect the new release. Ideally this should be in the same PR.
+* The main `README.md` must also reflect the new release. Ideally this should be in the same PR.
 
 #### 2. Merge the release notes
 

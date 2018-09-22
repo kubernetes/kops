@@ -24,9 +24,10 @@ import (
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kops/upup/pkg/fi/utils"
 
 	"github.com/golang/glog"
+
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 // BuildFlags returns a space separated list arguments
@@ -57,7 +58,7 @@ func BuildFlagsList(options interface{}) ([]string, error) {
 		}
 		if tag == "-" {
 			glog.V(4).Infof("skipping field with %q flag tag: %s", tag, path)
-			return utils.SkipReflection
+			return reflectutils.SkipReflection
 		}
 
 		// If we specify the repeat option, we will repeat the flag rather than joining it with commas
@@ -109,7 +110,7 @@ func BuildFlagsList(options interface{}) ([]string, error) {
 					flag := fmt.Sprintf("--%s=%s", flagName, strings.Join(args, ","))
 					flags = append(flags, flag)
 				}
-				return utils.SkipReflection
+				return reflectutils.SkipReflection
 			}
 
 			return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", val.Interface(), path, val.Interface())
@@ -132,7 +133,7 @@ func BuildFlagsList(options interface{}) ([]string, error) {
 						flags = append(flags, flag)
 					}
 				}
-				return utils.SkipReflection
+				return reflectutils.SkipReflection
 			}
 
 			return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", val.Interface(), path, val.Interface())
@@ -188,9 +189,9 @@ func BuildFlagsList(options interface{}) ([]string, error) {
 			flags = append(flags, flag)
 		}
 
-		return utils.SkipReflection
+		return reflectutils.SkipReflection
 	}
-	err := utils.ReflectRecursive(reflect.ValueOf(options), walker)
+	err := reflectutils.ReflectRecursive(reflect.ValueOf(options), walker)
 	if err != nil {
 		return nil, fmt.Errorf("BuildFlagsList to reflect value: %s", err)
 	}

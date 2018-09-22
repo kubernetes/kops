@@ -26,8 +26,14 @@ type KubeletConfigSpec struct {
 	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
 	// AuthorizationMode is the authorization mode the kubelet is running in
 	AuthorizationMode string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
+	// BootstrapKubeconfig is the path to a kubeconfig file that will be used to get client certificate for kube
+	BootstrapKubeconfig string `json:"bootstrapKubeconfig,omitempty" flag:"bootstrap-kubeconfig"`
 	// ClientCAFile is the path to a CA certificate
 	ClientCAFile string `json:"clientCaFile,omitempty" flag:"client-ca-file"`
+	// TODO: Remove unused TLSCertFile
+	TLSCertFile string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
+	// TODO: Remove unused TLSPrivateKeyFile
+	TLSPrivateKeyFile string `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
 	// KubeconfigPath is the path of kubeconfig for the kubelet
 	KubeconfigPath string `json:"kubeconfigPath,omitempty" flag:"kubeconfig"`
 	// RequireKubeconfig indicates a kubeconfig is required
@@ -158,6 +164,18 @@ type KubeletConfigSpec struct {
 	VolumeStatsAggPeriod *metav1.Duration `json:"volumeStatsAggPeriod,omitempty" flag:"volume-stats-agg-period"`
 	// Tells the Kubelet to fail to start if swap is enabled on the node.
 	FailSwapOn *bool `json:"failSwapOn,omitempty" flag:"fail-swap-on"`
+	// ExperimentalAllowedUnsafeSysctls are passed to the kubelet config to whitelist allowable sysctls
+	ExperimentalAllowedUnsafeSysctls []string `json:"experimental_allowed_unsafe_sysctls,omitempty" flag:"experimental-allowed-unsafe-sysctls"`
+	// StreamingConnectionIdleTimeout is the maximum time a streaming connection can be idle before the connection is automatically closed
+	StreamingConnectionIdleTimeout *metav1.Duration `json:"streamingConnectionIdleTimeout,omitempty" flag:"streaming-connection-idle-timeout"`
+	// DockerDisableSharedPID uses a shared PID namespace for containers in a pod.
+	DockerDisableSharedPID *bool `json:"dockerDisableSharedPID,omitempty" flag:"docker-disable-shared-pid"`
+	// RootDir is the directory path for managing kubelet files (volume mounts,etc)
+	RootDir string `json:"rootDir,omitempty" flag:"root-dir"`
+	// AuthenticationTokenWebhook uses the TokenReview API to determine authentication for bearer tokens.
+	AuthenticationTokenWebhook *bool `json:"authenticationTokenWebhook,omitempty" flag:"authentication-token-webhook"`
+	// AuthenticationTokenWebhook sets the duration to cache responses from the webhook token authenticator. Default is 2m. (default 2m0s)
+	AuthenticationTokenWebhookCacheTTL *metav1.Duration `json:"authenticationTokenWebhookCacheTtl,omitempty" flag:"authentication-token-webhook-cache-ttl"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
@@ -178,6 +196,8 @@ type KubeProxyConfig struct {
 	ClusterCIDR string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
 	// HostnameOverride, if non-empty, will be used as the identity instead of the actual hostname.
 	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
+	// BindAddress is IP address for the proxy server to serve on
+	BindAddress string `json:"bindAddress,omitempty" flag:"bind-address"`
 	// Master is the address of the Kubernetes API server (overrides any value in kubeconfig)
 	Master string `json:"master,omitempty" flag:"master"`
 	// Enabled allows enabling or disabling kube-proxy
@@ -186,6 +206,10 @@ type KubeProxyConfig struct {
 	ProxyMode string `json:"proxyMode,omitempty" flag:"proxy-mode"`
 	// FeatureGates is a series of key pairs used to switch on features for the proxy
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
+	// Maximum number of NAT connections to track per CPU core (default: 131072)
+	ConntrackMaxPerCore *int32 `json:"conntrackMaxPerCore,omitempty" flag:"conntrack-max-per-core"`
+	// Minimum number of conntrack entries to allocate, regardless of conntrack-max-per-core
+	ConntrackMin *int32 `json:"conntrackMin,omitempty" flag:"conntrack-min"`
 }
 
 // KubeAPIServerConfig defines the configuration for the kube api
@@ -200,10 +224,22 @@ type KubeAPIServerConfig struct {
 	SecurePort int32 `json:"securePort,omitempty" flag:"secure-port"`
 	// InsecurePort is the port the insecure api runs
 	InsecurePort int32 `json:"insecurePort,omitempty" flag:"insecure-port"`
-	// Address is the binding address for the kube api
+	// Address is the binding address for the kube api: Deprecated - use insecure-bind-address and bind-address
 	Address string `json:"address,omitempty" flag:"address"`
-	// AdmissionControl is a list of admission controllers to user
+	// BindAddress is the binding address for the secure kubernetes API
+	BindAddress string `json:"bindAddress,omitempty" flag:"bind-address"`
+	// InsecureBindAddress is the binding address for the InsecurePort for the insecure kubernetes API
+	InsecureBindAddress string `json:"insecureBindAddress,omitempty" flag:"insecure-bind-address"`
+	// EnableBootstrapAuthToken enables 'bootstrap.kubernetes.io/token' in the 'kube-system' namespace to be used for TLS bootstrapping authentication
+	EnableBootstrapAuthToken *bool `json:"enableBootstrapTokenAuth,omitempty" flag:"enable-bootstrap-token-auth"`
+	// EnableAggregatorRouting enables aggregator routing requests to endpoints IP rather than cluster IP
+	EnableAggregatorRouting *bool `json:"enableAggregatorRouting,omitempty" flag:"enable-aggregator-routing"`
+	// Deprecated: AdmissionControl is a list of admission controllers to use
 	AdmissionControl []string `json:"admissionControl,omitempty" flag:"admission-control"`
+	// EnableAdmissionPlugins is a list of enabled admission plugins
+	EnableAdmissionPlugins []string `json:"enableAdmissionPlugins,omitempty" flag:"enable-admission-plugins"`
+	// DisableAdmissionPlugins is a list of disabled admission plugins
+	DisableAdmissionPlugins []string `json:"disableAdmissionPlugins,omitempty" flag:"disable-admission-plugins"`
 	// ServiceClusterIPRange is the service address range
 	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty" flag:"service-cluster-ip-range"`
 	// Passed as --service-node-port-range to kube-apiserver. Expects 'startPort-endPort' format. Eg. 30000-33000
@@ -312,6 +348,10 @@ type KubeAPIServerConfig struct {
 
 	// EtcdQuorumRead configures the etcd-quorum-read flag, which forces consistent reads from etcd
 	EtcdQuorumRead *bool `json:"etcdQuorumRead,omitempty" flag:"etcd-quorum-read"`
+
+	// MinRequestTimeout configures the minimum number of seconds a handler must keep a request open before timing it out.
+	// Currently only honored by the watch request handler
+	MinRequestTimeout *int32 `json:"minRequestTimeout,omitempty" flag:"min-request-timeout"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
@@ -332,6 +372,8 @@ type KubeControllerManagerConfig struct {
 	ClusterCIDR string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
 	// AllocateNodeCIDRs enables CIDRs for Pods to be allocated and, if ConfigureCloudRoutes is true, to be set on the cloud provider.
 	AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty" flag:"allocate-node-cidrs"`
+	// NodeCIDRMaskSize set the size for the mask of the nodes.
+	NodeCIDRMaskSize *int32 `json:"nodeCIDRMaskSize,omitempty" flag:"node-cidr-mask-size"`
 	// ConfigureCloudRoutes enables CIDRs allocated with to be configured on the cloud provider.
 	ConfigureCloudRoutes *bool `json:"configureCloudRoutes,omitempty" flag:"configure-cloud-routes"`
 	// CIDRAllocatorType specifies the type of CIDR allocator to use.
@@ -375,6 +417,7 @@ type KubeControllerManagerConfig struct {
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }
 
+// CloudControllerManagerConfig is the configuration of the cloud controller
 type CloudControllerManagerConfig struct {
 	// Master is the url for the kube api master.
 	Master string `json:"master,omitempty" flag:"master"`
@@ -448,6 +491,17 @@ type CloudConfiguration struct {
 // HasAdmissionController checks if a specific admission controller is enabled
 func (c *KubeAPIServerConfig) HasAdmissionController(name string) bool {
 	for _, x := range c.AdmissionControl {
+		if x == name {
+			return true
+		}
+	}
+
+	for _, x := range c.DisableAdmissionPlugins {
+		if x == name {
+			return false
+		}
+	}
+	for _, x := range c.EnableAdmissionPlugins {
 		if x == name {
 			return true
 		}

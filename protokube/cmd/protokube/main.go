@@ -32,6 +32,7 @@ import (
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
 	"k8s.io/kops/protokube/pkg/gossip/mesh"
 	"k8s.io/kops/protokube/pkg/protokube"
+
 	// Load DNS plugins
 	"github.com/golang/glog"
 	"github.com/spf13/pflag"
@@ -63,6 +64,7 @@ func run() error {
 	var cloud, clusterID, dnsServer, dnsProviderID, dnsInternalSuffix, gossipSecret, gossipListen string
 	var flagChannels, tlsCert, tlsKey, tlsCA, peerCert, peerKey, peerCA string
 	var etcdBackupImage, etcdBackupStore, etcdImageSource, etcdElectionTimeout, etcdHeartbeatInterval string
+	var dnsUpdateInterval int
 
 	flag.BoolVar(&applyTaints, "apply-taints", applyTaints, "Apply taints to nodes based on the role")
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
@@ -72,6 +74,7 @@ func run() error {
 	flag.StringVar(&clusterID, "cluster-id", clusterID, "Cluster ID")
 	flag.StringVar(&dnsInternalSuffix, "dns-internal-suffix", dnsInternalSuffix, "DNS suffix for internal domain names")
 	flag.StringVar(&dnsServer, "dns-server", dnsServer, "DNS Server")
+	flags.IntVar(&dnsUpdateInterval, "dns-update-interval", 5, "Configure interval at which to update DNS records.")
 	flag.StringVar(&flagChannels, "channels", flagChannels, "channels to install")
 	flag.StringVar(&gossipListen, "gossip-listen", "0.0.0.0:3999", "address:port on which to bind for gossip")
 	flag.StringVar(&peerCA, "peer-ca", peerCA, "Path to a file containing the peer ca in PEM format")
@@ -89,6 +92,9 @@ func run() error {
 	flags.StringVar(&etcdElectionTimeout, "etcd-election-timeout", etcdElectionTimeout, "time in ms for an election to timeout")
 	flags.StringVar(&etcdHeartbeatInterval, "etcd-heartbeat-interval", etcdHeartbeatInterval, "time in ms of a heartbeat interval")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
+
+	manageEtcd := false
+	flag.BoolVar(&manageEtcd, "manage-etcd", manageEtcd, "Set to manage etcd (deprecated in favor of etcd-manager)")
 
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
@@ -255,14 +261,18 @@ func run() error {
 		}()
 
 		dnsView := gossipdns.NewDNSView(gossipState)
+		zoneInfo := gossipdns.DNSZoneInfo{
+			Name: gossipdns.DefaultZoneName,
+		}
+		if _, err := dnsView.AddZone(zoneInfo); err != nil {
+			glog.Fatalf("error creating zone: %v", err)
+		}
+
 		go func() {
 			gossipdns.RunDNSUpdates(dnsTarget, dnsView)
 			glog.Fatalf("RunDNSUpdates exited unexpectedly")
 		}()
 
-		zoneInfo := gossipdns.DNSZoneInfo{
-			Name: gossipdns.DefaultZoneName,
-		}
 		dnsProvider = &protokube.GossipDnsProvider{DNSView: dnsView, Zone: zoneInfo}
 	} else {
 		var dnsScope dns.Scope
@@ -290,7 +300,7 @@ func run() error {
 				return fmt.Errorf("unexpected zone flags: %q", err)
 			}
 
-			dnsController, err = dns.NewDNSController([]dnsprovider.Interface{dnsProvider}, zoneRules)
+			dnsController, err = dns.NewDNSController([]dnsprovider.Interface{dnsProvider}, zoneRules, dnsUpdateInterval)
 			if err != nil {
 				return err
 			}
@@ -320,6 +330,7 @@ func run() error {
 		ApplyTaints:           applyTaints,
 		Channels:              channels,
 		DNS:                   dnsProvider,
+		ManageEtcd:            manageEtcd,
 		EtcdBackupImage:       etcdBackupImage,
 		EtcdBackupStore:       etcdBackupStore,
 		EtcdImageSource:       etcdImageSource,
@@ -378,7 +389,7 @@ func findInternalIP() (net.IP, error) {
 
 		addrs, err := networkInterface.Addrs()
 		if err != nil {
-			return nil, fmt.Errorf("error querying network interface %s for IP adddresses: %v", name, err)
+			return nil, fmt.Errorf("error querying network interface %s for IP addresses: %v", name, err)
 		}
 
 		for _, addr := range addrs {
@@ -402,7 +413,7 @@ func findInternalIP() (net.IP, error) {
 	}
 
 	if len(ips) == 0 {
-		return nil, fmt.Errorf("unable to determine internal ip (no adddresses found)")
+		return nil, fmt.Errorf("unable to determine internal ip (no addresses found)")
 	}
 
 	if len(ips) == 1 {
