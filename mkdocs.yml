@@ -1,0 +1,26 @@
+site_name: Kubernetes Operations - kops
+strict: true
+repo_name: 'kubernetes/kops'
+repo_url: 'https://github.com/kubernetes/kops'
+markdown_extensions:
+  - admonition
+  - codehilite
+  - pymdownx.inlinehilite
+  - pymdownx.tasklist(custom_checkbox=true)
+  - toc:
+      permalink: true
+theme:
+  name: material
+  feature:
+    tabs: true
+  logo:
+    icon: 'public'   # globe icon
+  palette:
+    primary: 'teal'
+    accent: 'green'
+plugins:
+  - search
+  - awesome-pages:
+      collapse_single_pages: true
+extra_css: [extra.css]
+#google_analytics: ['UA-XXXXXXX-X', 'kubernetes.github.io']

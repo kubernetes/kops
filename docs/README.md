@@ -112,4 +112,3 @@
 * [Our release process](development/release.md)
 * [Releasing with Homebrew](development/homebrew.md)
 * [Rolling Update Diagrams](development/rolling_update.md)
-* [Updating Go Dependencies](development/dependencies.md)
