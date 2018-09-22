@@ -49,34 +49,34 @@ required = [
 # Core kubernetes components
 [[override]]
   name = "k8s.io/code-generator"
-  version = "kubernetes-1.10.1"
+  version = "kubernetes-1.11.3"
 [[override]]
   name = "k8s.io/apimachinery"
-  version = "kubernetes-1.10.1"
+  version = "kubernetes-1.11.3"
 [[override]]
   name = "k8s.io/api"
-  version = "kubernetes-1.10.1"
+  version = "kubernetes-1.11.3"
 [[override]]
   name = "k8s.io/utils"
-  revision = "258e2a2fa64568210fbd6267cf1d8fd87c3cb86e" # Latest as of 1.10.1
+  revision = "cd34563cd63c2bd7c6fe88a73c4dcf34ed8a67cb" # Latest
 [[override]]
   name = "k8s.io/kube-openapi"
-  revision = "f442ecb314a3679150c272e2b9713d8deed5955d" # Latest as of 1.10.1
+  revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803" # Latest
 [[override]]
   name = "k8s.io/client-go"
-  revision = "23781f4d6632d88e869066eaebb743857aa1ef9b" # 1.10.0 (no 1.10.1)
+  version = "kubernetes-1.11.3"
 [[override]]
   name = "k8s.io/apiserver"
-  version = "kubernetes-1.10.1"
+  version = "kubernetes-1.11.3"
 [[override]]
   name = "k8s.io/metrics"
-  version = "kubernetes-1.10.1"
+  version = "kubernetes-1.11.3"
 [[override]]
   name = "k8s.io/apiextensions-apiserver"
-  version = "kubernetes-1.10.1"
+  version = "kubernetes-1.11.3"
 [[override]]
   name = "k8s.io/kubernetes"
-  version = "v1.10.1"
+  version = "v1.11.3"
 
 # Needed for docs generation
 [[override]]
