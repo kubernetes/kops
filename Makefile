@@ -20,7 +20,7 @@ GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
 GOPATH_1ST:=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
-GOVERSION=1.9.3
+GOVERSION=1.10.3
 BUILD=$(GOPATH_1ST)/src/k8s.io/kops/.build
 LOCAL=$(BUILD)/local
 BINDATA_TARGETS=upup/models/bindata.go
@@ -198,7 +198,7 @@ upup/models/bindata.go: ${GOBINDATA} ${UPUP_MODELS_BINDATA_SOURCES}
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
-# 1.9 is preferred, 1.10 is likely to be the default soon.  1.8 is best-effort
+# 1.10 is the default for k8s 1.11.  Others are best-effort
 .PHONY: check-builds-in-go18
 check-builds-in-go18:
 	# Note we only check that kops builds; we know the tests don't compile because of type aliasing in uber zap
