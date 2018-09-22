@@ -48,6 +48,7 @@ go_library(
         "flock_linux_32bit.go",
         "openbsd_pledge.go",
         "pagesize_unix.go",
+        "race.go",
         "race0.go",
         "sockcmsg_linux.go",
         "sockcmsg_unix.go",
@@ -202,7 +203,7 @@ go_library(
         "ztypes_solaris_amd64.go",
     ],
     cgo = True,
-    importmap = "vendor/golang.org/x/sys/unix",
+    importmap = "k8s.io/kops/vendor/golang.org/x/sys/unix",
     importpath = "golang.org/x/sys/unix",
     visibility = ["//visibility:public"],
 )

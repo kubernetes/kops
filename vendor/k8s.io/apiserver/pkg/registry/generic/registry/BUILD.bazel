@@ -8,7 +8,7 @@ go_library(
         "storage_factory.go",
         "store.go",
     ],
-    importmap = "vendor/k8s.io/apiserver/pkg/registry/generic/registry",
+    importmap = "k8s.io/kops/vendor/k8s.io/apiserver/pkg/registry/generic/registry",
     importpath = "k8s.io/apiserver/pkg/registry/generic/registry",
     visibility = ["//visibility:public"],
     deps = [

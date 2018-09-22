@@ -12,7 +12,7 @@ go_library(
         "util.go",
         "versioned_generator.go",
     ],
-    importmap = "vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiregister-gen/generators",
+    importmap = "k8s.io/kops/vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiregister-gen/generators",
     importpath = "github.com/kubernetes-incubator/apiserver-builder/cmd/apiregister-gen/generators",
     visibility = ["//visibility:public"],
     deps = [

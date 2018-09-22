@@ -39,6 +39,18 @@ var commandFromName = map[string]command{
 	"update-repos": updateReposCmd,
 }
 
+var nameFromCommand = []string{
+	// keep in sync with definition above
+	"update",
+	"fix",
+	"update-repos",
+	"help",
+}
+
+func (cmd command) String() string {
+	return nameFromCommand[cmd]
+}
+
 func main() {
 	log.SetPrefix("gazelle: ")
 	log.SetFlags(0) // don't print timestamps

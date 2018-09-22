@@ -9,7 +9,7 @@ go_library(
         "encode.go",
         "json.go",
     ],
-    importmap = "vendor/gopkg.in/mgo.v2/bson",
+    importmap = "k8s.io/kops/vendor/gopkg.in/mgo.v2/bson",
     importpath = "gopkg.in/mgo.v2/bson",
     visibility = ["//visibility:public"],
     deps = ["//vendor/gopkg.in/mgo.v2/internal/json:go_default_library"],

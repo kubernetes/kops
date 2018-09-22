@@ -8,7 +8,7 @@ go_library(
         "register.go",
         "zz_generated.conversion.go",
     ],
-    importmap = "vendor/k8s.io/client-go/scale/scheme/autoscalingv1",
+    importmap = "k8s.io/kops/vendor/k8s.io/client-go/scale/scheme/autoscalingv1",
     importpath = "k8s.io/client-go/scale/scheme/autoscalingv1",
     visibility = ["//visibility:public"],
     deps = [

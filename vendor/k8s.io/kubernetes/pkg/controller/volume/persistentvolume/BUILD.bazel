@@ -12,7 +12,7 @@ go_library(
         "scheduler_binder_fake.go",
         "volume_host.go",
     ],
-    importmap = "vendor/k8s.io/kubernetes/pkg/controller/volume/persistentvolume",
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/controller/volume/persistentvolume",
     importpath = "k8s.io/kubernetes/pkg/controller/volume/persistentvolume",
     visibility = ["//visibility:public"],
     deps = [

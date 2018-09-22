@@ -26,7 +26,7 @@ go_library(
         "vswitches.go",
         "zones.go",
     ],
-    importmap = "vendor/github.com/denverdino/aliyungo/ecs",
+    importmap = "k8s.io/kops/vendor/github.com/denverdino/aliyungo/ecs",
     importpath = "github.com/denverdino/aliyungo/ecs",
     visibility = ["//visibility:public"],
     deps = [

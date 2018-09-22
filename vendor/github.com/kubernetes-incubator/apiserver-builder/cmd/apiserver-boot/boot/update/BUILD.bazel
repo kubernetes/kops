@@ -6,7 +6,7 @@ go_library(
         "update.go",
         "vendor.go",
     ],
-    importmap = "vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/update",
+    importmap = "k8s.io/kops/vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/update",
     importpath = "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/update",
     visibility = ["//visibility:public"],
     deps = [

@@ -36,7 +36,7 @@ go_library(
         "serviceaccount.go",
         "sorting_printer.go",
     ],
-    importmap = "vendor/k8s.io/kubernetes/pkg/kubectl",
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/kubectl",
     importpath = "k8s.io/kubernetes/pkg/kubectl",
     visibility = ["//visibility:public"],
     deps = [

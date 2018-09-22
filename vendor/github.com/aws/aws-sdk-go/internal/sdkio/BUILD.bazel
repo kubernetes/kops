@@ -6,7 +6,7 @@ go_library(
         "io_go1.6.go",
         "io_go1.7.go",
     ],
-    importmap = "vendor/github.com/aws/aws-sdk-go/internal/sdkio",
+    importmap = "k8s.io/kops/vendor/github.com/aws/aws-sdk-go/internal/sdkio",
     importpath = "github.com/aws/aws-sdk-go/internal/sdkio",
     visibility = ["//vendor/github.com/aws/aws-sdk-go:__subpackages__"],
 )

@@ -7,7 +7,7 @@ go_library(
         "cani.go",
         "reconcile.go",
     ],
-    importmap = "vendor/k8s.io/kubernetes/pkg/kubectl/cmd/auth",
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/kubectl/cmd/auth",
     importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/auth",
     visibility = ["//visibility:public"],
     deps = [

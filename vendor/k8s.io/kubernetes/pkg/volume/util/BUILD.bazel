@@ -16,7 +16,7 @@ go_library(
         "resize_util.go",
         "util.go",
     ],
-    importmap = "vendor/k8s.io/kubernetes/pkg/volume/util",
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/volume/util",
     importpath = "k8s.io/kubernetes/pkg/volume/util",
     visibility = ["//visibility:public"],
     deps = [
