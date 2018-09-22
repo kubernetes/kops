@@ -17,12 +17,19 @@ limitations under the License.
 package etcdmanager
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
+	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/yaml"
+	scheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/dns"
@@ -51,7 +58,7 @@ var _ fi.ModelBuilder = &EtcdManagerBuilder{}
 // Build creates the tasks
 func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, etcdCluster := range b.Cluster.Spec.EtcdClusters {
-		if etcdCluster.Manager == nil {
+		if etcdCluster.Provider != kops.EtcdProviderTypeManager {
 			continue
 		}
 
@@ -111,23 +118,117 @@ type etcdClusterSpec struct {
 }
 
 func (b *EtcdManagerBuilder) buildManifest(etcdCluster *kops.EtcdClusterSpec) (*v1.Pod, error) {
-	if etcdCluster.Manager == nil {
-		return nil, fmt.Errorf("manager not set for EtcdCluster")
-	}
-
 	return b.buildPod(etcdCluster)
 }
 
-// BuildEtcdManifest creates the pod spec, based on the etcd cluster
-func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Pod, error) {
-	image := etcdCluster.Manager.Image
-	{
-		remapped, err := b.AssetBuilder.RemapImage(image)
-		if err != nil {
-			return nil, fmt.Errorf("unable to remap container %q: %v", image, err)
-		} else {
-			image = remapped
+// parseManifest parses a set of objects from a []byte
+func parseManifest(data []byte) ([]runtime.Object, error) {
+	decoder := yaml.NewYAMLOrJSONDecoder(bytes.NewReader(data), 4096)
+	deser := scheme.Codecs.UniversalDeserializer()
+
+	var objects []runtime.Object
+
+	for {
+		ext := runtime.RawExtension{}
+		if err := decoder.Decode(&ext); err != nil {
+			if err == io.EOF {
+				break
+			}
+			fmt.Fprintf(os.Stderr, "%s", string(data))
+			glog.Infof("manifest: %s", string(data))
+			return nil, fmt.Errorf("error parsing manifest: %v", err)
 		}
+
+		obj, _, err := deser.Decode([]byte(ext.Raw), nil, nil)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing object in manifest: %v", err)
+		}
+
+		objects = append(objects, obj)
+	}
+
+	return objects, nil
+}
+
+// Until we introduce the bundle, we hard-code the manifest
+var defaultManifest = `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: etcd-manager
+  namespace: kube-system
+spec:
+  containers:
+  - image: kopeio/etcd-manager:1.0.20181001
+    name: etcd-manager
+    resources:
+      requests:
+        cpu: 100m
+    # TODO: Would be nice to reduce these permissions; needed for volume mounting
+    securityContext:
+      privileged: true
+    volumeMounts:
+    # TODO: Would be nice to scope this more tightly, but needed for volume mounting
+    - mountPath: /rootfs
+      name: rootfs
+    # We write artificial hostnames into etc hosts for the etcd nodes, so they have stable names
+    - mountPath: /etc/hosts
+      name: hosts
+  hostNetwork: true
+  volumes:
+  - hostPath:
+      path: /
+      type: Directory
+    name: rootfs
+  - hostPath:
+      path: /etc/hosts
+      type: File
+    name: hosts
+`
+
+// buildPod creates the pod spec, based on the EtcdClusterSpec
+func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Pod, error) {
+	var pod *v1.Pod
+	var container *v1.Container
+
+	var manifest []byte
+
+	// TODO: pull from bundle
+	bundle := "(embedded etcd manifest)"
+	manifest = []byte(defaultManifest)
+
+	{
+		objects, err := parseManifest(manifest)
+		if err != nil {
+			return nil, err
+		}
+		if len(objects) != 1 {
+			return nil, fmt.Errorf("expected exactly one object in manifest %s, found %d", bundle, len(objects))
+		}
+		if podObject, ok := objects[0].(*v1.Pod); !ok {
+			return nil, fmt.Errorf("expected v1.Pod object in manifest %s, found %T", bundle, objects[0])
+		} else {
+			pod = podObject
+		}
+
+		if len(pod.Spec.Containers) != 1 {
+			return nil, fmt.Errorf("expected exactly one container in etcd-manager Pod, found %d", len(pod.Spec.Containers))
+		}
+		container = &pod.Spec.Containers[0]
+
+		if etcdCluster.Manager != nil && etcdCluster.Manager.Image != "" {
+			glog.Warningf("overloading image in manifest %s with images %s", bundle, etcdCluster.Manager.Image)
+			container.Image = etcdCluster.Manager.Image
+		}
+	}
+
+	// Remap image via AssetBuilder
+	{
+		remapped, err := b.AssetBuilder.RemapImage(container.Image)
+		if err != nil {
+			return nil, fmt.Errorf("unable to remap container image %q: %v", container.Image, err)
+		}
+		container.Image = remapped
 	}
 
 	isTLS := etcdCluster.EnableEtcdTLS
@@ -142,7 +243,11 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		backupStore = etcdCluster.Backups.BackupStore
 	}
 
-	podName := "etcd-manager-" + etcdCluster.Name
+	pod.Name = "etcd-manager-" + etcdCluster.Name
+	if pod.Labels == nil {
+		pod.Labels = make(map[string]string)
+	}
+	pod.Labels["k8s-app"] = pod.Name
 
 	// TODO: Use a socket file for the quarantine port
 	quarantinedClientPort := 3994
@@ -188,7 +293,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	}
 	logFile := "/var/log/" + name + ".log"
 
-	config := &EtcdManagerConfig{
+	config := &config{
 		Containerized: true,
 		ClusterName:   clusterName,
 		BackupStore:   backupStore,
@@ -197,8 +302,6 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	}
 
 	config.LogVerbosity = 8
-
-	var envs []v1.EnvVar
 
 	{
 		// @check if we are using TLS
@@ -259,43 +362,20 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		return nil, err
 	}
 
-	pod := &v1.Pod{}
-	pod.APIVersion = "v1"
-	pod.Kind = "Pod"
-	pod.Name = podName
-	pod.Namespace = "kube-system"
-	pod.Labels = map[string]string{"k8s-app": podName}
-	pod.Spec.HostNetwork = true
-
 	{
-		container := &v1.Container{
-			Name:  "etcd-manager",
-			Image: image,
-			Resources: v1.ResourceRequirements{
-				Requests: v1.ResourceList{
-					v1.ResourceCPU: cpuRequest,
-				},
-			},
-			Command: exec.WithTee("/etcd-manager", args, "/var/log/etcd.log"),
-			Env:     envs,
-		}
+		container.Command = exec.WithTee("/etcd-manager", args, "/var/log/etcd.log")
 
-		// TODO: Reduce these permissions (they are needed for volume mounting)
-		container.SecurityContext = &v1.SecurityContext{
-			Privileged: fi.Bool(true),
+		// TODO: Should we try to incorporate the resources in the manifest?
+		container.Resources = v1.ResourceRequirements{
+			Requests: v1.ResourceList{
+				v1.ResourceCPU: cpuRequest,
+			},
 		}
 
 		// TODO: Use helper function here
 		container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
 			Name:      "varlogetcd",
 			MountPath: "/var/log/etcd.log",
-			ReadOnly:  false,
-		})
-
-		// TODO: Would be nice to narrow this mount
-		container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
-			Name:      "rootfs",
-			MountPath: "/rootfs",
 			ReadOnly:  false,
 		})
 		hostPathFileOrCreate := v1.HostPathFileOrCreate
@@ -309,24 +389,9 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 			},
 		})
 
-		hostPathDirectory := v1.HostPathDirectory
-		pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
-			Name: "rootfs",
-			VolumeSource: v1.VolumeSource{
-				HostPath: &v1.HostPathVolumeSource{
-					Path: "/",
-					Type: &hostPathDirectory,
-				},
-			},
-		})
-
-		kubemanifest.MapEtcHosts(pod, container, false)
-
 		if isTLS {
 			return nil, fmt.Errorf("TLS not supported for etcd-manager")
 		}
-
-		pod.Spec.Containers = append(pod.Spec.Containers, *container)
 	}
 
 	kubemanifest.MarkPodAsCritical(pod)
@@ -334,8 +399,8 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	return pod, nil
 }
 
-// EtcdManagerConfig are the flags for etcd-manager
-type EtcdManagerConfig struct {
+// config defines the flags for etcd-manager
+type config struct {
 	// LogVerbosity sets the log verbosity level
 	LogVerbosity int `flag:"v"`
 

@@ -1486,6 +1486,7 @@ func Convert_kops_EtcdBackupSpec_To_v1alpha1_EtcdBackupSpec(in *kops.EtcdBackupS
 
 func autoConvert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpec, out *kops.EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
+	out.Provider = kops.EtcdProviderType(in.Provider)
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
 		*out = make([]*kops.EtcdMemberSpec, len(*in))
@@ -1532,6 +1533,7 @@ func Convert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpe
 
 func autoConvert_kops_EtcdClusterSpec_To_v1alpha1_EtcdClusterSpec(in *kops.EtcdClusterSpec, out *EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
+	out.Provider = EtcdProviderType(in.Provider)
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
 		*out = make([]*EtcdMemberSpec, len(*in))
