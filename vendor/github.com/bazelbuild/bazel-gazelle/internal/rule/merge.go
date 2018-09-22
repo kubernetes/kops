@@ -42,7 +42,7 @@ import (
 // a "# keep" comment will be dropped. If the attribute is empty afterward,
 // it will be deleted.
 func MergeRules(src, dst *Rule, mergeable map[string]bool, filename string) {
-	if ShouldKeep(dst.call) {
+	if dst.ShouldKeep() {
 		return
 	}
 
@@ -270,7 +270,7 @@ type dictEntry struct {
 // fails because the expression is not understood, an error is returned,
 // and neither rule is modified.
 func SquashRules(src, dst *Rule, filename string) error {
-	if ShouldKeep(dst.call) {
+	if dst.ShouldKeep() {
 		return nil
 	}
 

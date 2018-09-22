@@ -27,5 +27,6 @@ go_library(
         "//vendor/k8s.io/kubernetes/pkg/apis/core/v1:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/apis/extensions:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/apis/networking:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/policy:go_default_library",
     ],
 )

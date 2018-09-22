@@ -34,7 +34,7 @@ required = [
 
 [[override]]
   name = "github.com/bazelbuild/bazel-gazelle"
-  version = "0.13.0"
+  version = "0.14.0"
 
 # aws-sdk-go is one of our critical dependencies
 [[override]]
@@ -61,7 +61,7 @@ required = [
   revision = "cd34563cd63c2bd7c6fe88a73c4dcf34ed8a67cb" # Latest
 [[override]]
   name = "k8s.io/kube-openapi"
-  revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803" # Latest
+  revision = "91cfa479c814065e420cee7ed227db0f63a5854e" # version specified in 1.11.3
 [[override]]
   name = "k8s.io/client-go"
   version = "kubernetes-1.11.3"
@@ -96,13 +96,22 @@ required = [
   revision = "d8c773c4cba11b11539e3d45f93daeaa5dcf1fa1"
 [[override]]
   name = "github.com/spf13/cobra"
-  revision = "6644d46b81fa1831979c4cded0106e774e0ef0ab"
+  revision = "c439c4fa093711d42e1b01acb1235b52004753c1"
 [[override]]
   name = "golang.org/x/crypto"
-  revision = "81e90905daefcd6fd217b62423c0908922eadb30"
+  revision = "49796115aa4b964c318aad4f3084fdb41e9aa067"
+[[override]]
+  name = "github.com/go-openapi/analysis"
+  revision = "b44dc874b601d9e4e2f6e19140e794ba24bead3b"
 [[override]]
   name = "github.com/go-openapi/spec"
   revision = "1de3e0542de65ad8d75452a595886fdd0befb363"
+[[override]]
+  name = "github.com/go-openapi/loads"
+  revision = "a80dea3052f00e5f032e860dd7355cd0cc67e24d"
+[[override]]
+  name = "github.com/go-openapi/strfmt"
+  revision = "d65c7fdb29eca313476e529628176fe17e58c488"
 [[override]]
   name = "github.com/go-openapi/swag"
   revision = "f3f9494671f93fcff853e3c6e9e948b3eb71e590"
@@ -135,14 +144,11 @@ required = [
   name = "github.com/renstrom/dedent"
   revision = "020d11c3b9c0c7a3c2efcc8e5cf5b9ef7bcea21f"
 [[override]]
-  name = "github.com/gophercloud/gophercloud"
-  revision = "f29afc2cceca860199ee88cd355a4d0a37b3fad2"
-[[override]]
   name = "gopkg.in/warnings.v0"
   revision = "8a331561fe74dadba6edfc59f3be66c22c3b065d"
 [[override]]
   name = "github.com/json-iterator/go"
-  revision = "13f86432b882000a51c6e610c620974462691a97"
+  revision = "f2b4162afba35581b6d4a50d3b8f34e33c144682"
 [[override]]
   name = "github.com/PuerkitoBio/purell"
   revision = "8a290539e2e8629dbc4e6bad948158f790ec31f4"
@@ -157,7 +163,7 @@ required = [
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
 [[override]]
   name = "google.golang.org/api"
-  revision = "7f657476956314fee258816aaf81c0ff65cf8bee"
+  revision = "8e296ef260056b6323d10727db40512dac6d92d5"
 # UNKNOWN dep github.com/petar/GoLLRB
 [[override]]
   name = "github.com/Microsoft/go-winio"
@@ -170,7 +176,7 @@ required = [
   revision = "ca53cad383cad2479bbba7f7a1a05797ec1386e4"
 [[override]]
   name = "github.com/vmware/govmomi"
-  revision = "0f82f03a2bbf14037d2331cf02f1d4157bbef6cc"
+  revision = "e70dd44f80baf671099254d675eb278529038234"
 [[override]]
   name = "github.com/coreos/go-systemd"
   revision = "48702e0da86bd25e76cfef347e2adeb434a0d0a6"
@@ -235,7 +241,7 @@ required = [
   revision = "19f72df4d05d31cbe1c56bfc8045c96babff6c7e"
 [[override]]
   name = "github.com/Azure/go-autorest"
-  revision = "d4e6b95c12a08b4de2d48b45d5b4d594e5d32fab"
+  revision = "1ff28809256a84bb6966640ff3d0371af82ccba4"
 [[override]]
   name = "golang.org/x/net"
   revision = "1c05540f6879653db88113bc4a2b70aec4bd491f"
@@ -250,7 +256,7 @@ required = [
   revision = "20b71e5b60d756d3d2f80def009790325acc2b23"
 [[override]]
   name = "github.com/google/cadvisor"
-  revision = "2e02d28350c5fbbad9cfb7e5a1733468b75ab3f9"
+  revision = "de723a090f4dd5390dc7c2acee37ba9c62f0cc09"
 [[override]]
   name = "gopkg.in/inf.v0"
   revision = "3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4"
@@ -287,10 +293,13 @@ required = [
   revision = "44d81051d367757e1c7c6a5a86423ece9afcf63c"
 [[override]]
   name = "github.com/golang/protobuf"
-  revision = "1643683e1b54a9e88ad26d98f81400c8c9d9f4f9"
+  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
 [[override]]
   name = "github.com/jonboulle/clockwork"
   revision = "72f9bd7c4e0c2a40055ab3d0f09654f730cce982"
+[[override]]
+  name = "github.com/go-openapi/errors"
+  revision = "d24ebc2075bad502fac3a8ae27aa6dd58e1952dc"
 [[override]]
   name = "github.com/go-openapi/jsonpointer"
   revision = "46af16f9f7b149af66e5d1bd010e3574dc06de98"
@@ -299,7 +308,7 @@ required = [
   revision = "e7e903064f5e9eb5da98208bae10b475d4db0f8c"
 [[override]]
   name = "github.com/spf13/pflag"
-  revision = "4c012f6dcd9546820e378d0bdda4d8fc772cdfea"
+  revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
 [[override]]
   name = "github.com/jmespath/go-jmespath"
   revision = "0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74"
@@ -361,7 +370,21 @@ required = [
 [[override]]
   name = "vbom.ml/util"
   revision = "db5cfe13f5cc80a4990d98e2e1b0707a4d1a5394"
-
+[[override]]
+  name = "github.com/client9/misspell"
+  revision = "9ce5d979ffdaca6385988d7ad1079a33ec942d20"
+[[override]]
+  name = "github.com/stretchr/testify"
+  revision = "c679ae2cc0cb27ec3293fea7e254e47386f05d69"
+[[override]]
+  name = "github.com/asaskevich/govalidator"
+  revision = "593d64559f7600f29581a3ee42177f5dbded27a9"
+[[override]]
+  name = "github.com/evanphx/json-patch"
+  revision = "94e38aa1586e8a6c8a75770bddf5ff84c48a106b"
+[[override]]
+  name = "github.com/pmezard/go-difflib"
+  revision = "d8ed2627bdf02c080bf22230dbb337003b7aba2d"
 
 
 # These are our dependencies, with the versions we previously locked to with submodules
@@ -415,6 +438,7 @@ required = [
   revision = "1f158d31de55abf9f97bbaa0a260e2b8023a3785"
 
 
+
 # We have some newer versions than kubernetes/kubernetes godeps
 [[override]]
   name = "github.com/satori/go.uuid"
@@ -426,9 +450,12 @@ required = [
   name = "golang.org/x/tools"
   revision = "2382e3994d48b1d22acc2c86bcad0a2aff028e32"
 [[override]]
-  # The older version specified in k8s.io/kubernetes Godeps breaks go dep
+  # The older version (c6fed...) specified in k8s.io/kubernetes Godeps breaks go dep
   name = "github.com/chai2010/gettext-go"
   revision = "bf70f2a70fb1b1f36d90d671a72795984eab0fcb"
 [[override]]
   name = "gopkg.in/square/go-jose.v2"
   revision = "76dd09796242edb5b897103a75df2645c028c960"
+[[override]]
+  name = "github.com/gophercloud/gophercloud"
+  revision = "f29afc2cceca860199ee88cd355a4d0a37b3fad2"
