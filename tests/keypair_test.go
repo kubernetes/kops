@@ -62,7 +62,8 @@ var _ fi.Target = &MockTarget{}
 func TestKeypairUpgrade(t *testing.T) {
 	lifecycle := fi.LifecycleSync
 
-	defaultDeadline := 2 * time.Second
+	runTasksOptions := fi.RunTasksOptions{}
+	runTasksOptions.MaxTaskDuration = 2 * time.Second
 
 	target := &MockTarget{}
 
@@ -119,7 +120,7 @@ func TestKeypairUpgrade(t *testing.T) {
 			t.Fatalf("error building context: %v", err)
 		}
 
-		if err := context.RunTasks(defaultDeadline); err != nil {
+		if err := context.RunTasks(runTasksOptions); err != nil {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 	}
@@ -160,7 +161,7 @@ func TestKeypairUpgrade(t *testing.T) {
 			t.Fatalf("error building context: %v", err)
 		}
 
-		if err := context.RunTasks(defaultDeadline); err != nil {
+		if err := context.RunTasks(runTasksOptions); err != nil {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 	}
@@ -180,7 +181,7 @@ func TestKeypairUpgrade(t *testing.T) {
 			t.Fatalf("error building context: %v", err)
 		}
 
-		if err := context.RunTasks(defaultDeadline); err != nil {
+		if err := context.RunTasks(runTasksOptions); err != nil {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 	}

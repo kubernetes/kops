@@ -24713,7 +24713,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 					Properties: map[string]spec.Schema{
 						"dns": {
 							SchemaProps: spec.SchemaProps{
-								Description: "DNS wil be used to provide config on kube-apiserver elb dns",
+								Description: "DNS will be used to provide config on kube-apiserver elb dns",
 								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha1.DNSAccessSpec"),
 							},
 						},
@@ -24758,7 +24758,15 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
 					Description: "AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking",
-					Properties:  map[string]spec.Schema{},
+					Properties: map[string]spec.Schema{
+						"imageName": {
+							SchemaProps: spec.SchemaProps{
+								Description: "The container image name to use, which by default is: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:1.0.0",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+					},
 				},
 			},
 			Dependencies: []string{},
@@ -24782,6 +24790,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"containerProxy": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ContainerProxy is a url for a pull-through proxy of a docker registry",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 					},
 				},
 			},
@@ -24796,11 +24811,16 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha1.KopeioAuthenticationSpec"),
 							},
 						},
+						"aws": {
+							SchemaProps: spec.SchemaProps{
+								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha1.AwsAuthenticationSpec"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha1.KopeioAuthenticationSpec"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha1.AwsAuthenticationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KopeioAuthenticationSpec"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.AuthorizationSpec": {
 			Schema: spec.Schema{
@@ -24821,6 +24841,14 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			},
 			Dependencies: []string{
 				"k8s.io/kops/pkg/apis/kops/v1alpha1.AlwaysAllowAuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.RBACAuthorizationSpec"},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha1.AwsAuthenticationSpec": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{},
+				},
+			},
+			Dependencies: []string{},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.BastionSpec": {
 			Schema: spec.Schema{
@@ -24861,7 +24889,14 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
 					Description: "CNINetworkingSpec is the specification for networking that is implemented by a Daemonset Networking is not managed by kops - we can create options here that directly configure e.g. weave but this is useful for arbitrary network modes or for modes that don't need additional configuration.",
-					Properties:  map[string]spec.Schema{},
+					Properties: map[string]spec.Schema{
+						"usesSecondaryIP": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+					},
 				},
 			},
 			Dependencies: []string{},
@@ -24882,6 +24917,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Description: "LogSeverityScreen lets us set the desired log level. (Default: info)",
 								Type:        []string{"string"},
 								Format:      "",
+							},
+						},
+						"mtu": {
+							SchemaProps: spec.SchemaProps{
+								Description: "MTU to be set in the cni-network-config for calico.",
+								Type:        []string{"integer"},
+								Format:      "int32",
 							},
 						},
 						"prometheusMetricsEnabled": {
@@ -24922,6 +24964,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 				SchemaProps: spec.SchemaProps{
 					Description: "CanalNetworkingSpec declares that we want Canal networking",
 					Properties: map[string]spec.Schema{
+						"chainInsertMode": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ChainInsertMode controls whether Felix inserts rules to the top of iptables chains, or appends to the bottom. Leaving the default option is safest to prevent accidentally breaking connectivity. Default: 'insert' (other options: 'append')",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"defaultEndpointToHostAction": {
 							SchemaProps: spec.SchemaProps{
 								Description: "DefaultEndpointToHostAction allows users to configure the default behaviour for traffic between pod to host after calico rules have been processed. Default: ACCEPT (other options: DROP, RETURN)",
@@ -24929,10 +24978,17 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
-						"chainInsertMode": {
+						"logSeveritySys": {
 							SchemaProps: spec.SchemaProps{
-								Description: "ChainInsertMode controls whether Felix inserts rules to the top of iptables chains, or appends to the bottom. Leaving the default option is safest to prevent accidentally breaking connectivity. Default: 'insert' (other options: 'append')",
+								Description: "LogSeveritySys the severity to set for logs which are sent to syslog Default: INFO (other options: DEBUG, WARNING, ERROR, CRITICAL, NONE)",
 								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"prometheusGoMetricsEnabled": {
+							SchemaProps: spec.SchemaProps{
+								Description: "PrometheusGoMetricsEnabled enables Prometheus Go runtime metrics collection",
+								Type:        []string{"boolean"},
 								Format:      "",
 							},
 						},
@@ -24950,13 +25006,6 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "int32",
 							},
 						},
-						"prometheusGoMetricsEnabled": {
-							SchemaProps: spec.SchemaProps{
-								Description: "PrometheusGoMetricsEnabled enables Prometheus Go runtime metrics collection",
-								Type:        []string{"boolean"},
-								Format:      "",
-							},
-						},
 						"prometheusProcessMetricsEnabled": {
 							SchemaProps: spec.SchemaProps{
 								Description: "PrometheusProcessMetricsEnabled enables Prometheus process metrics collection",
@@ -24972,12 +25021,342 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.CiliumNetworkingSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
-					Description: "CiliumNetworkingSpec declares that we want Cilium networking",
 					Properties: map[string]spec.Schema{
+						"version": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"accessLog": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"agentLabels": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"allowLocalhost": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"autoIpv6NodeRoutes": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"bpfRoot": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"containerRuntime": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"containerRuntimeEndpoint": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
 						"debug": {
 							SchemaProps: spec.SchemaProps{
 								Type:   []string{"boolean"},
 								Format: "",
+							},
+						},
+						"debugVerbose": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"device": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"disableConntrack": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"disableIpv4": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"disableK8sServices": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"enablePolicy": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"enableTracing": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"envoyLog": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"ipv4ClusterCidrMaskSize": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"integer"},
+								Format: "int32",
+							},
+						},
+						"ipv4Node": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"ipv4Range": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"ipv4ServiceRange": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"ipv6ClusterAllocCidr": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"ipv6Node": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"ipv6Range": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"ipv6ServiceRange": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"k8sApiServer": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"k8sKubeconfigPath": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"keepBpfTemplates": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"keepConfig": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"labelPrefixFile": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"labels": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"lb": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"libDir": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"logDriver": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"logOpt": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"logstash": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"logstashAgent": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"logstashProbeTimer": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"integer"},
+								Format: "int64",
+							},
+						},
+						"disableMasquerade": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"nat46Range": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"pprof": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"prefilterDevice": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"prometheusServeAddr": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"restore": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"singleClusterRoute": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"socketPath": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"stateDir": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"tracePayloadlen": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"integer"},
+								Format: "int32",
 							},
 						},
 						"tunnel": {
@@ -25088,6 +25467,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.CloudControllerManagerConfig": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
+					Description: "CloudControllerManagerConfig is the configuration of the cloud controller",
 					Properties: map[string]spec.Schema{
 						"master": {
 							SchemaProps: spec.SchemaProps{
@@ -25339,7 +25719,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"additionalNetworkCIDRs": {
 							SchemaProps: spec.SchemaProps{
-								Description: "AdditionalNetworkCIDRs is a list of aditional CIDR used for the AWS VPC or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network On AWS, it maps to any aditional CIDRs added to a VPC.",
+								Description: "AdditionalNetworkCIDRs is a list of additional CIDR used for the AWS VPC or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network On AWS, it maps to any additional CIDRs added to a VPC.",
 								Type:        []string{"array"},
 								Items: &spec.SchemaOrArray{
 									Schema: &spec.Schema{
@@ -25595,6 +25975,12 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha1.AuthorizationSpec"),
 							},
 						},
+						"nodeAuthorization": {
+							SchemaProps: spec.SchemaProps{
+								Description: "NodeAuthorization defined the custom node authorization configuration",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha1.NodeAuthorizationSpec"),
+							},
+						},
 						"cloudLabels": {
 							SchemaProps: spec.SchemaProps{
 								Description: "Tags for AWS instance groups",
@@ -25651,7 +26037,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha1.AccessSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.AddonSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.Assets", "k8s.io/kops/pkg/apis/kops/v1alpha1.AuthenticationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.AuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CloudConfiguration", "k8s.io/kops/pkg/apis/kops/v1alpha1.CloudControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.ClusterZoneSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.DockerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.EgressProxySpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdClusterSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.ExternalDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.FileAssetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.IAMSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeAPIServerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeProxyConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeSchedulerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.NetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.TargetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.TopologySpec"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha1.AccessSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.AddonSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.Assets", "k8s.io/kops/pkg/apis/kops/v1alpha1.AuthenticationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.AuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CloudConfiguration", "k8s.io/kops/pkg/apis/kops/v1alpha1.CloudControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.ClusterZoneSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.DockerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.EgressProxySpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdClusterSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.ExternalDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.FileAssetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.IAMSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeAPIServerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeProxyConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeSchedulerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.NetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.NodeAuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.TargetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.TopologySpec"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.ClusterZoneSpec": {
 			Schema: spec.Schema{
@@ -25750,6 +26136,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"dataRoot": {
+							SchemaProps: spec.SchemaProps{
+								Description: "DataRoot is the root directory of persistent docker state (default \"/var/lib/docker\")",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"defaultUlimit": {
 							SchemaProps: spec.SchemaProps{
 								Description: "DefaultUlimit is the ulimits for containers",
@@ -25762,6 +26155,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 										},
 									},
 								},
+							},
+						},
+						"execRoot": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ExecRoot is the root directory for execution state files (default \"/var/run/docker\")",
+								Type:        []string{"string"},
+								Format:      "",
 							},
 						},
 						"hosts": {
@@ -25876,6 +26276,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								},
 							},
 						},
+						"userNamespaceRemap": {
+							SchemaProps: spec.SchemaProps{
+								Description: "UserNamespaceRemap sets the user namespace remapping option for the docker daemon",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"version": {
 							SchemaProps: spec.SchemaProps{
 								Description: "Version is consumed by the nodeup and used to pick the docker version",
@@ -25960,7 +26367,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"enableTLSAuth": {
 							SchemaProps: spec.SchemaProps{
-								Description: "EnableTLSAuth indicats client and peer TLS auth should be enforced",
+								Description: "EnableTLSAuth indicates client and peer TLS auth should be enforced",
 								Type:        []string{"boolean"},
 								Format:      "",
 							},
@@ -26004,11 +26411,34 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdBackupSpec"),
 							},
 						},
+						"manager": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Manager describes the manager configuration",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdManagerSpec"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/apimachinery/pkg/apis/meta/v1.Duration", "k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdBackupSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdMemberSpec"},
+				"k8s.io/apimachinery/pkg/apis/meta/v1.Duration", "k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdBackupSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdManagerSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdMemberSpec"},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdManagerSpec": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "EtcdManagerSpec describes how we configure the etcd manager",
+					Properties: map[string]spec.Schema{
+						"image": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Image is the etcd manager image to use.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdMemberSpec": {
 			Schema: spec.Schema{
@@ -26135,7 +26565,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"watchNamespace": {
 							SchemaProps: spec.SchemaProps{
-								Description: "WatchNamespace is namespace to watch, detaults to all (use to control whom can creates dns entries)",
+								Description: "WatchNamespace is namespace to watch, defaults to all (use to control whom can creates dns entries)",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -26323,6 +26753,23 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			},
 			Dependencies: []string{
 				"k8s.io/kops/pkg/apis/kops/v1alpha1.ExecContainerAction"},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha1.IAMProfileSpec": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "IAMProfileSpec is the AWS IAM Profile to attach to instances in this instance group. Specify the ARN for the IAM instance profile (AWS only).",
+					Properties: map[string]spec.Schema{
+						"profile": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Profile of the cloud group iam profile. In aws this is the arn for the iam instance profile",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.IAMSpec": {
 			Schema: spec.Schema{
@@ -26603,7 +27050,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"additionalUserData": {
 							SchemaProps: spec.SchemaProps{
-								Description: "AdditionalUserData is any aditional user-data to be passed to the host",
+								Description: "AdditionalUserData is any additional user-data to be passed to the host",
 								Type:        []string{"array"},
 								Items: &spec.SchemaOrArray{
 									Schema: &spec.Schema{
@@ -26642,6 +27089,19 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								},
 							},
 						},
+						"externalLoadBalancers": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ExternalLoadBalancers define loadbalancers that should be attached to the instancegroup",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha1.LoadBalancer"),
+										},
+									},
+								},
+							},
+						},
 						"detailedInstanceMonitoring": {
 							SchemaProps: spec.SchemaProps{
 								Description: "DetailedInstanceMonitoring defines if detailed-monitoring is enabled (AWS only)",
@@ -26649,11 +27109,17 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"iam": {
+							SchemaProps: spec.SchemaProps{
+								Description: "IAMProfileSpec defines the identity of the cloud group iam profile (AWS only).",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha1.IAMProfileSpec"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha1.FileAssetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.UserData"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha1.FileAssetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.IAMProfileSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.LoadBalancer", "k8s.io/kops/pkg/apis/kops/v1alpha1.UserData"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.KopeioAuthenticationSpec": {
 			Schema: spec.Schema{
@@ -26714,14 +27180,70 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"address": {
 							SchemaProps: spec.SchemaProps{
-								Description: "Address is the binding address for the kube api",
+								Description: "Address is the binding address for the kube api: Deprecated - use insecure-bind-address and bind-address",
 								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"bindAddress": {
+							SchemaProps: spec.SchemaProps{
+								Description: "BindAddress is the binding address for the secure kubernetes API",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"insecureBindAddress": {
+							SchemaProps: spec.SchemaProps{
+								Description: "InsecureBindAddress is the binding address for the InsecurePort for the insecure kubernetes API",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"enableBootstrapTokenAuth": {
+							SchemaProps: spec.SchemaProps{
+								Description: "EnableBootstrapAuthToken enables 'bootstrap.kubernetes.io/token' in the 'kube-system' namespace to be used for TLS bootstrapping authentication",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"enableAggregatorRouting": {
+							SchemaProps: spec.SchemaProps{
+								Description: "EnableAggregatorRouting enables aggregator routing requests to endpoints IP rather than cluster IP",
+								Type:        []string{"boolean"},
 								Format:      "",
 							},
 						},
 						"admissionControl": {
 							SchemaProps: spec.SchemaProps{
-								Description: "AdmissionControl is a list of admission controllers to user",
+								Description: "Deprecated: AdmissionControl is a list of admission controllers to use",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"enableAdmissionPlugins": {
+							SchemaProps: spec.SchemaProps{
+								Description: "EnableAdmissionPlugins is a list of enabled admission plugins",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"disableAdmissionPlugins": {
+							SchemaProps: spec.SchemaProps{
+								Description: "DisableAdmissionPlugins is a list of disabled admission plugins",
 								Type:        []string{"array"},
 								Items: &spec.SchemaOrArray{
 									Schema: &spec.Schema{
@@ -27001,6 +27523,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"authenticationTokenWebhook": {
+							SchemaProps: spec.SchemaProps{
+								Description: "AuthenticationTokenWebhook enables bearer token authentication on kubelet.",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
 						"authenticationTokenWebhookConfigFile": {
 							SchemaProps: spec.SchemaProps{
 								Description: "File with webhook configuration for token authentication in kubeconfig format. The API server will query the remote service to determine authentication for bearer tokens.",
@@ -27124,6 +27653,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Description: "EtcdQuorumRead configures the etcd-quorum-read flag, which forces consistent reads from etcd",
 								Type:        []string{"boolean"},
 								Format:      "",
+							},
+						},
+						"minRequestTimeout": {
+							SchemaProps: spec.SchemaProps{
+								Description: "MinRequestTimeout configures the minimum number of seconds a handler must keep a request open before timing it out. Currently only honored by the watch request handler",
+								Type:        []string{"integer"},
+								Format:      "int32",
 							},
 						},
 					},
@@ -27308,34 +27844,6 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 				SchemaProps: spec.SchemaProps{
 					Description: "KubeDNSConfig defines the kube dns configuration",
 					Properties: map[string]spec.Schema{
-						"image": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Image is the name of the docker image to run Deprecated as this is now in the addon",
-								Type:        []string{"string"},
-								Format:      "",
-							},
-						},
-						"replicas": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Replicas is the number of pod replicas Deprecated as this is now in the addon, and controlled by autoscaler",
-								Type:        []string{"integer"},
-								Format:      "int32",
-							},
-						},
-						"domain": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Domain is the dns domain",
-								Type:        []string{"string"},
-								Format:      "",
-							},
-						},
-						"serverIP": {
-							SchemaProps: spec.SchemaProps{
-								Description: "ServerIP is the server ip",
-								Type:        []string{"string"},
-								Format:      "",
-							},
-						},
 						"cacheMaxSize": {
 							SchemaProps: spec.SchemaProps{
 								Description: "CacheMaxSize is the maximum entries to keep in dnsmaq",
@@ -27348,6 +27856,76 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Description: "CacheMaxConcurrent is the maximum number of concurrent queries for dnsmasq",
 								Type:        []string{"integer"},
 								Format:      "int32",
+							},
+						},
+						"domain": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Domain is the dns domain",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"image": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Image is the name of the docker image to run - @deprecated as this is now in the addon",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"replicas": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Replicas is the number of pod replicas - @deprecated as this is now in the addon, and controlled by autoscaler",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"provider": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Provider indicates whether CoreDNS or kube-dns will be the default service discovery.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"serverIP": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ServerIP is the server ip",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"stubDomains": {
+							SchemaProps: spec.SchemaProps{
+								Description: "StubDomains redirects a domains to another DNS service",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type: []string{"array"},
+											Items: &spec.SchemaOrArray{
+												Schema: &spec.Schema{
+													SchemaProps: spec.SchemaProps{
+														Type:   []string{"string"},
+														Format: "",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"upstreamNameservers": {
+							SchemaProps: spec.SchemaProps{
+								Description: "UpstreamNameservers sets the upstream nameservers for queries not on the cluster domain",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
 							},
 						},
 					},
@@ -27415,6 +27993,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"bindAddress": {
+							SchemaProps: spec.SchemaProps{
+								Description: "BindAddress is IP address for the proxy server to serve on",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"master": {
 							SchemaProps: spec.SchemaProps{
 								Description: "Master is the address of the Kubernetes API server (overrides any value in kubeconfig)",
@@ -27448,6 +28033,20 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 										},
 									},
 								},
+							},
+						},
+						"conntrackMaxPerCore": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Maximum number of NAT connections to track per CPU core (default: 131072)",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"conntrackMin": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Minimum number of conntrack entries to allocate, regardless of conntrack-max-per-core",
+								Type:        []string{"integer"},
+								Format:      "int32",
 							},
 						},
 					},
@@ -27540,11 +28139,30 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"bootstrapKubeconfig": {
+							SchemaProps: spec.SchemaProps{
+								Description: "BootstrapKubeconfig is the path to a kubeconfig file that will be used to get client certificate for kube",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"clientCaFile": {
 							SchemaProps: spec.SchemaProps{
 								Description: "ClientCAFile is the path to a CA certificate",
 								Type:        []string{"string"},
 								Format:      "",
+							},
+						},
+						"tlsCertFile": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"tlsPrivateKeyFile": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
 							},
 						},
 						"kubeconfigPath": {
@@ -27955,6 +28573,40 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"experimental_allowed_unsafe_sysctls": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ExperimentalAllowedUnsafeSysctls are passed to the kubelet config to whitelist allowable sysctls",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"streamingConnectionIdleTimeout": {
+							SchemaProps: spec.SchemaProps{
+								Description: "StreamingConnectionIdleTimeout is the maximum time a streaming connection can be idle before the connection is automatically closed",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"dockerDisableSharedPID": {
+							SchemaProps: spec.SchemaProps{
+								Description: "DockerDisableSharedPID uses a shared PID namespace for containers in a pod.",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"rootDir": {
+							SchemaProps: spec.SchemaProps{
+								Description: "RootDir is the directory path for managing kubelet files (volume mounts,etc)",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 					},
 				},
 			},
@@ -27996,6 +28648,30 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			},
 			Dependencies: []string{},
 		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha1.LoadBalancer": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "LoadBalancers defines a load balancer",
+					Properties: map[string]spec.Schema{
+						"loadBalancerName": {
+							SchemaProps: spec.SchemaProps{
+								Description: "LoadBalancerName to associate with this instance group (AWS ELB)",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"targetGroupArn": {
+							SchemaProps: spec.SchemaProps{
+								Description: "TargetGroupARN to associate with this instance group (AWS ALB/NLB)",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
+		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.LoadBalancerAccessSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
@@ -28024,6 +28700,18 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 										},
 									},
 								},
+							},
+						},
+						"useForInternalApi": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"sslCertificate": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
 							},
 						},
 					},
@@ -28106,6 +28794,88 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			},
 			Dependencies: []string{
 				"k8s.io/kops/pkg/apis/kops/v1alpha1.AmazonVPCNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CNINetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CalicoNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CanalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CiliumNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.ClassicNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.ExternalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.FlannelNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KopeioNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubenetNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KuberouterNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.RomanaNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.WeaveNetworkingSpec"},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha1.NodeAuthorizationSpec": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "NodeAuthorizationSpec is used to node authorization",
+					Properties: map[string]spec.Schema{
+						"nodeAuthorizer": {
+							SchemaProps: spec.SchemaProps{
+								Description: "NodeAuthorizer defined the configuration for the node authorizer",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha1.NodeAuthorizerSpec"),
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{
+				"k8s.io/kops/pkg/apis/kops/v1alpha1.NodeAuthorizerSpec"},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha1.NodeAuthorizerSpec": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "NodeAuthorizerSpec defines the configuration for a node authorizer",
+					Properties: map[string]spec.Schema{
+						"authorizer": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Authorizer is the authorizer to use",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"features": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Features is a series of authorizer features to enable or disable",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"image": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Image is the location of container",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"nodeURL": {
+							SchemaProps: spec.SchemaProps{
+								Description: "NodeURL is the node authorization service url",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"port": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Port is the port the service is running on the master",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"timeout": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Timeout the max time for authorization request",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"tokenTTL": {
+							SchemaProps: spec.SchemaProps{
+								Description: "TokenTTL is the max ttl for an issued token",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{
+				"k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.RBACAuthorizationSpec": {
 			Schema: spec.Schema{
@@ -28367,7 +29137,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 					Properties: map[string]spec.Schema{
 						"dns": {
 							SchemaProps: spec.SchemaProps{
-								Description: "DNS wil be used to provide config on kube-apiserver elb dns",
+								Description: "DNS will be used to provide config on kube-apiserver elb dns",
 								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha2.DNSAccessSpec"),
 							},
 						},
@@ -28412,7 +29182,15 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
 					Description: "AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking",
-					Properties:  map[string]spec.Schema{},
+					Properties: map[string]spec.Schema{
+						"imageName": {
+							SchemaProps: spec.SchemaProps{
+								Description: "The container image name to use, which by default is: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:1.0.0",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+					},
 				},
 			},
 			Dependencies: []string{},
@@ -28436,6 +29214,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"containerProxy": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ContainerProxy is a url for a pull-through proxy of a docker registry",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 					},
 				},
 			},
@@ -28450,11 +29235,16 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha2.KopeioAuthenticationSpec"),
 							},
 						},
+						"aws": {
+							SchemaProps: spec.SchemaProps{
+								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha2.AwsAuthenticationSpec"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha2.KopeioAuthenticationSpec"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha2.AwsAuthenticationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KopeioAuthenticationSpec"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.AuthorizationSpec": {
 			Schema: spec.Schema{
@@ -28475,6 +29265,14 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			},
 			Dependencies: []string{
 				"k8s.io/kops/pkg/apis/kops/v1alpha2.AlwaysAllowAuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.RBACAuthorizationSpec"},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha2.AwsAuthenticationSpec": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{},
+				},
+			},
+			Dependencies: []string{},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.BastionSpec": {
 			Schema: spec.Schema{
@@ -28502,7 +29300,14 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
 					Description: "CNINetworkingSpec is the specification for networking that is implemented by a Daemonset Networking is not managed by kops - we can create options here that directly configure e.g. weave but this is useful for arbitrary network modes or for modes that don't need additional configuration.",
-					Properties:  map[string]spec.Schema{},
+					Properties: map[string]spec.Schema{
+						"usesSecondaryIP": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+					},
 				},
 			},
 			Dependencies: []string{},
@@ -28523,6 +29328,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Description: "LogSeverityScreen lets us set the desired log level. (Default: info)",
 								Type:        []string{"string"},
 								Format:      "",
+							},
+						},
+						"mtu": {
+							SchemaProps: spec.SchemaProps{
+								Description: "MTU to be set in the cni-network-config for calico.",
+								Type:        []string{"integer"},
+								Format:      "int32",
 							},
 						},
 						"prometheusMetricsEnabled": {
@@ -28563,6 +29375,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 				SchemaProps: spec.SchemaProps{
 					Description: "CanalNetworkingSpec declares that we want Canal networking",
 					Properties: map[string]spec.Schema{
+						"chainInsertMode": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ChainInsertMode controls whether Felix inserts rules to the top of iptables chains, or appends to the bottom. Leaving the default option is safest to prevent accidentally breaking connectivity. Default: 'insert' (other options: 'append')",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"defaultEndpointToHostAction": {
 							SchemaProps: spec.SchemaProps{
 								Description: "DefaultEndpointToHostAction allows users to configure the default behaviour for traffic between pod to host after calico rules have been processed. Default: ACCEPT (other options: DROP, RETURN)",
@@ -28570,10 +29389,17 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
-						"chainInsertMode": {
+						"logSeveritySys": {
 							SchemaProps: spec.SchemaProps{
-								Description: "ChainInsertMode controls whether Felix inserts rules to the top of iptables chains, or appends to the bottom. Leaving the default option is safest to prevent accidentally breaking connectivity. Default: 'insert' (other options: 'append')",
+								Description: "LogSeveritySys the severity to set for logs which are sent to syslog Default: INFO (other options: DEBUG, WARNING, ERROR, CRITICAL, NONE)",
 								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"prometheusGoMetricsEnabled": {
+							SchemaProps: spec.SchemaProps{
+								Description: "PrometheusGoMetricsEnabled enables Prometheus Go runtime metrics collection",
+								Type:        []string{"boolean"},
 								Format:      "",
 							},
 						},
@@ -28589,13 +29415,6 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Description: "PrometheusMetricsPort is the TCP port that the experimental Prometheus metrics server should bind to (default: 9091)",
 								Type:        []string{"integer"},
 								Format:      "int32",
-							},
-						},
-						"prometheusGoMetricsEnabled": {
-							SchemaProps: spec.SchemaProps{
-								Description: "PrometheusGoMetricsEnabled enables Prometheus Go runtime metrics collection",
-								Type:        []string{"boolean"},
-								Format:      "",
 							},
 						},
 						"prometheusProcessMetricsEnabled": {
@@ -28615,10 +29434,341 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 				SchemaProps: spec.SchemaProps{
 					Description: "CiliumNetworkingSpec declares that we want Cilium networking",
 					Properties: map[string]spec.Schema{
+						"version": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"accessLog": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"agentLabels": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"allowLocalhost": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"autoIpv6NodeRoutes": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"bpfRoot": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"containerRuntime": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"containerRuntimeEndpoint": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
 						"debug": {
 							SchemaProps: spec.SchemaProps{
 								Type:   []string{"boolean"},
 								Format: "",
+							},
+						},
+						"debugVerbose": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"device": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"disableConntrack": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"disableIpv4": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"disableK8sServices": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"enablePolicy": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"enableTracing": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"envoyLog": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"ipv4ClusterCidrMaskSize": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"integer"},
+								Format: "int32",
+							},
+						},
+						"ipv4Node": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"ipv4Range": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"ipv4ServiceRange": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"ipv6ClusterAllocCidr": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"ipv6Node": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"ipv6Range": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"ipv6ServiceRange": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"k8sApiServer": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"k8sKubeconfigPath": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"keepBpfTemplates": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"keepConfig": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"labelPrefixFile": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"labels": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"lb": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"libDir": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"logDriver": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"logOpt": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"logstash": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"logstashAgent": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"logstashProbeTimer": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"integer"},
+								Format: "int64",
+							},
+						},
+						"disableMasquerade": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"nat46Range": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"pprof": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"prefilterDevice": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"prometheusServeAddr": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"restore": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"singleClusterRoute": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"socketPath": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"stateDir": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"tracePayloadlen": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"integer"},
+								Format: "int32",
 							},
 						},
 						"tunnel": {
@@ -28729,6 +29879,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.CloudControllerManagerConfig": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
+					Description: "CloudControllerManagerConfig is the configuration of the cloud controller",
 					Properties: map[string]spec.Schema{
 						"master": {
 							SchemaProps: spec.SchemaProps{
@@ -28978,7 +30129,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"additionalNetworkCIDRs": {
 							SchemaProps: spec.SchemaProps{
-								Description: "AdditionalNetworkCIDRs is a list of aditional CIDR used for the AWS VPC or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network On AWS, it maps to any aditional CIDRs added to a VPC.",
+								Description: "AdditionalNetworkCIDRs is a list of additional CIDR used for the AWS VPC or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network On AWS, it maps to any additional CIDRs added to a VPC.",
 								Type:        []string{"array"},
 								Items: &spec.SchemaOrArray{
 									Schema: &spec.Schema{
@@ -29255,6 +30406,12 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha2.AuthorizationSpec"),
 							},
 						},
+						"nodeAuthorization": {
+							SchemaProps: spec.SchemaProps{
+								Description: "NodeAuthorization defined the custom node authorization configuration",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha2.NodeAuthorizationSpec"),
+							},
+						},
 						"cloudLabels": {
 							SchemaProps: spec.SchemaProps{
 								Description: "Tags for AWS resources",
@@ -29311,7 +30468,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha2.AccessSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.AddonSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.Assets", "k8s.io/kops/pkg/apis/kops/v1alpha2.AuthenticationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.AuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CloudConfiguration", "k8s.io/kops/pkg/apis/kops/v1alpha2.CloudControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.ClusterSubnetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.DockerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.EgressProxySpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdClusterSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.ExternalDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.FileAssetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.IAMSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeAPIServerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeProxyConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeSchedulerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.NetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.TargetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.TopologySpec"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha2.AccessSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.AddonSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.Assets", "k8s.io/kops/pkg/apis/kops/v1alpha2.AuthenticationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.AuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CloudConfiguration", "k8s.io/kops/pkg/apis/kops/v1alpha2.CloudControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.ClusterSubnetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.DockerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.EgressProxySpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdClusterSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.ExternalDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.FileAssetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.IAMSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeAPIServerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeProxyConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeSchedulerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.NetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.NodeAuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.TargetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.TopologySpec"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.ClusterSubnetSpec": {
 			Schema: spec.Schema{
@@ -29365,7 +30522,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"publicIP": {
 							SchemaProps: spec.SchemaProps{
-								Description: "PublicIP to attatch to NatGateway",
+								Description: "PublicIP to attach to NatGateway",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -29431,6 +30588,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"dataRoot": {
+							SchemaProps: spec.SchemaProps{
+								Description: "DataRoot is the root directory of persistent docker state (default \"/var/lib/docker\")",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"defaultUlimit": {
 							SchemaProps: spec.SchemaProps{
 								Description: "DefaultUlimit is the ulimits for containers",
@@ -29443,6 +30607,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 										},
 									},
 								},
+							},
+						},
+						"execRoot": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ExecRoot is the root directory for execution state files (default \"/var/run/docker\")",
+								Type:        []string{"string"},
+								Format:      "",
 							},
 						},
 						"hosts": {
@@ -29555,6 +30726,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 										},
 									},
 								},
+							},
+						},
+						"userNamespaceRemap": {
+							SchemaProps: spec.SchemaProps{
+								Description: "UserNamespaceRemap sets the user namespace remapping option for the docker daemon",
+								Type:        []string{"string"},
+								Format:      "",
 							},
 						},
 						"version": {
@@ -29685,11 +30863,34 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdBackupSpec"),
 							},
 						},
+						"manager": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Manager describes the manager configuration",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdManagerSpec"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/apimachinery/pkg/apis/meta/v1.Duration", "k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdBackupSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdMemberSpec"},
+				"k8s.io/apimachinery/pkg/apis/meta/v1.Duration", "k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdBackupSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdManagerSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdMemberSpec"},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdManagerSpec": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "EtcdManagerSpec describes how we configure the etcd manager",
+					Properties: map[string]spec.Schema{
+						"image": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Image is the etcd manager image to use.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdMemberSpec": {
 			Schema: spec.Schema{
@@ -29816,7 +31017,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"watchNamespace": {
 							SchemaProps: spec.SchemaProps{
-								Description: "WatchNamespace is namespace to watch, detaults to all (use to control whom can creates dns entries)",
+								Description: "WatchNamespace is namespace to watch, defaults to all (use to control whom can creates dns entries)",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -30005,6 +31206,23 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			Dependencies: []string{
 				"k8s.io/kops/pkg/apis/kops/v1alpha2.ExecContainerAction"},
 		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha2.IAMProfileSpec": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "IAMProfileSpec is the AWS IAM Profile to attach to instances in this instance group. Specify the ARN for the IAM instance profile (AWS only).",
+					Properties: map[string]spec.Schema{
+						"profile": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Profile of the cloud group iam profile. In aws this is the arn for the iam instance profile",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
+		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.IAMSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
@@ -30108,7 +31326,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.InstanceGroupSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
-					Description: "InstanceGroupSpec is the specification for a instanceGroup",
+					Description: "InstanceGroupSpec is the specification for an instanceGroup",
 					Properties: map[string]spec.Schema{
 						"role": {
 							SchemaProps: spec.SchemaProps{
@@ -30312,7 +31530,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"additionalUserData": {
 							SchemaProps: spec.SchemaProps{
-								Description: "AdditionalUserData is any aditional user-data to be passed to the host",
+								Description: "AdditionalUserData is any additional user-data to be passed to the host",
 								Type:        []string{"array"},
 								Items: &spec.SchemaOrArray{
 									Schema: &spec.Schema{
@@ -30337,6 +31555,19 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								},
 							},
 						},
+						"externalLoadBalancers": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ExternalLoadBalancers define loadbalancers that should be attached to the instancegroup",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha2.LoadBalancer"),
+										},
+									},
+								},
+							},
+						},
 						"detailedInstanceMonitoring": {
 							SchemaProps: spec.SchemaProps{
 								Description: "DetailedInstanceMonitoring defines if detailed-monitoring is enabled (AWS only)",
@@ -30344,11 +31575,17 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"iam": {
+							SchemaProps: spec.SchemaProps{
+								Description: "IAMProfileSpec defines the identity of the cloud group iam profile (AWS only).",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha2.IAMProfileSpec"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha2.FileAssetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.UserData"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha2.FileAssetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.IAMProfileSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.LoadBalancer", "k8s.io/kops/pkg/apis/kops/v1alpha2.UserData"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.Keyset": {
 			Schema: spec.Schema{
@@ -30549,14 +31786,70 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"address": {
 							SchemaProps: spec.SchemaProps{
-								Description: "Address is the binding address for the kube api",
+								Description: "Address is the binding address for the kube api: Deprecated - use insecure-bind-address and bind-address",
 								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"bindAddress": {
+							SchemaProps: spec.SchemaProps{
+								Description: "BindAddress is the binding address for the secure kubernetes API",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"insecureBindAddress": {
+							SchemaProps: spec.SchemaProps{
+								Description: "InsecureBindAddress is the binding address for the InsecurePort for the insecure kubernetes API",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"enableBootstrapTokenAuth": {
+							SchemaProps: spec.SchemaProps{
+								Description: "EnableBootstrapAuthToken enables 'bootstrap.kubernetes.io/token' in the 'kube-system' namespace to be used for TLS bootstrapping authentication",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"enableAggregatorRouting": {
+							SchemaProps: spec.SchemaProps{
+								Description: "EnableAggregatorRouting enables aggregator routing requests to endpoints IP rather than cluster IP",
+								Type:        []string{"boolean"},
 								Format:      "",
 							},
 						},
 						"admissionControl": {
 							SchemaProps: spec.SchemaProps{
-								Description: "AdmissionControl is a list of admission controllers to user",
+								Description: "Deprecated: AdmissionControl is a list of admission controllers to use",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"enableAdmissionPlugins": {
+							SchemaProps: spec.SchemaProps{
+								Description: "EnableAdmissionPlugins is a list of enabled admission plugins",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"disableAdmissionPlugins": {
+							SchemaProps: spec.SchemaProps{
+								Description: "DisableAdmissionPlugins is a list of disabled admission plugins",
 								Type:        []string{"array"},
 								Items: &spec.SchemaOrArray{
 									Schema: &spec.Schema{
@@ -30836,6 +32129,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"authenticationTokenWebhook": {
+							SchemaProps: spec.SchemaProps{
+								Description: "AuthenticationTokenWebhook enables bearer token authentication on kubelet.",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
 						"authenticationTokenWebhookConfigFile": {
 							SchemaProps: spec.SchemaProps{
 								Description: "File with webhook configuration for token authentication in kubeconfig format. The API server will query the remote service to determine authentication for bearer tokens.",
@@ -30959,6 +32259,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Description: "EtcdQuorumRead configures the etcd-quorum-read flag, which forces consistent reads from etcd",
 								Type:        []string{"boolean"},
 								Format:      "",
+							},
+						},
+						"minRequestTimeout": {
+							SchemaProps: spec.SchemaProps{
+								Description: "MinRequestTimeout configures the minimum number of seconds a handler must keep a request open before timing it out. Currently only honored by the watch request handler",
+								Type:        []string{"integer"},
+								Format:      "int32",
 							},
 						},
 					},
@@ -31141,33 +32448,8 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.KubeDNSConfig": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
+					Description: "KubeDNSConfig defines the kube dns configuration",
 					Properties: map[string]spec.Schema{
-						"image": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Image is the name of the docker image to run Deprecated as this is now in the addon",
-								Type:        []string{"string"},
-								Format:      "",
-							},
-						},
-						"replicas": {
-							SchemaProps: spec.SchemaProps{
-								Description: "Deprecated as this is now in the addon, and controlled by autoscaler",
-								Type:        []string{"integer"},
-								Format:      "int32",
-							},
-						},
-						"domain": {
-							SchemaProps: spec.SchemaProps{
-								Type:   []string{"string"},
-								Format: "",
-							},
-						},
-						"serverIP": {
-							SchemaProps: spec.SchemaProps{
-								Type:   []string{"string"},
-								Format: "",
-							},
-						},
 						"cacheMaxSize": {
 							SchemaProps: spec.SchemaProps{
 								Description: "CacheMaxSize is the maximum entries to keep in dnsmaq",
@@ -31180,6 +32462,76 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Description: "CacheMaxConcurrent is the maximum number of concurrent queries for dnsmasq",
 								Type:        []string{"integer"},
 								Format:      "int32",
+							},
+						},
+						"domain": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Domain is the dns domain",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"image": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Image is the name of the docker image to run - @deprecated as this is now in the addon",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"replicas": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Replicas is the number of pod replicas - @deprecated as this is now in the addon, and controlled by autoscaler",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"provider": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Provider indicates whether CoreDNS or kube-dns will be the default service discovery.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"serverIP": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ServerIP is the server ip",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"stubDomains": {
+							SchemaProps: spec.SchemaProps{
+								Description: "StubDomains redirects a domains to another DNS service",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type: []string{"array"},
+											Items: &spec.SchemaOrArray{
+												Schema: &spec.Schema{
+													SchemaProps: spec.SchemaProps{
+														Type:   []string{"string"},
+														Format: "",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"upstreamNameservers": {
+							SchemaProps: spec.SchemaProps{
+								Description: "UpstreamNameservers sets the upstream nameservers for queries not on the cluster domain",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
 							},
 						},
 					},
@@ -31247,6 +32599,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"bindAddress": {
+							SchemaProps: spec.SchemaProps{
+								Description: "BindAddress is IP address for the proxy server to serve on",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"master": {
 							SchemaProps: spec.SchemaProps{
 								Description: "Master is the address of the Kubernetes API server (overrides any value in kubeconfig)",
@@ -31280,6 +32639,20 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 										},
 									},
 								},
+							},
+						},
+						"conntrackMaxPerCore": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Maximum number of NAT connections to track per CPU core (default: 131072)",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"conntrackMin": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Minimum number of conntrack entries to allocate, regardless of conntrack-max-per-core",
+								Type:        []string{"integer"},
+								Format:      "int32",
 							},
 						},
 					},
@@ -31372,11 +32745,30 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"bootstrapKubeconfig": {
+							SchemaProps: spec.SchemaProps{
+								Description: "BootstrapKubeconfig is the path to a kubeconfig file that will be used to get client certificate for kubelet",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"clientCaFile": {
 							SchemaProps: spec.SchemaProps{
 								Description: "ClientCAFile is the path to a CA certificate",
 								Type:        []string{"string"},
 								Format:      "",
+							},
+						},
+						"tlsCertFile": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"tlsPrivateKeyFile": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
 							},
 						},
 						"kubeconfigPath": {
@@ -31787,6 +33179,40 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"experimental_allowed_unsafe_sysctls": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ExperimentalAllowedUnsafeSysctls are passed to the kubelet config to whitelist allowable sysctls",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"streamingConnectionIdleTimeout": {
+							SchemaProps: spec.SchemaProps{
+								Description: "StreamingConnectionIdleTimeout is the maximum time a streaming connection can be idle before the connection is automatically closed",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"dockerDisableSharedPID": {
+							SchemaProps: spec.SchemaProps{
+								Description: "DockerDisableSharedPID uses a shared PID namespace for containers in a pod.",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"rootDir": {
+							SchemaProps: spec.SchemaProps{
+								Description: "RootDir is the directory path for managing kubelet files (volume mounts,etc)",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 					},
 				},
 			},
@@ -31828,6 +33254,30 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			},
 			Dependencies: []string{},
 		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha2.LoadBalancer": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "LoadBalancer defines a load balancer",
+					Properties: map[string]spec.Schema{
+						"loadBalancerName": {
+							SchemaProps: spec.SchemaProps{
+								Description: "LoadBalancerName to associate with this instance group (AWS ELB)",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"targetGroupArn": {
+							SchemaProps: spec.SchemaProps{
+								Description: "TargetGroupARN to associate with this instance group (AWS ALB/NLB)",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
+		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.LoadBalancerAccessSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
@@ -31856,6 +33306,18 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 										},
 									},
 								},
+							},
+						},
+						"useForInternalApi": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"sslCertificate": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
 							},
 						},
 					},
@@ -31938,6 +33400,88 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			},
 			Dependencies: []string{
 				"k8s.io/kops/pkg/apis/kops/v1alpha2.AmazonVPCNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CNINetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CalicoNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CanalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CiliumNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.ClassicNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.ExternalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.FlannelNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KopeioNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubenetNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KuberouterNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.RomanaNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.WeaveNetworkingSpec"},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha2.NodeAuthorizationSpec": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "NodeAuthorizationSpec is used to node authorization",
+					Properties: map[string]spec.Schema{
+						"nodeAuthorizer": {
+							SchemaProps: spec.SchemaProps{
+								Description: "NodeAuthorizer defined the configuration for the node authorizer",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha2.NodeAuthorizerSpec"),
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{
+				"k8s.io/kops/pkg/apis/kops/v1alpha2.NodeAuthorizerSpec"},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha2.NodeAuthorizerSpec": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "NodeAuthorizerSpec defines the configuration for a node authorizer",
+					Properties: map[string]spec.Schema{
+						"authorizer": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Authorizer is the authorizer to use",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"features": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Features is a series of authorizer features to enable or disable",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"image": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Image is the location of container",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"nodeURL": {
+							SchemaProps: spec.SchemaProps{
+								Description: "NodeURL is the node authorization service url",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"port": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Port is the port the service is running on the master",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"timeout": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Timeout the max time for authorization request",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"tokenTTL": {
+							SchemaProps: spec.SchemaProps{
+								Description: "TokenTTL is the max ttl for an issued token",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{
+				"k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.RBACAuthorizationSpec": {
 			Schema: spec.Schema{

@@ -1,3 +1,6 @@
+# git mergetool
+*.orig
+
 # Go embed files?
 *.go-e
 
@@ -85,3 +88,4 @@ ab-results-*.json
 # Ignore documentation site
 site
 
+addons/prometheus-operator/tmp # cloned git repo

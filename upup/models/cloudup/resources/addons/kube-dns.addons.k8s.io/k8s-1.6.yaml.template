@@ -12,6 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+{{- if or (.KubeDNS.UpstreamNameservers) (.KubeDNS.StubDomains) }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kube-dns
+  namespace: kube-system
+data:
+  {{- if .KubeDNS.UpstreamNameservers }}
+  upstreamNameservers: |
+    {{ ToJSON .KubeDNS.UpstreamNameservers }}
+  {{- end }}
+  {{- if .KubeDNS.StubDomains }}
+  stubDomains: |
+    {{ ToJSON .KubeDNS.StubDomains }}
+  {{- end }}
+{{- end }}
+
+---
+
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -85,6 +105,8 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
         # For 1.6, we keep the old tolerations in case of a downgrade to 1.5
         scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '10055'
     spec:
       dnsPolicy: Default  # Don't use cluster DNS.
       serviceAccountName: kube-dns
@@ -126,9 +148,9 @@ spec:
           initialDelaySeconds: 3
           timeoutSeconds: 5
         args:
-        - --domain={{ KubeDNS.Domain }}.
-        - --dns-port=10053
         - --config-dir=/kube-dns-config
+        - --dns-port=10053
+        - --domain={{ KubeDNS.Domain }}.
         - --v=2
         env:
         - name: PROMETHEUS_PORT

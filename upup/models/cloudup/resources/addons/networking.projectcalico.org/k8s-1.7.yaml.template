@@ -32,6 +32,9 @@ data:
           "etcd_scheme": "https",
           {{- end }}
           "log_level": "info",
+          {{- if .Networking.Calico.MTU }}
+          "mtu": {{- or .Networking.Calico.MTU }},
+          {{- end }}
           "ipam": {
             "type": "calico-ipam"
           },
@@ -216,6 +219,10 @@ spec:
               value: "{{- or .Networking.Calico.PrometheusProcessMetricsEnabled "true" }}"
             - name: FELIX_HEALTHENABLED
               value: "true"
+            {{- if .Networking.Calico.MTU }}
+            - name: FELIX_IPINIPMTU
+              value: "{{- or .Networking.Calico.MTU }}"
+            {{- end}}
           securityContext:
             privileged: true
           volumeMounts:
@@ -512,7 +519,7 @@ spec:
         operator: Exists
       serviceAccountName: k8s-ec2-srcdst
       containers:
-        - image: ottoyiu/k8s-ec2-srcdst:v0.2.1
+        - image: ottoyiu/k8s-ec2-srcdst:v0.2.2
           name: k8s-ec2-srcdst
           resources:
             requests:

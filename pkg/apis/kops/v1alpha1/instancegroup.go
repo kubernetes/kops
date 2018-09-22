@@ -96,8 +96,20 @@ type InstanceGroupSpec struct {
 	Zones []string `json:"zones,omitempty"`
 	// SuspendProcesses disables the listed Scaling Policies
 	SuspendProcesses []string `json:"suspendProcesses,omitempty"`
+	// ExternalLoadBalancers define loadbalancers that should be attached to the instancegroup
+	ExternalLoadBalancers []LoadBalancer `json:"externalLoadBalancers,omitempty"`
 	// DetailedInstanceMonitoring defines if detailed-monitoring is enabled (AWS only)
 	DetailedInstanceMonitoring *bool `json:"detailedInstanceMonitoring,omitempty"`
+	// IAMProfileSpec defines the identity of the cloud group iam profile (AWS only).
+	IAM *IAMProfileSpec `json:"iam,omitempty"`
+}
+
+// IAMProfileSpec is the AWS IAM Profile to attach to instances in this instance
+// group. Specify the ARN for the IAM instance profile (AWS only).
+type IAMProfileSpec struct {
+	// Profile of the cloud group iam profile. In aws this is the arn
+	// for the iam instance profile
+	Profile *string `json:"profile,omitempty"`
 }
 
 // UserData defines a user-data section
@@ -108,4 +120,12 @@ type UserData struct {
 	Type string `json:"type,omitempty"`
 	// Content is the user-data content
 	Content string `json:"content,omitempty"`
+}
+
+// LoadBalancers defines a load balancer
+type LoadBalancer struct {
+	// LoadBalancerName to associate with this instance group (AWS ELB)
+	LoadBalancerName *string `json:"loadBalancerName,omitempty"`
+	// TargetGroupARN to associate with this instance group (AWS ALB/NLB)
+	TargetGroupARN *string `json:"targetGroupArn,omitempty"`
 }

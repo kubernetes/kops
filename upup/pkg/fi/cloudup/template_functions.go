@@ -28,19 +28,21 @@ When defining a new function:
 package cloudup
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
 	"text/template"
 
-	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // TemplateFunctions provides a collection of methods used throughout the templates
@@ -55,10 +57,12 @@ type TemplateFunctions struct {
 // This will define the available functions we can use in our YAML models
 // If we are trying to get a new function implemented it MUST
 // be defined here.
-func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
+func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretStore) (err error) {
 	dest["EtcdScheme"] = tf.EtcdScheme
 	dest["SharedVPC"] = tf.SharedVPC
-	dest["UseEtcdTLS"] = tf.UseEtcdTLS
+	dest["ToJSON"] = tf.ToJSON
+	dest["UseBootstrapTokens"] = tf.modelContext.UseBootstrapTokens
+	dest["UseEtcdTLS"] = tf.modelContext.UseEtcdTLS
 	// Remember that we may be on a different arch from the target.  Hard-code for now.
 	dest["Arch"] = func() string { return "amd64" }
 	dest["replace"] = func(s, find, replace string) string {
@@ -106,22 +110,37 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 		}
 		dest["FlannelBackendType"] = func() string { return flannelBackendType }
 	}
-}
 
-// UseEtcdTLS checks if cluster is using etcd tls
-func (tf *TemplateFunctions) UseEtcdTLS() bool {
-	for _, x := range tf.cluster.Spec.EtcdClusters {
-		if x.EnableEtcdTLS {
-			return true
+	if tf.cluster.Spec.Networking != nil && tf.cluster.Spec.Networking.Weave != nil {
+		weavesecretString := ""
+		weavesecret, _ := secretStore.Secret("weavepassword")
+		if weavesecret != nil {
+			weavesecretString, err = weavesecret.AsString()
+			if err != nil {
+				return err
+			}
+			glog.V(4).Info("Weave secret function successfully registered")
 		}
+
+		dest["WeaveSecret"] = func() string { return weavesecretString }
 	}
 
-	return false
+	return nil
+}
+
+// ToJSON returns a json representation of the struct or on error an empty string
+func (tf *TemplateFunctions) ToJSON(data interface{}) string {
+	encoded, err := json.Marshal(data)
+	if err != nil {
+		return ""
+	}
+
+	return string(encoded)
 }
 
 // EtcdScheme parses and grabs the protocol to the etcd cluster
 func (tf *TemplateFunctions) EtcdScheme() string {
-	if tf.UseEtcdTLS() {
+	if tf.modelContext.UseEtcdTLS() {
 		return "https"
 	}
 

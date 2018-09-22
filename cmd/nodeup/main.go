@@ -104,11 +104,12 @@ func main() {
 				command = append(command, s)
 			}
 			i := bootstrap.Installation{
-				MaxTaskDuration: 5 * time.Minute,
-				CacheDir:        flagCacheDir,
-				Command:         command,
-				FSRoot:          flagRootFS,
+				CacheDir: flagCacheDir,
+				Command:  command,
+				FSRoot:   flagRootFS,
 			}
+			i.RunTasksOptions.InitDefaults()
+			i.RunTasksOptions.MaxTaskDuration = 5 * time.Minute
 			err = i.Run()
 			if err == nil {
 				fmt.Printf("service installed")

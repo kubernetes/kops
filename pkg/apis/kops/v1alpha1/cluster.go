@@ -151,6 +151,8 @@ type ClusterSpec struct {
 	Authentication *AuthenticationSpec `json:"authentication,omitempty"`
 	// Authorization field controls how the cluster is configured for authorization
 	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
+	// NodeAuthorization defined the custom node authorization configuration
+	NodeAuthorization *NodeAuthorizationSpec `json:"nodeAuthorization,omitempty"`
 	// Tags for AWS instance groups
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
 	// Hooks for custom actions e.g. on first installation
@@ -163,6 +165,30 @@ type ClusterSpec struct {
 	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
 	// Target allows for us to nest extra config for targets such as terraform
 	Target *TargetSpec `json:"target,omitempty"`
+}
+
+// NodeAuthorizationSpec is used to node authorization
+type NodeAuthorizationSpec struct {
+	// NodeAuthorizer defined the configuration for the node authorizer
+	NodeAuthorizer *NodeAuthorizerSpec `json:"nodeAuthorizer,omitempty"`
+}
+
+// NodeAuthorizerSpec defines the configuration for a node authorizer
+type NodeAuthorizerSpec struct {
+	// Authorizer is the authorizer to use
+	Authorizer string `json:"authorizer,omitempty"`
+	// Features is a series of authorizer features to enable or disable
+	Features *[]string `json:"features,omitempty"`
+	// Image is the location of container
+	Image string `json:"image,omitempty"`
+	// NodeURL is the node authorization service url
+	NodeURL string `json:"nodeURL,omitempty"`
+	// Port is the port the service is running on the master
+	Port int `json:"port,omitempty"`
+	// Timeout the max time for authorization request
+	Timeout *metav1.Duration `json:"timeout,omitempty"`
+	// TokenTTL is the max ttl for an issued token
+	TokenTTL *metav1.Duration `json:"tokenTTL,omitempty"`
 }
 
 // AddonSpec defines an addon that we want to install in the cluster
@@ -191,6 +217,8 @@ type Assets struct {
 	ContainerRegistry *string `json:"containerRegistry,omitempty"`
 	// FileRepository is the url for a private file serving repository
 	FileRepository *string `json:"fileRepository,omitempty"`
+	// ContainerProxy is a url for a pull-through proxy of a docker registry
+	ContainerProxy *string `json:"containerProxy,omitempty"`
 }
 
 // IAMSpec adds control over the IAM security policies applied to resources
@@ -215,6 +243,10 @@ type HookSpec struct {
 	ExecContainer *ExecContainerAction `json:"execContainer,omitempty"`
 	// Manifest is a raw systemd unit file
 	Manifest string `json:"manifest,omitempty"`
+	// UseRawManifest indicates that the contents of Manifest should be used as the contents
+	// of the systemd unit, unmodified. Before and Requires are ignored when used together
+	// with this value (and validation shouldn't allow them to be set)
+	UseRawManifest bool `json:"useRawManifest,omitempty"`
 }
 
 // ExecContainerAction defines an hood action
@@ -229,13 +261,17 @@ type ExecContainerAction struct {
 
 type AuthenticationSpec struct {
 	Kopeio *KopeioAuthenticationSpec `json:"kopeio,omitempty"`
+	Aws    *AwsAuthenticationSpec    `json:"aws,omitempty"`
 }
 
 func (s *AuthenticationSpec) IsEmpty() bool {
-	return s.Kopeio == nil
+	return s.Kopeio == nil && s.Aws == nil
 }
 
 type KopeioAuthenticationSpec struct {
+}
+
+type AwsAuthenticationSpec struct {
 }
 
 type AuthorizationSpec struct {
@@ -255,7 +291,7 @@ type AlwaysAllowAuthorizationSpec struct {
 
 // AccessSpec provides configuration details related to kubeapi dns and ELB access
 type AccessSpec struct {
-	// DNS wil be used to provide config on kube-apiserver elb dns
+	// DNS will be used to provide config on kube-apiserver elb dns
 	DNS *DNSAccessSpec `json:"dns,omitempty"`
 	// LoadBalancer is the configuration for the kube-apiserver ELB
 	LoadBalancer *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
@@ -281,24 +317,30 @@ type LoadBalancerAccessSpec struct {
 	Type                     LoadBalancerType `json:"type,omitempty"`
 	IdleTimeoutSeconds       *int64           `json:"idleTimeoutSeconds,omitempty"`
 	AdditionalSecurityGroups []string         `json:"additionalSecurityGroups,omitempty"`
+	UseForInternalApi        bool             `json:"useForInternalApi,omitempty"`
+	SSLCertificate           string           `json:"sslCertificate,omitempty"`
 }
 
 // KubeDNSConfig defines the kube dns configuration
 type KubeDNSConfig struct {
-	// Image is the name of the docker image to run
-	// Deprecated as this is now in the addon
-	Image string `json:"image,omitempty"`
-	// Replicas is the number of pod replicas
-	// Deprecated as this is now in the addon, and controlled by autoscaler
-	Replicas int `json:"replicas,omitempty"`
-	// Domain is the dns domain
-	Domain string `json:"domain,omitempty"`
-	// ServerIP is the server ip
-	ServerIP string `json:"serverIP,omitempty"`
 	// CacheMaxSize is the maximum entries to keep in dnsmaq
 	CacheMaxSize int `json:"cacheMaxSize,omitempty"`
 	// CacheMaxConcurrent is the maximum number of concurrent queries for dnsmasq
 	CacheMaxConcurrent int `json:"cacheMaxConcurrent,omitempty"`
+	// Domain is the dns domain
+	Domain string `json:"domain,omitempty"`
+	// Image is the name of the docker image to run - @deprecated as this is now in the addon
+	Image string `json:"image,omitempty"`
+	// Replicas is the number of pod replicas - @deprecated as this is now in the addon, and controlled by autoscaler
+	Replicas int `json:"replicas,omitempty"`
+	// Provider indicates whether CoreDNS or kube-dns will be the default service discovery.
+	Provider string `json:"provider,omitempty"`
+	// ServerIP is the server ip
+	ServerIP string `json:"serverIP,omitempty"`
+	// StubDomains redirects a domains to another DNS service
+	StubDomains map[string][]string `json:"stubDomains,omitempty"`
+	// UpstreamNameservers sets the upstream nameservers for queries not on the cluster domain
+	UpstreamNameservers []string `json:"upstreamNameservers,omitempty"`
 }
 
 // ExternalDNSConfig are options of the dns-controller
@@ -307,7 +349,7 @@ type ExternalDNSConfig struct {
 	Disable bool `json:"disable,omitempty"`
 	// WatchIngress indicates you want the dns-controller to watch and create dns entries for ingress resources
 	WatchIngress *bool `json:"watchIngress,omitempty"`
-	// WatchNamespace is namespace to watch, detaults to all (use to control whom can creates dns entries)
+	// WatchNamespace is namespace to watch, defaults to all (use to control whom can creates dns entries)
 	WatchNamespace string `json:"watchNamespace,omitempty"`
 }
 
@@ -317,7 +359,7 @@ type EtcdClusterSpec struct {
 	Name string `json:"name,omitempty"`
 	// Members stores the configurations for each member of the cluster (including the data volume)
 	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
-	// EnableTLSAuth indicats client and peer TLS auth should be enforced
+	// EnableTLSAuth indicates client and peer TLS auth should be enforced
 	EnableTLSAuth bool `json:"enableTLSAuth,omitempty"`
 	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients
 	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
@@ -331,6 +373,8 @@ type EtcdClusterSpec struct {
 	Image string `json:"image,omitempty"`
 	// Backups describes how we do backups of etcd
 	Backups *EtcdBackupSpec `json:"backups,omitempty"`
+	// Manager describes the manager configuration
+	Manager *EtcdManagerSpec `json:"manager,omitempty"`
 }
 
 // EtcdBackupSpec describes how we want to do backups of etcd
@@ -338,6 +382,12 @@ type EtcdBackupSpec struct {
 	// BackupStore is the VFS path where we will read/write backup data
 	BackupStore string `json:"backupStore,omitempty"`
 	// Image is the etcd backup manager image to use.  Setting this will create a sidecar container in the etcd pod with the specified image.
+	Image string `json:"image,omitempty"`
+}
+
+// EtcdManagerSpec describes how we configure the etcd manager
+type EtcdManagerSpec struct {
+	// Image is the etcd manager image to use.
 	Image string `json:"image,omitempty"`
 }
 

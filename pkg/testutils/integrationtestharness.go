@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/cloudmock/aws/mockautoscaling"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/cloudmock/aws/mockelb"
+	"k8s.io/kops/cloudmock/aws/mockelbv2"
 	"k8s.io/kops/cloudmock/aws/mockiam"
 	"k8s.io/kops/cloudmock/aws/mockroute53"
 	"k8s.io/kops/pkg/apis/kops"
@@ -68,7 +69,9 @@ func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
 		}
 		channelPath += "/"
 		h.originalDefaultChannelBase = kops.DefaultChannelBase
-		kops.DefaultChannelBase = "file://" + channelPath
+
+		// Make sure any platform-specific separators that aren't /, are converted to / for use in a file: protocol URL
+		kops.DefaultChannelBase = "file://" + filepath.ToSlash(channelPath)
 	}
 
 	return h
@@ -103,6 +106,8 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 	cloud.MockRoute53 = mockRoute53
 	mockELB := &mockelb.MockELB{}
 	cloud.MockELB = mockELB
+	mockELBV2 := &mockelbv2.MockELBV2{}
+	cloud.MockELBV2 = mockELBV2
 	mockIAM := &mockiam.MockIAM{}
 	cloud.MockIAM = mockIAM
 	mockAutoscaling := &mockautoscaling.MockAutoscaling{}
@@ -177,6 +182,12 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 		AvailabilityZone: aws.String("us-test-1a"),
 		CidrBlock:        aws.String("172.20.4.0/22"),
 	}, "subnet-abcdef")
+	mockEC2.CreateSubnetWithId(&ec2.CreateSubnetInput{
+		VpcId:            aws.String("vpc-12345678"),
+		AvailabilityZone: aws.String("us-test-1b"),
+		CidrBlock:        aws.String("172.20.8.0/22"),
+	}, "subnet-b2345678")
+
 	mockEC2.AssociateRouteTable(&ec2.AssociateRouteTableInput{
 		RouteTableId: aws.String("rtb-12345678"),
 		SubnetId:     aws.String("subnet-abcdef"),
@@ -189,7 +200,16 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 	mockEC2.CreateNatGatewayWithId(&ec2.CreateNatGatewayInput{
 		SubnetId:     aws.String("subnet-12345678"),
 		AllocationId: aws.String("eipalloc-12345678"),
-	}, "nat-12345678")
+	}, "nat-a2345678")
+
+	mockEC2.AllocateAddressWithId(&ec2.AllocateAddressInput{
+		Address: aws.String("2.22.22.22"),
+	}, "eipalloc-b2345678")
+
+	mockEC2.CreateNatGatewayWithId(&ec2.CreateNatGatewayInput{
+		SubnetId:     aws.String("subnet-b2345678"),
+		AllocationId: aws.String("eipalloc-b2345678"),
+	}, "nat-b2345678")
 
 	return cloud
 }

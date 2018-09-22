@@ -8,6 +8,7 @@ go_library(
         "bindmount.go",
         "createsdir.go",
         "file.go",
+        "group.go",
         "load_image.go",
         "mount_disk.go",
         "package.go",
@@ -18,6 +19,7 @@ go_library(
     importpath = "k8s.io/kops/upup/pkg/fi/nodeup/nodetasks",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/backoff:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/nodeup/cloudinit:go_default_library",
         "//upup/pkg/fi/nodeup/local:go_default_library",

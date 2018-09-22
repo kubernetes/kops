@@ -33,24 +33,22 @@ import (
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/pkg/model/components/etcdmanager"
+	nodeauthorizer "k8s.io/kops/pkg/model/components/node-authorizer"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
-	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/reflectutils"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
+// EtcdClusters is a list of the etcd clusters kops creates
 var EtcdClusters = []string{"main", "events"}
 
 type populateClusterSpec struct {
 	// InputCluster is the api object representing the whole cluster, as input by the user
 	// We build it up into a complete config, but we write the values as input
 	InputCluster *api.Cluster
-
-	// ModelStore is the location where models are found
-	ModelStore vfs.Path
-	// Models is a list of cloudup models to apply
-	Models []string
 
 	// fullCluster holds the built completed cluster spec
 	fullCluster *api.Cluster
@@ -67,18 +65,11 @@ func findModelStore() (vfs.Path, error) {
 // PopulateClusterSpec takes a user-specified cluster spec, and computes the full specification that should be set on the cluster.
 // We do this so that we don't need any real "brains" on the node side.
 func PopulateClusterSpec(clientset simple.Clientset, cluster *api.Cluster, assetBuilder *assets.AssetBuilder) (*api.Cluster, error) {
-	modelStore, err := findModelStore()
-	if err != nil {
-		return nil, err
-	}
-
 	c := &populateClusterSpec{
 		InputCluster: cluster,
-		ModelStore:   modelStore,
-		Models:       []string{"config"},
 		assetBuilder: assetBuilder,
 	}
-	err = c.run(clientset)
+	err := c.run(clientset)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +94,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	// Copy cluster & instance groups, so we can modify them freely
 	cluster := &api.Cluster{}
 
-	utils.JsonMergeStruct(cluster, c.InputCluster)
+	reflectutils.JsonMergeStruct(cluster, c.InputCluster)
 
 	err := c.assignSubnets(cluster)
 	if err != nil {
@@ -171,7 +162,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 
 				if (len(etcdInstanceGroups) % 2) == 0 {
 					// Not technically a requirement, but doesn't really make sense to allow
-					return fmt.Errorf("There should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zones and --master-zones to declare node zones and master zones separately.")
+					return fmt.Errorf("there should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zones and --master-zones to declare node zones and master zones separately")
 				}
 			}
 		}
@@ -279,7 +270,10 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 
 	templateFunctions := make(template.FuncMap)
 
-	tf.AddTo(templateFunctions)
+	err = tf.AddTo(templateFunctions, secretStore)
+	if err != nil {
+		return err
+	}
 
 	if cluster.Spec.KubernetesVersion == "" {
 		return fmt.Errorf("KubernetesVersion is required")
@@ -295,26 +289,22 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		AssetBuilder:      c.assetBuilder,
 	}
 
-	var fileModels []string
 	var codeModels []loader.OptionsBuilder
-	for _, m := range c.Models {
-		switch m {
-		case "config":
+	{
+		{
 			// Note: DefaultOptionsBuilder comes first
 			codeModels = append(codeModels, &components.DefaultsOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.EtcdOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &etcdmanager.EtcdManagerOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &nodeauthorizer.OptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{OptionsContext: optionsContext})
-			codeModels = append(codeModels, &components.DockerOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.DockerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.NetworkingOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeDnsOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeletOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeControllerManagerOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeSchedulerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.KubeProxyOptionsBuilder{Context: optionsContext})
-			fileModels = append(fileModels, m)
-
-		default:
-			fileModels = append(fileModels, m)
 		}
 	}
 
@@ -323,7 +313,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		Tags:          tags,
 	}
 
-	completed, err := specBuilder.BuildCompleteSpec(&cluster.Spec, c.ModelStore, fileModels)
+	completed, err := specBuilder.BuildCompleteSpec(&cluster.Spec)
 	if err != nil {
 		return fmt.Errorf("error building complete spec: %v", err)
 	}

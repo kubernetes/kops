@@ -13,7 +13,7 @@ Create a resource:
   * instancegroup  
   * secret  
 
-Create a cluster, instancegroup or secret using command line parameters or YAML configuration specification files. (Note: secrets cannot be created from YAML config files yet).
+Create a cluster, instancegroup or secret using command line parameters, YAML configuration specification files, or stdin. (Note: secrets cannot be created from YAML config files yet).
 
 ```
 kops create -f FILENAME [flags]
@@ -27,6 +27,9 @@ kops create -f FILENAME [flags]
   
   # Create secret from secret spec file
   kops create -f secret.yaml
+  
+  # Create an instancegroup based on the YAML passed into stdin.
+  cat instancegroup.yaml | kops create -f -
   
   # Create a cluster in AWS
   kops create cluster --name=kubernetes-cluster.example.com \
@@ -54,12 +57,12 @@ kops create -f FILENAME [flags]
 
 ```
       --alsologtostderr                  log to standard error as well as files
-      --config string                    config file (default is $HOME/.kops.yaml)
+      --config string                    yaml config file (default is $HOME/.kops.yaml)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging

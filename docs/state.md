@@ -39,3 +39,48 @@ The state store can easily be moved to a different s3 bucket. The steps for a si
 4. Run `kops update cluster ${CLUSTER_NAME} --yes` to apply the changes to the cluster. Newly launched nodes will now retrieve their dependent files from the new S3 bucket. The files in the old bucket are now safe to be deleted.
 
 Repeat for each cluster needing to be moved.
+
+## State store configuration
+
+There are a few ways to configure your state store.  In priority order:
+
++ command line argument `--state s3://yourstatestore`
++ environment variable `export KOPS_STATE_STORE=s3://yourstatestore`
++ config file `$HOME/.kops.yaml`
++ config file `$HOME/.kops/config`
+
+### Configuration file example:
+
+`$HOME/.kops/config` might look like this:
+
+```
+kops_state_store: s3://yourstatestore
+```
+
+## Cross Account State-store (AWS)
+
+There are situations in which the entity executing kops to create the cluster is not in the same account as the owner of the state store bucket. In this case, you must explicitly grant the permission: `s3:getBucketLocation` to the ARN that is running kops.
+
+You can use the following policy to guide your implementation:
+
+```
+{
+    "Id": "123",
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "123",
+            "Action": [
+                "s3:GetBucketLocation"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:s3:::state-store-bucket",
+            "Principal": {
+                "AWS": [
+                    "arn:aws:iam::123456789:user/kopsuser"
+                ]
+            }
+        }
+    ]
+}
+```

@@ -44,6 +44,9 @@ var (
 		# Replace a cluster desired configuration using a YAML file
 		kops replace -f my-cluster.yaml
 
+		# Replace an instancegroup using YAML passed into stdin.
+		cat instancegroup.yaml | kops replace -f -
+		
 		# Note, if the resource does not exist the command will error, use --force to provision resource
 		kops replace -f my-cluster.yaml --force
 		`))
@@ -97,9 +100,17 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 	codec := codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
 
 	for _, f := range c.Filenames {
-		contents, err := vfs.Context.ReadFile(f)
-		if err != nil {
-			return fmt.Errorf("error reading file %q: %v", f, err)
+		var contents []byte
+		if f == "-" {
+			contents, err = ConsumeStdin()
+			if err != nil {
+				return err
+			}
+		} else {
+			contents, err = vfs.Context.ReadFile(f)
+			if err != nil {
+				return fmt.Errorf("error reading file %q: %v", f, err)
+			}
 		}
 		sections := bytes.Split(contents, []byte("\n---\n"))
 

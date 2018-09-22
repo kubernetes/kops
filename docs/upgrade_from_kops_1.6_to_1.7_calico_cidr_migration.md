@@ -2,7 +2,7 @@
 Prior to kops 1.7, calico, and other CNI providers was misconfigured to use the 
 `.NonMasqueradeCIDR` field as the CIDR range for Pod IPs. As a result, IP
 conflict may occur when a Service is allocated an IP that has already been
-assigned to a Pod, or vice versa. To prevent this from occuring, manual steps
+assigned to a Pod, or vice versa. To prevent this from occurring, manual steps
 are necessary before upgrading your cluster using kops 1.7 onwards.
 
 
@@ -15,7 +15,7 @@ Within this IP range, smaller IP ranges are then carved out for:
 * Pod IPs - as defined as `.kubeControllerManager.clusterCIDR`
 
 It was found out in Issue [#1171](https://github.com/kubernetes/kops/issues/1171),
-that weave and calico was misconfigured to use the wider IP range rather than
+that weave and calico were misconfigured to use the wider IP range rather than
 the range dedicated to Pods only. This was fixed in PR [#2717](https://github.com/kubernetes/kops/pull/2717)
 and [#2768](https://github.com/kubernetes/kops/pull/2768) for the two CNIs, by
 switching over to using the `.kubeControllerManager.clusterCIDR` field instead.
@@ -50,8 +50,8 @@ pool doesn't exist already:
 https://github.com/projectcalico/calicoctl/blob/v1.3.0/calico_node/startup/startup.go#L463
 
 Therefore, we need to run two jobs. We have provided a manifest and a bash script.
-job create a new IPv4 pool that we want, and one deletes the existing IP
-pool that we no longer want. This is to be executed after an
+job creates a new IPv4 pool that we want, and deletes the existing IP
+pool that we no longer want. This is to be executed after a
 `kops update cluster --yes` using kops 1.7 and beyond,
 and before a `kops rolling-upgrade cluster`.
 

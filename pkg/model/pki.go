@@ -18,12 +18,14 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
-	"k8s.io/apiserver/pkg/authentication/user"
 	"k8s.io/kops/pkg/tokens"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/vfs"
+
+	"k8s.io/apiserver/pkg/authentication/user"
 )
 
 // PKIModelBuilder configures PKI keypairs, as well as tokens
@@ -52,17 +54,18 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	c.AddTask(defaultCA)
 
 	{
-
-		t := &fitasks.Keypair{
-			Name:      fi.String("kubelet"),
-			Lifecycle: b.Lifecycle,
-
-			Subject: "o=" + user.NodesGroup + ",cn=kubelet",
-			Type:    "client",
-			Signer:  defaultCA,
-			Format:  format,
+		// @check of bootstrap tokens are enable if so, disable the creation of the kubelet certificate - we also
+		// block at the IAM level for AWS cluster for pre-existing clusters.
+		if !b.UseBootstrapTokens() {
+			c.AddTask(&fitasks.Keypair{
+				Name:      fi.String("kubelet"),
+				Lifecycle: b.Lifecycle,
+				Subject:   "o=" + user.NodesGroup + ",cn=kubelet",
+				Type:      "client",
+				Signer:    defaultCA,
+				Format:    format,
+			})
 		}
-		c.AddTask(t)
 	}
 	{
 		// Generate a kubelet client certificate for api to speak securely to kubelets. This change was first
@@ -139,8 +142,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Format:    format,
 		})
 
-		// @check if calico is enabled as the CNI provider
-		if b.KopsModelContext.Cluster.Spec.Networking.Calico != nil {
+		// @check if calico or Cilium is enabled as the CNI provider
+		if b.KopsModelContext.Cluster.Spec.Networking.Calico != nil || b.KopsModelContext.Cluster.Spec.Networking.Cilium != nil {
 			c.AddTask(&fitasks.Keypair{
 				Name:      fi.String("calico-client"),
 				Lifecycle: b.Lifecycle,
@@ -260,10 +263,62 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
+	if b.Cluster.Spec.Authentication != nil {
+		if b.KopsModelContext.Cluster.Spec.Authentication.Aws != nil {
+			alternateNames := []string{
+				"localhost",
+				"127.0.0.1",
+			}
+
+			t := &fitasks.Keypair{
+				Name:           fi.String("aws-iam-authenticator"),
+				Subject:        "cn=aws-iam-authenticator",
+				Type:           "server",
+				AlternateNames: alternateNames,
+				Signer:         defaultCA,
+				Format:         format,
+			}
+			c.AddTask(t)
+		}
+	}
+
+	// @TODO this is VERY presumptuous, i'm going on the basis we can make it configurable in the future.
+	// But I'm conscious not to do too much work on bootstrap tokens as it might overlay further down the
+	// line with the machines api
+	if b.UseBootstrapTokens() {
+		serviceName := "node-authorizer-internal"
+
+		alternateNames := []string{
+			"127.0.0.1",
+			"localhost",
+			serviceName,
+			strings.Join([]string{serviceName, b.Cluster.Name}, "."),
+			strings.Join([]string{serviceName, b.Cluster.Spec.DNSZone}, "."),
+		}
+
+		// @note: the certificate used by the node authorizers
+		c.AddTask(&fitasks.Keypair{
+			Name:           fi.String("node-authorizer"),
+			Subject:        "cn=node-authorizaer",
+			Type:           "server",
+			AlternateNames: alternateNames,
+			Signer:         defaultCA,
+			Format:         format,
+		})
+
+		// @note: we use this for mutual tls between between node and authorizer
+		c.AddTask(&fitasks.Keypair{
+			Name:    fi.String("node-authorizer-client"),
+			Subject: "cn=node-authorizer-client",
+			Type:    "client",
+			Signer:  defaultCA,
+			Format:  format,
+		})
+	}
+
 	// Create auth tokens (though this is deprecated)
 	for _, x := range tokens.GetKubernetesAuthTokens_Deprecated() {
-		t := &fitasks.Secret{Name: fi.String(x), Lifecycle: b.Lifecycle}
-		c.AddTask(t)
+		c.AddTask(&fitasks.Secret{Name: fi.String(x), Lifecycle: b.Lifecycle})
 	}
 
 	{

@@ -21,6 +21,8 @@ import (
 
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/k8scodecs"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/exec"
@@ -29,8 +31,6 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kops/pkg/k8scodecs"
-	"k8s.io/kops/pkg/kubemanifest"
 )
 
 // KubeProxyBuilder installs kube-proxy
@@ -77,7 +77,7 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		kubeconfig, err := b.buildPKIKubeconfig("kube-proxy")
+		kubeconfig, err := b.BuildPKIKubeconfig("kube-proxy")
 		if err != nil {
 			return err
 		}
@@ -158,6 +158,11 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		resourceLimits["memory"] = memoryLimit
 	}
 
+	if c.ConntrackMaxPerCore == nil {
+		defaultConntrackMaxPerCore := int32(131072)
+		c.ConntrackMaxPerCore = &defaultConntrackMaxPerCore
+	}
+
 	flags, err := flagbuilder.BuildFlagsList(c)
 	if err != nil {
 		return nil, fmt.Errorf("error building kubeproxy flags: %v", err)
@@ -165,7 +170,6 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	image := c.Image
 
 	flags = append(flags, []string{
-		"--conntrack-max-per-core=131072",
 		"--kubeconfig=/var/lib/kube-proxy/kubeconfig",
 		"--oom-score-adj=-998",
 		`--resource-container=""`}...)

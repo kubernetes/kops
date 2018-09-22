@@ -24,6 +24,7 @@ import (
 	"os/exec"
 	"path"
 	"reflect"
+	"strconv"
 
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
@@ -43,6 +44,9 @@ type Archive struct {
 
 	// TargetDir is the directory for extraction
 	TargetDir string `json:"target,omitempty"`
+
+	// StripComponents is the number of components to remove when expanding the archive
+	StripComponents int `json:"stripComponents,omitempty"`
 }
 
 const (
@@ -159,6 +163,10 @@ func (_ *Archive) RenderLocal(t *local.LocalTarget, a, e, changes *Archive) erro
 		}
 
 		args := []string{"tar", "xf", localFile, "-C", targetDir}
+		if e.StripComponents != 0 {
+			args = append(args, "--strip-components="+strconv.Itoa(e.StripComponents))
+		}
+
 		glog.Infof("running command %s", args)
 		cmd := exec.Command(args[0], args[1:]...)
 		if output, err := cmd.CombinedOutput(); err != nil {

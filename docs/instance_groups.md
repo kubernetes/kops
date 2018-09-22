@@ -12,6 +12,15 @@ By default, a cluster has:
   because we need to force the cloud to run an instance in every zone, so we can mount the master volumes - we
   cannot do that across zones.
 
+## Instance Groups Disclaimer
+
+* When there is only one availability zone in a region (eu-central-1) and you would like to run multiple masters, 
+  you have to define multiple instance groups for each of those masters. (e.g. `master-eu-central-1-a` and 
+  `master-eu-central-1-b` and so on...)
+* If instance groups are not defined correctly (particularly when there are an even number of master or multiple 
+  groups of masters into one availability zone in a single region), etcd servers will not start and master nodes will not check in. This is because etcd servers are configured per availability zone. DNS and Route53 would be the first places to check when these problems are happening.
+
+
 ## Listing instance groups
 
 `kops get instancegroups`
@@ -106,7 +115,7 @@ spec:
 ## Creating a new instance group
 
 Suppose you want to add a new group of nodes, perhaps with a different instance type.  You do this using `kops create ig <InstanceGroupName> --subnet <zone(s)>`. Currently the
-`--subnet` flag is required, and it recieves the zone(s) of the subnet(s) in which the instance group will be. The command opens an editor with a skeleton configuration, allowing you to edit it before creation.
+`--subnet` flag is required, and it receives the zone(s) of the subnet(s) in which the instance group will be. The command opens an editor with a skeleton configuration, allowing you to edit it before creation.
 
 So the procedure is:
 
@@ -122,7 +131,7 @@ So the procedure is:
 
 ## Moving from one instance group spanning multiple AZs to one instance group per AZ
 
-It may be beneficial to have one IG per AZ rather than one IG spanning multiple AZs. One common example is, when you have a persistent volume claim bound to an AWS EBS Volume this volume is bound to the AZ it has been created in so any resource (e.g. a StatefulSet) depending on that volume is bound to that same AZ. In this case you have to ensure that there is at least one node running in that same AZ, which is not guaruanteed by one IG. This however can be guarantueed by one IG per AZ.
+It may be beneficial to have one IG per AZ rather than one IG spanning multiple AZs. One common example is, when you have a persistent volume claim bound to an AWS EBS Volume this volume is bound to the AZ it has been created in so any resource (e.g. a StatefulSet) depending on that volume is bound to that same AZ. In this case you have to ensure that there is at least one node running in that same AZ, which is not guaranteed by one IG. This however can be guaranteed by one IG per AZ.
 
 So the procedure is:
 
@@ -233,7 +242,7 @@ spec:
 
 ## Additional user-data for cloud-init
 
-Kops utilizes cloud-init to initialize and setup a host at boot time. However in certain cases you may already be leaveraging certain features of cloud-init in your infrastructure and would like to continue doing so. More information on cloud-init can be found [here](http://cloudinit.readthedocs.io/en/latest/)
+Kops utilizes cloud-init to initialize and setup a host at boot time. However in certain cases you may already be leveraging certain features of cloud-init in your infrastructure and would like to continue doing so. More information on cloud-init can be found [here](http://cloudinit.readthedocs.io/en/latest/)
 
 
 Additional user-user data can be passed to the host provisioning by setting the `AdditionalUserData` field. A list of valid user-data content-types can be found [here](http://cloudinit.readthedocs.io/en/latest/topics/format.html#mime-multi-part-archive)
@@ -307,6 +316,37 @@ spec:
   role: Node
   suspendProcesses:
   - AZRebalance
+```
+
+## Attaching existing Load Balancers to Instance Groups
+
+Instance groups can be linked to up to 10 load balancers. When attached, any instance launched will
+automatically register itself to the load balancer. For example, if you can create an instance group
+dedicated to running an ingress controller exposed on a
+[NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport), you can
+manually create a load balancer and link it to the instance group. Traffic to the load balancer will now
+automatically go to one of the nodes.
+
+You can specify either `loadBalancerName` to link the instance group to an AWS Classic ELB or you can
+specify `targetGroupARN` to link the instance group to a target group, which are used by Application
+load balancers and Network load balancers.
+
+```
+# Example ingress nodes
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: k8s.dev.local
+  name: ingress
+spec:
+  machineType: m4.large
+  maxSize: 2
+  minSize: 2
+  role: Node
+  externalLoadBalancers:
+  - targetGroupARN: arn:aws:elasticloadbalancing:eu-west-1:123456789012:targetgroup/my-ingress-target-group/0123456789abcdef
+  - loadBalancerName: my-elb-classic-load-balancer
 ```
 
 ## Enabling Detailed-Monitoring on AWS instances

@@ -37,7 +37,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      application: skipper-ingress
+      component: ingress
   updateStrategy:
     type: RollingUpdate
   template:
@@ -65,6 +65,7 @@ spec:
           - "-experimental-upgrade"
           - "-metrics-exp-decay-sample"
           - "-kubernetes-https-redirect=true"
+#          - "-whitelisted-healthcheck-cidr=<CIDR_BLOCK>"
         resources:
           limits:
             cpu: 200m
@@ -195,7 +196,7 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: "demo-app-v1"
+          serviceName: "demo-app-v2"
           servicePort: 80
 
 ---

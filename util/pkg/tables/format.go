@@ -25,7 +25,8 @@ import (
 	"text/tabwriter"
 
 	"github.com/golang/glog"
-	"k8s.io/kops/upup/pkg/fi"
+
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 // Table renders tables to stdout
@@ -44,7 +45,7 @@ func (c *TableColumn) getFromValue(v reflect.Value) string {
 	fvs := c.Getter.Call(args)
 	fv := fvs[0]
 
-	return fi.ValueAsString(fv)
+	return reflectutils.ValueAsString(fv)
 }
 
 type getterFunction func(interface{}) string
