@@ -23,10 +23,10 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kubernetes/pkg/kubectl/genericclioptions"
 )
 
 // RollingUpdateCluster is a struct containing cluster information for a rolling update.
@@ -45,7 +45,7 @@ type RollingUpdateCluster struct {
 	Force bool
 
 	K8sClient        kubernetes.Interface
-	ClientConfig     clientcmd.ClientConfig
+	ClientGetter     genericclioptions.RESTClientGetter
 	FailOnDrainError bool
 	FailOnValidate   bool
 	CloudOnly        bool
