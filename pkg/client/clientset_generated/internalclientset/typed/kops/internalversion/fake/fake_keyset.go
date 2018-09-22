@@ -62,7 +62,7 @@ func (c *FakeKeysets) List(opts v1.ListOptions) (result *kops.KeysetList, err er
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &kops.KeysetList{}
+	list := &kops.KeysetList{ListMeta: obj.(*kops.KeysetList).ListMeta}
 	for _, item := range obj.(*kops.KeysetList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
