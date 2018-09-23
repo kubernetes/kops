@@ -63,12 +63,12 @@ spec:
   role: Node
   subnets:
   - us-test-1a
-  additionaluserdata:
+  additionalUserData:
   - name: myscript.sh
     type: text/x-shellscript
     content: |
       #!/bin/sh
-      echo "Hello World.  The time is now $(date -R)!" | tee /root/output.txt
+      echo "nodes: The time is now $(date -R)!" | tee /root/output.txt
 
 ---
 
@@ -88,10 +88,10 @@ spec:
   role: Master
   subnets:
   - us-test-1a
-  additionaluserdata:
+  additionalUserData:
   - name: myscript.sh
     type: text/x-shellscript
     content: |
       #!/bin/sh
-      echo "Hello World.  The time is now $(date -R)!" | tee /root/output.txt
+      echo "master: The time is now $(date -R)!" | tee /root/output.txt
 
