@@ -292,7 +292,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
   Mime-Version: 1.0
 
   #!/bin/sh
-  echo "Hello World.  The time is now $(date -R)!" | tee /root/output.txt
+  echo "master: The time is now $(date -R)!" | tee /root/output.txt
 
   --MIMEBOUNDARY--
 
@@ -521,6 +521,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
   Mime-Version: 1.0
 
   #!/bin/sh
-  echo "Hello World.  The time is now $(date -R)!" | tee /root/output.txt
+  echo "nodes: The time is now $(date -R)!" | tee /root/output.txt
 
   --MIMEBOUNDARY--

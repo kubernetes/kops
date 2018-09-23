@@ -213,8 +213,8 @@ func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 			}
 		}
 
-		for _, UserDataInfo := range ig.Spec.AdditionalUserData {
-			err = writeUserDataPart(mimeWriter, UserDataInfo.Name, UserDataInfo.Type, []byte(UserDataInfo.Content))
+		for _, d := range ig.Spec.AdditionalUserData {
+			err = writeUserDataPart(mimeWriter, d.Name, d.Type, []byte(d.Content))
 			if err != nil {
 				return "", err
 			}
