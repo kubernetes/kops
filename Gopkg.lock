@@ -107,7 +107,7 @@
   version = "v9"
 
 [[projects]]
-  digest = "1:9b9aa0e8cd09203c6f105eeccb15da48c707d4827d21810dfe6bd718935f917e"
+  digest = "1:20ac61f29dff8fde52e8928f2de03172f4df1fed1beb0399fa649b88a890274f"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -161,6 +161,7 @@
     "service/s3",
     "service/sts",
   ]
+  pruneopts = "UT"
   revision = "1825bc12edc3cd682594909d6386f7fcb957c99c"
   version = "v1.14.30"
 
@@ -2120,7 +2121,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "beec19a74f2c84d0145bc939f8ba818026636435f1407cfac67dcda528df9f96"
   input-imports = [
     "cloud.google.com/go/compute/metadata",
     "github.com/MakeNowJust/heredoc",
@@ -2140,6 +2140,8 @@
     "github.com/aws/aws-sdk-go/service/ec2/ec2iface",
     "github.com/aws/aws-sdk-go/service/elb",
     "github.com/aws/aws-sdk-go/service/elb/elbiface",
+    "github.com/aws/aws-sdk-go/service/elbv2",
+    "github.com/aws/aws-sdk-go/service/elbv2/elbv2iface",
     "github.com/aws/aws-sdk-go/service/iam",
     "github.com/aws/aws-sdk-go/service/iam/iamiface",
     "github.com/aws/aws-sdk-go/service/pricing",
