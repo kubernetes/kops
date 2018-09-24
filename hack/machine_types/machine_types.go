@@ -37,23 +37,21 @@ import (
 
 var outputPath = ""
 
-func init() {
+func main() {
 	flag.StringVar(&outputPath, "out", outputPath, "file to write")
 
 	flag.Parse()
 	flag.Lookup("logtostderr").Value.Set("true")
-}
 
-func main() {
 	if err := run(); err != nil {
-		fmt.Fprintf(os.Stderr, "must specify output file with --out\n")
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
 }
 
 func run() error {
 	if outputPath == "" {
-		return fmt.Errorf("must specify output file with --out\n")
+		return fmt.Errorf("must specify output file with --out")
 	}
 
 	glog.Info("Beginning AWS Machine Refresh")
