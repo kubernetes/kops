@@ -198,7 +198,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersexternallbexampl
     - X-Remote-User
     securePort: 443
     serviceClusterIPRange: 100.64.0.0/13
-    storageBackend: etcd2
+    storageBackend: etcd3
   kubeControllerManager:
     allocateNodeCIDRs: true
     attachDetachReconcileSyncPeriod: 1m0s
