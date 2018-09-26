@@ -328,6 +328,8 @@ type KubeDNSConfig struct {
 	CacheMaxSize int `json:"cacheMaxSize,omitempty"`
 	// CacheMaxConcurrent is the maximum number of concurrent queries for dnsmasq
 	CacheMaxConcurrent int `json:"cacheMaxConcurrent,omitempty"`
+	// Corefile sets CoreDNS Corefile configuration
+	Corefile Corefile `json:"corefile,omitempty"`
 	// Domain is the dns domain
 	Domain string `json:"domain,omitempty"`
 	// Image is the name of the docker image to run - @deprecated as this is now in the addon
@@ -342,6 +344,12 @@ type KubeDNSConfig struct {
 	StubDomains map[string][]string `json:"stubDomains,omitempty"`
 	// UpstreamNameservers sets the upstream nameservers for queries not on the cluster domain
 	UpstreamNameservers []string `json:"upstreamNameservers,omitempty"`
+}
+
+// Corefile defines the Coredns Corefile configuration
+type Corefile struct {
+	EnableAutopath bool   `json:"enableAutopath,omitempty"`
+	Cache          string `json:"corefile,omitempty"`
 }
 
 // ExternalDNSConfig are options of the dns-controller

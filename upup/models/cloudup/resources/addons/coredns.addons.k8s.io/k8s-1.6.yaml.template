@@ -62,10 +62,13 @@ data:
           upstream
           fallthrough in-addr.arpa ip6.arpa
         }
+        {{ if KubeDNS.Corefile.EnableAutopath -}}
+        autpath @kubernetes
+        {{- end -}}
         prometheus :9153
         proxy . /etc/resolv.conf
         loop
-        cache 30
+        cache {{ KubeDNS.Corefile.Cache }}
         loadbalance
         reload
     }
@@ -84,7 +87,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
+      maxSurge: 10%
+      maxUnavailable: 0
   selector:
     matchLabels:
       k8s-app: kube-dns
