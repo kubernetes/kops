@@ -58,8 +58,8 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeDNS.Domain = clusterSpec.ClusterDNSDomain
 	}
 
-	if clusterSpec.KubeDNS.Cache == "" {
-		clusterSpec.KubeDNS.Cache = "30"
+	if clusterSpec.KubeDNS.Corefile.Cache == "" {
+		clusterSpec.KubeDNS.Corefile.Cache = "30"
 	}
 
 	if clusterSpec.KubeDNS.CoreDNSVersion == "" {
