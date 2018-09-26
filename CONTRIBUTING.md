@@ -22,6 +22,11 @@ Follow either of the two links above to access the appropriate CLA and instructi
 1. Fork the desired repo, develop and test your code changes. Unit tests are required for most PRs.
 1. Submit a pull request.
 
+
+### Building from Source
+
+To build kops from source, follow the [development documentation](https://github.com/kubernetes/kops/blob/master/docs/development/building.md).
+
 ### Adding dependencies
 
 If your patch depends on new packages, follow the [instructions to add a dependency](/docs/development/dependencies.md).

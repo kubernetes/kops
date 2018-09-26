@@ -98,7 +98,16 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 // template file, substituting in specific env vars & cluster spec configuration
 func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.Cluster) (*fi.ResourceHolder, error) {
 	// Bastions can have AdditionalUserData, but if there isn't any skip this part
-	if ig.IsBastion() && len(ig.Spec.AdditionalUserData) == 0 {
+	// Check if bastion has hooks enabled, in that special case we want to set hooks up
+	var bastionHooks []kops.HookSpec
+	var err error
+	if ig.IsBastion() {
+	  bastionHooks, err = b.getRelevantHooks(ig.Spec.Hooks, ig.Spec.Role)
+	} else {
+	  bastionHooks = bastionHooks
+	}
+
+	if ig.IsBastion() && len(ig.Spec.AdditionalUserData) == 0 && !(len(bastionHooks) > 0) {
 		return nil, nil
 	}
 
