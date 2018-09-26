@@ -105,7 +105,7 @@ spec:
           operator: "Exists"
       containers:
       - name: coredns
-        image: k8s.gcr.io/coredns:1.2.2
+        image: k8s.gcr.io/coredns:{{ KubeDNS.CoreDNSVersion }}
         imagePullPolicy: IfNotPresent
         resources:
           limits:

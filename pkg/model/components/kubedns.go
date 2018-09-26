@@ -62,5 +62,9 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeDNS.Cache = "30"
 	}
 
+	if clusterSpec.KubeDNS.CoreDNSVersion == "" {
+		clusterSpec.KubeDNS.CoreDNSVersion = "1.2.2"
+	}
+
 	return nil
 }

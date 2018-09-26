@@ -328,6 +328,8 @@ type KubeDNSConfig struct {
 	CacheMaxSize int `json:"cacheMaxSize,omitempty"`
 	// CacheMaxConcurrent is the maximum number of concurrent queries for dnsmasq
 	CacheMaxConcurrent int `json:"cacheMaxConcurrent,omitempty"`
+	// CoreDNSVersion sets the image version
+	CoreDNSVersion string `json:"coreDNSVersion,omitempty"`
 	// Corefile sets CoreDNS Corefile configuration
 	Corefile Corefile `json:"corefile,omitempty"`
 	// Domain is the dns domain
