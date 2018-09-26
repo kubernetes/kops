@@ -170,7 +170,7 @@ func waitForCertificates(files []string, timeout time.Duration) error {
 				if utils.FileExists(x) {
 					break
 				}
-				fmt.Printf("waiting for file: %s to appear, timeouts in %s", x, expires.Sub(time.Now()))
+				fmt.Printf("waiting for file: %s to appear, timeouts in %s\n", x, expires.Sub(time.Now()))
 				time.Sleep(5 * time.Second)
 			}
 		}

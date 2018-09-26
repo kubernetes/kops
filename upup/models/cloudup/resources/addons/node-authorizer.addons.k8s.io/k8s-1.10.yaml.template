@@ -171,20 +171,6 @@ spec:
             requests:
               cpu: 10m
               memory: 10Mi
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: {{ $na.Port }}
-              scheme: HTTPS
-            periodSeconds: 10
-            initialDelaySeconds: 10
-            failureThreshold: 5
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: {{ $na.Port }}
-              scheme: HTTPS
-            periodSeconds: 10
           volumeMounts:
             - mountPath: /config
               readOnly: true
