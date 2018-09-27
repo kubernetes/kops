@@ -47,6 +47,7 @@ go_library(
         "//pkg/kubeconfig:go_default_library",
         "//pkg/kubemanifest:go_default_library",
         "//pkg/pki:go_default_library",
+        "//pkg/resources/spotinst:go_default_library",
         "//pkg/systemd:go_default_library",
         "//pkg/tokens:go_default_library",
         "//pkg/try:go_default_library",

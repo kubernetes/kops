@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/util/pkg/reflectutils"
@@ -155,7 +156,12 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 
 // defaultMachineType returns the default MachineType for the instance group, based on the cloudprovider
 func defaultMachineType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
-	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	cloudProvider := kops.CloudProviderID(cluster.Spec.CloudProvider)
+	if cloudProvider == kops.CloudProviderSpotinst {
+		cloudProvider = spotinst.GuessCloudFromClusterSpec(&cluster.Spec)
+	}
+
+	switch cloudProvider {
 	case kops.CloudProviderAWS:
 		cloud, err := BuildCloud(cluster)
 		if err != nil {
@@ -219,7 +225,12 @@ func defaultImage(cluster *kops.Cluster, channel *kops.Channel) string {
 			}
 		}
 		if kubernetesVersion != nil {
-			image := channel.FindImage(kops.CloudProviderID(cluster.Spec.CloudProvider), *kubernetesVersion)
+			cloudProvider := kops.CloudProviderID(cluster.Spec.CloudProvider)
+			if cloudProvider == kops.CloudProviderSpotinst {
+				cloudProvider = spotinst.GuessCloudFromClusterSpec(&cluster.Spec)
+			}
+
+			image := channel.FindImage(cloudProvider, *kubernetesVersion)
 			if image != nil {
 				return image.Name
 			}

@@ -19,6 +19,7 @@ go_library(
         "//pkg/featureflag:go_default_library",
         "//pkg/model/components:go_default_library",
         "//pkg/model/iam:go_default_library",
+        "//pkg/resources/spotinst:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//vendor/github.com/blang/semver:go_default_library",

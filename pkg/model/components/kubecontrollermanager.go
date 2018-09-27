@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -115,6 +116,9 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 
 	case kops.CloudProviderOpenstack:
 		kcm.CloudProvider = "openstack"
+
+	case kops.CloudProviderSpotinst:
+		kcm.CloudProvider = string(spotinst.GuessCloudFromClusterSpec(clusterSpec))
 
 	default:
 		return fmt.Errorf("unknown cloudprovider %q", clusterSpec.CloudProvider)

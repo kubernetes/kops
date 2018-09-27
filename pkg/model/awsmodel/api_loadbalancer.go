@@ -61,7 +61,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
 	}
 
-	// Compute the subnets - only one per zone, and then break ties based on chooseBestSubnetForELB
+	// Compute the subnets - only one per zone, and then break ties based on ChooseBestSubnetForELB
 	var elbSubnets []*awstasks.Subnet
 	{
 		subnetsByZone := make(map[string][]*kops.ClusterSubnetSpec)
@@ -87,7 +87,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		for zone, subnets := range subnetsByZone {
-			subnet := b.chooseBestSubnetForELB(zone, subnets)
+			subnet := b.ChooseBestSubnetForELB(zone, subnets)
 
 			elbSubnets = append(elbSubnets, b.LinkToSubnet(subnet))
 		}
@@ -273,7 +273,7 @@ func (a ByScoreDescending) Less(i, j int) bool {
 // We have already applied the rules to match internal subnets to internal ELBs and vice-versa for public-facing ELBs.
 // For internal ELBs: we prefer the master subnets
 // For public facing ELBs: we prefer the utility subnets
-func (b *APILoadBalancerBuilder) chooseBestSubnetForELB(zone string, subnets []*kops.ClusterSubnetSpec) *kops.ClusterSubnetSpec {
+func (b *APILoadBalancerBuilder) ChooseBestSubnetForELB(zone string, subnets []*kops.ClusterSubnetSpec) *kops.ClusterSubnetSpec {
 	if len(subnets) == 0 {
 		return nil
 	}

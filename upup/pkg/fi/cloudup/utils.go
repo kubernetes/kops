@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/spotinst"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 )
 
@@ -157,6 +158,16 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 
 			cloud = aliCloud
 		}
+
+	case kops.CloudProviderSpotinst:
+		{
+			var err error
+			cloud, err = spotinst.NewCloud(cluster)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}

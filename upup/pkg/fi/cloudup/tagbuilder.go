@@ -30,13 +30,19 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 	tags := sets.NewString()
 
-	switch api.CloudProviderID(cluster.Spec.CloudProvider) {
+	cloudProvider := api.CloudProviderID(cluster.Spec.CloudProvider)
+	if cloudProvider == api.CloudProviderSpotinst {
+		cloudProvider = spotinst.GuessCloudFromClusterSpec(&cluster.Spec)
+	}
+
+	switch cloudProvider {
 	case api.CloudProviderGCE:
 		{
 			tags.Insert("_gce")
@@ -61,7 +67,7 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 	case api.CloudProviderOpenstack:
 
 	default:
-		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
+		return nil, fmt.Errorf("unknown CloudProvider %q", cloudProvider)
 	}
 
 	versionTag := ""

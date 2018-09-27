@@ -45,8 +45,10 @@ import (
 	"k8s.io/kops/pkg/model/domodel"
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/openstackmodel"
+	"k8s.io/kops/pkg/model/spotinstmodel"
 	"k8s.io/kops/pkg/model/vspheremodel"
 	"k8s.io/kops/pkg/resources/digitalocean"
+	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
@@ -62,6 +64,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/spotinsttasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks"
@@ -495,6 +498,68 @@ func (c *ApplyClusterCmd) Run() error {
 				return fmt.Errorf("Exactly one 'admin' SSH public key can be specified when running with Openstack; please delete a key using `kops delete secret`")
 			}
 		}
+
+	case kops.CloudProviderSpotinst:
+		{
+			if !featureflag.SpotinstCloudProvider.Enabled() {
+				return fmt.Errorf("Spotinst support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowSpotinst")
+			}
+
+			cloudProvider := spotinst.GuessCloudFromClusterSpec(&cluster.Spec)
+			switch cloudProvider {
+			case kops.CloudProviderAWS:
+				{
+					region = cloud.(spotinst.AWSCloud).Region()
+
+					l.AddTypes(map[string]interface{}{
+						// EC2
+						"elasticIP":                   &awstasks.ElasticIP{},
+						"instance":                    &awstasks.Instance{},
+						"instanceElasticIPAttachment": &awstasks.InstanceElasticIPAttachment{},
+						"instanceVolumeAttachment":    &awstasks.InstanceVolumeAttachment{},
+						"ebsVolume":                   &awstasks.EBSVolume{},
+						"sshKey":                      &awstasks.SSHKey{},
+
+						// IAM
+						"iamInstanceProfile":     &awstasks.IAMInstanceProfile{},
+						"iamInstanceProfileRole": &awstasks.IAMInstanceProfileRole{},
+						"iamRole":                &awstasks.IAMRole{},
+						"iamRolePolicy":          &awstasks.IAMRolePolicy{},
+
+						// VPC / Networking
+						"dhcpOptions":           &awstasks.DHCPOptions{},
+						"internetGateway":       &awstasks.InternetGateway{},
+						"route":                 &awstasks.Route{},
+						"routeTable":            &awstasks.RouteTable{},
+						"routeTableAssociation": &awstasks.RouteTableAssociation{},
+						"securityGroup":         &awstasks.SecurityGroup{},
+						"securityGroupRule":     &awstasks.SecurityGroupRule{},
+						"subnet":                &awstasks.Subnet{},
+						"vpc":                   &awstasks.VPC{},
+						"ngw":                   &awstasks.NatGateway{},
+						"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
+
+						// ELB
+						"loadBalancer": &awstasks.LoadBalancer{},
+
+						// Elastigroup
+						"elastigroup": &spotinsttasks.Elastigroup{},
+					})
+
+					if len(sshPublicKeys) == 0 {
+						return fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+					}
+
+					if len(sshPublicKeys) != 1 {
+						return fmt.Errorf("Exactly one 'admin' SSH public key can be specified when running with AWS; please delete a key using `kops delete secret`")
+					}
+
+					modelContext.SSHPublicKeys = sshPublicKeys
+					l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
+				}
+			}
+		}
+
 	default:
 		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}
@@ -644,6 +709,26 @@ func (c *ApplyClusterCmd) Run() error {
 					&openstackmodel.SSHKeyModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
 				)
 
+			case kops.CloudProviderSpotinst:
+				spotinstModelContext := &spotinstmodel.SpotinstModelContext{
+					KopsModelContext: modelContext,
+				}
+
+				cloudProvider := spotinst.GuessCloudFromClusterSpec(&cluster.Spec)
+				switch cloudProvider {
+				case kops.CloudProviderAWS:
+					l.Builders = append(l.Builders,
+						&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+						&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+						&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+						&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+						&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+						&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+						&model.NetworkModelBuilder{KopsModelContext: modelContext, Lifecycle: &networkLifecycle},
+
+						&spotinstmodel.APILoadBalancerBuilder{SpotinstModelContext: spotinstModelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
+						&spotinstmodel.BastionModelBuilder{SpotinstModelContext: spotinstModelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle})
+				}
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 			}
@@ -734,6 +819,18 @@ func (c *ApplyClusterCmd) Run() error {
 
 	case kops.CloudProviderOpenstack:
 
+	case kops.CloudProviderSpotinst:
+		spotinstModelContext := &spotinstmodel.SpotinstModelContext{
+			KopsModelContext: modelContext,
+		}
+
+		l.Builders = append(l.Builders, &spotinstmodel.ElastigroupModelBuilder{
+			SpotinstModelContext: spotinstModelContext,
+			BootstrapScript:      bootstrapScriptBuilder,
+			Lifecycle:            &clusterLifecycle,
+			SecurityLifecycle:    &securityLifecycle,
+		})
+
 	default:
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 	}
@@ -773,6 +870,8 @@ func (c *ApplyClusterCmd) Run() error {
 			target = openstack.NewOpenstackAPITarget(cloud.(openstack.OpenstackCloud))
 		case kops.CloudProviderALI:
 			target = aliup.NewALIAPITarget(cloud.(aliup.ALICloud))
+		case kops.CloudProviderSpotinst:
+			target = spotinst.NewAPITarget(cluster, cloud)
 		default:
 			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.CloudProvider)
 		}

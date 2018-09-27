@@ -15,6 +15,7 @@ go_library(
         "//pkg/resources/digitalocean:go_default_library",
         "//pkg/resources/gce:go_default_library",
         "//pkg/resources/openstack:go_default_library",
+        "//pkg/resources/spotinst:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",
