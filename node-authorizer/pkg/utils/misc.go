@@ -37,11 +37,11 @@ func GetKubernetesClient() (kubernetes.Interface, error) {
 
 // FileExists checks if the file exists
 func FileExists(filename string) bool {
-	if _, err := os.Stat(filename); !os.IsNotExist(err) {
-		return true
+	if _, err := os.Stat(filename); err != nil {
+		return false
 	}
 
-	return false
+	return true
 }
 
 // RandomBytes generates some random bytes

@@ -100,5 +100,5 @@ func GetNodeAuthorizerImage() string {
 		return v
 	}
 
-	return "quay.io/gambol99/node-authorizer:v0.0.2@sha256:4a9f17072cb937ccbe3042add3e7da8152a7f35ffbdf8b96ae49306f6b59c080"
+	return "quay.io/gambol99/node-authorizer:v0.0.2@sha256:78c20c69187d3098e196e2b645d0571aeef377adc5cbd89684023ec668306268"
 }
