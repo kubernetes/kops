@@ -153,7 +153,7 @@ func actionServerCommand(ctx *cli.Context) error {
 	return svc.Run()
 }
 
-// waitForCertificates is responisble for waiting for the certificates to appear
+// waitForCertificates is responsible for waiting for the certificates to appear
 func waitForCertificates(files []string, timeout time.Duration) error {
 	doneCh := make(chan struct{}, 0)
 
