@@ -24,8 +24,8 @@ import (
 	"k8s.io/kops/node-authorizer/pkg/authorizers/alwaysallow"
 	"k8s.io/kops/node-authorizer/pkg/authorizers/aws"
 	"k8s.io/kops/node-authorizer/pkg/server"
+	"k8s.io/kops/node-authorizer/pkg/utils"
 
-	"github.com/gambol99/aws-sso/pkg/utils"
 	"github.com/urfave/cli"
 )
 
