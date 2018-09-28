@@ -19,6 +19,7 @@ package utils
 import (
 	crypto_rand "crypto/rand"
 	"encoding/hex"
+	"os"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -32,6 +33,15 @@ func GetKubernetesClient() (kubernetes.Interface, error) {
 	}
 
 	return kubernetes.NewForConfig(config)
+}
+
+// FileExists checks if the file exists
+func FileExists(filename string) bool {
+	if _, err := os.Stat(filename); err != nil {
+		return false
+	}
+
+	return true
 }
 
 // RandomBytes generates some random bytes

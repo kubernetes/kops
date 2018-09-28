@@ -14,6 +14,7 @@ go_library(
         "//node-authorizer/pkg/authorizers/aws:go_default_library",
         "//node-authorizer/pkg/client:go_default_library",
         "//node-authorizer/pkg/server:go_default_library",
+        "//node-authorizer/pkg/utils:go_default_library",
         "//vendor/github.com/urfave/cli:go_default_library",
     ],
 )
