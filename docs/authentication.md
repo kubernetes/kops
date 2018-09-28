@@ -1,8 +1,7 @@
 # Authentication
 
-Kops has support for configuring authentication systems.  This support is
-currently highly experimental, and should not be used with kubernetes versions
-before 1.8.5 because of a serious bug with apimachinery (#55022)[https://github.com/kubernetes/kubernetes/issues/55022].
+Kops has support for configuring authentication systems.  This should not be used with kubernetes versions
+before 1.8.5 because of a serious bug with apimachinery [#55022](https://github.com/kubernetes/kubernetes/issues/55022).
 
 ## kopeio authentication
 
@@ -35,7 +34,7 @@ spec:
 ## AWS IAM Authenticator
 
 If you want to turn on AWS IAM Authenticator, you can add this block 
-to your cluster:
+to your cluster running Kubernetes 1.10 or newer:
 
 ```
 authentication:
@@ -56,9 +55,10 @@ spec:
     rbac: {}
 ```
 
-Once the cluster is up you will need to create the AWS IAM authenticator
+Once the cluster is up, or after you've performed a rolling update to an existing cluster with `kops rolling-update cluster ${CLUSTER_NAME} --instance-group-roles=Master --force --yes`, you will need to create the AWS IAM authenticator
 config as a config map. (This can also be done when boostrapping a cluster using addons)
-For more details on AWS IAM authenticator please visit (kubernetes-sigs/aws-iam-authenticator)[https://github.com/kubernetes-sigs/aws-iam-authenticator]
+For more details on AWS IAM authenticator please visit [kubernetes-sigs/aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator)
+
 Example config:
 
 ```
