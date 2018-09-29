@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -50,7 +51,7 @@ type ClientManager struct {
 	cache                *lru.Cache
 }
 
-// NewClientManager creates a ClientManager.
+// NewClientManager creates a clientManager.
 func NewClientManager() (ClientManager, error) {
 	cache, err := lru.New(defaultCacheSize)
 	if err != nil {
@@ -90,13 +91,13 @@ func (cm *ClientManager) SetServiceResolver(sr ServiceResolver) {
 func (cm *ClientManager) Validate() error {
 	var errs []error
 	if cm.negotiatedSerializer == nil {
-		errs = append(errs, fmt.Errorf("the ClientManager requires a negotiatedSerializer"))
+		errs = append(errs, fmt.Errorf("the clientManager requires a negotiatedSerializer"))
 	}
 	if cm.serviceResolver == nil {
-		errs = append(errs, fmt.Errorf("the ClientManager requires a serviceResolver"))
+		errs = append(errs, fmt.Errorf("the clientManager requires a serviceResolver"))
 	}
 	if cm.authInfoResolver == nil {
-		errs = append(errs, fmt.Errorf("the ClientManager requires an authInfoResolver"))
+		errs = append(errs, fmt.Errorf("the clientManager requires an authInfoResolver"))
 	}
 	return utilerrors.NewAggregate(errs)
 }
@@ -113,7 +114,12 @@ func (cm *ClientManager) HookClient(h *v1beta1.Webhook) (*rest.RESTClient, error
 	}
 
 	complete := func(cfg *rest.Config) (*rest.RESTClient, error) {
-		cfg.TLSClientConfig.CAData = h.ClientConfig.CABundle
+		// Combine CAData from the config with any existing CA bundle provided
+		if len(cfg.TLSClientConfig.CAData) > 0 {
+			cfg.TLSClientConfig.CAData = append(cfg.TLSClientConfig.CAData, '\n')
+		}
+		cfg.TLSClientConfig.CAData = append(cfg.TLSClientConfig.CAData, h.ClientConfig.CABundle...)
+
 		cfg.ContentConfig.NegotiatedSerializer = cm.negotiatedSerializer
 		cfg.ContentConfig.ContentType = runtime.ContentTypeJSON
 		client, err := rest.UnversionedRESTClientFor(cfg)
@@ -135,13 +141,17 @@ func (cm *ClientManager) HookClient(h *v1beta1.Webhook) (*rest.RESTClient, error
 		if svc.Path != nil {
 			cfg.APIPath = *svc.Path
 		}
-		cfg.TLSClientConfig.ServerName = serverName
+		// Set the server name if not already set
+		if len(cfg.TLSClientConfig.ServerName) == 0 {
+			cfg.TLSClientConfig.ServerName = serverName
+		}
 
 		delegateDialer := cfg.Dial
 		if delegateDialer == nil {
-			delegateDialer = net.Dial
+			var d net.Dialer
+			delegateDialer = d.DialContext
 		}
-		cfg.Dial = func(network, addr string) (net.Conn, error) {
+		cfg.Dial = func(ctx context.Context, network, addr string) (net.Conn, error) {
 			if addr == host {
 				u, err := cm.serviceResolver.ResolveEndpoint(svc.Namespace, svc.Name)
 				if err != nil {
@@ -149,7 +159,7 @@ func (cm *ClientManager) HookClient(h *v1beta1.Webhook) (*rest.RESTClient, error
 				}
 				addr = u.Host
 			}
-			return delegateDialer(network, addr)
+			return delegateDialer(ctx, network, addr)
 		}
 
 		return complete(cfg)

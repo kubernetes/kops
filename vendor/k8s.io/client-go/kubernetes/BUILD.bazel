@@ -11,7 +11,6 @@ go_library(
     importpath = "k8s.io/client-go/kubernetes",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/client-go/discovery:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/typed/admissionregistration/v1alpha1:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/typed/admissionregistration/v1beta1:go_default_library",
@@ -37,6 +36,7 @@ go_library(
         "//vendor/k8s.io/client-go/kubernetes/typed/rbac/v1alpha1:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/typed/rbac/v1beta1:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/typed/scheduling/v1alpha1:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes/typed/scheduling/v1beta1:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/typed/settings/v1alpha1:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/typed/storage/v1:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/typed/storage/v1alpha1:go_default_library",

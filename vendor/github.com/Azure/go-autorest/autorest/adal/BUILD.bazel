@@ -5,8 +5,6 @@ go_library(
     srcs = [
         "config.go",
         "devicetoken.go",
-        "msi.go",
-        "msi_windows.go",
         "persist.go",
         "sender.go",
         "token.go",

@@ -18,6 +18,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -31,19 +32,17 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/internal/resolve"
 	"github.com/bazelbuild/bazel-gazelle/internal/rule"
 	"github.com/bazelbuild/bazel-gazelle/internal/walk"
-	bzl "github.com/bazelbuild/buildtools/build"
 )
 
 // updateConfig holds configuration information needed to run the fix and
 // update commands. This includes everything in config.Config, but it also
 // includes some additional fields that aren't relevant to other packages.
 type updateConfig struct {
-	emit              emitFunc
-	outDir, outSuffix string
-	repos             []repos.Repo
+	emit  emitFunc
+	repos []repos.Repo
 }
 
-type emitFunc func(*config.Config, *bzl.File, string) error
+type emitFunc func(path string, data []byte) error
 
 var modeFromName = map[string]emitFunc{
 	"print": printFile,
@@ -68,8 +67,6 @@ func (ucr *updateConfigurer) RegisterFlags(fs *flag.FlagSet, cmd string, c *conf
 	c.ShouldFix = cmd == "fix"
 
 	fs.StringVar(&ucr.mode, "mode", "fix", "print: prints all of the updated BUILD files\n\tfix: rewrites all of the BUILD files in place\n\tdiff: computes the rewrite but then just does a diff")
-	fs.StringVar(&uc.outDir, "experimental_out_dir", "", "write build files to an alternate directory tree")
-	fs.StringVar(&uc.outSuffix, "experimental_out_suffix", "", "extra suffix appended to build file names. Only used if -experimental_out_dir is also set.")
 }
 
 func (ucr *updateConfigurer) CheckFlags(fs *flag.FlagSet, c *config.Config) error {
@@ -198,7 +195,7 @@ func runFixUpdate(cmd command, args []string) error {
 
 		// Insert or merge rules into the build file.
 		if f == nil {
-			f = rule.EmptyFile(filepath.Join(dir, c.DefaultBuildFileName()))
+			f = rule.EmptyFile(filepath.Join(dir, c.DefaultBuildFileName()), rel)
 			for _, r := range gen {
 				r.Insert(f)
 			}
@@ -236,15 +233,9 @@ func runFixUpdate(cmd command, args []string) error {
 	// Emit merged files.
 	for _, v := range visits {
 		merger.FixLoads(v.file, loads)
-		v.file.Sync()
-		bzl.Rewrite(v.file.File, nil) // have buildifier 'format' our rules.
-
-		path := v.file.Path
-		if uc.outDir != "" {
-			stem := filepath.Base(v.file.Path) + uc.outSuffix
-			path = filepath.Join(uc.outDir, v.pkgRel, stem)
-		}
-		if err := uc.emit(c, v.file.File, path); err != nil {
+		content := v.file.Format()
+		outputPath := findOutputPath(c, v.file)
+		if err := uc.emit(outputPath, content); err != nil {
 			log.Print(err)
 		}
 	}
@@ -269,7 +260,7 @@ func newFixUpdateConfiguration(cmd command, args []string, cexts []config.Config
 	if err := fs.Parse(args); err != nil {
 		if err == flag.ErrHelp {
 			fixUpdateUsage(fs)
-			os.Exit(0)
+			return nil, err
 		}
 		// flag already prints the error; don't print it again.
 		log.Fatal("Try -help for more information.")
@@ -283,7 +274,7 @@ func newFixUpdateConfiguration(cmd command, args []string, cexts []config.Config
 
 	uc := getUpdateConfig(c)
 	workspacePath := filepath.Join(c.RepoRoot, "WORKSPACE")
-	if workspace, err := rule.LoadFile(workspacePath); err != nil {
+	if workspace, err := rule.LoadFile(workspacePath, ""); err != nil {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}
@@ -361,8 +352,7 @@ func fixWorkspace(c *config.Config, workspace *rule.File, loads []rule.LoadInfo)
 	if err := merger.CheckGazelleLoaded(workspace); err != nil {
 		return err
 	}
-	workspace.Sync()
-	return uc.emit(c, workspace.File, workspace.Path)
+	return uc.emit(workspace.Path, workspace.Format())
 }
 
 func findWorkspaceName(f *rule.File) string {
@@ -383,4 +373,26 @@ func isDescendingDir(dir, root string) bool {
 		return true
 	}
 	return !strings.HasPrefix(rel, "..")
+}
+
+func findOutputPath(c *config.Config, f *rule.File) string {
+	if c.ReadBuildFilesDir == "" && c.WriteBuildFilesDir == "" {
+		return f.Path
+	}
+	baseDir := c.WriteBuildFilesDir
+	if c.WriteBuildFilesDir == "" {
+		baseDir = c.RepoRoot
+	}
+	outputDir := filepath.Join(baseDir, filepath.FromSlash(f.Pkg))
+	defaultOutputPath := filepath.Join(outputDir, c.DefaultBuildFileName())
+	files, err := ioutil.ReadDir(outputDir)
+	if err != nil {
+		// Ignore error. Directory probably doesn't exist.
+		return defaultOutputPath
+	}
+	outputPath := rule.MatchBuildFileName(outputDir, c.ValidBuildFileNames, files)
+	if outputPath == "" {
+		return defaultOutputPath
+	}
+	return outputPath
 }
