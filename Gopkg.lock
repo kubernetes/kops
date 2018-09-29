@@ -99,14 +99,6 @@
   version = "v1.0.1"
 
 [[projects]]
-  digest = "1:320e7ead93de9fd2b0e59b50fd92a4d50c1f8ab455d96bc2eb083267453a9709"
-  name = "github.com/asaskevich/govalidator"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "ccb8e960c48f04d6935e72476ae4a51028f9e22f"
-  version = "v9"
-
-[[projects]]
   digest = "1:20ac61f29dff8fde52e8928f2de03172f4df1fed1beb0399fa649b88a890274f"
   name = "github.com/aws/aws-sdk-go"
   packages = [
@@ -1623,7 +1615,7 @@
   version = "kubernetes-1.11.3"
 
 [[projects]]
-  digest = "1:004509a1d109aec0996f8ea494a216f5e74268469661689178ca06134c9d6f02"
+  digest = "1:b1d67a042544a528d86e37e7ace303dc74313d18c3aab360037db5b797ddde0b"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -1802,6 +1794,7 @@
     "util/integer",
     "util/jsonpath",
     "util/retry",
+    "util/workqueue",
   ]
   pruneopts = "UT"
   revision = "2cefa64ff137e128daeddbd1775cd775708a05bf"
@@ -2210,6 +2203,7 @@
     "google.golang.org/api/storage/v1",
     "gopkg.in/gcfg.v1",
     "gopkg.in/yaml.v2",
+    "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
     "k8s.io/api/rbac/v1beta1",
@@ -2237,7 +2231,7 @@
     "k8s.io/apimachinery/pkg/version",
     "k8s.io/apimachinery/pkg/watch",
     "k8s.io/apiserver/pkg/authentication/user",
-    "k8s.io/apiserver/pkg/endpoints/request",
+    "k8s.io/apiserver/pkg/endpoints/openapi",
     "k8s.io/apiserver/pkg/registry/generic",
     "k8s.io/apiserver/pkg/registry/generic/registry",
     "k8s.io/apiserver/pkg/registry/rest",
@@ -2249,16 +2243,23 @@
     "k8s.io/apiserver/pkg/util/logs",
     "k8s.io/client-go/discovery",
     "k8s.io/client-go/discovery/fake",
+    "k8s.io/client-go/informers",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/fake",
+    "k8s.io/client-go/kubernetes/scheme",
+    "k8s.io/client-go/kubernetes/typed/core/v1",
+    "k8s.io/client-go/listers/apps/v1",
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/testing",
+    "k8s.io/client-go/tools/cache",
     "k8s.io/client-go/tools/clientcmd",
     "k8s.io/client-go/tools/clientcmd/api",
     "k8s.io/client-go/tools/clientcmd/api/v1",
+    "k8s.io/client-go/tools/record",
     "k8s.io/client-go/util/flowcontrol",
     "k8s.io/client-go/util/homedir",
+    "k8s.io/client-go/util/workqueue",
     "k8s.io/code-generator/cmd/client-gen",
     "k8s.io/code-generator/cmd/conversion-gen",
     "k8s.io/code-generator/cmd/deepcopy-gen",
@@ -2277,6 +2278,7 @@
     "k8s.io/kubernetes/pkg/kubectl/genericclioptions/resource",
     "k8s.io/kubernetes/pkg/kubectl/util/i18n",
     "k8s.io/kubernetes/pkg/util/mount",
+    "k8s.io/kubernetes/pkg/util/nsenter",
     "k8s.io/utils/exec",
   ]
   solver-name = "gps-cdcl"
