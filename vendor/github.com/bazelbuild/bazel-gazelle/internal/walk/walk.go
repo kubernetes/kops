@@ -16,7 +16,6 @@ limitations under the License.
 package walk
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -90,7 +89,7 @@ func Walk(c *config.Config, cexts []config.Configurer, wf WalkFunc) {
 			return
 		}
 
-		f, err := loadBuildFile(dir, files, c.ValidBuildFileNames)
+		f, err := loadBuildFile(c, rel, dir, files)
 		if err != nil {
 			log.Print(err)
 			haveError = true
@@ -155,25 +154,22 @@ func shouldUpdateDir(rel string, updateRels []string) bool {
 	return false
 }
 
-func loadBuildFile(dir string, files []os.FileInfo, buildFileNames []string) (*rule.File, error) {
-	var f *rule.File
-	for _, base := range buildFileNames {
-		for _, fi := range files {
-			if fi.Name() != base || fi.IsDir() {
-				continue
-			}
-			if f != nil {
-				return f, fmt.Errorf("in directory %s, multiple Bazel files are present: %s, %s", dir, filepath.Base(f.Path), base)
-			}
-			var err error
-			f, err = rule.LoadFile(filepath.Join(dir, base))
-			if err != nil {
-				return nil, err
-			}
-			return f, nil
+func loadBuildFile(c *config.Config, pkg, dir string, files []os.FileInfo) (*rule.File, error) {
+	var err error
+	readDir := dir
+	readFiles := files
+	if c.ReadBuildFilesDir != "" {
+		readDir = filepath.Join(c.ReadBuildFilesDir, filepath.FromSlash(pkg))
+		readFiles, err = ioutil.ReadDir(readDir)
+		if err != nil {
+			return nil, err
 		}
 	}
-	return f, nil
+	path := rule.MatchBuildFileName(readDir, c.ValidBuildFileNames, readFiles)
+	if path == "" {
+		return nil, nil
+	}
+	return rule.LoadFile(path, pkg)
 }
 
 func configure(cexts []config.Configurer, knownDirectives map[string]bool, c *config.Config, rel string, f *rule.File) *config.Config {

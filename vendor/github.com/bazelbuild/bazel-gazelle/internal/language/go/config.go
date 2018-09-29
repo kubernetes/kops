@@ -216,6 +216,15 @@ func (_ *goLang) Configure(c *config.Config, rel string, f *rule.File) {
 	}
 
 	if f != nil {
+		setPrefix := func(prefix string) {
+			if err := checkPrefix(prefix); err != nil {
+				log.Print(err)
+				return
+			}
+			gc.prefix = prefix
+			gc.prefixSet = true
+			gc.prefixRel = rel
+		}
 		for _, d := range f.Directives {
 			switch d.Key {
 			case "build_tags":
@@ -229,35 +238,28 @@ func (_ *goLang) Configure(c *config.Config, rel string, f *rule.File) {
 				gc.importMapPrefix = d.Value
 				gc.importMapPrefixRel = rel
 			case "prefix":
-				if err := checkPrefix(d.Value); err != nil {
-					log.Print(err)
-					continue
-				}
-				gc.prefix = d.Value
-				gc.prefixSet = true
-				gc.prefixRel = rel
+				setPrefix(d.Value)
 			}
 		}
 		if !gc.prefixSet {
 			for _, r := range f.Rules {
-				if r.Kind() != "go_prefix" {
-					continue
+				switch r.Kind() {
+				case "go_prefix":
+					args := r.Args()
+					if len(args) != 1 {
+						continue
+					}
+					s, ok := args[0].(*bzl.StringExpr)
+					if !ok {
+						continue
+					}
+					setPrefix(s.Value)
+
+				case "gazelle":
+					if prefix := r.AttrString("prefix"); prefix != "" {
+						setPrefix(prefix)
+					}
 				}
-				args := r.Args()
-				if len(args) != 1 {
-					continue
-				}
-				s, ok := args[0].(*bzl.StringExpr)
-				if !ok {
-					continue
-				}
-				if err := checkPrefix(s.Value); err != nil {
-					log.Print(err)
-					continue
-				}
-				gc.prefix = s.Value
-				gc.prefixSet = true
-				break
 			}
 		}
 	}

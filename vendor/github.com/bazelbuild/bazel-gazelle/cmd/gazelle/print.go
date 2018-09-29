@@ -17,12 +17,9 @@ package main
 
 import (
 	"os"
-
-	"github.com/bazelbuild/bazel-gazelle/internal/config"
-	bzl "github.com/bazelbuild/buildtools/build"
 )
 
-func printFile(c *config.Config, f *bzl.File, _ string) error {
-	_, err := os.Stdout.Write(bzl.Format(f))
+func printFile(_ string, data []byte) error {
+	_, err := os.Stdout.Write(data)
 	return err
 }

@@ -6,7 +6,6 @@ go_library(
         "clientset.go",
         "cluster.go",
         "commonvfs.go",
-        "import_known_versions.go",
         "instancegroup.go",
         "utils.go",
     ],

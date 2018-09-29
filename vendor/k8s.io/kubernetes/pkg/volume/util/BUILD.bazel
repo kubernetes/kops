@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "atomic_writer.go",
+        "attach_limit.go",
         "device_util.go",
         "device_util_linux.go",
         "device_util_unsupported.go",
@@ -40,5 +41,6 @@ go_library(
         "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/volume:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/volume/util/types:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/volume/util/volumepathhandler:go_default_library",
     ],
 )

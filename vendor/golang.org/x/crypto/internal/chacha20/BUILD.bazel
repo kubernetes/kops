@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["chacha_generic.go"],
+    importmap = "k8s.io/kops/vendor/golang.org/x/crypto/internal/chacha20",
+    importpath = "golang.org/x/crypto/internal/chacha20",
+    visibility = ["//vendor/golang.org/x/crypto:__subpackages__"],
+)
