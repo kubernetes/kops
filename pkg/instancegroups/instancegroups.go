@@ -251,7 +251,7 @@ func (r *RollingUpdateInstanceGroup) ValidateClusterWithDuration(rollingUpdateDa
 		select {
 		case <-timeout:
 			// Got a timeout fail with a timeout error
-			return fmt.Errorf("cluster did not validate within a duation of %q", duration)
+			return fmt.Errorf("cluster did not validate within a duration of %q", duration)
 		case <-tick:
 			// Got a tick, validate cluster
 			if r.tryValidateCluster(rollingUpdateData, cluster, instanceGroupList, duration, tickDuration) {
