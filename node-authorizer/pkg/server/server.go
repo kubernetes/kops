@@ -37,7 +37,7 @@ import (
 
 const (
 	// Version is the server version
-	Version = "v0.0.1"
+	Version = "v0.0.4"
 	// the namespace to place the secrets
 	tokenNamespace = "kube-system"
 )
