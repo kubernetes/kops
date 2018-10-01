@@ -295,7 +295,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
   echo "master: The time is now $(date -R)!" | tee /root/output.txt
 
   --MIMEBOUNDARY--
-
 Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Properties.UserData: |
   Content-Type: multipart/mixed; boundary="MIMEBOUNDARY"
   MIME-Version: 1.0

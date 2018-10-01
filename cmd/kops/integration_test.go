@@ -645,22 +645,25 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 			actual[key] = extractedValue
 
 			// Strip carriage return as expectedValue is stored in a yaml string literal
-			// and golang will automatically strip CR from any string literal
+			// and yaml block quoting doesn't seem to support \r in a string
 			extractedValueTrimmed := strings.Replace(extractedValue, "\r", "", -1)
-			if expectedValue != extractedValueTrimmed {
-				if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
-					t.Errorf("cloudformation output differed from expected")
-					continue // Avoid Fatalf as we want to keep going and update all files
-				}
 
+			if expectedValue != extractedValueTrimmed {
 				diffString := diff.FormatDiff(expectedValue, extractedValueTrimmed)
 				t.Logf("diff for key %s:\n%s\n\n\n\n\n\n", key, diffString)
-				t.Fatalf("cloudformation output differed from expected. Test file: %s", path.Join(srcDir, expectedCfPath+".extracted.yaml"))
+				t.Errorf("cloudformation output differed from expected. Test file: %s", path.Join(srcDir, expectedCfPath+".extracted.yaml"))
 			}
 		}
 
 		if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
 			t.Logf("HACK_UPDATE_EXPECTED_IN_PLACE: writing expected output %s", fp)
+
+			// We replace the \r characters so that the yaml output (should) be block-quoted
+			// Literal quoting is sadly unreadable...
+			for k, v := range actual {
+				actual[k] = strings.Replace(v, "\r", "", -1)
+			}
+
 			b, err := yaml.Marshal(actual)
 			if err != nil {
 				t.Errorf("error serializing cloudformation output: %v", err)
