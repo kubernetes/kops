@@ -55,8 +55,8 @@ type NodeAuthorizer struct {
 // New creates and returns a node authorizer
 func New(config *Config, authorizer Authorizer) (*NodeAuthorizer, error) {
 	utils.Logger.Info("starting the node authorization service",
-		zap.String("listen", Version),
-		zap.String("version", config.Listen))
+		zap.String("listen", config.Listen),
+		zap.String("version", Version))
 
 	if err := config.IsValid(); err != nil {
 		return nil, fmt.Errorf("configuration error: %s", err)
