@@ -69,14 +69,13 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) ([]Secu
 		return nil, err
 	}
 
-	for _, nodeGroup := range nodeGroups {
-		suffix := nodeGroup.Suffix
+	for _, src := range nodeGroups {
 		// Allow full egress
 		{
 			t := &awstasks.SecurityGroupRule{
-				Name:          s(fmt.Sprintf("node-egress%s", suffix)),
+				Name:          s("node-egress" + src.Suffix),
 				Lifecycle:     b.Lifecycle,
-				SecurityGroup: nodeGroup.Task,
+				SecurityGroup: src.Task,
 				Egress:        fi.Bool(true),
 				CIDR:          s("0.0.0.0/0"),
 			}
@@ -84,12 +83,14 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) ([]Secu
 		}
 
 		// Nodes can talk to nodes
-		{
+		for _, dest := range nodeGroups {
+			suffix := JoinSuffixes(src, dest)
+
 			t := &awstasks.SecurityGroupRule{
-				Name:          s(fmt.Sprintf("all-node-to-node%s", suffix)),
+				Name:          s("all-node-to-node" + suffix),
 				Lifecycle:     b.Lifecycle,
-				SecurityGroup: nodeGroup.Task,
-				SourceGroup:   nodeGroup.Task,
+				SecurityGroup: dest.Task,
+				SourceGroup:   src.Task,
 			}
 			c.AddTask(t)
 		}
@@ -99,7 +100,7 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) ([]Secu
 			// Nodes can talk to masters
 			{
 				t := &awstasks.SecurityGroupRule{
-					Name:          s(fmt.Sprintf("all-nodes-to-master%s", suffix)),
+					Name:          s(fmt.Sprintf("all-nodes-to-master%s", src.Suffix)),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 					SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
@@ -352,14 +353,13 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeG
 		return nil, err
 	}
 
-	for _, masterGroup := range masterGroups {
-		masterSuffix := masterGroup.Suffix
+	for _, src := range masterGroups {
 		// Allow full egress
 		{
 			t := &awstasks.SecurityGroupRule{
-				Name:          s(fmt.Sprintf("master-egress%s", masterSuffix)),
+				Name:          s("master-egress" + src.Suffix),
 				Lifecycle:     b.Lifecycle,
-				SecurityGroup: masterGroup.Task,
+				SecurityGroup: src.Task,
 				Egress:        fi.Bool(true),
 				CIDR:          s("0.0.0.0/0"),
 			}
@@ -367,28 +367,29 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeG
 		}
 
 		// Masters can talk to masters
-		{
+		for _, dest := range masterGroups {
+			suffix := JoinSuffixes(src, dest)
+
 			t := &awstasks.SecurityGroupRule{
-				Name:          s(fmt.Sprintf("all-master-to-master%s", masterSuffix)),
+				Name:          s("all-master-to-master" + suffix),
 				Lifecycle:     b.Lifecycle,
-				SecurityGroup: masterGroup.Task,
-				SourceGroup:   masterGroup.Task,
+				SecurityGroup: dest.Task,
+				SourceGroup:   src.Task,
 			}
 			c.AddTask(t)
 		}
-		for _, nodeGroup := range nodeGroups {
-			nodeSuffix := masterSuffix + nodeGroup.Suffix
 
-			// Masters can talk to nodes
-			{
-				t := &awstasks.SecurityGroupRule{
-					Name:          s(fmt.Sprintf("all-master-to-node%s", nodeSuffix)),
-					Lifecycle:     b.Lifecycle,
-					SecurityGroup: nodeGroup.Task,
-					SourceGroup:   masterGroup.Task,
-				}
-				c.AddTask(t)
+		// Masters can talk to nodes
+		for _, dest := range nodeGroups {
+			suffix := JoinSuffixes(src, dest)
+
+			t := &awstasks.SecurityGroupRule{
+				Name:          s("all-master-to-node" + suffix),
+				Lifecycle:     b.Lifecycle,
+				SecurityGroup: dest.Task,
+				SourceGroup:   src.Task,
 			}
+			c.AddTask(t)
 		}
 	}
 
@@ -508,4 +509,25 @@ func (b *KopsModelContext) createSecurityGroups(role kops.InstanceGroupRole, lif
 	}
 
 	return groups, nil
+}
+
+// JoinSuffixes constructs a suffix for traffic from the src to the dest group
+// We have to avoid ambiguity in the case where one has a suffix and the other does not,
+// where normally l.Suffix + r.Suffix would equal r.Suffix + l.Suffix
+func JoinSuffixes(src SecurityGroupInfo, dest SecurityGroupInfo) string {
+	if src.Suffix == "" && dest.Suffix == "" {
+		return ""
+	}
+
+	s := src.Suffix
+	if s == "" {
+		s = "-default"
+	}
+
+	d := dest.Suffix
+	if d == "" {
+		d = "-default"
+	}
+
+	return s + d
 }

@@ -560,7 +560,34 @@ resource "aws_security_group_rule" "all-master-to-master" {
   protocol                 = "-1"
 }
 
-resource "aws_security_group_rule" "all-master-to-master-sg-master-1a" {
+resource "aws_security_group_rule" "all-master-to-master-default-sg-master-1a" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1a"
+  source_security_group_id = "${aws_security_group.masters-existingsg-example-com.id}"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+}
+
+resource "aws_security_group_rule" "all-master-to-master-default-sg-master-1b" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1b"
+  source_security_group_id = "${aws_security_group.masters-existingsg-example-com.id}"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+}
+
+resource "aws_security_group_rule" "all-master-to-master-sg-master-1a-default" {
+  type                     = "ingress"
+  security_group_id        = "${aws_security_group.masters-existingsg-example-com.id}"
+  source_security_group_id = "sg-master-1a"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+}
+
+resource "aws_security_group_rule" "all-master-to-master-sg-master-1a-sg-master-1a" {
   type                     = "ingress"
   security_group_id        = "sg-master-1a"
   source_security_group_id = "sg-master-1a"
@@ -569,10 +596,46 @@ resource "aws_security_group_rule" "all-master-to-master-sg-master-1a" {
   protocol                 = "-1"
 }
 
-resource "aws_security_group_rule" "all-master-to-master-sg-master-1b" {
+resource "aws_security_group_rule" "all-master-to-master-sg-master-1a-sg-master-1b" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1b"
+  source_security_group_id = "sg-master-1a"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+}
+
+resource "aws_security_group_rule" "all-master-to-master-sg-master-1b-default" {
+  type                     = "ingress"
+  security_group_id        = "${aws_security_group.masters-existingsg-example-com.id}"
+  source_security_group_id = "sg-master-1b"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+}
+
+resource "aws_security_group_rule" "all-master-to-master-sg-master-1b-sg-master-1a" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1a"
+  source_security_group_id = "sg-master-1b"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+}
+
+resource "aws_security_group_rule" "all-master-to-master-sg-master-1b-sg-master-1b" {
   type                     = "ingress"
   security_group_id        = "sg-master-1b"
   source_security_group_id = "sg-master-1b"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+}
+
+resource "aws_security_group_rule" "all-master-to-node-default-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-nodes"
+  source_security_group_id = "${aws_security_group.masters-existingsg-example-com.id}"
   from_port                = 0
   to_port                  = 0
   protocol                 = "-1"
@@ -596,16 +659,7 @@ resource "aws_security_group_rule" "all-master-to-node-sg-master-1b-sg-nodes" {
   protocol                 = "-1"
 }
 
-resource "aws_security_group_rule" "all-master-to-node-sg-nodes" {
-  type                     = "ingress"
-  security_group_id        = "sg-nodes"
-  source_security_group_id = "${aws_security_group.masters-existingsg-example-com.id}"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-}
-
-resource "aws_security_group_rule" "all-node-to-node-sg-nodes" {
+resource "aws_security_group_rule" "all-node-to-node-sg-nodes-sg-nodes" {
   type                     = "ingress"
   security_group_id        = "sg-nodes"
   source_security_group_id = "sg-nodes"
