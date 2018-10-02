@@ -95,23 +95,13 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) ([]Secu
 			c.AddTask(t)
 		}
 
-		// Pods running in Nodes could need to reach pods in master/s
-		if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-			// Nodes can talk to masters
-			{
-				t := &awstasks.SecurityGroupRule{
-					Name:          s(fmt.Sprintf("all-nodes-to-master%s", src.Suffix)),
-					Lifecycle:     b.Lifecycle,
-					SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-					SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-				}
-				c.AddTask(t)
-			}
-		}
 	}
 
 	return nodeGroups, nil
 }
+
+/*
+This is dead code, but hopefully one day we can open specific ports only, for better security
 
 func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBuilderContext) {
 	// TODO: We need to remove the ALL rule
@@ -226,6 +216,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 		c.AddTask(t)
 	}
 }
+*/
 
 func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBuilderContext, nodeGroups []SecurityGroupInfo, masterGroups []SecurityGroupInfo) {
 	type portRange struct {
@@ -289,20 +280,12 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 	}
 
 	for _, masterGroup := range masterGroups {
-		masterSuffix := masterGroup.Suffix
-		var nodeSuffix string
-
 		for _, nodeGroup := range nodeGroups {
-
-			if masterSuffix == "" && nodeGroup.Suffix == "" {
-				nodeSuffix = ""
-			} else {
-				nodeSuffix = fmt.Sprintf("%s-%s", masterSuffix, nodeGroup.Name)
-			}
+			suffix := JoinSuffixes(nodeGroup, masterGroup)
 
 			for _, r := range udpRanges {
 				t := &awstasks.SecurityGroupRule{
-					Name:          s(fmt.Sprintf("node-to-master-udp-%d-%d%s", r.From, r.To, nodeSuffix)),
+					Name:          s(fmt.Sprintf("node-to-master-udp-%d-%d%s", r.From, r.To, suffix)),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: masterGroup.Task,
 					SourceGroup:   nodeGroup.Task,
@@ -314,7 +297,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 			}
 			for _, r := range tcpRanges {
 				t := &awstasks.SecurityGroupRule{
-					Name:          s(fmt.Sprintf("node-to-master-tcp-%d-%d%s", r.From, r.To, nodeSuffix)),
+					Name:          s(fmt.Sprintf("node-to-master-tcp-%d-%d%s", r.From, r.To, suffix)),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: masterGroup.Task,
 					SourceGroup:   nodeGroup.Task,
@@ -335,7 +318,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 				}
 
 				t := &awstasks.SecurityGroupRule{
-					Name:          s(fmt.Sprintf("node-to-master-protocol-%s%s", name, nodeSuffix)),
+					Name:          s(fmt.Sprintf("node-to-master-protocol-%s%s", name, suffix)),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: masterGroup.Task,
 					SourceGroup:   nodeGroup.Task,
@@ -345,6 +328,25 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 			}
 		}
 	}
+
+	// For AmazonVPC networking, pods running in Nodes could need to reach pods in master/s
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
+		// Nodes can talk to masters
+		for _, src := range nodeGroups {
+			for _, dest := range masterGroups {
+				suffix := JoinSuffixes(src, dest)
+
+				t := &awstasks.SecurityGroupRule{
+					Name:          s("all-nodes-to-master" + suffix),
+					Lifecycle:     b.Lifecycle,
+					SecurityGroup: dest.Task,
+					SourceGroup:   src.Task,
+				}
+				c.AddTask(t)
+			}
+		}
+	}
+
 }
 
 func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeGroups []SecurityGroupInfo) ([]SecurityGroupInfo, error) {
