@@ -32,7 +32,7 @@ type EtcdOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &EtcdOptionsBuilder{}
 
-const DefaultEtcdVersion = "2.2.1"
+const DefaultEtcdVersion = "3.2.18"
 
 // BuildOptions is responsible for filling in the defaults for the etcd cluster model
 func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {

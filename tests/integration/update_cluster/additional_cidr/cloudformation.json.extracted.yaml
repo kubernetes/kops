@@ -152,11 +152,11 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
   encryptionConfig: null
   etcdClusters:
     events:
-      image: gcr.io/google_containers/etcd:2.2.1
-      version: 2.2.1
+      image: gcr.io/google_containers/etcd:3.2.18
+      version: 3.2.18
     main:
-      image: gcr.io/google_containers/etcd:2.2.1
-      version: 2.2.1
+      image: gcr.io/google_containers/etcd:3.2.18
+      version: 3.2.18
   kubeAPIServer:
     address: 127.0.0.1
     admissionControl:
@@ -179,7 +179,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
     logLevel: 2
     securePort: 443
     serviceClusterIPRange: 100.64.0.0/13
-    storageBackend: etcd2
+    storageBackend: etcd3
   kubeControllerManager:
     allocateNodeCIDRs: true
     attachDetachReconcileSyncPeriod: 1m0s

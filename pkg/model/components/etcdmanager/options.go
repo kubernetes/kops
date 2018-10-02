@@ -36,7 +36,7 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	for _, etcdCluster := range clusterSpec.EtcdClusters {
 		if etcdCluster.Version == "" {
-			etcdCluster.Version = "2.2.1"
+			etcdCluster.Version = "3.2.18"
 		}
 
 		if etcdCluster.Manager != nil {

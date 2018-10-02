@@ -59,7 +59,7 @@ func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 		StdOut: out,
 		StdErr: err,
 	}
-	o.RecommendedOptions.Etcd.StorageConfig.Type = storagebackend.StorageTypeETCD2
+	o.RecommendedOptions.Etcd.StorageConfig.Type = storagebackend.StorageTypeETCD3
 	o.RecommendedOptions.Etcd.StorageConfig.Codec = apiserver.Codecs.LegacyCodec(v1alpha2.SchemeGroupVersion)
 	//o.SecureServing.ServingOptions.BindPort = 443
 

@@ -165,7 +165,7 @@ func TestPopulateCluster_StorageDefault(t *testing.T) {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
 
-	if fi.StringValue(full.Spec.KubeAPIServer.StorageBackend) != "etcd2" {
+	if fi.StringValue(full.Spec.KubeAPIServer.StorageBackend) != "etcd3" {
 		t.Fatalf("Unexpected StorageBackend: %v", full.Spec.KubeAPIServer.StorageBackend)
 	}
 }
