@@ -110,7 +110,8 @@ spec:
   role: Master
   subnets:
   - us-test-1c
-  securityGroupOverride: sg-master-1c
+  # We don't override the default for this master - testing mixing!
+  #securityGroupOverride: sg-master-1c
 
 ---
 
