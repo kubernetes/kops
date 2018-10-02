@@ -411,7 +411,7 @@ type SecurityGroupInfo struct {
 func (b *KopsModelContext) createSecurityGroups(role kops.InstanceGroupRole, lifecycle *fi.Lifecycle, c *fi.ModelBuilderContext) ([]SecurityGroupInfo, error) {
 	var baseGroup *awstasks.SecurityGroup
 	if role == kops.InstanceGroupRoleMaster {
-		name := "masters." + b.ClusterName()
+		name := b.SecurityGroupName(role)
 		baseGroup = &awstasks.SecurityGroup{
 			Name:        s(name),
 			Lifecycle:   lifecycle,
@@ -431,9 +431,9 @@ func (b *KopsModelContext) createSecurityGroups(role kops.InstanceGroupRole, lif
 				// TODO: Protocol 4 for calico
 			},
 		}
-		baseGroup.Tags = b.CloudTags(*baseGroup.Name, false)
+		baseGroup.Tags = b.CloudTags(name, false)
 	} else if role == kops.InstanceGroupRoleNode {
-		name := "nodes." + b.ClusterName()
+		name := b.SecurityGroupName(role)
 		baseGroup = &awstasks.SecurityGroup{
 			Name:             s(name),
 			Lifecycle:        lifecycle,
@@ -441,23 +441,17 @@ func (b *KopsModelContext) createSecurityGroups(role kops.InstanceGroupRole, lif
 			Description:      s("Security group for nodes"),
 			RemoveExtraRules: []string{"port=22"},
 		}
-		baseGroup.Tags = b.CloudTags(*baseGroup.Name, false)
+		baseGroup.Tags = b.CloudTags(name, false)
 	} else if role == kops.InstanceGroupRoleBastion {
-		return nil, fmt.Errorf("bastion are not supported yet with instancegroup securitygroup")
-		/*
-			// TODO use this instead of the hardcoded names??
-			// b.SecurityGroupName(kops.InstanceGroupRoleBastion))
-			// TODO implement
-			name := "bastion." + b.ClusterName()
-			baseGroup = &awstasks.SecurityGroup{
-				Name:             s(name),
-				Lifecycle:        lifecycle,
-				VPC:              b.LinkToVPC(),
-				Description:      s("Security group for bastion"),
-				RemoveExtraRules: []string{"port=22"},
-			}
-			baseGroup.Tags = b.CloudTags(*baseGroup.Name, false)
-		*/
+		name := b.SecurityGroupName(role)
+		baseGroup = &awstasks.SecurityGroup{
+			Name:             s(name),
+			Lifecycle:        lifecycle,
+			VPC:              b.LinkToVPC(),
+			Description:      s("Security group for bastion"),
+			RemoveExtraRules: []string{"port=22"},
+		}
+		baseGroup.Tags = b.CloudTags(name, false)
 	} else {
 		return nil, fmt.Errorf("not a supported security group type")
 	}
