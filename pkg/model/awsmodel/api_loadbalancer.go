@@ -244,10 +244,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				SecurityGroup: masterGroup,
 				SourceGroup:   lbSG,
-				// SourceGroup: sgLink,
-				FromPort: i64(443),
-				ToPort:   i64(443),
-				Protocol: s("tcp"),
+				FromPort:      i64(443),
+				ToPort:        i64(443),
+				Protocol:      s("tcp"),
 			}
 			c.AddTask(t)
 		}
