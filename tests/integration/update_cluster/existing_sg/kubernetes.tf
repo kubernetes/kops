@@ -1,11 +1,11 @@
 locals = {
   cluster_name                 = "existingsg.example.com"
   master_autoscaling_group_ids = ["${aws_autoscaling_group.master-us-test-1a-masters-existingsg-example-com.id}", "${aws_autoscaling_group.master-us-test-1b-masters-existingsg-example-com.id}", "${aws_autoscaling_group.master-us-test-1c-masters-existingsg-example-com.id}"]
-  master_security_group_ids    = ["sg-1234dcba"]
+  master_security_group_ids    = ["sg-master-1a", "sg-master-1b", "sg-master-1c"]
   masters_role_arn             = "${aws_iam_role.masters-existingsg-example-com.arn}"
   masters_role_name            = "${aws_iam_role.masters-existingsg-example-com.name}"
   node_autoscaling_group_ids   = ["${aws_autoscaling_group.nodes-existingsg-example-com.id}"]
-  node_security_group_ids      = ["sg-1234abcd"]
+  node_security_group_ids      = ["sg-nodes"]
   node_subnet_ids              = ["${aws_subnet.us-test-1a-existingsg-example-com.id}"]
   nodes_role_arn               = "${aws_iam_role.nodes-existingsg-example-com.arn}"
   nodes_role_name              = "${aws_iam_role.nodes-existingsg-example-com.name}"
@@ -27,7 +27,7 @@ output "master_autoscaling_group_ids" {
 }
 
 output "master_security_group_ids" {
-  value = ["sg-1234dcba"]
+  value = ["sg-master-1a", "sg-master-1b", "sg-master-1c"]
 }
 
 output "masters_role_arn" {
@@ -43,7 +43,7 @@ output "node_autoscaling_group_ids" {
 }
 
 output "node_security_group_ids" {
-  value = ["sg-1234abcd"]
+  value = ["sg-nodes"]
 }
 
 output "node_subnet_ids" {
@@ -321,7 +321,7 @@ resource "aws_elb" "api-existingsg-example-com" {
     lb_protocol       = "TCP"
   }
 
-  security_groups = ["sg-abcd1234"]
+  security_groups = ["sg-elb"]
   subnets         = ["${aws_subnet.us-test-1a-existingsg-example-com.id}", "${aws_subnet.us-test-1b-existingsg-example-com.id}", "${aws_subnet.us-test-1c-existingsg-example-com.id}"]
 
   health_check = {
@@ -393,7 +393,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-existingsg-exampl
   instance_type               = "m3.medium"
   key_name                    = "${aws_key_pair.kubernetes-existingsg-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile        = "${aws_iam_instance_profile.masters-existingsg-example-com.id}"
-  security_groups             = ["sg-1234dcba"]
+  security_groups             = ["sg-master-1a"]
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.existingsg.example.com_user_data")}"
 
@@ -421,7 +421,7 @@ resource "aws_launch_configuration" "master-us-test-1b-masters-existingsg-exampl
   instance_type               = "m3.medium"
   key_name                    = "${aws_key_pair.kubernetes-existingsg-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile        = "${aws_iam_instance_profile.masters-existingsg-example-com.id}"
-  security_groups             = ["sg-1234dcba"]
+  security_groups             = ["sg-master-1b"]
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1b.masters.existingsg.example.com_user_data")}"
 
@@ -449,7 +449,7 @@ resource "aws_launch_configuration" "master-us-test-1c-masters-existingsg-exampl
   instance_type               = "m3.medium"
   key_name                    = "${aws_key_pair.kubernetes-existingsg-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile        = "${aws_iam_instance_profile.masters-existingsg-example-com.id}"
-  security_groups             = ["sg-1234dcba"]
+  security_groups             = ["sg-master-1c"]
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1c.masters.existingsg.example.com_user_data")}"
 
@@ -477,7 +477,7 @@ resource "aws_launch_configuration" "nodes-existingsg-example-com" {
   instance_type               = "t2.medium"
   key_name                    = "${aws_key_pair.kubernetes-existingsg-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile        = "${aws_iam_instance_profile.nodes-existingsg-example-com.id}"
-  security_groups             = ["sg-1234abcd"]
+  security_groups             = ["sg-nodes"]
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_nodes.existingsg.example.com_user_data")}"
 
@@ -537,6 +537,294 @@ resource "aws_route_table_association" "us-test-1b-existingsg-example-com" {
 resource "aws_route_table_association" "us-test-1c-existingsg-example-com" {
   subnet_id      = "${aws_subnet.us-test-1c-existingsg-example-com.id}"
   route_table_id = "${aws_route_table.existingsg-example-com.id}"
+}
+
+resource "aws_security_group_rule" "all-master-to-master-sg-master-1a" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1a"
+  source_security_group_id = "sg-master-1a"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+}
+
+resource "aws_security_group_rule" "all-master-to-master-sg-master-1b" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1b"
+  source_security_group_id = "sg-master-1b"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+}
+
+resource "aws_security_group_rule" "all-master-to-master-sg-master-1c" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1c"
+  source_security_group_id = "sg-master-1c"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+}
+
+resource "aws_security_group_rule" "all-master-to-nodesg-master-1a-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-nodes"
+  source_security_group_id = "sg-master-1a"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+}
+
+resource "aws_security_group_rule" "all-master-to-nodesg-master-1b-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-nodes"
+  source_security_group_id = "sg-master-1b"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+}
+
+resource "aws_security_group_rule" "all-master-to-nodesg-master-1c-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-nodes"
+  source_security_group_id = "sg-master-1c"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+}
+
+resource "aws_security_group_rule" "all-node-to-node" {
+  type                     = "ingress"
+  security_group_id        = "sg-nodes"
+  source_security_group_id = "sg-nodes"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+}
+
+resource "aws_security_group_rule" "api-elb-egress" {
+  type              = "egress"
+  security_group_id = "sg-elb"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "https-api-elb-0-0-0-0--0" {
+  type              = "ingress"
+  security_group_id = "sg-elb"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "https-elb-to-master-sg-master-1a" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1a"
+  source_security_group_id = "sg-elb"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "https-elb-to-master-sg-master-1b" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1b"
+  source_security_group_id = "sg-elb"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "https-elb-to-master-sg-master-1c" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1c"
+  source_security_group_id = "sg-elb"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "master-egress-sg-master-1a" {
+  type              = "egress"
+  security_group_id = "sg-master-1a"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "master-egress-sg-master-1b" {
+  type              = "egress"
+  security_group_id = "sg-master-1b"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "master-egress-sg-master-1c" {
+  type              = "egress"
+  security_group_id = "sg-master-1c"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "node-egress" {
+  type              = "egress"
+  security_group_id = "sg-nodes"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-1-2379-sg-master-1a-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1a"
+  source_security_group_id = "sg-nodes"
+  from_port                = 1
+  to_port                  = 2379
+  protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-1-2379-sg-master-1b-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1b"
+  source_security_group_id = "sg-nodes"
+  from_port                = 1
+  to_port                  = 2379
+  protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-1-2379-sg-master-1c-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1c"
+  source_security_group_id = "sg-nodes"
+  from_port                = 1
+  to_port                  = 2379
+  protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-2382-4000-sg-master-1a-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1a"
+  source_security_group_id = "sg-nodes"
+  from_port                = 2382
+  to_port                  = 4000
+  protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-2382-4000-sg-master-1b-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1b"
+  source_security_group_id = "sg-nodes"
+  from_port                = 2382
+  to_port                  = 4000
+  protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-2382-4000-sg-master-1c-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1c"
+  source_security_group_id = "sg-nodes"
+  from_port                = 2382
+  to_port                  = 4000
+  protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-4003-65535-sg-master-1a-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1a"
+  source_security_group_id = "sg-nodes"
+  from_port                = 4003
+  to_port                  = 65535
+  protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-4003-65535-sg-master-1b-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1b"
+  source_security_group_id = "sg-nodes"
+  from_port                = 4003
+  to_port                  = 65535
+  protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-4003-65535-sg-master-1c-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1c"
+  source_security_group_id = "sg-nodes"
+  from_port                = 4003
+  to_port                  = 65535
+  protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-udp-1-65535-sg-master-1a-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1a"
+  source_security_group_id = "sg-nodes"
+  from_port                = 1
+  to_port                  = 65535
+  protocol                 = "udp"
+}
+
+resource "aws_security_group_rule" "node-to-master-udp-1-65535-sg-master-1b-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1b"
+  source_security_group_id = "sg-nodes"
+  from_port                = 1
+  to_port                  = 65535
+  protocol                 = "udp"
+}
+
+resource "aws_security_group_rule" "node-to-master-udp-1-65535-sg-master-1c-sg-nodes" {
+  type                     = "ingress"
+  security_group_id        = "sg-master-1c"
+  source_security_group_id = "sg-nodes"
+  from_port                = 1
+  to_port                  = 65535
+  protocol                 = "udp"
+}
+
+resource "aws_security_group_rule" "ssh-external-to-master-0-0-0-0--0-sg-master-1a" {
+  type              = "ingress"
+  security_group_id = "sg-master-1a"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "ssh-external-to-master-0-0-0-0--0-sg-master-1b" {
+  type              = "ingress"
+  security_group_id = "sg-master-1b"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "ssh-external-to-master-0-0-0-0--0-sg-master-1c" {
+  type              = "ingress"
+  security_group_id = "sg-master-1c"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "ssh-external-to-node-0-0-0-0--0" {
+  type              = "ingress"
+  security_group_id = "sg-nodes"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
 }
 
 resource "aws_subnet" "us-test-1a-existingsg-example-com" {
