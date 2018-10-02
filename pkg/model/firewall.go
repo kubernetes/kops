@@ -461,6 +461,8 @@ func (b *KopsModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Sec
 
 	var groups []SecurityGroupInfo
 
+	done := make(map[string]bool)
+
 	// Build groups that specify a SecurityGroupOverride
 	allOverrides := true
 	for _, ig := range b.InstanceGroups {
@@ -474,6 +476,13 @@ func (b *KopsModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Sec
 		}
 
 		name := fi.StringValue(ig.Spec.SecurityGroupOverride)
+
+		// De-duplicate security groups
+		if done[name] {
+			continue
+		}
+		done[name] = true
+
 		t := &awstasks.SecurityGroup{
 			Name:        ig.Spec.SecurityGroupOverride,
 			ID:          ig.Spec.SecurityGroupOverride,
