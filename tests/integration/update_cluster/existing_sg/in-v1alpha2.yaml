@@ -6,7 +6,7 @@ metadata:
 spec:
   api:
     loadBalancer:
-      SecurityGroupOverride: sg-abcd1234
+      securityGroupOverride: sg-abcd1234
   kubernetesApiAccess:
   - 0.0.0.0/0
   channel: stable
@@ -72,7 +72,7 @@ spec:
   role: Master
   subnets:
   - us-test-1a
-  SecurityGroupOverride: sg-1234dcba
+  securityGroupOverride: sg-1234dcba
 
 ---
 
@@ -91,7 +91,7 @@ spec:
   role: Master
   subnets:
   - us-test-1b
-  SecurityGroupOverride: sg-1234dcba
+  securityGroupOverride: sg-1234dcba
 
 ---
 
@@ -110,7 +110,7 @@ spec:
   role: Master
   subnets:
   - us-test-1c
-  SecurityGroupOverride: sg-1234dcba
+  securityGroupOverride: sg-1234dcba
 
 ---
 
@@ -130,5 +130,5 @@ spec:
   role: Node
   subnets:
   - us-test-1a
-  SecurityGroupOverride: sg-1234abcd
+  securityGroupOverride: sg-1234abcd
 
