@@ -236,13 +236,13 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Allow HTTPS to the master instances from the ELB
 	{
-		for masterGroupName, masterGroup := range masterGroups {
-			suffix := GetGroupSuffix(masterGroupName, masterGroups)
+		for _, masterGroup := range masterGroups {
+			suffix := masterGroup.Suffix
 			t := &awstasks.SecurityGroupRule{
 				Name:      s(fmt.Sprintf("https-elb-to-master%s", suffix)),
 				Lifecycle: b.SecurityLifecycle,
 
-				SecurityGroup: masterGroup,
+				SecurityGroup: masterGroup.Task,
 				SourceGroup:   lbSG,
 				FromPort:      i64(443),
 				ToPort:        i64(443),
@@ -342,14 +342,4 @@ func (b *APILoadBalancerBuilder) chooseBestSubnetForELB(zone string, subnets []*
 	}
 
 	return scoredSubnets[0].subnet
-}
-
-// GetGroupSuffix returns the name of the security groups suffix.
-func GetGroupSuffix(name string, groups map[string]*awstasks.SecurityGroup) string {
-	if len(groups) != 1 {
-		glog.V(8).Infof("adding group suffix: %q", name)
-		return "-" + name
-	}
-
-	return ""
 }
