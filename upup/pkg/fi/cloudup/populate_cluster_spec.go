@@ -294,8 +294,8 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		{
 			// Note: DefaultOptionsBuilder comes first
 			codeModels = append(codeModels, &components.DefaultsOptionsBuilder{Context: optionsContext})
-			codeModels = append(codeModels, &components.EtcdOptionsBuilder{Context: optionsContext})
-			codeModels = append(codeModels, &etcdmanager.EtcdManagerOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.EtcdOptionsBuilder{OptionsContext: optionsContext})
+			codeModels = append(codeModels, &etcdmanager.EtcdManagerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &nodeauthorizer.OptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.DockerOptionsBuilder{OptionsContext: optionsContext})

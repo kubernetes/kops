@@ -36,7 +36,7 @@ import (
 
 // ValidateCluster is responsible for checking the validity of the Cluster spec
 func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
-	fieldSpec := field.NewPath("Spec")
+	fieldSpec := field.NewPath("spec")
 	var err error
 
 	// kubernetesRelease is the version with only major & minor fields
@@ -573,7 +573,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 			return field.Required(fieldEtcdClusters, "")
 		}
 		for i, x := range c.Spec.EtcdClusters {
-			if err := validateEtcdClusterSpec(x, fieldEtcdClusters.Index(i)); err != nil {
+			if err := validateEtcdClusterSpecLegacy(x, fieldEtcdClusters.Index(i)); err != nil {
 				return err
 			}
 		}
@@ -633,8 +633,8 @@ func validateSubnetCIDR(networkCIDR *net.IPNet, additionalNetworkCIDRs []*net.IP
 	return false
 }
 
-// validateEtcdClusterSpec is responsible for validating the etcd cluster spec
-func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec, fieldPath *field.Path) *field.Error {
+// validateEtcdClusterSpecLegacy is responsible for validating the etcd cluster spec
+func validateEtcdClusterSpecLegacy(spec *kops.EtcdClusterSpec, fieldPath *field.Path) *field.Error {
 	if spec.Name == "" {
 		return field.Required(fieldPath.Child("Name"), "EtcdCluster did not have name")
 	}
@@ -697,7 +697,7 @@ func validateEtcdVersion(spec *kops.EtcdClusterSpec, fieldPath *field.Path, mini
 
 	version := spec.Version
 	if spec.Version == "" {
-		version = components.DefaultEtcdVersion
+		version = components.DefaultEtcd2Version
 	}
 
 	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))

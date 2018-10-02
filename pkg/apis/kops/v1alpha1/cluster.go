@@ -360,10 +360,21 @@ type ExternalDNSConfig struct {
 	WatchNamespace string `json:"watchNamespace,omitempty"`
 }
 
+// EtcdProviderType describes etcd cluster provisioning types (Standalone, Manager)
+type EtcdProviderType string
+
+const (
+	EtcdProviderTypeManager EtcdProviderType = "Manager"
+	EtcdProviderTypeLegacy  EtcdProviderType = "Legacy"
+)
+
 // EtcdClusterSpec is the etcd cluster specification
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)
 	Name string `json:"name,omitempty"`
+	// Provider is the provider used to run etcd: standalone, manager.
+	// We default to manager for kubernetes 1.11 or if the manager is configured; otherwise standalone.
+	Provider EtcdProviderType `json:"provider,omitempty"`
 	// Members stores the configurations for each member of the cluster (including the data volume)
 	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
 	// EnableTLSAuth indicates client and peer TLS auth should be enforced
