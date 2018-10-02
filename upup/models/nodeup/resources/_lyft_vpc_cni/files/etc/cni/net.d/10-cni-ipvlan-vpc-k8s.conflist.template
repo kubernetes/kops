@@ -6,6 +6,7 @@
 	    "cniVersion": "0.3.1",
 	    "type": "cni-ipvlan-vpc-k8s-ipam",
 	    "interfaceIndex": 1,
+		"skipDeallocation" : true,
 	    "subnetTags":  {{ SubnetTags }},
 	    "secGroupIds": {{ NodeSecurityGroups }}
 	},
