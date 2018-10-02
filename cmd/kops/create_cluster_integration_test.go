@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 	"testing"
@@ -254,12 +255,27 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 
 	actualYAML := strings.Join(yamlAll, "\n\n---\n\n")
 	if actualYAML != expectedYAML {
+		p := path.Join(srcDir, expectedClusterPath)
+
+		if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
+			t.Logf("HACK_UPDATE_EXPECTED_IN_PLACE: writing expected output %s", p)
+
+			// Format nicely - keep git happy
+			s := actualYAML
+			s = strings.TrimSpace(s)
+			s = s + "\n"
+
+			if err := ioutil.WriteFile(p, []byte(s), 0644); err != nil {
+				t.Errorf("error writing expected output %s: %v", p, err)
+			}
+		}
+
 		glog.Infof("Actual YAML:\n%s\n", actualYAML)
 
 		diffString := diff.FormatDiff(expectedYAML, actualYAML)
 		t.Logf("diff:\n%s\n", diffString)
 
-		t.Fatalf("YAML differed from expected (%s)", path.Join(srcDir, expectedClusterPath))
+		t.Errorf("YAML differed from expected (%s)", p)
 	}
 
 }

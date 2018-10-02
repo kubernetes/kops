@@ -24,15 +24,19 @@ go_library(
         "//upup/pkg/fi/fitasks:go_default_library",
         "//upup/pkg/fi/loader:go_default_library",
         "//util/pkg/exec:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/yaml:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes/scheme:go_default_library",
     ],
 )
 
 go_test(
     name = "go_default_test",
     srcs = ["model_test.go"],
-    data = glob(["tests/**"]),  #keep
+    data = glob(["tests/**"]),
     embed = [":go_default_library"],
     deps = [
         "//pkg/assets:go_default_library",
