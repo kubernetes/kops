@@ -566,7 +566,7 @@ resource "aws_security_group_rule" "all-master-to-master-sg-master-1c" {
   protocol                 = "-1"
 }
 
-resource "aws_security_group_rule" "all-master-to-nodesg-master-1a-sg-nodes" {
+resource "aws_security_group_rule" "all-master-to-node-sg-master-1a-sg-nodes" {
   type                     = "ingress"
   security_group_id        = "sg-nodes"
   source_security_group_id = "sg-master-1a"
@@ -575,7 +575,7 @@ resource "aws_security_group_rule" "all-master-to-nodesg-master-1a-sg-nodes" {
   protocol                 = "-1"
 }
 
-resource "aws_security_group_rule" "all-master-to-nodesg-master-1b-sg-nodes" {
+resource "aws_security_group_rule" "all-master-to-node-sg-master-1b-sg-nodes" {
   type                     = "ingress"
   security_group_id        = "sg-nodes"
   source_security_group_id = "sg-master-1b"
@@ -584,7 +584,7 @@ resource "aws_security_group_rule" "all-master-to-nodesg-master-1b-sg-nodes" {
   protocol                 = "-1"
 }
 
-resource "aws_security_group_rule" "all-master-to-nodesg-master-1c-sg-nodes" {
+resource "aws_security_group_rule" "all-master-to-node-sg-master-1c-sg-nodes" {
   type                     = "ingress"
   security_group_id        = "sg-nodes"
   source_security_group_id = "sg-master-1c"
@@ -593,7 +593,7 @@ resource "aws_security_group_rule" "all-master-to-nodesg-master-1c-sg-nodes" {
   protocol                 = "-1"
 }
 
-resource "aws_security_group_rule" "all-node-to-node" {
+resource "aws_security_group_rule" "all-node-to-node-sg-nodes" {
   type                     = "ingress"
   security_group_id        = "sg-nodes"
   source_security_group_id = "sg-nodes"
@@ -674,7 +674,7 @@ resource "aws_security_group_rule" "master-egress-sg-master-1c" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "node-egress" {
+resource "aws_security_group_rule" "node-egress-sg-nodes" {
   type              = "egress"
   security_group_id = "sg-nodes"
   from_port         = 0
@@ -818,7 +818,7 @@ resource "aws_security_group_rule" "ssh-external-to-master-0-0-0-0--0-sg-master-
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "ssh-external-to-node-0-0-0-0--0" {
+resource "aws_security_group_rule" "ssh-external-to-node-0-0-0-0--0-sg-nodes" {
   type              = "ingress"
   security_group_id = "sg-nodes"
   from_port         = 22
