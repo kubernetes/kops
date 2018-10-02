@@ -64,9 +64,14 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) ([]SecurityGroupInfo, error) {
 
-	nodeGroups, err := b.createSecurityGroups(kops.InstanceGroupRoleNode, b.Lifecycle, c)
+	nodeGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleNode)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, group := range nodeGroups {
+		group.Task.Lifecycle = b.Lifecycle
+		c.AddTask(group.Task)
 	}
 
 	for _, src := range nodeGroups {
@@ -350,9 +355,14 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 }
 
 func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeGroups []SecurityGroupInfo) ([]SecurityGroupInfo, error) {
-	masterGroups, err := b.createSecurityGroups(kops.InstanceGroupRoleMaster, b.Lifecycle, c)
+	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleMaster)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, group := range masterGroups {
+		group.Task.Lifecycle = b.Lifecycle
+		c.AddTask(group.Task)
 	}
 
 	for _, src := range masterGroups {
@@ -398,23 +408,18 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeG
 	return masterGroups, nil
 }
 
-func (b *KopsModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]SecurityGroupInfo, error) {
-	return b.createSecurityGroups(role, nil, nil)
-}
-
 type SecurityGroupInfo struct {
 	Name   string
 	Suffix string
 	Task   *awstasks.SecurityGroup
 }
 
-func (b *KopsModelContext) createSecurityGroups(role kops.InstanceGroupRole, lifecycle *fi.Lifecycle, c *fi.ModelBuilderContext) ([]SecurityGroupInfo, error) {
+func (b *KopsModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]SecurityGroupInfo, error) {
 	var baseGroup *awstasks.SecurityGroup
 	if role == kops.InstanceGroupRoleMaster {
 		name := b.SecurityGroupName(role)
 		baseGroup = &awstasks.SecurityGroup{
 			Name:        s(name),
-			Lifecycle:   lifecycle,
 			VPC:         b.LinkToVPC(),
 			Description: s("Security group for masters"),
 			RemoveExtraRules: []string{
@@ -436,7 +441,6 @@ func (b *KopsModelContext) createSecurityGroups(role kops.InstanceGroupRole, lif
 		name := b.SecurityGroupName(role)
 		baseGroup = &awstasks.SecurityGroup{
 			Name:             s(name),
-			Lifecycle:        lifecycle,
 			VPC:              b.LinkToVPC(),
 			Description:      s("Security group for nodes"),
 			RemoveExtraRules: []string{"port=22"},
@@ -446,7 +450,6 @@ func (b *KopsModelContext) createSecurityGroups(role kops.InstanceGroupRole, lif
 		name := b.SecurityGroupName(role)
 		baseGroup = &awstasks.SecurityGroup{
 			Name:             s(name),
-			Lifecycle:        lifecycle,
 			VPC:              b.LinkToVPC(),
 			Description:      s("Security group for bastion"),
 			RemoveExtraRules: []string{"port=22"},
@@ -474,11 +477,12 @@ func (b *KopsModelContext) createSecurityGroups(role kops.InstanceGroupRole, lif
 		t := &awstasks.SecurityGroup{
 			Name:        ig.Spec.SecurityGroupOverride,
 			ID:          ig.Spec.SecurityGroupOverride,
-			Lifecycle:   lifecycle,
 			VPC:         b.LinkToVPC(),
 			Shared:      fi.Bool(true),
 			Description: baseGroup.Description,
 		}
+		// Because the SecurityGroup is shared, we don't set RemoveExtraRules
+		// This does mean we don't check them.  We might want to revisit this in future.
 
 		suffix := "-" + name
 
@@ -487,21 +491,14 @@ func (b *KopsModelContext) createSecurityGroups(role kops.InstanceGroupRole, lif
 			Suffix: suffix,
 			Task:   t,
 		})
-
 	}
 
+	// Add the default SecurityGroup, if any InstanceGroups are using the default
 	if !allOverrides {
 		groups = append(groups, SecurityGroupInfo{
 			Name: fi.StringValue(baseGroup.Name),
 			Task: baseGroup,
 		})
-	}
-
-	for _, group := range groups {
-		if c != nil {
-			glog.V(8).Infof("adding security group: %q", group.Name)
-			c.AddTask(group.Task)
-		}
 	}
 
 	return groups, nil
