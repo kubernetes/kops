@@ -110,13 +110,26 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			listeners["443"] = &awstasks.LoadBalancerListener{InstancePort: 443, SSLCertificateID: lbSpec.SSLCertificate}
 		}
 
+		var sgLink *awstasks.SecurityGroup
+		if lbSpec.SecurityGroupOverride != nil {
+			glog.V(1).Infof("WARNING: You are overwriting the Load Balancers, Security Group. When this is done you are responsible for ensure the correct rules!")
+
+			sgLink = &awstasks.SecurityGroup{
+				Name:   lbSpec.SecurityGroupOverride,
+				ID:     lbSpec.SecurityGroupOverride,
+				Shared: fi.Bool(true),
+			}
+		} else {
+			sgLink = b.LinkToELBSecurityGroup("api")
+		}
+
 		elb = &awstasks.LoadBalancer{
 			Name:      s("api." + b.ClusterName()),
 			Lifecycle: b.Lifecycle,
 
 			LoadBalancerName: s(loadBalancerName),
 			SecurityGroups: []*awstasks.SecurityGroup{
-				b.LinkToELBSecurityGroup("api"),
+				sgLink,
 			},
 			Subnets:   elbSubnets,
 			Listeners: listeners,
@@ -148,8 +161,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Create security group for API ELB
+	var lbSG *awstasks.SecurityGroup
 	{
-		t := &awstasks.SecurityGroup{
+		lbSG = &awstasks.SecurityGroup{
 			Name:      s(b.ELBSecurityGroupName("api")),
 			Lifecycle: b.SecurityLifecycle,
 
@@ -157,8 +171,15 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Description:      s("Security group for api ELB"),
 			RemoveExtraRules: []string{"port=443"},
 		}
-		t.Tags = b.CloudTags(*t.Name, false)
-		c.AddTask(t)
+		lbSG.Tags = b.CloudTags(*lbSG.Name, false)
+
+		if lbSpec.SecurityGroupOverride != nil {
+			lbSG.Name = fi.String(*lbSpec.SecurityGroupOverride)
+			lbSG.ID = fi.String(*lbSpec.SecurityGroupOverride)
+			lbSG.Shared = fi.Bool(true)
+		}
+
+		c.AddTask(lbSG)
 	}
 
 	// Allow traffic from ELB to egress freely
@@ -167,7 +188,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:      s("api-elb-egress"),
 			Lifecycle: b.SecurityLifecycle,
 
-			SecurityGroup: b.LinkToELBSecurityGroup("api"),
+			SecurityGroup: lbSG,
 			Egress:        fi.Bool(true),
 			CIDR:          s("0.0.0.0/0"),
 		}
@@ -181,7 +202,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				Name:      s("https-api-elb-" + cidr),
 				Lifecycle: b.SecurityLifecycle,
 
-				SecurityGroup: b.LinkToELBSecurityGroup("api"),
+				SecurityGroup: lbSG,
 				CIDR:          s(cidr),
 				FromPort:      i64(443),
 				ToPort:        i64(443),
@@ -208,19 +229,27 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleMaster)
+	if err != nil {
+		return err
+	}
+
 	// Allow HTTPS to the master instances from the ELB
 	{
-		t := &awstasks.SecurityGroupRule{
-			Name:      s("https-elb-to-master"),
-			Lifecycle: b.SecurityLifecycle,
+		for masterGroupName, masterGroup := range masterGroups {
+			suffix := GetGroupSuffix(masterGroupName, masterGroups)
+			t := &awstasks.SecurityGroupRule{
+				Name:      s(fmt.Sprintf("https-elb-to-master%s", suffix)),
+				Lifecycle: b.SecurityLifecycle,
 
-			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-			SourceGroup:   b.LinkToELBSecurityGroup("api"),
-			FromPort:      i64(443),
-			ToPort:        i64(443),
-			Protocol:      s("tcp"),
+				SecurityGroup: masterGroup,
+				SourceGroup:   lbSG,
+				FromPort:      i64(443),
+				ToPort:        i64(443),
+				Protocol:      s("tcp"),
+			}
+			c.AddTask(t)
 		}
-		c.AddTask(t)
 	}
 
 	if dns.IsGossipHostname(b.Cluster.Name) || b.UsePrivateDNS() {
@@ -313,4 +342,14 @@ func (b *APILoadBalancerBuilder) chooseBestSubnetForELB(zone string, subnets []*
 	}
 
 	return scoredSubnets[0].subnet
+}
+
+// GetGroupSuffix returns the name of the security groups suffix.
+func GetGroupSuffix(name string, groups map[string]*awstasks.SecurityGroup) string {
+	if len(groups) != 1 {
+		glog.V(8).Infof("adding group suffix: %q", name)
+		return "-" + name
+	}
+
+	return ""
 }
