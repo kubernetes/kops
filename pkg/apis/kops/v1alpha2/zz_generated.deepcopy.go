@@ -1771,6 +1771,15 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 			(*in).DeepCopyInto(*out)
 		}
 	}
+	if in.SecurityGroupOverride != nil {
+		in, out := &in.SecurityGroupOverride, &out.SecurityGroupOverride
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
 	return
 }
 
@@ -2967,6 +2976,15 @@ func (in *LoadBalancerAccessSpec) DeepCopyInto(out *LoadBalancerAccessSpec) {
 			*out = nil
 		} else {
 			*out = new(int64)
+			**out = **in
+		}
+	}
+	if in.SecurityGroupOverride != nil {
+		in, out := &in.SecurityGroupOverride, &out.SecurityGroupOverride
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
 			**out = **in
 		}
 	}
