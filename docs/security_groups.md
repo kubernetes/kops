@@ -22,7 +22,7 @@ metadata:
 spec:
   api:
     loadBalancer:
-      SecurityGroupOverride: sg-abcd1234
+      securityGroupOverride: sg-abcd1234
 
 .
 .
@@ -36,14 +36,14 @@ metadata:
     kops.k8s.io/cluster: mycluster.example.com
   name: master-us-test-1a
 spec:
-  SecurityGroupOverride: sg-1234dcba
+  securityGroupOverride: sg-1234dcba
 
 ```
 
 Now run a cluster update to create the new launch configuration, using [lifecycle overrides](./cli/kops_update_cluster.md#options) to prevent Security Group resources from being created:
 
 ```
-kops update cluster ${CLUSTER_NAME} --yes --lifecycle-overrides IAMRole=SecurityGroup=ExistsAndWarnIfChanges,SecurityGroupRule=ExistsAndWarnIfChanges
+kops update cluster ${CLUSTER_NAME} --yes --lifecycle-overrides SecurityGroup=ExistsAndWarnIfChanges,SecurityGroupRule=ExistsAndWarnIfChanges
 ```
 
 *Everytime `kops update cluster` is ran, it must include the above `--lifecycle-overrides`.*
