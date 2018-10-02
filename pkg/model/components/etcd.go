@@ -32,7 +32,14 @@ type EtcdOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &EtcdOptionsBuilder{}
 
-const DefaultEtcd2Version = "2.2.1"
+const (
+	DefaultEtcd2Version = "2.2.1"
+
+	//  1.11 originally recommended 3.2.18, but there was an advisory to update to 3.2.24
+	DefaultEtcd3Version_1_11 = "3.2.24"
+
+	DefaultEtcd3Version_1_13 = "3.2.24"
+)
 
 // BuildOptions is responsible for filling in the defaults for the etcd cluster model
 func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
@@ -53,7 +60,7 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 		if c.Version == "" && c.Provider == kops.EtcdProviderTypeLegacy {
 			// Even if in legacy mode, etcd version 2 is unsupported as of k8s 1.13
 			if b.IsKubernetesGTE("1.13") {
-				c.Version = "3.2.24"
+				c.Version = DefaultEtcd3Version_1_13
 			} else {
 				c.Version = DefaultEtcd2Version
 			}
@@ -62,8 +69,7 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 		if c.Version == "" && c.Provider == kops.EtcdProviderTypeManager {
 			// From 1.11, we run the k8s-recommended versions of etcd when using the manager
 			if b.IsKubernetesGTE("1.11") {
-				//  1.11 originally recommended 3.2.18, but there was an advisory to update to 3.2.24
-				c.Version = "3.2.24"
+				c.Version = DefaultEtcd3Version_1_11
 			} else {
 				c.Version = DefaultEtcd2Version
 			}
