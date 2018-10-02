@@ -33,6 +33,7 @@ type InstanceGroup struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// InstanceGroupList is a collection in instancegroups
 type InstanceGroupList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
@@ -44,9 +45,20 @@ type InstanceGroupList struct {
 type InstanceGroupRole string
 
 const (
+	// InstanceGroupRoleMaster defines the node as a master
 	InstanceGroupRoleMaster InstanceGroupRole = "Master"
-	InstanceGroupRoleNode   InstanceGroupRole = "Node"
+	// InstanceGroupRoleNode defines the node as a worker
+	InstanceGroupRoleNode InstanceGroupRole = "Node"
+	// InstanceGroupRoleBastion defines the node as a bastion host
+	InstanceGroupRoleBastion InstanceGroupRole = "Bastion"
 )
+
+// AllInstanceGroupRoles is a slice of all valid InstanceGroupRole values
+var AllInstanceGroupRoles = []InstanceGroupRole{
+	InstanceGroupRoleNode,
+	InstanceGroupRoleMaster,
+	InstanceGroupRoleBastion,
+}
 
 // InstanceGroupSpec is the specification for a instanceGroup
 type InstanceGroupSpec struct {
@@ -68,6 +80,8 @@ type InstanceGroupSpec struct {
 	RootVolumeIops *int32 `json:"rootVolumeIops,omitempty"`
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
+	// Volumes is a collection of additional volumes to create for instances within this InstanceGroup
+	Volumes []*InstanceGroupVolumeSpec `json:"volumes,omitempty"`
 	// Hooks is a list of hooks for this instanceGroup, note: these can override the cluster wide ones if required
 	Hooks []HookSpec `json:"hooks,omitempty"`
 	// MaxPrice indicates this is a spot-pricing group, with the specified value as our max-price bid
@@ -124,7 +138,34 @@ type UserData struct {
 	Content string `json:"content,omitempty"`
 }
 
-// LoadBalancers defines a load balancer
+// InstanceGroupVolumeSpec defined the spec for an additional volume attached to the instance group
+type InstanceGroupVolumeSpec struct {
+	// DeviceName is an optional device name of the block device
+	DeviceName *string `json:"deviceName,omitempty"`
+	// Encrypted indicates you want to encrypt the volume
+	Encrypted *bool `json:"encrypted,omitempty"`
+	// Filesystem is the type of filesystem to create on the device
+	Filesystem *InstanceGroupVolumeFilesystemSpec `json:"filesystem,omitempty"`
+	// Iops is the provision iops for this iops (think io1 in aws)
+	Iops *int32 `json:"iops,omitempty"`
+	// Size is the size of the volume in GB
+	Size *int32 `json:"size,omitempty"`
+	// Type is the type of volume to create and is cloud specific
+	Type *string `json:"type,omitempty"`
+}
+
+// InstanceGroupVolumeFilesystemSpec defines a specification for creating a filesystem
+type InstanceGroupVolumeFilesystemSpec struct {
+	// Ext4 is the specification for a ext4 filesystem
+	Ext4 *Ext4FileSystemSpec `json:"ext4,omitempty"`
+	// Path is the location to mount the volume
+	Path string `json:"mountPath,omitempty"`
+}
+
+// Ext4FileSystemSpec defines a specification for a ext4 filesystem on a instancegroup volume
+type Ext4FileSystemSpec struct{}
+
+// LoadBalancer defines a load balancer
 type LoadBalancer struct {
 	// LoadBalancerName to associate with this instance group (AWS ELB)
 	LoadBalancerName *string `json:"loadBalancerName,omitempty"`
