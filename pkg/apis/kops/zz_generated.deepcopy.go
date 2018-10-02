@@ -2468,16 +2468,8 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 	}
 	if in.Controllers != nil {
 		in, out := &in.Controllers, &out.Controllers
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new([]string)
-			if **in != nil {
-				in, out := *in, *out
-				*out = make([]string, len(*in))
-				copy(*out, *in)
-			}
-		}
+		*out = make([]string, len(*in))
+		copy(*out, *in)
 	}
 	if in.CIDRAllocatorType != nil {
 		in, out := &in.CIDRAllocatorType, &out.CIDRAllocatorType
