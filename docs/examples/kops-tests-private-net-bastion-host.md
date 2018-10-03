@@ -1,4 +1,4 @@
-# USING KOPS WITH PRIVATE NETWORKING AND A BASTION HOST IN A HIGLY-AVAILABLE SETUP
+# USING KOPS WITH PRIVATE NETWORKING AND A BASTION HOST IN A HIGHLY-AVAILABLE SETUP
 
 ## WHAT WE WANT TO ACCOMPLISH HERE?
 
@@ -307,7 +307,7 @@ ip-172-20-74-55.ec2.internal    master  True
 Your cluster privatekopscluster.k8s.local is ready
 ```
 
-## MAKING THE BASTION LAYER "HIGLY AVAILABLE".
+## MAKING THE BASTION LAYER "HIGHLY AVAILABLE".
 
 If for any reason any "legendary monster from the comics" decides to destroy the amazon AZ that contains our bastion, we'll basically be unable to enter to our instances. Let's add some H.A. to our bastion layer and force amazon to deploy additional bastion instances on other availability zones.
 
