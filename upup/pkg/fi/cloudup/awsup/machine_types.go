@@ -335,6 +335,14 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	},
 
 	{
+		Name:           "f1.4xlarge",
+		MemoryGB:       244,
+		ECU:            52,
+		Cores:          16,
+		EphemeralDisks: []int{940},
+	},
+
+	{
 		Name:           "f1.16xlarge",
 		MemoryGB:       976,
 		ECU:            188,
@@ -909,7 +917,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "r5.large",
 		MemoryGB:       16,
-		ECU:            8,
+		ECU:            10,
 		Cores:          2,
 		EphemeralDisks: nil,
 	},
@@ -917,7 +925,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "r5.xlarge",
 		MemoryGB:       32,
-		ECU:            16,
+		ECU:            19,
 		Cores:          4,
 		EphemeralDisks: nil,
 	},
@@ -925,7 +933,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "r5.2xlarge",
 		MemoryGB:       64,
-		ECU:            31,
+		ECU:            38,
 		Cores:          8,
 		EphemeralDisks: nil,
 	},
@@ -933,7 +941,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "r5.4xlarge",
 		MemoryGB:       128,
-		ECU:            60,
+		ECU:            71,
 		Cores:          16,
 		EphemeralDisks: nil,
 	},
@@ -949,7 +957,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "r5.24xlarge",
 		MemoryGB:       768,
-		ECU:            345,
+		ECU:            347,
 		Cores:          96,
 		EphemeralDisks: nil,
 	},
@@ -958,7 +966,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "r5d.large",
 		MemoryGB:       16,
-		ECU:            8,
+		ECU:            10,
 		Cores:          2,
 		EphemeralDisks: []int{75},
 	},
@@ -966,7 +974,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "r5d.xlarge",
 		MemoryGB:       32,
-		ECU:            16,
+		ECU:            19,
 		Cores:          4,
 		EphemeralDisks: []int{150},
 	},
@@ -974,7 +982,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "r5d.2xlarge",
 		MemoryGB:       64,
-		ECU:            31,
+		ECU:            38,
 		Cores:          8,
 		EphemeralDisks: []int{300},
 	},
@@ -982,7 +990,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "r5d.4xlarge",
 		MemoryGB:       128,
-		ECU:            60,
+		ECU:            71,
 		Cores:          16,
 		EphemeralDisks: []int{300, 300},
 	},
@@ -998,7 +1006,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "r5d.24xlarge",
 		MemoryGB:       768,
-		ECU:            345,
+		ECU:            347,
 		Cores:          96,
 		EphemeralDisks: []int{900, 900, 900, 900},
 	},
@@ -1211,7 +1219,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "z1d.large",
 		MemoryGB:       16,
-		ECU:            11,
+		ECU:            15,
 		Cores:          2,
 		EphemeralDisks: []int{75},
 	},
@@ -1219,7 +1227,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "z1d.xlarge",
 		MemoryGB:       32,
-		ECU:            21,
+		ECU:            28,
 		Cores:          4,
 		EphemeralDisks: []int{150},
 	},
@@ -1227,7 +1235,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "z1d.2xlarge",
 		MemoryGB:       64,
-		ECU:            43,
+		ECU:            53,
 		Cores:          8,
 		EphemeralDisks: []int{300},
 	},
@@ -1235,7 +1243,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "z1d.3xlarge",
 		MemoryGB:       96,
-		ECU:            65,
+		ECU:            75,
 		Cores:          12,
 		EphemeralDisks: []int{450},
 	},
@@ -1243,7 +1251,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "z1d.6xlarge",
 		MemoryGB:       192,
-		ECU:            128,
+		ECU:            134,
 		Cores:          24,
 		EphemeralDisks: []int{900},
 	},
@@ -1251,7 +1259,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:           "z1d.12xlarge",
 		MemoryGB:       384,
-		ECU:            235,
+		ECU:            271,
 		Cores:          48,
 		EphemeralDisks: []int{900, 900},
 	},

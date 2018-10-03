@@ -17,13 +17,13 @@ limitations under the License.
 package instancegroup
 
 import (
+	"context"
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	genericapirequest "k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/generic"
 	"k8s.io/apiserver/pkg/storage"
 	"k8s.io/apiserver/pkg/storage/names"
@@ -44,13 +44,13 @@ func (instanceGroupStrategy) NamespaceScoped() bool {
 	return true
 }
 
-func (instanceGroupStrategy) PrepareForCreate(ctx genericapirequest.Context, obj runtime.Object) {
+func (instanceGroupStrategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {
 }
 
-func (instanceGroupStrategy) PrepareForUpdate(ctx genericapirequest.Context, obj, old runtime.Object) {
+func (instanceGroupStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
 }
 
-func (instanceGroupStrategy) Validate(ctx genericapirequest.Context, obj runtime.Object) field.ErrorList {
+func (instanceGroupStrategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
 	return field.ErrorList{}
 	// return validation.ValidateServiceInjection(obj.(*serviceinjection.ServiceInjection))
 }
@@ -66,7 +66,7 @@ func (instanceGroupStrategy) AllowUnconditionalUpdate() bool {
 func (instanceGroupStrategy) Canonicalize(obj runtime.Object) {
 }
 
-func (instanceGroupStrategy) ValidateUpdate(ctx genericapirequest.Context, obj, old runtime.Object) field.ErrorList {
+func (instanceGroupStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
 	return field.ErrorList{}
 	// return validation.ValidateServiceInjectionUpdate(obj.(*serviceinjection.ServiceInjection), old.(*serviceinjection.ServiceInjection))
 }

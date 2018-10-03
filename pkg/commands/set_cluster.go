@@ -88,6 +88,10 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 			for _, c := range cluster.Spec.EtcdClusters {
 				c.Version = kv[1]
 			}
+		case "cluster.spec.etcdClusters[*].provider":
+			for _, etcd := range cluster.Spec.EtcdClusters {
+				etcd.Provider = api.EtcdProviderType(kv[1])
+			}
 		case "cluster.spec.etcdClusters[*].manager.image":
 			for _, etcd := range cluster.Spec.EtcdClusters {
 				if etcd.Manager == nil {

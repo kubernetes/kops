@@ -376,6 +376,8 @@ type KubeControllerManagerConfig struct {
 	NodeCIDRMaskSize *int32 `json:"nodeCIDRMaskSize,omitempty" flag:"node-cidr-mask-size"`
 	// ConfigureCloudRoutes enables CIDRs allocated with to be configured on the cloud provider.
 	ConfigureCloudRoutes *bool `json:"configureCloudRoutes,omitempty" flag:"configure-cloud-routes"`
+	// Controllers is a list of controllers to enable on the controller-manager
+	Controllers []string `json:"controllers,omitempty" flag:"controllers"`
 	// CIDRAllocatorType specifies the type of CIDR allocator to use.
 	CIDRAllocatorType *string `json:"cidrAllocatorType,omitempty" flag:"cidr-allocator-type"`
 	// rootCAFile is the root certificate authority will be included in service account's token secret. This must be a valid PEM-encoded CA bundle.

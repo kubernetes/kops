@@ -51,7 +51,7 @@ func addClientCommand() cli.Command {
 				Name:   "kubeconfig",
 				Usage:  "location to write bootstrap token config `PATH`",
 				EnvVar: "KUBECONFIG_BOOTSTRAP",
-				Value:  "/var/run/kubelet/kubelet-bootstrap.yml",
+				Value:  "/var/lib/kubelet/bootstrap-kubeconfig",
 			},
 			cli.StringFlag{
 				Name:   "tls-client-ca",

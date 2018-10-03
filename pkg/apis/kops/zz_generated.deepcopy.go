@@ -1943,6 +1943,15 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 			(*in).DeepCopyInto(*out)
 		}
 	}
+	if in.SecurityGroupOverride != nil {
+		in, out := &in.SecurityGroupOverride, &out.SecurityGroupOverride
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
 	return
 }
 
@@ -2465,6 +2474,11 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 			*out = new(bool)
 			**out = **in
 		}
+	}
+	if in.Controllers != nil {
+		in, out := &in.Controllers, &out.Controllers
+		*out = make([]string, len(*in))
+		copy(*out, *in)
 	}
 	if in.CIDRAllocatorType != nil {
 		in, out := &in.CIDRAllocatorType, &out.CIDRAllocatorType
@@ -3158,6 +3172,15 @@ func (in *LoadBalancerAccessSpec) DeepCopyInto(out *LoadBalancerAccessSpec) {
 			*out = nil
 		} else {
 			*out = new(int64)
+			**out = **in
+		}
+	}
+	if in.SecurityGroupOverride != nil {
+		in, out := &in.SecurityGroupOverride, &out.SecurityGroupOverride
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
 			**out = **in
 		}
 	}

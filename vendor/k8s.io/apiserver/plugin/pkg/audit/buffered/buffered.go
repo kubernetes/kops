@@ -54,7 +54,7 @@ type BatchConfig struct {
 	ThrottleEnable bool
 	// ThrottleQPS defines the allowed rate of batches per second sent to the delegate backend.
 	ThrottleQPS float32
-	// ThrottleBurst defines the maximum rate of batches per second sent to the delegate backend in case
+	// ThrottleBurst defines the maximum number of requests sent to the delegate backend at the same moment in case
 	// the capacity defined by ThrottleQPS was not utilized.
 	ThrottleBurst int
 }
@@ -102,6 +102,7 @@ type bufferedBackend struct {
 var _ audit.Backend = &bufferedBackend{}
 
 // NewBackend returns a buffered audit backend that wraps delegate backend.
+// Buffered backend automatically runs and shuts down the delegate backend.
 func NewBackend(delegate audit.Backend, config BatchConfig) audit.Backend {
 	var throttle flowcontrol.RateLimiter
 	if config.ThrottleEnable {

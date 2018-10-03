@@ -119,10 +119,9 @@ func (ix *RuleIndex) AddRule(c *config.Config, r *rule.Rule, f *rule.File) {
 		return
 	}
 
-	rel := f.Rel(c.RepoRoot)
 	record := &ruleRecord{
 		rule:       r,
-		label:      label.New(c.RepoName, rel, r.Name()),
+		label:      label.New(c.RepoName, f.Pkg, r.Name()),
 		importedAs: imps,
 	}
 	if _, ok := ix.labelMap[record.label]; ok {

@@ -19,6 +19,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/api/authentication/v1:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
@@ -26,6 +27,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/util/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/validation:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes:go_default_library",
+        "//vendor/k8s.io/client-go/tools/record:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/cloudprovider:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/io:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",

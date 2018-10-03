@@ -42,74 +42,71 @@ type FirewallModelBuilder struct {
 var _ fi.ModelBuilder = &FirewallModelBuilder{}
 
 func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	if err := b.buildNodeRules(c); err != nil {
+	nodeGroups, err := b.buildNodeRules(c)
+	if err != nil {
 		return err
 	}
-	if err := b.buildMasterRules(c); err != nil {
+
+	masterGroups, err := b.buildMasterRules(c, nodeGroups)
+	if err != nil {
 		return err
-	}
-	return nil
-}
-
-func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
-	{
-		t := &awstasks.SecurityGroup{
-			Name:             s(b.SecurityGroupName(kops.InstanceGroupRoleNode)),
-			Lifecycle:        b.Lifecycle,
-			VPC:              b.LinkToVPC(),
-			Description:      s("Security group for nodes"),
-			RemoveExtraRules: []string{"port=22"},
-		}
-		t.Tags = b.CloudTags(*t.Name, false)
-		c.AddTask(t)
-	}
-
-	// Allow full egress
-	{
-		t := &awstasks.SecurityGroupRule{
-			Name:          s("node-egress"),
-			Lifecycle:     b.Lifecycle,
-			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			Egress:        fi.Bool(true),
-			CIDR:          s("0.0.0.0/0"),
-		}
-		c.AddTask(t)
-	}
-
-	// Nodes can talk to nodes
-	{
-		t := &awstasks.SecurityGroupRule{
-			Name:          s("all-node-to-node"),
-			Lifecycle:     b.Lifecycle,
-			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-		}
-		c.AddTask(t)
-	}
-
-	// Pods running in Nodes could need to reach pods in master/s
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		// Nodes can talk to masters
-		{
-			t := &awstasks.SecurityGroupRule{
-				Name:          s("all-nodes-to-master"),
-				Lifecycle:     b.Lifecycle,
-				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-				SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			}
-			c.AddTask(t)
-		}
 	}
 
 	// We _should_ block per port... but:
 	// * It causes e2e tests to break
 	// * Users expect to be able to reach pods
 	// * If users are running an overlay, we punch a hole in it anyway
-	//b.applyNodeToMasterAllowSpecificPorts(c)
-	b.applyNodeToMasterBlockSpecificPorts(c)
+	// b.applyNodeToMasterAllowSpecificPorts(c)
+	b.applyNodeToMasterBlockSpecificPorts(c, nodeGroups, masterGroups)
 
 	return nil
 }
+
+func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) ([]SecurityGroupInfo, error) {
+
+	nodeGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleNode)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, group := range nodeGroups {
+		group.Task.Lifecycle = b.Lifecycle
+		c.AddTask(group.Task)
+	}
+
+	for _, src := range nodeGroups {
+		// Allow full egress
+		{
+			t := &awstasks.SecurityGroupRule{
+				Name:          s("node-egress" + src.Suffix),
+				Lifecycle:     b.Lifecycle,
+				SecurityGroup: src.Task,
+				Egress:        fi.Bool(true),
+				CIDR:          s("0.0.0.0/0"),
+			}
+			c.AddTask(t)
+		}
+
+		// Nodes can talk to nodes
+		for _, dest := range nodeGroups {
+			suffix := JoinSuffixes(src, dest)
+
+			t := &awstasks.SecurityGroupRule{
+				Name:          s("all-node-to-node" + suffix),
+				Lifecycle:     b.Lifecycle,
+				SecurityGroup: dest.Task,
+				SourceGroup:   src.Task,
+			}
+			c.AddTask(t)
+		}
+
+	}
+
+	return nodeGroups, nil
+}
+
+/*
+This is dead code, but hopefully one day we can open specific ports only, for better security
 
 func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBuilderContext) {
 	// TODO: We need to remove the ALL rule
@@ -181,7 +178,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 	}
 
 	for _, udpPort := range udpPorts {
-		c.AddTask(&awstasks.SecurityGroupRule{
+		t := &awstasks.SecurityGroupRule{
 			Name:          s(fmt.Sprintf("node-to-master-udp-%d", udpPort)),
 			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
@@ -189,10 +186,11 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 			FromPort:      i64(udpPort),
 			ToPort:        i64(udpPort),
 			Protocol:      s("udp"),
-		})
+		}
+		c.AddTask(t)
 	}
 	for _, tcpPort := range tcpPorts {
-		c.AddTask(&awstasks.SecurityGroupRule{
+		t := &awstasks.SecurityGroupRule{
 			Name:          s(fmt.Sprintf("node-to-master-tcp-%d", tcpPort)),
 			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
@@ -200,7 +198,8 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 			FromPort:      i64(tcpPort),
 			ToPort:        i64(tcpPort),
 			Protocol:      s("tcp"),
-		})
+		}
+		c.AddTask(t)
 	}
 	for _, protocol := range protocols {
 		awsName := strconv.Itoa(int(protocol))
@@ -212,17 +211,19 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 			glog.Warningf("unknown protocol %q - naming by number", awsName)
 		}
 
-		c.AddTask(&awstasks.SecurityGroupRule{
+		t := &awstasks.SecurityGroupRule{
 			Name:          s("node-to-master-protocol-" + name),
 			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 			Protocol:      s(awsName),
-		})
+		}
+		c.AddTask(t)
 	}
 }
+*/
 
-func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBuilderContext) {
+func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBuilderContext, nodeGroups []SecurityGroupInfo, masterGroups []SecurityGroupInfo) {
 	type portRange struct {
 		From int
 		To   int
@@ -269,18 +270,6 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 		protocols = append(protocols, ProtocolIPIP)
 	}
 
-	for _, r := range udpRanges {
-		c.AddTask(&awstasks.SecurityGroupRule{
-			Name:          s(fmt.Sprintf("node-to-master-udp-%d-%d", r.From, r.To)),
-			Lifecycle:     b.Lifecycle,
-			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			FromPort:      i64(int64(r.From)),
-			ToPort:        i64(int64(r.To)),
-			Protocol:      s("udp"),
-		})
-	}
-
 	tcpRanges := []portRange{
 		{From: 1, To: 0},
 	}
@@ -295,42 +284,142 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 		}
 	}
 
-	for _, r := range tcpRanges {
-		c.AddTask(&awstasks.SecurityGroupRule{
-			Name:          s(fmt.Sprintf("node-to-master-tcp-%d-%d", r.From, r.To)),
-			Lifecycle:     b.Lifecycle,
-			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			FromPort:      i64(int64(r.From)),
-			ToPort:        i64(int64(r.To)),
-			Protocol:      s("tcp"),
-		})
-	}
-	for _, protocol := range protocols {
-		awsName := strconv.Itoa(int(protocol))
-		name := awsName
-		switch protocol {
-		case ProtocolIPIP:
-			name = "ipip"
-		default:
-			glog.Warningf("unknown protocol %q - naming by number", awsName)
-		}
+	for _, masterGroup := range masterGroups {
+		for _, nodeGroup := range nodeGroups {
+			suffix := JoinSuffixes(nodeGroup, masterGroup)
 
-		c.AddTask(&awstasks.SecurityGroupRule{
-			Name:          s("node-to-master-protocol-" + name),
-			Lifecycle:     b.Lifecycle,
-			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			Protocol:      s(awsName),
-		})
+			for _, r := range udpRanges {
+				t := &awstasks.SecurityGroupRule{
+					Name:          s(fmt.Sprintf("node-to-master-udp-%d-%d%s", r.From, r.To, suffix)),
+					Lifecycle:     b.Lifecycle,
+					SecurityGroup: masterGroup.Task,
+					SourceGroup:   nodeGroup.Task,
+					FromPort:      i64(int64(r.From)),
+					ToPort:        i64(int64(r.To)),
+					Protocol:      s("udp"),
+				}
+				c.AddTask(t)
+			}
+			for _, r := range tcpRanges {
+				t := &awstasks.SecurityGroupRule{
+					Name:          s(fmt.Sprintf("node-to-master-tcp-%d-%d%s", r.From, r.To, suffix)),
+					Lifecycle:     b.Lifecycle,
+					SecurityGroup: masterGroup.Task,
+					SourceGroup:   nodeGroup.Task,
+					FromPort:      i64(int64(r.From)),
+					ToPort:        i64(int64(r.To)),
+					Protocol:      s("tcp"),
+				}
+				c.AddTask(t)
+			}
+			for _, protocol := range protocols {
+				awsName := strconv.Itoa(int(protocol))
+				name := awsName
+				switch protocol {
+				case ProtocolIPIP:
+					name = "ipip"
+				default:
+					glog.Warningf("unknown protocol %q - naming by number", awsName)
+				}
+
+				t := &awstasks.SecurityGroupRule{
+					Name:          s(fmt.Sprintf("node-to-master-protocol-%s%s", name, suffix)),
+					Lifecycle:     b.Lifecycle,
+					SecurityGroup: masterGroup.Task,
+					SourceGroup:   nodeGroup.Task,
+					Protocol:      s(awsName),
+				}
+				c.AddTask(t)
+			}
+		}
 	}
+
+	// For AmazonVPC networking, pods running in Nodes could need to reach pods in master/s
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
+		// Nodes can talk to masters
+		for _, src := range nodeGroups {
+			for _, dest := range masterGroups {
+				suffix := JoinSuffixes(src, dest)
+
+				t := &awstasks.SecurityGroupRule{
+					Name:          s("all-nodes-to-master" + suffix),
+					Lifecycle:     b.Lifecycle,
+					SecurityGroup: dest.Task,
+					SourceGroup:   src.Task,
+				}
+				c.AddTask(t)
+			}
+		}
+	}
+
 }
 
-func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext) error {
-	{
-		t := &awstasks.SecurityGroup{
-			Name:        s(b.SecurityGroupName(kops.InstanceGroupRoleMaster)),
-			Lifecycle:   b.Lifecycle,
+func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeGroups []SecurityGroupInfo) ([]SecurityGroupInfo, error) {
+	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleMaster)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, group := range masterGroups {
+		group.Task.Lifecycle = b.Lifecycle
+		c.AddTask(group.Task)
+	}
+
+	for _, src := range masterGroups {
+		// Allow full egress
+		{
+			t := &awstasks.SecurityGroupRule{
+				Name:          s("master-egress" + src.Suffix),
+				Lifecycle:     b.Lifecycle,
+				SecurityGroup: src.Task,
+				Egress:        fi.Bool(true),
+				CIDR:          s("0.0.0.0/0"),
+			}
+			c.AddTask(t)
+		}
+
+		// Masters can talk to masters
+		for _, dest := range masterGroups {
+			suffix := JoinSuffixes(src, dest)
+
+			t := &awstasks.SecurityGroupRule{
+				Name:          s("all-master-to-master" + suffix),
+				Lifecycle:     b.Lifecycle,
+				SecurityGroup: dest.Task,
+				SourceGroup:   src.Task,
+			}
+			c.AddTask(t)
+		}
+
+		// Masters can talk to nodes
+		for _, dest := range nodeGroups {
+			suffix := JoinSuffixes(src, dest)
+
+			t := &awstasks.SecurityGroupRule{
+				Name:          s("all-master-to-node" + suffix),
+				Lifecycle:     b.Lifecycle,
+				SecurityGroup: dest.Task,
+				SourceGroup:   src.Task,
+			}
+			c.AddTask(t)
+		}
+	}
+
+	return masterGroups, nil
+}
+
+type SecurityGroupInfo struct {
+	Name   string
+	Suffix string
+	Task   *awstasks.SecurityGroup
+}
+
+func (b *KopsModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]SecurityGroupInfo, error) {
+	var baseGroup *awstasks.SecurityGroup
+	if role == kops.InstanceGroupRoleMaster {
+		name := b.SecurityGroupName(role)
+		baseGroup = &awstasks.SecurityGroup{
+			Name:        s(name),
 			VPC:         b.LinkToVPC(),
 			Description: s("Security group for masters"),
 			RemoveExtraRules: []string{
@@ -347,43 +436,100 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext) error
 				// TODO: Protocol 4 for calico
 			},
 		}
-		t.Tags = b.CloudTags(*t.Name, false)
-		c.AddTask(t)
-	}
-
-	// Allow full egress
-	{
-		t := &awstasks.SecurityGroupRule{
-			Name:          s("master-egress"),
-			Lifecycle:     b.Lifecycle,
-			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-			Egress:        fi.Bool(true),
-			CIDR:          s("0.0.0.0/0"),
+		baseGroup.Tags = b.CloudTags(name, false)
+	} else if role == kops.InstanceGroupRoleNode {
+		name := b.SecurityGroupName(role)
+		baseGroup = &awstasks.SecurityGroup{
+			Name:             s(name),
+			VPC:              b.LinkToVPC(),
+			Description:      s("Security group for nodes"),
+			RemoveExtraRules: []string{"port=22"},
 		}
-		c.AddTask(t)
-	}
-
-	// Masters can talk to masters
-	{
-		t := &awstasks.SecurityGroupRule{
-			Name:          s("all-master-to-master"),
-			Lifecycle:     b.Lifecycle,
-			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
+		baseGroup.Tags = b.CloudTags(name, false)
+	} else if role == kops.InstanceGroupRoleBastion {
+		name := b.SecurityGroupName(role)
+		baseGroup = &awstasks.SecurityGroup{
+			Name:             s(name),
+			VPC:              b.LinkToVPC(),
+			Description:      s("Security group for bastion"),
+			RemoveExtraRules: []string{"port=22"},
 		}
-		c.AddTask(t)
+		baseGroup.Tags = b.CloudTags(name, false)
+	} else {
+		return nil, fmt.Errorf("not a supported security group type")
 	}
 
-	// Masters can talk to nodes
-	{
-		t := &awstasks.SecurityGroupRule{
-			Name:          s("all-master-to-node"),
-			Lifecycle:     b.Lifecycle,
-			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
+	var groups []SecurityGroupInfo
+
+	done := make(map[string]bool)
+
+	// Build groups that specify a SecurityGroupOverride
+	allOverrides := true
+	for _, ig := range b.InstanceGroups {
+		if ig.Spec.Role != role {
+			continue
 		}
-		c.AddTask(t)
+
+		if ig.Spec.SecurityGroupOverride == nil {
+			allOverrides = false
+			continue
+		}
+
+		name := fi.StringValue(ig.Spec.SecurityGroupOverride)
+
+		// De-duplicate security groups
+		if done[name] {
+			continue
+		}
+		done[name] = true
+
+		t := &awstasks.SecurityGroup{
+			Name:        ig.Spec.SecurityGroupOverride,
+			ID:          ig.Spec.SecurityGroupOverride,
+			VPC:         b.LinkToVPC(),
+			Shared:      fi.Bool(true),
+			Description: baseGroup.Description,
+		}
+		// Because the SecurityGroup is shared, we don't set RemoveExtraRules
+		// This does mean we don't check them.  We might want to revisit this in future.
+
+		suffix := "-" + name
+
+		groups = append(groups, SecurityGroupInfo{
+			Name:   name,
+			Suffix: suffix,
+			Task:   t,
+		})
 	}
 
-	return nil
+	// Add the default SecurityGroup, if any InstanceGroups are using the default
+	if !allOverrides {
+		groups = append(groups, SecurityGroupInfo{
+			Name: fi.StringValue(baseGroup.Name),
+			Task: baseGroup,
+		})
+	}
+
+	return groups, nil
+}
+
+// JoinSuffixes constructs a suffix for traffic from the src to the dest group
+// We have to avoid ambiguity in the case where one has a suffix and the other does not,
+// where normally l.Suffix + r.Suffix would equal r.Suffix + l.Suffix
+func JoinSuffixes(src SecurityGroupInfo, dest SecurityGroupInfo) string {
+	if src.Suffix == "" && dest.Suffix == "" {
+		return ""
+	}
+
+	s := src.Suffix
+	if s == "" {
+		s = "-default"
+	}
+
+	d := dest.Suffix
+	if d == "" {
+		d = "-default"
+	}
+
+	return s + d
 }

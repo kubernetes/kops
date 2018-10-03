@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/kubectl/cmd"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
+	"k8s.io/kubernetes/pkg/kubectl/genericclioptions"
 )
 
 // RollingUpdateInstanceGroup is the AWS ASG backing an InstanceGroup.
@@ -250,7 +251,7 @@ func (r *RollingUpdateInstanceGroup) ValidateClusterWithDuration(rollingUpdateDa
 		select {
 		case <-timeout:
 			// Got a timeout fail with a timeout error
-			return fmt.Errorf("cluster did not validate within a duation of %q", duration)
+			return fmt.Errorf("cluster did not validate within a duration of %q", duration)
 		case <-tick:
 			// Got a tick, validate cluster
 			if r.tryValidateCluster(rollingUpdateData, cluster, instanceGroupList, duration, tickDuration) {
@@ -314,32 +315,31 @@ func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInsta
 
 // DrainNode drains a K8s node.
 func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGroupMember, rollingUpdateData *RollingUpdateCluster) error {
-	if rollingUpdateData.ClientConfig == nil {
-		return fmt.Errorf("clientConfig not set")
+	if rollingUpdateData.ClientGetter == nil {
+		return fmt.Errorf("ClientGetter not set")
 	}
 
 	if u.Node.Name == "" {
 		return fmt.Errorf("node name not set")
 	}
-	f := cmdutil.NewFactory(rollingUpdateData.ClientConfig)
+	f := cmdutil.NewFactory(rollingUpdateData.ClientGetter)
 
-	// TODO: Send out somewhere else, also DrainOptions has errout
-	out := os.Stdout
-	errOut := os.Stderr
-
-	options := &cmd.DrainOptions{
-		Factory:            f,
-		Out:                out,
-		IgnoreDaemonsets:   true,
-		Force:              true,
-		DeleteLocalData:    true,
-		ErrOut:             errOut,
-		GracePeriodSeconds: -1,
+	streams := genericclioptions.IOStreams{
+		Out:    os.Stdout,
+		ErrOut: os.Stderr,
 	}
 
-	cmd := cmd.NewCmdDrain(f, out, errOut)
+	drain := cmd.NewCmdDrain(f, streams)
 	args := []string{u.Node.Name}
-	err := options.SetupDrain(cmd, args)
+	options := cmd.NewDrainOptions(f, streams)
+
+	// Override some options
+	options.IgnoreDaemonsets = true
+	options.Force = true
+	options.DeleteLocalData = true
+	options.GracePeriodSeconds = -1
+
+	err := options.Complete(f, drain, args)
 	if err != nil {
 		return fmt.Errorf("error setting up drain: %v", err)
 	}

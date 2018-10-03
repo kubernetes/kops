@@ -30,7 +30,7 @@ import (
 )
 
 func (_ *protoLang) Imports(c *config.Config, r *rule.Rule, f *rule.File) []resolve.ImportSpec {
-	rel := f.Rel(c.RepoRoot)
+	rel := f.Pkg
 	srcs := r.AttrStrings("srcs")
 	imports := make([]resolve.ImportSpec, len(srcs))
 	for i, src := range srcs {

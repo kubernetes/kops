@@ -315,11 +315,18 @@ const (
 
 // LoadBalancerAccessSpec provides configuration details related to API LoadBalancer and its access
 type LoadBalancerAccessSpec struct {
-	Type                     LoadBalancerType `json:"type,omitempty"`
-	IdleTimeoutSeconds       *int64           `json:"idleTimeoutSeconds,omitempty"`
-	AdditionalSecurityGroups []string         `json:"additionalSecurityGroups,omitempty"`
-	UseForInternalApi        bool             `json:"useForInternalApi,omitempty"`
-	SSLCertificate           string           `json:"sslCertificate,omitempty"`
+	// Type of load balancer to create may Public or Internal.
+	Type LoadBalancerType `json:"type,omitempty"`
+	// IdleTimeoutSeconds sets the timeout of the api loadbalancer.
+	IdleTimeoutSeconds *int64 `json:"idleTimeoutSeconds,omitempty"`
+	// SecurityGroupOverride overrides the default Kops created SG for the load balancer.
+	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
+	// AdditionalSecurityGroups attaches additional security groups (e.g. sg-123456).
+	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
+	// UseForInternalApi indicates wether the LB should be used by the kubelet
+	UseForInternalApi bool `json:"useForInternalApi,omitempty"`
+	// SSLCertificate allows you to specify the ACM cert to be used the the LB
+	SSLCertificate string `json:"sslCertificate,omitempty"`
 }
 
 // KubeDNSConfig defines the kube dns configuration
@@ -354,10 +361,21 @@ type ExternalDNSConfig struct {
 	WatchNamespace string `json:"watchNamespace,omitempty"`
 }
 
+// EtcdProviderType describes etcd cluster provisioning types (Standalone, Manager)
+type EtcdProviderType string
+
+const (
+	EtcdProviderTypeManager EtcdProviderType = "Manager"
+	EtcdProviderTypeLegacy  EtcdProviderType = "Legacy"
+)
+
 // EtcdClusterSpec is the etcd cluster specification
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)
 	Name string `json:"name,omitempty"`
+	// Provider is the provider used to run etcd: standalone, manager.
+	// We default to manager for kubernetes 1.11 or if the manager is configured; otherwise standalone.
+	Provider EtcdProviderType `json:"provider,omitempty"`
 	// Members stores the configurations for each member of the cluster (including the data volume)
 	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
 	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients

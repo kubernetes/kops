@@ -17,9 +17,9 @@ limitations under the License.
 package validation
 
 import (
+	"fmt"
 	"strings"
 
-	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"

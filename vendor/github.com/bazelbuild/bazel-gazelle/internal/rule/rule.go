@@ -27,7 +27,7 @@ package rule
 
 import (
 	"io/ioutil"
-	"log"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -46,6 +46,9 @@ type File struct {
 	// may modify this, but editing is not complete until Sync() is called.
 	File *bzl.File
 
+	// Pkg is the Bazel package this build file defines.
+	Pkg string
+
 	// Path is the file system path to the build file (same as File.Path).
 	Path string
 
@@ -63,10 +66,11 @@ type File struct {
 }
 
 // EmptyFile creates a File wrapped around an empty syntax tree.
-func EmptyFile(path string) *File {
+func EmptyFile(path, pkg string) *File {
 	return &File{
 		File: &bzl.File{Path: path},
 		Path: path,
+		Pkg:  pkg,
 	}
 }
 
@@ -76,30 +80,31 @@ func EmptyFile(path string) *File {
 //
 // This function returns I/O and parse errors without modification. It's safe
 // to use os.IsNotExist and similar predicates.
-func LoadFile(path string) (*File, error) {
+func LoadFile(path, pkg string) (*File, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	return LoadData(path, data)
+	return LoadData(path, pkg, data)
 }
 
 // LoadData parses a build file from a byte slice and scans it for rules and
 // load statements. The syntax tree within the returned File will be modified
 // by editing methods.
-func LoadData(path string, data []byte) (*File, error) {
+func LoadData(path, pkg string, data []byte) (*File, error) {
 	ast, err := bzl.Parse(path, data)
 	if err != nil {
 		return nil, err
 	}
-	return ScanAST(ast), nil
+	return ScanAST(pkg, ast), nil
 }
 
 // ScanAST creates a File wrapped around the given syntax tree. This tree
 // will be modified by editing methods.
-func ScanAST(bzlFile *bzl.File) *File {
+func ScanAST(pkg string, bzlFile *bzl.File) *File {
 	f := &File{
 		File: bzlFile,
+		Pkg:  pkg,
 		Path: bzlFile.Path,
 	}
 	for i, stmt := range f.File.Stmt {
@@ -125,18 +130,19 @@ func ScanAST(bzlFile *bzl.File) *File {
 	return f
 }
 
-// Rel returns the slash-separated relative path from the given absolute path to
-// the directory containing this file. If the file is in the root directory, Rel
-// returns "". This string may be used as a Bazel package name.
-func (f *File) Rel(root string) string {
-	rel, err := filepath.Rel(root, filepath.Dir(f.Path))
-	if err != nil {
-		log.Panicf("%s is not a parent of %s", root, f.Path)
+// MatchBuildFileName looks for a file in files that has a name from names.
+// If there is at least one matching file, a path will be returned by joining
+// dir and the first matching name. If there are no matching files, the
+// empty string is returned.
+func MatchBuildFileName(dir string, names []string, files []os.FileInfo) string {
+	for _, name := range names {
+		for _, fi := range files {
+			if fi.Name() == name && !fi.IsDir() {
+				return filepath.Join(dir, name)
+			}
+		}
 	}
-	if rel == "." {
-		rel = ""
-	}
-	return filepath.ToSlash(rel)
+	return ""
 }
 
 // Sync writes all changes back to the wrapped syntax tree. This should be
@@ -215,12 +221,11 @@ func (f *File) Format() []byte {
 	return bzl.Format(f.File)
 }
 
-// Save writes the build file to disk at the same path it was loaded from.
-// This method calls Sync internally.
-func (f *File) Save() error {
+// Save writes the build file to disk. This method calls Sync internally.
+func (f *File) Save(path string) error {
 	f.Sync()
 	data := bzl.Format(f.File)
-	return ioutil.WriteFile(f.Path, data, 0666)
+	return ioutil.WriteFile(path, data, 0666)
 }
 
 type stmt struct {

@@ -1486,6 +1486,7 @@ func Convert_kops_EtcdBackupSpec_To_v1alpha1_EtcdBackupSpec(in *kops.EtcdBackupS
 
 func autoConvert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpec, out *kops.EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
+	out.Provider = kops.EtcdProviderType(in.Provider)
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
 		*out = make([]*kops.EtcdMemberSpec, len(*in))
@@ -1532,6 +1533,7 @@ func Convert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpe
 
 func autoConvert_kops_EtcdClusterSpec_To_v1alpha1_EtcdClusterSpec(in *kops.EtcdClusterSpec, out *EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
+	out.Provider = EtcdProviderType(in.Provider)
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
 		*out = make([]*EtcdMemberSpec, len(*in))
@@ -2028,6 +2030,7 @@ func autoConvert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	} else {
 		out.IAM = nil
 	}
+	out.SecurityGroupOverride = in.SecurityGroupOverride
 	return nil
 }
 
@@ -2114,6 +2117,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha1_InstanceGroupSpec(in *kops.I
 	} else {
 		out.IAM = nil
 	}
+	out.SecurityGroupOverride = in.SecurityGroupOverride
 	return nil
 }
 
@@ -2306,6 +2310,7 @@ func autoConvert_v1alpha1_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.AllocateNodeCIDRs = in.AllocateNodeCIDRs
 	out.NodeCIDRMaskSize = in.NodeCIDRMaskSize
 	out.ConfigureCloudRoutes = in.ConfigureCloudRoutes
+	out.Controllers = in.Controllers
 	out.CIDRAllocatorType = in.CIDRAllocatorType
 	out.RootCAFile = in.RootCAFile
 	if in.LeaderElection != nil {
@@ -2347,6 +2352,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerMana
 	out.AllocateNodeCIDRs = in.AllocateNodeCIDRs
 	out.NodeCIDRMaskSize = in.NodeCIDRMaskSize
 	out.ConfigureCloudRoutes = in.ConfigureCloudRoutes
+	out.Controllers = in.Controllers
 	out.CIDRAllocatorType = in.CIDRAllocatorType
 	out.RootCAFile = in.RootCAFile
 	if in.LeaderElection != nil {
@@ -2740,6 +2746,7 @@ func Convert_kops_LoadBalancer_To_v1alpha1_LoadBalancer(in *kops.LoadBalancer, o
 func autoConvert_v1alpha1_LoadBalancerAccessSpec_To_kops_LoadBalancerAccessSpec(in *LoadBalancerAccessSpec, out *kops.LoadBalancerAccessSpec, s conversion.Scope) error {
 	out.Type = kops.LoadBalancerType(in.Type)
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
+	out.SecurityGroupOverride = in.SecurityGroupOverride
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.UseForInternalApi = in.UseForInternalApi
 	out.SSLCertificate = in.SSLCertificate
@@ -2754,6 +2761,7 @@ func Convert_v1alpha1_LoadBalancerAccessSpec_To_kops_LoadBalancerAccessSpec(in *
 func autoConvert_kops_LoadBalancerAccessSpec_To_v1alpha1_LoadBalancerAccessSpec(in *kops.LoadBalancerAccessSpec, out *LoadBalancerAccessSpec, s conversion.Scope) error {
 	out.Type = LoadBalancerType(in.Type)
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
+	out.SecurityGroupOverride = in.SecurityGroupOverride
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.UseForInternalApi = in.UseForInternalApi
 	out.SSLCertificate = in.SSLCertificate
