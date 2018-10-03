@@ -631,6 +631,7 @@ func (c *VFSCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
 // MirrorTo will copy keys to a vfs.Path, which is often easier for a machine to read
 func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 	if basedir.Path() == c.basedir.Path() {
+		glog.V(2).Infof("Skipping key store mirror from %q to %q (same paths)", c.basedir, basedir)
 		return nil
 	}
 	glog.V(2).Infof("Mirroring key store from %q to %q", c.basedir, basedir)
