@@ -33,6 +33,11 @@ import (
 	"github.com/golang/glog"
 )
 
+// DefaultPrivateKeySize is the key size to use when generating private keys
+// It can be overridden by the KOPS_RSA_PRIVATE_KEY_SIZE env var, or by tests
+// (as generating RSA keys can be a bottleneck for testing)
+var DefaultPrivateKeySize = 2048
+
 func ParsePEMPrivateKey(data []byte) (*PrivateKey, error) {
 	k, err := parsePEMPrivateKey(data)
 	if err != nil {
@@ -45,17 +50,19 @@ func ParsePEMPrivateKey(data []byte) (*PrivateKey, error) {
 }
 
 func GeneratePrivateKey() (*PrivateKey, error) {
-	var rsaKeySize int64 = 2048
+	var rsaKeySize = DefaultPrivateKeySize
 
 	if os.Getenv("KOPS_RSA_PRIVATE_KEY_SIZE") != "" {
-		var intErr error
-		rsaKeySize, intErr = strconv.ParseInt(os.Getenv("KOPS_RSA_PRIVATE_KEY_SIZE"), 0, 0)
-		if intErr != nil {
-			return nil, fmt.Errorf("error getting RSA private key size: %v", intErr)
+		s := os.Getenv("KOPS_RSA_PRIVATE_KEY_SIZE")
+		if v, err := strconv.Atoi(s); err != nil {
+			return nil, fmt.Errorf("error parsing KOPS_RSA_PRIVATE_KEY_SIZE=%s as integer", s)
+		} else {
+			rsaKeySize = int(v)
+			glog.V(4).Infof("Generating key of size %d, set by KOPS_RSA_PRIVATE_KEY_SIZE env var", rsaKeySize)
 		}
 	}
 
-	rsaKey, err := rsa.GenerateKey(crypto_rand.Reader, int(rsaKeySize))
+	rsaKey, err := rsa.GenerateKey(crypto_rand.Reader, rsaKeySize)
 	if err != nil {
 		return nil, fmt.Errorf("error generating RSA private key: %v", err)
 	}

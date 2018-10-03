@@ -35,6 +35,7 @@ import (
 	"k8s.io/kops/cloudmock/aws/mockiam"
 	"k8s.io/kops/cloudmock/aws/mockroute53"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/vfs"
@@ -49,6 +50,9 @@ type IntegrationTestHarness struct {
 
 	// originalKopsVersion is the original kops.Version value, restored on Close
 	originalKopsVersion string
+
+	// originalPKIDefaultPrivateKeySize is the saved pki.DefaultPrivateKeySize value, restored on Close
+	originalPKIDefaultPrivateKeySize int
 }
 
 func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
@@ -60,6 +64,10 @@ func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
 	h.TempDir = tempDir
 
 	vfs.Context.ResetMemfsContext(true)
+
+	// Generate much smaller keys, as this is often the bottleneck for tests
+	h.originalPKIDefaultPrivateKeySize = pki.DefaultPrivateKeySize
+	pki.DefaultPrivateKeySize = 512
 
 	// Replace the default channel path with a local filesystem path, so we don't try to retrieve it from a server
 	{
@@ -95,6 +103,10 @@ func (h *IntegrationTestHarness) Close() {
 
 	if h.originalDefaultChannelBase != "" {
 		kops.DefaultChannelBase = h.originalDefaultChannelBase
+	}
+
+	if h.originalPKIDefaultPrivateKeySize != 0 {
+		pki.DefaultPrivateKeySize = h.originalPKIDefaultPrivateKeySize
 	}
 }
 

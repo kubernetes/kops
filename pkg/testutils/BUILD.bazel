@@ -20,6 +20,7 @@ go_library(
         "//pkg/apis/kops/v1alpha2:go_default_library",
         "//pkg/diff:go_default_library",
         "//pkg/kopscodecs:go_default_library",
+        "//pkg/pki:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",
