@@ -61,12 +61,12 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	} else {
 		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
 
-			for masterGroupName, masterGroup := range masterGroups {
-				suffix := GetGroupSuffix(masterGroupName, masterGroups)
+			for _, masterGroup := range masterGroups {
+				suffix := masterGroup.Suffix
 				t := &awstasks.SecurityGroupRule{
 					Name:          s(fmt.Sprintf("ssh-external-to-master-%s%s", sshAccess, suffix)),
 					Lifecycle:     b.Lifecycle,
-					SecurityGroup: masterGroup,
+					SecurityGroup: masterGroup.Task,
 					Protocol:      s("tcp"),
 					FromPort:      i64(22),
 					ToPort:        i64(22),
@@ -75,12 +75,12 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				c.AddTask(t)
 			}
 
-			for nodeGroupName, nodeGroup := range nodeGroups {
-				suffix := GetGroupSuffix(nodeGroupName, nodeGroups)
+			for _, nodeGroup := range nodeGroups {
+				suffix := nodeGroup.Suffix
 				t := &awstasks.SecurityGroupRule{
 					Name:          s(fmt.Sprintf("ssh-external-to-node-%s%s", sshAccess, suffix)),
 					Lifecycle:     b.Lifecycle,
-					SecurityGroup: nodeGroup,
+					SecurityGroup: nodeGroup.Task,
 					Protocol:      s("tcp"),
 					FromPort:      i64(22),
 					ToPort:        i64(22),
@@ -97,12 +97,12 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
-		for nodeGroupName, nodeGroup := range nodeGroups {
-			suffix := GetGroupSuffix(nodeGroupName, nodeGroups)
+		for _, nodeGroup := range nodeGroups {
+			suffix := nodeGroup.Suffix
 			t1 := &awstasks.SecurityGroupRule{
 				Name:          s(fmt.Sprintf("nodeport-tcp-external-to-node-%s%s", nodePortAccess, suffix)),
 				Lifecycle:     b.Lifecycle,
-				SecurityGroup: nodeGroup,
+				SecurityGroup: nodeGroup.Task,
 				Protocol:      s("tcp"),
 				FromPort:      i64(int64(nodePortRange.Base)),
 				ToPort:        i64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
@@ -113,7 +113,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			t2 := &awstasks.SecurityGroupRule{
 				Name:          s(fmt.Sprintf("nodeport-udp-external-to-node-%s%s", nodePortAccess, suffix)),
 				Lifecycle:     b.Lifecycle,
-				SecurityGroup: nodeGroup,
+				SecurityGroup: nodeGroup.Task,
 				Protocol:      s("udp"),
 				FromPort:      i64(int64(nodePortRange.Base)),
 				ToPort:        i64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
@@ -130,12 +130,12 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// HTTPS to the master is allowed (for API access)
 		for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
-			for masterGroupName, masterGroup := range masterGroups {
-				suffix := GetGroupSuffix(masterGroupName, masterGroups)
+			for _, masterGroup := range masterGroups {
+				suffix := masterGroup.Suffix
 				t := &awstasks.SecurityGroupRule{
 					Name:          s(fmt.Sprintf("https-external-to-master-%s%s", apiAccess, suffix)),
 					Lifecycle:     b.Lifecycle,
-					SecurityGroup: masterGroup,
+					SecurityGroup: masterGroup.Task,
 					Protocol:      s("tcp"),
 					FromPort:      i64(443),
 					ToPort:        i64(443),
