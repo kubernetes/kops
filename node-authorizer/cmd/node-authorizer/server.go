@@ -95,7 +95,7 @@ func addServerCommand() cli.Command {
 				Name:   "certificate-ttl",
 				Usage:  "check the certificates exist and if not wait for x period `DURATION`",
 				EnvVar: "CERTIFICATE_TTL",
-				Value:  10 * time.Minute,
+				Value:  1 * time.Hour,
 			},
 			cli.DurationFlag{
 				Name:   "authorization-timeout",

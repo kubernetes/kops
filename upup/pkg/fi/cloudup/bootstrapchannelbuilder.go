@@ -150,7 +150,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	if b.cluster.Spec.NodeAuthorization != nil {
 		{
 			key := "node-authorizer.addons.k8s.io"
-			version := "v0.0.2"
+			version := "v0.0.4"
 
 			{
 				location := key + "/k8s-1.10.yaml"

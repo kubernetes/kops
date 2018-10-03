@@ -80,7 +80,8 @@ func (n *NodeAuthorizer) authorizeNodeRequest(ctx context.Context, request *Node
 	if !request.IsAllowed() {
 		utils.Logger.Error("the node has been denied authorization",
 			zap.String("client", request.Spec.RemoteAddr),
-			zap.String("node", request.Spec.NodeName))
+			zap.String("node", request.Spec.NodeName),
+			zap.String("reason", request.Status.Reason))
 
 		nodeAuthorizationMetric.WithLabelValues("denied").Inc()
 
