@@ -43,10 +43,10 @@ func New(config *Config) error {
 		zap.String("kubeconfig", config.KubeConfigPath),
 		zap.String("registration-url", config.NodeURL))
 
-	// @step: if we have a kubecfg already we can skip it
+	// @step: if we have a kubeconfig already we can skip it
 	if utils.FileExists(config.KubeConfigPath) {
-		utils.Logger.Info("skipping the client authorization as kubecfg found",
-			zap.String("kubecfg", config.KubeConfigPath))
+		utils.Logger.Info("skipping the client authorization as kubeconfig found",
+			zap.String("kubeconfig", config.KubeConfigPath))
 
 		return nil
 	}
