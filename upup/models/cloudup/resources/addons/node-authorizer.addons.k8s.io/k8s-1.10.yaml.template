@@ -131,6 +131,7 @@ spec:
       annotations:
         dns.alpha.kubernetes.io/internal: {{ $name }}-internal.{{ ClusterName }}
         prometheus.io/port: "{{ $na.Port }}"
+        prometheus.io/scheme: "https"
         prometheus.io/scrape: "true"
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
