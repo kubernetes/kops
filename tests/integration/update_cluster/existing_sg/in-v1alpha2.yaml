@@ -6,7 +6,7 @@ metadata:
 spec:
   api:
     loadBalancer:
-      securityGroupOverride: sg-abcd1234
+      securityGroupOverride: sg-elb # Not a valid name format on AWS, but doesn't matter for our tests
   kubernetesApiAccess:
   - 0.0.0.0/0
   channel: stable
@@ -72,7 +72,7 @@ spec:
   role: Master
   subnets:
   - us-test-1a
-  securityGroupOverride: sg-1234dcba
+  securityGroupOverride: sg-master-1a
 
 ---
 
@@ -91,7 +91,7 @@ spec:
   role: Master
   subnets:
   - us-test-1b
-  securityGroupOverride: sg-1234dcba
+  securityGroupOverride: sg-master-1b
 
 ---
 
@@ -110,7 +110,8 @@ spec:
   role: Master
   subnets:
   - us-test-1c
-  securityGroupOverride: sg-1234dcba
+  # We don't override the default for this master - testing mixing!
+  #securityGroupOverride: sg-master-1c
 
 ---
 
@@ -130,5 +131,5 @@ spec:
   role: Node
   subnets:
   - us-test-1a
-  securityGroupOverride: sg-1234abcd
+  securityGroupOverride: sg-nodes
 
