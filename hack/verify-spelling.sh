@@ -25,7 +25,7 @@ GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/client9/misspell/cmd/miss
 mkdir -p .build/docs
 find . -type f \( -name "*.go*" -o -name "*.md*" \) -a -path "./docs/releases/*" -exec basename {} \; | \
 	xargs -I{} sh -c 'sed -e "/^\* .*github.com\/kubernetes\/kops\/pull/d" docs/releases/{} > .build/docs/$(basename {})'
-find . -type f \( -name "*.go*" -o -name "*.md*" \) -a \( -not -path "./vendor/*" -not -path "./_vendor/*" -not -path "./docs/releases/*" \) | \
+find . -type f \( -name "*.go*" -o -name "*.md*" \) -a \( -not -path "./vendor/*" -not -path "./docs/releases/*" \) | \
   sed -e /README-ES.md/d -e /node_modules/d |
 		xargs ${OUTPUT_GOBIN}/misspell -error
 
