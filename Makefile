@@ -723,7 +723,7 @@ check-markdown-links:
 		-e LANG=en_US.UTF-8 \
 		-e LANGUAGE=en_US.UTF-8 \
 		rubygem/awesome_bot --allow-dupe --allow-redirect \
-		$(shell find $$PWD -name "*.md" -mindepth 1 -printf '%P\n' | grep -v vendor | grep -v _vendor | grep -v Changelog.md)
+		$(shell find $$PWD -name "*.md" -mindepth 1 -printf '%P\n' | grep -v vendor | grep -v Changelog.md)
 
 #-----------------------------------------------------------
 # kube-discovery
