@@ -110,17 +110,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			listeners["443"] = &awstasks.LoadBalancerListener{InstancePort: 443, SSLCertificateID: lbSpec.SSLCertificate}
 		}
 
-		var sgLink *awstasks.SecurityGroup
 		if lbSpec.SecurityGroupOverride != nil {
 			glog.V(1).Infof("WARNING: You are overwriting the Load Balancers, Security Group. When this is done you are responsible for ensure the correct rules!")
-
-			sgLink = &awstasks.SecurityGroup{
-				Name:   lbSpec.SecurityGroupOverride,
-				ID:     lbSpec.SecurityGroupOverride,
-				Shared: fi.Bool(true),
-			}
-		} else {
-			sgLink = b.LinkToELBSecurityGroup("api")
 		}
 
 		elb = &awstasks.LoadBalancer{
@@ -129,7 +120,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			LoadBalancerName: s(loadBalancerName),
 			SecurityGroups: []*awstasks.SecurityGroup{
-				sgLink,
+				b.LinkToELBSecurityGroup("api"),
 			},
 			Subnets:   elbSubnets,
 			Listeners: listeners,
@@ -174,7 +165,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		lbSG.Tags = b.CloudTags(*lbSG.Name, false)
 
 		if lbSpec.SecurityGroupOverride != nil {
-			lbSG.Name = fi.String(*lbSpec.SecurityGroupOverride)
 			lbSG.ID = fi.String(*lbSpec.SecurityGroupOverride)
 			lbSG.Shared = fi.Bool(true)
 		}
