@@ -37,7 +37,7 @@ var (
 	Use update to modify it, this command will only create a new entry.`))
 
 	createSecretDockerconfigExample = templates.Examples(i18n.T(`
-	# Create an new docker config.
+	# Create a new docker config.
 	kops create secret dockerconfig -f /path/to/docker/config.json \
 		--name k8s-cluster.example.com --state s3://example.com
 	# Replace an existing docker config secret.
