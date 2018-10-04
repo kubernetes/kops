@@ -89,7 +89,7 @@ var (
 
 		# Roll the k8s-cluster.example.com kops cluster,
 		# only roll the node instancegroup,
-		# use the new drain an validate functionality.
+		# use the new drain and validate functionality.
 		kops rolling-update cluster k8s-cluster.example.com --yes \
 		  --fail-on-validate-error="false" \
 		  --node-interval 8m \
