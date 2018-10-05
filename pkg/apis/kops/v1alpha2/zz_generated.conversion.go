@@ -3626,6 +3626,7 @@ func Convert_kops_UserData_To_v1alpha2_UserData(in *kops.UserData, out *UserData
 func autoConvert_v1alpha2_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *WeaveNetworkingSpec, out *kops.WeaveNetworkingSpec, s conversion.Scope) error {
 	out.MTU = in.MTU
 	out.ConnLimit = in.ConnLimit
+	out.NoMasqLocal = in.NoMasqLocal
 	return nil
 }
 
@@ -3637,6 +3638,7 @@ func Convert_v1alpha2_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *WeaveN
 func autoConvert_kops_WeaveNetworkingSpec_To_v1alpha2_WeaveNetworkingSpec(in *kops.WeaveNetworkingSpec, out *WeaveNetworkingSpec, s conversion.Scope) error {
 	out.MTU = in.MTU
 	out.ConnLimit = in.ConnLimit
+	out.NoMasqLocal = in.NoMasqLocal
 	return nil
 }
 

@@ -3658,6 +3658,15 @@ func (in *WeaveNetworkingSpec) DeepCopyInto(out *WeaveNetworkingSpec) {
 			**out = **in
 		}
 	}
+	if in.NoMasqLocal != nil {
+		in, out := &in.NoMasqLocal, &out.NoMasqLocal
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(int32)
+			**out = **in
+		}
+	}
 	return
 }
 
