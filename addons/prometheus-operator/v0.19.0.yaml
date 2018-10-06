@@ -779,7 +779,7 @@ spec:
                               description: Specify whether the ConfigMap must be defined
                               type: boolean
                         prefix:
-                          description: An optional identifer to prepend to each key
+                          description: An optional identifier to prepend to each key
                             in the ConfigMap. Must be a C_IDENTIFIER.
                           type: string
                         secretRef:
@@ -4215,7 +4215,7 @@ spec:
                           type: string
                         separator:
                           description: Separator placed between concatenated source
-                            label values. default is ';'.
+                            label values. Default is ';'.
                           type: string
                         sourceLabels:
                           description: The source labels select values from existing
@@ -5171,7 +5171,7 @@ spec:
                           type: integer
                         regex:
                           description: Regular expression against which the extracted
-                            value is matched. defailt is '(.*)'
+                            value is matched. Default is '(.*)'
                           type: string
                         replacement:
                           description: Replacement value against which a regex replace
@@ -5180,7 +5180,7 @@ spec:
                           type: string
                         separator:
                           description: Separator placed between concatenated source
-                            label values. default is ';'.
+                            label values. Default is ';'.
                           type: string
                         sourceLabels:
                           description: The source labels select values from existing
