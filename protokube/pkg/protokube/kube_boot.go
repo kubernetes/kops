@@ -63,7 +63,7 @@ type KubeBoot struct {
 	EtcdBackupStore string
 	// Etcd container registry location.
 	EtcdImageSource string
-	// EtcdElectionTimeout is is the leader election timeout
+	// EtcdElectionTimeout is the leader election timeout
 	EtcdElectionTimeout string
 	// EtcdHeartbeatInterval is the heartbeat interval
 	EtcdHeartbeatInterval string
