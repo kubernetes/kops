@@ -483,7 +483,7 @@ spec:
       image: busybox
 ```
 
-Install cachefiled
+Install cachefilesd
 
 ```
 spec:
