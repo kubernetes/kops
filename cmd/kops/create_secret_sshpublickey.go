@@ -39,7 +39,7 @@ var (
 		--name k8s-cluster.example.com --state s3://example.com
 	`))
 
-	createSecretSSHPublicKeyShort = i18n.T(`Create a ssh public key.`)
+	createSecretSSHPublicKeyShort = i18n.T(`Create an ssh public key.`)
 )
 
 type CreateSecretPublickeyOptions struct {
