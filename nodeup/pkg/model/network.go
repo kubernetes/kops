@@ -44,7 +44,7 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 		// external is based on kubenet
 		assetNames = append(assetNames, "bridge", "host-local", "loopback")
 	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil || networking.Cilium != nil {
-		assetNames = append(assetNames, "bridge", "host-local", "loopback", "ptp")
+		assetNames = append(assetNames, "bridge", "host-local", "loopback", "portmap", "ptp")
 		// Do we need tuning?
 
 		if b.IsKubernetesGTE("1.9") {
