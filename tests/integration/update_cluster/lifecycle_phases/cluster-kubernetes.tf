@@ -1,3 +1,19 @@
+locals = {
+  bastion_security_group_ids = ["${aws_security_group.bastion-lifecyclephases-example-com.id}"]
+  bastions_role_arn          = "${aws_iam_role.bastions-lifecyclephases-example-com.arn}"
+  bastions_role_name         = "${aws_iam_role.bastions-lifecyclephases-example-com.name}"
+  cluster_name               = "lifecyclephases.example.com"
+  master_security_group_ids  = ["${aws_security_group.masters-lifecyclephases-example-com.id}"]
+  masters_role_arn           = "${aws_iam_role.masters-lifecyclephases-example-com.arn}"
+  masters_role_name          = "${aws_iam_role.masters-lifecyclephases-example-com.name}"
+  node_security_group_ids    = ["${aws_security_group.nodes-lifecyclephases-example-com.id}"]
+  node_subnet_ids            = ["${aws_subnet.us-test-1a-lifecyclephases-example-com.id}"]
+  nodes_role_arn             = "${aws_iam_role.nodes-lifecyclephases-example-com.arn}"
+  nodes_role_name            = "${aws_iam_role.nodes-lifecyclephases-example-com.name}"
+  region                     = "us-test-1"
+  vpc_id                     = "${aws_vpc.lifecyclephases-example-com.id}"
+}
+
 output "bastion_security_group_ids" {
   value = ["${aws_security_group.bastion-lifecyclephases-example-com.id}"]
 }
@@ -187,6 +203,8 @@ resource "aws_launch_configuration" "bastion-lifecyclephases-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-lifecyclephases-example-com" {
@@ -213,6 +231,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-lifecyclephases-e
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-lifecyclephases-example-com" {
@@ -234,6 +254,8 @@ resource "aws_launch_configuration" "nodes-lifecyclephases-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 terraform = {

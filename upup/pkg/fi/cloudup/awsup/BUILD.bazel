@@ -26,6 +26,7 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/client:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/endpoints:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/autoscaling:go_default_library",
@@ -35,6 +36,8 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/service/ec2/ec2iface:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/elb:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/elb/elbiface:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/elbv2:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/elbv2/elbv2iface:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/iam:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/iam/iamiface:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/route53:go_default_library",
@@ -48,10 +51,7 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "aws_topology_test.go",
-        "aws_utils_test.go",
-    ],
+    srcs = ["aws_utils_test.go"],
     embed = [":go_default_library"],
     deps = [
         "//pkg/apis/kops:go_default_library",

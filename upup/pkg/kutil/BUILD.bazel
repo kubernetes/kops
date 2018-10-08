@@ -3,7 +3,6 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "config.go",
         "convert_kubeup_cluster.go",
         "import_cluster.go",
         "kubectl.go",
@@ -19,7 +18,7 @@ go_library(
         "//pkg/client/simple:go_default_library",
         "//pkg/kubeconfig:go_default_library",
         "//pkg/pki:go_default_library",
-        "//pkg/resources:go_default_library",
+        "//pkg/resources/aws:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
@@ -29,8 +28,6 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/golang.org/x/crypto/ssh:go_default_library",
-        "//vendor/k8s.io/client-go/rest:go_default_library",
         "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",
-        "//vendor/k8s.io/client-go/tools/clientcmd/api:go_default_library",
     ],
 )

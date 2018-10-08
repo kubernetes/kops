@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/baremetal"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
@@ -111,7 +112,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			region := cluster.Spec.Subnets[0].Zone
 			doCloud, err := do.NewDOCloud(region)
 			if err != nil {
-				return nil, fmt.Errorf("error initializin digitalocean cloud!")
+				return nil, fmt.Errorf("error initializing digitalocean cloud: %s", err)
 			}
 
 			cloud = doCloud
@@ -141,6 +142,21 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			cloud = osc
 		}
 
+	case kops.CloudProviderALI:
+		{
+			region, err := aliup.FindRegion(cluster)
+			if err != nil {
+				return nil, err
+			}
+
+			cloudTags := map[string]string{aliup.TagClusterName: cluster.ObjectMeta.Name}
+			aliCloud, err := aliup.NewALICloud(region, cloudTags)
+			if err != nil {
+				return nil, err
+			}
+
+			cloud = aliCloud
+		}
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}

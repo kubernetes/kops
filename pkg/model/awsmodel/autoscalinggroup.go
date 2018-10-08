@@ -67,8 +67,26 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			volumeIops := fi.Int32Value(ig.Spec.RootVolumeIops)
-			if volumeIops == 0 {
+			if volumeIops <= 0 {
 				volumeIops = DefaultVolumeIops
+			}
+
+			link, err := b.LinkToIAMInstanceProfile(ig)
+			if err != nil {
+				return fmt.Errorf("unable to find iam profile link for instance group %q: %v", ig.ObjectMeta.Name, err)
+			}
+
+			var sgLink *awstasks.SecurityGroup
+			if ig.Spec.SecurityGroupOverride != nil {
+				glog.V(1).Infof("WARNING: You are overwriting the Instance Groups, Security Group. When this is done you are responsible for ensure the correct rules!")
+
+				sgLink = &awstasks.SecurityGroup{
+					Name:   ig.Spec.SecurityGroupOverride,
+					ID:     ig.Spec.SecurityGroupOverride,
+					Shared: fi.Bool(true),
+				}
+			} else {
+				sgLink = b.LinkToSecurityGroup(ig.Spec.Role)
 			}
 
 			t := &awstasks.LaunchConfiguration{
@@ -76,11 +94,12 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Lifecycle: b.Lifecycle,
 
 				SecurityGroups: []*awstasks.SecurityGroup{
-					b.LinkToSecurityGroup(ig.Spec.Role),
+					sgLink,
 				},
-				IAMInstanceProfile: b.LinkToIAMInstanceProfile(ig),
+				IAMInstanceProfile: link,
 				ImageID:            s(ig.Spec.Image),
 				InstanceType:       s(ig.Spec.MachineType),
+				InstanceMonitoring: ig.Spec.DetailedInstanceMonitoring,
 
 				RootVolumeSize:         i64(int64(volumeSize)),
 				RootVolumeType:         s(volumeType),
@@ -113,7 +132,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				return err
 			}
 
-			if t.UserData, err = b.BootstrapScript.ResourceNodeUp(ig, &b.Cluster.Spec); err != nil {
+			if t.UserData, err = b.BootstrapScript.ResourceNodeUp(ig, b.Cluster); err != nil {
 				return err
 			}
 
@@ -224,13 +243,40 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			t.Tags = tags
 
-			if ig.Spec.SuspendProcesses != nil {
-				for _, p := range ig.Spec.SuspendProcesses {
-					t.SuspendProcesses = append(t.SuspendProcesses, p)
-				}
+			processes := []string{}
+			for _, p := range ig.Spec.SuspendProcesses {
+				processes = append(processes, p)
 			}
+			t.SuspendProcesses = &processes
 
 			c.AddTask(t)
+		}
+
+		// External Load Balancer/TargetGroup Attachments
+		{
+			for _, lb := range ig.Spec.ExternalLoadBalancers {
+				if lb.LoadBalancerName != nil {
+					t := &awstasks.ExternalLoadBalancerAttachment{
+						Name:             s("extlb-" + *lb.LoadBalancerName + "-" + ig.Name),
+						Lifecycle:        b.Lifecycle,
+						LoadBalancerName: *lb.LoadBalancerName,
+						AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+					}
+
+					c.AddTask(t)
+				}
+
+				if lb.TargetGroupARN != nil {
+					t := &awstasks.ExternalTargetGroupAttachment{
+						Name:             s("exttg-" + *lb.TargetGroupARN + "-" + ig.Name),
+						Lifecycle:        b.Lifecycle,
+						TargetGroupARN:   *lb.TargetGroupARN,
+						AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+					}
+
+					c.AddTask(t)
+				}
+			}
 		}
 	}
 

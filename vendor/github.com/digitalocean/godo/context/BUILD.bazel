@@ -7,6 +7,7 @@ go_library(
         "context_go17.go",
         "context_pre_go17.go",
     ],
+    importmap = "k8s.io/kops/vendor/github.com/digitalocean/godo/context",
     importpath = "github.com/digitalocean/godo/context",
     visibility = ["//visibility:public"],
     deps = [

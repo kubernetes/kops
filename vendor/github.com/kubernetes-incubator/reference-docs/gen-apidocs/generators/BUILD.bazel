@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "files.go",
+        "gen.go",
+        "templates.go",
+        "util.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/kubernetes-incubator/reference-docs/gen-apidocs/generators",
+    importpath = "github.com/kubernetes-incubator/reference-docs/gen-apidocs/generators",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/kubernetes-incubator/reference-docs/gen-apidocs/generators/api:go_default_library"],
+)

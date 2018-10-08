@@ -7,7 +7,6 @@ Create an instancegroup.
 
 ### Synopsis
 
-
 Create an InstanceGroup configuration. 
 
 An InstanceGroup is a group of similar virtual machines. On AWS, an InstanceGroup maps to an AutoScalingGroup. 
@@ -15,7 +14,7 @@ An InstanceGroup is a group of similar virtual machines. On AWS, an InstanceGrou
 The Role of an InstanceGroup defines whether machines will act as a Kubernetes master or node.
 
 ```
-kops create instancegroup
+kops create instancegroup [flags]
 ```
 
 ### Examples
@@ -33,28 +32,30 @@ kops create instancegroup
 ### Options
 
 ```
-      --dry-run              If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
-      --edit                 If true, an editor will be opened to edit default values. (default true)
-  -o, --output string        Ouput format. One of json|yaml
-      --role string          Type of instance group to create (Node,Master,Bastion) (default "Node")
-      --subnet stringSlice   Subnet in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.
+      --dry-run          If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
+      --edit             If true, an editor will be opened to edit default values. (default true)
+  -h, --help             help for instancegroup
+  -o, --output string    Output format. One of json|yaml
+      --role string      Type of instance group to create (Node,Master,Bastion) (default "Node")
+      --subnet strings   Subnet in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.
 ```
 
 ### Options inherited from parent commands
 
 ```
       --alsologtostderr                  log to standard error as well as files
-      --config string                    config file (default is $HOME/.kops.yaml)
+      --config string                    yaml config file (default is $HOME/.kops.yaml)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
 

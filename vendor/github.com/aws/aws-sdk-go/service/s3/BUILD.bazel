@@ -4,8 +4,8 @@ go_library(
     name = "go_default_library",
     srcs = [
         "api.go",
+        "body_hash.go",
         "bucket_location.go",
-        "content_md5.go",
         "customizations.go",
         "doc.go",
         "doc_custom.go",
@@ -19,6 +19,7 @@ go_library(
         "unmarshal_error.go",
         "waiters.go",
     ],
+    importmap = "k8s.io/kops/vendor/github.com/aws/aws-sdk-go/service/s3",
     importpath = "github.com/aws/aws-sdk-go/service/s3",
     visibility = ["//visibility:public"],
     deps = [
@@ -29,7 +30,11 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/aws/client/metadata:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/signer/v4:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/internal/sdkio:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/private/protocol/eventstream:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/private/protocol/eventstream/eventstreamapi:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/private/protocol/rest:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/restxml:go_default_library",
     ],
 )

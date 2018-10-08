@@ -1,3 +1,31 @@
+locals = {
+  bastion_autoscaling_group_ids     = ["${aws_autoscaling_group.bastion-privatecanal-example-com.id}"]
+  bastion_security_group_ids        = ["${aws_security_group.bastion-privatecanal-example-com.id}"]
+  bastions_role_arn                 = "${aws_iam_role.bastions-privatecanal-example-com.arn}"
+  bastions_role_name                = "${aws_iam_role.bastions-privatecanal-example-com.name}"
+  cluster_name                      = "privatecanal.example.com"
+  master_autoscaling_group_ids      = ["${aws_autoscaling_group.master-us-test-1a-masters-privatecanal-example-com.id}"]
+  master_security_group_ids         = ["${aws_security_group.masters-privatecanal-example-com.id}"]
+  masters_role_arn                  = "${aws_iam_role.masters-privatecanal-example-com.arn}"
+  masters_role_name                 = "${aws_iam_role.masters-privatecanal-example-com.name}"
+  node_autoscaling_group_ids        = ["${aws_autoscaling_group.nodes-privatecanal-example-com.id}"]
+  node_security_group_ids           = ["${aws_security_group.nodes-privatecanal-example-com.id}"]
+  node_subnet_ids                   = ["${aws_subnet.us-test-1a-privatecanal-example-com.id}"]
+  nodes_role_arn                    = "${aws_iam_role.nodes-privatecanal-example-com.arn}"
+  nodes_role_name                   = "${aws_iam_role.nodes-privatecanal-example-com.name}"
+  region                            = "us-test-1"
+  route_table_private-us-test-1a_id = "${aws_route_table.private-us-test-1a-privatecanal-example-com.id}"
+  route_table_public_id             = "${aws_route_table.privatecanal-example-com.id}"
+  subnet_us-test-1a_id              = "${aws_subnet.us-test-1a-privatecanal-example-com.id}"
+  subnet_utility-us-test-1a_id      = "${aws_subnet.utility-us-test-1a-privatecanal-example-com.id}"
+  vpc_cidr_block                    = "${aws_vpc.privatecanal-example-com.cidr_block}"
+  vpc_id                            = "${aws_vpc.privatecanal-example-com.id}"
+}
+
+output "bastion_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.bastion-privatecanal-example-com.id}"]
+}
+
 output "bastion_security_group_ids" {
   value = ["${aws_security_group.bastion-privatecanal-example-com.id}"]
 }
@@ -14,6 +42,10 @@ output "cluster_name" {
   value = "privatecanal.example.com"
 }
 
+output "master_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.master-us-test-1a-masters-privatecanal-example-com.id}"]
+}
+
 output "master_security_group_ids" {
   value = ["${aws_security_group.masters-privatecanal-example-com.id}"]
 }
@@ -24,6 +56,10 @@ output "masters_role_arn" {
 
 output "masters_role_name" {
   value = "${aws_iam_role.masters-privatecanal-example-com.name}"
+}
+
+output "node_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.nodes-privatecanal-example-com.id}"]
 }
 
 output "node_security_group_ids" {
@@ -44,6 +80,26 @@ output "nodes_role_name" {
 
 output "region" {
   value = "us-test-1"
+}
+
+output "route_table_private-us-test-1a_id" {
+  value = "${aws_route_table.private-us-test-1a-privatecanal-example-com.id}"
+}
+
+output "route_table_public_id" {
+  value = "${aws_route_table.privatecanal-example-com.id}"
+}
+
+output "subnet_us-test-1a_id" {
+  value = "${aws_subnet.us-test-1a-privatecanal-example-com.id}"
+}
+
+output "subnet_utility-us-test-1a_id" {
+  value = "${aws_subnet.utility-us-test-1a-privatecanal-example-com.id}"
+}
+
+output "vpc_cidr_block" {
+  value = "${aws_vpc.privatecanal-example-com.cidr_block}"
 }
 
 output "vpc_id" {
@@ -158,10 +214,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privatecanal-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privatecanal.example.com"
-    Name                 = "us-test-1a.etcd-events.privatecanal.example.com"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "us-test-1a.etcd-events.privatecanal.example.com"
+    "k8s.io/etcd/events"                             = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                             = "1"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -172,15 +229,22 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatecanal-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privatecanal.example.com"
-    Name                 = "us-test-1a.etcd-main.privatecanal.example.com"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "us-test-1a.etcd-main.privatecanal.example.com"
+    "k8s.io/etcd/main"                               = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                             = "1"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
 resource "aws_eip" "us-test-1a-privatecanal-example-com" {
   vpc = true
+
+  tags = {
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "us-test-1a.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+  }
 }
 
 resource "aws_elb" "api-privatecanal-example-com" {
@@ -322,6 +386,8 @@ resource "aws_launch_configuration" "bastion-privatecanal-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-privatecanal-example-com" {
@@ -348,6 +414,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privatecanal-exam
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-privatecanal-example-com" {
@@ -369,6 +437,8 @@ resource "aws_launch_configuration" "nodes-privatecanal-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_nat_gateway" "us-test-1a-privatecanal-example-com" {
@@ -445,8 +515,9 @@ resource "aws_security_group" "api-elb-privatecanal-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "api-elb.privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "api-elb.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -456,8 +527,9 @@ resource "aws_security_group" "bastion-elb-privatecanal-example-com" {
   description = "Security group for bastion ELB"
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "bastion-elb.privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "bastion-elb.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -467,8 +539,9 @@ resource "aws_security_group" "bastion-privatecanal-example-com" {
   description = "Security group for bastion"
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "bastion.privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "bastion.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -478,8 +551,9 @@ resource "aws_security_group" "masters-privatecanal-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "masters.privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "masters.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -489,8 +563,9 @@ resource "aws_security_group" "nodes-privatecanal-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "nodes.privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "nodes.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 

@@ -41,7 +41,7 @@ func ValidateClusterUpdate(obj *kops.Cluster, status *kops.ClusterStatus, old *k
 		}
 
 		for k, newCluster := range newClusters {
-			fp := field.NewPath("Spec", "EtcdClusters").Key(k)
+			fp := field.NewPath("spec", "etcdClusters").Key(k)
 
 			oldCluster := oldClusters[k]
 			allErrs = append(allErrs, validateEtcdClusterUpdate(fp, newCluster, status, oldCluster)...)
@@ -49,7 +49,7 @@ func ValidateClusterUpdate(obj *kops.Cluster, status *kops.ClusterStatus, old *k
 		for k := range oldClusters {
 			newCluster := newClusters[k]
 			if newCluster == nil {
-				fp := field.NewPath("Spec", "EtcdClusters").Key(k)
+				fp := field.NewPath("spec", "etcdClusters").Key(k)
 				allErrs = append(allErrs, field.Forbidden(fp, "EtcdClusters cannot be removed"))
 			}
 		}
@@ -121,6 +121,10 @@ func validateEtcdMemberUpdate(fp *field.Path, obj *kops.EtcdMemberSpec, status *
 
 	if fi.StringValue(obj.VolumeType) != fi.StringValue(old.VolumeType) {
 		allErrs = append(allErrs, field.Forbidden(fp.Child("VolumeType"), "VolumeType cannot be changed"))
+	}
+
+	if fi.Int32Value(obj.VolumeIops) != fi.Int32Value(old.VolumeIops) {
+		allErrs = append(allErrs, field.Forbidden(fp.Child("VolumeIops"), "VolumeIops cannot be changed"))
 	}
 
 	if fi.Int32Value(obj.VolumeSize) != fi.Int32Value(old.VolumeSize) {

@@ -57,7 +57,7 @@ func TestVPCCreate(t *testing.T) {
 			t.Fatalf("error building context: %v", err)
 		}
 
-		if err := context.RunTasks(defaultDeadline); err != nil {
+		if err := context.RunTasks(testRunTasksOptions); err != nil {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
@@ -102,4 +102,29 @@ func buildTags(tags map[string]string) []*ec2.Tag {
 		})
 	}
 	return t
+}
+
+// Test4758 is a sanity check for https://github.com/kubernetes/kops/issues/4758
+func Test4758(t *testing.T) {
+	a := &VPC{
+		Name: s("cluster2.example.com"),
+		Tags: map[string]string{},
+	}
+
+	e := &VPC{
+		Name: s("cluster2.example.com"),
+		Tags: map[string]string{},
+	}
+
+	changes := &VPC{}
+	changed := fi.BuildChanges(a, e, changes)
+
+	if changed {
+		t.Errorf("expected changed=false")
+	}
+
+	expectedChanges := &VPC{}
+	if !reflect.DeepEqual(changes, expectedChanges) {
+		t.Errorf("unexpected changes: +%v", changes)
+	}
 }

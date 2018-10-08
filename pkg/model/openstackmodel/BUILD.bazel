@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "context.go",
+        "convenience.go",
+        "network.go",
+        "sshkey.go",
+    ],
+    importpath = "k8s.io/kops/pkg/model/openstackmodel",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/model:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/openstacktasks:go_default_library",
+    ],
+)

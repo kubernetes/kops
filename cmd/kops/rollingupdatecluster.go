@@ -21,6 +21,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -28,7 +29,7 @@ import (
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
@@ -36,9 +37,9 @@ import (
 	"k8s.io/kops/pkg/instancegroups"
 	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
-	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/kubectl/genericclioptions"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
@@ -88,7 +89,7 @@ var (
 
 		# Roll the k8s-cluster.example.com kops cluster,
 		# only roll the node instancegroup,
-		# use the new drain an validate functionality.
+		# use the new drain and validate functionality.
 		kops rolling-update cluster k8s-cluster.example.com --yes \
 		  --fail-on-validate-error="false" \
 		  --node-interval 8m \
@@ -137,6 +138,10 @@ type RollingUpdateOptions struct {
 	// InstanceGroups is the list of instance groups to rolling-update;
 	// if not specified, all instance groups will be updated
 	InstanceGroups []string
+
+	// InstanceGroupRoles is the list of roles we should rolling-update
+	// if not specified, all instance groups will be updated
+	InstanceGroupRoles []string
 }
 
 func (o *RollingUpdateOptions) InitDefaults() {
@@ -177,6 +182,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
 	cmd.Flags().BoolVarP(&options.Interactive, "interactive", "i", options.Interactive, "Prompt to continue after each instance is updated")
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
+	cmd.Flags().StringSliceVar(&options.InstanceGroupRoles, "instance-group-roles", options.InstanceGroupRoles, "If specified, only instance groups of the specified role will be updated (e.g. Master,Node,Bastion)")
 
 	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 		cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The rolling-update will fail if draining a node fails.")
@@ -222,9 +228,10 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	}
 
 	contextName := cluster.ObjectMeta.Name
-	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		clientcmd.NewDefaultClientConfigLoadingRules(),
-		&clientcmd.ConfigOverrides{CurrentContext: contextName}).ClientConfig()
+	clientGetter := genericclioptions.NewConfigFlags()
+	clientGetter.Context = &contextName
+
+	config, err := clientGetter.ToRESTConfig()
 	if err != nil {
 		return fmt.Errorf("cannot load kubecfg settings for %q: %v", contextName, err)
 	}
@@ -277,6 +284,24 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 			}
 
 			filtered = append(filtered, found)
+		}
+
+		instanceGroups = filtered
+
+		// Don't warn if we find more ASGs than IGs
+		warnUnmatched = false
+	}
+
+	if len(options.InstanceGroupRoles) != 0 {
+		var filtered []*api.InstanceGroup
+
+		for _, ig := range instanceGroups {
+			for _, role := range options.InstanceGroupRoles {
+				if ig.Spec.Role == api.InstanceGroupRole(strings.Title(strings.ToLower(role))) {
+					filtered = append(filtered, ig)
+					continue
+				}
+			}
 		}
 
 		instanceGroups = filtered
@@ -372,7 +397,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		Force:             options.Force,
 		Cloud:             cloud,
 		K8sClient:         k8sClient,
-		ClientConfig:      kutil.NewClientConfig(config, "kube-system"),
+		ClientGetter:      clientGetter,
 		FailOnDrainError:  options.FailOnDrainError,
 		FailOnValidate:    options.FailOnValidate,
 		CloudOnly:         options.CloudOnly,
@@ -380,5 +405,5 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		PostDrainDelay:    options.PostDrainDelay,
 		ValidationTimeout: options.ValidationTimeout,
 	}
-	return d.RollingUpdate(groups, list)
+	return d.RollingUpdate(groups, cluster, list)
 }

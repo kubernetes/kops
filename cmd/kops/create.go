@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -33,7 +34,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/kubectl/genericclioptions/resource"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
@@ -45,8 +46,8 @@ var (
 	createLong = templates.LongDesc(i18n.T(`
 		Create a resource:` + validResources +
 		`
-	Create a cluster, instancegroup or secret using command line parameters
-	or YAML configuration specification files.
+	Create a cluster, instancegroup or secret using command line parameters, 
+	YAML configuration specification files, or stdin.
 	(Note: secrets cannot be created from YAML config files yet).
 	`))
 
@@ -55,8 +56,11 @@ var (
 	# Create a cluster from the configuration specification in a YAML file
 	kops create -f my-cluster.yaml
 
-	# Create secret from secret spec file 
+	# Create secret from secret spec file
 	kops create -f secret.yaml
+
+	# Create an instancegroup based on the YAML passed into stdin.
+	cat instancegroup.yaml | kops create -f -
 
 	# Create a cluster in AWS
 	kops create cluster --name=kubernetes-cluster.example.com \
@@ -68,7 +72,7 @@ var (
 	kops create ig --name=k8s-cluster.example.com node-example \
 		--role node --subnet my-subnet-name
 
-	# Create an new ssh public key called admin.
+	# Create a new ssh public key called admin.
 	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
 		--name k8s-cluster.example.com --state s3://example.com
 	`))
@@ -125,13 +129,20 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 	var sb bytes.Buffer
 	fmt.Fprintf(&sb, "\n")
 	for _, f := range c.Filenames {
-		contents, err := vfs.Context.ReadFile(f)
-		if err != nil {
-			return fmt.Errorf("error reading file %q: %v", f, err)
+		var contents []byte
+		if f == "-" {
+			contents, err = ConsumeStdin()
+			if err != nil {
+				return err
+			}
+		} else {
+			contents, err = vfs.Context.ReadFile(f)
+			if err != nil {
+				return fmt.Errorf("error reading file %q: %v", f, err)
+			}
 		}
-
 		// TODO: this does not support a JSON array
-		sections := bytes.Split(contents, []byte("\n---\n"))
+		sections := bytes.Split(bytes.Replace(contents, []byte("\r\n"), []byte("\n"), -1), []byte("\n---\n"))
 		for _, section := range sections {
 			defaults := &schema.GroupVersionKind{
 				Group:   v1alpha1.SchemeGroupVersion.Group,
@@ -188,7 +199,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 			case *kopsapi.SSHCredential:
 				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
 				if clusterName == "" {
-					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
+					return fmt.Errorf("must specify %q label with cluster name to create SSHCredential", kopsapi.LabelClusterName)
 				}
 				if v.Spec.PublicKey == "" {
 					return fmt.Errorf("spec.PublicKey is required")
@@ -233,4 +244,16 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 		}
 	}
 	return nil
+}
+
+// ConsumeStdin reads all the bytes available from stdin
+func ConsumeStdin() ([]byte, error) {
+	file := os.Stdin
+	buf := new(bytes.Buffer)
+	_, err := buf.ReadFrom(file)
+	if err != nil {
+		return nil, fmt.Errorf("error reading stdin: %v", err)
+	}
+
+	return buf.Bytes(), nil
 }

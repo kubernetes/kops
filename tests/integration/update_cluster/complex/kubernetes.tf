@@ -1,5 +1,27 @@
+locals = {
+  cluster_name                 = "complex.example.com"
+  master_autoscaling_group_ids = ["${aws_autoscaling_group.master-us-test-1a-masters-complex-example-com.id}"]
+  master_security_group_ids    = ["${aws_security_group.masters-complex-example-com.id}"]
+  masters_role_arn             = "${aws_iam_role.masters-complex-example-com.arn}"
+  masters_role_name            = "${aws_iam_role.masters-complex-example-com.name}"
+  node_autoscaling_group_ids   = ["${aws_autoscaling_group.nodes-complex-example-com.id}"]
+  node_security_group_ids      = ["${aws_security_group.nodes-complex-example-com.id}", "sg-exampleid3", "sg-exampleid4"]
+  node_subnet_ids              = ["${aws_subnet.us-test-1a-complex-example-com.id}"]
+  nodes_role_arn               = "${aws_iam_role.nodes-complex-example-com.arn}"
+  nodes_role_name              = "${aws_iam_role.nodes-complex-example-com.name}"
+  region                       = "us-test-1"
+  route_table_public_id        = "${aws_route_table.complex-example-com.id}"
+  subnet_us-test-1a_id         = "${aws_subnet.us-test-1a-complex-example-com.id}"
+  vpc_cidr_block               = "${aws_vpc.complex-example-com.cidr_block}"
+  vpc_id                       = "${aws_vpc.complex-example-com.id}"
+}
+
 output "cluster_name" {
   value = "complex.example.com"
+}
+
+output "master_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.master-us-test-1a-masters-complex-example-com.id}"]
 }
 
 output "master_security_group_ids" {
@@ -12,6 +34,10 @@ output "masters_role_arn" {
 
 output "masters_role_name" {
   value = "${aws_iam_role.masters-complex-example-com.name}"
+}
+
+output "node_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.nodes-complex-example-com.id}"]
 }
 
 output "node_security_group_ids" {
@@ -32,6 +58,18 @@ output "nodes_role_name" {
 
 output "region" {
   value = "us-test-1"
+}
+
+output "route_table_public_id" {
+  value = "${aws_route_table.complex-example-com.id}"
+}
+
+output "subnet_us-test-1a_id" {
+  value = "${aws_subnet.us-test-1a-complex-example-com.id}"
+}
+
+output "vpc_cidr_block" {
+  value = "${aws_vpc.complex-example-com.cidr_block}"
 }
 
 output "vpc_id" {
@@ -137,12 +175,13 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-complex-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "complex.example.com"
-    Name                 = "us-test-1a.etcd-events.complex.example.com"
-    Owner                = "John Doe"
-    "foo/bar"            = "fib+baz"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "us-test-1a.etcd-events.complex.example.com"
+    Owner                                       = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "k8s.io/etcd/events"                        = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                        = "1"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
@@ -153,12 +192,13 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-complex-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "complex.example.com"
-    Name                 = "us-test-1a.etcd-main.complex.example.com"
-    Owner                = "John Doe"
-    "foo/bar"            = "fib+baz"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "us-test-1a.etcd-main.complex.example.com"
+    Owner                                       = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "k8s.io/etcd/main"                          = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                        = "1"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
@@ -262,6 +302,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-complex-example-c
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-complex-example-com" {
@@ -283,6 +325,8 @@ resource "aws_launch_configuration" "nodes-complex-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = true
 }
 
 resource "aws_route" "0-0-0-0--0" {
@@ -326,8 +370,9 @@ resource "aws_security_group" "api-elb-complex-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "complex.example.com"
-    Name              = "api-elb.complex.example.com"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "api-elb.complex.example.com"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
@@ -337,8 +382,9 @@ resource "aws_security_group" "masters-complex-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "complex.example.com"
-    Name              = "masters.complex.example.com"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "masters.complex.example.com"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
@@ -348,8 +394,9 @@ resource "aws_security_group" "nodes-complex-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "complex.example.com"
-    Name              = "nodes.complex.example.com"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "nodes.complex.example.com"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 

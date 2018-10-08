@@ -58,12 +58,12 @@ type Cloud struct {
 
 var _ fi.Cloud = &Cloud{}
 
-// NewCloud returns a Cloud, expecting the env var DO_ACCESS_TOKEN
-// NewCloud will return an err if DO_ACCESS_TOKEN is not defined
+// NewCloud returns a Cloud, expecting the env var DIGITALOCEAN_ACCESS_TOKEN
+// NewCloud will return an err if DIGITALOCEAN_ACCESS_TOKEN is not defined
 func NewCloud(region string) (*Cloud, error) {
-	accessToken := os.Getenv("DO_ACCESS_TOKEN")
+	accessToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	if accessToken == "" {
-		return nil, errors.New("DO_ACCESS_TOKEN is required")
+		return nil, errors.New("DIGITALOCEAN_ACCESS_TOKEN is required")
 	}
 
 	tokenSource := &TokenSource{
@@ -111,6 +111,11 @@ func (c *Cloud) DNS() (dnsprovider.Interface, error) {
 // Volumes returns an implementation of godo.StorageService
 func (c *Cloud) Volumes() godo.StorageService {
 	return c.Client.Storage
+}
+
+// VolumeActions returns an implementation of godo.StorageActionsService
+func (c *Cloud) VolumeActions() godo.StorageActionsService {
+	return c.Client.StorageActions
 }
 
 func (c *Cloud) Droplets() godo.DropletsService {

@@ -20,6 +20,7 @@ package mount
 
 import (
 	"errors"
+	"os"
 )
 
 type execMounter struct{}
@@ -82,6 +83,34 @@ func (mounter *execMounter) MakeFile(pathname string) error {
 	return nil
 }
 
-func (mounter *execMounter) ExistsPath(pathname string) bool {
-	return true
+func (mounter *execMounter) ExistsPath(pathname string) (bool, error) {
+	return true, errors.New("not implemented")
+}
+
+func (mounter *execMounter) PrepareSafeSubpath(subPath Subpath) (newHostPath string, cleanupAction func(), err error) {
+	return subPath.Path, nil, nil
+}
+
+func (mounter *execMounter) CleanSubPaths(podDir string, volumeName string) error {
+	return nil
+}
+
+func (mounter *execMounter) SafeMakeDir(pathname string, base string, perm os.FileMode) error {
+	return nil
+}
+
+func (mounter *execMounter) GetMountRefs(pathname string) ([]string, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (mounter *execMounter) GetFSGroup(pathname string) (int64, error) {
+	return -1, errors.New("not implemented")
+}
+
+func (mounter *execMounter) GetSELinuxSupport(pathname string) (bool, error) {
+	return false, errors.New("not implemented")
+}
+
+func (mounter *execMounter) GetMode(pathname string) (os.FileMode, error) {
+	return 0, errors.New("not implemented")
 }

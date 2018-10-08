@@ -36,6 +36,10 @@ func FindDistribution(rootfs string) (Distribution, error) {
 			line = strings.TrimSpace(line)
 			if line == "DISTRIB_CODENAME=xenial" {
 				return DistributionXenial, nil
+			} else if line == "DISTRIB_CODENAME=bionic" {
+				glog.Warningf("bionic is not fully supported nor tested for Kops and Kubernetes")
+				glog.Warningf("this should only be used for testing purposes.")
+				return DistributionBionic, nil
 			}
 		}
 	} else if !os.IsNotExist(err) {
@@ -89,13 +93,16 @@ func FindDistribution(rootfs string) (Distribution, error) {
 		glog.Warningf("error reading /usr/lib/os-release: %v", err)
 	}
 
-	// ContainerOS uses /etc/os-release
+	// ContainerOS, Amazon Linux 2 uses /etc/os-release
 	osRelease, err := ioutil.ReadFile(path.Join(rootfs, "etc/os-release"))
 	if err == nil {
 		for _, line := range strings.Split(string(osRelease), "\n") {
 			line = strings.TrimSpace(line)
 			if line == "ID=cos" {
 				return DistributionContainerOS, nil
+			}
+			if strings.HasPrefix(line, "PRETTY_NAME=\"Amazon Linux 2") {
+				return DistributionCentos7, nil
 			}
 		}
 		glog.Warningf("unhandled /etc/os-release info %q", string(osRelease))

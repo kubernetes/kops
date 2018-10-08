@@ -14,13 +14,13 @@ P2: Rarely occurring issues and features that will bring vSphere support closer 
 
 **Notes:**
 
-*   Effort estimation inclues fix for an issue or implementation for a feature, testing and generating a PR.
-*   There are a few issues that are related to startup and base image. If we can resolve "Use PhotonOS for vSphere node template" issue first and replace init-cloud with guestinfo, those issues **might** get resolved automatically. But further investination is needed and fixed issues will need verifications and testings.
+*   Effort estimation includes fix for an issue or implementation for a feature, testing and generating a PR.
+*   There are a few issues that are related to startup and base image. If we can resolve "Use PhotonOS for vSphere node template" issue first and replace init-cloud with guestinfo, those issues **might** get resolved automatically. But further investigation is needed and fixed issues will need verifications and testings.
 
 |Priority|Task|Type (bug, feature, test|Effort estimate(in days)|Remarks|
 |--- |--- |--- |--- |--- |
 |P0|Kops for vSphere is broken kubernetes/kops#2729|Bug|1||
-|P0|AWS EBS is set as default volume provisioner, instead of vSphere kubernetes/kops#2732|Bug|1|Looks like the fix is available, need to be tested again before commiting https://github.com/vmware/kops/pull/70/files|
+|P0|AWS EBS is set as default volume provisioner, instead of vSphere kubernetes/kops#2732|Bug|1|Looks like the fix is available, need to be tested again before committing https://github.com/vmware/kops/pull/70/files|
 |P0|Package installation through nodeup causing delay in cluster deployment kubernetes/kops#2742|Bug|2|If we get the "Use PhotonOS for vSphere node template" done first, this one may just be avoided. Verification required.|
 |P0|Connection to api.clustername.skydns.local is failing  kubernetes/kops#2744|Bug|1|This might be fixed by Abrar's PR in kubernetes already. Just need to verify.|
 |P0|Make update command, that includes scale up and down, work kubernetes/kops#2738. There are two possible ways to implement this- without auto scaling group (ASG) or with auto scaling group|Feature|4 days Assuming ASG is available. 4 days ASG is not available.|This effort estimation needs more analysis.|
@@ -61,7 +61,7 @@ List of all kops commands and how they behave for vSphere cloud provider, as of 
 |create|-f FILENAME|Three yams files are required- cluster: kops create -f ~/kops.yaml, master IG: kops create -f ~/kops.nodeig.yaml, node IG: kops create -f ~/kops.masterig.yaml |Yes|No||
 |delete|cluster|kops delete cluster v2c1.skydns.local --yes|Yes|No||
 |delete|instancegroup|kops delete instancegroup --name=v2c1.skydns.local  nodes.v2c1.skydns.local|No. No implementation available to list resources. Method corresponding to AWS is getting called and crashing with panic, without any useful message.|Yes||
-|delete|secrete||Yes|-||
+|delete|secret||Yes|-||
 |delete|-f FILENAME|kops delete -f config.yaml  --name=v2c1.skydns.local|No. Cluster deletion works. Instance group deletion is failing with error: panic: interface conversion: *vsphere.VSphereCloud is not awsup.AWSCloud: missing method AddAWSTags goroutine 1 [running]: panic(0x26fbd20, 0xc420770780) /usr/local/go/src/runtime/panic.go:500 +0x1a1 k8s.io/kops/upup/pkg/kutil.FindCloudInstanceGroups|Yes|Delete cluster, ig specified by the file.|
 |describe|secrets|kops describe secrets|Yes|No|Describe secrets, based on the kubectl context.|
 |edit|cluster|kops  edit cluster --name=v2c1.skydns.local nodes|Yes. Edited spec gets updated in object store.|Yes|Edit works. But it would be a bad user experience if we allow users to edit the spec, followed by a failed 'kops update' and then no way to go back to the older spec.|
@@ -73,7 +73,7 @@ List of all kops commands and how they behave for vSphere cloud provider, as of 
 |get|instancesgroups||Yes|-|Gets list of intancegroups. If yaml output is specified, this output can be modified and used for 'kops replace' command.|
 |get|secrets||Yes|-|Gets list of secrets.|
 |import|cluster|kops import cluster --region=us-west-2 --name=v2c1.skydns.local nodes|No. Current implementation is very aws specific. Multiple aws services are queried to construct the api.Cluster object.|Yes|Imports spec for an existing cluster into the object store. While this functionality is good for importing and managing existing k8s clusters using kops, it doesn't seem like a high priority functionality at this point of time.|
-|replace||kops replace -f FILENAME|No|Yes|Outout of `kops get cluster name -oyaml` or `kops get ig name -oyaml` can be updated and passed to 'kops replace' command.|
+|replace||kops replace -f FILENAME|No|Yes|Output of `kops get cluster name -oyaml` or `kops get ig name -oyaml` can be updated and passed to 'kops replace' command.|
 |rolling-update|cluster||No. Current implementation is aws specific.|Yes||
 |secrets|create||-|-|Legacy command, points to 'kops create secrets'.|
 |secrets|describe||-|-|Legacy command, points to 'kops describe secrets'.|

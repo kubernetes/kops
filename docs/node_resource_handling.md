@@ -1,4 +1,4 @@
-## Node Resource Handling In Kuberenetes
+## Node Resource Handling In Kubernetes
 
 An aspect of Kubernetes clusters that is often overlooked is the resources non-
 pod components require to run, such as:
@@ -109,7 +109,7 @@ But, it seems fitting to recommend the following:
    bursting at the same time.
 4. Increase eviction thresholds if they are too low - while extreme utilization
    is ideal, it might be too close to the edge such that the system doesn't have
-   enought time to reclaim resources via evictions if the resource increases
+   enough time to reclaim resources via evictions if the resource increases
    within that window rapidly.
 5. Reserve resources for system components once you've been able to profile your
    nodes i.e. `kube-reserved` and `system-reserved`.

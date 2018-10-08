@@ -29,7 +29,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple"
-	"k8s.io/kops/pkg/resources"
+	awsresources "k8s.io/kops/pkg/resources/aws"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -118,27 +118,27 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		return fmt.Errorf("error finding instances: %v", err)
 	}
 
-	subnets, err := resources.DescribeSubnets(x.Cloud)
+	subnets, err := awsresources.DescribeSubnets(x.Cloud)
 	if err != nil {
 		return fmt.Errorf("error finding subnets: %v", err)
 	}
 
-	securityGroups, err := resources.DescribeSecurityGroups(x.Cloud)
+	securityGroups, err := awsresources.DescribeSecurityGroups(x.Cloud, x.OldClusterName)
 	if err != nil {
 		return fmt.Errorf("error finding security groups: %v", err)
 	}
 
-	volumes, err := resources.DescribeVolumes(x.Cloud)
+	volumes, err := awsresources.DescribeVolumes(x.Cloud)
 	if err != nil {
 		return err
 	}
 
-	dhcpOptions, err := resources.DescribeDhcpOptions(x.Cloud)
+	dhcpOptions, err := awsresources.DescribeDhcpOptions(x.Cloud)
 	if err != nil {
 		return err
 	}
 
-	routeTables, err := resources.DescribeRouteTables(x.Cloud)
+	routeTables, err := awsresources.DescribeRouteTables(x.Cloud, oldClusterName)
 	if err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		return err
 	}
 
-	elbs, _, err := resources.DescribeELBs(x.Cloud)
+	elbs, _, err := awsresources.DescribeELBs(x.Cloud)
 	if err != nil {
 		return err
 	}
@@ -306,7 +306,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		}
 
 		if retagGateway {
-			gateways, err := resources.DescribeInternetGatewaysIgnoreTags(x.Cloud)
+			gateways, err := awsresources.DescribeInternetGatewaysIgnoreTags(x.Cloud)
 			if err != nil {
 				return fmt.Errorf("error listing gateways: %v", err)
 			}

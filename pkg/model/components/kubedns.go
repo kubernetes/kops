@@ -28,6 +28,7 @@ type KubeDnsOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &KubeDnsOptionsBuilder{}
 
+// BuildOptions fills in the kubedns model
 func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
@@ -36,12 +37,26 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	clusterSpec.KubeDNS.Replicas = 2
-	ip, err := WellKnownServiceIP(clusterSpec, 10)
-	if err != nil {
-		return err
+
+	if clusterSpec.KubeDNS.CacheMaxSize == 0 {
+		clusterSpec.KubeDNS.CacheMaxSize = 1000
 	}
-	clusterSpec.KubeDNS.ServerIP = ip.String()
-	clusterSpec.KubeDNS.Domain = clusterSpec.ClusterDNSDomain
+
+	if clusterSpec.KubeDNS.CacheMaxConcurrent == 0 {
+		clusterSpec.KubeDNS.CacheMaxConcurrent = 150
+	}
+
+	if clusterSpec.KubeDNS.ServerIP == "" {
+		ip, err := WellKnownServiceIP(clusterSpec, 10)
+		if err != nil {
+			return err
+		}
+		clusterSpec.KubeDNS.ServerIP = ip.String()
+	}
+
+	if clusterSpec.KubeDNS.Domain == "" {
+		clusterSpec.KubeDNS.Domain = clusterSpec.ClusterDNSDomain
+	}
 
 	return nil
 }

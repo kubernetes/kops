@@ -9,6 +9,7 @@ go_library(
         "tokenreview.go",
         "tokenreview_expansion.go",
     ],
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/authentication/internalversion",
     importpath = "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/authentication/internalversion",
     visibility = ["//visibility:public"],
     deps = [

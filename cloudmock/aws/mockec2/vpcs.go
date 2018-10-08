@@ -18,7 +18,6 @@ package mockec2
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -32,6 +31,9 @@ type vpcInfo struct {
 }
 
 func (m *MockEC2) FindVpc(id string) *ec2.Vpc {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	vpc := m.Vpcs[id]
 	if vpc == nil {
 		return nil
@@ -124,11 +126,7 @@ func (m *MockEC2) DescribeVpcs(request *ec2.DescribeVpcsInput) (*ec2.DescribeVpc
 					}
 				}
 			default:
-				if strings.HasPrefix(*filter.Name, "tag:") {
-					match = m.hasTag(ec2.ResourceTypeVpc, *vpc.main.VpcId, filter)
-				} else {
-					return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
-				}
+				match = m.hasTag(ec2.ResourceTypeVpc, *vpc.main.VpcId, filter)
 			}
 
 			if !match {
@@ -162,6 +160,9 @@ func (m *MockEC2) DescribeVpcAttributeWithContext(aws.Context, *ec2.DescribeVpcA
 	return nil, nil
 }
 func (m *MockEC2) DescribeVpcAttribute(request *ec2.DescribeVpcAttributeInput) (*ec2.DescribeVpcAttributeOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeVpcs: %v", request)
 
 	vpc := m.Vpcs[*request.VpcId]
@@ -180,10 +181,10 @@ func (m *MockEC2) DescribeVpcAttribute(request *ec2.DescribeVpcAttributeInput) (
 }
 
 func (m *MockEC2) ModifyVpcAttribute(request *ec2.ModifyVpcAttributeInput) (*ec2.ModifyVpcAttributeOutput, error) {
-	glog.Infof("ModifyVpcAttribute: %v", request)
-
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
+
+	glog.Infof("ModifyVpcAttribute: %v", request)
 
 	vpc := m.Vpcs[*request.VpcId]
 	if vpc == nil {
@@ -207,6 +208,31 @@ func (m *MockEC2) ModifyVpcAttributeWithContext(aws.Context, *ec2.ModifyVpcAttri
 	return nil, nil
 }
 func (m *MockEC2) ModifyVpcAttributeRequest(*ec2.ModifyVpcAttributeInput) (*request.Request, *ec2.ModifyVpcAttributeOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteVpc(request *ec2.DeleteVpcInput) (*ec2.DeleteVpcOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteVpc: %v", request)
+
+	id := aws.StringValue(request.VpcId)
+	o := m.Vpcs[id]
+	if o == nil {
+		return nil, fmt.Errorf("VPC %q not found", id)
+	}
+	delete(m.Vpcs, id)
+
+	return &ec2.DeleteVpcOutput{}, nil
+}
+
+func (m *MockEC2) DeleteVpcWithContext(aws.Context, *ec2.DeleteVpcInput, ...request.Option) (*ec2.DeleteVpcOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DeleteVpcRequest(*ec2.DeleteVpcInput) (*request.Request, *ec2.DeleteVpcOutput) {
 	panic("Not implemented")
 	return nil, nil
 }

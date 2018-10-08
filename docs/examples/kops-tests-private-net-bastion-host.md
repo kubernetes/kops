@@ -1,6 +1,6 @@
-# USING KOPS WITH PRIVATE NETWORKING AND A BASTION HOST IN A HIGLY-AVAILABLE SETUP
+# USING KOPS WITH PRIVATE NETWORKING AND A BASTION HOST IN A HIGHLY-AVAILABLE SETUP
 
-## WHAT WE WANT TO ACOMPLISH HERE?
+## WHAT WE WANT TO ACCOMPLISH HERE?
 
 The exercise described in this document will focus on the following goals:
 
@@ -76,7 +76,7 @@ A few things to note here:
 - The "--master-zones=us-east-1a,us-east-1b,us-east-1c" KOPS argument will actually enforce we want 3 masters here. "--node-count=2" only applies to the worker nodes (not the masters). Again, real "HA" on Kubernetes control plane requires 3 masters.
 - The "--topology private" argument will ensure that all our instances will have private IP's and no public IP's from amazon.
 - We are including the arguments "--node-size" and "master-size" to specify the "instance types" for both our masters and worker nodes.
-- Because we are just doing a simple LAB, we are using "t2.micro" machines. Please DONT USE t2.micro on real production systems. Start with "t2.medium" as a minimun realistic/workable machine type.
+- Because we are just doing a simple LAB, we are using "t2.micro" machines. Please DON'T USE t2.micro on real production systems. Start with "t2.medium" as a minimum realistic/workable machine type.
 - And finally, the "--networking kopeio-vxlan" argument. With the private networking model, we need to tell kops which networking subsystem to use. More information about kops supported networking models can be obtained from the [KOPS Kubernetes Networking Documentation](https://github.com/kubernetes/kops/blob/master/docs/networking.md). For this exercise we'll use "kopeio-vxlan" (or "kopeio" for short).
 
 **NOTE**: You can add the "--bastion" argument here if you are not using "gossip dns" and create the bastion from start, but if you are using "gossip-dns" this will make this cluster to fail (this is a bug we are correcting now). For the moment don't use "--bastion" when using gossip DNS. We'll show you how to get around this by first creating the private cluster, then creation the bastion instance group once the cluster is running.
@@ -307,7 +307,7 @@ ip-172-20-74-55.ec2.internal    master  True
 Your cluster privatekopscluster.k8s.local is ready
 ```
 
-## MAKING THE BASTION LAYER "HIGLY AVAILABLE".
+## MAKING THE BASTION LAYER "HIGHLY AVAILABLE".
 
 If for any reason any "legendary monster from the comics" decides to destroy the amazon AZ that contains our bastion, we'll basically be unable to enter to our instances. Let's add some H.A. to our bastion layer and force amazon to deploy additional bastion instances on other availability zones.
 

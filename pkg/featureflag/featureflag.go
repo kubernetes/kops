@@ -32,9 +32,17 @@ import (
 	"github.com/golang/glog"
 )
 
+// Bool returns a pointer to the boolean value
 func Bool(b bool) *bool {
 	return &b
 }
+
+// ExperimentalClusterDNS allows for setting the kubelet dns flag to experimental values.
+// It allows for experiments with alternative DNS configurations - in particular local proxies.
+var ExperimentalClusterDNS = New("ExperimentalClusterDNS", Bool(false))
+
+// KeepLaunchConfigurations can be set to prevent garbage collection of old launch configurations
+var KeepLaunchConfigurations = New("KeepLaunchConfigurations", Bool(false))
 
 // DNSPreCreate controls whether we pre-create DNS records.
 var DNSPreCreate = New("DNSPreCreate", Bool(true))
@@ -65,6 +73,9 @@ var SpecOverrideFlag = New("SpecOverrideFlag", Bool(false))
 // In particular, this is the only (?) way to grant the bucket.list permission
 // However we should no longer need it, with the keyset.yaml fix
 var GoogleCloudBucketAcl = New("GoogleCloudBucketAcl", Bool(false))
+
+// EnableNodeAuthorization enables the node authorization features
+var EnableNodeAuthorization = New("EnableNodeAuthorization", Bool(false))
 
 var flags = make(map[string]*FeatureFlag)
 var flagsMutex sync.Mutex

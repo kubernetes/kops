@@ -32,7 +32,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/kubectl/genericclioptions/resource"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
@@ -44,6 +44,9 @@ var (
 		# Replace a cluster desired configuration using a YAML file
 		kops replace -f my-cluster.yaml
 
+		# Replace an instancegroup using YAML passed into stdin.
+		cat instancegroup.yaml | kops replace -f -
+		
 		# Note, if the resource does not exist the command will error, use --force to provision resource
 		kops replace -f my-cluster.yaml --force
 		`))
@@ -97,9 +100,17 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 	codec := codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
 
 	for _, f := range c.Filenames {
-		contents, err := vfs.Context.ReadFile(f)
-		if err != nil {
-			return fmt.Errorf("error reading file %q: %v", f, err)
+		var contents []byte
+		if f == "-" {
+			contents, err = ConsumeStdin()
+			if err != nil {
+				return err
+			}
+		} else {
+			contents, err = vfs.Context.ReadFile(f)
+			if err != nil {
+				return fmt.Errorf("error reading file %q: %v", f, err)
+			}
 		}
 		sections := bytes.Split(contents, []byte("\n---\n"))
 
@@ -182,6 +193,30 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 					if err != nil {
 						return fmt.Errorf("error replacing instanceGroup: %v", err)
 					}
+				}
+			case *kopsapi.SSHCredential:
+				clusterName := v.ObjectMeta.Labels[kopsapi.LabelClusterName]
+				if clusterName == "" {
+					return fmt.Errorf("must specify %q label with cluster name to replace SSHCredential", kopsapi.LabelClusterName)
+				}
+				if v.Spec.PublicKey == "" {
+					return fmt.Errorf("spec.PublicKey is required")
+				}
+
+				cluster, err := clientset.GetCluster(clusterName)
+				if err != nil {
+					return err
+				}
+
+				sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+				if err != nil {
+					return err
+				}
+
+				sshKeyArr := []byte(v.Spec.PublicKey)
+				err = sshCredentialStore.AddSSHPublicKey("admin", sshKeyArr)
+				if err != nil {
+					return fmt.Errorf("error replacing SSHCredential: %v", err)
 				}
 			default:
 				glog.V(2).Infof("Type of object was %T", v)

@@ -70,7 +70,7 @@ func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		// launching a custom Kubernetes build), they all depend on
 		// the "docker.service" Service task.
 		switch v.(type) {
-		case *File, *Package, *UpdatePackages, *UserTask, *MountDiskTask:
+		case *File, *Package, *UpdatePackages, *UserTask, *GroupTask, *MountDiskTask:
 			deps = append(deps, v)
 		case *Service, *LoadImageTask:
 			// ignore
@@ -240,7 +240,7 @@ func getSystemdDependencies(serviceName string, definition string) ([]string, er
 			// We extract the first argument (only)
 			tokens := strings.SplitN(v, " ", 2)
 			dependencies = append(dependencies, tokens[0])
-			glog.V(2).Infof("extracted depdendency from %q: %q", line, tokens[0])
+			glog.V(2).Infof("extracted dependency from %q: %q", line, tokens[0])
 		}
 	}
 	return dependencies, nil

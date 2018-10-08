@@ -7,7 +7,6 @@ Edit clusters and other resources.
 
 ### Synopsis
 
-
 Edit a resource configuration. This command changes the desired configuration in the registry. 
 
   To set your preferred editor, you can define the EDITOR environment variable.
@@ -26,22 +25,29 @@ Edit a resource configuration. This command changes the desired configuration in
   --state=s3://kops-state-1234 nodes
 ```
 
+### Options
+
+```
+  -h, --help   help for edit
+```
+
 ### Options inherited from parent commands
 
 ```
       --alsologtostderr                  log to standard error as well as files
-      --config string                    config file (default is $HOME/.kops.yaml)
+      --config string                    yaml config file (default is $HOME/.kops.yaml)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops edit cluster](kops_edit_cluster.md)	 - Edit cluster.
 * [kops edit instancegroup](kops_edit_instancegroup.md)	 - Edit instancegroup.

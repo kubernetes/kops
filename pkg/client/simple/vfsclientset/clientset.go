@@ -112,6 +112,11 @@ func DeleteAllClusterState(basePath vfs.Path) error {
 		if err != nil {
 			return err
 		}
+
+		if relativePath == "" {
+			continue
+		}
+
 		if relativePath == "config" || relativePath == "cluster.spec" {
 			continue
 		}
@@ -125,6 +130,13 @@ func DeleteAllClusterState(basePath vfs.Path) error {
 			continue
 		}
 		if strings.HasPrefix(relativePath, "instancegroup/") {
+			continue
+		}
+		if strings.HasPrefix(relativePath, "manifests/") {
+			continue
+		}
+		// TODO: offer an option _not_ to delete backups?
+		if strings.HasPrefix(relativePath, "backups/") {
 			continue
 		}
 

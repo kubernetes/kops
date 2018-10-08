@@ -19,8 +19,6 @@ package apiserver
 import (
 	"fmt"
 
-	"k8s.io/apimachinery/pkg/apimachinery/announced"
-	"k8s.io/apimachinery/pkg/apimachinery/registered"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -31,20 +29,17 @@ import (
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/install"
-	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	registrycluster "k8s.io/kops/pkg/apiserver/registry/cluster"
 	registryinstancegroup "k8s.io/kops/pkg/apiserver/registry/instancegroup"
 )
 
 var (
-	groupFactoryRegistry = make(announced.APIGroupFactoryRegistry)
-	registry             = registered.NewOrDie("")
-	Scheme               = runtime.NewScheme()
-	Codecs               = serializer.NewCodecFactory(Scheme)
+	Scheme = runtime.NewScheme()
+	Codecs = serializer.NewCodecFactory(Scheme)
 )
 
 func init() {
-	install.Install(groupFactoryRegistry, registry, Scheme)
+	install.Install(Scheme)
 
 	// we need to add the options to empty v1
 	// TODO fix the server code to avoid this
@@ -102,7 +97,7 @@ func (cfg *Config) Complete() CompletedConfig {
 
 // New returns a new instance of KopsServer from the given config.
 func (c completedConfig) New() (*KopsServer, error) {
-	genericServer, err := c.GenericConfig.New("kops-apiserver", genericapiserver.EmptyDelegate)
+	genericServer, err := c.GenericConfig.New("kops-apiserver", genericapiserver.NewEmptyDelegate())
 	if err != nil {
 		return nil, err
 	}
@@ -111,20 +106,37 @@ func (c completedConfig) New() (*KopsServer, error) {
 		GenericAPIServer: genericServer,
 	}
 
-	apiGroupInfo := server.NewDefaultAPIGroupInfo(kops.GroupName, registry, Scheme, metav1.ParameterCodec, Codecs)
+	apiGroupInfo := server.NewDefaultAPIGroupInfo(kops.GroupName, Scheme, metav1.ParameterCodec, Codecs)
 
-	apiGroupInfo.GroupMeta.GroupVersion = v1alpha2.SchemeGroupVersion
-	v1alpha2storage := map[string]rest.Storage{}
-	v1alpha2storage["clusters"], err = registrycluster.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter)
-	if err != nil {
-		return nil, fmt.Errorf("error initializing clusters: %v", err)
+	//	apiGroupInfo.GroupMeta.GroupVersion = v1alpha2.SchemeGroupVersion
+
+	// {
+	// 	v1alpha1storage := map[string]rest.Storage{}
+	// 	v1alpha1storage["clusters"], err = registrycluster.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("error initializing clusters: %v", err)
+	// 	}
+	// 	//v1alpha2stv1alpha1storageorage["clusters/full"] = registrycluster.NewREST(c.RESTOptionsGetter)
+	// 	v1alpha1storage["instancegroups"], err = registryinstancegroup.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("error initializing instancegroups: %v", err)
+	// 	}
+	// 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
+	// }
+
+	{
+		v1alpha2storage := map[string]rest.Storage{}
+		v1alpha2storage["clusters"], err = registrycluster.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter)
+		if err != nil {
+			return nil, fmt.Errorf("error initializing clusters: %v", err)
+		}
+		//v1alpha2storage["clusters/full"] = registrycluster.NewREST(c.RESTOptionsGetter)
+		v1alpha2storage["instancegroups"], err = registryinstancegroup.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter)
+		if err != nil {
+			return nil, fmt.Errorf("error initializing instancegroups: %v", err)
+		}
+		apiGroupInfo.VersionedResourcesStorageMap["v1alpha2"] = v1alpha2storage
 	}
-	//v1alpha2storage["clusters/full"] = registrycluster.NewREST(c.RESTOptionsGetter)
-	v1alpha2storage["instancegroups"], err = registryinstancegroup.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter)
-	if err != nil {
-		return nil, fmt.Errorf("error initializing instancegroups: %v", err)
-	}
-	apiGroupInfo.VersionedResourcesStorageMap["v1alpha2"] = v1alpha2storage
 
 	if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {
 		return nil, err

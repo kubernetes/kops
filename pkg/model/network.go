@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -37,6 +36,10 @@ type NetworkModelBuilder struct {
 
 var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
+type zoneInfo struct {
+	PrivateSubnets []*kops.ClusterSubnetSpec
+}
+
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	sharedVPC := b.Cluster.SharedVPC()
 	vpcName := b.ClusterName()
@@ -44,13 +47,17 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// VPC that holds everything for the cluster
 	{
-
+		vpcTags := tags
+		if sharedVPC {
+			// We don't tag a shared VPC - we can identify it by its ID anyway.  Issue #4265
+			vpcTags = nil
+		}
 		t := &awstasks.VPC{
 			Name:             s(vpcName),
 			Lifecycle:        b.Lifecycle,
 			Shared:           fi.Bool(sharedVPC),
 			EnableDNSSupport: fi.Bool(true),
-			Tags:             tags,
+			Tags:             vpcTags,
 		}
 
 		if sharedVPC && b.IsKubernetesGTE("1.5") {
@@ -71,7 +78,20 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		if b.Cluster.Spec.NetworkCIDR != "" {
 			t.CIDR = s(b.Cluster.Spec.NetworkCIDR)
 		}
+
 		c.AddTask(t)
+	}
+
+	if !sharedVPC {
+		for _, cidr := range b.Cluster.Spec.AdditionalNetworkCIDRs {
+			c.AddTask(&awstasks.VPCCIDRBlock{
+				Name:      s(cidr),
+				Lifecycle: b.Lifecycle,
+				VPC:       b.LinkToVPC(),
+				Shared:    fi.Bool(sharedVPC),
+				CIDRBlock: &cidr,
+			})
+		}
 	}
 
 	if !sharedVPC {
@@ -101,11 +121,18 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	allSubnetsShared := true
+	allSubnetsSharedInZone := make(map[string]bool)
+	for i := range b.Cluster.Spec.Subnets {
+		subnetSpec := &b.Cluster.Spec.Subnets[i]
+		allSubnetsSharedInZone[subnetSpec.Zone] = true
+	}
+
 	for i := range b.Cluster.Spec.Subnets {
 		subnetSpec := &b.Cluster.Spec.Subnets[i]
 		sharedSubnet := subnetSpec.ProviderID != ""
 		if !sharedSubnet {
 			allSubnetsShared = false
+			allSubnetsSharedInZone[subnetSpec.Zone] = false
 		}
 	}
 
@@ -118,13 +145,16 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 			VPC:       b.LinkToVPC(),
 			Shared:    fi.Bool(sharedVPC),
-
-			Tags: tags,
 		}
+		igw.Tags = b.CloudTags(*igw.Name, *igw.Shared)
 		c.AddTask(igw)
 
 		if !allSubnetsShared {
-			routeTableTags := b.CloudTags(vpcName, sharedVPC)
+			// The route table is not shared if we're creating a subnet for our cluster
+			// That subnet will be owned, and will be associated with our RouteTable.
+			// On deletion we delete the subnet & the route table.
+			sharedRouteTable := false
+			routeTableTags := b.CloudTags(vpcName, sharedRouteTable)
 			routeTableTags[awsup.TagNameKopsRole] = "public"
 			publicRouteTable = &awstasks.RouteTable{
 				Name:      s(b.ClusterName()),
@@ -133,7 +163,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				VPC: b.LinkToVPC(),
 
 				Tags:   routeTableTags,
-				Shared: fi.Bool(sharedVPC),
+				Shared: fi.Bool(sharedRouteTable),
 			}
 			c.AddTask(publicRouteTable)
 
@@ -148,7 +178,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	privateZones := sets.NewString()
+	infoByZone := make(map[string]*zoneInfo)
 
 	for i := range b.Cluster.Spec.Subnets {
 		subnetSpec := &b.Cluster.Spec.Subnets[i]
@@ -172,6 +202,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		subnet := &awstasks.Subnet{
 			Name:             s(subnetName),
+			ShortName:        s(subnetSpec.Name),
 			Lifecycle:        b.Lifecycle,
 			VPC:              b.LinkToVPC(),
 			AvailabilityZone: s(subnetSpec.Zone),
@@ -211,30 +242,50 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				})
 
 				// TODO: validate even if shared?
-				privateZones.Insert(subnetSpec.Zone)
+				if infoByZone[subnetSpec.Zone] == nil {
+					infoByZone[subnetSpec.Zone] = &zoneInfo{}
+				}
+				infoByZone[subnetSpec.Zone].PrivateSubnets = append(infoByZone[subnetSpec.Zone].PrivateSubnets, subnetSpec)
 			}
 		default:
 			return fmt.Errorf("subnet %q has unknown type %q", subnetSpec.Name, subnetSpec.Type)
 		}
 	}
 
-	// Loop over zones
-	for i, zone := range privateZones.List() {
+	// Set up private route tables & egress
+	for zone, info := range infoByZone {
+		if len(info.PrivateSubnets) == 0 {
+			continue
+		}
 
 		utilitySubnet, err := b.LinkToUtilitySubnetInZone(zone)
 		if err != nil {
 			return err
 		}
 
+		egress := info.PrivateSubnets[0].Egress
+		publicIP := info.PrivateSubnets[0].PublicIP
+
+		// Verify we don't have mixed values for egress/publicIP - the code doesn't handle it
+		for _, subnet := range info.PrivateSubnets {
+			if subnet.Egress != egress {
+				return fmt.Errorf("cannot mix egress values in private subnets")
+			}
+			if subnet.PublicIP != publicIP {
+				return fmt.Errorf("cannot mix publicIP values in private subnets")
+			}
+		}
+
 		var ngw *awstasks.NatGateway
-		if b.Cluster.Spec.Subnets[i].Egress != "" {
-			if strings.HasPrefix(b.Cluster.Spec.Subnets[i].Egress, "nat-") {
+		var in *awstasks.Instance
+		if egress != "" {
+			if strings.HasPrefix(egress, "nat-") {
 
 				ngw = &awstasks.NatGateway{
 					Name:                 s(zone + "." + b.ClusterName()),
 					Lifecycle:            b.Lifecycle,
 					Subnet:               utilitySubnet,
-					ID:                   s(b.Cluster.Spec.Subnets[i].Egress),
+					ID:                   s(egress),
 					AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 					// If we're here, it means this NatGateway was specified, so we are Shared
 					Shared: fi.Bool(true),
@@ -243,8 +294,20 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				c.AddTask(ngw)
 
+			} else if strings.HasPrefix(egress, "i-") {
+
+				in = &awstasks.Instance{
+					Name:      s(egress),
+					Lifecycle: b.Lifecycle,
+					ID:        s(egress),
+					Shared:    fi.Bool(true),
+					Tags:      nil, // We don't need to add tags here
+				}
+
+				c.AddTask(in)
+
 			} else {
-				return fmt.Errorf("kops currently only supports re-use of NAT Gateways. We will support more eventually! Please see https://github.com/kubernetes/kops/issues/1530")
+				return fmt.Errorf("kops currently only supports re-use of either NAT EC2 Instances or NAT Gateways. We will support more eventually! Please see https://github.com/kubernetes/kops/issues/1530")
 			}
 
 		} else {
@@ -252,16 +315,17 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			// Every NGW needs a public (Elastic) IP address, every private
 			// subnet needs a NGW, lets create it. We tie it to a subnet
 			// so we can track it in AWS
-			var eip = &awstasks.ElasticIP{}
-			eip = &awstasks.ElasticIP{
+			eip := &awstasks.ElasticIP{
 				Name:                           s(zone + "." + b.ClusterName()),
 				Lifecycle:                      b.Lifecycle,
 				AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 			}
 
-			if b.Cluster.Spec.Subnets[i].PublicIP != "" {
-				eip.PublicIP = s(b.Cluster.Spec.Subnets[i].PublicIP)
+			if publicIP != "" {
+				eip.PublicIP = s(publicIP)
 				eip.Tags = b.CloudTags(*eip.Name, true)
+			} else {
+				eip.Tags = b.CloudTags(*eip.Name, false)
 			}
 
 			c.AddTask(eip)
@@ -288,14 +352,17 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Private Route Table
 		//
 		// The private route table that will route to the NAT Gateway
-		routeTableTags := b.CloudTags(b.NamePrivateRouteTableInZone(zone), sharedVPC)
+		// We create an owned route table if we created any subnet in that zone.
+		// Otherwise we consider it shared.
+		routeTableShared := allSubnetsSharedInZone[zone]
+		routeTableTags := b.CloudTags(b.NamePrivateRouteTableInZone(zone), routeTableShared)
 		routeTableTags[awsup.TagNameKopsRole] = "private-" + zone
 		rt := &awstasks.RouteTable{
 			Name:      s(b.NamePrivateRouteTableInZone(zone)),
 			VPC:       b.LinkToVPC(),
 			Lifecycle: b.Lifecycle,
 
-			Shared: fi.Bool(sharedVPC),
+			Shared: fi.Bool(routeTableShared),
 			Tags:   routeTableTags,
 		}
 		c.AddTask(rt)
@@ -304,13 +371,28 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		//
 		// Routes for the private route table.
 		// Will route to the NAT Gateway
-		c.AddTask(&awstasks.Route{
-			Name:       s("private-" + zone + "-0.0.0.0/0"),
-			Lifecycle:  b.Lifecycle,
-			CIDR:       s("0.0.0.0/0"),
-			RouteTable: rt,
-			NatGateway: ngw,
-		})
+		var r *awstasks.Route
+		if in != nil {
+
+			r = &awstasks.Route{
+				Name:       s("private-" + zone + "-0.0.0.0/0"),
+				Lifecycle:  b.Lifecycle,
+				CIDR:       s("0.0.0.0/0"),
+				RouteTable: rt,
+				Instance:   in,
+			}
+
+		} else {
+
+			r = &awstasks.Route{
+				Name:       s("private-" + zone + "-0.0.0.0/0"),
+				Lifecycle:  b.Lifecycle,
+				CIDR:       s("0.0.0.0/0"),
+				RouteTable: rt,
+				NatGateway: ngw,
+			}
+		}
+		c.AddTask(r)
 
 	}
 

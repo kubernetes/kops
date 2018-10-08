@@ -6,6 +6,7 @@ go_library(
         "doc.go",
         "version.go",
     ],
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/util/version",
     importpath = "k8s.io/kubernetes/pkg/util/version",
     visibility = ["//visibility:public"],
 )

@@ -25,6 +25,8 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/util/mount"
+	"k8s.io/kubernetes/pkg/util/nsenter"
+	utilsexec "k8s.io/utils/exec"
 )
 
 type VolumeMountController struct {
@@ -112,8 +114,16 @@ func (k *VolumeMountController) safeFormatAndMount(volume *Volume, mountpoint st
 	safeFormatAndMount := &mount.SafeFormatAndMount{}
 
 	if Containerized {
+		ne, err := nsenter.NewNsenter(pathFor("/"), utilsexec.New())
+		if err != nil {
+			return fmt.Errorf("error building ns-enter object: %v", err)
+		}
+
+		// When used with kubelet, rootDir is supposed to be /var/lib/kubelet
+		rootDir := "/"
+
 		// Build mount & exec implementations that execute in the host namespaces
-		safeFormatAndMount.Interface = mount.NewNsenterMounter()
+		safeFormatAndMount.Interface = mount.NewNsenterMounter(rootDir, ne)
 		safeFormatAndMount.Exec = NewNsEnterExec()
 
 		// Note that we don't use pathFor for operations going through safeFormatAndMount,
@@ -187,8 +197,9 @@ func (k *VolumeMountController) safeFormatAndMount(volume *Volume, mountpoint st
 		}
 
 		if mountedDevice != "" {
-			if mountedDevice != source {
-				return fmt.Errorf("device already mounted at %s, but is %s and we want %s", target, mountedDevice, source)
+			// We check that it is the correct device.  We also tolerate /dev/X as well as /root/dev/X and any of symlinks to them
+			if mountedDevice != source && mountedDevice != device && pathFor(mountedDevice) != pathForSymlinks(device) {
+				return fmt.Errorf("device already mounted at %s, but is %s and we want %s or %s", target, mountedDevice, source, device)
 			}
 		} else {
 			glog.Infof("mounting inside container: %s -> %s", source, target)

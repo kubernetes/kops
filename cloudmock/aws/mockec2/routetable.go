@@ -106,26 +106,29 @@ func (m *MockEC2) DescribeRouteTables(request *ec2.DescribeRouteTablesInput) (*e
 }
 
 func (m *MockEC2) CreateRouteTable(request *ec2.CreateRouteTableInput) (*ec2.CreateRouteTableOutput, error) {
+	glog.Infof("CreateRouteTable: %v", request)
+
+	id := m.allocateId("rtb")
+	return m.CreateRouteTableWithId(request, id)
+}
+
+func (m *MockEC2) CreateRouteTableWithId(request *ec2.CreateRouteTableInput, id string) (*ec2.CreateRouteTableOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-
-	glog.Infof("CreateRouteTable: %v", request)
 
 	if request.DryRun != nil {
 		glog.Fatalf("DryRun")
 	}
 
-	n := len(m.RouteTables) + 1
-
 	rt := &ec2.RouteTable{
-		RouteTableId: s(fmt.Sprintf("rtb-%d", n)),
+		RouteTableId: s(id),
 		VpcId:        request.VpcId,
 	}
 
 	if m.RouteTables == nil {
 		m.RouteTables = make(map[string]*ec2.RouteTable)
 	}
-	m.RouteTables[*rt.RouteTableId] = rt
+	m.RouteTables[id] = rt
 
 	copy := *rt
 	response := &ec2.CreateRouteTableOutput{
@@ -177,6 +180,30 @@ func (m *MockEC2) CreateRouteWithContext(aws.Context, *ec2.CreateRouteInput, ...
 	return nil, nil
 }
 func (m *MockEC2) CreateRouteRequest(*ec2.CreateRouteInput) (*request.Request, *ec2.CreateRouteOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteRouteTable(request *ec2.DeleteRouteTableInput) (*ec2.DeleteRouteTableOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteRouteTable: %v", request)
+
+	id := aws.StringValue(request.RouteTableId)
+	o := m.RouteTables[id]
+	if o == nil {
+		return nil, fmt.Errorf("RouteTable %q not found", id)
+	}
+	delete(m.RouteTables, id)
+
+	return &ec2.DeleteRouteTableOutput{}, nil
+}
+func (m *MockEC2) DeleteRouteTableWithContext(aws.Context, *ec2.DeleteRouteTableInput, ...request.Option) (*ec2.DeleteRouteTableOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DeleteRouteTableRequest(*ec2.DeleteRouteTableInput) (*request.Request, *ec2.DeleteRouteTableOutput) {
 	panic("Not implemented")
 	return nil, nil
 }

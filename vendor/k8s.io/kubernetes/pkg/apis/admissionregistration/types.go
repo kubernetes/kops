@@ -106,11 +106,9 @@ type Rule struct {
 type FailurePolicyType string
 
 const (
-	// Ignore means the initializer is removed from the initializers list of an
-	// object if the initializer is timed out.
+	// Ignore means that an error calling the webhook is ignored.
 	Ignore FailurePolicyType = "Ignore"
-	// For 1.7, only "Ignore" is allowed. "Fail" will be allowed when the
-	// extensible admission feature is beta.
+	// Fail means that an error calling the webhook causes the admission to fail.
 	Fail FailurePolicyType = "Fail"
 )
 
@@ -300,9 +298,7 @@ type WebhookClientConfig struct {
 	//
 	// If the webhook is running within the cluster, then you should use `service`.
 	//
-	// If there is only one port open for the service, that port will be
-	// used. If there are multiple ports open, port 443 will be used if it
-	// is open, otherwise it is an error.
+	// Port 443 will be used if it is open, otherwise it is an error.
 	//
 	// +optional
 	Service *ServiceReference

@@ -1,3 +1,31 @@
+locals = {
+  bastion_autoscaling_group_ids     = ["${aws_autoscaling_group.bastion-privateweave-example-com.id}"]
+  bastion_security_group_ids        = ["${aws_security_group.bastion-privateweave-example-com.id}"]
+  bastions_role_arn                 = "${aws_iam_role.bastions-privateweave-example-com.arn}"
+  bastions_role_name                = "${aws_iam_role.bastions-privateweave-example-com.name}"
+  cluster_name                      = "privateweave.example.com"
+  master_autoscaling_group_ids      = ["${aws_autoscaling_group.master-us-test-1a-masters-privateweave-example-com.id}"]
+  master_security_group_ids         = ["${aws_security_group.masters-privateweave-example-com.id}"]
+  masters_role_arn                  = "${aws_iam_role.masters-privateweave-example-com.arn}"
+  masters_role_name                 = "${aws_iam_role.masters-privateweave-example-com.name}"
+  node_autoscaling_group_ids        = ["${aws_autoscaling_group.nodes-privateweave-example-com.id}"]
+  node_security_group_ids           = ["${aws_security_group.nodes-privateweave-example-com.id}"]
+  node_subnet_ids                   = ["${aws_subnet.us-test-1a-privateweave-example-com.id}"]
+  nodes_role_arn                    = "${aws_iam_role.nodes-privateweave-example-com.arn}"
+  nodes_role_name                   = "${aws_iam_role.nodes-privateweave-example-com.name}"
+  region                            = "us-test-1"
+  route_table_private-us-test-1a_id = "${aws_route_table.private-us-test-1a-privateweave-example-com.id}"
+  route_table_public_id             = "${aws_route_table.privateweave-example-com.id}"
+  subnet_us-test-1a_id              = "${aws_subnet.us-test-1a-privateweave-example-com.id}"
+  subnet_utility-us-test-1a_id      = "${aws_subnet.utility-us-test-1a-privateweave-example-com.id}"
+  vpc_cidr_block                    = "${aws_vpc.privateweave-example-com.cidr_block}"
+  vpc_id                            = "${aws_vpc.privateweave-example-com.id}"
+}
+
+output "bastion_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.bastion-privateweave-example-com.id}"]
+}
+
 output "bastion_security_group_ids" {
   value = ["${aws_security_group.bastion-privateweave-example-com.id}"]
 }
@@ -14,6 +42,10 @@ output "cluster_name" {
   value = "privateweave.example.com"
 }
 
+output "master_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.master-us-test-1a-masters-privateweave-example-com.id}"]
+}
+
 output "master_security_group_ids" {
   value = ["${aws_security_group.masters-privateweave-example-com.id}"]
 }
@@ -24,6 +56,10 @@ output "masters_role_arn" {
 
 output "masters_role_name" {
   value = "${aws_iam_role.masters-privateweave-example-com.name}"
+}
+
+output "node_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.nodes-privateweave-example-com.id}"]
 }
 
 output "node_security_group_ids" {
@@ -44,6 +80,26 @@ output "nodes_role_name" {
 
 output "region" {
   value = "us-test-1"
+}
+
+output "route_table_private-us-test-1a_id" {
+  value = "${aws_route_table.private-us-test-1a-privateweave-example-com.id}"
+}
+
+output "route_table_public_id" {
+  value = "${aws_route_table.privateweave-example-com.id}"
+}
+
+output "subnet_us-test-1a_id" {
+  value = "${aws_subnet.us-test-1a-privateweave-example-com.id}"
+}
+
+output "subnet_utility-us-test-1a_id" {
+  value = "${aws_subnet.utility-us-test-1a-privateweave-example-com.id}"
+}
+
+output "vpc_cidr_block" {
+  value = "${aws_vpc.privateweave-example-com.cidr_block}"
 }
 
 output "vpc_id" {
@@ -158,10 +214,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privateweave-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privateweave.example.com"
-    Name                 = "us-test-1a.etcd-events.privateweave.example.com"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "us-test-1a.etcd-events.privateweave.example.com"
+    "k8s.io/etcd/events"                             = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                             = "1"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
@@ -172,15 +229,22 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privateweave-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privateweave.example.com"
-    Name                 = "us-test-1a.etcd-main.privateweave.example.com"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "us-test-1a.etcd-main.privateweave.example.com"
+    "k8s.io/etcd/main"                               = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                             = "1"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
 resource "aws_eip" "us-test-1a-privateweave-example-com" {
   vpc = true
+
+  tags = {
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "us-test-1a.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
+  }
 }
 
 resource "aws_elb" "api-privateweave-example-com" {
@@ -322,6 +386,8 @@ resource "aws_launch_configuration" "bastion-privateweave-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-privateweave-example-com" {
@@ -348,6 +414,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privateweave-exam
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-privateweave-example-com" {
@@ -369,6 +437,8 @@ resource "aws_launch_configuration" "nodes-privateweave-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_nat_gateway" "us-test-1a-privateweave-example-com" {
@@ -445,8 +515,9 @@ resource "aws_security_group" "api-elb-privateweave-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "api-elb.privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "api-elb.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
@@ -456,8 +527,9 @@ resource "aws_security_group" "bastion-elb-privateweave-example-com" {
   description = "Security group for bastion ELB"
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "bastion-elb.privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "bastion-elb.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
@@ -467,8 +539,9 @@ resource "aws_security_group" "bastion-privateweave-example-com" {
   description = "Security group for bastion"
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "bastion.privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "bastion.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
@@ -478,8 +551,9 @@ resource "aws_security_group" "masters-privateweave-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "masters.privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "masters.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
@@ -489,8 +563,9 @@ resource "aws_security_group" "nodes-privateweave-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "nodes.privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "nodes.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 

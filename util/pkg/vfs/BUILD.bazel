@@ -9,6 +9,8 @@ go_library(
         "k8scontext.go",
         "k8sfs.go",
         "memfs.go",
+        "osscontext.go",
+        "ossfs.go",
         "s3context.go",
         "s3fs.go",
         "sshfs.go",
@@ -20,6 +22,7 @@ go_library(
     importpath = "k8s.io/kops/util/pkg/vfs",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/try:go_default_library",
         "//util/pkg/hashing:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
@@ -28,6 +31,7 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/s3:go_default_library",
+        "//vendor/github.com/denverdino/aliyungo/oss:go_default_library",
         "//vendor/github.com/go-ini/ini:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",
@@ -42,6 +46,7 @@ go_library(
         "//vendor/google.golang.org/api/googleapi:go_default_library",
         "//vendor/google.golang.org/api/storage/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
+        "//vendor/k8s.io/client-go/util/homedir:go_default_library",
     ],
 )
 

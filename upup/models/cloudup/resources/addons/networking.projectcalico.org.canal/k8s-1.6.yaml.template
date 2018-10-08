@@ -92,7 +92,7 @@ spec:
               value: "kubernetes"
             # Enable felix logging.
             - name: FELIX_LOGSEVERITYSYS
-              value: "info"
+              value: "{{- or .Networking.Canal.LogSeveritySys "INFO" }}"
             # Period, in seconds, at which felix re-applies all iptables state
             - name: FELIX_IPTABLESREFRESHINTERVAL
               value: "60"

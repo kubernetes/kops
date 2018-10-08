@@ -1,3 +1,14 @@
+{{- if WeaveSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: weave-net
+  namespace: kube-system
+stringData:
+  network-password: {{ WeaveSecret }}
+---
+{{- end }}
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -33,6 +44,13 @@ rules:
       - get
       - list
       - watch
+  - apiGroups:
+      - ''
+    resources:
+      - nodes/status
+    verbs:
+      - patch
+      - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
@@ -100,6 +118,8 @@ metadata:
     name: weave-net
     role.kubernetes.io/networking: "1"
 spec:
+  # Wait 5 seconds to let pod connect before rolling next pod
+  minReadySeconds: 5
   template:
     metadata:
       labels:
@@ -128,7 +148,14 @@ spec:
             - name: CONN_LIMIT
               value: "{{ .Networking.Weave.ConnLimit }}"
             {{- end }}
-          image: 'weaveworks/weave-kube:2.2.0'
+            {{- if WeaveSecret }}
+            - name: WEAVE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: weave-net
+                  key: network-password
+            {{- end }}
+          image: 'weaveworks/weave-kube:2.4.0'
           livenessProbe:
             httpGet:
               host: 127.0.0.1
@@ -166,7 +193,7 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: 'weaveworks/weave-npc:2.2.0'
+          image: 'weaveworks/weave-npc:2.4.0'
           resources:
             requests:
               cpu: 50m

@@ -21,14 +21,18 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
+	"net/http"
 	"os"
 	"strings"
 
 	"github.com/golang/glog"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/pflag"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	_ "k8s.io/kubernetes/pkg/client/metrics/prometheus" // for client metric registration
 
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/watchers"
@@ -50,9 +54,10 @@ var (
 
 func main() {
 	fmt.Printf("dns-controller version %s\n", BuildVersion)
-	var dnsServer, dnsProviderID, gossipListen, gossipSecret, watchNamespace string
+	var dnsServer, dnsProviderID, gossipListen, gossipSecret, watchNamespace, metricsListen string
 	var gossipSeeds, zones []string
 	var watchIngress bool
+	var updateInterval int
 
 	// Be sure to get the glog flags
 	glog.Flush()
@@ -66,6 +71,8 @@ func main() {
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 	flags.StringVar(&watchNamespace, "watch-namespace", "", "Limits the functionality for pods, services and ingress to specific namespace, by default all")
 	flag.IntVar(&route53.MaxBatchSize, "route53-batch-size", route53.MaxBatchSize, "Maximum number of operations performed per changeset batch")
+	flag.StringVar(&metricsListen, "metrics-listen", "", "The address on which to listen for Prometheus metrics.")
+	flags.IntVar(&updateInterval, "update-interval", 5, "Configure interval at which to update DNS records.")
 
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
@@ -73,6 +80,13 @@ func main() {
 	flag.Set("logtostderr", "true")
 	flags.AddGoFlagSet(flag.CommandLine)
 	flags.Parse(os.Args)
+
+	if metricsListen != "" {
+		go func() {
+			http.Handle("/metrics", promhttp.Handler())
+			log.Fatal(http.ListenAndServe(metricsListen, nil))
+		}()
+	}
 
 	zoneRules, err := dns.ParseZoneRules(zones)
 	if err != nil {
@@ -151,7 +165,7 @@ func main() {
 		dnsProviders = append(dnsProviders, dnsProvider)
 	}
 
-	dnsController, err := dns.NewDNSController(dnsProviders, zoneRules)
+	dnsController, err := dns.NewDNSController(dnsProviders, zoneRules, updateInterval)
 	if err != nil {
 		glog.Errorf("Error building DNS controller: %v", err)
 		os.Exit(1)
@@ -169,7 +183,7 @@ func main() {
 
 // initializeWatchers is responsible for creating the watchers
 func initializeWatchers(client kubernetes.Interface, dnsctl *dns.DNSController, namespace string, watchIngress bool) error {
-	glog.V(1).Info("initializing the watch controllers, namespace: %q", namespace)
+	glog.V(1).Infof("initializing the watch controllers, namespace: %q", namespace)
 
 	nodeController, err := watchers.NewNodeController(client, dnsctl)
 	if err != nil {

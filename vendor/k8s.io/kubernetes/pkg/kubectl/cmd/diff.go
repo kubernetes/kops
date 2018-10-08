@@ -26,15 +26,18 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/dynamic"
 	api "k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/kubectl/apply/parse"
 	"k8s.io/kubernetes/pkg/kubectl/apply/strategy"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/kubectl/genericclioptions"
+	"k8s.io/kubernetes/pkg/kubectl/genericclioptions/resource"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 	"k8s.io/utils/exec"
 )
@@ -44,7 +47,7 @@ var (
 		Diff configurations specified by filename or stdin between their local,
 		last-applied, live and/or "merged" versions.
 
-		LOCAL and LIVE versions are diffed by default. Other availble keywords
+		LOCAL and LIVE versions are diffed by default. Other available keywords
 		are MERGED and LAST.
 
 		Output is always YAML.
@@ -101,15 +104,15 @@ func parseDiffArguments(args []string) (string, string, error) {
 	return from, to, nil
 }
 
-func NewCmdDiff(f cmdutil.Factory, stdout, stderr io.Writer) *cobra.Command {
+func NewCmdDiff(f cmdutil.Factory, streams genericclioptions.IOStreams) *cobra.Command {
 	var options DiffOptions
 	diff := DiffProgram{
-		Exec:   exec.New(),
-		Stdout: stdout,
-		Stderr: stderr,
+		Exec:      exec.New(),
+		IOStreams: streams,
 	}
 	cmd := &cobra.Command{
-		Use:     "diff -f FILENAME",
+		Use: "diff -f FILENAME",
+		DisableFlagsInUseLine: true,
 		Short:   i18n.T("Diff different versions of configurations"),
 		Long:    diffLong,
 		Example: diffExample,
@@ -131,9 +134,8 @@ func NewCmdDiff(f cmdutil.Factory, stdout, stderr io.Writer) *cobra.Command {
 // KUBERNETES_EXTERNAL_DIFF environment variable will be used a diff
 // program. By default, `diff(1)` will be used.
 type DiffProgram struct {
-	Exec   exec.Interface
-	Stdout io.Writer
-	Stderr io.Writer
+	Exec exec.Interface
+	genericclioptions.IOStreams
 }
 
 func (d *DiffProgram) getCommand(args ...string) exec.Cmd {
@@ -146,8 +148,8 @@ func (d *DiffProgram) getCommand(args ...string) exec.Cmd {
 	}
 
 	cmd := d.Exec.Command(diff, args...)
-	cmd.SetStdout(d.Stdout)
-	cmd.SetStderr(d.Stderr)
+	cmd.SetStdout(d.Out)
+	cmd.SetStderr(d.ErrOut)
 
 	return cmd
 }
@@ -263,6 +265,7 @@ type Object interface {
 // InfoObject is an implementation of the Object interface. It gets all
 // the information from the Info object.
 type InfoObject struct {
+	Remote  runtime.Unstructured
 	Info    *resource.Info
 	Encoder runtime.Encoder
 	Parser  *parse.Factory
@@ -288,14 +291,10 @@ func (obj InfoObject) Local() (map[string]interface{}, error) {
 }
 
 func (obj InfoObject) Live() (map[string]interface{}, error) {
-	if obj.Info.Object == nil {
+	if obj.Remote == nil {
 		return nil, nil // Object doesn't exist on cluster.
 	}
-	data, err := runtime.Encode(obj.Encoder, obj.Info.Object)
-	if err != nil {
-		return nil, err
-	}
-	return obj.toMap(data)
+	return obj.Remote.UnstructuredContent(), nil
 }
 
 func (obj InfoObject) Merged() (map[string]interface{}, error) {
@@ -315,7 +314,7 @@ func (obj InfoObject) Merged() (map[string]interface{}, error) {
 	}
 
 	if live == nil || last == nil {
-		return local, nil // We probably don't have a live verison, merged is local.
+		return local, nil // We probably don't have a live version, merged is local.
 	}
 
 	elmt, err := obj.Parser.CreateElement(last, local, live)
@@ -327,10 +326,10 @@ func (obj InfoObject) Merged() (map[string]interface{}, error) {
 }
 
 func (obj InfoObject) Last() (map[string]interface{}, error) {
-	if obj.Info.Object == nil {
+	if obj.Remote == nil {
 		return nil, nil // No object is live, return empty
 	}
-	accessor, err := meta.Accessor(obj.Info.Object)
+	accessor, err := meta.Accessor(obj.Remote)
 	if err != nil {
 		return nil, err
 	}
@@ -390,6 +389,50 @@ func (d *Differ) TearDown() {
 	d.To.Dir.Delete()   // Ignore error
 }
 
+type Downloader struct {
+	mapper  meta.RESTMapper
+	dclient dynamic.Interface
+	ns      string
+}
+
+func NewDownloader(f cmdutil.Factory) (*Downloader, error) {
+	var err error
+	var d Downloader
+
+	d.mapper, err = f.ToRESTMapper()
+	if err != nil {
+		return nil, err
+	}
+	d.dclient, err = f.DynamicClient()
+	if err != nil {
+		return nil, err
+	}
+	d.ns, _, _ = f.ToRawKubeConfigLoader().Namespace()
+
+	return &d, nil
+}
+
+func (d *Downloader) Download(info *resource.Info) (*unstructured.Unstructured, error) {
+	gvk := info.Object.GetObjectKind().GroupVersionKind()
+	mapping, err := d.mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+	if err != nil {
+		return nil, err
+	}
+
+	var resource dynamic.ResourceInterface
+	switch mapping.Scope.Name() {
+	case meta.RESTScopeNameNamespace:
+		if info.Namespace == "" {
+			info.Namespace = d.ns
+		}
+		resource = d.dclient.Resource(mapping.Resource).Namespace(info.Namespace)
+	case meta.RESTScopeNameRoot:
+		resource = d.dclient.Resource(mapping.Resource)
+	}
+
+	return resource.Get(info.Name, metav1.GetOptions{})
+}
+
 // RunDiff uses the factory to parse file arguments, find the version to
 // diff, and find each Info object for each files, and runs against the
 // differ.
@@ -408,7 +451,7 @@ func RunDiff(f cmdutil.Factory, diff *DiffProgram, options *DiffOptions, from, t
 
 	printer := Printer{}
 
-	cmdNamespace, enforceNamespace, err := f.DefaultNamespace()
+	cmdNamespace, enforceNamespace, err := f.ToRawKubeConfigLoader().Namespace()
 	if err != nil {
 		return err
 	}
@@ -417,9 +460,15 @@ func RunDiff(f cmdutil.Factory, diff *DiffProgram, options *DiffOptions, from, t
 		Unstructured().
 		NamespaceParam(cmdNamespace).DefaultNamespace().
 		FilenameParam(enforceNamespace, &options.FilenameOptions).
+		Local().
 		Flatten().
 		Do()
 	if err := r.Err(); err != nil {
+		return err
+	}
+
+	dl, err := NewDownloader(f)
+	if err != nil {
 		return err
 	}
 
@@ -428,17 +477,12 @@ func RunDiff(f cmdutil.Factory, diff *DiffProgram, options *DiffOptions, from, t
 			return err
 		}
 
-		if err := info.Get(); err != nil {
-			if !errors.IsNotFound(err) {
-				return cmdutil.AddSourceToErr(fmt.Sprintf("retrieving current configuration of:\n%v\nfrom server for:", info), info.Source, err)
-			}
-			info.Object = nil
-		}
-
+		remote, _ := dl.Download(info)
 		obj := InfoObject{
+			Remote:  remote,
 			Info:    info,
 			Parser:  parser,
-			Encoder: f.JSONEncoder(),
+			Encoder: cmdutil.InternalVersionJSONEncoder(),
 		}
 
 		return differ.Diff(obj, printer)

@@ -22,6 +22,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 
 	"github.com/blang/semver"
@@ -146,17 +147,48 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		}
 	}
 
+	if a.AssetsLocation != nil && a.AssetsLocation.ContainerProxy != nil {
+		containerProxy := strings.TrimRight(*a.AssetsLocation.ContainerProxy, "/")
+		normalized := image
+
+		// If the image name contains only a single / we need to determine if the image is located on docker-hub or if it's using a convenient URL like k8s.gcr.io/<image-name>
+		// In case of a hub image it should be sufficient to just prepend the proxy url, producing eg docker-proxy.example.com/weaveworks/weave-kube
+		if strings.Count(normalized, "/") <= 1 && !strings.ContainsAny(strings.Split(normalized, "/")[0], ".:") {
+			normalized = containerProxy + "/" + normalized
+		} else {
+			var re = regexp.MustCompile(`^[^/]+`)
+			normalized = re.ReplaceAllString(normalized, containerProxy)
+		}
+
+		asset.DockerImage = normalized
+		asset.CanonicalLocation = image
+
+		// Run the new image
+		image = asset.DockerImage
+	}
+
 	if a.AssetsLocation != nil && a.AssetsLocation.ContainerRegistry != nil {
 		registryMirror := *a.AssetsLocation.ContainerRegistry
 		normalized := image
 
 		// Remove the 'standard' kubernetes image prefix, just for sanity
-		normalized = strings.TrimPrefix(normalized, "k8s.gcr.io/")
+		if !util.IsKubernetesGTE("1.10", a.KubernetesVersion) && strings.HasPrefix(normalized, "gcr.io/google_containers/") {
+			normalized = strings.TrimPrefix(normalized, "gcr.io/google_containers/")
+		} else {
+			normalized = strings.TrimPrefix(normalized, "k8s.gcr.io/")
+		}
 
-		// We can't nest arbitrarily
-		// Some risk of collisions, but also -- and __ in the names appear to be blocked by docker hub
-		normalized = strings.Replace(normalized, "/", "-", -1)
-		asset.DockerImage = registryMirror + "/" + normalized
+		// When assembling the cluster spec, kops may call the option more then once until the config converges
+		// This means that this function may me called more than once on the same image
+		// It this is pass is the second one, the image will already have been normalized with the containerRegistry settings
+		// If this is the case, passing though the process again will re-prepend the container registry again
+		// and again, causing the spec to never converge and the config build to fail.
+		if !strings.HasPrefix(normalized, registryMirror+"/") {
+			// We can't nest arbitrarily
+			// Some risk of collisions, but also -- and __ in the names appear to be blocked by docker hub
+			normalized = strings.Replace(normalized, "/", "-", -1)
+			asset.DockerImage = registryMirror + "/" + normalized
+		}
 
 		asset.CanonicalLocation = image
 
@@ -172,7 +204,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 // It also returns the SHA hash of the file.
 func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Hash, error) {
 	if fileURL == nil {
-		return nil, nil, fmt.Errorf("unable to remap an nil URL")
+		return nil, nil, fmt.Errorf("unable to remap a nil URL")
 	}
 
 	fileAsset := &FileAsset{

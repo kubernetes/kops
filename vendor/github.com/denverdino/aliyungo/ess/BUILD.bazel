@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "client.go",
+        "configuration.go",
+        "group.go",
+        "rule.go",
+        "schedule.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/denverdino/aliyungo/ess",
+    importpath = "github.com/denverdino/aliyungo/ess",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/denverdino/aliyungo/common:go_default_library",
+        "//vendor/github.com/denverdino/aliyungo/ecs:go_default_library",
+    ],
+)

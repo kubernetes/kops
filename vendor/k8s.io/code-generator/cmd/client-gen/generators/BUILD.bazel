@@ -10,6 +10,7 @@ go_library(
         "generator_for_type.go",
         "tags.go",
     ],
+    importmap = "k8s.io/kops/vendor/k8s.io/code-generator/cmd/client-gen/generators",
     importpath = "k8s.io/code-generator/cmd/client-gen/generators",
     visibility = ["//visibility:public"],
     deps = [

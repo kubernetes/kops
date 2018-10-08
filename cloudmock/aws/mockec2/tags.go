@@ -29,6 +29,7 @@ import (
 
 // Not (yet?) in aws-sdk-go
 const ResourceTypeNatGateway = "nat-gateway"
+const ResourceTypeAddress = "elastic-ip"
 
 func (m *MockEC2) CreateTagsRequest(*ec2.CreateTagsInput) (*request.Request, *ec2.CreateTagsOutput) {
 	panic("Not implemented")
@@ -41,6 +42,9 @@ func (m *MockEC2) CreateTagsWithContext(aws.Context, *ec2.CreateTagsInput, ...re
 }
 
 func (m *MockEC2) CreateTags(request *ec2.CreateTagsInput) (*ec2.CreateTagsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("CreateTags %v", request)
 
 	for _, v := range request.Resources {
@@ -71,6 +75,8 @@ func (m *MockEC2) addTag(resourceId string, tag *ec2.Tag) {
 		resourceType = ec2.ResourceTypeDhcpOptions
 	} else if strings.HasPrefix(resourceId, "rtb-") {
 		resourceType = ec2.ResourceTypeRouteTable
+	} else if strings.HasPrefix(resourceId, "eipalloc-") {
+		resourceType = ResourceTypeAddress
 	} else {
 		glog.Fatalf("Unknown resource-type in create tags: %v", resourceId)
 	}
@@ -156,6 +162,9 @@ func (m *MockEC2) getTags(resourceType string, resourceId string) []*ec2.Tag {
 }
 
 func (m *MockEC2) DescribeTags(request *ec2.DescribeTagsInput) (*ec2.DescribeTagsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeTags %v", request)
 
 	var tags []*ec2.TagDescription

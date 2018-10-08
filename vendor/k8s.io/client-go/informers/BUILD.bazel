@@ -6,6 +6,7 @@ go_library(
         "factory.go",
         "generic.go",
     ],
+    importmap = "k8s.io/kops/vendor/k8s.io/client-go/informers",
     importpath = "k8s.io/client-go/informers",
     visibility = ["//visibility:public"],
     deps = [
@@ -29,6 +30,7 @@ go_library(
         "//vendor/k8s.io/api/rbac/v1alpha1:go_default_library",
         "//vendor/k8s.io/api/rbac/v1beta1:go_default_library",
         "//vendor/k8s.io/api/scheduling/v1alpha1:go_default_library",
+        "//vendor/k8s.io/api/scheduling/v1beta1:go_default_library",
         "//vendor/k8s.io/api/settings/v1alpha1:go_default_library",
         "//vendor/k8s.io/api/storage/v1:go_default_library",
         "//vendor/k8s.io/api/storage/v1alpha1:go_default_library",

@@ -248,12 +248,15 @@ func FindKopsVersionSpec(versions []KopsVersionSpec, version semver.Version) *Ko
 
 type CloudProviderID string
 
-const CloudProviderAWS CloudProviderID = "aws"
-const CloudProviderBareMetal CloudProviderID = "baremetal"
-const CloudProviderGCE CloudProviderID = "gce"
-const CloudProviderDO CloudProviderID = "digitalocean"
-const CloudProviderVSphere CloudProviderID = "vsphere"
-const CloudProviderOpenstack CloudProviderID = "openstack"
+const (
+	CloudProviderALI       CloudProviderID = "alicloud"
+	CloudProviderAWS       CloudProviderID = "aws"
+	CloudProviderBareMetal CloudProviderID = "baremetal"
+	CloudProviderDO        CloudProviderID = "digitalocean"
+	CloudProviderGCE       CloudProviderID = "gce"
+	CloudProviderOpenstack CloudProviderID = "openstack"
+	CloudProviderVSphere   CloudProviderID = "vsphere"
+)
 
 // FindImage returns the image for the cloudprovider, or nil if none found
 func (c *Channel) FindImage(provider CloudProviderID, kubernetesVersion semver.Version) *ChannelImageSpec {

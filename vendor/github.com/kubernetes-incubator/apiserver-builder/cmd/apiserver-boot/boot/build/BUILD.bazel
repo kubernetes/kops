@@ -1,0 +1,22 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "build.go",
+        "build_container.go",
+        "build_executables.go",
+        "build_resource_config.go",
+        "docs.go",
+        "generate.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/build",
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/build",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/util:go_default_library",
+        "//vendor/github.com/spf13/cobra:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+    ],
+)

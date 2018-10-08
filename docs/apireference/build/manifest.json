@@ -23,6 +23,9 @@
       "filename": "_generated_accessspec_v1alpha2_kops_definition.md"
     },
     {
+      "filename": "_generated_addonspec_v1alpha2_kops_definition.md"
+    },
+    {
       "filename": "_generated_alwaysallowauthorizationspec_v1alpha2_kops_definition.md"
     },
     {
@@ -48,6 +51,9 @@
     },
     {
       "filename": "_generated_canalnetworkingspec_v1alpha2_kops_definition.md"
+    },
+    {
+      "filename": "_generated_ciliumnetworkingspec_v1alpha2_kops_definition.md"
     },
     {
       "filename": "_generated_classicnetworkingspec_v1alpha2_kops_definition.md"
@@ -78,6 +84,9 @@
     },
     {
       "filename": "_generated_egressproxyspec_v1alpha2_kops_definition.md"
+    },
+    {
+      "filename": "_generated_etcdbackupspec_v1alpha2_kops_definition.md"
     },
     {
       "filename": "_generated_etcdclusterspec_v1alpha2_kops_definition.md"

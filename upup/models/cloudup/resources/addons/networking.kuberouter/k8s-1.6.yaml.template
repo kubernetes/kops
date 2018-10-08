@@ -37,18 +37,24 @@ spec:
     spec:
       containers:
       - name: kube-router
-        image: cloudnativelabs/kube-router
-        imagePullPolicy: Always
+        image: cloudnativelabs/kube-router:v0.1.0
         args:
         - --run-router=true
         - --run-firewall=true
         - --run-service-proxy=true
+        - --metrics-port=12013
         - --kubeconfig=/var/lib/kube-router/kubeconfig
         env:
         - name: NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 20244
+          initialDelaySeconds: 10
+          periodSeconds: 3
         resources:
           requests:
             cpu: 100m
@@ -67,7 +73,6 @@ spec:
       initContainers:
       - name: install-cni
         image: busybox
-        imagePullPolicy: Always
         command:
         - /bin/sh
         - -c
@@ -88,7 +93,6 @@ spec:
       - key: CriticalAddonsOnly
         operator: Exists
       - effect: NoSchedule
-        key: node-role.kubernetes.io/master
         operator: Exists
       volumes:
       - hostPath:
@@ -107,7 +111,7 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: kube-router 
+  name: kube-router
   namespace: kube-system
 ---
 # Kube-router roles

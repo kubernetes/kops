@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "helpers.go",
+        "inflect.go",
+        "name.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/markbates/inflect",
+    importpath = "github.com/markbates/inflect",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/gobuffalo/envy:go_default_library"],
+)

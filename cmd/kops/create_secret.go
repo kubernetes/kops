@@ -30,7 +30,7 @@ var (
 	Create a secret`))
 
 	createSecretExample = templates.Examples(i18n.T(`
-	# Create an new ssh public key called admin.
+	# Create a new ssh public key called admin.
 	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
 		--name k8s-cluster.example.com --state s3://example.com
 
@@ -57,6 +57,7 @@ func NewCmdCreateSecret(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdCreateSecretDockerConfig(f, out))
 	cmd.AddCommand(NewCmdCreateSecretEncryptionConfig(f, out))
 	cmd.AddCommand(NewCmdCreateKeypairSecret(f, out))
+	cmd.AddCommand(NewCmdCreateSecretWeaveEncryptionConfig(f, out))
 
 	return cmd
 }

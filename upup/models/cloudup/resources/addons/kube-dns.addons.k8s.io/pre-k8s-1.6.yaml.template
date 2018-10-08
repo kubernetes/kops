@@ -131,7 +131,7 @@ spec:
           name: metrics
           protocol: TCP
       - name: dnsmasq
-        image: k8s.gcr.io/k8s-dns-dnsmasq-{{Arch}}:1.14.8
+        image: k8s.gcr.io/k8s-dns-dnsmasq-{{Arch}}:1.14.10
         livenessProbe:
           httpGet:
             path: /healthz-dnsmasq
@@ -142,7 +142,8 @@ spec:
           successThreshold: 1
           failureThreshold: 5
         args:
-        - --cache-size=1000
+        - --cache-size={{ KubeDNS.CacheMaxSize }}
+        - --dns-forward-max={{ KubeDNS.CacheMaxConcurrent }}
         - --no-resolv
         - --server=127.0.0.1#10053
         - --log-facility=-

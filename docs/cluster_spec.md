@@ -46,6 +46,15 @@ spec:
       idleTimeoutSeconds: 300
 ```
 
+You can use a valid SSL Certificate for your API Server Load Balancer. Currently, only AWS is supported:
+
+```yaml
+spec:
+  api:
+    loadBalancer:
+      sslCertificate: arn:aws:acm:<region>:<accountId>:certificate/<uuid>
+```
+
 ### etcdClusters v3 & tls
 
 Although kops doesn't presently default to etcd3, it is possible to turn on both v3 and TLS authentication for communication amongst cluster members. These options may be enabled via the cluster spec (manifests only i.e. no command line options as yet). An upfront warning; at present no upgrade path exists for migrating from v2 to v3 so **DO NOT** try to enable this on a v2 running cluster as it must be done on cluster creation. The below example snippet assumes a HA cluster of three masters.
@@ -72,6 +81,24 @@ etcdClusters:
   enableEtcdTLS: true
   name: events
   version: 3.0.17
+```
+
+> __Note:__ The images for etcd that kops uses are from the Google Cloud Repository. Google doesn't release every version of etcd to the gcr. Check that the version of etcd you want to use is available [at the gcr](https://console.cloud.google.com/gcr/images/google-containers/GLOBAL/etcd?gcrImageListsize=50) before using it in your cluster spec.
+
+By default, the Volumes created for the etcd clusters are 20GB each.  They can be adjusted via the `volumeSize` parameter.
+
+```yaml
+etcdClusters:
+- etcdMembers:
+  - instanceGroup: master-us-east-1a
+    name: a
+    volumeSize: 5
+  name: main
+- etcdMembers:
+  - instanceGroup: master-us-east-1a
+    name: a
+    volumeSize: 5
+  name: events
 ```
 
 ### sshAccess
@@ -175,9 +202,25 @@ spec:
 
 You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#fileassets)  feature to push an advanced audit policy file on the master nodes.
 
-Example policy file can be found [here]( https://raw.githubusercontent.com/kubernetes/website/master/docs/tasks/debug-application-cluster/audit-policy.yaml)
+Example policy file can be found [here](https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/audit/audit-policy.yaml)
 
-#### Max Requests Inflight 
+#### bootstrap tokens
+
+Read more about this here: https://kubernetes.io/docs/reference/access-authn-authz/bootstrap-tokens/
+
+```yaml
+spec:
+  kubeAPIServer:
+    enableBootstrapTokenAuth: true
+```
+
+By enabling this feature you instructing two things;
+- master nodes will bypass the bootstrap token but they _will_ build kubeconfigs with unique usernames in the system:nodes group _(this ensure's the master nodes confirm with the node authorization mode https://kubernetes.io/docs/reference/access-authn-authz/node/)_
+- secondly the nodes will be configured to use a bootstrap token located by default at `/var/lib/kubelet/bootstrap-kubeconfig` _(though this can be override in the kubelet spec)_. The nodes will sit the until a bootstrap file is created and once available attempt to provision the node.
+
+**Note** enabling bootstrap tokens does not provision bootstrap tokens for the worker nodes. Under this configuration it is assumed a third-party process is provisioning the tokens on behalf of the worker nodes. For the full setup please read [Node Authorizer Service](https://github.com/kubernetes/kops/blob/master/docs/node_authorization.md)
+
+#### Max Requests Inflight
 
 The maximum number of non-mutating requests in flight at a given time. When the server exceeds this, it rejects requests. Zero for no limit. (default 400)
 
@@ -250,6 +293,23 @@ spec:
     enableCustomMetrics: true
 ```
 
+#### Setting kubelet configurations together with the Amazon VPC backend
+Setting kubelet configurations together with the networking Amazon VPC backend requires to also set the `cloudProvider: aws` setting in this block. Example:
+
+```yaml
+spec:
+  kubelet:
+    enableCustomMetrics: true
+    cloudProvider: aws
+...
+...
+  cloudProvider: aws
+...
+...
+  networking:
+    amazonvpc: {}
+```
+
 ### kubeScheduler
 
 This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/
@@ -263,6 +323,26 @@ This block contains configurations for `kube-scheduler`.  See https://kubernetes
 Will make kube-scheduler use the scheduler policy from configmap "scheduler-policy" in namespace kube-system.
 
 Note that as of Kubernetes 1.8.0 kube-scheduler does not reload its configuration from configmap automatically. You will need to ssh into the master instance and restart the Docker container manually.
+
+### kubeDNS
+
+This block contains configurations for `kube-dns`.
+
+ ```yaml
+ spec:
+   kubeDNS:
+     provider: KubeDNS
+```
+
+Specifying KubeDNS will install kube-dns as the default service discovery.
+
+ ```yaml
+ spec:
+   kubeDNS:
+     provider: CoreDNS
+```
+
+This will install [CoreDNS](https://coredns.io/) instead of kube-dns.
 
 ### kubeControllerManager
 This block contains configurations for the `controller-manager`.
@@ -299,17 +379,17 @@ spec:
     kubeReserved:
         cpu: "100m"
         memory: "100Mi"
-        storage: "1Gi"
+        ephemeral-storage: "1Gi"
     kubeReservedCgroup: "/kube-reserved"
     systemReserved:
         cpu: "100m"
         memory: "100Mi"
-        storage: "1Gi"
+        ephemeral-storage: "1Gi"
     systemReservedCgroup: "/system-reserved"
     enforceNodeAllocatable: "pods,system-reserved,kube-reserved"
 ```
 
-Will result in the flag `--kube-reserved=cpu=100m,memory=100Mi,storage=1Gi --kube-reserved-cgroup=/kube-reserved --system-reserved=cpu=100mi,memory=100Mi,storage=1Gi --system-reserved-cgroup=/system-reserved --enforce-node-allocatable=pods,system-reserved,kube-reserved`
+Will result in the flag `--kube-reserved=cpu=100m,memory=100Mi,ephemeral-storage=1Gi --kube-reserved-cgroup=/kube-reserved --system-reserved=cpu=100m,memory=100Mi,ephemeral-storage=1Gi --system-reserved-cgroup=/system-reserved --enforce-node-allocatable=pods,system-reserved,kube-reserved`
 
 Learn [more about reserving compute resources](https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/).
 
@@ -328,22 +408,26 @@ More information about running in an existing VPC is [here](run_in_existing_vpc.
 
 Hooks allow for the execution of an action before the installation of Kubernetes on every node in a cluster.  For instance you can install Nvidia drivers for using GPUs. This hooks can be in the form of Docker images or manifest files (systemd units). Hooks can be placed in either the cluster spec, meaning they will be globally deployed, or they can be placed into the instanceGroup specification. Note: service names on the instanceGroup which overlap with the cluster spec take precedence and ignore the cluster spec definition, i.e. if you have a unit file 'myunit.service' in cluster and then one in the instanceGroup, only the instanceGroup is applied.
 
+When creating a systemd unit hook using the `manifest` field, the hook system will construct a systemd unit file for you. It creates the `[Unit]` section, adding an automated description and setting `Before` and `Requires` values based on the `before` and `requires` fields. The value of the `manifest` field is used as the `[Service]` section of the unit file. To override this behavior, and instead specify the entire unit file yourself, you may specify `useRawManifest: true`. In this case, the contents of the `manifest` field will be used as a systemd unit, unmodified. The `before` and `requires` fields may not be used together with `useRawManifest`.
+
 ```
 spec:
   # many sections removed
+
+  # run a docker container as a hook
   hooks:
   - before:
     - some_service.service
     requires:
     - docker.service
-      execContainer:
+    execContainer:
       image: kopeio/nvidia-bootstrap:1.6
       # these are added as -e to the docker environment
       environment:
         AWS_REGION: eu-west-1
         SOME_VAR: SOME_VALUE
 
-  # or a raw systemd unit
+  # or construct a systemd unit
   hooks:
   - name: iptable-restore.service
     roles:
@@ -352,6 +436,20 @@ spec:
     before:
     - kubelet.service
     manifest: |
+      EnvironmentFile=/etc/environment
+      # do some stuff
+
+  # or use a raw systemd unit
+  hooks:
+  - name: iptable-restore.service
+    roles:
+    - Node
+    - Master
+    useRawManifest: true
+    manifest: |
+      [Unit]
+      Description=Restore iptables rules
+      Before=kubelet.service
       [Service]
       EnvironmentFile=/etc/environment
       # do some stuff
@@ -385,15 +483,37 @@ spec:
       image: busybox
 ```
 
+Install cachefiled
+
+```
+spec:
+  # many sections removed
+  hooks:
+  - before:
+    - kubelet.service
+    manifest: |
+      Type=oneshot
+      ExecStart=/sbin/modprobe cachefiles
+    name: cachefiles.service
+  - execContainer:
+      command:
+      - sh
+      - -c
+      - chroot /rootfs apt-get update && chroot /rootfs apt-get install -y cachefilesd
+        && chroot /rootfs sed -i s/#RUN/RUN/ /etc/default/cachefilesd && chroot /rootfs
+        service cachefilesd restart
+      image: busybox
+```
+
 ### fileAssets
 
-FileAssets is an alpha feature which permits you to place inline file content into the cluster and instanceGroup specification. It's desiginated as alpha as you can probably do this via kubernetes daemonsets as an alternative.
+FileAssets is an alpha feature which permits you to place inline file content into the cluster and instanceGroup specification. It's designated as alpha as you can probably do this via kubernetes daemonsets as an alternative.
 
 ```yaml
 spec:
   fileAssets:
   - name: iptable-restore
-    # Note if not path is specificied the default path it /srv/kubernetes/assets/<name>
+    # Note if not path is specified the default path it /srv/kubernetes/assets/<name>
     path: /var/lib/iptables/rules-save
     roles: [Master,Node,Bastion] # a list of roles to apply the asset to, zero defaults to all
     content: |
@@ -405,7 +525,7 @@ spec:
 
 #### disableSecurityGroupIngress
 If you are using aws as `cloudProvider`, you can disable authorization of ELB security group to Kubernetes Nodes security group. In other words, it will not add security group rule.
-This can be usefull to avoid AWS limit: 50 rules per security group.
+This can be useful to avoid AWS limit: 50 rules per security group.
 ```yaml
 spec:
   cloudConfig:
@@ -431,7 +551,7 @@ It is possible to override Docker daemon options for all masters and nodes in th
 
 #### registryMirrors
 
-If you have a bunch of Docker instances (physicsal or vm) running, each time one of them pulls an image that is not present on the host, it will fetch it from the internet (DockerHub). By caching these images, you can keep the traffic within your local network and avoid egress bandwidth usage.
+If you have a bunch of Docker instances (physical or vm) running, each time one of them pulls an image that is not present on the host, it will fetch it from the internet (DockerHub). By caching these images, you can keep the traffic within your local network and avoid egress bandwidth usage.
 This setting benefits not only cluster provisioning but also image pulling.
 
 @see [Cache-Mirror Dockerhub For Speed](https://hackernoon.com/mirror-cache-dockerhub-locally-for-speed-f4eebd21a5ca)
@@ -477,4 +597,38 @@ spec:
     terraform:
       providerExtraConfig:
         alias: foo
+```
+
+### assets
+
+Assets define alernative locations from where to retrieve static files and containers
+
+#### containerRegistry
+
+The container registry enables kops / kubernetes to pull containers from a managed registry.
+This is useful when pulling containers from the internet is not an option, eg. because the
+deployment is offline / internet restricted or because of special requirements that apply
+for deployed artifacts, eg. auditing of containers.
+
+For a use case example, see [How to use kops in AWS China Region](https://github.com/kubernetes/kops/blob/master/docs/aws-china.md)
+
+```yaml
+spec:
+  assets:
+    containerRegistry: example.com/registry
+```
+
+
+#### containerProxy
+
+The container proxy is designed to acts as a [pull through cache](https://docs.docker.com/registry/recipes/mirror/) for docker container assets.
+Basically, what it does is it remaps the Kubernetes image URL to point to you cache so that the docker daemon will pull the image from that location.
+If, for example, the containerProxy is set to `proxy.example.com`, the image `k8s.gcr.io/kube-apiserver` will be pulled from `proxy.example.com/kube-apiserver` instead.
+Note that the proxy you use has to support this feature for private registries.
+
+
+```yaml
+spec:
+  assets:
+    containerProxy: proxy.example.com
 ```

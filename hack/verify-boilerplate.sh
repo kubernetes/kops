@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright 2014 The Kubernetes Authors.
 #
@@ -44,6 +44,6 @@ if [[ ${#TEMP_ARRAY[@]} -gt 0 ]]; then
   for file in "${TEMP_ARRAY[@]}"; do
     echo "FAIL: Boilerplate header is wrong for: ${file}"
   done
-  echo "FAIL: Please execute ./hack/update-header.sh to update headers"
+  echo "FAIL: Please execute ./hack/update-header.sh"
   exit 1
 fi

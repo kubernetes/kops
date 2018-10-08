@@ -1,6 +1,6 @@
 # Detailed description of a few selected arguments
 
-This list is not the full list, but a few arguments that where choosen.
+This list is not the full list, but a few arguments that where chosen.
 
 ## admin-access
 
