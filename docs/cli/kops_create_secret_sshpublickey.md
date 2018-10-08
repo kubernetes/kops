@@ -3,7 +3,7 @@
 
 ## kops create secret sshpublickey
 
-Create a ssh public key.
+Create an ssh public key.
 
 ### Synopsis
 
