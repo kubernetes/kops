@@ -313,13 +313,13 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.Channel, "channel", options.Channel, "Channel for default versions and configuration to use")
 
 	// Network topology
-	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Controls network topology for the cluster. public|private. Default is 'public'.")
+	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Controls network topology for the cluster: public|private.")
 
 	// Authorization
 	cmd.Flags().StringVar(&options.Authorization, "authorization", options.Authorization, "Authorization mode to use: "+AuthorizationFlagAlwaysAllow+" or "+AuthorizationFlagRBAC)
 
 	// DNS
-	cmd.Flags().StringVar(&options.DNSType, "dns", options.DNSType, "DNS hosted zone to use: public|private. Default is 'public'.")
+	cmd.Flags().StringVar(&options.DNSType, "dns", options.DNSType, "DNS hosted zone to use: public|private.")
 
 	// Bastion
 	cmd.Flags().BoolVar(&options.Bastion, "bastion", options.Bastion, "Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.")
