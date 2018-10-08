@@ -50,6 +50,6 @@ Create a secret
 * [kops create secret dockerconfig](kops_create_secret_dockerconfig.md)	 - Create a docker config.
 * [kops create secret encryptionconfig](kops_create_secret_encryptionconfig.md)	 - Create an encryption config.
 * [kops create secret keypair](kops_create_secret_keypair.md)	 - Create a secret keypair.
-* [kops create secret sshpublickey](kops_create_secret_sshpublickey.md)	 - Create a ssh public key.
+* [kops create secret sshpublickey](kops_create_secret_sshpublickey.md)	 - Create an ssh public key.
 * [kops create secret weavepassword](kops_create_secret_weavepassword.md)	 - Create a weave encryption config.
 
