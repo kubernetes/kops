@@ -300,7 +300,9 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 		hashString := strings.TrimSpace(string(b))
 		glog.V(2).Infof("Found hash %q for %q", hashString, u)
 
-		return hashing.FromString(hashString)
+		// Accept a hash string that is `<hash> <filename>`
+		fields := strings.Fields(hashString)
+		return hashing.FromString(fields[0])
 	}
 
 	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
