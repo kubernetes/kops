@@ -13,7 +13,7 @@ export ZONE="us-west-1a"
 export MASTER_ZONES="us-west-1a"
 export NAME=k8s.example.com
 export K8S_VERSION=1.6.4
-export NETWORKCIDER="10.240.0.0/16"
+export NETWORKCIDR="10.240.0.0/16"
 export MASTER_SIZE="m3.large"
 export WORKER_SIZE="m4.large"
 ```
@@ -28,7 +28,7 @@ kops create cluster $NAME              \
    --node-count=3                      \
    --node-size="$WORKER_SIZE"          \
    --master-size="$MASTER_SIZE"        \
-   --network-cidr=${NETWORKCIDER}      \
+   --network-cidr=${NETWORKCIDR}      \
    --dns-zone=ZVO7KL181S5AP            \
    --ssh-public-key=$HOME/.ssh/lab_no_password.pub
 ```
@@ -43,7 +43,7 @@ For more information on how to use and modify the configurations see [here](mani
 
 ## Managing instance groups
 
-You can also manage instance groups in seperate YAML files as well.  The command `kops get --name $NAME -o yaml > $NAME.yml` exports the entire clsuter.  An option is to have a YAML file for the cluster, and individual YAML files for the instance groups.  This allows you to do stuff like:
+You can also manage instance groups in separate YAML files as well.  The command `kops get --name $NAME -o yaml > $NAME.yml` exports the entire cluster.  An option is to have a YAML file for the cluster, and individual YAML files for the instance groups.  This allows you to do stuff like:
 
 ```shell
 if ! kops get cluster --name "$NAME"; then

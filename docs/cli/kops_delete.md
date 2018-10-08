@@ -7,11 +7,10 @@ Delete clusters,instancegroups, or secrets.
 
 ### Synopsis
 
-
 Delete Kubernetes clusters, instancegroups, and secrets, or a combination of the before mentioned.
 
 ```
-kops delete -f FILENAME [--yes]
+kops delete -f FILENAME [--yes] [flags]
 ```
 
 ### Examples
@@ -31,26 +30,28 @@ kops delete -f FILENAME [--yes]
 ### Options
 
 ```
-  -f, --filename stringSlice   Filename to use to delete the resource
-  -y, --yes                    Specify --yes to delete the resource
+  -f, --filename strings   Filename to use to delete the resource
+  -h, --help               help for delete
+  -y, --yes                Specify --yes to delete the resource
 ```
 
 ### Options inherited from parent commands
 
 ```
       --alsologtostderr                  log to standard error as well as files
-      --config string                    config file (default is $HOME/.kops.yaml)
+      --config string                    yaml config file (default is $HOME/.kops.yaml)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops delete cluster](kops_delete_cluster.md)	 - Delete a cluster.
 * [kops delete instancegroup](kops_delete_instancegroup.md)	 - Delete instancegroup

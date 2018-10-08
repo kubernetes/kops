@@ -27,10 +27,12 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
+	"k8s.io/helm/pkg/strvals"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/pkg/util/templater"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
@@ -45,6 +47,7 @@ var (
 
 	kops toolbox template \
 		--values values.yaml --values=another.yaml \
+		--set var=value --set-string othervar=true \
 		--snippets file_or_directory --snippets=another.dir \
 		--template file_or_directory --template=directory  \
 		--output cluster.yaml
@@ -63,6 +66,8 @@ type toolboxTemplateOption struct {
 	outputPath    string
 	snippetsPath  []string
 	templatePath  []string
+	values        []string
+	stringValues  []string
 }
 
 // NewCmdToolboxTemplate returns a new templating command
@@ -87,6 +92,8 @@ func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().StringSliceVar(&options.configPath, "values", options.configPath, "Path to a configuration file containing values to include in template")
+	cmd.Flags().StringArrayVar(&options.values, "set", options.values, "Set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)")
+	cmd.Flags().StringArrayVar(&options.stringValues, "set-string", options.stringValues, "Set STRING values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)")
 	cmd.Flags().StringSliceVar(&options.templatePath, "template", options.templatePath, "Path to template file or directory of templates to render")
 	cmd.Flags().StringSliceVar(&options.snippetsPath, "snippets", options.snippetsPath, "Path to directory containing snippets used for templating")
 	cmd.Flags().StringVar(&options.outputPath, "output", options.outputPath, "Path to output file, otherwise defaults to stdout")
@@ -100,7 +107,7 @@ func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
 // runToolBoxTemplate is the action for the command
 func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplateOption) error {
 	// @step: read in the configuration if any
-	context, err := newTemplateContext(options.configPath)
+	context, err := newTemplateContext(options.configPath, options.values, options.stringValues)
 	if err != nil {
 		return err
 	}
@@ -177,7 +184,7 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 			}
 			formatted, err := yaml.Marshal(&data)
 			if err != nil {
-				return fmt.Errorf("unable to marhshal formated content to yaml: %s", err)
+				return fmt.Errorf("unable to marhshal formatted content to yaml: %s", err)
 			}
 			documents = append(documents, string(formatted))
 		}
@@ -192,7 +199,7 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 		if err != nil {
 			return fmt.Errorf("unable to open file: %s, error: %v", options.outputPath, err)
 		}
-		defer w.Close()
+		defer try.CloseFile(w)
 		iowriter = w
 	}
 
@@ -204,7 +211,7 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 }
 
 // newTemplateContext is responsible for loadding the --values and build a context for the template
-func newTemplateContext(files []string) (map[string]interface{}, error) {
+func newTemplateContext(files []string, values []string, stringValues []string) (map[string]interface{}, error) {
 	context := make(map[string]interface{}, 0)
 
 	for _, x := range files {
@@ -223,13 +230,54 @@ func newTemplateContext(files []string) (map[string]interface{}, error) {
 				return nil, fmt.Errorf("unable decode the configuration file: %s, error: %v", j, err)
 			}
 
-			for k, v := range ctx {
-				context[k] = v
-			}
+			context = mergeValues(context, ctx)
+		}
+	}
+
+	// User specified a value via --set
+	for _, value := range values {
+		if err := strvals.ParseInto(value, context); err != nil {
+			return nil, fmt.Errorf("failed parsing --set data: %s", err)
+		}
+	}
+
+	// User specified a value via --set-string
+	for _, value := range stringValues {
+		if err := strvals.ParseIntoString(value, context); err != nil {
+			return nil, fmt.Errorf("failed parsing --set-string data: %s", err)
 		}
 	}
 
 	return context, nil
+}
+
+// Merges source and destination map, preferring values from the source map
+// Copied from the Helm (https://github.com/kubernetes/helm) project:
+// https://github.com/kubernetes/helm/blob/282984e75fd115a0765730efe09d8257c72fa56d/cmd/helm/install.go#L302
+func mergeValues(dest map[string]interface{}, src map[string]interface{}) map[string]interface{} {
+	for k, v := range src {
+		// If the key doesn't exist already, then just set the key to that value
+		if _, exists := dest[k]; !exists {
+			dest[k] = v
+			continue
+		}
+		nextMap, ok := v.(map[string]interface{})
+		// If it isn't another map, overwrite the value
+		if !ok {
+			dest[k] = v
+			continue
+		}
+		// Edge case: If the key exists in the destination, but isn't a map
+		destMap, isMap := dest[k].(map[string]interface{})
+		// If the source map has a map for this key, prefer it
+		if !isMap {
+			dest[k] = v
+			continue
+		}
+		// If we got to this point, it is a map in both, so merge them
+		dest[k] = mergeValues(destMap, nextMap)
+	}
+	return dest
 }
 
 // expandFiles is responsible for resolving any references to directories

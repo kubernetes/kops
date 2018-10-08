@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/edit"
 	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	util_editor "k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
@@ -147,11 +148,11 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		}
 
 		if len(results.file) > 0 {
-			os.Remove(results.file)
+			try.RemoveFile(results.file)
 		}
 
 		if bytes.Equal(stripComments(raw), stripComments(edited)) {
-			os.Remove(file)
+			try.RemoveFile(file)
 			fmt.Fprintln(out, "Edit cancelled, no changes made.")
 			return nil
 		}
@@ -161,7 +162,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 			return preservedFile(err, file, out)
 		}
 		if !lines {
-			os.Remove(file)
+			try.RemoveFile(file)
 			fmt.Fprintln(out, "Edit cancelled, saved file was empty.")
 			return nil
 		}

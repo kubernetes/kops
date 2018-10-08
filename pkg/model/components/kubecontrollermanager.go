@@ -152,7 +152,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		kcm.ConfigureCloudRoutes = fi.Bool(true)
 	} else if networking.External != nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(false)
-	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil {
+	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil || networking.Cilium != nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(false)
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external
@@ -164,6 +164,14 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	if kcm.UseServiceAccountCredentials == nil {
 		if b.Context.IsKubernetesGTE("1.6") {
 			kcm.UseServiceAccountCredentials = fi.Bool(true)
+		}
+	}
+
+	// @check if the node authorization is enabled and if so enable the tokencleaner controller (disabled by default)
+	// This is responsible for cleaning up bootstrap tokens which have expired
+	if b.Context.IsKubernetesGTE("1.10") {
+		if fi.BoolValue(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) && len(kcm.Controllers) <= 0 {
+			kcm.Controllers = []string{"*", "tokencleaner"}
 		}
 	}
 

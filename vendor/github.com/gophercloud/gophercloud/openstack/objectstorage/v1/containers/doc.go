@@ -7,6 +7,10 @@ containers represents two different objects.
 In addition to containing objects, you can also use the container to control
 access to objects by using an access control list (ACL).
 
+Note: When referencing the Object Storage API docs, some of the API actions
+are listed under "accounts" rather than "containers". This was an intentional
+design in Gophercloud to make some container actions feel more natural.
+
 Example to List Containers
 
 	listOpts := containers.ListOpts{

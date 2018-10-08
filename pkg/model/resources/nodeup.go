@@ -48,8 +48,7 @@ set -o pipefail
 NODEUP_URL={{ NodeUpSource }}
 NODEUP_HASH={{ NodeUpSourceHash }}
 
-{{ S3Env }}
-{{ AWS_REGION }}
+{{ EnvironmentVariables }}
 
 {{ ProxyEnv }}
 
@@ -75,25 +74,28 @@ download-or-bust() {
   while true; do
     for url in "${urls[@]}"; do
       local file="${url##*/}"
-      rm -f "${file}"
 
-      if [[ $(which curl) ]]; then
+      if [[ -e "${file}" ]]; then
+        echo "== File exists for ${url} =="
+
+      # CoreOS runs this script in a container without which (but has curl)
+      # Note also that busybox wget doesn't support wget --version, but busybox doesn't normally have curl
+      # So we default to wget unless we see curl
+      elif [[ $(curl --version) ]]; then
         if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
           echo "== Failed to curl ${url}. Retrying. =="
           break
         fi
-      elif [[ $(which wget ) ]]; then
+      else
         if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
           echo "== Failed to wget ${url}. Retrying. =="
           break
         fi
-      else
-        echo "== Could not find curl or wget. Retrying. =="
-        break
       fi
 
       if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
         echo "== Hash validation of ${url} failed. Retrying. =="
+        rm -f "${file}"
       else
         if [[ -n "${hash}" ]]; then
           echo "== Downloaded ${url} (SHA1 = ${hash}) =="
@@ -182,7 +184,7 @@ echo "== nodeup node config done =="
 `
 
 // AWSNodeUpTemplate returns a Mime Multi Part Archive containing the nodeup (bootstrap) script
-// and any aditional User Data passed to using AdditionalUserData in the IG Spec
+// and any additional User Data passed to using AdditionalUserData in the IG Spec
 func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 
 	userDataTemplate := NodeUpTemplate
@@ -211,8 +213,8 @@ func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 			}
 		}
 
-		for _, UserDataInfo := range ig.Spec.AdditionalUserData {
-			err = writeUserDataPart(mimeWriter, UserDataInfo.Name, UserDataInfo.Type, []byte(UserDataInfo.Content))
+		for _, d := range ig.Spec.AdditionalUserData {
+			err = writeUserDataPart(mimeWriter, d.Name, d.Type, []byte(d.Content))
 			if err != nil {
 				return "", err
 			}

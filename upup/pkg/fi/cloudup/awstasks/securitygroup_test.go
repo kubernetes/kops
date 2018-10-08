@@ -109,6 +109,7 @@ func TestSecurityGroupCreate(t *testing.T) {
 			Name:        s("sg1"),
 			Description: s("Description"),
 			VPC:         vpc1,
+			Tags:        map[string]string{"Name": "sg1"},
 		}
 
 		return map[string]fi.Task{
@@ -131,7 +132,7 @@ func TestSecurityGroupCreate(t *testing.T) {
 			t.Fatalf("error building context: %v", err)
 		}
 
-		if err := context.RunTasks(defaultDeadline); err != nil {
+		if err := context.RunTasks(testRunTasksOptions); err != nil {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 

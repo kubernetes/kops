@@ -7,7 +7,6 @@ Create a secret.
 
 ### Synopsis
 
-
 Create a secret
 
 ### Examples
@@ -24,25 +23,33 @@ Create a secret
   --name k8s-cluster.example.com --state s3://example.com
 ```
 
+### Options
+
+```
+  -h, --help   help for secret
+```
+
 ### Options inherited from parent commands
 
 ```
       --alsologtostderr                  log to standard error as well as files
-      --config string                    config file (default is $HOME/.kops.yaml)
+      --config string                    yaml config file (default is $HOME/.kops.yaml)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
 * [kops create secret dockerconfig](kops_create_secret_dockerconfig.md)	 - Create a docker config.
 * [kops create secret encryptionconfig](kops_create_secret_encryptionconfig.md)	 - Create an encryption config.
 * [kops create secret keypair](kops_create_secret_keypair.md)	 - Create a secret keypair.
-* [kops create secret sshpublickey](kops_create_secret_sshpublickey.md)	 - Create a ssh public key.
+* [kops create secret sshpublickey](kops_create_secret_sshpublickey.md)	 - Create an ssh public key.
+* [kops create secret weavepassword](kops_create_secret_weavepassword.md)	 - Create a weave encryption config.
 

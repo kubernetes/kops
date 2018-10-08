@@ -125,6 +125,9 @@ func (m *MockEC2) DescribeVolumesWithContext(aws.Context, *ec2.DescribeVolumesIn
 	return nil, nil
 }
 func (m *MockEC2) DescribeVolumes(request *ec2.DescribeVolumesInput) (*ec2.DescribeVolumesOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeVolumes: %v", request)
 
 	if request.VolumeIds != nil {
@@ -169,10 +172,18 @@ func (m *MockEC2) DescribeVolumes(request *ec2.DescribeVolumesInput) (*ec2.Descr
 	return response, nil
 }
 
-func (m *MockEC2) DescribeVolumesPages(*ec2.DescribeVolumesInput, func(*ec2.DescribeVolumesOutput, bool) bool) error {
-	panic("MockEC2 DescribeVolumesPages not implemented")
+func (m *MockEC2) DescribeVolumesPages(request *ec2.DescribeVolumesInput, callback func(*ec2.DescribeVolumesOutput, bool) bool) error {
+	// For the mock, we just send everything in one page
+	page, err := m.DescribeVolumes(request)
+	if err != nil {
+		return err
+	}
+
+	callback(page, false)
+
 	return nil
 }
+
 func (m *MockEC2) DescribeVolumesPagesWithContext(aws.Context, *ec2.DescribeVolumesInput, func(*ec2.DescribeVolumesOutput, bool) bool, ...request.Option) error {
 	panic("Not implemented")
 	return nil
@@ -187,6 +198,31 @@ func (m *MockEC2) DescribeVolumesModificationsWithContext(aws.Context, *ec2.Desc
 	return nil, nil
 }
 func (m *MockEC2) DescribeVolumesModificationsRequest(*ec2.DescribeVolumesModificationsInput) (*request.Request, *ec2.DescribeVolumesModificationsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteVolume(request *ec2.DeleteVolumeInput) (*ec2.DeleteVolumeOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteVolume: %v", request)
+
+	id := aws.StringValue(request.VolumeId)
+	o := m.Volumes[id]
+	if o == nil {
+		return nil, fmt.Errorf("Volume %q not found", id)
+	}
+	delete(m.Volumes, id)
+
+	return &ec2.DeleteVolumeOutput{}, nil
+}
+
+func (m *MockEC2) DeleteVolumeWithContext(aws.Context, *ec2.DeleteVolumeInput, ...request.Option) (*ec2.DeleteVolumeOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DeleteVolumeRequest(*ec2.DeleteVolumeInput) (*request.Request, *ec2.DeleteVolumeOutput) {
 	panic("Not implemented")
 	return nil, nil
 }

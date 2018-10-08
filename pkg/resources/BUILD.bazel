@@ -1,9 +1,8 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
     srcs = [
-        "aws.go",
         "dump.go",
         "dumpmodel.go",
         "tracker.go",
@@ -12,33 +11,10 @@ go_library(
     importpath = "k8s.io/kops/pkg/resources",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/dns:go_default_library",
         "//upup/pkg/fi:go_default_library",
-        "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/vsphere:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/service/autoscaling:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/service/cloudformation:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/service/elb:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/service/iam:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/service/route53:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/vmware/govmomi/find:go_default_library",
         "//vendor/github.com/vmware/govmomi/object:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    size = "small",
-    srcs = ["aws_test.go"],
-    embed = [":go_default_library"],
-    deps = [
-        "//cloudmock/aws/mockec2:go_default_library",
-        "//upup/pkg/fi/cloudup/awsup:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
     ],
 )

@@ -23,7 +23,9 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubeconfig"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/exec"
@@ -32,10 +34,9 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/kops/pkg/k8scodecs"
-	"k8s.io/kops/pkg/kubemanifest"
 )
 
+// PathAuthnConfig is the path to the custom webhook authentication config
 const PathAuthnConfig = "/etc/kubernetes/authn.config"
 
 // KubeAPIServerBuilder install kube-apiserver (just the manifest at the moment)
@@ -93,10 +94,10 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	// @check if we are using secure client certificates for kubelet and grab the certificates
 	if b.UseSecureKubelet() {
 		name := "kubelet-api"
-		if err := buildCertificateRequest(c, b.NodeupModelContext, name, ""); err != nil {
+		if err := b.BuildCertificateTask(c, name, name+".pem"); err != nil {
 			return err
 		}
-		if err := buildPrivateKeyRequest(c, b.NodeupModelContext, name, ""); err != nil {
+		if err := b.BuildPrivateKeyTask(c, name, name+"-key.pem"); err != nil {
 			return err
 		}
 	}
@@ -157,6 +158,122 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 		return nil
 	}
 
+	if b.Cluster.Spec.Authentication.Aws != nil {
+		id := "aws-iam-authenticator"
+		b.Cluster.Spec.KubeAPIServer.AuthenticationTokenWebhookConfigFile = fi.String(PathAuthnConfig)
+
+		{
+			caCertificate, err := b.NodeupModelContext.KeyStore.FindCert(fi.CertificateId_CA)
+			if err != nil {
+				return fmt.Errorf("error fetching AWS IAM Authentication CA certificate from keystore: %v", err)
+			}
+			if caCertificate == nil {
+				return fmt.Errorf("AWS IAM  Authentication CA certificate %q not found", fi.CertificateId_CA)
+			}
+
+			cluster := kubeconfig.KubectlCluster{
+				Server: "https://127.0.0.1:21362/authenticate",
+			}
+			context := kubeconfig.KubectlContext{
+				Cluster: "aws-iam-authenticator",
+				User:    "kube-apiserver",
+			}
+
+			cluster.CertificateAuthorityData, err = caCertificate.AsBytes()
+			if err != nil {
+				return fmt.Errorf("error encoding AWS IAM Authentication CA certificate: %v", err)
+			}
+
+			config := kubeconfig.KubectlConfig{}
+			config.Clusters = append(config.Clusters, &kubeconfig.KubectlClusterWithName{
+				Name:    "aws-iam-authenticator",
+				Cluster: cluster,
+			})
+			config.Users = append(config.Users, &kubeconfig.KubectlUserWithName{
+				Name: "kube-apiserver",
+			})
+			config.CurrentContext = "webhook"
+			config.Contexts = append(config.Contexts, &kubeconfig.KubectlContextWithName{
+				Name:    "webhook",
+				Context: context,
+			})
+
+			manifest, err := kops.ToRawYaml(config)
+			if err != nil {
+				return fmt.Errorf("error marshalling authentication config to yaml: %v", err)
+			}
+
+			c.AddTask(&nodetasks.File{
+				Path:     PathAuthnConfig,
+				Contents: fi.NewBytesResource(manifest),
+				Type:     nodetasks.FileType_File,
+				Mode:     fi.String("600"),
+			})
+		}
+
+		// We create user aws-iam-authenticator and hardcode its UID to 10000 as
+		// that is the ID used inside the aws-iam-authenticator container.
+		// The owner/group for the keypair to aws-iam-authenticator
+		{
+			c.AddTask(&nodetasks.UserTask{
+				Name:  "aws-iam-authenticator",
+				UID:   10000,
+				Shell: "/sbin/nologin",
+				Home:  "/srv/kubernetes/aws-iam-authenticator",
+			})
+		}
+
+		{
+			certificate, err := b.NodeupModelContext.KeyStore.FindCert(id)
+			if err != nil {
+				return fmt.Errorf("error fetching %q certificate from keystore: %v", id, err)
+			}
+			if certificate == nil {
+				return fmt.Errorf("certificate %q not found", id)
+			}
+
+			certificateData, err := certificate.AsBytes()
+			if err != nil {
+				return fmt.Errorf("error encoding %q certificate: %v", id, err)
+			}
+
+			c.AddTask(&nodetasks.File{
+				Path:     "/srv/kubernetes/aws-iam-authenticator/cert.pem",
+				Contents: fi.NewBytesResource(certificateData),
+				Type:     nodetasks.FileType_File,
+				Mode:     fi.String("600"),
+				Owner:    fi.String("aws-iam-authenticator"),
+				Group:    fi.String("aws-iam-authenticator"),
+			})
+		}
+
+		{
+			privateKey, err := b.NodeupModelContext.KeyStore.FindPrivateKey(id)
+			if err != nil {
+				return fmt.Errorf("error fetching %q private key from keystore: %v", id, err)
+			}
+			if privateKey == nil {
+				return fmt.Errorf("private key %q not found", id)
+			}
+
+			keyData, err := privateKey.AsBytes()
+			if err != nil {
+				return fmt.Errorf("error encoding %q private key: %v", id, err)
+			}
+
+			c.AddTask(&nodetasks.File{
+				Path:     "/srv/kubernetes/aws-iam-authenticator/key.pem",
+				Contents: fi.NewBytesResource(keyData),
+				Type:     nodetasks.FileType_File,
+				Mode:     fi.String("600"),
+				Owner:    fi.String("aws-iam-authenticator"),
+				Group:    fi.String("aws-iam-authenticator"),
+			})
+		}
+
+		return nil
+	}
+
 	return fmt.Errorf("Unrecognized authentication config %v", b.Cluster.Spec.Authentication)
 }
 
@@ -201,6 +318,21 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		if cert != nil {
 			certPath := filepath.Join(b.PathSrvKubernetes(), "apiserver-aggregator-ca.cert")
 			kubeAPIServer.RequestheaderClientCAFile = certPath
+		}
+	}
+
+	// @fixup: the admission controller migrated from --admission-control to --enable-admission-plugins, but
+	// most people will still have c.Spec.KubeAPIServer.AdmissionControl references into their configuration we need
+	// to fix up. A PR https://github.com/kubernetes/kops/pull/5221/ introduced the issue and since the command line
+	// flags are mutually exclusive the API refuses to come up.
+	if b.IsKubernetesGTE("1.10") {
+		// @note: note sure if this is the best place to put it, I could place into the validation.go which has the benefit of
+		// fixing up the manifests itself, but that feels VERY hacky
+		// @note: it's fine to use AdmissionControl here and it's not populated by the model, thus the only data could have come from the cluster spec
+		c := b.Cluster.Spec.KubeAPIServer
+		if len(c.AdmissionControl) > 0 {
+			copy(c.EnableAdmissionPlugins, c.AdmissionControl)
+			c.AdmissionControl = []string{}
 		}
 	}
 
@@ -302,7 +434,9 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	auditLogPath := b.Cluster.Spec.KubeAPIServer.AuditLogPath
-	if auditLogPath != nil {
+	// Don't mount a volume if the mount path is set to '-' for stdout logging
+	// See https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#audit-backends
+	if auditLogPath != nil && *auditLogPath != "-" {
 		// Mount the directory of the path instead, as kube-apiserver rotates the log by renaming the file.
 		// Renaming is not possible when the file is mounted as the host path, and will return a
 		// 'Device or resource busy' error
@@ -311,7 +445,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	if b.Cluster.Spec.Authentication != nil {
-		if b.Cluster.Spec.Authentication.Kopeio != nil {
+		if b.Cluster.Spec.Authentication.Kopeio != nil || b.Cluster.Spec.Authentication.Aws != nil {
 			addHostPathMapping(pod, container, "authn-config", PathAuthnConfig)
 		}
 	}
@@ -325,9 +459,15 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 
 func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	annotations := make(map[string]string)
-	annotations["dns.alpha.kubernetes.io/internal"] = b.Cluster.Spec.MasterInternalName
-	if b.Cluster.Spec.API != nil && b.Cluster.Spec.API.DNS != nil {
-		annotations["dns.alpha.kubernetes.io/external"] = b.Cluster.Spec.MasterPublicName
+
+	if b.Cluster.Spec.API != nil {
+		if b.Cluster.Spec.API.LoadBalancer == nil || b.Cluster.Spec.API.LoadBalancer.UseForInternalApi != true {
+			annotations["dns.alpha.kubernetes.io/internal"] = b.Cluster.Spec.MasterInternalName
+		}
+
+		if b.Cluster.Spec.API.DNS != nil {
+			annotations["dns.alpha.kubernetes.io/external"] = b.Cluster.Spec.MasterPublicName
+		}
 	}
 
 	return annotations

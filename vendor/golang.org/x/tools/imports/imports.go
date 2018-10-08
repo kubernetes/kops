@@ -98,10 +98,7 @@ func Process(filename string, src []byte, opt *Options) ([]byte, error) {
 		out = adjust(src, out)
 	}
 	if len(spacesBefore) > 0 {
-		out, err = addImportSpaces(bytes.NewReader(out), spacesBefore)
-		if err != nil {
-			return nil, err
-		}
+		out = addImportSpaces(bytes.NewReader(out), spacesBefore)
 	}
 
 	out, err = format.Source(out)
@@ -259,14 +256,9 @@ func matchSpace(orig []byte, src []byte) []byte {
 
 var impLine = regexp.MustCompile(`^\s+(?:[\w\.]+\s+)?"(.+)"`)
 
-// Used to set Scanner buffer size so that large tokens can be handled.
-// see https://github.com/golang/go/issues/18201
-const maxScanTokenSize = bufio.MaxScanTokenSize * 16
-
-func addImportSpaces(r io.Reader, breaks []string) ([]byte, error) {
+func addImportSpaces(r io.Reader, breaks []string) []byte {
 	var out bytes.Buffer
 	sc := bufio.NewScanner(r)
-	sc.Buffer(nil, maxScanTokenSize)
 	inImports := false
 	done := false
 	for sc.Scan() {
@@ -293,5 +285,5 @@ func addImportSpaces(r io.Reader, breaks []string) ([]byte, error) {
 
 		fmt.Fprintln(&out, s)
 	}
-	return out.Bytes(), sc.Err()
+	return out.Bytes()
 }

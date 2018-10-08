@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
+	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
@@ -76,6 +77,7 @@ type MockCloud struct {
 	MockIAM            iamiface.IAMAPI
 	MockRoute53        route53iface.Route53API
 	MockELB            elbiface.ELBAPI
+	MockELBV2          elbv2iface.ELBV2API
 }
 
 func (c *MockAWSCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
@@ -158,6 +160,14 @@ func (c *MockAWSCloud) CreateELBTags(loadBalancerName string, tags map[string]st
 	return createELBTags(c, loadBalancerName, tags)
 }
 
+func (c *MockAWSCloud) GetELBV2Tags(ResourceArn string) (map[string]string, error) {
+	return getELBV2Tags(c, ResourceArn)
+}
+
+func (c *MockAWSCloud) CreateELBV2Tags(ResourceArn string, tags map[string]string) error {
+	return createELBV2Tags(c, ResourceArn, tags)
+}
+
 func (c *MockAWSCloud) DescribeInstance(instanceID string) (*ec2.Instance, error) {
 	return nil, fmt.Errorf("MockAWSCloud DescribeInstance not implemented")
 }
@@ -203,6 +213,13 @@ func (c *MockAWSCloud) ELB() elbiface.ELBAPI {
 		glog.Fatalf("MockAWSCloud MockELB not set")
 	}
 	return c.MockELB
+}
+
+func (c *MockAWSCloud) ELBV2() elbv2iface.ELBV2API {
+	if c.MockELBV2 == nil {
+		glog.Fatalf("MockAWSCloud MockELBV2 not set")
+	}
+	return c.MockELBV2
 }
 
 func (c *MockAWSCloud) Autoscaling() autoscalingiface.AutoScalingAPI {

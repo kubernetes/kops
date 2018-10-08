@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "doc.go",
+        "flags.go",
         "index.go",
         "metrics.go",
         "openapi.go",
@@ -12,6 +13,7 @@ go_library(
         "swaggerui.go",
         "version.go",
     ],
+    importmap = "k8s.io/kops/vendor/k8s.io/apiserver/pkg/server/routes",
     importpath = "k8s.io/apiserver/pkg/server/routes",
     visibility = ["//visibility:public"],
     deps = [

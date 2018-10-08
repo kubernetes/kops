@@ -1,0 +1,263 @@
+example_location: "examples"
+api_groups:
+  - "ApiExtensions"
+  - "Apps"
+  - "Authentication"
+  - "Authorization"
+  - "Autoscaling"
+  - "Batch"
+  - "Certificates"
+  - "Core"
+  - "Extensions"
+  - "Meta"
+  - "Policy"
+  - "Rbac"
+  - "Scheduling"
+  - "Settings"
+  - "Storage"
+  - "RbacAuthorization"
+inline_definitions:
+  - name: Spec
+    match: ${resource}Spec
+  - name: Status
+    match: ${resource}Status
+  - name: List
+    match: ${resource}List
+  - name: DeploymentStrategy
+    match: ${resource}Strategy
+  - name: DeploymentRollback
+    match: ${resource}Rollback
+  - name: RollingUpdateDeployment
+    match: RollingUpdate${resource}
+  - name: EventSource
+    match: ${resource}Source
+resource_categories:
+  - name: "Workloads Apis"
+    include: "workloads"
+    resources:
+    - name: Container
+      version: v1
+      group: core
+      description_warning: "Containers are only ever created within the context of a <a href=\"#pod-v1-core\">Pod</a>.  This is usually done using a Controller.  See Controllers: <a href=\"#deployment-v1beta1-apps\">Deployment</a>, <a href=\"#job-v1-batch\">Job</a>, or <a href=\"#statefulset-v1beta1-apps\">StatefulSet</a>"
+    - name: CronJob
+      version: v1beta1
+      group: batch
+    - name: DaemonSet
+      version: v1
+      group: apps
+    - name: Deployment
+      version: v1
+      group: apps
+    - name: Job
+      version: v1
+      group: batch
+    - name: Pod
+      version: v1
+      group: core
+      description_warning: "It is recommended that users create Pods only through a Controller, and not directly.  See Controllers: <a href=\"#deployment-v1beta1-apps\">Deployment</a>, <a href=\"#job-v1-batch\">Job</a>, or <a href=\"#statefulset-v1beta1-apps\">StatefulSet</a>."
+    - name: ReplicaSet
+      version: v1
+      group: apps
+      description_warning: "In many cases it is recommended to create a <a href=\"#deployment-v1beta1-apps\">Deployment</a> instead of ReplicaSet."
+    - name: ReplicationController
+      version: v1
+      group: core
+      description_warning: "In many cases it is recommended to create a <a href=\"#deployment-v1beta1-apps\">Deployment</a> instead of a ReplicationController."
+    - name: StatefulSet
+      version: v1
+      group: apps
+  - name: "Service Apis"
+    include: "servicediscovery"
+    resources:
+    - name: Endpoints
+      version: v1
+      group: core
+    - name: Ingress
+      version: v1beta1
+      group: extensions
+    - name: Service
+      version: v1
+      group: core
+  - name: "Config & Storage Apis"
+    include: "config"
+    resources:
+    - name: ConfigMap
+      version: v1
+      group: core
+    - name: Secret
+      version: v1
+      group: core
+    - name: PersistentVolumeClaim
+      version: v1
+      group: core
+      description_note: "A <a href=\"#persistentvolume-v1-core\">PersistentVolume</a> must be allocated in the cluster to use this."
+    - name: StorageClass
+      version: v1
+      group: storage
+    - name: Volume
+      version: v1
+      group: core
+    - name: VolumeAttachment
+      version: v1alpha1
+      group: storage
+  - name: "Metadata Apis"
+    include: "meta"
+    resources:
+    - name: ControllerRevision
+      version: v1
+      group: apps
+    - name: CustomResourceDefinition
+      version: v1beta1
+      group: apiextensions
+    - name: Event
+      version: v1
+      group: core
+    - name: LimitRange
+      version: v1
+      group: core
+    - name: HorizontalPodAutoscaler
+      version: v1
+      group: autoscaling
+    - name: InitializerConfiguration
+      version: v1alpha1
+      group: admissionregistration
+    - name: MutatingWebhookConfiguration
+      version: v1beta1
+      group: admissionregistration
+    - name: ValidatingWebhookConfiguration
+      version: v1beta1
+      group: admissionregistration
+    - name: PodTemplate
+      version: v1
+      group: core
+    - name: PodDisruptionBudget
+      version: v1beta1
+      group: policy
+    - name: PriorityClass
+      version: v1alpha1
+      group: scheduling
+      description_warning: "Alpha objects should not be used in production and may not be compatible with future versions of the resource type."
+    - name: PodPreset
+      version: v1alpha1
+      group: settings
+      description_warning: "Alpha objects should not be used in production and may not be compatible with future versions of the resource type."
+    - name: PodSecurityPolicy
+      version: v1beta1
+      group: extensions
+  - name: "Cluster Apis"
+    include: "cluster"
+    resources:
+    - name: APIService
+      version: v1beta1
+      group: apiregistration
+    - name: Binding
+      version: v1
+      group: core
+    - name: CertificateSigningRequest
+      version: v1beta1
+      group: certificates
+    - name: ClusterRole
+      version: v1
+      group: rbac
+    - name: ClusterRoleBinding
+      version: v1
+      group: rbac
+    - name: ComponentStatus
+      version: v1
+      group: core
+    - name: LocalSubjectAccessReview
+      version: v1
+      group: authorization
+    - name: Namespace
+      version: v1
+      group: core
+    - name: Node
+      version: v1
+      group: core
+    - name: PersistentVolume
+      version: v1
+      group: core
+      description_note: "These are assigned to <a href=\"#pod-v1-core\">Pods</a> using <a href=\"#persistentvolumeclaim-v1-core\">PersistentVolumeClaims</a>."
+    - name: ResourceQuota
+      version: v1
+      group: core
+    - name: Role
+      version: v1
+      group: rbac
+    - name: RoleBinding
+      version: v1
+      group: rbac
+    - name: SelfSubjectAccessReview
+      version: v1
+      group: authorization
+    - name: SelfSubjectRulesReview
+      version: v1
+      group: authorization
+    - name: ServiceAccount
+      version: v1
+      group: core
+    - name: SubjectAccessReview
+      version: v1
+      group: authorization
+    - name: TokenReview
+      version: v1
+      group: authentication
+    - name: NetworkPolicy
+      version: v1
+      group: networking
+operation_categories:
+  - name: "Proxy Operations"
+    operation_types:
+    - name: Create Connect Portforward
+      match: connect${group}${version}Post(Namespaced)?${resource}Portforward
+    - name: Create Connect Proxy
+      match: connect${group}${version}Post(Namespaced)?${resource}Proxy
+    - name: Create Connect Proxy Path
+      match: connect${group}${version}Post(Namespaced)?${resource}ProxyWithPath
+    - name: Create Proxy
+      match: proxy${group}${version}POST(Namespaced)?${resource}
+    - name: Create Proxy Path
+      match: proxy${group}${version}POST(Namespaced)?${resource}WithPath
+    - name: Delete Connect Proxy
+      match: connect${group}${version}Delete(Namespaced)?${resource}Proxy
+    - name: Delete Connect Proxy Path
+      match: connect${group}${version}Delete(Namespaced)?${resource}ProxyWithPath
+    - name: Delete Proxy
+      match: proxy${group}${version}DELETE(Namespaced)?${resource}
+    - name: Delete Proxy Path
+      match: proxy${group}${version}DELETE(Namespaced)?${resource}WithPath
+    - name: Get Connect Portforward
+      match: connect${group}${version}Get(Namespaced)?${resource}Portforward
+    - name: Get Connect Proxy
+      match: connect${group}${version}Get(Namespaced)?${resource}Proxy
+    - name: Get Connect Proxy Path
+      match: connect${group}${version}Get(Namespaced)?${resource}ProxyWithPath
+    - name: Get Proxy
+      match: proxy${group}${version}GET(Namespaced)?${resource}
+    - name: Get Proxy Path
+      match: proxy${group}${version}GET(Namespaced)?${resource}WithPath
+    - name: Head Connect Proxy
+      match: connect${group}${version}Head(Namespaced)?${resource}Proxy
+    - name: Head Connect Proxy Path
+      match: connect${group}${version}Head(Namespaced)?${resource}ProxyWithPath
+    - name: Replace Connect Proxy
+      match: connect${group}${version}Put(Namespaced)?${resource}Proxy
+    - name: Replace Connect Proxy Path
+      match: connect${group}${version}Put(Namespaced)?${resource}ProxyWithPath
+    - name: Replace Proxy
+      match: proxy${group}${version}PUT(Namespaced)?${resource}
+    - name: Replace Proxy Path
+      match: proxy${group}${version}PUT(Namespaced)?${resource}WithPath
+  - name: "Misc Operations"
+    default: true
+    operation_types:
+    - name: Read Scale
+      match: read${group}${version}(Namespaced)?${resource}Scale
+    - name: Replace Scale
+      match: replace${group}${version}(Namespaced)?${resource}Scale
+    - name: Patch Scale
+      match: patch${group}${version}(Namespaced)?${resource}Scale
+    - name: Rollback
+      match: create${group}${version}(Namespaced)?${resource}Rollback
+    - name: Read Log
+      match: read${group}${version}(Namespaced)?${resource}Log

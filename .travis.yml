@@ -3,11 +3,12 @@ os:
   - linux
   - osx
 go:
-  - 1.8
-  - 1.9
+  # 1.8 & 1.9 are now best-effort; we recommend 1.10; k8s apimachinery relies on 1.10
+  # - 1.8
+  # - 1.9
+  - "1.10"
 
 go_import_path: k8s.io/kops
 
 script:
   - make ci
-  - hack/verify-apimachinery.sh

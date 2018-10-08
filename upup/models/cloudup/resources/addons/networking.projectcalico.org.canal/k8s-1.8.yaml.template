@@ -113,7 +113,7 @@ spec:
               value: "kubernetes"
             # Enable felix logging.
             - name: FELIX_LOGSEVERITYSYS
-              value: "info"
+              value: "{{- or .Networking.Canal.LogSeveritySys "INFO" }}"
             # Don't enable BGP.
             - name: CALICO_NETWORKING_BACKEND
               value: "none"

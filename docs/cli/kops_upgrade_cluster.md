@@ -7,11 +7,10 @@ Upgrade a kubernetes cluster.
 
 ### Synopsis
 
-
 Automates checking for and applying Kubernetes updates. This upgrades a cluster to the latest recommended production ready k8s version. After this command is run, use kops update cluster and kops rolling-update cluster to finish a cluster upgrade.
 
 ```
-kops upgrade cluster
+kops upgrade cluster [flags]
 ```
 
 ### Examples
@@ -25,6 +24,7 @@ kops upgrade cluster
 
 ```
       --channel string   Channel to use for upgrade
+  -h, --help             help for cluster
       --yes              Apply update
 ```
 
@@ -32,17 +32,18 @@ kops upgrade cluster
 
 ```
       --alsologtostderr                  log to standard error as well as files
-      --config string                    config file (default is $HOME/.kops.yaml)
+      --config string                    yaml config file (default is $HOME/.kops.yaml)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops upgrade](kops_upgrade.md)	 - Upgrade a kubernetes cluster.
 

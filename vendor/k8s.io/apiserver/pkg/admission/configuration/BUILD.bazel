@@ -8,6 +8,7 @@ go_library(
         "mutating_webhook_manager.go",
         "validating_webhook_manager.go",
     ],
+    importmap = "k8s.io/kops/vendor/k8s.io/apiserver/pkg/admission/configuration",
     importpath = "k8s.io/apiserver/pkg/admission/configuration",
     visibility = ["//visibility:public"],
     deps = [
@@ -16,7 +17,13 @@ go_library(
         "//vendor/k8s.io/api/admissionregistration/v1beta1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/admission/plugin/webhook/generic:go_default_library",
+        "//vendor/k8s.io/client-go/informers:go_default_library",
+        "//vendor/k8s.io/client-go/listers/admissionregistration/v1beta1:go_default_library",
+        "//vendor/k8s.io/client-go/tools/cache:go_default_library",
     ],
 )

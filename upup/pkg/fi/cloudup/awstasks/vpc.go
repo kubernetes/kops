@@ -37,7 +37,6 @@ type VPC struct {
 
 	ID                 *string
 	CIDR               *string
-	AdditionalCIDR     *[]string
 	EnableDNSHostnames *bool
 	EnableDNSSupport   *bool
 
@@ -77,11 +76,10 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 	}
 	vpc := response.Vpcs[0]
 	actual := &VPC{
-		ID:             vpc.VpcId,
-		CIDR:           vpc.CidrBlock,
-		AdditionalCIDR: getAdditionalCIDR(vpc.CidrBlock, vpc.CidrBlockAssociationSet),
-		Name:           findNameTag(vpc.Tags),
-		Tags:           intersectTags(vpc.Tags, e.Tags),
+		ID:   vpc.VpcId,
+		CIDR: vpc.CidrBlock,
+		Name: findNameTag(vpc.Tags),
+		Tags: intersectTags(vpc.Tags, e.Tags),
 	}
 
 	glog.V(4).Infof("found matching VPC %v", actual)
@@ -214,6 +212,11 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 		return nil
 	}
 
+	if err := t.AddOutputVariable("vpc_cidr_block", terraform.LiteralProperty("aws_vpc", *e.Name, "cidr_block")); err != nil {
+		// TODO: Should we try to output vpc_cidr_block for shared vpcs?
+		return err
+	}
+
 	tf := &terraformVPC{
 		CIDR:               e.CIDR,
 		Tags:               e.Tags,
@@ -275,16 +278,4 @@ func (e *VPC) CloudformationLink() *cloudformation.Literal {
 	}
 
 	return cloudformation.Ref("AWS::EC2::VPC", *e.Name)
-}
-
-func getAdditionalCIDR(CIDR *string, additionalCIDRSet []*ec2.VpcCidrBlockAssociation) *[]string {
-	var additionalCIDRs []string
-
-	for _, CIDRSet := range additionalCIDRSet {
-		if *CIDRSet.CidrBlock != *CIDR {
-			additionalCIDRs = append(additionalCIDRs, *CIDRSet.CidrBlock)
-		}
-	}
-
-	return &additionalCIDRs
 }

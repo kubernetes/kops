@@ -31,6 +31,9 @@ type subnetInfo struct {
 }
 
 func (m *MockEC2) FindSubnet(id string) *ec2.Subnet {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	subnet := m.subnets[id]
 	if subnet == nil {
 		return nil
@@ -42,6 +45,9 @@ func (m *MockEC2) FindSubnet(id string) *ec2.Subnet {
 }
 
 func (m *MockEC2) SubnetIds() []string {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	var ids []string
 	for id := range m.subnets {
 		ids = append(ids, id)
@@ -101,6 +107,9 @@ func (m *MockEC2) DescribeSubnetsWithContext(aws.Context, *ec2.DescribeSubnetsIn
 }
 
 func (m *MockEC2) DescribeSubnets(request *ec2.DescribeSubnetsInput) (*ec2.DescribeSubnetsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("DescribeSubnets: %v", request)
 
 	if len(request.SubnetIds) != 0 {
@@ -180,7 +189,7 @@ func (m *MockEC2) AssociateRouteTable(request *ec2.AssociateRouteTableInput) (*e
 		return nil, fmt.Errorf("RouteTable not found")
 	}
 
-	associationID := m.allocateId("rta-")
+	associationID := m.allocateId("rta")
 
 	rt.Associations = append(rt.Associations, &ec2.RouteTableAssociation{
 		RouteTableId:            rt.RouteTableId,
@@ -203,6 +212,31 @@ func (m *MockEC2) AssociateRouteTableWithContext(aws.Context, *ec2.AssociateRout
 	return nil, nil
 }
 func (m *MockEC2) AssociateRouteTableRequest(*ec2.AssociateRouteTableInput) (*request.Request, *ec2.AssociateRouteTableOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteSubnet(request *ec2.DeleteSubnetInput) (*ec2.DeleteSubnetOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	glog.Infof("DeleteSubnet: %v", request)
+
+	id := aws.StringValue(request.SubnetId)
+	o := m.subnets[id]
+	if o == nil {
+		return nil, fmt.Errorf("Subnet %q not found", id)
+	}
+	delete(m.subnets, id)
+
+	return &ec2.DeleteSubnetOutput{}, nil
+}
+
+func (m *MockEC2) DeleteSubnetWithContext(aws.Context, *ec2.DeleteSubnetInput, ...request.Option) (*ec2.DeleteSubnetOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DeleteSubnetRequest(*ec2.DeleteSubnetInput) (*request.Request, *ec2.DeleteSubnetOutput) {
 	panic("Not implemented")
 	return nil, nil
 }

@@ -34,11 +34,17 @@ import (
 )
 
 type S3Path struct {
-	s3Context *S3Context
-	bucket    string
-	region    string
-	key       string
-	etag      *string
+	s3Context     *S3Context
+	bucket        string
+	bucketDetails *S3BucketDetails
+	key           string
+	etag          *string
+
+	// scheme is configurable in case an S3 compatible custom
+	// endpoint is specified
+	scheme string
+	// sse specifies if server side encryption should be enabled
+	sse bool
 }
 
 var _ Path = &S3Path{}
@@ -49,7 +55,7 @@ type S3Acl struct {
 	RequestACL *string
 }
 
-func newS3Path(s3Context *S3Context, bucket string, key string) *S3Path {
+func newS3Path(s3Context *S3Context, scheme string, bucket string, key string, sse bool) *S3Path {
 	bucket = strings.TrimSuffix(bucket, "/")
 	key = strings.TrimPrefix(key, "/")
 
@@ -57,11 +63,13 @@ func newS3Path(s3Context *S3Context, bucket string, key string) *S3Path {
 		s3Context: s3Context,
 		bucket:    bucket,
 		key:       key,
+		scheme:    scheme,
+		sse:       sse,
 	}
 }
 
 func (p *S3Path) Path() string {
-	return "s3://" + p.bucket + "/" + p.key
+	return p.scheme + "://" + p.bucket + "/" + p.key
 }
 
 func (p *S3Path) Bucket() string {
@@ -106,6 +114,8 @@ func (p *S3Path) Join(relativePath ...string) Path {
 		s3Context: p.s3Context,
 		bucket:    p.bucket,
 		key:       joined,
+		scheme:    p.scheme,
+		sse:       p.sse,
 	}
 }
 
@@ -117,19 +127,30 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 
 	glog.V(4).Infof("Writing file %q", p)
 
-	// We always use server-side-encryption; it doesn't really cost us anything
-	sse := "AES256"
-
 	request := &s3.PutObjectInput{}
 	request.Body = data
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)
-	request.ServerSideEncryption = aws.String(sse)
+
+	// If we are on an S3 implementation that supports SSE (i.e. not
+	// DO), we use server-side-encryption, it doesn't really cost us
+	// anything.  But if the bucket has a defaultEncryption policy
+	// instead, we honor that - it is likely to be a higher encryption
+	// standard.
+	sseLog := "-"
+	if p.sse {
+		if p.bucketDetails.defaultEncryption {
+			sseLog = "DefaultBucketEncryption"
+		} else {
+			sseLog = "AES256"
+			request.ServerSideEncryption = aws.String("AES256")
+		}
+	}
 
 	acl := os.Getenv("KOPS_STATE_S3_ACL")
 	acl = strings.TrimSpace(acl)
 	if acl != "" {
-		glog.Infof("Using KOPS_STATE_S3_ACL=%s", acl)
+		glog.V(8).Infof("Using KOPS_STATE_S3_ACL=%s", acl)
 		request.ACL = aws.String(acl)
 	} else if aclObj != nil {
 		s3Acl, ok := aclObj.(*S3Acl)
@@ -141,7 +162,7 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208
 
-	glog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q SSE=%q ACL=%q", p.bucket, p.key, sse, acl)
+	glog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q SSE=%q ACL=%q", p.bucket, p.key, sseLog, acl)
 
 	_, err = client.PutObject(request)
 	if err != nil {
@@ -250,6 +271,8 @@ func (p *S3Path) ReadDir() ([]Path, error) {
 				bucket:    p.bucket,
 				key:       key,
 				etag:      o.ETag,
+				scheme:    p.scheme,
+				sse:       p.sse,
 			}
 			paths = append(paths, child)
 		}
@@ -286,6 +309,8 @@ func (p *S3Path) ReadTree() ([]Path, error) {
 				bucket:    p.bucket,
 				key:       key,
 				etag:      o.ETag,
+				scheme:    p.scheme,
+				sse:       p.sse,
 			}
 			paths = append(paths, child)
 		}
@@ -299,14 +324,16 @@ func (p *S3Path) ReadTree() ([]Path, error) {
 
 func (p *S3Path) client() (*s3.S3, error) {
 	var err error
-	if p.region == "" {
-		p.region, err = p.s3Context.getRegionForBucket(p.bucket)
+	if p.bucketDetails == nil || p.bucketDetails.region == "" {
+		bucketDetails, err := p.s3Context.getDetailsForBucket(p.bucket)
+
+		p.bucketDetails = bucketDetails
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	client, err := p.s3Context.getClient(p.region)
+	client, err := p.s3Context.getClient(p.bucketDetails.region)
 	if err != nil {
 		return nil, err
 	}

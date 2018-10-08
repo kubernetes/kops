@@ -26,7 +26,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 
 	"github.com/blang/semver"
-	"github.com/golang/glog"
 )
 
 // KubeAPIServerOptionsBuilder adds options for the apiserver to the model
@@ -55,7 +54,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	// @question: should the question every be able to set this?
 	if c.StorageBackend == nil {
 		// @note: we can use the first version as we enforce both running the same versions.
-		// albeit feels a little wierd to do this
+		// albeit feels a little weird to do this
 		sem, err := semver.Parse(strings.TrimPrefix(clusterSpec.EtcdClusters[0].Version, "v"))
 		if err != nil {
 			return err
@@ -91,7 +90,52 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	} else if clusterSpec.Authorization.AlwaysAllow != nil {
 		clusterSpec.KubeAPIServer.AuthorizationMode = fi.String("AlwaysAllow")
 	} else if clusterSpec.Authorization.RBAC != nil {
-		clusterSpec.KubeAPIServer.AuthorizationMode = fi.String("RBAC")
+		var modes []string
+
+		if b.IsKubernetesGTE("1.10") {
+			if fi.BoolValue(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) {
+				// Enable the Node authorizer, used for special per-node RBAC policies
+				modes = append(modes, "Node")
+			}
+		}
+		modes = append(modes, "RBAC")
+
+		clusterSpec.KubeAPIServer.AuthorizationMode = fi.String(strings.Join(modes, ","))
+	}
+
+	if clusterSpec.KubeAPIServer.EtcdQuorumRead == nil {
+		if b.IsKubernetesGTE("1.9") {
+			// 1.9 changed etcd-quorum-reads default to true
+			// There's a balance between some bugs which are attributed to not having etcd-quorum-reads,
+			// and the poor implementation of quorum-reads in etcd2.
+
+			etcdHA := false
+			etcdV2 := true
+			for _, c := range clusterSpec.EtcdClusters {
+				if len(c.Members) > 1 {
+					etcdHA = true
+				}
+				if c.Version != "" && !strings.HasPrefix(c.Version, "2.") {
+					etcdV2 = false
+				}
+			}
+
+			if !etcdV2 {
+				// etcd3 quorum reads are cheap.  Stick with default (which is to enable quorum reads)
+				clusterSpec.KubeAPIServer.EtcdQuorumRead = nil
+			} else {
+				// etcd2 quorum reads go through raft => write to disk => expensive
+				if !etcdHA {
+					// Turn off quorum reads - they still go through raft, but don't serve any purpose in non-HA clusters.
+					clusterSpec.KubeAPIServer.EtcdQuorumRead = fi.Bool(false)
+				} else {
+					// The problematic case.  We risk exposing more bugs, but against that we have to balance performance.
+					// For now we turn off quorum reads - it's a bad enough performance regression
+					// We'll likely make this default to true once we can set IOPS on the etcd volume and can easily upgrade to etcd3
+					clusterSpec.KubeAPIServer.EtcdQuorumRead = fi.Bool(false)
+				}
+			}
+		}
 	}
 
 	if err := b.configureAggregation(clusterSpec); err != nil {
@@ -127,7 +171,14 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	c.LogLevel = 2
 	c.SecurePort = 443
-	c.Address = "127.0.0.1"
+
+	if b.IsKubernetesGTE("1.10") {
+		c.BindAddress = "0.0.0.0"
+		c.InsecureBindAddress = "127.0.0.1"
+	} else {
+		c.Address = "127.0.0.1"
+	}
+
 	c.AllowPrivileged = fi.Bool(true)
 	c.ServiceClusterIPRange = clusterSpec.ServiceClusterIPRange
 	c.EtcdServers = []string{"http://127.0.0.1:4001"}
@@ -187,10 +238,25 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 			"ResourceQuota",
 		}
 	}
+	if b.IsKubernetesGTE("1.9") && b.IsKubernetesLT("1.10") {
+		c.AdmissionControl = []string{
+			"Initializers",
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"DefaultTolerationSeconds",
+			"MutatingAdmissionWebhook",
+			"ValidatingAdmissionWebhook",
+			"NodeRestriction",
+			"ResourceQuota",
+		}
+	}
 	// Based on recommendations from:
 	// https://kubernetes.io/docs/admin/admission-controllers/#is-there-a-recommended-set-of-admission-controllers-to-use
-	if b.IsKubernetesGTE("1.9") {
-		c.AdmissionControl = []string{
+	if b.IsKubernetesGTE("1.10") {
+		c.EnableAdmissionPlugins = []string{
 			"Initializers",
 			"NamespaceLifecycle",
 			"LimitRanger",
@@ -210,14 +276,8 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		c.AnonymousAuth = fi.Bool(false)
 	}
 
-	// We disable the insecure port from 1.6 onwards
-	if b.IsKubernetesGTE("1.6") {
-		c.InsecurePort = 0
-		glog.V(4).Infof("Enabling apiserver insecure port, for healthchecks (issue #43784)")
-		c.InsecurePort = 8080
-	} else {
-		c.InsecurePort = 8080
-	}
+	// FIXME : Disable the insecure port when kubernetes issue #43784 is fixed
+	c.InsecurePort = 8080
 
 	return nil
 }

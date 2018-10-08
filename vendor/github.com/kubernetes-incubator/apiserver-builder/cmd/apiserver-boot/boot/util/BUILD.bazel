@@ -1,0 +1,10 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["util.go"],
+    importmap = "k8s.io/kops/vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/util",
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/util",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/markbates/inflect:go_default_library"],
+)

@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -36,7 +35,7 @@ import (
 type Installation struct {
 	FSRoot          string
 	CacheDir        string
-	MaxTaskDuration time.Duration
+	RunTasksOptions fi.RunTasksOptions
 	Command         []string
 }
 
@@ -86,7 +85,7 @@ func (i *Installation) Run() error {
 	}
 	defer context.Close()
 
-	err = context.RunTasks(i.MaxTaskDuration)
+	err = context.RunTasks(i.RunTasksOptions)
 	if err != nil {
 		return fmt.Errorf("error running tasks: %v", err)
 	}
@@ -119,6 +118,12 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 		buffer.WriteString("\" ")
 	}
 
+	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
+		buffer.WriteString("\"GOSSIP_DNS_CONN_LIMIT=")
+		buffer.WriteString(os.Getenv("GOSSIP_DNS_CONN_LIMIT"))
+		buffer.WriteString("\" ")
+	}
+
 	// Pass in required credentials when using user-defined s3 endpoint
 	if os.Getenv("S3_ENDPOINT") != "" {
 		buffer.WriteString("\"S3_ENDPOINT=")
@@ -132,6 +137,12 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 		buffer.WriteString("\" ")
 		buffer.WriteString("\"S3_SECRET_ACCESS_KEY=")
 		buffer.WriteString(os.Getenv("S3_SECRET_ACCESS_KEY"))
+		buffer.WriteString("\" ")
+	}
+
+	if os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
+		buffer.WriteString("\"DIGITALOCEAN_ACCESS_TOKEN=")
+		buffer.WriteString(os.Getenv("DIGITALOCEAN_ACCESS_TOKEN"))
 		buffer.WriteString("\" ")
 	}
 

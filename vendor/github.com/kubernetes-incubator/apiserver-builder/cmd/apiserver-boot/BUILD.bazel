@@ -1,0 +1,25 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importmap = "k8s.io/kops/vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot",
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/build:go_default_library",
+        "//vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/create:go_default_library",
+        "//vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/init_repo:go_default_library",
+        "//vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/run:go_default_library",
+        "//vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/update:go_default_library",
+        "//vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/util:go_default_library",
+        "//vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/version:go_default_library",
+        "//vendor/github.com/spf13/cobra:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "apiserver-boot",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)

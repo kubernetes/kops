@@ -51,28 +51,26 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("unable to locate asset %q", assetName)
 		}
 
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path:     b.KubectlPath() + "/" + assetName,
 			Contents: asset,
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0755"),
-		}
-		c.AddTask(t)
+		})
 	}
 
 	{
-		kubeconfig, err := b.buildPKIKubeconfig("kubecfg")
+		kubeconfig, err := b.BuildPKIKubeconfig("kubecfg")
 		if err != nil {
 			return err
 		}
 
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path:     "/var/lib/kubectl/kubeconfig",
 			Contents: fi.NewStringResource(kubeconfig),
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
-		}
-		c.AddTask(t)
+		})
 
 		adminUser, adminGroup, err := b.findKubeconfigUser()
 		if err != nil {

@@ -26,6 +26,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/denverdino/aliyungo/oss"
 	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	"golang.org/x/net/context"
@@ -46,6 +47,8 @@ type VFSContext struct {
 	gcsClient *storage.Service
 	// swiftClient is the openstack swift client
 	swiftClient *gophercloud.ServiceClient
+	// ossClient is the Aliyun Open Source Storage client
+	ossClient *oss.Client
 }
 
 var Context = VFSContext{
@@ -75,6 +78,9 @@ func (c *VFSContext) ReadFile(location string) ([]byte, error) {
 				return c.readHttpLocation(httpURL, httpHeaders)
 			case "aws":
 				httpURL := "http://169.254.169.254/latest/" + u.Path
+				return c.readHttpLocation(httpURL, nil)
+			case "digitalocean":
+				httpURL := "http://169.254.169.254/metadata/v1" + u.Path
 				return c.readHttpLocation(httpURL, nil)
 
 			default:
@@ -109,6 +115,10 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 		return c.buildS3Path(p)
 	}
 
+	if strings.HasPrefix(p, "do://") {
+		return c.buildDOPath(p)
+	}
+
 	if strings.HasPrefix(p, "memfs://") {
 		return c.buildMemFSPath(p)
 	}
@@ -123,6 +133,10 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 
 	if strings.HasPrefix(p, "swift://") {
 		return c.buildOpenstackSwiftPath(p)
+	}
+
+	if strings.HasPrefix(p, "oss://") {
+		return c.buildOSSPath(p)
 	}
 
 	return nil, fmt.Errorf("unknown / unhandled path type: %q", p)
@@ -234,7 +248,25 @@ func (c *VFSContext) buildS3Path(p string) (*S3Path, error) {
 		return nil, fmt.Errorf("invalid s3 path: %q", p)
 	}
 
-	s3path := newS3Path(c.s3Context, bucket, u.Path)
+	s3path := newS3Path(c.s3Context, u.Scheme, bucket, u.Path, true)
+	return s3path, nil
+}
+
+func (c *VFSContext) buildDOPath(p string) (*S3Path, error) {
+	u, err := url.Parse(p)
+	if err != nil {
+		return nil, fmt.Errorf("invalid spaces path: %q", p)
+	}
+	if u.Scheme != "do" {
+		return nil, fmt.Errorf("invalid spaces path: %q", p)
+	}
+
+	bucket := strings.TrimSuffix(u.Host, "/")
+	if bucket == "" {
+		return nil, fmt.Errorf("invalid spaces path: %q", p)
+	}
+
+	s3path := newS3Path(c.s3Context, u.Scheme, bucket, u.Path, false)
 	return s3path, nil
 }
 
@@ -347,4 +379,30 @@ func (c *VFSContext) buildOpenstackSwiftPath(p string) (*SwiftPath, error) {
 	}
 
 	return NewSwiftPath(c.swiftClient, bucket, u.Path)
+}
+
+func (c *VFSContext) buildOSSPath(p string) (*OSSPath, error) {
+	u, err := url.Parse(p)
+	if err != nil {
+		return nil, fmt.Errorf("invalid aliyun oss path: %q", p)
+	}
+
+	if u.Scheme != "oss" {
+		return nil, fmt.Errorf("invalid aliyun oss path: %q", p)
+	}
+
+	bucket := strings.TrimSuffix(u.Host, "/")
+	if bucket == "" {
+		return nil, fmt.Errorf("invalid aliyun oss path: %q", p)
+	}
+
+	if c.ossClient == nil {
+		ossClient, err := NewAliOSSClient()
+		if err != nil {
+			return nil, err
+		}
+		c.ossClient = ossClient
+	}
+
+	return NewOSSPath(c.ossClient, bucket, u.Path)
 }

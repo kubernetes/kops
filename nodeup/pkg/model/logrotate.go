@@ -20,12 +20,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+
+	"github.com/golang/glog"
 )
 
 // LogrotateBuilder installs logrotate.d and configures log rotation for kubernetes logs
@@ -35,13 +36,16 @@ type LogrotateBuilder struct {
 
 var _ fi.ModelBuilder = &LogrotateBuilder{}
 
+// Build is responsible for configuring logrotate
 func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
-	if b.Distribution == distros.DistributionContainerOS {
+
+	switch b.Distribution {
+	case distros.DistributionContainerOS:
 		glog.Infof("Detected ContainerOS; won't install logrotate")
 		return nil
-	} else if b.Distribution == distros.DistributionCoreOS {
+	case distros.DistributionCoreOS:
 		glog.Infof("Detected CoreOS; won't install logrotate")
-	} else {
+	default:
 		c.AddTask(&nodetasks.Package{Name: "logrotate"})
 	}
 
@@ -132,11 +136,10 @@ func (b *LogrotateBuilder) addLogRotate(c *fi.ModelBuilderContext, name, path st
 
 	contents := strings.Join(lines, "\n")
 
-	t := &nodetasks.File{
+	c.AddTask(&nodetasks.File{
 		Path:     "/etc/logrotate.d/" + name,
 		Contents: fi.NewStringResource(contents),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0644"),
-	}
-	c.AddTask(t)
+	})
 }

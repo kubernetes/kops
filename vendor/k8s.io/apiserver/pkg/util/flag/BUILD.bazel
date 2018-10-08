@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "ciphersuites_flag.go",
         "colon_separated_multimap_string_string.go",
         "configuration_map.go",
         "flags.go",
@@ -10,14 +11,17 @@ go_library(
         "map_string_bool.go",
         "map_string_string.go",
         "namedcertkey_flag.go",
+        "noop.go",
         "omitempty.go",
         "string_flag.go",
         "tristate.go",
     ],
+    importmap = "k8s.io/kops/vendor/k8s.io/apiserver/pkg/util/flag",
     importpath = "k8s.io/apiserver/pkg/util/flag",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/spf13/pflag:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )

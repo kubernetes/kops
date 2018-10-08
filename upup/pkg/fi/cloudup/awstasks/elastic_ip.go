@@ -160,6 +160,28 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 		actual.TagOnSubnet = e.TagOnSubnet
 		actual.AssociatedNatGatewayRouteTable = e.AssociatedNatGatewayRouteTable
 
+		{
+			tags, err := cloud.EC2().DescribeTags(&ec2.DescribeTagsInput{
+				Filters: []*ec2.Filter{
+					{
+						Name:   aws.String("resource-id"),
+						Values: aws.StringSlice([]string{*a.AllocationId}),
+					},
+				},
+			})
+			if err != nil {
+				return nil, fmt.Errorf("error querying tags for ElasticIP: %v", err)
+			}
+			var ec2Tags []*ec2.Tag
+			for _, t := range tags.Tags {
+				ec2Tags = append(ec2Tags, &ec2.Tag{
+					Key:   t.Key,
+					Value: t.Value,
+				})
+			}
+			actual.Tags = intersectTags(ec2Tags, e.Tags)
+		}
+
 		// ElasticIP don't have a Name (no tags), so we set the name to avoid spurious changes
 		actual.Name = e.Name
 
@@ -183,7 +205,7 @@ func (e *ElasticIP) Run(c *fi.Context) error {
 
 // CheckChanges validates the resource. EIPs are simple, so virtually no
 // validation
-func (s *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
+func (_ *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
 	// This is a new EIP
 	if a == nil {
 		// No logic for EIPs - they are just created
@@ -229,10 +251,10 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 	} else {
 		publicIp = a.PublicIP
 		eipId = a.ID
-		err := t.AddAWSTags(*a.ID, changes.Tags)
-		if err != nil {
-			return fmt.Errorf("unable to tag ElasticIP: %v", err)
-		}
+	}
+
+	if err := t.AddAWSTags(*e.ID, e.Tags); err != nil {
+		return err
 	}
 
 	// Tag the associated subnet
@@ -257,12 +279,14 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 }
 
 type terraformElasticIP struct {
-	VPC *bool `json:"vpc"`
+	VPC  *bool             `json:"vpc"`
+	Tags map[string]string `json:"tags,omitempty"`
 }
 
 func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ElasticIP) error {
 	tf := &terraformElasticIP{
-		VPC: aws.Bool(true),
+		VPC:  aws.Bool(true),
+		Tags: e.Tags,
 	}
 
 	return t.RenderResource("aws_eip", *e.Name, tf)
@@ -273,12 +297,14 @@ func (e *ElasticIP) TerraformLink() *terraform.Literal {
 }
 
 type cloudformationElasticIP struct {
-	Domain *string `json:"Domain"`
+	Domain *string             `json:"Domain"`
+	Tags   []cloudformationTag `json:"Tags,omitempty"`
 }
 
 func (_ *ElasticIP) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *ElasticIP) error {
 	tf := &cloudformationElasticIP{
 		Domain: aws.String("vpc"),
+		Tags:   buildCloudformationTags(e.Tags),
 	}
 
 	return t.RenderResource("AWS::EC2::EIP", *e.Name, tf)

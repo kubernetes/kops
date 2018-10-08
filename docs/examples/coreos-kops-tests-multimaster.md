@@ -1,6 +1,6 @@
 # USING KOPS WITH COREOS - A MULTI-MASTER/MULTI-NODE PRACTICAL EXAMPLE
 
-## WHAT WE WANT TO ACOMPLISH HERE?
+## WHAT WE WANT TO ACCOMPLISH HERE?
 
 The exercise described in this document will focus on the following goals:
 
@@ -52,17 +52,17 @@ Some things to note from here:
 
 ## COREOS IMAGE INFORMATION:
 
-CoreOS webpage includes a "json" with the updated list of lattest images: [https://coreos.com/dist/aws/aws-stable.json](https://coreos.com/dist/aws/aws-stable.json)
+CoreOS webpage includes a "json" with the updated list of latest images: [https://coreos.com/dist/aws/aws-stable.json](https://coreos.com/dist/aws/aws-stable.json)
 
-By using "jq" you can obtain the "ami" for a specific region (change the region "-" for "_" in the following command):
+By using "jq" you can obtain the "ami" for a specific region
 
 
 ```bash
-curl -s https://coreos.com/dist/aws/aws-stable.json|sed -r 's/-/_/g'|jq '.us_east_1.hvm'|sed -r 's/_/-/g'
+curl -s https://coreos.com/dist/aws/aws-stable.json | jq -r '.["us-east-1"].hvm'
 "ami-32705b49"
 ```
 
-The last command will check the all "hvm" CoreOS images on us-east-1 region (us_east_1 for our command). Please, always use "hvm" images.
+The last command will check the all "hvm" CoreOS images on us-east-1 region. Please, always use "hvm" images.
 
 At the moment we created this document, our ami was: "ami-32705b49". More info about the image can be obtained by using the following "aws-cli" command:
 

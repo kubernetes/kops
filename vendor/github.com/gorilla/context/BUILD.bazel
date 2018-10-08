@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "context.go",
+        "doc.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/gorilla/context",
+    importpath = "github.com/gorilla/context",
+    visibility = ["//visibility:public"],
+)

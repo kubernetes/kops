@@ -150,7 +150,7 @@ func Test_Validate_No_Classic_With_14(t *testing.T) {
 		Classic: &api.ClassicNetworkingSpec{},
 	}
 
-	expectErrorFromValidate(t, c, "Spec.Networking")
+	expectErrorFromValidate(t, c, "spec.Networking")
 }
 
 func Test_Validate_Kubenet_With_14(t *testing.T) {
@@ -172,6 +172,27 @@ func TestValidate_ClusterName_Import(t *testing.T) {
 	c.ObjectMeta.Name = "kubernetes"
 
 	expectNoErrorFromValidate(t, c)
+}
+
+func TestValidate_ContainerRegistry_and_ContainerProxy_exclusivity(t *testing.T) {
+	c := buildDefaultCluster(t)
+
+	assets := new(api.Assets)
+	c.Spec.Assets = assets
+
+	expectNoErrorFromValidate(t, c)
+
+	registry := "https://registry.example.com/"
+	c.Spec.Assets.ContainerRegistry = &registry
+	expectNoErrorFromValidate(t, c)
+
+	proxy := "https://proxy.example.com/"
+	c.Spec.Assets.ContainerProxy = &proxy
+	expectErrorFromValidate(t, c, "ContainerProxy cannot be used in conjunction with ContainerRegistry")
+
+	c.Spec.Assets.ContainerRegistry = nil
+	expectNoErrorFromValidate(t, c)
+
 }
 
 func expectErrorFromValidate(t *testing.T, c *api.Cluster, message string) {

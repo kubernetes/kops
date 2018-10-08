@@ -26,6 +26,7 @@ import (
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
@@ -34,7 +35,6 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
-	"k8s.io/kops/pkg/assets"
 )
 
 // ProtokubeBuilder configures protokube
@@ -55,7 +55,7 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if t.IsMaster {
-		kubeconfig, err := t.buildPKIKubeconfig("kops")
+		kubeconfig, err := t.BuildPKIKubeconfig("kops")
 		if err != nil {
 			return err
 		}
@@ -75,7 +75,7 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 				}
 			}
 			for _, x := range []string{"etcd", "etcd-client"} {
-				if err := t.BuildPrivateTask(c, x, fmt.Sprintf("%s-key.pem", x)); err != nil {
+				if err := t.BuildPrivateKeyTask(c, x, fmt.Sprintf("%s-key.pem", x)); err != nil {
 					return err
 				}
 			}
@@ -116,7 +116,7 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 
 	// add kubectl only if a master
 	// path changes depending on distro, and always mount it on /opt/kops/bin
-	// kubectl is downloaded an installed by other tasks
+	// kubectl is downloaded and installed by other tasks
 	if t.IsMaster {
 		dockerArgs = append(dockerArgs, []string{
 			"-v", t.KubectlPath() + ":/opt/kops/bin:ro",
@@ -217,6 +217,9 @@ type ProtokubeFlags struct {
 	TLSCertFile               *string  `json:"tls-cert,omitempty" flag:"tls-cert"`
 	TLSKeyFile                *string  `json:"tls-key,omitempty" flag:"tls-key"`
 	Zone                      []string `json:"zone,omitempty" flag:"zone"`
+
+	// ManageEtcd is true if protokube should manage etcd; being replaced by etcd-manager
+	ManageEtcd bool `json:"manageEtcd,omitempty" flag:"manage-etcd"`
 }
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
@@ -245,51 +248,63 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		Master:                    b(t.IsMaster),
 	}
 
-	for _, e := range t.Cluster.Spec.EtcdClusters {
-		if e.Backups != nil {
-			if f.EtcdBackupImage == "" {
-				f.EtcdBackupImage = e.Backups.Image
+	f.ManageEtcd = false
+	if len(t.NodeupConfig.EtcdManifests) == 0 {
+		glog.V(4).Infof("no EtcdManifests; protokube will manage etcd")
+		f.ManageEtcd = true
+	}
+
+	if f.ManageEtcd {
+		for _, e := range t.Cluster.Spec.EtcdClusters {
+			// Because we can only specify a single EtcdBackupStore at the moment, we only backup main, not events
+			if e.Name != "main" {
+				continue
 			}
 
-			if f.EtcdBackupStore == "" {
-				f.EtcdBackupStore = e.Backups.BackupStore
+			if e.Backups != nil {
+				if f.EtcdBackupImage == "" {
+					f.EtcdBackupImage = e.Backups.Image
+				}
+
+				if f.EtcdBackupStore == "" {
+					f.EtcdBackupStore = e.Backups.BackupStore
+				}
 			}
 		}
-	}
 
-	// TODO this is dupicate code with etcd model
-	image := fmt.Sprintf("k8s.gcr.io/etcd:%s", imageVersion)
-	// override image if set as API value
-	if etcdContainerImage != "" {
-		image = etcdContainerImage
-	}
-	assets := assets.NewAssetBuilder(t.Cluster, "")
-	remapped, err := assets.RemapImage(image)
-	if err != nil {
-		return nil, fmt.Errorf("unable to remap container %q: %v", image, err)
-	} else {
+		// TODO this is duplicate code with etcd model
+		image := fmt.Sprintf("k8s.gcr.io/etcd:%s", imageVersion)
+		// override image if set as API value
+		if etcdContainerImage != "" {
+			image = etcdContainerImage
+		}
+		assets := assets.NewAssetBuilder(t.Cluster, "")
+		remapped, err := assets.RemapImage(image)
+		if err != nil {
+			return nil, fmt.Errorf("unable to remap container %q: %v", image, err)
+		}
+
 		image = remapped
-	}
+		f.EtcdImage = s(image)
 
-	f.EtcdImage = s(image)
+		// check if we are using tls and add the options to protokube
+		if t.UseEtcdTLS() {
+			f.PeerTLSCaFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
+			f.PeerTLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))
+			f.PeerTLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-key.pem"))
+			f.TLSCAFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
+			f.TLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))
+			f.TLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-key.pem"))
+		}
+		if t.UseEtcdTLSAuth() {
+			enableAuth := true
+			f.TLSAuth = b(enableAuth)
+		}
+	}
 
 	// initialize rbac on Kubernetes >= 1.6 and master
 	if k8sVersion.Major == 1 && k8sVersion.Minor >= 6 {
 		f.InitializeRBAC = fi.Bool(true)
-	}
-
-	// check if we are using tls and add the options to protokube
-	if t.UseEtcdTLS() {
-		f.PeerTLSCaFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
-		f.PeerTLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))
-		f.PeerTLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-key.pem"))
-		f.TLSCAFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
-		f.TLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))
-		f.TLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-key.pem"))
-	}
-	if t.UseTLSAuth() {
-		enableAuth := true
-		f.TLSAuth = b(enableAuth)
 	}
 
 	zone := t.Cluster.Spec.DNSZone
@@ -324,6 +339,9 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 			switch kops.CloudProviderID(t.Cluster.Spec.CloudProvider) {
 			case kops.CloudProviderAWS:
 				f.DNSProvider = fi.String("aws-route53")
+			case kops.CloudProviderDO:
+				f.DNSProvider = fi.String("digitalocean")
+				f.ClusterID = fi.String(t.Cluster.Name)
 			case kops.CloudProviderGCE:
 				f.DNSProvider = fi.String("google-clouddns")
 			case kops.CloudProviderVSphere:
@@ -353,6 +371,15 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 
 	// TODO write out an environments file for this.  This is getting a tad long.
 
+	// Passin gossip dns connection limit
+	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
+		buffer.WriteString(" ")
+		buffer.WriteString("-e 'GOSSIP_DNS_CONN_LIMIT=")
+		buffer.WriteString(os.Getenv("GOSSIP_DNS_CONN_LIMIT"))
+		buffer.WriteString("'")
+		buffer.WriteString(" ")
+	}
+
 	// Pass in required credentials when using user-defined s3 endpoint
 	if os.Getenv("AWS_REGION") != "" {
 		buffer.WriteString(" ")
@@ -379,6 +406,14 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 		buffer.WriteString(" -e S3_SECRET_ACCESS_KEY=")
 		buffer.WriteString("'")
 		buffer.WriteString(os.Getenv("S3_SECRET_ACCESS_KEY"))
+		buffer.WriteString("'")
+		buffer.WriteString(" ")
+	}
+
+	if kops.CloudProviderID(t.Cluster.Spec.CloudProvider) == kops.CloudProviderDO && os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
+		buffer.WriteString(" ")
+		buffer.WriteString("-e 'DIGITALOCEAN_ACCESS_TOKEN=")
+		buffer.WriteString(os.Getenv("DIGITALOCEAN_ACCESS_TOKEN"))
 		buffer.WriteString("'")
 		buffer.WriteString(" ")
 	}

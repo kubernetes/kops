@@ -26,21 +26,21 @@ import (
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 // Default Machine types for various types of instance group machine
 const (
 	defaultNodeMachineTypeGCE     = "n1-standard-2"
 	defaultNodeMachineTypeVSphere = "vsphere_node"
-	defaultNodeMachineTypeDO      = "2gb"
+	defaultNodeMachineTypeDO      = "s-2vcpu-4gb"
 
 	defaultBastionMachineTypeGCE     = "f1-micro"
 	defaultBastionMachineTypeVSphere = "vsphere_bastion"
 
 	defaultMasterMachineTypeGCE     = "n1-standard-1"
 	defaultMasterMachineTypeVSphere = "vsphere_master"
-	defaultMasterMachineTypeDO      = "2gb"
+	defaultMasterMachineTypeDO      = "s-2vcpu-2gb"
 
 	defaultVSphereNodeImage = "kops_ubuntu_16_04.ova"
 	defaultDONodeImage      = "coreos-stable"
@@ -64,7 +64,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	}
 
 	ig := &kops.InstanceGroup{}
-	utils.JsonMergeStruct(ig, input)
+	reflectutils.JsonMergeStruct(ig, input)
 
 	// TODO: Clean up
 	if ig.IsMaster() {

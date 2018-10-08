@@ -68,6 +68,5 @@ for dep in dep_status_map:
       print("[[override]]")
       print('  name = "%s"' % (dep))
       print('  revision = "%s"' % (godep_sha))
-      #print("pushd _vendor/{dep}; git fetch; git checkout {sha}; popd".format(dep=dep, sha=godep_sha))
   else:
     print("# UNKNOWN dep %s" % dep)

@@ -5,7 +5,7 @@ kops (Kubernetes-Ops) is a set of tools for installing, operating and deleting K
 It follows the Kubernetes design philosophy: the user creates a Cluster configuration object in JSON/YAML,
 and then controllers create the Cluster.
 
-Each component (kubelet, kube-apiserver...) is explictly configured: We reuse the k8s componentconfig types
+Each component (kubelet, kube-apiserver...) is explicitly configured: We reuse the k8s componentconfig types
 where we can, and we create additional types for the configuration of additional components.
 
 kops can:

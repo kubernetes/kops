@@ -21,6 +21,7 @@ go_library(
         "service.go",
         "serviceaccount.go",
     ],
+    importmap = "k8s.io/kops/vendor/k8s.io/client-go/informers/core/v1",
     importpath = "k8s.io/client-go/informers/core/v1",
     visibility = ["//visibility:public"],
     deps = [

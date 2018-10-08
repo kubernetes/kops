@@ -1,3 +1,30 @@
+locals = {
+  bastion_autoscaling_group_ids     = ["${aws_autoscaling_group.bastion-privatedns2-example-com.id}"]
+  bastion_security_group_ids        = ["${aws_security_group.bastion-privatedns2-example-com.id}"]
+  bastions_role_arn                 = "${aws_iam_role.bastions-privatedns2-example-com.arn}"
+  bastions_role_name                = "${aws_iam_role.bastions-privatedns2-example-com.name}"
+  cluster_name                      = "privatedns2.example.com"
+  master_autoscaling_group_ids      = ["${aws_autoscaling_group.master-us-test-1a-masters-privatedns2-example-com.id}"]
+  master_security_group_ids         = ["${aws_security_group.masters-privatedns2-example-com.id}"]
+  masters_role_arn                  = "${aws_iam_role.masters-privatedns2-example-com.arn}"
+  masters_role_name                 = "${aws_iam_role.masters-privatedns2-example-com.name}"
+  node_autoscaling_group_ids        = ["${aws_autoscaling_group.nodes-privatedns2-example-com.id}"]
+  node_security_group_ids           = ["${aws_security_group.nodes-privatedns2-example-com.id}"]
+  node_subnet_ids                   = ["${aws_subnet.us-test-1a-privatedns2-example-com.id}"]
+  nodes_role_arn                    = "${aws_iam_role.nodes-privatedns2-example-com.arn}"
+  nodes_role_name                   = "${aws_iam_role.nodes-privatedns2-example-com.name}"
+  region                            = "us-test-1"
+  route_table_private-us-test-1a_id = "${aws_route_table.private-us-test-1a-privatedns2-example-com.id}"
+  route_table_public_id             = "${aws_route_table.privatedns2-example-com.id}"
+  subnet_us-test-1a_id              = "${aws_subnet.us-test-1a-privatedns2-example-com.id}"
+  subnet_utility-us-test-1a_id      = "${aws_subnet.utility-us-test-1a-privatedns2-example-com.id}"
+  vpc_id                            = "vpc-12345678"
+}
+
+output "bastion_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.bastion-privatedns2-example-com.id}"]
+}
+
 output "bastion_security_group_ids" {
   value = ["${aws_security_group.bastion-privatedns2-example-com.id}"]
 }
@@ -14,6 +41,10 @@ output "cluster_name" {
   value = "privatedns2.example.com"
 }
 
+output "master_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.master-us-test-1a-masters-privatedns2-example-com.id}"]
+}
+
 output "master_security_group_ids" {
   value = ["${aws_security_group.masters-privatedns2-example-com.id}"]
 }
@@ -24,6 +55,10 @@ output "masters_role_arn" {
 
 output "masters_role_name" {
   value = "${aws_iam_role.masters-privatedns2-example-com.name}"
+}
+
+output "node_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.nodes-privatedns2-example-com.id}"]
 }
 
 output "node_security_group_ids" {
@@ -44,6 +79,22 @@ output "nodes_role_name" {
 
 output "region" {
   value = "us-test-1"
+}
+
+output "route_table_private-us-test-1a_id" {
+  value = "${aws_route_table.private-us-test-1a-privatedns2-example-com.id}"
+}
+
+output "route_table_public_id" {
+  value = "${aws_route_table.privatedns2-example-com.id}"
+}
+
+output "subnet_us-test-1a_id" {
+  value = "${aws_subnet.us-test-1a-privatedns2-example-com.id}"
+}
+
+output "subnet_utility-us-test-1a_id" {
+  value = "${aws_subnet.utility-us-test-1a-privatedns2-example-com.id}"
 }
 
 output "vpc_id" {
@@ -158,10 +209,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privatedns2-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privatedns2.example.com"
-    Name                 = "us-test-1a.etcd-events.privatedns2.example.com"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                               = "privatedns2.example.com"
+    Name                                            = "us-test-1a.etcd-events.privatedns2.example.com"
+    "k8s.io/etcd/events"                            = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                            = "1"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
   }
 }
 
@@ -172,15 +224,22 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatedns2-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privatedns2.example.com"
-    Name                 = "us-test-1a.etcd-main.privatedns2.example.com"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                               = "privatedns2.example.com"
+    Name                                            = "us-test-1a.etcd-main.privatedns2.example.com"
+    "k8s.io/etcd/main"                              = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                            = "1"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
   }
 }
 
 resource "aws_eip" "us-test-1a-privatedns2-example-com" {
   vpc = true
+
+  tags = {
+    KubernetesCluster                               = "privatedns2.example.com"
+    Name                                            = "us-test-1a.privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
+  }
 }
 
 resource "aws_elb" "api-privatedns2-example-com" {
@@ -312,6 +371,8 @@ resource "aws_launch_configuration" "bastion-privatedns2-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-privatedns2-example-com" {
@@ -338,6 +399,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privatedns2-examp
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-privatedns2-example-com" {
@@ -359,6 +422,8 @@ resource "aws_launch_configuration" "nodes-privatedns2-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_nat_gateway" "us-test-1a-privatedns2-example-com" {
@@ -402,7 +467,8 @@ resource "aws_route_table" "private-us-test-1a-privatedns2-example-com" {
 
   tags = {
     KubernetesCluster                               = "privatedns2.example.com"
-    "kubernetes.io/cluster/privatedns2.example.com" = "shared"
+    Name                                            = "private-us-test-1a.privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
     "kubernetes.io/kops/role"                       = "private-us-test-1a"
   }
 }
@@ -412,7 +478,8 @@ resource "aws_route_table" "privatedns2-example-com" {
 
   tags = {
     KubernetesCluster                               = "privatedns2.example.com"
-    "kubernetes.io/cluster/privatedns2.example.com" = "shared"
+    Name                                            = "privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
     "kubernetes.io/kops/role"                       = "public"
   }
 }
@@ -433,8 +500,9 @@ resource "aws_security_group" "api-elb-privatedns2-example-com" {
   description = "Security group for api ELB"
 
   tags = {
-    KubernetesCluster = "privatedns2.example.com"
-    Name              = "api-elb.privatedns2.example.com"
+    KubernetesCluster                               = "privatedns2.example.com"
+    Name                                            = "api-elb.privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
   }
 }
 
@@ -444,8 +512,9 @@ resource "aws_security_group" "bastion-elb-privatedns2-example-com" {
   description = "Security group for bastion ELB"
 
   tags = {
-    KubernetesCluster = "privatedns2.example.com"
-    Name              = "bastion-elb.privatedns2.example.com"
+    KubernetesCluster                               = "privatedns2.example.com"
+    Name                                            = "bastion-elb.privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
   }
 }
 
@@ -455,8 +524,9 @@ resource "aws_security_group" "bastion-privatedns2-example-com" {
   description = "Security group for bastion"
 
   tags = {
-    KubernetesCluster = "privatedns2.example.com"
-    Name              = "bastion.privatedns2.example.com"
+    KubernetesCluster                               = "privatedns2.example.com"
+    Name                                            = "bastion.privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
   }
 }
 
@@ -466,8 +536,9 @@ resource "aws_security_group" "masters-privatedns2-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "privatedns2.example.com"
-    Name              = "masters.privatedns2.example.com"
+    KubernetesCluster                               = "privatedns2.example.com"
+    Name                                            = "masters.privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
   }
 }
 
@@ -477,8 +548,9 @@ resource "aws_security_group" "nodes-privatedns2-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "privatedns2.example.com"
-    Name              = "nodes.privatedns2.example.com"
+    KubernetesCluster                               = "privatedns2.example.com"
+    Name                                            = "nodes.privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
   }
 }
 

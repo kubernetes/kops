@@ -7,11 +7,10 @@ Dump cluster information
 
 ### Synopsis
 
-
 Displays cluster information.  Includes information about cloud and Kubernetes resources.
 
 ```
-kops toolbox dump
+kops toolbox dump [flags]
 ```
 
 ### Examples
@@ -24,6 +23,7 @@ kops toolbox dump
 ### Options
 
 ```
+  -h, --help            help for dump
   -o, --output string   output format.  One of: yaml, json (default "yaml")
 ```
 
@@ -31,17 +31,18 @@ kops toolbox dump
 
 ```
       --alsologtostderr                  log to standard error as well as files
-      --config string                    config file (default is $HOME/.kops.yaml)
+      --config string                    yaml config file (default is $HOME/.kops.yaml)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands.
 

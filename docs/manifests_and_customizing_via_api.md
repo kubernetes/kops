@@ -17,7 +17,7 @@ This document also applies to using the `kops` API to customize a Kubernetes clu
 
 > We like to think of it as `kubectl` for Clusters.
 
-Because of the above statement `kops` includes an API which provides a feature for users to utilize YAML or JSON manifests for managing their `kops` created Kubernetes installations. In the same way that you can use a YAML manifest to deploy a Job, you can deploy and manage a `kops` Kuberenetes instance with a manifest. All of these values are also usable via the interactive editor with `kops edit`.
+Because of the above statement `kops` includes an API which provides a feature for users to utilize YAML or JSON manifests for managing their `kops` created Kubernetes installations. In the same way that you can use a YAML manifest to deploy a Job, you can deploy and manage a `kops` Kubernetes instance with a manifest. All of these values are also usable via the interactive editor with `kops edit`.
 
 > You can see all the options that are currently supported in Kops [here](https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/componentconfig.go) or [more prettily here](https://godoc.org/k8s.io/kops/pkg/apis/kops#ClusterSpec)
 
@@ -26,7 +26,7 @@ The following is a list of the benefits of using a file to manage instances.
 - Capability to access API values that are not accessible via the command line such as setting the max price for spot instances.
 - Create, replace, update, and delete clusters without entering an interactive editor. This feature is helpful when automating cluster creation.
 - Ability to check-in files to source control that represents an installation.
-- Run commands such as `kops delete -f mycuster.yaml`.
+- Run commands such as `kops delete -f mycluster.yaml`.
 
 ## Exporting a Cluster
 
@@ -305,7 +305,7 @@ The `ClusterSpec` allows a user to set configurations for such values as Docker 
 More information about some of the elements in the `ClusterSpec` is available in the following:
 
 -  Cluster Spec [document](cluster_spec.md) which outlines some of the values in the Cluster Specification.
-- [Ectd Encryption](etcd_backup.md)
+- [Etcd Encryption](etcd_backup.md)
 - [GPU](gpu.md) setup
 - [IAM Roles](iam_roles.md) - adding additional IAM roles.
 - [Labels](labels.md)

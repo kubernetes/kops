@@ -24,8 +24,14 @@ import (
 	"github.com/gophercloud/gophercloud"
 	os "github.com/gophercloud/gophercloud/openstack"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -38,6 +44,9 @@ import (
 const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
 const TagNameRolePrefix = "k8s.io/role/"
 const TagClusterName = "KubernetesCluster"
+
+// ErrNotFound is used to inform that the object is not found
+var ErrNotFound = "Resource not found"
 
 // readBackoff is the backoff strategy for openstack read retries.
 var readBackoff = wait.Backoff{
@@ -57,6 +66,9 @@ var writeBackoff = wait.Backoff{
 
 type OpenstackCloud interface {
 	fi.Cloud
+
+	// Region returns the region which cloud will run on
+	Region() string
 
 	// SetVolumeTags will set the tags for the Cinder volume
 	SetVolumeTags(id string, tags map[string]string) error
@@ -81,12 +93,47 @@ type OpenstackCloud interface {
 
 	//CreateSecurityGroupRule will create a new Neutron security group rule
 	CreateSecurityGroupRule(opt sgr.CreateOpts) (*sgr.SecGroupRule, error)
+
+	//ListNetworks will return the Neutron networks which match the options
+	ListNetworks(opt networks.ListOptsBuilder) ([]networks.Network, error)
+
+	//CreateNetwork will create a new Neutron network
+	CreateNetwork(opt networks.CreateOptsBuilder) (*networks.Network, error)
+
+	//ListRouters will return the Neutron routers which match the options
+	ListRouters(opt routers.ListOpts) ([]routers.Router, error)
+
+	//CreateRouter will create a new Neutron router
+	CreateRouter(opt routers.CreateOptsBuilder) (*routers.Router, error)
+
+	//ListSubnets will return the Neutron subnets which match the options
+	ListSubnets(opt subnets.ListOptsBuilder) ([]subnets.Subnet, error)
+
+	//CreateSubnet will create a new Neutron subnet
+	CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.Subnet, error)
+
+	// ListKeypair will return the Nova keypairs
+	ListKeypair(name string) (*keypairs.KeyPair, error)
+
+	// CreateKeypair will create a new Nova Keypair
+	CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error)
+
+	//ListPorts will return the Neutron ports which match the options
+	ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error)
+
+	//CreateRouterInterface will create a new Neutron router interface
+	CreateRouterInterface(routerID string, opt routers.AddInterfaceOptsBuilder) (*routers.InterfaceInfo, error)
+
+	// CreateServerGroup will create a new server group.
+	CreateServerGroup(opt servergroups.CreateOpts) (*servergroups.ServerGroup, error)
 }
 
 type openstackCloud struct {
 	cinderClient  *gophercloud.ServiceClient
 	neutronClient *gophercloud.ServiceClient
+	novaClient    *gophercloud.ServiceClient
 	tags          map[string]string
+	region        string
 }
 
 var _ fi.Cloud = &openstackCloud{}
@@ -121,12 +168,29 @@ func NewOpenstackCloud(tags map[string]string) (OpenstackCloud, error) {
 		return nil, fmt.Errorf("error building neutron client: %v", err)
 	}
 
+	endpointOpt, err = config.GetServiceConfig("Nova")
+	if err != nil {
+		return nil, err
+	}
+	novaClient, err := os.NewComputeV2(provider, endpointOpt)
+	if err != nil {
+		return nil, fmt.Errorf("error building nova client: %v", err)
+	}
+
+	region := endpointOpt.Region
+
 	c := &openstackCloud{
 		cinderClient:  cinderClient,
 		neutronClient: neutronClient,
+		novaClient:    novaClient,
 		tags:          tags,
+		region:        region,
 	}
 	return c, nil
+}
+
+func (c *openstackCloud) Region() string {
+	return c.region
 }
 
 func (c *openstackCloud) ProviderID() kops.CloudProviderID {
@@ -316,4 +380,230 @@ func (c *openstackCloud) CreateSecurityGroupRule(opt sgr.CreateOpts) (*sgr.SecGr
 	} else {
 		return rule, wait.ErrWaitTimeout
 	}
+}
+
+func (c *openstackCloud) ListNetworks(opt networks.ListOptsBuilder) ([]networks.Network, error) {
+	var ns []networks.Network
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		allPages, err := networks.List(c.neutronClient, opt).AllPages()
+		if err != nil {
+			return false, fmt.Errorf("error listing networks: %v", err)
+		}
+
+		r, err := networks.ExtractNetworks(allPages)
+		if err != nil {
+			return false, fmt.Errorf("error extracting networks from pages: %v", err)
+		}
+		ns = r
+		return true, nil
+	})
+	if err != nil {
+		return ns, err
+	} else if done {
+		return ns, nil
+	} else {
+		return ns, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) CreateNetwork(opt networks.CreateOptsBuilder) (*networks.Network, error) {
+	var n *networks.Network
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		r, err := networks.Create(c.neutronClient, opt).Extract()
+		if err != nil {
+			return false, fmt.Errorf("error creating network: %v", err)
+		}
+		n = r
+		return true, nil
+	})
+	if err != nil {
+		return n, err
+	} else if done {
+		return n, nil
+	} else {
+		return n, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) ListRouters(opt routers.ListOpts) ([]routers.Router, error) {
+	var rs []routers.Router
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		allPages, err := routers.List(c.neutronClient, opt).AllPages()
+		if err != nil {
+			return false, fmt.Errorf("error listing routers: %v", err)
+		}
+
+		r, err := routers.ExtractRouters(allPages)
+		if err != nil {
+			return false, fmt.Errorf("error extracting routers from pages: %v", err)
+		}
+		rs = r
+		return true, nil
+	})
+	if err != nil {
+		return rs, err
+	} else if done {
+		return rs, nil
+	} else {
+		return rs, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) CreateRouter(opt routers.CreateOptsBuilder) (*routers.Router, error) {
+	var r *routers.Router
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		v, err := routers.Create(c.neutronClient, opt).Extract()
+		if err != nil {
+			return false, fmt.Errorf("error creating router: %v", err)
+		}
+		r = v
+		return true, nil
+	})
+	if err != nil {
+		return r, err
+	} else if done {
+		return r, nil
+	} else {
+		return r, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) ListSubnets(opt subnets.ListOptsBuilder) ([]subnets.Subnet, error) {
+	var s []subnets.Subnet
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		allPages, err := subnets.List(c.neutronClient, opt).AllPages()
+		if err != nil {
+			return false, fmt.Errorf("error listing subnets: %v", err)
+		}
+
+		r, err := subnets.ExtractSubnets(allPages)
+		if err != nil {
+			return false, fmt.Errorf("error extracting subnets from pages: %v", err)
+		}
+		s = r
+		return true, nil
+	})
+	if err != nil {
+		return s, err
+	} else if done {
+		return s, nil
+	} else {
+		return s, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.Subnet, error) {
+	var s *subnets.Subnet
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		v, err := subnets.Create(c.neutronClient, opt).Extract()
+		if err != nil {
+			return false, fmt.Errorf("error creating subnet: %v", err)
+		}
+		s = v
+		return true, nil
+	})
+	if err != nil {
+		return s, err
+	} else if done {
+		return s, nil
+	} else {
+		return s, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) ListKeypair(name string) (*keypairs.KeyPair, error) {
+	var k *keypairs.KeyPair
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		rs, err := keypairs.Get(c.novaClient, name).Extract()
+		if err != nil {
+			if err.Error() == ErrNotFound {
+				return true, nil
+			}
+			return false, fmt.Errorf("error listing keypair: %v", err)
+		}
+		k = rs
+		return true, nil
+	})
+	if err != nil {
+		return k, err
+	} else if done {
+		return k, nil
+	} else {
+		return k, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error) {
+	var k *keypairs.KeyPair
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		v, err := keypairs.Create(c.novaClient, opt).Extract()
+		if err != nil {
+			return false, fmt.Errorf("error creating keypair: %v", err)
+		}
+		k = v
+		return true, nil
+	})
+	if err != nil {
+		return k, err
+	} else if done {
+		return k, nil
+	} else {
+		return k, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error) {
+	var p []ports.Port
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		allPages, err := ports.List(c.neutronClient, opt).AllPages()
+		if err != nil {
+			return false, fmt.Errorf("error listing ports: %v", err)
+		}
+
+		r, err := ports.ExtractPorts(allPages)
+		if err != nil {
+			return false, fmt.Errorf("error extracting ports from pages: %v", err)
+		}
+		p = r
+		return true, nil
+	})
+	if err != nil {
+		return p, err
+	} else if done {
+		return p, nil
+	} else {
+		return p, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) CreateRouterInterface(routerID string, opt routers.AddInterfaceOptsBuilder) (*routers.InterfaceInfo, error) {
+	var i *routers.InterfaceInfo
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		v, err := routers.AddInterface(c.neutronClient, routerID, opt).Extract()
+		if err != nil {
+			return false, fmt.Errorf("error creating router interface: %v", err)
+		}
+		i = v
+		return true, nil
+	})
+	if err != nil {
+		return i, err
+	} else if done {
+		return i, nil
+	} else {
+		return i, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) CreateServerGroup(opt servergroups.CreateOpts) (*servergroups.ServerGroup, error) {
+	return nil, fmt.Errorf("openstackCloud::CreateServerGroup not implemented")
 }

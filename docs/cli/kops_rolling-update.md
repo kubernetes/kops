@@ -7,7 +7,6 @@ Rolling update a cluster.
 
 ### Synopsis
 
-
 This command updates a kubernetes cluster to match the cloud and kops specifications.
 
 To perform a rolling update, you need to update the cloud resources first with the command
@@ -54,29 +53,36 @@ Note: terraform users will need to run all of the following commands from the sa
   
   # Roll the k8s-cluster.example.com kops cluster,
   # only roll the node instancegroup,
-  # use the new drain a validate functionality.
+  # use the new drain and validate functionality.
   kops rolling-update cluster k8s-cluster.example.com --yes \
   --fail-on-validate-error="false" \
   --node-interval 8m \
   --instance-group nodes
 ```
 
+### Options
+
+```
+  -h, --help   help for rolling-update
+```
+
 ### Options inherited from parent commands
 
 ```
       --alsologtostderr                  log to standard error as well as files
-      --config string                    config file (default is $HOME/.kops.yaml)
+      --config string                    yaml config file (default is $HOME/.kops.yaml)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ### SEE ALSO
+
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops rolling-update cluster](kops_rolling-update_cluster.md)	 - Rolling update a cluster.
 

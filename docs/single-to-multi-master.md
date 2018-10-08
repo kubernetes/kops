@@ -286,3 +286,43 @@ While optional, this last step allows you to be sure that your masters are
 fully configured by Kops and that there is no residual manual configuration.
 If there is any configuration problem, they will be detected during this step
 and not during a future upgrade or, worse, during a master failure.
+
+
+## 6 - Restore (if migration to multi-master failed)
+
+In case you failed to upgrade to multi-master you will need to restore from the backup you have taken previously.
+
+Take extra care becase kops will not start etcd and etcd-events with the same ID on <master-b> an/or <master-c> for example but will mix them (ex: etcd-b and etcd-events-c on <master-b> & etcd-c and etcd-events-b on <master-c> ); this can be double checked in Route53 where kops will create DNS records for your services.
+
+If your 2nd spinned master failed and cluster becomes inconsistent edit the corresponding kops master instancegroup and switch ``MinSize`` and ``MaxSize`` to "0" and run an update on your cluster.
+
+Next ssh into your primary master:
+
+``systemctl stop kubelet``
+``systemctl stop protokube``
+
+Reinitialize the etcd instances:
+* In both ``/etc/kubernetes/manifests/etcd-events.manifest`` and
+``/etc/kubernetes/manifests/etcd.manifest``, add the
+``ETCD_FORCE_NEW_CLUSTER`` variable with value ``1``.
+* Delete the containers and the data directories while restoring also from previous backup:
+
+```bash
+root@ip-172-20-116-230:~# docker stop $(docker ps | grep "gcr.io/google_containers/etcd" | awk '{print $1}')
+root@ip-172-20-116-230:~# rm -r /mnt/master-vol-03b97b1249caf379a/var/etcd/data-events/member/
+root@ip-172-20-116-230:~# rm -r /mnt/master-vol-0dbfd1f3c60b8c509/var/etcd/data/member/
+root@ip-172-20-116-230:~# cp -R /mnt/master-vol-03b97b1249caf379a/var/etcd/data-events/backup/member  /mnt/master-vol-03b97b1249caf379a/var/etcd/data-events/
+root@ip-172-20-116-230:~# cp -R /mnt/master-vol-0dbfd1f3c60b8c509/var/etcd/data/backup/member /mnt/master-vol-0dbfd1f3c60b8c509/var/etcd/data/
+```
+
+Now start back the services and watch for the logs:
+
+``systemctl start kubelet``
+``tail -f /var/log/etcd*`` # for errors, if no errors encountered re-start also protokube
+``systemctl start protokube``
+
+Test if your master is reboot-proof:
+
+Go to EC2 and ``Terminate`` the instance and check if your cluster recovers (needed to discard any manual configurations and check that kops handles everything the right way).
+
+Note! Would recommend also to use Amazon Lambda to take daily Snapshots of all your persistent volume so you can have from what to recover in case of failures.

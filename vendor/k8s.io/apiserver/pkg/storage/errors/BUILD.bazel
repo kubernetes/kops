@@ -6,6 +6,7 @@ go_library(
         "doc.go",
         "storage.go",
     ],
+    importmap = "k8s.io/kops/vendor/k8s.io/apiserver/pkg/storage/errors",
     importpath = "k8s.io/apiserver/pkg/storage/errors",
     visibility = ["//visibility:public"],
     deps = [

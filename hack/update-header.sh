@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright 2016 The Kubernetes Authors.
 #
@@ -16,8 +16,10 @@
 
 . $(dirname "${BASH_SOURCE}")/common.sh
 
-BAD_HEADERS=$((${KUBE_ROOT}/hack/verify-boilerplate.sh || true) | awk '{ print $6}')
+BAD_HEADERS=$((${KUBE_ROOT}/hack/verify-boilerplate.sh || true) | awk '{ print $7}')
 FORMATS="sh go Makefile Dockerfile"
+
+YEAR=`date +%Y`
 
 for i in ${FORMATS}
 do
@@ -25,7 +27,7 @@ do
 	for j in ${BAD_HEADERS}
 	do
 		:
-	        HEADER=$(cat ${KUBE_ROOT}/hack/boilerplate/boilerplate.${i}.txt | sed 's/YEAR/2017/')
+	        HEADER=$(cat ${KUBE_ROOT}/hack/boilerplate/boilerplate.${i}.txt | sed "s/YEAR/${YEAR}/")
 			value=$(<${j})
 			if [[ "$j" != *$i ]]
             then

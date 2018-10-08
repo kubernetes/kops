@@ -18,7 +18,7 @@ package dotasks
 
 import (
 	"context"
-	"strconv"
+	"errors"
 
 	"github.com/digitalocean/godo"
 
@@ -29,9 +29,10 @@ import (
 )
 
 //go:generate fitask -type=Droplet
+// Droplet represents a group of droplets. In the future it
+// will be managed by the Machines API
 type Droplet struct {
 	Name      *string
-	ID        *string
 	Lifecycle *fi.Lifecycle
 
 	Region   *string
@@ -39,38 +40,77 @@ type Droplet struct {
 	Image    *string
 	SSHKey   *string
 	Tags     []string
+	Count    int
 	UserData *fi.ResourceHolder
 }
 
 var _ fi.CompareWithID = &Droplet{}
 
 func (d *Droplet) CompareWithID() *string {
-	return d.ID
+	return d.Name
 }
 
 func (d *Droplet) Find(c *fi.Context) (*Droplet, error) {
 	cloud := c.Cloud.(*digitalocean.Cloud)
-	dropletService := cloud.Droplets()
 
-	droplets, _, err := dropletService.List(context.TODO(), &godo.ListOptions{})
+	droplets, err := listDroplets(cloud)
 	if err != nil {
 		return nil, err
 	}
 
+	found := false
+	count := 0
+	var foundDroplet godo.Droplet
 	for _, droplet := range droplets {
 		if droplet.Name == fi.StringValue(d.Name) {
-			return &Droplet{
-				Name:      fi.String(droplet.Name),
-				ID:        fi.String(strconv.Itoa(droplet.ID)),
-				Region:    fi.String(droplet.Region.Slug),
-				Size:      fi.String(droplet.Size.Slug),
-				Image:     fi.String(droplet.Image.Slug),
-				Lifecycle: d.Lifecycle,
-			}, nil
+			found = true
+			count++
+			foundDroplet = droplet
 		}
 	}
 
-	return nil, nil
+	if !found {
+		return nil, nil
+	}
+
+	return &Droplet{
+		Name:      fi.String(foundDroplet.Name),
+		Count:     count,
+		Region:    fi.String(foundDroplet.Region.Slug),
+		Size:      fi.String(foundDroplet.Size.Slug),
+		Image:     fi.String(foundDroplet.Image.Slug),
+		Tags:      foundDroplet.Tags,
+		SSHKey:    d.SSHKey,   // TODO: get from droplet or ignore change
+		UserData:  d.UserData, // TODO: get from droplet or ignore change
+		Lifecycle: d.Lifecycle,
+	}, nil
+}
+
+func listDroplets(cloud *digitalocean.Cloud) ([]godo.Droplet, error) {
+	allDroplets := []godo.Droplet{}
+
+	opt := &godo.ListOptions{}
+	for {
+		droplets, resp, err := cloud.Droplets().List(context.TODO(), opt)
+		if err != nil {
+			return nil, err
+		}
+
+		allDroplets = append(allDroplets, droplets...)
+
+		if resp.Links == nil || resp.Links.IsLastPage() {
+			break
+		}
+
+		page, err := resp.Links.CurrentPage()
+		if err != nil {
+			return nil, err
+		}
+
+		opt.Page = page + 1
+	}
+
+	return allDroplets, nil
 }
 
 func (d *Droplet) Run(c *fi.Context) error {
@@ -78,18 +118,37 @@ func (d *Droplet) Run(c *fi.Context) error {
 }
 
 func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
-	if a != nil {
-		return nil
-	}
-
 	userData, err := e.UserData.AsString()
 	if err != nil {
 		return err
 	}
 
-	dropletService := t.Cloud.Droplets()
-	_, _, err = dropletService.Create(context.TODO(), &godo.DropletCreateRequest{
-		Name:              fi.StringValue(e.Name),
+	var newDropletCount int
+	if a == nil {
+		newDropletCount = e.Count
+	} else {
+
+		expectedCount := e.Count
+		actualCount := a.Count
+
+		if expectedCount == actualCount {
+			return nil
+		}
+
+		if actualCount > expectedCount {
+			return errors.New("deleting droplets is not supported yet")
+		}
+
+		newDropletCount = expectedCount - actualCount
+	}
+
+	var dropletNames []string
+	for i := 0; i < newDropletCount; i++ {
+		dropletNames = append(dropletNames, fi.StringValue(e.Name))
+	}
+
+	_, _, err = t.Cloud.Droplets().CreateMultiple(context.TODO(), &godo.DropletMultiCreateRequest{
+		Names:             dropletNames,
 		Region:            fi.StringValue(e.Region),
 		Size:              fi.StringValue(e.Size),
 		Image:             godo.DropletCreateImage{Slug: fi.StringValue(e.Image)},
@@ -105,9 +164,6 @@ func (_ *Droplet) CheckChanges(a, e, changes *Droplet) error {
 	if a != nil {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
-		}
-		if changes.ID != nil {
-			return fi.CannotChangeField("ID")
 		}
 		if changes.Region != nil {
 			return fi.CannotChangeField("Region")

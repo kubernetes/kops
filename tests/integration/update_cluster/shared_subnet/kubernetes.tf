@@ -1,5 +1,26 @@
+locals = {
+  cluster_name                 = "sharedsubnet.example.com"
+  master_autoscaling_group_ids = ["${aws_autoscaling_group.master-us-test-1a-masters-sharedsubnet-example-com.id}"]
+  master_security_group_ids    = ["${aws_security_group.masters-sharedsubnet-example-com.id}"]
+  masters_role_arn             = "${aws_iam_role.masters-sharedsubnet-example-com.arn}"
+  masters_role_name            = "${aws_iam_role.masters-sharedsubnet-example-com.name}"
+  node_autoscaling_group_ids   = ["${aws_autoscaling_group.nodes-sharedsubnet-example-com.id}"]
+  node_security_group_ids      = ["${aws_security_group.nodes-sharedsubnet-example-com.id}"]
+  node_subnet_ids              = ["subnet-12345678"]
+  nodes_role_arn               = "${aws_iam_role.nodes-sharedsubnet-example-com.arn}"
+  nodes_role_name              = "${aws_iam_role.nodes-sharedsubnet-example-com.name}"
+  region                       = "us-test-1"
+  subnet_ids                   = ["subnet-12345678"]
+  subnet_us-test-1a_id         = "subnet-12345678"
+  vpc_id                       = "vpc-12345678"
+}
+
 output "cluster_name" {
   value = "sharedsubnet.example.com"
+}
+
+output "master_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.master-us-test-1a-masters-sharedsubnet-example-com.id}"]
 }
 
 output "master_security_group_ids" {
@@ -12,6 +33,10 @@ output "masters_role_arn" {
 
 output "masters_role_name" {
   value = "${aws_iam_role.masters-sharedsubnet-example-com.name}"
+}
+
+output "node_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.nodes-sharedsubnet-example-com.id}"]
 }
 
 output "node_security_group_ids" {
@@ -36,6 +61,10 @@ output "region" {
 
 output "subnet_ids" {
   value = ["subnet-12345678"]
+}
+
+output "subnet_us-test-1a_id" {
+  value = "subnet-12345678"
 }
 
 output "vpc_id" {
@@ -111,10 +140,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-sharedsubnet-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "sharedsubnet.example.com"
-    Name                 = "us-test-1a.etcd-events.sharedsubnet.example.com"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                = "sharedsubnet.example.com"
+    Name                                             = "us-test-1a.etcd-events.sharedsubnet.example.com"
+    "k8s.io/etcd/events"                             = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                             = "1"
+    "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
   }
 }
 
@@ -125,10 +155,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-sharedsubnet-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "sharedsubnet.example.com"
-    Name                 = "us-test-1a.etcd-main.sharedsubnet.example.com"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                                = "sharedsubnet.example.com"
+    Name                                             = "us-test-1a.etcd-main.sharedsubnet.example.com"
+    "k8s.io/etcd/main"                               = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                             = "1"
+    "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
   }
 }
 
@@ -193,6 +224,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-sharedsubnet-exam
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-sharedsubnet-example-com" {
@@ -214,6 +247,8 @@ resource "aws_launch_configuration" "nodes-sharedsubnet-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_security_group" "masters-sharedsubnet-example-com" {
@@ -222,8 +257,9 @@ resource "aws_security_group" "masters-sharedsubnet-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "sharedsubnet.example.com"
-    Name              = "masters.sharedsubnet.example.com"
+    KubernetesCluster                                = "sharedsubnet.example.com"
+    Name                                             = "masters.sharedsubnet.example.com"
+    "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
   }
 }
 
@@ -233,8 +269,9 @@ resource "aws_security_group" "nodes-sharedsubnet-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "sharedsubnet.example.com"
-    Name              = "nodes.sharedsubnet.example.com"
+    KubernetesCluster                                = "sharedsubnet.example.com"
+    Name                                             = "nodes.sharedsubnet.example.com"
+    "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
   }
 }
 

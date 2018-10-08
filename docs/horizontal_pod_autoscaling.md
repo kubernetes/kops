@@ -81,6 +81,8 @@ spec:
     enableCustomMetrics: true
 ```
 
+Note that the deprecated and inactive option '--enable-custom-metrics' has been removed in Kubernetes 1.11 [#60699](https://github.com/kubernetes/kubernetes/pull/60699)
+
 Enable the horizontal pod autoscaler REST client:
 
 ```yaml
@@ -121,7 +123,7 @@ These are the PRs that enable the required configuration:
 [k8s-aggregation-layer]: https://v1-9.docs.kubernetes.io/docs/tasks/access-kubernetes-api/configure-aggregation-layer/
 [k8s-extend-api]: https://v1-9.docs.kubernetes.io/docs/concepts/api-extension/apiserver-aggregation/
 [k8s-hpa]: https://v1-9.docs.kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
-[k8s-metrics-server]: https://github.com/kubernetes-incubator/metrics-server#deployment
+[k8s-metrics-server]: https://github.com/kubernetes/kops/blob/master/addons/metrics-server/README.md
 [k8s-prometheus-custom-metrics-adapter]: https://github.com/DirectXMan12/k8s-prometheus-adapter
 
 [pr-1]: https://github.com/kubernetes/kops/pull/3679

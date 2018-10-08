@@ -12,6 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+{{- if or (.KubeDNS.UpstreamNameservers) (.KubeDNS.StubDomains) }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kube-dns
+  namespace: kube-system
+data:
+  {{- if .KubeDNS.UpstreamNameservers }}
+  upstreamNameservers: |
+    {{ ToJSON .KubeDNS.UpstreamNameservers }}
+  {{- end }}
+  {{- if .KubeDNS.StubDomains }}
+  stubDomains: |
+    {{ ToJSON .KubeDNS.StubDomains }}
+  {{- end }}
+{{- end }}
+
+---
+
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -85,6 +105,8 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
         # For 1.6, we keep the old tolerations in case of a downgrade to 1.5
         scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '10055'
     spec:
       dnsPolicy: Default  # Don't use cluster DNS.
       serviceAccountName: kube-dns
@@ -96,7 +118,7 @@ spec:
 
       containers:
       - name: kubedns
-        image: k8s.gcr.io/k8s-dns-kube-dns-{{Arch}}:1.14.8
+        image: k8s.gcr.io/k8s-dns-kube-dns-{{Arch}}:1.14.10
         resources:
           # TODO: Set memory limits when we've profiled the container for large
           # clusters, then set request = limit to keep this container in
@@ -126,9 +148,9 @@ spec:
           initialDelaySeconds: 3
           timeoutSeconds: 5
         args:
-        - --domain={{ KubeDNS.Domain }}.
-        - --dns-port=10053
         - --config-dir=/kube-dns-config
+        - --dns-port=10053
+        - --domain={{ KubeDNS.Domain }}.
         - --v=2
         env:
         - name: PROMETHEUS_PORT
@@ -148,7 +170,7 @@ spec:
           mountPath: /kube-dns-config
 
       - name: dnsmasq
-        image: k8s.gcr.io/k8s-dns-dnsmasq-nanny-{{Arch}}:1.14.8
+        image: k8s.gcr.io/k8s-dns-dnsmasq-nanny-{{Arch}}:1.14.10
         livenessProbe:
           httpGet:
             path: /healthcheck/dnsmasq
@@ -165,7 +187,8 @@ spec:
         - -restartDnsmasq=true
         - --
         - -k
-        - --cache-size=1000
+        - --cache-size={{ KubeDNS.CacheMaxSize }}
+        - --dns-forward-max={{ KubeDNS.CacheMaxConcurrent }}
         - --no-negcache
         - --log-facility=-
         - --server=/{{ KubeDNS.Domain }}/127.0.0.1#10053
@@ -188,7 +211,7 @@ spec:
           mountPath: /etc/k8s/dns/dnsmasq-nanny
 
       - name: sidecar
-        image: k8s.gcr.io/k8s-dns-sidecar-amd64:1.14.8
+        image: k8s.gcr.io/k8s-dns-sidecar-amd64:1.14.10
         livenessProbe:
           httpGet:
             path: /metrics

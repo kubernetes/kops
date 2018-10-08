@@ -23,10 +23,10 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kubernetes/pkg/kubectl/genericclioptions"
 )
 
 // RollingUpdateCluster is a struct containing cluster information for a rolling update.
@@ -45,7 +45,7 @@ type RollingUpdateCluster struct {
 	Force bool
 
 	K8sClient        kubernetes.Interface
-	ClientConfig     clientcmd.ClientConfig
+	ClientGetter     genericclioptions.RESTClientGetter
 	FailOnDrainError bool
 	FailOnValidate   bool
 	CloudOnly        bool
@@ -59,7 +59,7 @@ type RollingUpdateCluster struct {
 }
 
 // RollingUpdate performs a rolling update on a K8s Cluster.
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.CloudInstanceGroup, cluster *api.Cluster, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
 		glog.Infof("Cloud Instance Group length is zero. Not doing a rolling-update.")
 		return nil
@@ -99,7 +99,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
 				if err == nil {
-					err = g.RollingUpdate(c, instanceGroups, true, c.BastionInterval, c.ValidationTimeout)
+					err = g.RollingUpdate(c, cluster, instanceGroups, true, c.BastionInterval, c.ValidationTimeout)
 				}
 
 				resultsMutex.Lock()
@@ -111,39 +111,30 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 		wg.Wait()
 	}
 
-	// Upgrade master next
-	{
-		var wg sync.WaitGroup
+	// Do not continue update if bastion(s) failed
+	for _, err := range results {
+		if err != nil {
+			return fmt.Errorf("bastion not healthy after update, stopping rolling-update: %q", err)
+		}
+	}
 
+	// Upgrade masters next
+	{
 		// We run master nodes in series, even if they are in separate instance groups
 		// typically they will be in separate instance groups, so we can force the zones,
 		// and we don't want to roll all the masters at the same time.  See issue #284
-		wg.Add(1)
 
-		go func() {
-			for k := range masterGroups {
-				resultsMutex.Lock()
-				results[k] = fmt.Errorf("function panic masters")
-				resultsMutex.Unlock()
+		for _, group := range masterGroups {
+			g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
+			if err == nil {
+				err = g.RollingUpdate(c, cluster, instanceGroups, false, c.MasterInterval, c.ValidationTimeout)
 			}
 
-			defer wg.Done()
-
-			for k, group := range masterGroups {
-				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
-				if err == nil {
-					err = g.RollingUpdate(c, instanceGroups, false, c.MasterInterval, c.ValidationTimeout)
-				}
-
-				resultsMutex.Lock()
-				results[k] = err
-				resultsMutex.Unlock()
-
-				// TODO: Bail on error?
+			// Do not continue update if master(s) failed, cluster is potentially in an unhealthy state
+			if err != nil {
+				return fmt.Errorf("master not healthy after update, stopping rolling-update: %q", err)
 			}
-		}()
-
-		wg.Wait()
+		}
 	}
 
 	// Upgrade nodes, with greater parallelism
@@ -170,7 +161,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 			for k, group := range nodeGroups {
 				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
 				if err == nil {
-					err = g.RollingUpdate(c, instanceGroups, false, c.NodeInterval, c.ValidationTimeout)
+					err = g.RollingUpdate(c, cluster, instanceGroups, false, c.NodeInterval, c.ValidationTimeout)
 				}
 
 				resultsMutex.Lock()

@@ -73,6 +73,7 @@ spec:
   role: Node
   subnets:
   - us-test-1a
+  detailedInstanceMonitoring: true
 
 ---
 

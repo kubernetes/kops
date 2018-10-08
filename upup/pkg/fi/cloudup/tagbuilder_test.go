@@ -79,14 +79,6 @@ func TestBuildTags_CloudProvider_AWS_Weave(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	if !tags.Has("_networking_cni") {
-		t.Fatal("tag _networking_cni not found")
-	}
-
-	if tags.Has("_networking_kubenet") {
-		t.Fatal("tag _networking_kubenet found")
-	}
-
 	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
@@ -111,14 +103,6 @@ func TestBuildTags_CloudProvider_AWS_Flannel(t *testing.T) {
 
 	if !tags.Has("_aws") {
 		t.Fatal("tag _aws not found")
-	}
-
-	if !tags.Has("_networking_cni") {
-		t.Fatal("tag _networking_cni not found")
-	}
-
-	if tags.Has("_networking_kubenet") {
-		t.Fatal("tag _networking_kubenet found")
 	}
 
 	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
@@ -147,14 +131,6 @@ func TestBuildTags_CloudProvider_AWS_Calico(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	if !tags.Has("_networking_cni") {
-		t.Fatal("tag _networking_cni not found")
-	}
-
-	if tags.Has("_networking_kubenet") {
-		t.Fatal("tag _networking_kubenet found")
-	}
-
 	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
@@ -179,14 +155,6 @@ func TestBuildTags_CloudProvider_AWS_Canal(t *testing.T) {
 
 	if !tags.Has("_aws") {
 		t.Fatal("tag _aws not found")
-	}
-
-	if !tags.Has("_networking_cni") {
-		t.Fatal("tag _networking_cni not found")
-	}
-
-	if tags.Has("_networking_kubenet") {
-		t.Fatal("tag _networking_kubenet found")
 	}
 
 	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
@@ -215,14 +183,6 @@ func TestBuildTags_CloudProvider_AWS_Romana(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	if !tags.Has("_networking_cni") {
-		t.Fatal("tag _networking_cni not found")
-	}
-
-	if tags.Has("_networking_kubenet") {
-		t.Fatal("tag _networking_kubenet found")
-	}
-
 	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
@@ -244,10 +204,6 @@ func TestBuildTags_CloudProvider_AWS(t *testing.T) {
 
 	if !tags.Has("_aws") {
 		t.Fatal("tag _aws not found")
-	}
-
-	if !tags.Has("_networking_cni") {
-		t.Fatal("tag _networking_cni not found")
 	}
 
 	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
@@ -314,5 +270,31 @@ func TestBuildTags_UpdatePolicy_None(t *testing.T) {
 
 	if nodeUpTags.Has("_automatic_upgrades") {
 		t.Fatal("nodeUpTag _automatic_upgrades found unexpectedly")
+	}
+}
+
+func TestBuildTags_CloudProvider_AWS_Cilium(t *testing.T) {
+
+	c := buildCluster(nil)
+	networking := &api.NetworkingSpec{Cilium: &api.CiliumNetworkingSpec{}}
+
+	c.Spec.Networking = networking
+
+	tags, err := buildCloudupTags(c)
+	if err != nil {
+		t.Fatalf("buildCloudupTags error: %v", err)
+	}
+
+	if !tags.Has("_aws") {
+		t.Fatal("tag _aws not found")
+	}
+
+	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	if err != nil {
+		t.Fatalf("buildNodeupTags error: %v", err)
+	}
+
+	if !nodeUpTags.Has("_aws") {
+		t.Fatal("nodeUpTag _aws not found")
 	}
 }

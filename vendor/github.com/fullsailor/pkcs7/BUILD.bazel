@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "ber.go",
+        "pkcs7.go",
+        "x509.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/fullsailor/pkcs7",
+    importpath = "github.com/fullsailor/pkcs7",
+    visibility = ["//visibility:public"],
+)

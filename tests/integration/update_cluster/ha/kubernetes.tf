@@ -1,5 +1,29 @@
+locals = {
+  cluster_name                 = "ha.example.com"
+  master_autoscaling_group_ids = ["${aws_autoscaling_group.master-us-test-1a-masters-ha-example-com.id}", "${aws_autoscaling_group.master-us-test-1b-masters-ha-example-com.id}", "${aws_autoscaling_group.master-us-test-1c-masters-ha-example-com.id}"]
+  master_security_group_ids    = ["${aws_security_group.masters-ha-example-com.id}"]
+  masters_role_arn             = "${aws_iam_role.masters-ha-example-com.arn}"
+  masters_role_name            = "${aws_iam_role.masters-ha-example-com.name}"
+  node_autoscaling_group_ids   = ["${aws_autoscaling_group.nodes-ha-example-com.id}"]
+  node_security_group_ids      = ["${aws_security_group.nodes-ha-example-com.id}"]
+  node_subnet_ids              = ["${aws_subnet.us-test-1a-ha-example-com.id}", "${aws_subnet.us-test-1b-ha-example-com.id}", "${aws_subnet.us-test-1c-ha-example-com.id}"]
+  nodes_role_arn               = "${aws_iam_role.nodes-ha-example-com.arn}"
+  nodes_role_name              = "${aws_iam_role.nodes-ha-example-com.name}"
+  region                       = "us-test-1"
+  route_table_public_id        = "${aws_route_table.ha-example-com.id}"
+  subnet_us-test-1a_id         = "${aws_subnet.us-test-1a-ha-example-com.id}"
+  subnet_us-test-1b_id         = "${aws_subnet.us-test-1b-ha-example-com.id}"
+  subnet_us-test-1c_id         = "${aws_subnet.us-test-1c-ha-example-com.id}"
+  vpc_cidr_block               = "${aws_vpc.ha-example-com.cidr_block}"
+  vpc_id                       = "${aws_vpc.ha-example-com.id}"
+}
+
 output "cluster_name" {
   value = "ha.example.com"
+}
+
+output "master_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.master-us-test-1a-masters-ha-example-com.id}", "${aws_autoscaling_group.master-us-test-1b-masters-ha-example-com.id}", "${aws_autoscaling_group.master-us-test-1c-masters-ha-example-com.id}"]
 }
 
 output "master_security_group_ids" {
@@ -12,6 +36,10 @@ output "masters_role_arn" {
 
 output "masters_role_name" {
   value = "${aws_iam_role.masters-ha-example-com.name}"
+}
+
+output "node_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.nodes-ha-example-com.id}"]
 }
 
 output "node_security_group_ids" {
@@ -32,6 +60,26 @@ output "nodes_role_name" {
 
 output "region" {
   value = "us-test-1"
+}
+
+output "route_table_public_id" {
+  value = "${aws_route_table.ha-example-com.id}"
+}
+
+output "subnet_us-test-1a_id" {
+  value = "${aws_subnet.us-test-1a-ha-example-com.id}"
+}
+
+output "subnet_us-test-1b_id" {
+  value = "${aws_subnet.us-test-1b-ha-example-com.id}"
+}
+
+output "subnet_us-test-1c_id" {
+  value = "${aws_subnet.us-test-1c-ha-example-com.id}"
+}
+
+output "vpc_cidr_block" {
+  value = "${aws_vpc.ha-example-com.cidr_block}"
 }
 
 output "vpc_id" {
@@ -165,10 +213,11 @@ resource "aws_ebs_volume" "a-etcd-events-ha-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "ha.example.com"
-    Name                 = "a.etcd-events.ha.example.com"
-    "k8s.io/etcd/events" = "a/a,b,c"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "a.etcd-events.ha.example.com"
+    "k8s.io/etcd/events"                   = "a/a,b,c"
+    "k8s.io/role/master"                   = "1"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -179,10 +228,11 @@ resource "aws_ebs_volume" "a-etcd-main-ha-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "ha.example.com"
-    Name                 = "a.etcd-main.ha.example.com"
-    "k8s.io/etcd/main"   = "a/a,b,c"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "a.etcd-main.ha.example.com"
+    "k8s.io/etcd/main"                     = "a/a,b,c"
+    "k8s.io/role/master"                   = "1"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -193,10 +243,11 @@ resource "aws_ebs_volume" "b-etcd-events-ha-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "ha.example.com"
-    Name                 = "b.etcd-events.ha.example.com"
-    "k8s.io/etcd/events" = "b/a,b,c"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "b.etcd-events.ha.example.com"
+    "k8s.io/etcd/events"                   = "b/a,b,c"
+    "k8s.io/role/master"                   = "1"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -207,10 +258,11 @@ resource "aws_ebs_volume" "b-etcd-main-ha-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "ha.example.com"
-    Name                 = "b.etcd-main.ha.example.com"
-    "k8s.io/etcd/main"   = "b/a,b,c"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "b.etcd-main.ha.example.com"
+    "k8s.io/etcd/main"                     = "b/a,b,c"
+    "k8s.io/role/master"                   = "1"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -221,10 +273,11 @@ resource "aws_ebs_volume" "c-etcd-events-ha-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "ha.example.com"
-    Name                 = "c.etcd-events.ha.example.com"
-    "k8s.io/etcd/events" = "c/a,b,c"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "c.etcd-events.ha.example.com"
+    "k8s.io/etcd/events"                   = "c/a,b,c"
+    "k8s.io/role/master"                   = "1"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -235,10 +288,11 @@ resource "aws_ebs_volume" "c-etcd-main-ha-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "ha.example.com"
-    Name                 = "c.etcd-main.ha.example.com"
-    "k8s.io/etcd/main"   = "c/a,b,c"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "c.etcd-main.ha.example.com"
+    "k8s.io/etcd/main"                     = "c/a,b,c"
+    "k8s.io/role/master"                   = "1"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -313,6 +367,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-ha-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1b-masters-ha-example-com" {
@@ -339,6 +395,8 @@ resource "aws_launch_configuration" "master-us-test-1b-masters-ha-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "master-us-test-1c-masters-ha-example-com" {
@@ -365,6 +423,8 @@ resource "aws_launch_configuration" "master-us-test-1c-masters-ha-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-ha-example-com" {
@@ -386,6 +446,8 @@ resource "aws_launch_configuration" "nodes-ha-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_route" "0-0-0-0--0" {
@@ -426,8 +488,9 @@ resource "aws_security_group" "masters-ha-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "ha.example.com"
-    Name              = "masters.ha.example.com"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "masters.ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -437,8 +500,9 @@ resource "aws_security_group" "nodes-ha-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "ha.example.com"
-    Name              = "nodes.ha.example.com"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "nodes.ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 

@@ -10,6 +10,7 @@ go_library(
         "namespace.go",
         "timeout.go",
     ],
+    importmap = "k8s.io/kops/vendor/google.golang.org/appengine",
     importpath = "google.golang.org/appengine",
     visibility = ["//visibility:public"],
     deps = [

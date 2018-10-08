@@ -1,5 +1,26 @@
+locals = {
+  cluster_name                 = "sharedvpc.example.com"
+  master_autoscaling_group_ids = ["${aws_autoscaling_group.master-us-test-1a-masters-sharedvpc-example-com.id}"]
+  master_security_group_ids    = ["${aws_security_group.masters-sharedvpc-example-com.id}"]
+  masters_role_arn             = "${aws_iam_role.masters-sharedvpc-example-com.arn}"
+  masters_role_name            = "${aws_iam_role.masters-sharedvpc-example-com.name}"
+  node_autoscaling_group_ids   = ["${aws_autoscaling_group.nodes-sharedvpc-example-com.id}"]
+  node_security_group_ids      = ["${aws_security_group.nodes-sharedvpc-example-com.id}"]
+  node_subnet_ids              = ["${aws_subnet.us-test-1a-sharedvpc-example-com.id}"]
+  nodes_role_arn               = "${aws_iam_role.nodes-sharedvpc-example-com.arn}"
+  nodes_role_name              = "${aws_iam_role.nodes-sharedvpc-example-com.name}"
+  region                       = "us-test-1"
+  route_table_public_id        = "${aws_route_table.sharedvpc-example-com.id}"
+  subnet_us-test-1a_id         = "${aws_subnet.us-test-1a-sharedvpc-example-com.id}"
+  vpc_id                       = "vpc-12345678"
+}
+
 output "cluster_name" {
   value = "sharedvpc.example.com"
+}
+
+output "master_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.master-us-test-1a-masters-sharedvpc-example-com.id}"]
 }
 
 output "master_security_group_ids" {
@@ -12,6 +33,10 @@ output "masters_role_arn" {
 
 output "masters_role_name" {
   value = "${aws_iam_role.masters-sharedvpc-example-com.name}"
+}
+
+output "node_autoscaling_group_ids" {
+  value = ["${aws_autoscaling_group.nodes-sharedvpc-example-com.id}"]
 }
 
 output "node_security_group_ids" {
@@ -32,6 +57,14 @@ output "nodes_role_name" {
 
 output "region" {
   value = "us-test-1"
+}
+
+output "route_table_public_id" {
+  value = "${aws_route_table.sharedvpc-example-com.id}"
+}
+
+output "subnet_us-test-1a_id" {
+  value = "${aws_subnet.us-test-1a-sharedvpc-example-com.id}"
 }
 
 output "vpc_id" {
@@ -107,10 +140,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-sharedvpc-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "sharedvpc.example.com"
-    Name                 = "us-test-1a.etcd-events.sharedvpc.example.com"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                             = "sharedvpc.example.com"
+    Name                                          = "us-test-1a.etcd-events.sharedvpc.example.com"
+    "k8s.io/etcd/events"                          = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                          = "1"
+    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
   }
 }
 
@@ -121,10 +155,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-sharedvpc-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "sharedvpc.example.com"
-    Name                 = "us-test-1a.etcd-main.sharedvpc.example.com"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster                             = "sharedvpc.example.com"
+    Name                                          = "us-test-1a.etcd-main.sharedvpc.example.com"
+    "k8s.io/etcd/main"                            = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"                          = "1"
+    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
   }
 }
 
@@ -189,6 +224,8 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-sharedvpc-example
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_launch_configuration" "nodes-sharedvpc-example-com" {
@@ -210,6 +247,8 @@ resource "aws_launch_configuration" "nodes-sharedvpc-example-com" {
   lifecycle = {
     create_before_destroy = true
   }
+
+  enable_monitoring = false
 }
 
 resource "aws_route" "0-0-0-0--0" {
@@ -222,7 +261,9 @@ resource "aws_route_table" "sharedvpc-example-com" {
   vpc_id = "vpc-12345678"
 
   tags = {
-    "kubernetes.io/cluster/sharedvpc.example.com" = "shared"
+    KubernetesCluster                             = "sharedvpc.example.com"
+    Name                                          = "sharedvpc.example.com"
+    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
     "kubernetes.io/kops/role"                     = "public"
   }
 }
@@ -238,8 +279,9 @@ resource "aws_security_group" "masters-sharedvpc-example-com" {
   description = "Security group for masters"
 
   tags = {
-    KubernetesCluster = "sharedvpc.example.com"
-    Name              = "masters.sharedvpc.example.com"
+    KubernetesCluster                             = "sharedvpc.example.com"
+    Name                                          = "masters.sharedvpc.example.com"
+    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
   }
 }
 
@@ -249,8 +291,9 @@ resource "aws_security_group" "nodes-sharedvpc-example-com" {
   description = "Security group for nodes"
 
   tags = {
-    KubernetesCluster = "sharedvpc.example.com"
-    Name              = "nodes.sharedvpc.example.com"
+    KubernetesCluster                             = "sharedvpc.example.com"
+    Name                                          = "nodes.sharedvpc.example.com"
+    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
   }
 }
 

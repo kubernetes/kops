@@ -21,7 +21,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
+
+	"k8s.io/kubernetes/pkg/util/nsenter"
 
 	"github.com/golang/glog"
 )
@@ -49,30 +50,34 @@ func (writer *StdWriter) WriteFile(filename string, data []byte, perm os.FileMod
 // it will not see the mounted device in its own namespace. To work around this
 // limitation one has to first enter hosts namespace (by using 'nsenter') and
 // only then write data.
-type NsenterWriter struct{}
+type NsenterWriter struct {
+	ne *nsenter.Nsenter
+}
+
+// NewNsenterWriter creates a new Writer that allows writing data to file using
+// nsenter command.
+func NewNsenterWriter(ne *nsenter.Nsenter) *NsenterWriter {
+	return &NsenterWriter{
+		ne: ne,
+	}
+}
 
 // WriteFile calls 'nsenter cat - > <the file>' and 'nsenter chmod' to create a
 // file on the host.
 func (writer *NsenterWriter) WriteFile(filename string, data []byte, perm os.FileMode) error {
-	cmd := "nsenter"
-	baseArgs := []string{
-		"--mount=/rootfs/proc/1/ns/mnt",
-		"--",
-	}
-
-	echoArgs := append(baseArgs, "sh", "-c", fmt.Sprintf("cat > %s", filename))
-	glog.V(5).Infof("Command to write data to file: %v %v", cmd, echoArgs)
-	command := exec.Command(cmd, echoArgs...)
-	command.Stdin = bytes.NewBuffer(data)
+	echoArgs := []string{"-c", fmt.Sprintf("cat > %s", filename)}
+	glog.V(5).Infof("nsenter: write data to file %s by nsenter", filename)
+	command := writer.ne.Exec("sh", echoArgs)
+	command.SetStdin(bytes.NewBuffer(data))
 	outputBytes, err := command.CombinedOutput()
 	if err != nil {
 		glog.Errorf("Output from writing to %q: %v", filename, string(outputBytes))
 		return err
 	}
 
-	chmodArgs := append(baseArgs, "chmod", fmt.Sprintf("%o", perm), filename)
-	glog.V(5).Infof("Command to change permissions to file: %v %v", cmd, chmodArgs)
-	outputBytes, err = exec.Command(cmd, chmodArgs...).CombinedOutput()
+	chmodArgs := []string{fmt.Sprintf("%o", perm), filename}
+	glog.V(5).Infof("nsenter: change permissions of file %s to %s", filename, chmodArgs[0])
+	outputBytes, err = writer.ne.Exec("chmod", chmodArgs).CombinedOutput()
 	if err != nil {
 		glog.Errorf("Output from chmod command: %v", string(outputBytes))
 		return err

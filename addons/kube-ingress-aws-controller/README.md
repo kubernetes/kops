@@ -3,12 +3,12 @@
 [Kube AWS Ingress Controller](https://github.com/zalando-incubator/kubernetes-on-aws)
 creates AWS Application Load Balancer (ALB) that is used to terminate TLS connections and use
 [AWS Certificate Manager (ACM)](https://aws.amazon.com/certificate-manager/) or
-[AWS Identity and Access Management (IAM)](http://docs.aws.amazon.com/IAM/latest/APIReference/Welcome.html)
+[AWS Identity and Access Management (IAM)](https://docs.aws.amazon.com/IAM/latest/APIReference/Welcome.html)
 certificates. ALBs are used to route traffic to an Ingress http router for example
 [skipper](https://github.com/zalando/skipper/), which routes
 traffic to Kubernetes services and implements
 [advanced features](https://zalando.github.io/skipper/dataclients/kubernetes/)
-like green-blue deployments, feature toggles, reate limits,
+like green-blue deployments, feature toggles, rate limits,
 circuitbreakers, metrics, access logs, opentracing API, shadow traffic or A/B tests.
 
 Advantages:
@@ -16,8 +16,8 @@ Advantages:
 - it uses Cloudformation instead of API calls for safety reasons, because if use Kubernetes in AWS at scale you will get rate limited from AWS sooner or later
 - it does not have routes limitations from AWS
 - you can use managed certificates like ACM, but also use you purchased certificates using IAM certificates
-- it automatically finds the best matching ACM and IAM certifacte for your ingress, but you can also provide hostnames or the ARN to influence the certificate/ALB lookup
-- you are free to use an http router imlementation of your choice, which can implement more features like green-blue deployments
+- it automatically finds the best matching ACM and IAM certificate for your ingress, but you can also provide hostnames or the ARN to influence the certificate/ALB lookup
+- you are free to use an http router implementation of your choice, which can implement more features like green-blue deployments
 
 
 For this tutorial I assume you have GNU sed installed, if not read
@@ -89,6 +89,7 @@ kube-ingress-aws-controller, which we will use:
     "acm:ListCertificates",
     "acm:DescribeCertificate",
     "autoscaling:DescribeAutoScalingGroups",
+    "autoscaling:DescribeLoadBalancerTargetGroups",
     "autoscaling:AttachLoadBalancers",
     "autoscaling:DetachLoadBalancers",
     "autoscaling:DetachLoadBalancerTargetGroups",
@@ -128,6 +129,7 @@ and add this to your node policy:
             "acm:ListCertificates",
             "acm:DescribeCertificate",
             "autoscaling:DescribeAutoScalingGroups",
+            "autoscaling:DescribeLoadBalancerTargetGroups",
             "autoscaling:AttachLoadBalancers",
             "autoscaling:DetachLoadBalancers",
             "autoscaling:DetachLoadBalancerTargetGroups",
@@ -162,7 +164,8 @@ kops rolling-update cluster
 To be able to route traffic from ALB to your nodes you need to create
 an Amazon EC2 security group with Kubernetes tags, that allow ingress
 port 80 and 443 from the internet and everything from ALBs to your
-nodes. Tags are used from Kubernetes components to find AWS components
+nodes. You also need to allow traffic to leave the ALB to the Internet and Kubernetes nodes.
+Tags are used from Kubernetes components to find AWS components
 owned by the cluster. We will do with the AWS cli:
 
 ```
@@ -172,11 +175,24 @@ sgidingress=$(aws ec2 describe-security-groups --filters Name=group-name,Values=
 sgidnode=$(aws ec2 describe-security-groups --filters Name=group-name,Values=nodes.$KOPS_CLUSTER_NAME | jq '.["SecurityGroups"][0]["GroupId"]' -r)
 aws ec2 authorize-security-group-ingress --group-id $sgidingress --protocol tcp --port 443 --cidr 0.0.0.0/0
 aws ec2 authorize-security-group-ingress --group-id $sgidingress --protocol tcp --port 80 --cidr 0.0.0.0/0
-
+aws ec2 authorize-security-group-egress --group-id $sgidingress --protocol all --port -1 --cidr 0.0.0.0/0
 aws ec2 authorize-security-group-ingress --group-id $sgidnode --protocol all --port -1 --source-group $sgidingress
 aws ec2 create-tags --resources $sgidingress --tags '[{"Key": "kubernetes.io/cluster/id", "Value": "owned"}, {"Key": "kubernetes:application", "Value": "kube-ingress-aws-controller"}]'
 ```
+If your cluster is running not in the default VPC then the commands for the creation of the security groups will look a little different:
 
+```
+VPC_ID=$(aws ec2 describe-security-groups --filters Name=group-name,Values=nodes.$KOPS_CLUSTER_NAME | jq '.["SecurityGroups"][0].VpcId' -r)
+aws ec2 create-security-group --description ingress.$KOPS_CLUSTER_NAME --group-name ingress.$KOPS_CLUSTER_NAME --vpc-id $VPC_ID
+aws ec2 describe-security-groups --filter Name=vpc-id,Values=$VPC_ID  Name=group-name,Values=ingress.$KOPS_CLUSTER_NAME
+sgidingress=$(aws ec2 describe-security-groups --filter Name=vpc-id,Values=$VPC_ID  Name=group-name,Values=ingress.$KOPS_CLUSTER_NAME | jq '.["SecurityGroups"][0]["GroupId"]' -r)
+sgidnode=$(aws ec2 describe-security-groups --filter Name=vpc-id,Values=$VPC_ID  Name=group-name,Values=nodes.$KOPS_CLUSTER_NAME | jq '.["SecurityGroups"][0]["GroupId"]' -r)
+aws ec2 authorize-security-group-ingress --group-id $sgidingress --protocol tcp --port 443 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-ingress --group-id $sgidingress --protocol tcp --port 80 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-egress --group-id $sgidingress --protocol all --port -1 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-ingress --group-id $sgidnode --protocol all --port -1 --source-group $sgidingress
+aws ec2 create-tags --resources $sgidingress --tags Key="kubernetes.io/cluster/${KOPS_CLUSTER_NAME}",Value="owned" Key="kubernetes:application",Value="kube-ingress-aws-controller"
+```
 ### AWS Certificate Manager (ACM)
 
 To have TLS termination you can use AWS managed certificates.  If you
@@ -189,7 +205,7 @@ aws acm list-certificates
 
 If you have one, you can move on to the next section.
 
-To create an ACM certificate, you have to requset a CSR with a domain name that you own in [route53](https://aws.amazon.com/route53/), for example.org. We will here request one wildcard certificate for example.org:
+To create an ACM certificate, you have to request a CSR with a domain name that you own in [route53](https://aws.amazon.com/route53/), for example.org. We will here request one wildcard certificate for example.org:
 
 ```
 aws acm request-certificate --domain-name *.example.org
@@ -213,7 +229,7 @@ aws acm describe-certificate --certificate-arn arn:aws:acm:<snip> | jq '.["Certi
 ```
 
 If this is no "ISSUED", your certificate is not valid and you have to fix it.
-To resend the CSR validation e-mail, you can use
+To resend the CSR validation e-mail, you can use:
 
 ```
 aws acm resend-validation-email
@@ -224,7 +240,7 @@ aws acm resend-validation-email
 
 kube-ingress-aws-controller will be deployed as deployment with 1
 replica, which is ok for production, because it's only configuring
-ALBs. Skipper will be deployed as daemonset and we create 2 ingress, 2
+ALBs. Skipper will be deployed as daemonset and we create 2 ingresses, 2
 services and 2 deployments to show green-blue deployments.
 
 Change region and hostnames depending on
@@ -238,6 +254,11 @@ sed -i "s/<HOSTNAME>/demo-app.example.org/" v1.0.0.yaml
 sed -i "s/<HOSTNAME2>/demo-green-blue.example.org/" v1.0.0.yaml
 kubectl create -f v1.0.0.yaml
 ```
+
+If your VPC-CIDR is different from 10.0.0.0/8, 192.168.0.0/16, 172.16.0.0/12, 127.0.0.1/8,fd00::/8 or ::1/128 you may
+get a "Readiness probe failed: HTTP probe failed with statuscode: 404" from the skipper pods with the *latest* or
+*v0.10.7* tag of skipper.
+To prevent this, uncomment the "-whitelisted-healthcheck-cidr=<CIDR_BLOCK>" in v1.0.0.yaml and add your VPC-CIDR.
 
 Check, if the installation was successful:
 
