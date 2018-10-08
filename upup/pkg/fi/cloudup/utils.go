@@ -112,7 +112,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			region := cluster.Spec.Subnets[0].Zone
 			doCloud, err := do.NewDOCloud(region)
 			if err != nil {
-				return nil, fmt.Errorf("error initializin digitalocean cloud!")
+				return nil, fmt.Errorf("error initializing digitalocean cloud: %s", err)
 			}
 
 			cloud = doCloud
