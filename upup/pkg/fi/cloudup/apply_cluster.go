@@ -417,16 +417,16 @@ func (c *ApplyClusterCmd) Run() error {
 				"iamRolePolicy":          &awstasks.IAMRolePolicy{},
 
 				// VPC / Networking
-				"dhcpOptions":           &awstasks.DHCPOptions{},
-				"internetGateway":       &awstasks.InternetGateway{},
-				"route":                 &awstasks.Route{},
-				"routeTable":            &awstasks.RouteTable{},
-				"routeTableAssociation": &awstasks.RouteTableAssociation{},
-				"securityGroup":         &awstasks.SecurityGroup{},
-				"securityGroupRule":     &awstasks.SecurityGroupRule{},
-				"subnet":                &awstasks.Subnet{},
-				"vpc":                   &awstasks.VPC{},
-				"ngw":                   &awstasks.NatGateway{},
+				"dhcpOptions":                &awstasks.DHCPOptions{},
+				"internetGateway":            &awstasks.InternetGateway{},
+				"route":                      &awstasks.Route{},
+				"routeTable":                 &awstasks.RouteTable{},
+				"routeTableAssociation":      &awstasks.RouteTableAssociation{},
+				"securityGroup":              &awstasks.SecurityGroup{},
+				"securityGroupRule":          &awstasks.SecurityGroupRule{},
+				"subnet":                     &awstasks.Subnet{},
+				"vpc":                        &awstasks.VPC{},
+				"ngw":                        &awstasks.NatGateway{},
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
 
 				// ELB
@@ -1137,7 +1137,7 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		}
 		k.Path = path.Join(k.Path, a)
 
-		u, hash, err := assetBuilder.RemapFileAndSHA(k)
+		asset, err := assetBuilder.BuildAssetForURL(k)
 		if err != nil {
 			return err
 		}
@@ -1145,7 +1145,7 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 	}
 
 	if usesCNI(c.Cluster) {
-		cniAsset, cniAssetHash, err := findCNIAssets(c.Cluster, assetBuilder)
+		cniAsset, err := findCNIAssets(c.Cluster, assetBuilder)
 		if err != nil {
 			return err
 		}
@@ -1182,24 +1182,24 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 	// Most distros will have their own socat and conntrack binary.
 	// Container operating systems like CoreOS need to have socat and conntrack added to them.
 	{
-		utilsLocation, hash, err := KopsFileUrl("linux/amd64/utils.tar.gz", assetBuilder)
+		utilsAsset, err := KopsAsset("linux/amd64/utils.tar.gz", assetBuilder)
 		if err != nil {
 			return err
 		}
 		c.Assets = append(c.Assets, BuildMirroredAsset(utilsLocation, hash))
 	}
 
-	n, hash, err := NodeUpLocation(assetBuilder)
+	nodeup, err := NodeupAsset(assetBuilder)
 	if err != nil {
 		return err
 	}
-	c.NodeUpSource = n.String()
-	c.NodeUpHash = hash.Hex()
+	c.NodeUpSource = nodeup.URL.String()
+	c.NodeUpHash = nodeup.Hash.Hex()
 
 	// Explicitly add the protokube image,
 	// otherwise when the Target is DryRun this asset is not added
 	// Is there a better way to call this?
-	_, _, err = ProtokubeImageSource(assetBuilder)
+	_, err = ProtokubeImageAsset(assetBuilder)
 	if err != nil {
 		return err
 	}
@@ -1302,30 +1302,31 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 
 			baseURL.Path = path.Join(baseURL.Path, "/bin/linux/amd64/", component+".tar")
 
-			u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+			asset, err := assetBuilder.BuildAssetForURL(baseURL)
 			if err != nil {
 				return nil, err
 			}
 
 			image := &nodeup.Image{
-				Source: u.String(),
-				Hash:   hash.Hex(),
+				Source: asset.URL.String(),
+				Hash:   asset.Hash.Hex(),
 			}
 			images = append(images, image)
 		}
 	}
 
 	{
-		location, hash, err := ProtokubeImageSource(assetBuilder)
+		protokubeAsset, err := ProtokubeImageAsset(assetBuilder)
 		if err != nil {
 			return nil, err
 		}
 
 		config.ProtokubeImage = &nodeup.Image{
 			Name:   kopsbase.DefaultProtokubeImageName(),
-			Source: location.String(),
-			Hash:   hash.Hex(),
+			Source: protokubeAsset.URL.String(),
+			Hash:   protokubeAsset.Hash.Hex(),
 		}
+
 	}
 
 	if role == kops.InstanceGroupRoleMaster {

@@ -26,7 +26,6 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops"
 	"k8s.io/kops/pkg/assets"
-	"k8s.io/kops/util/pkg/hashing"
 )
 
 const defaultKopsBaseUrl = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
@@ -43,20 +42,14 @@ var defaultKopsMirrors = []string{
 
 var kopsBaseUrl *url.URL
 
-// nodeUpLocation caches the nodeUpLocation url
-var nodeUpLocation *url.URL
+// nodeupAsset caches the nodeup Asset
+var nodeupAsset *assets.FileAsset
 
-// nodeUpHash caches the hash for nodeup
-var nodeUpHash *hashing.Hash
+// protokubeAsset caches the protokube Asset
+var protokubeAsset *assets.FileAsset
 
-// protokubeLocation caches the protokubeLocation url
-var protokubeLocation *url.URL
-
-// protokubeHash caches the hash for protokube
-var protokubeHash *hashing.Hash
-
-// BaseUrl returns the base url for the distribution of kops - in particular for nodeup & docker images
-func BaseUrl() (*url.URL, error) {
+// BaseURL returns the base url for the distribution of kops - in particular for nodeup & docker images
+func BaseURL() (*url.URL, error) {
 	// returning cached value
 	// Avoid repeated logging
 	if kopsBaseUrl != nil {
@@ -99,7 +92,7 @@ func SetKopsAssetsLocations(assetsBuilder *assets.AssetBuilder) error {
 	for _, s := range []string{
 		"linux/amd64/kops", "darwin/amd64/kops",
 	} {
-		_, _, err := KopsFileUrl(s, assetsBuilder)
+		_, err := KopsAsset(s, assetsBuilder)
 		if err != nil {
 			return err
 		}
@@ -107,90 +100,90 @@ func SetKopsAssetsLocations(assetsBuilder *assets.AssetBuilder) error {
 	return nil
 }
 
-// NodeUpLocation returns the URL where nodeup should be downloaded
-func NodeUpLocation(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash, error) {
+// NodeupAsset returns an asset representing how to download nodeup
+func NodeupAsset(assetsBuilder *assets.AssetBuilder) (*assets.FileAsset, error) {
 	// Avoid repeated logging
-	if nodeUpLocation != nil && nodeUpHash != nil {
+	if nodeupAsset != nil {
 		// Avoid repeated logging
-		glog.V(8).Infof("Using cached nodeup location: %q", nodeUpLocation.String())
-		return nodeUpLocation, nodeUpHash, nil
+		glog.V(8).Infof("Using cached nodeup asset: %v", nodeupAsset)
+		return nodeupAsset, nil
 	}
 	env := os.Getenv("NODEUP_URL")
 	var err error
 	if env == "" {
-		nodeUpLocation, nodeUpHash, err = KopsFileUrl("linux/amd64/nodeup", assetsBuilder)
+		nodeupAsset, err = KopsAsset("linux/amd64/nodeup", assetsBuilder)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
-		glog.V(8).Infof("Using default nodeup location: %q", nodeUpLocation.String())
+		glog.V(8).Infof("Using default nodeup asset: %q", nodeupAsset)
 	} else {
-		nodeUpLocation, err = url.Parse(env)
+		nodeupURL, err := url.Parse(env)
 		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse env var NODEUP_URL %q as a url: %v", env, err)
+			return nil, fmt.Errorf("unable to parse env var NODEUP_URL %q as a url: %v", env, err)
 		}
 
-		nodeUpLocation, nodeUpHash, err = assetsBuilder.RemapFileAndSHA(nodeUpLocation)
+		nodeupAsset, err = assetsBuilder.BuildAssetForURL(nodeupURL)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
-		glog.Warningf("Using nodeup location from NODEUP_URL env var: %q", nodeUpLocation.String())
+		glog.Warningf("Using nodeup location from NODEUP_URL env var: %q", nodeupURL.String())
 	}
 
-	return nodeUpLocation, nodeUpHash, nil
+	return nodeupAsset, nil
 }
 
 // TODO make this a container when hosted assets
 // TODO does this support a docker as well??
 // FIXME comments says this works with a docker already ... need to check on that
 
-// ProtokubeImageSource returns the source for the docker image for protokube.
+// ProtokubeImageAsset returns the source for the docker image for protokube.
 // Either a docker name (e.g. gcr.io/protokube:1.4), or a URL (https://...) in which case we download
 // the contents of the url and docker load it
-func ProtokubeImageSource(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash, error) {
+func ProtokubeImageAsset(assetsBuilder *assets.AssetBuilder) (*assets.FileAsset, error) {
 	// Avoid repeated logging
-	if protokubeLocation != nil && protokubeHash != nil {
-		glog.V(8).Infof("Using cached protokube location: %q", protokubeLocation)
-		return protokubeLocation, protokubeHash, nil
+	if protokubeAsset != nil {
+		glog.V(8).Infof("Using cached protokube location: %v", protokubeAsset)
+		return protokubeAsset, nil
 	}
 	env := os.Getenv("PROTOKUBE_IMAGE")
 	var err error
 	if env == "" {
-		protokubeLocation, protokubeHash, err = KopsFileUrl("images/protokube.tar.gz", assetsBuilder)
+		protokubeAsset, err = KopsAsset("images/protokube.tar.gz", assetsBuilder)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
-		glog.V(8).Infof("Using default protokube location: %q", protokubeLocation)
+		glog.V(8).Infof("Using default protokube location: %q", protokubeAsset)
 	} else {
 		protokubeImageSource, err := url.Parse(env)
 		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse env var PROTOKUBE_IMAGE %q as a url: %v", env, err)
+			return nil, fmt.Errorf("unable to parse env var PROTOKUBE_IMAGE %q as a url: %v", env, err)
 		}
 
-		protokubeLocation, protokubeHash, err = assetsBuilder.RemapFileAndSHA(protokubeImageSource)
+		protokubeAsset, err = assetsBuilder.BuildAssetForURL(protokubeImageSource)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
-		glog.Warningf("Using protokube location from PROTOKUBE_IMAGE env var: %q", protokubeLocation)
+		glog.Warningf("Using protokube from PROTOKUBE_IMAGE env var: %q", protokubeAsset)
 	}
 
-	return protokubeLocation, protokubeHash, nil
+	return protokubeAsset, nil
 }
 
-// KopsFileUrl returns the base url for the distribution of kops - in particular for nodeup & docker images
-func KopsFileUrl(file string, assetBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash, error) {
-	base, err := BaseUrl()
+// KopsAsset returns a FileAsset for a kops artifact, such as protokube or nodeup
+func KopsAsset(file string, assetBuilder *assets.AssetBuilder) (*assets.FileAsset, error) {
+	base, err := BaseURL()
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	base.Path = path.Join(base.Path, file)
 
-	fileUrl, hash, err := assetBuilder.RemapFileAndSHA(base)
+	asset, err := assetBuilder.BuildAssetForURL(base)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return fileUrl, hash, nil
+	return asset, nil
 }
 
 type MirroredAsset struct {

@@ -227,24 +227,24 @@ func (l *Loader) addAssetCopyTasks(assets []*assets.ContainerAsset, lifecycle *f
 func (l *Loader) addAssetFileCopyTasks(assets []*assets.FileAsset, lifecycle *fi.Lifecycle) error {
 	for _, asset := range assets {
 
-		if asset.FileURL == nil {
+		if asset.URL == nil {
 			return fmt.Errorf("asset file url cannot be nil")
 		}
 
 		// test if the asset needs to be copied
-		if asset.CanonicalFileURL != nil && asset.FileURL.String() != asset.CanonicalFileURL.String() {
-			glog.V(10).Infof("processing asset: %q, %q", asset.FileURL.String(), asset.CanonicalFileURL.String())
+		if asset.CanonicalURL != nil && asset.URL.String() != asset.CanonicalURL.String() {
+			glog.V(10).Infof("processing asset: %q, %q", asset.URL.String(), asset.CanonicalURL.String())
 			context := &fi.ModelBuilderContext{
 				Tasks: l.tasks,
 			}
 
-			glog.V(10).Infof("adding task: %q", asset.FileURL.String())
+			glog.V(10).Infof("adding task: %q", asset.URL.String())
 
 			copyFileTask := &assettasks.CopyFile{
-				Name:       fi.String(asset.CanonicalFileURL.String()),
-				TargetFile: fi.String(asset.FileURL.String()),
-				SourceFile: fi.String(asset.CanonicalFileURL.String()),
-				SHA:        fi.String(asset.SHAValue),
+				Name:       fi.String(asset.CanonicalURL.String()),
+				TargetFile: fi.String(asset.URL.String()),
+				SourceFile: fi.String(asset.CanonicalURL.String()),
+				SHA:        fi.String(asset.Hash.Hex()),
 				Lifecycle:  lifecycle,
 			}
 

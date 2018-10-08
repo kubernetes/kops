@@ -170,12 +170,12 @@ func (b *Builder) Build(cluster *kops.Cluster, ig *kops.InstanceGroup) (*Data, e
 
 		bootstrapScript := model.BootstrapScript{}
 
-		nodeupLocation, nodeupHash, err := cloudup.NodeUpLocation(assetBuilder)
+		nodeupAsset, err := cloudup.NodeupAsset(assetBuilder)
 		if err != nil {
 			return nil, err
 		}
-		bootstrapScript.NodeUpSource = nodeupLocation.String()
-		bootstrapScript.NodeUpSourceHash = nodeupHash.Hex()
+		bootstrapScript.NodeUpSource = nodeupAsset.URL.String()
+		bootstrapScript.NodeUpSourceHash = nodeupAsset.Hash.Hex()
 		bootstrapScript.NodeUpConfigBuilder = func(ig *kops.InstanceGroup) (*nodeup.Config, error) {
 			return nodeupConfig, err
 		}

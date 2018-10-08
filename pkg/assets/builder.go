@@ -64,12 +64,25 @@ type ContainerAsset struct {
 
 // FileAsset models a file's location.
 type FileAsset struct {
-	// FileURL is the URL of a file that is accessed by a Kubernetes cluster.
-	FileURL *url.URL
-	// CanonicalFileURL is the source URL of a file. This is used to copy a file to a FileRepository.
-	CanonicalFileURL *url.URL
-	// SHAValue is the SHA hash of the FileAsset.
-	SHAValue string
+	// URL is the URL of a file that is accessed by a Kubernetes cluster.
+	URL *url.URL
+	// CanonicalURL is the original source URL of a file. This is used to copy a file to a FileRepository.
+	CanonicalURL *url.URL
+	// Hash is the SHA hash of the asset.
+	Hash hashing.Hash
+}
+
+var _ fmt.Stringer = &FileAsset{}
+
+func (a *FileAsset) String() string {
+	s := a.Hash.Hex() + "@"
+	if a.URL != nil {
+		s += a.URL.String()
+	}
+	if a.CanonicalURL != nil {
+		s += ",canonical=" + a.CanonicalURL.String()
+	}
+	return s
 }
 
 // NewAssetBuilder creates a new AssetBuilder.
@@ -200,90 +213,93 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 	return image, nil
 }
 
-// RemapFileAndSHA returns a remapped url for the file, if AssetsLocation is defined.
+// BuildAssetForURL returns a remapped url for the file, if AssetsLocation is defined.
 // It also returns the SHA hash of the file.
-func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Hash, error) {
-	if fileURL == nil {
-		return nil, nil, fmt.Errorf("unable to remap a nil URL")
+func (a *AssetBuilder) BuildAssetForURL(u *url.URL) (*FileAsset, error) {
+	if u == nil {
+		return nil, fmt.Errorf("unable to remap a nil URL")
 	}
 
+	// TODO: Use "known hash" method
+
 	fileAsset := &FileAsset{
-		FileURL: fileURL,
+		URL: u,
 	}
 
 	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
-		fileAsset.CanonicalFileURL = fileURL
+		fileAsset.CanonicalURL = u
 
-		normalizedFileURL, err := a.normalizeURL(fileURL)
+		normalizedURL, err := a.normalizeURL(u)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
-		fileAsset.FileURL = normalizedFileURL
+		fileAsset.URL = normalizedURL
 
 		glog.V(4).Infof("adding remapped file: %+v", fileAsset)
 	}
 
 	h, err := a.findHash(fileAsset)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	fileAsset.SHAValue = h.Hex()
+	fileAsset.Hash = *h
 
 	a.FileAssets = append(a.FileAssets, fileAsset)
 	glog.V(8).Infof("adding file: %+v", fileAsset)
 
-	return fileAsset.FileURL, h, nil
+	return fileAsset, nil
 }
 
 // TODO - remove this method as CNI does now have a SHA file
 
-// RemapFileAndSHAValue is used exclusively to remap the cni tarball, as the tarball does not have a sha file in object storage.
-func (a *AssetBuilder) RemapFileAndSHAValue(fileURL *url.URL, shaValue string) (*url.URL, error) {
+// BuildAssetForURLKnownHash is used to build an asset from a URL, including remapping, where the hash is known.
+// It is particularly useful for assets that don't include a .sha1 file, such as CNI bundles (although newer CNI bundles do include the hash file).
+func (a *AssetBuilder) BuildAssetForURLKnownHash(fileURL *url.URL, hash hashing.Hash) (*FileAsset, error) {
 	if fileURL == nil {
 		return nil, fmt.Errorf("unable to remap a nil URL")
 	}
 
 	fileAsset := &FileAsset{
-		FileURL:  fileURL,
-		SHAValue: shaValue,
+		URL:  fileURL,
+		Hash: hash,
 	}
 
 	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
-		fileAsset.CanonicalFileURL = fileURL
+		fileAsset.CanonicalURL = fileURL
 
 		normalizedFile, err := a.normalizeURL(fileURL)
 		if err != nil {
 			return nil, err
 		}
 
-		fileAsset.FileURL = normalizedFile
-		glog.V(4).Infof("adding remapped file: %q", fileAsset.FileURL.String())
+		fileAsset.URL = normalizedFile
+		glog.V(4).Infof("adding remapped file: %q", fileAsset.URL.String())
 	}
 
 	a.FileAssets = append(a.FileAssets, fileAsset)
 
-	return fileAsset.FileURL, nil
+	return fileAsset, nil
 }
 
 // FindHash returns the hash value of a FileAsset.
 func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 
-	// If the phase is "assets" we use the CanonicalFileURL,
+	// If the phase is "assets" we use the CanonicalURL,
 	// but during other phases we use the hash from the FileRepository or the base kops path.
-	// We do not want to just test for CanonicalFileURL as it is defined in
+	// We do not want to just test for CanonicalURL as it is defined in
 	// other phases, but is not used to test for the SHA.
 	// This prevents a chicken and egg problem where the file is not yet in the FileRepository.
 	//
-	// assets phase -> get the sha file from the source / CanonicalFileURL
+	// assets phase -> get the sha file from the source / CanonicalURL
 	// any other phase -> get the sha file from the kops base location or the FileRepository
 	//
-	// TLDR; we use the file.CanonicalFileURL during assets phase, and use file.FileUrl the
+	// TLDR; we use the file.CanonicalURL during assets phase, and use file.FileUrl the
 	// rest of the time. If not we get a chicken and the egg problem where we are reading the sha file
 	// before it exists.
-	u := file.FileURL
-	if a.Phase == "assets" && file.CanonicalFileURL != nil {
-		u = file.CanonicalFileURL
+	u := file.URL
+	if a.Phase == "assets" && file.CanonicalURL != nil {
+		u = file.CanonicalURL
 	}
 
 	if u == nil {
