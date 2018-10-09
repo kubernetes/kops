@@ -233,7 +233,7 @@ spec:
 
 ## YAML Examples
 
-With the above YAML file, a user can add configurations that are not available via the command line. For instance, you can add a `MaxPrice` value to a new instance group and use spot instances. Also add node and cloud labels for the new instance group.
+With the above YAML file, a user can add configurations that are not available via the command line. For instance, you can add a `maxPrice` value to a new instance group and use spot instances. Also add node and cloud labels for the new instance group.
 
 ```yaml
 apiVersion: kops/v1alpha2
