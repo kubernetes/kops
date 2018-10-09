@@ -230,6 +230,14 @@ spec:
     maxRequestsInflight: 1000
 ```
 
+The maximum number of mutating requests in flight at a given time. When the server exceeds this, it rejects requests. Zero for no limit. (default 200)
+
+```yaml
+spec:
+  kubeAPIServer:
+    maxMutatingRequestsInflight: 450
+```
+
 #### runtimeConfig
 
 Keys and values here are translated into `--runtime-config` values for `kube-apiserver`, separated by commas.
