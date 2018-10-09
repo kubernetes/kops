@@ -27,22 +27,18 @@ import (
 
 func (m *MockRoute53) ListResourceRecordSetsRequest(*route53.ListResourceRecordSetsInput) (*request.Request, *route53.ListResourceRecordSetsOutput) {
 	panic("MockRoute53 ListResourceRecordSetsRequest not implemented")
-	return nil, nil
 }
 
 func (m *MockRoute53) ListResourceRecordSetsWithContext(aws.Context, *route53.ListResourceRecordSetsInput, ...request.Option) (*route53.ListResourceRecordSetsOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockRoute53) ListResourceRecordSets(*route53.ListResourceRecordSetsInput) (*route53.ListResourceRecordSetsOutput, error) {
 	panic("MockRoute53 ListResourceRecordSets not implemented")
-	return nil, nil
 }
 
 func (m *MockRoute53) ListResourceRecordSetsPagesWithContext(aws.Context, *route53.ListResourceRecordSetsInput, func(*route53.ListResourceRecordSetsOutput, bool) bool, ...request.Option) error {
 	panic("Not implemented")
-	return nil
 }
 
 func (m *MockRoute53) ListResourceRecordSetsPages(request *route53.ListResourceRecordSetsInput, callback func(*route53.ListResourceRecordSetsOutput, bool) bool) error {
@@ -80,12 +76,10 @@ func (m *MockRoute53) ListResourceRecordSetsPages(request *route53.ListResourceR
 
 func (m *MockRoute53) ChangeResourceRecordSetsRequest(*route53.ChangeResourceRecordSetsInput) (*request.Request, *route53.ChangeResourceRecordSetsOutput) {
 	panic("MockRoute53 ChangeResourceRecordSetsRequest not implemented")
-	return nil, nil
 }
 
 func (m *MockRoute53) ChangeResourceRecordSetsWithContext(aws.Context, *route53.ChangeResourceRecordSetsInput, ...request.Option) (*route53.ChangeResourceRecordSetsOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockRoute53) ChangeResourceRecordSets(request *route53.ChangeResourceRecordSetsInput) (*route53.ChangeResourceRecordSetsOutput, error) {
