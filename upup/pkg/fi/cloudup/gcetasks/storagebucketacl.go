@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-// StorageBucketAcl represents an ACL rule on a google cloud storage storage bucket
+// StorageBucketAcl represents an ACL rule on a google cloud storage bucket
 //go:generate fitask -type=StorageBucketAcl
 type StorageBucketAcl struct {
 	Name      *string
