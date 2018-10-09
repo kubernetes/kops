@@ -345,6 +345,8 @@ type KubeAPIServerConfig struct {
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 	// MaxRequestsInflight The maximum number of non-mutating requests in flight at a given time.
 	MaxRequestsInflight int32 `json:"maxRequestsInflight,omitempty" flag:"max-requests-inflight" flag-empty:"0"`
+	// MaxMutatingRequestsInflight The maximum number of mutating requests in flight at a given time. Defaults to 200
+	MaxMutatingRequestsInflight int32 `json:"maxMutatingRequestsInflight,omitempty" flag:"max-mutating-requests-inflight" flag-empty:"0"`
 
 	// EtcdQuorumRead configures the etcd-quorum-read flag, which forces consistent reads from etcd
 	EtcdQuorumRead *bool `json:"etcdQuorumRead,omitempty" flag:"etcd-quorum-read"`
