@@ -19,3 +19,20 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
   name: kubelet
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubelet-cluster-view
+  labels:
+    k8s-addon: rbac.addons.k8s.io
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: kubelet
