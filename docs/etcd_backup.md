@@ -2,7 +2,7 @@
 
 Kubernetes is relying on etcd for state storage. More details about the usage
 can be found [here](https://kubernetes.io/docs/admin/etcd/) and
-[here](https://coreos.com/etcd/docs/2.3.7/index.html).
+[here](https://coreos.com/etcd/docs/latest/v2/README.html).
 
 ## Backup requirement
 
