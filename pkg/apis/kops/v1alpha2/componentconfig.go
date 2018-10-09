@@ -354,6 +354,9 @@ type KubeAPIServerConfig struct {
 	// MinRequestTimeout configures the minimum number of seconds a handler must keep a request open before timing it out.
 	// Currently only honored by the watch request handler
 	MinRequestTimeout *int32 `json:"minRequestTimeout,omitempty" flag:"min-request-timeout"`
+
+	// Memory limit for apiserver in MB (used to configure sizes of caches, etc.)
+	TargetRamMb int32 `json:"targetRamMb,omitempty" flag:"target-ram-mb" flag-empty:"0"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller

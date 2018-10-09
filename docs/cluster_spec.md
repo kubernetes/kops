@@ -264,6 +264,16 @@ spec:
     serviceNodePortRange: 30000-33000
 ```
 
+#### targetRamMb
+
+Memory limit for apiserver in MB (used to configure sizes of caches, etc.)
+
+```yaml
+spec:
+  kubeAPIServer:
+    targetRamMb: 4096
+```
+
 ### externalDns
 
 This block contains configuration options for your `external-DNS` provider.
