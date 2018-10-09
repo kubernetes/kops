@@ -40,7 +40,7 @@ UID:=$(shell id -u)
 GID:=$(shell id -g)
 TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/vendor" hack/.packages)
 # We need to ignore clientsets because of kubernetes/kubernetes#60584
-GOVETABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor|clientset/fake" hack/.packages)
+GOVETABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/vendor|clientset/fake" hack/.packages)
 BAZEL_OPTIONS?=
 API_OPTIONS?=
 GCFLAGS?=
