@@ -325,7 +325,7 @@ type LoadBalancerAccessSpec struct {
 	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
 	// UseForInternalApi indicates wether the LB should be used by the kubelet
 	UseForInternalApi bool `json:"useForInternalApi,omitempty"`
-	// SSLCertificate allows you to specify the ACM cert to be used the the LB
+	// SSLCertificate allows you to specify the ACM cert to be used the LB
 	SSLCertificate string `json:"sslCertificate,omitempty"`
 }
 
