@@ -1,13 +1,21 @@
-# Vendored from https://github.com/aws/amazon-vpc-cni-k8s/blob/release-1.0/config/v1.0/aws-k8s-cni.yaml
+# Vendored from https://github.com/aws/amazon-vpc-cni-k8s/blob/v1.2.0/config/v1.2/aws-k8s-cni.yaml
 
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
   name: aws-node
 rules:
+- apiGroups:
+  - crd.k8s.amazonaws.com
+  resources:
+  - "*"
+  - namespaces
+  verbs:
+  - "*"
 - apiGroups: [""]
   resources:
   - pods
+  - nodes
   - namespaces
   verbs: ["list", "watch", "get"]
 - apiGroups: ["extensions"]
@@ -69,7 +77,10 @@ spec:
       - key: CriticalAddonsOnly
         operator: Exists
       containers:
-      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:1.0.0" }}"
+      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:1.2.1" }}"
+        ports:
+        - containerPort: 60000
+          name: metrics
         name: aws-node
         env:
           - name: AWS_VPC_K8S_CNI_LOGLEVEL
@@ -78,6 +89,10 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
+          - name: WATCH_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
         resources:
           requests:
             cpu: 10m
@@ -105,6 +120,21 @@ spec:
       - name: dockersock
         hostPath:
           path: /var/run/docker.sock
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: eniconfigs.crd.k8s.amazonaws.com
+spec:
+  scope: Cluster
+  group: crd.k8s.amazonaws.com
+  version: v1alpha1
+  names:
+    scope: Cluster
+    plural: eniconfigs
+    singuar: eniconfig
+    kind: ENIConfig
 
 ---
 
