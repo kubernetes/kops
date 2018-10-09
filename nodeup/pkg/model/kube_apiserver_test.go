@@ -92,6 +92,12 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 			},
 			"--experimental-encryption-provider-config=/srv/kubernetes/encryptionconfig.yaml --insecure-port=0 --secure-port=0",
 		},
+		{
+			kops.KubeAPIServerConfig{
+				TargetRamMb: 320,
+			},
+			"--insecure-port=0 --secure-port=0 --target-ram-mb=320",
+		},
 	}
 
 	for _, g := range grid {
