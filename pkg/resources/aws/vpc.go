@@ -67,7 +67,7 @@ func DescribeVPCs(cloud fi.Cloud, clusterName string) (map[string]*ec2.Vpc, erro
 	c := cloud.(awsup.AWSCloud)
 
 	vpcs := make(map[string]*ec2.Vpc)
-	glog.V(2).Infof("Listing EC2 VPC")
+	glog.V(2).Info("Listing EC2 VPC")
 	for _, filters := range buildEC2FiltersForCluster(clusterName) {
 		request := &ec2.DescribeVpcsInput{
 			Filters: filters,

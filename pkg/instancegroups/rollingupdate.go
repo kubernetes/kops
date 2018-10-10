@@ -61,7 +61,7 @@ type RollingUpdateCluster struct {
 // RollingUpdate performs a rolling update on a K8s Cluster.
 func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.CloudInstanceGroup, cluster *api.Cluster, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
-		glog.Infof("Cloud Instance Group length is zero. Not doing a rolling-update.")
+		glog.Info("Cloud Instance Group length is zero. Not doing a rolling-update.")
 		return nil
 	}
 
