@@ -91,10 +91,10 @@ func promptInteractive(upgradedHostId, upgradedHostName string) (stopPrompting b
 	val = strings.ToLower(val)
 	switch val {
 	case "n":
-		glog.Infof("User signaled to stop")
+		glog.Info("User signaled to stop")
 		os.Exit(3)
 	case "a":
-		glog.Infof("Always Yes, stop prompting for rest of hosts")
+		glog.Info("Always Yes, stop prompting for rest of hosts")
 		stopPrompting = true
 	}
 	return stopPrompting, err
@@ -140,7 +140,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 				return fmt.Errorf("error validating cluster: %v", err)
 			} else {
 				glog.V(2).Infof("Ignoring cluster validation error: %v", err)
-				glog.Infof("Cluster validation failed, but proceeding since fail-on-validate-error is set to false")
+				glog.Info("Cluster validation failed, but proceeding since fail-on-validate-error is set to false")
 			}
 		}
 	}
@@ -157,7 +157,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 			// We don't want to validate for bastions - they aren't part of the cluster
 		} else if rollingUpdateData.CloudOnly {
 
-			glog.Warningf("Not draining cluster nodes as 'cloudonly' flag is set.")
+			glog.Warning("Not draining cluster nodes as 'cloudonly' flag is set.")
 
 		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 
@@ -206,7 +206,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 			glog.Warningf("Not validating cluster as cloudonly flag is set.")
 
 		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
-			glog.Infof("Validating the cluster.")
+			glog.Info("Validating the cluster.")
 
 			if err = r.ValidateClusterWithDuration(rollingUpdateData, cluster, instanceGroupList, validationTimeout); err != nil {
 
@@ -273,7 +273,7 @@ func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *Rolli
 		glog.Infof("Cluster did not pass validation, will try again in %q until duration %q expires: %v.", tickDuration, duration, result.Failures[0].Message)
 		return false
 	} else {
-		glog.Infof("Cluster validated.")
+		glog.Info("Cluster validated.")
 		return true
 	}
 }
