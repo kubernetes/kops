@@ -1082,7 +1082,7 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 	// TODO figure out if we can only do this for CoreOS only and GCE Container OS
 	// TODO It is very difficult to pre-determine what OS an ami is, and if that OS needs socat
 	// At this time we just copy the socat and conntrack binaries to all distros.
-	// Most distros will have there own socat and conntrack binary.
+	// Most distros will have their own socat and conntrack binary.
 	// Container operating systems like CoreOS need to have socat and conntrack added to them.
 	{
 		utilsLocation, hash, err := KopsFileUrl("linux/amd64/utils.tar.gz", assetBuilder)
