@@ -33,14 +33,17 @@ spec:
     networking:
       kubenet: {}
   kubernetesVersions:
+  - range: ">=1.12.0"
+    recommendedVersion: 1.12.1
+    requiredVersion: 1.12.0
   - range: ">=1.11.0"
-    recommendedVersion: 1.11.2
+    recommendedVersion: 1.11.3
     requiredVersion: 1.11.0
   - range: ">=1.10.0"
-    recommendedVersion: 1.10.6
+    recommendedVersion: 1.10.8
     requiredVersion: 1.10.0
   - range: ">=1.9.0"
-    recommendedVersion: 1.9.10
+    recommendedVersion: 1.9.11
     requiredVersion: 1.9.0
   - range: ">=1.8.0"
     recommendedVersion: 1.8.15
@@ -58,18 +61,22 @@ spec:
     recommendedVersion: 1.4.12
     requiredVersion: 1.4.2
   kopsVersions:
+  - range: ">=1.12.0-alpha.1"
+    #recommendedVersion: "1.12.0"
+    #requiredVersion: 1.12.0
+    kubernetesVersion: 1.12.1
   - range: ">=1.11.0-alpha.1"
-    #recommendedVersion: "1.10.0"
-    #requiredVersion: 1.10.0
-    kubernetesVersion: 1.11.2
+    #recommendedVersion: "1.11.0"
+    #requiredVersion: 1.11.0
+    kubernetesVersion: 1.11.3
   - range: ">=1.10.0-alpha.1"
     recommendedVersion: "1.10.0"
     #requiredVersion: 1.10.0
-    kubernetesVersion: 1.10.6
+    kubernetesVersion: 1.10.8
   - range: ">=1.9.0-alpha.1"
     recommendedVersion: 1.9.2
     #requiredVersion: 1.9.0
-    kubernetesVersion: 1.9.10
+    kubernetesVersion: 1.9.11
   - range: ">=1.8.0-alpha.1"
     recommendedVersion: 1.8.1
     requiredVersion: 1.7.1
