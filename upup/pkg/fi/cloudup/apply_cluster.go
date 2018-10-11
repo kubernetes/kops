@@ -678,7 +678,7 @@ func (c *ApplyClusterCmd) Run() error {
 			KopsModelContext: modelContext,
 		}
 
-		if featureflag.SpotinstIntegration.Enabled() {
+		if featureflag.Spotinst.Enabled() {
 			l.Builders = append(l.Builders, &spotinstmodel.ElastigroupModelBuilder{
 				AWSModelContext:   awsModelContext,
 				BootstrapScript:   bootstrapScriptBuilder,

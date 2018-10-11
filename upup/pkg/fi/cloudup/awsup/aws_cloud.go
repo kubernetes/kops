@@ -269,7 +269,7 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.route53.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.route53.Handlers)
 
-		if featureflag.SpotinstIntegration.Enabled() {
+		if featureflag.Spotinst.Enabled() {
 			c.spotinst, err = spotinst.NewService(kops.CloudProviderAWS)
 			if err != nil {
 				return c, err

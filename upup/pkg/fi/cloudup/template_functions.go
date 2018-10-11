@@ -104,7 +104,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	}
 
-	if featureflag.SpotinstIntegration.Enabled() {
+	if featureflag.Spotinst.Enabled() {
 		if creds, err := spotinst.LoadCredentials(); err == nil {
 			dest["SpotinstToken"] = func() string { return creds.Token }
 			dest["SpotinstAccount"] = func() string { return creds.Account }
