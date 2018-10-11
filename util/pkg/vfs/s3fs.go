@@ -139,7 +139,8 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 	// standard.
 	sseLog := "-"
 	if p.sse {
-		if p.bucketDetails.defaultEncryption {
+		defaultEncryption := p.bucketDetails.hasServerSideEncryptionByDefault()
+		if defaultEncryption {
 			sseLog = "DefaultBucketEncryption"
 		} else {
 			sseLog = "AES256"
