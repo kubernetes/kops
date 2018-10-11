@@ -84,7 +84,7 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 		ListIAMRoles,
 	}
 
-	if featureflag.SpotinstIntegration.Enabled() {
+	if featureflag.Spotinst.Enabled() {
 		// Spotinst Elastigroups
 		listFunctions = append(listFunctions, ListSpotinstElastigroups)
 	} else {

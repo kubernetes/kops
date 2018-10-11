@@ -358,7 +358,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		cmd.Flags().StringVar(&options.VSphereDatastore, "vsphere-datastore", options.VSphereDatastore, "vsphere-datastore is required for vSphere.  Set a valid datastore in which to store dynamic provision volumes.")
 	}
 
-	if featureflag.SpotinstIntegration.Enabled() {
+	if featureflag.Spotinst.Enabled() {
 		// Spotinst flags
 		cmd.Flags().StringVar(&options.SpotinstProduct, "spotinst-product", options.SpotinstProduct, "Set the product code.")
 		cmd.Flags().StringVar(&options.SpotinstOrientation, "spotinst-orientation", options.SpotinstOrientation, "Set the group orientation.")
@@ -852,7 +852,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			cluster.Spec.CloudConfig.VSphereDatastore = fi.String(c.VSphereDatastore)
 		}
 
-		if featureflag.SpotinstIntegration.Enabled() {
+		if featureflag.Spotinst.Enabled() {
 			if cluster.Spec.CloudConfig == nil {
 				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
 			}
