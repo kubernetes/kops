@@ -77,6 +77,9 @@ var GoogleCloudBucketAcl = New("GoogleCloudBucketAcl", Bool(false))
 // EnableNodeAuthorization enables the node authorization features
 var EnableNodeAuthorization = New("EnableNodeAuthorization", Bool(false))
 
+// SpotinstIntegration toggles the use of Spotinst integration.
+var SpotinstIntegration = New("SpotinstIntegration", Bool(false))
+
 var flags = make(map[string]*FeatureFlag)
 var flagsMutex sync.Mutex
 

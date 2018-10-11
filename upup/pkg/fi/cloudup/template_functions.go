@@ -37,7 +37,9 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 
@@ -100,6 +102,13 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["DO_TOKEN"] = func() string {
 		return os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+	}
+
+	if featureflag.SpotinstIntegration.Enabled() {
+		if creds, err := spotinst.LoadCredentials(); err == nil {
+			dest["SpotinstToken"] = func() string { return creds.Token }
+			dest["SpotinstAccount"] = func() string { return creds.Account }
+		}
 	}
 
 	if tf.cluster.Spec.Networking != nil && tf.cluster.Spec.Networking.Flannel != nil {
