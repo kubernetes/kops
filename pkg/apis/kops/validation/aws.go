@@ -94,15 +94,16 @@ func awsValidateAMIforNVMe(fieldPath *field.Path, ig *kops.InstanceGroup) field.
 	allErrs := field.ErrorList{}
 
 	for _, prefix := range NVMe_INSTANCE_PREFIXES {
-		if strings.Contains(strings.ToUpper(ig.Spec.MachineType), strings.ToUpper(prefix)) {
-			glog.V(2).Infof("machineType %s requires an image based on stretch to operate. Trying to check compatibility", ig.Spec.MachineType)
-			if strings.Contains(ig.Spec.Image, "jessie") {
-				errString := fmt.Sprintf("%s cannot use machineType %s with image based on Debian jessie.", ig.Name, ig.Spec.MachineType)
-				allErrs = append(allErrs, field.Forbidden(fieldPath, errString))
-				continue
+		for _, machineType := range strings.Split(ig.Spec.MachineType, ",") {
+			if strings.Contains(strings.ToUpper(machineType), strings.ToUpper(prefix)) {
+				glog.V(2).Infof("machineType %s requires an image based on stretch to operate. Trying to check compatibility", machineType)
+				if strings.Contains(ig.Spec.Image, "jessie") {
+					errString := fmt.Sprintf("%s cannot use machineType %s with image based on Debian jessie.", ig.Name, machineType)
+					allErrs = append(allErrs, field.Forbidden(fieldPath, errString))
+					continue
+				}
 			}
 		}
-
 	}
 	return allErrs
 }
