@@ -280,7 +280,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 			if ip == nil {
 				return field.Invalid(fieldSpec.Child("kubeDNS", "serverIP"), address, "Cluster had an invalid kubeDNS.serverIP")
 			}
-			if !serviceClusterIPRange.Contains(ip) {
+			if serviceClusterIPRange != nil && !serviceClusterIPRange.Contains(ip) {
 				return field.Invalid(fieldSpec.Child("kubeDNS", "serverIP"), address, fmt.Sprintf("ServiceClusterIPRange %q must contain the DNS Server IP %q", c.Spec.ServiceClusterIPRange, address))
 			}
 			if !featureflag.ExperimentalClusterDNS.Enabled() {
