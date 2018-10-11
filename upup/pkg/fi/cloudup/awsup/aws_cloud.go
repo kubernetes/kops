@@ -48,6 +48,8 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
 	k8s_aws "k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
 )
@@ -102,6 +104,7 @@ type AWSCloud interface {
 	ELBV2() elbv2iface.ELBV2API
 	Autoscaling() autoscalingiface.AutoScalingAPI
 	Route53() route53iface.Route53API
+	Spotinst() spotinst.Service
 
 	// TODO: Document and rationalize these tags/filters methods
 	AddTags(name *string, tags map[string]string)
@@ -157,6 +160,7 @@ type awsCloudImplementation struct {
 	elbv2       *elbv2.ELBV2
 	autoscaling *autoscaling.AutoScaling
 	route53     *route53.Route53
+	spotinst    spotinst.Service
 
 	region string
 
@@ -265,6 +269,13 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.route53.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.route53.Handlers)
 
+		if featureflag.SpotinstIntegration.Enabled() {
+			c.spotinst, err = spotinst.NewService(kops.CloudProviderAWS)
+			if err != nil {
+				return c, err
+			}
+		}
+
 		awsCloudInstances[region] = c
 		raw = c
 	}
@@ -325,6 +336,10 @@ func NewEC2Filter(name string, values ...string) *ec2.Filter {
 
 // DeleteGroup deletes an aws autoscaling group
 func (c *awsCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
+	if c.spotinst != nil {
+		return spotinst.DeleteGroup(c.spotinst, g)
+	}
+
 	return deleteGroup(c, g)
 }
 
@@ -366,6 +381,10 @@ func deleteGroup(c AWSCloud, g *cloudinstances.CloudInstanceGroup) error {
 
 // DeleteInstance deletes an aws instance
 func (c *awsCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	if c.spotinst != nil {
+		return spotinst.DeleteInstance(c.spotinst, i)
+	}
+
 	return deleteInstance(c, i)
 }
 
@@ -393,6 +412,11 @@ func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstanceGroupMember) erro
 
 // GetCloudGroups returns a groups of instances that back a kops instance groups
 func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	if c.spotinst != nil {
+		return spotinst.GetCloudGroups(c.spotinst, cluster,
+			instancegroups, warnUnmatched, nodes)
+	}
+
 	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
 }
 
@@ -1138,6 +1162,10 @@ func (c *awsCloudImplementation) Autoscaling() autoscalingiface.AutoScalingAPI {
 
 func (c *awsCloudImplementation) Route53() route53iface.Route53API {
 	return c.route53
+}
+
+func (c *awsCloudImplementation) Spotinst() spotinst.Service {
+	return c.spotinst
 }
 
 func (c *awsCloudImplementation) FindVPCInfo(vpcID string) (*fi.VPCInfo, error) {
