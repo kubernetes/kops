@@ -45,10 +45,14 @@ type KubeconfigBuilder struct {
 }
 
 // Create new KubeconfigBuilder
-func NewKubeconfigBuilder() *KubeconfigBuilder {
-	c := &KubeconfigBuilder{}
-	c.configAccess = clientcmd.NewDefaultPathOptions()
-	return c
+func NewDefaultKubeconfigBuilder() *KubeconfigBuilder {
+	return NewKubeconfigBuilder(clientcmd.NewDefaultPathOptions())
+}
+
+func NewKubeconfigBuilder(configAccess clientcmd.ConfigAccess) *KubeconfigBuilder {
+	return &KubeconfigBuilder{
+		configAccess: configAccess,
+	}
 }
 
 func (b *KubeconfigBuilder) DeleteKubeConfig() error {
