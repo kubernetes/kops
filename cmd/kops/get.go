@@ -126,29 +126,18 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 		return fmt.Errorf("No cluster found")
 	}
 
-	clusterList := &api.ClusterList{}
-	clusterList.Items = make([]api.Cluster, 1)
-	clusterList.Items[0] = *cluster
-
-	args := make([]string, 0)
-
-	clusters, err := buildClusters(args, clusterList)
-	if err != nil {
-		return fmt.Errorf("error on buildClusters(): %v", err)
-	}
-
-	ig, err := client.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
+	igList, err := client.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
 
-	if ig == nil || ig.Items == nil || len(ig.Items) == 0 {
+	if igList == nil || igList.Items == nil || len(igList.Items) == 0 {
 		fmt.Fprintf(os.Stderr, "No instance groups found\n")
 	}
 
-	instancegroups, err := buildInstanceGroups(args, ig)
-	if err != nil {
-		return err
+	var instancegroups []*api.InstanceGroup
+	for i := range igList.Items {
+		instancegroups = append(instancegroups, &igList.Items[i])
 	}
 
 	var obj []runtime.Object
@@ -175,7 +164,7 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 
 	case OutputTable:
 		fmt.Fprintf(os.Stdout, "Cluster\n")
-		err = clusterOutputTable(clusters, out)
+		err = clusterOutputTable([]*api.Cluster{cluster}, out)
 		if err != nil {
 			return err
 		}
