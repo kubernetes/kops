@@ -18,6 +18,7 @@ package awsmodel
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/golang/glog"
 
@@ -98,7 +99,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				},
 				IAMInstanceProfile: link,
 				ImageID:            s(ig.Spec.Image),
-				InstanceType:       s(ig.Spec.MachineType),
+				InstanceType:       s(strings.Split(ig.Spec.MachineType, ",")[0]),
 				InstanceMonitoring: ig.Spec.DetailedInstanceMonitoring,
 
 				RootVolumeSize:         i64(int64(volumeSize)),
