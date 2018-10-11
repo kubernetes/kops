@@ -41,8 +41,20 @@ var (
 )
 
 type S3BucketDetails struct {
-	region            string
-	defaultEncryption bool
+	// context is the S3Context we are associated with
+	context *S3Context
+
+	// region is the region we have determined for the bucket
+	region string
+
+	// name is the name of the bucket
+	name string
+
+	// mutex protects applyServerSideEncryptionByDefault
+	mutex sync.Mutex
+
+	// applyServerSideEncryptionByDefault caches information on whether server-side encryption is enabled on the bucket
+	applyServerSideEncryptionByDefault *bool
 }
 
 type S3Context struct {
@@ -112,17 +124,19 @@ func getCustomS3Config(endpoint string, region string) (*aws.Config, error) {
 }
 
 func (s *S3Context) getDetailsForBucket(bucket string) (*S3BucketDetails, error) {
-	bucketDetails := func() *S3BucketDetails {
-		s.mutex.Lock()
-		defer s.mutex.Unlock()
-		return s.bucketDetails[bucket]
-	}()
+	s.mutex.Lock()
+	bucketDetails := s.bucketDetails[bucket]
+	s.mutex.Unlock()
 
 	if bucketDetails != nil && bucketDetails.region != "" {
 		return bucketDetails, nil
 	}
 
-	bucketDetails = &S3BucketDetails{region: "", defaultEncryption: false}
+	bucketDetails = &S3BucketDetails{
+		context: s,
+		region:  "",
+		name:    bucket,
+	}
 
 	// Probe to find correct region for bucket
 	endpoint := os.Getenv("S3_ENDPOINT")
@@ -131,7 +145,6 @@ func (s *S3Context) getDetailsForBucket(bucket string) (*S3BucketDetails, error)
 		bucketDetails.region = os.Getenv("S3_REGION")
 		if bucketDetails.region == "" {
 			bucketDetails.region = "us-east-1"
-			bucketDetails.defaultEncryption = s.checkDefaultEncryption(bucketDetails.region, bucket)
 		}
 		return bucketDetails, nil
 	}
@@ -170,55 +183,70 @@ func (s *S3Context) getDetailsForBucket(bucket string) (*S3BucketDetails, error)
 	if response.LocationConstraint == nil {
 		// US Classic does not return a region
 		bucketDetails.region = "us-east-1"
-		bucketDetails.defaultEncryption = s.checkDefaultEncryption(bucketDetails.region, bucket)
 	} else {
 		bucketDetails.region = *response.LocationConstraint
 		// Another special case: "EU" can mean eu-west-1
 		if bucketDetails.region == "EU" {
 			bucketDetails.region = "eu-west-1"
 		}
-		bucketDetails.defaultEncryption = s.checkDefaultEncryption(bucketDetails.region, bucket)
 	}
-	glog.V(2).Infof("Found bucket %q in region %q with default encryption set to %t", bucket, bucketDetails.region, bucketDetails.defaultEncryption)
+
+	glog.V(2).Infof("found bucket in region %q", bucketDetails.region)
 
 	s.mutex.Lock()
-	defer s.mutex.Unlock()
 	s.bucketDetails[bucket] = bucketDetails
+	s.mutex.Unlock()
 
 	return bucketDetails, nil
 }
 
-func (s *S3Context) checkDefaultEncryption(region string, bucket string) bool {
-	client, err := s.getClient(region)
+func (b *S3BucketDetails) hasServerSideEncryptionByDefault() bool {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+
+	if b.applyServerSideEncryptionByDefault != nil {
+		return *b.applyServerSideEncryptionByDefault
+	}
+
+	applyServerSideEncryptionByDefault := false
+
+	// We only make one attempt to find the SSE policy (even if there's an error)
+	b.applyServerSideEncryptionByDefault = &applyServerSideEncryptionByDefault
+
+	client, err := b.context.getClient(b.region)
 	if err != nil {
-		glog.Warningf("Unable to read bucket encryption policy in region %q: will encrypt using AES256", region)
+		glog.Warningf("Unable to read bucket encryption policy for %q in region %q: will encrypt using AES256", b.name, b.region)
 		return false
 	}
 
-	glog.V(4).Infof("Checking default bucket encryption %q", bucket)
+	glog.V(4).Infof("Checking default bucket encryption for %q", b.name)
 
 	request := &s3.GetBucketEncryptionInput{}
-	request.Bucket = aws.String(bucket)
+	request.Bucket = aws.String(b.name)
 
-	glog.V(8).Infof("Calling S3 GetBucketEncryption Bucket=%q", bucket)
+	glog.V(8).Infof("Calling S3 GetBucketEncryption Bucket=%q", b.name)
 
 	result, err := client.GetBucketEncryption(request)
 	if err != nil {
 		// the following cases might lead to the operation failing:
 		// 1. A deny policy on s3:GetEncryptionConfiguration
 		// 2. No default encryption policy set
-		glog.V(8).Infof("Unable to read bucket encryption policy: will encrypt using AES256")
+		glog.V(8).Infof("Unable to read bucket encryption policy for %q: will encrypt using AES256", b.name)
 		return false
 	}
 
 	// currently, only one element is in the rules array, iterating nonetheless for future compatibility
 	for _, element := range result.ServerSideEncryptionConfiguration.Rules {
 		if element.ApplyServerSideEncryptionByDefault != nil {
-			return true
+			applyServerSideEncryptionByDefault = true
 		}
 	}
 
-	return false
+	b.applyServerSideEncryptionByDefault = &applyServerSideEncryptionByDefault
+
+	glog.V(2).Infof("bucket %q has default encryption set to %t", b.name, applyServerSideEncryptionByDefault)
+
+	return applyServerSideEncryptionByDefault
 }
 
 /*
