@@ -18,6 +18,7 @@ package spotinstmodel
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/golang/glog"
@@ -104,19 +105,19 @@ func (b *ElastigroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				break
 
 			case InstanceGroupLabelUtilizeReservedInstances:
-				if v == "true" {
-					group.UtilizeReservedInstances = fi.Bool(true)
-				} else if v == "false" {
-					group.UtilizeReservedInstances = fi.Bool(false)
+				b, err := parseBool(v)
+				if err != nil {
+					return err
 				}
+				group.UtilizeReservedInstances = b
 				break
 
 			case InstanceGroupLabelFallbackToOnDemand:
-				if v == "true" {
-					group.FallbackToOnDemand = fi.Bool(true)
-				} else if v == "false" {
-					group.FallbackToOnDemand = fi.Bool(false)
+				b, err := parseBool(v)
+				if err != nil {
+					return err
 				}
+				group.FallbackToOnDemand = b
 				break
 			}
 		}
@@ -295,19 +296,19 @@ func (b *ElastigroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				for k, v := range ig.ObjectMeta.Labels {
 					switch k {
 					case InstanceGroupLabelAutoScalerDisabled:
-						if v == "true" {
-							autoScalerDisabled = true
-						} else if v == "false" {
-							autoScalerDisabled = false
+						b, err := parseBool(v)
+						if err != nil {
+							return err
 						}
+						autoScalerDisabled = fi.BoolValue(b)
 						break
 
 					case InstanceGroupLabelAutoScalerNodeLabels:
-						if v == "true" {
-							autoScalerNodeLabels = true
-						} else if v == "false" {
-							autoScalerNodeLabels = false
+						b, err := parseBool(v)
+						if err != nil {
+							return err
 						}
+						autoScalerNodeLabels = fi.BoolValue(b)
 						break
 					}
 				}
@@ -335,4 +336,12 @@ func (b *ElastigroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
+}
+
+func parseBool(str string) (*bool, error) {
+	b, err := strconv.ParseBool(str)
+	if err != nil {
+		return nil, fmt.Errorf("spotinst: unexpected boolean value: %q", str)
+	}
+	return fi.Bool(b), nil
 }
