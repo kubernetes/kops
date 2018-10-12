@@ -204,6 +204,14 @@ type KubeProxyConfig struct {
 	Enabled *bool `json:"enabled,omitempty"`
 	// Which proxy mode to use: (userspace, iptables, ipvs)
 	ProxyMode string `json:"proxyMode,omitempty" flag:"proxy-mode"`
+	// IPVSExcludeCIDRS is comma-separated list of CIDR's which the ipvs proxier should not touch when cleaning up IPVS rules
+	IPVSExcludeCIDRS []string `json:"ipvsExcludeCidrs,omitempty" flag:"ipvs-exclude-cidrs"`
+	// IPVSMinSyncPeriod is the minimum interval of how often the ipvs rules can be refreshed as endpoints and services change (e.g. '5s', '1m', '2h22m')
+	IPVSMinSyncPeriod *metav1.Duration `json:"ipvsMinSyncPeriod,omitempty" flag:"ipvs-min-sync-period"`
+	// IPVSScheduler is the ipvs scheduler type when proxy mode is ipvs
+	IPVSScheduler *string `json:"ipvsScheduler,omitempty" flag:"ipvs-scheduler"`
+	// IPVSSyncPeriod duration is the maximum interval of how often ipvs rules are refreshed
+	IPVSSyncPeriod *metav1.Duration `json:"ipvsSyncPeriod,omitempty" flag:"ipvs-sync-period"`
 	// FeatureGates is a series of key pairs used to switch on features for the proxy
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 	// Maximum number of NAT connections to track per CPU core (default: 131072)
