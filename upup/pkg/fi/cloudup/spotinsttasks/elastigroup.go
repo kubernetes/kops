@@ -191,7 +191,7 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 			if lc.UserData != nil {
 				userData, err := base64.StdEncoding.DecodeString(*lc.UserData)
 				if err != nil {
-					return nil, fmt.Errorf("spotinst: error decoding user data: %v", err)
+					return nil, err
 				}
 				actual.UserData = fi.WrapResource(fi.NewStringResource(string(userData)))
 			}
