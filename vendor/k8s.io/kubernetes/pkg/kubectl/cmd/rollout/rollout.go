@@ -20,9 +20,9 @@ import (
 	"github.com/renstrom/dedent"
 	"github.com/spf13/cobra"
 
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/kubectl/genericclioptions"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
@@ -56,10 +56,10 @@ func NewCmdRollout(f cmdutil.Factory, streams genericclioptions.IOStreams) *cobr
 		Run:     cmdutil.DefaultSubCommandRun(streams.Out),
 	}
 	// subcommands
-	cmd.AddCommand(NewCmdRolloutHistory(f, streams.Out))
+	cmd.AddCommand(NewCmdRolloutHistory(f, streams))
 	cmd.AddCommand(NewCmdRolloutPause(f, streams))
 	cmd.AddCommand(NewCmdRolloutResume(f, streams))
-	cmd.AddCommand(NewCmdRolloutUndo(f, streams.Out))
+	cmd.AddCommand(NewCmdRolloutUndo(f, streams))
 	cmd.AddCommand(NewCmdRolloutStatus(f, streams))
 
 	return cmd

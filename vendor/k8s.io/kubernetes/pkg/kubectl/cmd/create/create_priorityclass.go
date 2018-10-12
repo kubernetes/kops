@@ -19,10 +19,10 @@ package create
 import (
 	"github.com/spf13/cobra"
 
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/kubernetes/pkg/kubectl"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/kubectl/genericclioptions"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
@@ -32,7 +32,7 @@ var (
 
 	pcExample = templates.Examples(i18n.T(`
 		# Create a priorityclass named high-priority
-		kubectl create priorityclass default-priority --value=1000 --description="high priority"
+		kubectl create priorityclass high-priority --value=1000 --description="high priority"
 
 		# Create a priorityclass named default-priority that considered as the global default priority
 		kubectl create priorityclass default-priority --value=1000 --global-default=true --description="default priority"`))
