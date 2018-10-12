@@ -269,7 +269,7 @@ func (b *ElastigroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		if ig.Spec.MaxSize != nil {
 			maxSize = *ig.Spec.MaxSize
 		} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
-			maxSize = 10
+			maxSize = 2
 		}
 
 		group.MinSize = fi.Int64(int64(minSize))
