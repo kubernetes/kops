@@ -215,7 +215,7 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 	tags := make(map[string]string)
 
 	switch kops.CloudProviderID(m.Cluster.Spec.CloudProvider) {
-	case kops.CloudProviderAWS:
+	case kops.CloudProviderAWS, kops.CloudProviderSpotinst:
 		if shared {
 			// If the resource is shared, we don't try to set the Name - we presume that is managed externally
 			glog.V(4).Infof("Skipping Name tag for shared resource")

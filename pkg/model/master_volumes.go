@@ -108,6 +108,8 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				}
 			case kops.CloudProviderALI:
 				b.addALIVolume(c, name, volumeSize, zone, etcd, m, allMembers)
+			case kops.CloudProviderSpotinst:
+				b.addSpotinstVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.Spec.CloudProvider)
 			}
@@ -299,4 +301,8 @@ func (b *MasterVolumeBuilder) addALIVolume(c *fi.ModelBuilderContext, name strin
 	}
 
 	c.AddTask(t)
+}
+
+func (b *MasterVolumeBuilder) addSpotinstVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
+	b.addAWSVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 }

@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -332,11 +333,15 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		f.DNSInternalSuffix = fi.String(internalSuffix)
 	}
 
-	if t.Cluster.Spec.CloudProvider != "" {
-		f.Cloud = fi.String(t.Cluster.Spec.CloudProvider)
+	if cloudProvider := t.Cluster.Spec.CloudProvider; cloudProvider != "" {
+		if kops.CloudProviderID(cloudProvider) == kops.CloudProviderSpotinst {
+			cloudProvider = string(spotinst.GuessCloudFromClusterSpec(&t.Cluster.Spec))
+		}
+
+		f.Cloud = fi.String(cloudProvider)
 
 		if f.DNSProvider == nil {
-			switch kops.CloudProviderID(t.Cluster.Spec.CloudProvider) {
+			switch kops.CloudProviderID(cloudProvider) {
 			case kops.CloudProviderAWS:
 				f.DNSProvider = fi.String("aws-route53")
 			case kops.CloudProviderDO:
@@ -349,7 +354,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 				f.ClusterID = fi.String(t.Cluster.ObjectMeta.Name)
 				f.DNSServer = fi.String(*t.Cluster.Spec.CloudConfig.VSphereCoreDNSServer)
 			default:
-				glog.Warningf("Unknown cloudprovider %q; won't set DNS provider", t.Cluster.Spec.CloudProvider)
+				glog.Warningf("Unknown cloudprovider %q; won't set DNS provider", cloudProvider)
 			}
 		}
 	}

@@ -38,6 +38,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 
@@ -100,6 +101,11 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["DO_TOKEN"] = func() string {
 		return os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+	}
+
+	if creds, err := spotinst.LoadCredentials(); err == nil {
+		dest["SpotinstToken"] = func() string { return creds.Token }
+		dest["SpotinstAccount"] = func() string { return creds.Account }
 	}
 
 	if tf.cluster.Spec.Networking != nil && tf.cluster.Spec.Networking.Flannel != nil {
@@ -200,7 +206,12 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 		argv = append(argv, "--dns=gossip")
 		argv = append(argv, "--gossip-seed=127.0.0.1:3999")
 	} else {
-		switch kops.CloudProviderID(tf.cluster.Spec.CloudProvider) {
+		cloudProvider := kops.CloudProviderID(tf.cluster.Spec.CloudProvider)
+		if cloudProvider == kops.CloudProviderSpotinst {
+			cloudProvider = spotinst.GuessCloudFromClusterSpec(&tf.cluster.Spec)
+		}
+
+		switch cloudProvider {
 		case kops.CloudProviderAWS:
 			if strings.HasPrefix(os.Getenv("AWS_REGION"), "cn-") {
 				argv = append(argv, "--dns=gossip")
@@ -241,9 +252,12 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 func (tf *TemplateFunctions) ExternalDnsArgv() ([]string, error) {
 	var argv []string
 
-	cloudProvider := tf.cluster.Spec.CloudProvider
+	cloudProvider := kops.CloudProviderID(tf.cluster.Spec.CloudProvider)
+	if cloudProvider == kops.CloudProviderSpotinst {
+		cloudProvider = spotinst.GuessCloudFromClusterSpec(&tf.cluster.Spec)
+	}
 
-	switch kops.CloudProviderID(cloudProvider) {
+	switch cloudProvider {
 	case kops.CloudProviderAWS:
 		argv = append(argv, "--provider=aws")
 	case kops.CloudProviderGCE:

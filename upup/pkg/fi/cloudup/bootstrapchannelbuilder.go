@@ -430,6 +430,41 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		}
 	}
 
+	if kops.CloudProviderID(b.cluster.Spec.CloudProvider) == kops.CloudProviderSpotinst {
+		key := "spotinst-kubernetes-cluster-controller.addons.k8s.io"
+		version := "1.0.12"
+
+		{
+			id := "v1.8.0"
+			location := key + "/" + id + ".yaml"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          map[string]string{"k8s-addon": key},
+				Manifest:          fi.String(location),
+				KubernetesVersion: "<1.9.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
+
+		{
+			id := "v1.9.0"
+			location := key + "/" + id + ".yaml"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          map[string]string{"k8s-addon": key},
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.9.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
+	}
+
 	// The role.kubernetes.io/networking is used to label anything related to a networking addin,
 	// so that if we switch networking plugins (e.g. calico -> weave or vice-versa), we'll replace the
 	// old networking plugin, and there won't be old pods "floating around".

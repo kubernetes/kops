@@ -1084,6 +1084,25 @@
 [[projects]]
   branch = "master"
   digest = "1:595e123593925253dd02152777ddb8cd42300c4f61e783e163b053802547c47c"
+  name = "github.com/spotinst/spotinst-sdk-go"
+  packages = [
+    "service/elastigroup",
+    "service/elastigroup/providers/aws",
+    "service/elastigroup/providers/azure",
+    "service/elastigroup/providers/gce",
+    "spotinst",
+    "spotinst/client",
+    "spotinst/credentials",
+    "spotinst/log",
+    "spotinst/session",
+    "spotinst/util/jsonutil",
+    "spotinst/util/stringutil",
+    "spotinst/util/uritemplates"
+  ]
+  revision = "6ad524938db0aa7b36c61e9c51e1f3054ad57ee4"
+
+[[projects]]
+  branch = "master"
   name = "github.com/tent/http-link-go"
   packages = ["."]
   pruneopts = "UT"

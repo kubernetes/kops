@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -50,6 +51,12 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	cloudProvider := b.Cluster.Spec.CloudProvider
 	cloudConfig := b.Cluster.Spec.CloudConfig
+
+	if cloudProvider != "" {
+		if kops.CloudProviderID(cloudProvider) == kops.CloudProviderSpotinst {
+			cloudProvider = string(spotinst.GuessCloudFromClusterSpec(&b.Cluster.Spec))
+		}
+	}
 
 	if cloudConfig == nil {
 		cloudConfig = &kops.CloudConfiguration{}

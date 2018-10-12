@@ -139,6 +139,11 @@ type CreateClusterOptions struct {
 	// We can remove this once we support higher versions.
 	VSphereDatastore string
 
+	// Spotinst options
+	SpotinstProduct           string
+	SpotinstOrientation       string
+	SpotinstDisableAutoScaler bool
+
 	// ConfigBase is the location where we will store the configuration, it defaults to the state store
 	ConfigBase string
 
@@ -353,6 +358,14 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		cmd.Flags().StringVar(&options.VSphereCoreDNSServer, "vsphere-coredns-server", options.VSphereCoreDNSServer, "vsphere-coredns-server is required for vSphere.")
 		cmd.Flags().StringVar(&options.VSphereDatastore, "vsphere-datastore", options.VSphereDatastore, "vsphere-datastore is required for vSphere.  Set a valid datastore in which to store dynamic provision volumes.")
 	}
+
+	if featureflag.SpotinstCloudProvider.Enabled() {
+		// Spotinst flags
+		cmd.Flags().StringVar(&options.SpotinstProduct, "spotinst-product", options.SpotinstProduct, "Set the product code.")
+		cmd.Flags().StringVar(&options.SpotinstOrientation, "spotinst-orientation", options.SpotinstOrientation, "Set the group orientation.")
+		cmd.Flags().BoolVar(&options.SpotinstDisableAutoScaler, "spotinst-disable-autoscaler", options.SpotinstDisableAutoScaler, "Disable the cluster autoscaler.")
+	}
+
 	return cmd
 }
 
@@ -445,8 +458,15 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("unknown authorization mode %q", c.Authorization)
 	}
 
+	var cloudProvider api.CloudProviderID
 	if c.Cloud != "" {
 		cluster.Spec.CloudProvider = c.Cloud
+		cloudProvider = api.CloudProviderID(c.Cloud)
+
+		if cloudProvider == api.CloudProviderSpotinst {
+			// TODO(liran): What about other cloud providers?
+			cloudProvider = api.CloudProviderAWS
+		}
 	}
 
 	allZones := sets.NewString()
@@ -455,7 +475,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	if c.VPCID != "" {
 		cluster.Spec.NetworkID = c.VPCID
-	} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS && len(c.SubnetIDs) > 0 {
+	} else if cloudProvider == api.CloudProviderAWS && len(c.SubnetIDs) > 0 {
 		cloudTags := map[string]string{}
 		awsCloud, err := awsup.NewAWSCloud(c.Zones[0][:len(c.Zones[0])-1], cloudTags)
 		if err != nil {
@@ -565,7 +585,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	} else {
 		var zoneToSubnetProviderID map[string]string
-		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 && cloudProvider == api.CloudProviderAWS {
 			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, c.Zones[0][:len(c.Zones[0])-1], c.SubnetIDs)
 			if err != nil {
 				return err
@@ -840,6 +860,24 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 			cluster.Spec.CloudConfig.VSphereDatastore = fi.String(c.VSphereDatastore)
 		}
+
+		if api.CloudProviderID(c.Cloud) == api.CloudProviderSpotinst {
+			if !featureflag.SpotinstCloudProvider.Enabled() {
+				return fmt.Errorf("feature flag SpotinstCloudProvider is not set. Cloud Spotinst will not be supported.")
+			}
+			if cluster.Spec.CloudConfig == nil {
+				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
+			}
+			if c.SpotinstProduct != "" {
+				cluster.Spec.CloudConfig.SpotinstProduct = fi.String(c.SpotinstProduct)
+			}
+			if c.SpotinstOrientation != "" {
+				cluster.Spec.CloudConfig.SpotinstOrientation = fi.String(c.SpotinstOrientation)
+			}
+			if c.SpotinstDisableAutoScaler {
+				cluster.Spec.CloudConfig.SpotinstDisableAutoScaler = fi.Bool(c.SpotinstDisableAutoScaler)
+			}
+		}
 	}
 
 	// Populate project
@@ -955,7 +993,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		var utilitySubnets []api.ClusterSubnetSpec
 
 		var zoneToSubnetProviderID map[string]string
-		if len(c.Zones) > 0 && len(c.UtilitySubnetIDs) > 0 && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+		if len(c.Zones) > 0 && len(c.UtilitySubnetIDs) > 0 && cloudProvider == api.CloudProviderAWS {
 			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, c.Zones[0][:len(c.Zones[0])-1], c.UtilitySubnetIDs)
 			if err != nil {
 				return err
