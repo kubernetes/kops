@@ -86,15 +86,8 @@ func (b *ElastigroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// Cloud config.
 		if cfg := b.Cluster.Spec.CloudConfig; cfg != nil {
-			// Product.
-			if cfg.SpotinstProduct != nil {
-				group.Product = cfg.SpotinstProduct
-			}
-
-			// Orientation.
-			if cfg.SpotinstOrientation != nil {
-				group.Orientation = cfg.SpotinstOrientation
-			}
+			group.Product = cfg.SpotinstProduct
+			group.Orientation = cfg.SpotinstOrientation
 		}
 
 		// Strategy.
