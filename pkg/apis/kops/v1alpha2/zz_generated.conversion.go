@@ -2700,6 +2700,10 @@ func autoConvert_v1alpha2_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyC
 	out.Master = in.Master
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
+	out.IPVSExcludeCIDRS = in.IPVSExcludeCIDRS
+	out.IPVSMinSyncPeriod = in.IPVSMinSyncPeriod
+	out.IPVSScheduler = in.IPVSScheduler
+	out.IPVSSyncPeriod = in.IPVSSyncPeriod
 	out.FeatureGates = in.FeatureGates
 	out.ConntrackMaxPerCore = in.ConntrackMaxPerCore
 	out.ConntrackMin = in.ConntrackMin
@@ -2724,6 +2728,10 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha2_KubeProxyConfig(in *kops.KubeP
 	out.Master = in.Master
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
+	out.IPVSExcludeCIDRS = in.IPVSExcludeCIDRS
+	out.IPVSMinSyncPeriod = in.IPVSMinSyncPeriod
+	out.IPVSScheduler = in.IPVSScheduler
+	out.IPVSSyncPeriod = in.IPVSSyncPeriod
 	out.FeatureGates = in.FeatureGates
 	out.ConntrackMaxPerCore = in.ConntrackMaxPerCore
 	out.ConntrackMin = in.ConntrackMin
