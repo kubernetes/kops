@@ -652,7 +652,6 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 			"k8s-1.8":     "2.6.7-kops.3",
 			"k8s-1.9":     "3.2.3-kops.1",
 		}
-
 		{
 			id := "pre-k8s-1.6"
 			location := key + "/" + id + ".yaml"

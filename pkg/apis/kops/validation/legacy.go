@@ -436,17 +436,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		//      return field.Required(kubeProxyPath.Child("Master"), "")
 		//}
 
-		// @check if are using kubernetes <1.9.3 with ipvs and deny canal 3.2.3 due to issue
-		// https://docs.projectcalico.org/v3.2/getting-started/kubernetes/requirements
-		if c.Spec.KubeProxy.ProxyMode == "ipvs" {
-			if kubernetesRelease.LT(semver.MustParse("1.9.3")) {
-				// @NOTE: i'm not sure about this one, it could block someone from upgrading i.e. running 1.9.2 + canal + with pre GA ipvs .. perhaps drop?
-				if c.Spec.Networking != nil && c.Spec.Networking.Canal != nil {
-					return field.Invalid(kubeProxyPath.Child("proxyMode"), c.Spec.KubeProxy.ProxyMode, "ipvs mode is not support pre kubernetes 1.9.3 with canal v3")
-				}
-			}
-		}
-
 		if master != "" && !isValidAPIServersURL(master) {
 			return field.Invalid(kubeProxyPath.Child("Master"), master, "Not a valid APIServer URL")
 		}
