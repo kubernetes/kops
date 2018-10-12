@@ -26885,7 +26885,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"image": {
 							SchemaProps: spec.SchemaProps{
-								Description: "Image is the instance instance (ami etc) we should use",
+								Description: "Image is the instance (ami etc) we should use",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -31337,7 +31337,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"image": {
 							SchemaProps: spec.SchemaProps{
-								Description: "Image is the instance instance (ami etc) we should use",
+								Description: "Image is the instance (ami etc) we should use",
 								Type:        []string{"string"},
 								Format:      "",
 							},
