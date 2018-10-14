@@ -178,7 +178,7 @@ func igOutputTable(cluster *api.Cluster, instancegroups []*api.InstanceGroup, ou
 	t.AddColumn("MAX", func(c *api.InstanceGroup) string {
 		return int32PointerToString(c.Spec.MaxSize)
 	})
-	// SUBNETS is not not selected by default - not as useful as ZONES
+	// SUBNETS is not selected by default - not as useful as ZONES
 	return t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
 }
 

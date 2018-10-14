@@ -29,7 +29,7 @@ type Interface struct {
 }
 
 // New builds an Interface, with a specified Route53API implementation.
-// This is useful for testing purposes, but also if we want an instance with with custom AWS options.
+// This is useful for testing purposes, but also if we want an instance with custom AWS options.
 func New(service stubs.Route53API) *Interface {
 	return &Interface{service}
 }
