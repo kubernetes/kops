@@ -69,8 +69,8 @@ type Elastigroup struct {
 	RootVolumeOptimization   *bool
 	Tenancy                  *string
 	AutoScalerEnabled        *bool
+	AutoScalerClusterID      *string
 	AutoScalerNodeLabels     map[string]string
-	ClusterIdentifier        *string
 }
 
 var _ fi.CompareWithID = &Elastigroup{}
@@ -447,9 +447,9 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 
 	// Integration.
 	{
-		if e.ClusterIdentifier != nil {
+		if e.AutoScalerClusterID != nil {
 			k8s := new(aws.KubernetesIntegration)
-			k8s.SetClusterIdentifier(e.ClusterIdentifier)
+			k8s.SetClusterIdentifier(e.AutoScalerClusterID)
 			k8s.SetIntegrationMode(fi.String("pod"))
 
 			if e.AutoScalerEnabled != nil {
@@ -1152,10 +1152,10 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 
 	// Integration.
 	{
-		if e.ClusterIdentifier != nil {
+		if e.AutoScalerClusterID != nil {
 			tf.Integration = &terraformElastigroupIntegration{
 				IntegrationMode:   fi.String("pod"),
-				ClusterIdentifier: e.ClusterIdentifier,
+				ClusterIdentifier: e.AutoScalerClusterID,
 			}
 			if e.AutoScalerEnabled != nil {
 				tf.Integration.AutoScaleIsEnabled = e.AutoScalerEnabled

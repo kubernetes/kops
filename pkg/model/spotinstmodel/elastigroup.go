@@ -280,7 +280,7 @@ func (b *ElastigroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// Auto Scaler.
 		if ig.Spec.Role != kops.InstanceGroupRoleBastion {
-			group.ClusterIdentifier = fi.String(b.ClusterName())
+			group.AutoScalerClusterID = fi.String(b.ClusterName())
 
 			// Toggle auto scaler's features.
 			var autoScalerDisabled bool
