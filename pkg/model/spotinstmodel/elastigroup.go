@@ -51,10 +51,10 @@ const (
 	// instance group to specify whether the auto-scaler should be enabled.
 	InstanceGroupLabelAutoScalerDisabled = "spotinst.io/autoscaler-disabled"
 
-	// InstanceGroupLabelAutoScalerNodeLabels is the metadata label used on the
+	// InstanceGroupLabelAutoScalerDefaultNodeLabels is the metadata label used on the
 	// instance group to specify whether default node labels should be set for
 	// the auto-scaler.
-	InstanceGroupLabelAutoScalerNodeLabels = "spotinst.io/autoscaler-node-labels"
+	InstanceGroupLabelAutoScalerDefaultNodeLabels = "spotinst.io/autoscaler-default-node-labels"
 )
 
 // ElastigroupModelBuilder configures Elastigroup objects
@@ -296,7 +296,7 @@ func (b *ElastigroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 						autoScalerDisabled = fi.BoolValue(b)
 						break
 
-					case InstanceGroupLabelAutoScalerNodeLabels:
+					case InstanceGroupLabelAutoScalerDefaultNodeLabels:
 						b, err := parseBool(v)
 						if err != nil {
 							return err
