@@ -139,7 +139,7 @@ func (e *awsElastigroup) MinSize() int { return fi.IntValue(e.obj.Capacity.Minim
 // MaxSize returns the maximum size of the Elastigroup.
 func (e *awsElastigroup) MaxSize() int { return fi.IntValue(e.obj.Capacity.Maximum) }
 
-// Obj returns the underlying object which is a cloud-specific implementation.
+// Obj returns the raw object which is a cloud-specific implementation.
 func (e *awsElastigroup) Obj() interface{} { return e.obj }
 
 type awsInstance struct {
@@ -149,5 +149,5 @@ type awsInstance struct {
 // Id returns the ID of the instance.
 func (i *awsInstance) Id() string { return fi.StringValue(i.obj.ID) }
 
-// Obj returns the underlying object which is a cloud-specific implementation.
+// Obj returns the raw object which is a cloud-specific implementation.
 func (i *awsInstance) Obj() interface{} { return i.obj }
