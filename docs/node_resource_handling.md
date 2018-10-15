@@ -71,7 +71,7 @@ scheduled does not surpass the sum of allocatable resources. But suppose you
 have a couple of applications deployed in your cluster that are constantly using
 up way more resources set in their resource requests (burst above requests but
 below limits during workload). You end up with a node with pods that are each
-attempting to take take up more resources than there are available on the node!
+attempting to take up more resources than there are available on the node!
 
 This is particularly an issue with non-compressible resources like memory. For
 example, in the aforementioned case, with an eviction threshold of only
