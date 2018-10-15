@@ -139,6 +139,10 @@ type CreateClusterOptions struct {
 	// We can remove this once we support higher versions.
 	VSphereDatastore string
 
+	// Spotinst options
+	SpotinstProduct     string
+	SpotinstOrientation string
+
 	// ConfigBase is the location where we will store the configuration, it defaults to the state store
 	ConfigBase string
 
@@ -353,6 +357,13 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		cmd.Flags().StringVar(&options.VSphereCoreDNSServer, "vsphere-coredns-server", options.VSphereCoreDNSServer, "vsphere-coredns-server is required for vSphere.")
 		cmd.Flags().StringVar(&options.VSphereDatastore, "vsphere-datastore", options.VSphereDatastore, "vsphere-datastore is required for vSphere.  Set a valid datastore in which to store dynamic provision volumes.")
 	}
+
+	if featureflag.Spotinst.Enabled() {
+		// Spotinst flags
+		cmd.Flags().StringVar(&options.SpotinstProduct, "spotinst-product", options.SpotinstProduct, "Set the product description (valid values: Linux/UNIX, Linux/UNIX (Amazon VPC), Windows and Windows (Amazon VPC))")
+		cmd.Flags().StringVar(&options.SpotinstOrientation, "spotinst-orientation", options.SpotinstOrientation, "Set the prediction strategy (valid values: balanced, cost, equal-distribution and availability)")
+	}
+
 	return cmd
 }
 
@@ -839,6 +850,18 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				return fmt.Errorf("vsphere-datastore is required for vSphere. Set a valid datastore in which to store dynamic provision volumes.")
 			}
 			cluster.Spec.CloudConfig.VSphereDatastore = fi.String(c.VSphereDatastore)
+		}
+
+		if featureflag.Spotinst.Enabled() {
+			if cluster.Spec.CloudConfig == nil {
+				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
+			}
+			if c.SpotinstProduct != "" {
+				cluster.Spec.CloudConfig.SpotinstProduct = fi.String(c.SpotinstProduct)
+			}
+			if c.SpotinstOrientation != "" {
+				cluster.Spec.CloudConfig.SpotinstOrientation = fi.String(c.SpotinstOrientation)
+			}
 		}
 	}
 

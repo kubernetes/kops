@@ -34,7 +34,9 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/resources"
+	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -74,8 +76,6 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 		ListELBs,
 		ListELBV2s,
 		ListTargetGroups,
-		// ASG
-		ListAutoScalingGroups,
 
 		// Route 53
 		ListRoute53Records,
@@ -83,6 +83,15 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 		ListIAMInstanceProfiles,
 		ListIAMRoles,
 	}
+
+	if featureflag.Spotinst.Enabled() {
+		// Spotinst Elastigroups
+		listFunctions = append(listFunctions, ListSpotinstElastigroups)
+	} else {
+		// AutoScaling Groups
+		listFunctions = append(listFunctions, ListAutoScalingGroups)
+	}
+
 	for _, fn := range listFunctions {
 		rt, err := fn(cloud, clusterName)
 		if err != nil {
@@ -2022,6 +2031,10 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*resources.R
 	}
 
 	return resourceTrackers, nil
+}
+
+func ListSpotinstElastigroups(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	return spotinst.ListGroups(cloud.(awsup.AWSCloud).Spotinst(), clusterName)
 }
 
 func FindName(tags []*ec2.Tag) string {

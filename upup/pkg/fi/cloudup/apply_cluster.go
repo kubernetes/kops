@@ -45,6 +45,7 @@ import (
 	"k8s.io/kops/pkg/model/domodel"
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/openstackmodel"
+	"k8s.io/kops/pkg/model/spotinstmodel"
 	"k8s.io/kops/pkg/model/vspheremodel"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/templates"
@@ -62,6 +63,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/spotinsttasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks"
@@ -399,6 +401,9 @@ func (c *ApplyClusterCmd) Run() error {
 				// Autoscaling
 				"autoscalingGroup":    &awstasks.AutoscalingGroup{},
 				"launchConfiguration": &awstasks.LaunchConfiguration{},
+
+				// Spotinst
+				"spotinstElastigroup": &spotinsttasks.Elastigroup{},
 			})
 
 			if len(sshPublicKeys) == 0 {
@@ -673,13 +678,21 @@ func (c *ApplyClusterCmd) Run() error {
 			KopsModelContext: modelContext,
 		}
 
-		l.Builders = append(l.Builders, &awsmodel.AutoscalingGroupModelBuilder{
-			AWSModelContext: awsModelContext,
-			BootstrapScript: bootstrapScriptBuilder,
-			Lifecycle:       &clusterLifecycle,
-
-			SecurityLifecycle: &securityLifecycle,
-		})
+		if featureflag.Spotinst.Enabled() {
+			l.Builders = append(l.Builders, &spotinstmodel.ElastigroupModelBuilder{
+				AWSModelContext:   awsModelContext,
+				BootstrapScript:   bootstrapScriptBuilder,
+				Lifecycle:         &clusterLifecycle,
+				SecurityLifecycle: &securityLifecycle,
+			})
+		} else {
+			l.Builders = append(l.Builders, &awsmodel.AutoscalingGroupModelBuilder{
+				AWSModelContext:   awsModelContext,
+				BootstrapScript:   bootstrapScriptBuilder,
+				Lifecycle:         &clusterLifecycle,
+				SecurityLifecycle: &securityLifecycle,
+			})
+		}
 	case kops.CloudProviderDO:
 		doModelContext := &domodel.DOModelContext{
 			KopsModelContext: modelContext,
