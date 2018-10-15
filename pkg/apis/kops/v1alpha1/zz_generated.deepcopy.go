@@ -2402,6 +2402,38 @@ func (in *KubeProxyConfig) DeepCopyInto(out *KubeProxyConfig) {
 			**out = **in
 		}
 	}
+	if in.IPVSExcludeCIDRS != nil {
+		in, out := &in.IPVSExcludeCIDRS, &out.IPVSExcludeCIDRS
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.IPVSMinSyncPeriod != nil {
+		in, out := &in.IPVSMinSyncPeriod, &out.IPVSMinSyncPeriod
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
+	if in.IPVSScheduler != nil {
+		in, out := &in.IPVSScheduler, &out.IPVSScheduler
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
+	if in.IPVSSyncPeriod != nil {
+		in, out := &in.IPVSSyncPeriod, &out.IPVSSyncPeriod
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
 	if in.FeatureGates != nil {
 		in, out := &in.FeatureGates, &out.FeatureGates
 		*out = make(map[string]string, len(*in))
