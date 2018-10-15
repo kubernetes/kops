@@ -62,8 +62,10 @@ spec:
       serviceAccountName: aws-node
       hostNetwork: true
       tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
       - key: CriticalAddonsOnly
         operator: Exists
       containers:

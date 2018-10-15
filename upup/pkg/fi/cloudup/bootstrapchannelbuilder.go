@@ -466,7 +466,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Kopeio != nil {
 		key := "networking.kope.io"
-		version := "1.0.20180319"
+		version := "1.0.20180319-kops.2"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -749,7 +749,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Romana != nil {
 		key := "networking.romana"
-		version := "v2.0.2"
+		version := "v2.0.2-kops.2"
 
 		{
 			location := key + "/k8s-1.7.yaml"
@@ -769,7 +769,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.AmazonVPC != nil {
 		key := "networking.amazon-vpc-routed-eni"
-		version := "1.0.0-kops.2"
+		version := "1.0.0-kops.3"
 
 		{
 			id := "k8s-1.7"
