@@ -18,7 +18,9 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/dns:go_default_library",
+        "//pkg/featureflag:go_default_library",
         "//pkg/resources:go_default_library",
+        "//pkg/resources/spotinst:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",

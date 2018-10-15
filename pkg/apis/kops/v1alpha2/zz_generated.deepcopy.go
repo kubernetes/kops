@@ -498,6 +498,24 @@ func (in *CloudConfiguration) DeepCopyInto(out *CloudConfiguration) {
 			**out = **in
 		}
 	}
+	if in.SpotinstProduct != nil {
+		in, out := &in.SpotinstProduct, &out.SpotinstProduct
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
+	if in.SpotinstOrientation != nil {
+		in, out := &in.SpotinstOrientation, &out.SpotinstOrientation
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
 	return
 }
 
