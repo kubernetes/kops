@@ -3,7 +3,7 @@
 # This manifest includes the following component versions:
 #   calico/node:v3.2.3
 #   calico/cni:v3.2.3
-#   coreos/flannel:v0.9.1
+#   coreos/flannel:v0.9.0
 
 # This ConfigMap is used to configure a self-hosted Canal installation.
 kind: ConfigMap
