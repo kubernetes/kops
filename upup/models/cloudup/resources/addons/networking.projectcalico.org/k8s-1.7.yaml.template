@@ -360,7 +360,13 @@ spec:
               value: /certs/calico-client-key.pem
             - name: ETCD_CA_CERT_FILE
               value: /certs/ca.pem
+            {{- end }}
           volumeMounts:
+            # Necessary for gossip based DNS
+            - mountPath: /etc/hosts
+              name: etc-hosts
+              readOnly: true
+            {{- if eq $etcd_scheme "https" }}
             - mountPath: /certs
               name: calico
               readOnly: true
