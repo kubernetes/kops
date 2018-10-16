@@ -37,7 +37,7 @@ nodes as possible.
 ---------------------------
 ```
 
-Node resources can be be categorised into 4 (as shown above):
+Node resources can be categorised into 4 (as shown above):
 
 * `kube-reserved` – reserves resources for kubernetes system daemons.
 * `system-reserved` – reserves resources for operating system components.
