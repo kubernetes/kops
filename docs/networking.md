@@ -40,7 +40,7 @@ Several different CNI providers are currently built into kops:
 * [kopeio-vxlan](https://github.com/kopeio/networking)
 * [kube-router](./networking.md#kube-router-example-for-cni-ipvs-based-service-proxy-and-network-policy-enforcer)
 * [romana](https://github.com/romana/romana)
-* [weave](https://github.com/weaveworks/weave-kube)
+* [weave](https://github.com/weaveworks/weave)
 * [amazon-vpc-routed-eni](./networking.md#amazon-vpc-backend)
 * [Cilium](http://docs.cilium.io)
 
