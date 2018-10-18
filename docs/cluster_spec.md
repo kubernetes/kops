@@ -354,7 +354,7 @@ spec:
     enableCustomMetrics: true
 ```
 
-#### Setting kubelet CPU managment policies
+#### Setting kubelet CPU management policies
 To enable cpu management policies in kubernetes as per [cpu management doc](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#cpu-management-policies)
 we have to set the flag `--cpu-manager-policy` to the appropriate value on all the kubelets. This must be specified in the `kubelet` spec in our cluster.yml.
 
