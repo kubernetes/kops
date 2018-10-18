@@ -297,3 +297,6 @@ It hasn't been tested as this approach was only a PR when the author experimenti
 [7]: https://docs.docker.com/registry/recipes/mirror/#use-case-the-china-registry-mirror
 [8]: https://github.com/kubernetes/kops/issues/3236
 [9]: https://aws.amazon.com/about-aws/global-infrastructure/
+
+### Other External Projects
+[pahud/kops-cn](https://github.com/pahud/kops-cn) - Accelerate your Kops deployment in AWS China Beijing or Ningxia Region
