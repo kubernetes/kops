@@ -322,7 +322,7 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.ModelBuilderContext) erro
 
 	// So what we do here is we download a tarred container image, expand it to containerizedMounterHome, then
 	// set up bind mounts so that the script is executable (most of containeros is noexec),
-	// and set up some bind mounts of proc and dev so that  mounting can take place inside that container
+	// and set up some bind mounts of proc and dev so that mounting can take place inside that container
 	// - it isn't a full docker container.
 
 	{
