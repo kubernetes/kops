@@ -824,7 +824,7 @@ spec:
                               command:
                                 description: Command is the command line to execute
                                   inside the container, the working directory for
-                                  the command  is root ('/') in the container's filesystem.
+                                  the command is root ('/') in the container's filesystem.
                                   The command is simply exec'd, it is not run inside
                                   a shell, so traditional shell instructions ('|',
                                   etc) won't work. To use a shell, you need to explicitly
@@ -891,7 +891,7 @@ spec:
                               command:
                                 description: Command is the command line to execute
                                   inside the container, the working directory for
-                                  the command  is root ('/') in the container's filesystem.
+                                  the command is root ('/') in the container's filesystem.
                                   The command is simply exec'd, it is not run inside
                                   a shell, so traditional shell instructions ('|',
                                   etc) won't work. To use a shell, you need to explicitly
@@ -957,7 +957,7 @@ spec:
                         properties:
                           command:
                             description: Command is the command line to execute inside
-                              the container, the working directory for the command  is
+                              the container, the working directory for the command is
                               root ('/') in the container's filesystem. The command
                               is simply exec'd, it is not run inside a shell, so traditional
                               shell instructions ('|', etc) won't work. To use a shell,
@@ -1097,7 +1097,7 @@ spec:
                         properties:
                           command:
                             description: Command is the command line to execute inside
-                              the container, the working directory for the command  is
+                              the container, the working directory for the command is
                               root ('/') in the container's filesystem. The command
                               is simply exec'd, it is not run inside a shell, so traditional
                               shell instructions ('|', etc) won't work. To use a shell,
@@ -3163,7 +3163,7 @@ spec:
                               command:
                                 description: Command is the command line to execute
                                   inside the container, the working directory for
-                                  the command  is root ('/') in the container's filesystem.
+                                  the command is root ('/') in the container's filesystem.
                                   The command is simply exec'd, it is not run inside
                                   a shell, so traditional shell instructions ('|',
                                   etc) won't work. To use a shell, you need to explicitly
@@ -3230,7 +3230,7 @@ spec:
                               command:
                                 description: Command is the command line to execute
                                   inside the container, the working directory for
-                                  the command  is root ('/') in the container's filesystem.
+                                  the command is root ('/') in the container's filesystem.
                                   The command is simply exec'd, it is not run inside
                                   a shell, so traditional shell instructions ('|',
                                   etc) won't work. To use a shell, you need to explicitly
@@ -3296,7 +3296,7 @@ spec:
                         properties:
                           command:
                             description: Command is the command line to execute inside
-                              the container, the working directory for the command  is
+                              the container, the working directory for the command is
                               root ('/') in the container's filesystem. The command
                               is simply exec'd, it is not run inside a shell, so traditional
                               shell instructions ('|', etc) won't work. To use a shell,
@@ -3436,7 +3436,7 @@ spec:
                         properties:
                           command:
                             description: Command is the command line to execute inside
-                              the container, the working directory for the command  is
+                              the container, the working directory for the command is
                               root ('/') in the container's filesystem. The command
                               is simply exec'd, it is not run inside a shell, so traditional
                               shell instructions ('|', etc) won't work. To use a shell,
