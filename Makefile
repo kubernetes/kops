@@ -327,11 +327,13 @@ vsphere-version-dist: nodeup-dist protokube-export
 upload: version-dist # Upload kops to S3
 	aws s3 sync --acl public-read ${UPLOAD}/ ${S3_BUCKET}
 
+# gcs-upload builds kops and uploads to GCS
 .PHONY: gcs-upload
-gcs-upload: version-dist # Upload kops to GCS
+gcs-upload: bazel-version-dist
 	@echo "== Uploading kops =="
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${UPLOAD}/kops/* ${GCS_LOCATION}
+	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${BAZELUPLOAD}/kops/* ${GCS_LOCATION}
 
+# gcs-publish-ci is the entry point for CI testing
 # In CI testing, always upload the CI version.
 .PHONY: gcs-publish-ci
 gcs-publish-ci: VERSION := ${KOPS_CI_VERSION}+${GITSHA}
@@ -339,8 +341,8 @@ gcs-publish-ci: PROTOKUBE_TAG := $(subst +,-,${VERSION})
 gcs-publish-ci: gcs-upload
 	echo "VERSION: ${VERSION}"
 	echo "PROTOKUBE_TAG: ${PROTOKUBE_TAG}"
-	echo "${GCS_URL}/${VERSION}" > ${UPLOAD}/${LATEST_FILE}
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
+	echo "${GCS_URL}/${VERSION}" > ${BAZELUPLOAD}/${LATEST_FILE}
+	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${BAZELUPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
 
 .PHONY: gen-cli-docs
 gen-cli-docs: ${KOPS} # Regenerate CLI docs
