@@ -284,6 +284,11 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscontainerdexampl
   __EOF_KUBE_ENV
 
   download-release
+
+  tail -n +2 <<EOF >> /root/.ssh/authorized_keys
+  ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ==
+
+  EOF
   echo "== nodeup node config done =="
 Resources.AWSAutoScalingLaunchConfigurationnodescontainerdexamplecom.Properties.UserData: |
   #!/bin/bash
@@ -478,4 +483,9 @@ Resources.AWSAutoScalingLaunchConfigurationnodescontainerdexamplecom.Properties.
   __EOF_KUBE_ENV
 
   download-release
+
+  tail -n +2 <<EOF >> /root/.ssh/authorized_keys
+  ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ==
+
+  EOF
   echo "== nodeup node config done =="

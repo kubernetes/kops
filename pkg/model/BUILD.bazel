@@ -25,6 +25,7 @@ go_library(
         "//pkg/apis/kops/model:go_default_library",
         "//pkg/apis/kops/util:go_default_library",
         "//pkg/apis/nodeup:go_default_library",
+        "//pkg/client/simple/vfsclientset:go_default_library",
         "//pkg/dns:go_default_library",
         "//pkg/featureflag:go_default_library",
         "//pkg/model/components:go_default_library",

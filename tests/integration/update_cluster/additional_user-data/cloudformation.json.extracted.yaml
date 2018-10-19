@@ -299,6 +299,11 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
   __EOF_KUBE_ENV
 
   download-release
+
+  tail -n +2 <<EOF >> /home/admin/.ssh/authorized_keys
+  ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ==
+
+  EOF
   echo "== nodeup node config done =="
 
   --MIMEBOUNDARY
@@ -519,6 +524,11 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
   __EOF_KUBE_ENV
 
   download-release
+
+  tail -n +2 <<EOF >> /home/admin/.ssh/authorized_keys
+  ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ==
+
+  EOF
   echo "== nodeup node config done =="
 
   --MIMEBOUNDARY

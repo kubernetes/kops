@@ -197,4 +197,6 @@ channels:
 __EOF_KUBE_ENV
 
 download-release
+
+
 echo "== nodeup node config done =="

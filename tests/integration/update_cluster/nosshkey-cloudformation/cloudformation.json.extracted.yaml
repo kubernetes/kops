@@ -293,6 +293,10 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersnosshkeyexamplec
   __EOF_KUBE_ENV
 
   download-release
+
+  tail -n +2 <<EOF >> /home/admin/.ssh/authorized_keys
+
+  EOF
   echo "== nodeup node config done =="
 Resources.AWSAutoScalingLaunchConfigurationnodesnosshkeyexamplecom.Properties.UserData: |
   #!/bin/bash
@@ -494,4 +498,8 @@ Resources.AWSAutoScalingLaunchConfigurationnodesnosshkeyexamplecom.Properties.Us
   __EOF_KUBE_ENV
 
   download-release
+
+  tail -n +2 <<EOF >> /home/admin/.ssh/authorized_keys
+
+  EOF
   echo "== nodeup node config done =="

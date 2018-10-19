@@ -222,4 +222,6 @@ cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 __EOF_KUBE_ENV
 
 download-release
+
+
 echo "== nodeup node config done =="
