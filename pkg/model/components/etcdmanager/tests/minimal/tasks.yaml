@@ -58,6 +58,7 @@ Contents:
         - mountPath: /var/log/etcd.log
           name: varlogetcd
       hostNetwork: true
+      hostPID: true
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
@@ -119,6 +120,7 @@ Contents:
         - mountPath: /var/log/etcd.log
           name: varlogetcd
       hostNetwork: true
+      hostPID: true
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
