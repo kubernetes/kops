@@ -119,11 +119,11 @@ func (k *VolumeMountController) safeFormatAndMount(volume *Volume, mountpoint st
 			return fmt.Errorf("error building ns-enter object: %v", err)
 		}
 
-		// When used with kubelet, rootDir is supposed to be /var/lib/kubelet
-		rootDir := "/"
+		// This is a directory that is mounted identically on the container and the host; we don't have that.
+		sharedDir := "/no-shared-directories"
 
 		// Build mount & exec implementations that execute in the host namespaces
-		safeFormatAndMount.Interface = mount.NewNsenterMounter(rootDir, ne)
+		safeFormatAndMount.Interface = mount.NewNsenterMounter(sharedDir, ne)
 		safeFormatAndMount.Exec = NewNsEnterExec()
 
 		// Note that we don't use pathFor for operations going through safeFormatAndMount,
