@@ -57,6 +57,11 @@ func TestMinimal(t *testing.T) {
 	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha2", false, 1, true, nil)
 }
 
+// TestRestrictAccess runs the test on a simple SG configuration, similar to kops create cluster minimal.example.com --ssh-access=$(IPS) --admin-access=$(IPS) --master-count=3
+func TestRestrictAccess(t *testing.T) {
+	runTestAWS(t, "restrictaccess.example.com", "restrict_access", "v1alpha2", false, 1, true, nil)
+}
+
 // TestHA runs the test on a simple HA configuration, similar to kops create cluster minimal.example.com --zones us-west-1a,us-west-1b,us-west-1c --master-count=3
 func TestHA(t *testing.T) {
 	runTestAWS(t, "ha.example.com", "ha", "v1alpha1", false, 3, true, nil)
