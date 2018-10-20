@@ -175,6 +175,7 @@ spec:
     - mountPath: /etc/hosts
       name: hosts
   hostNetwork: true
+  hostPID: true # helps with mounting volumes from inside a container
   volumes:
   - hostPath:
       path: /
