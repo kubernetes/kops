@@ -10,8 +10,8 @@ Kubernetes Operations (kops) currently supports 4 networking modes:
 ### kops Default Networking
 
 Kubernetes Operations (kops) uses `kubenet` networking by default. This sets up networking on AWS using VPC
-networking, where the  master allocates a /24 CIDR to each Node, drawing from the Node network.
-Using `kubenet` mode routes for  each node are then configured in the AWS VPC routing tables.
+networking, where the master allocates a /24 CIDR to each Node, drawing from the Node network.
+Using `kubenet` mode routes for each node are then configured in the AWS VPC routing tables.
 
 One important limitation when using `kubenet` networking is that an AWS routing table cannot have more than
 50 entries, which sets a limit of 50 nodes per cluster. AWS support will sometimes raise the limit to 100,
