@@ -99,6 +99,13 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 	{
+		// We always create the directory, avoids circular dependency on a bind-mount
+		c.AddTask(&nodetasks.File{
+			Path: filepath.Dir(b.KubeletKubeConfig()),
+			Type: nodetasks.FileType_Directory,
+			Mode: s("0755"),
+		})
+
 		// @check if bootstrap tokens are enabled and create the appropreiate certificates
 		if b.UseBootstrapTokens() {
 			// @check if a master and if so, we bypass the token strapping and instead generate our own kubeconfig
