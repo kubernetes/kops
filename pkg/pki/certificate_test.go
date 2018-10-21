@@ -58,7 +58,7 @@ func TestGenerateCertificate(t *testing.T) {
 		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
 		ExtKeyUsage:           []x509.ExtKeyUsage{},
 		BasicConstraintsValid: true,
-		IsCA: true,
+		IsCA:                  true,
 	}
 
 	cert, err := SignNewCertificate(key, template, nil, nil)
