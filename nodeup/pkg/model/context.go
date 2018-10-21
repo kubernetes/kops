@@ -151,6 +151,17 @@ func (c *NodeupModelContext) PathSrvKubernetes() string {
 	}
 }
 
+// ConfigDirForComponent returns the path for component-specific
+// config, including secrets We use a directory per component, even if
+// that ends up duplicating files, because that is both more secure
+// (no shared files) and easier (fewer mounts).
+//
+// We use /etc/srv/kubernetes because that should be writeable even on
+// secured OS images, where /srv might not be.
+func (c *NodeupModelContext) ConfigDirForComponent(component string) string {
+	return filepath.Join("/etc/srv/kubernetes", component)
+}
+
 // FileAssetsDefaultPath is the default location for assets which have no path
 func (c *NodeupModelContext) FileAssetsDefaultPath() string {
 	return filepath.Join(c.PathSrvKubernetes(), "assets")
@@ -408,19 +419,23 @@ func (c *NodeupModelContext) KubectlPath() string {
 }
 
 // BuildCertificatePairTask creates the tasks to pull down the certificate and private key
-func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContext, key, path, filename string) error {
-	certificateName := filepath.Join(path, filename+".pem")
-	keyName := filepath.Join(path, filename+"-key.pem")
+func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContext, name, dir, filename string) error {
+	certificateName := filepath.Join(dir, filename+".crt")
+	keyName := filepath.Join(dir, filename+".key")
 
-	if err := c.BuildCertificateTask(ctx, key, certificateName); err != nil {
+	if err := c.BuildCertificateTask(ctx, name, certificateName); err != nil {
 		return err
 	}
 
-	return c.BuildPrivateKeyTask(ctx, key, keyName)
+	return c.BuildPrivateKeyTask(ctx, name, keyName)
 }
 
 // BuildCertificateTask is responsible for build a certificate request task
-func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, name, filename string) error {
+//
+// dst is the location to which we write the certificate; if it is not
+// an absolute path it will be joined with PathSrvKubernetes() (legacy
+// behaviour)
+func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, name, dst string) error {
 	cert, err := c.KeyStore.FindCert(name)
 	if err != nil {
 		return err
@@ -435,13 +450,12 @@ func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, n
 		return err
 	}
 
-	p := filename
-	if !filepath.IsAbs(p) {
-		p = filepath.Join(c.PathSrvKubernetes(), filename)
+	if !filepath.IsAbs(dst) {
+		dst = filepath.Join(c.PathSrvKubernetes(), dst)
 	}
 
 	ctx.AddTask(&nodetasks.File{
-		Path:     p,
+		Path:     dst,
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0600"),
@@ -451,28 +465,31 @@ func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, n
 }
 
 // BuildPrivateKeyTask is responsible for build a certificate request task
-func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, name, filename string) error {
-	cert, err := c.KeyStore.FindPrivateKey(name)
+//
+// dst is the location to which we write the key; if it is not an
+// absolute path it will be joined with PathSrvKubernetes() (legacy
+// behaviour)
+func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, name, dst string) error {
+	pk, err := c.KeyStore.FindPrivateKey(name)
 	if err != nil {
 		return err
 	}
 
-	if cert == nil {
+	if pk == nil {
 		return fmt.Errorf("private key %q not found", name)
 	}
 
-	serialized, err := cert.AsString()
+	serialized, err := pk.AsString()
 	if err != nil {
 		return err
 	}
 
-	p := filename
-	if !filepath.IsAbs(p) {
-		p = filepath.Join(c.PathSrvKubernetes(), filename)
+	if !filepath.IsAbs(dst) {
+		dst = filepath.Join(c.PathSrvKubernetes(), dst)
 	}
 
 	ctx.AddTask(&nodetasks.File{
-		Path:     p,
+		Path:     dst,
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0600"),

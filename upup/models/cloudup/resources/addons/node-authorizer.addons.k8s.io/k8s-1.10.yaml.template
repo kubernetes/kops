@@ -148,8 +148,8 @@ spec:
       volumes:
         - name: config
           hostPath:
-            path: /srv/kubernetes/node-authorizer
-            type: DirectoryOrCreate
+            path: /etc/srv/kubernetes/node-authorizer/
+            type: Directory # Don't create, as can't guarantee permissions
       containers:
         - name: {{ $name }}
           image: {{ $na.Image }}
@@ -162,9 +162,9 @@ spec:
             - --feature={{ . }}
             {{- end }}
             - --listen=0.0.0.0:{{ $na.Port }}
-            - --tls-cert=/config/tls.pem
-            - --tls-client-ca=/config/ca.pem
-            - --tls-private-key=/config/tls-key.pem
+            - --tls-cert=/config/tls.crt
+            - --tls-client-ca=/config/ca.crt
+            - --tls-private-key=/config/tls.key
             - --token-ttl={{ $na.TokenTTL.Duration }}
           {{- if $proxy }}
           env:

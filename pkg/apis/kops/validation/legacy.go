@@ -405,7 +405,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 				return field.Invalid(path.Child("tokenTTL"), c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL, "must be greater than or equal to zero")
 			}
 
-			// @question: we could probably just default theses settings in the model when the node-authorizer is enabled??
+			// @question: we could probably just default these settings in the model when the node-authorizer is enabled??
 			if c.Spec.KubeAPIServer == nil {
 				return field.Invalid(field.NewPath("kubeAPIServer"), c.Spec.KubeAPIServer, "bootstrap token authentication is not enabled in the kube-apiserver")
 			}

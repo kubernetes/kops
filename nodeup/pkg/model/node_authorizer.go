@@ -41,24 +41,26 @@ var _ fi.ModelBuilder = &NodeAuthorizationBuilder{}
 func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 	// @check if we are a master and download the certificates for the node-authozier
 	if b.UseBootstrapTokens() && b.IsMaster {
-		name := "node-authorizer"
-		// creates /src/kubernetes/node-authorizer/{tls,tls-key}.pem
-		if err := b.BuildCertificatePairTask(c, name, name, "tls"); err != nil {
+		d := b.ConfigDirForComponent("node-authorizer")
+
+		// creates /etc/srv/kubernetes/node-authorizer/tls{.key,.crt}
+		if err := b.BuildCertificatePairTask(c, "node-authorizer", d, "tls"); err != nil {
 			return err
 		}
-		// creates /src/kubernetes/node-authorizer/ca.pem
-		if err := b.BuildCertificateTask(c, fi.CertificateId_CA, filepath.Join(name, "ca.pem")); err != nil {
+		// creates /etc/srv/kubernetes/node-authorizer/ca.crt
+		if err := b.BuildCertificateTask(c, fi.CertificateId_CA, filepath.Join(d, "ca.crt")); err != nil {
 			return err
 		}
 	}
 
-	authorizerDir := "node-authorizer"
 	// @check if bootstrap tokens are enabled and download client certificates for nodes
 	if b.UseBootstrapTokens() && !b.IsMaster {
-		if err := b.BuildCertificatePairTask(c, "node-authorizer-client", authorizerDir, "tls"); err != nil {
+		d := b.ConfigDirForComponent("node-authorizer-client")
+
+		if err := b.BuildCertificatePairTask(c, "node-authorizer-client", d, "tls"); err != nil {
 			return err
 		}
-		if err := b.BuildCertificateTask(c, fi.CertificateId_CA, authorizerDir+"/ca.pem"); err != nil {
+		if err := b.BuildCertificateTask(c, fi.CertificateId_CA, filepath.Join(d, "ca.crt")); err != nil {
 			return err
 		}
 	}
@@ -68,6 +70,8 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// @check if the NodeAuthorizer provision the client service for nodes
 	if b.UseNodeAuthorizer() && !b.IsMaster {
+		d := b.ConfigDirForComponent("node-authorizer-client")
+
 		na := b.Cluster.Spec.NodeAuthorization.NodeAuthorizer
 
 		glog.V(3).Infof("node authorization service is enabled, authorizer: %s", na.Authorizer)
@@ -80,7 +84,7 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 		man.Set("Unit", "After", "docker.service")
 		man.Set("Unit", "Before", "kubelet.service")
 
-		clientCert := filepath.Join(b.PathSrvKubernetes(), authorizerDir, "tls.pem")
+		clientCert := filepath.Join(d, "tls.crt")
 		man.Set("Service", "Type", "oneshot")
 		man.Set("Service", "RemainAfterExit", "yes")
 		man.Set("Service", "EnvironmentFile", "/etc/environment")
@@ -98,7 +102,7 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 			"--rm",
 			"--net=host",
 			"--volume=" + path.Dir(b.KubeletBootstrapKubeconfig()) + ":/var/lib/kubelet",
-			"--volume=" + filepath.Join(b.PathSrvKubernetes(), authorizerDir) + ":/config:ro",
+			"--volume=" + d + ":/config:ro",
 			na.Image,
 			"client",
 			"--authorizer=" + na.Authorizer,
@@ -107,9 +111,9 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 			"--kubeconfig=" + b.KubeletBootstrapKubeconfig(),
 			"--node-url=" + na.NodeURL,
 			"--timeout=" + timeout.String(),
-			"--tls-client-ca=/config/ca.pem",
-			"--tls-cert=/config/tls.pem",
-			"--tls-private-key=/config/tls-key.pem",
+			"--tls-client-ca=/config/ca.crt",
+			"--tls-cert=/config/tls.crt",
+			"--tls-private-key=/config/tls.key",
 		}
 		man.Set("Service", "ExecStart", strings.Join(dockerCmd, " "))
 
