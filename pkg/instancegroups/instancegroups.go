@@ -24,6 +24,9 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/featureflag"
@@ -31,6 +34,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/kubectl/cmd"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
+	"k8s.io/kubernetes/pkg/kubectl/genericclioptions"
 )
 
 // RollingUpdateInstanceGroup is the AWS ASG backing an InstanceGroup.
@@ -67,10 +71,14 @@ func NewRollingUpdateInstanceGroup(cloud fi.Cloud, cloudGroup *cloudinstances.Cl
 }
 
 // promptInteractive asks the user to continue, mostly copied from vendor/google.golang.org/api/examples/gmail.go.
-func promptInteractive(upgradedHost string) (stopPrompting bool, err error) {
+func promptInteractive(upgradedHostId, upgradedHostName string) (stopPrompting bool, err error) {
 	stopPrompting = false
 	scanner := bufio.NewScanner(os.Stdin)
-	glog.Infof("Pausing after finished %q", upgradedHost)
+	if upgradedHostName != "" {
+		glog.Infof("Pausing after finished %q, node %q", upgradedHostId, upgradedHostName)
+	} else {
+		glog.Infof("Pausing after finished %q", upgradedHostId)
+	}
 	fmt.Print("Continue? (Y)es, (N)o, (A)lwaysYes: [Y] ")
 	scanner.Scan()
 	err = scanner.Err()
@@ -83,10 +91,10 @@ func promptInteractive(upgradedHost string) (stopPrompting bool, err error) {
 	val = strings.ToLower(val)
 	switch val {
 	case "n":
-		glog.Infof("User signaled to stop")
+		glog.Info("User signaled to stop")
 		os.Exit(3)
 	case "a":
-		glog.Infof("Always Yes, stop prompting for rest of hosts")
+		glog.Info("Always Yes, stop prompting for rest of hosts")
 		stopPrompting = true
 	}
 	return stopPrompting, err
@@ -132,7 +140,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 				return fmt.Errorf("error validating cluster: %v", err)
 			} else {
 				glog.V(2).Infof("Ignoring cluster validation error: %v", err)
-				glog.Infof("Cluster validation failed, but proceeding since fail-on-validate-error is set to false")
+				glog.Info("Cluster validation failed, but proceeding since fail-on-validate-error is set to false")
 			}
 		}
 	}
@@ -149,7 +157,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 			// We don't want to validate for bastions - they aren't part of the cluster
 		} else if rollingUpdateData.CloudOnly {
 
-			glog.Warningf("Not draining cluster nodes as 'cloudonly' flag is set.")
+			glog.Warning("Not draining cluster nodes as 'cloudonly' flag is set.")
 
 		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 
@@ -168,12 +176,26 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 			}
 		}
 
+		// We unregister the node before deleting it; if the replacement comes up with the same name it would otherwise still be cordoned
+		// (It often seems like GCE tries to re-use names)
+		if !isBastion && !rollingUpdateData.CloudOnly {
+			if u.Node == nil {
+				glog.Warningf("no kubernetes Node associated with %s, skipping node deletion", instanceId)
+			} else {
+				glog.Infof("deleting node %q from kubernetes", nodeName)
+				if err := r.deleteNode(u.Node, rollingUpdateData); err != nil {
+					return fmt.Errorf("error deleting node %q: %v", nodeName, err)
+				}
+			}
+		}
+
 		if err = r.DeleteInstance(u); err != nil {
-			glog.Errorf("Error deleting aws instance %q, node %q: %v", instanceId, nodeName, err)
+			glog.Errorf("error deleting instance %q, node %q: %v", instanceId, nodeName, err)
 			return err
 		}
 
 		// Wait for the minimum interval
+		glog.Infof("waiting for %v after terminating instance", sleepAfterTerminate)
 		time.Sleep(sleepAfterTerminate)
 
 		if isBastion {
@@ -182,10 +204,9 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 			continue
 		} else if rollingUpdateData.CloudOnly {
 			glog.Warningf("Not validating cluster as cloudonly flag is set.")
-			continue
 
 		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
-			glog.Infof("Validating the cluster.")
+			glog.Info("Validating the cluster.")
 
 			if err = r.ValidateClusterWithDuration(rollingUpdateData, cluster, instanceGroupList, validationTimeout); err != nil {
 
@@ -196,15 +217,16 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 
 				glog.Warningf("Cluster validation failed after removing instance, proceeding since fail-on-validate is set to false: %v", err)
 			}
-			if rollingUpdateData.Interactive {
-				stopPrompting, err := promptInteractive(nodeName)
-				if err != nil {
-					return err
-				}
-				if stopPrompting {
-					// Is a pointer to a struct, changes here push back into the original
-					rollingUpdateData.Interactive = false
-				}
+		}
+
+		if rollingUpdateData.Interactive {
+			stopPrompting, err := promptInteractive(u.ID, nodeName)
+			if err != nil {
+				return err
+			}
+			if stopPrompting {
+				// Is a pointer to a struct, changes here push back into the original
+				rollingUpdateData.Interactive = false
 			}
 		}
 	}
@@ -229,7 +251,7 @@ func (r *RollingUpdateInstanceGroup) ValidateClusterWithDuration(rollingUpdateDa
 		select {
 		case <-timeout:
 			// Got a timeout fail with a timeout error
-			return fmt.Errorf("cluster did not validate within a duation of %q", duration)
+			return fmt.Errorf("cluster did not validate within a duration of %q", duration)
 		case <-tick:
 			// Got a tick, validate cluster
 			if r.tryValidateCluster(rollingUpdateData, cluster, instanceGroupList, duration, tickDuration) {
@@ -251,7 +273,7 @@ func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *Rolli
 		glog.Infof("Cluster did not pass validation, will try again in %q until duration %q expires: %v.", tickDuration, duration, result.Failures[0].Message)
 		return false
 	} else {
-		glog.Infof("Cluster validated.")
+		glog.Info("Cluster validated.")
 		return true
 	}
 }
@@ -268,7 +290,6 @@ func (r *RollingUpdateInstanceGroup) ValidateCluster(rollingUpdateData *RollingU
 
 // DeleteInstance deletes an Cloud Instance.
 func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInstanceGroupMember) error {
-
 	id := u.ID
 	nodeName := ""
 	if u.Node != nil {
@@ -294,32 +315,31 @@ func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInsta
 
 // DrainNode drains a K8s node.
 func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGroupMember, rollingUpdateData *RollingUpdateCluster) error {
-	if rollingUpdateData.ClientConfig == nil {
-		return fmt.Errorf("clientConfig not set")
+	if rollingUpdateData.ClientGetter == nil {
+		return fmt.Errorf("ClientGetter not set")
 	}
 
 	if u.Node.Name == "" {
 		return fmt.Errorf("node name not set")
 	}
-	f := cmdutil.NewFactory(rollingUpdateData.ClientConfig)
+	f := cmdutil.NewFactory(rollingUpdateData.ClientGetter)
 
-	// TODO: Send out somewhere else, also DrainOptions has errout
-	out := os.Stdout
-	errOut := os.Stderr
-
-	options := &cmd.DrainOptions{
-		Factory:            f,
-		Out:                out,
-		IgnoreDaemonsets:   true,
-		Force:              true,
-		DeleteLocalData:    true,
-		ErrOut:             errOut,
-		GracePeriodSeconds: -1,
+	streams := genericclioptions.IOStreams{
+		Out:    os.Stdout,
+		ErrOut: os.Stderr,
 	}
 
-	cmd := cmd.NewCmdDrain(f, out, errOut)
+	drain := cmd.NewCmdDrain(f, streams)
 	args := []string{u.Node.Name}
-	err := options.SetupDrain(cmd, args)
+	options := cmd.NewDrainOptions(f, streams)
+
+	// Override some options
+	options.IgnoreDaemonsets = true
+	options.Force = true
+	options.DeleteLocalData = true
+	options.GracePeriodSeconds = -1
+
+	err := options.Complete(f, drain, args)
 	if err != nil {
 		return fmt.Errorf("error setting up drain: %v", err)
 	}
@@ -337,6 +357,22 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 	if rollingUpdateData.PostDrainDelay > 0 {
 		glog.Infof("Waiting for %s for pods to stabilize after draining.", rollingUpdateData.PostDrainDelay)
 		time.Sleep(rollingUpdateData.PostDrainDelay)
+	}
+
+	return nil
+}
+
+// DeleteNode deletes a node from the k8s API.  It does not delete the underlying instance.
+func (r *RollingUpdateInstanceGroup) deleteNode(node *corev1.Node, rollingUpdateData *RollingUpdateCluster) error {
+	k8sclient := rollingUpdateData.K8sClient
+	var options metav1.DeleteOptions
+	err := k8sclient.CoreV1().Nodes().Delete(node.Name, &options)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil
+		}
+
+		return fmt.Errorf("error deleting node: %v", err)
 	}
 
 	return nil

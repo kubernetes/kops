@@ -316,9 +316,9 @@ func (r *resourceRecordChangeset) Upsert(rrset dnsprovider.ResourceRecordSet) dn
 // Apply adds new records stored in r.additions, updates records stored
 // in r.upserts and deletes records stored in r.removals
 func (r *resourceRecordChangeset) Apply() error {
-	glog.V(2).Infof("applying changes in record change set")
+	glog.V(2).Info("applying changes in record change set")
 	if r.IsEmpty() {
-		glog.V(2).Infof("record change set is empty")
+		glog.V(2).Info("record change set is empty")
 		return nil
 	}
 
@@ -330,7 +330,7 @@ func (r *resourceRecordChangeset) Apply() error {
 			}
 		}
 
-		glog.V(2).Infof("record change set additions complete")
+		glog.V(2).Info("record change set additions complete")
 	}
 
 	if len(r.upserts) > 0 {
@@ -341,7 +341,7 @@ func (r *resourceRecordChangeset) Apply() error {
 			}
 		}
 
-		glog.V(2).Infof("record change set upserts complete")
+		glog.V(2).Info("record change set upserts complete")
 	}
 
 	if len(r.removals) > 0 {
@@ -361,10 +361,10 @@ func (r *resourceRecordChangeset) Apply() error {
 			}
 		}
 
-		glog.V(2).Infof("record change set removals complete")
+		glog.V(2).Info("record change set removals complete")
 	}
 
-	glog.V(2).Infof("record change sets successfully applied")
+	glog.V(2).Info("record change sets successfully applied")
 	return nil
 }
 

@@ -24,6 +24,13 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/golang/glog"
+
+	"k8s.io/api/core/v1"
+	"k8s.io/apiserver/pkg/authentication/user"
+
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
@@ -31,13 +38,7 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/upup/pkg/fi/utils"
-
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/golang/glog"
-	"k8s.io/api/core/v1"
-	"k8s.io/apiserver/pkg/authentication/user"
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 const (
@@ -222,7 +223,7 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Unit", "After", "docker.service")
 
 	if b.Distribution == distros.DistributionCoreOS {
-		// We add /opt/kubernetes/bin for our utilities (socat)
+		// We add /opt/kubernetes/bin for our utilities (socat, conntrack)
 		manifest.Set("Service", "Environment", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kubernetes/bin")
 	}
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/kubelet")
@@ -275,25 +276,27 @@ func (b *KubeletBuilder) buildKubeletConfig() (*kops.KubeletConfigSpec, error) {
 
 func (b *KubeletBuilder) addStaticUtils(c *fi.ModelBuilderContext) error {
 	if b.Distribution == distros.DistributionCoreOS {
-		// CoreOS does not ship with socat.  Install our own (statically linked) version
+		// CoreOS does not ship with socat or conntrack.  Install our own (statically linked) version
 		// TODO: Extract to common function?
-		assetName := "socat"
-		assetPath := ""
-		asset, err := b.Assets.Find(assetName, assetPath)
-		if err != nil {
-			return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
-		}
-		if asset == nil {
-			return fmt.Errorf("unable to locate asset %q", assetName)
-		}
+		for _, binary := range []string{"socat", "conntrack"} {
+			assetName := binary
+			assetPath := ""
+			asset, err := b.Assets.Find(assetName, assetPath)
+			if err != nil {
+				return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
+			}
+			if asset == nil {
+				return fmt.Errorf("unable to locate asset %q", assetName)
+			}
 
-		t := &nodetasks.File{
-			Path:     "/opt/kubernetes/bin/socat",
-			Contents: asset,
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0755"),
+			t := &nodetasks.File{
+				Path:     "/opt/kubernetes/bin/" + binary,
+				Contents: asset,
+				Type:     nodetasks.FileType_File,
+				Mode:     s("0755"),
+			}
+			c.AddTask(t)
 		}
-		c.AddTask(t)
 	}
 
 	return nil
@@ -319,7 +322,7 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.ModelBuilderContext) erro
 
 	// So what we do here is we download a tarred container image, expand it to containerizedMounterHome, then
 	// set up bind mounts so that the script is executable (most of containeros is noexec),
-	// and set up some bind mounts of proc and dev so that  mounting can take place inside that container
+	// and set up some bind mounts of proc and dev so that mounting can take place inside that container
 	// - it isn't a full docker container.
 
 	{
@@ -423,9 +426,9 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	// Merge KubeletConfig for NodeLabels
 	c := &kops.KubeletConfigSpec{}
 	if b.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {
-		utils.JsonMergeStruct(c, b.Cluster.Spec.MasterKubelet)
+		reflectutils.JsonMergeStruct(c, b.Cluster.Spec.MasterKubelet)
 	} else {
-		utils.JsonMergeStruct(c, b.Cluster.Spec.Kubelet)
+		reflectutils.JsonMergeStruct(c, b.Cluster.Spec.Kubelet)
 	}
 
 	// @check if we are using secure kubelet <-> api settings
@@ -439,7 +442,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	}
 
 	if b.InstanceGroup.Spec.Kubelet != nil {
-		utils.JsonMergeStruct(c, b.InstanceGroup.Spec.Kubelet)
+		reflectutils.JsonMergeStruct(c, b.InstanceGroup.Spec.Kubelet)
 	}
 
 	if b.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {

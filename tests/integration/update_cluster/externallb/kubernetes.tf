@@ -90,7 +90,7 @@ resource "aws_autoscaling_attachment" "extlb-my-other-elb-master-us-test-1a" {
   autoscaling_group_name = "${aws_autoscaling_group.master-us-test-1a-masters-externallb-example-com.id}"
 }
 
-resource "aws_autoscaling_attachment" "exttg-aws:my-tg--0123456789abcdef-master-us-test-1a" {
+resource "aws_autoscaling_attachment" "exttg-aws_my-tg--0123456789abcdef-master-us-test-1a" {
   alb_target_group_arn   = "aws:arn:elasticloadbalancing:us-test-1a:123456789012:targetgroup/my-tg/0123456789abcdef"
   autoscaling_group_name = "${aws_autoscaling_group.master-us-test-1a-masters-externallb-example-com.id}"
 }

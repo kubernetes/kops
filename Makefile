@@ -20,7 +20,7 @@ GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
 GOPATH_1ST:=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
-GOVERSION=1.9.3
+GOVERSION=1.10.3
 BUILD=$(GOPATH_1ST)/src/k8s.io/kops/.build
 LOCAL=$(BUILD)/local
 BINDATA_TARGETS=upup/models/bindata.go
@@ -40,7 +40,7 @@ UID:=$(shell id -u)
 GID:=$(shell id -g)
 TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/vendor" hack/.packages)
 # We need to ignore clientsets because of kubernetes/kubernetes#60584
-GOVETABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor|clientset/fake" hack/.packages)
+GOVETABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/vendor|clientset/fake" hack/.packages)
 BAZEL_OPTIONS?=
 API_OPTIONS?=
 GCFLAGS?=
@@ -49,12 +49,12 @@ GCFLAGS?=
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 # Unexport environment variables that can affect tests and are not used in builds
-unexport AWS_ACCESS_KEY_ID AWS_PROFILE AWS_REGION AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN CNI_VERSION_URL DNS_IGNORE_NS_CHECK DNSCONTROLLER_IMAGE DO_ACCESS_TOKEN GOOGLE_APPLICATION_CREDENTIALS
+unexport AWS_ACCESS_KEY_ID AWS_REGION AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN CNI_VERSION_URL DNS_IGNORE_NS_CHECK DNSCONTROLLER_IMAGE DO_ACCESS_TOKEN GOOGLE_APPLICATION_CREDENTIALS
 unexport KOPS_BASE_URL KOPS_CLUSTER_NAME KOPS_RUN_OBSOLETE_VERSION KOPS_STATE_STORE KOPS_STATE_S3_ACL KUBE_API_VERSIONS NODEUP_URL OPENSTACK_CREDENTIAL_FILE PROTOKUBE_IMAGE SKIP_PACKAGE_UPDATE
 unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCESS_KEY VSPHERE_USERNAME VSPHERE_PASSWORD
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.10.0
+DNS_CONTROLLER_TAG=1.11.0-alpha.1
 
 # Keep in sync with logic in get_workspace_status
 # TODO: just invoke tools/get_workspace_status.sh?
@@ -198,7 +198,7 @@ upup/models/bindata.go: ${GOBINDATA} ${UPUP_MODELS_BINDATA_SOURCES}
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
-# 1.9 is preferred, 1.10 is likely to be the default soon.  1.8 is best-effort
+# 1.10 is the default for k8s 1.11.  Others are best-effort
 .PHONY: check-builds-in-go18
 check-builds-in-go18:
 	# Note we only check that kops builds; we know the tests don't compile because of type aliasing in uber zap
@@ -327,11 +327,13 @@ vsphere-version-dist: nodeup-dist protokube-export
 upload: version-dist # Upload kops to S3
 	aws s3 sync --acl public-read ${UPLOAD}/ ${S3_BUCKET}
 
+# gcs-upload builds kops and uploads to GCS
 .PHONY: gcs-upload
-gcs-upload: version-dist # Upload kops to GCS
+gcs-upload: bazel-version-dist
 	@echo "== Uploading kops =="
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${UPLOAD}/kops/* ${GCS_LOCATION}
+	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${BAZELUPLOAD}/kops/* ${GCS_LOCATION}
 
+# gcs-publish-ci is the entry point for CI testing
 # In CI testing, always upload the CI version.
 .PHONY: gcs-publish-ci
 gcs-publish-ci: VERSION := ${KOPS_CI_VERSION}+${GITSHA}
@@ -339,8 +341,8 @@ gcs-publish-ci: PROTOKUBE_TAG := $(subst +,-,${VERSION})
 gcs-publish-ci: gcs-upload
 	echo "VERSION: ${VERSION}"
 	echo "PROTOKUBE_TAG: ${PROTOKUBE_TAG}"
-	echo "${GCS_URL}/${VERSION}" > ${UPLOAD}/${LATEST_FILE}
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
+	echo "${GCS_URL}/${VERSION}" > ${BAZELUPLOAD}/${LATEST_FILE}
+	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${BAZELUPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
 
 .PHONY: gen-cli-docs
 gen-cli-docs: ${KOPS} # Regenerate CLI docs
@@ -465,13 +467,27 @@ utils-dist:
 .PHONY: dep-prereqs
 dep-prereqs:
 	(which hg > /dev/null) || (echo "dep requires that mercurial is installed"; exit 1)
+	(which dep > /dev/null) || (echo "dep-ensure requires that dep is installed"; exit 1)
+	(which bazel > /dev/null) || (echo "dep-ensure requires that bazel is installed"; exit 1)
 
 .PHONY: dep-ensure
 dep-ensure: dep-prereqs
 	dep ensure -v
+	# Switch weavemesh to use peer_name_hash - bazel rule-go doesn't support build tags yet
+	rm vendor/github.com/weaveworks/mesh/peer_name_mac.go
+	sed -i -e 's/peer_name_hash/!peer_name_mac/g' vendor/github.com/weaveworks/mesh/peer_name_hash.go
+	# Remove all bazel build files that were vendored and regenerate (we assume they are go-gettable)
 	find vendor/ -name "BUILD" -delete
 	find vendor/ -name "BUILD.bazel" -delete
-	bazel run //:gazelle -- -proto disable
+	# Remove recursive symlinks that really confuse bazel
+	rm -rf vendor/github.com/coreos/etcd/cmd/
+	rm -rf vendor/github.com/jteeuwen/go-bindata/testdata/
+	# Remove depenencies that dep just can't figure out
+	rm -rf vendor/k8s.io/code-generator/cmd/set-gen/
+	rm -rf vendor/k8s.io/code-generator/cmd/go-to-protobuf/
+	rm -rf vendor/k8s.io/code-generator/cmd/import-boss/
+	make bazel-gazelle
+
 
 .PHONY: gofmt
 gofmt:
@@ -520,15 +536,7 @@ verify-packages: ${BINDATA_TARGETS}
 # find release notes, remove PR titles and output the rest to .build, then run misspell on all files
 .PHONY: verify-misspelling
 verify-misspelling:
-	@which misspell 2>/dev/null ; if [ $$? -eq 1 ]; then \
-		go get -u github.com/client9/misspell/cmd/misspell; \
-	fi
-	@mkdir -p .build/docs
-	@find . -type f \( -name "*.go*" -o -name "*.md*" \) -a -path "./docs/releases/*" -exec basename {} \; | \
-		xargs -I{} sh -c 'sed -e "/^\* .*github.com\/kubernetes\/kops\/pull/d" docs/releases/{} > .build/docs/$(basename {})'
-	@find . -type f \( -name "*.go*" -o -name "*.md*" \) -a \( -not -path "./vendor/*" -not -path "./_vendor/*" -not -path "./docs/releases/*" \) | \
-		sed -e /README-ES.md/d -e /node_modules/d | \
-		xargs misspell -error
+	hack/verify-spelling.sh
 
 .PHONY: verify-gendocs
 verify-gendocs: ${KOPS}
@@ -632,7 +640,7 @@ kops-server-build:
 	# Compile the API binary in linux, and copy to local filesystem
 	docker pull golang:${GOVERSION}
 	docker run --name=kops-server-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH}/src:/go/src -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ kops-server-docker-compile
-	docker cp kops-server-build-${UNIQUE}:/go/.build .
+	docker cp kops-server-build-${UNIQUE}:/go/src/k8s.io/kops/.build .
 	docker build -t ${DOCKER_REGISTRY}/kops-server:${KOPS_SERVER_TAG} -f images/kops-server/Dockerfile .
 
 .PHONY: kops-server-push
@@ -656,7 +664,9 @@ bazel-build-cli:
 
 .PHONY: bazel-crossbuild-kops
 bazel-crossbuild-kops:
-	bazel build --features=pure --platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64 --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 --platforms=@io_bazel_rules_go//go/toolchain:windows_amd64 //cmd/kops/...
+	bazel build --features=pure --platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64 //cmd/kops/...
+	bazel build --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops/...
+	bazel build --features=pure --platforms=@io_bazel_rules_go//go/toolchain:windows_amd64 //cmd/kops/...
 
 .PHONY: bazel-crossbuild-nodeup
 bazel-crossbuild-nodeup:
@@ -706,7 +716,7 @@ bazel-push-aws-run: bazel-push
 
 .PHONY: bazel-gazelle
 bazel-gazelle:
-	bazel run //:gazelle -- -proto disable
+	hack/update-bazel.sh
 
 .PHONY: check-markdown-links
 check-markdown-links:
@@ -715,7 +725,7 @@ check-markdown-links:
 		-e LANG=en_US.UTF-8 \
 		-e LANGUAGE=en_US.UTF-8 \
 		rubygem/awesome_bot --allow-dupe --allow-redirect \
-		$(shell find $$PWD -name "*.md" -mindepth 1 -printf '%P\n' | grep -v vendor | grep -v _vendor | grep -v Changelog.md)
+		$(shell find $$PWD -name "*.md" -mindepth 1 -printf '%P\n' | grep -v vendor | grep -v Changelog.md)
 
 #-----------------------------------------------------------
 # kube-discovery
@@ -761,3 +771,20 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokub
 .PHONY: bazel-upload
 bazel-upload: bazel-version-dist # Upload kops to S3
 	aws s3 sync --acl public-read ${BAZELUPLOAD}/ ${S3_BUCKET}
+
+#-----------------------------------------------------------  
+# static html documentation  
+
+.PHONY: live-docs
+live-docs:
+	@docker run --rm -it -p 3000:3000 -v ${PWD}:/docs aledbf/mkdocs:0.1
+
+.PHONY: build-docs
+build-docs:
+	@docker run --rm -it -v ${PWD}:/docs aledbf/mkdocs:0.1 build
+
+.PHONY: update-machine-types
+update-machine-types: #Update machine_types.go
+	go build -o hack/machine_types/machine_types  ${KOPS_ROOT}/hack/machine_types/machine_types.go
+	hack/machine_types/machine_types --out upup/pkg/fi/cloudup/awsup/machine_types.go
+	go fmt upup/pkg/fi/cloudup/awsup/machine_types.go

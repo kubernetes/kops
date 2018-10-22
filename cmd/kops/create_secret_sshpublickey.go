@@ -34,12 +34,12 @@ var (
 	key is not updated by this command.`))
 
 	createSecretSSHPublicKeyExample = templates.Examples(i18n.T(`
-	# Create an new ssh public key called admin.
+	# Create a new ssh public key called admin.
 	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
 		--name k8s-cluster.example.com --state s3://example.com
 	`))
 
-	createSecretSSHPublicKeyShort = i18n.T(`Create a ssh public key.`)
+	createSecretSSHPublicKeyShort = i18n.T(`Create an ssh public key.`)
 )
 
 type CreateSecretPublickeyOptions struct {

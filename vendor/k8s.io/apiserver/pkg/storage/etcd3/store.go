@@ -18,6 +18,7 @@ package etcd3
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -29,7 +30,6 @@ import (
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/golang/glog"
-	"golang.org/x/net/context"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -70,6 +70,7 @@ type store struct {
 	pathPrefix    string
 	watcher       *watcher
 	pagingEnabled bool
+	leaseManager  *leaseManager
 }
 
 type elemForDecode struct {
@@ -107,8 +108,9 @@ func newStore(c *clientv3.Client, quorumRead, pagingEnabled bool, codec runtime.
 		// for compatibility with etcd2 impl.
 		// no-op for default prefix of '/registry'.
 		// keeps compatibility with etcd2 impl for custom prefixes that don't start with '/'
-		pathPrefix: path.Join("/", prefix),
-		watcher:    newWatcher(c, codec, versioner, transformer),
+		pathPrefix:   path.Join("/", prefix),
+		watcher:      newWatcher(c, codec, versioner, transformer),
+		leaseManager: newDefaultLeaseManager(c),
 	}
 	if !quorumRead {
 		// In case of non-quorum reads, we can set WithSerializable()
@@ -388,25 +390,25 @@ func (s *store) GetToList(ctx context.Context, key string, resourceVersion strin
 	if err != nil {
 		return err
 	}
-	key = path.Join(s.pathPrefix, key)
-
-	getResp, err := s.client.KV.Get(ctx, key, s.getOps...)
-	if err != nil {
-		return err
-	}
-	if len(getResp.Kvs) == 0 {
-		return nil
-	}
-	data, _, err := s.transformer.TransformFromStorage(getResp.Kvs[0].Value, authenticatedDataString(key))
-	if err != nil {
-		return storage.NewInternalError(err.Error())
-	}
 	v, err := conversion.EnforcePtr(listPtr)
 	if err != nil || v.Kind() != reflect.Slice {
 		panic("need ptr to slice")
 	}
-	if err := appendListItem(v, data, uint64(getResp.Kvs[0].ModRevision), pred, s.codec, s.versioner); err != nil {
+
+	key = path.Join(s.pathPrefix, key)
+	getResp, err := s.client.KV.Get(ctx, key, s.getOps...)
+	if err != nil {
 		return err
+	}
+
+	if len(getResp.Kvs) > 0 {
+		data, _, err := s.transformer.TransformFromStorage(getResp.Kvs[0].Value, authenticatedDataString(key))
+		if err != nil {
+			return storage.NewInternalError(err.Error())
+		}
+		if err := appendListItem(v, data, uint64(getResp.Kvs[0].ModRevision), pred, s.codec, s.versioner); err != nil {
+			return err
+		}
 	}
 	// update version with cluster level revision
 	return s.versioner.UpdateList(listObj, uint64(getResp.Header.Revision), "")
@@ -758,13 +760,11 @@ func (s *store) ttlOpts(ctx context.Context, ttl int64) ([]clientv3.OpOption, er
 	if ttl == 0 {
 		return nil, nil
 	}
-	// TODO: one lease per ttl key is expensive. Based on current use case, we can have a long window to
-	// put keys within into same lease. We shall benchmark this and optimize the performance.
-	lcr, err := s.client.Lease.Grant(ctx, ttl)
+	id, err := s.leaseManager.GetLease(ctx, ttl)
 	if err != nil {
 		return nil, err
 	}
-	return []clientv3.OpOption{clientv3.WithLease(clientv3.LeaseID(lcr.ID))}, nil
+	return []clientv3.OpOption{clientv3.WithLease(id)}, nil
 }
 
 // decode decodes value of bytes into object. It will also set the object resource version to rev.

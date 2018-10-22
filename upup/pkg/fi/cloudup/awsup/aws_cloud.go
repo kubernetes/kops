@@ -33,6 +33,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
+	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -46,6 +48,8 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
 	k8s_aws "k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
 )
@@ -85,6 +89,7 @@ const (
 	WellKnownAccountRedhat             = "309956199498"
 	WellKnownAccountCoreOS             = "595879546273"
 	WellKnownAccountAmazonSystemLinux2 = "137112412989"
+	WellKnownAccountUbuntu             = "099720109477"
 )
 
 type AWSCloud interface {
@@ -96,8 +101,10 @@ type AWSCloud interface {
 	EC2() ec2iface.EC2API
 	IAM() iamiface.IAMAPI
 	ELB() elbiface.ELBAPI
+	ELBV2() elbv2iface.ELBV2API
 	Autoscaling() autoscalingiface.AutoScalingAPI
 	Route53() route53iface.Route53API
+	Spotinst() spotinst.Service
 
 	// TODO: Document and rationalize these tags/filters methods
 	AddTags(name *string, tags map[string]string)
@@ -150,8 +157,10 @@ type awsCloudImplementation struct {
 	ec2         *ec2.EC2
 	iam         *iam.IAM
 	elb         *elb.ELB
+	elbv2       *elbv2.ELBV2
 	autoscaling *autoscaling.AutoScaling
 	route53     *route53.Route53
+	spotinst    spotinst.Service
 
 	region string
 
@@ -240,6 +249,14 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		if err != nil {
 			return c, err
 		}
+		c.elbv2 = elbv2.New(sess, config)
+		c.elbv2.Handlers.Send.PushFront(requestLogger)
+		c.addHandlers(region, &c.elbv2.Handlers)
+
+		sess, err = session.NewSession(config)
+		if err != nil {
+			return c, err
+		}
 		c.autoscaling = autoscaling.New(sess, config)
 		c.autoscaling.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.autoscaling.Handlers)
@@ -251,6 +268,13 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.route53 = route53.New(sess, config)
 		c.route53.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.route53.Handlers)
+
+		if featureflag.Spotinst.Enabled() {
+			c.spotinst, err = spotinst.NewService(kops.CloudProviderAWS)
+			if err != nil {
+				return c, err
+			}
+		}
 
 		awsCloudInstances[region] = c
 		raw = c
@@ -312,6 +336,10 @@ func NewEC2Filter(name string, values ...string) *ec2.Filter {
 
 // DeleteGroup deletes an aws autoscaling group
 func (c *awsCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
+	if c.spotinst != nil {
+		return spotinst.DeleteGroup(c.spotinst, g)
+	}
+
 	return deleteGroup(c, g)
 }
 
@@ -353,6 +381,10 @@ func deleteGroup(c AWSCloud, g *cloudinstances.CloudInstanceGroup) error {
 
 // DeleteInstance deletes an aws instance
 func (c *awsCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	if c.spotinst != nil {
+		return spotinst.DeleteInstance(c.spotinst, i)
+	}
+
 	return deleteInstance(c, i)
 }
 
@@ -380,6 +412,11 @@ func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstanceGroupMember) erro
 
 // GetCloudGroups returns a groups of instances that back a kops instance groups
 func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	if c.spotinst != nil {
+		return spotinst.GetCloudGroups(c.spotinst, cluster,
+			instancegroups, warnUnmatched, nodes)
+	}
+
 	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
 }
 
@@ -806,6 +843,68 @@ func createELBTags(c AWSCloud, loadBalancerName string, tags map[string]string) 
 	}
 }
 
+func (c *awsCloudImplementation) GetELBV2Tags(ResourceArn string) (map[string]string, error) {
+	return getELBV2Tags(c, ResourceArn)
+}
+
+func getELBV2Tags(c AWSCloud, ResourceArn string) (map[string]string, error) {
+	tags := map[string]string{}
+
+	request := &elbv2.DescribeTagsInput{
+		ResourceArns: []*string{&ResourceArn},
+	}
+
+	attempt := 0
+	for {
+		attempt++
+
+		response, err := c.ELBV2().DescribeTags(request)
+		if err != nil {
+			return nil, fmt.Errorf("error listing tags on %v: %v", ResourceArn, err)
+		}
+
+		for _, tagset := range response.TagDescriptions {
+			for _, tag := range tagset.Tags {
+				tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
+			}
+		}
+
+		return tags, nil
+	}
+}
+
+func (c *awsCloudImplementation) CreateELBV2Tags(ResourceArn string, tags map[string]string) error {
+	return createELBV2Tags(c, ResourceArn, tags)
+}
+
+func createELBV2Tags(c AWSCloud, ResourceArn string, tags map[string]string) error {
+	if len(tags) == 0 {
+		return nil
+	}
+
+	elbv2Tags := []*elbv2.Tag{}
+	for k, v := range tags {
+		elbv2Tags = append(elbv2Tags, &elbv2.Tag{Key: aws.String(k), Value: aws.String(v)})
+	}
+
+	attempt := 0
+	for {
+		attempt++
+
+		request := &elbv2.AddTagsInput{
+			Tags:         elbv2Tags,
+			ResourceArns: []*string{&ResourceArn},
+		}
+
+		_, err := c.ELBV2().AddTags(request)
+		if err != nil {
+			return fmt.Errorf("error creating tags on %v: %v", ResourceArn, err)
+		}
+
+		return nil
+	}
+}
+
 func (c *awsCloudImplementation) BuildTags(name *string) map[string]string {
 	return buildTags(c.tags, name)
 }
@@ -1018,11 +1117,11 @@ func ValidateZones(zones []string, cloud AWSCloud) error {
 		}
 
 		for _, message := range z.Messages {
-			glog.Warningf("Zone %q has message: %q", aws.StringValue(message.Message))
+			glog.Warningf("Zone %q has message: %q", zone, aws.StringValue(message.Message))
 		}
 
 		if aws.StringValue(z.State) != "available" {
-			glog.Warningf("Zone %q has state %q", aws.StringValue(z.State))
+			glog.Warningf("Zone %q has state %q", zone, aws.StringValue(z.State))
 		}
 	}
 
@@ -1053,12 +1152,20 @@ func (c *awsCloudImplementation) ELB() elbiface.ELBAPI {
 	return c.elb
 }
 
+func (c *awsCloudImplementation) ELBV2() elbv2iface.ELBV2API {
+	return c.elbv2
+}
+
 func (c *awsCloudImplementation) Autoscaling() autoscalingiface.AutoScalingAPI {
 	return c.autoscaling
 }
 
 func (c *awsCloudImplementation) Route53() route53iface.Route53API {
 	return c.route53
+}
+
+func (c *awsCloudImplementation) Spotinst() spotinst.Service {
+	return c.spotinst
 }
 
 func (c *awsCloudImplementation) FindVPCInfo(vpcID string) (*fi.VPCInfo, error) {

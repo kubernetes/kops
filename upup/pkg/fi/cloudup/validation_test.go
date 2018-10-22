@@ -150,7 +150,7 @@ func Test_Validate_No_Classic_With_14(t *testing.T) {
 		Classic: &api.ClassicNetworkingSpec{},
 	}
 
-	expectErrorFromValidate(t, c, "Spec.Networking")
+	expectErrorFromValidate(t, c, "spec.Networking")
 }
 
 func Test_Validate_Kubenet_With_14(t *testing.T) {

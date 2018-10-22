@@ -49,7 +49,7 @@ type AutoscalingGroup struct {
 
 	LaunchConfiguration *LaunchConfiguration
 
-	SuspendProcesses []string
+	SuspendProcesses *[]string
 }
 
 var _ fi.CompareWithID = &AutoscalingGroup{}
@@ -146,6 +146,13 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		actual.Subnets = e.Subnets
 	}
 
+	processes := []string{}
+	for _, p := range g.SuspendedProcesses {
+		processes = append(processes, *p.ProcessName)
+	}
+
+	actual.SuspendProcesses = &processes
+
 	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle
 
@@ -227,6 +234,21 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			return fmt.Errorf("error enabling metrics collection for AutoscalingGroup: %v", err)
 		}
 
+		if len(*e.SuspendProcesses) > 0 {
+			toSuspend := []*string{}
+			for _, p := range *e.SuspendProcesses {
+				toSuspend = append(toSuspend, &p)
+			}
+
+			processQuery := &autoscaling.ScalingProcessQuery{}
+			processQuery.AutoScalingGroupName = e.Name
+			processQuery.ScalingProcesses = toSuspend
+
+			_, err := t.Cloud.Autoscaling().SuspendProcesses(processQuery)
+			if err != nil {
+				return fmt.Errorf("error suspending processes: %v", err)
+			}
+		}
 	} else {
 		request := &autoscaling.UpdateAutoScalingGroupInput{
 			AutoScalingGroupName: e.Name,
@@ -282,6 +304,33 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			}
 		}
 
+		if changes.SuspendProcesses != nil {
+			toSuspend := processCompare(e.SuspendProcesses, a.SuspendProcesses)
+			toResume := processCompare(a.SuspendProcesses, e.SuspendProcesses)
+
+			if len(toSuspend) > 0 {
+				suspendProcessQuery := &autoscaling.ScalingProcessQuery{}
+				suspendProcessQuery.AutoScalingGroupName = e.Name
+				suspendProcessQuery.ScalingProcesses = toSuspend
+
+				_, err := t.Cloud.Autoscaling().SuspendProcesses(suspendProcessQuery)
+				if err != nil {
+					return fmt.Errorf("error suspending processes: %v", err)
+				}
+			}
+			if len(toResume) > 0 {
+				resumeProcessQuery := &autoscaling.ScalingProcessQuery{}
+				resumeProcessQuery.AutoScalingGroupName = e.Name
+				resumeProcessQuery.ScalingProcesses = toResume
+
+				_, err := t.Cloud.Autoscaling().ResumeProcesses(resumeProcessQuery)
+				if err != nil {
+					return fmt.Errorf("error resuming processes: %v", err)
+				}
+			}
+			changes.SuspendProcesses = nil
+		}
+
 		empty := &AutoscalingGroup{}
 		if !reflect.DeepEqual(empty, changes) {
 			glog.Warningf("cannot apply changes to AutoScalingGroup: %v", changes)
@@ -306,24 +355,28 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 	}
 
-	if e.SuspendProcesses != nil {
-		processQuery := &autoscaling.ScalingProcessQuery{}
-		processQuery.AutoScalingGroupName = e.Name
-		processQuery.ScalingProcesses = []*string{}
-
-		for _, p := range e.SuspendProcesses {
-			processQuery.ScalingProcesses = append(processQuery.ScalingProcesses, &p)
-		}
-
-		_, err := t.Cloud.Autoscaling().SuspendProcesses(processQuery)
-		if err != nil {
-			return fmt.Errorf("error suspending processes: %v", err)
-		}
-	}
-
 	// TODO: Use PropagateAtLaunch = false for tagging?
 
 	return nil // We have
+}
+
+// processCompare returns processes that exist in a but not in b
+func processCompare(a *[]string, b *[]string) []*string {
+	notInB := []*string{}
+	for _, ap := range *a {
+		found := false
+		for _, bp := range *b {
+			if ap == bp {
+				found = true
+				break
+			}
+		}
+		if !found {
+			notFound := ap
+			notInB = append(notInB, &notFound)
+		}
+	}
+	return notInB
 }
 
 // getASGTagsToDelete loops through the currently set tags and builds a list of
@@ -429,7 +482,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 
 	var processes []*string
 	if e.SuspendProcesses != nil {
-		for _, p := range e.SuspendProcesses {
+		for _, p := range *e.SuspendProcesses {
 			processes = append(processes, fi.String(p))
 		}
 	}

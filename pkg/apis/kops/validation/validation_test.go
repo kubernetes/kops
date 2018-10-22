@@ -196,7 +196,7 @@ func Test_Validate_DockerConfig_Storage(t *testing.T) {
 		config := &kops.DockerConfig{Storage: &name}
 		errs := ValidateDockerConfig(config, field.NewPath("docker"))
 		if len(errs) != 1 {
-			t.Fatalf("Expected errors validating DockerConfig %q", config)
+			t.Fatalf("Expected errors validating DockerConfig %+v", config)
 		}
 		if errs[0].Field != "docker.storage" || errs[0].Type != field.ErrorTypeNotSupported {
 			t.Fatalf("Not the expected error validating DockerConfig %q", errs)

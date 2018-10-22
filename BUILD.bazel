@@ -1,8 +1,10 @@
+# gazelle:prefix k8s.io/kops
+
+load("@bazel_gazelle//:def.bzl", "gazelle")
+
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_go//go:def.bzl", "gazelle", "go_library", "go_prefix")
-
-go_prefix("k8s.io/kops")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 gazelle(
     name = "gazelle",

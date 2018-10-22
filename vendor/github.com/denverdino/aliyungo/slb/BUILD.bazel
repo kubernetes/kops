@@ -13,7 +13,7 @@ go_library(
         "tags.go",
         "vserver_group.go",
     ],
-    importmap = "vendor/github.com/denverdino/aliyungo/slb",
+    importmap = "k8s.io/kops/vendor/github.com/denverdino/aliyungo/slb",
     importpath = "github.com/denverdino/aliyungo/slb",
     visibility = ["//visibility:public"],
     deps = [

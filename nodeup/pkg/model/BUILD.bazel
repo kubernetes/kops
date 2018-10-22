@@ -52,8 +52,8 @@ go_library(
         "//pkg/try:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/nodeup/nodetasks:go_default_library",
-        "//upup/pkg/fi/utils:go_default_library",
         "//util/pkg/exec:go_default_library",
+        "//util/pkg/reflectutils:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/ec2metadata:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
@@ -79,11 +79,8 @@ go_test(
     deps = [
         "//nodeup/pkg/distros:go_default_library",
         "//pkg/apis/kops:go_default_library",
-        "//pkg/apis/kops/v1alpha2:go_default_library",
-        "//pkg/diff:go_default_library",
         "//pkg/flagbuilder:go_default_library",
-        "//pkg/kopscodecs:go_default_library",
+        "//pkg/testutils:go_default_library",
         "//upup/pkg/fi:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
     ],
 )

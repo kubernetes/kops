@@ -525,6 +525,24 @@ func (in *CloudConfiguration) DeepCopyInto(out *CloudConfiguration) {
 			**out = **in
 		}
 	}
+	if in.SpotinstProduct != nil {
+		in, out := &in.SpotinstProduct, &out.SpotinstProduct
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
+	if in.SpotinstOrientation != nil {
+		in, out := &in.SpotinstOrientation, &out.SpotinstOrientation
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
 	return
 }
 
@@ -1799,6 +1817,15 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 			(*in).DeepCopyInto(*out)
 		}
 	}
+	if in.SecurityGroupOverride != nil {
+		in, out := &in.SecurityGroupOverride, &out.SecurityGroupOverride
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
 	return
 }
 
@@ -2197,6 +2224,11 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 			**out = **in
 		}
 	}
+	if in.Controllers != nil {
+		in, out := &in.Controllers, &out.Controllers
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.CIDRAllocatorType != nil {
 		in, out := &in.CIDRAllocatorType, &out.CIDRAllocatorType
 		if *in == nil {
@@ -2367,6 +2399,38 @@ func (in *KubeProxyConfig) DeepCopyInto(out *KubeProxyConfig) {
 			*out = nil
 		} else {
 			*out = new(bool)
+			**out = **in
+		}
+	}
+	if in.IPVSExcludeCIDRS != nil {
+		in, out := &in.IPVSExcludeCIDRS, &out.IPVSExcludeCIDRS
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.IPVSMinSyncPeriod != nil {
+		in, out := &in.IPVSMinSyncPeriod, &out.IPVSMinSyncPeriod
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
+	if in.IPVSScheduler != nil {
+		in, out := &in.IPVSScheduler, &out.IPVSScheduler
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
+	if in.IPVSSyncPeriod != nil {
+		in, out := &in.IPVSSyncPeriod, &out.IPVSSyncPeriod
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
 			**out = **in
 		}
 	}
@@ -2876,6 +2940,15 @@ func (in *LoadBalancerAccessSpec) DeepCopyInto(out *LoadBalancerAccessSpec) {
 			**out = **in
 		}
 	}
+	if in.SecurityGroupOverride != nil {
+		in, out := &in.SecurityGroupOverride, &out.SecurityGroupOverride
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
 	if in.AdditionalSecurityGroups != nil {
 		in, out := &in.AdditionalSecurityGroups, &out.AdditionalSecurityGroups
 		*out = make([]string, len(*in))
@@ -3327,6 +3400,15 @@ func (in *WeaveNetworkingSpec) DeepCopyInto(out *WeaveNetworkingSpec) {
 	}
 	if in.ConnLimit != nil {
 		in, out := &in.ConnLimit, &out.ConnLimit
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(int32)
+			**out = **in
+		}
+	}
+	if in.NoMasqLocal != nil {
+		in, out := &in.NoMasqLocal, &out.NoMasqLocal
 		if *in == nil {
 			*out = nil
 		} else {

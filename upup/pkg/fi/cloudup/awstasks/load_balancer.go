@@ -311,6 +311,7 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 
 		actualListener := &LoadBalancerListener{}
 		actualListener.InstancePort = int(aws.Int64Value(l.InstancePort))
+		actualListener.SSLCertificateID = aws.StringValue(l.SSLCertificateId)
 		actual.Listeners[loadBalancerPort] = actualListener
 	}
 

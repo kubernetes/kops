@@ -526,6 +526,19 @@ var dockerVersions = []dockerVersion{
 		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
+
+	// 18.06.1 - Debian Stretch
+	{
+
+		DockerVersion: "18.06.1",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionDebian9},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.06.1~ce-0~debian",
+		Source:        "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.1~ce~3-0~debian_amd64.deb",
+		Hash:          "18473b80e61b6d4eb8b52d87313abd71261287e5",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
 }
 
 func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro distros.Distribution) bool {

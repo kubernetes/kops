@@ -7,7 +7,7 @@ go_library(
         "fake.go",
         "fixture.go",
     ],
-    importmap = "vendor/k8s.io/client-go/testing",
+    importmap = "k8s.io/kops/vendor/k8s.io/client-go/testing",
     importpath = "k8s.io/client-go/testing",
     visibility = ["//visibility:public"],
     deps = [
@@ -18,9 +18,9 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/version:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/json:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/strategicpatch:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
-        "//vendor/k8s.io/client-go/pkg/version:go_default_library",
         "//vendor/k8s.io/client-go/rest:go_default_library",
     ],
 )

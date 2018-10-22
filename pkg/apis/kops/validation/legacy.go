@@ -36,7 +36,7 @@ import (
 
 // ValidateCluster is responsible for checking the validity of the Cluster spec
 func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
-	fieldSpec := field.NewPath("Spec")
+	fieldSpec := field.NewPath("spec")
 	var err error
 
 	// kubernetesRelease is the version with only major & minor fields
@@ -233,7 +233,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	}
 
 	// Check Canal Networking Spec if used
-	if c.Spec.Networking.Canal != nil {
+	if c.Spec.Networking != nil && c.Spec.Networking.Canal != nil {
 		action := c.Spec.Networking.Canal.DefaultEndpointToHostAction
 		switch action {
 		case "", "ACCEPT", "DROP", "RETURN":
@@ -280,7 +280,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 			if ip == nil {
 				return field.Invalid(fieldSpec.Child("kubeDNS", "serverIP"), address, "Cluster had an invalid kubeDNS.serverIP")
 			}
-			if !serviceClusterIPRange.Contains(ip) {
+			if serviceClusterIPRange != nil && !serviceClusterIPRange.Contains(ip) {
 				return field.Invalid(fieldSpec.Child("kubeDNS", "serverIP"), address, fmt.Sprintf("ServiceClusterIPRange %q must contain the DNS Server IP %q", c.Spec.ServiceClusterIPRange, address))
 			}
 			if !featureflag.ExperimentalClusterDNS.Enabled() {
@@ -428,13 +428,18 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 
 	// KubeProxy
 	if c.Spec.KubeProxy != nil {
+		ipvsMode := "ipvs"
 		kubeProxyPath := fieldSpec.Child("KubeProxy")
-
 		master := c.Spec.KubeProxy.Master
-		// We no longer require the master to be set; nodeup can infer it automatically
-		//if strict && master == "" {
-		//      return field.Required(kubeProxyPath.Child("Master"), "")
-		//}
+
+		if kubernetesRelease.LT(semver.MustParse("1.8.0")) && c.Spec.KubeProxy.ProxyMode == ipvsMode {
+			return field.Invalid(kubeProxyPath.Child("proxyMode"), c.Spec.KubeProxy.ProxyMode, ipvsMode+" is not available pre v1.8.0")
+		}
+		for i, x := range c.Spec.KubeProxy.IPVSExcludeCIDRS {
+			if _, _, err := net.ParseCIDR(x); err != nil {
+				return field.Invalid(kubeProxyPath.Child("ipvsExcludeCIDRS").Index(i), x, "Invalid network CIDR")
+			}
+		}
 
 		if master != "" && !isValidAPIServersURL(master) {
 			return field.Invalid(kubeProxyPath.Child("Master"), master, "Not a valid APIServer URL")
@@ -573,7 +578,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 			return field.Required(fieldEtcdClusters, "")
 		}
 		for i, x := range c.Spec.EtcdClusters {
-			if err := validateEtcdClusterSpec(x, fieldEtcdClusters.Index(i)); err != nil {
+			if err := validateEtcdClusterSpecLegacy(x, fieldEtcdClusters.Index(i)); err != nil {
 				return err
 			}
 		}
@@ -633,8 +638,8 @@ func validateSubnetCIDR(networkCIDR *net.IPNet, additionalNetworkCIDRs []*net.IP
 	return false
 }
 
-// validateEtcdClusterSpec is responsible for validating the etcd cluster spec
-func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec, fieldPath *field.Path) *field.Error {
+// validateEtcdClusterSpecLegacy is responsible for validating the etcd cluster spec
+func validateEtcdClusterSpecLegacy(spec *kops.EtcdClusterSpec, fieldPath *field.Path) *field.Error {
 	if spec.Name == "" {
 		return field.Required(fieldPath.Child("Name"), "EtcdCluster did not have name")
 	}
@@ -697,7 +702,7 @@ func validateEtcdVersion(spec *kops.EtcdClusterSpec, fieldPath *field.Path, mini
 
 	version := spec.Version
 	if spec.Version == "" {
-		version = components.DefaultEtcdVersion
+		version = components.DefaultEtcd2Version
 	}
 
 	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))
@@ -730,7 +735,7 @@ func validateEtcdMemberSpec(spec *kops.EtcdMemberSpec, fieldPath *field.Path) *f
 }
 
 func validateCilium(c *kops.Cluster) *field.Error {
-	if c.Spec.Networking.Cilium != nil {
+	if c.Spec.Networking != nil && c.Spec.Networking.Cilium != nil {
 		specPath := field.NewPath("Spec")
 
 		minimalKubeVersion := semver.MustParse("1.7.0")

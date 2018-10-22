@@ -306,7 +306,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Format:         format,
 		})
 
-		// @note: we use this for mutual tls between between node and authorizer
+		// @note: we use this for mutual tls between node and authorizer
 		c.AddTask(&fitasks.Keypair{
 			Name:    fi.String("node-authorizer-client"),
 			Subject: "cn=node-authorizer-client",

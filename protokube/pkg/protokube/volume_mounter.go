@@ -25,6 +25,8 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/util/mount"
+	"k8s.io/kubernetes/pkg/util/nsenter"
+	utilsexec "k8s.io/utils/exec"
 )
 
 type VolumeMountController struct {
@@ -112,8 +114,16 @@ func (k *VolumeMountController) safeFormatAndMount(volume *Volume, mountpoint st
 	safeFormatAndMount := &mount.SafeFormatAndMount{}
 
 	if Containerized {
+		ne, err := nsenter.NewNsenter(pathFor("/"), utilsexec.New())
+		if err != nil {
+			return fmt.Errorf("error building ns-enter object: %v", err)
+		}
+
+		// This is a directory that is mounted identically on the container and the host; we don't have that.
+		sharedDir := "/no-shared-directories"
+
 		// Build mount & exec implementations that execute in the host namespaces
-		safeFormatAndMount.Interface = mount.NewNsenterMounter()
+		safeFormatAndMount.Interface = mount.NewNsenterMounter(sharedDir, ne)
 		safeFormatAndMount.Exec = NewNsEnterExec()
 
 		// Note that we don't use pathFor for operations going through safeFormatAndMount,

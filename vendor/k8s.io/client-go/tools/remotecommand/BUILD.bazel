@@ -12,7 +12,7 @@ go_library(
         "v3.go",
         "v4.go",
     ],
-    importmap = "vendor/k8s.io/client-go/tools/remotecommand",
+    importmap = "k8s.io/kops/vendor/k8s.io/client-go/tools/remotecommand",
     importpath = "k8s.io/client-go/tools/remotecommand",
     visibility = ["//visibility:public"],
     deps = [

@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -97,7 +98,7 @@ func TestDockerBuilder_BuildFlags(t *testing.T) {
 func runDockerBuilderTest(t *testing.T, key string) {
 	basedir := path.Join("tests/dockerbuilder/", key)
 
-	nodeUpModelContext, err := LoadModel(basedir)
+	nodeUpModelContext, err := BuildNodeupModelContext(basedir)
 	if err != nil {
 		t.Fatalf("error parsing cluster yaml %q: %v", basedir, err)
 		return
@@ -115,5 +116,5 @@ func runDockerBuilderTest(t *testing.T, key string) {
 		return
 	}
 
-	ValidateTasks(t, basedir, context)
+	testutils.ValidateTasks(t, basedir, context)
 }
