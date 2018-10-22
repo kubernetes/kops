@@ -27,6 +27,7 @@ import (
 	"fmt"
 	"time"
 
+	"k8s.io/kops/node-authorizer/pkg/authorizers"
 	"k8s.io/kops/node-authorizer/pkg/server"
 	"k8s.io/kops/node-authorizer/pkg/utils"
 
@@ -172,7 +173,11 @@ func (a *awsNodeAuthorizer) validateNodeInstance(ctx context.Context, doc *ec2me
 	}
 
 	// @check the instance is tagged with our kubernetes cluster id
-	if !hasInstanceTags(a.config.ClusterTag, a.config.ClusterName, instance.Tags) {
+	clusterTag := a.config.ClusterTag
+	if clusterTag == "" {
+		clusterTag = "KubernetesCluster"
+	}
+	if !hasInstanceTags(clusterTag, a.config.ClusterName, instance.Tags) {
 		return "missing cluster tag", nil
 	}
 
@@ -229,7 +234,7 @@ func (a *awsNodeAuthorizer) validateIdentityDocument(_ context.Context, signed [
 }
 
 // validateNodeRegistrationRequest is responsible for validating the request itself
-func validateNodeRegistrationRequest(request *Request) error {
+func validateNodeRegistrationRequest(request *authorizers.Request) error {
 	err := func() error {
 		if len(request.Document) <= 0 {
 			return errors.New("missing identity document")
@@ -245,8 +250,8 @@ func validateNodeRegistrationRequest(request *Request) error {
 }
 
 // decodeRequest is responsible for decoding the request
-func decodeRequest(in []byte) (*Request, error) {
-	request := &Request{}
+func decodeRequest(in []byte) (*authorizers.Request, error) {
+	request := &authorizers.Request{}
 
 	if err := json.NewDecoder(bytes.NewReader(in)).Decode(request); err != nil {
 		return nil, err

@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/kops/node-authorizer/pkg/authorizers/alwaysallow"
 	"k8s.io/kops/node-authorizer/pkg/authorizers/aws"
+	"k8s.io/kops/node-authorizer/pkg/authorizers/gce"
 	"k8s.io/kops/node-authorizer/pkg/server"
 	"k8s.io/kops/node-authorizer/pkg/utils"
 
@@ -73,7 +74,6 @@ func addServerCommand() cli.Command {
 				Name:   "cluster-tag",
 				Usage:  "name of the cloud tag used to identify the cluster name `NAME`",
 				EnvVar: "CLUSTER_TAG",
-				Value:  "KubernetesCluster",
 			},
 			cli.StringSliceFlag{
 				Name:  "feature",
@@ -192,6 +192,8 @@ func createAuthorizer(name string, config *server.Config) (server.Authorizer, er
 		return alwaysallow.NewAuthorizer()
 	case "aws":
 		return aws.NewAuthorizer(config)
+	case "gce":
+		return gce.NewAuthorizer(config)
 	}
 
 	return nil, errors.New("unknown authorizer")

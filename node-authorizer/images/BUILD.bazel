@@ -3,6 +3,7 @@ package(default_visibility = ["//visibility:public"])
 load(
     "@io_bazel_rules_docker//container:container.bzl",
     "container_image",
+    "container_push",
 )
 
 container_image(
@@ -13,4 +14,15 @@ container_image(
     files = [
         "//node-authorizer/cmd/node-authorizer",
     ],
+    entrypoint = ["/usr/bin/node-authorizer"],
+)
+
+container_push(
+    name = "push-node-authorizer",
+    format = "Docker",
+    image = ":node-authorizer",
+    registry = "{STABLE_DOCKER_REGISTRY}",
+    repository = "{STABLE_DOCKER_IMAGE_PREFIX}node-authorizer",
+    stamp = True,
+    tag = "{STABLE_DOCKER_TAG}",
 )

@@ -63,3 +63,20 @@ echo "STABLE_KOPS_VERSION ${VERSION}"
 
 PROTOKUBE_TAG=${VERSION/+/-}
 echo "STABLE_PROTOKUBE_TAG ${PROTOKUBE_TAG}"
+
+
+if [[ -z "${DOCKER_REGISTRY}" ]]; then
+  DOCKER_REGISTRY="index.docker.io"
+fi
+
+if [[ -z "${DOCKER_IMAGE_PREFIX}" ]]; then
+  DOCKER_IMAGE_PREFIX=`whoami`/
+fi
+
+if [[ -z "${DOCKER_TAG}" ]]; then
+  DOCKER_TAG="latest"
+fi
+
+echo "STABLE_DOCKER_REGISTRY ${DOCKER_REGISTRY}"
+echo "STABLE_DOCKER_IMAGE_PREFIX ${DOCKER_IMAGE_PREFIX}"
+echo "STABLE_DOCKER_TAG ${DOCKER_TAG}"

@@ -12,6 +12,7 @@ go_library(
     deps = [
         "//node-authorizer/pkg/authorizers/alwaysallow:go_default_library",
         "//node-authorizer/pkg/authorizers/aws:go_default_library",
+        "//node-authorizer/pkg/authorizers/gce:go_default_library",
         "//node-authorizer/pkg/server:go_default_library",
         "//node-authorizer/pkg/utils:go_default_library",
         "//vendor/go.uber.org/zap:go_default_library",

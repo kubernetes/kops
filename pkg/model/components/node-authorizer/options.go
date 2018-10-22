@@ -60,6 +60,8 @@ func (b *OptionsBuilder) BuildOptions(o interface{}) error {
 				switch kops.CloudProviderID(cs.CloudProvider) {
 				case kops.CloudProviderAWS:
 					na.NodeAuthorizer.Authorizer = "aws"
+				case kops.CloudProviderGCE:
+					na.NodeAuthorizer.Authorizer = "gce"
 				default:
 					na.NodeAuthorizer.Authorizer = "alwaysallow"
 				}
@@ -84,6 +86,8 @@ func (b *OptionsBuilder) BuildOptions(o interface{}) error {
 
 				switch kops.CloudProviderID(cs.CloudProvider) {
 				case kops.CloudProviderAWS:
+					features = append(features, "verify-signature")
+				case kops.CloudProviderGCE:
 					features = append(features, "verify-signature")
 				}
 				na.NodeAuthorizer.Features = &features

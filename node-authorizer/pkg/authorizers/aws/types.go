@@ -16,12 +16,6 @@ limitations under the License.
 
 package aws
 
-// Request is the request the node authorizer
-type Request struct {
-	// Document is the PKCS7 signed identity document
-	Document []byte
-}
-
 var (
 	// awsCertificates is a collection of AWS public certificates used to sign the identity documents
 	// https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-identity-documents.html

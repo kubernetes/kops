@@ -33,8 +33,10 @@ k8s.io/kops/examples/kops-api-example
 k8s.io/kops/hack/machine_types
 k8s.io/kops/kube-discovery/cmd/kube-discovery
 k8s.io/kops/node-authorizer/cmd/node-authorizer
+k8s.io/kops/node-authorizer/pkg/authorizers
 k8s.io/kops/node-authorizer/pkg/authorizers/alwaysallow
 k8s.io/kops/node-authorizer/pkg/authorizers/aws
+k8s.io/kops/node-authorizer/pkg/authorizers/gce
 k8s.io/kops/node-authorizer/pkg/client
 k8s.io/kops/node-authorizer/pkg/server
 k8s.io/kops/node-authorizer/pkg/utils

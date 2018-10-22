@@ -20,6 +20,7 @@ import (
 	"context"
 	"testing"
 
+	"k8s.io/kops/node-authorizer/pkg/authorizers"
 	"k8s.io/kops/node-authorizer/pkg/server"
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -45,7 +46,7 @@ func newTestAuthorizer(t *testing.T, config *server.Config) *awsNodeAuthorizer {
 func TestValidateIdentityDocument(t *testing.T) {
 	c := newTestAuthorizer(t, nil)
 
-	request := &Request{
+	request := &authorizers.Request{
 		Document: []byte(`MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAaCAJIAEggHUewog
 ICJtYXJrZXRwbGFjZVByb2R1Y3RDb2RlcyIgOiBudWxsLAogICJkZXZwYXlQcm9kdWN0Q29kZXMi
 IDogbnVsbCwKICAicHJpdmF0ZUlwIiA6ICIxMC4yNTAuMTAxLjE3IiwKICAidmVyc2lvbiIgOiAi

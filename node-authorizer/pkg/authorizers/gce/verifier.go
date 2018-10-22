@@ -14,20 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package gce
 
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
 	"net/http"
 	"time"
 
 	"k8s.io/kops/node-authorizer/pkg/authorizers"
 	"k8s.io/kops/node-authorizer/pkg/server"
-
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 // hc is the http client
@@ -41,50 +39,29 @@ var hc = &http.Client{
 	},
 }
 
-type awsNodeVerifier struct{}
+type gceNodeVerifier struct{}
 
 // NewVerifier creates and returns a verifier
 func NewVerifier() (server.Verifier, error) {
-	return &awsNodeVerifier{}, nil
+	return &gceNodeVerifier{}, nil
 }
 
 // Verify is responsible for build a identification document
-func (a *awsNodeVerifier) VerifyIdentity(ctx context.Context) ([]byte, error) {
-	errs := make(chan error, 0)
-	doneCh := make(chan []byte, 0)
-
-	go func() {
-		encoded, err := func() ([]byte, error) {
-			// @step: create a metadata client
-			client := ec2metadata.New(session.New())
-
-			// @step: get the pkcs7 signature from the metadata service
-			signature, err := client.GetDynamicData("/instance-identity/pkcs7")
-			if err != nil {
-				return []byte{}, err
-			}
-
-			// @step: construct request for the request
-			request := &authorizers.Request{
-				Document: []byte(signature),
-			}
-
-			return json.Marshal(request)
-		}()
-		if err != nil {
-			errs <- err
-			return
-		}
-
-		doneCh <- encoded
-	}()
-
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	case err := <-errs:
+func (a *gceNodeVerifier) VerifyIdentity(ctx context.Context) ([]byte, error) {
+	claim, err := getLocalInstanceIdentityClaim(ctx, AudienceNodeBootstrap)
+	if err != nil {
 		return nil, err
-	case req := <-doneCh:
-		return req, nil
 	}
+
+	// @step: construct request for the request
+	request := &authorizers.Request{
+		Document: []byte(claim),
+	}
+
+	j, err := json.Marshal(request)
+	if err != nil {
+		return nil, fmt.Errorf("error serializing request: %v", err)
+	}
+
+	return j, nil
 }

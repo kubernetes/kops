@@ -33,6 +33,7 @@ import (
 
 	"k8s.io/kops/node-authorizer/pkg/authorizers/alwaysallow"
 	"k8s.io/kops/node-authorizer/pkg/authorizers/aws"
+	"k8s.io/kops/node-authorizer/pkg/authorizers/gce"
 	"k8s.io/kops/node-authorizer/pkg/server"
 
 	v1 "k8s.io/client-go/tools/clientcmd/api/v1"
@@ -165,6 +166,8 @@ func newNodeVerifier(name string) (server.Verifier, error) {
 	switch name {
 	case "aws":
 		return aws.NewVerifier()
+	case "gce":
+		return gce.NewVerifier()
 	case "alwaysallow":
 		return alwaysallow.NewVerifier()
 	}
