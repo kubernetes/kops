@@ -62,7 +62,7 @@ func (c *FakeSSHCredentials) List(opts v1.ListOptions) (result *kops.SSHCredenti
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &kops.SSHCredentialList{}
+	list := &kops.SSHCredentialList{ListMeta: obj.(*kops.SSHCredentialList).ListMeta}
 	for _, item := range obj.(*kops.SSHCredentialList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)

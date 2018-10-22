@@ -704,6 +704,7 @@ func addMasterELBPolicies(p *Policy, resource stringorslice.StringOrSlice, legac
 				"elasticloadbalancing:CreateTargetGroup",                 // aws_loadbalancer.go
 				"elasticloadbalancing:DeleteListener",                    // aws_loadbalancer.go
 				"elasticloadbalancing:DeleteTargetGroup",                 // aws_loadbalancer.go
+				"elasticloadbalancing:DeregisterTargets",                 // aws_loadbalancer.go
 				"elasticloadbalancing:DescribeListeners",                 // aws_loadbalancer.go
 				"elasticloadbalancing:DescribeLoadBalancerPolicies",      // aws_loadbalancer.go
 				"elasticloadbalancing:DescribeTargetGroups",              // aws_loadbalancer.go

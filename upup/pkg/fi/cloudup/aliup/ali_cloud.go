@@ -215,7 +215,7 @@ func (c *aliCloudImplementation) CreateTags(resourceId string, resourceType stri
 	if len(tags) == 0 {
 		return nil
 	} else if len(tags) > 10 {
-		glog.V(4).Info("The number of specified resource's tags exceeds 10, resourceId:%q", resourceId)
+		glog.V(4).Infof("The number of specified resource's tags exceeds 10, resourceId:%q", resourceId)
 	}
 	if resourceId == "" {
 		return errors.New("resourceId not provided to CreateTags")
@@ -287,7 +287,7 @@ func (c *aliCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]k
 		return nil, nil
 	}
 	if len(responseLoadBalancers) > 1 {
-		glog.V(4).Info("The number of specified loadbalancer with the same name exceeds 1, loadbalancerName:%q", name)
+		glog.V(4).Infof("The number of specified loadbalancer with the same name exceeds 1, loadbalancerName:%q", name)
 	}
 
 	address := responseLoadBalancers[0].Address

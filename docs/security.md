@@ -6,7 +6,7 @@ SSH is allowed to the masters and the nodes, by default from anywhere.
 
 To change the CIDR allowed to access SSH (and HTTPS), set AdminAccess on the cluster spec.
 
-When using the default images, the SSH username will be `admin`, and the SSH private key is be
+When using the default images, the SSH username will be `admin`, and the SSH private key will be
 the private key corresponding to the public key in `kops get secrets --type sshpublickey admin`.  When
 creating a new cluster, the SSH public key can be specified with the `--ssh-public-key` option, and it
 defaults to `~/.ssh/id_rsa.pub`.
@@ -51,7 +51,7 @@ spec:
     anonymousAuth: false
 ```
 
-**Note** on a existing cluster with 'anonymousAuth' unset you would need to first roll out the masters and then update the node instance groups.
+**Note** on an existing cluster with 'anonymousAuth' unset you would need to first roll out the masters and then update the node instance groups.
 
 ### API Bearer Token
 

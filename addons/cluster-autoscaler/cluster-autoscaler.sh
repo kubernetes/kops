@@ -73,14 +73,14 @@ EOF
 
 ASG_POLICY_NAME=aws-cluster-autoscaler
 unset TESTOUTPUT
-TESTOUTPUT=$(aws iam list-policies | jq -r '.Policies[] | select(.PolicyName == "aws-cluster-autoscaler") | .Arn')
+TESTOUTPUT=$(aws iam list-policies --output json | jq -r '.Policies[] | select(.PolicyName == "aws-cluster-autoscaler") | .Arn')
 if [[ $? -eq 0 && -n "$TESTOUTPUT" ]]
 then
   printf " ✅  Policy already exists\n"
   ASG_POLICY_ARN=$TESTOUTPUT
 else
   printf " ✅  Policy does not yet exist, creating now.\n"
-  ASG_POLICY=$(aws iam create-policy --policy-name $ASG_POLICY_NAME --policy-document file://asg-policy.json)
+  ASG_POLICY=$(aws iam create-policy --policy-name $ASG_POLICY_NAME --policy-document file://asg-policy.json --output json)
   ASG_POLICY_ARN=$(echo $ASG_POLICY | jq -r '.Policy.Arn')
   printf " ✅ \n"
 fi

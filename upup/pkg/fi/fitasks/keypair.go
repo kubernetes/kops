@@ -263,7 +263,7 @@ func (e *Keypair) BuildCertificateTemplate() (*x509.Certificate, error) {
 	}
 
 	if len(subjectPkix.ToRDNSequence()) == 0 {
-		return nil, fmt.Errorf("Subject name was empty for SSL keypair %q", e.Name)
+		return nil, fmt.Errorf("Subject name was empty for SSL keypair %q", *e.Name)
 	}
 
 	template.Subject = *subjectPkix

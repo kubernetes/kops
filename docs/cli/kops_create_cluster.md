@@ -73,7 +73,7 @@ kops create cluster [flags]
       --channel string                   Channel for default versions and configuration to use (default "stable")
       --cloud string                     Cloud provider to use - gce, aws, vsphere
       --cloud-labels string              A list of KV pairs used to tag all instance groups in AWS (eg "Owner=John Doe,Team=Some Team").
-      --dns string                       DNS hosted zone to use: public|private. Default is 'public'. (default "Public")
+      --dns string                       DNS hosted zone to use: public|private. (default "Public")
       --dns-zone string                  DNS hosted zone to use (defaults to longest matching zone)
       --dry-run                          If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
       --encrypt-etcd-storage             Generate key in aws kms and use it for encrypt etcd volumes
@@ -102,7 +102,7 @@ kops create cluster [flags]
       --ssh-public-key string            SSH public key to use (defaults to ~/.ssh/id_rsa.pub on AWS)
       --subnets strings                  Set to use shared subnets
       --target string                    Valid targets: direct, terraform, cloudformation. Set this flag to terraform if you want kops to generate terraform (default "direct")
-  -t, --topology string                  Controls network topology for the cluster. public|private. Default is 'public'. (default "public")
+  -t, --topology string                  Controls network topology for the cluster: public|private. (default "public")
       --utility-subnets strings          Set to use shared utility subnets
       --vpc string                       Set to use a shared VPC
   -y, --yes                              Specify --yes to immediately create the cluster

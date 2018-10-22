@@ -20,7 +20,7 @@ go_library(
         "time.go",
         "writer.go",
     ],
-    importmap = "vendor/go.uber.org/zap",
+    importmap = "k8s.io/kops/vendor/go.uber.org/zap",
     importpath = "go.uber.org/zap",
     visibility = ["//visibility:public"],
     deps = [

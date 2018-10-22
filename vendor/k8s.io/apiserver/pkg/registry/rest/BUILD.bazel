@@ -13,7 +13,7 @@ go_library(
         "update.go",
         "zz_generated.deepcopy.go",
     ],
-    importmap = "vendor/k8s.io/apiserver/pkg/registry/rest",
+    importmap = "k8s.io/kops/vendor/k8s.io/apiserver/pkg/registry/rest",
     importpath = "k8s.io/apiserver/pkg/registry/rest",
     visibility = ["//visibility:public"],
     deps = [

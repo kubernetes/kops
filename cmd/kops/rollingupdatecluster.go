@@ -30,7 +30,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
@@ -38,9 +37,9 @@ import (
 	"k8s.io/kops/pkg/instancegroups"
 	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
-	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/kubectl/genericclioptions"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
@@ -90,7 +89,7 @@ var (
 
 		# Roll the k8s-cluster.example.com kops cluster,
 		# only roll the node instancegroup,
-		# use the new drain an validate functionality.
+		# use the new drain and validate functionality.
 		kops rolling-update cluster k8s-cluster.example.com --yes \
 		  --fail-on-validate-error="false" \
 		  --node-interval 8m \
@@ -229,9 +228,10 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	}
 
 	contextName := cluster.ObjectMeta.Name
-	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		clientcmd.NewDefaultClientConfigLoadingRules(),
-		&clientcmd.ConfigOverrides{CurrentContext: contextName}).ClientConfig()
+	clientGetter := genericclioptions.NewConfigFlags()
+	clientGetter.Context = &contextName
+
+	config, err := clientGetter.ToRESTConfig()
 	if err != nil {
 		return fmt.Errorf("cannot load kubecfg settings for %q: %v", contextName, err)
 	}
@@ -397,7 +397,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		Force:             options.Force,
 		Cloud:             cloud,
 		K8sClient:         k8sClient,
-		ClientConfig:      kutil.NewClientConfig(config, "kube-system"),
+		ClientGetter:      clientGetter,
 		FailOnDrainError:  options.FailOnDrainError,
 		FailOnValidate:    options.FailOnValidate,
 		CloudOnly:         options.CloudOnly,

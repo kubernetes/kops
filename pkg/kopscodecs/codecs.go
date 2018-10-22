@@ -19,11 +19,8 @@ package kopscodecs
 import (
 	"bytes"
 	"fmt"
-	"os"
 
 	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/apimachinery/announced"
-	"k8s.io/apimachinery/pkg/apimachinery/registered"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -37,12 +34,9 @@ var Scheme = runtime.NewScheme()
 var Codecs = serializer.NewCodecFactory(Scheme)
 var ParameterCodec = runtime.NewParameterCodec(Scheme)
 
-var Registry = registered.NewOrDie(os.Getenv("KUBE_API_VERSIONS"))
-var GroupFactoryRegistry = make(announced.APIGroupFactoryRegistry)
-
 func init() {
 	metav1.AddToGroupVersion(Scheme, schema.GroupVersion{Version: "v1"})
-	install.Install(GroupFactoryRegistry, Registry, Scheme)
+	install.Install(Scheme)
 }
 
 func encoder(gv runtime.GroupVersioner, mediaType string) runtime.Encoder {

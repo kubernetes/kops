@@ -58,7 +58,7 @@ func (b *KubeconfigBuilder) DeleteKubeConfig() error {
 	}
 
 	if config == nil || clientcmdapi.IsConfigEmpty(config) {
-		glog.V(2).Infof("kubeconfig is empty")
+		glog.V(2).Info("kubeconfig is empty")
 		return nil
 	}
 

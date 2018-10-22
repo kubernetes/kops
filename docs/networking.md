@@ -10,8 +10,8 @@ Kubernetes Operations (kops) currently supports 4 networking modes:
 ### kops Default Networking
 
 Kubernetes Operations (kops) uses `kubenet` networking by default. This sets up networking on AWS using VPC
-networking, where the  master allocates a /24 CIDR to each Node, drawing from the Node network.
-Using `kubenet` mode routes for  each node are then configured in the AWS VPC routing tables.
+networking, where the master allocates a /24 CIDR to each Node, drawing from the Node network.
+Using `kubenet` mode routes for each node are then configured in the AWS VPC routing tables.
 
 One important limitation when using `kubenet` networking is that an AWS routing table cannot have more than
 50 entries, which sets a limit of 50 nodes per cluster. AWS support will sometimes raise the limit to 100,
@@ -40,7 +40,7 @@ Several different CNI providers are currently built into kops:
 * [kopeio-vxlan](https://github.com/kopeio/networking)
 * [kube-router](./networking.md#kube-router-example-for-cni-ipvs-based-service-proxy-and-network-policy-enforcer)
 * [romana](https://github.com/romana/romana)
-* [weave](https://github.com/weaveworks/weave-kube)
+* [weave](https://github.com/weaveworks/weave)
 * [amazon-vpc-routed-eni](./networking.md#amazon-vpc-backend)
 * [Cilium](http://docs.cilium.io)
 
@@ -252,7 +252,7 @@ For support with Flannel you can submit an issue on Github:
 
 ### Kube-router example for CNI, IPVS based service proxy and Network Policy enforcer
 
-[Kube-router](https://github.com/cloudnativelabs/kube-router) is project that provides one cohesive soltion that provides CNI networking for pods, an IPVS based network service proxy and iptables based network policy enforcement.
+[Kube-router](https://github.com/cloudnativelabs/kube-router) is project that provides one cohesive solution that provides CNI networking for pods, an IPVS based network service proxy and iptables based network policy enforcement.
 
 #### Installing kube-router on a new Cluster
 

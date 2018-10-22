@@ -60,19 +60,20 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
 
         if [[ -e "${file}" ]]; then
           echo "== File exists for ${url} =="
-        elif [[ $(which curl) ]]; then
+
+        # CoreOS runs this script in a container without which (but has curl)
+        # Note also that busybox wget doesn't support wget --version, but busybox doesn't normally have curl
+        # So we default to wget unless we see curl
+        elif [[ $(curl --version) ]]; then
           if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
             echo "== Failed to curl ${url}. Retrying. =="
             break
           fi
-        elif [[ $(which wget ) ]]; then
+        else
           if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
             echo "== Failed to wget ${url}. Retrying. =="
             break
           fi
-        else
-          echo "== Could not find curl or wget. Retrying. =="
-          break
         fi
 
         if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
@@ -256,7 +257,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
   cat > ig_spec.yaml << '__EOF_IG_SPEC'
   kubelet: null
   nodeLabels: null
-  suspendProcesses: null
   taints: null
 
   __EOF_IG_SPEC
@@ -292,10 +292,9 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
   Mime-Version: 1.0
 
   #!/bin/sh
-  echo "Hello World.  The time is now $(date -R)!" | tee /root/output.txt
+  echo "master: The time is now $(date -R)!" | tee /root/output.txt
 
   --MIMEBOUNDARY--
-
 Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Properties.UserData: |
   Content-Type: multipart/mixed; boundary="MIMEBOUNDARY"
   MIME-Version: 1.0
@@ -358,19 +357,20 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
 
         if [[ -e "${file}" ]]; then
           echo "== File exists for ${url} =="
-        elif [[ $(which curl) ]]; then
+
+        # CoreOS runs this script in a container without which (but has curl)
+        # Note also that busybox wget doesn't support wget --version, but busybox doesn't normally have curl
+        # So we default to wget unless we see curl
+        elif [[ $(curl --version) ]]; then
           if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
             echo "== Failed to curl ${url}. Retrying. =="
             break
           fi
-        elif [[ $(which wget ) ]]; then
+        else
           if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
             echo "== Failed to wget ${url}. Retrying. =="
             break
           fi
-        else
-          echo "== Could not find curl or wget. Retrying. =="
-          break
         fi
 
         if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
@@ -485,7 +485,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
   cat > ig_spec.yaml << '__EOF_IG_SPEC'
   kubelet: null
   nodeLabels: null
-  suspendProcesses: null
   taints: null
 
   __EOF_IG_SPEC
@@ -521,6 +520,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
   Mime-Version: 1.0
 
   #!/bin/sh
-  echo "Hello World.  The time is now $(date -R)!" | tee /root/output.txt
+  echo "nodes: The time is now $(date -R)!" | tee /root/output.txt
 
   --MIMEBOUNDARY--

@@ -7,7 +7,7 @@ go_library(
         "lister.go",
         "tags.go",
     ],
-    importmap = "vendor/k8s.io/code-generator/cmd/lister-gen/generators",
+    importmap = "k8s.io/kops/vendor/k8s.io/code-generator/cmd/lister-gen/generators",
     importpath = "k8s.io/code-generator/cmd/lister-gen/generators",
     visibility = ["//visibility:public"],
     deps = [

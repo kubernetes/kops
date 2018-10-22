@@ -86,7 +86,7 @@ func (l *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		return nil, nil
 	}
 	if len(configList) > 1 {
-		glog.V(4).Info("The number of specified ScalingConfigurations with the same name and ScalingGroupId exceeds 1, diskName:%q", *l.Name)
+		glog.V(4).Infof("The number of specified ScalingConfigurations with the same name and ScalingGroupId exceeds 1, diskName:%q", *l.Name)
 	}
 
 	glog.V(2).Infof("found matching LaunchConfiguration: %q", *l.Name)

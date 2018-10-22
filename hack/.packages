@@ -6,6 +6,7 @@ k8s.io/kops/channels/pkg/cmd
 k8s.io/kops/cloudmock/aws/mockautoscaling
 k8s.io/kops/cloudmock/aws/mockec2
 k8s.io/kops/cloudmock/aws/mockelb
+k8s.io/kops/cloudmock/aws/mockelbv2
 k8s.io/kops/cloudmock/aws/mockiam
 k8s.io/kops/cloudmock/aws/mockroute53
 k8s.io/kops/cmd/kops
@@ -28,6 +29,7 @@ k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/stubs
 k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype
 k8s.io/kops/dnsprovider/pkg/dnsprovider/tests
 k8s.io/kops/examples/kops-api-example
+k8s.io/kops/hack/machine_types
 k8s.io/kops/kube-discovery/cmd/kube-discovery
 k8s.io/kops/node-authorizer/cmd/node-authorizer
 k8s.io/kops/node-authorizer/pkg/authorizers/alwaysallow
@@ -106,6 +108,7 @@ k8s.io/kops/pkg/model/gcemodel
 k8s.io/kops/pkg/model/iam
 k8s.io/kops/pkg/model/openstackmodel
 k8s.io/kops/pkg/model/resources
+k8s.io/kops/pkg/model/spotinstmodel
 k8s.io/kops/pkg/model/vspheremodel
 k8s.io/kops/pkg/openapi
 k8s.io/kops/pkg/pki
@@ -116,7 +119,9 @@ k8s.io/kops/pkg/resources/aws
 k8s.io/kops/pkg/resources/digitalocean
 k8s.io/kops/pkg/resources/digitalocean/dns
 k8s.io/kops/pkg/resources/gce
+k8s.io/kops/pkg/resources/openstack
 k8s.io/kops/pkg/resources/ops
+k8s.io/kops/pkg/resources/spotinst
 k8s.io/kops/pkg/sshcredentials
 k8s.io/kops/pkg/systemd
 k8s.io/kops/pkg/templates
@@ -160,6 +165,7 @@ k8s.io/kops/upup/pkg/fi/cloudup/gce
 k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
 k8s.io/kops/upup/pkg/fi/cloudup/openstack
 k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks
+k8s.io/kops/upup/pkg/fi/cloudup/spotinsttasks
 k8s.io/kops/upup/pkg/fi/cloudup/terraform
 k8s.io/kops/upup/pkg/fi/cloudup/vsphere
 k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks
@@ -178,6 +184,7 @@ k8s.io/kops/upup/tools/generators/fitask
 k8s.io/kops/upup/tools/generators/pkg/codegen
 k8s.io/kops/util/pkg/exec
 k8s.io/kops/util/pkg/hashing
+k8s.io/kops/util/pkg/reflectutils
 k8s.io/kops/util/pkg/slice
 k8s.io/kops/util/pkg/tables
 k8s.io/kops/util/pkg/ui

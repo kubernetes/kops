@@ -38,7 +38,7 @@ import (
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
-	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/reflectutils"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -94,7 +94,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	// Copy cluster & instance groups, so we can modify them freely
 	cluster := &api.Cluster{}
 
-	utils.JsonMergeStruct(cluster, c.InputCluster)
+	reflectutils.JsonMergeStruct(cluster, c.InputCluster)
 
 	err := c.assignSubnets(cluster)
 	if err != nil {
@@ -294,8 +294,8 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		{
 			// Note: DefaultOptionsBuilder comes first
 			codeModels = append(codeModels, &components.DefaultsOptionsBuilder{Context: optionsContext})
-			codeModels = append(codeModels, &components.EtcdOptionsBuilder{Context: optionsContext})
-			codeModels = append(codeModels, &etcdmanager.EtcdManagerOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.EtcdOptionsBuilder{OptionsContext: optionsContext})
+			codeModels = append(codeModels, &etcdmanager.EtcdManagerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &nodeauthorizer.OptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.DockerOptionsBuilder{OptionsContext: optionsContext})

@@ -18,6 +18,7 @@ package awsmodel
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/golang/glog"
 
@@ -76,16 +77,29 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				return fmt.Errorf("unable to find iam profile link for instance group %q: %v", ig.ObjectMeta.Name, err)
 			}
 
+			var sgLink *awstasks.SecurityGroup
+			if ig.Spec.SecurityGroupOverride != nil {
+				glog.V(1).Infof("WARNING: You are overwriting the Instance Groups, Security Group. When this is done you are responsible for ensure the correct rules!")
+
+				sgLink = &awstasks.SecurityGroup{
+					Name:   ig.Spec.SecurityGroupOverride,
+					ID:     ig.Spec.SecurityGroupOverride,
+					Shared: fi.Bool(true),
+				}
+			} else {
+				sgLink = b.LinkToSecurityGroup(ig.Spec.Role)
+			}
+
 			t := &awstasks.LaunchConfiguration{
 				Name:      s(name),
 				Lifecycle: b.Lifecycle,
 
 				SecurityGroups: []*awstasks.SecurityGroup{
-					b.LinkToSecurityGroup(ig.Spec.Role),
+					sgLink,
 				},
 				IAMInstanceProfile: link,
 				ImageID:            s(ig.Spec.Image),
-				InstanceType:       s(ig.Spec.MachineType),
+				InstanceType:       s(strings.Split(ig.Spec.MachineType, ",")[0]),
 				InstanceMonitoring: ig.Spec.DetailedInstanceMonitoring,
 
 				RootVolumeSize:         i64(int64(volumeSize)),
@@ -230,11 +244,11 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			t.Tags = tags
 
-			if ig.Spec.SuspendProcesses != nil {
-				for _, p := range ig.Spec.SuspendProcesses {
-					t.SuspendProcesses = append(t.SuspendProcesses, p)
-				}
+			processes := []string{}
+			for _, p := range ig.Spec.SuspendProcesses {
+				processes = append(processes, p)
 			}
+			t.SuspendProcesses = &processes
 
 			c.AddTask(t)
 		}

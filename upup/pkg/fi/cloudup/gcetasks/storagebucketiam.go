@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-// StorageBucketIam represents an IAM policy on a google cloud storage storage bucket
+// StorageBucketIam represents an IAM policy on a google cloud storage bucket
 //go:generate fitask -type=StorageBucketIam
 type StorageBucketIam struct {
 	Name      *string

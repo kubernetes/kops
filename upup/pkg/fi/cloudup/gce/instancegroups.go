@@ -20,7 +20,6 @@ import (
 	"encoding/base32"
 	"fmt"
 	"hash/fnv"
-	"strconv"
 	"strings"
 
 	"github.com/golang/glog"
@@ -101,13 +100,10 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 	project := c.Project()
 	ctx := context.Background()
 
-	nodesByExternalID := make(map[string]*v1.Node)
 	nodesByProviderID := make(map[string]*v1.Node)
 
 	for i := range nodes {
 		node := &nodes[i]
-		//ExternalID is deprecated in kubernetes 1.11 https://github.com/kubernetes/kubernetes/pull/61877
-		nodesByExternalID[node.Spec.ExternalID] = node
 		nodesByProviderID[node.Spec.ProviderID] = node
 	}
 
@@ -184,14 +180,6 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 					name := LastComponent(id)
 					providerID := "gce://" + project + "/" + zoneName + "/" + name
 					node := nodesByProviderID[providerID]
-
-					// fall back to lookup by external id
-					if node == nil {
-						glog.V(8).Infof("unable to find node by provider id %q, falling back to legacy external id", providerID)
-
-						externalID := strconv.FormatUint(i.Id, 10)
-						node = nodesByExternalID[externalID]
-					}
 
 					if node != nil {
 						cm.Node = node

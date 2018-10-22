@@ -692,6 +692,8 @@ func autoConvert_v1alpha2_CloudConfiguration_To_kops_CloudConfiguration(in *Clou
 	out.VSphereResourcePool = in.VSphereResourcePool
 	out.VSphereDatastore = in.VSphereDatastore
 	out.VSphereCoreDNSServer = in.VSphereCoreDNSServer
+	out.SpotinstProduct = in.SpotinstProduct
+	out.SpotinstOrientation = in.SpotinstOrientation
 	return nil
 }
 
@@ -713,6 +715,8 @@ func autoConvert_kops_CloudConfiguration_To_v1alpha2_CloudConfiguration(in *kops
 	out.VSphereResourcePool = in.VSphereResourcePool
 	out.VSphereDatastore = in.VSphereDatastore
 	out.VSphereCoreDNSServer = in.VSphereCoreDNSServer
+	out.SpotinstProduct = in.SpotinstProduct
+	out.SpotinstOrientation = in.SpotinstOrientation
 	return nil
 }
 
@@ -1587,6 +1591,7 @@ func Convert_kops_EtcdBackupSpec_To_v1alpha2_EtcdBackupSpec(in *kops.EtcdBackupS
 
 func autoConvert_v1alpha2_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpec, out *kops.EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
+	out.Provider = kops.EtcdProviderType(in.Provider)
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
 		*out = make([]*kops.EtcdMemberSpec, len(*in))
@@ -1633,6 +1638,7 @@ func Convert_v1alpha2_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpe
 
 func autoConvert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec(in *kops.EtcdClusterSpec, out *EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
+	out.Provider = EtcdProviderType(in.Provider)
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
 		*out = make([]*EtcdMemberSpec, len(*in))
@@ -1905,6 +1911,7 @@ func autoConvert_v1alpha2_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.Hook
 		out.ExecContainer = nil
 	}
 	out.Manifest = in.Manifest
+	out.UseRawManifest = in.UseRawManifest
 	return nil
 }
 
@@ -1937,6 +1944,7 @@ func autoConvert_kops_HookSpec_To_v1alpha2_HookSpec(in *kops.HookSpec, out *Hook
 		out.ExecContainer = nil
 	}
 	out.Manifest = in.Manifest
+	out.UseRawManifest = in.UseRawManifest
 	return nil
 }
 
@@ -2138,6 +2146,7 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	} else {
 		out.IAM = nil
 	}
+	out.SecurityGroupOverride = in.SecurityGroupOverride
 	return nil
 }
 
@@ -2229,6 +2238,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 	} else {
 		out.IAM = nil
 	}
+	out.SecurityGroupOverride = in.SecurityGroupOverride
 	return nil
 }
 
@@ -2476,8 +2486,10 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.RequestheaderAllowedNames = in.RequestheaderAllowedNames
 	out.FeatureGates = in.FeatureGates
 	out.MaxRequestsInflight = in.MaxRequestsInflight
+	out.MaxMutatingRequestsInflight = in.MaxMutatingRequestsInflight
 	out.EtcdQuorumRead = in.EtcdQuorumRead
 	out.MinRequestTimeout = in.MinRequestTimeout
+	out.TargetRamMb = in.TargetRamMb
 	return nil
 }
 
@@ -2547,8 +2559,10 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.RequestheaderAllowedNames = in.RequestheaderAllowedNames
 	out.FeatureGates = in.FeatureGates
 	out.MaxRequestsInflight = in.MaxRequestsInflight
+	out.MaxMutatingRequestsInflight = in.MaxMutatingRequestsInflight
 	out.EtcdQuorumRead = in.EtcdQuorumRead
 	out.MinRequestTimeout = in.MinRequestTimeout
+	out.TargetRamMb = in.TargetRamMb
 	return nil
 }
 
@@ -2568,6 +2582,7 @@ func autoConvert_v1alpha2_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.AllocateNodeCIDRs = in.AllocateNodeCIDRs
 	out.NodeCIDRMaskSize = in.NodeCIDRMaskSize
 	out.ConfigureCloudRoutes = in.ConfigureCloudRoutes
+	out.Controllers = in.Controllers
 	out.CIDRAllocatorType = in.CIDRAllocatorType
 	out.RootCAFile = in.RootCAFile
 	if in.LeaderElection != nil {
@@ -2609,6 +2624,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerMana
 	out.AllocateNodeCIDRs = in.AllocateNodeCIDRs
 	out.NodeCIDRMaskSize = in.NodeCIDRMaskSize
 	out.ConfigureCloudRoutes = in.ConfigureCloudRoutes
+	out.Controllers = in.Controllers
 	out.CIDRAllocatorType = in.CIDRAllocatorType
 	out.RootCAFile = in.RootCAFile
 	if in.LeaderElection != nil {
@@ -2688,6 +2704,10 @@ func autoConvert_v1alpha2_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyC
 	out.Master = in.Master
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
+	out.IPVSExcludeCIDRS = in.IPVSExcludeCIDRS
+	out.IPVSMinSyncPeriod = in.IPVSMinSyncPeriod
+	out.IPVSScheduler = in.IPVSScheduler
+	out.IPVSSyncPeriod = in.IPVSSyncPeriod
 	out.FeatureGates = in.FeatureGates
 	out.ConntrackMaxPerCore = in.ConntrackMaxPerCore
 	out.ConntrackMin = in.ConntrackMin
@@ -2712,6 +2732,10 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha2_KubeProxyConfig(in *kops.KubeP
 	out.Master = in.Master
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
+	out.IPVSExcludeCIDRS = in.IPVSExcludeCIDRS
+	out.IPVSMinSyncPeriod = in.IPVSMinSyncPeriod
+	out.IPVSScheduler = in.IPVSScheduler
+	out.IPVSSyncPeriod = in.IPVSSyncPeriod
 	out.FeatureGates = in.FeatureGates
 	out.ConntrackMaxPerCore = in.ConntrackMaxPerCore
 	out.ConntrackMin = in.ConntrackMin
@@ -3002,6 +3026,7 @@ func Convert_kops_LoadBalancer_To_v1alpha2_LoadBalancer(in *kops.LoadBalancer, o
 func autoConvert_v1alpha2_LoadBalancerAccessSpec_To_kops_LoadBalancerAccessSpec(in *LoadBalancerAccessSpec, out *kops.LoadBalancerAccessSpec, s conversion.Scope) error {
 	out.Type = kops.LoadBalancerType(in.Type)
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
+	out.SecurityGroupOverride = in.SecurityGroupOverride
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.UseForInternalApi = in.UseForInternalApi
 	out.SSLCertificate = in.SSLCertificate
@@ -3016,6 +3041,7 @@ func Convert_v1alpha2_LoadBalancerAccessSpec_To_kops_LoadBalancerAccessSpec(in *
 func autoConvert_kops_LoadBalancerAccessSpec_To_v1alpha2_LoadBalancerAccessSpec(in *kops.LoadBalancerAccessSpec, out *LoadBalancerAccessSpec, s conversion.Scope) error {
 	out.Type = LoadBalancerType(in.Type)
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
+	out.SecurityGroupOverride = in.SecurityGroupOverride
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.UseForInternalApi = in.UseForInternalApi
 	out.SSLCertificate = in.SSLCertificate
@@ -3616,6 +3642,7 @@ func Convert_kops_UserData_To_v1alpha2_UserData(in *kops.UserData, out *UserData
 func autoConvert_v1alpha2_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *WeaveNetworkingSpec, out *kops.WeaveNetworkingSpec, s conversion.Scope) error {
 	out.MTU = in.MTU
 	out.ConnLimit = in.ConnLimit
+	out.NoMasqLocal = in.NoMasqLocal
 	return nil
 }
 
@@ -3627,6 +3654,7 @@ func Convert_v1alpha2_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *WeaveN
 func autoConvert_kops_WeaveNetworkingSpec_To_v1alpha2_WeaveNetworkingSpec(in *kops.WeaveNetworkingSpec, out *WeaveNetworkingSpec, s conversion.Scope) error {
 	out.MTU = in.MTU
 	out.ConnLimit = in.ConnLimit
+	out.NoMasqLocal = in.NoMasqLocal
 	return nil
 }
 

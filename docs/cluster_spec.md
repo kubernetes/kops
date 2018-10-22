@@ -46,6 +46,15 @@ spec:
       idleTimeoutSeconds: 300
 ```
 
+You can use a valid SSL Certificate for your API Server Load Balancer. Currently, only AWS is supported:
+
+```yaml
+spec:
+  api:
+    loadBalancer:
+      sslCertificate: arn:aws:acm:<region>:<accountId>:certificate/<uuid>
+```
+
 ### etcdClusters v3 & tls
 
 Although kops doesn't presently default to etcd3, it is possible to turn on both v3 and TLS authentication for communication amongst cluster members. These options may be enabled via the cluster spec (manifests only i.e. no command line options as yet). An upfront warning; at present no upgrade path exists for migrating from v2 to v3 so **DO NOT** try to enable this on a v2 running cluster as it must be done on cluster creation. The below example snippet assumes a HA cluster of three masters.
@@ -75,6 +84,22 @@ etcdClusters:
 ```
 
 > __Note:__ The images for etcd that kops uses are from the Google Cloud Repository. Google doesn't release every version of etcd to the gcr. Check that the version of etcd you want to use is available [at the gcr](https://console.cloud.google.com/gcr/images/google-containers/GLOBAL/etcd?gcrImageListsize=50) before using it in your cluster spec.
+
+By default, the Volumes created for the etcd clusters are 20GB each.  They can be adjusted via the `volumeSize` parameter.
+
+```yaml
+etcdClusters:
+- etcdMembers:
+  - instanceGroup: master-us-east-1a
+    name: a
+    volumeSize: 5
+  name: main
+- etcdMembers:
+  - instanceGroup: master-us-east-1a
+    name: a
+    volumeSize: 5
+  name: events
+```
 
 ### sshAccess
 
@@ -205,6 +230,14 @@ spec:
     maxRequestsInflight: 1000
 ```
 
+The maximum number of mutating requests in flight at a given time. When the server exceeds this, it rejects requests. Zero for no limit. (default 200)
+
+```yaml
+spec:
+  kubeAPIServer:
+    maxMutatingRequestsInflight: 450
+```
+
 #### runtimeConfig
 
 Keys and values here are translated into `--runtime-config` values for `kube-apiserver`, separated by commas.
@@ -229,6 +262,16 @@ This value is passed as `--service-node-port-range` for `kube-apiserver`.
 spec:
   kubeAPIServer:
     serviceNodePortRange: 30000-33000
+```
+
+#### targetRamMb
+
+Memory limit for apiserver in MB (used to configure sizes of caches, etc.)
+
+```yaml
+spec:
+  kubeAPIServer:
+    targetRamMb: 4096
 ```
 
 ### externalDns
@@ -383,22 +426,26 @@ More information about running in an existing VPC is [here](run_in_existing_vpc.
 
 Hooks allow for the execution of an action before the installation of Kubernetes on every node in a cluster.  For instance you can install Nvidia drivers for using GPUs. This hooks can be in the form of Docker images or manifest files (systemd units). Hooks can be placed in either the cluster spec, meaning they will be globally deployed, or they can be placed into the instanceGroup specification. Note: service names on the instanceGroup which overlap with the cluster spec take precedence and ignore the cluster spec definition, i.e. if you have a unit file 'myunit.service' in cluster and then one in the instanceGroup, only the instanceGroup is applied.
 
+When creating a systemd unit hook using the `manifest` field, the hook system will construct a systemd unit file for you. It creates the `[Unit]` section, adding an automated description and setting `Before` and `Requires` values based on the `before` and `requires` fields. The value of the `manifest` field is used as the `[Service]` section of the unit file. To override this behavior, and instead specify the entire unit file yourself, you may specify `useRawManifest: true`. In this case, the contents of the `manifest` field will be used as a systemd unit, unmodified. The `before` and `requires` fields may not be used together with `useRawManifest`.
+
 ```
 spec:
   # many sections removed
+
+  # run a docker container as a hook
   hooks:
   - before:
     - some_service.service
     requires:
     - docker.service
-      execContainer:
+    execContainer:
       image: kopeio/nvidia-bootstrap:1.6
       # these are added as -e to the docker environment
       environment:
         AWS_REGION: eu-west-1
         SOME_VAR: SOME_VALUE
 
-  # or a raw systemd unit
+  # or construct a systemd unit
   hooks:
   - name: iptable-restore.service
     roles:
@@ -407,6 +454,20 @@ spec:
     before:
     - kubelet.service
     manifest: |
+      EnvironmentFile=/etc/environment
+      # do some stuff
+
+  # or use a raw systemd unit
+  hooks:
+  - name: iptable-restore.service
+    roles:
+    - Node
+    - Master
+    useRawManifest: true
+    manifest: |
+      [Unit]
+      Description=Restore iptables rules
+      Before=kubelet.service
       [Service]
       EnvironmentFile=/etc/environment
       # do some stuff
@@ -440,7 +501,7 @@ spec:
       image: busybox
 ```
 
-Install cachefiled
+Install cachefilesd
 
 ```
 spec:
@@ -464,13 +525,13 @@ spec:
 
 ### fileAssets
 
-FileAssets is an alpha feature which permits you to place inline file content into the cluster and instanceGroup specification. It's desiginated as alpha as you can probably do this via kubernetes daemonsets as an alternative.
+FileAssets is an alpha feature which permits you to place inline file content into the cluster and instanceGroup specification. It's designated as alpha as you can probably do this via kubernetes daemonsets as an alternative.
 
 ```yaml
 spec:
   fileAssets:
   - name: iptable-restore
-    # Note if not path is specificied the default path it /srv/kubernetes/assets/<name>
+    # Note if not path is specified the default path it /srv/kubernetes/assets/<name>
     path: /var/lib/iptables/rules-save
     roles: [Master,Node,Bastion] # a list of roles to apply the asset to, zero defaults to all
     content: |

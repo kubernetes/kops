@@ -14,6 +14,14 @@ etcd-manager is currently in early alpha - it is undergoing testing. However, if
 you have a test cluster where you don't mind if it erases all your data, please
 do try it out and provide feedback.
 
+If using kubernetes >= 1.12 (which will not formally be supported until kops 1.12), note that etcd-manager will be used by default.  You can override this with the `cluster.spec.etcdClusters[*].provider=Legacy` override.  This can be specified:
+
+* as an argument to `kops create cluster`: `--overrides cluster.spec.etcdClusters[*].provider=Legacy`
+* on an existing cluster with `kops set cluster cluster.spec.etcdClusters[*].provider=Legacy`
+* by setting the field using `kops edit` or `kops replace`, manually making the same change as `kops set cluster ...`
+
+(Note you will probably have to `export KOPS_FEATURE_FLAGS=SpecOverrideFlag`)
+
 ## How to use etcd-manager
 
 Reminder: etcd-manager is alpha, and may cause you to lose the data in your

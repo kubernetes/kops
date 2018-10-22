@@ -131,6 +131,7 @@ spec:
       annotations:
         dns.alpha.kubernetes.io/internal: {{ $name }}-internal.{{ ClusterName }}
         prometheus.io/port: "{{ $na.Port }}"
+        prometheus.io/scheme: "https"
         prometheus.io/scrape: "true"
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
@@ -147,23 +148,23 @@ spec:
         - name: config
           hostPath:
             path: /srv/kubernetes/node-authorizer
-            type: Directory
+            type: DirectoryOrCreate
       containers:
         - name: {{ $name }}
           image: {{ $na.Image }}
           args:
-          - server
-          - --authorization-timeout={{ $na.Timeout.Duration }}
-          - --authorizer={{ $na.Authorizer }}
-          - --cluster-name={{ ClusterName }}
-          {{- range $na.Features }}
-          - --feature={{ . }}
-          {{- end }}
-          - --listen=0.0.0.0:{{ $na.Port }}
-          - --tls-cert=/config/tls.pem
-          - --tls-client-ca=/config/ca.pem
-          - --tls-private-key=/config/tls-key.pem
-          - --token-ttl={{ $na.TokenTTL.Duration }}
+            - server
+            - --authorization-timeout={{ $na.Timeout.Duration }}
+            - --authorizer={{ $na.Authorizer }}
+            - --cluster-name={{ ClusterName }}
+            {{- range $na.Features }}
+            - --feature={{ . }}
+            {{- end }}
+            - --listen=0.0.0.0:{{ $na.Port }}
+            - --tls-cert=/config/tls.pem
+            - --tls-client-ca=/config/ca.pem
+            - --tls-private-key=/config/tls-key.pem
+            - --token-ttl={{ $na.TokenTTL.Duration }}
           resources:
             limits:
               cpu: 100m
@@ -171,20 +172,6 @@ spec:
             requests:
               cpu: 10m
               memory: 10Mi
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: {{ $na.Port }}
-              scheme: HTTPS
-            periodSeconds: 10
-            initialDelaySeconds: 10
-            failureThreshold: 5
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: {{ $na.Port }}
-              scheme: HTTPS
-            periodSeconds: 10
           volumeMounts:
             - mountPath: /config
               readOnly: true

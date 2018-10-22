@@ -77,19 +77,20 @@ download-or-bust() {
 
       if [[ -e "${file}" ]]; then
         echo "== File exists for ${url} =="
-      elif [[ $(which curl) ]]; then
+
+      # CoreOS runs this script in a container without which (but has curl)
+      # Note also that busybox wget doesn't support wget --version, but busybox doesn't normally have curl
+      # So we default to wget unless we see curl
+      elif [[ $(curl --version) ]]; then
         if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
           echo "== Failed to curl ${url}. Retrying. =="
           break
         fi
-      elif [[ $(which wget ) ]]; then
+      else
         if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
           echo "== Failed to wget ${url}. Retrying. =="
           break
         fi
-      else
-        echo "== Could not find curl or wget. Retrying. =="
-        break
       fi
 
       if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
@@ -212,8 +213,8 @@ func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 			}
 		}
 
-		for _, UserDataInfo := range ig.Spec.AdditionalUserData {
-			err = writeUserDataPart(mimeWriter, UserDataInfo.Name, UserDataInfo.Type, []byte(UserDataInfo.Content))
+		for _, d := range ig.Spec.AdditionalUserData {
+			err = writeUserDataPart(mimeWriter, d.Name, d.Type, []byte(d.Content))
 			if err != nil {
 				return "", err
 			}

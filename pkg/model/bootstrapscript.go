@@ -191,7 +191,6 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 			spec["kubelet"] = ig.Spec.Kubelet
 			spec["nodeLabels"] = ig.Spec.NodeLabels
 			spec["taints"] = ig.Spec.Taints
-			spec["suspendProcesses"] = ig.Spec.SuspendProcesses
 
 			hooks, err := b.getRelevantHooks(ig.Spec.Hooks, ig.Spec.Role)
 			if err != nil {
