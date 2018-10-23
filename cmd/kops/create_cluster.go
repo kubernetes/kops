@@ -1081,7 +1081,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 
-	if c.APISSLCertificate != "" {
+	if cluster.Spec.API.LoadBalancer != nil && c.APISSLCertificate != "" {
 		cluster.Spec.API.LoadBalancer.SSLCertificate = c.APISSLCertificate
 	}
 
