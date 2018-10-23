@@ -36,8 +36,10 @@ spec:
               readOnly: true
       serviceAccountName: kopeio-networking-agent
       tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
       volumes:
         - name: lib-modules
           hostPath:
