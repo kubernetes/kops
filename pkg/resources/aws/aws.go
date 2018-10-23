@@ -297,6 +297,24 @@ func matchesElbTags(tags map[string]string, actual []*elb.Tag) bool {
 	return true
 }
 
+func matchesElbV2Tags(tags map[string]string, actual []*elbv2.Tag) bool {
+	for k, v := range tags {
+		found := false
+		for _, a := range actual {
+			if aws.StringValue(a.Key) == k {
+				if aws.StringValue(a.Value) == v {
+					found = true
+					break
+				}
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
 // In addition to KubernetesCluster aws tag kops also includes a Name tag for ELBs, for instance: Name => api.clustername.com.
 // matchELBNameTag validates if a given ELB is either api.clustername.com or bastion.clustername.com.
 func matchELBNameTag(tag string, actual []*elb.Tag) bool {
