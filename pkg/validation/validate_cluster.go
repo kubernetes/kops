@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"strings"
 
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
@@ -55,7 +56,7 @@ func (v *ValidationCluster) addError(failure *ValidationError) {
 type ValidationNode struct {
 	Name     string             `json:"name,omitempty"`
 	Zone     string             `json:"zone,omitempty"`
-	Role     string             `json:"role,omitempty"`
+	Roles    string             `json:"roles,omitempty"`
 	Hostname string             `json:"hostname,omitempty"`
 	Status   v1.ConditionStatus `json:"status,omitempty"`
 }
@@ -234,23 +235,23 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 				continue
 			}
 
-			role := util.GetNodeRole(node)
-			if role == "" {
-				role = "node"
+			roles := util.GetNodeRoles(node)
+			// Default to node
+			if roles == "" {
+				roles = "node"
 			}
 
 			n := &ValidationNode{
 				Name:     node.Name,
 				Zone:     node.ObjectMeta.Labels["failure-domain.beta.kubernetes.io/zone"],
 				Hostname: node.ObjectMeta.Labels["kubernetes.io/hostname"],
-				Role:     role,
+				Roles:    roles,
 				Status:   getNodeReadyStatus(node),
 			}
 
 			ready := isNodeReady(node)
 
-			// TODO: Use instance group role instead...
-			if n.Role == "master" {
+			if strings.Contains(n.Roles, "master") {
 				if !ready {
 					v.addError(&ValidationError{
 						Kind:    "Node",
@@ -260,7 +261,7 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 				}
 
 				v.Nodes = append(v.Nodes, n)
-			} else if n.Role == "node" {
+			} else if strings.Contains(n.Roles, "node") {
 				if !ready {
 					v.addError(&ValidationError{
 						Kind:    "Node",
@@ -271,7 +272,7 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 
 				v.Nodes = append(v.Nodes, n)
 			} else {
-				glog.Warningf("ignoring node with role %q", n.Role)
+				glog.Warningf("ignoring node with roles: %q", n.Roles)
 			}
 		}
 	}

@@ -18,6 +18,7 @@ package watchers
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"k8s.io/kops/dns-controller/pkg/dns"
@@ -220,9 +221,11 @@ func (c *NodeController) updateNodeRecords(node *v1.Node) string {
 	// node/role=<role>/external -> ExternalIP
 	// node/role=<role>/internal -> InternalIP
 	{
-		role := kopsutil.GetNodeRole(node)
-		// Default to node
-		if role == "" {
+		role := kopsutil.GetNodeRoles(node)
+		// Only "master" or "node" is useful here
+		if strings.Contains(role, "master") {
+			role = "master"
+		} else {
 			role = "node"
 		}
 

@@ -202,12 +202,12 @@ func validateClusterOutputTable(result *validation.ValidationCluster, cluster *a
 			return n.Status
 		})
 
-		nodeTable.AddColumn("ROLE", func(n *validation.ValidationNode) string {
-			return n.Role
+		nodeTable.AddColumn("ROLES", func(n *validation.ValidationNode) string {
+			return n.Roles
 		})
 
 		fmt.Fprintln(out, "\nNODE STATUS")
-		if err := nodeTable.Render(result.Nodes, out, "NAME", "ROLE", "READY"); err != nil {
+		if err := nodeTable.Render(result.Nodes, out, "NAME", "ROLES", "READY"); err != nil {
 			return fmt.Errorf("cannot render nodes for %q: %v", cluster.Name, err)
 		}
 	}

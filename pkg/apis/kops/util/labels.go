@@ -22,18 +22,21 @@ import (
 	"k8s.io/api/core/v1"
 )
 
-func GetNodeRole(node *v1.Node) string {
-	role := ""
+func GetNodeRoles(node *v1.Node) string {
+	keyRoles := make([]string, 0)
+
 	// Newer labels
 	for k := range node.Labels {
 		if strings.HasPrefix(k, "node-role.kubernetes.io/") {
-			role = strings.TrimPrefix(k, "node-role.kubernetes.io/")
+			keyRoles = append(keyRoles, strings.TrimPrefix(k, "node-role.kubernetes.io/"))
 		}
 	}
+
 	// Older label
-	if role == "" {
-		role = node.Labels["kubernetes.io/role"]
+	if len(keyRoles) == 0 {
+		keyRoles = append(keyRoles, node.Labels["kubernetes.io/role"])
 	}
 
-	return role
+	roles := strings.Join(keyRoles, ",")
+	return roles
 }
