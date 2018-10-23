@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	goflag "flag"
 	"fmt"
 	"io"
@@ -325,4 +326,15 @@ func GetCluster(factory Factory, clusterName string) (*kopsapi.Cluster, error) {
 		return nil, fmt.Errorf("cluster name did not match expected name: %v vs %v", clusterName, cluster.ObjectMeta.Name)
 	}
 	return cluster, nil
+}
+
+// ConsumeStdin reads all the bytes available from stdin
+func ConsumeStdin() ([]byte, error) {
+	file := os.Stdin
+	buf := new(bytes.Buffer)
+	_, err := buf.ReadFrom(file)
+	if err != nil {
+		return nil, fmt.Errorf("error reading stdin: %v", err)
+	}
+	return buf.Bytes(), nil
 }
