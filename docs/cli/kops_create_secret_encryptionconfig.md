@@ -19,6 +19,9 @@ kops create secret encryptionconfig [flags]
   # Create a new encryption config.
   kops create secret encryptionconfig -f config.yaml \
   --name k8s-cluster.example.com --state s3://example.com
+  # Create a new encryption config via stdin.
+  generate-encryption-config.sh | kops create secret encryptionconfig -f - \
+  --name k8s-cluster.example.com --state s3://example.com
   # Replace an existing encryption config secret.
   kops create secret encryptionconfig -f config.yaml --force \
   --name k8s-cluster.example.com --state s3://example.com

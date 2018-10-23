@@ -19,6 +19,9 @@ kops delete -f FILENAME [--yes] [flags]
   # Delete a cluster using a manifest file
   kops delete -f my-cluster.yaml
   
+  # Delete a cluster using a pasted manifest file from stdin.
+  pbpaste | kops delete -f -
+  
   # Delete a cluster in AWS.
   kops delete cluster --name=k8s.example.com --state=s3://kops-state-1234
   
