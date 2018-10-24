@@ -322,7 +322,7 @@ type LoadBalancerAccessSpec struct {
 	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
 	// AdditionalSecurityGroups attaches additional security groups (e.g. sg-123456).
 	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
-	// UseForInternalApi indicates wether the LB should be used by the kubelet
+	// UseForInternalApi indicates whether the LB should be used by the kubelet
 	UseForInternalApi bool `json:"useForInternalApi,omitempty"`
 	// SSLCertificate allows you to specify the ACM cert to be used the LB
 	SSLCertificate string `json:"sslCertificate,omitempty"`
