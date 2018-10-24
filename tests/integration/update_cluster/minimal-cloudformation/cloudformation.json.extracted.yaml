@@ -177,6 +177,9 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
     image: gcr.io/google_containers/kube-apiserver:v1.4.12
     insecurePort: 8080
     logLevel: 2
+    resources:
+      requests:
+        cpu: 150m
     securePort: 443
     serviceClusterIPRange: 100.64.0.0/13
     storageBackend: etcd2

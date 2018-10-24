@@ -18,6 +18,7 @@ package components
 
 import (
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"strings"
 
 	v1 "k8s.io/api/core/v1"
@@ -294,6 +295,14 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// FIXME : Disable the insecure port when kubernetes issue #43784 is fixed
 	c.InsecurePort = 8080
+
+	if clusterSpec.KubeAPIServer.Resources == nil {
+		clusterSpec.KubeAPIServer.Resources = &v1.ResourceRequirements{
+			Requests: v1.ResourceList{
+				v1.ResourceCPU: resource.MustParse("150m"),
+			},
+		}
+	}
 
 	return nil
 }

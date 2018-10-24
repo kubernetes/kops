@@ -31,7 +31,6 @@ import (
 	"k8s.io/kops/util/pkg/exec"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -407,11 +406,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 				HostPort:      8080,
 			},
 		},
-		Resources: v1.ResourceRequirements{
-			Requests: v1.ResourceList{
-				v1.ResourceCPU: resource.MustParse("150m"),
-			},
-		},
+		Resources: *b.Cluster.Spec.KubeAPIServer.Resources,
 	}
 
 	for _, path := range b.SSLHostPaths() {

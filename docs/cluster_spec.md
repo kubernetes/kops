@@ -301,6 +301,18 @@ spec:
     targetRamMb: 4096
 ```
 
+#### resources
+
+Pod resources for apiserver
+
+```yaml
+spec:
+  kubeAPIServer:
+    resources:
+      requests:
+        cpu: 150m
+```
+
 ### externalDns
 
 This block contains configuration options for your `external-DNS` provider.

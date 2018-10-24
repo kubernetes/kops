@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha2
 
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+import corev1 "k8s.io/api/core/v1"
 
 // KubeletConfigSpec defines the kubelet configuration
 type KubeletConfigSpec struct {
@@ -374,6 +375,8 @@ type KubeAPIServerConfig struct {
 
 	// Memory limit for apiserver in MB (used to configure sizes of caches, etc.)
 	TargetRamMb int32 `json:"targetRamMb,omitempty" flag:"target-ram-mb" flag-empty:"0"`
+	// Pod resources for apiserver
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller

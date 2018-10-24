@@ -197,6 +197,9 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersexternallbexampl
     - X-Remote-Group
     requestheaderUsernameHeaders:
     - X-Remote-User
+    resources:
+      requests:
+        cpu: 150m
     securePort: 443
     serviceClusterIPRange: 100.64.0.0/13
     storageBackend: etcd2
