@@ -171,7 +171,7 @@ func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *fi.Secret) (*fi.Se
 	// Make double-sure it round-trips
 	s, err := c.loadSecret(p)
 	if err != nil {
-		glog.Fatalf("unable to load secret immmediately after creation %v: %v", p, err)
+		glog.Fatalf("unable to load secret immediately after creation %v: %v", p, err)
 		return nil, false, err
 	}
 	return s, true, nil
@@ -193,7 +193,7 @@ func (c *VFSSecretStore) ReplaceSecret(id string, secret *fi.Secret) (*fi.Secret
 	// Confirm the secret exists
 	s, err := c.loadSecret(p)
 	if err != nil {
-		return nil, fmt.Errorf("unable to load secret immmediately after creation %v: %v", p, err)
+		return nil, fmt.Errorf("unable to load secret immediately after creation %v: %v", p, err)
 	}
 	return s, nil
 }
