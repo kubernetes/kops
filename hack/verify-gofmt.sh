@@ -14,6 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+if [ ! "$TRAVIS_GO_VERSION" = "1.11.x" ]; then
+  exit 0
+fi
+
 . $(dirname "${BASH_SOURCE}")/common.sh
 
 GOFMT="gofmt -s -w"
