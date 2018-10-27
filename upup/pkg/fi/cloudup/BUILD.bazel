@@ -53,6 +53,7 @@ go_library(
         "//pkg/resources/digitalocean:go_default_library",
         "//pkg/resources/spotinst:go_default_library",
         "//pkg/templates:go_default_library",
+        "//pkg/util/subnet:go_default_library",
         "//upup/models:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/assettasks:go_default_library",
