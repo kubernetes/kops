@@ -51,7 +51,10 @@ var (
 	deleteExample = templates.Examples(i18n.T(`
 		# Delete a cluster using a manifest file
 		kops delete -f my-cluster.yaml
-
+		
+		# Delete a cluster using a pasted manifest file from stdin.
+		pbpaste | kops delete -f -
+		
 		# Delete a cluster in AWS.
 		kops delete cluster --name=k8s.example.com --state=s3://kops-state-1234
 
@@ -101,9 +104,18 @@ func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 	deletedClusters := sets.NewString()
 
 	for _, f := range d.Filenames {
-		contents, err := vfs.Context.ReadFile(f)
-		if err != nil {
-			return fmt.Errorf("error reading file %q: %v", f, err)
+		var contents []byte
+		var err error
+		if f == "-" {
+			contents, err = ConsumeStdin()
+			if err != nil {
+				return fmt.Errorf("error reading from stdin: %v", err)
+			}
+		} else {
+			contents, err = vfs.Context.ReadFile(f)
+			if err != nil {
+				return fmt.Errorf("error reading file %q: %v", f, err)
+			}
 		}
 
 		sections := bytes.Split(contents, []byte("\n---\n"))
