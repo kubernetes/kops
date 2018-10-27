@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -244,16 +243,4 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 		}
 	}
 	return nil
-}
-
-// ConsumeStdin reads all the bytes available from stdin
-func ConsumeStdin() ([]byte, error) {
-	file := os.Stdin
-	buf := new(bytes.Buffer)
-	_, err := buf.ReadFrom(file)
-	if err != nil {
-		return nil, fmt.Errorf("error reading stdin: %v", err)
-	}
-
-	return buf.Bytes(), nil
 }

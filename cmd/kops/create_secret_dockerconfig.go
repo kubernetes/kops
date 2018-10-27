@@ -40,6 +40,9 @@ var (
 	# Create a new docker config.
 	kops create secret dockerconfig -f /path/to/docker/config.json \
 		--name k8s-cluster.example.com --state s3://example.com
+	# Create a docker config via stdin.
+	generate-docker-config.sh | kops create secret dockerconfig -f - \
+		--name k8s-cluster.example.com --state s3://example.com
 	# Replace an existing docker config secret.
 	kops create secret dockerconfig -f /path/to/docker/config.json --force \
 		--name k8s-cluster.example.com --state s3://example.com
@@ -110,10 +113,17 @@ func RunCreateSecretDockerConfig(f *util.Factory, out io.Writer, options *Create
 	if err != nil {
 		return err
 	}
-
-	data, err := ioutil.ReadFile(options.DockerConfigPath)
-	if err != nil {
-		return fmt.Errorf("error reading docker config %v: %v", options.DockerConfigPath, err)
+	var data []byte
+	if options.DockerConfigPath == "-" {
+		data, err = ConsumeStdin()
+		if err != nil {
+			return fmt.Errorf("error reading docker config from stdin: %v", err)
+		}
+	} else {
+		data, err = ioutil.ReadFile(options.DockerConfigPath)
+		if err != nil {
+			return fmt.Errorf("error reading docker config %v: %v", options.DockerConfigPath, err)
+		}
 	}
 
 	var parsedData map[string]interface{}
