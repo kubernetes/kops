@@ -25,6 +25,12 @@ rules:
   verbs:
   - list
   - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
@@ -55,7 +61,6 @@ data:
   Corefile: |
     .:53 {
         errors
-        log
         health
         kubernetes {{ KubeDNS.Domain }}. in-addr.arpa ip6.arpa {
           pods insecure
@@ -99,9 +104,11 @@ spec:
           effect: NoSchedule
         - key: "CriticalAddonsOnly"
           operator: "Exists"
+      nodeSelector:
+          beta.kubernetes.io/os: linux
       containers:
       - name: coredns
-        image: k8s.gcr.io/coredns:1.2.2
+        image: k8s.gcr.io/coredns:1.2.4
         imagePullPolicy: IfNotPresent
         resources:
           limits:
