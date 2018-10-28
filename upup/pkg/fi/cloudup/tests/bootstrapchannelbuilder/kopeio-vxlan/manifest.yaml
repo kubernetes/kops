@@ -69,11 +69,11 @@ spec:
     name: networking.kope.io
     selector:
       role.kubernetes.io/networking: "1"
-    version: 1.0.20180319-kops.2
+    version: 1.0.20181028-kops.1
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0'
     manifest: networking.kope.io/k8s-1.6.yaml
     name: networking.kope.io
     selector:
       role.kubernetes.io/networking: "1"
-    version: 1.0.20180319-kops.2
+    version: 1.0.20181028-kops.1
