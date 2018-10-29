@@ -23,22 +23,20 @@ WORK_DIR=`mktemp -d`
 function cleanup {
   rm -rf "$WORK_DIR"
 }
-#trap cleanup EXIT
-ls -lrt ${WORK_DIR}/
+trap cleanup EXIT
+
 mkdir -p ${WORK_DIR}/go/
-ls -lrt ${WORK_DIR}/go/
 ln -s ${GOPATH}/src/k8s.io/kops/vendor/ ${WORK_DIR}/go/src
 
-env GOPATH=${WORK_DIR}/go/ go install k8s.io/code-generator/cmd/conversion-gen/
-echo $GOPATH
-#cp ${WORK_DIR}/go/bin/conversion-gen ${GOPATH}/bin/
+GOPATH=${WORK_DIR}/go/ go install k8s.io/code-generator/cmd/conversion-gen/
+cp ${WORK_DIR}/go/bin/conversion-gen ${GOPATH}/bin/
 
 GOPATH=${WORK_DIR}/go/ go install k8s.io/code-generator/cmd/deepcopy-gen/
-#cp ${WORK_DIR}/go/bin/deepcopy-gen ${GOPATH}/bin/
+cp ${WORK_DIR}/go/bin/deepcopy-gen ${GOPATH}/bin/
 
 GOPATH=${WORK_DIR}/go/ go install k8s.io/code-generator/cmd/defaulter-gen/
-#cp ${WORK_DIR}/go/bin/defaulter-gen ${GOPATH}/bin/
+cp ${WORK_DIR}/go/bin/defaulter-gen ${GOPATH}/bin/
 
 GOPATH=${WORK_DIR}/go/ go install k8s.io/code-generator/cmd/client-gen/
-#cp ${WORK_DIR}/go/bin/client-gen ${GOPATH}/bin/
+cp ${WORK_DIR}/go/bin/client-gen ${GOPATH}/bin/
 
