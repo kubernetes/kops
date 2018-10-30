@@ -34,6 +34,12 @@ func TestParse(t *testing.T) {
 		{Input: "1.9.0", Expected: "1.9.0"},
 		{Input: "1.10.0", Expected: "1.10.0"},
 		{Input: "v1.1.0-alpha1", Expected: "1.1.0-alpha1"},
+		{Input: "1.11.0", Expected: "1.11.0"},
+		{Input: "1.12.0", Expected: "1.12.0"},
+		{Input: "1.13.0", Expected: "1.13.0"},
+		{Input: "1.14.0", Expected: "1.14.0"},
+		{Input: "1.15.0", Expected: "1.15.0"},
+		{Input: "1.16.0", Expected: "1.16.0"},
 		{Input: "https://example.com/v1.8.0-downloads", Expected: "1.8.0"},
 	}
 

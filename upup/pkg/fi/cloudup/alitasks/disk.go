@@ -143,7 +143,7 @@ func (_ *Disk) RenderALI(t *aliup.ALIAPITarget, a, e, changes *Disk) error {
 	}
 
 	if changes != nil && changes.Tags != nil {
-		glog.V(2).Infof("Modifing tags of disk with Name:%q", fi.StringValue(e.Name))
+		glog.V(2).Infof("Modifying tags of disk with Name:%q", fi.StringValue(e.Name))
 		if err := t.Cloud.CreateTags(*e.DiskId, DiskResource, e.Tags); err != nil {
 			return fmt.Errorf("error adding Tags to ALI YunPan: %v", err)
 		}

@@ -159,7 +159,7 @@ func (_ *SecurityGroup) RenderALI(t *aliup.ALIAPITarget, a, e, changes *Security
 	}
 
 	if a != nil && (len(a.Tags) > 0) {
-		glog.V(2).Infof("Modifing SecurityGroup with Name:%q", fi.StringValue(e.Name))
+		glog.V(2).Infof("Modifying SecurityGroup with Name:%q", fi.StringValue(e.Name))
 
 		tagsToDelete := e.getGroupTagsToDelete(a.Tags)
 		if len(tagsToDelete) > 0 {

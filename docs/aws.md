@@ -277,7 +277,13 @@ Information regarding cluster state store location must be set when using `kops`
 
 kops supports [default bucket encryption](https://aws.amazon.com/de/blogs/aws/new-amazon-s3-encryption-security-features/) to encrypt the kops state in an S3 bucket. In this way, whatever default server side encryption is set for your bucket, it will be used for the kops state, too. You may want to use this AWS feature e.g. for easily encrypting every written object by default or when for compliance reasons you need to use specific encryption keys (KMS, CMK).
 
-If your S3 bucket has a default encryption set up, kops will use it. If the default encryption is not set or it cannot be checked, kops will resort to using client side AES256 encryption.
+If your S3 bucket has a default encryption set up, kops will use it:
+
+```bash
+aws s3api put-bucket-encryption --bucket prefix-example-com-state-store --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
+```
+
+If the default encryption is not set or it cannot be checked, kops will resort to using client side AES256 encryption.
  
 ### Sharing an S3 bucket across multiple accounts
 

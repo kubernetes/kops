@@ -108,6 +108,7 @@ k8s.io/kops/pkg/model/gcemodel
 k8s.io/kops/pkg/model/iam
 k8s.io/kops/pkg/model/openstackmodel
 k8s.io/kops/pkg/model/resources
+k8s.io/kops/pkg/model/spotinstmodel
 k8s.io/kops/pkg/model/vspheremodel
 k8s.io/kops/pkg/openapi
 k8s.io/kops/pkg/pki
@@ -120,6 +121,7 @@ k8s.io/kops/pkg/resources/digitalocean/dns
 k8s.io/kops/pkg/resources/gce
 k8s.io/kops/pkg/resources/openstack
 k8s.io/kops/pkg/resources/ops
+k8s.io/kops/pkg/resources/spotinst
 k8s.io/kops/pkg/sshcredentials
 k8s.io/kops/pkg/systemd
 k8s.io/kops/pkg/templates
@@ -128,6 +130,7 @@ k8s.io/kops/pkg/tokens
 k8s.io/kops/pkg/try
 k8s.io/kops/pkg/urls
 k8s.io/kops/pkg/util/stringorslice
+k8s.io/kops/pkg/util/subnet
 k8s.io/kops/pkg/util/templater
 k8s.io/kops/pkg/validation
 k8s.io/kops/pkg/values
@@ -163,6 +166,7 @@ k8s.io/kops/upup/pkg/fi/cloudup/gce
 k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
 k8s.io/kops/upup/pkg/fi/cloudup/openstack
 k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks
+k8s.io/kops/upup/pkg/fi/cloudup/spotinsttasks
 k8s.io/kops/upup/pkg/fi/cloudup/terraform
 k8s.io/kops/upup/pkg/fi/cloudup/vsphere
 k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks

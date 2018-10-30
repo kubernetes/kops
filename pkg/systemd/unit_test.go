@@ -48,7 +48,7 @@ func TestUnitFileExtensionValid(t *testing.T) {
 		})
 	}
 
-	// Add two testcases for no extension and and invalid extension.
+	// Add two testcases for no extension and invalid extension.
 	testcases = append(testcases, testCase{
 		"invalid extension: (no extension)",
 		"my-unit",

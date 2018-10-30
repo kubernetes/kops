@@ -779,7 +779,7 @@ spec:
                               description: Specify whether the ConfigMap must be defined
                               type: boolean
                         prefix:
-                          description: An optional identifer to prepend to each key
+                          description: An optional identifier to prepend to each key
                             in the ConfigMap. Must be a C_IDENTIFIER.
                           type: string
                         secretRef:
@@ -824,7 +824,7 @@ spec:
                               command:
                                 description: Command is the command line to execute
                                   inside the container, the working directory for
-                                  the command  is root ('/') in the container's filesystem.
+                                  the command is root ('/') in the container's filesystem.
                                   The command is simply exec'd, it is not run inside
                                   a shell, so traditional shell instructions ('|',
                                   etc) won't work. To use a shell, you need to explicitly
@@ -891,7 +891,7 @@ spec:
                               command:
                                 description: Command is the command line to execute
                                   inside the container, the working directory for
-                                  the command  is root ('/') in the container's filesystem.
+                                  the command is root ('/') in the container's filesystem.
                                   The command is simply exec'd, it is not run inside
                                   a shell, so traditional shell instructions ('|',
                                   etc) won't work. To use a shell, you need to explicitly
@@ -957,7 +957,7 @@ spec:
                         properties:
                           command:
                             description: Command is the command line to execute inside
-                              the container, the working directory for the command  is
+                              the container, the working directory for the command is
                               root ('/') in the container's filesystem. The command
                               is simply exec'd, it is not run inside a shell, so traditional
                               shell instructions ('|', etc) won't work. To use a shell,
@@ -1097,7 +1097,7 @@ spec:
                         properties:
                           command:
                             description: Command is the command line to execute inside
-                              the container, the working directory for the command  is
+                              the container, the working directory for the command is
                               root ('/') in the container's filesystem. The command
                               is simply exec'd, it is not run inside a shell, so traditional
                               shell instructions ('|', etc) won't work. To use a shell,
@@ -1378,7 +1378,7 @@ spec:
             imagePullSecrets:
               description: An optional list of references to secrets in the same namespace
                 to use for pulling prometheus and alertmanager images from registries
-                see http://kubernetes.io/docs/user-guide/images#specifying-imagepullsecrets-on-a-pod
+                see https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
               items:
                 description: LocalObjectReference contains enough information to let
                   you locate the referenced object inside the same namespace.
@@ -1410,7 +1410,7 @@ spec:
                   description: 'Annotations is an unstructured key value map stored
                     with a resource that may be set by external tools to store and
                     retrieve arbitrary metadata. They are not queryable and should
-                    be preserved when modifying objects. More info: http://kubernetes.io/docs/user-guide/annotations'
+                    be preserved when modifying objects. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/'
                   type: object
                 clusterName:
                   description: The name of the cluster which the object belongs to.
@@ -1550,7 +1550,7 @@ spec:
                             uid:
                               description: 'UID of the resource. (when there is a
                                 single resource which can be described). More info:
-                                http://kubernetes.io/docs/user-guide/identifiers#uids'
+                                https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                               type: string
                         kind:
                           description: 'Kind is a string value representing the REST
@@ -1608,20 +1608,20 @@ spec:
                   description: 'Map of string keys and values that can be used to
                     organize and categorize (scope and select) objects. May match
                     selectors of replication controllers and services. More info:
-                    http://kubernetes.io/docs/user-guide/labels'
+                    https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/'
                   type: object
                 name:
                   description: 'Name must be unique within a namespace. Is required
                     when creating resources, although some resources may allow a client
                     to request the generation of an appropriate name automatically.
                     Name is primarily intended for creation idempotence and configuration
-                    definition. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+                    definition. Cannot be updated. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                   type: string
                 namespace:
                   description: |-
                     Namespace defines the space within each name must be unique. An empty namespace is equivalent to the "default" namespace, but "default" is the canonical representation. Not all objects are required to be scoped to a namespace - the value of this field for those objects will be empty.
 
-                    Must be a DNS_LABEL. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/namespaces
+                    Must be a DNS_LABEL. Cannot be updated. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
                   type: string
                 ownerReferences:
                   description: List of objects depended by this object. If ALL objects
@@ -1652,10 +1652,10 @@ spec:
                         description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
                         type: string
                       name:
-                        description: 'Name of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                         type: string
                       uid:
-                        description: 'UID of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#uids'
+                        description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                         type: string
                     required:
                     - apiVersion
@@ -1877,7 +1877,7 @@ spec:
                             stored with a resource that may be set by external tools
                             to store and retrieve arbitrary metadata. They are not
                             queryable and should be preserved when modifying objects.
-                            More info: http://kubernetes.io/docs/user-guide/annotations'
+                            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/'
                           type: object
                         clusterName:
                           description: The name of the cluster which the object belongs
@@ -2087,7 +2087,7 @@ spec:
                           description: 'Map of string keys and values that can be
                             used to organize and categorize (scope and select) objects.
                             May match selectors of replication controllers and services.
-                            More info: http://kubernetes.io/docs/user-guide/labels'
+                            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/'
                           type: object
                         name:
                           description: 'Name must be unique within a namespace. Is
@@ -2095,13 +2095,13 @@ spec:
                             may allow a client to request the generation of an appropriate
                             name automatically. Name is primarily intended for creation
                             idempotence and configuration definition. Cannot be updated.
-                            More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+                            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                           type: string
                         namespace:
                           description: |-
                             Namespace defines the space within each name must be unique. An empty namespace is equivalent to the "default" namespace, but "default" is the canonical representation. Not all objects are required to be scoped to a namespace - the value of this field for those objects will be empty.
 
-                            Must be a DNS_LABEL. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/namespaces
+                            Must be a DNS_LABEL. Cannot be updated. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
                           type: string
                         ownerReferences:
                           description: List of objects depended by this object. If
@@ -2135,10 +2135,10 @@ spec:
                                 description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
                                 type: string
                               name:
-                                description: 'Name of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                                 type: string
                               uid:
-                                description: 'UID of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#uids'
+                                description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                                 type: string
                             required:
                             - apiVersion
@@ -2160,7 +2160,7 @@ spec:
                           description: |-
                             UID is the unique in time and space value for this object. It is typically generated by the server on successful creation of a resource and is not allowed to change on PUT operations.
 
-                            Populated by the system. Read-only. More info: http://kubernetes.io/docs/user-guide/identifiers#uids
+                            Populated by the system. Read-only. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids
                           type: string
                     spec:
                       description: PersistentVolumeClaimSpec describes the common
@@ -3163,7 +3163,7 @@ spec:
                               command:
                                 description: Command is the command line to execute
                                   inside the container, the working directory for
-                                  the command  is root ('/') in the container's filesystem.
+                                  the command is root ('/') in the container's filesystem.
                                   The command is simply exec'd, it is not run inside
                                   a shell, so traditional shell instructions ('|',
                                   etc) won't work. To use a shell, you need to explicitly
@@ -3230,7 +3230,7 @@ spec:
                               command:
                                 description: Command is the command line to execute
                                   inside the container, the working directory for
-                                  the command  is root ('/') in the container's filesystem.
+                                  the command is root ('/') in the container's filesystem.
                                   The command is simply exec'd, it is not run inside
                                   a shell, so traditional shell instructions ('|',
                                   etc) won't work. To use a shell, you need to explicitly
@@ -3296,7 +3296,7 @@ spec:
                         properties:
                           command:
                             description: Command is the command line to execute inside
-                              the container, the working directory for the command  is
+                              the container, the working directory for the command is
                               root ('/') in the container's filesystem. The command
                               is simply exec'd, it is not run inside a shell, so traditional
                               shell instructions ('|', etc) won't work. To use a shell,
@@ -3436,7 +3436,7 @@ spec:
                         properties:
                           command:
                             description: Command is the command line to execute inside
-                              the container, the working directory for the command  is
+                              the container, the working directory for the command is
                               root ('/') in the container's filesystem. The command
                               is simply exec'd, it is not run inside a shell, so traditional
                               shell instructions ('|', etc) won't work. To use a shell,
@@ -3724,7 +3724,7 @@ spec:
             imagePullSecrets:
               description: An optional list of references to secrets in the same namespace
                 to use for pulling prometheus and alertmanager images from registries
-                see http://kubernetes.io/docs/user-guide/images#specifying-imagepullsecrets-on-a-pod
+                see https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
               items:
                 description: LocalObjectReference contains enough information to let
                   you locate the referenced object inside the same namespace.
@@ -3755,7 +3755,7 @@ spec:
                   description: 'Annotations is an unstructured key value map stored
                     with a resource that may be set by external tools to store and
                     retrieve arbitrary metadata. They are not queryable and should
-                    be preserved when modifying objects. More info: http://kubernetes.io/docs/user-guide/annotations'
+                    be preserved when modifying objects. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/'
                   type: object
                 clusterName:
                   description: The name of the cluster which the object belongs to.
@@ -3895,7 +3895,7 @@ spec:
                             uid:
                               description: 'UID of the resource. (when there is a
                                 single resource which can be described). More info:
-                                http://kubernetes.io/docs/user-guide/identifiers#uids'
+                                https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                               type: string
                         kind:
                           description: 'Kind is a string value representing the REST
@@ -3953,20 +3953,20 @@ spec:
                   description: 'Map of string keys and values that can be used to
                     organize and categorize (scope and select) objects. May match
                     selectors of replication controllers and services. More info:
-                    http://kubernetes.io/docs/user-guide/labels'
+                    https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/'
                   type: object
                 name:
                   description: 'Name must be unique within a namespace. Is required
                     when creating resources, although some resources may allow a client
                     to request the generation of an appropriate name automatically.
                     Name is primarily intended for creation idempotence and configuration
-                    definition. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+                    definition. Cannot be updated. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                   type: string
                 namespace:
                   description: |-
                     Namespace defines the space within each name must be unique. An empty namespace is equivalent to the "default" namespace, but "default" is the canonical representation. Not all objects are required to be scoped to a namespace - the value of this field for those objects will be empty.
 
-                    Must be a DNS_LABEL. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/namespaces
+                    Must be a DNS_LABEL. Cannot be updated. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
                   type: string
                 ownerReferences:
                   description: List of objects depended by this object. If ALL objects
@@ -3997,10 +3997,10 @@ spec:
                         description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
                         type: string
                       name:
-                        description: 'Name of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                         type: string
                       uid:
-                        description: 'UID of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#uids'
+                        description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                         type: string
                     required:
                     - apiVersion
@@ -4022,7 +4022,7 @@ spec:
                   description: |-
                     UID is the unique in time and space value for this object. It is typically generated by the server on successful creation of a resource and is not allowed to change on PUT operations.
 
-                    Populated by the system. Read-only. More info: http://kubernetes.io/docs/user-guide/identifiers#uids
+                    Populated by the system. Read-only. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids
                   type: string
             remoteRead:
               description: If specified, the remote_read spec. This is an experimental
@@ -4215,7 +4215,7 @@ spec:
                           type: string
                         separator:
                           description: Separator placed between concatenated source
-                            label values. default is ';'.
+                            label values. Default is ';'.
                           type: string
                         sourceLabels:
                           description: The source labels select values from existing
@@ -4566,7 +4566,7 @@ spec:
                             stored with a resource that may be set by external tools
                             to store and retrieve arbitrary metadata. They are not
                             queryable and should be preserved when modifying objects.
-                            More info: http://kubernetes.io/docs/user-guide/annotations'
+                            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/'
                           type: object
                         clusterName:
                           description: The name of the cluster which the object belongs
@@ -4713,7 +4713,7 @@ spec:
                                     uid:
                                       description: 'UID of the resource. (when there
                                         is a single resource which can be described).
-                                        More info: http://kubernetes.io/docs/user-guide/identifiers#uids'
+                                        More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                                       type: string
                                 kind:
                                   description: 'Kind is a string value representing
@@ -4776,7 +4776,7 @@ spec:
                           description: 'Map of string keys and values that can be
                             used to organize and categorize (scope and select) objects.
                             May match selectors of replication controllers and services.
-                            More info: http://kubernetes.io/docs/user-guide/labels'
+                            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/'
                           type: object
                         name:
                           description: 'Name must be unique within a namespace. Is
@@ -4784,13 +4784,13 @@ spec:
                             may allow a client to request the generation of an appropriate
                             name automatically. Name is primarily intended for creation
                             idempotence and configuration definition. Cannot be updated.
-                            More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+                            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                           type: string
                         namespace:
                           description: |-
                             Namespace defines the space within each name must be unique. An empty namespace is equivalent to the "default" namespace, but "default" is the canonical representation. Not all objects are required to be scoped to a namespace - the value of this field for those objects will be empty.
 
-                            Must be a DNS_LABEL. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/namespaces
+                            Must be a DNS_LABEL. Cannot be updated. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
                           type: string
                         ownerReferences:
                           description: List of objects depended by this object. If
@@ -4824,10 +4824,10 @@ spec:
                                 description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
                                 type: string
                               name:
-                                description: 'Name of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                                 type: string
                               uid:
-                                description: 'UID of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#uids'
+                                description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                                 type: string
                             required:
                             - apiVersion
@@ -4849,7 +4849,7 @@ spec:
                           description: |-
                             UID is the unique in time and space value for this object. It is typically generated by the server on successful creation of a resource and is not allowed to change on PUT operations.
 
-                            Populated by the system. Read-only. More info: http://kubernetes.io/docs/user-guide/identifiers#uids
+                            Populated by the system. Read-only. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids
                           type: string
                     spec:
                       description: PersistentVolumeClaimSpec describes the common
@@ -5171,7 +5171,7 @@ spec:
                           type: integer
                         regex:
                           description: Regular expression against which the extracted
-                            value is matched. defailt is '(.*)'
+                            value is matched. Default is '(.*)'
                           type: string
                         replacement:
                           description: Replacement value against which a regex replace
@@ -5180,7 +5180,7 @@ spec:
                           type: string
                         separator:
                           description: Separator placed between concatenated source
-                            label values. default is ';'.
+                            label values. Default is ';'.
                           type: string
                         sourceLabels:
                           description: The source labels select values from existing

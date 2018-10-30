@@ -211,7 +211,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	if kubeDNS.Provider == "CoreDNS" {
 		{
 			key := "coredns.addons.k8s.io"
-			version := "1.2.2-kops.1"
+			version := "1.2.4-kops.1"
 
 			{
 				location := key + "/k8s-1.6.yaml"
@@ -230,23 +230,38 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		}
 	}
 
-	{
-		key := "rbac.addons.k8s.io"
-		version := "1.8.0"
+	// @check if node authorization or bootstrap tokens are enabled an if so we can forgo applying
+	// this manifest. For clusters whom are upgrading from RBAC to Node,RBAC the clusterrolebinding
+	// will remain and have to be deleted manually once all the nodes have been upgraded.
+	enableRBACAddon := true
+	if b.cluster.Spec.NodeAuthorization != nil {
+		enableRBACAddon = false
+	}
+	if b.cluster.Spec.KubeAPIServer != nil {
+		if b.cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken != nil && *b.cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken == true {
+			enableRBACAddon = false
+		}
+	}
 
+	if enableRBACAddon {
 		{
-			location := key + "/k8s-1.8.yaml"
-			id := "k8s-1.8"
+			key := "rbac.addons.k8s.io"
+			version := "1.8.0"
 
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Selector:          map[string]string{"k8s-addon": key},
-				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.8.0",
-				Id:                id,
-			})
-			manifests[key+"-"+id] = "addons/" + location
+			{
+				location := key + "/k8s-1.8.yaml"
+				id := "k8s-1.8"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          map[string]string{"k8s-addon": key},
+					Manifest:          fi.String(location),
+					KubernetesVersion: ">=1.8.0",
+					Id:                id,
+				})
+				manifests[key+"-"+id] = "addons/" + location
+			}
 		}
 	}
 
@@ -269,7 +284,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	if externalDNS == nil || !externalDNS.Disable {
 		{
 			key := "dns-controller.addons.k8s.io"
-			version := "1.10.0"
+			version := "1.11.0-alpha.1"
 
 			{
 				location := key + "/pre-k8s-1.6.yaml"
@@ -430,6 +445,41 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		}
 	}
 
+	if featureflag.Spotinst.Enabled() {
+		key := "spotinst-kubernetes-cluster-controller.addons.k8s.io"
+		version := "1.0.16"
+
+		{
+			id := "v1.8.0"
+			location := key + "/" + id + ".yaml"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          map[string]string{"k8s-addon": key},
+				Manifest:          fi.String(location),
+				KubernetesVersion: "<1.9.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
+
+		{
+			id := "v1.9.0"
+			location := key + "/" + id + ".yaml"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          map[string]string{"k8s-addon": key},
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.9.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
+	}
+
 	// The role.kubernetes.io/networking is used to label anything related to a networking addin,
 	// so that if we switch networking plugins (e.g. calico -> weave or vice-versa), we'll replace the
 	// old networking plugin, and there won't be old pods "floating around".
@@ -451,7 +501,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Kopeio != nil {
 		key := "networking.kope.io"
-		version := "1.0.20180319"
+		version := "1.0.20180319-kops.2"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -489,8 +539,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		versions := map[string]string{
 			"pre-k8s-1.6": "2.3.0-kops.2",
 			"k8s-1.6":     "2.3.0-kops.2",
-			"k8s-1.7":     "2.4.0-kops.1",
-			"k8s-1.8":     "2.4.0-kops.1",
+			"k8s-1.7":     "2.4.1-kops.1",
+			"k8s-1.8":     "2.4.1-kops.1",
 		}
 
 		{
@@ -649,9 +699,9 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		versions := map[string]string{
 			"pre-k8s-1.6": "2.4.2-kops.2",
 			"k8s-1.6":     "2.4.2-kops.2",
-			"k8s-1.8":     "2.6.7-kops.2",
+			"k8s-1.8":     "2.6.7-kops.3",
+			"k8s-1.9":     "3.2.3-kops.1",
 		}
-
 		{
 			id := "pre-k8s-1.6"
 			location := key + "/" + id + ".yaml"
@@ -691,7 +741,21 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				Version:           fi.String(versions[id]),
 				Selector:          networkingSelector,
 				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.8.0",
+				KubernetesVersion: ">=1.8.0 <1.9.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
+		{
+			id := "k8s-1.9"
+			location := key + "/" + id + ".yaml"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(versions[id]),
+				Selector:          networkingSelector,
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.9.0",
 				Id:                id,
 			})
 			manifests[key+"-"+id] = "addons/" + location
@@ -720,7 +784,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Romana != nil {
 		key := "networking.romana"
-		version := "v2.0.2"
+		version := "v2.0.2-kops.2"
 
 		{
 			location := key + "/k8s-1.7.yaml"
@@ -740,7 +804,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.AmazonVPC != nil {
 		key := "networking.amazon-vpc-routed-eni"
-		version := "1.0.0-kops.2"
+		version := "1.0.0-kops.3"
 
 		{
 			id := "k8s-1.7"

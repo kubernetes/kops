@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -122,12 +123,28 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 		return err
 	}
 
-	clusterList, err := client.ListClusters(metav1.ListOptions{})
-	if err != nil {
-		return err
+	var clusterList []*api.Cluster
+	if len(options.ClusterNames) != 1 {
+		list, err := client.ListClusters(metav1.ListOptions{})
+		if err != nil {
+			return err
+		}
+		for i := range list.Items {
+			clusterList = append(clusterList, &list.Items[i])
+		}
+	} else {
+		// Optimization - avoid fetching all clusters if we're only querying one
+		cluster, err := client.GetCluster(options.ClusterNames[0])
+		if err != nil {
+			if !apierrors.IsNotFound(err) {
+				return err
+			}
+		} else {
+			clusterList = append(clusterList, cluster)
+		}
 	}
 
-	clusters, err := buildClusters(options.ClusterNames, clusterList)
+	clusters, err := filterClustersByName(options.ClusterNames, clusterList)
 	if err != nil {
 		return err
 	}
@@ -165,27 +182,25 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 	}
 }
 
-func buildClusters(args []string, clusterList *api.ClusterList) ([]*api.Cluster, error) {
-	var clusters []*api.Cluster
-	if len(args) != 0 {
+// filterClustersByName returns the clusters matching the specified names.
+// If names are specified and no cluster is found with a name, we return an error.
+func filterClustersByName(clusterNames []string, clusters []*api.Cluster) ([]*api.Cluster, error) {
+	if len(clusterNames) != 0 {
+		// Build a map as we want to return them in the same order as args
 		m := make(map[string]*api.Cluster)
-		for i := range clusterList.Items {
-			c := &clusterList.Items[i]
+		for _, c := range clusters {
 			m[c.ObjectMeta.Name] = c
 		}
-		for _, clusterName := range args {
+		var filtered []*api.Cluster
+		for _, clusterName := range clusterNames {
 			c := m[clusterName]
 			if c == nil {
 				return nil, fmt.Errorf("cluster not found %q", clusterName)
 			}
 
-			clusters = append(clusters, c)
+			filtered = append(filtered, c)
 		}
-	} else {
-		for i := range clusterList.Items {
-			c := &clusterList.Items[i]
-			clusters = append(clusters, c)
-		}
+		return filtered, nil
 	}
 
 	return clusters, nil

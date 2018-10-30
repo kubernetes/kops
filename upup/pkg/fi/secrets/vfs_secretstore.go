@@ -50,11 +50,42 @@ func (c *VFSSecretStore) VFSPath() vfs.Path {
 
 func (c *VFSSecretStore) MirrorTo(basedir vfs.Path) error {
 	if basedir.Path() == c.basedir.Path() {
+		glog.V(2).Infof("Skipping mirror of secret store from %q to %q (same path)", c.basedir, basedir)
 		return nil
 	}
 	glog.V(2).Infof("Mirroring secret store from %q to %q", c.basedir, basedir)
 
-	return vfs.CopyTree(c.basedir, basedir, func(p vfs.Path) (vfs.ACL, error) { return acls.GetACL(p, c.cluster) })
+	secrets, err := c.ListSecrets()
+	if err != nil {
+		return fmt.Errorf("error listing secrets for mirror: %v", err)
+	}
+
+	for _, name := range secrets {
+		secret, err := c.FindSecret(name)
+		if err != nil {
+			return fmt.Errorf("error reading secret %q for mirror: %v", name, err)
+		}
+
+		if secret == nil {
+			return fmt.Errorf("unable to find secret %q for mirror", name)
+		}
+
+		p := BuildVfsSecretPath(basedir, name)
+
+		acl, err := acls.GetACL(p, c.cluster)
+		if err != nil {
+			return fmt.Errorf("error building acl for secret %q for mirror: %v", name, err)
+		}
+
+		glog.Infof("mirroring secret %s -> %s", name, p)
+
+		err = createSecret(secret, p, acl, true)
+		if err != nil {
+			return fmt.Errorf("error writing secret %q for mirror: %v", name, err)
+		}
+	}
+
+	return nil
 }
 
 func BuildVfsSecretPath(basedir vfs.Path, name string) vfs.Path {
@@ -122,7 +153,7 @@ func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *fi.Secret) (*fi.Se
 			return nil, false, err
 		}
 
-		err = c.createSecret(secret, p, acl, false)
+		err = createSecret(secret, p, acl, false)
 		if err != nil {
 			if os.IsExist(err) && i == 0 {
 				glog.Infof("Got already-exists error when writing secret; likely due to concurrent creation.  Will retry")
@@ -140,7 +171,7 @@ func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *fi.Secret) (*fi.Se
 	// Make double-sure it round-trips
 	s, err := c.loadSecret(p)
 	if err != nil {
-		glog.Fatalf("unable to load secret immmediately after creation %v: %v", p, err)
+		glog.Fatalf("unable to load secret immediately after creation %v: %v", p, err)
 		return nil, false, err
 	}
 	return s, true, nil
@@ -154,7 +185,7 @@ func (c *VFSSecretStore) ReplaceSecret(id string, secret *fi.Secret) (*fi.Secret
 		return nil, err
 	}
 
-	err = c.createSecret(secret, p, acl, true)
+	err = createSecret(secret, p, acl, true)
 	if err != nil {
 		return nil, fmt.Errorf("unable to write secret: %v", err)
 	}
@@ -162,7 +193,7 @@ func (c *VFSSecretStore) ReplaceSecret(id string, secret *fi.Secret) (*fi.Secret
 	// Confirm the secret exists
 	s, err := c.loadSecret(p)
 	if err != nil {
-		return nil, fmt.Errorf("unable to load secret immmediately after creation %v: %v", p, err)
+		return nil, fmt.Errorf("unable to load secret immediately after creation %v: %v", p, err)
 	}
 	return s, nil
 }
@@ -183,7 +214,7 @@ func (c *VFSSecretStore) loadSecret(p vfs.Path) (*fi.Secret, error) {
 }
 
 // createSecret will create the Secret, overwriting an existing secret if replace is true
-func (c *VFSSecretStore) createSecret(s *fi.Secret, p vfs.Path, acl vfs.ACL, replace bool) error {
+func createSecret(s *fi.Secret, p vfs.Path, acl vfs.ACL, replace bool) error {
 	data, err := json.Marshal(s)
 	if err != nil {
 		return fmt.Errorf("error serializing secret: %v", err)

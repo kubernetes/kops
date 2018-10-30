@@ -45,6 +45,9 @@ var (
 	# Install a specific weave password.
 	kops create secret weavepassword -f /path/to/weavepassword \
 		--name k8s-cluster.example.com --state s3://example.com
+	# Install a specific weave password via stdin.
+	kops create secret weavepassword -f - \
+		--name k8s-cluster.example.com --state s3://example.com	
 	# Replace an existing weavepassword secret.
 	kops create secret weavepassword -f /path/to/weavepassword --force \
 		--name k8s-cluster.example.com --state s3://example.com
@@ -112,9 +115,18 @@ func RunCreateSecretWeaveEncryptionConfig(f *util.Factory, options *CreateSecret
 	}
 
 	if options.WeavePasswordFilePath != "" {
-		data, err := ioutil.ReadFile(options.WeavePasswordFilePath)
-		if err != nil {
-			return fmt.Errorf("error reading weave password file %v: %v", options.WeavePasswordFilePath, err)
+		var data []byte
+		if options.WeavePasswordFilePath == "-" {
+			data, err = ConsumeStdin()
+			if err != nil {
+				return fmt.Errorf("error reading weave password file from stdin: %v", err)
+			}
+		} else {
+			data, err = ioutil.ReadFile(options.WeavePasswordFilePath)
+			if err != nil {
+				return fmt.Errorf("error reading weave password file %v: %v", options.WeavePasswordFilePath, err)
+			}
+
 		}
 
 		secret.Data = data

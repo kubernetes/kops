@@ -7,11 +7,18 @@ Eventually, kubernetes services will also pull from the state store, so that we 
 configuration through a channel like user-data.  (This is currently done for secrets and SSL keys, for example,
 though we have to copy the data from the state store to a file where components like kubelet can read them).
 
-The state store uses kops's VFS implementation, so can in theory be stored anywhere.  Currently storage on S3
-is supported, but support for GCS is coming soon, along with encrypted storage.
+The state store uses kops's VFS implementation, so can in theory be stored anywhere. 
+As of now the following state stores are supported: 
+* Amazon AWS S3 (s3://)
+* local filesystem (file://)
+* Digital Ocean (do://)
+* MemFS (memfs://)
+* Google Cloud (gs://)
+* Kubernetes (k8s://)
+* OpenStack Swift (swift://)
+* AliCloud (oss://)
 
-The state store is just files; you can copy the files down and put them into git (or your preferred version
-control system).
+The state store is just files; you can copy the files down and put them into git (or your preferred version control system).
 
 ## {statestore}/config
 

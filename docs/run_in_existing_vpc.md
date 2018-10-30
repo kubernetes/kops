@@ -68,7 +68,7 @@ and a new route table, but you can also use a shared subnet (see [below](#shared
 
 ### VPC with multiple CIDRs
 
-AWS now allows you to add more CIDRs to a VPC, the param `AdditionalNetworkCIDRs` allows you to specify any additional CIDRs added to the VPC.
+AWS now allows you to add more CIDRs to a VPC, the param `additionalNetworkCIDRs` allows you to specify any additional CIDRs added to the VPC.
 
 ```yaml
 metadata:

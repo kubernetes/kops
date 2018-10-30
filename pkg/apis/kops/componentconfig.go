@@ -204,6 +204,14 @@ type KubeProxyConfig struct {
 	Enabled *bool `json:"enabled,omitempty"`
 	// Which proxy mode to use: (userspace, iptables(default), ipvs)
 	ProxyMode string `json:"proxyMode,omitempty" flag:"proxy-mode"`
+	// IPVSExcludeCIDRS is comma-separated list of CIDR's which the ipvs proxier should not touch when cleaning up IPVS rules
+	IPVSExcludeCIDRS []string `json:"ipvsExcludeCidrs,omitempty" flag:"ipvs-exclude-cidrs"`
+	// IPVSMinSyncPeriod is the minimum interval of how often the ipvs rules can be refreshed as endpoints and services change (e.g. '5s', '1m', '2h22m')
+	IPVSMinSyncPeriod *metav1.Duration `json:"ipvsMinSyncPeriod,omitempty" flag:"ipvs-min-sync-period"`
+	// IPVSScheduler is the ipvs scheduler type when proxy mode is ipvs
+	IPVSScheduler *string `json:"ipvsScheduler,omitempty" flag:"ipvs-scheduler"`
+	// IPVSSyncPeriod duration is the maximum interval of how often ipvs rules are refreshed
+	IPVSSyncPeriod *metav1.Duration `json:"ipvsSyncPeriod,omitempty" flag:"ipvs-sync-period"`
 	// FeatureGates is a series of key pairs used to switch on features for the proxy
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 	// Maximum number of NAT connections to track per CPU core (default: 131072)
@@ -345,6 +353,8 @@ type KubeAPIServerConfig struct {
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 	// MaxRequestsInflight The maximum number of non-mutating requests in flight at a given time.
 	MaxRequestsInflight int32 `json:"maxRequestsInflight,omitempty" flag:"max-requests-inflight" flag-empty:"0"`
+	// MaxMutatingRequestsInflight The maximum number of mutating requests in flight at a given time. Defaults to 200
+	MaxMutatingRequestsInflight int32 `json:"maxMutatingRequestsInflight,omitempty" flag:"max-mutating-requests-inflight" flag-empty:"0"`
 
 	// EtcdQuorumRead configures the etcd-quorum-read flag, which forces consistent reads from etcd
 	EtcdQuorumRead *bool `json:"etcdQuorumRead,omitempty" flag:"etcd-quorum-read"`
@@ -352,6 +362,9 @@ type KubeAPIServerConfig struct {
 	// MinRequestTimeout configures the minimum number of seconds a handler must keep a request open before timing it out.
 	// Currently only honored by the watch request handler
 	MinRequestTimeout *int32 `json:"minRequestTimeout,omitempty" flag:"min-request-timeout"`
+
+	// Memory limit for apiserver in MB (used to configure sizes of caches, etc.)
+	TargetRamMb int32 `json:"targetRamMb,omitempty" flag:"target-ram-mb" flag-empty:"0"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
@@ -488,6 +501,9 @@ type CloudConfiguration struct {
 	VSphereResourcePool  *string `json:"vSphereResourcePool,omitempty"`
 	VSphereDatastore     *string `json:"vSphereDatastore,omitempty"`
 	VSphereCoreDNSServer *string `json:"vSphereCoreDNSServer,omitempty"`
+	// Spotinst cloud-config specs
+	SpotinstProduct     *string `json:"spotinstProduct,omitempty"`
+	SpotinstOrientation *string `json:"spotinstOrientation,omitempty"`
 }
 
 // HasAdmissionController checks if a specific admission controller is enabled

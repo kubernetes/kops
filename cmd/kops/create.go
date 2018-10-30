@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -72,7 +71,7 @@ var (
 	kops create ig --name=k8s-cluster.example.com node-example \
 		--role node --subnet my-subnet-name
 
-	# Create an new ssh public key called admin.
+	# Create a new ssh public key called admin.
 	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
 		--name k8s-cluster.example.com --state s3://example.com
 	`))
@@ -244,16 +243,4 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 		}
 	}
 	return nil
-}
-
-// ConsumeStdin reads all the bytes available from stdin
-func ConsumeStdin() ([]byte, error) {
-	file := os.Stdin
-	buf := new(bytes.Buffer)
-	_, err := buf.ReadFrom(file)
-	if err != nil {
-		return nil, fmt.Errorf("error reading stdin: %v", err)
-	}
-
-	return buf.Bytes(), nil
 }

@@ -198,8 +198,10 @@ spec:
           type: spc_t
       serviceAccountName: romana-agent
       tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
       containers:
       - name: romana-agent
         image: quay.io/romana/agent:v2.0.2

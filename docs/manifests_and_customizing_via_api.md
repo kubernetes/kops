@@ -233,7 +233,7 @@ spec:
 
 ## YAML Examples
 
-With the above YAML file, a user can add configurations that are not available via the command line. For instance, you can add a `MaxPrice` value to a new instance group and use spot instances. Also add node and cloud labels for the new instance group.
+With the above YAML file, a user can add configurations that are not available via the command line. For instance, you can add a `maxPrice` value to a new instance group and use spot instances. Also add node and cloud labels for the new instance group.
 
 ```yaml
 apiVersion: kops/v1alpha2
@@ -342,6 +342,6 @@ Using YAML or JSON-based configuration for building and managing kops clusters i
 
 - If you do not need to define or customize a value, let kops set that value. Setting too many values prevents kops from doing its job in setting up the cluster and you may end up with strange bugs.
 - If you end up with strange bugs, try letting kops do more.
-- Be cautious, take care, and test test test outside of production!
+- Be cautious, take care, and test outside of production!
 
 If you need to run a custom version of Kubernetes Controller Manager, set `kubeControllerManager.image` and update your cluster. This is the beauty of using a manifest for your cluster!

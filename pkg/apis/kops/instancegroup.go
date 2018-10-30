@@ -71,7 +71,7 @@ var AllInstanceGroupRoles = []InstanceGroupRole{
 type InstanceGroupSpec struct {
 	// Type determines the role of instances in this group: masters or nodes
 	Role InstanceGroupRole `json:"role,omitempty"`
-	// Image is the instance instance (ami etc) we should use
+	// Image is the instance (ami etc) we should use
 	Image string `json:"image,omitempty"`
 	// MinSize is the minimum size of the pool
 	MinSize *int32 `json:"minSize,omitempty"`
@@ -123,7 +123,7 @@ type InstanceGroupSpec struct {
 	DetailedInstanceMonitoring *bool `json:"detailedInstanceMonitoring,omitempty"`
 	// IAMProfileSpec defines the identity of the cloud group iam profile (AWS only).
 	IAM *IAMProfileSpec `json:"iam,omitempty"`
-	// SecurityGroupOverride overrides the defaut security group created by Kops for this IG (AWS only).
+	// SecurityGroupOverride overrides the default security group created by Kops for this IG (AWS only).
 	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
 }
 

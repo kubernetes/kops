@@ -23,7 +23,6 @@ import (
 type Addons struct {
 	metav1.TypeMeta `json:",inline"`
 
-	// We use v1.ObjectMeta so we don't serialize everything, even though we are using the full api machinery here (yet!)
 	ObjectMeta metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec AddonsSpec `json:"spec,omitempty"`
