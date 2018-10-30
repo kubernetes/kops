@@ -18,10 +18,10 @@ $(document).ready(function() {
         });
     }
 
-    function setDefautTab() {
+    function setDefaultTab() {
         $(codeTabs[0]).addClass('tab-selected');
         $('.' + codeTabs[0].id).addClass('active');
     }
 
-    setDefautTab();
+    setDefaultTab();
 });
