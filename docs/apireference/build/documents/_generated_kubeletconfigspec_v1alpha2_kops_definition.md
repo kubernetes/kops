@@ -28,7 +28,7 @@ clientCaFile <br /> *string*    | ClientCAFile is the path to a CA certificate
 cloudProvider <br /> *string*    | CloudProvider is the provider for cloud services.
 clusterDNS <br /> *string*    | ClusterDNS is the IP address for a cluster DNS server
 clusterDomain <br /> *string*    | ClusterDomain is the DNS domain for this cluster
-configureCbr0 <br /> *boolean*    | configureCBR0 enables the kublet to configure cbr0 based on Node.Spec.PodCIDR.
+configureCbr0 <br /> *boolean*    | configureCBR0 enables the kubelet to configure cbr0 based on Node.Spec.PodCIDR.
 enableCustomMetrics <br /> *boolean*    | Enable gathering custom metrics.
 enableDebuggingHandlers <br /> *boolean*    | EnableDebuggingHandlers enables server endpoints for log collection and local running of containers and commands
 enforceNodeAllocatable <br /> *string*    | Enforce Allocatable across pods whenever the overall usage across all pods exceeds Allocatable.
