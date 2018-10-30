@@ -486,6 +486,7 @@ dep-ensure: dep-prereqs
 	rm -rf vendor/k8s.io/code-generator/cmd/set-gen/
 	rm -rf vendor/k8s.io/code-generator/cmd/go-to-protobuf/
 	rm -rf vendor/k8s.io/code-generator/cmd/import-boss/
+	rm -rf vendor/github.com/docker/docker/contrib/
 	make bazel-gazelle
 
 
