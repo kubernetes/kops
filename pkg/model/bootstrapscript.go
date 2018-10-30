@@ -102,9 +102,9 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 	var bastionHooks []kops.HookSpec
 	var err error
 	if ig.IsBastion() {
-	  bastionHooks, err = b.getRelevantHooks(ig.Spec.Hooks, ig.Spec.Role)
+		bastionHooks, err = b.getRelevantHooks(ig.Spec.Hooks, ig.Spec.Role)
 	} else {
-	  bastionHooks = bastionHooks
+		//Do nothing as bastionHooks should be empty
 	}
 
 	if ig.IsBastion() && len(ig.Spec.AdditionalUserData) == 0 && !(len(bastionHooks) > 0) {
