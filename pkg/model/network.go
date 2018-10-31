@@ -332,6 +332,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				c.AddTask(in)
 
+			} else if egress == "External" {
+				// Nothing to do here
 			} else {
 				return fmt.Errorf("kops currently only supports re-use of either NAT EC2 Instances or NAT Gateways. We will support more eventually! Please see https://github.com/kubernetes/kops/issues/1530")
 			}
