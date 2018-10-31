@@ -117,6 +117,7 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 	actual.Name = group.Name
 	actual.MinSize = fi.Int64(int64(fi.IntValue(group.Capacity.Minimum)))
 	actual.MaxSize = fi.Int64(int64(fi.IntValue(group.Capacity.Maximum)))
+	actual.Risk = group.Strategy.Risk
 	actual.Orientation = group.Strategy.AvailabilityVsCost
 
 	// Compute.
@@ -134,7 +135,12 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 		{
 			for _, zone := range compute.AvailabilityZones {
 				if zone.SubnetID != nil {
-					actual.Subnets = append(actual.Subnets, &awstasks.Subnet{ID: zone.SubnetID})
+					t := &awstasks.Subnet{ID: zone.SubnetID}
+					s, err := t.Find(c)
+					if err != nil {
+						return nil, err
+					}
+					actual.Subnets = append(actual.Subnets, s)
 				}
 			}
 			if subnetSlicesEqualIgnoreOrder(actual.Subnets, e.Subnets) {
@@ -149,11 +155,16 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 
 		// Image.
 		{
-			image, err := resolveImage(cloud, fi.StringValue(lc.ImageID))
-			if err != nil {
-				return nil, err
+			if e.ImageID != nil && lc.ImageID != nil &&
+				fi.StringValue(lc.ImageID) != fi.StringValue(e.ImageID) {
+				image, err := resolveImage(cloud, fi.StringValue(e.ImageID))
+				if err != nil {
+					return nil, err
+				}
+				if fi.StringValue(image.ImageId) == fi.StringValue(lc.ImageID) {
+					actual.ImageID = e.ImageID
+				}
 			}
-			actual.ImageID = image.Name
 		}
 
 		// Tags.
@@ -161,15 +172,30 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 			if len(lc.Tags) > 0 {
 				actual.Tags = make(map[string]string)
 				for _, tag := range lc.Tags {
-					actual.Tags[*tag.Key] = *tag.Value
+					actual.Tags[fi.StringValue(tag.Key)] = fi.StringValue(tag.Value)
 				}
 			}
 		}
 
 		// Security groups.
 		{
-			for _, sg := range lc.SecurityGroupIDs {
-				actual.SecurityGroups = append(actual.SecurityGroups, &awstasks.SecurityGroup{ID: fi.String(sg)})
+			for _, sg := range e.SecurityGroups {
+				t := &awstasks.SecurityGroup{ID: sg.ID}
+				if sg.VPC != nil {
+					t.VPC = &awstasks.VPC{ID: sg.VPC.ID}
+				}
+				s, err := t.Find(c)
+				if err != nil {
+					return nil, err
+				}
+				if s != nil {
+					for _, sgID := range lc.SecurityGroupIDs {
+						if fi.StringValue(s.ID) == sgID {
+							actual.SecurityGroups = append(actual.SecurityGroups, s)
+							break
+						}
+					}
+				}
 			}
 		}
 
@@ -189,7 +215,7 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 		// User data.
 		{
 			if lc.UserData != nil {
-				userData, err := base64.StdEncoding.DecodeString(*lc.UserData)
+				userData, err := base64.StdEncoding.DecodeString(fi.StringValue(lc.UserData))
 				if err != nil {
 					return nil, err
 				}
@@ -211,25 +237,78 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 			actual.AssociatePublicIP = fi.Bool(associatePublicIP)
 		}
 
-		if lc.LoadBalancersConfig != nil {
+		// Load balancer.
+		if e.LoadBalancer != nil && lc.LoadBalancersConfig != nil {
 			if lbs := lc.LoadBalancersConfig.LoadBalancers; len(lbs) > 0 {
-				actual.LoadBalancer = &awstasks.LoadBalancer{
-					Name:             lbs[0].Name,
-					LoadBalancerName: lbs[0].Name,
+				t := &awstasks.LoadBalancer{Name: e.LoadBalancer.Name}
+				s, err := t.Find(c)
+				if err != nil {
+					return nil, err
+				}
+				if s != nil && fi.StringValue(s.LoadBalancerName) == fi.StringValue(lbs[0].Name) {
+					actual.LoadBalancer = s
 				}
 			}
 		}
 
+		// IAM instance profile.
 		if lc.IAMInstanceProfile != nil {
-			actual.IAMInstanceProfile = &awstasks.IAMInstanceProfile{Name: lc.IAMInstanceProfile.Name}
+			t := &awstasks.IAMInstanceProfile{Name: lc.IAMInstanceProfile.Name}
+			s, err := t.Find(c)
+			if err != nil {
+				return nil, err
+			}
+			actual.IAMInstanceProfile = s
 		}
 
+		// SSH key.
 		if lc.KeyPair != nil {
-			actual.SSHKey = &awstasks.SSHKey{Name: lc.KeyPair}
+			t := &awstasks.SSHKey{Name: lc.KeyPair}
+			s, err := t.Find(c)
+			if err != nil {
+				return nil, err
+			}
+			actual.SSHKey = s
 		}
 
+		// Tenancy.
 		if lc.Tenancy != nil {
 			actual.Tenancy = lc.Tenancy
+		}
+
+		// Monitoring.
+		if lc.Monitoring != nil {
+			actual.Monitoring = lc.Monitoring
+		}
+	}
+
+	// Integration.
+	{
+		if group.Integration != nil && group.Integration.Kubernetes != nil {
+			integration := group.Integration.Kubernetes
+
+			// Cluster identifier.
+			if integration.ClusterIdentifier != nil {
+				actual.AutoScalerClusterID = integration.ClusterIdentifier
+			}
+
+			// Auto scaler.
+			if integration.AutoScale != nil {
+				if integration.AutoScale.IsEnabled != nil {
+					actual.AutoScalerEnabled = integration.AutoScale.IsEnabled
+				}
+
+				// Labels.
+				if integration.AutoScale.Labels != nil {
+					labels := make(map[string]string)
+					for _, label := range integration.AutoScale.Labels {
+						labels[fi.StringValue(label.Key)] = fi.StringValue(label.Value)
+					}
+					if len(labels) > 0 {
+						actual.AutoScalerNodeLabels = labels
+					}
+				}
+			}
 		}
 	}
 
@@ -531,6 +610,16 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 
 	// Strategy.
 	{
+		// Risk.
+		if changes.Risk != nil {
+			if group.Strategy == nil {
+				group.Strategy = new(aws.Strategy)
+			}
+
+			group.Strategy.SetRisk(e.Risk)
+			changes.Risk = nil
+		}
+
 		// Orientation.
 		if changes.Orientation != nil {
 			if group.Strategy == nil {
