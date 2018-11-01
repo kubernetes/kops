@@ -61,10 +61,10 @@ type (
 		// Read returns an existing Elastigroup by ID.
 		Read(ctx context.Context, groupID string) (Elastigroup, error)
 
-		// Update updates an existing Elastigroup.
+		// Update an existing Elastigroup.
 		Update(ctx context.Context, group Elastigroup) error
 
-		// Delete deletes an existing Elastigroup by ID.
+		// Delete an existing Elastigroup by ID.
 		Delete(ctx context.Context, groupID string) error
 
 		// Detach removes one or more instances from the specified Elastigroup.

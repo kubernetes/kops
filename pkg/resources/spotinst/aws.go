@@ -70,7 +70,7 @@ func (s *awsService) Read(ctx context.Context, groupID string) (Elastigroup, err
 	return &awsElastigroup{output.Group}, nil
 }
 
-// Update updates an existing Elastigroup.
+// Update an existing Elastigroup.
 func (s *awsService) Update(ctx context.Context, group Elastigroup) error {
 	input := &aws.UpdateGroupInput{
 		Group: group.Obj().(*aws.Group),
@@ -81,7 +81,7 @@ func (s *awsService) Update(ctx context.Context, group Elastigroup) error {
 
 }
 
-// Delete deletes an existing Elastigroup by ID.
+// Delete an existing Elastigroup by ID.
 func (s *awsService) Delete(ctx context.Context, groupID string) error {
 	input := &aws.DeleteGroupInput{
 		GroupID: fi.String(groupID),
