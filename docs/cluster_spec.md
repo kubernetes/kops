@@ -85,19 +85,23 @@ etcdClusters:
 
 > __Note:__ The images for etcd that kops uses are from the Google Cloud Repository. Google doesn't release every version of etcd to the gcr. Check that the version of etcd you want to use is available [at the gcr](https://console.cloud.google.com/gcr/images/google-containers/GLOBAL/etcd?gcrImageListsize=50) before using it in your cluster spec.
 
-By default, the Volumes created for the etcd clusters are 20GB each.  They can be adjusted via the `volumeSize` parameter.
+By default, the Volumes created for the etcd clusters are `gp2` and 20GB each. The volume size, type and Iops( for `io1`) can be configured via their parameters. Conversion between `gp2` and `io1` is not supported, nor are size changes.
 
 ```yaml
 etcdClusters:
 - etcdMembers:
   - instanceGroup: master-us-east-1a
     name: a
-    volumeSize: 5
+    volumeType: gp2
+    volumeSize: 20
   name: main
 - etcdMembers:
   - instanceGroup: master-us-east-1a
     name: a
-    volumeSize: 5
+    volumeType: io1
+    # WARNING: bear in mind that the Iops to volume size ratio has a maximum of 50 on AWS!
+    volumeIops: 100
+    volumeSize: 21
   name: events
 ```
 
