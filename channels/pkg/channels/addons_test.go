@@ -83,7 +83,7 @@ func Test_Replacement(t *testing.T) {
 		New      *ChannelVersion
 		Replaces bool
 	}{
-		// With no id, update iff newer semver
+		// With no id, update if newer semver
 		{
 			Old:      &ChannelVersion{Version: s("1.0.0"), Id: ""},
 			New:      &ChannelVersion{Version: s("1.0.0"), Id: ""},
