@@ -102,7 +102,7 @@ func (e *SecurityGroup) findEc2(c *fi.Context) (*ec2.SecurityGroup, error) {
 		// Find by ID.
 		request.GroupIds = []*string{e.ID}
 
-	} else if fi.StringValue(e.Name) != "" && e.VPC != nil {
+	} else if fi.StringValue(e.Name) != "" && e.VPC != nil && e.VPC.ID != nil {
 		// Find by filters (name and VPC ID).
 		filters := cloud.BuildFilters(e.Name)
 		filters = append(filters, awsup.NewEC2Filter("vpc-id", *e.VPC.ID))
