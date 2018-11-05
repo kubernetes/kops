@@ -48,6 +48,7 @@
       "Effect": "Allow",
       "Action": [
         "s3:GetBucketLocation",
+        "s3:GetEncryptionConfiguration",
         "s3:ListBucket"
       ],
       "Resource": [
