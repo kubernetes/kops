@@ -838,6 +838,7 @@ func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderCo
 		Type:       nodetasks.FileType_File,
 		OnChangeExecute: [][]string{
 			{"systemctl", "daemon-reload"},
+			{"iptables", "--flush"},
 			{"systemctl", "restart", "docker.service"},
 			// We need to restart kops-configuration service since nodeup needs to load images
 			// into docker with the new overlay storage. Restart is on the background because
