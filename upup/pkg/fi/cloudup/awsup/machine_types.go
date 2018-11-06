@@ -718,6 +718,55 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: nil,
 	},
 
+	// m5a family
+	{
+		Name:           "m5a.large",
+		MemoryGB:       8,
+		ECU:            nil,
+		Cores:          2,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "m5a.xlarge",
+		MemoryGB:       16,
+		ECU:            nil,
+		Cores:          4,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "m5a.2xlarge",
+		MemoryGB:       32,
+		ECU:            nil,
+		Cores:          8,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "m5a.4xlarge",
+		MemoryGB:       64,
+		ECU:            nil,
+		Cores:          16,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "m5a.12xlarge",
+		MemoryGB:       192,
+		ECU:            nil,
+		Cores:          48,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "m5a.24xlarge",
+		MemoryGB:       384,
+		ECU:            nil,
+		Cores:          96,
+		EphemeralDisks: nil,
+	},
+
 	// m5d family
 	{
 		Name:           "m5d.large",
@@ -958,6 +1007,55 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Name:           "r5.24xlarge",
 		MemoryGB:       768,
 		ECU:            347,
+		Cores:          96,
+		EphemeralDisks: nil,
+	},
+
+	// r5a family
+	{
+		Name:           "r5a.large",
+		MemoryGB:       16,
+		ECU:            nil,
+		Cores:          2,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "r5a.xlarge",
+		MemoryGB:       32,
+		ECU:            nil,
+		Cores:          4,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "r5a.2xlarge",
+		MemoryGB:       64,
+		ECU:            nil,
+		Cores:          8,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "r5a.4xlarge",
+		MemoryGB:       128,
+		ECU:            nil,
+		Cores:          16,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "r5a.12xlarge",
+		MemoryGB:       384,
+		ECU:            nil,
+		Cores:          48,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "r5a.24xlarge",
+		MemoryGB:       768,
+		ECU:            nil,
 		Cores:          96,
 		EphemeralDisks: nil,
 	},
