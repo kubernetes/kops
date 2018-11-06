@@ -30,12 +30,16 @@ type DockerConfig struct {
 	DefaultUlimit []string `json:"defaultUlimit,omitempty" flag:"default-ulimit,repeat"`
 	// ExecRoot is the root directory for execution state files (default "/var/run/docker")
 	ExecRoot *string `json:"execRoot,omitempty" flag:"exec-root"`
+	// IPv6 subnet for fixed IPs
+	FixedCidrV6 *string `json:"fixedCidrV6,omitempty" flag:"fixed-cidr-v6"`
 	// Hosts enables you to configure the endpoints the docker daemon listens on i.e tcp://0.0.0.0.2375 or unix:///var/run/docker.sock etc
 	Hosts []string `json:"hosts,omitempty" flag:"host,repeat"`
 	// IPMasq enables ip masquerading for containers
 	IPMasq *bool `json:"ipMasq,omitempty" flag:"ip-masq"`
 	// IPtables enables addition of iptables rules
 	IPTables *bool `json:"ipTables,omitempty" flag:"iptables"`
+	// Enable IPv6 networking
+	IPv6 *bool `json:"ipv6,omitempty" flag:"ipv6"`
 	// InsecureRegistry enable insecure registry communication @question according to dockers this a list??
 	InsecureRegistry *string `json:"insecureRegistry,omitempty" flag:"insecure-registry"`
 	// LiveRestore enables live restore of docker when containers are still running

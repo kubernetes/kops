@@ -116,6 +116,13 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"")
 	}
 
+	if *b.Cluster.Spec.Docker.IPv6 {
+		sysctls = append(sysctls,
+			"# IPv6 accept Router Advertisements even if forwarding is enabled",
+			"net.ipv6.conf.eth0.accept_ra=2",
+			"")
+	}
+
 	sysctls = append(sysctls,
 		"# Prevent docker from changing iptables: https://github.com/kubernetes/kubernetes/issues/40182",
 		"net.ipv4.ip_forward=1",

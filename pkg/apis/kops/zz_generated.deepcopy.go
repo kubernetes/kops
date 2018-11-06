@@ -1190,6 +1190,15 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 			**out = **in
 		}
 	}
+	if in.FixedCidrV6 != nil {
+		in, out := &in.FixedCidrV6, &out.FixedCidrV6
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
 	if in.Hosts != nil {
 		in, out := &in.Hosts, &out.Hosts
 		*out = make([]string, len(*in))
@@ -1206,6 +1215,15 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 	}
 	if in.IPTables != nil {
 		in, out := &in.IPTables, &out.IPTables
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
+			**out = **in
+		}
+	}
+	if in.IPv6 != nil {
+		in, out := &in.IPv6, &out.IPv6
 		if *in == nil {
 			*out = nil
 		} else {

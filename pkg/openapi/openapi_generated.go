@@ -25710,6 +25710,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"fixedCidrV6": {
+							SchemaProps: spec.SchemaProps{
+								Description: "IPv6 subnet for fixed IPs",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"networkCIDR": {
 							SchemaProps: spec.SchemaProps{
 								Description: "NetworkCIDR is the CIDR used for the AWS VPC Network, or otherwise allocated to k8s This is a real CIDR, not the internal k8s network On AWS, it maps to the VPC CIDR.  It is not required on GCE.",
@@ -25742,6 +25749,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 							SchemaProps: spec.SchemaProps{
 								Description: "Topology defines the type of network topology to use on the cluster - default public This is heavily weighted towards AWS for the time being, but should also be agnostic enough to port out to GCE later if needed",
 								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha1.TopologySpec"),
+							},
+						},
+						"ipv6": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Enable IPv6 networking",
+								Type:        []string{"boolean"},
+								Format:      "",
 							},
 						},
 						"secretStore": {
