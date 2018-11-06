@@ -185,7 +185,8 @@ kubectl delete deployment -lk8s-app=heapster --namespace=kube-system
 ## Delete remaining resources of the old cluster
 
 `kops delete cluster ${OLD_NAME}`
-> ```
+> 
+```
 TYPE                    NAME                                    ID
 autoscaling-config      kubernetes-minion-group-us-west-2a      kubernetes-minion-group-us-west-2a
 autoscaling-group       kubernetes-minion                       kubernetes-minion-group-us-west-2a
