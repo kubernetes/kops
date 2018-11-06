@@ -92,7 +92,10 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			switch kops.CloudProviderID(b.Cluster.Spec.CloudProvider) {
 			case kops.CloudProviderAWS:
-				b.addAWSVolume(c, name, volumeSize, zone, etcd, m, allMembers)
+				err = b.addAWSVolume(c, name, volumeSize, zone, etcd, m, allMembers)
+				if err != nil {
+					return err
+				}
 			case kops.CloudProviderDO:
 				b.addDOVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			case kops.CloudProviderGCE:
@@ -116,7 +119,7 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
+func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) error {
 	volumeType := fi.StringValue(m.VolumeType)
 	volumeIops := fi.Int32Value(m.VolumeIops)
 	switch volumeType {
@@ -160,9 +163,16 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 	}
 	if volumeType == "io1" {
 		t.VolumeIops = i64(int64(volumeIops))
+
+		// https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html
+		if float64(*t.VolumeIops)/float64(*t.SizeGB) > 50.0 {
+			return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 50. For %s ratio is %f", *t.Name, float64(*t.VolumeIops)/float64(*t.SizeGB))
+		}
 	}
 
 	c.AddTask(t)
+
+	return nil
 }
 
 func (b *MasterVolumeBuilder) addDOVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
