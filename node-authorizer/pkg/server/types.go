@@ -68,7 +68,7 @@ type Config struct {
 	Features []string
 	// EnableVerbose indicate verbose logging
 	EnableVerbose bool
-	// ClientCommonName is the common name on the client certiicate if mutual tls is enabled
+	// ClientCommonName is the common name on the client certificate if mutual tls is enabled
 	ClientCommonName string
 	// ClusterName is the name of the kubernetes cluster
 	ClusterName string
@@ -168,7 +168,7 @@ type Authorizer interface {
 
 // Verifier is the client side of authorizer
 type Verifier interface {
-	// VerifyIdentity is responisible for constructing the parameters for a request
+	// VerifyIdentity is responsible for constructing the parameters for a request
 	VerifyIdentity(context.Context) ([]byte, error)
 }
 
