@@ -116,6 +116,18 @@ type CanalNetworkingSpec struct {
 
 // KuberouterNetworkingSpec declares that we want Kube-router networking
 type KuberouterNetworkingSpec struct {
+	// The container image name to use, which by default is:
+	// cloudnativelabs/kube-router:v0.1.0
+	ImageName string `json:"imageName,omitempty"`
+	// PrometheusMetricsPort is the TCP port that the Prometheus
+	// metrics server should bind to (default: 12013)
+	PrometheusMetricsPort int32 `json:"prometheusMetricsPort,omitempty"`
+	// LivenessProbeEnabled if livenessProbe is enabled (default: true)
+	LivenessProbeEnabled bool `json:"livenessProbeEnabled,omitempty"`
+	// LivenessProbeInitialDelay livenessProbe initialDelay (default: 10)
+	LivenessProbeInitialDelay bool `json:"livenessProbeInitialDelay,omitempty"`
+	// LivenessProbePeriodSeconds livenessProbe periodSeconds (default: 3)
+	LivenessProbePeriodSeconds bool `json:"livenessProbePeriodSeconds,omitempty"`
 }
 
 // RomanaNetworkingSpec declares that we want Romana networking

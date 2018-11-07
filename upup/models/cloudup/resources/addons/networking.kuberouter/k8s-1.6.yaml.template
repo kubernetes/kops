@@ -37,24 +37,26 @@ spec:
     spec:
       containers:
       - name: kube-router
-        image: cloudnativelabs/kube-router:v0.1.0
+        image: {{- or .Networking.Kuberouter.ImageName "cloudnativelabs/kube-router:v0.1.0" }}
         args:
         - --run-router=true
         - --run-firewall=true
         - --run-service-proxy=true
-        - --metrics-port=12013
+        - --metrics-port={{- or .Networking.Kuberouter.PrometheusMetricsPort "12013" }}
         - --kubeconfig=/var/lib/kube-router/kubeconfig
         env:
         - name: NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        {{- if eq .Networking.Kuberouter.LivenessProbeEnabled "true" }}
         livenessProbe:
           httpGet:
             path: /healthz
             port: 20244
-          initialDelaySeconds: 10
-          periodSeconds: 3
+          initialDelaySeconds: {{- or .Networking.Kuberouter.LivenessProbeInitialDelay "10" }}
+          periodSeconds: {{- or .Networking.Kuberouter.LivenessProbePeriodSeconds "3" }}
+        {{- end }}
         resources:
           requests:
             cpu: 100m

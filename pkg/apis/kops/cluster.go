@@ -526,6 +526,7 @@ func (c *Cluster) FillDefaults() error {
 	} else if c.Spec.Networking.Canal != nil {
 		// OK
 	} else if c.Spec.Networking.Kuberouter != nil {
+		c.Spec.Networking.Kuberouter.LivenessProbeEnabled = true
 		// OK
 	} else if c.Spec.Networking.Romana != nil {
 		// OK
