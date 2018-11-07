@@ -496,9 +496,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		if cluster.Spec.CloudProvider == "" {
 			if allZones.Len() == 0 {
 				return fmt.Errorf("must specify --zones or --cloud")
-			} else {
-				return fmt.Errorf("unable to infer CloudProvider from Zones (is there a typo in --zones?)")
 			}
+			return fmt.Errorf("unable to infer CloudProvider from Zones (is there a typo in --zones?)")
 		}
 	}
 
@@ -1368,11 +1367,9 @@ func loadSSHPublicKeys(sshPublicKey string) (map[string][]byte, error) {
 		authorized, err := ioutil.ReadFile(sshPublicKey)
 		if err != nil {
 			return nil, err
-		} else {
-			sshPublicKeys[fi.SecretNameSSHPrimary] = authorized
-
-			glog.Infof("Using SSH public key: %v\n", sshPublicKey)
 		}
+		sshPublicKeys[fi.SecretNameSSHPrimary] = authorized
+		glog.Infof("Using SSH public key: %v\n", sshPublicKey)
 	}
 	return sshPublicKeys, nil
 }

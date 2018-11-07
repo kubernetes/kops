@@ -165,9 +165,8 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 				if err != nil {
 					if errors.IsNotFound(err) {
 						return fmt.Errorf("cluster %q not found", clusterName)
-					} else {
-						return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
-					}
+					} 
+					return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
 				}
 				// check if the instancegroup exists already
 				igName := v.ObjectMeta.Name
