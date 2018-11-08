@@ -153,6 +153,7 @@ func run() error {
 		}
 	}
 
+	seen := map[string]bool{}
 	for _, item := range prices {
 		for k, v := range item {
 			if k == "product" {
@@ -161,6 +162,11 @@ func run() error {
 				for k, v := range product["attributes"].(map[string]interface{}) {
 					attributes[k] = v.(string)
 				}
+
+				if _, ok := seen[attributes["instanceType"]]; ok {
+					continue
+				}
+				seen[attributes["instanceType"]] = true
 
 				machine := awsup.AWSMachineTypeInfo{
 					Name:  attributes["instanceType"],
