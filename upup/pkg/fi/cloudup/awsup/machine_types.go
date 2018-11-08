@@ -33,6 +33,7 @@ type AWSMachineTypeInfo struct {
 	EphemeralDisks []int
 	Burstable      bool
 	GPU            bool
+	MaxPods        int
 }
 
 type EphemeralDevice struct {
