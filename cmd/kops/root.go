@@ -221,7 +221,7 @@ func (c *RootCmd) ProcessArgs(args []string) error {
 
 	if len(args) == 1 {
 		return fmt.Errorf("Cannot specify cluster via --name and positional argument")
-	} 
+	}
 	return fmt.Errorf("expected a single <clustername> to be passed as an argument")
 }
 
