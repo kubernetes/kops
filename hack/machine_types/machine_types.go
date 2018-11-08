@@ -27,6 +27,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/aws/amazon-vpc-cni-k8s/pkg/awsutils"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -195,6 +196,14 @@ func run() error {
 					machine.ECU = stringToFloat32(attributes["ecu"])
 				}
 
+				// AWS VPC CNI plugin-specific maximum pod calculation based on:
+				// https://github.com/aws/amazon-vpc-cni-k8s/blob/f52ad45/README.md
+				enisPerInstance, enisOK := awsutils.InstanceENIsAvailable[attributes["instanceType"]]
+				ipsPerENI, ipsOK := awsutils.InstanceIPsAvailable[attributes["instanceType"]]
+				if enisOK && ipsOK {
+					machine.MaxPods = enisPerInstance*(int(ipsPerENI)-1) + 2
+				}
+
 				machines = append(machines, machine)
 
 				family := strings.Split(attributes["instanceType"], ".")[0]
@@ -254,7 +263,8 @@ func run() error {
 		MemoryGB: %v,
 		ECU: %v,
 		Cores: %v,
-	`, m.Name, m.MemoryGB, ecu, m.Cores)
+		MaxPods: %v,
+	`, m.Name, m.MemoryGB, ecu, m.Cores, m.MaxPods)
 				output = output + body
 
 				// Avoid awkward []int(nil) syntax
