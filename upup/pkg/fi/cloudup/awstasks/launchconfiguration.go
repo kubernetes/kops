@@ -612,8 +612,10 @@ type cloudformationBlockDeviceEBS struct {
 	VolumeType          *string `json:"VolumeType,omitempty"`
 	VolumeSize          *int64  `json:"VolumeSize,omitempty"`
 	DeleteOnTermination *bool   `json:"DeleteOnTermination,omitempty"`
+	Encrypted           *bool   `json:"Encrypted,omitempty"`
 }
 
+// RenderCloudformation is responsible for rendering the cloudformation template
 func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *LaunchConfiguration) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 
@@ -664,6 +666,11 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 			return err
 		}
 
+		additionalDevices, err := buildAdditionalDevices(e.BlockDeviceMappings)
+		if err != nil {
+			return err
+		}
+
 		if len(rootDevices) != 0 {
 			if len(rootDevices) != 1 {
 				return fmt.Errorf("unexpectedly found multiple root devices")
@@ -688,6 +695,21 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 					VirtualName: bdm.VirtualName,
 					DeviceName:  fi.String(deviceName),
 				})
+			}
+		}
+
+		if len(additionalDevices) != 0 {
+			for deviceName, bdm := range additionalDevices {
+				d := &cloudformationBlockDevice{
+					DeviceName: fi.String(deviceName),
+					Ebs: &cloudformationBlockDeviceEBS{
+						VolumeType:          bdm.EbsVolumeType,
+						VolumeSize:          bdm.EbsVolumeSize,
+						DeleteOnTermination: fi.Bool(true),
+						Encrypted:           bdm.EbsEncrypted,
+					},
+				}
+				cf.BlockDeviceMappings = append(cf.BlockDeviceMappings, d)
 			}
 		}
 	}
