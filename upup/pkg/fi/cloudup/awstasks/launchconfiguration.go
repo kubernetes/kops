@@ -443,6 +443,7 @@ type terraformLaunchConfiguration struct {
 	UserData                 *terraform.Literal      `json:"user_data,omitempty"`
 	RootBlockDevice          *terraformBlockDevice   `json:"root_block_device,omitempty"`
 	EBSOptimized             *bool                   `json:"ebs_optimized,omitempty"`
+	EBSBlockDevice           []*terraformBlockDevice `json:"ebs_block_device,omitempty"`
 	EphemeralBlockDevice     []*terraformBlockDevice `json:"ephemeral_block_device,omitempty"`
 	Lifecycle                *terraform.Lifecycle    `json:"lifecycle,omitempty"`
 	SpotPrice                *string                 `json:"spot_price,omitempty"`
@@ -454,11 +455,13 @@ type terraformBlockDevice struct {
 	// For ephemeral devices
 	DeviceName  *string `json:"device_name,omitempty"`
 	VirtualName *string `json:"virtual_name,omitempty"`
-
 	// For root
-	VolumeType          *string `json:"volume_type,omitempty"`
-	VolumeSize          *int64  `json:"volume_size,omitempty"`
-	DeleteOnTermination *bool   `json:"delete_on_termination,omitempty"`
+	VolumeType *string `json:"volume_type,omitempty"`
+	VolumeSize *int64  `json:"volume_size,omitempty"`
+	// Encryption
+	Encrypted *bool `json:"encrypted,omitempty"`
+	// Termination
+	DeleteOnTermination *bool `json:"delete_on_termination,omitempty"`
 }
 
 func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LaunchConfiguration) error {
@@ -509,6 +512,11 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 			return err
 		}
 
+		additionalDevices, err := buildAdditionalDevices(e.BlockDeviceMappings)
+		if err != nil {
+			return err
+		}
+
 		if len(rootDevices) != 0 {
 			if len(rootDevices) != 1 {
 				return fmt.Errorf("unexpectedly found multiple root devices")
@@ -530,6 +538,20 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 				tf.EphemeralBlockDevice = append(tf.EphemeralBlockDevice, &terraformBlockDevice{
 					VirtualName: bdm.VirtualName,
 					DeviceName:  fi.String(deviceName),
+				})
+			}
+		}
+
+		if len(additionalDevices) != 0 {
+			tf.EBSBlockDevice = []*terraformBlockDevice{}
+			for _, deviceName := range sets.StringKeySet(additionalDevices).List() {
+				bdm := additionalDevices[deviceName]
+				tf.EBSBlockDevice = append(tf.EBSBlockDevice, &terraformBlockDevice{
+					DeleteOnTermination: fi.Bool(true),
+					DeviceName:          fi.String(deviceName),
+					Encrypted:           bdm.EbsEncrypted,
+					VolumeSize:          bdm.EbsVolumeSize,
+					VolumeType:          bdm.EbsVolumeType,
 				})
 			}
 		}
