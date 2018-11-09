@@ -183,16 +183,16 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	actual.SecurityGroups = securityGroups
 
 	// Find the root volume
-	for _, b := range lc.BlockDeviceMappings {
+	for i, b := range lc.BlockDeviceMappings {
 		if b.Ebs == nil {
 			continue
 		}
-		// @TODO check if this still work, i.e. will it be the only volume without a snapshot??
-		if b.Ebs.SnapshotId != nil {
+		switch i {
+		case 0:
 			actual.RootVolumeSize = b.Ebs.VolumeSize
 			actual.RootVolumeType = b.Ebs.VolumeType
 			actual.RootVolumeIops = b.Ebs.Iops
-		} else {
+		default:
 			_, d := BlockDeviceMappingFromAutoscaling(b)
 			actual.BlockDeviceMappings = append(actual.BlockDeviceMappings, d)
 		}
