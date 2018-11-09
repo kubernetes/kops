@@ -197,7 +197,7 @@ Our office hours call is recorded, but the tone tends to be casual. First-timers
 Office hours are designed for ALL of those contributing to kops or the community. Contributions are not limited to those who commit source code. There are so many important ways to be involved- 
  - helping in the slack channels
  - triaging/writing issues 
- - thinking about the topics raised at office hours and forming and advocating for your good ideas  forming opinions
+ - thinking about the topics raised at office hours and forming and advocating for your good ideas forming opinions
  - testing pre-(and official) releases
 
 Although not exhaustive, the above activities are extremely important to our continued success and are all worth contributions. If you want to talk about kops and you have doubt, just come.
