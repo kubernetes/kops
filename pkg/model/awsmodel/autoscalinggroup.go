@@ -30,7 +30,9 @@ import (
 )
 
 const (
+	// DefaultVolumeType is the default volume type
 	DefaultVolumeType = "gp2"
+	// DefaultVolumeIops is the default volume iops
 	DefaultVolumeIops = 100
 )
 
@@ -38,14 +40,14 @@ const (
 type AutoscalingGroupModelBuilder struct {
 	*AWSModelContext
 
-	BootstrapScript *model.BootstrapScript
-	Lifecycle       *fi.Lifecycle
-
+	BootstrapScript   *model.BootstrapScript
+	Lifecycle         *fi.Lifecycle
 	SecurityLifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
 
+// Build is responsible for constructing the aws autoscaling group from the kops spec
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	var err error
 	for _, ig := range b.InstanceGroups {
@@ -128,6 +130,24 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					return err
 				}
 				t.SecurityGroups = append(t.SecurityGroups, sgTask)
+			}
+
+			// @step: add any additional block devices to the launch configuration
+			for _, x := range ig.Spec.Volumes {
+				if x.Type == nil {
+					x.Type = fi.String(DefaultVolumeType)
+				}
+				if x.Iops == nil {
+					x.Iops = fi.Int64(DefaultVolumeIops)
+				}
+				t.BlockDeviceMappings = append(t.BlockDeviceMappings, &awstasks.BlockDeviceMapping{
+					DeviceName:             x.DeviceName,
+					EbsDeleteOnTermination: fi.Bool(true),
+					EbsEncrypted:           x.Encrypted,
+					EbsVolumeIops:          x.Iops,
+					EbsVolumeSize:          x.Size,
+					EbsVolumeType:          x.Type,
+				})
 			}
 
 			if t.SSHKey, err = b.LinkToSSHKey(); err != nil {
