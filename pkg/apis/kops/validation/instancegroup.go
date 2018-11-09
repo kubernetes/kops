@@ -88,6 +88,12 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 		}
 	}
 
+	for i, x := range g.Spec.Volumes {
+		if x.DeviceName == nil {
+			return field.Invalid(field.NewPath("volumes").Index(i).Child("deviceName"), "", "volume must have a device name")
+		}
+	}
+
 	if err := validateInstanceProfile(g.Spec.IAM, field.NewPath("iam")); err != nil {
 		return err
 	}
