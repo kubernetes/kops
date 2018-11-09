@@ -164,6 +164,8 @@ type ClusterSpec struct {
 	IAM *IAMSpec `json:"iam,omitempty"`
 	// EncryptionConfig controls if encryption is enabled
 	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
+	// DisableSubnetTags controls if subnets are tagged in AWS
+	DisableSubnetTags bool `json:"disableSubnetTags,omitempty"`
 	// Target allows for us to nest extra config for targets such as terraform
 	Target *TargetSpec `json:"target,omitempty"`
 }
