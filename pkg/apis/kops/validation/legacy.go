@@ -17,6 +17,7 @@ limitations under the License.
 package validation
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -800,6 +801,12 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool) er
 			errs := awsValidateInstanceGroup(g)
 			if len(errs) != 0 {
 				return errs[0]
+			}
+		default:
+			for _, x := range groups {
+				if len(x.Spec.Volumes) > 0 {
+					return errors.New("instancegroup volumes are only available with aws at present")
+				}
 			}
 		}
 	}
