@@ -20,13 +20,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
-
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+
+	"github.com/golang/glog"
 )
 
 const (
@@ -97,17 +97,14 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Name:      s(name),
 				Lifecycle: b.Lifecycle,
 
-				SecurityGroups: []*awstasks.SecurityGroup{
-					sgLink,
-				},
-				IAMInstanceProfile: link,
-				ImageID:            s(ig.Spec.Image),
-				InstanceType:       s(strings.Split(ig.Spec.MachineType, ",")[0]),
-				InstanceMonitoring: ig.Spec.DetailedInstanceMonitoring,
-
+				IAMInstanceProfile:     link,
+				ImageID:                s(ig.Spec.Image),
+				InstanceMonitoring:     ig.Spec.DetailedInstanceMonitoring,
+				InstanceType:           s(strings.Split(ig.Spec.MachineType, ",")[0]),
+				RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
 				RootVolumeSize:         i64(int64(volumeSize)),
 				RootVolumeType:         s(volumeType),
-				RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
+				SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
 			}
 
 			if volumeType == "io1" {
@@ -118,13 +115,13 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				t.Tenancy = s(ig.Spec.Tenancy)
 			}
 
+			// @step: add any additional security groups to the instance
 			for _, id := range ig.Spec.AdditionalSecurityGroups {
 				sgTask := &awstasks.SecurityGroup{
-					Name:   fi.String(id),
-					ID:     fi.String(id),
-					Shared: fi.Bool(true),
-
+					Name:      fi.String(id),
+					ID:        fi.String(id),
 					Lifecycle: b.SecurityLifecycle,
+					Shared:    fi.Bool(true),
 				}
 				if err := c.EnsureTask(sgTask); err != nil {
 					return err
@@ -219,16 +216,15 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				Granularity: s("1Minute"),
 				Metrics: []string{
-					"GroupMinSize",
-					"GroupMaxSize",
 					"GroupDesiredCapacity",
 					"GroupInServiceInstances",
+					"GroupMaxSize",
+					"GroupMinSize",
 					"GroupPendingInstances",
 					"GroupStandbyInstances",
 					"GroupTerminatingInstances",
 					"GroupTotalInstances",
 				},
-
 				LaunchConfiguration: launchConfiguration,
 			}
 
