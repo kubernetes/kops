@@ -25,15 +25,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // defaultRetainLaunchConfigurationCount is the number of launch configurations (matching the name prefix) that we should
@@ -134,6 +135,7 @@ func (e *LaunchConfiguration) findLaunchConfigurations(c *fi.Context) ([]*autosc
 	return configurations, nil
 }
 
+// Find is responsible for finding the launch configuration
 func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
@@ -317,23 +319,28 @@ func (s *LaunchConfiguration) CheckChanges(a, e, changes *LaunchConfiguration) e
 	return nil
 }
 
+// RenderAWS is responsible for creating the launchconfiguration via api
 func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LaunchConfiguration) error {
 	launchConfigurationName := *e.Name + "-" + fi.BuildTimestampString()
+
 	glog.V(2).Infof("Creating AutoscalingLaunchConfiguration with Name:%q", launchConfigurationName)
 
 	if e.ImageID == nil {
 		return fi.RequiredField("ImageID")
 	}
+
 	image, err := t.Cloud.ResolveImage(*e.ImageID)
 	if err != nil {
 		return err
 	}
 
-	request := &autoscaling.CreateLaunchConfigurationInput{}
-	request.LaunchConfigurationName = &launchConfigurationName
-	request.ImageId = image.ImageId
-	request.InstanceType = e.InstanceType
-	request.EbsOptimized = e.RootVolumeOptimization
+	request := &autoscaling.CreateLaunchConfigurationInput{
+		AssociatePublicIpAddress: e.AssociatePublicIP,
+		EbsOptimized:             e.RootVolumeOptimization,
+		ImageId:                  image.ImageId,
+		InstanceType:             e.InstanceType,
+		LaunchConfigurationName:  &launchConfigurationName,
+	}
 
 	if e.SSHKey != nil {
 		request.KeyName = e.SSHKey.Name
@@ -349,7 +356,6 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	}
 
 	request.SecurityGroups = securityGroupIDs
-	request.AssociatePublicIpAddress = e.AssociatePublicIP
 	if e.SpotPrice != "" {
 		request.SpotPrice = aws.String(e.SpotPrice)
 	}
