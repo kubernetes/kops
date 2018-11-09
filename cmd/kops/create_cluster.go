@@ -80,6 +80,7 @@ type CreateClusterOptions struct {
 	VPCID                string
 	SubnetIDs            []string
 	UtilitySubnetIDs     []string
+	DisableSubnetTags    bool
 	NetworkCIDR          string
 	DNSZone              string
 	AdminAccess          []string
@@ -294,6 +295,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringSliceVar(&options.SubnetIDs, "subnets", options.SubnetIDs, "Set to use shared subnets")
 	cmd.Flags().StringSliceVar(&options.UtilitySubnetIDs, "utility-subnets", options.UtilitySubnetIDs, "Set to use shared utility subnets")
 	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Set to override the default network CIDR")
+	cmd.Flags().BoolVar(&options.DisableSubnetTags, "disable-subnet-tags", options.DisableSubnetTags, "Set to disable automatic subnet tagging")
 
 	cmd.Flags().Int32Var(&options.MasterCount, "master-count", options.MasterCount, "Set the number of masters.  Defaults to one master per master-zone")
 	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set the number of nodes")
@@ -945,6 +947,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		glog.Infof("Empty topology. Defaulting to public topology")
 		c.Topology = api.TopologyPublic
 	}
+
+	cluster.Spec.DisableSubnetTags = c.DisableSubnetTags
 
 	switch c.Topology {
 	case api.TopologyPublic:
