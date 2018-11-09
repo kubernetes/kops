@@ -491,31 +491,42 @@ func FindAutoscalingGroups(c AWSCloud, tags map[string]string) ([]*autoscaling.G
 	}
 
 	if len(asgNames) != 0 {
-		request := &autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: asgNames,
-		}
-		err := c.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) bool {
-			for _, asg := range p.AutoScalingGroups {
-				if !matchesAsgTags(tags, asg.Tags) {
-					// We used an inexact filter above
-					continue
-				}
-				// Check for "Delete in progress" (the only use of .Status)
-				if asg.Status != nil {
-					glog.Warningf("Skipping ASG %v (which matches tags): %v", *asg.AutoScalingGroupARN, *asg.Status)
-					continue
-				}
-				asgs = append(asgs, asg)
+		for i := 0; i < len(asgNames); i += 50 {
+			batch := asgNames[i:minInt(i+50, len(asgNames))]
+			request := &autoscaling.DescribeAutoScalingGroupsInput{
+				AutoScalingGroupNames: batch,
 			}
-			return true
-		})
-		if err != nil {
-			return nil, fmt.Errorf("error listing autoscaling groups: %v", err)
+			err := c.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) bool {
+				for _, asg := range p.AutoScalingGroups {
+					if !matchesAsgTags(tags, asg.Tags) {
+						// We used an inexact filter above
+						continue
+					}
+					// Check for "Delete in progress" (the only use of .Status)
+					if asg.Status != nil {
+						glog.Warningf("Skipping ASG %v (which matches tags): %v", *asg.AutoScalingGroupARN, *asg.Status)
+						continue
+					}
+					asgs = append(asgs, asg)
+				}
+				return true
+			})
+			if err != nil {
+				return nil, fmt.Errorf("error listing autoscaling groups: %v", err)
+			}
 		}
 
 	}
 
 	return asgs, nil
+}
+
+// Returns the minimum of two ints
+func minInt(a int, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // matchesAsgTags is used to filter an asg by tags
