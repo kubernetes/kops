@@ -89,13 +89,40 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 	}
 
 	for i, x := range g.Spec.Volumes {
+		used := make(map[string]bool, 0)
+		path := field.NewPath("volumes").Index(i)
+
 		if x.DeviceName == nil {
-			return field.Invalid(field.NewPath("volumes").Index(i).Child("deviceName"), "", "volume must have a device name")
+			return field.Invalid(path.Child("deviceName"), "", "volume must have a device name")
 		}
+		// @check the device name has not been used already
+		if _, found := used[*x.DeviceName]; found {
+			return field.Invalid(path.Child("deviceName"), *x.DeviceName, "duplicate device name found")
+		}
+		// @check the filesystem specification if we have one
+		if x.Filesystem != nil {
+			if err := validateInstanceGroupFilesystem(path.Child("filesystem"), x.Filesystem); err != nil {
+				return err
+			}
+		}
+
+		used[*x.DeviceName] = true
 	}
 
 	if err := validateInstanceProfile(g.Spec.IAM, field.NewPath("iam")); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// validateInstanceGroupFilesystem is responsible for validation the volume filesystem spec
+func validateInstanceGroupFilesystem(path *field.Path, item *kops.InstanceGroupVolumeFilesystemSpec) error {
+	if item.Path == "" {
+		return field.Invalid(path.Child("path"), item.Path, "no path for filesystem defined")
+	}
+	if item.Ext4 == nil {
+		item.Ext4 = &kops.Ext4FileSystemSpec{}
 	}
 
 	return nil
