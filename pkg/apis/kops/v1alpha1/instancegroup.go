@@ -159,7 +159,7 @@ type InstanceGroupVolumeFilesystemSpec struct {
 	// Ext4 is the specification for a ext4 filesystem
 	Ext4 *Ext4FileSystemSpec `json:"ext4,omitempty"`
 	// Path is the location to mount the volume
-	Path string `json:"mountPath,omitempty"`
+	Path string `json:"path,omitempty"`
 }
 
 // Ext4FileSystemSpec defines a specification for a ext4 filesystem on a instancegroup volume
