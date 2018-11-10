@@ -102,7 +102,7 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-// buildPod is responsble constructing the pod spec
+// buildPod is responsible constructing the pod spec
 func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	c := b.Cluster.Spec.KubeProxy
 	if c == nil {

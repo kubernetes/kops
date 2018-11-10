@@ -57,7 +57,7 @@ func (e *MirrorSecrets) Find(c *fi.Context) (*MirrorSecrets, error) {
 	return nil, nil
 }
 
-// Run implemements fi.Task::Run
+// Run implements fi.Task::Run
 func (e *MirrorSecrets) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
