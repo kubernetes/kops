@@ -26,12 +26,13 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 )
 
 const (
 	// DefaultVolumeType is the default volume type
-	DefaultVolumeType = "gp2"
+	DefaultVolumeType = ec2.VolumeTypeGp2
 	// DefaultVolumeIops is the default volume iops
 	DefaultVolumeIops = 100
 )
@@ -107,7 +108,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
 			}
 
-			if volumeType == "io1" {
+			if volumeType == ec2.VolumeTypeIo1 {
 				t.RootVolumeIops = i64(int64(volumeIops))
 			}
 
@@ -134,7 +135,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				if x.Type == nil {
 					x.Type = fi.String(DefaultVolumeType)
 				}
-				if x.Iops == nil {
+				if x.Iops == nil && fi.StringValue(x.Type) == ec2.VolumeTypeIo1 {
 					x.Iops = fi.Int64(DefaultVolumeIops)
 				}
 				t.BlockDeviceMappings = append(t.BlockDeviceMappings, &awstasks.BlockDeviceMapping{
