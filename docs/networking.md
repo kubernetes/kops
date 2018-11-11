@@ -122,7 +122,7 @@ $ kops create secret weavepassword -f password
 $ kops update cluster
 ```
 
-Since unencrypted nodes will not be able to connect to nodes configured with encryption enabled, this configuration cannot be changed easily without downtime. 
+Since unencrypted nodes will not be able to connect to nodes configured with encryption enabled, this configuration cannot be changed easily without downtime.
 
 ### Calico Example for CNI and Network Policy
 
@@ -158,10 +158,10 @@ Reference: [Calico 2.1 Release Notes](https://www.projectcalico.org/project-cali
 Note that Calico by default, routes between nodes within a subnet are distributed using a full node-to-node BGP mesh.
 Each node automatically sets up a BGP peering with every other node within the same L2 network.
 This full node-to-node mesh per L2 network has its scaling challenges for larger scale deployments.
-BGP route reflectors can be used as a replacement to a full mesh, and is useful for scaling up a cluster.
+BGP route reflectors can be used as a replacement to a full mesh, and is useful for scaling up a cluster. BGP route reflectors are recommended once the number of nodes goes above ~50-100.
 The setup of BGP route reflectors is currently out of the scope of kops.
 
-Read more here: [BGP route reflectors](http://docs.projectcalico.org/latest/usage/routereflector/calico-routereflector)
+Read more here: [BGP route reflectors](https://docs.projectcalico.org/latest/usage/routereflector)
 
 
 To enable this mode in a cluster, with Calico as the CNI and Network Policy provider, you must edit the cluster after the previous `kops create ...` command.
