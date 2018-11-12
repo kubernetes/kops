@@ -30,6 +30,7 @@ go_library(
         "secrets.go",
         "sysctls.go",
         "update_service.go",
+        "volumes.go",
     ],
     importpath = "k8s.io/kops/nodeup/pkg/model",
     visibility = ["//visibility:public"],
