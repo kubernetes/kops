@@ -132,19 +132,19 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			// @step: add any additional block devices to the launch configuration
 			for _, x := range ig.Spec.Volumes {
-				if x.Type == nil {
-					x.Type = fi.String(DefaultVolumeType)
+				if x.Type == "" {
+					x.Type = DefaultVolumeType
 				}
-				if x.Iops == nil && fi.StringValue(x.Type) == ec2.VolumeTypeIo1 {
+				if x.Iops == nil && x.Type == ec2.VolumeTypeIo1 {
 					x.Iops = fi.Int64(DefaultVolumeIops)
 				}
 				t.BlockDeviceMappings = append(t.BlockDeviceMappings, &awstasks.BlockDeviceMapping{
-					DeviceName:             x.DeviceName,
+					DeviceName:             fi.String(x.Device),
 					EbsDeleteOnTermination: fi.Bool(true),
 					EbsEncrypted:           x.Encrypted,
 					EbsVolumeIops:          x.Iops,
-					EbsVolumeSize:          x.Size,
-					EbsVolumeType:          x.Type,
+					EbsVolumeSize:          fi.Int64(x.Size),
+					EbsVolumeType:          fi.String(x.Type),
 				})
 			}
 

@@ -72,7 +72,7 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 				enabled := false
 				managed := true
 				c.AddTask(&nodetasks.Service{
-					Name:        ensureSystemdSuffix(name),
+					Name:        h.EnsureSystemdSuffix(name),
 					ManageState: &managed,
 					Enabled:     &enabled,
 					Running:     &enabled,
@@ -92,15 +92,6 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
-}
-
-// ensureSystemdSuffix ensures that the hook name ends with a valid systemd unit file extension. If it
-// doesn't, it adds ".service" for backwards-compatibility with older versions of Kops
-func ensureSystemdSuffix(name string) string {
-	if !systemd.UnitFileExtensionValid(name) {
-		name += ".service"
-	}
-	return name
 }
 
 // buildSystemdService is responsible for generating the service
@@ -132,6 +123,11 @@ func (h *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*no
 			unit.Set("Unit", "Before", x)
 		}
 
+		if h.UseVolumeMounts() {
+			unit.Set("Unit", "Requires", h.VolumesServiceName())
+			unit.Set("Unit", "After", h.VolumesServiceName())
+		}
+
 		// are we a raw unit file or a docker exec?
 		switch hook.ExecContainer {
 		case nil:
@@ -145,7 +141,7 @@ func (h *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*no
 	}
 
 	service := &nodetasks.Service{
-		Name:       ensureSystemdSuffix(name),
+		Name:       h.EnsureSystemdSuffix(name),
 		Definition: definition,
 	}
 
@@ -172,6 +168,11 @@ func (h *HookBuilder) buildDockerService(unit *systemd.Manifest, hook *kops.Hook
 	dockerPullCommand := systemd.EscapeCommand([]string{"/usr/bin/docker", "pull", hook.ExecContainer.Image})
 
 	unit.Set("Unit", "Requires", "docker.service")
+	if h.UseVolumeMounts() {
+		unit.Set("Unit", "Requires", h.VolumesServiceName())
+		unit.Set("Unit", "After", h.VolumesServiceName())
+	}
+
 	unit.Set("Service", "ExecStartPre", dockerPullCommand)
 	unit.Set("Service", "ExecStart", dockerRunCommand)
 	unit.Set("Service", "Type", "oneshot")
