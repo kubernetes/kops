@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/kubeconfig"
+	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/vfs"
@@ -85,6 +86,21 @@ func (c *NodeupModelContext) SSLHostPaths() []string {
 	}
 
 	return paths
+}
+
+// VolumesServiceName is the name of the service which is downstream of any volume mounts
+func (c *NodeupModelContext) VolumesServiceName() string {
+	return c.EnsureSystemdSuffix("kops-volume-mounts")
+}
+
+// EnsureSystemdSuffix ensures that the hook name ends with a valid systemd unit file extension. If it
+// doesn't, it adds ".service" for backwards-compatibility with older versions of Kops
+func (c *NodeupModelContext) EnsureSystemdSuffix(name string) string {
+	if !systemd.UnitFileExtensionValid(name) {
+		name += ".service"
+	}
+
+	return name
 }
 
 // PathSrvKubernetes returns the path for the kubernetes service files
@@ -240,6 +256,16 @@ func (c *NodeupModelContext) UseEtcdTLS() bool {
 		if x.EnableEtcdTLS {
 			return true
 		}
+	}
+
+	return false
+}
+
+// UseVolumeMounts is used to check if we have volume mounts enabled as we need to
+// insert requires and afters in various places
+func (c *NodeupModelContext) UseVolumeMounts() bool {
+	if c.InstanceGroup != nil {
+		return len(c.InstanceGroup.Spec.VolumeMounts) > 0
 	}
 
 	return false

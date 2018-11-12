@@ -139,6 +139,12 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Kubernetes Protokube Service")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
+
+	// @step: let need a dependency for any volumes to be mounted first
+	if t.UseVolumeMounts() {
+		manifest.Set("Unit", "Requires", t.VolumesServiceName())
+		manifest.Set("Unit", "After", t.VolumesServiceName())
+	}
 	manifest.Set("Service", "ExecStartPre", t.ProtokubeImagePullCommand())
 	manifest.Set("Service", "ExecStart", protokubeCommand)
 	manifest.Set("Service", "Restart", "always")

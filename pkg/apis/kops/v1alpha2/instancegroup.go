@@ -60,6 +60,20 @@ var AllInstanceGroupRoles = []InstanceGroupRole{
 	InstanceGroupRoleBastion,
 }
 
+const (
+	// BtfsFilesystem indicates a btfs filesystem
+	BtfsFilesystem = "btfs"
+	// Ext4Filesystem indicates a ext3 filesystem
+	Ext4Filesystem = "ext4"
+	// XFSFilesystem indicates a xfs filesystem
+	XFSFilesystem = "xfs"
+)
+
+var (
+	// SupportedFilesystems is a list of supported filesystems to format as
+	SupportedFilesystems = []string{BtfsFilesystem, Ext4Filesystem, XFSFilesystem}
+)
+
 // InstanceGroupSpec is the specification for an instanceGroup
 type InstanceGroupSpec struct {
 	// Type determines the role of instances in this group: masters or nodes
@@ -81,7 +95,9 @@ type InstanceGroupSpec struct {
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
 	// Volumes is a collection of additional volumes to create for instances within this InstanceGroup
-	Volumes []*InstanceGroupVolumeSpec `json:"volumes,omitempty"`
+	Volumes []*VolumeSpec `json:"volumes,omitempty"`
+	// VolumeMounts a collection of volume mounts
+	VolumeMounts []*VolumeMountSpec `json:"volumeMounts,omitempty"`
 	// Subnets is the names of the Subnets (as specified in the Cluster) where machines in this instance group should be placed
 	Subnets []string `json:"subnets,omitempty"`
 	// Zones is the names of the Zones where machines in this instance group should be placed
@@ -132,32 +148,33 @@ type UserData struct {
 	Content string `json:"content,omitempty"`
 }
 
-// InstanceGroupVolumeSpec defined the spec for an additional volume attached to the instance group
-type InstanceGroupVolumeSpec struct {
-	// DeviceName is an optional device name of the block device
-	DeviceName *string `json:"deviceName,omitempty"`
+// VolumeSpec defined the spec for an additional volume attached to the instance group
+type VolumeSpec struct {
+	// Device is an optional device name of the block device
+	Device string `json:"device,omitempty"`
 	// Encrypted indicates you want to encrypt the volume
 	Encrypted *bool `json:"encrypted,omitempty"`
-	// Filesystem is the type of filesystem to create on the device
-	Filesystem *InstanceGroupVolumeFilesystemSpec `json:"filesystem,omitempty"`
 	// Iops is the provision iops for this iops (think io1 in aws)
 	Iops *int64 `json:"iops,omitempty"`
 	// Size is the size of the volume in GB
-	Size *int64 `json:"size,omitempty"`
+	Size int64 `json:"size,omitempty"`
 	// Type is the type of volume to create and is cloud specific
-	Type *string `json:"type,omitempty"`
+	Type string `json:"type,omitempty"`
 }
 
-// InstanceGroupVolumeFilesystemSpec defines a specification for creating a filesystem
-type InstanceGroupVolumeFilesystemSpec struct {
-	// Ext4 is the specification for a ext4 filesystem
-	Ext4 *Ext4FileSystemSpec `json:"ext4,omitempty"`
-	// Path is the location to mount the volume
+// VolumeMountSpec defines the specification for mounting a device
+type VolumeMountSpec struct {
+	// Device is the device name to provision and mount
+	Device string `json:"device,omitempty"`
+	// Filesystem is the filesystem to mount
+	Filesystem string `json:"filesystem,omitempty"`
+	// FormatOptions is a collection of options passed when formatting the device
+	FormatOptions []string `json:"formatOptions,omitempty"`
+	// MountOptions is a collection of mount options
+	MountOptions []string `json:"mountOptions,omitempty"`
+	// Path is the location to mount the device
 	Path string `json:"path,omitempty"`
 }
-
-// Ext4FileSystemSpec defines a specification for a ext4 filesystem on a instancegroup volume
-type Ext4FileSystemSpec struct{}
 
 // IAMProfileSpec is the AWS IAM Profile to attach to instances in this instance
 // group. Specify the ARN for the IAM instance profile (AWS only).

@@ -18,13 +18,15 @@ package validation
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/arn"
-	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
+
+	"github.com/aws/aws-sdk-go/aws/arn"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
 // ValidateInstanceGroup is responsible for validating the configuration of a instancegroup
@@ -88,25 +90,37 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 		}
 	}
 
+	// @step: iterate and check the volume specs
 	for i, x := range g.Spec.Volumes {
-		used := make(map[string]bool, 0)
+		devices := make(map[string]bool, 0)
 		path := field.NewPath("volumes").Index(i)
 
-		if x.DeviceName == nil {
-			return field.Invalid(path.Child("deviceName"), "", "volume must have a device name")
-		}
-		// @check the device name has not been used already
-		if _, found := used[*x.DeviceName]; found {
-			return field.Invalid(path.Child("deviceName"), *x.DeviceName, "duplicate device name found")
-		}
-		// @check the filesystem specification if we have one
-		if x.Filesystem != nil {
-			if err := validateInstanceGroupFilesystem(path.Child("filesystem"), x.Filesystem); err != nil {
-				return err
-			}
+		if err := validateVolumeSpec(path, x); err != nil {
+			return err
 		}
 
-		used[*x.DeviceName] = true
+		// @check the device name has not been used already
+		if _, found := devices[x.Device]; found {
+			return field.Invalid(path.Child("device"), x.Device, "duplicate device name found in volumes")
+		}
+
+		devices[x.Device] = true
+	}
+
+	// @step: iterate and check the volume mount specs
+	for i, x := range g.Spec.VolumeMounts {
+		used := make(map[string]bool, 0)
+		path := field.NewPath("volumeMounts").Index(i)
+
+		if err := validateVolumeMountSpec(path, x); err != nil {
+			return err
+		}
+		if _, found := used[x.Device]; found {
+			return field.Invalid(path.Child("device"), x.Device, "duplicate device reference")
+		}
+		if _, found := used[x.Path]; found {
+			return field.Invalid(path.Child("path"), x.Path, "duplicate mount path specified")
+		}
 	}
 
 	if err := validateInstanceProfile(g.Spec.IAM, field.NewPath("iam")); err != nil {
@@ -116,13 +130,32 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 	return nil
 }
 
-// validateInstanceGroupFilesystem is responsible for validation the volume filesystem spec
-func validateInstanceGroupFilesystem(path *field.Path, item *kops.InstanceGroupVolumeFilesystemSpec) error {
-	if item.Path == "" {
-		return field.Invalid(path.Child("path"), item.Path, "no path for filesystem defined")
+// validateVolumeSpec is responsible for checking a volume spec is ok
+func validateVolumeSpec(path *field.Path, v *kops.VolumeSpec) error {
+	if v.Device == "" {
+		return field.Required(path.Child("device"), "device name required")
 	}
-	if item.Ext4 == nil {
-		item.Ext4 = &kops.Ext4FileSystemSpec{}
+	if v.Size <= 0 {
+		return field.Invalid(path.Child("size"), v.Size, "must be greater than zero")
+	}
+
+	return nil
+}
+
+// validateVolumeMountSpec is responsible for checking the volume mount is ok
+func validateVolumeMountSpec(path *field.Path, spec *kops.VolumeMountSpec) error {
+	if spec.Device == "" {
+		return field.Required(path.Child("device"), "device name required")
+	}
+	if spec.Filesystem == "" {
+		return field.Required(path.Child("filesystem"), "filesystem type required")
+	}
+	if spec.Path == "" {
+		return field.Required(path.Child("path"), "mount path required")
+	}
+	if !slice.Contains(kops.SupportedFilesystems, spec.Filesystem) {
+		return field.Invalid(path.Child("filesystem"), spec.Filesystem,
+			fmt.Sprintf("unsupported filesystem, available types: %s", strings.Join(kops.SupportedFilesystems, ",")))
 	}
 
 	return nil
