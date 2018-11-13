@@ -87,6 +87,8 @@ type CalicoNetworkingSpec struct {
 	PrometheusGoMetricsEnabled bool `json:"prometheusGoMetricsEnabled,omitempty"`
 	// PrometheusProcessMetricsEnabled enables Prometheus process metrics collection
 	PrometheusProcessMetricsEnabled bool `json:"prometheusProcessMetricsEnabled,omitempty"`
+	// MajorVersion is the version of Calico to use
+	MajorVersion string `json:"majorVersion,omitempty"`
 }
 
 // CanalNetworkingSpec declares that we want Canal networking

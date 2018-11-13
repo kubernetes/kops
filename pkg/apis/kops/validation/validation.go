@@ -21,11 +21,14 @@ import (
 	"net"
 	"strings"
 
+	"github.com/blang/semver"
+
 	"k8s.io/apimachinery/pkg/api/validation"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/iam"
 )
 
@@ -94,6 +97,9 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 
 	if spec.Networking != nil {
 		allErrs = append(allErrs, validateNetworking(spec.Networking, fieldPath.Child("networking"))...)
+		if spec.Networking.Calico != nil {
+			allErrs = append(allErrs, validateNetworkingCalico(spec.Networking.Calico, spec.EtcdClusters[0], fieldPath.Child("networking").Child("Calico"))...)
+		}
 	}
 
 	// IAM additionalPolicies
@@ -340,4 +346,45 @@ func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec, fieldPath *field.Path) 
 	}
 
 	return errs
+}
+
+func ValidateEtcdVersionForCalicoV3(e *kops.EtcdClusterSpec, majorVersion string, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	version := e.Version
+	if e.Version == "" {
+		version = components.DefaultEtcd2Version
+	}
+	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))
+	if err != nil {
+		allErrs = append(allErrs, field.InternalError(fldPath.Child("MajorVersion"), fmt.Errorf("Failed to parse Etcd version to check compatibility: %s", err)))
+	}
+
+	if sem.Major != 3 {
+		if e.Version == "" {
+			allErrs = append(allErrs,
+				field.Invalid(fldPath.Child("MajorVersion"), majorVersion,
+					fmt.Sprintf("Unable to use v3 when ETCD version for %s cluster is default(%s)",
+						e.Name, components.DefaultEtcd2Version)))
+		} else {
+			allErrs = append(allErrs,
+				field.Invalid(fldPath.Child("MajorVersion"), majorVersion,
+					fmt.Sprintf("Unable to use v3 when ETCD version for %s cluster is %s", e.Name, e.Version)))
+		}
+	}
+	return allErrs
+}
+
+func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	switch v.MajorVersion {
+	case "":
+		// OK:
+	case "v3":
+		allErrs = append(allErrs, ValidateEtcdVersionForCalicoV3(e, v.MajorVersion, fldPath)...)
+	default:
+		allErrs = append(allErrs, field.NotSupported(fldPath.Child("MajorVersion"), v.MajorVersion, []string{"v3"}))
+	}
+
+	return allErrs
 }
