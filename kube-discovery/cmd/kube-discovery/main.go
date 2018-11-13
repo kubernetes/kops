@@ -146,9 +146,8 @@ func (c *DiscoveryController) runOnce() error {
 	// TODO: Verify resolved records against certificates?
 	if err := hosts.UpdateHostsFileWithRecords(hostsPath, addrToHosts); err != nil {
 		return fmt.Errorf("error updating hosts file: %v", err)
-	} else {
-		glog.Infof("updated %s", hostsPath)
 	}
+	glog.Infof("updated %s", hostsPath)
 
 	return nil
 }

@@ -166,10 +166,9 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 						return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating cluster: %v", err)
-				} else {
-					fmt.Fprintf(&sb, "Created cluster/%s\n", v.ObjectMeta.Name)
-					//cSpec = true
 				}
+				fmt.Fprintf(&sb, "Created cluster/%s\n", v.ObjectMeta.Name)
+				//cSpec = true
 
 			case *kopsapi.InstanceGroup:
 				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
@@ -218,9 +217,8 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				err = sshCredentialStore.AddSSHPublicKey("admin", sshKeyArr)
 				if err != nil {
 					return err
-				} else {
-					fmt.Fprintf(&sb, "Added ssh credential\n")
 				}
+				fmt.Fprintf(&sb, "Added ssh credential\n")
 
 			default:
 				glog.V(2).Infof("Type of object was %T", v)
