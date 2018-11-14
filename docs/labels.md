@@ -2,8 +2,8 @@
 
 There are two main types of labels that kops can create:
 
-* `CloudLabels` become tags in AWS on the instances
-* `NodeLabels` become labels on the k8s Node objects
+* `CloudLabels` become tags in AWS on the ASGs(autoscaling groups) and are propagates to their instances.
+* `NodeLabels` become labels on the k8s Node objects and tags on the ASGs(with the prefix: k8s.io/cluster-autoscaler/node-template/label/) and are propagated to their instances.
 
 Both are specified at the InstanceGroup level.
 
