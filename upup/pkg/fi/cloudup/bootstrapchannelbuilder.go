@@ -645,7 +645,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 			"pre-k8s-1.6": "2.4.2-kops.1",
 			"k8s-1.6":     "2.6.9-kops.1",
 			"k8s-1.7":     "2.6.9-kops.1",
-			"k8s-1.7-v3":  "3.2.1-kops.1",
+			"k8s-1.7-v3":  "3.3.1-kops.1",
 		}
 
 		if b.cluster.Spec.Networking.Calico.MajorVersion == "v3" {
