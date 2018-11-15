@@ -8,7 +8,74 @@ Addons in Kubernetes are traditionally done by copying files to `/etc/kubernetes
 doesn't really make sense in HA master configurations.  We also have kubectl available, and addons are just a thin
 wrapper over calling kubectl.
 
-This document describes how to install some common addons.
+The command `kops create cluster` does not support specifying addons to be added to the cluster when it is created. Instead they can be added after cluster creation using kubectl. Alternatively when creating a cluster from a yaml manifest, addons can be specified using `spec.addons`.
+```yaml
+spec:
+  addons:
+  - kubernetes-dashboard
+  - s3://kops-addons/addon.yaml
+```
+
+This document describes how to install some common addons and how to create your own custom ones. 
+
+### Custom addons
+
+The docs about the [addon manager](addon_manager.md) describe in more detail how to define a addon resource with regards to versioning.
+Here is a minimal example of an addon manifest that would install two different addons.
+
+```yaml
+kind: Addons
+metadata:
+  name: example
+spec:
+  addons:
+  - name: foo.addons.org.io
+    version: 0.0.1
+    selector:
+      k8s-addon: foo.addons.org.io
+    manifest: foo.addons.org.io/v0.0.1.yaml
+  - name: bar.addons.org.io
+    version: 0.0.1
+    selector:
+      k8s-addon: bar.addons.org.io
+    manifest: bar.addons.org.io/v0.0.1.yaml
+```
+
+In this this example the folder structure should look like this;
+
+```
+addon.yaml
+  foo.addons.org.io
+    v0.0.1.yaml
+  bar.addons.org.io
+    v0.0.1.yaml
+```
+
+The yaml files in the foo/bar folders can be any kubernetes resource. Typically this file structure would be pushed to S3 or another of the supported backends and then referenced as above in `spec.addons`. In order for master nodes to be able to access the S3 bucket containing the addon manifests, one might have to add additional iam policies to the master nodes using `spec.additionalPolicies`, like so;
+```yaml
+spec:
+  additionalPolicies:
+    master: |
+      [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:GetObject"
+          ],
+          "Resource": ["arn:aws:s3:::kops-addons/*"]
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:GetBucketLocation",
+            "s3:ListBucket"
+          ],
+          "Resource": ["arn:aws:s3:::kops-addons"]
+        }
+      ]
+```
+The masters will poll for changes changes in the bucket and keep the addons up to date.
+
 
 ### Dashboard
 
