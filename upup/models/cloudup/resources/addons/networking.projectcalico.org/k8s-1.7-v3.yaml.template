@@ -36,7 +36,7 @@ data:
             "type": "calico-ipam"
           },
           "policy": {
-            "type": "k8s",
+            "type": "k8s"
           },
           "kubernetes": {
             "kubeconfig": "/etc/cni/net.d/__KUBECONFIG_FILENAME__"
