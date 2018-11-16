@@ -91,7 +91,16 @@ aws iam attach-role-policy --policy-arn $ASG_POLICY_ARN --role-name $IAM_ROLE
 printf " ✅ \n"
 
 addon=cluster-autoscaler.yml
-wget -O ${addon} https://raw.githubusercontent.com/kubernetes/kops/master/addons/cluster-autoscaler/v1.8.0.yaml
+manifest_url=https://raw.githubusercontent.com/kubernetes/kops/master/addons/cluster-autoscaler/v1.8.0.yaml
+
+if which -s wget; then
+  wget -O ${addon} ${manifest_url}
+elif which -s curl; then
+  curl -s -o ${addon} ${manifest_url}
+else
+  echo "No curl or wget available. Can't get the manifest."
+  exit 1
+fi
 
 sed -i -e "s@{{CLOUD_PROVIDER}}@${CLOUD_PROVIDER}@g" "${addon}"
 sed -i -e "s@{{IMAGE}}@${IMAGE}@g" "${addon}"
