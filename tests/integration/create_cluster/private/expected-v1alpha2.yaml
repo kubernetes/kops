@@ -4,6 +4,8 @@ metadata:
   creationTimestamp: 2017-01-01T00:00:00Z
   name: private.example.com
 spec:
+  kubelet:
+    anonymousAuth: true
   api:
     loadBalancer:
       type: Public
