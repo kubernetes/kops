@@ -4,6 +4,8 @@ metadata:
   creationTimestamp: 2017-01-01T00:00:00Z
   name: subnet.example.com
 spec:
+  kubelet:
+    anonymousAuth: true
   adminAccess:
   - 0.0.0.0/0
   api:
