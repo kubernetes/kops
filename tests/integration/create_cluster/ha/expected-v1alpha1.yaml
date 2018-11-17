@@ -4,8 +4,6 @@ metadata:
   creationTimestamp: 2017-01-01T00:00:00Z
   name: ha.example.com
 spec:
-  kubelet:
-    anonymousAuth: true
   adminAccess:
   - 0.0.0.0/0
   api:
@@ -35,6 +33,8 @@ spec:
   iam:
     allowContainerRegistry: true
     legacy: false
+  kubelet:
+    anonymousAuth: true
   kubernetesVersion: v1.6.0-alpha.3
   masterPublicName: api.ha.example.com
   networkCIDR: 172.20.0.0/16
