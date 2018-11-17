@@ -11,7 +11,7 @@ go_library(
         "role.go",
         "rolebinding.go",
     ],
-    importmap = "vendor/k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/rbac/internalversion",
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/rbac/internalversion",
     importpath = "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/rbac/internalversion",
     visibility = ["//visibility:public"],
     deps = [

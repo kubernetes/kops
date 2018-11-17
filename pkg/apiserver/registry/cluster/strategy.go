@@ -17,13 +17,13 @@ limitations under the License.
 package cluster
 
 import (
+	"context"
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	genericapirequest "k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/generic"
 	"k8s.io/apiserver/pkg/storage"
 	"k8s.io/apiserver/pkg/storage/names"
@@ -46,13 +46,13 @@ func (clusterStrategy) NamespaceScoped() bool {
 	return true
 }
 
-func (clusterStrategy) PrepareForCreate(ctx genericapirequest.Context, obj runtime.Object) {
+func (clusterStrategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {
 }
 
-func (clusterStrategy) PrepareForUpdate(ctx genericapirequest.Context, obj, old runtime.Object) {
+func (clusterStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
 }
 
-func (clusterStrategy) Validate(ctx genericapirequest.Context, obj runtime.Object) field.ErrorList {
+func (clusterStrategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
 	return field.ErrorList{}
 	// return validation.ValidateServiceInjection(obj.(*serviceinjection.ServiceInjection))
 }
@@ -68,7 +68,7 @@ func (clusterStrategy) AllowUnconditionalUpdate() bool {
 func (clusterStrategy) Canonicalize(obj runtime.Object) {
 }
 
-func (clusterStrategy) ValidateUpdate(ctx genericapirequest.Context, obj, old runtime.Object) field.ErrorList {
+func (clusterStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
 	glog.Warningf("Performing cluster update without status validation")
 	var status *kops.ClusterStatus
 	return validation.ValidateClusterUpdate(obj.(*kops.Cluster), status, old.(*kops.Cluster))

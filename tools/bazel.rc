@@ -1,1 +1,6 @@
+# TODO: Remove once we expect everyone is running bazel >= 0.18
+# (This is the "legacy" location for bazel.rc)
+# (See https://github.com/bazelbuild/bazel/issues/6319)
+
+
 build --workspace_status_command=./tools/get_workspace_status.sh

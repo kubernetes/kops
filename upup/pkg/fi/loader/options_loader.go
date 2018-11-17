@@ -28,6 +28,7 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 const maxIterations = 10
@@ -96,7 +97,7 @@ func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (in
 	next := reflect.New(t).Interface()
 
 	// Copy the current state before applying rules; they act as defaults
-	utils.JsonMergeStruct(next, current)
+	reflectutils.JsonMergeStruct(next, current)
 
 	for _, t := range l.templates {
 		glog.V(2).Infof("executing template %s (tags=%s)", t.Name, t.Tags)
@@ -135,7 +136,7 @@ func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (in
 	}
 
 	// Also copy the user-provided values after applying rules; they act as overrides now
-	utils.JsonMergeStruct(next, userConfig)
+	reflectutils.JsonMergeStruct(next, userConfig)
 
 	return next, nil
 }

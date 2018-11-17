@@ -33,7 +33,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/kubectl/genericclioptions/resource"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
@@ -45,8 +45,8 @@ var (
 	createLong = templates.LongDesc(i18n.T(`
 		Create a resource:` + validResources +
 		`
-	Create a cluster, instancegroup or secret using command line parameters
-	or YAML configuration specification files.
+	Create a cluster, instancegroup or secret using command line parameters, 
+	YAML configuration specification files, or stdin.
 	(Note: secrets cannot be created from YAML config files yet).
 	`))
 
@@ -58,6 +58,9 @@ var (
 	# Create secret from secret spec file
 	kops create -f secret.yaml
 
+	# Create an instancegroup based on the YAML passed into stdin.
+	cat instancegroup.yaml | kops create -f -
+
 	# Create a cluster in AWS
 	kops create cluster --name=kubernetes-cluster.example.com \
 		--state=s3://kops-state-1234 --zones=eu-west-1a \
@@ -68,7 +71,7 @@ var (
 	kops create ig --name=k8s-cluster.example.com node-example \
 		--role node --subnet my-subnet-name
 
-	# Create an new ssh public key called admin.
+	# Create a new ssh public key called admin.
 	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
 		--name k8s-cluster.example.com --state s3://example.com
 	`))
@@ -125,13 +128,20 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 	var sb bytes.Buffer
 	fmt.Fprintf(&sb, "\n")
 	for _, f := range c.Filenames {
-		contents, err := vfs.Context.ReadFile(f)
-		if err != nil {
-			return fmt.Errorf("error reading file %q: %v", f, err)
+		var contents []byte
+		if f == "-" {
+			contents, err = ConsumeStdin()
+			if err != nil {
+				return err
+			}
+		} else {
+			contents, err = vfs.Context.ReadFile(f)
+			if err != nil {
+				return fmt.Errorf("error reading file %q: %v", f, err)
+			}
 		}
-
 		// TODO: this does not support a JSON array
-		sections := bytes.Split(contents, []byte("\n---\n"))
+		sections := bytes.Split(bytes.Replace(contents, []byte("\r\n"), []byte("\n"), -1), []byte("\n---\n"))
 		for _, section := range sections {
 			defaults := &schema.GroupVersionKind{
 				Group:   v1alpha1.SchemeGroupVersion.Group,
@@ -156,10 +166,9 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 						return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating cluster: %v", err)
-				} else {
-					fmt.Fprintf(&sb, "Created cluster/%s\n", v.ObjectMeta.Name)
-					//cSpec = true
 				}
+				fmt.Fprintf(&sb, "Created cluster/%s\n", v.ObjectMeta.Name)
+				//cSpec = true
 
 			case *kopsapi.InstanceGroup:
 				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
@@ -208,9 +217,8 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				err = sshCredentialStore.AddSSHPublicKey("admin", sshKeyArr)
 				if err != nil {
 					return err
-				} else {
-					fmt.Fprintf(&sb, "Added ssh credential\n")
 				}
+				fmt.Fprintf(&sb, "Added ssh credential\n")
 
 			default:
 				glog.V(2).Infof("Type of object was %T", v)

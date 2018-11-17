@@ -7,12 +7,14 @@ package(default_visibility = ["//visibility:public"])
 #    tags = ["manual"],
 #)
 
+# TODO: this does not work: we need to tell the task about the sources
 sh_test(
     name = "verify-boilerplate",
     srcs = ["verify-boilerplate.sh"],
     tags = ["manual"],
 )
 
+# TODO: this does not work: we need to tell the task about the sources
 sh_test(
     name = "verify-gofmt",
     srcs = ["verify-gofmt.sh"],

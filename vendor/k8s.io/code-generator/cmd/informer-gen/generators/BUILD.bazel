@@ -13,7 +13,7 @@ go_library(
         "types.go",
         "versioninterface.go",
     ],
-    importmap = "vendor/k8s.io/code-generator/cmd/informer-gen/generators",
+    importmap = "k8s.io/kops/vendor/k8s.io/code-generator/cmd/informer-gen/generators",
     importpath = "k8s.io/code-generator/cmd/informer-gen/generators",
     visibility = ["//visibility:public"],
     deps = [

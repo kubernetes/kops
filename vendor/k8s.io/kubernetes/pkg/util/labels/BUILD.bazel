@@ -6,7 +6,7 @@ go_library(
         "doc.go",
         "labels.go",
     ],
-    importmap = "vendor/k8s.io/kubernetes/pkg/util/labels",
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/util/labels",
     importpath = "k8s.io/kubernetes/pkg/util/labels",
     visibility = ["//visibility:public"],
     deps = ["//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library"],

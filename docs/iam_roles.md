@@ -1,6 +1,6 @@
 # IAM Roles
 
-Two IAM roles are created for the cluster: one for the masters, and one for the nodes.
+By default Kops creates two IAM roles for the cluster: one for the masters, and one for the nodes.
 
 > Please note that currently all Pods running on your cluster have access to the instance IAM role.
 > Consider using projects such as [kube2iam](https://github.com/jtblin/kube2iam) to prevent that.
@@ -66,6 +66,7 @@ to add DynamoDB and Elasticsearch permissions to your nodes.
 Edit your cluster via `kops edit cluster ${CLUSTER_NAME}` and add the following to the spec:
 
 ```
+spec:
   additionalPolicies:
     node: |
       [
@@ -121,6 +122,7 @@ kops update cluster ${CLUSTER_NAME} --yes
 You can have an additional policy for each kops role (node, master, bastion). For instance, if you wanted to apply one set of additional permissions to the master instances, and another to the nodes, you could do the following:
 
 ```
+spec:
   additionalPolicies:
     node: |
       [
@@ -138,4 +140,48 @@ You can have an additional policy for each kops role (node, master, bastion). Fo
           "Resource": ["*"]
         }
       ]
+```
+
+## Use existing AWS Instance Profiles
+
+Rather than having Kops create and manage IAM roles and instance profiles, it is possible to use an existing instance profile. This is useful in organizations where security policies prevent tools from creating their own IAM roles and policies.
+Kops will still output any differences in the IAM Inline Policy for each IAM Role.
+This is convenient for determining policy changes that need to be made when upgrading Kops.
+**Using IAM Managed Policies will not output these differences, it is up to the user to track expected changes to policies.**
+
+*NOTE: Currently Kops only supports using existing instance profiles for every instance group in the cluster, not a mix of existing and managed instance profiles.
+This is due to the lifecycle overrides being used to prevent creation of the IAM-related resources.*
+
+To do this, get a list of instance group names for the cluster:
+
+```
+kops get ig --name ${CLUSTER_NAME}
+```
+
+And update every instance group's spec with the desired instance profile ARNs:
+
+```
+kops edit ig --name ${CLUSTER_NAME} ${INSTANCE_GROUP_NAME}
+```
+
+Adding the following `iam` section to the spec:
+
+```yaml
+spec:
+  iam:
+    profile: arn:aws:iam::1234567890108:instance-profile/kops-custom-node-role
+```
+
+Now run a cluster update to create the new launch configuration, using [lifecycle overrides](./cli/kops_update_cluster.md#options) to prevent IAM-related resources from being created:
+
+```
+kops update cluster ${CLUSTER_NAME} --yes --lifecycle-overrides IAMRole=ExistsAndWarnIfChanges,IAMRolePolicy=ExistsAndWarnIfChanges,IAMInstanceProfileRole=ExistsAndWarnIfChanges
+```
+
+*Everytime `kops update cluster` is run, it must include the above `--lifecycle-overrides` unless a non-`security` phase is specified.*
+
+Finally, perform a rolling update in order to replace EC2 instances in the ASG with the new launch configuration:
+
+```
+kops rolling-update cluster ${CLUSTER_NAME} --yes
 ```

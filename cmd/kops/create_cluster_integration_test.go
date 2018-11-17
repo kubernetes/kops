@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 	"testing"
@@ -87,6 +88,12 @@ func TestCreateClusterPrivate(t *testing.T) {
 func TestCreateClusterWithNGWSpecified(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ngwspecified", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ngwspecified", "v1alpha2")
+}
+
+// TestCreateClusterWithINGWSpecified runs kops create cluster private.example.com --zones us-test-1a --master-zones us-test-1a
+func TestCreateClusterWithINGWSpecified(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ingwspecified", "v1alpha1")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ingwspecified", "v1alpha2")
 }
 
 // TestCreateClusterSharedVPC runs kops create cluster vpc.example.com --zones us-test-1a --master-zones us-test-1a --vpc vpc-12345678
@@ -243,16 +250,32 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 		t.Fatalf("unexpected error reading expected YAML: %v", err)
 	}
 
-	expectedYAML := strings.TrimSpace(string(expectedYAMLBytes))
+	//on windows, with git set to autocrlf, the reference files on disk have windows line endings
+	expectedYAML := strings.Replace(strings.TrimSpace(string(expectedYAMLBytes)), "\r\n", "\n", -1)
 
 	actualYAML := strings.Join(yamlAll, "\n\n---\n\n")
 	if actualYAML != expectedYAML {
+		p := path.Join(srcDir, expectedClusterPath)
+
+		if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
+			t.Logf("HACK_UPDATE_EXPECTED_IN_PLACE: writing expected output %s", p)
+
+			// Format nicely - keep git happy
+			s := actualYAML
+			s = strings.TrimSpace(s)
+			s = s + "\n"
+
+			if err := ioutil.WriteFile(p, []byte(s), 0644); err != nil {
+				t.Errorf("error writing expected output %s: %v", p, err)
+			}
+		}
+
 		glog.Infof("Actual YAML:\n%s\n", actualYAML)
 
 		diffString := diff.FormatDiff(expectedYAML, actualYAML)
 		t.Logf("diff:\n%s\n", diffString)
 
-		t.Fatalf("YAML differed from expected (%s)", path.Join(srcDir, expectedClusterPath))
+		t.Errorf("YAML differed from expected (%s)", p)
 	}
 
 }

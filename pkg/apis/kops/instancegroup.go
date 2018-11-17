@@ -60,6 +60,7 @@ const (
 	InstanceGroupRoleBastion InstanceGroupRole = "Bastion"
 )
 
+// AllInstanceGroupRoles is a slice of all valid InstanceGroupRole values
 var AllInstanceGroupRoles = []InstanceGroupRole{
 	InstanceGroupRoleNode,
 	InstanceGroupRoleMaster,
@@ -70,7 +71,7 @@ var AllInstanceGroupRoles = []InstanceGroupRole{
 type InstanceGroupSpec struct {
 	// Type determines the role of instances in this group: masters or nodes
 	Role InstanceGroupRole `json:"role,omitempty"`
-	// Image is the instance instance (ami etc) we should use
+	// Image is the instance (ami etc) we should use
 	Image string `json:"image,omitempty"`
 	// MinSize is the minimum size of the pool
 	MinSize *int32 `json:"minSize,omitempty"`
@@ -116,8 +117,14 @@ type InstanceGroupSpec struct {
 	AdditionalUserData []UserData `json:"additionalUserData,omitempty"`
 	// SuspendProcesses disables the listed Scaling Policies
 	SuspendProcesses []string `json:"suspendProcesses,omitempty"`
+	// ExternalLoadBalancers define loadbalancers that should be attached to the instancegroup
+	ExternalLoadBalancers []LoadBalancer `json:"externalLoadBalancers,omitempty"`
 	// DetailedInstanceMonitoring defines if detailed-monitoring is enabled (AWS only)
 	DetailedInstanceMonitoring *bool `json:"detailedInstanceMonitoring,omitempty"`
+	// IAMProfileSpec defines the identity of the cloud group iam profile (AWS only).
+	IAM *IAMProfileSpec `json:"iam,omitempty"`
+	// SecurityGroupOverride overrides the default security group created by Kops for this IG (AWS only).
+	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
 }
 
 // UserData defines a user-data section
@@ -128,6 +135,14 @@ type UserData struct {
 	Type string `json:"type,omitempty"`
 	// Content is the user-data content
 	Content string `json:"content,omitempty"`
+}
+
+// IAMProfileSpec is the AWS IAM Profile to attach to instances in this instance
+// group. Specify the ARN for the IAM instance profile (AWS only).
+type IAMProfileSpec struct {
+	// Profile is the AWS IAM Profile to attach to instances in this instance group.
+	// Specify the ARN for the IAM instance profile. (AWS only)
+	Profile *string `json:"profile,omitempty"`
 }
 
 // PerformAssignmentsInstanceGroups populates InstanceGroups with default values
@@ -195,4 +210,12 @@ func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
 	} else {
 		g.Spec.NodeLabels[NodeLabelInstanceGroup] = g.Name
 	}
+}
+
+// LoadBalancers defines a load balancer
+type LoadBalancer struct {
+	// LoadBalancerName to associate with this instance group (AWS ELB)
+	LoadBalancerName *string `json:"loadBalancerName,omitempty"`
+	// TargetGroupARN to associate with this instance group (AWS ALB/NLB)
+	TargetGroupARN *string `json:"targetGroupArn,omitempty"`
 }

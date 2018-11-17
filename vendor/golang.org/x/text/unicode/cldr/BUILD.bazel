@@ -11,7 +11,7 @@ go_library(
         "slice.go",
         "xml.go",
     ],
-    importmap = "vendor/golang.org/x/text/unicode/cldr",
+    importmap = "k8s.io/kops/vendor/golang.org/x/text/unicode/cldr",
     importpath = "golang.org/x/text/unicode/cldr",
     visibility = ["//visibility:public"],
 )

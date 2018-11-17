@@ -8,7 +8,7 @@ go_library(
         "transport.go",
         "upgradeaware.go",
     ],
-    importmap = "vendor/k8s.io/apimachinery/pkg/util/proxy",
+    importmap = "k8s.io/kops/vendor/k8s.io/apimachinery/pkg/util/proxy",
     importpath = "k8s.io/apimachinery/pkg/util/proxy",
     visibility = ["//visibility:public"],
     deps = [

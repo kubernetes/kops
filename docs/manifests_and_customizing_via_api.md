@@ -17,7 +17,7 @@ This document also applies to using the `kops` API to customize a Kubernetes clu
 
 > We like to think of it as `kubectl` for Clusters.
 
-Because of the above statement `kops` includes an API which provides a feature for users to utilize YAML or JSON manifests for managing their `kops` created Kubernetes installations. In the same way that you can use a YAML manifest to deploy a Job, you can deploy and manage a `kops` Kuberenetes instance with a manifest. All of these values are also usable via the interactive editor with `kops edit`.
+Because of the above statement `kops` includes an API which provides a feature for users to utilize YAML or JSON manifests for managing their `kops` created Kubernetes installations. In the same way that you can use a YAML manifest to deploy a Job, you can deploy and manage a `kops` Kubernetes instance with a manifest. All of these values are also usable via the interactive editor with `kops edit`.
 
 > You can see all the options that are currently supported in Kops [here](https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/componentconfig.go) or [more prettily here](https://godoc.org/k8s.io/kops/pkg/apis/kops#ClusterSpec)
 
@@ -233,7 +233,7 @@ spec:
 
 ## YAML Examples
 
-With the above YAML file, a user can add configurations that are not available via the command line. For instance, you can add a `MaxPrice` value to a new instance group and use spot instances. Also add node and cloud labels for the new instance group.
+With the above YAML file, a user can add configurations that are not available via the command line. For instance, you can add a `maxPrice` value to a new instance group and use spot instances. Also add node and cloud labels for the new instance group.
 
 ```yaml
 apiVersion: kops/v1alpha2
@@ -305,7 +305,7 @@ The `ClusterSpec` allows a user to set configurations for such values as Docker 
 More information about some of the elements in the `ClusterSpec` is available in the following:
 
 -  Cluster Spec [document](cluster_spec.md) which outlines some of the values in the Cluster Specification.
-- [Ectd Encryption](etcd_backup.md)
+- [Etcd Encryption](etcd_backup.md)
 - [GPU](gpu.md) setup
 - [IAM Roles](iam_roles.md) - adding additional IAM roles.
 - [Labels](labels.md)
@@ -342,6 +342,6 @@ Using YAML or JSON-based configuration for building and managing kops clusters i
 
 - If you do not need to define or customize a value, let kops set that value. Setting too many values prevents kops from doing its job in setting up the cluster and you may end up with strange bugs.
 - If you end up with strange bugs, try letting kops do more.
-- Be cautious, take care, and test test test outside of production!
+- Be cautious, take care, and test outside of production!
 
 If you need to run a custom version of Kubernetes Controller Manager, set `kubeControllerManager.image` and update your cluster. This is the beauty of using a manifest for your cluster!

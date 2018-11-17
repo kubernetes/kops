@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -102,6 +103,18 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			idleTimeout = time.Second * time.Duration(*lbSpec.IdleTimeoutSeconds)
 		}
 
+		listeners := map[string]*awstasks.LoadBalancerListener{
+			"443": {InstancePort: 443},
+		}
+
+		if lbSpec.SSLCertificate != "" {
+			listeners["443"] = &awstasks.LoadBalancerListener{InstancePort: 443, SSLCertificateID: lbSpec.SSLCertificate}
+		}
+
+		if lbSpec.SecurityGroupOverride != nil {
+			glog.V(1).Infof("WARNING: You are overwriting the Load Balancers, Security Group. When this is done you are responsible for ensure the correct rules!")
+		}
+
 		elb = &awstasks.LoadBalancer{
 			Name:      s("api." + b.ClusterName()),
 			Lifecycle: b.Lifecycle,
@@ -110,10 +123,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			SecurityGroups: []*awstasks.SecurityGroup{
 				b.LinkToELBSecurityGroup("api"),
 			},
-			Subnets: elbSubnets,
-			Listeners: map[string]*awstasks.LoadBalancerListener{
-				"443": {InstancePort: 443},
-			},
+			Subnets:   elbSubnets,
+			Listeners: listeners,
 
 			// Configure fast-recovery health-checks
 			HealthCheck: &awstasks.LoadBalancerHealthCheck{
@@ -142,8 +153,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Create security group for API ELB
+	var lbSG *awstasks.SecurityGroup
 	{
-		t := &awstasks.SecurityGroup{
+		lbSG = &awstasks.SecurityGroup{
 			Name:      s(b.ELBSecurityGroupName("api")),
 			Lifecycle: b.SecurityLifecycle,
 
@@ -151,8 +163,14 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Description:      s("Security group for api ELB"),
 			RemoveExtraRules: []string{"port=443"},
 		}
-		t.Tags = b.CloudTags(*t.Name, false)
-		c.AddTask(t)
+		lbSG.Tags = b.CloudTags(*lbSG.Name, false)
+
+		if lbSpec.SecurityGroupOverride != nil {
+			lbSG.ID = fi.String(*lbSpec.SecurityGroupOverride)
+			lbSG.Shared = fi.Bool(true)
+		}
+
+		c.AddTask(lbSG)
 	}
 
 	// Allow traffic from ELB to egress freely
@@ -161,7 +179,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:      s("api-elb-egress"),
 			Lifecycle: b.SecurityLifecycle,
 
-			SecurityGroup: b.LinkToELBSecurityGroup("api"),
+			SecurityGroup: lbSG,
 			Egress:        fi.Bool(true),
 			CIDR:          s("0.0.0.0/0"),
 		}
@@ -175,7 +193,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				Name:      s("https-api-elb-" + cidr),
 				Lifecycle: b.SecurityLifecycle,
 
-				SecurityGroup: b.LinkToELBSecurityGroup("api"),
+				SecurityGroup: lbSG,
 				CIDR:          s(cidr),
 				FromPort:      i64(443),
 				ToPort:        i64(443),
@@ -202,19 +220,27 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleMaster)
+	if err != nil {
+		return err
+	}
+
 	// Allow HTTPS to the master instances from the ELB
 	{
-		t := &awstasks.SecurityGroupRule{
-			Name:      s("https-elb-to-master"),
-			Lifecycle: b.SecurityLifecycle,
+		for _, masterGroup := range masterGroups {
+			suffix := masterGroup.Suffix
+			t := &awstasks.SecurityGroupRule{
+				Name:      s(fmt.Sprintf("https-elb-to-master%s", suffix)),
+				Lifecycle: b.SecurityLifecycle,
 
-			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-			SourceGroup:   b.LinkToELBSecurityGroup("api"),
-			FromPort:      i64(443),
-			ToPort:        i64(443),
-			Protocol:      s("tcp"),
+				SecurityGroup: masterGroup.Task,
+				SourceGroup:   lbSG,
+				FromPort:      i64(443),
+				ToPort:        i64(443),
+				Protocol:      s("tcp"),
+			}
+			c.AddTask(t)
 		}
-		c.AddTask(t)
 	}
 
 	if dns.IsGossipHostname(b.Cluster.Name) || b.UsePrivateDNS() {
@@ -229,16 +255,21 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		masterKeypair.AlternateNameTasks = append(masterKeypair.AlternateNameTasks, elb)
 	}
 
-	for _, ig := range b.MasterInstanceGroups() {
-		t := &awstasks.LoadBalancerAttachment{
-			Name:      s("api-" + ig.ObjectMeta.Name),
-			Lifecycle: b.Lifecycle,
+	// When Spotinst Elastigroups are used, there is no need to create
+	// a separate task for the attachment of the load balancer since this
+	// is already done as part of the Elastigroup's creation, if needed.
+	if !featureflag.Spotinst.Enabled() {
+		for _, ig := range b.MasterInstanceGroups() {
+			t := &awstasks.LoadBalancerAttachment{
+				Name:      s("api-" + ig.ObjectMeta.Name),
+				Lifecycle: b.Lifecycle,
 
-			LoadBalancer:     b.LinkToELB("api"),
-			AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+				LoadBalancer:     b.LinkToELB("api"),
+				AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+			}
+
+			c.AddTask(t)
 		}
-
-		c.AddTask(t)
 	}
 
 	return nil

@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "azure.go",
+        "service.go",
+        "tag.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/azure",
+    importpath = "github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/azure",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/client:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/session:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates:go_default_library",
+    ],
+)

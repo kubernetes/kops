@@ -31,15 +31,24 @@ spec:
     masters: private
     nodes: private
   subnets:
+  - cidr: 172.20.64.0/19
+    name: us-test-1b
+    type: Private
+    egress: nat-b2345678
+    zone: us-test-1b
   - cidr: 172.20.32.0/19
     name: us-test-1a
     type: Private
-    egress: nat-12345678
+    egress: nat-a2345678
     zone: us-test-1a
   - cidr: 172.20.4.0/22
     name: utility-us-test-1a
     type: Utility
     zone: us-test-1a
+  - cidr: 172.20.8.0/22
+    name: utility-us-test-1b
+    type: Utility
+    zone: us-test-1b
 
 ---
 
@@ -78,6 +87,7 @@ spec:
   role: Node
   subnets:
   - us-test-1a
+  - us-test-1b
 
 
 ---

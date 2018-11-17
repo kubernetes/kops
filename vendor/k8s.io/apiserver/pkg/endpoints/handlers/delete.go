@@ -41,6 +41,11 @@ func DeleteResource(r rest.GracefulDeleter, allowsOptions bool, scope RequestSco
 		trace := utiltrace.New("Delete " + req.URL.Path)
 		defer trace.LogIfLong(500 * time.Millisecond)
 
+		if isDryRun(req.URL) {
+			scope.err(errors.NewBadRequest("dryRun is not supported yet"), w, req)
+			return
+		}
+
 		// TODO: we either want to remove timeout or document it (if we document, move timeout out of this function and declare it in api_installer)
 		timeout := parseTimeout(req.URL.Query().Get("timeout"))
 
@@ -49,8 +54,10 @@ func DeleteResource(r rest.GracefulDeleter, allowsOptions bool, scope RequestSco
 			scope.err(err, w, req)
 			return
 		}
-		ctx := scope.ContextFunc(req)
+		ctx := req.Context()
 		ctx = request.WithNamespace(ctx, namespace)
+		ae := request.AuditEventFrom(ctx)
+		admit = admission.WithAudit(admit, ae)
 
 		options := &metav1.DeleteOptions{}
 		if allowsOptions {
@@ -167,6 +174,11 @@ func DeleteResource(r rest.GracefulDeleter, allowsOptions bool, scope RequestSco
 // DeleteCollection returns a function that will handle a collection deletion
 func DeleteCollection(r rest.CollectionDeleter, checkBody bool, scope RequestScope, admit admission.Interface) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
+		if isDryRun(req.URL) {
+			scope.err(errors.NewBadRequest("dryRun is not supported yet"), w, req)
+			return
+		}
+
 		// TODO: we either want to remove timeout or document it (if we document, move timeout out of this function and declare it in api_installer)
 		timeout := parseTimeout(req.URL.Query().Get("timeout"))
 
@@ -176,26 +188,28 @@ func DeleteCollection(r rest.CollectionDeleter, checkBody bool, scope RequestSco
 			return
 		}
 
-		ctx := scope.ContextFunc(req)
+		ctx := req.Context()
 		ctx = request.WithNamespace(ctx, namespace)
+		ae := request.AuditEventFrom(ctx)
+		admit = admission.WithAudit(admit, ae)
 
-		if mutatingAdmission, ok := admit.(admission.MutationInterface); ok && mutatingAdmission.Handles(admission.Delete) {
+		if admit != nil && admit.Handles(admission.Delete) {
 			userInfo, _ := request.UserFrom(ctx)
-
-			err = mutatingAdmission.Admit(admission.NewAttributesRecord(nil, nil, scope.Kind, namespace, "", scope.Resource, scope.Subresource, admission.Delete, userInfo))
-			if err != nil {
-				scope.err(err, w, req)
-				return
+			attrs := admission.NewAttributesRecord(nil, nil, scope.Kind, namespace, "", scope.Resource, scope.Subresource, admission.Delete, userInfo)
+			if mutatingAdmission, ok := admit.(admission.MutationInterface); ok {
+				err = mutatingAdmission.Admit(attrs)
+				if err != nil {
+					scope.err(err, w, req)
+					return
+				}
 			}
-		}
-		// TODO: avoid calling Handles twice
-		if validatingAdmission, ok := admit.(admission.ValidationInterface); ok && validatingAdmission.Handles(admission.Delete) {
-			userInfo, _ := request.UserFrom(ctx)
 
-			err = validatingAdmission.Validate(admission.NewAttributesRecord(nil, nil, scope.Kind, namespace, "", scope.Resource, scope.Subresource, admission.Delete, userInfo))
-			if err != nil {
-				scope.err(err, w, req)
-				return
+			if validatingAdmission, ok := admit.(admission.ValidationInterface); ok {
+				err = validatingAdmission.Validate(attrs)
+				if err != nil {
+					scope.err(err, w, req)
+					return
+				}
 			}
 		}
 

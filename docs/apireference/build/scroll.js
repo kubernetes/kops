@@ -65,7 +65,7 @@ $(document).ready(function() {
             currL1Nav = getNavNode(activeSection.token);
             currL1Nav.show('fast');
         } 
-        // If active active is not the same as previous, hide previous L1Nav and show current L1Nav; set previous to current
+        // If active is not the same as previous, hide previous L1Nav and show current L1Nav; set previous to current
         else if (activeSection.token !== prevSectionToken) {
             prevL1Nav = getNavNode(prevSectionToken);
             currL1Nav = getNavNode(activeSection.token);

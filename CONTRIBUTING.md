@@ -24,7 +24,7 @@ Follow either of the two links above to access the appropriate CLA and instructi
 
 ### Adding dependencies
 
-If your patch depends on new packages, follow the [instructions to add a dependency](/docs/development/dependencies.md).
+If your patch depends on new packages, follow the [instructions to add a dependency](/docs/development/vendoring.md#adding-a-dependency-to-the-vendor-directory).
 
 ## Bug reporting
 

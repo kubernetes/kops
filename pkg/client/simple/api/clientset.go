@@ -72,7 +72,7 @@ func (c *RESTClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {
 	if cluster.Spec.ConfigBase != "" {
 		return vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
 	}
-	// URL for clusters looks like  https://<server>/apis/kops/v1alpha2/namespaces/<cluster>/clusters/<cluster>
+	// URL for clusters looks like https://<server>/apis/kops/v1alpha2/namespaces/<cluster>/clusters/<cluster>
 	// We probably want to add a subresource for full resources
 	return vfs.Context.BuildVfsPath(c.BaseURL.String())
 }

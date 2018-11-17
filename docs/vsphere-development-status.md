@@ -61,7 +61,7 @@ List of all kops commands and how they behave for vSphere cloud provider, as of 
 |create|-f FILENAME|Three yams files are required- cluster: kops create -f ~/kops.yaml, master IG: kops create -f ~/kops.nodeig.yaml, node IG: kops create -f ~/kops.masterig.yaml |Yes|No||
 |delete|cluster|kops delete cluster v2c1.skydns.local --yes|Yes|No||
 |delete|instancegroup|kops delete instancegroup --name=v2c1.skydns.local  nodes.v2c1.skydns.local|No. No implementation available to list resources. Method corresponding to AWS is getting called and crashing with panic, without any useful message.|Yes||
-|delete|secrete||Yes|-||
+|delete|secret||Yes|-||
 |delete|-f FILENAME|kops delete -f config.yaml  --name=v2c1.skydns.local|No. Cluster deletion works. Instance group deletion is failing with error: panic: interface conversion: *vsphere.VSphereCloud is not awsup.AWSCloud: missing method AddAWSTags goroutine 1 [running]: panic(0x26fbd20, 0xc420770780) /usr/local/go/src/runtime/panic.go:500 +0x1a1 k8s.io/kops/upup/pkg/kutil.FindCloudInstanceGroups|Yes|Delete cluster, ig specified by the file.|
 |describe|secrets|kops describe secrets|Yes|No|Describe secrets, based on the kubectl context.|
 |edit|cluster|kops  edit cluster --name=v2c1.skydns.local nodes|Yes. Edited spec gets updated in object store.|Yes|Edit works. But it would be a bad user experience if we allow users to edit the spec, followed by a failed 'kops update' and then no way to go back to the older spec.|

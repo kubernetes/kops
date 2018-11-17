@@ -47,6 +47,12 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 		},
 		{
 			kops.KubeAPIServerConfig{
+				MaxMutatingRequestsInflight: 900,
+			},
+			"--insecure-port=0 --max-mutating-requests-inflight=900 --secure-port=0",
+		},
+		{
+			kops.KubeAPIServerConfig{
 				InsecurePort: 8080,
 				SecurePort:   443,
 			},
@@ -59,6 +65,14 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 				MaxRequestsInflight: 1000,
 			},
 			"--insecure-port=8080 --max-requests-inflight=1000 --secure-port=443",
+		},
+		{
+			kops.KubeAPIServerConfig{
+				InsecurePort:                8080,
+				SecurePort:                  443,
+				MaxMutatingRequestsInflight: 900,
+			},
+			"--insecure-port=8080 --max-mutating-requests-inflight=900 --secure-port=443",
 		},
 		{
 			kops.KubeAPIServerConfig{
@@ -77,6 +91,12 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 				ExperimentalEncryptionProviderConfig: fi.String("/srv/kubernetes/encryptionconfig.yaml"),
 			},
 			"--experimental-encryption-provider-config=/srv/kubernetes/encryptionconfig.yaml --insecure-port=0 --secure-port=0",
+		},
+		{
+			kops.KubeAPIServerConfig{
+				TargetRamMb: 320,
+			},
+			"--insecure-port=0 --secure-port=0 --target-ram-mb=320",
 		},
 	}
 

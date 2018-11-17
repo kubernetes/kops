@@ -19,6 +19,7 @@ package awstasks
 import (
 	"encoding/base64"
 	"fmt"
+	"math"
 	"sort"
 	"strings"
 	"time"
@@ -27,11 +28,24 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
+
+// defaultRetainLaunchConfigurationCount is the number of launch configurations (matching the name prefix) that we should
+// keep, we delete older ones
+var defaultRetainLaunchConfigurationCount = 3
+
+// RetainLaunchConfigurationCount returns the number of launch configurations to keep
+func RetainLaunchConfigurationCount() int {
+	if featureflag.KeepLaunchConfigurations.Enabled() {
+		return math.MaxInt32
+	}
+	return defaultRetainLaunchConfigurationCount
+}
 
 //go:generate fitask -type=LaunchConfiguration
 type LaunchConfiguration struct {
@@ -68,24 +82,26 @@ type LaunchConfiguration struct {
 
 var _ fi.CompareWithID = &LaunchConfiguration{}
 
+var _ fi.ProducesDeletions = &LaunchConfiguration{}
+
 func (e *LaunchConfiguration) CompareWithID() *string {
 	return e.ID
 }
 
-func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) {
+// findLaunchConfigurations returns matching LaunchConfigurations, sorted by CreatedTime (ascending)
+func (e *LaunchConfiguration) findLaunchConfigurations(c *fi.Context) ([]*autoscaling.LaunchConfiguration, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &autoscaling.DescribeLaunchConfigurationsInput{}
 
 	prefix := *e.Name + "-"
 
-	configurations := map[string]*autoscaling.LaunchConfiguration{}
+	var configurations []*autoscaling.LaunchConfiguration
 	err := cloud.Autoscaling().DescribeLaunchConfigurationsPages(request, func(page *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
 		for _, l := range page.LaunchConfigurations {
 			name := aws.StringValue(l.LaunchConfigurationName)
 			if strings.HasPrefix(name, prefix) {
-				suffix := name[len(prefix):]
-				configurations[suffix] = l
+				configurations = append(configurations, l)
 			}
 		}
 		return true
@@ -94,21 +110,36 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		return nil, fmt.Errorf("error listing AutoscalingLaunchConfigurations: %v", err)
 	}
 
+	sort.Slice(configurations, func(i, j int) bool {
+		ti := configurations[i].CreatedTime
+		tj := configurations[j].CreatedTime
+		if tj == nil {
+			return true
+		}
+		if ti == nil {
+			return false
+		}
+		return ti.UnixNano() < tj.UnixNano()
+	})
+
+	return configurations, nil
+}
+
+func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) {
+	cloud := c.Cloud.(awsup.AWSCloud)
+
+	configurations, err := e.findLaunchConfigurations(c)
+	if err != nil {
+		return nil, err
+	}
+
 	if len(configurations) == 0 {
 		return nil, nil
 	}
 
-	var newest *autoscaling.LaunchConfiguration
-	var newestTime int64
-	for _, lc := range configurations {
-		t := lc.CreatedTime.UnixNano()
-		if t > newestTime {
-			newestTime = t
-			newest = lc
-		}
-	}
-
-	lc := newest
+	// We pick up the latest launch configuration
+	// (TODO: this might not actually be attached to the AutoScalingGroup, if something went wrong previously)
+	lc := configurations[len(configurations)-1]
 
 	glog.V(2).Infof("found existing AutoscalingLaunchConfiguration: %q", *lc.LaunchConfigurationName)
 
@@ -117,13 +148,19 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		ID:                     lc.LaunchConfigurationName,
 		ImageID:                lc.ImageId,
 		InstanceType:           lc.InstanceType,
-		SSHKey:                 &SSHKey{Name: lc.KeyName},
 		AssociatePublicIP:      lc.AssociatePublicIpAddress,
-		IAMInstanceProfile:     &IAMInstanceProfile{Name: lc.IamInstanceProfile},
 		InstanceMonitoring:     lc.InstanceMonitoring.Enabled,
 		SpotPrice:              aws.StringValue(lc.SpotPrice),
 		Tenancy:                lc.PlacementTenancy,
 		RootVolumeOptimization: lc.EbsOptimized,
+	}
+
+	if lc.KeyName != nil {
+		actual.SSHKey = &SSHKey{Name: lc.KeyName}
+	}
+
+	if lc.IamInstanceProfile != nil {
+		actual.IAMInstanceProfile = &IAMInstanceProfile{Name: lc.IamInstanceProfile}
 	}
 
 	securityGroups := []*SecurityGroup{}
@@ -145,11 +182,13 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		actual.RootVolumeIops = b.Ebs.Iops
 	}
 
-	userData, err := base64.StdEncoding.DecodeString(aws.StringValue(lc.UserData))
-	if err != nil {
-		return nil, fmt.Errorf("error decoding UserData: %v", err)
+	if lc.UserData != nil {
+		userData, err := base64.StdEncoding.DecodeString(aws.StringValue(lc.UserData))
+		if err != nil {
+			return nil, fmt.Errorf("error decoding UserData: %v", err)
+		}
+		actual.UserData = fi.WrapResource(fi.NewStringResource(string(userData)))
 	}
-	actual.UserData = fi.WrapResource(fi.NewStringResource(string(userData)))
 
 	// Avoid spurious changes on ImageId
 	if e.ImageID != nil && actual.ImageID != nil && *actual.ImageID != *e.ImageID {
@@ -616,4 +655,69 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 
 func (e *LaunchConfiguration) CloudformationLink() *cloudformation.Literal {
 	return cloudformation.Ref("AWS::AutoScaling::LaunchConfiguration", *e.Name)
+}
+
+// deleteLaunchConfiguration tracks a LaunchConfiguration that we're going to delete
+// It implements fi.Deletion
+type deleteLaunchConfiguration struct {
+	lc *autoscaling.LaunchConfiguration
+}
+
+var _ fi.Deletion = &deleteLaunchConfiguration{}
+
+func (d *deleteLaunchConfiguration) TaskName() string {
+	return "LaunchConfiguration"
+}
+
+func (d *deleteLaunchConfiguration) Item() string {
+	return aws.StringValue(d.lc.LaunchConfigurationName)
+}
+
+func (d *deleteLaunchConfiguration) Delete(t fi.Target) error {
+	glog.V(2).Infof("deleting launch configuration %v", d)
+
+	awsTarget, ok := t.(*awsup.AWSAPITarget)
+	if !ok {
+		return fmt.Errorf("unexpected target type for deletion: %T", t)
+	}
+
+	request := &autoscaling.DeleteLaunchConfigurationInput{
+		LaunchConfigurationName: d.lc.LaunchConfigurationName,
+	}
+
+	name := aws.StringValue(request.LaunchConfigurationName)
+	glog.V(2).Infof("Calling autoscaling DeleteLaunchConfiguration for %s", name)
+	_, err := awsTarget.Cloud.Autoscaling().DeleteLaunchConfiguration(request)
+	if err != nil {
+		return fmt.Errorf("error deleting autoscaling LaunchConfiguration %s: %v", name, err)
+	}
+
+	return nil
+}
+
+func (d *deleteLaunchConfiguration) String() string {
+	return d.TaskName() + "-" + d.Item()
+}
+
+func (e *LaunchConfiguration) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
+	var removals []fi.Deletion
+
+	configurations, err := e.findLaunchConfigurations(c)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(configurations) <= RetainLaunchConfigurationCount() {
+		return nil, nil
+	}
+
+	configurations = configurations[:len(configurations)-RetainLaunchConfigurationCount()]
+
+	for _, configuration := range configurations {
+		removals = append(removals, &deleteLaunchConfiguration{lc: configuration})
+	}
+
+	glog.V(2).Infof("will delete launch configurations: %v", removals)
+
+	return removals, nil
 }

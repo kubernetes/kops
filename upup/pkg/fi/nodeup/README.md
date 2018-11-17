@@ -34,7 +34,7 @@ Owner & group will be root:root
 
 Two special extensions are recognized:
 
-* .asset will be sourced from assets.  Assets are binaries that are made available to the installer, e.g. from a .tar.gz distributino
+* .asset will be sourced from assets.  Assets are binaries that are made available to the installer, e.g. from a .tar.gz distributions
 * .template is a go template
 
 packages

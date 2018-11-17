@@ -127,3 +127,72 @@ func TestGetASGTagsToDelete(t *testing.T) {
 		}
 	}
 }
+
+func TestProcessCompare(t *testing.T) {
+	rebalance := "AZRebalance"
+	healthcheck := "HealthCheck"
+
+	a := []string{}
+	b := []string{
+		rebalance,
+	}
+	c := []string{
+		rebalance,
+		healthcheck,
+	}
+
+	cases := []struct {
+		A                 *[]string
+		B                 *[]string
+		ExpectedProcesses []*string
+	}{
+		{
+			A:                 &a,
+			B:                 &b,
+			ExpectedProcesses: []*string{},
+		},
+		{
+			A: &b,
+			B: &a,
+			ExpectedProcesses: []*string{
+				&rebalance,
+			},
+		},
+		{
+			A: &c,
+			B: &b,
+			ExpectedProcesses: []*string{
+				&healthcheck,
+			},
+		},
+		{
+			A: &c,
+			B: &a,
+			ExpectedProcesses: []*string{
+				&rebalance,
+				&healthcheck,
+			},
+		},
+	}
+
+	for i, x := range cases {
+		result := processCompare(x.A, x.B)
+
+		expected, err := yaml.Marshal(x.ExpectedProcesses)
+		if err != nil {
+			t.Errorf("case %d, unexpected error converting expected processes to yaml: %v", i, err)
+		}
+
+		actual, err := yaml.Marshal(result)
+		if err != nil {
+			t.Errorf("case %d, unexpected error converting actual result to yaml: %v", i, err)
+		}
+
+		if string(expected) != string(actual) {
+			diffString := diff.FormatDiff(string(expected), string(actual))
+			t.Errorf("case %d failed, actual output differed from expected.", i)
+			t.Logf("diff:\n%s\n", diffString)
+
+		}
+	}
+}

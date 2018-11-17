@@ -3,7 +3,7 @@
 
 ## kops create secret sshpublickey
 
-Create a ssh public key.
+Create an ssh public key.
 
 ### Synopsis
 
@@ -16,7 +16,7 @@ kops create secret sshpublickey [flags]
 ### Examples
 
 ```
-  # Create an new ssh public key called admin.
+  # Create a new ssh public key called admin.
   kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
   --name k8s-cluster.example.com --state s3://example.com
 ```
@@ -32,12 +32,12 @@ kops create secret sshpublickey [flags]
 
 ```
       --alsologtostderr                  log to standard error as well as files
-      --config string                    config file (default is $HOME/.kops.yaml)
+      --config string                    yaml config file (default is $HOME/.kops.yaml)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
-      --state string                     Location of state storage. Overrides KOPS_STATE_STORE environment variable
+      --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging

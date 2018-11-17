@@ -41,7 +41,7 @@ func ValidateClusterUpdate(obj *kops.Cluster, status *kops.ClusterStatus, old *k
 		}
 
 		for k, newCluster := range newClusters {
-			fp := field.NewPath("Spec", "EtcdClusters").Key(k)
+			fp := field.NewPath("spec", "etcdClusters").Key(k)
 
 			oldCluster := oldClusters[k]
 			allErrs = append(allErrs, validateEtcdClusterUpdate(fp, newCluster, status, oldCluster)...)
@@ -49,7 +49,7 @@ func ValidateClusterUpdate(obj *kops.Cluster, status *kops.ClusterStatus, old *k
 		for k := range oldClusters {
 			newCluster := newClusters[k]
 			if newCluster == nil {
-				fp := field.NewPath("Spec", "EtcdClusters").Key(k)
+				fp := field.NewPath("spec", "etcdClusters").Key(k)
 				allErrs = append(allErrs, field.Forbidden(fp, "EtcdClusters cannot be removed"))
 			}
 		}

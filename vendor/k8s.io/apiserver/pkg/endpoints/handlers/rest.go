@@ -17,10 +17,12 @@ limitations under the License.
 package handlers
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/golang/glog"
@@ -37,12 +39,12 @@ import (
 	"k8s.io/apiserver/pkg/endpoints/metrics"
 	"k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
+	openapiproto "k8s.io/kube-openapi/pkg/util/proto"
 )
 
 // RequestScope encapsulates common fields across all RESTful handler methods.
 type RequestScope struct {
 	Namer ScopeNamer
-	ContextFunc
 
 	Serializer runtime.NegotiatedSerializer
 	runtime.ParameterCodec
@@ -54,6 +56,7 @@ type RequestScope struct {
 	UnsafeConvertor runtime.ObjectConvertor
 
 	TableConvertor rest.TableConvertor
+	OpenAPISchema  openapiproto.Schema
 
 	Resource    schema.GroupVersionResource
 	Kind        schema.GroupVersionKind
@@ -63,8 +66,7 @@ type RequestScope struct {
 }
 
 func (scope *RequestScope) err(err error, w http.ResponseWriter, req *http.Request) {
-	ctx := scope.ContextFunc(req)
-	responsewriters.ErrorNegotiated(ctx, err, scope.Serializer, scope.Kind.GroupVersion(), w, req)
+	responsewriters.ErrorNegotiated(err, scope.Serializer, scope.Kind.GroupVersion(), w, req)
 }
 
 func (scope *RequestScope) AllowsConversion(gvk schema.GroupVersionKind) bool {
@@ -91,9 +93,6 @@ func (scope *RequestScope) AllowsStreamSchema(s string) bool {
 	return s == "watch"
 }
 
-// MaxRetryWhenPatchConflicts is the maximum number of conflicts retry during a patch operation before returning failure
-const MaxRetryWhenPatchConflicts = 5
-
 // ConnectResource returns a function that handles a connect request on a rest.Storage object.
 func ConnectResource(connecter rest.Connecter, scope RequestScope, admit admission.Interface, restPath string, isSubresource bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
@@ -102,8 +101,11 @@ func ConnectResource(connecter rest.Connecter, scope RequestScope, admit admissi
 			scope.err(err, w, req)
 			return
 		}
-		ctx := scope.ContextFunc(req)
+		ctx := req.Context()
 		ctx = request.WithNamespace(ctx, namespace)
+		ae := request.AuditEventFrom(ctx)
+		admit = admission.WithAudit(admit, ae)
+
 		opts, subpath, subpathKey := connecter.NewConnectOptions()
 		if err := getRequestOptions(req, scope, opts, subpath, subpathKey, isSubresource); err != nil {
 			err = errors.NewBadRequest(err.Error())
@@ -118,15 +120,15 @@ func ConnectResource(connecter rest.Connecter, scope RequestScope, admit admissi
 			}
 			userInfo, _ := request.UserFrom(ctx)
 			// TODO: remove the mutating admission here as soon as we have ported all plugin that handle CONNECT
-			if mutatingAdmit, ok := admit.(admission.MutationInterface); ok {
-				err = mutatingAdmit.Admit(admission.NewAttributesRecord(connectRequest, nil, scope.Kind, namespace, name, scope.Resource, scope.Subresource, admission.Connect, userInfo))
+			if mutatingAdmission, ok := admit.(admission.MutationInterface); ok {
+				err = mutatingAdmission.Admit(admission.NewAttributesRecord(connectRequest, nil, scope.Kind, namespace, name, scope.Resource, scope.Subresource, admission.Connect, userInfo))
 				if err != nil {
 					scope.err(err, w, req)
 					return
 				}
 			}
-			if mutatingAdmit, ok := admit.(admission.ValidationInterface); ok {
-				err = mutatingAdmit.Validate(admission.NewAttributesRecord(connectRequest, nil, scope.Kind, namespace, name, scope.Resource, scope.Subresource, admission.Connect, userInfo))
+			if validatingAdmission, ok := admit.(admission.ValidationInterface); ok {
+				err = validatingAdmission.Validate(admission.NewAttributesRecord(connectRequest, nil, scope.Kind, namespace, name, scope.Resource, scope.Subresource, admission.Connect, userInfo))
 				if err != nil {
 					scope.err(err, w, req)
 					return
@@ -153,8 +155,7 @@ type responder struct {
 }
 
 func (r *responder) Object(statusCode int, obj runtime.Object) {
-	ctx := r.scope.ContextFunc(r.req)
-	responsewriters.WriteObject(ctx, statusCode, r.scope.Kind.GroupVersion(), r.scope.Serializer, obj, r.w, r.req)
+	responsewriters.WriteObject(statusCode, r.scope.Kind.GroupVersion(), r.scope.Serializer, obj, r.w, r.req)
 }
 
 func (r *responder) Error(err error) {
@@ -266,7 +267,7 @@ func checkName(obj runtime.Object, name, namespace string, namer ScopeNamer) err
 
 // setListSelfLink sets the self link of a list to the base URL, then sets the self links
 // on all child objects returned. Returns the number of items in the list.
-func setListSelfLink(obj runtime.Object, ctx request.Context, req *http.Request, namer ScopeNamer) (int, error) {
+func setListSelfLink(obj runtime.Object, ctx context.Context, req *http.Request, namer ScopeNamer) (int, error) {
 	if !meta.IsListType(obj) {
 		return 0, nil
 	}
@@ -322,4 +323,8 @@ func parseTimeout(str string) time.Duration {
 		glog.Errorf("Failed to parse %q: %v", str, err)
 	}
 	return 30 * time.Second
+}
+
+func isDryRun(url *url.URL) bool {
+	return len(url.Query()["dryRun"]) != 0
 }

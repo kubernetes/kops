@@ -27,6 +27,7 @@ var (
 	DistributionJessie      Distribution = "jessie"
 	DistributionDebian9     Distribution = "debian9"
 	DistributionXenial      Distribution = "xenial"
+	DistributionBionic      Distribution = "bionic"
 	DistributionRhel7       Distribution = "rhel7"
 	DistributionCentos7     Distribution = "centos7"
 	DistributionCoreOS      Distribution = "coreos"
@@ -43,6 +44,8 @@ func (d Distribution) BuildTags() []string {
 		t = []string{} // trying to move away from tags
 	case DistributionXenial:
 		t = []string{"_xenial"}
+	case DistributionBionic:
+		t = []string{"_bionic"}
 	case DistributionCentos7:
 		t = []string{"_centos7"}
 	case DistributionRhel7:
@@ -71,7 +74,7 @@ func (d Distribution) BuildTags() []string {
 
 func (d Distribution) IsDebianFamily() bool {
 	switch d {
-	case DistributionJessie, DistributionXenial, DistributionDebian9:
+	case DistributionJessie, DistributionXenial, DistributionBionic, DistributionDebian9:
 		return true
 	case DistributionCentos7, DistributionRhel7:
 		return false
@@ -87,7 +90,7 @@ func (d Distribution) IsRHELFamily() bool {
 	switch d {
 	case DistributionCentos7, DistributionRhel7:
 		return true
-	case DistributionJessie, DistributionXenial, DistributionDebian9:
+	case DistributionJessie, DistributionXenial, DistributionBionic, DistributionDebian9:
 		return false
 	case DistributionCoreOS, DistributionContainerOS:
 		return false
@@ -99,7 +102,7 @@ func (d Distribution) IsRHELFamily() bool {
 
 func (d Distribution) IsSystemd() bool {
 	switch d {
-	case DistributionJessie, DistributionXenial, DistributionDebian9:
+	case DistributionJessie, DistributionXenial, DistributionBionic, DistributionDebian9:
 		return true
 	case DistributionCentos7, DistributionRhel7:
 		return true

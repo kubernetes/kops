@@ -60,7 +60,7 @@ You can use this to make more in depth changes to the formula.
 Test and make sure that the new release works.
 
 ### Audit the Homebrew formula
-```brew audit --strict --online``` will output any code that that doesn't meet the Homebrew standards.
+```brew audit --strict --online``` will output any code that doesn't meet the Homebrew standards.
 
 ### Send a commit to the Homebrew repo
 

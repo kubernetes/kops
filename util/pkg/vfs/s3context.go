@@ -40,16 +40,33 @@ var (
 	s3UrlRegexp = regexp.MustCompile(`s3([-.](?P<region>\w{2}-\w+-\d{1})|[-.](?P<bucket>[\w.\-\_]+)|)?.amazonaws.com(.cn)?(?P<path>.*)?`)
 )
 
+type S3BucketDetails struct {
+	// context is the S3Context we are associated with
+	context *S3Context
+
+	// region is the region we have determined for the bucket
+	region string
+
+	// name is the name of the bucket
+	name string
+
+	// mutex protects applyServerSideEncryptionByDefault
+	mutex sync.Mutex
+
+	// applyServerSideEncryptionByDefault caches information on whether server-side encryption is enabled on the bucket
+	applyServerSideEncryptionByDefault *bool
+}
+
 type S3Context struct {
-	mutex           sync.Mutex
-	clients         map[string]*s3.S3
-	bucketLocations map[string]string
+	mutex         sync.Mutex
+	clients       map[string]*s3.S3
+	bucketDetails map[string]*S3BucketDetails
 }
 
 func NewS3Context() *S3Context {
 	return &S3Context{
-		clients:         make(map[string]*s3.S3),
-		bucketLocations: make(map[string]string),
+		clients:       make(map[string]*s3.S3),
+		bucketDetails: make(map[string]*S3BucketDetails),
 	}
 }
 
@@ -106,26 +123,30 @@ func getCustomS3Config(endpoint string, region string) (*aws.Config, error) {
 	return s3Config, nil
 }
 
-func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
-	region := func() string {
-		s.mutex.Lock()
-		defer s.mutex.Unlock()
-		return s.bucketLocations[bucket]
-	}()
+func (s *S3Context) getDetailsForBucket(bucket string) (*S3BucketDetails, error) {
+	s.mutex.Lock()
+	bucketDetails := s.bucketDetails[bucket]
+	s.mutex.Unlock()
 
-	if region != "" {
-		return region, nil
+	if bucketDetails != nil && bucketDetails.region != "" {
+		return bucketDetails, nil
+	}
+
+	bucketDetails = &S3BucketDetails{
+		context: s,
+		region:  "",
+		name:    bucket,
 	}
 
 	// Probe to find correct region for bucket
 	endpoint := os.Getenv("S3_ENDPOINT")
 	if endpoint != "" {
 		// If customized S3 storage is set, return user-defined region
-		region = os.Getenv("S3_REGION")
-		if region == "" {
-			region = "us-east-1"
+		bucketDetails.region = os.Getenv("S3_REGION")
+		if bucketDetails.region == "" {
+			bucketDetails.region = "us-east-1"
 		}
-		return region, nil
+		return bucketDetails, nil
 	}
 
 	awsRegion := os.Getenv("AWS_REGION")
@@ -134,7 +155,7 @@ func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
 	}
 
 	if err := validateRegion(awsRegion); err != nil {
-		return "", err
+		return bucketDetails, err
 	}
 
 	request := &s3.GetBucketLocationInput{
@@ -144,7 +165,7 @@ func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
 
 	s3Client, err := s.getClient(awsRegion)
 	if err != nil {
-		return "", fmt.Errorf("error connecting to S3: %s", err)
+		return bucketDetails, fmt.Errorf("error connecting to S3: %s", err)
 	}
 	// Attempt one GetBucketLocation call the "normal" way (i.e. as the bucket owner)
 	response, err = s3Client.GetBucketLocation(request)
@@ -156,26 +177,76 @@ func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
 	}
 
 	if err != nil {
-		return "", err
+		return bucketDetails, err
 	}
 
 	if response.LocationConstraint == nil {
 		// US Classic does not return a region
-		region = "us-east-1"
+		bucketDetails.region = "us-east-1"
 	} else {
-		region = *response.LocationConstraint
+		bucketDetails.region = *response.LocationConstraint
 		// Another special case: "EU" can mean eu-west-1
-		if region == "EU" {
-			region = "eu-west-1"
+		if bucketDetails.region == "EU" {
+			bucketDetails.region = "eu-west-1"
 		}
 	}
-	glog.V(2).Infof("Found bucket %q in region %q", bucket, region)
+
+	glog.V(2).Infof("found bucket in region %q", bucketDetails.region)
 
 	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	s.bucketLocations[bucket] = region
+	s.bucketDetails[bucket] = bucketDetails
+	s.mutex.Unlock()
 
-	return region, nil
+	return bucketDetails, nil
+}
+
+func (b *S3BucketDetails) hasServerSideEncryptionByDefault() bool {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+
+	if b.applyServerSideEncryptionByDefault != nil {
+		return *b.applyServerSideEncryptionByDefault
+	}
+
+	applyServerSideEncryptionByDefault := false
+
+	// We only make one attempt to find the SSE policy (even if there's an error)
+	b.applyServerSideEncryptionByDefault = &applyServerSideEncryptionByDefault
+
+	client, err := b.context.getClient(b.region)
+	if err != nil {
+		glog.Warningf("Unable to read bucket encryption policy for %q in region %q: will encrypt using AES256", b.name, b.region)
+		return false
+	}
+
+	glog.V(4).Infof("Checking default bucket encryption for %q", b.name)
+
+	request := &s3.GetBucketEncryptionInput{}
+	request.Bucket = aws.String(b.name)
+
+	glog.V(8).Infof("Calling S3 GetBucketEncryption Bucket=%q", b.name)
+
+	result, err := client.GetBucketEncryption(request)
+	if err != nil {
+		// the following cases might lead to the operation failing:
+		// 1. A deny policy on s3:GetEncryptionConfiguration
+		// 2. No default encryption policy set
+		glog.V(8).Infof("Unable to read bucket encryption policy for %q: will encrypt using AES256", b.name)
+		return false
+	}
+
+	// currently, only one element is in the rules array, iterating nonetheless for future compatibility
+	for _, element := range result.ServerSideEncryptionConfiguration.Rules {
+		if element.ApplyServerSideEncryptionByDefault != nil {
+			applyServerSideEncryptionByDefault = true
+		}
+	}
+
+	b.applyServerSideEncryptionByDefault = &applyServerSideEncryptionByDefault
+
+	glog.V(2).Infof("bucket %q has default encryption set to %t", b.name, applyServerSideEncryptionByDefault)
+
+	return applyServerSideEncryptionByDefault
 }
 
 /*

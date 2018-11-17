@@ -31,6 +31,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
@@ -204,7 +205,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		edited, file, err := edit.LaunchTempFile(fmt.Sprintf("%s-edit-", filepath.Base(os.Args[0])), ext, bytes.NewReader(raw))
 		defer func() {
 			if file != "" {
-				os.Remove(file)
+				try.RemoveFile(file)
 			}
 		}()
 		if err != nil {

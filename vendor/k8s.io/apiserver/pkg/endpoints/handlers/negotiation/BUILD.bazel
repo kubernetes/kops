@@ -7,7 +7,7 @@ go_library(
         "errors.go",
         "negotiate.go",
     ],
-    importmap = "vendor/k8s.io/apiserver/pkg/endpoints/handlers/negotiation",
+    importmap = "k8s.io/kops/vendor/k8s.io/apiserver/pkg/endpoints/handlers/negotiation",
     importpath = "k8s.io/apiserver/pkg/endpoints/handlers/negotiation",
     visibility = ["//visibility:public"],
     deps = [

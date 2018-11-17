@@ -190,7 +190,7 @@ func writeFile(c *fi.Context, p vfs.Path, data []byte) error {
 	return nil
 }
 
-// buildVFSPath task a recognizable https url and transforms that URL into the equivalent url with the the object
+// buildVFSPath task a recognizable https url and transforms that URL into the equivalent url with the object
 // store prefix.
 func buildVFSPath(target string) (string, error) {
 	if !strings.Contains(target, "://") || strings.HasPrefix(target, "memfs://") {

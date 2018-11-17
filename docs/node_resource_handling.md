@@ -1,4 +1,4 @@
-## Node Resource Handling In Kuberenetes
+## Node Resource Handling In Kubernetes
 
 An aspect of Kubernetes clusters that is often overlooked is the resources non-
 pod components require to run, such as:
@@ -37,7 +37,7 @@ nodes as possible.
 ---------------------------
 ```
 
-Node resources can be be categorised into 4 (as shown above):
+Node resources can be categorised into 4 (as shown above):
 
 * `kube-reserved` – reserves resources for kubernetes system daemons.
 * `system-reserved` – reserves resources for operating system components.
@@ -71,7 +71,7 @@ scheduled does not surpass the sum of allocatable resources. But suppose you
 have a couple of applications deployed in your cluster that are constantly using
 up way more resources set in their resource requests (burst above requests but
 below limits during workload). You end up with a node with pods that are each
-attempting to take take up more resources than there are available on the node!
+attempting to take up more resources than there are available on the node!
 
 This is particularly an issue with non-compressible resources like memory. For
 example, in the aforementioned case, with an eviction threshold of only
@@ -128,4 +128,4 @@ But, it seems fitting to recommend the following:
 [5]: https://cloud.google.com/container-engine/
 [6]: https://github.com/kubernetes/kops
 [7]: http://node-perf-dash.k8s.io/#/builds
-[8]: http://blog.kubernetes.io/2016/11/visualize-kubelet-performance-with-node-dashboard.html
+[8]: http://kubernetes.io/blog/2016/11/visualize-kubelet-performance-with-node-dashboard.html

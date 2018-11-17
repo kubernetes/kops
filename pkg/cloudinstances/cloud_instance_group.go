@@ -18,9 +18,11 @@ package cloudinstances
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
+	"k8s.io/kops/pkg/apis/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 )
 
@@ -83,11 +85,14 @@ func (c *CloudInstanceGroup) Status() string {
 }
 
 // GetNodeMap returns a list of nodes keyed by their external id
-func GetNodeMap(nodes []v1.Node) map[string]*v1.Node {
+func GetNodeMap(nodes []v1.Node, cluster *kops.Cluster) map[string]*v1.Node {
 	nodeMap := make(map[string]*v1.Node)
 	for i := range nodes {
 		node := &nodes[i]
-		nodeMap[node.Spec.ExternalID] = node
+
+		providerIDs := strings.Split(node.Spec.ProviderID, "/")
+		instanceID := providerIDs[len(providerIDs)-1]
+		nodeMap[instanceID] = node
 	}
 
 	return nodeMap

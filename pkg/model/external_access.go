@@ -17,6 +17,8 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -41,6 +43,15 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		glog.Warningf("SSHAccess is empty")
 	}
 
+	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleMaster)
+	if err != nil {
+		return err
+	}
+	nodeGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleNode)
+	if err != nil {
+		return err
+	}
+
 	// SSH is open to AdminCIDR set
 	if b.UsesSSHBastion() {
 		// If we are using a bastion, we only access through the bastion
@@ -49,25 +60,34 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		glog.V(2).Infof("bastion is in use; won't configure SSH access to master / node instances")
 	} else {
 		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
-			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:          s("ssh-external-to-master-" + sshAccess),
-				Lifecycle:     b.Lifecycle,
-				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-				Protocol:      s("tcp"),
-				FromPort:      i64(22),
-				ToPort:        i64(22),
-				CIDR:          s(sshAccess),
-			})
 
-			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:          s("ssh-external-to-node-" + sshAccess),
-				Lifecycle:     b.Lifecycle,
-				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-				Protocol:      s("tcp"),
-				FromPort:      i64(22),
-				ToPort:        i64(22),
-				CIDR:          s(sshAccess),
-			})
+			for _, masterGroup := range masterGroups {
+				suffix := masterGroup.Suffix
+				t := &awstasks.SecurityGroupRule{
+					Name:          s(fmt.Sprintf("ssh-external-to-master-%s%s", sshAccess, suffix)),
+					Lifecycle:     b.Lifecycle,
+					SecurityGroup: masterGroup.Task,
+					Protocol:      s("tcp"),
+					FromPort:      i64(22),
+					ToPort:        i64(22),
+					CIDR:          s(sshAccess),
+				}
+				c.AddTask(t)
+			}
+
+			for _, nodeGroup := range nodeGroups {
+				suffix := nodeGroup.Suffix
+				t := &awstasks.SecurityGroupRule{
+					Name:          s(fmt.Sprintf("ssh-external-to-node-%s%s", sshAccess, suffix)),
+					Lifecycle:     b.Lifecycle,
+					SecurityGroup: nodeGroup.Task,
+					Protocol:      s("tcp"),
+					FromPort:      i64(22),
+					ToPort:        i64(22),
+					CIDR:          s(sshAccess),
+				}
+				c.AddTask(t)
+			}
 		}
 	}
 
@@ -77,24 +97,30 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
-		c.AddTask(&awstasks.SecurityGroupRule{
-			Name:          s("nodeport-tcp-external-to-node-" + nodePortAccess),
-			Lifecycle:     b.Lifecycle,
-			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			Protocol:      s("tcp"),
-			FromPort:      i64(int64(nodePortRange.Base)),
-			ToPort:        i64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
-			CIDR:          s(nodePortAccess),
-		})
-		c.AddTask(&awstasks.SecurityGroupRule{
-			Name:          s("nodeport-udp-external-to-node-" + nodePortAccess),
-			Lifecycle:     b.Lifecycle,
-			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			Protocol:      s("udp"),
-			FromPort:      i64(int64(nodePortRange.Base)),
-			ToPort:        i64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
-			CIDR:          s(nodePortAccess),
-		})
+		for _, nodeGroup := range nodeGroups {
+			suffix := nodeGroup.Suffix
+			t1 := &awstasks.SecurityGroupRule{
+				Name:          s(fmt.Sprintf("nodeport-tcp-external-to-node-%s%s", nodePortAccess, suffix)),
+				Lifecycle:     b.Lifecycle,
+				SecurityGroup: nodeGroup.Task,
+				Protocol:      s("tcp"),
+				FromPort:      i64(int64(nodePortRange.Base)),
+				ToPort:        i64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
+				CIDR:          s(nodePortAccess),
+			}
+			c.AddTask(t1)
+
+			t2 := &awstasks.SecurityGroupRule{
+				Name:          s(fmt.Sprintf("nodeport-udp-external-to-node-%s%s", nodePortAccess, suffix)),
+				Lifecycle:     b.Lifecycle,
+				SecurityGroup: nodeGroup.Task,
+				Protocol:      s("udp"),
+				FromPort:      i64(int64(nodePortRange.Base)),
+				ToPort:        i64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
+				CIDR:          s(nodePortAccess),
+			}
+			c.AddTask(t2)
+		}
 	}
 
 	if !b.UseLoadBalancerForAPI() {
@@ -104,16 +130,19 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// HTTPS to the master is allowed (for API access)
 		for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
-			t := &awstasks.SecurityGroupRule{
-				Name:          s("https-external-to-master-" + apiAccess),
-				Lifecycle:     b.Lifecycle,
-				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-				Protocol:      s("tcp"),
-				FromPort:      i64(443),
-				ToPort:        i64(443),
-				CIDR:          s(apiAccess),
+			for _, masterGroup := range masterGroups {
+				suffix := masterGroup.Suffix
+				t := &awstasks.SecurityGroupRule{
+					Name:          s(fmt.Sprintf("https-external-to-master-%s%s", apiAccess, suffix)),
+					Lifecycle:     b.Lifecycle,
+					SecurityGroup: masterGroup.Task,
+					Protocol:      s("tcp"),
+					FromPort:      i64(443),
+					ToPort:        i64(443),
+					CIDR:          s(apiAccess),
+				}
+				c.AddTask(t)
 			}
-			c.AddTask(t)
 		}
 	}
 

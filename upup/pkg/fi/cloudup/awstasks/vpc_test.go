@@ -57,7 +57,7 @@ func TestVPCCreate(t *testing.T) {
 			t.Fatalf("error building context: %v", err)
 		}
 
-		if err := context.RunTasks(defaultDeadline); err != nil {
+		if err := context.RunTasks(testRunTasksOptions); err != nil {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 

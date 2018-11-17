@@ -113,7 +113,7 @@ spec:
               value: "kubernetes"
             # Enable felix logging.
             - name: FELIX_LOGSEVERITYSYS
-              value: "info"
+              value: "{{- or .Networking.Canal.LogSeveritySys "INFO" }}"
             # Don't enable BGP.
             - name: CALICO_NETWORKING_BACKEND
               value: "none"
@@ -272,7 +272,6 @@ spec:
 ---
 
 apiVersion: apiextensions.k8s.io/v1beta1
-description: Calico Global Felix Configuration
 kind: CustomResourceDefinition
 metadata:
    name: globalfelixconfigs.crd.projectcalico.org
@@ -288,7 +287,6 @@ spec:
 ---
 
 apiVersion: apiextensions.k8s.io/v1beta1
-description: Calico Global BGP Configuration
 kind: CustomResourceDefinition
 metadata:
   name: globalbgpconfigs.crd.projectcalico.org
@@ -304,7 +302,6 @@ spec:
 ---
 
 apiVersion: apiextensions.k8s.io/v1beta1
-description: Calico IP Pools
 kind: CustomResourceDefinition
 metadata:
   name: ippools.crd.projectcalico.org
@@ -320,7 +317,6 @@ spec:
 ---
 
 apiVersion: apiextensions.k8s.io/v1beta1
-description: Calico Global Network Policies
 kind: CustomResourceDefinition
 metadata:
   name: globalnetworkpolicies.crd.projectcalico.org

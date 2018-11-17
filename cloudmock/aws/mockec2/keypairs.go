@@ -32,14 +32,12 @@ func (m *MockEC2) DescribeKeyPairsRequest(*ec2.DescribeKeyPairsInput) (*request.
 }
 func (m *MockEC2) DescribeKeyPairsWithContext(aws.Context, *ec2.DescribeKeyPairsInput, ...request.Option) (*ec2.DescribeKeyPairsOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockEC2) ImportKeyPairRequest(*ec2.ImportKeyPairInput) (*request.Request, *ec2.ImportKeyPairOutput) {
 	panic("MockEC2 ImportKeyPairRequest not implemented")
 }
 func (m *MockEC2) ImportKeyPairWithContext(aws.Context, *ec2.ImportKeyPairInput, ...request.Option) (*ec2.ImportKeyPairOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockEC2) ImportKeyPair(request *ec2.ImportKeyPairInput) (*ec2.ImportKeyPairOutput, error) {
 	m.mutex.Lock()
@@ -71,7 +69,6 @@ func (m *MockEC2) CreateKeyPairRequest(*ec2.CreateKeyPairInput) (*request.Reques
 }
 func (m *MockEC2) CreateKeyPairWithContext(aws.Context, *ec2.CreateKeyPairInput, ...request.Option) (*ec2.CreateKeyPairOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockEC2) CreateKeyPair(*ec2.CreateKeyPairInput) (*ec2.CreateKeyPairOutput, error) {
 	panic("MockEC2 CreateKeyPair not implemented")
@@ -99,10 +96,17 @@ func (m *MockEC2) DescribeKeyPairs(request *ec2.DescribeKeyPairsInput) (*ec2.Des
 				allFiltersMatch = false
 			}
 		}
+
 		for _, filter := range request.Filters {
 			match := false
 			switch *filter.Name {
 
+			case "key-name":
+				for _, v := range filter.Values {
+					if aws.StringValue(keypair.KeyName) == aws.StringValue(v) {
+						match = true
+					}
+				}
 			default:
 				return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
 			}
@@ -146,9 +150,7 @@ func (m *MockEC2) DeleteKeyPair(request *ec2.DeleteKeyPairInput) (*ec2.DeleteKey
 
 func (m *MockEC2) DeleteKeyPairWithContext(aws.Context, *ec2.DeleteKeyPairInput, ...request.Option) (*ec2.DeleteKeyPairOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockEC2) DeleteKeyPairRequest(*ec2.DeleteKeyPairInput) (*request.Request, *ec2.DeleteKeyPairOutput) {
 	panic("Not implemented")
-	return nil, nil
 }

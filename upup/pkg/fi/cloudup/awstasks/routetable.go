@@ -195,6 +195,14 @@ type terraformRouteTable struct {
 }
 
 func (_ *RouteTable) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *RouteTable) error {
+	// We use the role tag as a concise and stable identifier
+	tag := e.Tags[awsup.TagNameKopsRole]
+	if tag != "" {
+		if err := t.AddOutputVariable("route_table_"+tag+"_id", e.TerraformLink()); err != nil {
+			return err
+		}
+	}
+
 	tf := &terraformRouteTable{
 		VPCID: e.VPC.TerraformLink(),
 		Tags:  e.Tags,

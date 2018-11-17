@@ -85,7 +85,7 @@ func main() {
 				if i == 0 {
 					// We could also try to evaluate based on cwd
 					if _, err := os.Stat(procSelfExe); os.IsNotExist(err) {
-						glog.Fatalf("file %v does not exists", procSelfExe)
+						glog.Fatalf("file %v does not exist", procSelfExe)
 					}
 
 					fi, err := os.Lstat(procSelfExe)
@@ -104,11 +104,12 @@ func main() {
 				command = append(command, s)
 			}
 			i := bootstrap.Installation{
-				MaxTaskDuration: 5 * time.Minute,
-				CacheDir:        flagCacheDir,
-				Command:         command,
-				FSRoot:          flagRootFS,
+				CacheDir: flagCacheDir,
+				Command:  command,
+				FSRoot:   flagRootFS,
 			}
+			i.RunTasksOptions.InitDefaults()
+			i.RunTasksOptions.MaxTaskDuration = 5 * time.Minute
 			err = i.Run()
 			if err == nil {
 				fmt.Printf("service installed")

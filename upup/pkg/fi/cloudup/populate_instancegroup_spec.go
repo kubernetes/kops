@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 // Default Machine types for various types of instance group machine
@@ -64,7 +64,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	}
 
 	ig := &kops.InstanceGroup{}
-	utils.JsonMergeStruct(ig, input)
+	reflectutils.JsonMergeStruct(ig, input)
 
 	// TODO: Clean up
 	if ig.IsMaster() {

@@ -20,7 +20,6 @@ import (
 	"encoding/base32"
 	"fmt"
 	"hash/fnv"
-	"strconv"
 	"strings"
 
 	"github.com/golang/glog"
@@ -100,7 +99,13 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 
 	project := c.Project()
 	ctx := context.Background()
-	nodesByExternalID := cloudinstances.GetNodeMap(nodes)
+
+	nodesByProviderID := make(map[string]*v1.Node)
+
+	for i := range nodes {
+		node := &nodes[i]
+		nodesByProviderID[node.Spec.ProviderID] = node
+	}
 
 	// There is some code duplication with resources/gce.go here, but more in the structure than a straight copy-paste
 
@@ -171,7 +176,11 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 						CloudInstanceGroup: g,
 					}
 
-					node := nodesByExternalID[strconv.FormatUint(i.Id, 10)]
+					// Try first by provider ID
+					name := LastComponent(id)
+					providerID := "gce://" + project + "/" + zoneName + "/" + name
+					node := nodesByProviderID[providerID]
+
 					if node != nil {
 						cm.Node = node
 					} else {

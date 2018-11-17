@@ -95,6 +95,9 @@ func (m *MockAutoscaling) CreateLaunchConfiguration(request *autoscaling.CreateL
 	if m.LaunchConfigurations == nil {
 		m.LaunchConfigurations = make(map[string]*autoscaling.LaunchConfiguration)
 	}
+	if m.LaunchConfigurations[*lc.LaunchConfigurationName] != nil {
+		return nil, fmt.Errorf("duplicate LaunchConfigurationName %s", *lc.LaunchConfigurationName)
+	}
 	m.LaunchConfigurations[*lc.LaunchConfigurationName] = lc
 
 	return &autoscaling.CreateLaunchConfigurationOutput{}, nil

@@ -61,7 +61,7 @@ func (m *Manifest) ToYAML() ([]byte, error) {
 
 func (m *Manifest) accept(visitor Visitor) error {
 	err := visit(visitor, m.data, []string{}, func(v interface{}) {
-		glog.Fatalf("cannot mutate top-level data")
+		glog.Fatal("cannot mutate top-level data")
 	})
 	return err
 }

@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
+	openapinamer "k8s.io/apiserver/pkg/endpoints/openapi"
 	"k8s.io/apiserver/pkg/registry/generic"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
@@ -165,8 +166,8 @@ func (o KopsServerOptions) RunKopsServer() error {
 
 	// Configure the openapi spec provided on /swagger.json
 	// TODO: Come up with a better title and a meaningful version
-	config.GenericConfig.OpenAPIConfig = genericapiserver.DefaultOpenAPIConfig(
-		openapi.GetOpenAPIDefinitions, apiserver.Scheme)
+
+	config.GenericConfig.OpenAPIConfig = genericapiserver.DefaultOpenAPIConfig(openapi.GetOpenAPIDefinitions, openapinamer.NewDefinitionNamer(apiserver.Scheme))
 	config.GenericConfig.OpenAPIConfig.Info.Title = "Kops API"
 	config.GenericConfig.OpenAPIConfig.Info.Version = "0.1"
 

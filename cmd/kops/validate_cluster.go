@@ -39,7 +39,7 @@ import (
 
 func init() {
 	if runtime.GOOS == "darwin" {
-		// In order for  net.LookupHost(apiAddr.Host) to lookup our placeholder address on darwin, we have to
+		// In order for net.LookupHost(apiAddr.Host) to lookup our placeholder address on darwin, we have to
 		os.Setenv("GODEBUG", "netdns=go")
 	}
 }

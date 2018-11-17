@@ -32,7 +32,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/kubectl/genericclioptions/resource"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
@@ -44,6 +44,9 @@ var (
 		# Replace a cluster desired configuration using a YAML file
 		kops replace -f my-cluster.yaml
 
+		# Replace an instancegroup using YAML passed into stdin.
+		cat instancegroup.yaml | kops replace -f -
+		
 		# Note, if the resource does not exist the command will error, use --force to provision resource
 		kops replace -f my-cluster.yaml --force
 		`))
@@ -97,9 +100,17 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 	codec := codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
 
 	for _, f := range c.Filenames {
-		contents, err := vfs.Context.ReadFile(f)
-		if err != nil {
-			return fmt.Errorf("error reading file %q: %v", f, err)
+		var contents []byte
+		if f == "-" {
+			contents, err = ConsumeStdin()
+			if err != nil {
+				return err
+			}
+		} else {
+			contents, err = vfs.Context.ReadFile(f)
+			if err != nil {
+				return fmt.Errorf("error reading file %q: %v", f, err)
+			}
 		}
 		sections := bytes.Split(contents, []byte("\n---\n"))
 
@@ -154,9 +165,8 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 				if err != nil {
 					if errors.IsNotFound(err) {
 						return fmt.Errorf("cluster %q not found", clusterName)
-					} else {
-						return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
 					}
+					return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
 				}
 				// check if the instancegroup exists already
 				igName := v.ObjectMeta.Name

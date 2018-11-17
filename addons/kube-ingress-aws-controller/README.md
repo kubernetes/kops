@@ -3,7 +3,7 @@
 [Kube AWS Ingress Controller](https://github.com/zalando-incubator/kubernetes-on-aws)
 creates AWS Application Load Balancer (ALB) that is used to terminate TLS connections and use
 [AWS Certificate Manager (ACM)](https://aws.amazon.com/certificate-manager/) or
-[AWS Identity and Access Management (IAM)](http://docs.aws.amazon.com/IAM/latest/APIReference/Welcome.html)
+[AWS Identity and Access Management (IAM)](https://docs.aws.amazon.com/IAM/latest/APIReference/Welcome.html)
 certificates. ALBs are used to route traffic to an Ingress http router for example
 [skipper](https://github.com/zalando/skipper/), which routes
 traffic to Kubernetes services and implements
@@ -179,7 +179,20 @@ aws ec2 authorize-security-group-egress --group-id $sgidingress --protocol all -
 aws ec2 authorize-security-group-ingress --group-id $sgidnode --protocol all --port -1 --source-group $sgidingress
 aws ec2 create-tags --resources $sgidingress --tags '[{"Key": "kubernetes.io/cluster/id", "Value": "owned"}, {"Key": "kubernetes:application", "Value": "kube-ingress-aws-controller"}]'
 ```
+If your cluster is running not in the default VPC then the commands for the creation of the security groups will look a little different:
 
+```
+VPC_ID=$(aws ec2 describe-security-groups --filters Name=group-name,Values=nodes.$KOPS_CLUSTER_NAME | jq '.["SecurityGroups"][0].VpcId' -r)
+aws ec2 create-security-group --description ingress.$KOPS_CLUSTER_NAME --group-name ingress.$KOPS_CLUSTER_NAME --vpc-id $VPC_ID
+aws ec2 describe-security-groups --filter Name=vpc-id,Values=$VPC_ID  Name=group-name,Values=ingress.$KOPS_CLUSTER_NAME
+sgidingress=$(aws ec2 describe-security-groups --filter Name=vpc-id,Values=$VPC_ID  Name=group-name,Values=ingress.$KOPS_CLUSTER_NAME | jq '.["SecurityGroups"][0]["GroupId"]' -r)
+sgidnode=$(aws ec2 describe-security-groups --filter Name=vpc-id,Values=$VPC_ID  Name=group-name,Values=nodes.$KOPS_CLUSTER_NAME | jq '.["SecurityGroups"][0]["GroupId"]' -r)
+aws ec2 authorize-security-group-ingress --group-id $sgidingress --protocol tcp --port 443 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-ingress --group-id $sgidingress --protocol tcp --port 80 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-egress --group-id $sgidingress --protocol all --port -1 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-ingress --group-id $sgidnode --protocol all --port -1 --source-group $sgidingress
+aws ec2 create-tags --resources $sgidingress --tags Key="kubernetes.io/cluster/${KOPS_CLUSTER_NAME}",Value="owned" Key="kubernetes:application",Value="kube-ingress-aws-controller"
+```
 ### AWS Certificate Manager (ACM)
 
 To have TLS termination you can use AWS managed certificates.  If you
@@ -241,6 +254,11 @@ sed -i "s/<HOSTNAME>/demo-app.example.org/" v1.0.0.yaml
 sed -i "s/<HOSTNAME2>/demo-green-blue.example.org/" v1.0.0.yaml
 kubectl create -f v1.0.0.yaml
 ```
+
+If your VPC-CIDR is different from 10.0.0.0/8, 192.168.0.0/16, 172.16.0.0/12, 127.0.0.1/8,fd00::/8 or ::1/128 you may
+get a "Readiness probe failed: HTTP probe failed with statuscode: 404" from the skipper pods with the *latest* or
+*v0.10.7* tag of skipper.
+To prevent this, uncomment the "-whitelisted-healthcheck-cidr=<CIDR_BLOCK>" in v1.0.0.yaml and add your VPC-CIDR.
 
 Check, if the installation was successful:
 

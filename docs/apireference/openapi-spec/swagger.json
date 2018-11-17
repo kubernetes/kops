@@ -1,0 +1,9 @@
+{
+  "paths": [
+    "/apis",
+    "/apis/kops",
+    "/apis/kops/v1alpha2",
+    "/metrics",
+    "/version"
+  ]
+}

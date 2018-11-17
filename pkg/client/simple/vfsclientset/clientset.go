@@ -132,6 +132,13 @@ func DeleteAllClusterState(basePath vfs.Path) error {
 		if strings.HasPrefix(relativePath, "instancegroup/") {
 			continue
 		}
+		if strings.HasPrefix(relativePath, "manifests/") {
+			continue
+		}
+		// TODO: offer an option _not_ to delete backups?
+		if strings.HasPrefix(relativePath, "backups/") {
+			continue
+		}
 
 		return fmt.Errorf("refusing to delete: unknown file found: %s", path)
 	}

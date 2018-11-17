@@ -31,6 +31,7 @@ type SysctlBuilder struct {
 
 var _ fi.ModelBuilder = &SysctlBuilder{}
 
+// Build is responsible for configuring sysctl settings
 func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 	var sysctls []string
 
@@ -120,13 +121,12 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 		"net.ipv4.ip_forward=1",
 		"")
 
-	t := &nodetasks.File{
+	c.AddTask(&nodetasks.File{
 		Path:            "/etc/sysctl.d/99-k8s-general.conf",
 		Contents:        fi.NewStringResource(strings.Join(sysctls, "\n")),
 		Type:            nodetasks.FileType_File,
 		OnChangeExecute: [][]string{{"sysctl", "--system"}},
-	}
-	c.AddTask(t)
+	})
 
 	return nil
 }

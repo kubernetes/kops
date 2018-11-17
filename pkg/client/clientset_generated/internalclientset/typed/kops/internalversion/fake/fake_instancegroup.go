@@ -62,7 +62,7 @@ func (c *FakeInstanceGroups) List(opts v1.ListOptions) (result *kops.InstanceGro
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &kops.InstanceGroupList{}
+	list := &kops.InstanceGroupList{ListMeta: obj.(*kops.InstanceGroupList).ListMeta}
 	for _, item := range obj.(*kops.InstanceGroupList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)

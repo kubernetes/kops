@@ -31,7 +31,13 @@ import (
 
 //go:generate fitask -type=Subnet
 type Subnet struct {
-	Name      *string
+	Name *string
+
+	// ShortName is a shorter name, for use in terraform outputs
+	// ShortName is expected to be unique across all subnets in the cluster,
+	// so it is typically set to the name of the Subnet, in the cluster spec.
+	ShortName *string
+
 	Lifecycle *fi.Lifecycle
 
 	ID               *string
@@ -82,7 +88,8 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 	e.ID = actual.ID
 
 	// Prevent spurious changes
-	actual.Lifecycle = e.Lifecycle // Lifecycle is not materialized in AWS
+	actual.Lifecycle = e.Lifecycle // Not materialized in AWS
+	actual.ShortName = e.ShortName // Not materialized in AWS
 	actual.Name = e.Name           // Name is part of Tags
 
 	return actual, nil
@@ -214,6 +221,13 @@ type terraformSubnet struct {
 }
 
 func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
+	if fi.StringValue(e.ShortName) != "" {
+		name := fi.StringValue(e.ShortName)
+		if err := t.AddOutputVariable("subnet_"+name+"_id", e.TerraformLink()); err != nil {
+			return err
+		}
+	}
+
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not terraform owned / managed

@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importmap = "k8s.io/kops/vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiregister-gen",
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/cmd/apiregister-gen",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiregister-gen/generators:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/util/logs:go_default_library",
+        "//vendor/k8s.io/gengo/args:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "apiregister-gen",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)

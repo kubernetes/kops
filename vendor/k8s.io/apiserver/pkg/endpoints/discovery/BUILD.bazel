@@ -10,7 +10,7 @@ go_library(
         "util.go",
         "version.go",
     ],
-    importmap = "vendor/k8s.io/apiserver/pkg/endpoints/discovery",
+    importmap = "k8s.io/kops/vendor/k8s.io/apiserver/pkg/endpoints/discovery",
     importpath = "k8s.io/apiserver/pkg/endpoints/discovery",
     visibility = ["//visibility:public"],
     deps = [
@@ -21,6 +21,5 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/util/net:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/endpoints/handlers/negotiation:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/endpoints/handlers/responsewriters:go_default_library",
-        "//vendor/k8s.io/apiserver/pkg/endpoints/request:go_default_library",
     ],
 )

@@ -36,6 +36,10 @@ func FindDistribution(rootfs string) (Distribution, error) {
 			line = strings.TrimSpace(line)
 			if line == "DISTRIB_CODENAME=xenial" {
 				return DistributionXenial, nil
+			} else if line == "DISTRIB_CODENAME=bionic" {
+				glog.Warningf("bionic is not fully supported nor tested for Kops and Kubernetes")
+				glog.Warningf("this should only be used for testing purposes.")
+				return DistributionBionic, nil
 			}
 		}
 	} else if !os.IsNotExist(err) {

@@ -49,7 +49,7 @@ func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource)
 		}
 	}
 
-	glog.V(2).Infof("Dependencies")
+	glog.V(2).Info("Dependencies")
 	for k, v := range depMap {
 		glog.V(2).Infof("\t%s\t%v", k, v)
 	}
@@ -121,7 +121,7 @@ func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource)
 						err = trackers[0].GroupDeleter(cloud, trackers)
 					} else {
 						if len(trackers) != 1 {
-							glog.Fatalf("found group without groupKey")
+							glog.Fatal("found group without groupKey")
 						}
 						err = trackers[0].Deleter(cloud, trackers[0])
 					}

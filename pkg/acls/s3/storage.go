@@ -59,7 +59,7 @@ func (s *s3PublicAclStrategy) GetACL(p vfs.Path, cluster *kops.Cluster) (vfs.ACL
 	// We are checking that the file repository url is in S3
 	_, err = vfs.VFSPath(fileRepository)
 	if err != nil {
-		glog.V(8).Infof("path %q is not inside of a s3 bucket", u.String)
+		glog.V(8).Infof("path %q is not inside of a s3 bucket", u.String())
 		return nil, nil
 	}
 

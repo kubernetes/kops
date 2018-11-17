@@ -4,11 +4,12 @@ go_library(
     name = "go_default_library",
     srcs = [
         "doc.go",
+        "helpers.go",
         "register.go",
         "types.go",
         "zz_generated.deepcopy.go",
     ],
-    importmap = "vendor/k8s.io/kubernetes/pkg/apis/scheduling",
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/apis/scheduling",
     importpath = "k8s.io/kubernetes/pkg/apis/scheduling",
     visibility = ["//visibility:public"],
     deps = [

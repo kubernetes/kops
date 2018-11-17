@@ -50,17 +50,23 @@ func AuthOptionsFromEnv() (gophercloud.AuthOptions, error) {
 	}
 
 	if authURL == "" {
-		err := gophercloud.ErrMissingInput{Argument: "authURL"}
+		err := gophercloud.ErrMissingEnvironmentVariable{
+			EnvironmentVariable: "OS_AUTH_URL",
+		}
 		return nilOptions, err
 	}
 
 	if username == "" && userID == "" {
-		err := gophercloud.ErrMissingInput{Argument: "username"}
+		err := gophercloud.ErrMissingAnyoneOfEnvironmentVariables{
+			EnvironmentVariables: []string{"OS_USERNAME", "OS_USERID"},
+		}
 		return nilOptions, err
 	}
 
 	if password == "" {
-		err := gophercloud.ErrMissingInput{Argument: "password"}
+		err := gophercloud.ErrMissingEnvironmentVariable{
+			EnvironmentVariable: "OS_PASSWORD",
+		}
 		return nilOptions, err
 	}
 

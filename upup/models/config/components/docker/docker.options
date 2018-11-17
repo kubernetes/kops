@@ -1,7 +1,0 @@
-Docker:
-  Bridge: cbr0
-  LogLevel: warn
-  IPTables: false
-  IPMasq: false
-  # Note the alternative syntax... with a comma we will try each of the filesystems in turn
-  Storage: overlay,aufs
