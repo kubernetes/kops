@@ -987,6 +987,12 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.MasterPublicName = c.MasterPublicName
 	}
 
+	// Default to kubelet auth being turned off
+	if cluster.Spec.Kubelet == nil {
+		cluster.Spec.Kubelet = &api.KubeletConfigSpec{}
+	}
+	cluster.Spec.Kubelet.AnonymousAuth = fi.Bool(true)
+
 	// Populate the API access, so that it can be discoverable
 	// TODO: This is the same code as in defaults - try to dedup?
 	if cluster.Spec.API == nil {
