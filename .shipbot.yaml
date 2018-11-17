@@ -9,7 +9,7 @@ assets:
     githubName: kops-linux-amd64
   - source: .build/dist/linux/amd64/kops.sha1
     githubName: kops-linux-amd64-sha1
-#  - source: .build/dist/windows/amd64/kops.exe
-#    githubName: kops-windows-amd64
-#  - source: .build/dist/windows/amd64/kops.exe.sha1
-#    githubName: kops-windows-amd64-sha1
+  - source: .build/dist/windows/amd64/kops.exe
+    githubName: kops-windows-amd64
+  - source: .build/dist/windows/amd64/kops.exe.sha1
+    githubName: kops-windows-amd64-sha1

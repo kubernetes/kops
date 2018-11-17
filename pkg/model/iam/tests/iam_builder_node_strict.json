@@ -2,7 +2,6 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "kopsK8sEC2NodePerms",
       "Effect": "Allow",
       "Action": [
         "ec2:DescribeInstances",
@@ -13,10 +12,10 @@
       ]
     },
     {
-      "Sid": "kopsK8sS3GetListBucket",
       "Effect": "Allow",
       "Action": [
         "s3:GetBucketLocation",
+        "s3:GetEncryptionConfiguration",
         "s3:ListBucket"
       ],
       "Resource": [
@@ -24,7 +23,6 @@
       ]
     },
     {
-      "Sid": "kopsK8sS3NodeBucketSelectiveGet",
       "Effect": "Allow",
       "Action": [
         "s3:Get*"

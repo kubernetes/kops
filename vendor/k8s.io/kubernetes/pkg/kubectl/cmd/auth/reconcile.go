@@ -18,31 +18,36 @@ package auth
 
 import (
 	"errors"
-	"io"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 
-	"k8s.io/kubernetes/pkg/apis/rbac"
-	internalcoreclient "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/internalversion"
-	internalrbacclient "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/rbac/internalversion"
+	rbacv1 "k8s.io/api/rbac/v1"
+	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
+	rbacv1client "k8s.io/client-go/kubernetes/typed/rbac/v1"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/kubectl/genericclioptions"
+	"k8s.io/kubernetes/pkg/kubectl/genericclioptions/printers"
+	"k8s.io/kubernetes/pkg/kubectl/genericclioptions/resource"
+	"k8s.io/kubernetes/pkg/kubectl/scheme"
 	"k8s.io/kubernetes/pkg/registry/rbac/reconciliation"
 )
 
 // ReconcileOptions is the start of the data required to perform the operation.  As new fields are added, add them here instead of
 // referencing the cmd.Flags()
 type ReconcileOptions struct {
+	PrintFlags      *genericclioptions.PrintFlags
+	FilenameOptions *resource.FilenameOptions
+	DryRun          bool
+
 	Visitor         resource.Visitor
-	RBACClient      internalrbacclient.RbacInterface
-	NamespaceClient internalcoreclient.NamespaceInterface
+	RBACClient      rbacv1client.RbacV1Interface
+	NamespaceClient corev1client.CoreV1Interface
 
-	Print func(*resource.Info) error
+	PrintObject printers.ResourcePrinterFunc
 
-	Out io.Writer
-	Err io.Writer
+	genericclioptions.IOStreams
 }
 
 var (
@@ -56,12 +61,16 @@ var (
 		kubectl auth reconcile -f my-rbac-rules.yaml`)
 )
 
-func NewCmdReconcile(f cmdutil.Factory, out, err io.Writer) *cobra.Command {
-	fileOptions := &resource.FilenameOptions{}
-	o := &ReconcileOptions{
-		Out: out,
-		Err: err,
+func NewReconcileOptions(ioStreams genericclioptions.IOStreams) *ReconcileOptions {
+	return &ReconcileOptions{
+		FilenameOptions: &resource.FilenameOptions{},
+		PrintFlags:      genericclioptions.NewPrintFlags("reconciled").WithTypeSetter(scheme.Scheme),
+		IOStreams:       ioStreams,
 	}
+}
+
+func NewCmdReconcile(f cmdutil.Factory, streams genericclioptions.IOStreams) *cobra.Command {
+	o := NewReconcileOptions(streams)
 
 	cmd := &cobra.Command{
 		Use: "reconcile -f FILENAME",
@@ -70,35 +79,36 @@ func NewCmdReconcile(f cmdutil.Factory, out, err io.Writer) *cobra.Command {
 		Long:    reconcileLong,
 		Example: reconcileExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			cmdutil.CheckErr(o.Complete(cmd, f, args, fileOptions))
+			cmdutil.CheckErr(o.Complete(cmd, f, args))
 			cmdutil.CheckErr(o.Validate())
 			cmdutil.CheckErr(o.RunReconcile())
 		},
 	}
 
-	cmdutil.AddPrinterFlags(cmd)
-	usage := "identifying the resource to reconcile."
-	cmdutil.AddFilenameOptionFlags(cmd, fileOptions, usage)
+	o.PrintFlags.AddFlags(cmd)
+
+	cmdutil.AddFilenameOptionFlags(cmd, o.FilenameOptions, "identifying the resource to reconcile.")
+	cmd.Flags().BoolVar(&o.DryRun, "dry-run", o.DryRun, "If true, display results but do not submit changes")
 	cmd.MarkFlagRequired("filename")
 
 	return cmd
 }
 
-func (o *ReconcileOptions) Complete(cmd *cobra.Command, f cmdutil.Factory, args []string, options *resource.FilenameOptions) error {
+func (o *ReconcileOptions) Complete(cmd *cobra.Command, f cmdutil.Factory, args []string) error {
 	if len(args) > 0 {
 		return errors.New("no arguments are allowed")
 	}
 
-	namespace, enforceNamespace, err := f.DefaultNamespace()
+	namespace, enforceNamespace, err := f.ToRawKubeConfigLoader().Namespace()
 	if err != nil {
 		return err
 	}
 
 	r := f.NewBuilder().
-		Internal().
+		WithScheme(scheme.Scheme, scheme.Scheme.PrioritizedVersionsAllGroups()...).
 		ContinueOnError().
 		NamespaceParam(namespace).DefaultNamespace().
-		FilenameParam(enforceNamespace, options).
+		FilenameParam(enforceNamespace, o.FilenameOptions).
 		Flatten().
 		Do()
 
@@ -107,24 +117,28 @@ func (o *ReconcileOptions) Complete(cmd *cobra.Command, f cmdutil.Factory, args 
 	}
 	o.Visitor = r
 
-	client, err := f.ClientSet()
+	clientConfig, err := f.ToRESTConfig()
 	if err != nil {
 		return err
 	}
-	o.RBACClient = client.Rbac()
-	o.NamespaceClient = client.Core().Namespaces()
-
-	dryRun := false
-	output := cmdutil.GetFlagString(cmd, "output")
-	shortOutput := output == "name"
-	o.Print = func(info *resource.Info) error {
-		if len(output) > 0 && !shortOutput {
-			return cmdutil.PrintObject(cmd, info.Object, o.Out)
-		}
-		cmdutil.PrintSuccess(shortOutput, o.Out, info.Object, dryRun, "reconciled")
-		return nil
+	o.RBACClient, err = rbacv1client.NewForConfig(clientConfig)
+	if err != nil {
+		return err
+	}
+	o.NamespaceClient, err = corev1client.NewForConfig(clientConfig)
+	if err != nil {
+		return err
 	}
 
+	if o.DryRun {
+		o.PrintFlags.Complete("%s (dry run)")
+	}
+	printer, err := o.PrintFlags.ToPrinter()
+	if err != nil {
+		return err
+	}
+
+	o.PrintObject = printer.PrintObj
 	return nil
 }
 
@@ -138,13 +152,13 @@ func (o *ReconcileOptions) Validate() error {
 	if o.NamespaceClient == nil {
 		return errors.New("ReconcileOptions.NamespaceClient must be set")
 	}
-	if o.Print == nil {
+	if o.PrintObject == nil {
 		return errors.New("ReconcileOptions.Print must be set")
 	}
 	if o.Out == nil {
 		return errors.New("ReconcileOptions.Out must be set")
 	}
-	if o.Err == nil {
+	if o.ErrOut == nil {
 		return errors.New("ReconcileOptions.Err must be set")
 	}
 	return nil
@@ -156,18 +170,14 @@ func (o *ReconcileOptions) RunReconcile() error {
 			return err
 		}
 
-		// shallowInfoCopy this is used to later twiddle the Object for printing
-		// we really need more straightforward printing options
-		shallowInfoCopy := *info
-
 		switch t := info.Object.(type) {
-		case *rbac.Role:
+		case *rbacv1.Role:
 			reconcileOptions := reconciliation.ReconcileRoleOptions{
-				Confirm:                true,
+				Confirm:                !o.DryRun,
 				RemoveExtraPermissions: false,
 				Role: reconciliation.RoleRuleOwner{Role: t},
 				Client: reconciliation.RoleModifier{
-					NamespaceClient: o.NamespaceClient,
+					NamespaceClient: o.NamespaceClient.Namespaces(),
 					Client:          o.RBACClient,
 				},
 			}
@@ -175,12 +185,11 @@ func (o *ReconcileOptions) RunReconcile() error {
 			if err != nil {
 				return err
 			}
-			shallowInfoCopy.Object = result.Role.GetObject()
-			o.Print(&shallowInfoCopy)
+			o.PrintObject(result.Role.GetObject(), o.Out)
 
-		case *rbac.ClusterRole:
+		case *rbacv1.ClusterRole:
 			reconcileOptions := reconciliation.ReconcileRoleOptions{
-				Confirm:                true,
+				Confirm:                !o.DryRun,
 				RemoveExtraPermissions: false,
 				Role: reconciliation.ClusterRoleRuleOwner{ClusterRole: t},
 				Client: reconciliation.ClusterRoleModifier{
@@ -191,29 +200,27 @@ func (o *ReconcileOptions) RunReconcile() error {
 			if err != nil {
 				return err
 			}
-			shallowInfoCopy.Object = result.Role.GetObject()
-			o.Print(&shallowInfoCopy)
+			o.PrintObject(result.Role.GetObject(), o.Out)
 
-		case *rbac.RoleBinding:
+		case *rbacv1.RoleBinding:
 			reconcileOptions := reconciliation.ReconcileRoleBindingOptions{
-				Confirm:             true,
+				Confirm:             !o.DryRun,
 				RemoveExtraSubjects: false,
 				RoleBinding:         reconciliation.RoleBindingAdapter{RoleBinding: t},
 				Client: reconciliation.RoleBindingClientAdapter{
 					Client:          o.RBACClient,
-					NamespaceClient: o.NamespaceClient,
+					NamespaceClient: o.NamespaceClient.Namespaces(),
 				},
 			}
 			result, err := reconcileOptions.Run()
 			if err != nil {
 				return err
 			}
-			shallowInfoCopy.Object = result.RoleBinding.GetObject()
-			o.Print(&shallowInfoCopy)
+			o.PrintObject(result.RoleBinding.GetObject(), o.Out)
 
-		case *rbac.ClusterRoleBinding:
+		case *rbacv1.ClusterRoleBinding:
 			reconcileOptions := reconciliation.ReconcileRoleBindingOptions{
-				Confirm:             true,
+				Confirm:             !o.DryRun,
 				RemoveExtraSubjects: false,
 				RoleBinding:         reconciliation.ClusterRoleBindingAdapter{ClusterRoleBinding: t},
 				Client: reconciliation.ClusterRoleBindingClientAdapter{
@@ -224,8 +231,7 @@ func (o *ReconcileOptions) RunReconcile() error {
 			if err != nil {
 				return err
 			}
-			shallowInfoCopy.Object = result.RoleBinding.GetObject()
-			o.Print(&shallowInfoCopy)
+			o.PrintObject(result.RoleBinding.GetObject(), o.Out)
 
 		default:
 			glog.V(1).Infof("skipping %#v", info.Object.GetObjectKind())

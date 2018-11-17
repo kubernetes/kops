@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -85,5 +86,8 @@ func (s *CloudDiscoveryStatusStore) FindClusterStatus(cluster *kops.Cluster) (*k
 		return awsCloud.FindClusterStatus(cluster)
 	}
 
+	if aliCloud, ok := cloud.(aliup.ALICloud); ok {
+		return aliCloud.FindClusterStatus(cluster)
+	}
 	return nil, fmt.Errorf("Etcd Status not implemented for %T", cloud)
 }

@@ -104,7 +104,7 @@ func RunGetInstanceGroups(options *GetInstanceGroupsOptions, args []string) erro
 		return err
 	}
 
-	instancegroups, err := buildInstanceGroups(args, list)
+	instancegroups, err := filterInstanceGroupsByName(args, list.Items)
 	if err != nil {
 		return err
 	}
@@ -132,27 +132,26 @@ func RunGetInstanceGroups(options *GetInstanceGroupsOptions, args []string) erro
 	}
 }
 
-func buildInstanceGroups(args []string, list *api.InstanceGroupList) ([]*api.InstanceGroup, error) {
+func filterInstanceGroupsByName(instanceGroupNames []string, list []api.InstanceGroup) ([]*api.InstanceGroup, error) {
 	var instancegroups []*api.InstanceGroup
-	len := len(args)
-	if len != 0 {
+	if len(instanceGroupNames) != 0 {
+		// Build a map so we can return items in the same order
 		m := make(map[string]*api.InstanceGroup)
-		for i := range list.Items {
-			ig := &list.Items[i]
+		for i := range list {
+			ig := &list[i]
 			m[ig.ObjectMeta.Name] = ig
 		}
-		instancegroups = make([]*api.InstanceGroup, 0, len)
-		for _, arg := range args {
-			ig := m[arg]
+		for _, name := range instanceGroupNames {
+			ig := m[name]
 			if ig == nil {
-				return nil, fmt.Errorf("instancegroup not found %q", arg)
+				return nil, fmt.Errorf("instancegroup not found %q", name)
 			}
 
 			instancegroups = append(instancegroups, ig)
 		}
 	} else {
-		for i := range list.Items {
-			ig := &list.Items[i]
+		for i := range list {
+			ig := &list[i]
 			instancegroups = append(instancegroups, ig)
 		}
 	}
@@ -179,7 +178,7 @@ func igOutputTable(cluster *api.Cluster, instancegroups []*api.InstanceGroup, ou
 	t.AddColumn("MAX", func(c *api.InstanceGroup) string {
 		return int32PointerToString(c.Spec.MaxSize)
 	})
-	// SUBNETS is not not selected by default - not as useful as ZONES
+	// SUBNETS is not selected by default - not as useful as ZONES
 	return t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
 }
 

@@ -19,6 +19,11 @@ package gcemodel
 import (
 	"fmt"
 
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
@@ -36,29 +41,62 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 // Build creates the tasks that set up storage acls
 func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
-	clusterPath := b.Cluster.Spec.ConfigBase
-	p, err := vfs.Context.BuildVfsPath(clusterPath)
-	if err != nil {
-		return fmt.Errorf("cannot parse cluster path %q: %v", clusterPath, err)
-	}
-
 	serviceAccount, err := b.Cloud.ServiceAccount()
 	if err != nil {
 		return fmt.Errorf("error fetching ServiceAccount: %v", err)
 	}
 
-	switch p := p.(type) {
-	case *vfs.GSPath:
-		// It's not ideal that we have to do this at the bucket level,
-		// but GCS doesn't seem to have a way to do subtrees (like AWS IAM does)
-		// Note this permission only lets us list objects, not read them
-		c.AddTask(&gcetasks.StorageBucketAcl{
-			Name:      s("serviceaccount-statestore-list"),
-			Lifecycle: b.Lifecycle,
-			Bucket:    s(p.Bucket()),
-			Entity:    s("user-" + serviceAccount),
-			Role:      s("READER"),
-		})
+	if featureflag.GoogleCloudBucketAcl.Enabled() {
+		clusterPath := b.Cluster.Spec.ConfigBase
+		p, err := vfs.Context.BuildVfsPath(clusterPath)
+		if err != nil {
+			return fmt.Errorf("cannot parse cluster path %q: %v", clusterPath, err)
+		}
+
+		switch p := p.(type) {
+		case *vfs.GSPath:
+			// It's not ideal that we have to do this at the bucket level,
+			// but GCS doesn't seem to have a way to do subtrees (like AWS IAM does)
+			// Note this permission only lets us list objects, not read them
+			c.AddTask(&gcetasks.StorageBucketAcl{
+				Name:      s("serviceaccount-statestore-list"),
+				Lifecycle: b.Lifecycle,
+				Bucket:    s(p.Bucket()),
+				Entity:    s("user-" + serviceAccount),
+				Role:      s("READER"),
+			})
+		}
+	}
+
+	glog.Warningf("we need to split master / node roles")
+	role := kops.InstanceGroupRoleMaster
+	writeablePaths, err := iam.WriteableVFSPaths(b.Cluster, role)
+	if err != nil {
+		return err
+	}
+
+	buckets := sets.NewString()
+	for _, p := range writeablePaths {
+		if gcsPath, ok := p.(*vfs.GSPath); ok {
+			bucket := gcsPath.Bucket()
+			if buckets.Has(bucket) {
+				continue
+			}
+
+			glog.Warningf("adding bucket level write ACL to gs://%s to support etcd backup", bucket)
+
+			c.AddTask(&gcetasks.StorageBucketAcl{
+				Name:      s("serviceaccount-backup-readwrite-" + bucket),
+				Lifecycle: b.Lifecycle,
+				Bucket:    s(bucket),
+				Entity:    s("user-" + serviceAccount),
+				Role:      s("WRITER"),
+			})
+
+			buckets.Insert(bucket)
+		} else {
+			glog.Warningf("unknown path, can't apply IAM policy: %q", p)
+		}
 	}
 
 	return nil

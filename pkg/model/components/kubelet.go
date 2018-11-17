@@ -32,6 +32,7 @@ type KubeletOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &KubeletOptionsBuilder{}
 
+// BuildOptions is responsible for filling the defaults for the kubelet
 func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
@@ -47,9 +48,12 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.MasterKubelet = &kops.KubeletConfigSpec{}
 	}
 
-	ip, err := WellKnownServiceIP(clusterSpec, 10)
-	if err != nil {
-		return err
+	if clusterSpec.KubeAPIServer != nil && clusterSpec.KubeAPIServer.EnableBootstrapAuthToken != nil {
+		if *clusterSpec.KubeAPIServer.EnableBootstrapAuthToken {
+			if clusterSpec.Kubelet.BootstrapKubeconfig == "" {
+				clusterSpec.Kubelet.BootstrapKubeconfig = "/var/lib/kubelet/bootstrap-kubeconfig"
+			}
+		}
 	}
 
 	// Standard options
@@ -57,9 +61,16 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec.Kubelet.PodManifestPath = "/etc/kubernetes/manifests"
 	clusterSpec.Kubelet.AllowPrivileged = fi.Bool(true)
 	clusterSpec.Kubelet.LogLevel = fi.Int32(2)
-	clusterSpec.Kubelet.ClusterDNS = ip.String()
 	clusterSpec.Kubelet.ClusterDomain = clusterSpec.ClusterDNSDomain
 	clusterSpec.Kubelet.NonMasqueradeCIDR = clusterSpec.NonMasqueradeCIDR
+
+	if clusterSpec.Kubelet.ClusterDNS == "" {
+		ip, err := WellKnownServiceIP(clusterSpec, 10)
+		if err != nil {
+			return err
+		}
+		clusterSpec.Kubelet.ClusterDNS = ip.String()
+	}
 
 	if b.Context.IsKubernetesLT("1.7") {
 		// babysit-daemons removed in 1.7

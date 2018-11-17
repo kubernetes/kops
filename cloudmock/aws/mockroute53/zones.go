@@ -27,12 +27,10 @@ import (
 
 func (m *MockRoute53) GetHostedZoneRequest(*route53.GetHostedZoneInput) (*request.Request, *route53.GetHostedZoneOutput) {
 	panic("MockRoute53 GetHostedZoneRequest not implemented")
-	return nil, nil
 }
 
 func (m *MockRoute53) GetHostedZoneWithContext(aws.Context, *route53.GetHostedZoneInput, ...request.Option) (*route53.GetHostedZoneOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockRoute53) GetHostedZone(request *route53.GetHostedZoneInput) (*route53.GetHostedZoneOutput, error) {
@@ -62,35 +60,28 @@ func (m *MockRoute53) GetHostedZone(request *route53.GetHostedZoneInput) (*route
 
 func (m *MockRoute53) GetHostedZoneCountRequest(*route53.GetHostedZoneCountInput) (*request.Request, *route53.GetHostedZoneCountOutput) {
 	panic("MockRoute53 GetHostedZoneCountRequest not implemented")
-	return nil, nil
 }
 func (m *MockRoute53) GetHostedZoneCountWithContext(aws.Context, *route53.GetHostedZoneCountInput, ...request.Option) (*route53.GetHostedZoneCountOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockRoute53) GetHostedZoneCount(*route53.GetHostedZoneCountInput) (*route53.GetHostedZoneCountOutput, error) {
 	panic("MockRoute53 GetHostedZoneCount not implemented")
-	return nil, nil
 }
 
 func (m *MockRoute53) ListHostedZonesRequest(*route53.ListHostedZonesInput) (*request.Request, *route53.ListHostedZonesOutput) {
 	panic("MockRoute53 ListHostedZonesRequest not implemented")
-	return nil, nil
 }
 
 func (m *MockRoute53) ListHostedZonesWithContext(aws.Context, *route53.ListHostedZonesInput, ...request.Option) (*route53.ListHostedZonesOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockRoute53) ListHostedZones(*route53.ListHostedZonesInput) (*route53.ListHostedZonesOutput, error) {
 	panic("MockRoute53 ListHostedZones not implemented")
-	return nil, nil
 }
 
 func (m *MockRoute53) ListHostedZonesPagesWithContext(aws.Context, *route53.ListHostedZonesInput, func(*route53.ListHostedZonesOutput, bool) bool, ...request.Option) error {
 	panic("Not implemented")
-	return nil
 }
 
 func (m *MockRoute53) ListHostedZonesPages(request *route53.ListHostedZonesInput, callback func(*route53.ListHostedZonesOutput, bool) bool) error {
@@ -112,12 +103,10 @@ func (m *MockRoute53) ListHostedZonesPages(request *route53.ListHostedZonesInput
 
 func (m *MockRoute53) ListHostedZonesByNameRequest(*route53.ListHostedZonesByNameInput) (*request.Request, *route53.ListHostedZonesByNameOutput) {
 	panic("MockRoute53 ListHostedZonesByNameRequest not implemented")
-	return nil, nil
 }
 
 func (m *MockRoute53) ListHostedZonesByNameWithContext(aws.Context, *route53.ListHostedZonesByNameInput, ...request.Option) (*route53.ListHostedZonesByNameOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockRoute53) ListHostedZonesByName(*route53.ListHostedZonesByNameInput) (*route53.ListHostedZonesByNameOutput, error) {

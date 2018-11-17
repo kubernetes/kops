@@ -35,7 +35,8 @@ type IAMInstanceProfile struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
 
-	ID *string
+	ID     *string
+	Shared *bool
 }
 
 var _ fi.CompareWithID = &IAMInstanceProfile{}
@@ -85,6 +86,7 @@ func (e *IAMInstanceProfile) Find(c *fi.Context) (*IAMInstanceProfile, error) {
 
 	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle
+	actual.Shared = e.Shared
 
 	return actual, nil
 }
@@ -95,7 +97,7 @@ func (e *IAMInstanceProfile) Run(c *fi.Context) error {
 
 func (s *IAMInstanceProfile) CheckChanges(a, e, changes *IAMInstanceProfile) error {
 	if a != nil {
-		if fi.StringValue(e.Name) == "" {
+		if fi.StringValue(e.Name) == "" && !fi.BoolValue(e.Shared) {
 			return fi.RequiredField("Name")
 		}
 	}
@@ -103,7 +105,11 @@ func (s *IAMInstanceProfile) CheckChanges(a, e, changes *IAMInstanceProfile) err
 }
 
 func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMInstanceProfile) error {
-	if a == nil {
+	if fi.BoolValue(e.Shared) {
+		if a == nil {
+			return fmt.Errorf("instance role profile with id %q not found", fi.StringValue(e.ID))
+		}
+	} else if a == nil {
 		glog.V(2).Infof("Creating IAMInstanceProfile with Name:%q", *e.Name)
 
 		request := &iam.CreateInstanceProfileInput{
@@ -154,6 +160,9 @@ func (_ *IAMInstanceProfile) RenderTerraform(t *terraform.TerraformTarget, a, e,
 }
 
 func (e *IAMInstanceProfile) TerraformLink() *terraform.Literal {
+	if fi.BoolValue(e.Shared) {
+		return terraform.LiteralFromStringValue(fi.StringValue(e.Name))
+	}
 	return terraform.LiteralProperty("aws_iam_instance_profile", *e.Name, "id")
 }
 
@@ -163,5 +172,8 @@ func (_ *IAMInstanceProfile) RenderCloudformation(t *cloudformation.Cloudformati
 }
 
 func (e *IAMInstanceProfile) CloudformationLink() *cloudformation.Literal {
-	return cloudformation.Ref("AWS::IAM::InstanceProfile", *e.Name)
+	if fi.BoolValue(e.Shared) {
+		return cloudformation.LiteralString(fi.StringValue(e.Name))
+	}
+	return cloudformation.Ref("AWS::IAM::InstanceProfile", fi.StringValue(e.Name))
 }

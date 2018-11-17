@@ -19,8 +19,6 @@ package apiserver
 import (
 	"fmt"
 
-	"k8s.io/apimachinery/pkg/apimachinery/announced"
-	"k8s.io/apimachinery/pkg/apimachinery/registered"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -31,20 +29,17 @@ import (
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/install"
-	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	registrycluster "k8s.io/kops/pkg/apiserver/registry/cluster"
 	registryinstancegroup "k8s.io/kops/pkg/apiserver/registry/instancegroup"
 )
 
 var (
-	groupFactoryRegistry = make(announced.APIGroupFactoryRegistry)
-	registry             = registered.NewOrDie("")
-	Scheme               = runtime.NewScheme()
-	Codecs               = serializer.NewCodecFactory(Scheme)
+	Scheme = runtime.NewScheme()
+	Codecs = serializer.NewCodecFactory(Scheme)
 )
 
 func init() {
-	install.Install(groupFactoryRegistry, registry, Scheme)
+	install.Install(Scheme)
 
 	// we need to add the options to empty v1
 	// TODO fix the server code to avoid this
@@ -102,7 +97,7 @@ func (cfg *Config) Complete() CompletedConfig {
 
 // New returns a new instance of KopsServer from the given config.
 func (c completedConfig) New() (*KopsServer, error) {
-	genericServer, err := c.GenericConfig.New("kops-apiserver", genericapiserver.EmptyDelegate)
+	genericServer, err := c.GenericConfig.New("kops-apiserver", genericapiserver.NewEmptyDelegate())
 	if err != nil {
 		return nil, err
 	}
@@ -111,9 +106,9 @@ func (c completedConfig) New() (*KopsServer, error) {
 		GenericAPIServer: genericServer,
 	}
 
-	apiGroupInfo := server.NewDefaultAPIGroupInfo(kops.GroupName, registry, Scheme, metav1.ParameterCodec, Codecs)
+	apiGroupInfo := server.NewDefaultAPIGroupInfo(kops.GroupName, Scheme, metav1.ParameterCodec, Codecs)
 
-	apiGroupInfo.GroupMeta.GroupVersion = v1alpha2.SchemeGroupVersion
+	//	apiGroupInfo.GroupMeta.GroupVersion = v1alpha2.SchemeGroupVersion
 
 	// {
 	// 	v1alpha1storage := map[string]rest.Storage{}

@@ -23,16 +23,18 @@ import (
 	"net"
 	"strings"
 
-	"github.com/blang/semver"
-	"github.com/golang/glog"
-	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+
+	"github.com/blang/semver"
+	"github.com/golang/glog"
+	utilnet "k8s.io/apimachinery/pkg/util/net"
 )
 
 const (
@@ -42,16 +44,15 @@ const (
 
 var UseLegacyELBName = featureflag.New("UseLegacyELBName", featureflag.Bool(false))
 
+// KopsModelContext is the kops model
 type KopsModelContext struct {
-	Cluster *kops.Cluster
-
-	Region         string
+	Cluster        *kops.Cluster
 	InstanceGroups []*kops.InstanceGroup
-
-	SSHPublicKeys [][]byte
+	Region         string
+	SSHPublicKeys  [][]byte
 }
 
-// Will attempt to calculate a meaningful name for an ELB given a prefix
+// GetELBName32 will attempt to calculate a meaningful name for an ELB given a prefix
 // Will never return a string longer than 32 chars
 // Note this is _not_ the primary identifier for the ELB - we use the Name tag for that.
 func (m *KopsModelContext) GetELBName32(prefix string) string {
@@ -248,6 +249,16 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 	return tags
 }
 
+// UseBootstrapTokens checks if bootstrap tokens are enabled
+func (m *KopsModelContext) UseBootstrapTokens() bool {
+	if m.Cluster.Spec.KubeAPIServer == nil {
+		return false
+	}
+
+	return fi.BoolValue(m.Cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken)
+}
+
+// UsesBastionDns checks if we should use a specific name for the bastion dns
 func (m *KopsModelContext) UsesBastionDns() bool {
 	if m.Cluster.Spec.Topology.Bastion != nil && m.Cluster.Spec.Topology.Bastion.BastionPublicName != "" {
 		return true
@@ -255,6 +266,7 @@ func (m *KopsModelContext) UsesBastionDns() bool {
 	return false
 }
 
+// UsesSSHBastion checks if we have a Bastion in the cluster
 func (m *KopsModelContext) UsesSSHBastion() bool {
 	for _, ig := range m.InstanceGroups {
 		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
@@ -265,6 +277,7 @@ func (m *KopsModelContext) UsesSSHBastion() bool {
 	return false
 }
 
+// UseLoadBalancerForAPI checks if we are using a load balancer for the kubeapi
 func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 	if m.Cluster.Spec.API == nil {
 		return false
@@ -272,6 +285,15 @@ func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 	return m.Cluster.Spec.API.LoadBalancer != nil
 }
 
+// If true then we will use the created loadbalancer for internal kubelet
+// connections.  The intention here is to make connections to apiserver more
+// HA - see https://github.com/kubernetes/kops/issues/4252
+func (m *KopsModelContext) UseLoadBalancerForInternalAPI() bool {
+	return m.UseLoadBalancerForAPI() &&
+		m.Cluster.Spec.API.LoadBalancer.UseForInternalApi == true
+}
+
+// UsePrivateDNS checks if we are using private DNS
 func (m *KopsModelContext) UsePrivateDNS() bool {
 	topology := m.Cluster.Spec.Topology
 	if topology != nil && topology.DNS != nil {

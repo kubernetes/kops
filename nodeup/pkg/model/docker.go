@@ -17,12 +17,16 @@ limitations under the License.
 package model
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model/resources"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -48,6 +52,9 @@ type dockerVersion struct {
 	Distros       []distros.Distribution
 	Dependencies  []string
 	Architectures []Architecture
+
+	// PlainBinary indicates that the Source is not an OS, but a "bare" tar.gz
+	PlainBinary bool
 }
 
 // DefaultDockerVersion is the (legacy) docker version we use if one is not specified in the manifest.
@@ -410,6 +417,17 @@ var dockerVersions = []dockerVersion{
 		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
 	},
 
+	// 17.03.2 - Ubuntu Bionic via binary download (no packages available)
+	{
+		DockerVersion: "17.03.2",
+		PlainBinary:   true,
+		Distros:       []distros.Distribution{distros.DistributionBionic},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Source:        "http://download.docker.com/linux/static/stable/x86_64/docker-17.03.2-ce.tgz",
+		Hash:          "141716ae046016a1792ce232a0f4c8eed7fe37d1",
+		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+	},
+
 	// 17.03.2 - Centos / Rhel7 (two packages)
 	{
 		DockerVersion: "17.03.2",
@@ -494,6 +512,33 @@ var dockerVersions = []dockerVersion{
 		Hash:          "b4ce72e80ff02926de943082821bbbe73958f87a",
 		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
 	},
+
+	// 18.03.1 - Bionic
+	{
+		DockerVersion: "18.03.1",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionBionic},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.03.1~ce~3-0~ubuntu",
+		Source:        "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.03.1~ce~3-0~ubuntu_amd64.deb",
+		Hash:          "b55b32bd0e9176dd32b1e6128ad9fda10a65cc8b",
+		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
+		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
+	},
+
+	// 18.06.1 - Debian Stretch
+	{
+
+		DockerVersion: "18.06.1",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionDebian9},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.06.1~ce-0~debian",
+		Source:        "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.1~ce~3-0~debian_amd64.deb",
+		Hash:          "18473b80e61b6d4eb8b52d87313abd71261287e5",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
 }
 
 func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro distros.Distribution) bool {
@@ -573,15 +618,28 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			count++
 
-			c.AddTask(&nodetasks.Package{
-				Name:    dv.Name,
-				Version: s(dv.Version),
-				Source:  s(dv.Source),
-				Hash:    s(dv.Hash),
+			if dv.PlainBinary {
+				c.AddTask(&nodetasks.Archive{
+					Name:            "docker",
+					Source:          dv.Source,
+					Hash:            dv.Hash,
+					TargetDir:       "/usr/bin/",
+					StripComponents: 1,
+				})
 
-				// TODO: PreventStart is now unused?
-				PreventStart: fi.Bool(true),
-			})
+				c.AddTask(b.buildDockerGroup())
+				c.AddTask(b.buildSystemdSocket())
+			} else {
+				c.AddTask(&nodetasks.Package{
+					Name:    dv.Name,
+					Version: s(dv.Version),
+					Source:  s(dv.Source),
+					Hash:    s(dv.Hash),
+
+					// TODO: PreventStart is now unused?
+					PreventStart: fi.Bool(true),
+				})
+			}
 
 			for _, dep := range dv.Dependencies {
 				c.AddTask(&nodetasks.Package{Name: dep})
@@ -620,6 +678,40 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
+}
+
+// buildDockerGroup creates the docker group, which owns the docker.socket
+func (b *DockerBuilder) buildDockerGroup() *nodetasks.GroupTask {
+	return &nodetasks.GroupTask{
+		Name:   "docker",
+		System: true,
+	}
+}
+
+// buildSystemdSocket creates docker.socket, for when we're not installing from a package
+func (b *DockerBuilder) buildSystemdSocket() *nodetasks.Service {
+	manifest := &systemd.Manifest{}
+	manifest.Set("Unit", "Description", "Docker Socket for the API")
+	manifest.Set("Unit", "PartOf", "docker.service")
+
+	manifest.Set("Socket", "ListenStream", "/var/run/docker.sock")
+	manifest.Set("Socket", "SocketMode", "0660")
+	manifest.Set("Socket", "SocketUser", "root")
+	manifest.Set("Socket", "SocketGroup", "docker")
+
+	manifest.Set("Install", "WantedBy", "sockets.target")
+
+	manifestString := manifest.Render()
+	glog.V(8).Infof("Built docker.socket manifest\n%s", manifestString)
+
+	service := &nodetasks.Service{
+		Name:       "docker.socket",
+		Definition: s(manifestString),
+	}
+
+	service.InitDefaults()
+
+	return service
 }
 
 func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int64, dockerVersionMinor int64) *nodetasks.Service {
@@ -693,6 +785,10 @@ func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int64, dockerVers
 	//# Uncomment TasksMax if your systemd version supports it.
 	//# Only systemd 226 and above support this version.
 	//#TasksMax=infinity
+	if b.IsKubernetesGTE("1.10") {
+		// Equivalent of https://github.com/kubernetes/kubernetes/pull/51986
+		manifest.Set("Service", "TasksMax", "infinity")
+	}
 
 	manifest.Set("Service", "Restart", "always")
 	manifest.Set("Service", "RestartSec", "2s")
@@ -727,6 +823,12 @@ func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderCo
 		"EnvironmentFile=/etc/sysconfig/docker",
 		"EnvironmentFile=/etc/environment",
 	}
+
+	if b.IsKubernetesGTE("1.10") {
+		// Equivalent of https://github.com/kubernetes/kubernetes/pull/51986
+		lines = append(lines, "TasksMax=infinity")
+	}
+
 	contents := strings.Join(lines, "\n")
 
 	c.AddTask(&nodetasks.File{
@@ -754,7 +856,34 @@ func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderCo
 
 // buildSysconfig is responsible for extracting the docker configuration and writing the sysconfig file
 func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
-	flagsString, err := flagbuilder.BuildFlags(b.Cluster.Spec.Docker)
+	var docker kops.DockerConfig
+	if b.Cluster.Spec.Docker != nil {
+		docker = *b.Cluster.Spec.Docker
+	}
+
+	// ContainerOS now sets the storage flag in /etc/docker/daemon.json, and it is an error to set it twice
+	if b.Distribution == distros.DistributionContainerOS {
+		// So that we can support older COS images though, we do check for /etc/docker/daemon.json
+		if b, err := ioutil.ReadFile("/etc/docker/daemon.json"); err != nil {
+			if os.IsNotExist(err) {
+				glog.V(2).Infof("/etc/docker/daemon.json not found")
+			} else {
+				glog.Warningf("error reading /etc/docker/daemon.json: %v", err)
+			}
+		} else {
+			// Maybe we get smarter here?
+			data := make(map[string]interface{})
+			if err := json.Unmarshal(b, &data); err != nil {
+				glog.Warningf("error deserializing /etc/docker/daemon.json: %v", err)
+			} else {
+				storageDriver := data["storage-driver"]
+				glog.Infof("/etc/docker/daemon.json has storage-driver: %q", storageDriver)
+			}
+			docker.Storage = nil
+		}
+	}
+
+	flagsString, err := flagbuilder.BuildFlags(&docker)
 	if err != nil {
 		return fmt.Errorf("error building docker flags: %v", err)
 	}

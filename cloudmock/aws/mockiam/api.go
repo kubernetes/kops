@@ -26,6 +26,9 @@ import (
 )
 
 type MockIAM struct {
+	// Mock out interface
+	iamiface.IAMAPI
+
 	mutex            sync.Mutex
 	InstanceProfiles map[string]*iam.InstanceProfile
 	Roles            map[string]*iam.Role

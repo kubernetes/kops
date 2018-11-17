@@ -19,7 +19,6 @@ package vfs
 import (
 	"bytes"
 	"encoding/base64"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
@@ -351,7 +350,7 @@ func (p *GSPath) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 		return nil, nil
 	}
 
-	md5Bytes, err := hex.DecodeString(md5)
+	md5Bytes, err := base64.StdEncoding.DecodeString(md5)
 	if err != nil {
 		return nil, fmt.Errorf("Etag was not a valid MD5 sum: %q", md5)
 	}

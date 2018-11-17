@@ -35,7 +35,7 @@ func Get(c *gophercloud.ServiceClient, opts GetOptsBuilder) (r GetResult) {
 			h[k] = v
 		}
 	}
-	resp, err := c.Request("HEAD", getURL(c), &gophercloud.RequestOpts{
+	resp, err := c.Head(getURL(c), &gophercloud.RequestOpts{
 		MoreHeaders: h,
 		OkCodes:     []int{204},
 	})

@@ -47,8 +47,10 @@ func (m *imageRemapVisitor) VisitString(path []string, v string, mutator func(st
 		return nil
 	}
 
-	// Deployments look like spec.template.spec.containers.[2].image
-	if n < 3 || path[n-3] != "containers" {
+	// Deployments/DaemonSets/Jobs/StatefulSets have two imapge fields
+	//	- spec.template.spec.containers.[2].image
+	//  - spec.template.spec.initContainers.[2].image
+	if n < 3 || (path[n-3] != "containers" && path[n-3] != "initContainers") {
 		glog.Warningf("Skipping likely image field: %s", strings.Join(path, "."))
 		return nil
 	}

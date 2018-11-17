@@ -19,6 +19,7 @@ package mesh
 import (
 	"fmt"
 	"net"
+	"os"
 	"strconv"
 	"time"
 
@@ -39,10 +40,25 @@ type MeshGossiper struct {
 }
 
 func NewMeshGossiper(listen string, channelName string, nodeName string, password []byte, seeds gossip.SeedProvider) (*MeshGossiper, error) {
+
+	connLimit := 0 // 0 means no limit
+	gossipDnsConnLimit := os.Getenv("GOSSIP_DNS_CONN_LIMIT")
+	if gossipDnsConnLimit != "" {
+		limit, err := strconv.Atoi(gossipDnsConnLimit)
+		if err != nil {
+			// Continue with the default value
+			glog.Warningf("cannot parse env GOSSIP_DNS_CONN_LIMIT value %q", gossipDnsConnLimit)
+		} else {
+			connLimit = limit
+		}
+	}
+
+	glog.Infof("gossip dns connection limit is:%d", connLimit)
+
 	meshConfig := mesh.Config{
 		ProtocolMinVersion: mesh.ProtocolMinVersion,
 		Password:           password,
-		ConnLimit:          64,
+		ConnLimit:          connLimit,
 		PeerDiscovery:      true,
 		//TrustedSubnets:     []*net.IPNet{},
 	}

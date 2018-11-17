@@ -18,6 +18,7 @@ package validation
 
 import (
 	"fmt"
+	"regexp"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
@@ -25,13 +26,20 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
+// ValidateInstanceGroup is responsible for validating the configuration of a instancegroup
 func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 	if g.ObjectMeta.Name == "" {
 		return field.Required(field.NewPath("Name"), "")
 	}
 
-	if g.Spec.Role == "" {
+	switch g.Spec.Role {
+	case "":
 		return field.Required(field.NewPath("Role"), "Role must be set")
+	case kops.InstanceGroupRoleMaster:
+	case kops.InstanceGroupRoleNode:
+	case kops.InstanceGroupRoleBastion:
+	default:
+		return field.Invalid(field.NewPath("Role"), g.Spec.Role, "Unknown role")
 	}
 
 	if g.Spec.Tenancy != "" {
@@ -50,13 +58,18 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 		return field.Invalid(field.NewPath("RootVolumeIops"), g.Spec.RootVolumeIops, "RootVolumeIops must be greater than 0")
 	}
 
-	switch g.Spec.Role {
-	case kops.InstanceGroupRoleMaster:
-	case kops.InstanceGroupRoleNode:
-	case kops.InstanceGroupRoleBastion:
+	// @check all the hooks are valid in this instancegroup
+	for i := range g.Spec.Hooks {
+		if errs := validateHookSpec(&g.Spec.Hooks[i], field.NewPath("hooks").Index(i)); len(errs) > 0 {
+			return errs.ToAggregate()
+		}
+	}
 
-	default:
-		return field.Invalid(field.NewPath("Role"), g.Spec.Role, "Unknown role")
+	// @check the fileAssets for this instancegroup are valid
+	for i := range g.Spec.FileAssets {
+		if errs := validateFileAssetSpec(&g.Spec.FileAssets[i], field.NewPath("fileAssets").Index(i)); len(errs) > 0 {
+			return errs.ToAggregate()
+		}
 	}
 
 	if g.IsMaster() {
@@ -72,6 +85,10 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 				return err
 			}
 		}
+	}
+
+	if err := validateInstanceProfile(g.Spec.IAM, field.NewPath("iam")); err != nil {
+		return err
 	}
 
 	return nil
@@ -151,5 +168,20 @@ func validateExtraUserData(userData *kops.UserData) error {
 		return field.Invalid(fieldPath.Child("Type"), userData.Type, "Invalid user-data content type")
 	}
 
+	return nil
+}
+
+// format is arn:aws:iam::123456789012:instance-profile/S3Access
+var validARN = regexp.MustCompile(`^arn:aws:iam::\d+:instance-profile\/\S+$`)
+
+// validateInstanceProfile checks the String values for the AuthProfile
+func validateInstanceProfile(v *kops.IAMProfileSpec, fldPath *field.Path) *field.Error {
+	if v != nil && v.Profile != nil {
+		arn := *v.Profile
+		if !validARN.MatchString(arn) {
+			return field.Invalid(fldPath.Child("Profile"), arn,
+				"Instance Group IAM Instance Profile must be a valid aws arn such as arn:aws:iam::123456789012:instance-profile/KopsExampleRole")
+		}
+	}
 	return nil
 }

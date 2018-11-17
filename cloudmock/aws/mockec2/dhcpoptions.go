@@ -78,11 +78,9 @@ func (m *MockEC2) DescribeDhcpOptions(request *ec2.DescribeDhcpOptionsInput) (*e
 
 func (m *MockEC2) DescribeDhcpOptionsWithContext(aws.Context, *ec2.DescribeDhcpOptionsInput, ...request.Option) (*ec2.DescribeDhcpOptionsOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockEC2) DescribeDhcpOptionsRequest(*ec2.DescribeDhcpOptionsInput) (*request.Request, *ec2.DescribeDhcpOptionsOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockEC2) AssociateDhcpOptions(request *ec2.AssociateDhcpOptionsInput) (*ec2.AssociateDhcpOptionsOutput, error) {
@@ -112,11 +110,9 @@ func (m *MockEC2) AssociateDhcpOptions(request *ec2.AssociateDhcpOptionsInput) (
 }
 func (m *MockEC2) AssociateDhcpOptionsWithContext(aws.Context, *ec2.AssociateDhcpOptionsInput, ...request.Option) (*ec2.AssociateDhcpOptionsOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockEC2) AssociateDhcpOptionsRequest(*ec2.AssociateDhcpOptionsInput) (*request.Request, *ec2.AssociateDhcpOptionsOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockEC2) CreateDhcpOptions(request *ec2.CreateDhcpOptionsInput) (*ec2.CreateDhcpOptionsOutput, error) {
@@ -157,11 +153,9 @@ func (m *MockEC2) CreateDhcpOptions(request *ec2.CreateDhcpOptionsInput) (*ec2.C
 }
 func (m *MockEC2) CreateDhcpOptionsWithContext(aws.Context, *ec2.CreateDhcpOptionsInput, ...request.Option) (*ec2.CreateDhcpOptionsOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockEC2) CreateDhcpOptionsRequest(*ec2.CreateDhcpOptionsInput) (*request.Request, *ec2.CreateDhcpOptionsOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockEC2) DeleteDhcpOptions(request *ec2.DeleteDhcpOptionsInput) (*ec2.DeleteDhcpOptionsOutput, error) {
@@ -182,9 +176,7 @@ func (m *MockEC2) DeleteDhcpOptions(request *ec2.DeleteDhcpOptionsInput) (*ec2.D
 
 func (m *MockEC2) DeleteDhcpOptionsWithContext(aws.Context, *ec2.DeleteDhcpOptionsInput, ...request.Option) (*ec2.DeleteDhcpOptionsOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockEC2) DeleteDhcpOptionsRequest(*ec2.DeleteDhcpOptionsInput) (*request.Request, *ec2.DeleteDhcpOptionsOutput) {
 	panic("Not implemented")
-	return nil, nil
 }

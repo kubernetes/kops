@@ -194,7 +194,7 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
       - name: default-http-backend
-        image: k8s.gcr.io/defaultbackend:1.3
+        image: k8s.gcr.io/defaultbackend:1.4
         livenessProbe:
           httpGet:
             path: /healthz
@@ -236,7 +236,10 @@ metadata:
   labels:
     k8s-addon: ingress-nginx.addons.k8s.io
   annotations:
+    # Enable PROXY protocol
     service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
+    # Increase the ELB idle timeout to avoid issues with WebSockets or Server-Sent Events.
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: '3600'
 spec:
   type: LoadBalancer
   selector:
@@ -274,7 +277,7 @@ spec:
       terminationGracePeriodSeconds: 60
       serviceAccountName: nginx-ingress-controller
       containers:
-      - image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.12.0
+      - image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.18.0
         name: nginx-ingress-controller
         imagePullPolicy: Always
         ports:

@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "apis_generator.go",
+        "controller_generator.go",
+        "install_generator.go",
+        "package.go",
+        "parser.go",
+        "unversioned_generator.go",
+        "util.go",
+        "versioned_generator.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiregister-gen/generators",
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/cmd/apiregister-gen/generators",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/markbates/inflect:go_default_library",
+        "//vendor/github.com/pkg/errors:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/gengo/args:go_default_library",
+        "//vendor/k8s.io/gengo/generator:go_default_library",
+        "//vendor/k8s.io/gengo/namer:go_default_library",
+        "//vendor/k8s.io/gengo/types:go_default_library",
+    ],
+)

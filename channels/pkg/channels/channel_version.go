@@ -120,9 +120,8 @@ func (c *ChannelVersion) replaces(existing *ChannelVersion) bool {
 			// Same version; check ids
 			if c.Id == existing.Id {
 				return false
-			} else {
-				glog.V(4).Infof("Channels had same version %q but different ids (%q vs %q); will replace", *c.Version, c.Id, existing.Id)
 			}
+			glog.V(4).Infof("Channels had same version %q but different ids (%q vs %q); will replace", *c.Version, c.Id, existing.Id)
 		}
 	}
 

@@ -29,8 +29,10 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/homedir"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/bundle"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
@@ -125,7 +127,7 @@ func RunToolboxBundle(context Factory, out io.Writer, options *ToolboxBundleOpti
 	}
 	nodeSSH.SSHConfig.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 	nodeSSH.SSHConfig.User = sshUser
-	sshIdentity := filepath.Join(os.Getenv("HOME"), ".ssh", "id_rsa")
+	sshIdentity := filepath.Join(homedir.HomeDir(), ".ssh", "id_rsa")
 	if err := kutil.AddSSHIdentity(&nodeSSH.SSHConfig, sshIdentity); err != nil {
 		return err
 	}
@@ -188,7 +190,7 @@ func writeToTar(files []*bundle.DataFile, bundlePath string) error {
 	if err != nil {
 		return fmt.Errorf("error creating output bundle file %q: %v", bundlePath, err)
 	}
-	defer f.Close()
+	defer try.CloseFile(f)
 
 	gw := gzip.NewWriter(f)
 	defer gw.Close()

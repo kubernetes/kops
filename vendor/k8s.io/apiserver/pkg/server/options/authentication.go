@@ -59,7 +59,8 @@ func (s *RequestHeaderAuthenticationOptions) AddFlags(fs *pflag.FlagSet) {
 
 	fs.StringVar(&s.ClientCAFile, "requestheader-client-ca-file", s.ClientCAFile, ""+
 		"Root certificate bundle to use to verify client certificates on incoming requests "+
-		"before trusting usernames in headers specified by --requestheader-username-headers")
+		"before trusting usernames in headers specified by --requestheader-username-headers. "+
+		"WARNING: generally do not depend on authorization being already done for incoming requests.")
 
 	fs.StringSliceVar(&s.AllowedNames, "requestheader-allowed-names", s.AllowedNames, ""+
 		"List of client certificate common names to allow to provide usernames in headers "+
@@ -159,7 +160,11 @@ func (s *DelegatingAuthenticationOptions) ApplyTo(c *server.AuthenticationInfo, 
 
 	clientCA, err := s.getClientCA()
 	if err != nil {
-		return err
+		if _, ignorable := err.(ignorableError); !ignorable {
+			return err
+		} else {
+			glog.Warning(err)
+		}
 	}
 	if err = c.ApplyClientCert(clientCA.ClientCA, servingInfo); err != nil {
 		return fmt.Errorf("unable to load client CA file: %v", err)
@@ -199,7 +204,11 @@ func (s *DelegatingAuthenticationOptions) ToAuthenticationConfig() (authenticato
 
 	clientCA, err := s.getClientCA()
 	if err != nil {
-		return authenticatorfactory.DelegatingAuthenticatorConfig{}, err
+		if _, ignorable := err.(ignorableError); !ignorable {
+			return authenticatorfactory.DelegatingAuthenticatorConfig{}, err
+		} else {
+			glog.Warning(err)
+		}
 	}
 	requestHeader, err := s.getRequestHeader()
 	if err != nil {
@@ -218,8 +227,12 @@ func (s *DelegatingAuthenticationOptions) ToAuthenticationConfig() (authenticato
 
 const (
 	authenticationConfigMapNamespace = metav1.NamespaceSystem
-	authenticationConfigMapName      = "extension-apiserver-authentication"
-	authenticationRoleName           = "extension-apiserver-authentication-reader"
+	// authenticationConfigMapName is the name of ConfigMap in the kube-system namespace holding the root certificate
+	// bundle to use to verify client certificates on incoming requests before trusting usernames in headers specified
+	// by --requestheader-username-headers. This is created in the cluster by the kube-apiserver.
+	// "WARNING: generally do not depend on authorization being already done for incoming requests.")
+	authenticationConfigMapName = "extension-apiserver-authentication"
+	authenticationRoleName      = "extension-apiserver-authentication-reader"
 )
 
 func (s *DelegatingAuthenticationOptions) getClientCA() (*ClientCertAuthenticationOptions, error) {
@@ -235,7 +248,7 @@ func (s *DelegatingAuthenticationOptions) getClientCA() (*ClientCertAuthenticati
 		return nil, err
 	}
 	if incluster == nil {
-		return nil, fmt.Errorf("cluster doesn't provide client-ca-file")
+		return &s.ClientCert, ignorableError{fmt.Errorf("cluster doesn't provide client-ca-file in configmap/%s in %s, so client certificate authentication to extension api-server won't work.", authenticationConfigMapName, authenticationConfigMapNamespace)}
 	}
 	return incluster, nil
 }
@@ -389,3 +402,5 @@ func (s *DelegatingAuthenticationOptions) newTokenAccessReview() (authentication
 
 	return client.TokenReviews(), nil
 }
+
+type ignorableError struct{ error }

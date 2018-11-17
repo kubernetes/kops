@@ -18,7 +18,9 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/dns:go_default_library",
+        "//pkg/featureflag:go_default_library",
         "//pkg/resources:go_default_library",
+        "//pkg/resources/spotinst:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
@@ -26,6 +28,7 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/service/cloudformation:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/elb:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/elbv2:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/iam:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/route53:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",

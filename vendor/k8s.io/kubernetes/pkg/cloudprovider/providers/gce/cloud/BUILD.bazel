@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "constants.go",
+        "context.go",
         "doc.go",
         "gce_projects.go",
         "gen.go",
@@ -13,7 +14,7 @@ go_library(
         "service.go",
         "utils.go",
     ],
-    importmap = "vendor/k8s.io/kubernetes/pkg/cloudprovider/providers/gce/cloud",
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/cloudprovider/providers/gce/cloud",
     importpath = "k8s.io/kubernetes/pkg/cloudprovider/providers/gce/cloud",
     visibility = ["//visibility:public"],
     deps = [

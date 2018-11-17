@@ -62,7 +62,7 @@ go_library(
         "volume_list.go",
         "volume_remove.go",
     ],
-    importmap = "vendor/github.com/docker/engine-api/client",
+    importmap = "k8s.io/kops/vendor/github.com/docker/engine-api/client",
     importpath = "github.com/docker/engine-api/client",
     visibility = ["//visibility:public"],
     deps = [

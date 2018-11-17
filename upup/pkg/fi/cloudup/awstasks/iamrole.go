@@ -77,7 +77,7 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 		actualPolicy := *r.AssumeRolePolicyDocument
 		actualPolicy, err = url.QueryUnescape(actualPolicy)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing AssumeRolePolicyDocument for IAMRole %q: %v", e.Name, err)
+			return nil, fmt.Errorf("error parsing AssumeRolePolicyDocument for IAMRole %s: %v", *e.Name, err)
 		}
 
 		// The RolePolicyDocument is reformatted by AWS
@@ -85,17 +85,17 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 		if e.RolePolicyDocument != nil {
 			expectedPolicy, err := e.RolePolicyDocument.AsString()
 			if err != nil {
-				return nil, fmt.Errorf("error reading expected RolePolicyDocument for IAMRole %q: %v", e.Name, err)
+				return nil, fmt.Errorf("error reading expected RolePolicyDocument for IAMRole %q: %v", aws.StringValue(e.Name), err)
 			}
 			expectedJson := make(map[string]interface{})
 			err = json.Unmarshal([]byte(expectedPolicy), &expectedJson)
 			if err != nil {
-				return nil, fmt.Errorf("error parsing expected RolePolicyDocument for IAMRole %q: %v", e.Name, err)
+				return nil, fmt.Errorf("error parsing expected RolePolicyDocument for IAMRole %q: %v", aws.StringValue(e.Name), err)
 			}
 			actualJson := make(map[string]interface{})
 			err = json.Unmarshal([]byte(actualPolicy), &actualJson)
 			if err != nil {
-				return nil, fmt.Errorf("error parsing actual RolePolicyDocument for IAMRole %q: %v", e.Name, err)
+				return nil, fmt.Errorf("error parsing actual RolePolicyDocument for IAMRole %q: %v", aws.StringValue(e.Name), err)
 			}
 
 			if reflect.DeepEqual(actualJson, expectedJson) {

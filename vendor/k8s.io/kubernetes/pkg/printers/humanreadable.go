@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -70,11 +71,10 @@ var _ PrintHandler = &HumanReadablePrinter{}
 
 // NewHumanReadablePrinter creates a HumanReadablePrinter.
 // If encoder and decoder are provided, an attempt to convert unstructured types to internal types is made.
-func NewHumanReadablePrinter(encoder runtime.Encoder, decoder runtime.Decoder, options PrintOptions) *HumanReadablePrinter {
+func NewHumanReadablePrinter(decoder runtime.Decoder, options PrintOptions) *HumanReadablePrinter {
 	printer := &HumanReadablePrinter{
 		handlerMap: make(map[reflect.Type]*handlerEntry),
 		options:    options,
-		encoder:    encoder,
 		decoder:    decoder,
 	}
 	return printer
@@ -257,14 +257,6 @@ func (h *HumanReadablePrinter) HandledResources() []string {
 	return keys
 }
 
-func (h *HumanReadablePrinter) AfterPrint(output io.Writer, res string) error {
-	return nil
-}
-
-func (h *HumanReadablePrinter) IsGeneric() bool {
-	return false
-}
-
 func (h *HumanReadablePrinter) unknown(data []byte, w io.Writer) error {
 	_, err := fmt.Fprintf(w, "Unknown object: %s", string(data))
 	return err
@@ -278,12 +270,9 @@ func printHeader(columnNames []string, w io.Writer) error {
 }
 
 // PrintObj prints the obj in a human-friendly format according to the type of the obj.
-// TODO: unify the behavior of PrintObj, which often expects single items and tracks
-// headers and filtering, with other printers, that expect list objects. The tracking
-// behavior should probably be a higher level wrapper (MultiObjectTablePrinter) that
-// calls into the PrintTable method and then displays consistent output.
 func (h *HumanReadablePrinter) PrintObj(obj runtime.Object, output io.Writer) error {
-	if w, found := output.(*tabwriter.Writer); !found && !h.skipTabWriter {
+	w, found := output.(*tabwriter.Writer)
+	if !found && !h.skipTabWriter {
 		w = GetNewTabWriter(output)
 		output = w
 		defer w.Flush()
@@ -299,14 +288,19 @@ func (h *HumanReadablePrinter) PrintObj(obj runtime.Object, output io.Writer) er
 
 	// check if the object is unstructured. If so, let's attempt to convert it to a type we can understand before
 	// trying to print, since the printers are keyed by type. This is extremely expensive.
-	if h.encoder != nil && h.decoder != nil {
-		obj, _ = decodeUnknownObject(obj, h.encoder, h.decoder)
+	if h.decoder != nil {
+		obj, _ = decodeUnknownObject(obj, h.decoder)
 	}
 
 	// print with a registered handler
 	t := reflect.TypeOf(obj)
 	if handler := h.handlerMap[t]; handler != nil {
 		includeHeaders := h.lastType != t && !h.options.NoHeaders
+
+		if h.lastType != nil && h.lastType != t && !h.options.NoHeaders {
+			fmt.Fprintln(output)
+		}
+
 		if err := printRowsForHandlerEntry(output, handler, obj, h.options, includeHeaders); err != nil {
 			return err
 		}
@@ -317,6 +311,11 @@ func (h *HumanReadablePrinter) PrintObj(obj runtime.Object, output io.Writer) er
 	// print with the default handler if set, and use the columns from the last time
 	if h.defaultHandler != nil {
 		includeHeaders := h.lastType != h.defaultHandler && !h.options.NoHeaders
+
+		if h.lastType != nil && h.lastType != h.defaultHandler && !h.options.NoHeaders {
+			fmt.Fprintln(output)
+		}
+
 		if err := printRowsForHandlerEntry(output, h.defaultHandler, obj, h.options, includeHeaders); err != nil {
 			return err
 		}
@@ -362,11 +361,13 @@ func PrintTable(table *metav1beta1.Table, output io.Writer, options PrintOptions
 		fmt.Fprintln(output)
 	}
 	for _, row := range table.Rows {
-		if !options.ShowAll && hasCondition(row.Conditions, metav1beta1.RowCompleted) {
-			continue
-		}
 		first := true
 		for i, cell := range row.Cells {
+			if i >= len(table.ColumnDefinitions) {
+				// https://issue.k8s.io/66379
+				// don't panic in case of bad output from the server, with more cells than column definitions
+				break
+			}
 			column := table.ColumnDefinitions[i]
 			if !options.Wide && column.Priority != 0 {
 				continue
@@ -813,14 +814,18 @@ func AppendAllLabels(showLabels bool, itemLabels map[string]string) string {
 }
 
 // check if the object is unstructured. If so, attempt to convert it to a type we can understand.
-func decodeUnknownObject(obj runtime.Object, encoder runtime.Encoder, decoder runtime.Decoder) (runtime.Object, error) {
+func decodeUnknownObject(obj runtime.Object, decoder runtime.Decoder) (runtime.Object, error) {
 	var err error
-	switch obj.(type) {
-	case runtime.Unstructured, *runtime.Unknown:
-		if objBytes, err := runtime.Encode(encoder, obj); err == nil {
+	switch t := obj.(type) {
+	case runtime.Unstructured:
+		if objBytes, err := runtime.Encode(unstructured.UnstructuredJSONScheme, obj); err == nil {
 			if decodedObj, err := runtime.Decode(decoder, objBytes); err == nil {
 				obj = decodedObj
 			}
+		}
+	case *runtime.Unknown:
+		if decodedObj, err := runtime.Decode(decoder, t.Raw); err == nil {
+			obj = decodedObj
 		}
 	}
 

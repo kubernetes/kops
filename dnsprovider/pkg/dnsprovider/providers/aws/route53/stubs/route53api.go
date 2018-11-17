@@ -37,7 +37,7 @@ type Route53API interface {
 }
 
 // Route53APIStub is a minimal implementation of Route53API, used primarily for unit testing.
-// See http://http://docs.aws.amazon.com/sdk-for-go/api/service/route53.html for descriptions
+// See https://docs.aws.amazon.com/sdk-for-go/api/service/route53/
 // of all of its methods.
 type Route53APIStub struct {
 	zones      map[string]*route53.HostedZone

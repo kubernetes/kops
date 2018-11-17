@@ -68,7 +68,7 @@ and a new route table, but you can also use a shared subnet (see [below](#shared
 
 ### VPC with multiple CIDRs
 
-AWS now allows you to add more CIDRs to a VPC, the param `AdditionalNetworkCIDRs` allows you to specify any additional CIDRs added to the VPC.
+AWS now allows you to add more CIDRs to a VPC, the param `additionalNetworkCIDRs` allows you to specify any additional CIDRs added to the VPC.
 
 ```yaml
 metadata:
@@ -142,32 +142,35 @@ spec:
   kops update cluster ${CLUSTER_NAME} --yes
   ```
 
-  **If you run in AWS private topology with shared subnets, and you would like Kubernetes to provision resources in these shared subnets, you must create tags on them.**
-  
-  **This is important, for example, if your `utility` subnets are shared, you will not be able to launch any services that create Elastic Load Balancers (ELBs).**
-  
-  **Prior to kops 1.8 `KubernetesCluster` tag was used for this. This lead to several problems if there were more than one Kubernetes Cluster in a subnet.**
-  
-  **After you upgraded to kops 1.8 remove `KubernetesCluster` Tag from subnets otherwise `kubernetes.io/cluster/<clustername>` won't have any effect!**
+### Subnet Tags
 
-  **These are currently needed Tags on shared resources:**
+  By default, kops will tag your existing subnets with the standard tags:
 
-  Public Subnets:
+  Public/Utility Subnets:
   ```
   "kubernetes.io/cluster/<cluster-name>" = "shared"
   "kubernetes.io/role/elb"               = "1"
+  "SubnetType"                           = "Utility"
   ```
 
   Private Subnets:
   ```
   "kubernetes.io/cluster/<cluster-name>" = "shared"
   "kubernetes.io/role/internal-elb"      = "1"
+  "SubnetType"                           = "Private"
   ```
+  
+  These tags are important, for example, your services will be unable to create public or private Elastic Load Balancers (ELBs) if the respective `elb` or `internal-elb` tags are missing.
+  
+  If you would like to manage these tags externally then specify `--disable-subnet-tags` during your cluster creation. This will prevent kops from tagging existing subnets and allow some custom control, such as separate subnets for internal ELBs.
+  
+  Prior to kops 1.8 `KubernetesCluster` tag was used instead of `kubernetes.io/cluster/<cluster-name>`. This lead to several problems if there were more than one Kubernetes Cluster in a subnet. After you upgraded to kops 1.8 ensure the `KubernetesCluster` Tag is removed from subnets otherwise `kubernetes.io/cluster/<clustername>` won't have any effect!
 
-
-### Shared NAT Gateways
+### Shared NAT Egress
 
 On AWS in private [topology](topology.md), `kops` creates one NAT Gateway (NGW) per AZ. If your shared VPC is already set up with an NGW in the subnet that `kops` deploys private resources to, it is possible to specify the ID and have `kops`/`kubernetes` use it.
+
+If you don't want to use NAT Gateways but have setup [EC2 NAT Instances](https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_NAT_Instance.html) in your VPC that you can share, it's possible to specify the IDs of said instances and have `kops`/`kubernetes` use them.
 
 After creating a basic cluster spec, edit your cluster to specify NGW:
 
@@ -179,6 +182,11 @@ spec:
   - cidr: 10.20.64.0/21
     name: us-east-1a
     egress: nat-987654321
+    type: Private
+    zone: us-east-1a
+  - cidr: 10.20.96.0/21
+    name: us-east-1b
+    egress: i-987654321
     type: Private
     zone: us-east-1a
   - cidr: 10.20.32.0/21
@@ -195,6 +203,8 @@ Please note:
   in their route table.  Private subnets should not have public IPs, and will typically have a NAT gateway
   configured as their default route.
 * kops won't create a route-table at all if we're not creating subnets.
+* In the example above the first subnet is using a shared NAT Gateway while the
+  second one is using a shared NAT Instance
 
 ### Proxy VPC Egress
 

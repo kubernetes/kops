@@ -48,7 +48,7 @@ brew install kubernetes-cli
 From the [official kubernetes kubectl release](https://kubernetes.io/docs/tasks/tools/install-kubectl/):
 
 ```
-wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
+curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
 chmod +x ./kubectl
 sudo mv ./kubectl /usr/local/bin/kubectl
 ```
@@ -62,20 +62,28 @@ wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl
 chmod +x ./kubectl
 sudo mv ./kubectl /usr/local/bin/kubectl
 ```
+# Installing AWS CLI Tools
 
+https://aws.amazon.com/cli/
 
-## Installing AWS CLI Tools
-
-### MacOS
-
-The officially supported way of installing the tool is with `pip`:
-
+ On MacOS, Windows and Linux OS:
+ 
+ The officially supported way of installing the tool is with `pip`:
+ 
 ```bash
 pip install awscli
 ```
 
-You can also grab the tool with homebrew, although this is not officially supported by AWS.
+##### _OR use these alternative methods for MacOS and Windows:_
 
+### MacOS
+
+You can grab the tool with homebrew, although this is not officially supported by AWS.
 ```bash
 brew update && brew install awscli
 ```
+
+### Windows
+
+You can download the MSI installer from this page and follow the steps through the installer which requires no other dependencies: 
+https://docs.aws.amazon.com/cli/latest/userguide/awscli-install-windows.html

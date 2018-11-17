@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright 2016 The Kubernetes Authors.
 #
@@ -33,11 +33,13 @@ cp ${WORK_DIR}/go/bin/openapi-gen ${GOPATH}/bin/
 
 # Install the apiserver-builder commands
 GOPATH=${WORK_DIR}/go/ go install github.com/kubernetes-incubator/apiserver-builder/cmd/...
-cp ${WORK_DIR}/go/bin/openapi-gen ${GOPATH}/bin/
+cp ${WORK_DIR}/go/bin/apiserver-boot ${GOPATH}/bin/
+cp ${WORK_DIR}/go/bin/apiregister-gen ${GOPATH}/bin/
 
 # Install the reference docs commands (apiserver-builder commands invoke these)
 GOPATH=${WORK_DIR}/go/ go install github.com/kubernetes-incubator/reference-docs/gen-apidocs/...
 cp ${WORK_DIR}/go/bin/openapi-gen ${GOPATH}/bin/
+cp ${WORK_DIR}/go/bin/gen-apidocs ${GOPATH}/bin/
 
 # More code generators
 GOPATH=${WORK_DIR}/go/ go install k8s.io/code-generator/cmd/lister-gen
@@ -45,4 +47,16 @@ cp ${WORK_DIR}/go/bin/lister-gen ${GOPATH}/bin/
 
 GOPATH=${WORK_DIR}/go/ go install k8s.io/code-generator/cmd/informer-gen
 cp ${WORK_DIR}/go/bin/informer-gen ${GOPATH}/bin/
+
+GOPATH=${WORK_DIR}/go/ go install k8s.io/code-generator/cmd/client-gen
+cp ${WORK_DIR}/go/bin/client-gen ${GOPATH}/bin/
+
+GOPATH=${WORK_DIR}/go/ go install k8s.io/code-generator/cmd/deepcopy-gen
+cp ${WORK_DIR}/go/bin/deepcopy-gen ${GOPATH}/bin/
+
+GOPATH=${WORK_DIR}/go/ go install k8s.io/code-generator/cmd/conversion-gen
+cp ${WORK_DIR}/go/bin/conversion-gen ${GOPATH}/bin/
+
+GOPATH=${WORK_DIR}/go/ go install k8s.io/code-generator/cmd/defaulter-gen
+cp ${WORK_DIR}/go/bin/defaulter-gen ${GOPATH}/bin/
 

@@ -23,7 +23,6 @@ import (
 	"os"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/golang/glog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -80,11 +79,12 @@ func (c *Context) AllTasks() map[string]Task {
 	return c.tasks
 }
 
-func (c *Context) RunTasks(maxTaskDuration time.Duration) error {
+func (c *Context) RunTasks(options RunTasksOptions) error {
 	e := &executor{
 		context: c,
+		options: options,
 	}
-	return e.RunTasks(c.tasks, maxTaskDuration)
+	return e.RunTasks(c.tasks)
 }
 
 func (c *Context) Close() {

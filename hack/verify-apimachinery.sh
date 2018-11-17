@@ -25,4 +25,5 @@ if make apimachinery-codegen; then
 else
 	echo "\n FAIL: - the verify-apimachinery.sh test failed, apimachinery is not up to date"
 	echo "\n FAIL: - please run the command 'make apimachinery'"
+	exit 1
 fi

@@ -17,11 +17,11 @@ limitations under the License.
 package factory
 
 import (
+	"context"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/pkg/transport"
-	"golang.org/x/net/context"
 
 	"k8s.io/apiserver/pkg/storage"
 	"k8s.io/apiserver/pkg/storage/etcd3"
@@ -31,10 +31,13 @@ import (
 
 // The short keepalive timeout and interval have been chosen to aggressively
 // detect a failed etcd server without introducing much overhead.
-var (
-	keepaliveTime    = 30 * time.Second
-	keepaliveTimeout = 10 * time.Second
-)
+const keepaliveTime = 30 * time.Second
+const keepaliveTimeout = 10 * time.Second
+
+// dialTimeout is the timeout for failing to establish a connection.
+// It is set to 20 seconds as times shorter than that will cause TLS connections to fail
+// on heavily loaded arm64 CPUs (issue #64649)
+const dialTimeout = 20 * time.Second
 
 func newETCD3Storage(c storagebackend.Config) (storage.Interface, DestroyFunc, error) {
 	tlsInfo := transport.TLSInfo{
@@ -52,6 +55,7 @@ func newETCD3Storage(c storagebackend.Config) (storage.Interface, DestroyFunc, e
 		tlsConfig = nil
 	}
 	cfg := clientv3.Config{
+		DialTimeout:          dialTimeout,
 		DialKeepAliveTime:    keepaliveTime,
 		DialKeepAliveTimeout: keepaliveTimeout,
 		Endpoints:            c.ServerList,

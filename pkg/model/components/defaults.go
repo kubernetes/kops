@@ -28,6 +28,7 @@ type DefaultsOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &DefaultsOptionsBuilder{}
 
+// BuildOptions is responsible for cluster options
 func (b *DefaultsOptionsBuilder) BuildOptions(o interface{}) error {
 	options := o.(*kops.ClusterSpec)
 

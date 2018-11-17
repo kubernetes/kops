@@ -242,7 +242,8 @@ func (e *InstanceTemplate) mapToGCE(project string) (*compute.InstanceTemplate, 
 		AccessConfigs: []*compute.AccessConfig{{
 			Kind: "compute#accessConfig",
 			//NatIP: *e.IPAddress.Address,
-			Type: "ONE_TO_ONE_NAT",
+			Type:        "ONE_TO_ONE_NAT",
+			NetworkTier: "PREMIUM",
 		}},
 		Network: e.Network.URL(project),
 	}

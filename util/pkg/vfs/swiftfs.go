@@ -24,7 +24,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -37,6 +36,7 @@ import (
 	swiftobject "github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects"
 	"github.com/gophercloud/gophercloud/pagination"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/util/homedir"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -73,12 +73,7 @@ func (_ OpenstackConfig) filename() (string, error) {
 		return name, nil
 	}
 
-	var homeDir string
-	if runtime.GOOS == "windows" {
-		homeDir = os.Getenv("USERPROFILE")
-	} else {
-		homeDir = os.Getenv("HOME")
-	}
+	homeDir := homedir.HomeDir()
 	if homeDir == "" {
 		return "", fmt.Errorf("can not find home directory")
 	}
@@ -309,7 +304,7 @@ func (p *SwiftPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 
 func (p *SwiftPath) createBucket() error {
 	done, err := RetryWithBackoff(swiftWriteBackoff, func() (bool, error) {
-		_, err := swiftcontainer.Get(p.client, p.bucket).Extract()
+		_, err := swiftcontainer.Get(p.client, p.bucket, swiftcontainer.GetOpts{}).Extract()
 		if err == nil {
 			return true, nil
 		}

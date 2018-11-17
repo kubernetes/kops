@@ -29,6 +29,8 @@ In addition, we support a few-well known aliases for the owner:
 
 * `kope.io` => `383156758163`
 * `redhat.com` => `309956199498`
+* `coreos.com` => `595879546273`
+* `amazon.com` => `137112412989`
 
 ## Debian
 
@@ -67,7 +69,7 @@ and then using e.g. `aws ec2 describe-images --image-id ami-493f2f29`
 
 ## CentOS
 
-CentOS7 support is still experimental, but should work.  Please report any issues.
+CentOS7 support is still experimental, but should work. Please report any issues.
 
 The following steps are known:
 
@@ -83,12 +85,12 @@ Be aware of the following limitations:
 
 ## RHEL7
 
-RHEL7 support is still experimental, but should work.  Please report any issues.
+RHEL7 support is still experimental, but should work. Please report any issues.
 
 The following steps are known:
 
 * Redhat AMIs can be found using `aws ec2 describe-images --region=us-east-1 --owner=309956199498 --filters Name=virtualization-type,Values=hvm`
-* You can specify the name using the 'redhat.com` owner alias, for example `redhat.com/RHEL-7.2_HVM-20161025-x86_64-1-Hourly2-GP2`
+* You can specify the name using the `redhat.com` owner alias, for example `redhat.com/RHEL-7.2_HVM-20161025-x86_64-1-Hourly2-GP2`
 
 Be aware of the following limitations:
 
@@ -120,3 +122,23 @@ curl -s https://coreos.com/dist/aws/aws-stable.json | jq -r '.["us-east-1"].hvm'
 As part of our documentation, you will find a practical exercise using CoreOS with KOPS. See the file ["coreos-kops-tests-multimaster.md"](https://github.com/kubernetes/kops/blob/master/docs/examples/coreos-kops-tests-multimaster.md) in the "examples" directory. This exercise covers not only using kops with CoreOS, but also a practical view of KOPS with a multi-master kubernetes setup.
 
 > Note: SSH username for CoreOS based instances will be `core`
+
+## Amazon Linux 2
+
+Amazon Linux 2 support is still experimental, but should work. Please report any issues.
+
+The following steps are known:
+
+* The latest Amazon Linux 2 AMI can be found using:
+```bash
+aws ec2 describe-images --region=us-east-1 --owner=137112412989 \
+    --filters "Name=name,Values=amzn2-ami-hvm-2*-gp2" \
+    --query 'sort_by(Images,&CreationDate)[-1].{name:Name}'
+```
+* You can specify the name using the `amazon.com` owner alias, for example `amazon.com/amzn2-ami-hvm-2.0.20180622.1-x86_64-gp2`
+
+Be aware of the following limitations:
+
+* [Amazon Linux 2 LTS](https://aws.amazon.com/amazon-linux-2/release-notes/) is the recommended minimum version, a previous version called just "Amazon Linux AMI" is not supported.
+
+> Note: SSH username for Amazon Linux 2 based instances will be `ec2-user`

@@ -55,6 +55,9 @@ type DNSController struct {
 
 	// changeCount is a change-counter, which helps us avoid computation when nothing has changed
 	changeCount uint64
+
+	// update loop frequency (seconds)
+	updateInterval time.Duration
 }
 
 // DNSController is a Context
@@ -81,16 +84,17 @@ type DNSControllerScope struct {
 var _ Scope = &DNSControllerScope{}
 
 // NewDnsController creates a DnsController
-func NewDNSController(dnsProviders []dnsprovider.Interface, zoneRules *ZoneRules) (*DNSController, error) {
+func NewDNSController(dnsProviders []dnsprovider.Interface, zoneRules *ZoneRules, updateInterval int) (*DNSController, error) {
 	dnsCache, err := newDNSCache(dnsProviders)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing DNS cache: %v", err)
 	}
 
 	c := &DNSController{
-		scopes:    make(map[string]*DNSControllerScope),
-		zoneRules: zoneRules,
-		dnsCache:  dnsCache,
+		scopes:         make(map[string]*DNSControllerScope),
+		zoneRules:      zoneRules,
+		dnsCache:       dnsCache,
+		updateInterval: time.Duration(updateInterval) * time.Second,
 	}
 
 	return c, nil
@@ -117,10 +121,10 @@ func (c *DNSController) runWatcher(stopCh <-chan struct{}) {
 
 		if err != nil {
 			glog.Warningf("Unexpected error in DNS controller, will retry: %v", err)
-			time.Sleep(10 * time.Second)
+			time.Sleep(2 * c.updateInterval)
 		} else {
 			// Simple debouncing; DNS servers are typically pretty slow anyway
-			time.Sleep(5 * time.Second)
+			time.Sleep(c.updateInterval)
 		}
 	}
 }
@@ -600,7 +604,7 @@ func (s *DNSControllerScope) Replace(recordName string, records []Record) {
 		delete(s.Records, recordName)
 	} else {
 		if recordsSliceEquals(existing, records) {
-			glog.V(6).Infof("skipping spurious update of record %s/%s=%s", s.ScopeName, recordName, records)
+			glog.V(6).Infof("skipping spurious update of record %s/%s=%+v", s.ScopeName, recordName, records)
 			return
 		}
 

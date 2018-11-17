@@ -186,15 +186,15 @@ func findNatGatewayById(cloud awsup.AWSCloud, id *string) (*ec2.NatGateway, erro
 	request.NatGatewayIds = []*string{id}
 	response, err := cloud.EC2().DescribeNatGateways(request)
 	if err != nil {
-		return nil, fmt.Errorf("error listing NatGateway %q: %v", id, err)
+		return nil, fmt.Errorf("error listing NatGateway %q: %v", aws.StringValue(id), err)
 	}
 
 	if response == nil || len(response.NatGateways) == 0 {
-		glog.V(2).Infof("Unable to find NatGateway %q", id)
+		glog.V(2).Infof("Unable to find NatGateway %q", aws.StringValue(id))
 		return nil, nil
 	}
 	if len(response.NatGateways) != 1 {
-		return nil, fmt.Errorf("found multiple NatGateways with id %q", id)
+		return nil, fmt.Errorf("found multiple NatGateways with id %q", aws.StringValue(id))
 	}
 	return response.NatGateways[0], nil
 }
@@ -280,7 +280,7 @@ func (e *NatGateway) waitAvailable(cloud awsup.AWSCloud) error {
 
 	id := aws.StringValue(e.ID)
 	if id == "" {
-		return fmt.Errorf("NAT Gateway %q did not have ID", e.Name)
+		return fmt.Errorf("NAT Gateway %q did not have ID", aws.StringValue(e.Name))
 	}
 
 	glog.Infof("Waiting for NAT Gateway %q to be available (this often takes about 5 minutes)", id)

@@ -86,11 +86,10 @@ iptables -A FORWARD -w -p UDP -j ACCEPT
 iptables -A FORWARD -w -p ICMP -j ACCEPT
 fi
 `
-	t := &nodetasks.File{
+	return &nodetasks.File{
 		Path:     "/home/kubernetes/bin/iptables-setup",
 		Contents: fi.NewStringResource(script),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0755"),
 	}
-	return t
 }

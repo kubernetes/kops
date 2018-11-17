@@ -6,7 +6,7 @@ go_library(
         "doc.go",
         "helpers.go",
     ],
-    importmap = "vendor/k8s.io/apiserver/pkg/server/resourceconfig",
+    importmap = "k8s.io/kops/vendor/k8s.io/apiserver/pkg/server/resourceconfig",
     importpath = "k8s.io/apiserver/pkg/server/resourceconfig",
     visibility = ["//visibility:public"],
     deps = [

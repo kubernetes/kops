@@ -83,7 +83,7 @@ cloudLabels <br /> *object*    | CloudLabels indicates the labels for instances 
 detailedInstanceMonitoring <br /> *boolean*    | DetailedInstanceMonitoring defines if detailed-monitoring is enabled (AWS only)
 fileAssets <br /> *[FileAssetSpec](#fileassetspec-v1alpha2-kops) array*    | FileAssets is a collection of file assets for this instance group
 hooks <br /> *[HookSpec](#hookspec-v1alpha2-kops) array*    | Hooks is a list of hooks for this instanceGroup, note: these can override the cluster wide ones if required
-image <br /> *string*    | Image is the instance instance (ami etc) we should use
+image <br /> *string*    | Image is the instance (ami etc) we should use
 kubelet <br /> *[KubeletConfigSpec](#kubeletconfigspec-v1alpha2-kops)*    | Kubelet overrides kubelet config from the ClusterSpec
 machineType <br /> *string*    | MachineType is the instance class
 maxPrice <br /> *string*    | MaxPrice indicates this is a spot-pricing group, with the specified value as our max-price bid

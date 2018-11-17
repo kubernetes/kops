@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.6
+FROM debian:jessie
+# ^ Cannot be Alpine since it does not support systemctl
+# ^ Systemctl is used to restart kubelet upon successful run of run.sh
 
-RUN apk --no-cache add ca-certificates wget && update-ca-certificates
+RUN apt-get update && apt-get -yq install curl jq
+
 ADD run.sh /run.sh
 
-CMD /run.sh
+CMD [ "/bin/bash", "/run.sh" ]

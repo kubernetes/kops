@@ -37,6 +37,9 @@ type Config struct {
 	ProtokubeImage *Image `json:"protokubeImage,omitempty"`
 	// Channels is a list of channels that we should apply
 	Channels []string `json:"channels,omitempty"`
+
+	// Manifests for running etcd
+	EtcdManifests []string `json:"etcdManifests,omitempty"`
 }
 
 // Image is a docker image we should pre-load

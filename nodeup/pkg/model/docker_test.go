@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -38,6 +39,7 @@ func TestDockerBuilder_LogFlags(t *testing.T) {
 }
 
 func TestDockerBuilder_BuildFlags(t *testing.T) {
+	logDriver := "json-file"
 	grid := []struct {
 		config   kops.DockerConfig
 		expected string
@@ -48,23 +50,36 @@ func TestDockerBuilder_BuildFlags(t *testing.T) {
 		},
 		{
 			kops.DockerConfig{
-				LogDriver: "json-file",
+				LogDriver: &logDriver,
 			},
 			"--log-driver=json-file",
 		},
 		{
 			kops.DockerConfig{
-				LogDriver: "json-file",
+				LogDriver: &logDriver,
 				LogOpt:    []string{"max-size=10m"},
 			},
 			"--log-driver=json-file --log-opt=max-size=10m",
 		},
 		{
 			kops.DockerConfig{
-				LogDriver: "json-file",
+				LogDriver: &logDriver,
 				LogOpt:    []string{"max-size=10m", "max-file=5"},
 			},
 			"--log-driver=json-file --log-opt=max-file=5 --log-opt=max-size=10m",
+		},
+		// nil bridge & empty bridge are the same
+		{
+			kops.DockerConfig{Bridge: nil},
+			"",
+		},
+		{
+			kops.DockerConfig{Bridge: fi.String("")},
+			"",
+		},
+		{
+			kops.DockerConfig{Bridge: fi.String("br0")},
+			"--bridge=br0",
 		},
 	}
 
@@ -83,7 +98,7 @@ func TestDockerBuilder_BuildFlags(t *testing.T) {
 func runDockerBuilderTest(t *testing.T, key string) {
 	basedir := path.Join("tests/dockerbuilder/", key)
 
-	nodeUpModelContext, err := LoadModel(basedir)
+	nodeUpModelContext, err := BuildNodeupModelContext(basedir)
 	if err != nil {
 		t.Fatalf("error parsing cluster yaml %q: %v", basedir, err)
 		return
@@ -101,5 +116,5 @@ func runDockerBuilderTest(t *testing.T, key string) {
 		return
 	}
 
-	ValidateTasks(t, basedir, context)
+	testutils.ValidateTasks(t, basedir, context)
 }

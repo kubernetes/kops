@@ -22,7 +22,8 @@ import (
 	"reflect"
 
 	"github.com/golang/glog"
-	"k8s.io/kops/upup/pkg/fi/utils"
+
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 type HasDependencies interface {
@@ -76,8 +77,8 @@ func reflectForDependencies(tasks map[string]Task, task Task) []Task {
 func getDependencies(tasks map[string]Task, v reflect.Value) []Task {
 	var dependencies []Task
 
-	err := utils.ReflectRecursive(v, func(path string, f *reflect.StructField, v reflect.Value) error {
-		if utils.IsPrimitiveValue(v) {
+	err := reflectutils.ReflectRecursive(v, func(path string, f *reflect.StructField, v reflect.Value) error {
+		if reflectutils.IsPrimitiveValue(v) {
 			return nil
 		}
 
@@ -111,7 +112,7 @@ func getDependencies(tasks map[string]Task, v reflect.Value) []Task {
 			} else {
 				return fmt.Errorf("Unhandled type for %q: %T", path, v.Interface())
 			}
-			return utils.SkipReflection
+			return reflectutils.SkipReflection
 
 		default:
 			glog.Infof("Unhandled kind for %q: %T", path, v.Interface())

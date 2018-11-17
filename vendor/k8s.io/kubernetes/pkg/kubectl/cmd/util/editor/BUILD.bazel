@@ -6,7 +6,7 @@ go_library(
         "editoptions.go",
         "editor.go",
     ],
-    importmap = "vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util/editor",
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util/editor",
     importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/util/editor",
     visibility = ["//visibility:public"],
     deps = [
@@ -26,10 +26,11 @@ go_library(
         "//vendor/k8s.io/kubernetes/pkg/apis/core:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/kubectl:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/kubectl/resource:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util/editor/crlf:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/genericclioptions:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/genericclioptions/printers:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/genericclioptions/resource:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/kubectl/scheme:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/crlf:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/kubectl/util/term:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/printers:go_default_library",
     ],
 )

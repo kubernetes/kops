@@ -573,9 +573,13 @@ func (c *VFSCAStore) ListKeysets() ([]*kops.Keyset, error) {
 				keysets[name] = keyset
 			}
 
-			keyset.Spec.Keys = append(keyset.Spec.Keys, kops.KeysetItem{
-				Id: strings.TrimSuffix(tokens[1], ".crt"),
-			})
+			if tokens[1] == "keyset.yaml" {
+				// TODO: Should we load the keyset to get the actual ids?
+			} else {
+				keyset.Spec.Keys = append(keyset.Spec.Keys, kops.KeysetItem{
+					Id: strings.TrimSuffix(tokens[1], ".crt"),
+				})
+			}
 		}
 	}
 
@@ -627,6 +631,7 @@ func (c *VFSCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
 // MirrorTo will copy keys to a vfs.Path, which is often easier for a machine to read
 func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 	if basedir.Path() == c.basedir.Path() {
+		glog.V(2).Infof("Skipping key store mirror from %q to %q (same paths)", c.basedir, basedir)
 		return nil
 	}
 	glog.V(2).Infof("Mirroring key store from %q to %q", c.basedir, basedir)

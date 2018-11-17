@@ -62,7 +62,7 @@ func (c *FakeClusters) List(opts v1.ListOptions) (result *kops.ClusterList, err 
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &kops.ClusterList{}
+	list := &kops.ClusterList{ListMeta: obj.(*kops.ClusterList).ListMeta}
 	for _, item := range obj.(*kops.ClusterList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)

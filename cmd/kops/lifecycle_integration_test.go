@@ -75,7 +75,7 @@ func TestLifecyclePrivateKopeio(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:      t,
 		SrcDir: "privatekopeio",
-		Shared: []string{"nat-12345678"},
+		Shared: []string{"nat-a2345678", "nat-b2345678"},
 	})
 }
 
@@ -107,6 +107,8 @@ func TestLifecyclePrivateSharedSubnet(t *testing.T) {
 
 func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptions, cloud *awsup.MockAWSCloud) {
 	t := o.t
+
+	t.Logf("running lifecycle test for cluster %s", o.ClusterName)
 
 	var stdout bytes.Buffer
 
@@ -144,7 +146,7 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 	{
 		options := &UpdateClusterOptions{}
 		options.InitDefaults()
-		options.MaxTaskDuration = 10 * time.Second
+		options.RunTasksOptions.MaxTaskDuration = 10 * time.Second
 		options.Yes = true
 
 		// We don't test it here, and it adds a dependency on kubectl
@@ -160,7 +162,7 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 		options := &UpdateClusterOptions{}
 		options.InitDefaults()
 		options.Target = cloudup.TargetDryRun
-		options.MaxTaskDuration = 10 * time.Second
+		options.RunTasksOptions.MaxTaskDuration = 10 * time.Second
 
 		// We don't test it here, and it adds a dependency on kubectl
 		options.CreateKubecfg = false
@@ -216,6 +218,9 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 				}
 				if ownership != expect {
 					t.Errorf("unexpected kubernetes.io/cluster/ tag on %q: actual=%q expected=%q", id, ownership, expect)
+				}
+				if legacy != "" {
+					t.Errorf("added (legacy) KubernetesCluster tag on %q, but it is shared", id)
 				}
 			} else {
 				switch resource {

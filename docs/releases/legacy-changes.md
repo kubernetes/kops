@@ -13,7 +13,7 @@ Reworked SSH keys and support for running CI builds
 
 * Builds that are not published as Docker images can be run.  `kops` will pass a list of images in the NodeUp
   configuration, and NodeUp will download and `docker load` these images.  For examples, see the
-  [testing tips](docs/testing.md)
+  [testing tips](../development/testing.md)
 
 ## Jul 21 2016
 

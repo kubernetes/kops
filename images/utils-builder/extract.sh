@@ -19,6 +19,7 @@ rm -rf /utils
 
 mkdir -p /utils
 cp /socat/socat-*/debian/socat/usr/bin/socat /utils/socat
+cp /conntrack/conntrack-*/debian/conntrack/usr/sbin/conntrack /utils/conntrack
 #(sha1sum /utils/socat | cut -d' ' -f1) > /utils/socat.sha1
 
 tar cvfz /utils.tar.gz /utils

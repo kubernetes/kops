@@ -33,7 +33,7 @@ func DescribeRouteTables(cloud fi.Cloud, clusterName string) (map[string]*ec2.Ro
 	c := cloud.(awsup.AWSCloud)
 
 	routeTables := make(map[string]*ec2.RouteTable)
-	glog.V(2).Infof("Listing EC2 RouteTables")
+	glog.V(2).Info("Listing EC2 RouteTables")
 	for _, filters := range buildEC2FiltersForCluster(clusterName) {
 		request := &ec2.DescribeRouteTablesInput{
 			Filters: filters,

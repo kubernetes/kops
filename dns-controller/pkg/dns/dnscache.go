@@ -68,9 +68,8 @@ func (d *dnsCache) ListZones(validity time.Duration) ([]dnsprovider.Zone, error)
 	if d.cachedZones != nil {
 		if (d.cachedZonesTimestamp + validity.Nanoseconds()) > now {
 			return d.cachedZones, nil
-		} else {
-			glog.V(2).Infof("querying all DNS zones (cache expired)")
 		}
+		glog.V(2).Infof("querying all DNS zones (cache expired)")
 	} else {
 		glog.V(2).Infof("querying all DNS zones (no cached results)")
 	}

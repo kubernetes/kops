@@ -57,12 +57,10 @@ func (m *MockEC2) SubnetIds() []string {
 
 func (m *MockEC2) CreateSubnetRequest(*ec2.CreateSubnetInput) (*request.Request, *ec2.CreateSubnetOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockEC2) CreateSubnetWithContext(aws.Context, *ec2.CreateSubnetInput, ...request.Option) (*ec2.CreateSubnetOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockEC2) CreateSubnetWithId(request *ec2.CreateSubnetInput, id string) (*ec2.CreateSubnetOutput, error) {
@@ -98,12 +96,10 @@ func (m *MockEC2) CreateSubnet(request *ec2.CreateSubnetInput) (*ec2.CreateSubne
 
 func (m *MockEC2) DescribeSubnetsRequest(*ec2.DescribeSubnetsInput) (*request.Request, *ec2.DescribeSubnetsOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockEC2) DescribeSubnetsWithContext(aws.Context, *ec2.DescribeSubnetsInput, ...request.Option) (*ec2.DescribeSubnetsOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockEC2) DescribeSubnets(request *ec2.DescribeSubnetsInput) (*ec2.DescribeSubnetsOutput, error) {
@@ -209,11 +205,9 @@ func (m *MockEC2) AssociateRouteTable(request *ec2.AssociateRouteTableInput) (*e
 }
 func (m *MockEC2) AssociateRouteTableWithContext(aws.Context, *ec2.AssociateRouteTableInput, ...request.Option) (*ec2.AssociateRouteTableOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockEC2) AssociateRouteTableRequest(*ec2.AssociateRouteTableInput) (*request.Request, *ec2.AssociateRouteTableOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
 
 func (m *MockEC2) DeleteSubnet(request *ec2.DeleteSubnetInput) (*ec2.DeleteSubnetOutput, error) {
@@ -234,9 +228,7 @@ func (m *MockEC2) DeleteSubnet(request *ec2.DeleteSubnetInput) (*ec2.DeleteSubne
 
 func (m *MockEC2) DeleteSubnetWithContext(aws.Context, *ec2.DeleteSubnetInput, ...request.Option) (*ec2.DeleteSubnetOutput, error) {
 	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockEC2) DeleteSubnetRequest(*ec2.DeleteSubnetInput) (*request.Request, *ec2.DeleteSubnetOutput) {
 	panic("Not implemented")
-	return nil, nil
 }
