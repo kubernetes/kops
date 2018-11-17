@@ -4,8 +4,6 @@ metadata:
   creationTimestamp: 2017-01-01T00:00:00Z
   name: ha-gce.example.com
 spec:
-  kubelet:
-    anonymousAuth: true
   api:
     dns: {}
   authorization:
@@ -33,6 +31,8 @@ spec:
   iam:
     allowContainerRegistry: true
     legacy: false
+  kubelet:
+    anonymousAuth: true
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: v1.8.0-beta.1
