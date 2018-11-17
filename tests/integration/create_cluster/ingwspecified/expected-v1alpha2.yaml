@@ -24,6 +24,8 @@ spec:
   iam:
     allowContainerRegistry: true
     legacy: false
+  kubelet:
+    anonymousAuth: true
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: v1.4.8
