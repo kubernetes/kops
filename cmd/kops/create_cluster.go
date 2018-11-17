@@ -1059,7 +1059,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.MasterPublicName = c.MasterPublicName
 	}
 
-	// Default to kubelet auth being turned off
+	// Default to kubelet anon authentication being turned off
 	if cluster.Spec.Kubelet == nil {
 		cluster.Spec.Kubelet = &api.KubeletConfigSpec{}
 	}
