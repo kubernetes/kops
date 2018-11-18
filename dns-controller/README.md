@@ -7,7 +7,7 @@ we have an `etcd` cluster and an `apiserver`.  It also sets up DNS
 records for the `etcd` nodes (this is a much simpler problem, because 
 we have a 1:1 mapping from an `etcd` node to a DNS name.)
 
-However, none of the nodes can reach the api server to register.  Nor 
+However, none of the nodes can reach the API server to register.  Nor 
 can end-users reach the API.  In future we might expose the API server 
 as a normal service via `Type=LoadBalancer` or via a normal Ingress, 
 but for now we just expose it via DNS.
