@@ -14,7 +14,7 @@ Build the kops API server container, and push the image up to your registry.
 kops-server-push
 ```
 
-# Deploy the kops API server to a cluster
+# Deploying the kops API server to a cluster
 
 From the kops directory run the following `helm` command. More information on `helm` can be found [here](https://github.com/kubernetes/helm)
 
