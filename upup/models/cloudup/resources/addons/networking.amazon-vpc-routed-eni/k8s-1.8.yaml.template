@@ -133,7 +133,7 @@ spec:
   names:
     scope: Cluster
     plural: eniconfigs
-    singuar: eniconfig
+    singular: eniconfig
     kind: ENIConfig
 
 ---
