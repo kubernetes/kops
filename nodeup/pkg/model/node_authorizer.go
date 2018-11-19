@@ -80,12 +80,6 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 		man.Set("Unit", "After", "docker.service")
 		man.Set("Unit", "Before", "kubelet.service")
 
-		// @step: ensure we start after the volumes have been mounted
-		if b.UseVolumeMounts() {
-			man.Set("Unit", "Requires", b.VolumesServiceName())
-			man.Set("Unit", "After", b.VolumesServiceName())
-		}
-
 		clientCert := filepath.Join(b.PathSrvKubernetes(), authorizerDir, "tls.pem")
 		man.Set("Service", "Type", "oneshot")
 		man.Set("Service", "RemainAfterExit", "yes")
