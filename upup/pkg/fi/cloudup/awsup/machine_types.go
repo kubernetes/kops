@@ -271,7 +271,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		MemoryGB:       144,
 		ECU:            281,
 		Cores:          72,
-		EphemeralDisks: []int{1800},
+		EphemeralDisks: []int{900, 900},
 	},
 
 	// cc2 family
@@ -393,6 +393,16 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		MemoryGB:       488,
 		ECU:            188,
 		Cores:          64,
+		EphemeralDisks: nil,
+		GPU:            true,
+	},
+
+	// g3s family
+	{
+		Name:           "g3s.xlarge",
+		MemoryGB:       30.5,
+		ECU:            13,
+		Cores:          4,
 		EphemeralDisks: nil,
 		GPU:            true,
 	},
@@ -718,6 +728,55 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: nil,
 	},
 
+	// m5a family
+	{
+		Name:           "m5a.large",
+		MemoryGB:       8,
+		ECU:            0,
+		Cores:          2,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "m5a.xlarge",
+		MemoryGB:       16,
+		ECU:            0,
+		Cores:          4,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "m5a.2xlarge",
+		MemoryGB:       32,
+		ECU:            0,
+		Cores:          8,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "m5a.4xlarge",
+		MemoryGB:       64,
+		ECU:            0,
+		Cores:          16,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "m5a.12xlarge",
+		MemoryGB:       192,
+		ECU:            0,
+		Cores:          48,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "m5a.24xlarge",
+		MemoryGB:       384,
+		ECU:            0,
+		Cores:          96,
+		EphemeralDisks: nil,
+	},
+
 	// m5d family
 	{
 		Name:           "m5d.large",
@@ -958,6 +1017,55 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Name:           "r5.24xlarge",
 		MemoryGB:       768,
 		ECU:            347,
+		Cores:          96,
+		EphemeralDisks: nil,
+	},
+
+	// r5a family
+	{
+		Name:           "r5a.large",
+		MemoryGB:       16,
+		ECU:            0,
+		Cores:          2,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "r5a.xlarge",
+		MemoryGB:       32,
+		ECU:            0,
+		Cores:          4,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "r5a.2xlarge",
+		MemoryGB:       64,
+		ECU:            0,
+		Cores:          8,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "r5a.4xlarge",
+		MemoryGB:       128,
+		ECU:            0,
+		Cores:          16,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "r5a.12xlarge",
+		MemoryGB:       384,
+		ECU:            0,
+		Cores:          48,
+		EphemeralDisks: nil,
+	},
+
+	{
+		Name:           "r5a.24xlarge",
+		MemoryGB:       768,
+		ECU:            0,
 		Cores:          96,
 		EphemeralDisks: nil,
 	},

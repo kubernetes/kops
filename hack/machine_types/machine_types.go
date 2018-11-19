@@ -189,6 +189,8 @@ func run() error {
 				if attributes["ecu"] == "Variable" {
 					machine.Burstable = true
 					machine.ECU = t2CreditsPerHour[machine.Name] // This is actually credits * ECUs, but we'll add that later
+				} else if attributes["ecu"] == "NA" {
+					machine.ECU = 0
 				} else {
 					machine.ECU = stringToFloat32(attributes["ecu"])
 				}
@@ -230,7 +232,14 @@ func run() error {
 
 	for _, f := range sortedFamilies {
 		output = output + fmt.Sprintf("\n// %s family", f)
+		previousMachine := ""
 		for _, m := range machines {
+			// Ignore duplicates
+			if m.Name == previousMachine {
+				continue
+			}
+			previousMachine = m.Name
+
 			if family := strings.Split(m.Name, ".")[0]; family == f {
 				var ecu string
 				if m.Burstable {
