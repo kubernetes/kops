@@ -18,6 +18,7 @@ package etcdmanager
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"k8s.io/kops/pkg/assets"
@@ -37,6 +38,7 @@ func Test_RunEtcdManagerBuilder(t *testing.T) {
 		t.Fatalf("error loading model %q: %v", basedir, err)
 		return
 	}
+	os.Setenv("AWS_REGION", "cn-north-1")
 
 	builder := EtcdManagerBuilder{
 		KopsModelContext: kopsModelContext,

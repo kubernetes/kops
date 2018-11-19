@@ -89,6 +89,9 @@ Contents:
           --v=6 --volume-name-tag=k8s.io/etcd/events --volume-provider=aws --volume-tag=k8s.io/etcd/events
           --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
           > /tmp/pipe 2>&1
+        env:
+        - name: AWS_REGION
+          value: cn-north-1
         image: kopeio/etcd-manager:3.0.20190328
         name: etcd-manager
         resources:
@@ -159,6 +162,9 @@ Contents:
           --v=6 --volume-name-tag=k8s.io/etcd/main --volume-provider=aws --volume-tag=k8s.io/etcd/main
           --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
           > /tmp/pipe 2>&1
+        env:
+        - name: AWS_REGION
+          value: cn-north-1
         image: kopeio/etcd-manager:3.0.20190328
         name: etcd-manager
         resources:

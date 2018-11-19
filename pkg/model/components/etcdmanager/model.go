@@ -368,6 +368,9 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 				awsup.TagNameRolePrefix + "master=1",
 			}
 			config.VolumeNameTag = awsup.TagNameEtcdClusterPrefix + etcdCluster.Name
+			container.Env = []v1.EnvVar{
+				{Name: "AWS_REGION", Value: os.Getenv("AWS_REGION")},
+			}
 
 		case kops.CloudProviderGCE:
 			config.VolumeProvider = "gce"
