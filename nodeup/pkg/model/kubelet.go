@@ -88,7 +88,15 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 			Mode:     s("0755"),
 		})
 	}
-
+	{
+		if kubeletConfig.PodManifestPath != "" {
+			t, err := b.buildManifestDirectory(kubeletConfig)
+			if err != nil {
+				return err
+			}
+			c.AddTask(t)
+		}
+	}
 	{
 		// @check if bootstrap tokens are enabled and create the appropreiate certificates
 		if b.UseBootstrapTokens() {
@@ -147,6 +155,16 @@ func (b *KubeletBuilder) kubeletPath() string {
 		kubeletCommand = "/home/kubernetes/bin/kubelet"
 	}
 	return kubeletCommand
+}
+
+// buildManifestDirectory creates the directory where kubelet expects static manifests to reside
+func (b *KubeletBuilder) buildManifestDirectory(kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
+	directory := &nodetasks.File{
+		Path: kubeletConfig.PodManifestPath,
+		Type: nodetasks.FileType_Directory,
+		Mode: s("0755"),
+	}
+	return directory, nil
 }
 
 // buildSystemdEnvironmentFile renders the environment file for the kubelet
