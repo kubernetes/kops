@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/util/mount"
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
@@ -101,6 +102,43 @@ func (c *NodeupModelContext) EnsureSystemdSuffix(name string) string {
 	}
 
 	return name
+}
+
+// EnsureDirectory ensures the directory exists or creates it
+func (c *NodeupModelContext) EnsureDirectory(path string) error {
+	st, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return os.MkdirAll(path, 0755)
+		}
+
+		return err
+	}
+
+	if !st.IsDir() {
+		return fmt.Errorf("path: %s already exists but is not a directory", path)
+	}
+
+	return nil
+}
+
+// IsMounted checks if the device is mount
+func (c *NodeupModelContext) IsMounted(m mount.Interface, device, path string) (bool, error) {
+	list, err := m.List()
+	if err != nil {
+		return false, err
+	}
+
+	for _, x := range list {
+		if x.Device == device {
+			glog.V(3).Infof("Found mountpoint device: %s, path: %s, type: %s", x.Device, x.Path, x.Type)
+			if strings.TrimSuffix(x.Path, "/") == strings.TrimSuffix(path, "/") {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
 
 // PathSrvKubernetes returns the path for the kubernetes service files

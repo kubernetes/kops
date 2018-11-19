@@ -123,11 +123,6 @@ func (h *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*no
 			unit.Set("Unit", "Before", x)
 		}
 
-		if h.UseVolumeMounts() {
-			unit.Set("Unit", "Requires", h.VolumesServiceName())
-			unit.Set("Unit", "After", h.VolumesServiceName())
-		}
-
 		// are we a raw unit file or a docker exec?
 		switch hook.ExecContainer {
 		case nil:
@@ -168,11 +163,6 @@ func (h *HookBuilder) buildDockerService(unit *systemd.Manifest, hook *kops.Hook
 	dockerPullCommand := systemd.EscapeCommand([]string{"/usr/bin/docker", "pull", hook.ExecContainer.Image})
 
 	unit.Set("Unit", "Requires", "docker.service")
-	if h.UseVolumeMounts() {
-		unit.Set("Unit", "Requires", h.VolumesServiceName())
-		unit.Set("Unit", "After", h.VolumesServiceName())
-	}
-
 	unit.Set("Service", "ExecStartPre", dockerPullCommand)
 	unit.Set("Service", "ExecStart", dockerRunCommand)
 	unit.Set("Service", "Type", "oneshot")

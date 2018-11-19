@@ -803,10 +803,8 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool) er
 				return errs[0]
 			}
 		default:
-			for _, x := range groups {
-				if len(x.Spec.Volumes) > 0 {
-					return errors.New("instancegroup volumes are only available with aws at present")
-				}
+			if len(g.Spec.Volumes) > 0 {
+				return errors.New("instancegroup volumes are only available with aws at present")
 			}
 		}
 	}

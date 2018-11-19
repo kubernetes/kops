@@ -250,11 +250,6 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kubernetes")
 	manifest.Set("Unit", "After", "docker.service")
 
-	if b.UseVolumeMounts() {
-		manifest.Set("Unit", "Requires", b.VolumesServiceName())
-		manifest.Set("Unit", "After", b.VolumesServiceName())
-	}
-
 	if b.Distribution == distros.DistributionCoreOS {
 		// We add /opt/kubernetes/bin for our utilities (socat, conntrack)
 		manifest.Set("Service", "Environment", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kubernetes/bin")
@@ -586,7 +581,7 @@ func (b *KubeletBuilder) buildMasterKubeletKubeconfig() (*nodetasks.File, error)
 
 	template := &x509.Certificate{
 		BasicConstraintsValid: true,
-		IsCA:                  false,
+		IsCA: false,
 	}
 
 	template.Subject = pkix.Name{

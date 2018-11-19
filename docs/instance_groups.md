@@ -14,10 +14,10 @@ By default, a cluster has:
 
 ## Instance Groups Disclaimer
 
-* When there is only one availability zone in a region (eu-central-1) and you would like to run multiple masters, 
-  you have to define multiple instance groups for each of those masters. (e.g. `master-eu-central-1-a` and 
+* When there is only one availability zone in a region (eu-central-1) and you would like to run multiple masters,
+  you have to define multiple instance groups for each of those masters. (e.g. `master-eu-central-1-a` and
   `master-eu-central-1-b` and so on...)
-* If instance groups are not defined correctly (particularly when there are an even number of master or multiple 
+* If instance groups are not defined correctly (particularly when there are an even number of master or multiple
   groups of masters into one availability zone in a single region), etcd servers will not start and master nodes will not check in. This is because etcd servers are configured per availability zone. DNS and Route53 would be the first places to check when these problems are happening.
 
 
@@ -111,6 +111,101 @@ spec:
   rootVolumeType: io1
   rootVolumeIops: 200
 ```
+
+## Adding additional storage to the instance groups
+
+You can add additional storage _(note, presently confined to AWS)_ via the instancegroup specification.
+
+```YAML
+---
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: my-beloved-cluster
+  name: compute
+spec:
+  cloudLabels:
+    role: compute
+  image: coreos.com/CoreOS-stable-1855.4.0-hvm
+  machineType: m4.large
+  ...
+  volumes:
+  - device: /dev/xvdd
+    encrypted: true
+    size: 20
+    type: gp2
+```
+
+In AWS the above to add an additional 20gb EBS volume to the launchconfiguration and this each node within the instancegroup.
+
+## Automatically formatting and mounting the additional storage
+
+You can add additional storage via the above `volumes` collection though this only provisions the storage itself. Assuming you don't wish to handle the mechanics of formatting and mounting the device yourself _(perhaps via a hook)_ you can utilize the `volumeMounts` section of the instancegroup to handle this for you.
+
+```
+---
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: my-beloved-cluster
+  name: compute
+spec:
+  cloudLabels:
+    role: compute
+  image: coreos.com/CoreOS-stable-1855.4.0-hvm
+  machineType: m4.large
+  ...
+  volumeMounts:
+  - device: /dev/xvdd
+    filesystem: ext4
+    path: /var/lib/docker
+  volumes:
+  - device: /dev/xvdd
+    encrypted: true
+    size: 20
+    type: gp2
+```
+
+The above will provision the additional storage, format and mount the device into the node. Note this feature is purposely distinct from `volumes` so that it may be reused in areas such as ephemeral storage. Using a `c5d.large` instance as an example, which comes with a 50gb SSD drive; we can use the `volumeMounts` to mount this into `/var/lib/docker` for us.
+
+```YAML
+---
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: my-beloved-cluster
+  name: compute
+spec:
+  cloudLabels:
+    role: compute
+  image: coreos.com/CoreOS-stable-1855.4.0-hvm
+  machineType: c5d.large
+  ...
+  volumeMounts:
+  - device: /dev/xvdd
+    filesystem: ext4
+    path: /data
+  # -- mount the instance storage --
+  - device: /dev/nvme2n1
+    filesystem: ext4
+    path: /var/lib/docker
+  volumes:
+  - device: /dev/nvme1n1
+    encrypted: true
+    size: 20
+    type: gp2
+```
+
+```shell
+$ df -h | grep nvme[12]
+/dev/nvme1n1      20G   45M   20G   1% /data
+/dev/nvme2n1      46G  633M   45G   2% /var/lib/docker
+```
+
+> Note: at present its up to the user ensure the correct device names.
 
 ## Creating a new instance group
 

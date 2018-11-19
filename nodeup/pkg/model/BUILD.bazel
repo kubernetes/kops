@@ -66,6 +66,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/authentication/user:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
     ],
 )
 
