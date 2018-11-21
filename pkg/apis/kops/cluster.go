@@ -538,6 +538,8 @@ func (c *Cluster) FillDefaults() error {
 			c.Spec.Networking.Cilium.Version = CiliumDefaultVersion
 		}
 		// OK
+	} else if c.Spec.Networking.LyftVPC != nil {
+		// OK
 	} else {
 		// No networking model selected; choose Kubenet
 		c.Spec.Networking.Kubenet = &KubenetNetworkingSpec{}
