@@ -96,6 +96,16 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTags sets.String) (sets.String, error) {
 	tags := sets.NewString()
 
+	networking := cluster.Spec.Networking
+
+	if networking == nil {
+		return nil, fmt.Errorf("Networking is not set, and should not be nil here")
+	}
+
+	if networking.LyftVPC != nil {
+		tags.Insert("_lyft_vpc_cni")
+	}
+
 	switch fi.StringValue(cluster.Spec.UpdatePolicy) {
 	case "": // default
 		tags.Insert("_automatic_upgrades")

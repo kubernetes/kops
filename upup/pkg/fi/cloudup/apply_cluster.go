@@ -1092,6 +1092,17 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		c.Assets = append(c.Assets, cniAssetHashString+"@"+cniAsset.String())
 	}
 
+	if c.Cluster.Spec.Networking.LyftVPC != nil {
+		lyftVPCDownloadURL := os.Getenv("LYFT_VPC_DOWNLOAD_URL")
+		if lyftVPCDownloadURL == "" {
+			lyftVPCDownloadURL = "bfdc65028a3bf8ffe14388fca28ede3600e7e2dee4e781908b6a23f9e79f86ad@https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.4.2/cni-ipvlan-vpc-k8s-v0.4.2.tar.gz"
+		} else {
+			glog.Warningf("Using url from LYFT_VPC_DOWNLOAD_URL env var: %q", lyftVPCDownloadURL)
+		}
+
+		c.Assets = append(c.Assets, lyftVPCDownloadURL)
+	}
+
 	// TODO figure out if we can only do this for CoreOS only and GCE Container OS
 	// TODO It is very difficult to pre-determine what OS an ami is, and if that OS needs socat
 	// At this time we just copy the socat and conntrack binaries to all distros.
