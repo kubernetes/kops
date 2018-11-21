@@ -332,7 +332,7 @@ type LoadBalancerAccessSpec struct {
 
 // KubeDNSConfig defines the kube dns configuration
 type KubeDNSConfig struct {
-	// CacheMaxSize is the maximum entries to keep in dnsmaq
+	// CacheMaxSize is the maximum entries to keep in dnsmasq
 	CacheMaxSize int `json:"cacheMaxSize,omitempty"`
 	// CacheMaxConcurrent is the maximum number of concurrent queries for dnsmasq
 	CacheMaxConcurrent int `json:"cacheMaxConcurrent,omitempty"`
