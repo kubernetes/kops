@@ -43,6 +43,7 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 	} else if networking.External != nil {
 		// external is based on kubenet
 		assetNames = append(assetNames, "bridge", "host-local", "loopback")
+
 	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil || networking.Cilium != nil {
 		assetNames = append(assetNames, "bridge", "host-local", "loopback", "ptp")
 		// Do we need tuning?
@@ -57,6 +58,8 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 		// TODO combine with External
 		// Kopeio is based on kubenet / external
 		assetNames = append(assetNames, "bridge", "host-local", "loopback")
+	} else if networking.LyftVPC != nil {
+		assetNames = append(assetNames, "cni-ipvlan-vpc-k8s-ipam", "cni-ipvlan-vpc-k8s-ipvlan", "cni-ipvlan-vpc-k8s-tool", "cni-ipvlan-vpc-k8s-unnumbered-ptp", "loopback")
 	} else {
 		return fmt.Errorf("no networking mode set")
 	}

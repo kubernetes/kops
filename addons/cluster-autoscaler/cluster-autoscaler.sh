@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -e
+
 #Set all the variables in this section
 CLUSTER_NAME="myfirstcluster.k8s.local"
 CLOUD_PROVIDER=aws

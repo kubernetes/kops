@@ -211,7 +211,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	if kubeDNS.Provider == "CoreDNS" {
 		{
 			key := "coredns.addons.k8s.io"
-			version := "1.2.4-kops.1"
+			version := "1.2.6-kops.1"
 
 			{
 				location := key + "/k8s-1.6.yaml"
@@ -837,7 +837,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.AmazonVPC != nil {
 		key := "networking.amazon-vpc-routed-eni"
-		version := "1.0.0-kops.3"
+		version := "1.2.1-kops.1"
 
 		{
 			id := "k8s-1.7"
