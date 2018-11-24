@@ -324,7 +324,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 			}
 
 			if launchConfiguration == nil {
-				glog.Warningf("LaunchConfiguration %q not found; ignoring", name)
+				glog.Warningf("ignoring error launchConfiguration %q not found", name)
 				continue
 			}
 
