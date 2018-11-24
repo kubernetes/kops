@@ -23,6 +23,8 @@ import (
 	"path"
 	"strings"
 
+	"k8s.io/kops/pkg/k8sversion"
+
 	"github.com/blang/semver"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -278,6 +280,29 @@ func (c *ApplyClusterCmd) Run() error {
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
 
+	// TODO: consider moving this somewhere, it's duplicated on create
+	kv, err := k8sversion.Parse(cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return err
+	}
+
+	// check if we should recommend turning off anonymousAuth on k8s versions gte than 1.10
+	// we do 1.10 since this is a really critical issues and 1.10 has it
+	if cluster.Spec.Kubelet == nil {
+		cluster.Spec.Kubelet = &kops.KubeletConfigSpec{}
+	}
+
+	if kv.IsGTE("1.10") && cluster.Spec.Kubelet.AnonymousAuth == nil {
+		fmt.Println("")
+		fmt.Printf(starline)
+		fmt.Println("")
+		fmt.Println("Kubelet anonymousAuth is currently turned on. This allows RBAC escalation and remote code execution possibilites.")
+		fmt.Println("It is highly recommended you turn it off by setting 'spec.kubelet.anonymousAuth' to 'false' via 'kops edit cluster'")
+		fmt.Println("")
+		fmt.Printf(starline)
+		fmt.Println("")
+	}
+
 	if err := c.AddFileAssets(assetBuilder); err != nil {
 		return err
 	}
@@ -382,16 +407,16 @@ func (c *ApplyClusterCmd) Run() error {
 				"iamRolePolicy":          &awstasks.IAMRolePolicy{},
 
 				// VPC / Networking
-				"dhcpOptions":           &awstasks.DHCPOptions{},
-				"internetGateway":       &awstasks.InternetGateway{},
-				"route":                 &awstasks.Route{},
-				"routeTable":            &awstasks.RouteTable{},
-				"routeTableAssociation": &awstasks.RouteTableAssociation{},
-				"securityGroup":         &awstasks.SecurityGroup{},
-				"securityGroupRule":     &awstasks.SecurityGroupRule{},
-				"subnet":                &awstasks.Subnet{},
-				"vpc":                   &awstasks.VPC{},
-				"ngw":                   &awstasks.NatGateway{},
+				"dhcpOptions":                &awstasks.DHCPOptions{},
+				"internetGateway":            &awstasks.InternetGateway{},
+				"route":                      &awstasks.Route{},
+				"routeTable":                 &awstasks.RouteTable{},
+				"routeTableAssociation":      &awstasks.RouteTableAssociation{},
+				"securityGroup":              &awstasks.SecurityGroup{},
+				"securityGroupRule":          &awstasks.SecurityGroupRule{},
+				"subnet":                     &awstasks.Subnet{},
+				"vpc":                        &awstasks.VPC{},
+				"ngw":                        &awstasks.NatGateway{},
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
 
 				// ELB
