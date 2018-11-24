@@ -1065,7 +1065,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if cluster.Spec.Kubelet == nil {
 		cluster.Spec.Kubelet = &api.KubeletConfigSpec{}
 	}
-	cluster.Spec.Kubelet.AnonymousAuth = fi.Bool(true)
+	cluster.Spec.Kubelet.AnonymousAuth = fi.Bool(false)
 
 	// Populate the API access, so that it can be discoverable
 	// TODO: This is the same code as in defaults - try to dedup?
