@@ -51,7 +51,7 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *resources.Resource) error {
 			return nil
 		}
 		if len(response.SecurityGroups) != 1 {
-			return fmt.Errorf("found mutiple SecurityGroups with ID %q", id)
+			return fmt.Errorf("found multiple SecurityGroups with ID %q", id)
 		}
 		sg := response.SecurityGroups[0]
 
