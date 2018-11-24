@@ -44,6 +44,7 @@ import (
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/k8sversion"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -1061,11 +1062,20 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.MasterPublicName = c.MasterPublicName
 	}
 
-	// Default to kubelet anon authentication being turned off
+	kv, err := k8sversion.Parse(cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return err
+	}
+
+	// check if we should set anonymousAuth to false on k8s versions gte than 1.10
+	// we do 1.10 since this is a really critical issues and 1.10 has support
 	if cluster.Spec.Kubelet == nil {
 		cluster.Spec.Kubelet = &api.KubeletConfigSpec{}
 	}
-	cluster.Spec.Kubelet.AnonymousAuth = fi.Bool(false)
+
+	if kv.IsGTE("1.10") && cluster.Spec.Kubelet.AnonymousAuth == nil {
+		cluster.Spec.Kubelet.AnonymousAuth = fi.Bool(false)
+	}
 
 	// Populate the API access, so that it can be discoverable
 	// TODO: This is the same code as in defaults - try to dedup?
