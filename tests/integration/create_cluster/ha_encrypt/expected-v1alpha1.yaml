@@ -39,8 +39,8 @@ spec:
   iam:
     allowContainerRegistry: true
     legacy: false
-  kubelet:
-    kubernetesVersion: v1.6.0-alpha.3
+  kubelet: {}
+  kubernetesVersion: v1.6.0-alpha.3
   masterPublicName: api.ha.example.com
   networkCIDR: 172.20.0.0/16
   networking:
