@@ -201,12 +201,11 @@ func run() error {
 					machine.ECU = stringToFloat32(attributes["ecu"])
 				}
 
-				// AWS VPC CNI plugin-specific maximum pod calculation based on:
-				// https://github.com/aws/amazon-vpc-cni-k8s/blob/f52ad45/README.md
-				enisPerInstance, enisOK := InstanceENIsAvailable[attributes["instanceType"]]
-				ipsPerENI, ipsOK := InstanceIPsAvailable[attributes["instanceType"]]
-				if enisOK && ipsOK {
-					machine.MaxPods = enisPerInstance*(int(ipsPerENI)-1) + 2
+				if enis, enisOK := InstanceENIsAvailable[attributes["instanceType"]]; enisOK {
+					machine.InstanceENIs = enis
+				}
+				if ipsPerENI, ipsOK := InstanceIPsAvailable[attributes["instanceType"]]; ipsOK {
+					machine.InstanceIPsPerENI = int(ipsPerENI)
 				}
 
 				machines = append(machines, machine)
@@ -268,8 +267,9 @@ func run() error {
 		MemoryGB: %v,
 		ECU: %v,
 		Cores: %v,
-		MaxPods: %v,
-	`, m.Name, m.MemoryGB, ecu, m.Cores, m.MaxPods)
+		InstanceENIs: %v,
+		InstanceIPsPerENI: %v,
+	`, m.Name, m.MemoryGB, ecu, m.Cores, m.InstanceENIs, m.InstanceIPsPerENI)
 				output = output + body
 
 				// Avoid awkward []int(nil) syntax
