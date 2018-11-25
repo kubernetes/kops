@@ -26,8 +26,7 @@ spec:
     allowContainerRegistry: true
     legacy: false
   kubelet:
-    anonymousAuth: false
-  kubernetesVersion: v1.4.8
+    kubernetesVersion: v1.4.8
   masterPublicName: api.vpc.example.com
   networkCIDR: 10.0.0.0/12
   networkID: vpc-12345678
