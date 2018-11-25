@@ -1064,17 +1064,19 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	kv, err := k8sversion.Parse(cluster.Spec.KubernetesVersion)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse kubernetes version: %s", err.Error())
 	}
 
 	// check if we should set anonymousAuth to false on k8s versions gte than 1.10
 	// we do 1.10 since this is a really critical issues and 1.10 has support
-	if cluster.Spec.Kubelet == nil {
-		cluster.Spec.Kubelet = &api.KubeletConfigSpec{}
-	}
+	if kv.IsGTE("1.10") {
+		if cluster.Spec.Kubelet == nil {
+			cluster.Spec.Kubelet = &api.KubeletConfigSpec{}
+		}
 
-	if kv.IsGTE("1.10") && cluster.Spec.Kubelet.AnonymousAuth == nil {
-		cluster.Spec.Kubelet.AnonymousAuth = fi.Bool(false)
+		if cluster.Spec.Kubelet.AnonymousAuth == nil {
+			cluster.Spec.Kubelet.AnonymousAuth = fi.Bool(false)
+		}
 	}
 
 	// Populate the API access, so that it can be discoverable
