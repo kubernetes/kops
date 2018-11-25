@@ -174,7 +174,8 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersexternallbexampl
     - NodeRestriction
     - ResourceQuota
     allowPrivileged: true
-      apiServerCount: 1
+    anonymousAuth: false
+    apiServerCount: 1
     authorizationMode: AlwaysAllow
     cloudProvider: aws
     etcdServers:
