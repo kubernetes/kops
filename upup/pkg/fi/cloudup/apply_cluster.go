@@ -280,7 +280,6 @@ func (c *ApplyClusterCmd) Run() error {
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
 
-	// TODO: consider moving this somewhere, it's duplicated on create
 	kv, err := k8sversion.Parse(cluster.Spec.KubernetesVersion)
 	if err != nil {
 		return err
@@ -288,21 +287,27 @@ func (c *ApplyClusterCmd) Run() error {
 
 	// check if we should recommend turning off anonymousAuth on k8s versions gte than 1.10
 	// we do 1.10 since this is a really critical issues and 1.10 has it
-	if cluster.Spec.Kubelet == nil {
-		cluster.Spec.Kubelet = &kops.KubeletConfigSpec{}
-	}
+	if kv.IsGTE("1.10") {
+		// we do a check here because setting modifying the kubelet object messes with the output
+		warn := false
+		if cluster.Spec.Kubelet == nil {
+			warn = true
+		} else if cluster.Spec.Kubelet.AnonymousAuth == nil {
+			warn = true
+		}
 
-	if kv.IsGTE("1.10") && cluster.Spec.Kubelet.AnonymousAuth == nil {
-		fmt.Println("")
-		fmt.Printf(starline)
-		fmt.Println("")
-		fmt.Println("Kubelet anonymousAuth is currently turned on. This allows RBAC escalation and remote code execution possibilites.")
-		fmt.Println("It is highly recommended you turn it off by setting 'spec.kubelet.anonymousAuth' to 'false' via 'kops edit cluster'")
-		fmt.Println("")
-		fmt.Println("See https://github.com/kubernetes/kops/blob/master/docs/security.md#kubelet-api")
-		fmt.Println("")
-		fmt.Printf(starline)
-		fmt.Println("")
+		if warn {
+			fmt.Println("")
+			fmt.Printf(starline)
+			fmt.Println("")
+			fmt.Println("Kubelet anonymousAuth is currently turned on. This allows RBAC escalation and remote code execution possibilites.")
+			fmt.Println("It is highly recommended you turn it off by setting 'spec.kubelet.anonymousAuth' to 'false' via 'kops edit cluster'")
+			fmt.Println("")
+			fmt.Println("See https://github.com/kubernetes/kops/blob/master/docs/security.md#kubelet-api")
+			fmt.Println("")
+			fmt.Printf(starline)
+			fmt.Println("")
+		}
 	}
 
 	if err := c.AddFileAssets(assetBuilder); err != nil {

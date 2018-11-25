@@ -26,7 +26,6 @@ spec:
   iam:
     allowContainerRegistry: true
     legacy: false
-  kubelet: {}
   kubernetesVersion: v1.4.8
   masterPublicName: api.private.example.com
   networkCIDR: 172.20.0.0/16

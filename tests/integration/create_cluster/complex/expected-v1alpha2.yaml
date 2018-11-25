@@ -23,7 +23,6 @@ spec:
   iam:
     allowContainerRegistry: true
     legacy: false
-  kubelet: {}
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: v1.7.1
