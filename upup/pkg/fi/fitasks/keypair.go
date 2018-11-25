@@ -293,7 +293,7 @@ func buildCertificateTemplateForType(certificateType string) (*x509.Certificate,
 
 	template := &x509.Certificate{
 		BasicConstraintsValid: true,
-		IsCA: false,
+		IsCA:                  false,
 	}
 
 	tokens := strings.Split(certificateType, ",")
