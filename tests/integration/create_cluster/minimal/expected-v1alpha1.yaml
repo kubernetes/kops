@@ -25,6 +25,8 @@ spec:
   iam:
     allowContainerRegistry: true
     legacy: false
+  kubelet:
+    anonymousAuth: false
   kubernetesVersion: v1.11.0
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
