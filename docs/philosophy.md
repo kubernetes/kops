@@ -32,9 +32,7 @@ There are two primary types:
 
 ## State Store
 
-The API objects are currently stored in an abstraction called a "state store", and currently the only implemented
-storage is an S3 bucket.  The storage of files in the S3 bucket is an implementation detail.  Expect more state
-stores soon.  For example, it might be convenient to put the InstanceGroup into the kubernetes API itself.
+The API objects are currently stored in an abstraction called a "state store".  [state.md](/docs/state.md) has more detail.
 
 ## Configuration inference
 
