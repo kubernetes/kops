@@ -27,7 +27,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/aws/amazon-vpc-cni-k8s/pkg/awsutils"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -204,8 +203,8 @@ func run() error {
 
 				// AWS VPC CNI plugin-specific maximum pod calculation based on:
 				// https://github.com/aws/amazon-vpc-cni-k8s/blob/f52ad45/README.md
-				enisPerInstance, enisOK := awsutils.InstanceENIsAvailable[attributes["instanceType"]]
-				ipsPerENI, ipsOK := awsutils.InstanceIPsAvailable[attributes["instanceType"]]
+				enisPerInstance, enisOK := InstanceENIsAvailable[attributes["instanceType"]]
+				ipsPerENI, ipsOK := InstanceIPsAvailable[attributes["instanceType"]]
 				if enisOK && ipsOK {
 					machine.MaxPods = enisPerInstance*(int(ipsPerENI)-1) + 2
 				}
