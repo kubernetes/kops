@@ -1067,9 +1067,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("failed to parse kubernetes version: %s", err.Error())
 	}
 
-	// check if we should set anonymousAuth to false on k8s versions gte than 1.10
-	// we do 1.10 since this is a really critical issues and 1.10 has support
-	if kv.IsGTE("1.10") {
+	// check if we should set anonymousAuth to false on k8s versions >=1.11
+	if kv.IsGTE("1.11") {
 		if cluster.Spec.Kubelet == nil {
 			cluster.Spec.Kubelet = &api.KubeletConfigSpec{}
 		}
