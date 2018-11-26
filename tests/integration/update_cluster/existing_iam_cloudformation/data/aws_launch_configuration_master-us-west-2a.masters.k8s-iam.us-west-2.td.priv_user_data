@@ -171,7 +171,6 @@ kubeAPIServer:
   - Priority
   - ResourceQuota
   allowPrivileged: true
-  anonymousAuth: false
   apiServerCount: 1
   authorizationMode: RBAC
   cloudProvider: aws
