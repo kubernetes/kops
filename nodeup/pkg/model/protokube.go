@@ -69,12 +69,12 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// retrieve the etcd peer certificates and private keys from the keystore
 		if t.UseEtcdTLS() {
-			for _, x := range []string{"etcd", "etcd-client"} {
+			for _, x := range []string{"etcd", "etcd-peer", "etcd-client"} {
 				if err := t.BuildCertificateTask(c, x, fmt.Sprintf("%s.pem", x)); err != nil {
 					return err
 				}
 			}
-			for _, x := range []string{"etcd", "etcd-client"} {
+			for _, x := range []string{"etcd", "etcd-peer", "etcd-client"} {
 				if err := t.BuildPrivateKeyTask(c, x, fmt.Sprintf("%s-key.pem", x)); err != nil {
 					return err
 				}
@@ -290,8 +290,8 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		// check if we are using tls and add the options to protokube
 		if t.UseEtcdTLS() {
 			f.PeerTLSCaFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
-			f.PeerTLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))
-			f.PeerTLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-key.pem"))
+			f.PeerTLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-peer.pem"))
+			f.PeerTLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-peer-key.pem"))
 			f.TLSCAFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
 			f.TLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))
 			f.TLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-key.pem"))
