@@ -44,6 +44,7 @@ import (
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/k8sversion"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -1059,6 +1060,22 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	if c.MasterPublicName != "" {
 		cluster.Spec.MasterPublicName = c.MasterPublicName
+	}
+
+	kv, err := k8sversion.Parse(cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return fmt.Errorf("failed to parse kubernetes version: %s", err.Error())
+	}
+
+	// check if we should set anonymousAuth to false on k8s versions >=1.11
+	if kv.IsGTE("1.11") {
+		if cluster.Spec.Kubelet == nil {
+			cluster.Spec.Kubelet = &api.KubeletConfigSpec{}
+		}
+
+		if cluster.Spec.Kubelet.AnonymousAuth == nil {
+			cluster.Spec.Kubelet.AnonymousAuth = fi.Bool(false)
+		}
 	}
 
 	// Populate the API access, so that it can be discoverable
