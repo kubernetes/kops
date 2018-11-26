@@ -152,6 +152,7 @@ func run() error {
 		}
 	}
 
+	seen := map[string]bool{}
 	for _, item := range prices {
 		for k, v := range item {
 			if k == "product" {
@@ -160,6 +161,11 @@ func run() error {
 				for k, v := range product["attributes"].(map[string]interface{}) {
 					attributes[k] = v.(string)
 				}
+
+				if _, ok := seen[attributes["instanceType"]]; ok {
+					continue
+				}
+				seen[attributes["instanceType"]] = true
 
 				machine := awsup.AWSMachineTypeInfo{
 					Name:  attributes["instanceType"],
@@ -193,6 +199,13 @@ func run() error {
 					machine.ECU = 0
 				} else {
 					machine.ECU = stringToFloat32(attributes["ecu"])
+				}
+
+				if enis, enisOK := InstanceENIsAvailable[attributes["instanceType"]]; enisOK {
+					machine.InstanceENIs = enis
+				}
+				if ipsPerENI, ipsOK := InstanceIPsAvailable[attributes["instanceType"]]; ipsOK {
+					machine.InstanceIPsPerENI = int(ipsPerENI)
 				}
 
 				machines = append(machines, machine)
@@ -254,7 +267,9 @@ func run() error {
 		MemoryGB: %v,
 		ECU: %v,
 		Cores: %v,
-	`, m.Name, m.MemoryGB, ecu, m.Cores)
+		InstanceENIs: %v,
+		InstanceIPsPerENI: %v,
+	`, m.Name, m.MemoryGB, ecu, m.Cores, m.InstanceENIs, m.InstanceIPsPerENI)
 				output = output + body
 
 				// Avoid awkward []int(nil) syntax

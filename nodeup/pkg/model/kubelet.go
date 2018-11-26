@@ -37,6 +37,7 @@ import (
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
@@ -457,6 +458,42 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 
 	if b.IsMaster {
 		c.BootstrapKubeconfig = ""
+	}
+
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
+		instanceType, err := awsup.GetMachineTypeInfo(b.InstanceGroup.Spec.MachineType)
+		if err != nil {
+			return c, err
+		}
+
+		// Default maximum pods per node defined by KubeletConfiguration, but
+		// respect any value the user sets explicitly.
+		maxPods := int32(110)
+		if c.MaxPods != nil {
+			maxPods = *c.MaxPods
+		}
+
+		// AWS VPC CNI plugin-specific maximum pod calculation based on:
+		// https://github.com/aws/amazon-vpc-cni-k8s/blob/f52ad45/README.md
+		//
+		// Treat the calculated value as a hard max, since networking with the CNI
+		// plugin won't work correctly once we exceed that maximum.
+		enis := instanceType.InstanceENIs
+		ips := instanceType.InstanceIPsPerENI
+		if enis > 0 && ips > 0 {
+			instanceMaxPods := enis*(ips-1) + 2
+			if int32(instanceMaxPods) < maxPods {
+				maxPods = int32(instanceMaxPods)
+			}
+		}
+
+		// Write back values that could have changed
+		c.MaxPods = &maxPods
+		if b.InstanceGroup.Spec.Kubelet != nil {
+			if b.InstanceGroup.Spec.Kubelet.MaxPods == nil {
+				b.InstanceGroup.Spec.Kubelet.MaxPods = &maxPods
+			}
+		}
 	}
 
 	if b.InstanceGroup.Spec.Kubelet != nil {
