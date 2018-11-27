@@ -152,6 +152,8 @@ func run() error {
 		}
 	}
 
+	var warnings []string
+
 	seen := map[string]bool{}
 	for _, item := range prices {
 		for k, v := range item {
@@ -162,13 +164,15 @@ func run() error {
 					attributes[k] = v.(string)
 				}
 
-				if _, ok := seen[attributes["instanceType"]]; ok {
+				instanceType := attributes["instanceType"]
+
+				if _, ok := seen[instanceType]; ok {
 					continue
 				}
-				seen[attributes["instanceType"]] = true
+				seen[instanceType] = true
 
 				machine := awsup.AWSMachineTypeInfo{
-					Name:  attributes["instanceType"],
+					Name:  instanceType,
 					Cores: stringToInt(attributes["vcpu"]),
 				}
 
@@ -201,16 +205,21 @@ func run() error {
 					machine.ECU = stringToFloat32(attributes["ecu"])
 				}
 
-				if enis, enisOK := InstanceENIsAvailable[attributes["instanceType"]]; enisOK {
+				if enis, enisOK := InstanceENIsAvailable[instanceType]; enisOK {
 					machine.InstanceENIs = enis
+				} else {
+					warnings = append(warnings, fmt.Sprintf("ENIs not known for %s", instanceType))
 				}
-				if ipsPerENI, ipsOK := InstanceIPsAvailable[attributes["instanceType"]]; ipsOK {
+
+				if ipsPerENI, ipsOK := InstanceIPsAvailable[instanceType]; ipsOK {
 					machine.InstanceIPsPerENI = int(ipsPerENI)
+				} else {
+					warnings = append(warnings, fmt.Sprintf("IPs per ENI not known for %s", instanceType))
 				}
 
 				machines = append(machines, machine)
 
-				family := strings.Split(attributes["instanceType"], ".")[0]
+				family := strings.Split(instanceType, ".")[0]
 				families[family] = struct{}{}
 
 			}
@@ -242,6 +251,14 @@ func run() error {
 	})
 
 	var output string
+
+	if len(warnings) != 0 {
+		output = output + "\n"
+		for _, warning := range warnings {
+			output = output + "// WARNING: " + warning + "\n"
+		}
+		output = output + "\n"
+	}
 
 	for _, f := range sortedFamilies {
 		output = output + fmt.Sprintf("\n// %s family", f)
