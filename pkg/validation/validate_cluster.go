@@ -167,7 +167,7 @@ func (v *ValidationCluster) collectComponentFailures(client kubernetes.Interface
 				v.addError(&ValidationError{
 					Kind:    "ComponentStatus",
 					Name:    component.Name,
-					Message: "component is unhealthy",
+					Message: fmt.Sprintf("component %q is unhealthy", component.Name),
 				})
 			}
 		}
