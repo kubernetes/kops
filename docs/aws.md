@@ -220,7 +220,7 @@ kops create cluster --dns private --dns-zone ZABCDEFG $NAME
 
 ## Testing your DNS setup
 
-This section is not be required if a gossip-based cluster is created.
+This section is not required if a gossip-based cluster is created.
 
 You should now able to dig your domain (or subdomain) and see the AWS Name
 Servers on the other end.
