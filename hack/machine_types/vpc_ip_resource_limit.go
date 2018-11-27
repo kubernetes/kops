@@ -32,6 +32,11 @@ package main
 // InstanceENIsAvailable contains a mapping of instance types to the number of ENIs available which is described at
 // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI
 var InstanceENIsAvailable = map[string]int{
+	"a1.medium":     2,
+	"a1.large":      3,
+	"a1.xlarge":     4,
+	"a1.2xlarge":    4,
+	"a1.4xlarge":    8,
 	"c1.medium":     2,
 	"c1.xlarge":     4,
 	"c3.large":      3,
@@ -56,6 +61,12 @@ var InstanceENIsAvailable = map[string]int{
 	"c5d.4xlarge":   8,
 	"c5d.9xlarge":   8,
 	"c5d.18xlarge":  15,
+	"c5n.large":     3,
+	"c5n.xlarge":    4,
+	"c5n.2xlarge":   4,
+	"c5n.4xlarge":   8,
+	"c5n.9xlarge":   8,
+	"c5n.18xlarge":  15,
 	"cc2.8xlarge":   8,
 	"cr1.8xlarge":   8,
 	"d2.xlarge":     4,
@@ -194,6 +205,11 @@ var InstanceENIsAvailable = map[string]int{
 // InstanceIPsAvailable contains a mapping of instance types to the number of IPs per ENI
 // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI
 var InstanceIPsAvailable = map[string]int64{
+	"a1.medium":     4,
+	"a1.large":      10,
+	"a1.xlarge":     15,
+	"a1.2xlarge":    15,
+	"a1.4xlarge":    30,
 	"c1.medium":     6,
 	"c1.xlarge":     15,
 	"c3.large":      10,
@@ -218,6 +234,12 @@ var InstanceIPsAvailable = map[string]int64{
 	"c5d.4xlarge":   30,
 	"c5d.9xlarge":   30,
 	"c5d.18xlarge":  50,
+	"c5n.large":     10,
+	"c5n.xlarge":    15,
+	"c5n.2xlarge":   15,
+	"c5n.4xlarge":   30,
+	"c5n.9xlarge":   30,
+	"c5n.18xlarge":  50,
 	"cc2.8xlarge":   30,
 	"cr1.8xlarge":   30,
 	"d2.xlarge":     15,
