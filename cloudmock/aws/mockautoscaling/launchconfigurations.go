@@ -40,6 +40,9 @@ func (m *MockAutoscaling) DescribeLaunchConfigurationsRequest(*autoscaling.Descr
 }
 
 func (m *MockAutoscaling) DescribeLaunchConfigurationsPages(request *autoscaling.DescribeLaunchConfigurationsInput, callback func(*autoscaling.DescribeLaunchConfigurationsOutput, bool) bool) error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	if request.LaunchConfigurationNames != nil {
 		glog.Fatalf("LaunchConfigurationNames not implemented")
 	}
@@ -67,6 +70,9 @@ func (m *MockAutoscaling) DescribeLaunchConfigurationsPagesWithContext(aws.Conte
 }
 
 func (m *MockAutoscaling) CreateLaunchConfiguration(request *autoscaling.CreateLaunchConfigurationInput) (*autoscaling.CreateLaunchConfigurationOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	glog.Infof("CreateLaunchConfiguration: %v", request)
 
 	createdTime := time.Now().UTC()
