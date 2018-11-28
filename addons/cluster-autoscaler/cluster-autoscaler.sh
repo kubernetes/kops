@@ -93,9 +93,9 @@ printf " ✅ \n"
 addon=cluster-autoscaler.yml
 manifest_url=https://raw.githubusercontent.com/kubernetes/kops/master/addons/cluster-autoscaler/v1.8.0.yaml
 
-if which -s wget; then
+if [[ $(which wget) ]]; then
   wget -O ${addon} ${manifest_url}
-elif which -s curl; then
+elif [[ $(which curl) ]]; then
   curl -s -o ${addon} ${manifest_url}
 else
   echo "No curl or wget available. Can't get the manifest."
