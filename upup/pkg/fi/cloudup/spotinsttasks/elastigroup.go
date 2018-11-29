@@ -135,12 +135,8 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 		{
 			for _, zone := range compute.AvailabilityZones {
 				if zone.SubnetID != nil {
-					t := &awstasks.Subnet{ID: zone.SubnetID}
-					s, err := t.Find(c)
-					if err != nil {
-						return nil, err
-					}
-					actual.Subnets = append(actual.Subnets, s)
+					actual.Subnets = append(actual.Subnets,
+						&awstasks.Subnet{ID: zone.SubnetID})
 				}
 			}
 			if subnetSlicesEqualIgnoreOrder(actual.Subnets, e.Subnets) {
@@ -149,14 +145,16 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 		}
 	}
 
-	// Launch Specification.
+	// Launch specification.
 	{
 		lc := group.Compute.LaunchSpecification
 
 		// Image.
 		{
-			if e.ImageID != nil && lc.ImageID != nil &&
-				fi.StringValue(lc.ImageID) != fi.StringValue(e.ImageID) {
+			actual.ImageID = lc.ImageID
+
+			if e.ImageID != nil && actual.ImageID != nil &&
+				fi.StringValue(actual.ImageID) != fi.StringValue(e.ImageID) {
 				image, err := resolveImage(cloud, fi.StringValue(e.ImageID))
 				if err != nil {
 					return nil, err
@@ -179,23 +177,9 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 
 		// Security groups.
 		{
-			for _, sg := range e.SecurityGroups {
-				t := &awstasks.SecurityGroup{ID: sg.ID}
-				if sg.VPC != nil {
-					t.VPC = &awstasks.VPC{ID: sg.VPC.ID}
-				}
-				s, err := t.Find(c)
-				if err != nil {
-					return nil, err
-				}
-				if s != nil {
-					for _, sgID := range lc.SecurityGroupIDs {
-						if fi.StringValue(s.ID) == sgID {
-							actual.SecurityGroups = append(actual.SecurityGroups, s)
-							break
-						}
-					}
-				}
+			for _, sgID := range lc.SecurityGroupIDs {
+				actual.SecurityGroups = append(actual.SecurityGroups,
+					&awstasks.SecurityGroup{ID: fi.String(sgID)})
 			}
 		}
 
@@ -203,9 +187,9 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 		{
 			for _, b := range lc.BlockDeviceMappings {
 				if b.EBS == nil || b.EBS.SnapshotID != nil {
-					// Not the root.
-					continue
+					continue // not the root
 				}
+
 				actual.RootVolumeType = b.EBS.VolumeType
 				actual.RootVolumeSize = fi.Int64(int64(fi.IntValue(b.EBS.VolumeSize)))
 				actual.RootVolumeIOPS = fi.Int64(int64(fi.IntValue(b.EBS.IOPS)))
@@ -238,37 +222,32 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 		}
 
 		// Load balancer.
-		if e.LoadBalancer != nil && lc.LoadBalancersConfig != nil {
-			if lbs := lc.LoadBalancersConfig.LoadBalancers; len(lbs) > 0 {
-				t := &awstasks.LoadBalancer{Name: e.LoadBalancer.Name}
-				s, err := t.Find(c)
-				if err != nil {
-					return nil, err
-				}
-				if s != nil && fi.StringValue(s.LoadBalancerName) == fi.StringValue(lbs[0].Name) {
-					actual.LoadBalancer = s
+		{
+			if lc.LoadBalancersConfig != nil && len(lc.LoadBalancersConfig.LoadBalancers) > 0 {
+				lbs := lc.LoadBalancersConfig.LoadBalancers
+				actual.LoadBalancer = &awstasks.LoadBalancer{Name: lbs[0].Name}
+
+				if e.LoadBalancer != nil && actual.LoadBalancer != nil &&
+					fi.StringValue(actual.LoadBalancer.Name) != fi.StringValue(e.LoadBalancer.Name) {
+					elb, err := awstasks.FindLoadBalancerByNameTag(cloud, fi.StringValue(e.LoadBalancer.Name))
+					if err != nil {
+						return nil, err
+					}
+					if fi.StringValue(elb.LoadBalancerName) == fi.StringValue(lbs[0].Name) {
+						actual.LoadBalancer = e.LoadBalancer
+					}
 				}
 			}
 		}
 
 		// IAM instance profile.
 		if lc.IAMInstanceProfile != nil {
-			t := &awstasks.IAMInstanceProfile{Name: lc.IAMInstanceProfile.Name}
-			s, err := t.Find(c)
-			if err != nil {
-				return nil, err
-			}
-			actual.IAMInstanceProfile = s
+			actual.IAMInstanceProfile = &awstasks.IAMInstanceProfile{Name: lc.IAMInstanceProfile.Name}
 		}
 
 		// SSH key.
 		if lc.KeyPair != nil {
-			t := &awstasks.SSHKey{Name: lc.KeyPair}
-			s, err := t.Find(c)
-			if err != nil {
-				return nil, err
-			}
-			actual.SSHKey = s
+			actual.SSHKey = &awstasks.SSHKey{Name: lc.KeyPair}
 		}
 
 		// Tenancy.
@@ -457,14 +436,12 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 
 			// User data.
 			{
-				if e.UserData != nil {
-					userData, err := e.UserData.AsString()
-					if err != nil {
-						return err
-					}
-					encoded := base64.StdEncoding.EncodeToString([]byte(userData))
-					group.Compute.LaunchSpecification.SetUserData(fi.String(encoded))
+				userData, err := e.UserData.AsString()
+				if err != nil {
+					return err
 				}
+				encoded := base64.StdEncoding.EncodeToString([]byte(userData))
+				group.Compute.LaunchSpecification.SetUserData(fi.String(encoded))
 			}
 
 			// IAM instance profile.
@@ -930,8 +907,21 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 		}
 	}
 
-	// Auto Scaler.
+	// Integration.
 	{
+		if changes.AutoScalerClusterID != nil {
+			if group.Integration == nil {
+				group.Integration = new(aws.Integration)
+			}
+			if group.Integration.Kubernetes == nil {
+				group.Integration.Kubernetes = new(aws.KubernetesIntegration)
+			}
+
+			group.Integration.Kubernetes.SetClusterIdentifier(e.AutoScalerClusterID)
+			group.Integration.Kubernetes.SetIntegrationMode(fi.String("pod"))
+			changes.AutoScalerClusterID = nil
+		}
+
 		if changes.AutoScalerEnabled != nil {
 			if group.Integration == nil {
 				group.Integration = new(aws.Integration)
