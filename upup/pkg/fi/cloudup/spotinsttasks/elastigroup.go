@@ -196,6 +196,13 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 			}
 		}
 
+		// EBS optimization.
+		{
+			if lc.EBSOptimized != nil {
+				actual.RootVolumeOptimization = lc.EBSOptimized
+			}
+		}
+
 		// User data.
 		{
 			if lc.UserData != nil {
@@ -425,7 +432,7 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 				}
 			}
 
-			// Image ID.
+			// Image.
 			{
 				image, err := resolveImage(cloud, fi.StringValue(e.ImageID))
 				if err != nil {
@@ -762,7 +769,46 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 				}
 			}
 
-			// Image ID.
+			// Block device mappings.
+			{
+				if changes.RootVolumeType != nil || changes.RootVolumeSize != nil || changes.RootVolumeIOPS != nil {
+					rootDevices, err := e.buildRootDevice(cloud)
+					if err != nil {
+						return err
+					}
+
+					ephemeralDevices, err := e.buildEphemeralDevices(e.OnDemandInstanceType)
+					if err != nil {
+						return err
+					}
+
+					if len(rootDevices) != 0 || len(ephemeralDevices) != 0 {
+						var mappings []*aws.BlockDeviceMapping
+						for device, bdm := range rootDevices {
+							mappings = append(mappings, e.buildBlockDeviceMapping(device, bdm))
+						}
+						for device, bdm := range ephemeralDevices {
+							mappings = append(mappings, e.buildBlockDeviceMapping(device, bdm))
+						}
+						if len(mappings) > 0 {
+							if group.Compute == nil {
+								group.Compute = new(aws.Compute)
+							}
+							if group.Compute.LaunchSpecification == nil {
+								group.Compute.LaunchSpecification = new(aws.LaunchSpecification)
+							}
+
+							group.Compute.LaunchSpecification.SetBlockDeviceMappings(mappings)
+						}
+					}
+
+					changes.RootVolumeType = nil
+					changes.RootVolumeSize = nil
+					changes.RootVolumeIOPS = nil
+				}
+			}
+
+			// Image.
 			{
 				if changes.ImageID != nil {
 					image, err := resolveImage(cloud, fi.StringValue(e.ImageID))
@@ -777,6 +823,7 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 						if group.Compute.LaunchSpecification == nil {
 							group.Compute.LaunchSpecification = new(aws.LaunchSpecification)
 						}
+
 						group.Compute.LaunchSpecification.SetImageId(image.ImageId)
 					}
 
@@ -816,6 +863,36 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 
 					group.Compute.LaunchSpecification.SetIAMInstanceProfile(iprof)
 					changes.IAMInstanceProfile = nil
+				}
+			}
+
+			// Monitoring.
+			{
+				if changes.Monitoring != nil {
+					if group.Compute == nil {
+						group.Compute = new(aws.Compute)
+					}
+					if group.Compute.LaunchSpecification == nil {
+						group.Compute.LaunchSpecification = new(aws.LaunchSpecification)
+					}
+
+					group.Compute.LaunchSpecification.SetMonitoring(e.Monitoring)
+					changes.Monitoring = nil
+				}
+			}
+
+			// EBS optimization.
+			{
+				if changes.RootVolumeOptimization != nil {
+					if group.Compute == nil {
+						group.Compute = new(aws.Compute)
+					}
+					if group.Compute.LaunchSpecification == nil {
+						group.Compute.LaunchSpecification = new(aws.LaunchSpecification)
+					}
+
+					group.Compute.LaunchSpecification.SetEBSOptimized(e.RootVolumeOptimization)
+					changes.RootVolumeOptimization = nil
 				}
 			}
 
@@ -1104,7 +1181,7 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 		}
 	}
 
-	// Security Groups.
+	// Security groups.
 	{
 		for _, sg := range e.SecurityGroups {
 			tf.SecurityGroups = append(tf.SecurityGroups, sg.TerraformLink())
@@ -1127,7 +1204,7 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 		}
 	}
 
-	// IAM Instance Profile.
+	// IAM instance profile.
 	{
 		if e.IAMInstanceProfile != nil {
 			tf.IAMInstanceProfile = e.IAMInstanceProfile.TerraformLink()
@@ -1143,7 +1220,7 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 		}
 	}
 
-	// EBS Optimization.
+	// EBS optimization.
 	{
 		if e.RootVolumeOptimization != nil {
 			tf.EBSOptimized = e.RootVolumeOptimization
@@ -1152,7 +1229,7 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 		}
 	}
 
-	// SSH Key pair.
+	// SSH key.
 	{
 		if e.SSHKey != nil {
 			tf.KeyName = e.SSHKey.TerraformLink()
