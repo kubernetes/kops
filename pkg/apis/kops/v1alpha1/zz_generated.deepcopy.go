@@ -2328,6 +2328,15 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 			**out = **in
 		}
 	}
+	if in.HorizontalPodAutoscalerTolerance != nil {
+		in, out := &in.HorizontalPodAutoscalerTolerance, &out.HorizontalPodAutoscalerTolerance
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(float64)
+			**out = **in
+		}
+	}
 	if in.HorizontalPodAutoscalerUseRestClients != nil {
 		in, out := &in.HorizontalPodAutoscalerUseRestClients, &out.HorizontalPodAutoscalerUseRestClients
 		if *in == nil {
