@@ -27812,6 +27812,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
 							},
 						},
+						"horizontalPodAutoscalerTolerance": {
+							SchemaProps: spec.SchemaProps{
+								Description: "HorizontalPodAutoscalerDownscaleDelay is a duration that specifies how long the autoscaler has to wait before another downscale operation can be performed after the current one has completed.",
+								Type:        []string{"float"},
+								Format:      "float64",
+							},
+						},
 						"horizontalPodAutoscalerUseRestClients": {
 							SchemaProps: spec.SchemaProps{
 								Description: "HorizontalPodAutoscalerUseRestClients determines if the new-style clients should be used if support for custom metrics is enabled.",
