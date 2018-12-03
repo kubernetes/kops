@@ -97,7 +97,7 @@ spec:
     spec:
       containers:
       - name: spotinst-kubernetes-cluster-controller
-        image: spotinst/kubernetes-cluster-controller:1.0.16
+        image: spotinst/kubernetes-cluster-controller:1.0.18
         imagePullPolicy: Always
         env:
         - name: SPOTINST_TOKEN
