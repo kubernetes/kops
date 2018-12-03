@@ -138,10 +138,9 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		if err = r.ValidateCluster(rollingUpdateData, cluster, instanceGroupList); err != nil {
 			if rollingUpdateData.FailOnValidate {
 				return fmt.Errorf("error validating cluster: %v", err)
-			} else {
-				glog.V(2).Infof("Ignoring cluster validation error: %v", err)
-				glog.Info("Cluster validation failed, but proceeding since fail-on-validate-error is set to false")
 			}
+			glog.V(2).Infof("Ignoring cluster validation error: %v", err)
+			glog.Info("Cluster validation failed, but proceeding since fail-on-validate-error is set to false")
 		}
 	}
 
@@ -167,9 +166,8 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 				if err = r.DrainNode(u, rollingUpdateData); err != nil {
 					if rollingUpdateData.FailOnDrainError {
 						return fmt.Errorf("failed to drain node %q: %v", nodeName, err)
-					} else {
-						glog.Infof("Ignoring error draining node %q: %v", nodeName, err)
-					}
+					}	
+					glog.Infof("Ignoring error draining node %q: %v", nodeName, err)
 				}
 			} else {
 				glog.Warningf("Skipping drain of instance %q, because it is not registered in kubernetes", instanceId)
@@ -297,9 +295,8 @@ func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInsta
 	}
 	if nodeName != "" {
 		glog.Infof("Stopping instance %q, node %q, in group %q (this may take a while).", id, nodeName, r.CloudGroup.HumanName)
-	} else {
-		glog.Infof("Stopping instance %q, in group %q (this may take a while).", id, r.CloudGroup.HumanName)
 	}
+	glog.Infof("Stopping instance %q, in group %q (this may take a while).", id, r.CloudGroup.HumanName)
 
 	if err := r.Cloud.DeleteInstance(u); err != nil {
 		if nodeName != "" {
