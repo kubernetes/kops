@@ -578,7 +578,7 @@ subjects:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: calico-complete-upgrade
+  name: calico-complete-upgrade-v331
   namespace: kube-system
   labels:
     role.kubernetes.io/networking: "1"
@@ -597,7 +597,7 @@ spec:
           command: ['/bin/sh', '-c', '/completion-job.sh']
           env:
             - name: EXPECTED_NODE_IMAGE
-              value: quay.io/calico/node:v3.1.1
+              value: quay.io/calico/node:v3.3.1
             # The location of the Calico etcd cluster.
             - name: CALICO_ETCD_ENDPOINTS
               valueFrom:
