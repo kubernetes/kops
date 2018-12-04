@@ -34,10 +34,10 @@ spec:
       kubenet: {}
   kubernetesVersions:
   - range: ">=1.11.0"
-    recommendedVersion: 1.11.2
+    recommendedVersion: 1.11.5
     requiredVersion: 1.11.0
   - range: ">=1.10.0"
-    recommendedVersion: 1.10.6
+    recommendedVersion: 1.10.11
     requiredVersion: 1.10.0
   - range: ">=1.9.0"
     recommendedVersion: 1.9.10
