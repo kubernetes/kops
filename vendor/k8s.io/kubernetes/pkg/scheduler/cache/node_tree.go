@@ -21,7 +21,6 @@ import (
 	"sync"
 
 	"k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 	utilnode "k8s.io/kubernetes/pkg/util/node"
 
 	"github.com/golang/glog"
@@ -30,12 +29,11 @@ import (
 // NodeTree is a tree-like data structure that holds node names in each zone. Zone names are
 // keys to "NodeTree.tree" and values of "NodeTree.tree" are arrays of node names.
 type NodeTree struct {
-	tree           map[string]*nodeArray // a map from zone (region-zone) to an array of nodes in the zone.
-	zones          []string              // a list of all the zones in the tree (keys)
-	zoneIndex      int
-	exhaustedZones sets.String // set of zones that all of their nodes are returned by next()
-	NumNodes       int
-	mu             sync.RWMutex
+	tree      map[string]*nodeArray // a map from zone (region-zone) to an array of nodes in the zone.
+	zones     []string              // a list of all the zones in the tree (keys)
+	zoneIndex int
+	NumNodes  int
+	mu        sync.RWMutex
 }
 
 // nodeArray is a struct that has nodes that are in a zone.
@@ -61,8 +59,7 @@ func (na *nodeArray) next() (nodeName string, exhausted bool) {
 
 func newNodeTree(nodes []*v1.Node) *NodeTree {
 	nt := &NodeTree{
-		tree:           make(map[string]*nodeArray),
-		exhaustedZones: sets.NewString(),
+		tree: make(map[string]*nodeArray),
 	}
 	for _, n := range nodes {
 		nt.AddNode(n)
@@ -155,7 +152,6 @@ func (nt *NodeTree) resetExhausted() {
 	for _, na := range nt.tree {
 		na.lastIndex = 0
 	}
-	nt.exhaustedZones = sets.NewString()
 	nt.zoneIndex = 0
 }
 
