@@ -12,8 +12,8 @@ The command `kops create cluster` does not support specifying addons to be added
 ```yaml
 spec:
   addons:
-  - kubernetes-dashboard
-  - s3://kops-addons/addon.yaml
+  - manifest: kubernetes-dashboard
+  - manifest: s3://kops-addons/addon.yaml
 ```
 
 This document describes how to install some common addons and how to create your own custom ones. 
