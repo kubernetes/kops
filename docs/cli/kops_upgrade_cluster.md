@@ -25,7 +25,7 @@ kops upgrade cluster [flags]
 ```
       --channel string   Channel to use for upgrade
   -h, --help             help for cluster
-      --yes              Apply update
+  -y, --yes              Apply update
 ```
 
 ### Options inherited from parent commands
