@@ -483,8 +483,9 @@ func (b *KopsModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Sec
 		}
 		done[name] = true
 
+		sgName := fmt.Sprintf("%v-%v", fi.StringValue(ig.Spec.SecurityGroupOverride), role)
 		t := &awstasks.SecurityGroup{
-			Name:        ig.Spec.SecurityGroupOverride,
+			Name:        &sgName,
 			ID:          ig.Spec.SecurityGroupOverride,
 			VPC:         b.LinkToVPC(),
 			Shared:      fi.Bool(true),
