@@ -1190,6 +1190,15 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 			**out = **in
 		}
 	}
+	if in.Experimental != nil {
+		in, out := &in.Experimental, &out.Experimental
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
+			**out = **in
+		}
+	}
 	if in.Hosts != nil {
 		in, out := &in.Hosts, &out.Hosts
 		*out = make([]string, len(*in))
@@ -1253,6 +1262,15 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 		in, out := &in.LogOpt, &out.LogOpt
 		*out = make([]string, len(*in))
 		copy(*out, *in)
+	}
+	if in.MetricsAddress != nil {
+		in, out := &in.MetricsAddress, &out.MetricsAddress
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
 	}
 	if in.MTU != nil {
 		in, out := &in.MTU, &out.MTU
