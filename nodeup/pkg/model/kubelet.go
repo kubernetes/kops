@@ -175,6 +175,15 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		kubeletConfig.BootstrapKubeconfig = ""
 	}
 
+	if kubeletConfig.ExperimentalAllowedUnsafeSysctls != nil {
+		// The ExperimentalAllowedUnsafeSysctls flag was renamed in k/k #63717
+		if b.IsKubernetesGTE("1.11") {
+			glog.V(1).Info("ExperimentalAllowedUnsafeSysctls was renamed in k8s 1.11+, please use AllowedUnsafeSysctls instead.")
+			kubeletConfig.AllowedUnsafeSysctls = append(kubeletConfig.ExperimentalAllowedUnsafeSysctls, kubeletConfig.AllowedUnsafeSysctls...)
+			kubeletConfig.ExperimentalAllowedUnsafeSysctls = nil
+		}
+	}
+
 	// TODO: Dump the separate file for flags - just complexity!
 	flags, err := flagbuilder.BuildFlags(kubeletConfig)
 	if err != nil {
