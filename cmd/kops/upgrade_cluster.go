@@ -56,7 +56,7 @@ func init() {
 		},
 	}
 
-	cmd.Flags().BoolVar(&upgradeCluster.Yes, "yes", false, "Apply update")
+	cmd.Flags().BoolVarP(&upgradeCluster.Yes, "yes", "y", false, "Apply update")
 	cmd.Flags().StringVar(&upgradeCluster.Channel, "channel", "", "Channel to use for upgrade")
 
 	upgradeCmd.AddCommand(cmd)
