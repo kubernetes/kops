@@ -78,6 +78,7 @@ kops rolling-update cluster [flags]
   -i, --interactive                    Prompt to continue after each instance is updated
       --master-interval duration       Time to wait between restarting masters (default 5m0s)
       --node-interval duration         Time to wait between restarting nodes (default 4m0s)
+      --validation-timeout duration    Maximum time to wait for a cluster to validate (default 5m0s)
   -y, --yes                            Perform rolling update immediately, without --yes rolling-update executes a dry-run
 ```
 
