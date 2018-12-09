@@ -8,6 +8,7 @@ go_library(
         "gce.go",
         "helpers.go",
         "instancegroup.go",
+        "kubelet.go",
         "legacy.go",
         "validation.go",
     ],

@@ -465,38 +465,12 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	if c.Spec.Kubelet != nil {
 		kubeletPath := fieldSpec.Child("Kubelet")
 
-		if kubernetesRelease.GTE(semver.MustParse("1.6.0")) {
-			// Flag removed in 1.6
-			if c.Spec.Kubelet.APIServers != "" {
-				return field.Invalid(
-					kubeletPath.Child("APIServers"),
-					c.Spec.Kubelet.APIServers,
-					"api-servers flag was removed in 1.6")
-			}
-		} else {
-			if strict && c.Spec.Kubelet.APIServers == "" {
-				return field.Required(kubeletPath.Child("APIServers"), "")
-			}
-		}
-
-		if kubernetesRelease.GTE(semver.MustParse("1.10.0")) {
-			// Flag removed in 1.10
-			if c.Spec.Kubelet.RequireKubeconfig != nil {
-				return field.Invalid(
-					kubeletPath.Child("requireKubeconfig"),
-					*c.Spec.Kubelet.RequireKubeconfig,
-					"require-kubeconfig flag was removed in 1.10.  (Please be sure you are not using a cluster config from `kops get cluster --full`)")
-			}
-		}
+		validateKubeletConfig(kubeletPath, kubernetesRelease, c.Spec.Kubelet, strict)
 
 		if c.Spec.Kubelet.BootstrapKubeconfig != "" {
 			if c.Spec.KubeAPIServer == nil {
 				return field.Required(fieldSpec.Child("KubeAPIServer"), "bootstrap token require the NodeRestriction admissions controller")
 			}
-		}
-
-		if c.Spec.Kubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.Kubelet.APIServers) {
-			return field.Invalid(kubeletPath.Child("APIServers"), c.Spec.Kubelet.APIServers, "Not a valid APIServer URL")
 		}
 	}
 
@@ -504,33 +478,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	if c.Spec.MasterKubelet != nil {
 		masterKubeletPath := fieldSpec.Child("MasterKubelet")
 
-		if kubernetesRelease.GTE(semver.MustParse("1.6.0")) {
-			// Flag removed in 1.6
-			if c.Spec.MasterKubelet.APIServers != "" {
-				return field.Invalid(
-					masterKubeletPath.Child("APIServers"),
-					c.Spec.MasterKubelet.APIServers,
-					"api-servers flag was removed in 1.6")
-			}
-		} else {
-			if strict && c.Spec.MasterKubelet.APIServers == "" {
-				return field.Required(masterKubeletPath.Child("APIServers"), "")
-			}
-		}
-
-		if kubernetesRelease.GTE(semver.MustParse("1.10.0")) {
-			// Flag removed in 1.10
-			if c.Spec.MasterKubelet.RequireKubeconfig != nil {
-				return field.Invalid(
-					masterKubeletPath.Child("requireKubeconfig"),
-					*c.Spec.MasterKubelet.RequireKubeconfig,
-					"require-kubeconfig flag was removed in 1.10.  (Please be sure you are not using a cluster config from `kops get cluster --full`)")
-			}
-		}
-
-		if c.Spec.MasterKubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.MasterKubelet.APIServers) {
-			return field.Invalid(masterKubeletPath.Child("APIServers"), c.Spec.MasterKubelet.APIServers, "Not a valid APIServer URL")
-		}
+		validateKubeletConfig(masterKubeletPath, kubernetesRelease, c.Spec.MasterKubelet, strict)
 	}
 
 	// Topology support
