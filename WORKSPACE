@@ -47,11 +47,9 @@ container_repositories()
 
 container_pull(
     name = "debian_hyperkube_base_amd64",
-    # 'tag' is also supported, but digest is encouraged for reproducibility.
-    digest = "sha256:cc782ed16599000ca4c85d47ec6264753747ae1e77520894dca84b104a7621e2",
     registry = "k8s.gcr.io",
     repository = "debian-hyperkube-base-amd64",
-    tag = "0.10",
+    tag = "0.11.5",
 )
 
 git_repository(
@@ -73,8 +71,8 @@ dpkg_src(
     name = "debian_stretch",
     arch = "amd64",
     distro = "stretch",
-    sha256 = "4cb2fac3e32292613b92d3162e99eb8a1ed7ce47d1b142852b0de3092b25910c",
-    snapshot = "20180406T154421Z",
+    sha256 = "e4bd231ea3a4b9703832e4ac418e01bf17bab4d6df76008ec4c094cc25fa501c",
+    snapshot = "20181209T224436Z",
     url = "http://snapshot.debian.org/archive",
 )
 
