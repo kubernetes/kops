@@ -122,8 +122,8 @@ type KuberouterNetworkingSpec struct {
 	// PrometheusMetricsPort is the TCP port that the Prometheus
 	// metrics server should bind to (default: 12013)
 	PrometheusMetricsPort int32 `json:"prometheusMetricsPort,omitempty"`
-	// LivenessProbeEnabled if livenessProbe is enabled (default: true)
-	LivenessProbeEnabled bool `json:"livenessProbeEnabled,omitempty"`
+	// LivenessProbeDisabled if livenessProbe is disabled (default: false)
+	LivenessProbeDisabled bool `json:"livenessProbeDisabled,omitempty"`
 	// LivenessProbeInitialDelay livenessProbe initialDelay (default: 10)
 	LivenessProbeInitialDelay bool `json:"livenessProbeInitialDelay,omitempty"`
 	// LivenessProbePeriodSeconds livenessProbe periodSeconds (default: 3)

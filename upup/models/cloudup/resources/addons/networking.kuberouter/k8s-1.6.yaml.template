@@ -49,7 +49,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        {{- if eq .Networking.Kuberouter.LivenessProbeEnabled "true" }}
+        {{- if ne .Networking.Kuberouter.LivenessProbeDisabled "false" }}
         livenessProbe:
           httpGet:
             path: /healthz
