@@ -539,6 +539,18 @@ var dockerVersions = []dockerVersion{
 		Hash:          "18473b80e61b6d4eb8b52d87313abd71261287e5",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
+
+	// 18.06.1 - CentOS / Rhel7
+	{
+		DockerVersion: "18.06.1",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.06.1.ce",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.1.ce-3.el7.x86_64.rpm",
+		Hash:          "0a1325e570c5e54111a79623c9fd0c0c714d3a11",
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
+	},
 }
 
 func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro distros.Distribution) bool {
