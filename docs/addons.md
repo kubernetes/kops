@@ -135,7 +135,7 @@ The [Prometheus Operator](https://github.com/coreos/prometheus-operator/) makes 
 [kube-prometheus](https://github.com/coreos/prometheus-operator/blob/master/contrib/kube-prometheus) combines the Prometheus Operator with a collection of manifests to help getting started with monitoring Kubernetes itself and applications running on top of it.
 
 ```console
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/prometheus-operator/v0.19.0.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/prometheus-operator/v0.26.0.yaml
 ```
 
 ### Route53 Mapper
