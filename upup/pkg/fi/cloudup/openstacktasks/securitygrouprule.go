@@ -48,6 +48,17 @@ type SecurityGroupRule struct {
 	Lifecycle      *fi.Lifecycle
 }
 
+// GetDependencies returns the dependencies of the Instance task
+func (e *SecurityGroupRule) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
+	for _, task := range tasks {
+		if _, ok := task.(*SecurityGroup); ok {
+			deps = append(deps, task)
+		}
+	}
+	return deps
+}
+
 var _ fi.CompareWithID = &SecurityGroupRule{}
 
 func (r *SecurityGroupRule) CompareWithID() *string {
@@ -92,6 +103,7 @@ func (r *SecurityGroupRule) Find(context *fi.Context) (*SecurityGroupRule, error
 		SecGroup:       &SecurityGroup{ID: fi.String(rule.SecGroupID)},
 		Lifecycle:      r.Lifecycle,
 	}
+	r.ID = actual.ID
 	return actual, nil
 }
 
@@ -152,18 +164,4 @@ func (_ *SecurityGroupRule) RenderOpenstack(t *openstack.OpenstackAPITarget, a, 
 
 	glog.V(2).Infof("Openstack task SecurityGroupRule::RenderOpenstack did nothing")
 	return nil
-}
-
-var _ fi.HasLifecycle = &SecurityGroupRule{}
-
-func (r *SecurityGroupRule) GetLifecycle() *fi.Lifecycle {
-	return r.Lifecycle
-}
-
-func (r *SecurityGroupRule) SetLifecycle(lifecycle fi.Lifecycle) {
-	r.Lifecycle = &lifecycle
-}
-
-func (r *SecurityGroupRule) String() string {
-	return fi.TaskAsString(r)
 }
