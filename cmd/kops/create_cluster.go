@@ -1292,7 +1292,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				fmt.Fprintf(&sb, " * edit your master instance group: kops edit ig --name=%s %s\n", clusterName, masters[0].ObjectMeta.Name)
 			}
 			fmt.Fprintf(&sb, "\n")
-			fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster %s --yes\n", clusterName)
+			ok := os.LookupEnv(NAME)
+				if !ok {
+					fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster --name %s --yes\n", clusterName)
+				} else {
+					fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster --yes\n")
+				}
+			}
 			fmt.Fprintf(&sb, "\n")
 
 			_, err := out.Write(sb.Bytes())
