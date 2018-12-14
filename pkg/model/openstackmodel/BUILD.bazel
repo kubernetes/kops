@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "context.go",
         "convenience.go",
+        "firewall.go",
         "instance.go",
         "lb.go",
         "network.go",
@@ -15,8 +16,12 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/apis/kops:go_default_library",
+        "//pkg/dns:go_default_library",
         "//pkg/model:go_default_library",
         "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/openstack:go_default_library",
         "//upup/pkg/fi/cloudup/openstacktasks:go_default_library",
+        "//upup/pkg/fi/fitasks:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
     ],
 )
