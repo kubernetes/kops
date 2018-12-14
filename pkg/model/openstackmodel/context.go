@@ -18,6 +18,7 @@ package openstackmodel
 
 import (
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 )
 
@@ -39,4 +40,8 @@ func (c *OpenstackModelContext) LinkToSubnet(name *string) *openstacktasks.Subne
 
 func (c *OpenstackModelContext) LinkToPort(name *string) *openstacktasks.Port {
 	return &openstacktasks.Port{Name: name}
+}
+
+func (c *OpenstackModelContext) LinkToSecurityGroup(name string) *openstacktasks.SecurityGroup {
+	return &openstacktasks.SecurityGroup{Name: fi.String(name)}
 }

@@ -30,14 +30,47 @@ type Port struct {
 	ID             *string
 	Name           *string
 	Network        *Network
-	SecurityGroups []SecurityGroup
+	SecurityGroups []*SecurityGroup
 	Lifecycle      *fi.Lifecycle
+}
+
+// GetDependencies returns the dependencies of the Port task
+func (e *Port) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
+	for _, task := range tasks {
+		if _, ok := task.(*Subnet); ok {
+			deps = append(deps, task)
+		}
+	}
+	return deps
 }
 
 var _ fi.CompareWithID = &Port{}
 
 func (s *Port) CompareWithID() *string {
 	return s.ID
+}
+
+func NewPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, port *ports.Port, find *Port) (*Port, error) {
+	sgs := make([]*SecurityGroup, len(port.SecurityGroups))
+	for i, sgid := range port.SecurityGroups {
+		sgs[i] = &SecurityGroup{
+			ID:        fi.String(sgid),
+			Lifecycle: lifecycle,
+		}
+	}
+
+	actual := &Port{
+		ID:             fi.String(port.ID),
+		Name:           fi.String(port.Name),
+		Network:        &Network{ID: fi.String(port.NetworkID)},
+		SecurityGroups: sgs,
+		Lifecycle:      lifecycle,
+	}
+	if find != nil {
+		find.ID = actual.ID
+	}
+	return actual, nil
 }
 
 func (s *Port) Find(context *fi.Context) (*Port, error) {
@@ -54,24 +87,8 @@ func (s *Port) Find(context *fi.Context) (*Port, error) {
 	} else if len(rs) != 1 {
 		return nil, fmt.Errorf("found multiple ports with name: %s", fi.StringValue(s.Name))
 	}
-	v := rs[0]
 
-	sgs := make([]SecurityGroup, len(v.SecurityGroups))
-	for i, sgid := range v.SecurityGroups {
-		sgs[i] = SecurityGroup{
-			ID:        fi.String(sgid),
-			Lifecycle: s.Lifecycle,
-		}
-	}
-
-	actual := &Port{
-		ID:             fi.String(v.ID),
-		Name:           fi.String(v.Name),
-		Network:        &Network{ID: fi.String(v.NetworkID)},
-		SecurityGroups: sgs,
-		Lifecycle:      s.Lifecycle,
-	}
-	return actual, nil
+	return NewPortTaskFromCloud(cloud, s.Lifecycle, &rs[0], s)
 }
 
 func (s *Port) Run(context *fi.Context) error {

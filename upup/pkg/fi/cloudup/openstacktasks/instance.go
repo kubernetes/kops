@@ -29,43 +29,77 @@ import (
 
 //go:generate fitask -type=Instance
 type Instance struct {
-	ID     *string
-	Name   *string
-	Port   *Port
-	Region *string
-	Flavor *string
-	Image  *string
-	SSHKey *string
-	Tags   []string
-	Count  int
-	Role   *string
+	ID          *string
+	Name        *string
+	Port        *Port
+	Region      *string
+	Flavor      *string
+	Image       *string
+	SSHKey      *string
+	ServerGroup *ServerGroup
+	Tags        []string
+	Role        *string
+	UserData    *string
+	Metadata    map[string]string
 
 	Lifecycle *fi.Lifecycle
 }
 
+// GetDependencies returns the dependencies of the Instance task
+func (e *Instance) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
+	for _, task := range tasks {
+		if _, ok := task.(*ServerGroup); ok {
+			deps = append(deps, task)
+		}
+		if _, ok := task.(*Port); ok {
+			deps = append(deps, task)
+		}
+	}
+	return deps
+}
+
 var _ fi.CompareWithID = &Instance{}
+
+func (e *Instance) WaitForStatusActive(t *openstack.OpenstackAPITarget) error {
+	return servers.WaitForStatus(t.Cloud.ComputeClient(), *e.ID, "ACTIVE", 120)
+}
 
 func (e *Instance) CompareWithID() *string {
 	return e.ID
 }
 
 func (e *Instance) Find(c *fi.Context) (*Instance, error) {
-	if e == nil || e.ID == nil {
+	if e == nil || e.Name == nil {
 		return nil, nil
 	}
-	id := *(e.ID)
-	v, err := servers.Get(c.Cloud.(openstack.OpenstackCloud).ComputeClient(), id).Extract()
+	serverPage, err := servers.List(c.Cloud.(openstack.OpenstackCloud).ComputeClient(), servers.ListOpts{
+		Name: fi.StringValue(e.Name),
+	}).AllPages()
 	if err != nil {
-		return nil, fmt.Errorf("error finding server with id %s: %v", id, err)
+		return nil, fmt.Errorf("error finding server with name %s: %v", fi.StringValue(e.Name), err)
+	}
+	serverList, err := servers.ExtractServers(serverPage)
+	if err != nil {
+		return nil, fmt.Errorf("error extracting server page: %v", err)
+	}
+	if len(serverList) == 0 {
+		return nil, nil
+	}
+	if len(serverList) > 1 {
+		return nil, fmt.Errorf("Multiple servers found with name %s", fi.StringValue(e.Name))
 	}
 
-	a := new(Instance)
-	a.ID = fi.String(v.ID)
-	a.Name = fi.String(v.Name)
-	a.SSHKey = fi.String(v.KeyName)
-	a.Lifecycle = e.Lifecycle
+	server := serverList[0]
+	actual := &Instance{
+		ID:        fi.String(server.ID),
+		Name:      fi.String(server.Name),
+		SSHKey:    fi.String(server.KeyName),
+		Lifecycle: e.Lifecycle,
+	}
+	e.ID = actual.ID
 
-	return a, nil
+	return actual, nil
 }
 
 func (e *Instance) Run(c *fi.Context) error {
@@ -105,24 +139,32 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 					Port: fi.StringValue(e.Port.ID),
 				},
 			},
+			Metadata:      e.Metadata,
+			ServiceClient: t.Cloud.ComputeClient(),
+		}
+		if e.UserData != nil {
+			opt.UserData = []byte(*e.UserData)
 		}
 		keyext := keypairs.CreateOptsExt{
 			CreateOptsBuilder: opt,
-			KeyName:           fi.StringValue(e.SSHKey),
+			KeyName:           openstackKeyPairName(fi.StringValue(e.SSHKey)),
 		}
+
 		sgext := schedulerhints.CreateOptsExt{
 			CreateOptsBuilder: keyext,
 			SchedulerHints: &schedulerhints.SchedulerHints{
-				Group: fi.StringValue(e.Role),
+				Group: *e.ServerGroup.ID,
 			},
 		}
 		v, err := t.Cloud.CreateInstance(sgext)
 		if err != nil {
 			return fmt.Errorf("Error creating instance: %v", err)
 		}
-
 		e.ID = fi.String(v.ID)
+		e.ServerGroup.Members = append(e.ServerGroup.Members, fi.StringValue(e.ID))
+
 		glog.V(2).Infof("Creating a new Openstack instance, id=%s", v.ID)
+
 		return nil
 	}
 

@@ -493,6 +493,25 @@ type LeaderElectionConfiguration struct {
 	LeaderElect *bool `json:"leaderElect,omitempty" flag:"leader-elect"`
 }
 
+type OpenstackLoadbalancerConfig struct {
+	Method          *string `json:"method,omitempty"`
+	Provider        *string `json:"provider,omitempty"`
+	UseOctavia      *bool   `json:"useOctavia,omitempty"`
+	FloatingNetwork *string `json:"floatingNetwork,omitempty"`
+	SubnetID        *string `json:"subnetID,omitempty"`
+}
+
+type OpenstackMonitor struct {
+	Delay      *string `json:"delay,omitempty"`
+	Timeout    *string `json:"timeout,omitempty"`
+	MaxRetries *int    `json:"maxRetries,omitempty"`
+}
+
+type OpenstackConfiguration struct {
+	Loadbalancer *OpenstackLoadbalancerConfig `json:"loadbalancer,omitempty"`
+	Monitor      *OpenstackMonitor            `json:"monitor,omitempty"`
+}
+
 // CloudConfiguration defines the cloud provider configuration
 type CloudConfiguration struct {
 	// GCE cloud-config options
@@ -513,6 +532,8 @@ type CloudConfiguration struct {
 	// Spotinst cloud-config specs
 	SpotinstProduct     *string `json:"spotinstProduct,omitempty"`
 	SpotinstOrientation *string `json:"spotinstOrientation,omitempty"`
+	// Openstack cloud-config options
+	Openstack *OpenstackConfiguration `json:"openstack,omitempty"`
 }
 
 // HasAdmissionController checks if a specific admission controller is enabled
