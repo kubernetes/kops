@@ -41,24 +41,38 @@ func (s *ServerGroup) CompareWithID() *string {
 }
 
 func (s *ServerGroup) Find(context *fi.Context) (*ServerGroup, error) {
-	if s == nil || s.ID == nil {
+	if s == nil || s.Name == nil {
 		return nil, nil
 	}
-	id := *(s.ID)
 	cloud := context.Cloud.(openstack.OpenstackCloud)
-	g, err := servergroups.Get(cloud.ComputeClient(), id).Extract()
-	if err != nil {
-		return nil, err
-	}
+	//TODO: move to cloud, add vfs backoff
 
-	a := &ServerGroup{
-		ID:        fi.String(g.ID),
-		Name:      fi.String(g.Name),
-		Members:   g.Members,
-		Policies:  g.Policies,
-		Lifecycle: s.Lifecycle,
+	page, err := servergroups.List(cloud.ComputeClient()).AllPages()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to list server groups: %v", err)
 	}
-	return a, nil
+	serverGroups, err := servergroups.ExtractServerGroups(page)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to extract server groups: %v", err)
+	}
+	var actual *ServerGroup
+	for _, serverGroup := range serverGroups {
+		if serverGroup.Name == *s.Name {
+			if actual != nil {
+				return nil, fmt.Errorf("Found multiple server groups with name %s", s.Name)
+			}
+			actual = &ServerGroup{
+				Name:    fi.String(serverGroup.Name),
+				ID:      fi.String(serverGroup.ID),
+				Members: serverGroup.Members,
+			}
+		}
+	}
+	if actual == nil {
+		return nil, nil
+	}
+	s.ID = actual.ID
+	return actual, nil
 }
 
 func (s *ServerGroup) Run(context *fi.Context) error {
@@ -94,7 +108,6 @@ func (_ *ServerGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, cha
 		if err != nil {
 			return fmt.Errorf("error creating ServerGroup: %v", err)
 		}
-
 		e.ID = fi.String(g.ID)
 		return nil
 	}

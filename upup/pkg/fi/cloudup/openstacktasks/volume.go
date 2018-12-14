@@ -68,6 +68,8 @@ func (c *Volume) Find(context *fi.Context) (*Volume, error) {
 		Tags:             v.Metadata,
 		Lifecycle:        c.Lifecycle,
 	}
+	c.ID = actual.ID
+	c.AvailabilityZone = actual.AvailabilityZone
 	return actual, nil
 }
 
@@ -115,9 +117,14 @@ func (_ *Volume) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 	if a == nil {
 		glog.V(2).Infof("Creating PersistentVolume with Name:%q", fi.StringValue(e.Name))
 
+		storageAZ, err := t.Cloud.GetStorageAZFromCompute(fi.StringValue(e.AvailabilityZone))
+		if err != nil {
+			return fmt.Errorf("Failed to get storage availability zone: %s", err)
+		}
+
 		opt := cinderv2.CreateOpts{
 			Size:             int(*e.SizeGB),
-			AvailabilityZone: fi.StringValue(e.AvailabilityZone),
+			AvailabilityZone: storageAZ.ZoneName,
 			Metadata:         e.Tags,
 			Name:             fi.StringValue(e.Name),
 			VolumeType:       fi.StringValue(e.VolumeType),
@@ -129,6 +136,7 @@ func (_ *Volume) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 		}
 
 		e.ID = fi.String(v.ID)
+		e.AvailabilityZone = fi.String(v.AvailabilityZone)
 		return nil
 	}
 

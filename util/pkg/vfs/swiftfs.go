@@ -45,6 +45,7 @@ import (
 func NewSwiftClient() (*gophercloud.ServiceClient, error) {
 	config := OpenstackConfig{}
 
+	// Check if env credentials are valid first
 	authOption, err := config.GetCredential()
 	if err != nil {
 		return nil, err
@@ -69,9 +70,18 @@ func NewSwiftClient() (*gophercloud.ServiceClient, error) {
 		return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
 	}
 
-	endpointOpt, err := config.GetServiceConfig("Swift")
-	if err != nil {
-		return nil, err
+	var endpointOpt gophercloud.EndpointOpts
+	if region, err := config.GetRegion(); err != nil {
+		glog.Warningf("Retrieving swift configuration from openstack config file: %v", err)
+		endpointOpt, err = config.GetServiceConfig("Swift")
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		endpointOpt = gophercloud.EndpointOpts{
+			Type:   "object-store",
+			Region: region,
+		}
 	}
 
 	client, err := openstack.NewObjectStorageV1(pc, endpointOpt)
@@ -121,6 +131,93 @@ func (oc OpenstackConfig) getSection(name string, items []string) (map[string]st
 }
 
 func (oc OpenstackConfig) GetCredential() (gophercloud.AuthOptions, error) {
+
+	opt, fileErr := oc.getCredentialFromFile()
+
+	// Override all file values with the equivalent environment variables
+	for _, envVar := range []string{
+		"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_ID", "OS_PROJECT_NAME",
+		"OS_PROJECT_DOMAIN_NAME", "OS_PROJECT_DOMAIN_ID",
+		"OS_USERNAME",
+		"OS_PASSWORD",
+		"OS_AUTH_URL",
+	} {
+		val := os.Getenv(envVar)
+		// If surrounded by single quotes, strip
+		if len(val) > 1 {
+			if val[0] == '\'' && val[len(val)-1] == '\'' {
+				val = val[1 : len(val)-1]
+			}
+		}
+		if val != "" {
+			switch envVar {
+			case "OS_TENANT_ID", "OS_PROJECT_ID":
+				opt.TenantID = val
+			case "OS_TENANT_NAME", "OS_PROJECT_NAME":
+				opt.TenantName = val
+			case "OS_PROJECT_DOMAIN_NAME":
+				opt.DomainName = val
+			case "OS_PROJECT_DOMAIN_ID":
+				opt.DomainID = val
+			case "OS_USERNAME":
+				opt.Username = val
+			case "OS_PASSWORD":
+				opt.Password = val
+			case "OS_AUTH_URL":
+				opt.IdentityEndpoint = val
+			}
+		}
+	}
+	var err bytes.Buffer
+	if opt.TenantID == "" && opt.TenantName == "" {
+		err.WriteString("OS_TENANT_ID or OS_TENANT_NAME, ")
+	}
+	if opt.DomainName == "" && opt.DomainID == "" {
+		err.WriteString("OS_PROJECT_DOMAIN_NAME or OS_PROJECT_DOMAIN_ID, ")
+	}
+	if opt.Username == "" {
+		err.WriteString("OS_USERNAME, ")
+		return opt, fmt.Errorf("Swift will not use env auth as it is missing OS_USERNAME")
+	}
+	if opt.Password == "" {
+		err.WriteString("OS_PASSWORD, ")
+		return opt, fmt.Errorf("Swift will not use env auth as it is missing OS_PASSWORD")
+	}
+	if opt.IdentityEndpoint == "" {
+		err.WriteString("OS_AUTH_URL ")
+	}
+	if len(err.String()) != 0 {
+		if fileErr != nil {
+			return opt, fmt.Errorf("openstack config file did not specify %s and were not in environment variables", err.String())
+		}
+		return opt, fmt.Errorf("Missing %s from environment or openstack config", err.String())
+	}
+
+	return opt, nil
+}
+
+func (oc OpenstackConfig) GetRegion() (string, error) {
+
+	var region string
+	if region = os.Getenv("OS_REGION_NAME"); region != "" {
+		if len(region) > 1 {
+			if region[0] == '\'' && region[len(region)-1] == '\'' {
+				region = region[1 : len(region)-1]
+			}
+		}
+		return region, nil
+	}
+
+	items := []string{"region"}
+	// TODO: Unsure if this is the correct section for region
+	values, err := oc.getSection("Global", items)
+	if err != nil {
+		return "", fmt.Errorf("Region not provided in OS_REGION_NAME or openstack config section GLOBAL")
+	}
+	return values["region"], nil
+}
+
+func (oc OpenstackConfig) getCredentialFromFile() (gophercloud.AuthOptions, error) {
 	opt := gophercloud.AuthOptions{}
 	name := "Default"
 	items := []string{"identity", "user", "user_id", "password", "domain_id", "domain_name", "tenant_id", "tenant_name"}
