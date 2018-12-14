@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_prefix")
+
+go_prefix("github.com/bazelbuild/buildtools")
+
+test_suite(
+    name = "tests",
+    tests = [
+        "//api_proto:api.gen.pb.go_checkshtest",
+        "//build:go_default_test",
+        "//build:parse.y.go_checkshtest",
+        "//build_proto:build.gen.pb.go_checkshtest",
+        "//deps_proto:deps.gen.pb.go_checkshtest",
+        "//edit:go_default_test",
+        "//extra_actions_base_proto:extra_actions_base.gen.pb.go_checkshtest",
+        "//lang:tables.gen.go_checkshtest",
+        "//tables:go_default_test",
+        "//wspace:go_default_test",
+    ],
+)

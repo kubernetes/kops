@@ -6,12 +6,11 @@ go_library(
         "update.go",
         "vendor.go",
     ],
-    importmap = "vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/update",
     importpath = "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/update",
     visibility = ["//visibility:public"],
     deps = [
+        "//cmd/apiserver-boot/boot/init_repo:go_default_library",
         "//vendor/github.com/emicklei/go-restful/log:go_default_library",
-        "//vendor/github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/init_repo:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
     ],
 )

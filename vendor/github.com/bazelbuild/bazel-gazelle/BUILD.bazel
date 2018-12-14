@@ -1,0 +1,10 @@
+# gazelle:prefix github.com/bazelbuild/bazel-gazelle
+
+load("//:def.bzl", "gazelle")
+
+gazelle(
+    name = "gazelle",
+    command = "fix",
+)
+
+exports_files(["WORKSPACE"])

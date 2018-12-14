@@ -36,3 +36,7 @@ func (c *OpenstackModelContext) LinkToRouter(name *string) *openstacktasks.Route
 func (c *OpenstackModelContext) LinkToSubnet(name *string) *openstacktasks.Subnet {
 	return &openstacktasks.Subnet{Name: name}
 }
+
+func (c *OpenstackModelContext) LinkToPort(name *string) *openstacktasks.Port {
+	return &openstacktasks.Port{Name: name}
+}

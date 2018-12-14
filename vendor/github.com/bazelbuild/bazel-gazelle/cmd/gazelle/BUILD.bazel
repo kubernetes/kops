@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_binary", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -12,19 +12,18 @@ go_library(
         "update-repos.go",
         "version.go",
     ],
-    importmap = "vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle",
     importpath = "github.com/bazelbuild/bazel-gazelle/cmd/gazelle",
     visibility = ["//visibility:private"],
     deps = [
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/config:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/generator:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/label:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/merger:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/packages:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/repos:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/resolve:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/version:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/wspace:go_default_library",
+        "//internal/config:go_default_library",
+        "//internal/generator:go_default_library",
+        "//internal/label:go_default_library",
+        "//internal/merger:go_default_library",
+        "//internal/packages:go_default_library",
+        "//internal/repos:go_default_library",
+        "//internal/resolve:go_default_library",
+        "//internal/version:go_default_library",
+        "//internal/wspace:go_default_library",
         "//vendor/github.com/bazelbuild/buildtools/build:go_default_library",
     ],
 )
@@ -33,4 +32,27 @@ go_binary(
     name = "gazelle",
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
+)
+
+go_binary(
+    name = "gazelle_pure",
+    embed = [":go_default_library"],
+    pure = "on",
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    size = "small",
+    srcs = [
+        "fix_test.go",
+        "integration_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//internal/config:go_default_library",
+        "//internal/wspace:go_default_library",
+        "//vendor/github.com/bazelbuild/buildtools/build:go_default_library",
+    ],
 )

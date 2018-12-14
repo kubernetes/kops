@@ -1,0 +1,84 @@
+hash: 0ed42f135e2b57df4a123b68366c0021a016e9a5b52ff88f31d47eecfb78d5dd
+updated: 2018-01-21T14:04:45.7433-08:00
+imports:
+- name: github.com/emicklei/go-restful
+  version: ff4f55a206334ef123e4f79bbf348980da81ca46
+  subpackages:
+  - log
+- name: github.com/go-openapi/analysis
+  version: b44dc874b601d9e4e2f6e19140e794ba24bead3b
+- name: github.com/go-openapi/jsonpointer
+  version: 46af16f9f7b149af66e5d1bd010e3574dc06de98
+- name: github.com/go-openapi/jsonreference
+  version: 13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272
+- name: github.com/go-openapi/loads
+  version: 18441dfa706d924a39a030ee2c3b1d8d81917b38
+- name: github.com/go-openapi/runtime
+  version: 11e322eeecc1032d5a0a96c566ed53f2b5c26e22
+- name: github.com/go-openapi/spec
+  version: 6aced65f8501fe1217321abf0749d354824ba2ff
+- name: github.com/go-openapi/strfmt
+  version: d65c7fdb29eca313476e529628176fe17e58c488
+- name: github.com/go-openapi/swag
+  version: 1d0bd113de87027671077d3c71eb3ac5d7dbba72
+- name: github.com/go-openapi/validate
+  version: deaf2c9013bc1a7f4c774662259a506ba874d80f
+- name: github.com/gogo/protobuf
+  version: c0656edd0d9eab7c66d1eb0c568f9039345796f7
+  subpackages:
+  - proto
+  - sortkeys
+- name: github.com/golang/glog
+  version: 44145f04b68cf362d9c4df2182967c2275eaefed
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/kubernetes-incubator/reference-docs
+  version: 2991dafd4e5074507fcf86b8f2ae315427a8e829
+  subpackages:
+  - gen-apidocs
+- name: github.com/markbates/inflect
+  version: a12c3aec81a6a938bf584a4bac567afed9256586
+- name: github.com/onsi/ginkgo
+  version: 9eda700730cba42af70d53180f9dcce9266bc2bc
+- name: github.com/onsi/gomega
+  version: c893efa28eb45626cdaa76c9f653b62488858837
+- name: github.com/pkg/errors
+  version: a22138067af1c4942683050411a841ade67fe1eb
+- name: github.com/spf13/cobra
+  version: f62e98d28ab7ad31d707ba837a966378465c7b57
+  subpackages:
+  - doc
+- name: github.com/spf13/pflag
+  version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
+- name: github.com/spf13/viper
+  version: 7fb2782df3d83e0036cc89f461ed0422628776f4
+- name: k8s.io/api
+  version: 006a217681ae70cbacdd66a5e2fca1a61a8ff28e
+- name: k8s.io/apimachinery
+  version: 68f9c3a1feb3140df59c67ced62d3a5df8e6c9c2
+  subpackages:
+  - pkg/runtime/schema
+  - pkg/util/runtime
+  - pkg/util/sets
+  - pkg/util/wait
+- name: k8s.io/apiserver
+  version: 2a1092aaa7202e8f9b188281ff9424a014ce61c2
+  subpackages:
+  - pkg/util/logs
+- name: k8s.io/client-go
+  version: 9389c055a838d4f208b699b3c7c51b70f2368861
+  subpackages:
+  - util/homedir
+- name: k8s.io/code-generator
+  version: 91d3f6a57905178524105a085085901bb73bd3dc
+- name: k8s.io/gengo
+  version: 9e661e9308f078838e266cca1c673922088c0ea4
+  subpackages:
+  - args
+  - generator
+  - namer
+  - parser
+  - types
+- name: k8s.io/kube-openapi
+  version: 868f2f29720b192240e18284659231b440f9cda5
+testImports: []

@@ -1,0 +1,97 @@
+
+# Gopkg.toml example
+#
+# Refer to https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md
+# for detailed Gopkg.toml documentation.
+#
+# required = ["github.com/user/thing/cmd/thing"]
+# ignored = ["github.com/user/project/pkgX", "bitbucket.org/user/project/pkgA/pkgY"]
+#
+# [[constraint]]
+#   name = "github.com/user/project"
+#   version = "1.0.0"
+#
+# [[constraint]]
+#   name = "github.com/user/project2"
+#   branch = "dev"
+#   source = "github.com/myfork/project2"
+#
+# [[override]]
+#  name = "github.com/x/y"
+#  version = "2.4.0"
+
+# Uncomment to update deps with dep tool
+# ignored = ["github.com/kubernetes-incubator/apiserver-builder","github.com/kubernetes-incubator/apiserver-builder/cmd"]
+
+# Comment to update deps with dep tool
+[[constraint]]
+  version = "v0.1-alpha.28"
+  name = "github.com/kubernetes-incubator/apiserver-builder"
+
+[[constraint]]
+  name = "github.com/emicklei/go-restful"
+
+[[constraint]]
+  name = "github.com/go-openapi/loads"
+
+[[constraint]]
+  name = "github.com/go-openapi/runtime"
+
+[[constraint]]
+  name = "github.com/go-openapi/spec"
+
+[[constraint]]
+  name = "github.com/go-openapi/validate"
+
+[[constraint]]
+  name = "github.com/golang/glog"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/markbates/inflect"
+
+[[constraint]]
+  name = "github.com/onsi/ginkgo"
+  version = "1.4.0"
+
+[[constraint]]
+  name = "github.com/onsi/gomega"
+  version = "1.2.0"
+
+[[constraint]]
+  name = "github.com/pkg/errors"
+
+[[constraint]]
+  name = "github.com/spf13/cobra"
+
+[[constraint]]
+  name = "github.com/spf13/pflag"
+
+[[constraint]]
+  name = "github.com/spf13/viper"
+
+[[constraint]]
+  branch = "release-1.9"
+  name = "k8s.io/api"
+
+[[constraint]]
+  branch = "release-1.9"
+  name = "k8s.io/apiextensions-apiserver"
+
+[[constraint]]
+  branch = "release-1.9"
+  name = "k8s.io/apimachinery"
+
+[[constraint]]
+  branch = "release-1.9"
+  name = "k8s.io/apiserver"
+
+[[constraint]]
+  branch = "release-6.0"
+  name = "k8s.io/client-go"
+
+[[constraint]]
+  name = "k8s.io/gengo"
+
+[[constraint]]
+  name = "k8s.io/kube-openapi"
