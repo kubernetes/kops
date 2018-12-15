@@ -181,6 +181,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", options.MasterInterval, "Time to wait between restarting masters")
 	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting nodes")
 	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
+	cmd.Flags().DurationVar(&options.PostDrainDelay, "post-drain-delay", options.PostDrainDelay, "Time to wait after draining each node")
 	cmd.Flags().BoolVarP(&options.Interactive, "interactive", "i", options.Interactive, "Prompt to continue after each instance is updated")
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
 	cmd.Flags().StringSliceVar(&options.InstanceGroupRoles, "instance-group-roles", options.InstanceGroupRoles, "If specified, only instance groups of the specified role will be updated (e.g. Master,Node,Bastion)")
