@@ -19,6 +19,7 @@ package openstack
 import (
 	"fmt"
 	"time"
+	"net/http"
 
 	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
@@ -100,17 +101,29 @@ type OpenstackCloud interface {
 	//CreateNetwork will create a new Neutron network
 	CreateNetwork(opt networks.CreateOptsBuilder) (*networks.Network, error)
 
+	//DeleteNetwork will delete neutron network
+	DeleteNetwork(networkID string) error
+
 	//ListRouters will return the Neutron routers which match the options
 	ListRouters(opt routers.ListOpts) ([]routers.Router, error)
 
 	//CreateRouter will create a new Neutron router
 	CreateRouter(opt routers.CreateOptsBuilder) (*routers.Router, error)
 
+	//DeleteRouter will delete neutron router
+	DeleteRouter(routerID string) error
+
+	//DeleteRouterGateway will delete gateway from neutron router
+	//DeleteRouterGateway(routerName string) error
+
 	//ListSubnets will return the Neutron subnets which match the options
 	ListSubnets(opt subnets.ListOptsBuilder) ([]subnets.Subnet, error)
 
 	//CreateSubnet will create a new Neutron subnet
 	CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.Subnet, error)
+
+	//DeleteSubnet will delete neutron subnet
+	DeleteSubnet(subnetID string) error
 
 	// ListKeypairs will return the all Nova keypairs
 	ListKeypairs() ([]keypairs.KeyPair, error)
@@ -129,6 +142,9 @@ type OpenstackCloud interface {
 
 	//CreateRouterInterface will create a new Neutron router interface
 	CreateRouterInterface(routerID string, opt routers.AddInterfaceOptsBuilder) (*routers.InterfaceInfo, error)
+
+	//DeleteRouterInterface will delete router interface from subnet
+	DeleteRouterInterface(routerID string, opt routers.RemoveInterfaceOptsBuilder) error
 
 	// CreateServerGroup will create a new server group.
 	CreateServerGroup(opt servergroups.CreateOpts) (*servergroups.ServerGroup, error)
@@ -193,6 +209,20 @@ func NewOpenstackCloud(tags map[string]string) (OpenstackCloud, error) {
 		region:        region,
 	}
 	return c, nil
+}
+
+func isNotFound(err error) bool {
+	if _, ok := err.(gophercloud.ErrDefault404); ok {
+		return true
+	}
+
+	if errCode, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok {
+		if errCode.Actual == http.StatusNotFound {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (c *openstackCloud) Region() string {
@@ -413,6 +443,23 @@ func (c *openstackCloud) ListNetworks(opt networks.ListOptsBuilder) ([]networks.
 	}
 }
 
+func (c *openstackCloud) DeleteNetwork(networkID string) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err := networks.Delete(c.neutronClient, networkID).ExtractErr()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting network: %v", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}
+
 func (c *openstackCloud) CreateNetwork(opt networks.CreateOptsBuilder) (*networks.Network, error) {
 	var n *networks.Network
 
@@ -455,6 +502,23 @@ func (c *openstackCloud) ListRouters(opt routers.ListOpts) ([]routers.Router, er
 		return rs, nil
 	} else {
 		return rs, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) DeleteRouter(routerID string) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err := routers.Delete(c.neutronClient, routerID).ExtractErr()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting router: %v", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
 	}
 }
 
@@ -503,6 +567,23 @@ func (c *openstackCloud) ListSubnets(opt subnets.ListOptsBuilder) ([]subnets.Sub
 	}
 }
 
+func (c *openstackCloud) DeleteSubnet(subnetID string) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err := subnets.Delete(c.neutronClient, subnetID).ExtractErr()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting subnet: %v", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}
+
 func (c *openstackCloud) CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.Subnet, error) {
 	var s *subnets.Subnet
 
@@ -526,7 +607,7 @@ func (c *openstackCloud) CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.S
 func (c *openstackCloud) DeleteKeyPair(name string) error {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
 		err := keypairs.Delete(c.novaClient, name).ExtractErr()
-		if err != nil {
+		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting keypair: %v", err)
 		}
 
@@ -629,6 +710,23 @@ func (c *openstackCloud) ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, err
 		return p, nil
 	} else {
 		return p, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) DeleteRouterInterface(routerID string, opt routers.RemoveInterfaceOptsBuilder) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		_, err := routers.RemoveInterface(c.neutronClient, routerID, opt).Extract()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting router interface: %v", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
 	}
 }
 

@@ -20,6 +20,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
@@ -29,7 +33,11 @@ import (
 type openstackListFn func() ([]*resources.Resource, error)
 
 const (
-	typeSSHKey = "SSHKey"
+	typeSSHKey   = "SSHKey"
+	typeRouterIF = "Router-IF"
+	typeRouter   = "Router"
+	typeSubnet   = "Subnet"
+	typeNetwork  = "Network"
 )
 
 func ListResources(cloud openstack.OpenstackCloud, clusterName string) (map[string]*resources.Resource, error) {
@@ -43,6 +51,7 @@ func ListResources(cloud openstack.OpenstackCloud, clusterName string) (map[stri
 
 	listFunctions := []openstackListFn{
 		os.ListKeypairs,
+		os.ListNetwork,
 	}
 	for _, fn := range listFunctions {
 		resourceTrackers, err := fn()
@@ -53,7 +62,6 @@ func ListResources(cloud openstack.OpenstackCloud, clusterName string) (map[stri
 			resources[t.Type+":"+t.ID] = t
 		}
 	}
-
 	return resources, nil
 }
 
@@ -62,7 +70,6 @@ type clusterDiscoveryOS struct {
 	osCloud     openstack.OpenstackCloud
 	clusterName string
 
-	//instanceTemplates []*compute.InstanceTemplate
 	zones []string
 }
 
@@ -70,6 +77,127 @@ func openstackKeyPairName(org string) string {
 	name := strings.Replace(org, ".", "-", -1)
 	name = strings.Replace(name, ":", "_", -1)
 	return name
+}
+
+func (os *clusterDiscoveryOS) ListNetwork() ([]*resources.Resource, error) {
+	var resourceTrackers []*resources.Resource
+
+	opt := networks.ListOpts{
+		Name: os.clusterName,
+	}
+	networks, err := os.osCloud.ListNetworks(opt)
+	if err != nil {
+		return resourceTrackers, err
+	}
+
+	for _, network := range networks {
+		optRouter := routers.ListOpts{
+			Name: strings.Replace(os.clusterName, ".", "-", -1),
+		}
+		routers, err := os.osCloud.ListRouters(optRouter)
+		if err != nil {
+			return resourceTrackers, err
+		}
+		for _, router := range routers {
+			resourceTracker := &resources.Resource{
+				Name:    router.Name,
+				ID:      router.ID,
+				Type:    typeRouter,
+				Deleter: DeleteRouter,
+			}
+			resourceTrackers = append(resourceTrackers, resourceTracker)
+		}
+
+		optSubnet := subnets.ListOpts{
+			NetworkID:  network.ID,
+		}
+		subnets, err := os.osCloud.ListSubnets(optSubnet)
+		if err != nil {
+			return resourceTrackers, err
+		}
+		for _, subnet := range subnets {
+			// router interfaces
+			for _, router := range routers {
+				resourceTracker := &resources.Resource{
+					Name:    router.ID,
+					ID:      subnet.ID,
+					Type:    typeRouterIF,
+					Deleter: DeleteRouterIF,
+				}
+				resourceTrackers = append(resourceTrackers, resourceTracker)
+			}
+			resourceTracker := &resources.Resource{
+				Name:    subnet.Name,
+				ID:      subnet.ID,
+				Type:    typeSubnet,
+				Deleter: DeleteSubnet,
+			}
+			resourceTrackers = append(resourceTrackers, resourceTracker)
+		}
+		resourceTracker := &resources.Resource{
+			Name:    network.Name,
+			ID:      network.ID,
+			Type:    typeNetwork,
+			Deleter: DeleteNetwork,
+		}
+		resourceTrackers = append(resourceTrackers, resourceTracker)
+	}
+	return resourceTrackers, nil
+}
+
+func DeleteRouterIF(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(openstack.OpenstackCloud)
+	name := r.Name
+
+	glog.V(2).Infof("Deleting Openstack router interface %q", name)
+
+	opts := routers.RemoveInterfaceOpts{
+		SubnetID: r.ID,
+	}
+	err := c.DeleteRouterInterface(name, opts)
+	if err != nil {
+		return fmt.Errorf("error deleting router interface %q: %v", name, err)
+	}
+	return nil
+}
+
+func DeleteRouter(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(openstack.OpenstackCloud)
+	name := r.Name
+
+	glog.V(2).Infof("Deleting Openstack router %q", name)
+
+	err := c.DeleteRouter(r.ID)
+	if err != nil {
+		return fmt.Errorf("error deleting router %q: %v", name, err)
+	}
+	return nil
+}
+
+func DeleteSubnet(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(openstack.OpenstackCloud)
+	name := r.Name
+
+	glog.V(2).Infof("Deleting Openstack subnet %q", name)
+
+	err := c.DeleteSubnet(r.ID)
+	if err != nil {
+		return fmt.Errorf("error deleting subnet %q: %v", name, err)
+	}
+	return nil
+}
+
+func DeleteNetwork(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(openstack.OpenstackCloud)
+	name := r.Name
+
+	glog.V(2).Infof("Deleting Openstack network %q", name)
+
+	err := c.DeleteNetwork(r.ID)
+	if err != nil {
+		return fmt.Errorf("error deleting network %q: %v", name, err)
+	}
+	return nil
 }
 
 func (os *clusterDiscoveryOS) ListKeypairs() ([]*resources.Resource, error) {
