@@ -7,6 +7,11 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/resources:go_default_library",
+        "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/openstack:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/networks:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/subnets:go_default_library",
     ],
 )

@@ -109,7 +109,7 @@ func (os *clusterDiscoveryOS) ListNetwork() ([]*resources.Resource, error) {
 		}
 
 		optSubnet := subnets.ListOpts{
-			NetworkID:  network.ID,
+			NetworkID: network.ID,
 		}
 		subnets, err := os.osCloud.ListSubnets(optSubnet)
 		if err != nil {

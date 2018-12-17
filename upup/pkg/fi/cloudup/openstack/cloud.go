@@ -18,8 +18,8 @@ package openstack
 
 import (
 	"fmt"
-	"time"
 	"net/http"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
