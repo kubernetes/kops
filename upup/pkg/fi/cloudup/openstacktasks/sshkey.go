@@ -45,7 +45,7 @@ func (e *SSHKey) CompareWithID() *string {
 
 func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 	cloud := c.Cloud.(openstack.OpenstackCloud)
-	rs, err := cloud.ListKeypair(openstackKeyPairName(fi.StringValue(e.Name)))
+	rs, err := cloud.GetKeypair(openstackKeyPairName(fi.StringValue(e.Name)))
 	if err != nil {
 		return nil, err
 	}

@@ -112,11 +112,17 @@ type OpenstackCloud interface {
 	//CreateSubnet will create a new Neutron subnet
 	CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.Subnet, error)
 
-	// ListKeypair will return the Nova keypairs
-	ListKeypair(name string) (*keypairs.KeyPair, error)
+	// ListKeypairs will return the all Nova keypairs
+	ListKeypairs() ([]keypairs.KeyPair, error)
+
+	// GetKeypair will return the Nova keypair
+	GetKeypair(name string) (*keypairs.KeyPair, error)
 
 	// CreateKeypair will create a new Nova Keypair
 	CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error)
+
+	// DeleteKeyPair will delete a Nova keypair
+	DeleteKeyPair(name string) error
 
 	//ListPorts will return the Neutron ports which match the options
 	ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error)
@@ -517,7 +523,49 @@ func (c *openstackCloud) CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.S
 	}
 }
 
-func (c *openstackCloud) ListKeypair(name string) (*keypairs.KeyPair, error) {
+func (c *openstackCloud) DeleteKeyPair(name string) error {
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		err := keypairs.Delete(c.novaClient, name).ExtractErr()
+		if err != nil {
+			return false, fmt.Errorf("error deleting keypair: %v", err)
+		}
+
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) ListKeypairs() ([]keypairs.KeyPair, error) {
+	var k []keypairs.KeyPair
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		allPages, err := keypairs.List(c.novaClient).AllPages()
+		if err != nil {
+			return false, fmt.Errorf("error listing keypairs: %v", err)
+		}
+
+		ks, err := keypairs.ExtractKeyPairs(allPages)
+		if err != nil {
+			return false, fmt.Errorf("error extracting keypairs from pages: %v", err)
+		}
+		k = ks
+		return true, nil
+	})
+	if err != nil {
+		return k, err
+	} else if done {
+		return k, nil
+	} else {
+		return k, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) GetKeypair(name string) (*keypairs.KeyPair, error) {
 	var k *keypairs.KeyPair
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
 		rs, err := keypairs.Get(c.novaClient, name).Extract()
@@ -525,7 +573,7 @@ func (c *openstackCloud) ListKeypair(name string) (*keypairs.KeyPair, error) {
 			if err.Error() == ErrNotFound {
 				return true, nil
 			}
-			return false, fmt.Errorf("error listing keypair: %v", err)
+			return false, fmt.Errorf("error getting keypair: %v", err)
 		}
 		k = rs
 		return true, nil
