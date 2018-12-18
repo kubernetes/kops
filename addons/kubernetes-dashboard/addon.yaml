@@ -46,11 +46,6 @@ spec:
     selector:
       k8s-addon: kubernetes-dashboard.addons.k8s.io
     manifest: v1.8.3.yaml
-  - version: 1.10.0
-    kubernetesVersion: ">=1.10.0" 
-    selector:
-      k8s-addon: kubernetes-dashboard.addons.k8s.io
-    manifest: v1.10.0.yaml
   - version: 1.10.1
     kubernetesVersion: ">=1.10.0" 
     selector:
