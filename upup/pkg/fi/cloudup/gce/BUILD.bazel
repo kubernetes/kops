@@ -9,6 +9,7 @@ go_library(
         "instancegroups.go",
         "labels.go",
         "mock_gce_cloud.go",
+        "network.go",
         "op.go",
         "status.go",
         "utils.go",

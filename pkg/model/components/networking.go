@@ -60,6 +60,11 @@ func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
+	if networking.GCE != nil {
+		// GCE IPAlias networking uses kubenet on the nodes
+		options.Kubelet.NetworkPluginName = "kubenet"
+	}
+
 	if networking.Classic != nil {
 		// The --configure-cbr0 option was deprecated in v1.4 and removed in v1.5.
 		// Only use it when "classic" is allowed (which, by cluster validation,

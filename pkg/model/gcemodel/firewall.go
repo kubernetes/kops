@@ -59,11 +59,10 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	// The traffic is not recognized if it's on the overlay network?
-	klog.Warningf("Adding overlay network for X -> node rule - HACK")
-	klog.Warningf("We should probably use subnets?")
+	if b.Cluster.Spec.NonMasqueradeCIDR != "" {
+		// The traffic is not recognized if it's on the overlay network?
+		klog.Warningf("Adding overlay network for X -> node rule - HACK")
 
-	{
 		t := &gcetasks.FirewallRule{
 			Name:         s(b.SafeObjectName("cidr-to-node")),
 			Lifecycle:    b.Lifecycle,
@@ -114,9 +113,9 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	// The traffic is not recognized if it's on the overlay network?
-	klog.Warningf("Adding overlay network for X -> master rule - HACK")
-	{
+	if b.Cluster.Spec.NonMasqueradeCIDR != "" {
+		// The traffic is not recognized if it's on the overlay network?
+		klog.Warningf("Adding overlay network for X -> master rule - HACK")
 		t := &gcetasks.FirewallRule{
 			Name:         s(b.SafeObjectName("cidr-to-master")),
 			Lifecycle:    b.Lifecycle,

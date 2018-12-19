@@ -237,7 +237,10 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 		networking := &kops.NetworkingSpec{}
 		networking.Flannel = &g.Input
 
-		errs := validateNetworking(networking, field.NewPath("Networking"))
+		cluster := &kops.Cluster{}
+		cluster.Spec.Networking = networking
+
+		errs := validateNetworking(&cluster.Spec, networking, field.NewPath("Networking"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
