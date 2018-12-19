@@ -102,6 +102,8 @@ type ClusterSpec struct {
 	Multizone *bool `json:"multizone,omitempty"`
 	// ServiceClusterIPRange is the CIDR, from the internal network, where we allocate IPs for services
 	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty"`
+	// PodCIDR is the CIDR from which we allocate IPs for pods
+	PodCIDR string `json:"podCIDR,omitempty"`
 	// NonMasqueradeCIDR is the CIDR for the internal k8s network (on which pods & services live)
 	// It cannot overlap ServiceClusterIPRange
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`

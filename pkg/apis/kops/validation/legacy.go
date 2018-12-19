@@ -184,31 +184,42 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		}
 	}
 
+	// nonMasqueradeCIDR is essentially deprecated, and we're moving to cluster-cidr instead (which is better named pod-cidr)
+	nonMasqueradeCIDRRequired := true
+	serviceClusterMustBeSubnetOfNonMasqueradeCIDR := true
+	if c.Spec.Networking != nil && c.Spec.Networking.GCE != nil {
+		nonMasqueradeCIDRRequired = false
+		serviceClusterMustBeSubnetOfNonMasqueradeCIDR = false
+	}
+
 	// Check NonMasqueradeCIDR
 	var nonMasqueradeCIDR *net.IPNet
 	{
 		nonMasqueradeCIDRString := c.Spec.NonMasqueradeCIDR
 		if nonMasqueradeCIDRString == "" {
-			return field.Required(fieldSpec.Child("NonMasqueradeCIDR"), "Cluster did not have NonMasqueradeCIDR set")
-		}
-		_, nonMasqueradeCIDR, err = net.ParseCIDR(nonMasqueradeCIDRString)
-		if err != nil {
-			return field.Invalid(fieldSpec.Child("NonMasqueradeCIDR"), nonMasqueradeCIDRString, "Cluster had an invalid NonMasqueradeCIDR")
-		}
-
-		if networkCIDR != nil && subnet.Overlap(nonMasqueradeCIDR, networkCIDR) && c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC == nil && c.Spec.Networking.LyftVPC == nil {
-
-			return field.Invalid(fieldSpec.Child("NonMasqueradeCIDR"), nonMasqueradeCIDRString, fmt.Sprintf("NonMasqueradeCIDR %q cannot overlap with NetworkCIDR %q", nonMasqueradeCIDRString, c.Spec.NetworkCIDR))
-		}
-
-		if c.Spec.Kubelet != nil && c.Spec.Kubelet.NonMasqueradeCIDR != nonMasqueradeCIDRString {
-			if strict || c.Spec.Kubelet.NonMasqueradeCIDR != "" {
-				return field.Invalid(fieldSpec.Child("NonMasqueradeCIDR"), nonMasqueradeCIDRString, "Kubelet NonMasqueradeCIDR did not match cluster NonMasqueradeCIDR")
+			if nonMasqueradeCIDRRequired {
+				return field.Required(fieldSpec.Child("NonMasqueradeCIDR"), "Cluster did not have NonMasqueradeCIDR set")
 			}
-		}
-		if c.Spec.MasterKubelet != nil && c.Spec.MasterKubelet.NonMasqueradeCIDR != nonMasqueradeCIDRString {
-			if strict || c.Spec.MasterKubelet.NonMasqueradeCIDR != "" {
-				return field.Invalid(fieldSpec.Child("NonMasqueradeCIDR"), nonMasqueradeCIDRString, "MasterKubelet NonMasqueradeCIDR did not match cluster NonMasqueradeCIDR")
+		} else {
+			_, nonMasqueradeCIDR, err = net.ParseCIDR(nonMasqueradeCIDRString)
+			if err != nil {
+				return field.Invalid(fieldSpec.Child("NonMasqueradeCIDR"), nonMasqueradeCIDRString, "Cluster had an invalid NonMasqueradeCIDR")
+			}
+
+			if networkCIDR != nil && subnet.Overlap(nonMasqueradeCIDR, networkCIDR) && c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC == nil && c.Spec.Networking.LyftVPC == nil {
+
+				return field.Invalid(fieldSpec.Child("NonMasqueradeCIDR"), nonMasqueradeCIDRString, fmt.Sprintf("NonMasqueradeCIDR %q cannot overlap with NetworkCIDR %q", nonMasqueradeCIDRString, c.Spec.NetworkCIDR))
+			}
+
+			if c.Spec.Kubelet != nil && c.Spec.Kubelet.NonMasqueradeCIDR != nonMasqueradeCIDRString {
+				if strict || c.Spec.Kubelet.NonMasqueradeCIDR != "" {
+					return field.Invalid(fieldSpec.Child("NonMasqueradeCIDR"), nonMasqueradeCIDRString, "Kubelet NonMasqueradeCIDR did not match cluster NonMasqueradeCIDR")
+				}
+			}
+			if c.Spec.MasterKubelet != nil && c.Spec.MasterKubelet.NonMasqueradeCIDR != nonMasqueradeCIDRString {
+				if strict || c.Spec.MasterKubelet.NonMasqueradeCIDR != "" {
+					return field.Invalid(fieldSpec.Child("NonMasqueradeCIDR"), nonMasqueradeCIDRString, "MasterKubelet NonMasqueradeCIDR did not match cluster NonMasqueradeCIDR")
+				}
 			}
 		}
 	}
@@ -227,7 +238,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 				return field.Invalid(fieldSpec.Child("ServiceClusterIPRange"), serviceClusterIPRangeString, "Cluster had an invalid ServiceClusterIPRange")
 			}
 
-			if !subnet.BelongsTo(nonMasqueradeCIDR, serviceClusterIPRange) {
+			if nonMasqueradeCIDR != nil && serviceClusterMustBeSubnetOfNonMasqueradeCIDR && !subnet.BelongsTo(nonMasqueradeCIDR, serviceClusterIPRange) {
 				return field.Invalid(fieldSpec.Child("ServiceClusterIPRange"), serviceClusterIPRangeString, fmt.Sprintf("ServiceClusterIPRange %q must be a subnet of NonMasqueradeCIDR %q", serviceClusterIPRangeString, c.Spec.NonMasqueradeCIDR))
 			}
 
@@ -273,7 +284,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 				return field.Invalid(fieldSpec.Child("KubeControllerManager", "ClusterCIDR"), clusterCIDRString, "Cluster had an invalid KubeControllerManager.ClusterCIDR")
 			}
 
-			if !subnet.BelongsTo(nonMasqueradeCIDR, clusterCIDR) {
+			if nonMasqueradeCIDR != nil && !subnet.BelongsTo(nonMasqueradeCIDR, clusterCIDR) {
 				return field.Invalid(fieldSpec.Child("KubeControllerManager", "ClusterCIDR"), clusterCIDRString, fmt.Sprintf("KubeControllerManager.ClusterCIDR %q must be a subnet of NonMasqueradeCIDR %q", clusterCIDRString, c.Spec.NonMasqueradeCIDR))
 			}
 		}
