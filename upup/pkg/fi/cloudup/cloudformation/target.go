@@ -148,7 +148,7 @@ func (t *CloudformationTarget) Finish(taskMap map[string]fi.Task) error {
 
 	jsonBytes, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
-		return fmt.Errorf("error marshalling cloudformation data to json: %v", err)
+		return fmt.Errorf("error marshaling cloudformation data to json: %v", err)
 	}
 
 	files := make(map[string][]byte)

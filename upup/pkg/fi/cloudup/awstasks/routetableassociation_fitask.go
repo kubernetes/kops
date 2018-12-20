@@ -26,7 +26,7 @@ import (
 
 // RouteTableAssociation
 
-// JSON marshalling boilerplate
+// JSON marshaling boilerplate
 type realRouteTableAssociation RouteTableAssociation
 
 // UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string

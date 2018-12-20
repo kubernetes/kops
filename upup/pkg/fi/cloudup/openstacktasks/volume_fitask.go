@@ -26,7 +26,7 @@ import (
 
 // Volume
 
-// JSON marshalling boilerplate
+// JSON marshaling boilerplate
 type realVolume Volume
 
 // UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string

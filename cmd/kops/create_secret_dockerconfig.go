@@ -33,7 +33,7 @@ import (
 var (
 	createSecretDockerconfigLong = templates.LongDesc(i18n.T(`
 	Create a new docker config, and store it in the state store.
-	Used to configure docker on each master or node (ie. for auth)
+	Used to configure docker on each master or node (i.e. for auth)
 	Use update to modify it, this command will only create a new entry.`))
 
 	createSecretDockerconfigExample = templates.Examples(i18n.T(`

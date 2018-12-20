@@ -35,7 +35,7 @@ type KubeAPIServerOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &KubeAPIServerOptionsBuilder{}
 
-// BuildOptions is resposible for filling in the default settings for the kube apiserver
+// BuildOptions is responsible for filling in the default settings for the kube apiserver
 func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 	if clusterSpec.KubeAPIServer == nil {
@@ -282,7 +282,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	return nil
 }
 
-// buildAPIServerCount calculates the count of the api servers, essentuially the number of node marked as Master role
+// buildAPIServerCount calculates the count of the api servers, essentially the number of node marked as Master role
 func (b *KubeAPIServerOptionsBuilder) buildAPIServerCount(clusterSpec *kops.ClusterSpec) int {
 	// The --apiserver-count flag is (generally agreed) to be something we need to get rid of in k8s
 

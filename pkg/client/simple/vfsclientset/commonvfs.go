@@ -136,7 +136,7 @@ func (c *commonVFS) readConfig(configPath vfs.Path) (runtime.Object, error) {
 func (c *commonVFS) writeConfig(cluster *kops.Cluster, configPath vfs.Path, o runtime.Object, writeOptions ...vfs.WriteOption) error {
 	data, err := c.serialize(o)
 	if err != nil {
-		return fmt.Errorf("error marshalling object: %v", err)
+		return fmt.Errorf("error marshaling object: %v", err)
 	}
 
 	create := false

@@ -21,7 +21,7 @@ authorizationPlugins <br /> *string array*    | AuthorizationPlugins is a list o
 bridge <br /> *string*    | Bridge is the network interface containers should bind onto
 bridgeIP <br /> *string*    | BridgeIP is a specific IP address and netmask for the docker0 bridge, using standard CIDR notation
 defaultUlimit <br /> *string array*    | DefaultUlimit is the ulimits for containers
-hosts <br /> *string array*    | Hosts enables you to configure the endpoints the docker daemon listens on i.e tcp://0.0.0.0.2375 or unix:///var/run/docker.sock etc
+hosts <br /> *string array*    | Hosts enables you to configure the endpoints the docker daemon listens on i.e. tcp://0.0.0.0.2375 or unix:///var/run/docker.sock etc
 insecureRegistry <br /> *string*    | InsecureRegistry enable insecure registry communication @question according to dockers this a list??
 ipMasq <br /> *boolean*    | IPMasq enables ip masquerading for containers
 ipTables <br /> *boolean*    | IPtables enables addition of iptables rules

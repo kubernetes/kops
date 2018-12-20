@@ -60,7 +60,7 @@ import (
 const perTypeDef = `
 // {{.Name}}
 
-// JSON marshalling boilerplate
+// JSON marshaling boilerplate
 type real{{.Name}} {{.Name}}
 
 // UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string

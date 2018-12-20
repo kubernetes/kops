@@ -112,7 +112,7 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 
 		y, err := manifest.ToYAML()
 		if err != nil {
-			return nil, fmt.Errorf("error re-marshalling manifest: %v", err)
+			return nil, fmt.Errorf("error re-marshaling manifest: %v", err)
 		}
 
 		remappedManifests = append(remappedManifests, y)

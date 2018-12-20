@@ -150,7 +150,7 @@ func DebugPrint(o interface{}) string {
 func DebugAsJsonString(v interface{}) string {
 	data, err := json.Marshal(v)
 	if err != nil {
-		return fmt.Sprintf("error marshalling: %v", err)
+		return fmt.Sprintf("error marshaling: %v", err)
 	}
 	return string(data)
 }
@@ -158,7 +158,7 @@ func DebugAsJsonString(v interface{}) string {
 func DebugAsJsonStringIndent(v interface{}) string {
 	data, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
-		return fmt.Sprintf("error marshalling: %v", err)
+		return fmt.Sprintf("error marshaling: %v", err)
 	}
 	return string(data)
 }

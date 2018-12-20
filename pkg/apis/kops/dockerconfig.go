@@ -32,7 +32,7 @@ type DockerConfig struct {
 	ExecRoot *string `json:"execRoot,omitempty" flag:"exec-root"`
 	// Experimental features permits enabling new features such as dockerd metrics
 	Experimental *bool `json:"experimental,omitempty" flag:"experimental"`
-	// Hosts enables you to configure the endpoints the docker daemon listens on i.e tcp://0.0.0.0.2375 or unix:///var/run/docker.sock etc
+	// Hosts enables you to configure the endpoints the docker daemon listens on i.e. tcp://0.0.0.0.2375 or unix:///var/run/docker.sock etc
 	Hosts []string `json:"hosts,omitempty" flag:"host,repeat"`
 	// IPMasq enables ip masquerading for containers
 	IPMasq *bool `json:"ipMasq,omitempty" flag:"ip-masq"`
