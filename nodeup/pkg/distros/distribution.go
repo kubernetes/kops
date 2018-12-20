@@ -78,7 +78,25 @@ func (d Distribution) BuildTags() []string {
 
 func (d Distribution) IsDebianFamily() bool {
 	switch d {
-	case DistributionJessie, DistributionXenial, DistributionBionic, DistributionDebian9, DistributionDebian10:
+	case DistributionJessie, DistributionDebian9, DistributionDebian10:
+		return true
+	case DistributionXenial, DistributionBionic:
+		return true
+	case DistributionCentos7, DistributionRhel7:
+		return false
+	case DistributionCoreOS, DistributionContainerOS:
+		return false
+	default:
+		klog.Fatalf("unknown distribution: %s", d)
+		return false
+	}
+}
+
+func (d Distribution) IsUbuntu() bool {
+	switch d {
+	case DistributionJessie, DistributionDebian9, DistributionDebian10:
+		return false
+	case DistributionXenial, DistributionBionic:
 		return true
 	case DistributionCentos7, DistributionRhel7:
 		return false
