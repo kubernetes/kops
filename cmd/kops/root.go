@@ -147,6 +147,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdSet(f, out))
 	cmd.AddCommand(NewCmdToolbox(f, out))
 	cmd.AddCommand(NewCmdValidate(f, out))
+	cmd.AddCommand(NewCmdVersion(f, out))
 
 	return cmd
 }
