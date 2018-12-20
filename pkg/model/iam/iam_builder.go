@@ -56,7 +56,7 @@ type Policy struct {
 func (p *Policy) AsJSON() (string, error) {
 	j, err := json.MarshalIndent(p, "", "  ")
 	if err != nil {
-		return "", fmt.Errorf("error marshalling policy to JSON: %v", err)
+		return "", fmt.Errorf("error marshaling policy to JSON: %v", err)
 	}
 	return string(j), nil
 }
@@ -502,7 +502,7 @@ func (b *PolicyResource) Open() (io.Reader, error) {
 }
 
 // UseBootstrapTokens check if we are using bootstrap tokens - @TODO, i don't like this we should probably pass in
-// the kops model into the builder rather than duplicating the code. I'll leave for anothe PR
+// the kops model into the builder rather than duplicating the code. I'll leave for another PR
 func (b *PolicyBuilder) UseBootstrapTokens() bool {
 	if b.Cluster.Spec.KubeAPIServer == nil {
 		return false

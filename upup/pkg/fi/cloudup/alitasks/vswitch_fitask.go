@@ -26,7 +26,7 @@ import (
 
 // VSwitch
 
-// JSON marshalling boilerplate
+// JSON marshaling boilerplate
 type realVSwitch VSwitch
 
 // UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string

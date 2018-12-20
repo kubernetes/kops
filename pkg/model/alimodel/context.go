@@ -132,7 +132,7 @@ func (c *ALIModelContext) GetScalingGroupName(ig *kops.InstanceGroup) string {
 }
 
 // CloudTagsForInstanceGroup computes the tags to apply to instances in the specified InstanceGroup
-// Copy from contex.go, adjust parameters length to meet AliCloud requirements
+// Copy from context.go, adjust parameters length to meet AliCloud requirements
 func (c *ALIModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (map[string]string, error) {
 	labels := make(map[string]string)
 

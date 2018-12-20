@@ -88,7 +88,7 @@ func (b *Builder) Build(cluster *kops.Cluster, ig *kops.InstanceGroup) (*Data, e
 	{
 		data, err := utils.YamlMarshal(fullCluster)
 		if err != nil {
-			return nil, fmt.Errorf("error marshalling configuration: %v", err)
+			return nil, fmt.Errorf("error marshaling configuration: %v", err)
 		}
 
 		file := &DataFile{}

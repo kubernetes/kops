@@ -629,7 +629,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	return nil
 }
 
-// validateSubnetCIDR is responsible for validating subnets are part of the CIRDs assigned to the cluster.
+// validateSubnetCIDR is responsible for validating subnets are part of the CIDRs assigned to the cluster.
 func validateSubnetCIDR(networkCIDR *net.IPNet, additionalNetworkCIDRs []*net.IPNet, subnetCIDR *net.IPNet) bool {
 	if subnet.BelongsTo(networkCIDR, subnetCIDR) {
 		return true

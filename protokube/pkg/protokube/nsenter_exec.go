@@ -39,7 +39,7 @@ type nsEnterExec struct{}
 
 var _ mount.Exec = &nsEnterExec{}
 
-// Run implements mount.Exec::Run but runs proceses in the host namespace
+// Run implements mount.Exec::Run but runs processes in the host namespace
 func (e *nsEnterExec) Run(cmd string, args ...string) ([]byte, error) {
 	nsenterArgs := []string{
 		"--mount=" + hostMountNamespacePath,

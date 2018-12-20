@@ -138,7 +138,7 @@ externalDns <br /> *[ExternalDNSConfig](#externaldnsconfig-v1alpha2-kops)*    |
 fileAssets <br /> *[FileAssetSpec](#fileassetspec-v1alpha2-kops) array*    | A collection of files assets for deployed cluster wide
 hooks <br /> *[HookSpec](#hookspec-v1alpha2-kops) array*    | Hooks for custom actions e.g. on first installation
 iam <br /> *[IAMSpec](#iamspec-v1alpha2-kops)*    | IAM field adds control over the IAM security policies applied to resources
-isolateMasters <br /> *boolean*    | IsolatesMasters determines whether we should lock down masters so that they are not on the pod network. true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master if they have hostNetwork=true. false is now the default, and it will:  * give the master a normal PodCIDR  * run kube-proxy on the master  * enable debugging handlers on the master, so kubectl logs works
+isolateMasters <br /> *boolean*    | IsolateMasters determines whether we should lock down masters so that they are not on the pod network. true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master if they have hostNetwork=true. false is now the default, and it will:  * give the master a normal PodCIDR  * run kube-proxy on the master  * enable debugging handlers on the master, so kubectl logs works
 keyStore <br /> *string*    | KeyStore is the VFS path to where SSL keys and certificates are stored
 kubeAPIServer <br /> *[KubeAPIServerConfig](#kubeapiserverconfig-v1alpha2-kops)*    | 
 kubeControllerManager <br /> *[KubeControllerManagerConfig](#kubecontrollermanagerconfig-v1alpha2-kops)*    | 

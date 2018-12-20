@@ -47,7 +47,7 @@ type Keypair struct {
 	Lifecycle *fi.Lifecycle
 	// Signer is the keypair to use to sign, for when we want to use an alternative CA
 	Signer *Keypair
-	// Subject is the cerificate subject
+	// Subject is the certificate subject
 	Subject string `json:"subject"`
 	// Type the type of certificate i.e. CA, server, client etc
 	Type string `json:"type"`

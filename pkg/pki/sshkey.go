@@ -119,7 +119,7 @@ func toDER(pubkey ssh.PublicKey) ([]byte, error) {
 
 	der, err := x509.MarshalPKIXPublicKey(cryptoKey)
 	if err != nil {
-		return nil, fmt.Errorf("error marshalling SSH public key: %v", err)
+		return nil, fmt.Errorf("error marshaling SSH public key: %v", err)
 	}
 	return der, nil
 }

@@ -27,7 +27,7 @@ auditLogMaxAge <br /> *integer*    | The maximum number of days to retain old au
 auditLogMaxBackups <br /> *integer*    | The maximum number of old audit log files to retain.
 auditLogMaxSize <br /> *integer*    | The maximum size in megabytes of the audit log file before it gets rotated. Defaults to 100MB.
 auditLogPath <br /> *string*    | If set, all requests coming to the apiserver will be logged to this file.
-auditPolicyFile <br /> *string*    | AuditPolicyFile is the full path to a advanced audit configuration file a.g. /srv/kubernetes/audit.conf
+auditPolicyFile <br /> *string*    | AuditPolicyFile is the full path to a advanced audit configuration file e.g. /srv/kubernetes/audit.conf
 authenticationTokenWebhookCacheTtl <br /> *[Duration](#duration-v1-meta)*    | The duration to cache responses from the webhook token authenticator. Default is 2m. (default 2m0s)
 authenticationTokenWebhookConfigFile <br /> *string*    | File with webhook configuration for token authentication in kubeconfig format. The API server will query the remote service to determine authentication for bearer tokens.
 authorizationMode <br /> *string*    | AuthorizationMode is the authorization mode the kubeapi is running in

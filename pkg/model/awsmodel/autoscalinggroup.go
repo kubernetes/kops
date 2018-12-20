@@ -74,7 +74,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			link, err := b.LinkToIAMInstanceProfile(ig)
 			if err != nil {
-				return fmt.Errorf("unable to find iam profile link for instance group %q: %v", ig.ObjectMeta.Name, err)
+				return fmt.Errorf("unable to find IAM profile link for instance group %q: %v", ig.ObjectMeta.Name, err)
 			}
 
 			var sgLink *awstasks.SecurityGroup
