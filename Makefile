@@ -131,9 +131,15 @@ ifdef DEBUGGABLE
   GCFLAGS=-gcflags "all=-N -l"
 endif
 
-.PHONY: kops-install # Install kops to local $GOPATH/bin
-kops-install: gobindata-tool ${BINDATA_TARGETS}
-	go install ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/
+UNAME_S := $(shell uname -s)
+BAZEL_ARCH=linux_amd64_stripped
+ifeq ($(UNAME), Darwin)
+  BAZEL_ARCH=darwin_amd64_stripped
+endif
+
+.PHONY: kops-install # Install kops to local ${GOPATH_1ST}/bin
+kops-install: kops
+	cp -fp `bazel info bazel-bin`/cmd/kops/${BAZEL_ARCH}/kops ${GOPATH_1ST}/bin/kops
 
 .PHONY: channels-install # Install channels to local $GOPATH/bin
 channels-install: ${CHANNELS}
@@ -145,7 +151,7 @@ all-install: all kops-install channels-install
 	cp ${PROTOKUBE} ${GOPATH_1ST}/bin
 
 .PHONY: all
-all: ${KOPS} ${PROTOKUBE} ${NODEUP} ${CHANNELS}
+all: kops ${PROTOKUBE} ${NODEUP} ${CHANNELS}
 
 .PHONY: help
 help: # Show this help
@@ -180,7 +186,8 @@ clean: # Remove build directory and bindata-generated files
 	if test -e ${BUILD}; then rm -rfv ${BUILD}; fi
 
 .PHONY: kops
-kops: ${KOPS}
+kops: ${BINDATA_TARGETS}
+	bazel build //cmd/kops
 
 .PHONY: ${KOPS}
 ${KOPS}: ${BINDATA_TARGETS}
@@ -327,15 +334,12 @@ vsphere-version-dist: nodeup-dist protokube-export
 	cp ${DIST}/darwin/amd64/kops.sha1 ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
 	cp ${DIST}/windows/amd64/kops.exe ${UPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
 
+# upload builds kops and uploads to GCS / S3
 .PHONY: upload
-upload: version-dist # Upload kops to S3
-	aws s3 sync --acl public-read ${UPLOAD}/ ${S3_BUCKET}
-
-# gcs-upload builds kops and uploads to GCS
-.PHONY: gcs-upload
-gcs-upload: bazel-version-dist
+upload: bazel-version-dist
 	@echo "== Uploading kops =="
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${BAZELUPLOAD}/kops/* ${GCS_LOCATION}
+	${UPLOAD} ${BAZELUPLOAD}/* ${UPLOAD_DEST}
+
 
 # gcs-publish-ci is the entry point for CI testing
 # In CI testing, always upload the CI version.
@@ -772,10 +776,6 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokub
 	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
 	cp ${DIST}/linux/amd64/utils.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz
 	cp ${DIST}/linux/amd64/utils.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
-
-.PHONY: bazel-upload
-bazel-upload: bazel-version-dist # Upload kops to S3
-	aws s3 sync --acl public-read ${BAZELUPLOAD}/ ${S3_BUCKET}
 
 #-----------------------------------------------------------
 # static html documentation  
