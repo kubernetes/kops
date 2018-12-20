@@ -34,9 +34,9 @@ type FakeInstanceGroups struct {
 	ns   string
 }
 
-var instancegroupsResource = schema.GroupVersionResource{Group: "kops", Version: "v1alpha1", Resource: "instancegroups"}
+var instancegroupsResource = schema.GroupVersionResource{Group: "kops.k8s.io", Version: "v1alpha1", Resource: "instancegroups"}
 
-var instancegroupsKind = schema.GroupVersionKind{Group: "kops", Version: "v1alpha1", Kind: "InstanceGroup"}
+var instancegroupsKind = schema.GroupVersionKind{Group: "kops.k8s.io", Version: "v1alpha1", Kind: "InstanceGroup"}
 
 // Get takes name of the instanceGroup, and returns the corresponding instanceGroup object, and an error if there is any.
 func (c *FakeInstanceGroups) Get(name string, options v1.GetOptions) (result *v1alpha1.InstanceGroup, err error) {

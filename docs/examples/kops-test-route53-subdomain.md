@@ -686,7 +686,7 @@ kops edit ig nodes
 An editor (whatever you have on the $EDITOR shell variable) will open with the following text:
 
 ```
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-09-06T13:40:39Z
@@ -708,7 +708,7 @@ spec:
 Let's change minSize and maxSize to "3"
 
 ```
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-09-06T13:40:39Z
