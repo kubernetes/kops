@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/golang/glog"
 	context "golang.org/x/net/context"
 	compute "google.golang.org/api/compute/v0.beta"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -84,7 +84,7 @@ func performNetworkAssignmentsIPAliases(ctx context.Context, c *kops.Cluster, cl
 		subnetURLs[subnet] = true
 	}
 
-	glog.Infof("scanning regions for subnetwork CIDR allocations")
+	klog.Infof("scanning regions for subnetwork CIDR allocations")
 
 	var subnets []*compute.Subnetwork
 	for _, r := range regions {
@@ -132,7 +132,7 @@ func performNetworkAssignmentsIPAliases(ctx context.Context, c *kops.Cluster, cl
 		return err
 	}
 
-	glog.Infof("Will use %s for Nodes, %s for Pods and %s for Services", nodeCIDR, podCIDR, serviceCIDR)
+	klog.Infof("Will use %s for Nodes, %s for Pods and %s for Services", nodeCIDR, podCIDR, serviceCIDR)
 
 	nodeSubnet.CIDR = nodeCIDR
 	c.Spec.PodCIDR = podCIDR
