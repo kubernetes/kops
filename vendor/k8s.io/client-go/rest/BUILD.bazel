@@ -7,6 +7,7 @@ go_library(
         "config.go",
         "plugin.go",
         "request.go",
+        "token_source.go",
         "transport.go",
         "url_utils.go",
         "urlbackoff.go",
@@ -18,6 +19,7 @@ go_library(
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/golang.org/x/net/http2:go_default_library",
+        "//vendor/golang.org/x/oauth2:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
