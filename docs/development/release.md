@@ -56,7 +56,7 @@ make dns-controller-push DOCKER_REGISTRY=kope
 
 ```
 # export AWS_PROFILE=??? # If needed
-make upload S3_BUCKET=s3://kubeupv2
+make upload UPLOAD_DEST=s3://kubeupv2
 ```
 
 ## Tag new version

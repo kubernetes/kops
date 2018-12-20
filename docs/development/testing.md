@@ -71,15 +71,26 @@ This isn't yet terribly useful, though - it just shows how to replicate the
 existing job, but not with your custom code. To test a custom `kops` build, you
 can do the following:
 
+To use S3:
 ```
 # cd to your kops repo
 export S3_BUCKET_NAME=<yourbucketname>
-make kops-install upload S3_BUCKET=s3://${S3_BUCKET_NAME} VERSION=dev
+make kops-install dev-upload UPLOAD_DEST=s3://${S3_BUCKET_NAME}
 
-export KOPS_BASE_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/dev/
-
-kops create cluster <clustername> --zones us-east-1b
+KOPS_VERSION=`bazel run //cmd/kops version | cut -f2 -d ' '`
+export KOPS_BASE_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/${KOPS_VERSION}/
 ```
+
+To use GCS:
+```
+export GCS_BUCKET_NAME=kops-dev-${USER}
+make kops-install dev-upload UPLOAD_DEST=gs://${GCS_BUCKET_NAME}
+
+KOPS_VERSION=`bazel run //cmd/kops version | cut -f2 -d ' '`
+export KOPS_BASE_URL=https://${GCS_BUCKET_NAME}.storage.googleapis.com/kops/${KOPS_VERSION}/
+```
+
+You can create a cluster using `kops create cluster <clustername> --zones us-east-1b`
 
 Then follow the test directions above.
 
