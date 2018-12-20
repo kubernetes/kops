@@ -51,7 +51,7 @@ You can see the details of your Cluster object by doing:
 
 `> kops get cluster --state gs://kubernetes-clusters/ simple.k8s.local -oyaml`
 ```
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: 2017-10-03T05:07:27Z

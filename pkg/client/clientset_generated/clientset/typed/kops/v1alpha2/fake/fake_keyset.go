@@ -34,9 +34,9 @@ type FakeKeysets struct {
 	ns   string
 }
 
-var keysetsResource = schema.GroupVersionResource{Group: "kops", Version: "v1alpha2", Resource: "keysets"}
+var keysetsResource = schema.GroupVersionResource{Group: "kops.k8s.io", Version: "v1alpha2", Resource: "keysets"}
 
-var keysetsKind = schema.GroupVersionKind{Group: "kops", Version: "v1alpha2", Kind: "Keyset"}
+var keysetsKind = schema.GroupVersionKind{Group: "kops.k8s.io", Version: "v1alpha2", Kind: "Keyset"}
 
 // Get takes name of the keyset, and returns the corresponding keyset object, and an error if there is any.
 func (c *FakeKeysets) Get(name string, options v1.GetOptions) (result *v1alpha2.Keyset, err error) {

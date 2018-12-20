@@ -31,7 +31,7 @@ kops edit ig bastions --name $KOPS_NAME
 You should now be able to edit and configure your bastion instance group.
 
 ```yaml
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-05T13:37:07Z"

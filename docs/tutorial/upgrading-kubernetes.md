@@ -18,7 +18,7 @@ controlled at the cluster level.  So instead of `kops edit ig <name>`, we `kops 
 # and an empty file will abort the edit. If an error occurs while saving this file will be
 # reopened with the relevant failures.
 #
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: 2017-10-04T03:52:25Z

@@ -34,9 +34,9 @@ type FakeSSHCredentials struct {
 	ns   string
 }
 
-var sshcredentialsResource = schema.GroupVersionResource{Group: "kops", Version: "", Resource: "sshcredentials"}
+var sshcredentialsResource = schema.GroupVersionResource{Group: "kops.k8s.io", Version: "", Resource: "sshcredentials"}
 
-var sshcredentialsKind = schema.GroupVersionKind{Group: "kops", Version: "", Kind: "SSHCredential"}
+var sshcredentialsKind = schema.GroupVersionKind{Group: "kops.k8s.io", Version: "", Kind: "SSHCredential"}
 
 // Get takes name of the sSHCredential, and returns the corresponding sSHCredential object, and an error if there is any.
 func (c *FakeSSHCredentials) Get(name string, options v1.GetOptions) (result *kops.SSHCredential, err error) {
