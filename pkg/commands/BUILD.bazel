@@ -6,10 +6,12 @@ go_library(
         "helpers_readwrite.go",
         "set_cluster.go",
         "status_discovery.go",
+        "version.go",
     ],
     importpath = "k8s.io/kops/pkg/commands",
     visibility = ["//visibility:public"],
     deps = [
+        "//:go_default_library",
         "//cmd/kops/util:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/validation:go_default_library",
