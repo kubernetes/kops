@@ -9,7 +9,7 @@ This document details the template language used.
 The file passed as `--template` must be a [go template](https://golang.org/pkg/text/template/). Example:
 ```yaml
 # File cluster.tmpl.yaml
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -105,7 +105,7 @@ $ kops toolbox template --values dev.yaml --template cluster.yaml --template ins
 The example below assumes you have placed the appropriate files i.e. *(nodes.json, master.json etc)* in to the snippets directory. Note, the namespace of the snippets are flat and always the basename() of the file path; so `snippets/components/docker.options` is still referred to as 'docker.options'.
 
 ```YAML
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   name: {{ .environment }}.{{ .dns_zone }}
