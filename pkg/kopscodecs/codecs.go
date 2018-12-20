@@ -19,6 +19,7 @@ package kopscodecs
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -86,8 +87,43 @@ func ToVersionedJSONWithVersion(obj runtime.Object, version runtime.GroupVersion
 
 // Decode decodes the specified data, with the specified default version
 func Decode(data []byte, defaultReadVersion *schema.GroupVersionKind) (runtime.Object, *schema.GroupVersionKind, error) {
+	data = rewriteAPIGroup(data)
+
 	decoder := decoder()
 
 	object, gvk, err := decoder.Decode(data, defaultReadVersion, nil)
 	return object, gvk, err
+}
+
+// rewriteAPIGroup rewrites the apiVersion from kops/v1alphaN -> kops.k8s.io/v1alphaN
+// This allows us to register as a normal CRD
+func rewriteAPIGroup(y []byte) []byte {
+	changed := false
+
+	lines := bytes.Split(y, []byte("\n"))
+	for i := range lines {
+		if !bytes.Contains(lines[i], []byte("apiVersion:")) {
+			continue
+		}
+
+		{
+			re := regexp.MustCompile("kops/v1alpha1")
+			if re.Match(lines[i]) {
+				lines[i] = re.ReplaceAllLiteral(lines[i], []byte("kops.k8s.io/v1alpha1"))
+				changed = true
+			}
+		}
+
+		{
+			re := regexp.MustCompile("kops/v1alpha2")
+			lines[i] = re.ReplaceAllLiteral(lines[i], []byte("kops.k8s.io/v1alpha2"))
+			changed = true
+		}
+	}
+
+	if changed {
+		y = bytes.Join(lines, []byte("\n"))
+	}
+
+	return y
 }
