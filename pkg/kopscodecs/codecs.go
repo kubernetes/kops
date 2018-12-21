@@ -84,6 +84,10 @@ func ToVersionedJSONWithVersion(obj runtime.Object, version runtime.GroupVersion
 	return w.Bytes(), nil
 }
 
-func ParseVersionedYaml(data []byte) (runtime.Object, *schema.GroupVersionKind, error) {
-	return decoder().Decode(data, nil, nil)
+// Decode decodes the specified data, with the specified default version
+func Decode(data []byte, defaultReadVersion *schema.GroupVersionKind) (runtime.Object, *schema.GroupVersionKind, error) {
+	decoder := decoder()
+
+	object, gvk, err := decoder.Decode(data, defaultReadVersion, nil)
+	return object, gvk, err
 }
