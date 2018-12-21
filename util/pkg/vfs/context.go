@@ -228,7 +228,7 @@ func RetryWithBackoff(backoff wait.Backoff, condition func() (bool, error)) (boo
 		}
 
 		if noMoreRetries {
-			glog.V(2).Infof("hit maximum retries %d with error %v", i, err)
+			glog.Infof("hit maximum retries %d with error %v", i, err)
 			return done, err
 		}
 	}
