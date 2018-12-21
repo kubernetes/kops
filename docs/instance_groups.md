@@ -137,7 +137,7 @@ spec:
     type: gp2
 ```
 
-In AWS the above to add an additional 20gb EBS volume to the launchconfiguration and this each node within the instancegroup.
+In AWS the above example shows how to add an additional 20gb EBS volume, which applies to each node within the instancegroup.
 
 ## Automatically formatting and mounting the additional storage
 
@@ -185,7 +185,7 @@ spec:
   machineType: c5d.large
   ...
   volumeMounts:
-  - device: /dev/xvdd
+  - device: /dev/nvme1n1
     filesystem: ext4
     path: /data
   # -- mount the instance storage --

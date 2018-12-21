@@ -1386,11 +1386,10 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		in, out := &in.Volumes, &out.Volumes
 		*out = make([]*VolumeSpec, len(*in))
 		for i := range *in {
-			if (*in)[i] == nil {
-				(*out)[i] = nil
-			} else {
-				(*out)[i] = new(VolumeSpec)
-				(*in)[i].DeepCopyInto((*out)[i])
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(VolumeSpec)
+				(*in).DeepCopyInto(*out)
 			}
 		}
 	}
@@ -1398,11 +1397,10 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		in, out := &in.VolumeMounts, &out.VolumeMounts
 		*out = make([]*VolumeMountSpec, len(*in))
 		for i := range *in {
-			if (*in)[i] == nil {
-				(*out)[i] = nil
-			} else {
-				(*out)[i] = new(VolumeMountSpec)
-				(*in)[i].DeepCopyInto((*out)[i])
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(VolumeMountSpec)
+				(*in).DeepCopyInto(*out)
 			}
 		}
 	}
@@ -2704,21 +2702,13 @@ func (in *VolumeSpec) DeepCopyInto(out *VolumeSpec) {
 	*out = *in
 	if in.Encrypted != nil {
 		in, out := &in.Encrypted, &out.Encrypted
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(bool)
-			**out = **in
-		}
+		*out = new(bool)
+		**out = **in
 	}
 	if in.Iops != nil {
 		in, out := &in.Iops, &out.Iops
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(int64)
-			**out = **in
-		}
+		*out = new(int64)
+		**out = **in
 	}
 	return
 }
