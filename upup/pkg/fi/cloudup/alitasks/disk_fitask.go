@@ -26,7 +26,7 @@ import (
 
 // Disk
 
-// JSON marshalling boilerplate
+// JSON marshaling boilerplate
 type realDisk Disk
 
 // UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string

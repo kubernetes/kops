@@ -274,7 +274,7 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 
 	jsonBytes, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
-		return fmt.Errorf("error marshalling terraform data to json: %v", err)
+		return fmt.Errorf("error marshaling terraform data to json: %v", err)
 	}
 
 	useJson := false

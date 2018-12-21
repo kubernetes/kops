@@ -53,7 +53,7 @@ func findCreatesDirParents(p string, tasks map[string]fi.Task) []fi.Task {
 	return deps
 }
 
-// findCreatesDirMatching finds the tasks which create the specified directory (matching, non-recusive)
+// findCreatesDirMatching finds the tasks which create the specified directory (matching, non-recursive)
 func findCreatesDirMatching(p string, tasks map[string]fi.Task) []fi.Task {
 	if !strings.HasSuffix(p, "/") {
 		p += "/"

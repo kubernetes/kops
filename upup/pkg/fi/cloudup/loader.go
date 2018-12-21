@@ -458,7 +458,7 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 		// TODO replace with partial unmarshal...
 		jsonValue, err := json.Marshal(v)
 		if err != nil {
-			return nil, fmt.Errorf("error marshalling to json: %v", err)
+			return nil, fmt.Errorf("error marshaling to json: %v", err)
 		}
 		err = json.Unmarshal(jsonValue, o.Interface())
 		if err != nil {

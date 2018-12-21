@@ -23522,7 +23522,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/apimachinery/pkg/apis/meta/v1.GroupVersionKind": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
-					Description: "GroupVersionKind unambiguously identifies a kind.  It doesn't anonymously include GroupVersion to avoid automatic coersion.  It doesn't use a GroupVersion to avoid custom marshalling",
+					Description: "GroupVersionKind unambiguously identifies a kind.  It doesn't anonymously include GroupVersion to avoid automatic coersion.  It doesn't use a GroupVersion to avoid custom marshaling",
 					Properties: map[string]spec.Schema{
 						"group": {
 							SchemaProps: spec.SchemaProps{
@@ -23551,7 +23551,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/apimachinery/pkg/apis/meta/v1.GroupVersionResource": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
-					Description: "GroupVersionResource unambiguously identifies a resource.  It doesn't anonymously include GroupVersion to avoid automatic coersion.  It doesn't use a GroupVersion to avoid custom marshalling",
+					Description: "GroupVersionResource unambiguously identifies a resource.  It doesn't anonymously include GroupVersion to avoid automatic coersion.  It doesn't use a GroupVersion to avoid custom marshaling",
 					Properties: map[string]spec.Schema{
 						"group": {
 							SchemaProps: spec.SchemaProps{
@@ -24356,7 +24356,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/apimachinery/pkg/apis/meta/v1.Timestamp": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
-					Description: "Timestamp is a struct that is equivalent to Time, but intended for protobuf marshalling/unmarshalling. It is generated into a serialization that matches Time. Do not use in Go structs.",
+					Description: "Timestamp is a struct that is equivalent to Time, but intended for protobuf marshaling/unmarshaling. It is generated into a serialization that matches Time. Do not use in Go structs.",
 					Properties: map[string]spec.Schema{
 						"seconds": {
 							SchemaProps: spec.SchemaProps{
@@ -24713,7 +24713,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 					Properties: map[string]spec.Schema{
 						"dns": {
 							SchemaProps: spec.SchemaProps{
-								Description: "DNS will be used to provide config on kube-apiserver elb dns",
+								Description: "DNS will be used to provide config on kube-apiserver ELB DNS",
 								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha1.DNSAccessSpec"),
 							},
 						},
@@ -25760,7 +25760,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"configStore": {
 							SchemaProps: spec.SchemaProps{
-								Description: "ConfigStore is the VFS path to where the configuration (Cluster, InstanceGroupss etc) is stored",
+								Description: "ConfigStore is the VFS path to where the configuration (Cluster, InstanceGroups etc) is stored",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -25830,7 +25830,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"isolateMasters": {
 							SchemaProps: spec.SchemaProps{
-								Description: "IsolatesMasters determines whether we should lock down masters so that they are not on the pod network. true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master if they have hostNetwork=true. false is now the default, and it will:\n * give the master a normal PodCIDR\n * run kube-proxy on the master\n * enable debugging handlers on the master, so kubectl logs works",
+								Description: "IsolateMasters determines whether we should lock down masters so that they are not on the pod network. true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master if they have hostNetwork=true. false is now the default, and it will:\n * give the master a normal PodCIDR\n * run kube-proxy on the master\n * enable debugging handlers on the master, so kubectl logs works",
 								Type:        []string{"boolean"},
 								Format:      "",
 							},
@@ -26166,7 +26166,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"hosts": {
 							SchemaProps: spec.SchemaProps{
-								Description: "Hosts enables you to configure the endpoints the docker daemon listens on i.e tcp://0.0.0.0.2375 or unix:///var/run/docker.sock etc",
+								Description: "Hosts enables you to configure the endpoints the docker daemon listens on i.e. tcp://0.0.0.0.2375 or unix:///var/run/docker.sock etc",
 								Type:        []string{"array"},
 								Items: &spec.SchemaOrArray{
 									Schema: &spec.Schema{
@@ -26461,7 +26461,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"volumeType": {
 							SchemaProps: spec.SchemaProps{
-								Description: "VolumeType is the underlining cloud storage class",
+								Description: "VolumeType is the underlying cloud storage class",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -26475,7 +26475,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"volumeSize": {
 							SchemaProps: spec.SchemaProps{
-								Description: "VolumeSize is the underlining cloud volume size",
+								Description: "VolumeSize is the underlying cloud volume size",
 								Type:        []string{"integer"},
 								Format:      "int32",
 							},
@@ -26761,7 +26761,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 					Properties: map[string]spec.Schema{
 						"profile": {
 							SchemaProps: spec.SchemaProps{
-								Description: "Profile of the cloud group iam profile. In aws this is the arn for the iam instance profile",
+								Description: "Profile of the cloud group IAM profile. In aws this is the arn for the iam instance profile",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -27111,7 +27111,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"iam": {
 							SchemaProps: spec.SchemaProps{
-								Description: "IAMProfileSpec defines the identity of the cloud group iam profile (AWS only).",
+								Description: "IAMProfileSpec defines the identity of the cloud group IAM profile (AWS only).",
 								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha1.IAMProfileSpec"),
 							},
 						},
@@ -27264,7 +27264,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"serviceNodePortRange": {
 							SchemaProps: spec.SchemaProps{
-								Description: "Passed as --service-node-port-range to kube-apiserver. Expects 'startPort-endPort' format. Eg. 30000-33000",
+								Description: "Passed as --service-node-port-range to kube-apiserver. Expects 'startPort-endPort' format e.g. 30000-33000",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -27518,7 +27518,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"auditPolicyFile": {
 							SchemaProps: spec.SchemaProps{
-								Description: "AuditPolicyFile is the full path to a advanced audit configuration file a.g. /srv/kubernetes/audit.conf",
+								Description: "AuditPolicyFile is the full path to a advanced audit configuration file e.g. /srv/kubernetes/audit.conf",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -28313,7 +28313,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"configureCbr0": {
 							SchemaProps: spec.SchemaProps{
-								Description: "configureCBR0 enables the kublet to configure cbr0 based on Node.Spec.PodCIDR.",
+								Description: "configureCBR0 enables the kubelet to configure cbr0 based on Node.Spec.PodCIDR.",
 								Type:        []string{"boolean"},
 								Format:      "",
 							},
@@ -29144,7 +29144,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 					Properties: map[string]spec.Schema{
 						"dns": {
 							SchemaProps: spec.SchemaProps{
-								Description: "DNS will be used to provide config on kube-apiserver elb dns",
+								Description: "DNS will be used to provide config on kube-apiserver ELB DNS",
 								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha2.DNSAccessSpec"),
 							},
 						},
@@ -30281,7 +30281,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"isolateMasters": {
 							SchemaProps: spec.SchemaProps{
-								Description: "IsolatesMasters determines whether we should lock down masters so that they are not on the pod network. true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master if they have hostNetwork=true. false is now the default, and it will:\n * give the master a normal PodCIDR\n * run kube-proxy on the master\n * enable debugging handlers on the master, so kubectl logs works",
+								Description: "IsolateMasters determines whether we should lock down masters so that they are not on the pod network. true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master if they have hostNetwork=true. false is now the default, and it will:\n * give the master a normal PodCIDR\n * run kube-proxy on the master\n * enable debugging handlers on the master, so kubectl logs works",
 								Type:        []string{"boolean"},
 								Format:      "",
 							},
@@ -30625,7 +30625,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"hosts": {
 							SchemaProps: spec.SchemaProps{
-								Description: "Hosts enables you to configure the endpoints the docker daemon listens on i.e tcp://0.0.0.0.2375 or unix:///var/run/docker.sock etc",
+								Description: "Hosts enables you to configure the endpoints the docker daemon listens on i.e. tcp://0.0.0.0.2375 or unix:///var/run/docker.sock etc",
 								Type:        []string{"array"},
 								Items: &spec.SchemaOrArray{
 									Schema: &spec.Schema{
@@ -30920,7 +30920,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"volumeType": {
 							SchemaProps: spec.SchemaProps{
-								Description: "VolumeType is the underlining cloud storage class",
+								Description: "VolumeType is the underlying cloud storage class",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -30934,7 +30934,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"volumeSize": {
 							SchemaProps: spec.SchemaProps{
-								Description: "VolumeSize is the underlining cloud volume size",
+								Description: "VolumeSize is the underlying cloud volume size",
 								Type:        []string{"integer"},
 								Format:      "int32",
 							},
@@ -31220,7 +31220,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 					Properties: map[string]spec.Schema{
 						"profile": {
 							SchemaProps: spec.SchemaProps{
-								Description: "Profile of the cloud group iam profile. In aws this is the arn for the iam instance profile",
+								Description: "Profile of the cloud group IAM profile. In aws this is the arn for the iam instance profile",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -31584,7 +31584,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"iam": {
 							SchemaProps: spec.SchemaProps{
-								Description: "IAMProfileSpec defines the identity of the cloud group iam profile (AWS only).",
+								Description: "IAMProfileSpec defines the identity of the cloud group IAM profile (AWS only).",
 								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha2.IAMProfileSpec"),
 							},
 						},
@@ -31877,7 +31877,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"serviceNodePortRange": {
 							SchemaProps: spec.SchemaProps{
-								Description: "Passed as --service-node-port-range to kube-apiserver. Expects 'startPort-endPort' format. Eg. 30000-33000",
+								Description: "Passed as --service-node-port-range to kube-apiserver. Expects 'startPort-endPort' format e.g. 30000-33000",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -32131,7 +32131,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"auditPolicyFile": {
 							SchemaProps: spec.SchemaProps{
-								Description: "AuditPolicyFile is the full path to a advanced audit configuration file a.g. /srv/kubernetes/audit.conf",
+								Description: "AuditPolicyFile is the full path to a advanced audit configuration file e.g. /srv/kubernetes/audit.conf",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -32919,7 +32919,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"configureCbr0": {
 							SchemaProps: spec.SchemaProps{
-								Description: "configureCBR0 enables the kublet to configure cbr0 based on Node.Spec.PodCIDR.",
+								Description: "configureCBR0 enables the kubelet to configure cbr0 based on Node.Spec.PodCIDR.",
 								Type:        []string{"boolean"},
 								Format:      "",
 							},

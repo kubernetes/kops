@@ -100,7 +100,7 @@ type InstanceGroupSpec struct {
 	ExternalLoadBalancers []LoadBalancer `json:"externalLoadBalancers,omitempty"`
 	// DetailedInstanceMonitoring defines if detailed-monitoring is enabled (AWS only)
 	DetailedInstanceMonitoring *bool `json:"detailedInstanceMonitoring,omitempty"`
-	// IAMProfileSpec defines the identity of the cloud group iam profile (AWS only).
+	// IAMProfileSpec defines the identity of the cloud group IAM profile (AWS only).
 	IAM *IAMProfileSpec `json:"iam,omitempty"`
 	// SecurityGroupOverride overrides the default security group created by Kops for this IG (AWS only).
 	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
@@ -109,7 +109,7 @@ type InstanceGroupSpec struct {
 // IAMProfileSpec is the AWS IAM Profile to attach to instances in this instance
 // group. Specify the ARN for the IAM instance profile (AWS only).
 type IAMProfileSpec struct {
-	// Profile of the cloud group iam profile. In aws this is the arn
+	// Profile of the cloud group IAM profile. In aws this is the arn
 	// for the iam instance profile
 	Profile *string `json:"profile,omitempty"`
 }

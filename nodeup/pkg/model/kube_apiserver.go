@@ -81,7 +81,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		manifest, err := k8scodecs.ToVersionedYaml(pod)
 		if err != nil {
-			return fmt.Errorf("error marshalling manifest to yaml: %v", err)
+			return fmt.Errorf("error marshaling manifest to yaml: %v", err)
 		}
 
 		c.AddTask(&nodetasks.File{
@@ -146,7 +146,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 
 		manifest, err := kops.ToRawYaml(config)
 		if err != nil {
-			return fmt.Errorf("error marshalling authentication config to yaml: %v", err)
+			return fmt.Errorf("error marshaling authentication config to yaml: %v", err)
 		}
 
 		c.AddTask(&nodetasks.File{
@@ -200,7 +200,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 
 			manifest, err := kops.ToRawYaml(config)
 			if err != nil {
-				return fmt.Errorf("error marshalling authentication config to yaml: %v", err)
+				return fmt.Errorf("error marshaling authentication config to yaml: %v", err)
 			}
 
 			c.AddTask(&nodetasks.File{

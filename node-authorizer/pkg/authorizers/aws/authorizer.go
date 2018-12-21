@@ -47,7 +47,7 @@ var (
 )
 
 var (
-	// CheckIAMProfile indicates we should validate the iam profile
+	// CheckIAMProfile indicates we should validate the IAM profile
 	CheckIAMProfile = "verify-iam-profile"
 	// CheckIPAddress indicates we should validate the client ip address
 	CheckIPAddress = "verify-ip"
@@ -176,7 +176,7 @@ func (a *awsNodeAuthorizer) validateNodeInstance(ctx context.Context, doc *ec2me
 		return "missing cluster tag", nil
 	}
 
-	// @check the instance has access to the nodes iam profile
+	// @check the instance has access to the nodes IAM profile
 	if a.config.UseFeature(CheckIAMProfile) {
 		if instance.IamInstanceProfile == nil {
 			return "instance does not have an instance profile", nil
