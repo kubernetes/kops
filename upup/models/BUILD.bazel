@@ -17,11 +17,9 @@ go_library(
 genrule(
     name = "bindata",
     srcs = glob(
-        ["**"],
-        exclude = [
-            "bindata.go",
-            "vfs.go",
-            "BUILD.bazel",
+        [
+            "cloudup/**",
+            "nodeup/**",
         ],
     ),
     outs = ["bindata.go"],
