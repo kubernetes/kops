@@ -950,12 +950,8 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 	}
 	if in.Experimental != nil {
 		in, out := &in.Experimental, &out.Experimental
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(bool)
-			**out = **in
-		}
+		*out = new(bool)
+		**out = **in
 	}
 	if in.Hosts != nil {
 		in, out := &in.Hosts, &out.Hosts
@@ -999,12 +995,8 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 	}
 	if in.MetricsAddress != nil {
 		in, out := &in.MetricsAddress, &out.MetricsAddress
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(string)
-			**out = **in
-		}
+		*out = new(string)
+		**out = **in
 	}
 	if in.MTU != nil {
 		in, out := &in.MTU, &out.MTU
