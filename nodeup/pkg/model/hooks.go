@@ -48,7 +48,7 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 				continue
 			}
 
-			// i dont want to effect those whom are already using the hooks, so i'm gonna try an keep the name for now
+			// I don't want to affect those whom are already using the hooks, so I'm going to try to keep the name for now
 			// i.e. use the default naming convention - kops-hook-<index>, only those using the Name or hooks in IG should alter
 			var name string
 			switch hook.Name {
@@ -180,7 +180,7 @@ func (h *HookBuilder) buildDockerService(unit *systemd.Manifest, hook *kops.Hook
 	return nil
 }
 
-// isValidExecContainerAction checks the validatity of the execContainer - personally i think this validation
+// isValidExecContainerAction checks the validity of the execContainer - personally i think this validation
 // should be done high up the chain, but
 func isValidExecContainerAction(action *kops.ExecContainerAction) error {
 	action.Image = strings.TrimSpace(action.Image)

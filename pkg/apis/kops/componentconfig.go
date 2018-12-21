@@ -77,7 +77,7 @@ type KubeletConfigSpec struct {
 	SystemCgroups string `json:"systemCgroups,omitempty" flag:"system-cgroups"`
 	// cgroupRoot is the root cgroup to use for pods. This is handled by the container runtime on a best effort basis.
 	CgroupRoot string `json:"cgroupRoot,omitempty" flag:"cgroup-root"`
-	// configureCBR0 enables the kublet to configure cbr0 based on Node.Spec.PodCIDR.
+	// configureCBR0 enables the kubelet to configure cbr0 based on Node.Spec.PodCIDR.
 	ConfigureCBR0 *bool `json:"configureCbr0,omitempty" flag:"configure-cbr0"`
 	// How should the kubelet configure the container bridge for hairpin packets.
 	// Setting this flag allows endpoints in a Service to loadbalance back to
@@ -255,7 +255,7 @@ type KubeAPIServerConfig struct {
 	DisableAdmissionPlugins []string `json:"disableAdmissionPlugins,omitempty" flag:"disable-admission-plugins"`
 	// ServiceClusterIPRange is the service address range
 	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty" flag:"service-cluster-ip-range"`
-	// Passed as --service-node-port-range to kube-apiserver. Expects 'startPort-endPort' format. Eg. 30000-33000
+	// Passed as --service-node-port-range to kube-apiserver. Expects 'startPort-endPort' format e.g. 30000-33000
 	ServiceNodePortRange string `json:"serviceNodePortRange,omitempty" flag:"service-node-port-range"`
 	// EtcdServers is a list of the etcd service to connect
 	EtcdServers []string `json:"etcdServers,omitempty" flag:"etcd-servers"`
@@ -331,7 +331,7 @@ type KubeAPIServerConfig struct {
 	AuditLogMaxBackups *int32 `json:"auditLogMaxBackups,omitempty" flag:"audit-log-maxbackup"`
 	// The maximum size in megabytes of the audit log file before it gets rotated. Defaults to 100MB.
 	AuditLogMaxSize *int32 `json:"auditLogMaxSize,omitempty" flag:"audit-log-maxsize"`
-	// AuditPolicyFile is the full path to a advanced audit configuration file a.g. /srv/kubernetes/audit.conf
+	// AuditPolicyFile is the full path to a advanced audit configuration file e.g. /srv/kubernetes/audit.conf
 	AuditPolicyFile string `json:"auditPolicyFile,omitempty" flag:"audit-policy-file"`
 	// File with webhook configuration for token authentication in kubeconfig format. The API server will query the remote service to determine authentication for bearer tokens.
 	AuthenticationTokenWebhookConfigFile *string `json:"authenticationTokenWebhookConfigFile,omitempty" flag:"authentication-token-webhook-config-file"`

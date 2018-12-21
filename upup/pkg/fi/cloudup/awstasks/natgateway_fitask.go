@@ -26,7 +26,7 @@ import (
 
 // NatGateway
 
-// JSON marshalling boilerplate
+// JSON marshaling boilerplate
 type realNatGateway NatGateway
 
 // UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string

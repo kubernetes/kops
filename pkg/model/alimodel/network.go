@@ -21,15 +21,15 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/alitasks"
 )
 
-// NetWorkModelBuilder configures VPC network objects
-type NetWorkModelBuilder struct {
+// NetworkModelBuilder configures VPC network objects
+type NetworkModelBuilder struct {
 	*ALIModelContext
 	Lifecycle *fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &NetWorkModelBuilder{}
+var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
-func (b *NetWorkModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	sharedVPC := b.Cluster.SharedVPC()
 
 	// VPC that holds everything for the cluster

@@ -26,7 +26,7 @@ import (
 
 // ExternalTargetGroupAttachment
 
-// JSON marshalling boilerplate
+// JSON marshaling boilerplate
 type realExternalTargetGroupAttachment ExternalTargetGroupAttachment
 
 // UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string

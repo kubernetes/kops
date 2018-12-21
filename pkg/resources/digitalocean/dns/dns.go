@@ -307,7 +307,7 @@ func (r *resourceRecordChangeset) Remove(rrset dnsprovider.ResourceRecordSet) dn
 	return r
 }
 
-// Upsert adds a new resource record set to the list of upesrts to apply
+// Upsert adds a new resource record set to the list of upserts to apply
 func (r *resourceRecordChangeset) Upsert(rrset dnsprovider.ResourceRecordSet) dnsprovider.ResourceRecordChangeset {
 	r.upserts = append(r.upserts, rrset)
 	return r
@@ -377,7 +377,7 @@ func (r *resourceRecordChangeset) IsEmpty() bool {
 	return false
 }
 
-// ResourceRecordSet returns the associated resourceRecordSets of a changset
+// ResourceRecordSet returns the associated resourceRecordSets of a changeset
 func (r *resourceRecordChangeset) ResourceRecordSets() dnsprovider.ResourceRecordSets {
 	return r.rrsets
 }
@@ -506,7 +506,7 @@ func createRecord(c *godo.Client, zoneName string, createRequest *godo.DomainRec
 	return nil
 }
 
-// editRecord edits a record given an associated ozone and a godo.DomainRecordEditRequest
+// editRecord edits a record given an associated zone and a godo.DomainRecordEditRequest
 func editRecord(c *godo.Client, zoneName string, recordID int, editRequest *godo.DomainRecordEditRequest) error {
 	_, _, err := c.Domains.EditRecord(context.TODO(), zoneName, recordID, editRequest)
 	if err != nil {

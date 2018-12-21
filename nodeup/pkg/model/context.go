@@ -219,7 +219,7 @@ func (c *NodeupModelContext) BuildKubeConfig(username string, ca, certificate, p
 
 	yaml, err := kops.ToRawYaml(config)
 	if err != nil {
-		return "", fmt.Errorf("error marshalling kubeconfig to yaml: %v", err)
+		return "", fmt.Errorf("error marshaling kubeconfig to yaml: %v", err)
 	}
 
 	return string(yaml), nil

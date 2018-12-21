@@ -54,7 +54,7 @@ func LoadManifestsFrom(contents []byte) ([]*Manifest, error) {
 func (m *Manifest) ToYAML() ([]byte, error) {
 	b, err := yaml.Marshal(m.data)
 	if err != nil {
-		return nil, fmt.Errorf("error marshalling manifest to yaml: %v", err)
+		return nil, fmt.Errorf("error marshaling manifest to yaml: %v", err)
 	}
 	return b, nil
 }

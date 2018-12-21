@@ -63,7 +63,7 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		manifest, err := k8scodecs.ToVersionedYaml(pod)
 		if err != nil {
-			return fmt.Errorf("error marshalling pod to yaml: %v", err)
+			return fmt.Errorf("error marshaling pod to yaml: %v", err)
 		}
 
 		c.AddTask(&nodetasks.File{

@@ -35,7 +35,7 @@ import (
 var (
 	// matches all regional naming conventions of S3:
 	// https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
-	// TODO: perhaps make region regex more specific, ie. (us|eu|ap|cn|ca|sa), to prevent catching bucket names that match region format?
+	// TODO: perhaps make region regex more specific, i.e. (us|eu|ap|cn|ca|sa), to prevent matching bucket names that match region format?
 	//       but that will mean updating this list when AWS introduces new regions
 	s3UrlRegexp = regexp.MustCompile(`s3([-.](?P<region>\w{2}-\w+-\d{1})|[-.](?P<bucket>[\w.\-\_]+)|)?.amazonaws.com(.cn)?(?P<path>.*)?`)
 )

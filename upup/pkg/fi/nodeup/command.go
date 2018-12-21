@@ -53,7 +53,7 @@ import (
 // MaxTaskDuration is the amount of time to keep trying for; we retry for a long time - there is not really any great fallback
 const MaxTaskDuration = 365 * 24 * time.Hour
 
-// NodeUpCommand the configiruation for nodeup
+// NodeUpCommand is the configuration for nodeup
 type NodeUpCommand struct {
 	CacheDir       string
 	ConfigLocation string
