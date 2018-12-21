@@ -212,7 +212,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 			return fmt.Errorf("error launching editor: %v", err)
 		}
 
-		obj, _, err := kopscodecs.ParseVersionedYaml(edited)
+		obj, _, err := kopscodecs.Decode(edited, nil)
 		if err != nil {
 			return fmt.Errorf("error parsing yaml: %v", err)
 		}

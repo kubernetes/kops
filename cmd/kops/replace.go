@@ -94,11 +94,6 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 		return err
 	}
 
-	// Codecs provides access to encoding and decoding for the scheme
-	codecs := kopscodecs.Codecs //serializer.NewCodecFactory(scheme)
-
-	codec := codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
-
 	for _, f := range c.Filenames {
 		var contents []byte
 		if f == "-" {
@@ -115,7 +110,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 		sections := bytes.Split(contents, []byte("\n---\n"))
 
 		for _, section := range sections {
-			o, gvk, err := codec.Decode(section, nil, nil)
+			o, gvk, err := kopscodecs.Decode(section, nil)
 			if err != nil {
 				return fmt.Errorf("error parsing file %q: %v", f, err)
 			}

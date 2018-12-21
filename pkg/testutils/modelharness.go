@@ -49,18 +49,13 @@ func LoadModel(basedir string) (*Model, error) {
 
 	spec := &Model{}
 
-	// Codecs provides access to encoding and decoding for the scheme
-	codecs := kopscodecs.Codecs
-
-	codec := codecs.UniversalDecoder(kops.SchemeGroupVersion)
-
 	sections := bytes.Split(clusterYaml, []byte("\n---\n"))
 	for _, section := range sections {
 		defaults := &schema.GroupVersionKind{
 			Group:   v1alpha2.SchemeGroupVersion.Group,
 			Version: v1alpha2.SchemeGroupVersion.Version,
 		}
-		o, gvk, err := codec.Decode(section, defaults, nil)
+		o, gvk, err := kopscodecs.Decode(section, defaults)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing file %v", err)
 		}
