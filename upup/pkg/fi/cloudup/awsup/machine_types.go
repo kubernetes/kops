@@ -1077,6 +1077,18 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		GPU:               true,
 	},
 
+	// p3dn family
+	{
+		Name:              "p3dn.24xlarge",
+		MemoryGB:          768,
+		ECU:               345,
+		Cores:             96,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{900, 900},
+		GPU:               true,
+	},
+
 	// r3 family
 	{
 		Name:              "r3.large",
