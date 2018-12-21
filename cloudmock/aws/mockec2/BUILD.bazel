@@ -16,7 +16,6 @@ go_library(
         "securitygroups.go",
         "subnets.go",
         "tags.go",
-        "unimplemented.go",
         "volumes.go",
         "vpcs.go",
     ],
