@@ -165,7 +165,10 @@ type KubeletConfigSpec struct {
 	// Tells the Kubelet to fail to start if swap is enabled on the node.
 	FailSwapOn *bool `json:"failSwapOn,omitempty" flag:"fail-swap-on"`
 	// ExperimentalAllowedUnsafeSysctls are passed to the kubelet config to whitelist allowable sysctls
+	// Was promoted to beta and renamed. https://github.com/kubernetes/kubernetes/pull/63717
 	ExperimentalAllowedUnsafeSysctls []string `json:"experimentalAllowedUnsafeSysctls,omitempty" flag:"experimental-allowed-unsafe-sysctls"`
+	// AllowedUnsafeSysctls are passed to the kubelet config to whitelist allowable sysctls
+	AllowedUnsafeSysctls []string `json:"allowedUnsafeSysctls,omitempty" flag:"allowed-unsafe-sysctls"`
 	// StreamingConnectionIdleTimeout is the maximum time a streaming connection can be idle before the connection is automatically closed
 	StreamingConnectionIdleTimeout *metav1.Duration `json:"streamingConnectionIdleTimeout,omitempty" flag:"streaming-connection-idle-timeout"`
 	// DockerDisableSharedPID uses a shared PID namespace for containers in a pod.

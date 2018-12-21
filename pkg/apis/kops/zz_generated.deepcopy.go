@@ -3057,6 +3057,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.AllowedUnsafeSysctls != nil {
+		in, out := &in.AllowedUnsafeSysctls, &out.AllowedUnsafeSysctls
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.StreamingConnectionIdleTimeout != nil {
 		in, out := &in.StreamingConnectionIdleTimeout, &out.StreamingConnectionIdleTimeout
 		if *in == nil {
