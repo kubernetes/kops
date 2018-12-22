@@ -75,5 +75,11 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
+	if cloudProvider == kops.CloudProviderDO {
+		if config.HostnameOverride == "" {
+			config.HostnameOverride = "@digitalocean"
+		}
+	}
+
 	return nil
 }
