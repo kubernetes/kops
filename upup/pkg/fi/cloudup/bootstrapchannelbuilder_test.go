@@ -56,7 +56,7 @@ func runChannelBuilderTest(t *testing.T, key string) {
 	if err != nil {
 		t.Fatalf("error reading cluster yaml file %q: %v", clusterYamlPath, err)
 	}
-	obj, _, err := kopscodecs.ParseVersionedYaml(clusterYaml)
+	obj, _, err := kopscodecs.Decode(clusterYaml, nil)
 	if err != nil {
 		t.Fatalf("error parsing cluster yaml %q: %v", clusterYamlPath, err)
 	}

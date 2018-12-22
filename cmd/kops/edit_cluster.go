@@ -167,7 +167,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 			return nil
 		}
 
-		newObj, _, err := kopscodecs.ParseVersionedYaml(edited)
+		newObj, _, err := kopscodecs.Decode(edited, nil)
 		if err != nil {
 			return preservedFile(fmt.Errorf("error parsing config: %s", err), file, out)
 		}

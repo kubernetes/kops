@@ -97,9 +97,6 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
-	// Codecs provides access to encoding and decoding for the scheme
-	codec := kopscodecs.Codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
-
 	// We could have more than one cluster in a manifest so we are using a set
 	deletedClusters := sets.NewString()
 
@@ -124,7 +121,7 @@ func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 				Group:   v1alpha1.SchemeGroupVersion.Group,
 				Version: v1alpha1.SchemeGroupVersion.Version,
 			}
-			o, gvk, err := codec.Decode(section, defaults, nil)
+			o, gvk, err := kopscodecs.Decode(section, defaults)
 			if err != nil {
 				return fmt.Errorf("error parsing file %q: %v", f, err)
 			}

@@ -217,16 +217,9 @@ func (c *VFSCAStore) buildPrivateKeyPath(name string, id string) vfs.Path {
 }
 
 func (c *VFSCAStore) parseKeysetYaml(data []byte) (*kops.Keyset, KeysetFormat, error) {
-	codecs := kopscodecs.Codecs
-	yaml, ok := runtime.SerializerInfoForMediaType(codecs.SupportedMediaTypes(), "application/yaml")
-	if !ok {
-		glog.Fatalf("no YAML serializer registered")
-	}
-	decoder := codecs.DecoderToVersion(yaml.Serializer, kops.SchemeGroupVersion)
-
 	defaultReadVersion := v1alpha2.SchemeGroupVersion.WithKind("Keyset")
 
-	object, gvk, err := decoder.Decode(data, &defaultReadVersion, nil)
+	object, gvk, err := kopscodecs.Decode(data, &defaultReadVersion)
 	if err != nil {
 		return nil, "", fmt.Errorf("error parsing keyset: %v", err)
 	}
