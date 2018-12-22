@@ -142,7 +142,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return nil
 	}
 
-	newObj, _, err := kopscodecs.ParseVersionedYaml(edited)
+	newObj, _, err := kopscodecs.Decode(edited, nil)
 	if err != nil {
 		return fmt.Errorf("error parsing InstanceGroup: %v", err)
 	}
