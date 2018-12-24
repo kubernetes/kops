@@ -2,7 +2,16 @@
 
 ## Getting Started
 
-Kops used to only support Google Cloud DNS and Amazon Route53 to provision a kubernetes cluster. But since 1.6.2 `gossip` has been added which make it possible to provision a cluster without one of those DNS providers. Thanks to `gossip`, it's officially supported to provision a fully-functional kubernetes cluster in AWS China Region [which doesn't have Route53 so far][1] since [1.7][2]. Currently only `cn-north-1` is available but [new region coming *soon*][9]
+Kops used to only support Google Cloud DNS and Amazon Route53 to provision a kubernetes cluster. But since 1.6.2 `gossip` has been added which make it possible to provision a cluster without one of those DNS providers. Thanks to `gossip`, it's officially supported to provision a fully-functional kubernetes cluster in AWS China Region [which doesn't have Route53 so far][1] since [1.7][2]. Currently only `cn-north-1` and `cn-northwest-1` is available but [new region coming *soon*][9]
+
+## The Easy Way
+
+There is an experimental solution named [kops-cn](https://github.com/nwcdlabs/kops-cn) which has mirrored all required
+binaries by kops to AWS China and provided them as an alternative file repository.
+
+It should just work if you follow the README ([Chinese](https://github.com/nwcdlabs/kops-cn/blob/master/README.md), [English](https://github.com/nwcdlabs/kops-cn/blob/master/README_en.md)) step by step.
+
+## The Hard Way
 
 Most of the following procedures to provision a cluster are the same with [the guide to use kops in AWS](aws.md). The differences will be highlighted and the similar parts will be omitted.
 
@@ -53,7 +62,7 @@ First of all, we have to solve the slow and unstable connection to the internet 
 
 ### Prepare kops ami
 
-We have to build our own AMI because there is [no official kops ami in AWS China Region][3]. There're two ways to accomplish so. 
+We have to build our own AMI because there is [no official kops ami in AWS China Region][3]. There're two ways to accomplish so.
 
 #### ImageBuilder
 
