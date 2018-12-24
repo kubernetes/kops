@@ -143,7 +143,7 @@ func TestPrivateKopeio(t *testing.T) {
 
 // TestUnmanaged is a test where all the subnets opt-out of route management
 func TestUnmanaged(t *testing.T) {
-	runTestAWS(t, "unmanaged.example.com", "unmanaged", "v1alpha2", true, 1)
+	runTestAWS(t, "unmanaged.example.com", "unmanaged", "v1alpha2", true, 1, true, nil)
 }
 
 // TestPrivateSharedSubnet runs the test on a configuration with private topology & shared subnets
