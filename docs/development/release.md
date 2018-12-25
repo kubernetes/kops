@@ -92,8 +92,8 @@ make release-github
 e.g.
 
 ```
-git log 1.8.0-beta.1..1.8.0-beta.2 --oneline | grep Merge.pull | cut -f 5 -d ' ' | tac  > ~/shipbot/prs
-
+git log 1.11.0-beta.1..1.11.0 --oneline | grep Merge.pull | cut -f 5 -d ' ' | tac  > ~/shipbot/prs
+relnotes  -config .shipbot.yaml  < ~/shipbot/prs  >> docs/releases/1.11-NOTES.md
 ```
 
 ## On github
