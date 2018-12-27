@@ -33,7 +33,7 @@ Upgrade uses the latest Kubernetes version considered stable by kops, defined in
 * `kops edit cluster $NAME`
 * set the kubernetesVersion to the target version (e.g. `v1.3.5`)
 * NOTE: The next 3 steps must all be ran in the same directory
-* `kops update cluster $NAME --target=terraform`
+* `kops update cluster $NAME --target=terraform --out=.`
 * `terraform plan`
 * `terraform apply`
 * `kops rolling-update cluster $NAME` to preview, then `kops rolling-update cluster $NAME --yes`
