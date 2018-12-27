@@ -225,6 +225,8 @@ metadata:
     k8s-addon: ingress-nginx.addons.k8s.io
 data:
   use-proxy-protocol: "true"
+  ssl-redirect: "true"
+  hsts: "true"
 
 ---
 
@@ -243,7 +245,6 @@ metadata:
     service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "3600"
     service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "ARN" #put your AWS SSL cert ARN here
     service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
-    ingress.kubernetes.io/force-ssl-redirect: "true" # make it false if you don't want ssl force redirect for http requests
 spec:
   type: LoadBalancer
   selector:
