@@ -27,6 +27,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/util/pkg/reflectutils"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // Default Machine types for various types of instance group machine
@@ -201,6 +203,19 @@ func defaultMachineType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, 
 		case kops.InstanceGroupRoleBastion:
 			return defaultBastionMachineTypeVSphere, nil
 		}
+
+	case kops.CloudProviderOpenstack:
+		cloud, err := BuildCloud(cluster)
+		if err != nil {
+			return "", fmt.Errorf("error building cloud for Openstack cluster: %v", err)
+		}
+
+		instanceType, err := cloud.(openstack.OpenstackCloud).DefaultInstanceType(cluster, ig)
+		if err != nil {
+			return "", fmt.Errorf("error finding default machine type: %v", err)
+		}
+		return instanceType, nil
+
 	}
 
 	glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q, Role=%q", cluster.Spec.CloudProvider, ig.Spec.Role)
