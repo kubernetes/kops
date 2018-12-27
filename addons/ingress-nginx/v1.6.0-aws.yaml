@@ -227,6 +227,7 @@ data:
   use-proxy-protocol: "true"
   ssl-redirect: "true"
   hsts: "true"
+  force-ssl-redirect: "true"
 
 ---
 
