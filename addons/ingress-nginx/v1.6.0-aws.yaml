@@ -253,10 +253,10 @@ spec:
     port: 443
     targetPort: http
     protocol: TCP
-  - name: http
-    port: 80
-    targetPort: http
-    protocol: TCP
+#  - name: http
+#    port: 80
+#    targetPort: http
+#    protocol: TCP
 
 ---
 
