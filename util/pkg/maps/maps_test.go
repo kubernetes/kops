@@ -20,7 +20,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestKeys(t *testing.T) {
@@ -29,7 +28,7 @@ func TestKeys(t *testing.T) {
 		"key1": true,
 		"key2": true,
 	}
-	require.Equal(t, 3, len(Keys(m)))
+	assert.Equal(t, 3, len(Keys(m)))
 }
 
 func TestSortedKeys(t *testing.T) {
