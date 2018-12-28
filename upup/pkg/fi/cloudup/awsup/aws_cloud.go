@@ -580,7 +580,7 @@ func findAutoscalingGroupLaunchConfiguration(g *autoscaling.Group) (string, erro
 	return "", fmt.Errorf("error finding launch template or configuration for autoscaling group: %s", aws.StringValue(g.AutoScalingGroupName))
 }
 
-// findInstanceLaunchConfiguration is responisble for discoverying the launch configuration for an instance
+// findInstanceLaunchConfiguration is responsible for discoverying the launch configuration for an instance
 func findInstanceLaunchConfiguration(i *autoscaling.Instance) (string, error) {
 	name := aws.StringValue(i.LaunchConfigurationName)
 	if name != "" {
