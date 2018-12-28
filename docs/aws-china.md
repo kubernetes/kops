@@ -6,7 +6,7 @@ Kops used to only support Google Cloud DNS and Amazon Route53 to provision a kub
 
 Most of the following procedures to provision a cluster are the same with [the guide to use kops in AWS](aws.md). The differences will be highlighted and the similar parts will be omitted.
 
-*NOTE: THE FOLLOWING PROCEDURES ARE ONLY TESTED WITH KOPS 1.10.0 AND KUBERNETES 1.9.11, 1.10.12* 
+*NOTE: THE FOLLOWING PROCEDURES ARE ONLY TESTED WITH KOPS 1.10.0, 1.10.1 AND KUBERNETES 1.9.11, 1.10.12* 
 
 ### [Install kops](aws.md#install-kops)
 
