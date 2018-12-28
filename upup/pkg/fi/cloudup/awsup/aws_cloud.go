@@ -548,8 +548,62 @@ func matchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription
 	return true
 }
 
+// findAutoscalingGroupLaunchConfiguration is responsible for finding the launch - which could be a launchconfiguration, a template or a mixed instance policy template
+func findAutoscalingGroupLaunchConfiguration(g *autoscaling.Group) (string, error) {
+	name := aws.StringValue(g.LaunchConfigurationName)
+	if name != "" {
+		return name, nil
+	}
+
+	// @check the launch template then
+	if g.LaunchTemplate != nil {
+		name = aws.StringValue(g.LaunchTemplate.LaunchTemplateName)
+		if name != "" {
+			return name, nil
+		}
+	}
+
+	// @check: ok, lets check the mixed instance policy
+	if g.MixedInstancesPolicy != nil {
+		if g.MixedInstancesPolicy.LaunchTemplate != nil {
+			if g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification != nil {
+				// honestly!!
+				name = aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.LaunchTemplateName)
+			}
+		}
+	}
+
+	if name != "" {
+		return name, nil
+	}
+
+	return "", fmt.Errorf("error finding launch template or configuration for autoscaling group: %s", aws.StringValue(g.AutoScalingGroupName))
+}
+
+// findInstanceLaunchConfiguration is responisble for discoverying the launch configuration for an instance
+func findInstanceLaunchConfiguration(i *autoscaling.Instance) (string, error) {
+	name := aws.StringValue(i.LaunchConfigurationName)
+	if name != "" {
+		return name, nil
+	}
+
+	// else we need to check the launch template
+	if i.LaunchTemplate != nil {
+		name = aws.StringValue(i.LaunchTemplate.LaunchTemplateName)
+		if name != "" {
+			return name, nil
+		}
+	}
+
+	return "", fmt.Errorf("error finding the launch configuration or template for instance: %s", aws.StringValue(i.InstanceId))
+
+}
+
 func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
-	newLaunchConfigName := aws.StringValue(g.LaunchConfigurationName)
+	newConfigName, err := findAutoscalingGroupLaunchConfiguration(g)
+	if err != nil {
+		return nil, err
+	}
 
 	cg := &cloudinstances.CloudInstanceGroup{
 		HumanName:     aws.StringValue(g.AutoScalingGroupName),
@@ -560,13 +614,16 @@ func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscali
 	}
 
 	for _, i := range g.Instances {
-		instanceId := aws.StringValue(i.InstanceId)
-		if instanceId == "" {
-			glog.Warningf("ignoring instance with no instance id: %s", i)
+		id := aws.StringValue(i.InstanceId)
+		if id == "" {
+			glog.Warningf("ignoring instance with no instance id: %s in autoscaling group: %s", id, cg.HumanName)
 			continue
 		}
-		err := cg.NewCloudInstanceGroupMember(instanceId, newLaunchConfigName, aws.StringValue(i.LaunchConfigurationName), nodeMap)
+		currentConfigName, err := findInstanceLaunchConfiguration(i)
 		if err != nil {
+			return nil, err
+		}
+		if err := cg.NewCloudInstanceGroupMember(id, newConfigName, currentConfigName, nodeMap); err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 		}
 	}
