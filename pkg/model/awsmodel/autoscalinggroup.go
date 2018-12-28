@@ -27,7 +27,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
 )
 
 const (
@@ -220,13 +219,12 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 	// @step: check if we can add an public ip to this subnet
 	switch subnets[0].Type {
 	case kops.SubnetTypePublic, kops.SubnetTypeUtility:
-		t.AssociatePublicIP = ig.Spec.AssociatePublicIP
-	case kops.SubnetTypePrivate:
+		t.AssociatePublicIP = fi.Bool(true)
 		if ig.Spec.AssociatePublicIP != nil {
-			if fi.BoolValue(ig.Spec.AssociatePublicIP) {
-				glog.Warningf("Ignoring AssociatePublicIP=true for private InstanceGroup %q", ig.ObjectMeta.Name)
-			}
+			t.AssociatePublicIP = ig.Spec.AssociatePublicIP
 		}
+	case kops.SubnetTypePrivate:
+		t.AssociatePublicIP = fi.Bool(false)
 	}
 
 	return t, nil
