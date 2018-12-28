@@ -30,8 +30,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
+// MaxUserDataSize is the max size of the userdata
 const MaxUserDataSize = 16384
 
+// Instance defines the instance specification
 type Instance struct {
 	ID        *string
 	Lifecycle *fi.Lifecycle
@@ -217,12 +219,12 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 		if e.ImageID == nil {
 			return fi.RequiredField("ImageID")
 		}
-		image, err := t.Cloud.ResolveImage(*e.ImageID)
+		image, err := t.Cloud.ResolveImage(fi.StringValue(e.ImageID))
 		if err != nil {
 			return err
 		}
 
-		glog.V(2).Infof("Creating Instance with Name:%q", *e.Name)
+		glog.V(2).Infof("Creating Instance with Name:%q", fi.StringValue(e.Name))
 		request := &ec2.RunInstancesInput{
 			ImageId:      image.ImageId,
 			InstanceType: e.InstanceType,
@@ -250,7 +252,7 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 
 		// Build up the actual block device mappings
 		// TODO: Support RootVolumeType & RootVolumeSize (see launchconfiguration)
-		blockDeviceMappings, err := buildEphemeralDevices(e.InstanceType)
+		blockDeviceMappings, err := FindEphemeralDevices(t.Cloud, fi.StringValue(e.InstanceType))
 		if err != nil {
 			return err
 		}
