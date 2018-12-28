@@ -98,7 +98,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 
 	// @TODO check if there any a better way of doing this .. initially I had a type LaunchTemplate which included
 	// LaunchConfiguration as an anonymous field, bit given up the task dependency walker works this caused issues, due
-	// to the creation of a implict dependency
+	// to the creation of a implicit dependency
 	return &awstasks.LaunchTemplate{
 		Name:                   fi.String(name),
 		Lifecycle:              b.Lifecycle,
