@@ -124,7 +124,6 @@ VPC_NETWORK_CIDR=<vpc network cidr> # e.g. 172.30.0.0/16
 AMI=<owner id/ami name> # e.g. 123456890/k8s-1.9-debian-jessie-amd64-hvm-ebs-2018-07-18
 
 kops create cluster \
-    --authorization AlwaysAllow \
     --zones ${AWS_REGION}a \
     --vpc ${VPC_ID} \
     --network-cidr ${VPC_NETWORK_CIDR} \
