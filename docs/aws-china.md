@@ -55,9 +55,9 @@ First of all, we have to solve the slow and unstable connection to the internet 
 
 ### Prepare kops ami
 
-We have to build our own AMI because there is [no official kops ami in AWS China Region][3]. There're two ways to accomplish so. 
+We have to build our own AMI because there is [no official kops ami in AWS China Regions][3]. There're two ways to accomplish so. 
 
-#### ImageBuilder
+#### ImageBuilder **RECOMMENDED**
 
 First, launch an instance in a private subnet which accesses the internet fast and stably.
 
@@ -81,6 +81,9 @@ cd ${GOPATH}/src/k8s.io/kube-deploy/imagebuilder
 
 sed -i '' "s|publicIP := aws.StringValue(instance.PublicIpAddress)|publicIP := aws.StringValue(instance.PrivateIpAddress)|" pkg/imagebuilder/aws.go
 make
+
+# cloud-init is failing due to urllib3 dependency. https://github.com/aws/aws-cli/issues/3678
+sed -i '' "s/'awscli'/'awscli==1.16.38'/g" templates/1.9-jessie.yml
 
 # If the keypair specified is not `$HOME/.ssh/id_rsa`, the config yaml file need to be modified to add the full path to the private key.
 echo 'SSHPrivateKey: "/absolute/path/to/the/private/key"' >> aws-1.9-jessie.yaml
