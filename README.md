@@ -66,8 +66,9 @@ Documentation is in the `/docs` directory, [and the index is here.](docs/README.
 ### Kubernetes Version Support
 
 kops is intended to be backward compatible.  It is always recommended to use the
-latest version of kops with whatever version of Kubernetes you are using.  Always
-use the latest version of kops.
+latest version of kops with whatever version of Kubernetes you are using.  We suggest
+kops users run one of the [3 minor versions](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/release/versioning.md#supported-releases-and-component-skew) Kubernetes is supporting however we
+do our best to support previous releases for a period of time.
 
 One exception, in regards to compatibility, kops supports the equivalent
 Kubernetes minor release number.  A minor version is the second digit in the
@@ -82,19 +83,19 @@ versions of K8s, but Kubernetes releases always require kops to install specific
 versions of components like docker, that tested against the particular
 Kubernetes version.
 
+
 #### Compatibility Matrix
 
-| kops version | k8s 1.5.x | k8s 1.6.x | k8s 1.7.x | k8s 1.8.x | k8s 1.9.x | k8s 1.10.x |
-|--------------|-----------|-----------|-----------|-----------|-----------|------------|
-| 1.10.x       | Y         | Y         | Y         | Y         | Y         | Y          |
-| 1.9.x        | Y         | Y         | Y         | Y         | Y         | N          |
-| 1.8.x        | Y         | Y         | Y         | Y         | N         | N          |
-| 1.7.x        | Y         | Y         | Y         | N         | N         | N          |
-| 1.6.x        | Y         | Y         | N         | N         | N         | N          |
+| kops version  | k8s 1.8.x | k8s 1.9.x | k8s 1.10.x | k8s 1.11.x | k8s 1.12.x |
+|---------------|-----------|-----------|------------|------------|------------|
+| 1.12.x - Alpha| Y         | Y         | Y          | Y          | Y         |
+| 1.11.x        | Y         | Y         | Y          | Y          | N          |
+| 1.10.x        | Y         | Y         | Y          | N          | N          |
+| ~~1.9.x~~         | Y         | Y         | N          | N          | N          |
+| ~~1.8.x~~         | Y         | N         | N          | N          | N          |
 
 Use the latest version of kops for all releases of Kubernetes, with the caveat
-that higher versions of Kubernetes are not _officially_ supported by kops.
-
+that higher versions of Kubernetes are not _officially_ supported by kops. Releases who are ~~crossed out~~ _should_ work but we suggest should be upgraded soon.
 ### kops Release Schedule
 
 This project does not follow the Kubernetes release schedule.  `kops` aims to
@@ -194,9 +195,9 @@ Our office hours call is recorded, but the tone tends to be casual. First-timers
 - Help wanted requests
 - Demonstrations of cool stuff. PoCs. Fresh ideas. Show us how you use kops to go beyond the norm- help us define the future!
 
-Office hours are designed for ALL of those contributing to kops or the community. Contributions are not limited to those who commit source code. There are so many important ways to be involved- 
+Office hours are designed for ALL of those contributing to kops or the community. Contributions are not limited to those who commit source code. There are so many important ways to be involved-
  - helping in the slack channels
- - triaging/writing issues 
+ - triaging/writing issues
  - thinking about the topics raised at office hours and forming and advocating for your good ideas forming opinions
  - testing pre-(and official) releases
 
@@ -205,7 +206,7 @@ Although not exhaustive, the above activities are extremely important to our con
 
 ### Other Ways to Communicate with the Contributors
 
-Please check in with us in the [#kops-users](https://kubernetes.slack.com/messages/kops-users/) or [#kops-dev](https://kubernetes.slack.com/messages/kops-dev/) channel. Often-times, a well crafted question or potential bug report in slack will catch the attention of the right folks and help quickly get the ship righted. 
+Please check in with us in the [#kops-users](https://kubernetes.slack.com/messages/kops-users/) or [#kops-dev](https://kubernetes.slack.com/messages/kops-dev/) channel. Often-times, a well crafted question or potential bug report in slack will catch the attention of the right folks and help quickly get the ship righted.
 
 ## GitHub Issues
 
