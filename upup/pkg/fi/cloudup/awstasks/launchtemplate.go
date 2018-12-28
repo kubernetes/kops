@@ -326,7 +326,7 @@ func (t *LaunchTemplate) findAllLaunchTemplatesVersions(c *fi.Context) ([]*ec2.L
 
 	cloud, ok := c.Cloud.(awsup.AWSCloud)
 	if !ok {
-		return []*ec2.LaunchTemplateVersion{}, fmt.Errorf("invalid cloud provider: %v, expected: awsup.AWSCloud", c.Cloud, "awsup.AWSCloud)")
+		return []*ec2.LaunchTemplateVersion{}, fmt.Errorf("invalid cloud provider: %v, expected: awsup.AWSCloud", c.Cloud)
 	}
 
 	templates, err := t.findAllLaunchTemplates(c)
@@ -372,7 +372,7 @@ func (t *LaunchTemplate) buildRootDevice(cloud awsup.AWSCloud) (map[string]*Bloc
 	if err != nil {
 		return nil, fmt.Errorf("unable to resolve image: %q: %v", image, err)
 	} else if img == nil {
-		return nil, fmt.Errorf("unable to resolve image: %q: not found")
+		return nil, fmt.Errorf("unable to resolve image: %q: not found", image)
 	}
 
 	bm := make(map[string]*BlockDeviceMapping)
