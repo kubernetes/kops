@@ -33,7 +33,7 @@ type InstanceGroup struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// InstanceGroupList is a collection of instancegroups
+// InstanceGroupList is a list of instance groups
 type InstanceGroupList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
@@ -45,19 +45,19 @@ type InstanceGroupList struct {
 type InstanceGroupRole string
 
 const (
-	// InstanceGroupRoleMaster defines the node as a master
+	// InstanceGroupRoleMaster is a master role
 	InstanceGroupRoleMaster InstanceGroupRole = "Master"
-	// InstanceGroupRoleNode defines the node as a worker
+	// InstanceGroupRoleNode is a node role
 	InstanceGroupRoleNode InstanceGroupRole = "Node"
-	// InstanceGroupRoleBastion defines the node as a bastion host
+	// InstanceGroupRoleBastion is a bastion role
 	InstanceGroupRoleBastion InstanceGroupRole = "Bastion"
 )
 
-// AllInstanceGroupRoles is a slice of all valid InstanceGroupRole values
+// AllInstanceGroupRoles is a list of all available roles
 var AllInstanceGroupRoles = []InstanceGroupRole{
-	InstanceGroupRoleNode,
-	InstanceGroupRoleMaster,
 	InstanceGroupRoleBastion,
+	InstanceGroupRoleMaster,
+	InstanceGroupRoleNode,
 }
 
 const (
@@ -124,6 +124,8 @@ type InstanceGroupSpec struct {
 	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
 	// Taints indicates the kubernetes taints for nodes in this group
 	Taints []string `json:"taints,omitempty"`
+	// MixedInstancesPolicy defined a optional backing of an AWS ASG by a EC2 Fleet (AWS Only)
+	MixedInstancesPolicy *MixedInstancesPolicySpec `json:"mixedInstancesPolicy,omitempty"`
 	// AdditionalUserData is any additional user-data to be passed to the host
 	AdditionalUserData []UserData `json:"additionalUserData,omitempty"`
 	// SuspendProcesses disables the listed Scaling Policies
@@ -136,6 +138,39 @@ type InstanceGroupSpec struct {
 	IAM *IAMProfileSpec `json:"iam,omitempty"`
 	// SecurityGroupOverride overrides the default security group created by Kops for this IG (AWS only).
 	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
+}
+
+const (
+	// SpotAllocationStrategyLowestPrices indicates a lowest price strategy
+	SpotAllocationStrategyLowestPrices = "LowestPrice"
+	// SpotAllocationStrategyDiversified indicates a diversified strategy
+	SpotAllocationStrategyDiversified = "Diversified"
+)
+
+// SpotAllocationStrategies is a collection of supported strategies
+var SpotAllocationStrategies = []string{SpotAllocationStrategyLowestPrices, SpotAllocationStrategyDiversified}
+
+// MixedInstancesPolicySpec defines the specification for an autoscaling backed by a ec2 fleet
+type MixedInstancesPolicySpec struct {
+	// Instances is a list of instance types which we are willing to run in the EC2 fleet
+	Instances []string `json:"instances,omitempty"`
+	// OnDemandAllocationStrategy indicates how to allocate instance types to fulfill On-Demand capacity
+	OnDemandAllocationStrategy *string `json:"onDemandAllocationStrategy,omitempty"`
+	// OnDemandBase is the minimum amount of the Auto Scaling group's capacity that must be
+	// fulfilled by On-Demand Instances. This base portion is provisioned first as your group scales.
+	OnDemandBase *int64 `json:"onDemandBase,omitempty"`
+	// OnDemandAboveBase controls the percentages of On-Demand Instances and Spot Instances for your
+	// additional capacity beyond OnDemandBase. The range is 0–100. The default value is 100. If you
+	// leave this parameter set to 100, the percentages are 100% for On-Demand Instances and 0% for
+	// Spot Instances.
+	OnDemandAboveBase *int64 `json:"onDemandAboveBase,omitempty"`
+	// SpotAllocationStrategy diversifies your Spot capacity across multiple instance types to
+	// find the best pricing. Higher Spot availability may result from a larger number of
+	// instance types to choose from.
+	SpotAllocationStrategy *string `json:"spotAllocationStrategy,omitempty"`
+	// SpotInstancePools is the number of Spot pools to use to allocate your Spot capacity (defaults to 2)
+	// pools are determined from the different instance types in the Overrides array of LaunchTemplate
+	SpotInstancePools *int64 `json:"spotInstancePools,omitempty"`
 }
 
 // UserData defines a user-data section
