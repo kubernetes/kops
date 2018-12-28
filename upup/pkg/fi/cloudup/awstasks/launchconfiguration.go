@@ -459,7 +459,7 @@ func (t *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]
 	if err != nil {
 		return nil, fmt.Errorf("unable to resolve image: %q: %v", image, err)
 	} else if img == nil {
-		return nil, fmt.Errorf("unable to resolve image: %q: not found")
+		return nil, fmt.Errorf("unable to resolve image: %q: not found", image)
 	}
 
 	bm := make(map[string]*BlockDeviceMapping)
