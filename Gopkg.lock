@@ -100,10 +100,11 @@
   version = "v1.0.1"
 
 [[projects]]
-  digest = "1:bec386c02055f020566931a5dae08ec5582f1488f50b18d767d5c0edba71c434"
+  digest = "1:bc64ec2fe484ee175b0bd8f9306ff392d8b730ebf2de85a736bfa145be6cce13"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
+    "aws/arn",
     "aws/awserr",
     "aws/awsutil",
     "aws/client",
@@ -2173,6 +2174,7 @@
     "github.com/MakeNowJust/heredoc",
     "github.com/Masterminds/sprig",
     "github.com/aws/aws-sdk-go/aws",
+    "github.com/aws/aws-sdk-go/aws/arn",
     "github.com/aws/aws-sdk-go/aws/awserr",
     "github.com/aws/aws-sdk-go/aws/client",
     "github.com/aws/aws-sdk-go/aws/credentials",

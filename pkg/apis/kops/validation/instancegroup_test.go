@@ -88,6 +88,16 @@ func TestValidateInstanceProfile(t *testing.T) {
 		},
 		{
 			Input: &kops.IAMProfileSpec{
+				Profile: s("arn:aws-cn:iam::123456789012:instance-profile/has/path/S3Access"),
+			},
+		},
+		{
+			Input: &kops.IAMProfileSpec{
+				Profile: s("arn:aws-us-gov:iam::123456789012:instance-profile/has/path/S3Access"),
+			},
+		},
+		{
+			Input: &kops.IAMProfileSpec{
 				Profile: s("42"),
 			},
 			ExpectedErrors: []string{"Invalid value::IAMProfile.Profile"},
