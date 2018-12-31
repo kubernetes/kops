@@ -17,6 +17,8 @@ limitations under the License.
 package awstasks
 
 import (
+	"fmt"
+
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -25,7 +27,7 @@ import (
 func FindEphemeralDevices(cloud awsup.AWSCloud, machineType string) (map[string]*BlockDeviceMapping, error) {
 	mt, err := awsup.GetMachineTypeInfo(machineType)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to find instance type details on: %s, error: %s", machineType, err)
 	}
 
 	blockDeviceMappings := make(map[string]*BlockDeviceMapping)
