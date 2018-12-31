@@ -507,6 +507,7 @@ type terraformBlockDevice struct {
 	DeleteOnTermination *bool `json:"delete_on_termination,omitempty"`
 }
 
+// RenderTerraform is responsible for rendering the terraform json
 func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LaunchConfiguration) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 
@@ -615,11 +616,12 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 	// So that we can update configurations
 	tf.Lifecycle = &terraform.Lifecycle{CreateBeforeDestroy: fi.Bool(true)}
 
-	return t.RenderResource("aws_launch_configuration", *e.Name, tf)
+	return t.RenderResource("aws_launch_configuration", fi.StringValue(e.Name), tf)
 }
 
+// TerraformLink returns the terraform reference
 func (e *LaunchConfiguration) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("aws_launch_configuration", *e.Name, "id")
+	return terraform.LiteralProperty("aws_launch_configuration", fi.StringValue(e.Name), "id")
 }
 
 type cloudformationLaunchConfiguration struct {
@@ -635,9 +637,6 @@ type cloudformationLaunchConfiguration struct {
 	UserData                 *string                      `json:"UserData,omitempty"`
 	PlacementTenancy         *string                      `json:"PlacementTenancy,omitempty"`
 	InstanceMonitoring       *bool                        `json:"InstanceMonitoring,omitempty"`
-
-	//NamePrefix               *string                 `json:"name_prefix,omitempty"`
-	//Lifecycle                *cloudformation.Lifecycle    `json:"lifecycle,omitempty"`
 }
 
 type cloudformationBlockDevice struct {
