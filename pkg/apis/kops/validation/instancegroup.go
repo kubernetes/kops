@@ -159,12 +159,15 @@ func validatedMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstancesPo
 
 	if spec.OnDemandAboveBase != nil {
 		if fi.Int64Value(spec.OnDemandAboveBase) < 0 {
-			errs = append(errs, field.Invalid(path.Child("onDemandAboveBase"), spec.OnDemandAboveBase, "cannout be less then zero"))
+			errs = append(errs, field.Invalid(path.Child("onDemandAboveBase"), spec.OnDemandAboveBase, "cannot be less than 0"))
+		}
+		if fi.Int64Value(spec.OnDemandAboveBase) > 100 {
+			errs = append(errs, field.Invalid(path.Child("onDemandAboveBase"), spec.OnDemandAboveBase, "cannot be greater than 100"))
 		}
 	}
 
 	if spec.SpotAllocationStrategy != nil && !slice.Contains(kops.SpotAllocationStrategies, fi.StringValue(spec.SpotAllocationStrategy)) {
-		errs = append(errs, field.Invalid(path.Child("spotAllocationStrategy"), spec.SpotAllocationStrategy, "unsupport spot allocation stratergy"))
+		errs = append(errs, field.Invalid(path.Child("spotAllocationStrategy"), spec.SpotAllocationStrategy, "unsupported spot allocation strategy"))
 	}
 
 	return errs

@@ -140,7 +140,6 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 			actual.MixedOnDemandAllocationStrategy = mpd.OnDemandAllocationStrategy
 			actual.MixedOnDemandBase = mpd.OnDemandBaseCapacity
 			actual.MixedSpotAllocationStrategy = mpd.SpotAllocationStrategy
-			actual.MixedSpotAllocationStrategy = mpd.SpotAllocationStrategy
 			actual.MixedSpotInstancePools = mpd.SpotInstancePools
 		}
 
