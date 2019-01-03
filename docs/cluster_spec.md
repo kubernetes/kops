@@ -52,6 +52,7 @@ You can use a valid SSL Certificate for your API Server Load Balancer. Currently
 spec:
   api:
     loadBalancer:
+      type: Public
       sslCertificate: arn:aws:acm:<region>:<accountId>:certificate/<uuid>
 ```
 
