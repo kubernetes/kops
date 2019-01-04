@@ -74,6 +74,26 @@ type terraformLaunchTemplateMarketOptions struct {
 	SpotOptions []*terraformLaunchTemplateMarketOptionsSpotOptions `json:"options,omitempty"`
 }
 
+type terraformLaunchTemplateBlockDeviceEBS struct {
+	// VolumeType is the ebs type to use
+	VolumeType *string `json:"volume_type,omitempty"`
+	// VolumeSize is the volume size
+	VolumeSize *int64 `json:"volume_size,omitempty"`
+	// IOPS is the provisioned iops
+	IOPS *int64 `json:"iops,omitempty"`
+	// DeleteOnTermination indicates the volume should die with the instance
+	DeleteOnTermination *bool `json:"delete_on_termination,omitempty"`
+}
+
+type terraformLaunchTemplateBlockDevice struct {
+	// DeviceName is the name of the device
+	DeviceName *string `json:"device_name,omitempty"`
+	// VirtualName is used for the ephemeral devices
+	VirtualName *string `json:"virtual_name,omitempty"`
+	// EBS defines the ebs spec
+	EBS []*terraformLaunchTemplateBlockDeviceEBS `json:"ebs,omitempty"`
+}
+
 type terraformLaunchTemplate struct {
 	// NamePrefix is the name of the launch template
 	NamePrefix *string `json:"name_prefix,omitempty"`
@@ -81,7 +101,7 @@ type terraformLaunchTemplate struct {
 	Lifecycle *terraform.Lifecycle `json:"lifecycle,omitempty"`
 
 	// BlockDeviceMappings is the device mappings
-	BlockDeviceMappings []*terraformBlockDevice `json:"block_device_mappings,omitempty"`
+	BlockDeviceMappings []*terraformLaunchTemplateBlockDevice `json:"block_device_mappings,omitempty"`
 	// EBSOptimized indicates if the root device is ebs optimized
 	EBSOptimized *bool `json:"ebs_optimized,omitempty"`
 	// IAMInstanceProfile is the IAM profile to assign to the nodes
@@ -169,11 +189,17 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 	if err != nil {
 		return err
 	}
-	for _, x := range devices {
-		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, &terraformBlockDevice{
-			VolumeType:          x.EbsVolumeType,
-			VolumeSize:          x.EbsVolumeSize,
-			DeleteOnTermination: fi.Bool(true),
+	for n, x := range devices {
+		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, &terraformLaunchTemplateBlockDevice{
+			DeviceName: fi.String(n),
+			EBS: []*terraformLaunchTemplateBlockDeviceEBS{
+				{
+					DeleteOnTermination: fi.Bool(true),
+					IOPS:                x.EbsVolumeIops,
+					VolumeSize:          x.EbsVolumeSize,
+					VolumeType:          x.EbsVolumeType,
+				},
+			},
 		})
 	}
 	devices, err = FindEphemeralDevices(cloud, fi.StringValue(e.InstanceType))
@@ -181,7 +207,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		return err
 	}
 	for n, x := range devices {
-		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, &terraformBlockDevice{
+		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, &terraformLaunchTemplateBlockDevice{
 			VirtualName: x.VirtualName,
 			DeviceName:  fi.String(n),
 		})
