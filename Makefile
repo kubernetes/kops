@@ -777,6 +777,12 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokub
 bazel-upload: bazel-version-dist # Upload kops to S3
 	aws s3 sync --acl public-read ${BAZELUPLOAD}/ ${S3_BUCKET}
 
+# prow-postsubmit is run by the prow postsubmit job
+# It uploads a build to a staging directory, which in theory we can publish as a release
+.PHONY: prow-postsubmit
+prow-postsubmit: bazel-version-dist
+	${UPLOAD} ${BAZELUPLOAD}/kops/${VERSION}/ ${UPLOAD_DEST}/${KOPS_RELEASE_VERSION}-${GITSHA}/
+
 #-----------------------------------------------------------
 # static html documentation  
 
