@@ -22,7 +22,6 @@ import (
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/golang/glog"
@@ -136,11 +135,6 @@ func (t *LaunchTemplate) CheckChanges(a, e, changes *LaunchTemplate) error {
 		}
 	}
 	return nil
-}
-
-// CloudformationLink returns the cloudformation name
-func (t *LaunchTemplate) CloudformationLink() *cloudformation.Literal {
-	return cloudformation.Ref("AWS::AutoScaling::LaunchTemplateName", fi.StringValue(t.Name))
 }
 
 // FindDeletions is responsible for finding launch templates which can be deleted

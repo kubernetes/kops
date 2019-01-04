@@ -22,7 +22,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func TestLaunchTemplateTerraformRender(t *testing.T) {
+func TestLaunchTemplateCloudformationRender(t *testing.T) {
 	cases := []*renderTest{
 		{
 			Resource: &LaunchTemplate{
@@ -46,42 +46,45 @@ func TestLaunchTemplateTerraformRender(t *testing.T) {
 				},
 				Tenancy: fi.String("dedicated"),
 			},
-			Expected: `provider "aws" {
-  region = "eu-west-2"
-}
-
-resource "aws_launch_template" "test" {
-  name_prefix = "test-"
-
-  lifecycle = {
-    create_before_destroy = true
+			Expected: `{
+  "Resources": {
+    "AWSEC2LaunchTemplatetest": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "test",
+        "LaunchTemplateData": {
+          "EbsOptimized": true,
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilenodes"
+            }
+          },
+          "InstanceType": "t2.medium",
+          "KeyName": "mykey",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": true
+            }
+          ],
+          "Placement": [
+            {
+              "Tenancy": "dedicated"
+            }
+          ],
+          "SecurityGroup": [
+            {
+              "Ref": "AWSEC2SecurityGroupnodes1"
+            },
+            {
+              "Ref": "AWSEC2SecurityGroupnodes2"
+            }
+          ]
+        }
+      }
+    }
   }
-
-  ebs_optimized = true
-
-  iam_instance_profile = {
-    name = "${aws_iam_instance_profile.nodes.id}"
-  }
-
-  instance_type = "t2.medium"
-  key_name      = "${aws_key_pair.mykey.id}"
-
-  network_interfaces = {
-    associate_public_ip_address = true
-  }
-
-  placement = {
-    tenancy = "dedicated"
-  }
-
-  vpc_security_group_ids = ["${aws_security_group.nodes-1.id}", "${aws_security_group.nodes-2.id}"]
-}
-
-terraform = {
-  required_version = ">= 0.9.3"
-}
-`,
+}`,
 		},
 	}
-	doRenderTests(t, "RenderTerraform", cases)
+	doRenderTests(t, "RenderCloudformation", cases)
 }

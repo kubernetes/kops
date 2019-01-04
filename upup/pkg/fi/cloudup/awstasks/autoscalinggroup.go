@@ -698,6 +698,46 @@ type cloudformationASGMetricsCollection struct {
 	Granularity *string   `json:"Granularity"`
 	Metrics     []*string `json:"Metrics"`
 }
+
+type cloudformationAutoscalingLaunchTemplateSpecification struct {
+	// LaunchTemplateName is the name of the template to use
+	LaunchTemplateName *string `json:"LaunchTemplateName,omitempty"`
+}
+
+type cloudformationAutoscalingLaunchTemplateOverride struct {
+	// InstanceType is the instance to use
+	InstanceType *string `json:"InstanceType,omitempty"`
+}
+
+type cloudformationAutoscalingLaunchTemplate struct {
+	// LaunchTemplateSpecification is the definition for a LT
+	LaunchTemplateSpecification *cloudformationAutoscalingLaunchTemplateSpecification `json:"LaunchTemplateSpecification,omitempty"`
+	// Override the is machine type override
+	Overrides []*cloudformationAutoscalingLaunchTemplateOverride `json:"Overrides,omitempty"`
+}
+
+type cloudformationAutoscalingInstanceDistribution struct {
+	// OnDemandAllocationStrategy
+	OnDemandAllocationStrategy *string `json:"InstancesDistribution,omitempty"`
+	// OnDemandBaseCapacity is the base ondemand requirement
+	OnDemandBaseCapacity *int64 `json:"OnDemandBaseCapacity,omitempty"`
+	// OnDemandPercentageAboveBaseCapacity is the percentage above base for on-demand instances
+	OnDemandPercentageAboveBaseCapacity *int64 `json:"OnDemandPercentageAboveBaseCapacity,omitempty"`
+	// SpotAllocationStrategy is the spot allocation stratergy
+	SpotAllocationStrategy *string `json:"SpotAllocationStrategy,omitempty"`
+	// SpotInstancePool is the number of pools
+	SpotInstancePool *int64 `json:"SpotInstancePool,omitempty"`
+	// SpotMaxPrice is the max bid on spot instance, defaults to demand value
+	SpotMaxPrice *float64 `json:"SpotMaxPrice,omitempty"`
+}
+
+type cloudformationMixedInstancesPolicy struct {
+	// LaunchTemplate is the launch template spec
+	LaunchTemplate *cloudformationAutoscalingLaunchTemplate `json:"LaunchTemplate,omitempty"`
+	// InstanceDistribution is the distribution strategy
+	InstanceDistribution *cloudformationAutoscalingInstanceDistribution `json:"InstancesDistribution,omitempty"`
+}
+
 type cloudformationAutoscalingGroup struct {
 	Name                    *string                               `json:"AutoScalingGroupName,omitempty"`
 	LaunchConfigurationName *cloudformation.Literal               `json:"LaunchConfigurationName,omitempty"`
@@ -706,14 +746,14 @@ type cloudformationAutoscalingGroup struct {
 	VPCZoneIdentifier       []*cloudformation.Literal             `json:"VPCZoneIdentifier,omitempty"`
 	Tags                    []*cloudformationASGTag               `json:"Tags,omitempty"`
 	MetricsCollection       []*cloudformationASGMetricsCollection `json:"MetricsCollection,omitempty"`
-
-	LoadBalancerNames []*cloudformation.Literal `json:"LoadBalancerNames,omitempty"`
-	TargetGroupARNs   []*cloudformation.Literal `json:"TargetGroupARNs,omitempty"`
+	MixedInstancesPolicy    *cloudformationMixedInstancesPolicy   `json:"MixedInstancesPolicy,omitempty"`
+	LoadBalancerNames       []*cloudformation.Literal             `json:"LoadBalancerNames,omitempty"`
+	TargetGroupARNs         []*cloudformation.Literal             `json:"TargetGroupARNs,omitempty"`
 }
 
 // RenderCloudformation is responsible for generating the cloudformation template
 func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *AutoscalingGroup) error {
-	tf := &cloudformationAutoscalingGroup{
+	cf := &cloudformationAutoscalingGroup{
 		Name:    e.Name,
 		MinSize: e.MinSize,
 		MaxSize: e.MaxSize,
@@ -723,23 +763,47 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 				Metrics:     aws.StringSlice(e.Metrics),
 			},
 		},
-		LaunchConfigurationName: e.LaunchConfiguration.CloudformationLink(),
+	}
+
+	if e.UseMixedInstancesPolicy() {
+		cf.MixedInstancesPolicy = &cloudformationMixedInstancesPolicy{
+			LaunchTemplate: &cloudformationAutoscalingLaunchTemplate{
+				LaunchTemplateSpecification: &cloudformationAutoscalingLaunchTemplateSpecification{
+					LaunchTemplateName: e.LaunchTemplate.Name,
+				},
+			},
+			InstanceDistribution: &cloudformationAutoscalingInstanceDistribution{
+				OnDemandAllocationStrategy:          e.MixedOnDemandAllocationStrategy,
+				OnDemandBaseCapacity:                e.MixedOnDemandBase,
+				OnDemandPercentageAboveBaseCapacity: e.MixedOnDemandAboveBase,
+				SpotAllocationStrategy:              e.MixedSpotAllocationStrategy,
+				SpotInstancePool:                    e.MixedSpotInstancePools,
+			},
+		}
+
+		for _, x := range e.MixedInstanceOverrides {
+			cf.MixedInstancesPolicy.LaunchTemplate.Overrides = append(cf.MixedInstancesPolicy.LaunchTemplate.Overrides, &cloudformationAutoscalingLaunchTemplateOverride{InstanceType: fi.String(x)})
+		}
+	}
+
+	if e.LaunchConfiguration != nil {
+		cf.LaunchConfigurationName = e.LaunchConfiguration.CloudformationLink()
 	}
 
 	for _, s := range e.Subnets {
-		tf.VPCZoneIdentifier = append(tf.VPCZoneIdentifier, s.CloudformationLink())
+		cf.VPCZoneIdentifier = append(cf.VPCZoneIdentifier, s.CloudformationLink())
 	}
 
 	for _, k := range maps.SortedKeys(e.Tags) {
 		v := e.Tags[k]
-		tf.Tags = append(tf.Tags, &cloudformationASGTag{
+		cf.Tags = append(cf.Tags, &cloudformationASGTag{
 			Key:               fi.String(k),
 			Value:             fi.String(v),
 			PropagateAtLaunch: fi.Bool(true),
 		})
 	}
 
-	return t.RenderResource("AWS::AutoScaling::AutoScalingGroup", fi.StringValue(e.Name), tf)
+	return t.RenderResource("AWS::AutoScaling::AutoScalingGroup", fi.StringValue(e.Name), cf)
 }
 
 // CloudformationLink is adds a reference
