@@ -569,12 +569,11 @@ func findAutoscalingGroupLaunchConfiguration(g *autoscaling.Group) (string, erro
 			if g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification != nil {
 				// honestly!!
 				name = aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.LaunchTemplateName)
+				if name != "" {
+					return name, nil
+				}
 			}
 		}
-	}
-
-	if name != "" {
-		return name, nil
 	}
 
 	return "", fmt.Errorf("error finding launch template or configuration for autoscaling group: %s", aws.StringValue(g.AutoScalingGroupName))
