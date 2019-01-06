@@ -57,7 +57,7 @@ container_pull(
 git_repository(
     name = "distroless",
     remote = "https://github.com/googlecloudplatform/distroless.git",
-    commit = "886114394dfed219001ec3b068b139a3456e49d4",
+    commit = "3585653b2b0d33c3fb369b907ef68df8344fd2ad",
 )
 
 load(

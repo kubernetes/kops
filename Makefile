@@ -15,6 +15,7 @@
 
 DOCKER_REGISTRY?=gcr.io/must-override
 S3_BUCKET?=s3://must-override/
+UPLOAD_DEST?=$(S3_BUCKET)
 GCS_LOCATION?=gs://must-override
 GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
@@ -48,6 +49,9 @@ GCFLAGS?=
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
+UPLOAD=$(MAKEDIR)/hack/upload
+
+
 # Unexport environment variables that can affect tests and are not used in builds
 unexport AWS_ACCESS_KEY_ID AWS_REGION AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN CNI_VERSION_URL DNS_IGNORE_NS_CHECK DNSCONTROLLER_IMAGE DO_ACCESS_TOKEN GOOGLE_APPLICATION_CREDENTIALS
 unexport KOPS_BASE_URL KOPS_CLUSTER_NAME KOPS_RUN_OBSOLETE_VERSION KOPS_STATE_STORE KOPS_STATE_S3_ACL KUBE_API_VERSIONS NODEUP_URL OPENSTACK_CREDENTIAL_FILE PROTOKUBE_IMAGE SKIP_PACKAGE_UPDATE
@@ -80,7 +84,7 @@ ifndef VERSION
   # we never cross versions.
   #
   # We expect that if you are uploading nodeup/protokube, you will set
-  # VERSION (along with S3_BUCKET), either directly or by setting CI=1
+  # VERSION (along with UPLOAD_DEST), either directly or by setting CI=1
   ifndef CI
     VERSION=${KOPS_RELEASE_VERSION}
   else
@@ -747,7 +751,7 @@ push-node-authorizer:
 bazel-protokube-export:
 	mkdir -p ${BAZELIMAGES}
 	bazel build --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar
-	cp bazel-bin/images/protokube.tar ${BAZELIMAGES}/protokube.tar
+	cp -fp bazel-bin/images/protokube.tar ${BAZELIMAGES}/protokube.tar
 	gzip --force --fast ${BAZELIMAGES}/protokube.tar
 	(${SHASUMCMD} ${BAZELIMAGES}/protokube.tar.gz | cut -d' ' -f1) > ${BAZELIMAGES}/protokube.tar.gz.sha1
 
@@ -756,6 +760,7 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokub
 	rm -rf ${BAZELUPLOAD}
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
 	mkdir -p ${BAZELUPLOAD}/utils/${VERSION}/linux/amd64/
 	cp bazel-bin/cmd/nodeup/linux_amd64_pure_stripped/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
@@ -766,6 +771,8 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokub
 	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops.sha1
 	cp bazel-bin/cmd/kops/darwin_amd64_pure_stripped/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops
 	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
+	cp bazel-bin/cmd/kops/windows_amd64_pure_stripped/kops.exe ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
+	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha1
 	cp ${DIST}/linux/amd64/utils.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz
 	cp ${DIST}/linux/amd64/utils.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
 
@@ -773,7 +780,13 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokub
 bazel-upload: bazel-version-dist # Upload kops to S3
 	aws s3 sync --acl public-read ${BAZELUPLOAD}/ ${S3_BUCKET}
 
-#-----------------------------------------------------------  
+# prow-postsubmit is run by the prow postsubmit job
+# It uploads a build to a staging directory, which in theory we can publish as a release
+.PHONY: prow-postsubmit
+prow-postsubmit: bazel-version-dist
+	${UPLOAD} ${BAZELUPLOAD}/kops/${VERSION}/ ${UPLOAD_DEST}/${KOPS_RELEASE_VERSION}-${GITSHA}/
+
+#-----------------------------------------------------------
 # static html documentation  
 
 .PHONY: live-docs
@@ -789,3 +802,37 @@ update-machine-types: #Update machine_types.go
 	go build -o hack/machine_types/machine_types  ${KOPS_ROOT}/hack/machine_types/
 	hack/machine_types/machine_types --out upup/pkg/fi/cloudup/awsup/machine_types.go
 	go fmt upup/pkg/fi/cloudup/awsup/machine_types.go
+
+#-----------------------------------------------------------
+# development targets
+
+# dev-upload-nodeup uploads nodeup to GCS
+.PHONY: dev-upload-nodeup
+dev-upload-nodeup: bazel-crossbuild-nodeup
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
+	cp -fp bazel-bin/cmd/nodeup/linux_amd64_pure_stripped/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
+	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha1
+	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+
+# dev-upload-protokube uploads protokube to GCS
+.PHONY: dev-upload-protokube
+dev-upload-protokube: bazel-protokube-export # Upload kops to GCS
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
+	cp -fp ${BAZELIMAGES}/protokube.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz
+	cp -fp ${BAZELIMAGES}/protokube.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha1
+	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+
+# dev-copy-utils copies utils from a recent release
+# We don't currently have a bazel build for them, and the build is pretty slow, but they change rarely.
+.PHONE: dev-copy-utils
+dev-copy-utils:
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
+	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.11.0-alpha.1/linux/amd64/utils.tar.gz
+	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.11.0-alpha.1/linux/amd64/utils.tar.gz.sha1
+	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+
+# dev-upload does a faster build and uploads to GCS / S3
+# It copies utils instead of building it
+.PHONY: dev-upload
+dev-upload: dev-upload-nodeup dev-upload-protokube dev-copy-utils
+	echo "Done"

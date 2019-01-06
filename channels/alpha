@@ -68,11 +68,11 @@ spec:
   - range: ">=1.11.0-alpha.1"
     #recommendedVersion: "1.11.0"
     #requiredVersion: 1.11.0
-    kubernetesVersion: 1.11.5
+    kubernetesVersion: 1.11.6
   - range: ">=1.10.0-alpha.1"
     recommendedVersion: "1.10.0"
     #requiredVersion: 1.10.0
-    kubernetesVersion: 1.10.11
+    kubernetesVersion: 1.10.12
   - range: ">=1.9.0-alpha.1"
     recommendedVersion: 1.9.2
     #requiredVersion: 1.9.0
