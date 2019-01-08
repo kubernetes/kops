@@ -33,6 +33,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/resources"
@@ -49,16 +50,9 @@ const (
 	TypeTargetGroup             = "target-group"
 )
 
-type elbDNSName struct {
-	Apiserver string
-	Bastion   string
-}
+type listFn func(fi.Cloud, *api.Cluster, string) ([]*resources.Resource, error)
 
-var elbDNSNames elbDNSName
-
-type listFn func(fi.Cloud, string) ([]*resources.Resource, error)
-
-func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*resources.Resource, error) {
+func ListResourcesAWS(cloud awsup.AWSCloud, cluster *api.Cluster, clusterName string) (map[string]*resources.Resource, error) {
 	resourceTrackers := make(map[string]*resources.Resource)
 
 	// These are the functions that are used for looking up
@@ -100,7 +94,7 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 	}
 
 	for _, fn := range listFunctions {
-		rt, err := fn(cloud, clusterName)
+		rt, err := fn(cloud, cluster, clusterName)
 		if err != nil {
 			return nil, err
 		}
@@ -377,7 +371,7 @@ func DumpCloudFormationStack(op *resources.DumpOperation, r *resources.Resource)
 	return nil
 }
 
-func ListCloudFormationStacks(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListCloudFormationStacks(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
 	request := &cloudformation.ListStacksInput{}
 	c := cloud.(awsup.AWSCloud)
@@ -402,7 +396,7 @@ func ListCloudFormationStacks(cloud fi.Cloud, clusterName string) ([]*resources.
 	return resourceTrackers, nil
 }
 
-func ListInstances(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListInstances(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	glog.V(2).Infof("Querying EC2 instances")
@@ -599,7 +593,7 @@ func DeleteVolume(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListVolumes(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	volumes, err := DescribeVolumes(cloud)
@@ -700,7 +694,7 @@ func DeleteKeypair(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListKeypairs(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	if !strings.Contains(clusterName, ".") {
 		glog.Infof("cluster %q is legacy (kube-up) cluster; won't delete keypairs", clusterName)
 		return nil, nil
@@ -762,7 +756,7 @@ func DeleteSubnet(cloud fi.Cloud, tracker *resources.Resource) error {
 	return nil
 }
 
-func ListSubnets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListSubnets(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 	subnets, err := DescribeSubnets(cloud)
 	if err != nil {
@@ -953,7 +947,7 @@ func DeleteDhcpOptions(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListDhcpOptions(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListDhcpOptions(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	dhcpOptions, err := DescribeDhcpOptions(cloud)
 	if err != nil {
 		return nil, err
@@ -1059,7 +1053,7 @@ func DeleteInternetGateway(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListInternetGateways(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListInternetGateways(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	gateways, err := DescribeInternetGateways(cloud)
 	if err != nil {
 		return nil, err
@@ -1152,7 +1146,7 @@ func DeleteAutoScalingGroup(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListAutoScalingGroups(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	tags := c.Tags()
@@ -1450,7 +1444,7 @@ func DumpELB(op *resources.DumpOperation, r *resources.Resource) error {
 	return nil
 }
 
-func ListELBs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListELBs(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	elbs, elbTags, err := DescribeELBs(cloud)
 	if err != nil {
 		return nil, err
@@ -1505,7 +1499,6 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 		}
 
 		tagRequest := &elb.DescribeTagsInput{}
-		var apielbname string
 
 		nameToELB := make(map[string]*elb.LoadBalancerDescription)
 		elbNameToDNS := make(map[string]string)
@@ -1533,18 +1526,6 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 
 			elb := nameToELB[elbName]
 			elbs = append(elbs, elb)
-
-			// get ELB DNS names by matching tags
-			if matchELBNameTag("api."+tags["KubernetesCluster"], t.Tags) {
-				apielbname = aws.StringValue(t.LoadBalancerName)
-				elbDNSNames.Apiserver = elbNameToDNS[apielbname] + "."
-			} else if matchELBNameTag("bastion."+tags["KubernetesCluster"], t.Tags) {
-				apielbname = aws.StringValue(t.LoadBalancerName)
-				elbDNSNames.Bastion = elbNameToDNS[apielbname] + "."
-			} else {
-				continue
-			}
-
 		}
 
 		return true
@@ -1559,7 +1540,7 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 }
 
 // For NLBs and ALBs
-func ListELBV2s(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListELBV2s(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	elbv2s, _, err := DescribeELBV2s(cloud)
 	if err != nil {
 		return nil, err
@@ -1651,7 +1632,7 @@ func DescribeELBV2s(cloud fi.Cloud) ([]*elbv2.LoadBalancer, map[string][]*elbv2.
 	return elbv2s, elbv2Tags, nil
 }
 
-func ListTargetGroups(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListTargetGroups(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	targetgroups, _, err := DescribeTargetGroups(cloud)
 	if err != nil {
 		return nil, err
@@ -1804,7 +1785,7 @@ func deleteRoute53Records(cloud fi.Cloud, zone *route53.HostedZone, resourceTrac
 	return nil
 }
 
-func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListRoute53Records(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
 
 	if dns.IsGossipHostname(clusterName) {
@@ -1863,13 +1844,10 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*resources.Resour
 				prefix := strings.TrimSuffix(name, clusterName)
 
 				remove := false
-				// TODO: Compute the actual set of names for internal records?
-				// aws console prefixes dualstack. to support IPv4 and IPV6 for internet facing records
-				if rrs.AliasTarget != nil && strings.TrimPrefix(aws.StringValue(rrs.AliasTarget.DNSName), "dualstack.") == elbDNSNames.Apiserver {
+				// TODO: Compute the actual set of names?
+				if strings.TrimSuffix(aws.StringValue(rrs.Name), ".") == cluster.Spec.MasterPublicName {
 					remove = true
-				} else if rrs.AliasTarget != nil && strings.TrimPrefix(aws.StringValue(rrs.AliasTarget.DNSName), "dualstack.") == elbDNSNames.Bastion {
-					remove = true
-				} else if prefix == ".api.internal" {
+				} else if prefix == ".api.internal" || prefix == ".bastion" {
 					remove = true
 				} else if strings.HasPrefix(prefix, ".etcd-") {
 					remove = true
@@ -1953,7 +1931,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListIAMRoles(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	remove := make(map[string]bool)
@@ -2031,7 +2009,7 @@ func DeleteIAMInstanceProfile(cloud fi.Cloud, r *resources.Resource) error {
 	return nil
 }
 
-func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListIAMInstanceProfiles(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	remove := make(map[string]bool)
@@ -2073,7 +2051,7 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*resources.R
 	return resourceTrackers, nil
 }
 
-func ListSpotinstElastigroups(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListSpotinstElastigroups(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	return spotinst.ListGroups(cloud.(awsup.AWSCloud).Spotinst(), clusterName)
 }
 

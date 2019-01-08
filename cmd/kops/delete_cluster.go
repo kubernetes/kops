@@ -131,7 +131,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 			}
 		}
 
-		allResources, err := resourceops.ListResources(cloud, clusterName, options.Region)
+		allResources, err := resourceops.ListResources(cloud, cluster, clusterName, options.Region)
 		if err != nil {
 			return err
 		}

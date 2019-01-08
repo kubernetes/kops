@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -51,7 +52,7 @@ func DescribeRouteTables(cloud fi.Cloud, clusterName string) (map[string]*ec2.Ro
 	return routeTables, nil
 }
 
-func ListRouteTables(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListRouteTables(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	routeTables, err := DescribeRouteTables(cloud, clusterName)
 	if err != nil {
 		return nil, err

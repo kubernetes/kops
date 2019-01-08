@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -92,7 +93,7 @@ func DumpSecurityGroup(op *resources.DumpOperation, r *resources.Resource) error
 	return nil
 }
 
-func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListSecurityGroups(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	groups, err := DescribeSecurityGroups(cloud, clusterName)
 	if err != nil {
 		return nil, err

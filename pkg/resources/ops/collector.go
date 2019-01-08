@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/kops/pkg/apis/kops"
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/pkg/resources/aws"
 	"k8s.io/kops/pkg/resources/digitalocean"
@@ -33,10 +34,10 @@ import (
 )
 
 // ListResources collects the resources from the specified cloud
-func ListResources(cloud fi.Cloud, clusterName string, region string) (map[string]*resources.Resource, error) {
+func ListResources(cloud fi.Cloud, cluster *api.Cluster, clusterName string, region string) (map[string]*resources.Resource, error) {
 	switch cloud.ProviderID() {
 	case kops.CloudProviderAWS:
-		return aws.ListResourcesAWS(cloud.(awsup.AWSCloud), clusterName)
+		return aws.ListResourcesAWS(cloud.(awsup.AWSCloud), cluster, clusterName)
 	case kops.CloudProviderDO:
 		return digitalocean.ListResources(cloud.(*digitalocean.Cloud), clusterName)
 	case kops.CloudProviderGCE:

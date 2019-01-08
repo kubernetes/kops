@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -85,7 +86,7 @@ func DescribeVPCs(cloud fi.Cloud, clusterName string) (map[string]*ec2.Vpc, erro
 	return vpcs, nil
 }
 
-func ListVPCs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+func ListVPCs(cloud fi.Cloud, cluster *api.Cluster, clusterName string) ([]*resources.Resource, error) {
 	vpcs, err := DescribeVPCs(cloud, clusterName)
 	if err != nil {
 		return nil, err
