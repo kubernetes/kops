@@ -8,6 +8,7 @@ roleRef:
   kind: ClusterRole
   name: system:kubelet-api-admin
 subjects:
+# TODO: perhaps change the client cerificate, place into a group and using a group selector instead?
 - apiGroup: rbac.authorization.k8s.io
   kind: User
   name: kubelet-api
