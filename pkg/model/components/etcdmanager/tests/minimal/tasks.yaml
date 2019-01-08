@@ -48,6 +48,7 @@ Contents:
         resources:
           requests:
             cpu: 100m
+            memory: 100Mi
         securityContext:
           privileged: true
         volumeMounts:
@@ -110,6 +111,7 @@ Contents:
         resources:
           requests:
             cpu: 200m
+            memory: 100Mi
         securityContext:
           privileged: true
         volumeMounts:

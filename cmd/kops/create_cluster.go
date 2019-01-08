@@ -31,6 +31,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -700,6 +701,20 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		for _, etcdCluster := range cloudup.EtcdClusters {
 			etcd := &api.EtcdClusterSpec{}
 			etcd.Name = etcdCluster
+
+			// if this is the main cluster, we use 200 millicores by default.
+			// otherwise we use 100 millicores by default.  100Mi is always default
+			// for event and main clusters.  This is changeable in the kops cluster
+			// configuration.
+			if etcd.Name == "main" {
+				cpuRequest := resource.MustParse("200m")
+				etcd.CPURequest = &cpuRequest
+			} else {
+				cpuRequest := resource.MustParse("100m")
+				etcd.CPURequest = &cpuRequest
+			}
+			memoryRequest := resource.MustParse("100Mi")
+			etcd.MemoryRequest = &memoryRequest
 
 			var names []string
 			for _, ig := range masters {

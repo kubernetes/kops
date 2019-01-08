@@ -88,6 +88,8 @@ etcdClusters:
 
 By default, the Volumes created for the etcd clusters are `gp2` and 20GB each. The volume size, type and Iops( for `io1`) can be configured via their parameters. Conversion between `gp2` and `io1` is not supported, nor are size changes.
 
+It is also possible to specify the requests for your etcd cluster members using the `cpuRequest` and `memoryRequest` parameters.
+
 ```yaml
 etcdClusters:
 - etcdMembers:
@@ -104,6 +106,8 @@ etcdClusters:
     volumeIops: 100
     volumeSize: 21
   name: events
+  cpuRequest: 150m
+  memoryRequest: 512Mi
 ```
 
 ### sshAccess
