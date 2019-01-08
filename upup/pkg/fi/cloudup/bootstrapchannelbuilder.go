@@ -266,6 +266,29 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	}
 
 	{
+		// Adding the kubelet-api-admin binding: this is required when switching to webhook authorization on the kubelet
+		// docs: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#other-component-roles
+		// issue: https://github.com/kubernetes/kops/issues/5176
+		key := "rbac.addons.k8s.io"
+		version := "v0.0.1"
+
+		{
+			id := "kubelet-api-admin"
+			location := key + "/kubelet-api-admin.yaml"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          map[string]string{"k8s-addon": key},
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.9.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
+	}
+
+	{
 		key := "limit-range.addons.k8s.io"
 		version := "1.5.0"
 		location := key + "/v" + version + ".yaml"
