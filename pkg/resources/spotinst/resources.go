@@ -106,7 +106,7 @@ func GetCloudGroups(svc Service, cluster *kops.Cluster, instancegroups []*kops.I
 
 		if instancegroup == nil {
 			if warnUnmatched {
-				glog.Warningf("Found group with no corresponding instance group %q", group.Name())
+				glog.V(2).Infof("Found group with no corresponding instance group %q", group.Name())
 			}
 			continue
 		}

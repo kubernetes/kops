@@ -130,6 +130,7 @@ k8s.io/kops/pkg/tokens
 k8s.io/kops/pkg/try
 k8s.io/kops/pkg/urls
 k8s.io/kops/pkg/util/stringorslice
+k8s.io/kops/pkg/util/subnet
 k8s.io/kops/pkg/util/templater
 k8s.io/kops/pkg/validation
 k8s.io/kops/pkg/values

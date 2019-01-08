@@ -142,17 +142,11 @@ spec:
   kops update cluster ${CLUSTER_NAME} --yes
   ```
 
-  **If you run in AWS private topology with shared subnets, and you would like Kubernetes to provision resources in these shared subnets, you must create tags on them.**
-  
-  **This is important, for example, if your `utility` subnets are shared, you will not be able to launch any services that create Elastic Load Balancers (ELBs).**
-  
-  **Prior to kops 1.8 `KubernetesCluster` tag was used for this. This lead to several problems if there were more than one Kubernetes Cluster in a subnet.**
-  
-  **After you upgraded to kops 1.8 remove `KubernetesCluster` Tag from subnets otherwise `kubernetes.io/cluster/<clustername>` won't have any effect!**
+### Subnet Tags
 
-  **These are currently needed Tags on shared resources:**
+  By default, kops will tag your existing subnets with the standard tags:
 
-  Public Subnets:
+  Public/Utility Subnets:
   ```
   "kubernetes.io/cluster/<cluster-name>" = "shared"
   "kubernetes.io/role/elb"               = "1"
@@ -165,7 +159,12 @@ spec:
   "kubernetes.io/role/internal-elb"      = "1"
   "SubnetType"                           = "Private"
   ```
-
+  
+  These tags are important, for example, your services will be unable to create public or private Elastic Load Balancers (ELBs) if the respective `elb` or `internal-elb` tags are missing.
+  
+  If you would like to manage these tags externally then specify `--disable-subnet-tags` during your cluster creation. This will prevent kops from tagging existing subnets and allow some custom control, such as separate subnets for internal ELBs.
+  
+  Prior to kops 1.8 `KubernetesCluster` tag was used instead of `kubernetes.io/cluster/<cluster-name>`. This lead to several problems if there were more than one Kubernetes Cluster in a subnet. After you upgraded to kops 1.8 ensure the `KubernetesCluster` Tag is removed from subnets otherwise `kubernetes.io/cluster/<clustername>` won't have any effect!
 
 ### Shared NAT Egress
 

@@ -39,7 +39,7 @@ required = [
 # aws-sdk-go is one of our critical dependencies
 [[override]]
   name = "github.com/aws/aws-sdk-go"
-  version = "v1.13.60"
+  version = "v1.16.11"
 
 # We need this for our build
 [[override]]
@@ -49,34 +49,34 @@ required = [
 # Core kubernetes components
 [[override]]
   name = "k8s.io/code-generator"
-  version = "kubernetes-1.11.3"
+  version = "kubernetes-1.12.3"
 [[override]]
   name = "k8s.io/apimachinery"
-  version = "kubernetes-1.11.3"
+  version = "kubernetes-1.12.3"
 [[override]]
   name = "k8s.io/api"
-  version = "kubernetes-1.11.3"
+  version = "kubernetes-1.12.3"
 [[override]]
   name = "k8s.io/utils"
-  revision = "cd34563cd63c2bd7c6fe88a73c4dcf34ed8a67cb" # Latest
+  revision = "1bd4f387aa67de2eec07a362c10bc8bd7fe74237" # Latest
 [[override]]
   name = "k8s.io/kube-openapi"
-  revision = "91cfa479c814065e420cee7ed227db0f63a5854e" # version specified in 1.11.3
+  revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803" # version specified in 1.12.3
 [[override]]
   name = "k8s.io/client-go"
-  version = "kubernetes-1.11.3"
+  version = "kubernetes-1.12.3"
 [[override]]
   name = "k8s.io/apiserver"
-  version = "kubernetes-1.11.3"
+  version = "kubernetes-1.12.3"
 [[override]]
   name = "k8s.io/metrics"
-  version = "kubernetes-1.11.3"
+  version = "kubernetes-1.12.3"
 [[override]]
   name = "k8s.io/apiextensions-apiserver"
-  version = "kubernetes-1.11.3"
+  version = "kubernetes-1.12.3"
 [[override]]
   name = "k8s.io/kubernetes"
-  version = "v1.11.3"
+  version = "v1.12.3"
 
 # Needed for docs generation
 [[override]]
@@ -90,7 +90,7 @@ required = [
 # These come from godeps.json in kubernetes
 [[override]]
   name = "k8s.io/gengo"
-  revision = "01a732e01d00cb9a81bb0ca050d3e6d2b947927b"
+  revision = "fdcf9f9480fdd5bf2b3c3df9bf4ecd22b25b87e2"
 [[override]]
   name = "github.com/hashicorp/hcl"
   revision = "d8c773c4cba11b11539e3d45f93daeaa5dcf1fa1"
@@ -133,7 +133,7 @@ required = [
   revision = "13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272"
 [[override]]
   name = "github.com/docker/docker"
-  revision = "4f3616fb1c112e206b88cb7a9922bf49067a7756"
+  revision = "a9fbbdc8dd8794b20af358382ab780559bca589d"
 [[override]]
   name = "github.com/fatih/camelcase"
   revision = "f6a740d52f961c60348ebb109adde9f4635d7540"
@@ -163,7 +163,7 @@ required = [
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
 [[override]]
   name = "google.golang.org/api"
-  revision = "8e296ef260056b6323d10727db40512dac6d92d5"
+  revision = "3639d6d93f377f39a1de765fa4ef37b3c7ca8bd9"
 # UNKNOWN dep github.com/petar/GoLLRB
 [[override]]
   name = "github.com/Microsoft/go-winio"
@@ -176,7 +176,7 @@ required = [
   revision = "ca53cad383cad2479bbba7f7a1a05797ec1386e4"
 [[override]]
   name = "github.com/vmware/govmomi"
-  revision = "e70dd44f80baf671099254d675eb278529038234"
+  revision = "22f74650cf39ba4649fba45e770df0f44df6f758"
 [[override]]
   name = "github.com/coreos/go-systemd"
   revision = "48702e0da86bd25e76cfef347e2adeb434a0d0a6"
@@ -223,7 +223,7 @@ required = [
 # UNKNOWN dep github.com/google/go-querystring
 [[override]]
   name = "github.com/imdario/mergo"
-  revision = "6633656539c1639d9d78127b7d47c622b5d7b6dc"
+  revision = "9316a62528ac99aaecb4e47eadd6dc8aa6533d58"
 [[override]]
   name = "google.golang.org/genproto"
   revision = "09f6ed296fc66555a25fe4ce95173148778dfa85"
@@ -238,10 +238,10 @@ required = [
   revision = "9e638d38cf6977a37a8ea0078f3ee75a7cdb2dd1"
 [[override]]
   name = "github.com/Azure/go-ansiterm"
-  revision = "19f72df4d05d31cbe1c56bfc8045c96babff6c7e"
+  revision = "d6e3b3328b783f23731bc4d058875b0371ff8109"
 [[override]]
   name = "github.com/Azure/go-autorest"
-  revision = "1ff28809256a84bb6966640ff3d0371af82ccba4"
+  revision = "bca49d5b51a50dc5bb17bbf6204c711c6dbded06"
 [[override]]
   name = "golang.org/x/net"
   revision = "1c05540f6879653db88113bc4a2b70aec4bd491f"
@@ -256,7 +256,7 @@ required = [
   revision = "20b71e5b60d756d3d2f80def009790325acc2b23"
 [[override]]
   name = "github.com/google/cadvisor"
-  revision = "de723a090f4dd5390dc7c2acee37ba9c62f0cc09"
+  revision = "fc17731afdcf184832482e324913c8f1a91b54ee"
 [[override]]
   name = "gopkg.in/inf.v0"
   revision = "3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4"
@@ -287,7 +287,7 @@ required = [
   revision = "e31f36ffc91a2ba9ddb72a4b6a607ff9b3d3cb63"
 [[override]]
   name = "github.com/pelletier/go-toml"
-  revision = "16398bac157da96aa88f98a2df640c7f32af1da2"
+  revision = "c01d1270ff3e442a8a57cddc1c92dc1138598194"
 [[override]]
   name = "github.com/google/gofuzz"
   revision = "44d81051d367757e1c7c6a5a86423ece9afcf63c"
@@ -317,7 +317,7 @@ required = [
   revision = "65c1f6f8f0fc1e2185eb9863a3bc751496404259"
 [[override]]
   name = "github.com/matttproud/golang_protobuf_extensions"
-  revision = "fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a"
+  revision = "c12348ce28de40eed0136aa2b644d0ee0650e56c"
 [[override]]
   name = "github.com/ghodss/yaml"
   revision = "73d445a93680fa1a78ae23a5839bad48f32ba1ee"
@@ -350,9 +350,6 @@ required = [
   name = "github.com/miekg/dns"
   revision = "5d001d020961ae1c184f9f8152fdc73810481677"
 [[override]]
-  name = "github.com/juju/ratelimit"
-  revision = "5b9ff866471762aa2ab2dced63c9fb6f53921342"
-[[override]]
   name = "github.com/davecgh/go-spew"
   revision = "782f4967f2dc4564575ca782fe2d04090b5faca8"
 [[override]]
@@ -366,7 +363,7 @@ required = [
   revision = "a0d98a5f288019575c6d1f4bb1573fef2d1fcdc4"
 [[override]]
   name = "github.com/coreos/etcd"
-  revision = "95a726a27e09030f9ccbd9982a1508f5a6d25ada"
+  revision = "420a452267a7ce45b3fcbed04d54030d69964fc1"
 [[override]]
   name = "vbom.ml/util"
   revision = "db5cfe13f5cc80a4990d98e2e1b0707a4d1a5394"
@@ -381,10 +378,13 @@ required = [
   revision = "593d64559f7600f29581a3ee42177f5dbded27a9"
 [[override]]
   name = "github.com/evanphx/json-patch"
-  revision = "94e38aa1586e8a6c8a75770bddf5ff84c48a106b"
+  revision = "36442dbdb585210f8d5a1b45e67aa323c197d5c4"
 [[override]]
   name = "github.com/pmezard/go-difflib"
   revision = "d8ed2627bdf02c080bf22230dbb337003b7aba2d"
+[[override]]
+  name = "gopkg.in/square/go-jose.v2"
+  revision = "89060dee6a84df9a4dae49f676f0c755037834f1"
 
 
 # These are our dependencies, with the versions we previously locked to with submodules
@@ -453,9 +453,6 @@ required = [
   # The older version (c6fed...) specified in k8s.io/kubernetes Godeps breaks go dep
   name = "github.com/chai2010/gettext-go"
   revision = "bf70f2a70fb1b1f36d90d671a72795984eab0fcb"
-[[override]]
-  name = "gopkg.in/square/go-jose.v2"
-  revision = "76dd09796242edb5b897103a75df2645c028c960"
 [[override]]
   name = "github.com/gophercloud/gophercloud"
   revision = "f29afc2cceca860199ee88cd355a4d0a37b3fad2"

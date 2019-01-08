@@ -7,7 +7,6 @@ go_test(
         "exported_testdata",  # keep
     ],
     deps = [
-        "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/v1alpha1:go_default_library",
         "//pkg/apis/kops/v1alpha2:go_default_library",
         "//pkg/diff:go_default_library",

@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -254,16 +255,21 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		masterKeypair.AlternateNameTasks = append(masterKeypair.AlternateNameTasks, elb)
 	}
 
-	for _, ig := range b.MasterInstanceGroups() {
-		t := &awstasks.LoadBalancerAttachment{
-			Name:      s("api-" + ig.ObjectMeta.Name),
-			Lifecycle: b.Lifecycle,
+	// When Spotinst Elastigroups are used, there is no need to create
+	// a separate task for the attachment of the load balancer since this
+	// is already done as part of the Elastigroup's creation, if needed.
+	if !featureflag.Spotinst.Enabled() {
+		for _, ig := range b.MasterInstanceGroups() {
+			t := &awstasks.LoadBalancerAttachment{
+				Name:      s("api-" + ig.ObjectMeta.Name),
+				Lifecycle: b.Lifecycle,
 
-			LoadBalancer:     b.LinkToELB("api"),
-			AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+				LoadBalancer:     b.LinkToELB("api"),
+				AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+			}
+
+			c.AddTask(t)
 		}
-
-		c.AddTask(t)
 	}
 
 	return nil

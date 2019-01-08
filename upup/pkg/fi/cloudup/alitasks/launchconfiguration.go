@@ -201,8 +201,8 @@ func (_ *LaunchConfiguration) RenderALI(t *aliup.ALIAPITarget, a, e, changes *La
 	}
 	e.ConfigurationId = fi.String(createScalingConfigurationResponse.ScalingConfigurationId)
 
-	// Disable ScalingGroup, used to bind scalingConfig, we should excute EnableScalingGroup in the task LaunchConfiguration
-	// If the ScalingGroup is active, we can not excute EnableScalingGroup.
+	// Disable ScalingGroup, used to bind scalingConfig, we should execute EnableScalingGroup in the task LaunchConfiguration
+	// If the ScalingGroup is active, we can not execute EnableScalingGroup.
 	if e.ScalingGroup.Active != nil && fi.BoolValue(e.ScalingGroup.Active) {
 
 		glog.V(2).Infof("Disabling LoadBalancer with id:%q", fi.StringValue(e.ScalingGroup.ScalingGroupId))

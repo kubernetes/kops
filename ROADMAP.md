@@ -1,99 +1,51 @@
 # ROADMAP
 
-The kops 1.N.x version officially supports kubernetes 1.N.x and earlier.  While kubernetes 1.99 will likely run with kops 1.98,
-the configuration will probably not be correct (for example docker versions, CNI versions etc).
+## VERSION SUPPORT
+kops 1.N.x _officially_ supports Kubernetes 1.N.x and prior versions. We understand that those in the community run a wide selection of versions and we do our best to maintain backward compatibility as far as we can. 
 
-kops 1.N.0 is released when it is believed that kubernetes 1.N.x is stable, along with all the core addons (e.g. networking).
-This can mean that kops can release months after the release of kubernetes.  It's also not a deterministic release criteria,
-particularly with some networking plugins that are supported by kops but themselves still under development.  We discussed
-this challenge in kops office hours in March 2018, and the consensus was that we want to keep this, but that we should release
-alphas & betas much earlier so that users can try out new kubernetes versions on release day.
+However, kops 1.N.x does NOT support Kubernetes 1.N+1.x. Sometimes you get lucky and kops 1.N will technically install a later version of Kubernetes, but we cannot guarantee or support this situation. As always, we recommend waiting for the official release of kops with minor version >= the version of Kubernetes you wish to install. Please see the [compatibility matrix](README.md#Compatibility_Matrix) for further questions.
 
-For the next few releases this means that:
+## RELEASE SCHEDULE
+There is a natural lag between the release of Kubernetes and the corresponding version of kops that has full support for it. While the first patch versions of a minor Kubernetes release are burning in, the kops team races to incorporate all the updates needed to release. Once we have both some stability in the upstream version of Kubernetes AND full support in kops, we will cut a release that includes version specific configuration and a selection of add-ons to match.
 
-* 1.9.0 release target April 7th
-* 1.10 alpha.1 with release of kops 1.9.0 (April 7th)
-* 1.10 release target April 28th
-* 1.11 alpha.1 at release of kops 1.10
-* 1.11 beta.1 at release of k8s 1.11
-* 1.12 alpha.1 at release of kops 1.11 etc
+In practice, sometimes this means that kops release lags the upstream release by 1 or more months. We sincerely try to avoid this scenario- we understand how important this project is and respect the need that teams have to maintain their clusters. 
+
+Our goal is to have an official kops release no later than a month after the corresponding Kubernetes version is released. Please help us achieve this timeline and meet our goals by jumping in and giving us a hand. We always need assistance closing issues, reviewing PRs, and contributing code! Stop by office hours if you're interested. 
+
+A rough outline of the timeline/release cycle with respect to the Kubernetes release follows. We are revising the automation around the release process so that we can get alpha and beta releases out to the community and other developers much faster for testing and to get more eyes on open issues.
+
+Example release timeline based on Kubernetes quarterly release cycle:
+July 1: Kubernetes 1.W.0 is released.
+July 7: kops 1.W.beta1
+July 21: kops 1.W.0 released
+August 15: kops 1.W+1alpha1
+August 31: kops 1.W+1alpha2
+etc...
+September 25: Kubernetes1.W+1.RC-X
+Oct 1: Kubernetes 1.W+1.0
+Oct 7: kops 1.W+1beta1
+Oct 21: kops 1.W+1.0
 
 
-### _kops 1.10_
+## UPCOMING RELEASES
 
-* Support for kubernetes 1.10
-* Full support for GCE
-* Make the etcd-backup tool enabled-by-default, so everyone should have backups.
-* Allow users to opt-in to the full etcd-manager.
-* Make etcd3 the default for new clusters, now that we have an upgrade path.
-* Beginning of separation of addon functionality
-* Support for more clouds (Aliyun, DigitalOcean, OpenStack)
+### kops 1.11
 
-### _kops 1.11_
+* Full support for Kubernetes 1.11
+* Alpha support for bundles (etcd-manager is the test case)
+* etcd3 will be the default for newly created clusters. 
+  - Existing clusters will continue to run etcd2 but will be prompted to upgrade to 3. The upgrade will become mandatory in 1.12.
+* Default to Debian stretch images which increase support for newer instance types
+* Improvements to the release process that will make it easier for community members to cut releases.
 
-* Make the etcd-manager the default, deprecate the protokube-integrated approach
-* kops-server
-* Machines API support (including bare-metal)
+### kops 1.12
+* Full support for Kubernetes 1.12
+* Improvements to etcd3 support
 
-# HISTORICAL
+## UPCOMING FEATURES
+NB: These are features that are in process and may be introduced behind flags or in alpha capacity but are not explicitly targeting specific releases. 
 
-# 1.9
-
-## Must-have features
-
-* Support for k8s 1.9 _done_
-* etcd backup support _done_
-
-## Other features
-
-* Use NodeAuthorizer / bootstrap kubeconfigs [#3551](https://github.com/kubernetes/kops/issues/3551) _no progress; may be less important with machines API_
-
-# 1.8
-
-## Must-have features
-
-* Support for k8s 1.8
-
-## Other features
-
-* Improved GCE support
-* Support for API aggregation
-
-# 1.7
-
-## Must-have features
-
-* Support for k8s 1.7
- 
-## Other features we are working on in the 1.7 timeframe
-
-* etcd controller to allow moving between versions
-* kops server for better team scenarios
-* support for bare-metal
-* more gossip backends
-* IAM integration
-* more cloud providers
-* promote GCE to stable
-* RBAC policies for all components
-* bringing rolling-update out of alpha
-
-## 1.6
-
-### Must-have features
-
-* Support for k8s 1.6 _done_
-* RBAC enabled by default _yes, but we kept RBAC optional_
-
-## Other features we are working on in the 1.6 timeframe
-
-* Support for GCE _alpha_
-* Support for Google's [Container Optimized OS](https://cloud.google.com/container-optimized-os) (formerly known as GCI) _alpha_
-* Some support for bare-metal _private branches, not merged_
-* Some support for more cloud providers _initial work on vsphere_
-* Some IAM integration _discussions, but no code_
-* Federation made easy _no progress_
-* Authentication made easy _no progress_
-* Integration with kubeadm _kops now uses kubeadm for some RBAC related functionality_
-* CloudFormation integration on AWS _beta_
-
+* Documentation revamp that is closer to k8s.io: Stories and walkthroughs of common scenarios, restructure and update information
+* Additional cloud provider support: spotinst, aliyun, azure...?
+* Revisit recommended base cluster configurations to get them modernized. Update recommendations and defaults for instances, disks, etc, 
 

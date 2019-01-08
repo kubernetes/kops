@@ -219,7 +219,7 @@ func (c *NodeupModelContext) BuildKubeConfig(username string, ca, certificate, p
 
 	yaml, err := kops.ToRawYaml(config)
 	if err != nil {
-		return "", fmt.Errorf("error marshalling kubeconfig to yaml: %v", err)
+		return "", fmt.Errorf("error marshaling kubeconfig to yaml: %v", err)
 	}
 
 	return string(yaml), nil
@@ -288,7 +288,7 @@ func (c *NodeupModelContext) UseNodeAuthorizer() bool {
 
 // UsesSecondaryIP checks if the CNI in use attaches secondary interfaces to the host.
 func (c *NodeupModelContext) UsesSecondaryIP() bool {
-	if (c.Cluster.Spec.Networking.CNI != nil && c.Cluster.Spec.Networking.CNI.UsesSecondaryIP) || c.Cluster.Spec.Networking.AmazonVPC != nil {
+	if (c.Cluster.Spec.Networking.CNI != nil && c.Cluster.Spec.Networking.CNI.UsesSecondaryIP) || c.Cluster.Spec.Networking.AmazonVPC != nil || c.Cluster.Spec.Networking.LyftVPC != nil {
 		return true
 	}
 

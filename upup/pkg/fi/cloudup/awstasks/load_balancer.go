@@ -657,6 +657,7 @@ type terraformLoadBalancerListener struct {
 	InstanceProtocol string `json:"instance_protocol"`
 	LBPort           int64  `json:"lb_port"`
 	LBProtocol       string `json:"lb_protocol"`
+	SSLCertificateID string `json:"ssl_certificate_id,omitempty"`
 }
 
 type terraformLoadBalancerHealthCheck struct {
@@ -697,12 +698,23 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 			return fmt.Errorf("error parsing load balancer listener port: %q", loadBalancerPort)
 		}
 
-		tf.Listener = append(tf.Listener, &terraformLoadBalancerListener{
-			InstanceProtocol: "TCP",
-			InstancePort:     listener.InstancePort,
-			LBPort:           loadBalancerPortInt,
-			LBProtocol:       "TCP",
-		})
+		if listener.SSLCertificateID != "" {
+			tf.Listener = append(tf.Listener, &terraformLoadBalancerListener{
+				InstanceProtocol: "SSL",
+				InstancePort:     listener.InstancePort,
+				LBPort:           loadBalancerPortInt,
+				LBProtocol:       "SSL",
+				SSLCertificateID: listener.SSLCertificateID,
+			})
+		} else {
+			tf.Listener = append(tf.Listener, &terraformLoadBalancerListener{
+				InstanceProtocol: "TCP",
+				InstancePort:     listener.InstancePort,
+				LBPort:           loadBalancerPortInt,
+				LBProtocol:       "TCP",
+			})
+		}
+
 	}
 
 	if e.HealthCheck != nil {

@@ -56,7 +56,7 @@ type Policy struct {
 func (p *Policy) AsJSON() (string, error) {
 	j, err := json.MarshalIndent(p, "", "  ")
 	if err != nil {
-		return "", fmt.Errorf("error marshalling policy to JSON: %v", err)
+		return "", fmt.Errorf("error marshaling policy to JSON: %v", err)
 	}
 	return string(j), nil
 }
@@ -188,6 +188,10 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
 	}
 
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
+		addLyftVPCPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+	}
+
 	return p, nil
 }
 
@@ -219,6 +223,10 @@ func (b *PolicyBuilder) BuildAWSPolicyNode() (*Policy, error) {
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
 		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+	}
+
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
+		addLyftVPCPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
 	}
 
 	return p, nil
@@ -314,7 +322,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 
 			p.Statement = append(p.Statement, &Statement{
 				Effect: StatementEffectAllow,
-				Action: stringorslice.Of("s3:GetBucketLocation", "s3:ListBucket"),
+				Action: stringorslice.Of("s3:GetBucketLocation", "s3:GetEncryptionConfiguration", "s3:ListBucket"),
 				Resource: stringorslice.Slice([]string{
 					strings.Join([]string{b.IAMPrefix(), ":s3:::", s3Path.Bucket()}, ""),
 				}),
@@ -494,7 +502,7 @@ func (b *PolicyResource) Open() (io.Reader, error) {
 }
 
 // UseBootstrapTokens check if we are using bootstrap tokens - @TODO, i don't like this we should probably pass in
-// the kops model into the builder rather than duplicating the code. I'll leave for anothe PR
+// the kops model into the builder rather than duplicating the code. I'll leave for another PR
 func (b *PolicyBuilder) UseBootstrapTokens() bool {
 	if b.Cluster.Spec.KubeAPIServer == nil {
 		return false
@@ -816,6 +824,33 @@ func addRomanaCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, le
 					"ec2:ResourceTag/KubernetesCluster": clusterName,
 				},
 			},
+		},
+	)
+}
+
+func addLyftVPCPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string) {
+	if legacyIAM {
+		// Legacy IAM provides ec2:*, so no additional permissions required
+		return
+	}
+
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:DescribeSubnets",
+				"ec2:AttachNetworkInterface",
+				"ec2:AssignPrivateIpAddresses",
+				"ec2:UnassignPrivateIpAddresses",
+				"ec2:CreateNetworkInterface",
+				"ec2:DescribeNetworkInterfaces",
+				"ec2:DescribeVpcPeeringConnections",
+				"ec2:DescribeSecurityGroups",
+				"ec2:DetachNetworkInterface",
+				"ec2:DeleteNetworkInterface",
+				"ec2:ModifyNetworkInterfaceAttribute",
+			}),
+			Resource: resource,
 		},
 	)
 }

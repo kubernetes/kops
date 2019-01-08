@@ -128,4 +128,4 @@ But, it seems fitting to recommend the following:
 [5]: https://cloud.google.com/container-engine/
 [6]: https://github.com/kubernetes/kops
 [7]: http://node-perf-dash.k8s.io/#/builds
-[8]: http://blog.kubernetes.io/2016/11/visualize-kubelet-performance-with-node-dashboard.html
+[8]: http://kubernetes.io/blog/2016/11/visualize-kubelet-performance-with-node-dashboard.html

@@ -113,12 +113,19 @@ func (b *LogrotateBuilder) addLogrotateService(c *fi.ModelBuilderContext) error 
 }
 
 type logRotateOptions struct {
-	MaxSize string
+	MaxSize    string
+	DateFormat string
 }
 
 func (b *LogrotateBuilder) addLogRotate(c *fi.ModelBuilderContext, name, path string, options logRotateOptions) {
 	if options.MaxSize == "" {
 		options.MaxSize = "100M"
+	}
+
+	// CoreOS sets "dateext" options, and maxsize-based rotation will fail if
+	// the file has been previously rotated on the same calendar date.
+	if b.Distribution == distros.DistributionCoreOS {
+		options.DateFormat = "-%Y%m%d-%s"
 	}
 
 	lines := []string{
@@ -129,12 +136,20 @@ func (b *LogrotateBuilder) addLogRotate(c *fi.ModelBuilderContext, name, path st
 		"  notifempty",
 		"  delaycompress",
 		"  maxsize " + options.MaxSize,
+	}
+
+	if options.DateFormat != "" {
+		lines = append(lines, "  dateformat "+options.DateFormat)
+	}
+
+	lines = append(
+		lines,
 		"  daily",
 		"  create 0644 root root",
 		"}",
-	}
+	)
 
-	contents := strings.Join(lines, "\n")
+	contents := strings.Join(lines, "\n") + "\n"
 
 	c.AddTask(&nodetasks.File{
 		Path:     "/etc/logrotate.d/" + name,

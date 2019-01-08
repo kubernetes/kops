@@ -56,7 +56,7 @@ make dns-controller-push DOCKER_REGISTRY=kope
 
 ```
 # export AWS_PROFILE=??? # If needed
-make upload S3_BUCKET=s3://kubeupv2
+make upload UPLOAD_DEST=s3://kubeupv2
 ```
 
 ## Tag new version
@@ -92,8 +92,8 @@ make release-github
 e.g.
 
 ```
-git log 1.8.0-beta.1..1.8.0-beta.2 --oneline | grep Merge.pull | cut -f 5 -d ' ' | tac  > ~/shipbot/prs
-
+git log 1.11.0-beta.1..1.11.0 --oneline | grep Merge.pull | cut -f 5 -d ' ' | tac  > ~/shipbot/prs
+relnotes  -config .shipbot.yaml  < ~/shipbot/prs  >> docs/releases/1.11-NOTES.md
 ```
 
 ## On github

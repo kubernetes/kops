@@ -155,7 +155,7 @@ spec:
             - --stderrthreshold=info
             - --cloud-provider={{CLOUD_PROVIDER}}
             - --skip-nodes-with-local-storage=false
-            - --nodes={{MIN_NODES}:{{MAX_NODES}}:{{GROUP_NAME}}
+            - --nodes={{MIN_NODES}}:{{MAX_NODES}}:{{GROUP_NAME}}
           env:
             - name: AWS_REGION
               value: {{AWS_REGION}}

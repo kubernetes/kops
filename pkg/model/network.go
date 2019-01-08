@@ -184,21 +184,27 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		subnetSpec := &b.Cluster.Spec.Subnets[i]
 		sharedSubnet := subnetSpec.ProviderID != ""
 		subnetName := subnetSpec.Name + "." + b.ClusterName()
-		tags := b.CloudTags(subnetName, sharedSubnet)
+		tags := map[string]string{}
 
 		// Apply tags so that Kubernetes knows which subnets should be used for internal/external ELBs
-		switch subnetSpec.Type {
-		case kops.SubnetTypePublic, kops.SubnetTypeUtility:
-			tags[aws.TagNameSubnetPublicELB] = "1"
+		if b.Cluster.Spec.DisableSubnetTags {
+			glog.V(2).Infof("skipping subnet tags. Ensure these are maintained externally.")
+		} else {
+			glog.V(2).Infof("applying subnet tags")
+			tags = b.CloudTags(subnetName, sharedSubnet)
+			tags["SubnetType"] = string(subnetSpec.Type)
 
-		case kops.SubnetTypePrivate:
-			tags[aws.TagNameSubnetInternalELB] = "1"
+			switch subnetSpec.Type {
+			case kops.SubnetTypePublic, kops.SubnetTypeUtility:
+				tags[aws.TagNameSubnetPublicELB] = "1"
 
-		default:
-			glog.V(2).Infof("unable to properly tag subnet %q because it has unknown type %q. Load balancers may be created in incorrect subnets", subnetSpec.Name, subnetSpec.Type)
+			case kops.SubnetTypePrivate:
+				tags[aws.TagNameSubnetInternalELB] = "1"
+
+			default:
+				glog.V(2).Infof("unable to properly tag subnet %q because it has unknown type %q. Load balancers may be created in incorrect subnets", subnetSpec.Name, subnetSpec.Type)
+			}
 		}
-
-		tags["SubnetType"] = string(subnetSpec.Type)
 
 		subnet := &awstasks.Subnet{
 			Name:             s(subnetName),

@@ -95,7 +95,7 @@ echo "Starting build"
 
 # removing CI=1 because it forces a new upload every time
 # export CI=1
-make && S3_BUCKET=s3://${NODEUP_BUCKET} make upload
+make && UPLOAD_DEST=s3://${NODEUP_BUCKET} make upload
 
 # removing make test since it relies on the files in the bucket
 # && make test

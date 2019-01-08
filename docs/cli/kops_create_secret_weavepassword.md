@@ -26,6 +26,9 @@ kops create secret weavepassword [flags]
   # Install a specific weave password.
   kops create secret weavepassword -f /path/to/weavepassword \
   --name k8s-cluster.example.com --state s3://example.com
+  # Install a specific weave password via stdin.
+  kops create secret weavepassword -f - \
+  --name k8s-cluster.example.com --state s3://example.com
   # Replace an existing weavepassword secret.
   kops create secret weavepassword -f /path/to/weavepassword --force \
   --name k8s-cluster.example.com --state s3://example.com

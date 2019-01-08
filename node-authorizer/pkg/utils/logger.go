@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	// Logger is the defaut logger
+	// Logger is the default logger
 	Logger *zap.Logger
 )
 

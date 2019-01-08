@@ -28,7 +28,7 @@ func YAMLToJSON(yamlBytes []byte) ([]byte, error) {
 	return yaml.YAMLToJSON(yamlBytes)
 }
 
-// YamlUnmarshal unmarshalls the yaml content to an interface
+// YamlUnmarshal unmarshals the yaml content to an interface
 func YamlUnmarshal(yamlBytes []byte, dest interface{}) error {
 	return yaml.Unmarshal(yamlBytes, dest)
 }

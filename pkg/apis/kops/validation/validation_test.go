@@ -291,3 +291,47 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
+
+type caliInput struct {
+	Calico *kops.CalicoNetworkingSpec
+	Etcd   *kops.EtcdClusterSpec
+}
+
+func Test_Validate_Calico(t *testing.T) {
+	grid := []struct {
+		Input          caliInput
+		ExpectedErrors []string
+	}{
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{},
+				Etcd:   &kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					MajorVersion: "v3",
+				},
+				Etcd: &kops.EtcdClusterSpec{
+					Version: "3.2.18",
+				},
+			},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					MajorVersion: "v3",
+				},
+				Etcd: &kops.EtcdClusterSpec{
+					Version: "2.2.18",
+				},
+			},
+			ExpectedErrors: []string{"Invalid value::Calico.MajorVersion"},
+		},
+	}
+	for _, g := range grid {
+		errs := validateNetworkingCalico(g.Input.Calico, g.Input.Etcd, field.NewPath("Calico"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}

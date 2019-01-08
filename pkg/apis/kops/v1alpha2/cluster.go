@@ -112,7 +112,7 @@ type ClusterSpec struct {
 	// KubernetesAPIAccess determines the permitted access to the API endpoints (master HTTPS)
 	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
 	KubernetesAPIAccess []string `json:"kubernetesApiAccess,omitempty"`
-	// IsolatesMasters determines whether we should lock down masters so that they are not on the pod network.
+	// IsolateMasters determines whether we should lock down masters so that they are not on the pod network.
 	// true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master
 	// if they have hostNetwork=true.
 	// false is now the default, and it will:
@@ -164,6 +164,8 @@ type ClusterSpec struct {
 	IAM *IAMSpec `json:"iam,omitempty"`
 	// EncryptionConfig holds the encryption config
 	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
+	// DisableSubnetTags controls if subnets are tagged in AWS
+	DisableSubnetTags bool `json:"DisableSubnetTags,omitempty"`
 	// Target allows for us to nest extra config for targets such as terraform
 	Target *TargetSpec `json:"target,omitempty"`
 }
@@ -292,7 +294,7 @@ type AlwaysAllowAuthorizationSpec struct {
 
 // AccessSpec provides configuration details related to kubeapi dns and ELB access
 type AccessSpec struct {
-	// DNS will be used to provide config on kube-apiserver elb dns
+	// DNS will be used to provide config on kube-apiserver ELB DNS
 	DNS *DNSAccessSpec `json:"dns,omitempty"`
 	// LoadBalancer is the configuration for the kube-apiserver ELB
 	LoadBalancer *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
@@ -323,7 +325,7 @@ type LoadBalancerAccessSpec struct {
 	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
 	// AdditionalSecurityGroups attaches additional security groups (e.g. sg-123456).
 	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
-	// UseForInternalApi indicates wether the LB should be used by the kubelet
+	// UseForInternalApi indicates whether the LB should be used by the kubelet
 	UseForInternalApi bool `json:"useForInternalApi,omitempty"`
 	// SSLCertificate allows you to specify the ACM cert to be used the LB
 	SSLCertificate string `json:"sslCertificate,omitempty"`
@@ -331,7 +333,7 @@ type LoadBalancerAccessSpec struct {
 
 // KubeDNSConfig defines the kube dns configuration
 type KubeDNSConfig struct {
-	// CacheMaxSize is the maximum entries to keep in dnsmaq
+	// CacheMaxSize is the maximum entries to keep in dnsmasq
 	CacheMaxSize int `json:"cacheMaxSize,omitempty"`
 	// CacheMaxConcurrent is the maximum number of concurrent queries for dnsmasq
 	CacheMaxConcurrent int `json:"cacheMaxConcurrent,omitempty"`
@@ -416,11 +418,11 @@ type EtcdMemberSpec struct {
 	Name string `json:"name,omitempty"`
 	// InstanceGroup is the instanceGroup this volume is associated
 	InstanceGroup *string `json:"instanceGroup,omitempty"`
-	// VolumeType is the underlining cloud storage class
+	// VolumeType is the underlying cloud storage class
 	VolumeType *string `json:"volumeType,omitempty"`
 	// If volume type is io1, then we need to specify the number of Iops.
 	VolumeIops *int32 `json:"volumeIops,omitempty"`
-	// VolumeSize is the underlining cloud volume size
+	// VolumeSize is the underlying cloud volume size
 	VolumeSize *int32 `json:"volumeSize,omitempty"`
 	// KmsKeyId is a AWS KMS ID used to encrypt the volume
 	KmsKeyId *string `json:"kmsKeyId,omitempty"`

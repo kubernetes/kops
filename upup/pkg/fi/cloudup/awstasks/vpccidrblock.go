@@ -122,7 +122,7 @@ func (_ *VPCCIDRBlock) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 	return fmt.Errorf("terraform does not support AdditionalCIDRs on VPCs")
 
 	// The code below is based on https://github.com/terraform-providers/terraform-provider-aws/pull/1568
-	// and can be un-comented once it is landed.
+	// and can be un-commented once it is landed.
 	// When this has been enabled please fix test TestAdditionalCIDR in integration_test.go to run runTestAWS.
 	// tf := &terraformVPCCIDRBlock{
 	// 	VPCID:     e.VPC.TerraformLink(),

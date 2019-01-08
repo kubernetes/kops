@@ -96,26 +96,22 @@ func (e *SecurityGroup) Find(c *fi.Context) (*SecurityGroup, error) {
 
 func (e *SecurityGroup) findEc2(c *fi.Context) (*ec2.SecurityGroup, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
-
-	var vpcID *string
-	if e.VPC != nil {
-		vpcID = e.VPC.ID
-	}
-
-	if vpcID == nil {
-		return nil, nil
-	}
-
 	request := &ec2.DescribeSecurityGroupsInput{}
 
 	if fi.StringValue(e.ID) != "" {
+		// Find by ID.
 		request.GroupIds = []*string{e.ID}
-	} else {
-		filters := cloud.BuildFilters(e.Name)
-		filters = append(filters, awsup.NewEC2Filter("vpc-id", *vpcID))
-		filters = append(filters, awsup.NewEC2Filter("group-name", *e.Name))
 
+	} else if fi.StringValue(e.Name) != "" && e.VPC != nil && e.VPC.ID != nil {
+		// Find by filters (name and VPC ID).
+		filters := cloud.BuildFilters(e.Name)
+		filters = append(filters, awsup.NewEC2Filter("vpc-id", *e.VPC.ID))
+		filters = append(filters, awsup.NewEC2Filter("group-name", *e.Name))
 		request.Filters = filters
+
+	} else {
+		// No reason to try.
+		return nil, nil
 	}
 
 	response, err := cloud.EC2().DescribeSecurityGroups(request)

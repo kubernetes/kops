@@ -81,7 +81,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		manifest, err := k8scodecs.ToVersionedYaml(pod)
 		if err != nil {
-			return fmt.Errorf("error marshalling manifest to yaml: %v", err)
+			return fmt.Errorf("error marshaling manifest to yaml: %v", err)
 		}
 
 		c.AddTask(&nodetasks.File{
@@ -146,7 +146,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 
 		manifest, err := kops.ToRawYaml(config)
 		if err != nil {
-			return fmt.Errorf("error marshalling authentication config to yaml: %v", err)
+			return fmt.Errorf("error marshaling authentication config to yaml: %v", err)
 		}
 
 		c.AddTask(&nodetasks.File{
@@ -200,7 +200,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 
 			manifest, err := kops.ToRawYaml(config)
 			if err != nil {
-				return fmt.Errorf("error marshalling authentication config to yaml: %v", err)
+				return fmt.Errorf("error marshaling authentication config to yaml: %v", err)
 			}
 
 			c.AddTask(&nodetasks.File{
@@ -283,8 +283,11 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	kubeAPIServer.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 	kubeAPIServer.TLSCertFile = filepath.Join(b.PathSrvKubernetes(), "server.cert")
 	kubeAPIServer.TLSPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
-	kubeAPIServer.BasicAuthFile = filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv")
 	kubeAPIServer.TokenAuthFile = filepath.Join(b.PathSrvKubernetes(), "known_tokens.csv")
+
+	if !kubeAPIServer.DisableBasicAuth {
+		kubeAPIServer.BasicAuthFile = filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv")
+	}
 
 	if b.UseEtcdTLS() {
 		kubeAPIServer.EtcdCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")

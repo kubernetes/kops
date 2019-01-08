@@ -20,12 +20,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/cli-runtime/pkg/genericclioptions/resource"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
@@ -34,7 +34,6 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/kubectl/genericclioptions/resource"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
@@ -119,11 +118,6 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 		return err
 	}
 
-	// Codecs provides access to encoding and decoding for the scheme
-	codecs := kopscodecs.Codecs //serializer.NewCodecFactory(scheme)
-
-	codec := codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
-
 	var clusterName = ""
 	//var cSpec = false
 	var sb bytes.Buffer
@@ -148,7 +142,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				Group:   v1alpha1.SchemeGroupVersion.Group,
 				Version: v1alpha1.SchemeGroupVersion.Version,
 			}
-			o, gvk, err := codec.Decode(section, defaults, nil)
+			o, gvk, err := kopscodecs.Decode(section, defaults)
 			if err != nil {
 				return fmt.Errorf("error parsing file %q: %v", f, err)
 			}
@@ -167,10 +161,9 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 						return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating cluster: %v", err)
-				} else {
-					fmt.Fprintf(&sb, "Created cluster/%s\n", v.ObjectMeta.Name)
-					//cSpec = true
 				}
+				fmt.Fprintf(&sb, "Created cluster/%s\n", v.ObjectMeta.Name)
+				//cSpec = true
 
 			case *kopsapi.InstanceGroup:
 				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
@@ -219,9 +212,8 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				err = sshCredentialStore.AddSSHPublicKey("admin", sshKeyArr)
 				if err != nil {
 					return err
-				} else {
-					fmt.Fprintf(&sb, "Added ssh credential\n")
 				}
+				fmt.Fprintf(&sb, "Added ssh credential\n")
 
 			default:
 				glog.V(2).Infof("Type of object was %T", v)
@@ -244,16 +236,4 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 		}
 	}
 	return nil
-}
-
-// ConsumeStdin reads all the bytes available from stdin
-func ConsumeStdin() ([]byte, error) {
-	file := os.Stdin
-	buf := new(bytes.Buffer)
-	_, err := buf.ReadFrom(file)
-	if err != nil {
-		return nil, fmt.Errorf("error reading stdin: %v", err)
-	}
-
-	return buf.Bytes(), nil
 }

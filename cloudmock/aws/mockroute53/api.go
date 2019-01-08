@@ -33,6 +33,9 @@ type zoneInfo struct {
 }
 
 type MockRoute53 struct {
+	// Mock out interface
+	route53iface.Route53API
+
 	mutex sync.Mutex
 	Zones []*zoneInfo
 }

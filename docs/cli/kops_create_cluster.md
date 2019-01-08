@@ -72,7 +72,8 @@ kops create cluster [flags]
       --bastion                          Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.
       --channel string                   Channel for default versions and configuration to use (default "stable")
       --cloud string                     Cloud provider to use - gce, aws, vsphere
-      --cloud-labels string              A list of KV pairs used to tag all instance groups in AWS (eg "Owner=John Doe,Team=Some Team").
+      --cloud-labels string              A list of KV pairs used to tag all instance groups in AWS (e.g. "Owner=John Doe,Team=Some Team").
+      --disable-subnet-tags              Set to disable automatic subnet tagging
       --dns string                       DNS hosted zone to use: public|private. (default "Public")
       --dns-zone string                  DNS hosted zone to use (defaults to longest matching zone)
       --dry-run                          If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
@@ -89,7 +90,7 @@ kops create cluster [flags]
       --master-zones strings             Zones in which to run masters (must be an odd number)
       --model string                     Models to apply (separate multiple models with commas) (default "proto,cloudup")
       --network-cidr string              Set to override the default network CIDR
-      --networking string                Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium. (default "kubenet")
+      --networking string                Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium, cni. (default "kubenet")
       --node-count int32                 Set the number of nodes
       --node-security-groups strings     Add precreated additional security groups to nodes.
       --node-size string                 Set instance size for nodes

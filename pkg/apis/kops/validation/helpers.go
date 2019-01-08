@@ -17,31 +17,10 @@ limitations under the License.
 package validation
 
 import (
-	"net"
 	"net/url"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
-
-// isSubnet checks if child is a subnet of parent
-func isSubnet(parent *net.IPNet, child *net.IPNet) bool {
-	parentOnes, parentBits := parent.Mask.Size()
-	childOnes, childBits := child.Mask.Size()
-	if childBits != parentBits {
-		return false
-	}
-	if parentOnes > childOnes {
-		return false
-	}
-	childMasked := child.IP.Mask(parent.Mask)
-	parentMasked := parent.IP.Mask(parent.Mask)
-	return childMasked.Equal(parentMasked)
-}
-
-// subnetsOverlap checks if two subnets overlap
-func subnetsOverlap(l *net.IPNet, r *net.IPNet) bool {
-	return l.Contains(r.IP) || r.Contains(l.IP)
-}
 
 func isValidAPIServersURL(s string) bool {
 	u, err := url.Parse(s)

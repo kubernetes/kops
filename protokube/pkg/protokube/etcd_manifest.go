@@ -152,7 +152,7 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 	return pod
 }
 
-// buildEtcdEnvironmentOptions is responsible for building the environment variabled for etcd
+// buildEtcdEnvironmentOptions is responsible for building the environment variables for etcd
 // @question should we perhaps make this version specific in prep for v3 support?
 func buildEtcdEnvironmentOptions(c *EtcdCluster) []v1.EnvVar {
 	var options []v1.EnvVar

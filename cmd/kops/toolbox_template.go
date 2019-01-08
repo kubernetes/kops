@@ -210,7 +210,7 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 	return nil
 }
 
-// newTemplateContext is responsible for loadding the --values and build a context for the template
+// newTemplateContext is responsible for loading the --values and build a context for the template
 func newTemplateContext(files []string, values []string, stringValues []string) (map[string]interface{}, error) {
 	context := make(map[string]interface{}, 0)
 

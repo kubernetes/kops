@@ -80,7 +80,7 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		manifestYAML, err := k8scodecs.ToVersionedYaml(manifest)
 		if err != nil {
-			return fmt.Errorf("error marshalling manifest to yaml: %v", err)
+			return fmt.Errorf("error marshaling manifest to yaml: %v", err)
 		}
 
 		c.AddTask(&fitasks.ManagedFile{

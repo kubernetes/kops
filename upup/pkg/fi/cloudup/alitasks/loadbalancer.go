@@ -188,7 +188,7 @@ func (_ *LoadBalancer) RenderALI(t *aliup.ALIAPITarget, a, e, changes *LoadBalan
 	}
 
 	if a != nil && (len(a.Tags) > 0) {
-		glog.V(2).Infof("Modifing LoadBalancer with Name:%q, update LoadBalancer tags", fi.StringValue(e.Name))
+		glog.V(2).Infof("Modifying LoadBalancer with Name:%q, update LoadBalancer tags", fi.StringValue(e.Name))
 
 		tagsToDelete := e.getLoadBalancerTagsToDelete(a.Tags)
 		if len(tagsToDelete) > 0 {
@@ -207,7 +207,7 @@ func (_ *LoadBalancer) RenderALI(t *aliup.ALIAPITarget, a, e, changes *LoadBalan
 	return nil
 }
 
-// getDiskTagsToDelete loops through the currently set tags and builds a list of tags to be deleted from the specificated disk
+// getDiskTagsToDelete loops through the currently set tags and builds a list of tags to be deleted from the specified disk
 func (l *LoadBalancer) getLoadBalancerTagsToDelete(currentTags map[string]string) map[string]string {
 	tagsToDelete := map[string]string{}
 	for k, v := range currentTags {

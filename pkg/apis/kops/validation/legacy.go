@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/pkg/util/subnet"
 	"k8s.io/kops/upup/pkg/fi"
 
 	"github.com/blang/semver"
@@ -190,7 +191,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 			return field.Invalid(fieldSpec.Child("NonMasqueradeCIDR"), nonMasqueradeCIDRString, "Cluster had an invalid NonMasqueradeCIDR")
 		}
 
-		if networkCIDR != nil && subnetsOverlap(nonMasqueradeCIDR, networkCIDR) && c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC == nil {
+		if networkCIDR != nil && subnet.Overlap(nonMasqueradeCIDR, networkCIDR) && c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC == nil && c.Spec.Networking.LyftVPC == nil {
+
 			return field.Invalid(fieldSpec.Child("NonMasqueradeCIDR"), nonMasqueradeCIDRString, fmt.Sprintf("NonMasqueradeCIDR %q cannot overlap with NetworkCIDR %q", nonMasqueradeCIDRString, c.Spec.NetworkCIDR))
 		}
 
@@ -220,7 +222,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 				return field.Invalid(fieldSpec.Child("ServiceClusterIPRange"), serviceClusterIPRangeString, "Cluster had an invalid ServiceClusterIPRange")
 			}
 
-			if !isSubnet(nonMasqueradeCIDR, serviceClusterIPRange) {
+			if !subnet.BelongsTo(nonMasqueradeCIDR, serviceClusterIPRange) {
 				return field.Invalid(fieldSpec.Child("ServiceClusterIPRange"), serviceClusterIPRangeString, fmt.Sprintf("ServiceClusterIPRange %q must be a subnet of NonMasqueradeCIDR %q", serviceClusterIPRangeString, c.Spec.NonMasqueradeCIDR))
 			}
 
@@ -266,7 +268,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 				return field.Invalid(fieldSpec.Child("KubeControllerManager", "ClusterCIDR"), clusterCIDRString, "Cluster had an invalid KubeControllerManager.ClusterCIDR")
 			}
 
-			if !isSubnet(nonMasqueradeCIDR, clusterCIDR) {
+			if !subnet.BelongsTo(nonMasqueradeCIDR, clusterCIDR) {
 				return field.Invalid(fieldSpec.Child("KubeControllerManager", "ClusterCIDR"), clusterCIDRString, fmt.Sprintf("KubeControllerManager.ClusterCIDR %q must be a subnet of NonMasqueradeCIDR %q", clusterCIDRString, c.Spec.NonMasqueradeCIDR))
 			}
 		}
@@ -596,8 +598,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		}
 	}
 
-	if c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC != nil &&
-		(c.Spec.CloudProvider != "aws") {
+	if c.Spec.Networking != nil && (c.Spec.Networking.AmazonVPC != nil || c.Spec.Networking.LyftVPC != nil) &&
+		c.Spec.CloudProvider != "aws" {
 		return field.Invalid(fieldSpec.Child("Networking"), "amazon-vpc-routed-eni", "amazon-vpc-routed-eni networking is supported only in AWS")
 	}
 
@@ -608,6 +610,10 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 
 		if c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC != nil {
 			return field.Invalid(fieldSpec.Child("Networking"), "amazon-vpc-routed-eni", "amazon-vpc-routed-eni networking is not supported with kubernetes versions 1.6 or lower")
+		}
+
+		if c.Spec.Networking != nil && c.Spec.Networking.LyftVPC != nil {
+			return field.Invalid(fieldSpec.Child("Networking"), "cni-ipvlan-vpc-k8s", "cni-ipvlan-vpc-k8s networking is not supported with kubernetes versions 1.6 or lower")
 		}
 	}
 
@@ -623,14 +629,14 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	return nil
 }
 
-// validateSubnetCIDR is responsible for validating subnets are part of the CIRDs assigned to the cluster.
+// validateSubnetCIDR is responsible for validating subnets are part of the CIDRs assigned to the cluster.
 func validateSubnetCIDR(networkCIDR *net.IPNet, additionalNetworkCIDRs []*net.IPNet, subnetCIDR *net.IPNet) bool {
-	if isSubnet(networkCIDR, subnetCIDR) {
+	if subnet.BelongsTo(networkCIDR, subnetCIDR) {
 		return true
 	}
 
 	for _, additionalNetworkCIDR := range additionalNetworkCIDRs {
-		if isSubnet(additionalNetworkCIDR, subnetCIDR) {
+		if subnet.BelongsTo(additionalNetworkCIDR, subnetCIDR) {
 			return true
 		}
 	}

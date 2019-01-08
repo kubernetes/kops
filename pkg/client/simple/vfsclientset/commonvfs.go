@@ -44,7 +44,6 @@ type ValidationFunction func(o runtime.Object) error
 type commonVFS struct {
 	kind               string
 	basePath           vfs.Path
-	decoder            runtime.Decoder
 	encoder            runtime.Encoder
 	defaultReadVersion *schema.GroupVersionKind
 	validate           ValidationFunction
@@ -57,7 +56,6 @@ func (c *commonVFS) init(kind string, basePath vfs.Path, storeVersion runtime.Gr
 		glog.Fatalf("no YAML serializer registered")
 	}
 	c.encoder = codecs.EncoderForVersion(yaml.Serializer, storeVersion)
-	c.decoder = codecs.DecoderToVersion(yaml.Serializer, kops.SchemeGroupVersion)
 
 	c.kind = kind
 	c.basePath = basePath
@@ -126,7 +124,7 @@ func (c *commonVFS) readConfig(configPath vfs.Path) (runtime.Object, error) {
 		return nil, fmt.Errorf("error reading %s: %v", configPath, err)
 	}
 
-	object, _, err := c.decoder.Decode(data, c.defaultReadVersion, nil)
+	object, _, err := kopscodecs.Decode(data, c.defaultReadVersion)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing %s: %v", configPath, err)
 	}
@@ -136,7 +134,7 @@ func (c *commonVFS) readConfig(configPath vfs.Path) (runtime.Object, error) {
 func (c *commonVFS) writeConfig(cluster *kops.Cluster, configPath vfs.Path, o runtime.Object, writeOptions ...vfs.WriteOption) error {
 	data, err := c.serialize(o)
 	if err != nil {
-		return fmt.Errorf("error marshalling object: %v", err)
+		return fmt.Errorf("error marshaling object: %v", err)
 	}
 
 	create := false

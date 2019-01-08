@@ -41,7 +41,7 @@ type KubeProxyBuilder struct {
 var _ fi.ModelBuilder = &KubeAPIServerBuilder{}
 
 // Build is responsible for building the kube-proxy manifest
-// @TODO we should probaby change this to a daemonset in the future and follow the kubeadm path
+// @TODO we should probably change this to a daemonset in the future and follow the kubeadm path
 func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.Cluster.Spec.KubeProxy.Enabled != nil && *b.Cluster.Spec.KubeProxy.Enabled == false {
@@ -66,7 +66,7 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		manifest, err := k8scodecs.ToVersionedYaml(pod)
 		if err != nil {
-			return fmt.Errorf("error marshalling manifest to yaml: %v", err)
+			return fmt.Errorf("error marshaling manifest to yaml: %v", err)
 		}
 
 		c.AddTask(&nodetasks.File{
@@ -102,7 +102,7 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-// buildPod is responsble constructing the pod spec
+// buildPod is responsible constructing the pod spec
 func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	c := b.Cluster.Spec.KubeProxy
 	if c == nil {

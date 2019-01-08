@@ -24,8 +24,10 @@ import (
 )
 
 type MockAutoscaling struct {
-	mutex sync.Mutex
+	// Mock out interface
+	autoscalingiface.AutoScalingAPI
 
+	mutex                sync.Mutex
 	Groups               map[string]*autoscaling.Group
 	LaunchConfigurations map[string]*autoscaling.LaunchConfiguration
 }

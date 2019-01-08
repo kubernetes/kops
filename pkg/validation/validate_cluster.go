@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"strings"
 
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
@@ -66,6 +67,9 @@ func hasPlaceHolderIP(clusterName string) (bool, error) {
 	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		clientcmd.NewDefaultClientConfigLoadingRules(),
 		&clientcmd.ConfigOverrides{CurrentContext: clusterName}).ClientConfig()
+	if err != nil {
+		return false, fmt.Errorf("error building configuration: %v", err)
+	}
 
 	apiAddr, err := url.Parse(config.Host)
 	if err != nil {
@@ -167,7 +171,7 @@ func (v *ValidationCluster) collectComponentFailures(client kubernetes.Interface
 				v.addError(&ValidationError{
 					Kind:    "ComponentStatus",
 					Name:    component.Name,
-					Message: "component is unhealthy",
+					Message: fmt.Sprintf("component %q is unhealthy", component.Name),
 				})
 			}
 		}
@@ -185,14 +189,27 @@ func (v *ValidationCluster) collectPodFailures(client kubernetes.Interface) erro
 		if pod.Status.Phase == v1.PodSucceeded {
 			continue
 		}
-		for _, status := range pod.Status.ContainerStatuses {
-			if !status.Ready {
-				v.addError(&ValidationError{
-					Kind:    "Pod",
-					Name:    "kube-system/" + pod.Name,
-					Message: fmt.Sprintf("kube-system pod %q is not healthy", pod.Name),
-				})
+		if pod.Status.Phase == v1.PodPending {
+			v.addError(&ValidationError{
+				Kind:    "Pod",
+				Name:    "kube-system/" + pod.Name,
+				Message: fmt.Sprintf("kube-system pod %q is pending", pod.Name),
+			})
+			continue
+		}
+		var notready []string
+		for _, container := range pod.Status.ContainerStatuses {
+			if !container.Ready {
+				notready = append(notready, container.Name)
 			}
+		}
+		if len(notready) != 0 {
+			v.addError(&ValidationError{
+				Kind:    "Pod",
+				Name:    "kube-system/" + pod.Name,
+				Message: fmt.Sprintf("kube-system pod %q is not ready (%s)", pod.Name, strings.Join(notready, ",")),
+			})
+
 		}
 	}
 	return nil

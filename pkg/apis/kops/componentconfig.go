@@ -77,7 +77,7 @@ type KubeletConfigSpec struct {
 	SystemCgroups string `json:"systemCgroups,omitempty" flag:"system-cgroups"`
 	// cgroupRoot is the root cgroup to use for pods. This is handled by the container runtime on a best effort basis.
 	CgroupRoot string `json:"cgroupRoot,omitempty" flag:"cgroup-root"`
-	// configureCBR0 enables the kublet to configure cbr0 based on Node.Spec.PodCIDR.
+	// configureCBR0 enables the kubelet to configure cbr0 based on Node.Spec.PodCIDR.
 	ConfigureCBR0 *bool `json:"configureCbr0,omitempty" flag:"configure-cbr0"`
 	// How should the kubelet configure the container bridge for hairpin packets.
 	// Setting this flag allows endpoints in a Service to loadbalance back to
@@ -165,7 +165,10 @@ type KubeletConfigSpec struct {
 	// Tells the Kubelet to fail to start if swap is enabled on the node.
 	FailSwapOn *bool `json:"failSwapOn,omitempty" flag:"fail-swap-on"`
 	// ExperimentalAllowedUnsafeSysctls are passed to the kubelet config to whitelist allowable sysctls
+	// Was promoted to beta and renamed. https://github.com/kubernetes/kubernetes/pull/63717
 	ExperimentalAllowedUnsafeSysctls []string `json:"experimentalAllowedUnsafeSysctls,omitempty" flag:"experimental-allowed-unsafe-sysctls"`
+	// AllowedUnsafeSysctls are passed to the kubelet config to whitelist allowable sysctls
+	AllowedUnsafeSysctls []string `json:"allowedUnsafeSysctls,omitempty" flag:"allowed-unsafe-sysctls"`
 	// StreamingConnectionIdleTimeout is the maximum time a streaming connection can be idle before the connection is automatically closed
 	StreamingConnectionIdleTimeout *metav1.Duration `json:"streamingConnectionIdleTimeout,omitempty" flag:"streaming-connection-idle-timeout"`
 	// DockerDisableSharedPID uses a shared PID namespace for containers in a pod.
@@ -224,6 +227,8 @@ type KubeProxyConfig struct {
 type KubeAPIServerConfig struct {
 	// Image is the docker container used
 	Image string `json:"image,omitempty"`
+	// DisableBasicAuth removes the --basic-auth-file flag
+	DisableBasicAuth bool `json:"disableBasicAuth,omitempty"`
 	// LogLevel is the logging level of the api
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 	// CloudProvider is the name of the cloudProvider we are using, aws, gce etcd
@@ -250,7 +255,7 @@ type KubeAPIServerConfig struct {
 	DisableAdmissionPlugins []string `json:"disableAdmissionPlugins,omitempty" flag:"disable-admission-plugins"`
 	// ServiceClusterIPRange is the service address range
 	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty" flag:"service-cluster-ip-range"`
-	// Passed as --service-node-port-range to kube-apiserver. Expects 'startPort-endPort' format. Eg. 30000-33000
+	// Passed as --service-node-port-range to kube-apiserver. Expects 'startPort-endPort' format e.g. 30000-33000
 	ServiceNodePortRange string `json:"serviceNodePortRange,omitempty" flag:"service-node-port-range"`
 	// EtcdServers is a list of the etcd service to connect
 	EtcdServers []string `json:"etcdServers,omitempty" flag:"etcd-servers"`
@@ -326,7 +331,7 @@ type KubeAPIServerConfig struct {
 	AuditLogMaxBackups *int32 `json:"auditLogMaxBackups,omitempty" flag:"audit-log-maxbackup"`
 	// The maximum size in megabytes of the audit log file before it gets rotated. Defaults to 100MB.
 	AuditLogMaxSize *int32 `json:"auditLogMaxSize,omitempty" flag:"audit-log-maxsize"`
-	// AuditPolicyFile is the full path to a advanced audit configuration file a.g. /srv/kubernetes/audit.conf
+	// AuditPolicyFile is the full path to a advanced audit configuration file e.g. /srv/kubernetes/audit.conf
 	AuditPolicyFile string `json:"auditPolicyFile,omitempty" flag:"audit-policy-file"`
 	// File with webhook configuration for token authentication in kubeconfig format. The API server will query the remote service to determine authentication for bearer tokens.
 	AuthenticationTokenWebhookConfigFile *string `json:"authenticationTokenWebhookConfigFile,omitempty" flag:"authentication-token-webhook-config-file"`
@@ -425,6 +430,10 @@ type KubeControllerManagerConfig struct {
 	// long the autoscaler has to wait before another upscale operation can
 	// be performed after the current one has completed.
 	HorizontalPodAutoscalerUpscaleDelay *metav1.Duration `json:"horizontalPodAutoscalerUpscaleDelay,omitempty" flag:"horizontal-pod-autoscaler-upscale-delay"`
+	// HorizontalPodAutoscalerTolerance is the minimum change (from 1.0) in the
+	// desired-to-actual metrics ratio for the horizontal pod autoscaler to
+	// consider scaling.
+	HorizontalPodAutoscalerTolerance *float64 `json:"horizontalPodAutoscalerTolerance,omitempty" flag:"horizontal-pod-autoscaler-tolerance"`
 	// HorizontalPodAutoscalerUseRestClients determines if the new-style clients
 	// should be used if support for custom metrics is enabled.
 	HorizontalPodAutoscalerUseRestClients *bool `json:"horizontalPodAutoscalerUseRestClients,omitempty" flag:"horizontal-pod-autoscaler-use-rest-clients"`

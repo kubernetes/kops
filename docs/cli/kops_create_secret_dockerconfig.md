@@ -7,7 +7,7 @@ Create a docker config.
 
 ### Synopsis
 
-Create a new docker config, and store it in the state store. Used to configure docker on each master or node (ie. for auth) Use update to modify it, this command will only create a new entry.
+Create a new docker config, and store it in the state store. Used to configure docker on each master or node (i.e. for auth) Use update to modify it, this command will only create a new entry.
 
 ```
 kops create secret dockerconfig [flags]
@@ -18,6 +18,9 @@ kops create secret dockerconfig [flags]
 ```
   # Create a new docker config.
   kops create secret dockerconfig -f /path/to/docker/config.json \
+  --name k8s-cluster.example.com --state s3://example.com
+  # Create a docker config via stdin.
+  generate-docker-config.sh | kops create secret dockerconfig -f - \
   --name k8s-cluster.example.com --state s3://example.com
   # Replace an existing docker config secret.
   kops create secret dockerconfig -f /path/to/docker/config.json --force \

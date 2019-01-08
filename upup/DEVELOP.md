@@ -32,7 +32,7 @@ TODOS
 * Cache hashes in-process (along with timestamp?) so we don't hash the kubernetes binary bundle repeatedly
 * Fix the fact that we hash assets twice
 * Confirm that we drop support for init.d
-* Can we just use JSON custom marshalling instead of all our reflection stuff (or at least lighten the load)
+* Can we just use JSON custom marshaling instead of all our reflection stuff (or at least lighten the load)
 
 * Do we officially publish https://storage.googleapis.com/kubernetes-release/release/v1.2.2/kubernetes-server-linux-amd64.tar.gz (ie just the server tar.gz)?
 

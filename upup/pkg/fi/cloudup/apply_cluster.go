@@ -23,6 +23,8 @@ import (
 	"path"
 	"strings"
 
+	"k8s.io/kops/pkg/k8sversion"
+
 	"github.com/blang/semver"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -276,6 +278,36 @@ func (c *ApplyClusterCmd) Run() error {
 	if cluster.Spec.KubernetesVersion != versionWithoutV {
 		glog.Warningf("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
+	}
+
+	kv, err := k8sversion.Parse(cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return err
+	}
+
+	// check if we should recommend turning off anonymousAuth on k8s versions gte than 1.10
+	// we do 1.10 since this is a really critical issues and 1.10 has it
+	if kv.IsGTE("1.10") {
+		// we do a check here because setting modifying the kubelet object messes with the output
+		warn := false
+		if cluster.Spec.Kubelet == nil {
+			warn = true
+		} else if cluster.Spec.Kubelet.AnonymousAuth == nil {
+			warn = true
+		}
+
+		if warn {
+			fmt.Println("")
+			fmt.Printf(starline)
+			fmt.Println("")
+			fmt.Println("Kubelet anonymousAuth is currently turned on. This allows RBAC escalation and remote code execution possibilites.")
+			fmt.Println("It is highly recommended you turn it off by setting 'spec.kubelet.anonymousAuth' to 'false' via 'kops edit cluster'")
+			fmt.Println("")
+			fmt.Println("See https://github.com/kubernetes/kops/blob/master/docs/security.md#kubelet-api")
+			fmt.Println("")
+			fmt.Printf(starline)
+			fmt.Println("")
+		}
 	}
 
 	if err := c.AddFileAssets(assetBuilder); err != nil {
@@ -626,7 +658,7 @@ func (c *ApplyClusterCmd) Run() error {
 				l.Builders = append(l.Builders,
 					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
 					&alimodel.APILoadBalancerModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
-					&alimodel.NetWorkModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+					&alimodel.NetworkModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
 					&alimodel.RAMModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
 					&alimodel.SSHKeyModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
 					&alimodel.FirewallModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
@@ -1090,6 +1122,17 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		}
 
 		c.Assets = append(c.Assets, cniAssetHashString+"@"+cniAsset.String())
+	}
+
+	if c.Cluster.Spec.Networking.LyftVPC != nil {
+		lyftVPCDownloadURL := os.Getenv("LYFT_VPC_DOWNLOAD_URL")
+		if lyftVPCDownloadURL == "" {
+			lyftVPCDownloadURL = "bfdc65028a3bf8ffe14388fca28ede3600e7e2dee4e781908b6a23f9e79f86ad@https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.4.2/cni-ipvlan-vpc-k8s-v0.4.2.tar.gz"
+		} else {
+			glog.Warningf("Using url from LYFT_VPC_DOWNLOAD_URL env var: %q", lyftVPCDownloadURL)
+		}
+
+		c.Assets = append(c.Assets, lyftVPCDownloadURL)
 	}
 
 	// TODO figure out if we can only do this for CoreOS only and GCE Container OS

@@ -152,6 +152,9 @@ func run() error {
 		}
 	}
 
+	var warnings []string
+
+	seen := map[string]bool{}
 	for _, item := range prices {
 		for k, v := range item {
 			if k == "product" {
@@ -161,8 +164,15 @@ func run() error {
 					attributes[k] = v.(string)
 				}
 
+				instanceType := attributes["instanceType"]
+
+				if _, ok := seen[instanceType]; ok {
+					continue
+				}
+				seen[instanceType] = true
+
 				machine := awsup.AWSMachineTypeInfo{
-					Name:  attributes["instanceType"],
+					Name:  instanceType,
 					Cores: stringToInt(attributes["vcpu"]),
 				}
 
@@ -189,13 +199,27 @@ func run() error {
 				if attributes["ecu"] == "Variable" {
 					machine.Burstable = true
 					machine.ECU = t2CreditsPerHour[machine.Name] // This is actually credits * ECUs, but we'll add that later
+				} else if attributes["ecu"] == "NA" {
+					machine.ECU = 0
 				} else {
 					machine.ECU = stringToFloat32(attributes["ecu"])
 				}
 
+				if enis, enisOK := InstanceENIsAvailable[instanceType]; enisOK {
+					machine.InstanceENIs = enis
+				} else {
+					warnings = append(warnings, fmt.Sprintf("ENIs not known for %s", instanceType))
+				}
+
+				if ipsPerENI, ipsOK := InstanceIPsAvailable[instanceType]; ipsOK {
+					machine.InstanceIPsPerENI = int(ipsPerENI)
+				} else {
+					warnings = append(warnings, fmt.Sprintf("IPs per ENI not known for %s", instanceType))
+				}
+
 				machines = append(machines, machine)
 
-				family := strings.Split(attributes["instanceType"], ".")[0]
+				family := strings.Split(instanceType, ".")[0]
 				families[family] = struct{}{}
 
 			}
@@ -228,6 +252,14 @@ func run() error {
 
 	var output string
 
+	if len(warnings) != 0 {
+		output = output + "\n"
+		for _, warning := range warnings {
+			output = output + "// WARNING: " + warning + "\n"
+		}
+		output = output + "\n"
+	}
+
 	for _, f := range sortedFamilies {
 		output = output + fmt.Sprintf("\n// %s family", f)
 		for _, m := range machines {
@@ -245,7 +277,9 @@ func run() error {
 		MemoryGB: %v,
 		ECU: %v,
 		Cores: %v,
-	`, m.Name, m.MemoryGB, ecu, m.Cores)
+		InstanceENIs: %v,
+		InstanceIPsPerENI: %v,
+	`, m.Name, m.MemoryGB, ecu, m.Cores, m.InstanceENIs, m.InstanceIPsPerENI)
 				output = output + body
 
 				// Avoid awkward []int(nil) syntax

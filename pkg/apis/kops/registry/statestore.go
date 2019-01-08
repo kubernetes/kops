@@ -56,7 +56,7 @@ func ReadConfigDeprecated(configPath vfs.Path, config interface{}) error {
 func WriteConfigDeprecated(cluster *kops.Cluster, configPath vfs.Path, config interface{}, writeOptions ...vfs.WriteOption) error {
 	data, err := utils.YamlMarshal(config)
 	if err != nil {
-		return fmt.Errorf("error marshalling configuration: %v", err)
+		return fmt.Errorf("error marshaling configuration: %v", err)
 	}
 
 	create := false

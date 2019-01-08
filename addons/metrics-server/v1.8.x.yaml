@@ -57,6 +57,19 @@ rules:
       - list
       - watch
 ---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: system:aggregated-metrics-reader
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+rules:
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -99,7 +112,7 @@ spec:
       protocol: TCP
       targetPort: 443
 ---
-apiVersion: apps/v1beta2
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: metrics-server
@@ -117,17 +130,14 @@ spec:
         k8s-app: metrics-server
     spec:
       serviceAccountName: metrics-server
+      volumes:
+      # mount in tmp so we can safely use from-scratch images and/or read-only containers
+      - name: tmp-dir
+        emptyDir: {}
       containers:
-        - name: metrics-server
-          image: gcr.io/google_containers/metrics-server-amd64:v0.2.1
-          imagePullPolicy: Always
-          command:
-            - /metrics-server
-            - --source=kubernetes.summary_api:''
-          resources:
-            requests:
-              cpu: 20m
-              memory: 200Mi
-            limits:
-              cpu: 100m
-              memory: 500Mi
+      - name: metrics-server
+        image: gcr.io/google_containers/metrics-server-amd64:v0.3.1
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: tmp-dir
+          mountPath: /tmp

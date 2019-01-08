@@ -74,15 +74,16 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			link, err := b.LinkToIAMInstanceProfile(ig)
 			if err != nil {
-				return fmt.Errorf("unable to find iam profile link for instance group %q: %v", ig.ObjectMeta.Name, err)
+				return fmt.Errorf("unable to find IAM profile link for instance group %q: %v", ig.ObjectMeta.Name, err)
 			}
 
 			var sgLink *awstasks.SecurityGroup
 			if ig.Spec.SecurityGroupOverride != nil {
 				glog.V(1).Infof("WARNING: You are overwriting the Instance Groups, Security Group. When this is done you are responsible for ensure the correct rules!")
 
+				sgName := fmt.Sprintf("%v-%v", fi.StringValue(ig.Spec.SecurityGroupOverride), ig.Spec.Role)
 				sgLink = &awstasks.SecurityGroup{
-					Name:   ig.Spec.SecurityGroupOverride,
+					Name:   &sgName,
 					ID:     ig.Spec.SecurityGroupOverride,
 					Shared: fi.Bool(true),
 				}

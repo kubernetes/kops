@@ -157,7 +157,7 @@ func (_ *ScalingGroup) RenderALI(t *aliup.ALIAPITarget, a, e, changes *ScalingGr
 	} else {
 		//only support to update size
 		if changes.MinSize != nil || changes.MaxSize != nil {
-			glog.V(2).Infof("Modifing AutoscalingGroup with Name:%q", fi.StringValue(e.Name))
+			glog.V(2).Infof("Modifying AutoscalingGroup with Name:%q", fi.StringValue(e.Name))
 
 			modifyScalingGroupArgs := &ess.ModifyScalingGroupArgs{
 				ScalingGroupId: fi.StringValue(a.ScalingGroupId),
@@ -166,7 +166,7 @@ func (_ *ScalingGroup) RenderALI(t *aliup.ALIAPITarget, a, e, changes *ScalingGr
 			}
 			_, err := t.Cloud.EssClient().ModifyScalingGroup(modifyScalingGroupArgs)
 			if err != nil {
-				return fmt.Errorf("error modifing autoscalingGroup: %v", err)
+				return fmt.Errorf("error modifying autoscalingGroup: %v", err)
 			}
 		}
 	}

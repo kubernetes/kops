@@ -28,16 +28,23 @@ spec:
               memory: 100Mi
           securityContext:
             privileged: true
-          image: kopeio/networking-agent:1.0.20180319
+          image: kopeio/networking-agent:1.0.20181028
           name: networking-agent
           volumeMounts:
             - name: lib-modules
               mountPath: /lib/modules
               readOnly: true
+          env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
       serviceAccountName: kopeio-networking-agent
       tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
       volumes:
         - name: lib-modules
           hostPath:
@@ -71,6 +78,12 @@ rules:
   - get
   - list
   - watch
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
   - patch
 
 ---
