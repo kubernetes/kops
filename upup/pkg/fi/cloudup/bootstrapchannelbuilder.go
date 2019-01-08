@@ -266,6 +266,42 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	}
 
 	{
+		// @check if kubelet web authorization is enabled - by default the  is not bound
+		// docs: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#other-component-roles
+		// issue: https://github.com/kubernetes/kops/issues/5176
+		var enabled bool
+
+		// @TODO: now technically kubelet config can come form instancegroup, master kubelet or cluster, though i'm not
+		// sure how to check the instancegroups here
+		if b.cluster.Spec.Kubelet != nil && fi.BoolValue(b.cluster.Spec.Kubelet.AuthenticationTokenWebhook) {
+			enabled = true
+		}
+		if b.cluster.Spec.MasterKubelet != nil && fi.BoolValue(b.cluster.Spec.MasterKubelet.AuthenticationTokenWebhook) {
+			enabled = true
+		}
+
+		if enabled {
+			key := "rbac.addons.k8s.io"
+			version := "v0.0.1"
+
+			{
+				id := "kubelet-api-admin"
+				location := key + "/kubelet-api-admin.yaml"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          map[string]string{"k8s-addon": key},
+					Manifest:          fi.String(location),
+					KubernetesVersion: ">=1.8.0",
+					Id:                id,
+				})
+				manifests[key+"-"+id] = "addons/" + location
+			}
+		}
+	}
+
+	{
 		key := "limit-range.addons.k8s.io"
 		version := "1.5.0"
 		location := key + "/v" + version + ".yaml"
