@@ -30,6 +30,13 @@ spec:
     selector:
       k8s-addon: rbac.addons.k8s.io
     version: 1.8.0
+  - id: kubelet-api-admin
+    kubernetesVersion: '>=1.9.0'
+    manifest: rbac.addons.k8s.io/kubelet-api-admin.yaml
+    name: rbac.addons.k8s.io
+    selector:
+      k8s-addon: rbac.addons.k8s.io
+    version: v0.0.1
   - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
     name: limit-range.addons.k8s.io
     selector:
