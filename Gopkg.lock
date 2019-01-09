@@ -317,12 +317,6 @@
   revision = "449fdfce4d962303d702fec724ef0ad181c92528"
 
 [[projects]]
-  name = "github.com/drekle/kops"
-  packages = ["pkg/dns"]
-  revision = "8b52ea6d1cac6913cb2fa8edda6e054a6fdc5f27"
-  version = "1.10.0"
-
-[[projects]]
   name = "github.com/elazarl/go-bindata-assetfs"
   packages = ["."]
   revision = "3dcc96556217539f50599357fb481ac0dc7439b9"
@@ -1807,6 +1801,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4af73201063e66126e919d6585f76049e7939d47097d0af094d4133bdc1e4e39"
+  inputs-digest = "992feccab0600b64d7fa3e608b829dc167f27a33aa6bb8a8c5c0511eafb02a97"
   solver-name = "gps-cdcl"
   solver-version = 1
