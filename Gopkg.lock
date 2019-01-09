@@ -290,12 +290,13 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:c208e46a2c410d62b3e5c97f1f1db797d8d0862307b7800c4783dac5be1c83fa"
+  digest = "1:2beb133a93078255768c2445096e4a549a845c15c0ce7614f8c8aa35b43c0850"
   name = "github.com/denverdino/aliyungo"
   packages = [
     "common",
     "ecs",
     "ess",
+    "metadata",
     "oss",
     "ram",
     "slb",
@@ -2217,6 +2218,7 @@
     "github.com/denverdino/aliyungo/common",
     "github.com/denverdino/aliyungo/ecs",
     "github.com/denverdino/aliyungo/ess",
+    "github.com/denverdino/aliyungo/metadata",
     "github.com/denverdino/aliyungo/oss",
     "github.com/denverdino/aliyungo/ram",
     "github.com/denverdino/aliyungo/slb",
