@@ -6,8 +6,6 @@ go_library(
         "context.go",
         "convenience.go",
         "firewall.go",
-        "instance.go",
-        "lb.go",
         "network.go",
         "servergroup.go",
         "sshkey.go",
