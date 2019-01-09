@@ -195,6 +195,7 @@ func (_ *FirewallRule) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 		Name:         g.Name,
 		SourceRanges: g.SourceRanges,
 		TargetTags:   g.TargetTags,
+		SourceTags:   g.SourceTags,
 		Allowed:      allowed,
 	}
 
