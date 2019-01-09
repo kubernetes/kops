@@ -2,6 +2,12 @@
 
 **WARNING**: OpenStack support on kops is currently **alpha** meaning it is in the early stages of development and subject to change, please use with caution.
 
+## Source your openstack RC
+The Cloud Config used by the kubernetes API server and kubelet will be constructed from environment variables in the openstack RC file.
+```bash
+source openstack.rc
+```
+**--OR--**
 ## Create config file
 The config file contains the OpenStack credentials required to create a cluster. The config file has the following format:
 ```ini
@@ -43,10 +49,30 @@ export KOPS_FEATURE_FLAGS="AlphaAllowOpenStack"
 ## Creating a Cluster
 
 ```bash
+# to see your etcd storage type
+openstack volume type list
+
 # coreos (the default) + flannel overlay cluster in Default
-kops create cluster --cloud=openstack --name=my-cluster.k8s.local --networking=flannel --zones=Default --network-cidr=192.168.0.0/16
-# Not implemented yet...
-# kops update cluster my-cluster.k8s.local --yes
+kops create cluster \
+  --cloud openstack \
+  --name my-cluster.k8s.local \
+  --state swift://my-cluster \
+  --zones nova \
+  --network-cidr 10.0.0.0/24 \
+  --image CentOS \
+  --master-count=3 \
+  --node-count=1 \
+  --node-size 2vCPUx8GB \
+  --master-size 2vCPUx8GB \
+  --etcd-storage-type CBS \
+   --api-loadbalancer-type public \
+  --topology private \
+  --bastion \
+  --ssh-public-key ~/.ssh/id_rsa.pub \
+  --networking weave
+
+# to update a cluster
+kops update cluster my-cluster.k8s.local --state swift://my-cluster --yes
 
 # to delete a cluster
 # Not implemented yet...
@@ -56,7 +82,5 @@ kops create cluster --cloud=openstack --name=my-cluster.k8s.local --networking=f
 ## Features Still in Development
 
 kops for OpenStack currently does not support these features:
-* cluster create (servers, servergroups, load balancers, and DNS are not implemented yet)
 * cluster delete
-* state delete (fails due to unimplemented methods)
 
