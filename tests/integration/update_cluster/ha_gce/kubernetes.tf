@@ -154,6 +154,7 @@ resource "google_compute_firewall" "master-to-master-ha-gce-example-com" {
     protocol = "sctp"
   }
 
+  source_tags = ["ha-gce-example-com-k8s-io-role-master"]
   target_tags = ["ha-gce-example-com-k8s-io-role-master"]
 }
 
@@ -185,6 +186,7 @@ resource "google_compute_firewall" "master-to-node-ha-gce-example-com" {
     protocol = "sctp"
   }
 
+  source_tags = ["ha-gce-example-com-k8s-io-role-master"]
   target_tags = ["ha-gce-example-com-k8s-io-role-node"]
 }
 
@@ -202,6 +204,7 @@ resource "google_compute_firewall" "node-to-master-ha-gce-example-com" {
     ports    = ["4194"]
   }
 
+  source_tags = ["ha-gce-example-com-k8s-io-role-node"]
   target_tags = ["ha-gce-example-com-k8s-io-role-master"]
 }
 
@@ -233,6 +236,7 @@ resource "google_compute_firewall" "node-to-node-ha-gce-example-com" {
     protocol = "sctp"
   }
 
+  source_tags = ["ha-gce-example-com-k8s-io-role-node"]
   target_tags = ["ha-gce-example-com-k8s-io-role-node"]
 }
 
@@ -250,6 +254,7 @@ resource "google_compute_firewall" "nodeport-external-to-node-ha-gce-example-com
     ports    = ["30000-32767"]
   }
 
+  source_tags = ["ha-gce-example-com-k8s-io-role-node"]
   target_tags = ["ha-gce-example-com-k8s-io-role-node"]
 }
 
