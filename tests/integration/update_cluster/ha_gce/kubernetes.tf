@@ -26,6 +26,12 @@ resource "google_compute_disk" "d1-etcd-events-ha-gce-example-com" {
   type = "pd-ssd"
   size = 20
   zone = "us-test1-a"
+
+  labels = {
+    k8s-io-cluster-name = "ha-gce-example-com"
+    k8s-io-etcd-events  = "1-2f1-2c2-2c3"
+    k8s-io-role-master  = "master"
+  }
 }
 
 resource "google_compute_disk" "d1-etcd-main-ha-gce-example-com" {
@@ -33,6 +39,12 @@ resource "google_compute_disk" "d1-etcd-main-ha-gce-example-com" {
   type = "pd-ssd"
   size = 20
   zone = "us-test1-a"
+
+  labels = {
+    k8s-io-cluster-name = "ha-gce-example-com"
+    k8s-io-etcd-main    = "1-2f1-2c2-2c3"
+    k8s-io-role-master  = "master"
+  }
 }
 
 resource "google_compute_disk" "d2-etcd-events-ha-gce-example-com" {
@@ -40,6 +52,12 @@ resource "google_compute_disk" "d2-etcd-events-ha-gce-example-com" {
   type = "pd-ssd"
   size = 20
   zone = "us-test1-b"
+
+  labels = {
+    k8s-io-cluster-name = "ha-gce-example-com"
+    k8s-io-etcd-events  = "2-2f1-2c2-2c3"
+    k8s-io-role-master  = "master"
+  }
 }
 
 resource "google_compute_disk" "d2-etcd-main-ha-gce-example-com" {
@@ -47,6 +65,12 @@ resource "google_compute_disk" "d2-etcd-main-ha-gce-example-com" {
   type = "pd-ssd"
   size = 20
   zone = "us-test1-b"
+
+  labels = {
+    k8s-io-cluster-name = "ha-gce-example-com"
+    k8s-io-etcd-main    = "2-2f1-2c2-2c3"
+    k8s-io-role-master  = "master"
+  }
 }
 
 resource "google_compute_disk" "d3-etcd-events-ha-gce-example-com" {
@@ -54,6 +78,12 @@ resource "google_compute_disk" "d3-etcd-events-ha-gce-example-com" {
   type = "pd-ssd"
   size = 20
   zone = "us-test1-c"
+
+  labels = {
+    k8s-io-cluster-name = "ha-gce-example-com"
+    k8s-io-etcd-events  = "3-2f1-2c2-2c3"
+    k8s-io-role-master  = "master"
+  }
 }
 
 resource "google_compute_disk" "d3-etcd-main-ha-gce-example-com" {
@@ -61,6 +91,12 @@ resource "google_compute_disk" "d3-etcd-main-ha-gce-example-com" {
   type = "pd-ssd"
   size = 20
   zone = "us-test1-c"
+
+  labels = {
+    k8s-io-cluster-name = "ha-gce-example-com"
+    k8s-io-etcd-main    = "3-2f1-2c2-2c3"
+    k8s-io-role-master  = "master"
+  }
 }
 
 resource "google_compute_firewall" "cidr-to-master-ha-gce-example-com" {
