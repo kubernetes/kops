@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/cloudmock/aws/mockec2"
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
@@ -111,7 +112,8 @@ func TestListVPCs(t *testing.T) {
 	}
 
 	for _, g := range grid {
-		resources, err := ListVPCs(awsCloud, g.ClusterName)
+		cluster := &api.Cluster{}
+		resources, err := ListVPCs(awsCloud, cluster, g.ClusterName)
 		if err != nil {
 			t.Errorf("unexpected error listing VPCs: %v", err)
 			continue

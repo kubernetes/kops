@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/cloudmock/aws/mockec2"
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -93,6 +94,7 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 func TestListRouteTables(t *testing.T) {
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	//resources := make(map[string]*Resource)
+	cluster := &api.Cluster{}
 	clusterName := "me.example.com"
 	ownershipTagKey := "kubernetes.io/cluster/" + clusterName
 
@@ -128,7 +130,7 @@ func TestListRouteTables(t *testing.T) {
 		},
 	})
 
-	resourceTrackers, err := ListRouteTables(cloud, clusterName)
+	resourceTrackers, err := ListRouteTables(cloud, cluster, clusterName)
 	if err != nil {
 		t.Fatalf("error listing route tables: %v", err)
 	}
