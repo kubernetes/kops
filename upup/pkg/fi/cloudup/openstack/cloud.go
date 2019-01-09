@@ -19,7 +19,7 @@ package openstack
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/drekle/kops/pkg/dns"
+	"k8s.io/kops/pkg/dns"
 	"net/http"
 	"time"
 
