@@ -211,7 +211,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	if kubeDNS.Provider == "CoreDNS" {
 		{
 			key := "coredns.addons.k8s.io"
-			version := "1.2.6-kops.1"
+			version := "1.3.0-kops.1"
 
 			{
 				location := key + "/k8s-1.6.yaml"
