@@ -100,3 +100,12 @@ dpkg_list(
         "@debian_stretch//file:Packages.json",
     ],
 )
+
+# We use the prebuilt utils.tar.gz containing socat & conntrack, building it in bazel is really painful
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+
+http_file(
+    name = "utils_tar_gz",
+    urls = ["https://kubeupv2.s3.amazonaws.com/kops/1.11.0-alpha.1/linux/amd64/utils.tar.gz"],
+    sha256 = "74ff5d81ba62f7a153da1138ae0890594867816bcc9fc40cfe1c96fe06110d43",
+)
