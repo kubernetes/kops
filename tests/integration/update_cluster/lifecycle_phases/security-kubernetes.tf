@@ -1,4 +1,4 @@
-locals = {
+locals {
   bastions_role_arn  = "${aws_iam_role.bastions-lifecyclephases-example-com.arn}"
   bastions_role_name = "${aws_iam_role.bastions-lifecyclephases-example-com.name}"
   cluster_name       = "lifecyclephases.example.com"
@@ -103,7 +103,7 @@ resource "aws_security_group" "api-elb-lifecyclephases-example-com" {
   vpc_id      = "${aws_vpc.lifecyclephases-example-com.id}"
   description = "Security group for api ELB"
 
-  tags = {
+  tags {
     KubernetesCluster                                   = "lifecyclephases.example.com"
     Name                                                = "api-elb.lifecyclephases.example.com"
     "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
@@ -115,7 +115,7 @@ resource "aws_security_group" "bastion-elb-lifecyclephases-example-com" {
   vpc_id      = "${aws_vpc.lifecyclephases-example-com.id}"
   description = "Security group for bastion ELB"
 
-  tags = {
+  tags {
     KubernetesCluster                                   = "lifecyclephases.example.com"
     Name                                                = "bastion-elb.lifecyclephases.example.com"
     "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
@@ -127,7 +127,7 @@ resource "aws_security_group" "bastion-lifecyclephases-example-com" {
   vpc_id      = "${aws_vpc.lifecyclephases-example-com.id}"
   description = "Security group for bastion"
 
-  tags = {
+  tags {
     KubernetesCluster                                   = "lifecyclephases.example.com"
     Name                                                = "bastion.lifecyclephases.example.com"
     "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
@@ -139,7 +139,7 @@ resource "aws_security_group" "masters-lifecyclephases-example-com" {
   vpc_id      = "${aws_vpc.lifecyclephases-example-com.id}"
   description = "Security group for masters"
 
-  tags = {
+  tags {
     KubernetesCluster                                   = "lifecyclephases.example.com"
     Name                                                = "masters.lifecyclephases.example.com"
     "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
@@ -151,7 +151,7 @@ resource "aws_security_group" "nodes-lifecyclephases-example-com" {
   vpc_id      = "${aws_vpc.lifecyclephases-example-com.id}"
   description = "Security group for nodes"
 
-  tags = {
+  tags {
     KubernetesCluster                                   = "lifecyclephases.example.com"
     Name                                                = "nodes.lifecyclephases.example.com"
     "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
@@ -320,6 +320,6 @@ resource "aws_security_group_rule" "ssh-external-to-bastion-elb-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-terraform = {
+terraform {
   required_version = ">= 0.9.3"
 }

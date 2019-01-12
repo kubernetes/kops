@@ -1,4 +1,4 @@
-locals = {
+locals {
   bastion_autoscaling_group_ids = ["${aws_autoscaling_group.bastion-private-shared-subnet-example-com.id}"]
   bastion_security_group_ids    = ["${aws_security_group.bastion-private-shared-subnet-example-com.id}"]
   bastions_role_arn             = "${aws_iam_role.bastions-private-shared-subnet-example-com.arn}"
@@ -117,19 +117,19 @@ resource "aws_autoscaling_group" "bastion-private-shared-subnet-example-com" {
   min_size             = 1
   vpc_zone_identifier  = ["subnet-abcdef"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "private-shared-subnet.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "bastion.private-shared-subnet.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/bastion"
     value               = "1"
     propagate_at_launch = true
@@ -146,19 +146,19 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-private-shared-subne
   min_size             = 1
   vpc_zone_identifier  = ["subnet-12345678"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "private-shared-subnet.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1a.masters.private-shared-subnet.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -175,19 +175,19 @@ resource "aws_autoscaling_group" "nodes-private-shared-subnet-example-com" {
   min_size             = 2
   vpc_zone_identifier  = ["subnet-12345678"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "private-shared-subnet.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "nodes.private-shared-subnet.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/node"
     value               = "1"
     propagate_at_launch = true
@@ -203,7 +203,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-private-shared-subnet-example-
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                                         = "private-shared-subnet.example.com"
     Name                                                      = "us-test-1a.etcd-events.private-shared-subnet.example.com"
     "k8s.io/etcd/events"                                      = "us-test-1a/us-test-1a"
@@ -218,7 +218,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-private-shared-subnet-example-co
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                                         = "private-shared-subnet.example.com"
     Name                                                      = "us-test-1a.etcd-main.private-shared-subnet.example.com"
     "k8s.io/etcd/main"                                        = "us-test-1a/us-test-1a"
@@ -230,7 +230,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-private-shared-subnet-example-co
 resource "aws_elb" "api-private-shared-subnet-example-com" {
   name = "api-private-shared-subnet-n2f8ak"
 
-  listener = {
+  listener {
     instance_port     = 443
     instance_protocol = "TCP"
     lb_port           = 443
@@ -240,7 +240,7 @@ resource "aws_elb" "api-private-shared-subnet-example-com" {
   security_groups = ["${aws_security_group.api-elb-private-shared-subnet-example-com.id}"]
   subnets         = ["subnet-abcdef"]
 
-  health_check = {
+  health_check {
     target              = "SSL:443"
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -250,7 +250,7 @@ resource "aws_elb" "api-private-shared-subnet-example-com" {
 
   idle_timeout = 300
 
-  tags = {
+  tags  {
     KubernetesCluster                                         = "private-shared-subnet.example.com"
     Name                                                      = "api.private-shared-subnet.example.com"
     "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
@@ -260,7 +260,7 @@ resource "aws_elb" "api-private-shared-subnet-example-com" {
 resource "aws_elb" "bastion-private-shared-subnet-example-com" {
   name = "bastion-private-shared-su-5ol32q"
 
-  listener = {
+  listener {
     instance_port     = 22
     instance_protocol = "TCP"
     lb_port           = 22
@@ -270,7 +270,7 @@ resource "aws_elb" "bastion-private-shared-subnet-example-com" {
   security_groups = ["${aws_security_group.bastion-elb-private-shared-subnet-example-com.id}"]
   subnets         = ["subnet-abcdef"]
 
-  health_check = {
+  health_check {
     target              = "TCP:22"
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -280,7 +280,7 @@ resource "aws_elb" "bastion-private-shared-subnet-example-com" {
 
   idle_timeout = 300
 
-  tags = {
+  tags {
     KubernetesCluster                                         = "private-shared-subnet.example.com"
     Name                                                      = "bastion.private-shared-subnet.example.com"
     "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
@@ -349,13 +349,13 @@ resource "aws_launch_configuration" "bastion-private-shared-subnet-example-com" 
   security_groups             = ["${aws_security_group.bastion-private-shared-subnet-example-com.id}"]
   associate_public_ip_address = true
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 32
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -372,18 +372,18 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-private-shared-su
   associate_public_ip_address = false
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.private-shared-subnet.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -400,13 +400,13 @@ resource "aws_launch_configuration" "nodes-private-shared-subnet-example-com" {
   associate_public_ip_address = false
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_nodes.private-shared-subnet.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 128
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -417,7 +417,7 @@ resource "aws_route53_record" "api-private-shared-subnet-example-com" {
   name = "api.private-shared-subnet.example.com"
   type = "A"
 
-  alias = {
+  alias {
     name                   = "${aws_elb.api-private-shared-subnet-example-com.dns_name}"
     zone_id                = "${aws_elb.api-private-shared-subnet-example-com.zone_id}"
     evaluate_target_health = false
@@ -431,7 +431,7 @@ resource "aws_security_group" "api-elb-private-shared-subnet-example-com" {
   vpc_id      = "vpc-12345678"
   description = "Security group for api ELB"
 
-  tags = {
+  tags {
     KubernetesCluster                                         = "private-shared-subnet.example.com"
     Name                                                      = "api-elb.private-shared-subnet.example.com"
     "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
@@ -443,7 +443,7 @@ resource "aws_security_group" "bastion-elb-private-shared-subnet-example-com" {
   vpc_id      = "vpc-12345678"
   description = "Security group for bastion ELB"
 
-  tags = {
+  tags {
     KubernetesCluster                                         = "private-shared-subnet.example.com"
     Name                                                      = "bastion-elb.private-shared-subnet.example.com"
     "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
@@ -455,7 +455,7 @@ resource "aws_security_group" "bastion-private-shared-subnet-example-com" {
   vpc_id      = "vpc-12345678"
   description = "Security group for bastion"
 
-  tags = {
+  tags {
     KubernetesCluster                                         = "private-shared-subnet.example.com"
     Name                                                      = "bastion.private-shared-subnet.example.com"
     "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
@@ -467,7 +467,7 @@ resource "aws_security_group" "masters-private-shared-subnet-example-com" {
   vpc_id      = "vpc-12345678"
   description = "Security group for masters"
 
-  tags = {
+  tags {
     KubernetesCluster                                         = "private-shared-subnet.example.com"
     Name                                                      = "masters.private-shared-subnet.example.com"
     "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
@@ -479,7 +479,7 @@ resource "aws_security_group" "nodes-private-shared-subnet-example-com" {
   vpc_id      = "vpc-12345678"
   description = "Security group for nodes"
 
-  tags = {
+  tags {
     KubernetesCluster                                         = "private-shared-subnet.example.com"
     Name                                                      = "nodes.private-shared-subnet.example.com"
     "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
@@ -657,6 +657,6 @@ resource "aws_security_group_rule" "ssh-external-to-bastion-elb-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-terraform = {
+terraform {
   required_version = ">= 0.9.3"
 }

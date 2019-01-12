@@ -1,4 +1,4 @@
-locals = {
+locals {
   bastion_autoscaling_group_ids     = ["${aws_autoscaling_group.bastion-privatekopeio-example-com.id}"]
   bastion_security_group_ids        = ["${aws_security_group.bastion-privatekopeio-example-com.id}"]
   bastions_role_arn                 = "${aws_iam_role.bastions-privatekopeio-example-com.arn}"
@@ -142,19 +142,19 @@ resource "aws_autoscaling_group" "bastion-privatekopeio-example-com" {
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.utility-us-test-1a-privatekopeio-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "privatekopeio.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "bastion.privatekopeio.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/bastion"
     value               = "1"
     propagate_at_launch = true
@@ -171,19 +171,19 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatekopeio-exampl
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-privatekopeio-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "privatekopeio.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1a.masters.privatekopeio.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -200,19 +200,19 @@ resource "aws_autoscaling_group" "nodes-privatekopeio-example-com" {
   min_size             = 2
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-privatekopeio-example-com.id}", "${aws_subnet.us-test-1b-privatekopeio-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "privatekopeio.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "nodes.privatekopeio.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/node"
     value               = "1"
     propagate_at_launch = true
@@ -228,7 +228,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privatekopeio-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "us-test-1a.etcd-events.privatekopeio.example.com"
     "k8s.io/etcd/events"                              = "us-test-1a/us-test-1a"
@@ -243,7 +243,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatekopeio-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "us-test-1a.etcd-main.privatekopeio.example.com"
     "k8s.io/etcd/main"                                = "us-test-1a/us-test-1a"
@@ -255,7 +255,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatekopeio-example-com" {
 resource "aws_elb" "api-privatekopeio-example-com" {
   name = "api-privatekopeio-example-tl2bv8"
 
-  listener = {
+  listener {
     instance_port     = 443
     instance_protocol = "TCP"
     lb_port           = 443
@@ -265,7 +265,7 @@ resource "aws_elb" "api-privatekopeio-example-com" {
   security_groups = ["${aws_security_group.api-elb-privatekopeio-example-com.id}"]
   subnets         = ["${aws_subnet.utility-us-test-1a-privatekopeio-example-com.id}", "${aws_subnet.utility-us-test-1b-privatekopeio-example-com.id}"]
 
-  health_check = {
+  health_check {
     target              = "SSL:443"
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -275,7 +275,7 @@ resource "aws_elb" "api-privatekopeio-example-com" {
 
   idle_timeout = 300
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "api.privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
@@ -285,7 +285,7 @@ resource "aws_elb" "api-privatekopeio-example-com" {
 resource "aws_elb" "bastion-privatekopeio-example-com" {
   name = "bastion-privatekopeio-exa-d8ef8e"
 
-  listener = {
+  listener {
     instance_port     = 22
     instance_protocol = "TCP"
     lb_port           = 22
@@ -295,7 +295,7 @@ resource "aws_elb" "bastion-privatekopeio-example-com" {
   security_groups = ["${aws_security_group.bastion-elb-privatekopeio-example-com.id}"]
   subnets         = ["${aws_subnet.utility-us-test-1a-privatekopeio-example-com.id}"]
 
-  health_check = {
+  health_check {
     target              = "TCP:22"
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -305,7 +305,7 @@ resource "aws_elb" "bastion-privatekopeio-example-com" {
 
   idle_timeout = 300
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "bastion.privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
@@ -363,7 +363,7 @@ resource "aws_iam_role_policy" "nodes-privatekopeio-example-com" {
 resource "aws_internet_gateway" "privatekopeio-example-com" {
   vpc_id = "${aws_vpc.privatekopeio-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
@@ -384,13 +384,13 @@ resource "aws_launch_configuration" "bastion-privatekopeio-example-com" {
   security_groups             = ["${aws_security_group.bastion-privatekopeio-example-com.id}"]
   associate_public_ip_address = true
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 32
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -407,18 +407,18 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privatekopeio-exa
   associate_public_ip_address = false
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.privatekopeio.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -435,13 +435,13 @@ resource "aws_launch_configuration" "nodes-privatekopeio-example-com" {
   associate_public_ip_address = false
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_nodes.privatekopeio.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 128
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -470,7 +470,7 @@ resource "aws_route53_record" "api-privatekopeio-example-com" {
   name = "api.privatekopeio.example.com"
   type = "A"
 
-  alias = {
+  alias {
     name                   = "${aws_elb.api-privatekopeio-example-com.dns_name}"
     zone_id                = "${aws_elb.api-privatekopeio-example-com.zone_id}"
     evaluate_target_health = false
@@ -482,7 +482,7 @@ resource "aws_route53_record" "api-privatekopeio-example-com" {
 resource "aws_route_table" "private-us-test-1a-privatekopeio-example-com" {
   vpc_id = "${aws_vpc.privatekopeio-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "private-us-test-1a.privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
@@ -493,7 +493,7 @@ resource "aws_route_table" "private-us-test-1a-privatekopeio-example-com" {
 resource "aws_route_table" "private-us-test-1b-privatekopeio-example-com" {
   vpc_id = "${aws_vpc.privatekopeio-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "private-us-test-1b.privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
@@ -504,7 +504,7 @@ resource "aws_route_table" "private-us-test-1b-privatekopeio-example-com" {
 resource "aws_route_table" "privatekopeio-example-com" {
   vpc_id = "${aws_vpc.privatekopeio-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
@@ -537,7 +537,7 @@ resource "aws_security_group" "api-elb-privatekopeio-example-com" {
   vpc_id      = "${aws_vpc.privatekopeio-example-com.id}"
   description = "Security group for api ELB"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "api-elb.privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
@@ -549,7 +549,7 @@ resource "aws_security_group" "bastion-elb-privatekopeio-example-com" {
   vpc_id      = "${aws_vpc.privatekopeio-example-com.id}"
   description = "Security group for bastion ELB"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "bastion-elb.privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
@@ -561,7 +561,7 @@ resource "aws_security_group" "bastion-privatekopeio-example-com" {
   vpc_id      = "${aws_vpc.privatekopeio-example-com.id}"
   description = "Security group for bastion"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "bastion.privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
@@ -573,7 +573,7 @@ resource "aws_security_group" "masters-privatekopeio-example-com" {
   vpc_id      = "${aws_vpc.privatekopeio-example-com.id}"
   description = "Security group for masters"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "masters.privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
@@ -585,7 +585,7 @@ resource "aws_security_group" "nodes-privatekopeio-example-com" {
   vpc_id      = "${aws_vpc.privatekopeio-example-com.id}"
   description = "Security group for nodes"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "nodes.privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
@@ -768,7 +768,7 @@ resource "aws_subnet" "us-test-1a-privatekopeio-example-com" {
   cidr_block        = "172.20.32.0/19"
   availability_zone = "us-test-1a"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "us-test-1a.privatekopeio.example.com"
     SubnetType                                        = "Private"
@@ -782,7 +782,7 @@ resource "aws_subnet" "us-test-1b-privatekopeio-example-com" {
   cidr_block        = "172.20.64.0/19"
   availability_zone = "us-test-1b"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "us-test-1b.privatekopeio.example.com"
     SubnetType                                        = "Private"
@@ -796,7 +796,7 @@ resource "aws_subnet" "utility-us-test-1a-privatekopeio-example-com" {
   cidr_block        = "172.20.4.0/22"
   availability_zone = "us-test-1a"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "utility-us-test-1a.privatekopeio.example.com"
     SubnetType                                        = "Utility"
@@ -810,7 +810,7 @@ resource "aws_subnet" "utility-us-test-1b-privatekopeio-example-com" {
   cidr_block        = "172.20.8.0/22"
   availability_zone = "us-test-1b"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "utility-us-test-1b.privatekopeio.example.com"
     SubnetType                                        = "Utility"
@@ -824,7 +824,7 @@ resource "aws_vpc" "privatekopeio-example-com" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
@@ -835,7 +835,7 @@ resource "aws_vpc_dhcp_options" "privatekopeio-example-com" {
   domain_name         = "us-test-1.compute.internal"
   domain_name_servers = ["AmazonProvidedDNS"]
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
@@ -847,6 +847,6 @@ resource "aws_vpc_dhcp_options_association" "privatekopeio-example-com" {
   dhcp_options_id = "${aws_vpc_dhcp_options.privatekopeio-example-com.id}"
 }
 
-terraform = {
+terraform {
   required_version = ">= 0.9.3"
 }

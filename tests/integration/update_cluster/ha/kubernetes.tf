@@ -1,4 +1,4 @@
-locals = {
+locals {
   cluster_name                 = "ha.example.com"
   master_autoscaling_group_ids = ["${aws_autoscaling_group.master-us-test-1a-masters-ha-example-com.id}", "${aws_autoscaling_group.master-us-test-1b-masters-ha-example-com.id}", "${aws_autoscaling_group.master-us-test-1c-masters-ha-example-com.id}"]
   master_security_group_ids    = ["${aws_security_group.masters-ha-example-com.id}"]
@@ -97,19 +97,19 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-ha-example-com" {
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-ha-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "ha.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1a.masters.ha.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -126,19 +126,19 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-ha-example-com" {
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.us-test-1b-ha-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "ha.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1b.masters.ha.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -155,19 +155,19 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-ha-example-com" {
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.us-test-1c-ha-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "ha.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1c.masters.ha.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -184,19 +184,19 @@ resource "aws_autoscaling_group" "nodes-ha-example-com" {
   min_size             = 2
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-ha-example-com.id}", "${aws_subnet.us-test-1b-ha-example-com.id}", "${aws_subnet.us-test-1c-ha-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "ha.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "nodes.ha.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/node"
     value               = "1"
     propagate_at_launch = true
@@ -212,7 +212,7 @@ resource "aws_ebs_volume" "a-etcd-events-ha-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "a.etcd-events.ha.example.com"
     "k8s.io/etcd/events"                   = "a/a,b,c"
@@ -227,7 +227,7 @@ resource "aws_ebs_volume" "a-etcd-main-ha-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "a.etcd-main.ha.example.com"
     "k8s.io/etcd/main"                     = "a/a,b,c"
@@ -242,7 +242,7 @@ resource "aws_ebs_volume" "b-etcd-events-ha-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "b.etcd-events.ha.example.com"
     "k8s.io/etcd/events"                   = "b/a,b,c"
@@ -257,7 +257,7 @@ resource "aws_ebs_volume" "b-etcd-main-ha-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "b.etcd-main.ha.example.com"
     "k8s.io/etcd/main"                     = "b/a,b,c"
@@ -272,7 +272,7 @@ resource "aws_ebs_volume" "c-etcd-events-ha-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "c.etcd-events.ha.example.com"
     "k8s.io/etcd/events"                   = "c/a,b,c"
@@ -287,7 +287,7 @@ resource "aws_ebs_volume" "c-etcd-main-ha-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "c.etcd-main.ha.example.com"
     "k8s.io/etcd/main"                     = "c/a,b,c"
@@ -331,7 +331,7 @@ resource "aws_iam_role_policy" "nodes-ha-example-com" {
 resource "aws_internet_gateway" "ha-example-com" {
   vpc_id = "${aws_vpc.ha-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "ha.example.com"
     "kubernetes.io/cluster/ha.example.com" = "owned"
@@ -353,18 +353,18 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-ha-example-com" {
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.ha.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -381,18 +381,18 @@ resource "aws_launch_configuration" "master-us-test-1b-masters-ha-example-com" {
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1b.masters.ha.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -409,18 +409,18 @@ resource "aws_launch_configuration" "master-us-test-1c-masters-ha-example-com" {
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1c.masters.ha.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -437,13 +437,13 @@ resource "aws_launch_configuration" "nodes-ha-example-com" {
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_nodes.ha.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 128
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -459,7 +459,7 @@ resource "aws_route" "0-0-0-0--0" {
 resource "aws_route_table" "ha-example-com" {
   vpc_id = "${aws_vpc.ha-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "ha.example.com"
     "kubernetes.io/cluster/ha.example.com" = "owned"
@@ -487,7 +487,7 @@ resource "aws_security_group" "masters-ha-example-com" {
   vpc_id      = "${aws_vpc.ha-example-com.id}"
   description = "Security group for masters"
 
-  tags = {
+  tags {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "masters.ha.example.com"
     "kubernetes.io/cluster/ha.example.com" = "owned"
@@ -499,7 +499,7 @@ resource "aws_security_group" "nodes-ha-example-com" {
   vpc_id      = "${aws_vpc.ha-example-com.id}"
   description = "Security group for nodes"
 
-  tags = {
+  tags {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "nodes.ha.example.com"
     "kubernetes.io/cluster/ha.example.com" = "owned"
@@ -619,7 +619,7 @@ resource "aws_subnet" "us-test-1a-ha-example-com" {
   cidr_block        = "172.20.32.0/19"
   availability_zone = "us-test-1a"
 
-  tags = {
+  tags {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "us-test-1a.ha.example.com"
     SubnetType                             = "Public"
@@ -633,7 +633,7 @@ resource "aws_subnet" "us-test-1b-ha-example-com" {
   cidr_block        = "172.20.64.0/19"
   availability_zone = "us-test-1b"
 
-  tags = {
+  tags {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "us-test-1b.ha.example.com"
     SubnetType                             = "Public"
@@ -647,7 +647,7 @@ resource "aws_subnet" "us-test-1c-ha-example-com" {
   cidr_block        = "172.20.96.0/19"
   availability_zone = "us-test-1c"
 
-  tags = {
+  tags {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "us-test-1c.ha.example.com"
     SubnetType                             = "Public"
@@ -661,7 +661,7 @@ resource "aws_vpc" "ha-example-com" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  tags = {
+  tags {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "ha.example.com"
     "kubernetes.io/cluster/ha.example.com" = "owned"
@@ -672,7 +672,7 @@ resource "aws_vpc_dhcp_options" "ha-example-com" {
   domain_name         = "us-test-1.compute.internal"
   domain_name_servers = ["AmazonProvidedDNS"]
 
-  tags = {
+  tags {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "ha.example.com"
     "kubernetes.io/cluster/ha.example.com" = "owned"
@@ -684,6 +684,6 @@ resource "aws_vpc_dhcp_options_association" "ha-example-com" {
   dhcp_options_id = "${aws_vpc_dhcp_options.ha-example-com.id}"
 }
 
-terraform = {
+terraform {
   required_version = ">= 0.9.3"
 }

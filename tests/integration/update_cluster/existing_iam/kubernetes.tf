@@ -1,4 +1,4 @@
-locals = {
+locals {
   cluster_name                 = "existing-iam.example.com"
   master_autoscaling_group_ids = ["${aws_autoscaling_group.master-us-test-1a-masters-existing-iam-example-com.id}", "${aws_autoscaling_group.master-us-test-1b-masters-existing-iam-example-com.id}", "${aws_autoscaling_group.master-us-test-1c-masters-existing-iam-example-com.id}"]
   master_security_group_ids    = ["${aws_security_group.masters-existing-iam-example-com.id}"]
@@ -77,19 +77,19 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-existing-iam-example
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-existing-iam-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "existing-iam.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1a.masters.existing-iam.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -106,19 +106,19 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-existing-iam-example
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.us-test-1b-existing-iam-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "existing-iam.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1b.masters.existing-iam.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -135,19 +135,19 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-existing-iam-example
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.us-test-1c-existing-iam-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "existing-iam.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1c.masters.existing-iam.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -164,19 +164,19 @@ resource "aws_autoscaling_group" "nodes-existing-iam-example-com" {
   min_size             = 2
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-existing-iam-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "existing-iam.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "nodes.existing-iam.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/node"
     value               = "1"
     propagate_at_launch = true
@@ -192,7 +192,7 @@ resource "aws_ebs_volume" "a-etcd-events-existing-iam-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                                = "existing-iam.example.com"
     Name                                             = "a.etcd-events.existing-iam.example.com"
     "k8s.io/etcd/events"                             = "a/a"
@@ -207,7 +207,7 @@ resource "aws_ebs_volume" "a-etcd-main-existing-iam-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                                = "existing-iam.example.com"
     Name                                             = "a.etcd-main.existing-iam.example.com"
     "k8s.io/etcd/main"                               = "a/a"
@@ -219,7 +219,7 @@ resource "aws_ebs_volume" "a-etcd-main-existing-iam-example-com" {
 resource "aws_internet_gateway" "existing-iam-example-com" {
   vpc_id = "${aws_vpc.existing-iam-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "existing-iam.example.com"
     Name                                             = "existing-iam.example.com"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
@@ -241,18 +241,18 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-existing-iam-exam
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.existing-iam.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -269,18 +269,18 @@ resource "aws_launch_configuration" "master-us-test-1b-masters-existing-iam-exam
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1b.masters.existing-iam.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -297,18 +297,18 @@ resource "aws_launch_configuration" "master-us-test-1c-masters-existing-iam-exam
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1c.masters.existing-iam.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -325,13 +325,13 @@ resource "aws_launch_configuration" "nodes-existing-iam-example-com" {
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_nodes.existing-iam.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 128
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -347,7 +347,7 @@ resource "aws_route" "0-0-0-0--0" {
 resource "aws_route_table" "existing-iam-example-com" {
   vpc_id = "${aws_vpc.existing-iam-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "existing-iam.example.com"
     Name                                             = "existing-iam.example.com"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
@@ -375,7 +375,7 @@ resource "aws_security_group" "masters-existing-iam-example-com" {
   vpc_id      = "${aws_vpc.existing-iam-example-com.id}"
   description = "Security group for masters"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "existing-iam.example.com"
     Name                                             = "masters.existing-iam.example.com"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
@@ -387,7 +387,7 @@ resource "aws_security_group" "nodes-existing-iam-example-com" {
   vpc_id      = "${aws_vpc.existing-iam-example-com.id}"
   description = "Security group for nodes"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "existing-iam.example.com"
     Name                                             = "nodes.existing-iam.example.com"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
@@ -507,7 +507,7 @@ resource "aws_subnet" "us-test-1a-existing-iam-example-com" {
   cidr_block        = "172.20.32.0/19"
   availability_zone = "us-test-1a"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "existing-iam.example.com"
     Name                                             = "us-test-1a.existing-iam.example.com"
     SubnetType                                       = "Public"
@@ -521,7 +521,7 @@ resource "aws_subnet" "us-test-1b-existing-iam-example-com" {
   cidr_block        = "172.20.64.0/19"
   availability_zone = "us-test-1b"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "existing-iam.example.com"
     Name                                             = "us-test-1b.existing-iam.example.com"
     SubnetType                                       = "Public"
@@ -535,7 +535,7 @@ resource "aws_subnet" "us-test-1c-existing-iam-example-com" {
   cidr_block        = "172.20.96.0/19"
   availability_zone = "us-test-1c"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "existing-iam.example.com"
     Name                                             = "us-test-1c.existing-iam.example.com"
     SubnetType                                       = "Public"
@@ -549,7 +549,7 @@ resource "aws_vpc" "existing-iam-example-com" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  tags = {
+  tags {
     KubernetesCluster                                = "existing-iam.example.com"
     Name                                             = "existing-iam.example.com"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
@@ -560,7 +560,7 @@ resource "aws_vpc_dhcp_options" "existing-iam-example-com" {
   domain_name         = "us-test-1.compute.internal"
   domain_name_servers = ["AmazonProvidedDNS"]
 
-  tags = {
+  tags {
     KubernetesCluster                                = "existing-iam.example.com"
     Name                                             = "existing-iam.example.com"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
@@ -572,6 +572,6 @@ resource "aws_vpc_dhcp_options_association" "existing-iam-example-com" {
   dhcp_options_id = "${aws_vpc_dhcp_options.existing-iam-example-com.id}"
 }
 
-terraform = {
+terraform {
   required_version = ">= 0.9.3"
 }

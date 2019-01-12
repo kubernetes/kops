@@ -1,4 +1,4 @@
-locals = {
+locals {
   bastion_security_group_ids = ["${aws_security_group.bastion-lifecyclephases-example-com.id}"]
   bastions_role_arn          = "${aws_iam_role.bastions-lifecyclephases-example-com.arn}"
   bastions_role_name         = "${aws_iam_role.bastions-lifecyclephases-example-com.name}"
@@ -83,7 +83,7 @@ resource "aws_autoscaling_attachment" "master-us-test-1a-masters-lifecyclephases
 resource "aws_elb" "api-lifecyclephases-example-com" {
   name = "api-lifecyclephases-example--l94cb4"
 
-  listener = {
+  listener {
     instance_port     = 443
     instance_protocol = "TCP"
     lb_port           = 443
@@ -93,7 +93,7 @@ resource "aws_elb" "api-lifecyclephases-example-com" {
   security_groups = ["${aws_security_group.api-elb-lifecyclephases-example-com.id}"]
   subnets         = ["${aws_subnet.utility-us-test-1a-lifecyclephases-example-com.id}"]
 
-  health_check = {
+  health_check {
     target              = "SSL:443"
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -103,7 +103,7 @@ resource "aws_elb" "api-lifecyclephases-example-com" {
 
   idle_timeout = 300
 
-  tags = {
+  tags {
     KubernetesCluster = "lifecyclephases.example.com"
     Name              = "api.lifecyclephases.example.com"
   }
@@ -112,7 +112,7 @@ resource "aws_elb" "api-lifecyclephases-example-com" {
 resource "aws_elb" "bastion-lifecyclephases-example-com" {
   name = "bastion-lifecyclephases-exam-fdb6ge"
 
-  listener = {
+  listener {
     instance_port     = 22
     instance_protocol = "TCP"
     lb_port           = 22
@@ -122,7 +122,7 @@ resource "aws_elb" "bastion-lifecyclephases-example-com" {
   security_groups = ["${aws_security_group.bastion-elb-lifecyclephases-example-com.id}"]
   subnets         = ["${aws_subnet.utility-us-test-1a-lifecyclephases-example-com.id}"]
 
-  health_check = {
+  health_check {
     target              = "TCP:22"
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -132,7 +132,7 @@ resource "aws_elb" "bastion-lifecyclephases-example-com" {
 
   idle_timeout = 300
 
-  tags = {
+  tags {
     KubernetesCluster                                   = "lifecyclephases.example.com"
     Name                                                = "bastion.lifecyclephases.example.com"
     "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
@@ -143,7 +143,7 @@ resource "aws_route53_record" "api-lifecyclephases-example-com" {
   name = "api.lifecyclephases.example.com"
   type = "A"
 
-  alias = {
+  alias {
     name                   = "${aws_elb.api-lifecyclephases-example-com.dns_name}"
     zone_id                = "${aws_elb.api-lifecyclephases-example-com.zone_id}"
     evaluate_target_health = false
@@ -152,6 +152,6 @@ resource "aws_route53_record" "api-lifecyclephases-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
-terraform = {
+terraform {
   required_version = ">= 0.9.3"
 }

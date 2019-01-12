@@ -1,4 +1,4 @@
-locals = {
+locals {
   cluster_name                 = "sharedsubnet.example.com"
   master_autoscaling_group_ids = ["${aws_autoscaling_group.master-us-test-1a-masters-sharedsubnet-example-com.id}"]
   master_security_group_ids    = ["${aws_security_group.masters-sharedsubnet-example-com.id}"]
@@ -82,19 +82,19 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-sharedsubnet-example
   min_size             = 1
   vpc_zone_identifier  = ["subnet-12345678"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "sharedsubnet.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1a.masters.sharedsubnet.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -111,19 +111,19 @@ resource "aws_autoscaling_group" "nodes-sharedsubnet-example-com" {
   min_size             = 2
   vpc_zone_identifier  = ["subnet-12345678"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "sharedsubnet.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "nodes.sharedsubnet.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/node"
     value               = "1"
     propagate_at_launch = true
@@ -139,7 +139,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-sharedsubnet-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                                = "sharedsubnet.example.com"
     Name                                             = "us-test-1a.etcd-events.sharedsubnet.example.com"
     "k8s.io/etcd/events"                             = "us-test-1a/us-test-1a"
@@ -154,7 +154,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-sharedsubnet-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                                = "sharedsubnet.example.com"
     Name                                             = "us-test-1a.etcd-main.sharedsubnet.example.com"
     "k8s.io/etcd/main"                               = "us-test-1a/us-test-1a"
@@ -210,18 +210,18 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-sharedsubnet-exam
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.sharedsubnet.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -238,13 +238,13 @@ resource "aws_launch_configuration" "nodes-sharedsubnet-example-com" {
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_nodes.sharedsubnet.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 128
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -256,7 +256,7 @@ resource "aws_security_group" "masters-sharedsubnet-example-com" {
   vpc_id      = "vpc-12345678"
   description = "Security group for masters"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "sharedsubnet.example.com"
     Name                                             = "masters.sharedsubnet.example.com"
     "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
@@ -268,7 +268,7 @@ resource "aws_security_group" "nodes-sharedsubnet-example-com" {
   vpc_id      = "vpc-12345678"
   description = "Security group for nodes"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "sharedsubnet.example.com"
     Name                                             = "nodes.sharedsubnet.example.com"
     "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
@@ -383,6 +383,6 @@ resource "aws_security_group_rule" "ssh-external-to-node-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-terraform = {
+terraform {
   required_version = ">= 0.9.3"
 }

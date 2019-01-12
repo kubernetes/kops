@@ -1,4 +1,4 @@
-locals = {
+locals {
   cluster_name                 = "existingsg.example.com"
   master_autoscaling_group_ids = ["${aws_autoscaling_group.master-us-test-1a-masters-existingsg-example-com.id}", "${aws_autoscaling_group.master-us-test-1b-masters-existingsg-example-com.id}", "${aws_autoscaling_group.master-us-test-1c-masters-existingsg-example-com.id}"]
   master_security_group_ids    = ["${aws_security_group.masters-existingsg-example-com.id}", "sg-master-1a", "sg-master-1b"]
@@ -112,19 +112,19 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-existingsg-example-c
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-existingsg-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "existingsg.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1a.masters.existingsg.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -141,19 +141,19 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-existingsg-example-c
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.us-test-1b-existingsg-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "existingsg.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1b.masters.existingsg.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -170,19 +170,19 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-existingsg-example-c
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.us-test-1c-existingsg-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "existingsg.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1c.masters.existingsg.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -199,19 +199,19 @@ resource "aws_autoscaling_group" "nodes-existingsg-example-com" {
   min_size             = 2
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-existingsg-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "existingsg.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "nodes.existingsg.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/node"
     value               = "1"
     propagate_at_launch = true
@@ -227,7 +227,7 @@ resource "aws_ebs_volume" "a-etcd-events-existingsg-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                              = "existingsg.example.com"
     Name                                           = "a.etcd-events.existingsg.example.com"
     "k8s.io/etcd/events"                           = "a/a,b,c"
@@ -242,7 +242,7 @@ resource "aws_ebs_volume" "a-etcd-main-existingsg-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                              = "existingsg.example.com"
     Name                                           = "a.etcd-main.existingsg.example.com"
     "k8s.io/etcd/main"                             = "a/a,b,c"
@@ -257,7 +257,7 @@ resource "aws_ebs_volume" "b-etcd-events-existingsg-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                              = "existingsg.example.com"
     Name                                           = "b.etcd-events.existingsg.example.com"
     "k8s.io/etcd/events"                           = "b/a,b,c"
@@ -272,7 +272,7 @@ resource "aws_ebs_volume" "b-etcd-main-existingsg-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                              = "existingsg.example.com"
     Name                                           = "b.etcd-main.existingsg.example.com"
     "k8s.io/etcd/main"                             = "b/a,b,c"
@@ -287,7 +287,7 @@ resource "aws_ebs_volume" "c-etcd-events-existingsg-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                              = "existingsg.example.com"
     Name                                           = "c.etcd-events.existingsg.example.com"
     "k8s.io/etcd/events"                           = "c/a,b,c"
@@ -302,7 +302,7 @@ resource "aws_ebs_volume" "c-etcd-main-existingsg-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                              = "existingsg.example.com"
     Name                                           = "c.etcd-main.existingsg.example.com"
     "k8s.io/etcd/main"                             = "c/a,b,c"
@@ -314,7 +314,7 @@ resource "aws_ebs_volume" "c-etcd-main-existingsg-example-com" {
 resource "aws_elb" "api-existingsg-example-com" {
   name = "api-existingsg-example-co-ikb7m9"
 
-  listener = {
+  listener {
     instance_port     = 443
     instance_protocol = "TCP"
     lb_port           = 443
@@ -324,7 +324,7 @@ resource "aws_elb" "api-existingsg-example-com" {
   security_groups = ["sg-elb"]
   subnets         = ["${aws_subnet.us-test-1a-existingsg-example-com.id}", "${aws_subnet.us-test-1b-existingsg-example-com.id}", "${aws_subnet.us-test-1c-existingsg-example-com.id}"]
 
-  health_check = {
+  health_check {
     target              = "SSL:443"
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -338,6 +338,11 @@ resource "aws_elb" "api-existingsg-example-com" {
     KubernetesCluster                              = "existingsg.example.com"
     Name                                           = "api.existingsg.example.com"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
+=======
+  tags {
+    KubernetesCluster = "existingsg.example.com"
+    Name              = "api.existingsg.example.com"
+>>>>>>> Support terraform 0.12 hcl syntax
   }
 }
 
@@ -376,7 +381,7 @@ resource "aws_iam_role_policy" "nodes-existingsg-example-com" {
 resource "aws_internet_gateway" "existingsg-example-com" {
   vpc_id = "${aws_vpc.existingsg-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                              = "existingsg.example.com"
     Name                                           = "existingsg.example.com"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
@@ -398,18 +403,18 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-existingsg-exampl
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.existingsg.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -426,18 +431,18 @@ resource "aws_launch_configuration" "master-us-test-1b-masters-existingsg-exampl
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1b.masters.existingsg.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -454,18 +459,18 @@ resource "aws_launch_configuration" "master-us-test-1c-masters-existingsg-exampl
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1c.masters.existingsg.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -482,13 +487,13 @@ resource "aws_launch_configuration" "nodes-existingsg-example-com" {
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_nodes.existingsg.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 128
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -505,7 +510,7 @@ resource "aws_route53_record" "api-existingsg-example-com" {
   name = "api.existingsg.example.com"
   type = "A"
 
-  alias = {
+  alias {
     name                   = "${aws_elb.api-existingsg-example-com.dns_name}"
     zone_id                = "${aws_elb.api-existingsg-example-com.zone_id}"
     evaluate_target_health = false
@@ -517,7 +522,7 @@ resource "aws_route53_record" "api-existingsg-example-com" {
 resource "aws_route_table" "existingsg-example-com" {
   vpc_id = "${aws_vpc.existingsg-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                              = "existingsg.example.com"
     Name                                           = "existingsg.example.com"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
@@ -545,7 +550,7 @@ resource "aws_security_group" "masters-existingsg-example-com" {
   vpc_id      = "${aws_vpc.existingsg-example-com.id}"
   description = "Security group for masters"
 
-  tags = {
+  tags {
     KubernetesCluster                              = "existingsg.example.com"
     Name                                           = "masters.existingsg.example.com"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
@@ -908,7 +913,7 @@ resource "aws_subnet" "us-test-1a-existingsg-example-com" {
   cidr_block        = "172.20.32.0/19"
   availability_zone = "us-test-1a"
 
-  tags = {
+  tags {
     KubernetesCluster                              = "existingsg.example.com"
     Name                                           = "us-test-1a.existingsg.example.com"
     SubnetType                                     = "Public"
@@ -922,7 +927,7 @@ resource "aws_subnet" "us-test-1b-existingsg-example-com" {
   cidr_block        = "172.20.64.0/19"
   availability_zone = "us-test-1b"
 
-  tags = {
+  tags {
     KubernetesCluster                              = "existingsg.example.com"
     Name                                           = "us-test-1b.existingsg.example.com"
     SubnetType                                     = "Public"
@@ -936,7 +941,7 @@ resource "aws_subnet" "us-test-1c-existingsg-example-com" {
   cidr_block        = "172.20.96.0/19"
   availability_zone = "us-test-1c"
 
-  tags = {
+  tags {
     KubernetesCluster                              = "existingsg.example.com"
     Name                                           = "us-test-1c.existingsg.example.com"
     SubnetType                                     = "Public"
@@ -950,7 +955,7 @@ resource "aws_vpc" "existingsg-example-com" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  tags = {
+  tags {
     KubernetesCluster                              = "existingsg.example.com"
     Name                                           = "existingsg.example.com"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
@@ -961,7 +966,7 @@ resource "aws_vpc_dhcp_options" "existingsg-example-com" {
   domain_name         = "us-test-1.compute.internal"
   domain_name_servers = ["AmazonProvidedDNS"]
 
-  tags = {
+  tags {
     KubernetesCluster                              = "existingsg.example.com"
     Name                                           = "existingsg.example.com"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
@@ -973,6 +978,6 @@ resource "aws_vpc_dhcp_options_association" "existingsg-example-com" {
   dhcp_options_id = "${aws_vpc_dhcp_options.existingsg-example-com.id}"
 }
 
-terraform = {
+terraform {
   required_version = ">= 0.9.3"
 }

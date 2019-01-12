@@ -1,4 +1,4 @@
-locals = {
+locals {
   cluster_name                      = "lifecyclephases.example.com"
   region                            = "us-test-1"
   route_table_private-us-test-1a_id = "${aws_route_table.private-us-test-1a-lifecyclephases-example-com.id}"
@@ -48,7 +48,7 @@ provider "aws" {
 resource "aws_eip" "us-test-1a-lifecyclephases-example-com" {
   vpc = true
 
-  tags = {
+  tags {
     KubernetesCluster                                   = "lifecyclephases.example.com"
     Name                                                = "us-test-1a.lifecyclephases.example.com"
     "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
@@ -58,7 +58,7 @@ resource "aws_eip" "us-test-1a-lifecyclephases-example-com" {
 resource "aws_internet_gateway" "lifecyclephases-example-com" {
   vpc_id = "${aws_vpc.lifecyclephases-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                                   = "lifecyclephases.example.com"
     Name                                                = "lifecyclephases.example.com"
     "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
@@ -69,7 +69,7 @@ resource "aws_nat_gateway" "us-test-1a-lifecyclephases-example-com" {
   allocation_id = "${aws_eip.us-test-1a-lifecyclephases-example-com.id}"
   subnet_id     = "${aws_subnet.utility-us-test-1a-lifecyclephases-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                                   = "lifecyclephases.example.com"
     Name                                                = "us-test-1a.lifecyclephases.example.com"
     "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
@@ -91,7 +91,7 @@ resource "aws_route" "private-us-test-1a-0-0-0-0--0" {
 resource "aws_route_table" "lifecyclephases-example-com" {
   vpc_id = "${aws_vpc.lifecyclephases-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                                   = "lifecyclephases.example.com"
     Name                                                = "lifecyclephases.example.com"
     "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
@@ -102,7 +102,7 @@ resource "aws_route_table" "lifecyclephases-example-com" {
 resource "aws_route_table" "private-us-test-1a-lifecyclephases-example-com" {
   vpc_id = "${aws_vpc.lifecyclephases-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                                   = "lifecyclephases.example.com"
     Name                                                = "private-us-test-1a.lifecyclephases.example.com"
     "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
@@ -125,7 +125,7 @@ resource "aws_subnet" "us-test-1a-lifecyclephases-example-com" {
   cidr_block        = "172.20.32.0/19"
   availability_zone = "us-test-1a"
 
-  tags = {
+  tags {
     KubernetesCluster                                   = "lifecyclephases.example.com"
     Name                                                = "us-test-1a.lifecyclephases.example.com"
     SubnetType                                          = "Private"
@@ -139,7 +139,7 @@ resource "aws_subnet" "utility-us-test-1a-lifecyclephases-example-com" {
   cidr_block        = "172.20.4.0/22"
   availability_zone = "us-test-1a"
 
-  tags = {
+  tags {
     KubernetesCluster                                   = "lifecyclephases.example.com"
     Name                                                = "utility-us-test-1a.lifecyclephases.example.com"
     SubnetType                                          = "Utility"
@@ -153,7 +153,7 @@ resource "aws_vpc" "lifecyclephases-example-com" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  tags = {
+  tags {
     KubernetesCluster                                   = "lifecyclephases.example.com"
     Name                                                = "lifecyclephases.example.com"
     "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
@@ -164,7 +164,7 @@ resource "aws_vpc_dhcp_options" "lifecyclephases-example-com" {
   domain_name         = "us-test-1.compute.internal"
   domain_name_servers = ["AmazonProvidedDNS"]
 
-  tags = {
+  tags {
     KubernetesCluster                                   = "lifecyclephases.example.com"
     Name                                                = "lifecyclephases.example.com"
     "kubernetes.io/cluster/lifecyclephases.example.com" = "owned"
@@ -176,6 +176,6 @@ resource "aws_vpc_dhcp_options_association" "lifecyclephases-example-com" {
   dhcp_options_id = "${aws_vpc_dhcp_options.lifecyclephases-example-com.id}"
 }
 
-terraform = {
+terraform {
   required_version = ">= 0.9.3"
 }

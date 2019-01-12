@@ -1,4 +1,4 @@
-locals = {
+locals {
   bastion_autoscaling_group_ids     = ["${aws_autoscaling_group.bastion-privatecanal-example-com.id}"]
   bastion_security_group_ids        = ["${aws_security_group.bastion-privatecanal-example-com.id}"]
   bastions_role_arn                 = "${aws_iam_role.bastions-privatecanal-example-com.arn}"
@@ -127,19 +127,19 @@ resource "aws_autoscaling_group" "bastion-privatecanal-example-com" {
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.utility-us-test-1a-privatecanal-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "privatecanal.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "bastion.privatecanal.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/bastion"
     value               = "1"
     propagate_at_launch = true
@@ -156,19 +156,19 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatecanal-example
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-privatecanal-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "privatecanal.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1a.masters.privatecanal.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -185,19 +185,19 @@ resource "aws_autoscaling_group" "nodes-privatecanal-example-com" {
   min_size             = 2
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-privatecanal-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "privatecanal.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "nodes.privatecanal.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/node"
     value               = "1"
     propagate_at_launch = true
@@ -213,7 +213,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privatecanal-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "us-test-1a.etcd-events.privatecanal.example.com"
     "k8s.io/etcd/events"                             = "us-test-1a/us-test-1a"
@@ -228,7 +228,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatecanal-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "us-test-1a.etcd-main.privatecanal.example.com"
     "k8s.io/etcd/main"                               = "us-test-1a/us-test-1a"
@@ -240,7 +240,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatecanal-example-com" {
 resource "aws_eip" "us-test-1a-privatecanal-example-com" {
   vpc = true
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "us-test-1a.privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
@@ -250,7 +250,7 @@ resource "aws_eip" "us-test-1a-privatecanal-example-com" {
 resource "aws_elb" "api-privatecanal-example-com" {
   name = "api-privatecanal-example--6tql53"
 
-  listener = {
+  listener {
     instance_port     = 443
     instance_protocol = "TCP"
     lb_port           = 443
@@ -260,7 +260,7 @@ resource "aws_elb" "api-privatecanal-example-com" {
   security_groups = ["${aws_security_group.api-elb-privatecanal-example-com.id}"]
   subnets         = ["${aws_subnet.utility-us-test-1a-privatecanal-example-com.id}"]
 
-  health_check = {
+  health_check {
     target              = "SSL:443"
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -270,7 +270,7 @@ resource "aws_elb" "api-privatecanal-example-com" {
 
   idle_timeout = 300
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "api.privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
@@ -280,7 +280,7 @@ resource "aws_elb" "api-privatecanal-example-com" {
 resource "aws_elb" "bastion-privatecanal-example-com" {
   name = "bastion-privatecanal-exam-hmhsp5"
 
-  listener = {
+  listener {
     instance_port     = 22
     instance_protocol = "TCP"
     lb_port           = 22
@@ -290,7 +290,7 @@ resource "aws_elb" "bastion-privatecanal-example-com" {
   security_groups = ["${aws_security_group.bastion-elb-privatecanal-example-com.id}"]
   subnets         = ["${aws_subnet.utility-us-test-1a-privatecanal-example-com.id}"]
 
-  health_check = {
+  health_check {
     target              = "TCP:22"
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -300,7 +300,7 @@ resource "aws_elb" "bastion-privatecanal-example-com" {
 
   idle_timeout = 300
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "bastion.privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
@@ -358,7 +358,7 @@ resource "aws_iam_role_policy" "nodes-privatecanal-example-com" {
 resource "aws_internet_gateway" "privatecanal-example-com" {
   vpc_id = "${aws_vpc.privatecanal-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
@@ -379,13 +379,13 @@ resource "aws_launch_configuration" "bastion-privatecanal-example-com" {
   security_groups             = ["${aws_security_group.bastion-privatecanal-example-com.id}"]
   associate_public_ip_address = true
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 32
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -402,18 +402,18 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privatecanal-exam
   associate_public_ip_address = false
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.privatecanal.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -430,13 +430,13 @@ resource "aws_launch_configuration" "nodes-privatecanal-example-com" {
   associate_public_ip_address = false
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_nodes.privatecanal.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 128
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -447,7 +447,7 @@ resource "aws_nat_gateway" "us-test-1a-privatecanal-example-com" {
   allocation_id = "${aws_eip.us-test-1a-privatecanal-example-com.id}"
   subnet_id     = "${aws_subnet.utility-us-test-1a-privatecanal-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "us-test-1a.privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
@@ -470,7 +470,7 @@ resource "aws_route53_record" "api-privatecanal-example-com" {
   name = "api.privatecanal.example.com"
   type = "A"
 
-  alias = {
+  alias {
     name                   = "${aws_elb.api-privatecanal-example-com.dns_name}"
     zone_id                = "${aws_elb.api-privatecanal-example-com.zone_id}"
     evaluate_target_health = false
@@ -482,7 +482,7 @@ resource "aws_route53_record" "api-privatecanal-example-com" {
 resource "aws_route_table" "private-us-test-1a-privatecanal-example-com" {
   vpc_id = "${aws_vpc.privatecanal-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "private-us-test-1a.privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
@@ -493,7 +493,7 @@ resource "aws_route_table" "private-us-test-1a-privatecanal-example-com" {
 resource "aws_route_table" "privatecanal-example-com" {
   vpc_id = "${aws_vpc.privatecanal-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
@@ -516,7 +516,7 @@ resource "aws_security_group" "api-elb-privatecanal-example-com" {
   vpc_id      = "${aws_vpc.privatecanal-example-com.id}"
   description = "Security group for api ELB"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "api-elb.privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
@@ -528,7 +528,7 @@ resource "aws_security_group" "bastion-elb-privatecanal-example-com" {
   vpc_id      = "${aws_vpc.privatecanal-example-com.id}"
   description = "Security group for bastion ELB"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "bastion-elb.privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
@@ -540,7 +540,7 @@ resource "aws_security_group" "bastion-privatecanal-example-com" {
   vpc_id      = "${aws_vpc.privatecanal-example-com.id}"
   description = "Security group for bastion"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "bastion.privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
@@ -552,7 +552,7 @@ resource "aws_security_group" "masters-privatecanal-example-com" {
   vpc_id      = "${aws_vpc.privatecanal-example-com.id}"
   description = "Security group for masters"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "masters.privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
@@ -564,7 +564,7 @@ resource "aws_security_group" "nodes-privatecanal-example-com" {
   vpc_id      = "${aws_vpc.privatecanal-example-com.id}"
   description = "Security group for nodes"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "nodes.privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
@@ -747,7 +747,7 @@ resource "aws_subnet" "us-test-1a-privatecanal-example-com" {
   cidr_block        = "172.20.32.0/19"
   availability_zone = "us-test-1a"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "us-test-1a.privatecanal.example.com"
     SubnetType                                       = "Private"
@@ -761,7 +761,7 @@ resource "aws_subnet" "utility-us-test-1a-privatecanal-example-com" {
   cidr_block        = "172.20.4.0/22"
   availability_zone = "us-test-1a"
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "utility-us-test-1a.privatecanal.example.com"
     SubnetType                                       = "Utility"
@@ -775,7 +775,7 @@ resource "aws_vpc" "privatecanal-example-com" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
@@ -786,7 +786,7 @@ resource "aws_vpc_dhcp_options" "privatecanal-example-com" {
   domain_name         = "us-test-1.compute.internal"
   domain_name_servers = ["AmazonProvidedDNS"]
 
-  tags = {
+  tags {
     KubernetesCluster                                = "privatecanal.example.com"
     Name                                             = "privatecanal.example.com"
     "kubernetes.io/cluster/privatecanal.example.com" = "owned"
@@ -798,6 +798,6 @@ resource "aws_vpc_dhcp_options_association" "privatecanal-example-com" {
   dhcp_options_id = "${aws_vpc_dhcp_options.privatecanal-example-com.id}"
 }
 
-terraform = {
+terraform {
   required_version = ">= 0.9.3"
 }

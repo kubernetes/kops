@@ -1,4 +1,4 @@
-locals = {
+locals {
   cluster_name                 = "externallb.example.com"
   master_autoscaling_group_ids = ["${aws_autoscaling_group.master-us-test-1a-masters-externallb-example-com.id}"]
   master_security_group_ids    = ["${aws_security_group.masters-externallb-example-com.id}"]
@@ -102,19 +102,19 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-externallb-example-c
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-externallb-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "externallb.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1a.masters.externallb.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -131,19 +131,19 @@ resource "aws_autoscaling_group" "nodes-externallb-example-com" {
   min_size             = 2
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-externallb-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "externallb.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "nodes.externallb.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/node"
     value               = "1"
     propagate_at_launch = true
@@ -159,7 +159,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-externallb-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                              = "externallb.example.com"
     Name                                           = "us-test-1a.etcd-events.externallb.example.com"
     "k8s.io/etcd/events"                           = "us-test-1a/us-test-1a"
@@ -174,7 +174,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-externallb-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                              = "externallb.example.com"
     Name                                           = "us-test-1a.etcd-main.externallb.example.com"
     "k8s.io/etcd/main"                             = "us-test-1a/us-test-1a"
@@ -218,7 +218,7 @@ resource "aws_iam_role_policy" "nodes-externallb-example-com" {
 resource "aws_internet_gateway" "externallb-example-com" {
   vpc_id = "${aws_vpc.externallb-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                              = "externallb.example.com"
     Name                                           = "externallb.example.com"
     "kubernetes.io/cluster/externallb.example.com" = "owned"
@@ -240,18 +240,18 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-externallb-exampl
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.externallb.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -268,13 +268,13 @@ resource "aws_launch_configuration" "nodes-externallb-example-com" {
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_nodes.externallb.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 128
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -290,7 +290,7 @@ resource "aws_route" "0-0-0-0--0" {
 resource "aws_route_table" "externallb-example-com" {
   vpc_id = "${aws_vpc.externallb-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                              = "externallb.example.com"
     Name                                           = "externallb.example.com"
     "kubernetes.io/cluster/externallb.example.com" = "owned"
@@ -308,7 +308,7 @@ resource "aws_security_group" "masters-externallb-example-com" {
   vpc_id      = "${aws_vpc.externallb-example-com.id}"
   description = "Security group for masters"
 
-  tags = {
+  tags {
     KubernetesCluster                              = "externallb.example.com"
     Name                                           = "masters.externallb.example.com"
     "kubernetes.io/cluster/externallb.example.com" = "owned"
@@ -320,7 +320,7 @@ resource "aws_security_group" "nodes-externallb-example-com" {
   vpc_id      = "${aws_vpc.externallb-example-com.id}"
   description = "Security group for nodes"
 
-  tags = {
+  tags {
     KubernetesCluster                              = "externallb.example.com"
     Name                                           = "nodes.externallb.example.com"
     "kubernetes.io/cluster/externallb.example.com" = "owned"
@@ -440,7 +440,7 @@ resource "aws_subnet" "us-test-1a-externallb-example-com" {
   cidr_block        = "172.20.32.0/19"
   availability_zone = "us-test-1a"
 
-  tags = {
+  tags {
     KubernetesCluster                              = "externallb.example.com"
     Name                                           = "us-test-1a.externallb.example.com"
     SubnetType                                     = "Public"
@@ -454,7 +454,7 @@ resource "aws_vpc" "externallb-example-com" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  tags = {
+  tags {
     KubernetesCluster                              = "externallb.example.com"
     Name                                           = "externallb.example.com"
     "kubernetes.io/cluster/externallb.example.com" = "owned"
@@ -465,7 +465,7 @@ resource "aws_vpc_dhcp_options" "externallb-example-com" {
   domain_name         = "us-test-1.compute.internal"
   domain_name_servers = ["AmazonProvidedDNS"]
 
-  tags = {
+  tags {
     KubernetesCluster                              = "externallb.example.com"
     Name                                           = "externallb.example.com"
     "kubernetes.io/cluster/externallb.example.com" = "owned"
@@ -477,6 +477,6 @@ resource "aws_vpc_dhcp_options_association" "externallb-example-com" {
   dhcp_options_id = "${aws_vpc_dhcp_options.externallb-example-com.id}"
 }
 
-terraform = {
+terraform {
   required_version = ">= 0.9.3"
 }

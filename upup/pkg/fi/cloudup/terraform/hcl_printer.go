@@ -113,6 +113,8 @@ func hclPrint(node ast.Node) ([]byte, error) {
 	// We don't need to escape > or <
 	s = strings.Replace(s, "\\u003c", "<", -1)
 	s = strings.Replace(s, "\\u003e", ">", -1)
+	// hack for support terraform 0.12
+	s = strings.Replace(s, " = {", " {", -1)
 
 	if featureflag.SkipTerraformFormat.Enabled() {
 		glog.Infof("feature-flag SkipTerraformFormat was set; skipping terraform format")

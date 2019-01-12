@@ -1,4 +1,4 @@
-locals = {
+locals {
   cluster_name              = "k8s-iam.us-west-2.td.priv"
   master_security_group_ids = "${aws_security_group.masters-k8s-iam-us-west-2-td-priv.id}"
   masters_role_arn          = "${aws_iam_role.masters-k8s-iam-us-west-2-td-priv.arn}"
@@ -67,31 +67,31 @@ resource "aws_autoscaling_group" "master-us-west-2a-masters-k8s-iam-us-west-2-td
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.us-west-2a-k8s-iam-us-west-2-td-priv.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "k8s-iam.us-west-2.td.priv"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-west-2a.masters.k8s-iam.us-west-2.td.priv"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup"
     value               = "master-us-west-2a"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "terraform"
     value               = "true"
     propagate_at_launch = true
@@ -105,31 +105,31 @@ resource "aws_autoscaling_group" "nodes-k8s-iam-us-west-2-td-priv" {
   min_size             = 2
   vpc_zone_identifier  = ["${aws_subnet.us-west-2a-k8s-iam-us-west-2-td-priv.id}", "${aws_subnet.us-west-2b-k8s-iam-us-west-2-td-priv.id}", "${aws_subnet.us-west-2c-k8s-iam-us-west-2-td-priv.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "k8s-iam.us-west-2.td.priv"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "nodes.k8s-iam.us-west-2.td.priv"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup"
     value               = "nodes"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/node"
     value               = "1"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "terraform"
     value               = "true"
     propagate_at_launch = true
@@ -142,7 +142,7 @@ resource "aws_ebs_volume" "a-etcd-events-k8s-iam-us-west-2-td-priv" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster    = "k8s-iam.us-west-2.td.priv"
     Name                 = "a.etcd-events.k8s-iam.us-west-2.td.priv"
     "k8s.io/etcd/events" = "a/a"
@@ -157,7 +157,7 @@ resource "aws_ebs_volume" "a-etcd-main-k8s-iam-us-west-2-td-priv" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster    = "k8s-iam.us-west-2.td.priv"
     Name                 = "a.etcd-main.k8s-iam.us-west-2.td.priv"
     "k8s.io/etcd/main"   = "a/a"
@@ -181,7 +181,7 @@ resource "aws_eip" "us-west-2c-k8s-iam-us-west-2-td-priv" {
 resource "aws_elb" "api-k8s-iam-us-west-2-td-priv" {
   name = "api-k8s-iam-us-west-2-td--a7fd54"
 
-  listener = {
+  listener {
     instance_port     = 443
     instance_protocol = "TCP"
     lb_port           = 443
@@ -192,7 +192,7 @@ resource "aws_elb" "api-k8s-iam-us-west-2-td-priv" {
   subnets         = ["${aws_subnet.us-west-2a-k8s-iam-us-west-2-td-priv.id}", "${aws_subnet.us-west-2b-k8s-iam-us-west-2-td-priv.id}", "${aws_subnet.us-west-2c-k8s-iam-us-west-2-td-priv.id}"]
   internal        = true
 
-  health_check = {
+  health_check {
     target              = "SSL:443"
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -202,7 +202,7 @@ resource "aws_elb" "api-k8s-iam-us-west-2-td-priv" {
 
   idle_timeout = 300
 
-  tags = {
+  tags {
     KubernetesCluster = "k8s-iam.us-west-2.td.priv"
     Name              = "api.k8s-iam.us-west-2.td.priv"
   }
@@ -243,7 +243,7 @@ resource "aws_iam_role_policy" "nodes-k8s-iam-us-west-2-td-priv" {
 resource "aws_internet_gateway" "k8s-iam-us-west-2-td-priv" {
   vpc_id = "${aws_vpc.k8s-iam-us-west-2-td-priv.id}"
 
-  tags = {
+  tags {
     KubernetesCluster = "k8s-iam.us-west-2.td.priv"
     Name              = "k8s-iam.us-west-2.td.priv"
   }
@@ -264,13 +264,13 @@ resource "aws_launch_configuration" "master-us-west-2a-masters-k8s-iam-us-west-2
   associate_public_ip_address = false
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-west-2a.masters.k8s-iam.us-west-2.td.priv_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 }
@@ -285,13 +285,13 @@ resource "aws_launch_configuration" "nodes-k8s-iam-us-west-2-td-priv" {
   associate_public_ip_address = false
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_nodes.k8s-iam.us-west-2.td.priv_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 128
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 }
@@ -339,7 +339,7 @@ resource "aws_route53_record" "api-k8s-iam-us-west-2-td-priv" {
   name = "api.k8s-iam.us-west-2.td.priv"
   type = "A"
 
-  alias = {
+  alias {
     name                   = "${aws_elb.api-k8s-iam-us-west-2-td-priv.dns_name}"
     zone_id                = "${aws_elb.api-k8s-iam-us-west-2-td-priv.zone_id}"
     evaluate_target_health = false
@@ -356,7 +356,7 @@ resource "aws_route53_zone_association" "us-west-2-td-priv" {
 resource "aws_route_table" "k8s-iam-us-west-2-td-priv" {
   vpc_id = "${aws_vpc.k8s-iam-us-west-2-td-priv.id}"
 
-  tags = {
+  tags {
     KubernetesCluster = "k8s-iam.us-west-2.td.priv"
     Name              = "k8s-iam.us-west-2.td.priv"
   }
@@ -365,7 +365,7 @@ resource "aws_route_table" "k8s-iam-us-west-2-td-priv" {
 resource "aws_route_table" "private-us-west-2a-k8s-iam-us-west-2-td-priv" {
   vpc_id = "${aws_vpc.k8s-iam-us-west-2-td-priv.id}"
 
-  tags = {
+  tags {
     KubernetesCluster = "k8s-iam.us-west-2.td.priv"
     Name              = "private-us-west-2a.k8s-iam.us-west-2.td.priv"
   }
@@ -374,7 +374,7 @@ resource "aws_route_table" "private-us-west-2a-k8s-iam-us-west-2-td-priv" {
 resource "aws_route_table" "private-us-west-2b-k8s-iam-us-west-2-td-priv" {
   vpc_id = "${aws_vpc.k8s-iam-us-west-2-td-priv.id}"
 
-  tags = {
+  tags {
     KubernetesCluster = "k8s-iam.us-west-2.td.priv"
     Name              = "private-us-west-2b.k8s-iam.us-west-2.td.priv"
   }
@@ -383,7 +383,7 @@ resource "aws_route_table" "private-us-west-2b-k8s-iam-us-west-2-td-priv" {
 resource "aws_route_table" "private-us-west-2c-k8s-iam-us-west-2-td-priv" {
   vpc_id = "${aws_vpc.k8s-iam-us-west-2-td-priv.id}"
 
-  tags = {
+  tags {
     KubernetesCluster = "k8s-iam.us-west-2.td.priv"
     Name              = "private-us-west-2c.k8s-iam.us-west-2.td.priv"
   }
@@ -424,7 +424,7 @@ resource "aws_security_group" "api-elb-k8s-iam-us-west-2-td-priv" {
   vpc_id      = "${aws_vpc.k8s-iam-us-west-2-td-priv.id}"
   description = "Security group for api ELB"
 
-  tags = {
+  tags {
     KubernetesCluster = "k8s-iam.us-west-2.td.priv"
     Name              = "api-elb.k8s-iam.us-west-2.td.priv"
   }
@@ -435,7 +435,7 @@ resource "aws_security_group" "masters-k8s-iam-us-west-2-td-priv" {
   vpc_id      = "${aws_vpc.k8s-iam-us-west-2-td-priv.id}"
   description = "Security group for masters"
 
-  tags = {
+  tags {
     KubernetesCluster = "k8s-iam.us-west-2.td.priv"
     Name              = "masters.k8s-iam.us-west-2.td.priv"
   }
@@ -446,7 +446,7 @@ resource "aws_security_group" "nodes-k8s-iam-us-west-2-td-priv" {
   vpc_id      = "${aws_vpc.k8s-iam-us-west-2-td-priv.id}"
   description = "Security group for nodes"
 
-  tags = {
+  tags {
     KubernetesCluster = "k8s-iam.us-west-2.td.priv"
     Name              = "nodes.k8s-iam.us-west-2.td.priv"
   }
@@ -592,7 +592,7 @@ resource "aws_subnet" "us-west-2a-k8s-iam-us-west-2-td-priv" {
   cidr_block        = "10.203.32.0/19"
   availability_zone = "us-west-2a"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "k8s-iam.us-west-2.td.priv"
     Name                                              = "us-west-2a.k8s-iam.us-west-2.td.priv"
     "kubernetes.io/cluster/k8s-iam.us-west-2.td.priv" = "owned"
@@ -605,7 +605,7 @@ resource "aws_subnet" "us-west-2b-k8s-iam-us-west-2-td-priv" {
   cidr_block        = "10.203.64.0/19"
   availability_zone = "us-west-2b"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "k8s-iam.us-west-2.td.priv"
     Name                                              = "us-west-2b.k8s-iam.us-west-2.td.priv"
     "kubernetes.io/cluster/k8s-iam.us-west-2.td.priv" = "owned"
@@ -618,7 +618,7 @@ resource "aws_subnet" "us-west-2c-k8s-iam-us-west-2-td-priv" {
   cidr_block        = "10.203.96.0/19"
   availability_zone = "us-west-2c"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "k8s-iam.us-west-2.td.priv"
     Name                                              = "us-west-2c.k8s-iam.us-west-2.td.priv"
     "kubernetes.io/cluster/k8s-iam.us-west-2.td.priv" = "owned"
@@ -631,7 +631,7 @@ resource "aws_subnet" "utility-us-west-2a-k8s-iam-us-west-2-td-priv" {
   cidr_block        = "10.203.0.0/22"
   availability_zone = "us-west-2a"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "k8s-iam.us-west-2.td.priv"
     Name                                              = "utility-us-west-2a.k8s-iam.us-west-2.td.priv"
     "kubernetes.io/cluster/k8s-iam.us-west-2.td.priv" = "owned"
@@ -644,7 +644,7 @@ resource "aws_subnet" "utility-us-west-2b-k8s-iam-us-west-2-td-priv" {
   cidr_block        = "10.203.4.0/22"
   availability_zone = "us-west-2b"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "k8s-iam.us-west-2.td.priv"
     Name                                              = "utility-us-west-2b.k8s-iam.us-west-2.td.priv"
     "kubernetes.io/cluster/k8s-iam.us-west-2.td.priv" = "owned"
@@ -657,7 +657,7 @@ resource "aws_subnet" "utility-us-west-2c-k8s-iam-us-west-2-td-priv" {
   cidr_block        = "10.203.8.0/22"
   availability_zone = "us-west-2c"
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "k8s-iam.us-west-2.td.priv"
     Name                                              = "utility-us-west-2c.k8s-iam.us-west-2.td.priv"
     "kubernetes.io/cluster/k8s-iam.us-west-2.td.priv" = "owned"
@@ -670,7 +670,7 @@ resource "aws_vpc" "k8s-iam-us-west-2-td-priv" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  tags = {
+  tags {
     KubernetesCluster                                 = "k8s-iam.us-west-2.td.priv"
     Name                                              = "k8s-iam.us-west-2.td.priv"
     "kubernetes.io/cluster/k8s-iam.us-west-2.td.priv" = "owned"
@@ -681,7 +681,7 @@ resource "aws_vpc_dhcp_options" "k8s-iam-us-west-2-td-priv" {
   domain_name         = "us-west-2.compute.internal"
   domain_name_servers = ["AmazonProvidedDNS"]
 
-  tags = {
+  tags {
     KubernetesCluster = "k8s-iam.us-west-2.td.priv"
     Name              = "k8s-iam.us-west-2.td.priv"
   }
@@ -692,6 +692,6 @@ resource "aws_vpc_dhcp_options_association" "k8s-iam-us-west-2-td-priv" {
   dhcp_options_id = "${aws_vpc_dhcp_options.k8s-iam-us-west-2-td-priv.id}"
 }
 
-terraform = {
+terraform {
   required_version = ">= 0.9.3"
 }

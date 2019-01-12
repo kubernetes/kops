@@ -1,4 +1,4 @@
-locals = {
+locals {
   cluster_name                 = "complex.example.com"
   master_autoscaling_group_ids = ["${aws_autoscaling_group.master-us-test-1a-masters-complex-example-com.id}"]
   master_security_group_ids    = ["${aws_security_group.masters-complex-example-com.id}"]
@@ -92,31 +92,31 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-complex-example-com"
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-complex-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "complex.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1a.masters.complex.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Owner"
     value               = "John Doe"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "foo/bar"
     value               = "fib+baz"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -133,31 +133,31 @@ resource "aws_autoscaling_group" "nodes-complex-example-com" {
   min_size             = 2
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-complex-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "complex.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "nodes.complex.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Owner"
     value               = "John Doe"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "foo/bar"
     value               = "fib+baz"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/node"
     value               = "1"
     propagate_at_launch = true
@@ -174,7 +174,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-complex-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "us-test-1a.etcd-events.complex.example.com"
     Owner                                       = "John Doe"
@@ -191,7 +191,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-complex-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "us-test-1a.etcd-main.complex.example.com"
     Owner                                       = "John Doe"
@@ -205,7 +205,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-complex-example-com" {
 resource "aws_elb" "api-complex-example-com" {
   name = "api-complex-example-com-vd3t5n"
 
-  listener = {
+  listener {
     instance_port     = 443
     instance_protocol = "TCP"
     lb_port           = 443
@@ -215,7 +215,7 @@ resource "aws_elb" "api-complex-example-com" {
   security_groups = ["${aws_security_group.api-elb-complex-example-com.id}", "sg-exampleid3", "sg-exampleid4"]
   subnets         = ["${aws_subnet.us-test-1a-complex-example-com.id}"]
 
-  health_check = {
+  health_check {
     target              = "SSL:443"
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -269,7 +269,7 @@ resource "aws_iam_role_policy" "nodes-complex-example-com" {
 resource "aws_internet_gateway" "complex-example-com" {
   vpc_id = "${aws_vpc.complex-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "complex.example.com"
     "kubernetes.io/cluster/complex.example.com" = "owned"
@@ -291,18 +291,18 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-complex-example-c
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.complex.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -319,13 +319,13 @@ resource "aws_launch_configuration" "nodes-complex-example-com" {
   associate_public_ip_address = true
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_nodes.complex.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 128
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -342,7 +342,7 @@ resource "aws_route53_record" "api-complex-example-com" {
   name = "api.complex.example.com"
   type = "A"
 
-  alias = {
+  alias {
     name                   = "${aws_elb.api-complex-example-com.dns_name}"
     zone_id                = "${aws_elb.api-complex-example-com.zone_id}"
     evaluate_target_health = false
@@ -354,7 +354,7 @@ resource "aws_route53_record" "api-complex-example-com" {
 resource "aws_route_table" "complex-example-com" {
   vpc_id = "${aws_vpc.complex-example-com.id}"
 
-  tags = {
+  tags {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "complex.example.com"
     "kubernetes.io/cluster/complex.example.com" = "owned"
@@ -372,7 +372,7 @@ resource "aws_security_group" "api-elb-complex-example-com" {
   vpc_id      = "${aws_vpc.complex-example-com.id}"
   description = "Security group for api ELB"
 
-  tags = {
+  tags {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "api-elb.complex.example.com"
     "kubernetes.io/cluster/complex.example.com" = "owned"
@@ -384,7 +384,7 @@ resource "aws_security_group" "masters-complex-example-com" {
   vpc_id      = "${aws_vpc.complex-example-com.id}"
   description = "Security group for masters"
 
-  tags = {
+  tags {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "masters.complex.example.com"
     "kubernetes.io/cluster/complex.example.com" = "owned"
@@ -396,7 +396,7 @@ resource "aws_security_group" "nodes-complex-example-com" {
   vpc_id      = "${aws_vpc.complex-example-com.id}"
   description = "Security group for nodes"
 
-  tags = {
+  tags {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "nodes.complex.example.com"
     "kubernetes.io/cluster/complex.example.com" = "owned"
@@ -579,7 +579,7 @@ resource "aws_subnet" "us-test-1a-complex-example-com" {
   cidr_block        = "172.20.32.0/19"
   availability_zone = "us-test-1a"
 
-  tags = {
+  tags {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "us-test-1a.complex.example.com"
     SubnetType                                  = "Public"
@@ -593,7 +593,7 @@ resource "aws_vpc" "complex-example-com" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  tags = {
+  tags {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "complex.example.com"
     "kubernetes.io/cluster/complex.example.com" = "owned"
@@ -604,7 +604,7 @@ resource "aws_vpc_dhcp_options" "complex-example-com" {
   domain_name         = "us-test-1.compute.internal"
   domain_name_servers = ["AmazonProvidedDNS"]
 
-  tags = {
+  tags {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "complex.example.com"
     "kubernetes.io/cluster/complex.example.com" = "owned"
@@ -616,6 +616,6 @@ resource "aws_vpc_dhcp_options_association" "complex-example-com" {
   dhcp_options_id = "${aws_vpc_dhcp_options.complex-example-com.id}"
 }
 
-terraform = {
+terraform {
   required_version = ">= 0.9.3"
 }
