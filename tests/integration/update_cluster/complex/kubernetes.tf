@@ -225,7 +225,7 @@ resource "aws_elb" "api-complex-example-com" {
 
   idle_timeout = 300
 
-  tags = {
+  tags {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "api.complex.example.com"
     Owner                                       = "John Doe"

@@ -1,4 +1,4 @@
-locals = {
+locals {
   bastion_autoscaling_group_ids = ["${aws_autoscaling_group.bastion-unmanaged-example-com.id}"]
   bastion_security_group_ids    = ["${aws_security_group.bastion-unmanaged-example-com.id}"]
   bastions_role_arn             = "${aws_iam_role.bastions-unmanaged-example-com.arn}"
@@ -122,19 +122,19 @@ resource "aws_autoscaling_group" "bastion-unmanaged-example-com" {
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.utility-us-test-1a-unmanaged-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "unmanaged.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "bastion.unmanaged.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/bastion"
     value               = "1"
     propagate_at_launch = true
@@ -151,19 +151,19 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-unmanaged-example-co
   min_size             = 1
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-unmanaged-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "unmanaged.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "master-us-test-1a.masters.unmanaged.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -180,19 +180,19 @@ resource "aws_autoscaling_group" "nodes-unmanaged-example-com" {
   min_size             = 2
   vpc_zone_identifier  = ["${aws_subnet.us-test-1a-unmanaged-example-com.id}", "${aws_subnet.us-test-1b-unmanaged-example-com.id}"]
 
-  tag = {
+  tag {
     key                 = "KubernetesCluster"
     value               = "unmanaged.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "Name"
     value               = "nodes.unmanaged.example.com"
     propagate_at_launch = true
   }
 
-  tag = {
+  tag {
     key                 = "k8s.io/role/node"
     value               = "1"
     propagate_at_launch = true
@@ -208,7 +208,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-unmanaged-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                             = "unmanaged.example.com"
     Name                                          = "us-test-1a.etcd-events.unmanaged.example.com"
     "k8s.io/etcd/events"                          = "us-test-1a/us-test-1a"
@@ -223,7 +223,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-unmanaged-example-com" {
   type              = "gp2"
   encrypted         = false
 
-  tags = {
+  tags {
     KubernetesCluster                             = "unmanaged.example.com"
     Name                                          = "us-test-1a.etcd-main.unmanaged.example.com"
     "k8s.io/etcd/main"                            = "us-test-1a/us-test-1a"
@@ -235,7 +235,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-unmanaged-example-com" {
 resource "aws_elb" "api-unmanaged-example-com" {
   name = "api-unmanaged-example-com-t82m6f"
 
-  listener = {
+  listener {
     instance_port     = 443
     instance_protocol = "TCP"
     lb_port           = 443
@@ -245,7 +245,7 @@ resource "aws_elb" "api-unmanaged-example-com" {
   security_groups = ["${aws_security_group.api-elb-unmanaged-example-com.id}"]
   subnets         = ["${aws_subnet.utility-us-test-1a-unmanaged-example-com.id}", "${aws_subnet.utility-us-test-1b-unmanaged-example-com.id}"]
 
-  health_check = {
+  health_check {
     target              = "SSL:443"
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -255,7 +255,7 @@ resource "aws_elb" "api-unmanaged-example-com" {
 
   idle_timeout = 300
 
-  tags = {
+  tags {
     KubernetesCluster                             = "unmanaged.example.com"
     Name                                          = "api.unmanaged.example.com"
     "kubernetes.io/cluster/unmanaged.example.com" = "owned"
@@ -265,7 +265,7 @@ resource "aws_elb" "api-unmanaged-example-com" {
 resource "aws_elb" "bastion-unmanaged-example-com" {
   name = "bastion-unmanaged-example-d7bn3d"
 
-  listener = {
+  listener {
     instance_port     = 22
     instance_protocol = "TCP"
     lb_port           = 22
@@ -275,7 +275,7 @@ resource "aws_elb" "bastion-unmanaged-example-com" {
   security_groups = ["${aws_security_group.bastion-elb-unmanaged-example-com.id}"]
   subnets         = ["${aws_subnet.utility-us-test-1a-unmanaged-example-com.id}"]
 
-  health_check = {
+  health_check {
     target              = "TCP:22"
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -285,7 +285,7 @@ resource "aws_elb" "bastion-unmanaged-example-com" {
 
   idle_timeout = 300
 
-  tags = {
+  tags {
     KubernetesCluster                             = "unmanaged.example.com"
     Name                                          = "bastion.unmanaged.example.com"
     "kubernetes.io/cluster/unmanaged.example.com" = "owned"
@@ -354,13 +354,13 @@ resource "aws_launch_configuration" "bastion-unmanaged-example-com" {
   security_groups             = ["${aws_security_group.bastion-unmanaged-example-com.id}"]
   associate_public_ip_address = true
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 32
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -377,18 +377,18 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-unmanaged-example
   associate_public_ip_address = false
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.unmanaged.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 64
     delete_on_termination = true
   }
 
-  ephemeral_block_device = {
+  ephemeral_block_device {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -405,13 +405,13 @@ resource "aws_launch_configuration" "nodes-unmanaged-example-com" {
   associate_public_ip_address = false
   user_data                   = "${file("${path.module}/data/aws_launch_configuration_nodes.unmanaged.example.com_user_data")}"
 
-  root_block_device = {
+  root_block_device {
     volume_type           = "gp2"
     volume_size           = 128
     delete_on_termination = true
   }
 
-  lifecycle = {
+  lifecycle {
     create_before_destroy = true
   }
 
@@ -422,7 +422,7 @@ resource "aws_route53_record" "api-unmanaged-example-com" {
   name = "api.unmanaged.example.com"
   type = "A"
 
-  alias = {
+  alias {
     name                   = "${aws_elb.api-unmanaged-example-com.dns_name}"
     zone_id                = "${aws_elb.api-unmanaged-example-com.zone_id}"
     evaluate_target_health = false
@@ -436,7 +436,7 @@ resource "aws_security_group" "api-elb-unmanaged-example-com" {
   vpc_id      = "vpc-12345678"
   description = "Security group for api ELB"
 
-  tags = {
+  tags {
     KubernetesCluster                             = "unmanaged.example.com"
     Name                                          = "api-elb.unmanaged.example.com"
     "kubernetes.io/cluster/unmanaged.example.com" = "owned"
@@ -448,7 +448,7 @@ resource "aws_security_group" "bastion-elb-unmanaged-example-com" {
   vpc_id      = "vpc-12345678"
   description = "Security group for bastion ELB"
 
-  tags = {
+  tags {
     KubernetesCluster                             = "unmanaged.example.com"
     Name                                          = "bastion-elb.unmanaged.example.com"
     "kubernetes.io/cluster/unmanaged.example.com" = "owned"
@@ -460,7 +460,7 @@ resource "aws_security_group" "bastion-unmanaged-example-com" {
   vpc_id      = "vpc-12345678"
   description = "Security group for bastion"
 
-  tags = {
+  tags {
     KubernetesCluster                             = "unmanaged.example.com"
     Name                                          = "bastion.unmanaged.example.com"
     "kubernetes.io/cluster/unmanaged.example.com" = "owned"
@@ -472,7 +472,7 @@ resource "aws_security_group" "masters-unmanaged-example-com" {
   vpc_id      = "vpc-12345678"
   description = "Security group for masters"
 
-  tags = {
+  tags {
     KubernetesCluster                             = "unmanaged.example.com"
     Name                                          = "masters.unmanaged.example.com"
     "kubernetes.io/cluster/unmanaged.example.com" = "owned"
@@ -484,7 +484,7 @@ resource "aws_security_group" "nodes-unmanaged-example-com" {
   vpc_id      = "vpc-12345678"
   description = "Security group for nodes"
 
-  tags = {
+  tags {
     KubernetesCluster                             = "unmanaged.example.com"
     Name                                          = "nodes.unmanaged.example.com"
     "kubernetes.io/cluster/unmanaged.example.com" = "owned"
@@ -667,7 +667,7 @@ resource "aws_subnet" "us-test-1a-unmanaged-example-com" {
   cidr_block        = "172.20.32.0/19"
   availability_zone = "us-test-1a"
 
-  tags = {
+  tags {
     KubernetesCluster                             = "unmanaged.example.com"
     Name                                          = "us-test-1a.unmanaged.example.com"
     SubnetType                                    = "Private"
@@ -681,7 +681,7 @@ resource "aws_subnet" "us-test-1b-unmanaged-example-com" {
   cidr_block        = "172.20.64.0/19"
   availability_zone = "us-test-1b"
 
-  tags = {
+  tags {
     KubernetesCluster                             = "unmanaged.example.com"
     Name                                          = "us-test-1b.unmanaged.example.com"
     SubnetType                                    = "Private"
@@ -695,7 +695,7 @@ resource "aws_subnet" "utility-us-test-1a-unmanaged-example-com" {
   cidr_block        = "172.20.4.0/22"
   availability_zone = "us-test-1a"
 
-  tags = {
+  tags {
     KubernetesCluster                             = "unmanaged.example.com"
     Name                                          = "utility-us-test-1a.unmanaged.example.com"
     SubnetType                                    = "Utility"
@@ -709,7 +709,7 @@ resource "aws_subnet" "utility-us-test-1b-unmanaged-example-com" {
   cidr_block        = "172.20.8.0/22"
   availability_zone = "us-test-1b"
 
-  tags = {
+  tags {
     KubernetesCluster                             = "unmanaged.example.com"
     Name                                          = "utility-us-test-1b.unmanaged.example.com"
     SubnetType                                    = "Utility"
@@ -718,6 +718,6 @@ resource "aws_subnet" "utility-us-test-1b-unmanaged-example-com" {
   }
 }
 
-terraform = {
+terraform {
   required_version = ">= 0.9.3"
 }
