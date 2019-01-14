@@ -540,7 +540,17 @@ var dockerVersions = []dockerVersion{
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
-	// 18.06.1 - CentOS / Rhel7
+	// 18.06.1 - CentOS / Rhel7 (two packages)
+	{
+		DockerVersion: "18.06.1",
+		Name:          "container-selinux-2",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.06.1.ce",
+		Source:        "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
+		Hash:          "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
+		Dependencies:  []string{"policycoreutils-python"},
+	},
 	{
 		DockerVersion: "18.06.1",
 		Name:          "docker-ce",
