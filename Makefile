@@ -465,6 +465,10 @@ utils-dist:
 	mkdir -p ${DIST}/linux/amd64/
 	docker run -v `pwd`/.build/dist/linux/amd64/:/dist utils-builder /extract.sh
 
+.PHONY: bazel-utils-dist
+bazel-utils-dist:
+	bazel build //images/utils-builder:utils
+
 # --------------------------------------------------
 # development targets
 
@@ -756,7 +760,7 @@ bazel-protokube-export:
 	(${SHASUMCMD} ${BAZELIMAGES}/protokube.tar.gz | cut -d' ' -f1) > ${BAZELIMAGES}/protokube.tar.gz.sha1
 
 .PHONY: bazel-version-dist
-bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokube-export utils-dist
+bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokube-export bazel-utils-dist
 	rm -rf ${BAZELUPLOAD}
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/
@@ -773,8 +777,8 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokub
 	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
 	cp bazel-bin/cmd/kops/windows_amd64_pure_stripped/kops.exe ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
 	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha1
-	cp ${DIST}/linux/amd64/utils.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz
-	cp ${DIST}/linux/amd64/utils.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
+	cp bazel-bin/images/utils-builder/utils.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz
+	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
 
 .PHONY: bazel-upload
 bazel-upload: bazel-version-dist # Upload kops to S3
