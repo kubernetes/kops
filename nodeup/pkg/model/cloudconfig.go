@@ -104,6 +104,43 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		// We need this to support Kubernetes vSphere CloudProvider < v1.5.3
 		lines = append(lines, "[disk]")
 		lines = append(lines, "scsicontrollertype = pvscsi")
+	case "openstack":
+		osc := cloudConfig.Openstack
+		if osc == nil {
+			break
+		}
+
+		lines = append(lines,
+			fmt.Sprintf("auth-url=\"%s\"", os.Getenv("OS_AUTH_URL")),
+			fmt.Sprintf("username=\"%s\"", os.Getenv("OS_USERNAME")),
+			fmt.Sprintf("password=\"%s\"", os.Getenv("OS_PASSWORD")),
+			fmt.Sprintf("region=\"%s\"", os.Getenv("OS_REGION_NAME")),
+			fmt.Sprintf("tenant-id=\"%s\"", os.Getenv("OS_TENANT_ID")),
+			fmt.Sprintf("tenant-name=\"%s\"", os.Getenv("OS_TENANT_NAME")),
+			fmt.Sprintf("domain-name=\"%s\"", os.Getenv("OS_DOMAIN_NAME")),
+			fmt.Sprintf("domain-id=\"%s\"", os.Getenv("OS_DOMAIN_ID")),
+			"",
+		)
+
+		if lb := osc.Loadbalancer; lb != nil {
+			lines = append(lines,
+				"[LoadBalancer]",
+				fmt.Sprintf("floating-network-id=%s", fi.StringValue(lb.FloatingNetwork)),
+				fmt.Sprintf("lb-method=%s", fi.StringValue(lb.Method)),
+				fmt.Sprintf("lb-provider=%s", fi.StringValue(lb.Provider)),
+				fmt.Sprintf("use-octavia=%t", fi.BoolValue(lb.UseOctavia)),
+				"",
+			)
+		}
+		if monitor := osc.Monitor; monitor != nil {
+			lines = append(lines,
+				"create-monitor=yes",
+				fmt.Sprintf("monitor-delay=%s", fi.StringValue(monitor.Delay)),
+				fmt.Sprintf("monitor-timeout=%s", fi.StringValue(monitor.Timeout)),
+				fmt.Sprintf("monitor-max-retries=%d", fi.IntValue(monitor.MaxRetries)),
+				"",
+			)
+		}
 	}
 
 	config := "[global]\n" + strings.Join(lines, "\n") + "\n"

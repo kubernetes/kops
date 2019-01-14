@@ -135,6 +135,7 @@ func (oc OpenstackConfig) GetCredential() (gophercloud.AuthOptions, error) {
 	// prioritize environment config
 	env, enverr := openstack.AuthOptionsFromEnv()
 	if enverr != nil {
+		glog.Warningf("Could not initialize swift from environment: %v", enverr)
 		// fallback to config file
 		return oc.getCredentialFromFile()
 	}
