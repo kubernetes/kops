@@ -140,6 +140,25 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 		buffer.WriteString("\" ")
 	}
 
+	// Pass in required credentials when using user-defined swift endpoint
+	if os.Getenv("OS_AUTH_URL") != "" {
+		for _, envVar := range []string{
+			"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_ID", "OS_PROJECT_NAME",
+			"OS_PROJECT_DOMAIN_NAME", "OS_PROJECT_DOMAIN_ID",
+			"OS_DOMAIN_NAME", "OS_DOMAIN_ID",
+			"OS_USERNAME",
+			"OS_PASSWORD",
+			"OS_AUTH_URL",
+			"OS_REGION_NAME",
+		} {
+			buffer.WriteString("\"")
+			buffer.WriteString(envVar)
+			buffer.WriteString("=")
+			buffer.WriteString(os.Getenv(envVar))
+			buffer.WriteString("\" ")
+		}
+	}
+
 	if os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
 		buffer.WriteString("\"DIGITALOCEAN_ACCESS_TOKEN=")
 		buffer.WriteString(os.Getenv("DIGITALOCEAN_ACCESS_TOKEN"))
