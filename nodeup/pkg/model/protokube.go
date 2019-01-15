@@ -420,9 +420,9 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 			"OS_AUTH_URL",
 			"OS_REGION_NAME",
 		} {
-			buffer.WriteString(" -e ")
+			buffer.WriteString(" -e '")
 			buffer.WriteString(envVar)
-			buffer.WriteString("='")
+			buffer.WriteString("=")
 			buffer.WriteString(os.Getenv(envVar))
 			buffer.WriteString("'")
 		}
