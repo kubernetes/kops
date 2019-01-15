@@ -501,7 +501,7 @@ var dockerVersions = []dockerVersion{
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
 
-	// 17.09.0 - Centos / Rhel7
+	// 17.09.0 - Centos / Rhel7 (two packages)
 	{
 		DockerVersion: "17.09.0",
 		Name:          "container-selinux-2",
