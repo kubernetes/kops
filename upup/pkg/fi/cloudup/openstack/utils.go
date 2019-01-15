@@ -18,16 +18,16 @@ package openstack
 
 import (
 	"fmt"
-        "github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"k8s.io/kops/pkg/apis/kops"
 	"sort"
 )
 
 const (
-        openstackExternalIPType = "OS-EXT-IPS:type"
-        openstackAddressFixed   = "fixed"
-        openstackAddress        = "addr"
+	openstackExternalIPType = "OS-EXT-IPS:type"
+	openstackAddressFixed   = "fixed"
+	openstackAddress        = "addr"
 )
 
 type flavorList []flavors.Flavor
@@ -103,26 +103,26 @@ func (c *openstackCloud) DefaultInstanceType(cluster *kops.Cluster, ig *kops.Ins
 }
 
 func GetServerFixedIP(server *servers.Server, interfaceName string) (poolAddress string, err error) {
-        if localAddr, ok := server.Addresses[interfaceName]; ok {
+	if localAddr, ok := server.Addresses[interfaceName]; ok {
 
-                if localAddresses, ok := localAddr.([]interface{}); ok {
-                        for _, addr := range localAddresses {
-                                addrMap := addr.(map[string]interface{})
-                                if addrType, ok := addrMap[openstackExternalIPType]; ok && addrType == openstackAddressFixed {
-                                        if fixedIP, ok := addrMap[openstackAddress]; ok {
-                                                if fixedIPStr, ok := fixedIP.(string); ok {
-                                                        poolAddress = fixedIPStr
-                                                } else {
-                                                        err = fmt.Errorf("Fixed IP was not a string: %v", fixedIP)
-                                                }
-                                        } else {
-                                                err = fmt.Errorf("Type fixed did not contain addr: %v", addr)
-                                        }
-                                }
-                        }
-                }
-        } else {
-                err = fmt.Errorf("server `%s` interface name `%s` not found", server.ID, interfaceName)
-        }
-        return poolAddress, err
+		if localAddresses, ok := localAddr.([]interface{}); ok {
+			for _, addr := range localAddresses {
+				addrMap := addr.(map[string]interface{})
+				if addrType, ok := addrMap[openstackExternalIPType]; ok && addrType == openstackAddressFixed {
+					if fixedIP, ok := addrMap[openstackAddress]; ok {
+						if fixedIPStr, ok := fixedIP.(string); ok {
+							poolAddress = fixedIPStr
+						} else {
+							err = fmt.Errorf("Fixed IP was not a string: %v", fixedIP)
+						}
+					} else {
+						err = fmt.Errorf("Type fixed did not contain addr: %v", addr)
+					}
+				}
+			}
+		}
+	} else {
+		err = fmt.Errorf("server `%s` interface name `%s` not found", server.ID, interfaceName)
+	}
+	return poolAddress, err
 }
