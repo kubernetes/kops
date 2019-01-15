@@ -377,7 +377,7 @@ Specifying KubeDNS will install kube-dns as the default service discovery.
 
 This will install [CoreDNS](https://coredns.io/) instead of kube-dns.
 
-**Note:** If you are upgrading to CoreDNS, kube-dns will be left in place and must be removed manually. You can scale the kube-dns and kube-dns-autoscaler deployments in the `kube-system` namespace to 0 as a starting point
+**Note:** If you are upgrading to CoreDNS, kube-dns will be left in place and must be removed manually (you can scale the kube-dns and kube-dns-autoscaler deployments in the `kube-system` namespace to 0 as a starting point). The `kube-dns` service itself should be left, as this retains the ClusterIP and eliminates the possibility of DNS outages in your cluster.
 
 ### kubeControllerManager
 This block contains configurations for the `controller-manager`.
