@@ -13,7 +13,7 @@ go_library(
         "license_mit.go",
         "licenses.go",
     ],
-    importmap = "vendor/github.com/spf13/cobra/cobra/cmd",
+    importmap = "k8s.io/kops/vendor/github.com/spf13/cobra/cobra/cmd",
     importpath = "github.com/spf13/cobra/cobra/cmd",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/spf13/viper:go_default_library"],
