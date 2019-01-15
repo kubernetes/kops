@@ -59,7 +59,7 @@ func (s *ServerGroup) Find(context *fi.Context) (*ServerGroup, error) {
 	for _, serverGroup := range serverGroups {
 		if serverGroup.Name == *s.Name {
 			if actual != nil {
-				return nil, fmt.Errorf("Found multiple server groups with name %s", s.Name)
+				return nil, fmt.Errorf("Found multiple server groups with name %s", fi.StringValue(s.Name))
 			}
 			actual = &ServerGroup{
 				Name:    fi.String(serverGroup.Name),
