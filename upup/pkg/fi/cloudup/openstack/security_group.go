@@ -18,6 +18,7 @@ package openstack
 
 import (
 	"fmt"
+
 	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	"k8s.io/apimachinery/pkg/util/wait"

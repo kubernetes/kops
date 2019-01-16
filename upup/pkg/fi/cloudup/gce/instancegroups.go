@@ -25,7 +25,7 @@ import (
 	"github.com/golang/glog"
 	context "golang.org/x/net/context"
 	compute "google.golang.org/api/compute/v0.beta"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 )

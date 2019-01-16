@@ -26,7 +26,7 @@ import (
 
 // LB
 
-// JSON marshalling boilerplate
+// JSON marshaling boilerplate
 type realLB LB
 
 // UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string

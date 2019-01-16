@@ -26,7 +26,7 @@ import (
 
 // PoolAssociation
 
-// JSON marshalling boilerplate
+// JSON marshaling boilerplate
 type realPoolAssociation PoolAssociation
 
 // UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string

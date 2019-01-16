@@ -18,10 +18,11 @@ package openstack
 
 import (
 	"fmt"
+	"sort"
+
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"k8s.io/kops/pkg/apis/kops"
-	"sort"
 )
 
 const (
