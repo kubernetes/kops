@@ -18,6 +18,7 @@ package openstack
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"

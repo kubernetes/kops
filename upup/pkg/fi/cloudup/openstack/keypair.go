@@ -18,6 +18,7 @@ package openstack
 
 import (
 	"fmt"
+
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/util/pkg/vfs"

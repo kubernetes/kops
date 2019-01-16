@@ -19,9 +19,10 @@ package openstack
 import (
 	"crypto/tls"
 	"fmt"
-	"k8s.io/kops/pkg/dns"
 	"net/http"
 	"time"
+
+	"k8s.io/kops/pkg/dns"
 
 	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
@@ -45,7 +46,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/openstack/designate"

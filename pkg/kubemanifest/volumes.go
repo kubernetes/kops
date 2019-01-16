@@ -17,7 +17,7 @@ limitations under the License.
 package kubemanifest
 
 import (
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 )
 
 // MapEtcHosts maps the /etc/hosts file into the pod (useful for gossip DNS)

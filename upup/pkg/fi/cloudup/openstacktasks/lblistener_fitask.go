@@ -26,7 +26,7 @@ import (
 
 // LBListener
 
-// JSON marshalling boilerplate
+// JSON marshaling boilerplate
 type realLBListener LBListener
 
 // UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
