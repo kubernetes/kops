@@ -18,6 +18,7 @@ package openstack
 
 import (
 	"fmt"
+
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/pagination"
@@ -86,7 +87,7 @@ func (c *openstackCloud) GetExternalNetwork() (net *networks.Network, err error)
 			for _, externalNet := range externalNetwork {
 				if externalNet.External {
 					net = &externalNet.Network
-					return false, nil
+					return true, nil
 				}
 			}
 			return true, nil
