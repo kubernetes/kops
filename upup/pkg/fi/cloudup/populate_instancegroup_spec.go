@@ -28,7 +28,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/util/pkg/reflectutils"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
-	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // Default Machine types for various types of instance group machine
