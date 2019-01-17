@@ -23,6 +23,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/pagination"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -85,7 +86,7 @@ func (c *openstackCloud) GetExternalNetwork() (net *networks.Network, err error)
 				return false, err
 			}
 			for _, externalNet := range externalNetwork {
-				if externalNet.External {
+				if externalNet.External && externalNet.Name == fi.StringValue(c.extNetworkName) {
 					net = &externalNet.Network
 					return true, nil
 				}

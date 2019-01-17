@@ -509,10 +509,16 @@ type OpenstackMonitor struct {
 	MaxRetries *int    `json:"maxRetries,omitempty"`
 }
 
+// OpenstackRouter defines the config for a router
+type OpenstackRouter struct {
+	ExternalNetwork *string `json:"externalNetwork,omitempty"`
+}
+
 // OpenstackConfiguration defines cloud config elements for the openstack cloud provider
 type OpenstackConfiguration struct {
 	Loadbalancer *OpenstackLoadbalancerConfig `json:"loadbalancer,omitempty"`
 	Monitor      *OpenstackMonitor            `json:"monitor,omitempty"`
+	Router       *OpenstackRouter             `json:"router,omitempty"`
 }
 
 // CloudConfiguration defines the cloud provider configuration

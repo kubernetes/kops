@@ -148,6 +148,9 @@ type CreateClusterOptions struct {
 	SpotinstProduct     string
 	SpotinstOrientation string
 
+	// OpenstackExternalNet is the name of the external network for the openstack router
+	OpenstackExternalNet string
+
 	// ConfigBase is the location where we will store the configuration, it defaults to the state store
 	ConfigBase string
 
@@ -369,6 +372,11 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		// Spotinst flags
 		cmd.Flags().StringVar(&options.SpotinstProduct, "spotinst-product", options.SpotinstProduct, "Set the product description (valid values: Linux/UNIX, Linux/UNIX (Amazon VPC), Windows and Windows (Amazon VPC))")
 		cmd.Flags().StringVar(&options.SpotinstOrientation, "spotinst-orientation", options.SpotinstOrientation, "Set the prediction strategy (valid values: balanced, cost, equal-distribution and availability)")
+	}
+
+	if cloudup.AlphaAllowOpenstack.Enabled() {
+		// Openstack flags
+		cmd.Flags().StringVar(&options.OpenstackExternalNet, "os-ext-net", options.OpenstackExternalNet, "The name of the external network to use with the openstack router")
 	}
 
 	return cmd
@@ -868,6 +876,28 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 			if c.SpotinstOrientation != "" {
 				cluster.Spec.CloudConfig.SpotinstOrientation = fi.String(c.SpotinstOrientation)
+			}
+		}
+
+		if cloudup.AlphaAllowOpenstack.Enabled() && c.Cloud == "openstack" {
+			if cluster.Spec.CloudConfig == nil {
+				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
+			}
+			cluster.Spec.CloudConfig.Openstack = &api.OpenstackConfiguration{
+				Router: &api.OpenstackRouter{
+					ExternalNetwork: fi.String(c.OpenstackExternalNet),
+				},
+				Loadbalancer: &api.OpenstackLoadbalancerConfig{
+					FloatingNetwork: fi.String(c.OpenstackExternalNet),
+					Method:          fi.String("ROUND_ROBIN"),
+					Provider:        fi.String("haproxy"),
+					UseOctavia:      fi.Bool(false),
+				},
+				Monitor: &api.OpenstackMonitor{
+					Delay:      fi.String("1m"),
+					Timeout:    fi.String("30s"),
+					MaxRetries: fi.Int(3),
+				},
 			}
 		}
 	}
