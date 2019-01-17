@@ -44,7 +44,11 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 	// Any change here should be accompanied by a proportional change in CPU
 	// requests of other per-node add-ons (e.g. fluentd).
 	if config.CPURequest == "" {
-		config.CPURequest = "100m"
+		config.CPURequest = "50m"
+	}
+
+	if config.MemoryRequest == "" {
+		config.MemoryRequest = "32Mi"
 	}
 
 	image, err := Image("kube-proxy", clusterSpec, b.Context.AssetBuilder)
