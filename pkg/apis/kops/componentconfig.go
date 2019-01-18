@@ -333,8 +333,6 @@ type KubeAPIServerConfig struct {
 	AuditLogMaxSize *int32 `json:"auditLogMaxSize,omitempty" flag:"audit-log-maxsize"`
 	// AuditPolicyFile is the full path to a advanced audit configuration file e.g. /srv/kubernetes/audit.conf
 	AuditPolicyFile string `json:"auditPolicyFile,omitempty" flag:"audit-policy-file"`
-	// AuditPolicyFile is the full path to a advanced audit configuration file e.g. /srv/kubernetes/audit.conf
-	AuditPolicyFile string `json:"auditPolicyFile,omitempty" flag:"audit-policy-file"`
 	// AuditWebhookBatchBufferSize is The size of the buffer to store events before batching and writing. Only used in batch mode. (default 10000)
 	AuditWebhookBatchBufferSize *int32 `json:"auditWebhookBatchBufferSize,omitempty" flag:"audit-webhook-batch-buffer-size"`
 	// AuditWebhookBatchMaxSize is The maximum size of a batch. Only used in batch mode. (default 400)
