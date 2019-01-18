@@ -28,6 +28,7 @@ import (
 	"github.com/golang/glog"
 	cinderv2 "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipos "k8s.io/kops/protokube/pkg/gossip/openstack"
@@ -172,14 +173,21 @@ func (a *OpenstackVolumes) discoverTags() error {
 
 	// Internal IP
 	{
-		ips, err := net.LookupIP(a.meta.Hostname)
+		servers, err := a.cloud.ListInstances(servers.ListOpts{
+			Host:     a.instanceName,
+			TenantID: a.meta.ProjectID,
+		})
+		if err != nil || len(servers) < 1 {
+			return fmt.Errorf("error listing servers for hostname %s: %v", a.meta.Hostname, err)
+		}
+		if len(servers) > 1 {
+			return fmt.Errorf("recieved more than one server for hostname %s", a.meta.Hostname)
+		}
+		ip, err := openstack.GetServerFixedIP(&servers[0], a.clusterName)
 		if err != nil {
 			return fmt.Errorf("error querying InternalIP from hostname: %v", err)
 		}
-		if len(ips) == 0 {
-			return fmt.Errorf("ip lookups from metadata hostname was empty")
-		}
-		a.internalIP = ips[0]
+		a.internalIP = net.ParseIP(ip)
 		glog.Infof("Found internalIP=%q", a.internalIP)
 	}
 
