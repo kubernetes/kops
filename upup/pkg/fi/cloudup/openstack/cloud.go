@@ -91,8 +91,13 @@ type OpenstackCloud interface {
 	// Region returns the region which cloud will run on
 	Region() string
 
+	// GetInstance will return a openstack server provided its ID
+	GetInstance(id string) (*servers.Server, error)
+
+	// ListInstances will return a slice of openstack servers provided list opts
 	ListInstances(servers.ListOptsBuilder) ([]servers.Server, error)
 
+	// CreateInstance will create an openstack server provided create opts
 	CreateInstance(servers.CreateOptsBuilder) (*servers.Server, error)
 
 	// SetVolumeTags will set the tags for the Cinder volume

@@ -17,7 +17,6 @@ limitations under the License.
 package protokube
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -29,7 +28,6 @@ import (
 	"github.com/golang/glog"
 	cinderv2 "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipos "k8s.io/kops/protokube/pkg/gossip/openstack"
@@ -174,24 +172,8 @@ func (a *OpenstackVolumes) discoverTags() error {
 
 	// Internal IP
 	{
-		servers, err := a.cloud.ListInstances(servers.ListOpts{
-			Host:     a.instanceName,
-			TenantID: a.project,
-		})
-		if err != nil || len(servers) < 1 {
-			return fmt.Errorf("error listing servers for name %s: %v", a.instanceName, err)
-		}
-		if len(servers) > 1 {
-			var buf bytes.Buffer
-			for i, server := range servers {
-				if i != 0 {
-					buf.WriteString(",")
-				}
-				buf.WriteString(server.ID)
-			}
-			return fmt.Errorf("recieved more than one server for name %s: %s", a.instanceName, buf.String())
-		}
-		ip, err := openstack.GetServerFixedIP(&servers[0], a.clusterName)
+		server, err := a.cloud.GetInstance(strings.TrimSpace(a.meta.ServerID))
+		ip, err := openstack.GetServerFixedIP(server, a.clusterName)
 		if err != nil {
 			return fmt.Errorf("error querying InternalIP from name: %v", err)
 		}
