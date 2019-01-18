@@ -189,6 +189,8 @@ type KubeletConfigSpec struct {
 	CPUCFSQuotaPeriod *metav1.Duration `json:"cpuCFSQuotaPeriod,omitempty" flag:"cpu-cfs-quota-period"`
 	// CpuManagerPolicy allows for changing the default policy of None to static
 	CpuManagerPolicy string `json:"cpuManagerPolicy,omitempty" flag:"cpu-manager-policy"`
+	// RegistryQPS if > 0, limit registry pull QPS to this value.  If 0, unlimited. (default 5)
+	RegistryQPS *int32 `json:"registryQPS,omitempty" flag:"registry-qps"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
