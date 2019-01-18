@@ -17,6 +17,7 @@ limitations under the License.
 package protokube
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -175,17 +176,24 @@ func (a *OpenstackVolumes) discoverTags() error {
 	{
 		servers, err := a.cloud.ListInstances(servers.ListOpts{
 			Host:     a.instanceName,
-			TenantID: a.meta.ProjectID,
+			TenantID: a.project,
 		})
 		if err != nil || len(servers) < 1 {
-			return fmt.Errorf("error listing servers for hostname %s: %v", a.meta.Hostname, err)
+			return fmt.Errorf("error listing servers for name %s: %v", a.instanceName, err)
 		}
 		if len(servers) > 1 {
-			return fmt.Errorf("recieved more than one server for hostname %s", a.meta.Hostname)
+			var buf bytes.Buffer
+			for i, server := range servers {
+				if i != 0 {
+					buf.WriteString(",")
+				}
+				buf.WriteString(server.ID)
+			}
+			return fmt.Errorf("recieved more than one server for name %s: %s", a.instanceName, buf.String())
 		}
 		ip, err := openstack.GetServerFixedIP(&servers[0], a.clusterName)
 		if err != nil {
-			return fmt.Errorf("error querying InternalIP from hostname: %v", err)
+			return fmt.Errorf("error querying InternalIP from name: %v", err)
 		}
 		a.internalIP = net.ParseIP(ip)
 		glog.Infof("Found internalIP=%q", a.internalIP)
