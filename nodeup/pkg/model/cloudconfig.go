@@ -140,12 +140,15 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 				"",
 			)
 		}
-		//Block Storage Config
-		lines = append(lines,
-			"[BlockStorage]",
-			"bs-version=v2", //v2 assumed in OpenstackCloud
-			"ignore-volume-az=true",
-			"")
+
+		if bs := osc.BlockStorage; bs != nil {
+			//Block Storage Config
+			lines = append(lines,
+				"[BlockStorage]",
+				fmt.Sprintf("bs-version=%s", fi.StringValue(bs.Version)),
+				fmt.Sprintf("ignore-volume-az=%t", fi.BoolValue(bs.IgnoreAZ)),
+				"")
+		}
 
 		if monitor := osc.Monitor; monitor != nil {
 			lines = append(lines,
