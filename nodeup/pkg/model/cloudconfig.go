@@ -109,14 +109,22 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		if osc == nil {
 			break
 		}
-
+		//Support mapping of older keystone API
+		tenantName := os.Getenv("OS_TENANT_NAME")
+		if tenantName == "" {
+			tenantName = os.Getenv("OS_PROJECT_NAME")
+		}
+		tenantID := os.Getenv("OS_TENANT_ID")
+		if tenantID == "" {
+			tenantID = os.Getenv("OS_PROJECT_ID")
+		}
 		lines = append(lines,
 			fmt.Sprintf("auth-url=\"%s\"", os.Getenv("OS_AUTH_URL")),
 			fmt.Sprintf("username=\"%s\"", os.Getenv("OS_USERNAME")),
 			fmt.Sprintf("password=\"%s\"", os.Getenv("OS_PASSWORD")),
 			fmt.Sprintf("region=\"%s\"", os.Getenv("OS_REGION_NAME")),
-			fmt.Sprintf("tenant-id=\"%s\"", os.Getenv("OS_TENANT_ID")),
-			fmt.Sprintf("tenant-name=\"%s\"", os.Getenv("OS_TENANT_NAME")),
+			fmt.Sprintf("tenant-id=\"%s\"", tenantID),
+			fmt.Sprintf("tenant-name=\"%s\"", tenantName),
 			fmt.Sprintf("domain-name=\"%s\"", os.Getenv("OS_DOMAIN_NAME")),
 			fmt.Sprintf("domain-id=\"%s\"", os.Getenv("OS_DOMAIN_ID")),
 			"",
@@ -125,13 +133,20 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		if lb := osc.Loadbalancer; lb != nil {
 			lines = append(lines,
 				"[LoadBalancer]",
-				fmt.Sprintf("floating-network-id=%s", fi.StringValue(lb.FloatingNetwork)),
+				fmt.Sprintf("floating-network-id=%s", fi.StringValue(lb.FloatingNetworkID)),
 				fmt.Sprintf("lb-method=%s", fi.StringValue(lb.Method)),
 				fmt.Sprintf("lb-provider=%s", fi.StringValue(lb.Provider)),
 				fmt.Sprintf("use-octavia=%t", fi.BoolValue(lb.UseOctavia)),
 				"",
 			)
 		}
+		//Block Storage Config
+		lines = append(lines,
+			"[BlockStorage]",
+			"bs-version=v2", //v2 assumed in OpenstackCloud
+			"ignore-volume-az=true",
+			"")
+
 		if monitor := osc.Monitor; monitor != nil {
 			lines = append(lines,
 				"create-monitor=yes",

@@ -2581,6 +2581,11 @@ func (in *OpenstackLoadbalancerConfig) DeepCopyInto(out *OpenstackLoadbalancerCo
 		*out = new(string)
 		**out = **in
 	}
+	if in.FloatingNetworkID != nil {
+		in, out := &in.FloatingNetworkID, &out.FloatingNetworkID
+		*out = new(string)
+		**out = **in
+	}
 	if in.SubnetID != nil {
 		in, out := &in.SubnetID, &out.SubnetID
 		*out = new(string)

@@ -321,6 +321,17 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 
 		c.extNetworkName = spec.CloudConfig.Openstack.Router.ExternalNetwork
 	}
+	if spec.CloudConfig.Openstack.Loadbalancer.FloatingNetworkID == nil &&
+		spec.CloudConfig.Openstack.Loadbalancer.FloatingNetwork != nil {
+		// This field is derived
+		lbNet, err := c.ListNetworks(networks.ListOpts{
+			Name: fi.StringValue(spec.CloudConfig.Openstack.Loadbalancer.FloatingNetwork),
+		})
+		if err != nil || len(lbNet) != 1 {
+			return c, fmt.Errorf("could not establish floating network id.")
+		}
+		spec.CloudConfig.Openstack.Loadbalancer.FloatingNetworkID = fi.String(lbNet[0].ID)
+	}
 
 	return c, nil
 }

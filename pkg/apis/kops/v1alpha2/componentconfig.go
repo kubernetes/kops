@@ -495,11 +495,12 @@ type LeaderElectionConfiguration struct {
 
 // OpenstackLoadbalancerConfig defines the config for a neutron loadbalancer
 type OpenstackLoadbalancerConfig struct {
-	Method          *string `json:"method,omitempty"`
-	Provider        *string `json:"provider,omitempty"`
-	UseOctavia      *bool   `json:"useOctavia,omitempty"`
-	FloatingNetwork *string `json:"floatingNetwork,omitempty"`
-	SubnetID        *string `json:"subnetID,omitempty"`
+	Method            *string `json:"method,omitempty"`
+	Provider          *string `json:"provider,omitempty"`
+	UseOctavia        *bool   `json:"useOctavia,omitempty"`
+	FloatingNetwork   *string `json:"floatingNetwork,omitempty"`
+	FloatingNetworkID *string `json:"floatingNetworkID,omitempty"`
+	SubnetID          *string `json:"subnetID,omitempty"`
 }
 
 // OpenstackMonitor defines the config for a health monitor
