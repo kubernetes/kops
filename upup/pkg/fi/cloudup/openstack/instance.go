@@ -49,6 +49,26 @@ func (c *openstackCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMemb
 	return fmt.Errorf("openstackCloud::DeleteInstance not implemented")
 }
 
+func (c *openstackCloud) GetInstance(id string) (*servers.Server, error) {
+	var server *servers.Server
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		instance, err := servers.Get(c.novaClient, id).Extract()
+		if err != nil {
+			return false, err
+		}
+		server = instance
+		return true, nil
+	})
+	if err != nil {
+		return server, err
+	} else if done {
+		return server, nil
+	} else {
+		return server, wait.ErrWaitTimeout
+	}
+}
+
 func (c *openstackCloud) ListInstances(opt servers.ListOptsBuilder) ([]servers.Server, error) {
 	var instances []servers.Server
 
