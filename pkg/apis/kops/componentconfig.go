@@ -346,11 +346,11 @@ type KubeAPIServerConfig struct {
 	// AuditWebhookBatchThrottleQps is Maximum average number of batches per second. Only used in batch mode. (default 10)
 	AuditWebhookBatchThrottleQps *float32 `json:"auditWebhookBatchThrottleQps,omitempty" flag:"audit-webhook-batch-throttle-qps"`
 	// AuditWebhookConfigFile is Path to a kubeconfig formatted file that defines the audit webhook configuration. Requires the 'AdvancedAuditing' feature gate.
-	AuditWebhookConfigFile string `json:"auditWebhookBatchConfigFile,omitempty" flag:"audit-webhook-config-file"`
+	AuditWebhookConfigFile string `json:"auditWebhookConfigFile,omitempty" flag:"audit-webhook-config-file"`
 	// AuditWebhookInitialBackoff is The amount of time to wait before retrying the first failed request. (default 10s)
 	AuditWebhookInitialBackoff string `json:"auditWebhookInitialBackoff,omitempty" flag:"audit-webhook-initial-backoff"`
 	// AuditWebhookMode is Strategy for sending audit events. Blocking indicates sending events should block server responses. Batch causes the backend to buffer and write events asynchronously. Known modes are batch,blocking. (default "batch")
-	AuditWebhookMode string `json:"auditWebhookBatchMode,omitempty" flag:"audit-webhook-mode"`
+	AuditWebhookMode string `json:"auditWebhookMode,omitempty" flag:"audit-webhook-mode"`
 	// File with webhook configuration for token authentication in kubeconfig format. The API server will query the remote service to determine authentication for bearer tokens.
 	AuthenticationTokenWebhookConfigFile *string `json:"authenticationTokenWebhookConfigFile,omitempty" flag:"authentication-token-webhook-config-file"`
 	// The duration to cache responses from the webhook token authenticator. Default is 2m. (default 2m0s)
