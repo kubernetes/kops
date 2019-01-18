@@ -2310,6 +2310,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.RegistryQPS != nil {
+		in, out := &in.RegistryQPS, &out.RegistryQPS
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 
