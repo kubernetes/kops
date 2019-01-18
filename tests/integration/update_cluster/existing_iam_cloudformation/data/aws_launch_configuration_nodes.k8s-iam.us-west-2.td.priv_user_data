@@ -153,11 +153,12 @@ docker:
   version: 1.13.1
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
-  cpuRequest: 100m
+  cpuRequest: 50m
   featureGates: null
   hostnameOverride: '@aws'
   image: gcr.io/google_containers/kube-proxy:v1.8.4
   logLevel: 2
+  memoryRequest: 32Mi
 kubelet:
   allowPrivileged: true
   cgroupRoot: /

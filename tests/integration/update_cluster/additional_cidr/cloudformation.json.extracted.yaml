@@ -194,10 +194,11 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
     master: 127.0.0.1:8080
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
-    cpuRequest: 100m
+    cpuRequest: 50m
     hostnameOverride: '@aws'
     image: gcr.io/google_containers/kube-proxy:v1.4.12
     logLevel: 2
+    memoryRequest: 32Mi
   kubeScheduler:
     image: gcr.io/google_containers/kube-scheduler:v1.4.12
     leaderElection:
@@ -428,10 +429,11 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionalcidrexamplecom.Propert
     version: 1.11.2
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
-    cpuRequest: 100m
+    cpuRequest: 50m
     hostnameOverride: '@aws'
     image: gcr.io/google_containers/kube-proxy:v1.4.12
     logLevel: 2
+    memoryRequest: 32Mi
   kubelet:
     allowPrivileged: true
     apiServers: https://api.internal.additionalcidr.example.com

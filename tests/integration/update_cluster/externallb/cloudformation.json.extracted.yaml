@@ -214,10 +214,11 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersexternallbexampl
     useServiceAccountCredentials: true
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
-    cpuRequest: 100m
+    cpuRequest: 50m
     hostnameOverride: '@aws'
     image: gcr.io/google_containers/kube-proxy:v1.8.0
     logLevel: 2
+    memoryRequest: 32Mi
   kubeScheduler:
     image: gcr.io/google_containers/kube-scheduler:v1.8.0
     leaderElection:
@@ -452,10 +453,11 @@ Resources.AWSAutoScalingLaunchConfigurationnodesexternallbexamplecom.Properties.
     version: 1.13.1
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
-    cpuRequest: 100m
+    cpuRequest: 50m
     hostnameOverride: '@aws'
     image: gcr.io/google_containers/kube-proxy:v1.8.0
     logLevel: 2
+    memoryRequest: 32Mi
   kubelet:
     allowPrivileged: true
     cgroupRoot: /
