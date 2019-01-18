@@ -893,6 +893,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 					Provider:        fi.String("haproxy"),
 					UseOctavia:      fi.Bool(false),
 				},
+				BlockStorage: &api.OpenstackBlockStorageConfig{
+					Version:  fi.String("v2"),
+					IgnoreAZ: fi.Bool(true),
+				},
 				Monitor: &api.OpenstackMonitor{
 					Delay:      fi.String("1m"),
 					Timeout:    fi.String("30s"),

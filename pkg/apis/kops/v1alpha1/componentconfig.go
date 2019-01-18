@@ -503,6 +503,11 @@ type OpenstackLoadbalancerConfig struct {
 	SubnetID          *string `json:"subnetID,omitempty"`
 }
 
+type OpenstackBlockStorageConfig struct {
+	Version  *string `json:"bs-version,omitempty"`
+	IgnoreAZ *bool   `json:"ignore-volume-az,omitempty"`
+}
+
 // OpenstackMonitor defines the config for a health monitor
 type OpenstackMonitor struct {
 	Delay      *string `json:"delay,omitempty"`
@@ -520,6 +525,7 @@ type OpenstackConfiguration struct {
 	Loadbalancer *OpenstackLoadbalancerConfig `json:"loadbalancer,omitempty"`
 	Monitor      *OpenstackMonitor            `json:"monitor,omitempty"`
 	Router       *OpenstackRouter             `json:"router,omitempty"`
+	BlockStorage *OpenstackBlockStorageConfig `json:"blockStorage,omitempty"`
 }
 
 // CloudConfiguration defines the cloud provider configuration
