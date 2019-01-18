@@ -139,6 +139,16 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 				fmt.Sprintf("use-octavia=%t", fi.BoolValue(lb.UseOctavia)),
 				"",
 			)
+
+			if monitor := osc.Monitor; monitor != nil {
+				lines = append(lines,
+					"create-monitor=yes",
+					fmt.Sprintf("monitor-delay=%s", fi.StringValue(monitor.Delay)),
+					fmt.Sprintf("monitor-timeout=%s", fi.StringValue(monitor.Timeout)),
+					fmt.Sprintf("monitor-max-retries=%d", fi.IntValue(monitor.MaxRetries)),
+					"",
+				)
+			}
 		}
 
 		if bs := osc.BlockStorage; bs != nil {
@@ -148,16 +158,6 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 				fmt.Sprintf("bs-version=%s", fi.StringValue(bs.Version)),
 				fmt.Sprintf("ignore-volume-az=%t", fi.BoolValue(bs.IgnoreAZ)),
 				"")
-		}
-
-		if monitor := osc.Monitor; monitor != nil {
-			lines = append(lines,
-				"create-monitor=yes",
-				fmt.Sprintf("monitor-delay=%s", fi.StringValue(monitor.Delay)),
-				fmt.Sprintf("monitor-timeout=%s", fi.StringValue(monitor.Timeout)),
-				fmt.Sprintf("monitor-max-retries=%d", fi.IntValue(monitor.MaxRetries)),
-				"",
-			)
 		}
 	}
 
