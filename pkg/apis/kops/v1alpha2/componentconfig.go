@@ -333,6 +333,24 @@ type KubeAPIServerConfig struct {
 	AuditLogMaxSize *int32 `json:"auditLogMaxSize,omitempty" flag:"audit-log-maxsize"`
 	// AuditPolicyFile is the full path to a advanced audit configuration file e.g. /srv/kubernetes/audit.conf
 	AuditPolicyFile string `json:"auditPolicyFile,omitempty" flag:"audit-policy-file"`
+	// AuditWebhookBatchBufferSize is The size of the buffer to store events before batching and writing. Only used in batch mode. (default 10000)
+	AuditWebhookBatchBufferSize *int32 `json:"auditWebhookBatchBufferSize,omitempty" flag:"audit-webhook-batch-buffer-size"`
+	// AuditWebhookBatchMaxSize is The maximum size of a batch. Only used in batch mode. (default 400)
+	AuditWebhookBatchMaxSize *int32 `json:"auditWebhookBatchBufferSize,omitempty" flag:"audit-webhook-batch-max-size"`
+	// AuditWebhookBatchMaxWait is The amount of time to wait before force writing the batch that hadn't reached the max size. Only used in batch mode. (default 30s)
+	AuditWebhookBatchMaxWait string `json:"auditWebhookBatchBufferSize,omitempty" flag:"audit-webhook-batch-max-wait"`
+	// AuditWebhookBatchThrottleBurst is Maximum number of requests sent at the same moment if ThrottleQPS was not utilized before. Only used in batch mode. (default 15)
+	AuditWebhookBatchThrottleBurst *int32 `json:"auditWebhookBatchBufferSize,omitempty" flag:"audit-webhook-batch-throttle-burst"`
+	// AuditWebhookBatchThrottleEnable is Whether batching throttling is enabled. Only used in batch mode. (default true)
+	AuditWebhookBatchThrottleEnable string `json:"auditWebhookBatchBufferSize,omitempty" flag:"audit-webhook-batch-throttle-enable"`
+	// AuditWebhookBatchThrottleQps is Maximum average number of batches per second. Only used in batch mode. (default 10)
+	AuditWebhookBatchThrottleQps *float32 `json:"auditWebhookBatchBufferSize,omitempty" flag:"audit-webhook-batch-throttle-qps"`
+	// AuditWebhookConfigFile is Path to a kubeconfig formatted file that defines the audit webhook configuration. Requires the 'AdvancedAuditing' feature gate.
+	AuditWebhookConfigFile string `json:"auditWebhookBatchBufferSize,omitempty" flag:"audit-webhook-config-file"`
+	// AuditWebhookInitialBackoff is The amount of time to wait before retrying the first failed request. (default 10s)
+	AuditWebhookInitialBackoff string `json:"auditWebhookBatchBufferSize,omitempty" flag:"audit-webhook-initial-backoff"`
+	// AuditWebhookMode is Strategy for sending audit events. Blocking indicates sending events should block server responses. Batch causes the backend to buffer and write events asynchronously. Known modes are batch,blocking. (default "batch")
+	AuditWebhookMode string `json:"auditWebhookBatchBufferSize,omitempty" flag:"audit-webhook-mode"`
 	// File with webhook configuration for token authentication in kubeconfig format. The API server will query the remote service to determine authentication for bearer tokens.
 	AuthenticationTokenWebhookConfigFile *string `json:"authenticationTokenWebhookConfigFile,omitempty" flag:"authentication-token-webhook-config-file"`
 	// The duration to cache responses from the webhook token authenticator. Default is 2m. (default 2m0s)
