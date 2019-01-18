@@ -149,7 +149,8 @@ type CreateClusterOptions struct {
 	SpotinstOrientation string
 
 	// OpenstackExternalNet is the name of the external network for the openstack router
-	OpenstackExternalNet string
+	OpenstackExternalNet     string
+	OpenstackStorageIgnoreAZ bool
 
 	// ConfigBase is the location where we will store the configuration, it defaults to the state store
 	ConfigBase string
@@ -377,6 +378,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	if cloudup.AlphaAllowOpenstack.Enabled() {
 		// Openstack flags
 		cmd.Flags().StringVar(&options.OpenstackExternalNet, "os-ext-net", options.OpenstackExternalNet, "The name of the external network to use with the openstack router")
+		cmd.Flags().BoolVar(&options.OpenstackStorageIgnoreAZ, "os-kubelet-ignore-az", options.OpenstackStorageIgnoreAZ, "If true kubernetes may attach volumes accross availability zones")
 	}
 
 	return cmd
@@ -895,7 +897,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				},
 				BlockStorage: &api.OpenstackBlockStorageConfig{
 					Version:  fi.String("v2"),
-					IgnoreAZ: fi.Bool(true),
+					IgnoreAZ: fi.Bool(c.OpenstackStorageIgnoreAZ),
 				},
 				Monitor: &api.OpenstackMonitor{
 					Delay:      fi.String("1m"),
