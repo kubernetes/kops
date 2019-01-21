@@ -182,17 +182,23 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 
 	actual.SecurityGroups = securityGroups
 
+	// @step: get the image is order to find out the root device name as using the index
+	// is not vaiable, under conditions they move
+	image, err := cloud.ResolveImage(fi.StringValue(e.ImageID))
+	if err != nil {
+		return nil, err
+	}
+
 	// Find the root volume
-	for i, b := range lc.BlockDeviceMappings {
+	for _, b := range lc.BlockDeviceMappings {
 		if b.Ebs == nil {
 			continue
 		}
-		switch i {
-		case 0:
+		if b.DeviceName != nil && fi.StringValue(b.DeviceName) == fi.StringValue(image.RootDeviceName) {
 			actual.RootVolumeSize = b.Ebs.VolumeSize
 			actual.RootVolumeType = b.Ebs.VolumeType
 			actual.RootVolumeIops = b.Ebs.Iops
-		default:
+		} else {
 			_, d := BlockDeviceMappingFromAutoscaling(b)
 			actual.BlockDeviceMappings = append(actual.BlockDeviceMappings, d)
 		}
