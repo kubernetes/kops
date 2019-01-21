@@ -1641,6 +1641,26 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.AuditWebhookBatchBufferSize != nil {
+		in, out := &in.AuditWebhookBatchBufferSize, &out.AuditWebhookBatchBufferSize
+		*out = new(int32)
+		**out = **in
+	}
+	if in.AuditWebhookBatchMaxSize != nil {
+		in, out := &in.AuditWebhookBatchMaxSize, &out.AuditWebhookBatchMaxSize
+		*out = new(int32)
+		**out = **in
+	}
+	if in.AuditWebhookBatchThrottleBurst != nil {
+		in, out := &in.AuditWebhookBatchThrottleBurst, &out.AuditWebhookBatchThrottleBurst
+		*out = new(int32)
+		**out = **in
+	}
+	if in.AuditWebhookBatchThrottleQps != nil {
+		in, out := &in.AuditWebhookBatchThrottleQps, &out.AuditWebhookBatchThrottleQps
+		*out = new(float64)
+		**out = **in
+	}
 	if in.AuthenticationTokenWebhookConfigFile != nil {
 		in, out := &in.AuthenticationTokenWebhookConfigFile, &out.AuthenticationTokenWebhookConfigFile
 		*out = new(string)
