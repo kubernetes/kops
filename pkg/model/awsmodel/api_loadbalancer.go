@@ -189,7 +189,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow traffic into the ELB from KubernetesAPIAccess CIDRs
 	{
 		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
-			t := &awstasks.SecurityGroupRule{
+
+			// Allow https traffic
+			c.AddTask(&awstasks.SecurityGroupRule{
 				Name:      s("https-api-elb-" + cidr),
 				Lifecycle: b.SecurityLifecycle,
 
@@ -198,8 +200,19 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				FromPort:      i64(443),
 				ToPort:        i64(443),
 				Protocol:      s("tcp"),
-			}
-			c.AddTask(t)
+			})
+
+			// Allow ICMP traffic required for PMTU discovery
+			c.AddTask(&awstasks.SecurityGroupRule{
+				Name:      s("icmp-pmtu-api-elb-" + cidr),
+				Lifecycle: b.SecurityLifecycle,
+
+				SecurityGroup: lbSG,
+				CIDR:          s(cidr),
+				FromPort:      i64(3),
+				ToPort:        i64(4),
+				Protocol:      s("icmp"),
+			})
 		}
 	}
 
