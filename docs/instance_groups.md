@@ -199,6 +199,8 @@ spec:
     type: gp2
 ```
 
+For AWS you can find more information on device naming conventions [here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html)
+
 ```shell
 $ df -h | grep nvme[12]
 /dev/nvme1n1      20G   45M   20G   1% /data
