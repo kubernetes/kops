@@ -112,7 +112,6 @@ func (i *BlockDeviceMapping) ToAutoscaling(deviceName string) *autoscaling.Block
 			Encrypted:           i.EbsEncrypted,
 			VolumeSize:          i.EbsVolumeSize,
 			VolumeType:          i.EbsVolumeType,
-			Iops:                i.EbsVolumeIops,
 		}
 		if fi.StringValue(o.Ebs.VolumeType) == ec2.VolumeTypeIo1 {
 			o.Ebs.Iops = i.EbsVolumeIops
