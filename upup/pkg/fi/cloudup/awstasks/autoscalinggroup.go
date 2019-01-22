@@ -23,41 +23,41 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/golang/glog"
 )
 
 const CloudTagInstanceGroupRolePrefix = "k8s.io/role/"
 
-//go:generate fitask -type=AutoscalingGroup
+// AutoscalingGroup defined the specification for a autoscaling group
 type AutoscalingGroup struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
 
-	MinSize *int64
-	MaxSize *int64
-	Subnets []*Subnet
-	Tags    map[string]string
-
-	Granularity *string
-	Metrics     []string
-
+	Granularity         *string
 	LaunchConfiguration *LaunchConfiguration
-
-	SuspendProcesses *[]string
+	MaxSize             *int64
+	Metrics             []string
+	MinSize             *int64
+	Subnets             []*Subnet
+	SuspendProcesses    *[]string
+	Tags                map[string]string
 }
 
 var _ fi.CompareWithID = &AutoscalingGroup{}
 
+// CompareWithID is used to compare resource ids
 func (e *AutoscalingGroup) CompareWithID() *string {
 	return e.Name
 }
 
+// findAutoscalingGroup is responsible for finding the autoscaling group
 func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group, error) {
 	request := &autoscaling.DescribeAutoScalingGroupsInput{
 		AutoScalingGroupNames: []*string{&name},
@@ -100,6 +100,7 @@ func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group
 	return found[0], nil
 }
 
+// Find is just a wrapper for the find method
 func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
@@ -171,6 +172,7 @@ func (e *AutoscalingGroup) Run(c *fi.Context) error {
 		return err
 	}
 	c.Cloud.(awsup.AWSCloud).AddTags(e.Name, e.Tags)
+
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
@@ -191,26 +193,30 @@ func (e *AutoscalingGroup) buildTags(cloud fi.Cloud) map[string]string {
 	return tags
 }
 
+// RenderAWS is responsible for creating the autoscaling group
 func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingGroup) error {
 	tags := []*autoscaling.Tag{}
+
 	for k, v := range e.buildTags(t.Cloud) {
 		tags = append(tags, &autoscaling.Tag{
 			Key:               aws.String(k),
-			Value:             aws.String(v),
+			PropagateAtLaunch: aws.Bool(true),
 			ResourceId:        e.Name,
 			ResourceType:      aws.String("auto-scaling-group"),
-			PropagateAtLaunch: aws.Bool(true),
+			Value:             aws.String(v),
 		})
 	}
 
 	if a == nil {
-		glog.V(2).Infof("Creating autoscaling Group with Name:%q", *e.Name)
+		glog.V(2).Infof("Creating autoscaling Group with Name: %q", *e.Name)
 
-		request := &autoscaling.CreateAutoScalingGroupInput{}
-		request.AutoScalingGroupName = e.Name
-		request.LaunchConfigurationName = e.LaunchConfiguration.ID
-		request.MinSize = e.MinSize
-		request.MaxSize = e.MaxSize
+		request := &autoscaling.CreateAutoScalingGroupInput{
+			AutoScalingGroupName:    e.Name,
+			LaunchConfigurationName: e.LaunchConfiguration.ID,
+			MaxSize:                 e.MaxSize,
+			MinSize:                 e.MinSize,
+			Tags:                    tags,
+		}
 
 		var subnetIDs []string
 		for _, s := range e.Subnets {
@@ -218,19 +224,15 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 		request.VPCZoneIdentifier = aws.String(strings.Join(subnetIDs, ","))
 
-		request.Tags = tags
-
-		_, err := t.Cloud.Autoscaling().CreateAutoScalingGroup(request)
-		if err != nil {
+		if _, err := t.Cloud.Autoscaling().CreateAutoScalingGroup(request); err != nil {
 			return fmt.Errorf("error creating AutoscalingGroup: %v", err)
 		}
 
-		_, err = t.Cloud.Autoscaling().EnableMetricsCollection(&autoscaling.EnableMetricsCollectionInput{
+		if _, err := t.Cloud.Autoscaling().EnableMetricsCollection(&autoscaling.EnableMetricsCollectionInput{
 			AutoScalingGroupName: e.Name,
 			Granularity:          e.Granularity,
 			Metrics:              aws.StringSlice(e.Metrics),
-		})
-		if err != nil {
+		}); err != nil {
 			return fmt.Errorf("error enabling metrics collection for AutoscalingGroup: %v", err)
 		}
 
@@ -414,6 +416,7 @@ type terraformAutoscalingGroup struct {
 	SuspendedProcesses      []*string            `json:"suspended_processes,omitempty"`
 }
 
+// RenderTerraform is responsible for rendering the terraform
 func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *AutoscalingGroup) error {
 
 	tf := &terraformAutoscalingGroup{
