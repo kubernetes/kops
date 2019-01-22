@@ -135,8 +135,12 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				if x.Type == "" {
 					x.Type = DefaultVolumeType
 				}
-				if x.Iops == nil && x.Type == ec2.VolumeTypeIo1 {
-					x.Iops = fi.Int64(DefaultVolumeIops)
+				if x.Type == ec2.VolumeTypeIo1 {
+					if x.Iops == nil {
+						x.Iops = fi.Int64(DefaultVolumeIops)
+					}
+				} else {
+					x.Iops = nil
 				}
 				t.BlockDeviceMappings = append(t.BlockDeviceMappings, &awstasks.BlockDeviceMapping{
 					DeviceName:             fi.String(x.Device),
