@@ -77,11 +77,6 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				volumeIops = DefaultVolumeIops
 			}
 
-			rootVolumeTermination := fi.BoolValue(ig.Spec.RootVolumeTermination)
-			if rootVolumeTermination == nil {
-				rootVolumeTermination = DefaultRootVolumeTermination
-			}
-
 			link, err := b.LinkToIAMInstanceProfile(ig)
 			if err != nil {
 				return fmt.Errorf("unable to find IAM profile link for instance group %q: %v", ig.ObjectMeta.Name, err)
@@ -112,7 +107,12 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
 				RootVolumeSize:         i64(int64(volumeSize)),
 				RootVolumeType:         s(volumeType),
+<<<<<<< HEAD
 				SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
+=======
+				RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
+				RootVolumeTermination:  ig.Spec.RootVolumeTermination,
+>>>>>>> Carry the Spec value through
 			}
 
 			if volumeType == ec2.VolumeTypeIo1 {
