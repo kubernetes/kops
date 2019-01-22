@@ -78,6 +78,8 @@ type LaunchConfiguration struct {
 	RootVolumeSize *int64
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
 	RootVolumeType *string
+	// RootVolumeTermination defines wether to keep EBS root volume on termination
+	RootVolumeTermination *bool
 	// SSHKey is the key to use for the instance
 	SSHKey *SSHKey
 	// SecurityGroups is a collection of security groups
@@ -286,7 +288,7 @@ func (e *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]
 	blockDeviceMappings := make(map[string]*BlockDeviceMapping)
 
 	rootDeviceMapping := &BlockDeviceMapping{
-		EbsDeleteOnTermination: aws.Bool(true),
+		EbsDeleteOnTermination: e.RootVolumeTermination,
 		EbsVolumeSize:          e.RootVolumeSize,
 		EbsVolumeType:          e.RootVolumeType,
 		EbsVolumeIops:          e.RootVolumeIops,
@@ -448,6 +450,7 @@ type terraformLaunchConfiguration struct {
 	AssociatePublicIpAddress *bool                   `json:"associate_public_ip_address,omitempty"`
 	UserData                 *terraform.Literal      `json:"user_data,omitempty"`
 	RootBlockDevice          *terraformBlockDevice   `json:"root_block_device,omitempty"`
+	EbsDeleteOnTermination   *bool                   `json:"delete_on_termination,omitempty"`
 	EBSOptimized             *bool                   `json:"ebs_optimized,omitempty"`
 	EBSBlockDevice           []*terraformBlockDevice `json:"ebs_block_device,omitempty"`
 	EphemeralBlockDevice     []*terraformBlockDevice `json:"ephemeral_block_device,omitempty"`
@@ -532,7 +535,7 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 				tf.RootBlockDevice = &terraformBlockDevice{
 					VolumeType:          bdm.EbsVolumeType,
 					VolumeSize:          bdm.EbsVolumeSize,
-					DeleteOnTermination: fi.Bool(true),
+					DeleteOnTermination: bdm.EbsDeleteOnTermination,
 				}
 			}
 		}
@@ -688,7 +691,7 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 					Ebs: &cloudformationBlockDeviceEBS{
 						VolumeType:          bdm.EbsVolumeType,
 						VolumeSize:          bdm.EbsVolumeSize,
-						DeleteOnTermination: fi.Bool(true),
+						DeleteOnTermination: bdm.EbsDeleteOnTermination,
 					},
 				}
 				cf.BlockDeviceMappings = append(cf.BlockDeviceMappings, d)

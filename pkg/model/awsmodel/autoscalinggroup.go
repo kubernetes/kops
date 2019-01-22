@@ -35,6 +35,8 @@ const (
 	DefaultVolumeType = ec2.VolumeTypeGp2
 	// DefaultVolumeIops is the default volume iops
 	DefaultVolumeIops = 100
+	// DefaultRootVolumeTermination sets the default
+	DefaultRootVolumeTermination = true
 )
 
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
@@ -73,6 +75,11 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			volumeIops := fi.Int32Value(ig.Spec.RootVolumeIops)
 			if volumeIops <= 0 {
 				volumeIops = DefaultVolumeIops
+			}
+
+			rootVolumeTermination := fi.BoolValue(ig.Spec.RootVolumeTermination)
+			if rootVolumeTermination == nil {
+				rootVolumeTermination = DefaultRootVolumeTermination
 			}
 
 			link, err := b.LinkToIAMInstanceProfile(ig)

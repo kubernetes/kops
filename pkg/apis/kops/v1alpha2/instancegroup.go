@@ -92,6 +92,8 @@ type InstanceGroupSpec struct {
 	RootVolumeType *string `json:"rootVolumeType,omitempty"`
 	// If volume type is io1, then we need to specify the number of Iops.
 	RootVolumeIops *int32 `json:"rootVolumeIops,omitempty"`
+	// Keep the root volume upon instance termination
+	RootVolumeTermination *bool `json:"rootVolumeTermination,omitempty"`
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
 	// Volumes is a collection of additional volumes to create for instances within this InstanceGroup
