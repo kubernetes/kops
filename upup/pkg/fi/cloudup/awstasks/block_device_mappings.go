@@ -51,6 +51,7 @@ func BlockDeviceMappingFromEC2(i *ec2.BlockDeviceMapping) (string, *BlockDeviceM
 	if i.Ebs != nil {
 		o.EbsDeleteOnTermination = i.Ebs.DeleteOnTermination
 		o.EbsEncrypted = i.Ebs.Encrypted
+		o.EbsVolumeIops = i.Ebs.Iops
 		o.EbsVolumeSize = i.Ebs.VolumeSize
 		o.EbsVolumeType = i.Ebs.VolumeType
 	}
@@ -64,12 +65,15 @@ func (i *BlockDeviceMapping) ToEC2(deviceName string) *ec2.BlockDeviceMapping {
 		DeviceName:  aws.String(deviceName),
 		VirtualName: i.VirtualName,
 	}
-	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || i.EbsVolumeType != nil {
+	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || i.EbsVolumeType != nil || i.EbsVolumeIops != nil {
 		o.Ebs = &ec2.EbsBlockDevice{
 			DeleteOnTermination: i.EbsDeleteOnTermination,
 			Encrypted:           i.EbsEncrypted,
 			VolumeSize:          i.EbsVolumeSize,
 			VolumeType:          i.EbsVolumeType,
+		}
+		if fi.StringValue(o.Ebs.VolumeType) == ec2.VolumeTypeIo1 {
+			o.Ebs.Iops = i.EbsVolumeIops
 		}
 	}
 
@@ -87,6 +91,10 @@ func BlockDeviceMappingFromAutoscaling(i *autoscaling.BlockDeviceMapping) (strin
 		o.EbsEncrypted = i.Ebs.Encrypted
 		o.EbsVolumeSize = i.Ebs.VolumeSize
 		o.EbsVolumeType = i.Ebs.VolumeType
+
+		if fi.StringValue(o.EbsVolumeType) == ec2.VolumeTypeIo1 {
+			o.EbsVolumeIops = i.Ebs.Iops
+		}
 	}
 
 	return aws.StringValue(i.DeviceName), o
@@ -105,6 +113,9 @@ func (i *BlockDeviceMapping) ToAutoscaling(deviceName string) *autoscaling.Block
 			VolumeSize:          i.EbsVolumeSize,
 			VolumeType:          i.EbsVolumeType,
 			Iops:                i.EbsVolumeIops,
+		}
+		if fi.StringValue(o.Ebs.VolumeType) == ec2.VolumeTypeIo1 {
+			o.Ebs.Iops = i.EbsVolumeIops
 		}
 	}
 
