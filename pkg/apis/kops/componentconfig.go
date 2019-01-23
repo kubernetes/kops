@@ -493,6 +493,41 @@ type LeaderElectionConfiguration struct {
 	LeaderElect *bool `json:"leaderElect,omitempty" flag:"leader-elect"`
 }
 
+// OpenstackLoadbalancerConfig defines the config for a neutron loadbalancer
+type OpenstackLoadbalancerConfig struct {
+	Method            *string `json:"method,omitempty"`
+	Provider          *string `json:"provider,omitempty"`
+	UseOctavia        *bool   `json:"useOctavia,omitempty"`
+	FloatingNetwork   *string `json:"floatingNetwork,omitempty"`
+	FloatingNetworkID *string `json:"floatingNetworkID,omitempty"`
+	SubnetID          *string `json:"subnetID,omitempty"`
+}
+
+type OpenstackBlockStorageConfig struct {
+	Version  *string `json:"bs-version,omitempty"`
+	IgnoreAZ *bool   `json:"ignore-volume-az,omitempty"`
+}
+
+// OpenstackMonitor defines the config for a health monitor
+type OpenstackMonitor struct {
+	Delay      *string `json:"delay,omitempty"`
+	Timeout    *string `json:"timeout,omitempty"`
+	MaxRetries *int    `json:"maxRetries,omitempty"`
+}
+
+// OpenstackRouter defines the config for a router
+type OpenstackRouter struct {
+	ExternalNetwork *string `json:"externalNetwork,omitempty"`
+}
+
+// OpenstackConfiguration defines cloud config elements for the openstack cloud provider
+type OpenstackConfiguration struct {
+	Loadbalancer *OpenstackLoadbalancerConfig `json:"loadbalancer,omitempty"`
+	Monitor      *OpenstackMonitor            `json:"monitor,omitempty"`
+	Router       *OpenstackRouter             `json:"router,omitempty"`
+	BlockStorage *OpenstackBlockStorageConfig `json:"blockStorage,omitempty"`
+}
+
 // CloudConfiguration defines the cloud provider configuration
 type CloudConfiguration struct {
 	// GCE cloud-config options
@@ -513,6 +548,8 @@ type CloudConfiguration struct {
 	// Spotinst cloud-config specs
 	SpotinstProduct     *string `json:"spotinstProduct,omitempty"`
 	SpotinstOrientation *string `json:"spotinstOrientation,omitempty"`
+	// Openstack cloud-config options
+	Openstack *OpenstackConfiguration `json:"openstack,omitempty"`
 }
 
 // HasAdmissionController checks if a specific admission controller is enabled

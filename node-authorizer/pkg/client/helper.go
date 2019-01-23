@@ -35,7 +35,7 @@ import (
 	"k8s.io/kops/node-authorizer/pkg/authorizers/aws"
 	"k8s.io/kops/node-authorizer/pkg/server"
 
-	"k8s.io/client-go/tools/clientcmd/api/v1"
+	v1 "k8s.io/client-go/tools/clientcmd/api/v1"
 )
 
 // makeHTTPClient is responsible for making a http client
