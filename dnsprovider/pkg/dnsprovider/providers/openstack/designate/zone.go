@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2016 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,19 +14,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package openstack
+package designate
 
 import (
-	"k8s.io/kops/pkg/resources"
-	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+
+	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
 )
 
-type listFn func(openstack.OpenstackCloud, string) ([]*resources.Resource, error)
+var _ dnsprovider.Zone = &Zone{}
 
-func ListResources(cloud openstack.OpenstackCloud, clusterName string) (map[string]*resources.Resource, error) {
-	resourceTrackers := make(map[string]*resources.Resource)
+type Zone struct {
+	impl  zones.Zone
+	zones *Zones
+}
 
-	// TODO(lmb): Implement resource list
+func (z *Zone) Name() string {
+	return z.impl.Name
+}
 
-	return resourceTrackers, nil
+func (z *Zone) ID() string {
+	return z.impl.ID
+}
+
+func (z *Zone) ResourceRecordSets() (dnsprovider.ResourceRecordSets, bool) {
+	return &ResourceRecordSets{z}, true
 }

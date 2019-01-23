@@ -35,6 +35,20 @@ type RouterInterface struct {
 	Lifecycle *fi.Lifecycle
 }
 
+// GetDependencies returns the dependencies of the RouterInterface task
+func (e *RouterInterface) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
+	for _, task := range tasks {
+		if _, ok := task.(*Router); ok {
+			deps = append(deps, task)
+		}
+		if _, ok := task.(*Subnet); ok {
+			deps = append(deps, task)
+		}
+	}
+	return deps
+}
+
 var _ fi.CompareWithID = &RouterInterface{}
 
 func (i *RouterInterface) CompareWithID() *string {
@@ -57,34 +71,27 @@ func (i *RouterInterface) Find(context *fi.Context) (*RouterInterface, error) {
 		return nil, nil
 	}
 
+	var actual *RouterInterface
+
 	subnetID := fi.StringValue(i.Subnet.ID)
-	iID := ""
-	n := 0
 	for _, p := range ps {
 		for _, ip := range p.FixedIPs {
 			if ip.SubnetID == subnetID {
-				n += 1
-				iID = p.ID
-				break
+				if actual != nil {
+					return nil, fmt.Errorf("find multiple interfaces which subnet:%s attach to", subnetID)
+				}
+				actual = &RouterInterface{
+					ID:        fi.String(p.ID),
+					Name:      i.Name,
+					Router:    i.Router,
+					Subnet:    i.Subnet,
+					Lifecycle: i.Lifecycle,
+				}
+				i.ID = actual.ID
 			}
 		}
 	}
-	switch n {
-	case 0:
-		return nil, nil
-	case 1:
-		actual := &RouterInterface{
-			ID:        fi.String(iID),
-			Name:      i.Name,
-			Router:    i.Router,
-			Subnet:    i.Subnet,
-			Lifecycle: i.Lifecycle,
-		}
-
-		return actual, nil
-	default:
-		return nil, fmt.Errorf("find multiple interfaces which subnet:%s attach to", subnetID)
-	}
+	return actual, nil
 }
 
 func (i *RouterInterface) Run(context *fi.Context) error {
