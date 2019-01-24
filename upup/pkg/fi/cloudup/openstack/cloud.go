@@ -237,8 +237,6 @@ type OpenstackCloud interface {
 
 	ListPools(v2pools.ListOpts) ([]v2pools.Pool, error)
 
-	GetPool(poolID string, memberID string) (*v2pools.Member, error)
-
 	// DeletePool will delete loadbalancer pool
 	DeletePool(poolID string) error
 
