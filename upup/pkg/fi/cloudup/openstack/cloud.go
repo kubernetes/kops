@@ -388,7 +388,32 @@ func (c *openstackCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error
 }
 
 func (c *openstackCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return nil, fmt.Errorf("openstackCloud::GetCloudGroups not implemented")
+	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+
+	serverGrps, err := c.ListServerGroups()
+	if err != nil {
+		return nil, fmt.Errorf("unable to list servergroups: %v", err)
+	}
+
+	for _, grp := range serverGrps {
+		name := grp.Name
+		instancegroup, err := matchInstanceGroup(name, cluster.ObjectMeta.Name, instancegroups)
+		if err != nil {
+			return nil, fmt.Errorf("error getting instance group for servergroup %q", name)
+		}
+		if instancegroup == nil {
+			if warnUnmatched {
+				glog.Warningf("Found servergrp with no corresponding instance group %q", name)
+			}
+			continue
+		}
+		groups[instancegroup.ObjectMeta.Name], err = c.osBuildCloudInstanceGroup(instancegroup, &grp, nodeMap)
+		if err != nil {
+			return nil, fmt.Errorf("error getting cloud instance group %q: %v", instancegroup.ObjectMeta.Name, err)
+		}
+	}
+	return groups, nil
 }
 
 func (c *openstackCloud) GetCloudTags() map[string]string {
