@@ -62,9 +62,11 @@ func (s *ServerGroup) Find(context *fi.Context) (*ServerGroup, error) {
 				return nil, fmt.Errorf("Found multiple server groups with name %s", fi.StringValue(s.Name))
 			}
 			actual = &ServerGroup{
-				Name:    fi.String(serverGroup.Name),
-				ID:      fi.String(serverGroup.ID),
-				Members: serverGroup.Members,
+				Name:      fi.String(serverGroup.Name),
+				ID:        fi.String(serverGroup.ID),
+				Members:   nil, // TODO implement logic how servergrp members are updated
+				Lifecycle: s.Lifecycle,
+				Policies:  serverGroup.Policies,
 			}
 		}
 	}
