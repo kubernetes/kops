@@ -59,6 +59,7 @@ import (
 const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
 const TagNameRolePrefix = "k8s.io/role/"
 const TagClusterName = "KubernetesCluster"
+const TagRoleMaster = "master"
 
 // ErrNotFound is used to inform that the object is not found
 var ErrNotFound = "Resource not found"
@@ -183,6 +184,8 @@ type OpenstackCloud interface {
 	ListLBs(opt loadbalancers.ListOptsBuilder) ([]loadbalancers.LoadBalancer, error)
 
 	GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
+
+	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
 
 	// DefaultInstanceType determines a suitable instance type for the specified instance group
 	DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error)
