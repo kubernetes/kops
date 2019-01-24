@@ -877,6 +877,13 @@ func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice,
 			}),
 			Resource: resource,
 		},
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:CreateTags",
+			}),
+			Resource: stringorslice.Slice([]string{"arn:aws:ec2:*:*:network-interface/*"}),
+		},
 	)
 }
 
