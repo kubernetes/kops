@@ -88,6 +88,23 @@ func (c *openstackCloud) ListLBs(opt loadbalancers.ListOptsBuilder) (lbs []loadb
 	return lbs, nil
 }
 
+func (c *openstackCloud) GetPool(poolID string, memberID string) (member *v2pools.Member, err error) {
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		member, err = v2pools.GetMember(c.neutronClient, poolID, memberID).Extract()
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	})
+	if !done {
+		if err == nil {
+			err = wait.ErrWaitTimeout
+		}
+		return member, err
+	}
+	return member, nil
+}
+
 func (c *openstackCloud) AssociateToPool(server *servers.Server, poolID string, opts v2pools.CreateMemberOpts) (association *v2pools.Member, err error) {
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
