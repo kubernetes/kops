@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,43 +17,93 @@ limitations under the License.
 package openstack
 
 import (
-	"fmt"
+	"strings"
 
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
+	v2pools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
 const (
-	typeLB = "lb"
+	typeLB  = "LoadBalancer"
+	typeLBL = "LBListener"
+	typeLBP = "LBPool"
 )
 
-func listLBs(cloud openstack.OpenstackCloud, clusterName string) ([]*resources.Resource, error) {
+func (os *clusterDiscoveryOS) ListLB() ([]*resources.Resource, error) {
+	var resourceTrackers []*resources.Resource
 	opts := loadbalancers.ListOpts{
-		Name: clusterName,
+		Name: "api." + os.clusterName,
 	}
-	lbs, err := cloud.ListLBs(opts)
+	lbs, err := os.osCloud.ListLBs(opts)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list lbs: %s", err)
+		return nil, err
 	}
 
-	var rts []*resources.Resource
-	for _, t := range lbs {
-		rt := &resources.Resource{
-			Name: t.Name,
-			ID:   t.ID,
+	for _, lb := range lbs {
+		resourceTracker := &resources.Resource{
+			Name: lb.Name,
+			ID:   lb.ID,
 			Type: typeLB,
 			Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
 				opts := loadbalancers.DeleteOpts{
 					Cascade: true,
 				}
-				return loadbalancers.Delete(cloud.(openstack.OpenstackCloud).LoadBalancerClient(), t.ID, opts).ExtractErr()
+				return cloud.(openstack.OpenstackCloud).DeleteLB(r.ID, opts)
 			},
-			Obj: lbs,
 		}
-		rts = append(rts, rt)
+		resourceTrackers = append(resourceTrackers, resourceTracker)
+	}
+	return resourceTrackers, nil
+}
+
+func (os *clusterDiscoveryOS) ListLBPools() ([]*resources.Resource, error) {
+	var resourceTrackers []*resources.Resource
+
+	pools, err := os.osCloud.ListPools(v2pools.ListOpts{})
+	if err != nil {
+		return nil, err
 	}
 
-	return rts, nil
+	for _, pool := range pools {
+		if strings.Contains(pool.Name, os.clusterName) {
+			resourceTracker := &resources.Resource{
+				Name: pool.Name,
+				ID:   pool.ID,
+				Type: typeLBP,
+				Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
+					return cloud.(openstack.OpenstackCloud).DeletePool(r.ID)
+				},
+			}
+			resourceTrackers = append(resourceTrackers, resourceTracker)
+		}
+	}
+	return resourceTrackers, nil
+}
+
+func (os *clusterDiscoveryOS) ListLBListener() ([]*resources.Resource, error) {
+	var resourceTrackers []*resources.Resource
+
+	listeners, err := os.osCloud.ListListeners(listeners.ListOpts{})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, listener := range listeners {
+		if strings.Contains(listener.Name, os.clusterName) {
+			resourceTracker := &resources.Resource{
+				Name: listener.Name,
+				ID:   listener.ID,
+				Type: typeLBL,
+				Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
+					return cloud.(openstack.OpenstackCloud).DeleteListener(r.ID)
+				},
+			}
+			resourceTrackers = append(resourceTrackers, resourceTracker)
+		}
+	}
+	return resourceTrackers, nil
 }
