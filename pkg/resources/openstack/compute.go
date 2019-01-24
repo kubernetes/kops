@@ -99,7 +99,7 @@ func listServerGroups(cloud openstack.OpenstackCloud, clusterName string) ([]*re
 func listKeypairs(cloud openstack.OpenstackCloud, clusterName string) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
 
-	kp, err := cloud.ListKeypair(clusterName)
+	kp, err := cloud.GetKeypair(clusterName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get keypair: %s", err)
 	}

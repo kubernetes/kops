@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-func (c *openstackCloud) ListKeypair(name string) (*keypairs.KeyPair, error) {
+func (c *openstackCloud) GetKeypair(name string) (*keypairs.KeyPair, error) {
 	var k *keypairs.KeyPair
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
 		rs, err := keypairs.Get(c.novaClient, name).Extract()
