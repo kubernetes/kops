@@ -62,8 +62,57 @@ func (s *PoolAssociation) CompareWithID() *string {
 }
 
 func (p *PoolAssociation) Find(context *fi.Context) (*PoolAssociation, error) {
-	// Task throws no errors for members which already exist in the provided pool
-	return nil, nil
+	cloud := context.Cloud.(openstack.OpenstackCloud)
+
+	opt := v2pools.ListOpts{
+		Name: fi.StringValue(p.Pool.Name),
+		ID:   fi.StringValue(p.Pool.ID),
+	}
+
+	rs, err := cloud.ListPools(opt)
+	if err != nil {
+		return nil, err
+	}
+	if rs == nil {
+		return nil, nil
+	} else if len(rs) != 1 {
+		return nil, fmt.Errorf("found multiple pools with name: %s", fi.StringValue(p.Pool.Name))
+	}
+
+	a := rs[0]
+	// check is member already created
+	found := false
+	for _, member := range a.Members {
+		poolMember, err := cloud.GetPool(a.ID, member.ID)
+		if err != nil {
+			return nil, err
+		}
+		if fi.StringValue(p.Name) == poolMember.Name {
+			found = true
+			break
+		}
+	}
+	// if not found it is created by returning nil, nil
+	// this is needed for instance in initial installation
+	if !found {
+		return nil, nil
+	}
+	pool, err := NewLBPoolTaskFromCloud(cloud, p.Lifecycle, &a, nil)
+	if err != nil {
+		return nil, fmt.Errorf("NewLBListenerTaskFromCloud: failed to fetch pool %s: %v", fi.StringValue(pool.Name), err)
+	}
+
+	actual := &PoolAssociation{
+		ID:            p.ID,
+		Name:          p.Name,
+		Pool:          pool,
+		ServerGroup:   p.ServerGroup,
+		InterfaceName: p.InterfaceName,
+		ProtocolPort:  p.ProtocolPort,
+		Lifecycle:     p.Lifecycle,
+	}
+	p.ID = actual.ID
+	return actual, nil
 }
 
 func (s *PoolAssociation) Run(context *fi.Context) error {
@@ -95,24 +144,23 @@ func (_ *PoolAssociation) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 				return fmt.Errorf("Failed to find server with id `%s`: %v", serverID, err)
 			}
 
-			poolAddress, err := openstack.GetServerFixedIP(server, fi.StringValue(e.InterfaceName))
+			memberAddress, err := openstack.GetServerFixedIP(server, fi.StringValue(e.InterfaceName))
 
 			if err != nil {
 				return fmt.Errorf("Failed to get fixed ip for associated pool: %v", err)
 			}
 
-			pool, err := t.Cloud.AssociateToPool(server, fi.StringValue(e.Pool.ID), v2pools.CreateMemberOpts{
+			member, err := t.Cloud.AssociateToPool(server, fi.StringValue(e.Pool.ID), v2pools.CreateMemberOpts{
 				Name:         fi.StringValue(e.Name),
 				ProtocolPort: fi.IntValue(e.ProtocolPort),
 				SubnetID:     fi.StringValue(e.Pool.Loadbalancer.VipSubnet),
-				Address:      poolAddress,
+				Address:      memberAddress,
 			})
 			if err != nil {
-				return fmt.Errorf("Failed to create pool: %v", err)
+				return fmt.Errorf("Failed to create member: %v", err)
 			}
-			e.ID = fi.String(pool.ID)
+			e.ID = fi.String(member.ID)
 		}
-
 		return nil
 	} else {
 		//TODO: Update Member, this is covered as `a` will always be nil
