@@ -127,3 +127,20 @@ func (c *openstackCloud) CreateNetwork(opt networks.CreateOptsBuilder) (*network
 		return n, wait.ErrWaitTimeout
 	}
 }
+
+func (c *openstackCloud) DeleteNetwork(networkID string) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err := networks.Delete(c.neutronClient, networkID).ExtractErr()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting network: %v", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}

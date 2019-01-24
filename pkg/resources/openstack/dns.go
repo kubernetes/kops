@@ -30,15 +30,17 @@ const (
 	typeDNSRecord = "dNSRecord"
 )
 
-var listDNSFunctions = []listFn{
-	listDNSRecordsets,
-}
-
-func listDNSRecordsets(cloud openstack.OpenstackCloud, clusterName string) ([]*resources.Resource, error) {
+func (os *clusterDiscoveryOS) ListDNSRecordsets() ([]*resources.Resource, error) {
 	zopts := zones.ListOpts{
-		Name: clusterName,
+		Name: os.clusterName,
 	}
-	zs, err := cloud.ListDNSZones(zopts)
+
+	// if dnsclient does not exist (designate disabled)
+	if os.osCloud.DNSClient() == nil {
+		return nil, nil
+	}
+
+	zs, err := os.osCloud.ListDNSZones(zopts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list dns zones: %s", err)
 	}
@@ -51,7 +53,7 @@ func listDNSRecordsets(cloud openstack.OpenstackCloud, clusterName string) ([]*r
 
 	z := zs[0]
 
-	rrs, err := cloud.ListDNSRecordsets(z.ID, nil)
+	rrs, err := os.osCloud.ListDNSRecordsets(z.ID, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract recordsets pages for zone %s: %v", z.Name, err)
 	}
@@ -67,6 +69,7 @@ func listDNSRecordsets(cloud openstack.OpenstackCloud, clusterName string) ([]*r
 			ID:   rr.ID,
 			Type: typeDNSRecord,
 			Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
+				// TODO: not tested and this should have retry similar to what we have in another resources
 				return recordsets.Delete(cloud.(openstack.OpenstackCloud).DNSClient(), z.ID, rr.ID).ExtractErr()
 			},
 			Obj: rr,

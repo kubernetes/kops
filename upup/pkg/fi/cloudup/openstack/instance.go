@@ -49,6 +49,10 @@ func (c *openstackCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMemb
 	return fmt.Errorf("openstackCloud::DeleteInstance not implemented")
 }
 
+func (c *openstackCloud) DeleteInstanceWithID(instanceID string) error {
+	return servers.Delete(c.novaClient, instanceID).ExtractErr()
+}
+
 func (c *openstackCloud) GetInstance(id string) (*servers.Server, error) {
 	var server *servers.Server
 
