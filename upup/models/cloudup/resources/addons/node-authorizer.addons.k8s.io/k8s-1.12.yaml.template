@@ -13,7 +13,7 @@ metadata:
     k8s-addon: {{ $name }}.addons.k8s.io
 ---
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: kops:{{ $name }}:nodes-viewer
   labels:
@@ -63,7 +63,7 @@ subjects:
   apiGroup: rbac.authorization.k8s.io
 ---
 # the service permission requires to create the bootstrap tokens
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: kops:{{ $namespace }}:{{ $name }}
@@ -80,7 +80,7 @@ rules:
   - create
   - list
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: kops:{{ $namespace }}:{{ $name }}
@@ -114,7 +114,7 @@ subjects:
   namespace: {{ $namespace }}
 ---
 kind: DaemonSet
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 metadata:
   name: {{ $name }}
   namespace: {{ $namespace }}

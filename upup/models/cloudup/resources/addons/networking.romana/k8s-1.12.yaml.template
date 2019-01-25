@@ -1,6 +1,6 @@
 ---
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: romana-listener
 rules:
@@ -39,7 +39,7 @@ metadata:
   namespace: kube-system
 ---
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: romana-listener
 roleRef:
@@ -52,7 +52,7 @@ subjects:
   namespace: kube-system
 ---
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: romana-agent
 rules:
@@ -71,7 +71,7 @@ metadata:
   namespace: kube-system
 ---
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: romana-agent
 roleRef:
@@ -117,13 +117,18 @@ spec:
   sessionAffinity: None
   type: ClusterIP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: romana-daemon
   namespace: kube-system
+  labels:
+    romana-app: daemon
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      romana-app: daemon
   template:
     metadata:
       labels:
@@ -149,13 +154,16 @@ spec:
         - --cloud=aws
         - --network-cidr-overrides=romana-network={{ .KubeControllerManager.ClusterCIDR }}
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: romana-listener
   namespace: kube-system
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      romana-app: listener
   template:
     metadata:
       labels:
@@ -179,14 +187,19 @@ spec:
           limits:
             memory: 64Mi
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: romana-agent
   namespace: kube-system
+  labels:
+    romana-app: agent
 spec:
   updateStrategy:
     type: RollingUpdate
+  selector:
+    matchLabels:
+      romana-app: agent
   template:
     metadata:
       labels:
@@ -254,7 +267,7 @@ spec:
           path: /var/run/romana
 ---
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: romana-aws
 rules:
@@ -274,7 +287,7 @@ metadata:
   namespace: kube-system
 ---
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: romana-aws
 roleRef:
@@ -286,13 +299,18 @@ subjects:
   name: romana-aws
   namespace: kube-system
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: romana-aws
   namespace: kube-system
+  labels:
+    romana-app: aws
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      romana-app: aws
   template:
     metadata:
       labels:
@@ -316,13 +334,18 @@ spec:
           limits:
             memory: 64Mi
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: romana-vpcrouter
   namespace: kube-system
+  labels:
+    romana-app: vpcrouter
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      romana-app: vpcrouter
   template:
     metadata:
       labels:
