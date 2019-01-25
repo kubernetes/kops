@@ -1,5 +1,5 @@
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
   labels:
@@ -26,7 +26,7 @@ rules:
       - patch
 ---
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
   labels:
@@ -76,7 +76,7 @@ data:
     }
 ---
 kind: DaemonSet
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 metadata:
   name: kube-flannel-ds
   namespace: kube-system
@@ -84,6 +84,11 @@ metadata:
     k8s-app: flannel
     role.kubernetes.io/networking: "1"
 spec:
+  selector:
+    matchLabels:
+      tier: node
+      app: flannel
+      role.kubernetes.io/networking: "1"
   template:
     metadata:
       labels:

@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: kopeio-networking-agent
@@ -7,6 +7,10 @@ metadata:
     k8s-addon: networking.kope.io
     role.kubernetes.io/networking: "1"
 spec:
+  selector:
+    matchLabels:
+      name: kopeio-networking-agent
+      role.kubernetes.io/networking: "1"
   template:
     metadata:
       labels:
