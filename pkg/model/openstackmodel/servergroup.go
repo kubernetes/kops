@@ -173,7 +173,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		lbSubnetName := b.MasterInstanceGroups()[0].Spec.Subnets[0]
 		lbTask := &openstacktasks.LB{
 			Name:      fi.String(b.Cluster.Spec.MasterPublicName),
-			Subnet:    fi.String(lbSubnetName),
+			Subnet:    fi.String(lbSubnetName + "." + b.ClusterName()),
 			Lifecycle: b.Lifecycle,
 		}
 		c.AddTask(lbTask)
