@@ -1,0 +1,82 @@
+---
+apiVersion: extensions/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  annotations:
+    k8s-addon: podsecuritypolicy.addons.k8s.io
+  name: kube-system
+spec:
+  allowedCapabilities:
+  - '*'
+  fsGroup:
+    rule: RunAsAny
+  hostPID: true
+  hostIPC: true
+  hostNetwork: true
+  hostPorts:
+  - min: 1
+    max: 65536
+  privileged: true
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  annotations:
+    k8s-addon: podsecuritypolicy.addons.k8s.io
+  name: kops:kube-system:psp
+rules:
+- apiGroups:
+  - policy
+  resources:
+  - podsecuritypolicies
+  resourceNames:
+  - kube-system
+  verbs:
+  - use
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: kops:kube-system:psp
+roleRef:
+  kind: ClusterRole
+  name: kops:kube-system:psp
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: Group
+  name: system:masters
+  apiGroup: rbac.authorization.k8s.io
+# permit the kubelets to access this policy (used for manifests)
+- kind: User
+  name: kubelet
+  apiGroup: rbac.authorization.k8s.io
+{{- if UseBootstrapTokens }}
+- kind: Group
+  name: system:nodes
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  annotations:
+    k8s-addon: podsecuritypolicy.addons.k8s.io
+  name: kops:kube-system:psp
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: kops:kube-system:psp
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+# permit the cluster wise admin to use this policy
+- kind: Group
+  name: system:serviceaccounts:kube-system
+  apiGroup: rbac.authorization.k8s.io
