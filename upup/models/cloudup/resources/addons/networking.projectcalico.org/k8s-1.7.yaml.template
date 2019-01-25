@@ -60,7 +60,7 @@ data:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: calico
+  name: calico-node
   labels:
     role.kubernetes.io/networking: "1"
 rules:
@@ -88,7 +88,7 @@ rules:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: calico
+  name: calico-node
   namespace: kube-system
   labels:
     role.kubernetes.io/networking: "1"
@@ -97,16 +97,16 @@ metadata:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: calico
+  name: calico-node
   labels:
     role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: calico
+  name: calico-node
 subjects:
 - kind: ServiceAccount
-  name: calico
+  name: calico-node
   namespace: kube-system
 
 ---
@@ -139,7 +139,7 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       hostNetwork: true
-      serviceAccountName: calico
+      serviceAccountName: calico-node
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
@@ -155,7 +155,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v2.6.7
+          image: quay.io/calico/node:v2.6.12
           resources:
             requests:
               cpu: 10m
@@ -244,7 +244,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/calico/cni:v1.11.2
+          image: quay.io/calico/cni:v1.11.8
           resources:
             requests:
               cpu: 10m
@@ -327,7 +327,7 @@ spec:
       # The controllers must run in the host network namespace so that
       # it isn't governed by policy that would prevent it from working.
       hostNetwork: true
-      serviceAccountName: calico
+      serviceAccountName: calico-node
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
@@ -335,7 +335,7 @@ spec:
         operator: Exists
       containers:
         - name: calico-kube-controllers
-          image: quay.io/calico/kube-controllers:v1.0.3
+          image: quay.io/calico/kube-controllers:v1.0.5
           resources:
             requests:
               cpu: 10m
@@ -398,7 +398,7 @@ spec:
         k8s-app: calico-policy
     spec:
       hostNetwork: true
-      serviceAccountName: calico
+      serviceAccountName: calico-node
       containers:
         - name: calico-policy-controller
           # This shouldn't get updated, since this is the last version we shipped that should be used.
