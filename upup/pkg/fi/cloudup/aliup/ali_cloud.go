@@ -51,6 +51,7 @@ type ALICloud interface {
 	SlbClient() *slb.Client
 	RamClient() *ram.RamClient
 	EssClient() *ess.Client
+	VpcClient() *ecs.Client
 
 	Region() string
 	AddClusterTags(tags map[string]string)
@@ -67,6 +68,7 @@ type aliCloudImplementation struct {
 	slbClient *slb.Client
 	ramClient *ram.RamClient
 	essClient *ess.Client
+	vpcClient *ecs.Client
 
 	region string
 	tags   map[string]string
@@ -95,6 +97,7 @@ func NewALICloud(region string, tags map[string]string) (ALICloud, error) {
 	ramclient := ram.NewClient(accessKeyId, accessKeySecret)
 	c.ramClient = ramclient.(*ram.RamClient)
 	c.essClient = ess.NewClient(accessKeyId, accessKeySecret)
+	c.vpcClient = ecs.NewVPCClient(accessKeyId, accessKeySecret, common.Region(region))
 
 	c.tags = tags
 
@@ -115,6 +118,10 @@ func (c *aliCloudImplementation) RamClient() *ram.RamClient {
 
 func (c *aliCloudImplementation) EssClient() *ess.Client {
 	return c.essClient
+}
+
+func (c *aliCloudImplementation) VpcClient() *ecs.Client {
+	return c.vpcClient
 }
 
 func (c *aliCloudImplementation) Region() string {
