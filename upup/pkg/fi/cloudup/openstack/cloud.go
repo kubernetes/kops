@@ -197,6 +197,8 @@ type OpenstackCloud interface {
 
 	CreatePool(opts v2pools.CreateOpts) (*v2pools.Pool, error)
 
+	GetPool(poolID string, memberID string) (*v2pools.Member, error)
+
 	ListPools(v2pools.ListOpts) ([]v2pools.Pool, error)
 
 	ListListeners(opts listeners.ListOpts) ([]listeners.Listener, error)
