@@ -68,6 +68,14 @@ func (c *Volume) Find(context *fi.Context) (*Volume, error) {
 		Tags:             v.Metadata,
 		Lifecycle:        c.Lifecycle,
 	}
+	// remove tags "readonly" and "attached_mode", openstack are adding these and if not removed
+	// kops will always try to update volumes
+	if _, ok := actual.Tags["readonly"]; ok {
+		delete(actual.Tags, "readonly")
+	}
+	if _, ok := actual.Tags["attached_mode"]; ok {
+		delete(actual.Tags, "attached_mode")
+	}
 	c.ID = actual.ID
 	c.AvailabilityZone = actual.AvailabilityZone
 	return actual, nil
