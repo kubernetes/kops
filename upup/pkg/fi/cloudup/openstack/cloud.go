@@ -151,8 +151,8 @@ type OpenstackCloud interface {
 	//CreateSubnet will create a new Neutron subnet
 	CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.Subnet, error)
 
-	// ListKeypair will return the Nova keypairs
-	ListKeypair(name string) (*keypairs.KeyPair, error)
+	// GetKeypair will return the Nova keypair
+	GetKeypair(name string) (*keypairs.KeyPair, error)
 
 	// CreateKeypair will create a new Nova Keypair
 	CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error)
