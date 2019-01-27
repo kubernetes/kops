@@ -57,8 +57,9 @@ func NewLBPoolTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecy
 	}
 
 	a := &LBPool{
-		ID:   fi.String(pool.ID),
-		Name: fi.String(pool.Name),
+		ID:        fi.String(pool.ID),
+		Name:      fi.String(pool.Name),
+		Lifecycle: lifecycle,
 	}
 	if len(pool.Loadbalancers) == 1 {
 		lbID := pool.Loadbalancers[0]
