@@ -155,6 +155,18 @@ spec:
     zone: us-east-1a
 ```
 
+In the case that you don't use NAT gateways or internet gateways, you can use the "External" flag for egress to force kops to ignore egress for the subnet. This can be useful when other tools are used to manage egress for the subnet such as virtual private gateways. Please note that your cluster may need to have access to the internet upon creation, so egress must be available upon initializing a cluster. This is intended for use when egress is managed external to kops, typically with an existing cluster.
+
+```
+spec:
+  subnets:
+  - cidr: 10.20.64.0/21
+    name: us-east-1a
+    egress: External
+    type: Private
+    zone: us-east-1a
+```
+
 #### publicIP
 The IP of an existing EIP that you would like to attach to the NAT gateway.
 
