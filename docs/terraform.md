@@ -6,7 +6,7 @@ The gist of it is that, instead of letting kops apply the changes, you tell kops
 
 The Terraform output should be reasonably stable (i.e. the text files should only change where something has actually changed - items should appear in the same order etc). This is extremely useful when using version control as you can diff your changes easily.
 
-Note that if you modify the Terraform files that kops spits out, it will override your changes with the configuration state defined by its own configs. In other terms, kops own state is the ultimate source of truth (as far as kops is concerned), and Terraform is a representation of that state for your convenience.
+Note that if you modify the Terraform files that kops spits out, it will override your changes with the configuration state defined by its own configs. In other terms, kops's own state is the ultimate source of truth (as far as kops is concerned), and Terraform is a representation of that state for your convenience.
 
 Ps: Steps below assume a recent version of Terraform. There's a workaround for a bug if you are using a Terraform version before 0.7 that you should be aware of (see [_"Caveats"_ section](#caveats)).
 
@@ -111,7 +111,7 @@ Ps: You don't have to `kops delete cluster` if you just want to recreate from sc
 
 Changes made with `kops edit` (like enabling RBAC and / or feature gates) will result in changes to the launch configuration of your cluster nodes. After a `terraform apply`, they won't be applied right away since terraform will not launch new instances as part of that.
 
-In order to see your changes applied to the cluster you'll also need to run `kops rolling-update` after running `terraform apply`, this will ensure that all nodes changes have the desired settings configured with `kops edit`.
+To see your changes applied to the cluster you'll also need to run `kops rolling-update` after running `terraform apply`. This will ensure that all nodes' changes have the desired settings configured with `kops edit`.
 
 #### Workaround for Terraform <0.7
 
