@@ -94,5 +94,9 @@ func (s *CloudDiscoveryStatusStore) FindClusterStatus(cluster *kops.Cluster) (*k
 	if aliCloud, ok := cloud.(aliup.ALICloud); ok {
 		return aliCloud.FindClusterStatus(cluster)
 	}
+
+	if osCloud, ok := cloud.(openstack.OpenstackCloud); ok {
+		return osCloud.FindClusterStatus(cluster)
+	}
 	return nil, fmt.Errorf("Etcd Status not implemented for %T", cloud)
 }
