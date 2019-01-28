@@ -320,6 +320,43 @@ func (c *DNSController) runOnce() error {
 	return nil
 }
 
+func (c *DNSController) RemoveRecordsImmediate(records []Record) error {
+	op, err := newDNSOp(c.zoneRules, c.dnsCache)
+	if err != nil {
+		return err
+	}
+
+	// Store a list of all the errors, so that one bad apple doesn't block every other request
+	var errors []error
+
+	for _, r := range records {
+		k := recordKey{
+			RecordType: r.RecordType,
+			FQDN:       r.FQDN,
+		}
+
+		err := op.deleteRecords(k)
+		if err != nil {
+			glog.Infof("error deleting records for %s: %v", k, err)
+			errors = append(errors, err)
+		}
+	}
+
+	for key, changeset := range op.changesets {
+		glog.V(2).Infof("applying DNS changeset for zone %s", key)
+		if err := changeset.Apply(); err != nil {
+			glog.Warningf("error applying DNS changeset for zone %s: %v", key, err)
+			errors = append(errors, fmt.Errorf("error applying DNS changeset for zone %s: %v", key, err))
+		}
+	}
+
+	if len(errors) != 0 {
+		return errors[0]
+	}
+
+	return nil
+}
+
 // dnsOp manages a single dns change; we cache results and state for the duration of the operation
 type dnsOp struct {
 	dnsCache     *dnsCache

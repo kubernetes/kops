@@ -96,6 +96,9 @@ func run() error {
 	manageEtcd := false
 	flag.BoolVar(&manageEtcd, "manage-etcd", manageEtcd, "Set to manage etcd (deprecated in favor of etcd-manager)")
 
+	var removeDNSNames string
+	flag.StringVar(&removeDNSNames, "remove-dns-names", removeDNSNames, "If set, will remove the DNS records specified")
+
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
 
@@ -341,6 +344,11 @@ func run() error {
 			DNSController: dnsController,
 		}
 	}
+
+	go func() {
+		removeDNSRecords(removeDNSNames, dnsProvider)
+	}()
+
 	modelDir := "model/etcd"
 
 	var channels []string

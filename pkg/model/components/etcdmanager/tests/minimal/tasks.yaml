@@ -1,4 +1,13 @@
 Lifecycle: null
+Name: etcd-clients-ca
+Signer: null
+alternateNameTasks: null
+alternateNames: null
+format: v1alpha2
+subject: cn=etcd-clients-ca
+type: ca
+---
+Lifecycle: null
 Name: etcd-manager-ca-events
 Signer: null
 alternateNameTasks: null
@@ -14,6 +23,24 @@ alternateNameTasks: null
 alternateNames: null
 format: v1alpha2
 subject: cn=etcd-manager-ca-main
+type: ca
+---
+Lifecycle: null
+Name: etcd-peers-ca-events
+Signer: null
+alternateNameTasks: null
+alternateNames: null
+format: v1alpha2
+subject: cn=etcd-peers-ca-events
+type: ca
+---
+Lifecycle: null
+Name: etcd-peers-ca-main
+Signer: null
+alternateNameTasks: null
+alternateNames: null
+format: v1alpha2
+subject: cn=etcd-peers-ca-main
 type: ca
 ---
 Contents:
@@ -56,10 +83,10 @@ Contents:
         - -c
         - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
           --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-events
-          --client-urls=http://__name__:4002 --cluster-name=etcd-events --containerized=true
+          --client-urls=https://__name__:4002 --cluster-name=etcd-events --containerized=true
           --dns-suffix=.internal.minimal.example.com --etcd-insecure=true --grpc-port=3997
-          --insecure=false --peer-urls=http://__name__:2381 --quarantine-client-urls=http://__name__:3995
-          --v=8 --volume-name-tag=k8s.io/etcd/events --volume-provider=aws --volume-tag=k8s.io/etcd/events
+          --insecure=false --peer-urls=https://__name__:2381 --quarantine-client-urls=https://__name__:3995
+          --v=6 --volume-name-tag=k8s.io/etcd/events --volume-provider=aws --volume-tag=k8s.io/etcd/events
           --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
           > /tmp/pipe 2>&1
         image: kopeio/etcd-manager:3.0.20190224
@@ -126,10 +153,10 @@ Contents:
         - -c
         - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
           --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-main
-          --client-urls=http://__name__:4001 --cluster-name=etcd --containerized=true
+          --client-urls=https://__name__:4001 --cluster-name=etcd --containerized=true
           --dns-suffix=.internal.minimal.example.com --etcd-insecure=true --grpc-port=3996
-          --insecure=false --peer-urls=http://__name__:2380 --quarantine-client-urls=http://__name__:3994
-          --v=8 --volume-name-tag=k8s.io/etcd/main --volume-provider=aws --volume-tag=k8s.io/etcd/main
+          --insecure=false --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994
+          --v=6 --volume-name-tag=k8s.io/etcd/main --volume-provider=aws --volume-tag=k8s.io/etcd/main
           --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
           > /tmp/pipe 2>&1
         image: kopeio/etcd-manager:3.0.20190224
