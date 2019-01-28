@@ -32,7 +32,7 @@ var _ fi.ModelBuilder = &EtcdTLSBuilder{}
 // Build is responsible for performing setup for CNIs that need etcd TLS support
 func (b *EtcdTLSBuilder) Build(c *fi.ModelBuilderContext) error {
 	// @check if tls is enabled and if so, we need to download the client certificates
-	if b.UseEtcdTLS() {
+	if !b.UseEtcdManager() && b.UseEtcdTLS() {
 		name := "calico-client"
 		dirname := "calico"
 		ca := filepath.Join(dirname, "ca.pem")
