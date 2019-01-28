@@ -35,8 +35,6 @@ const (
 	DefaultVolumeType = ec2.VolumeTypeGp2
 	// DefaultVolumeIops is the default volume iops
 	DefaultVolumeIops = 100
-	// DefaultRootVolumeTermination sets the default
-	DefaultRootVolumeTermination = true
 )
 
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
