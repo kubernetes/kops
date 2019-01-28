@@ -10,6 +10,7 @@ go_library(
         "directories.go",
         "docker.go",
         "etcd.go",
+        "etcd_manager_tls.go",
         "etcd_tls.go",
         "file_assets.go",
         "firewall.go",

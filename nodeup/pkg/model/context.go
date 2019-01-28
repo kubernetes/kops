@@ -371,8 +371,13 @@ func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, n
 		return err
 	}
 
+	p := filename
+	if !filepath.IsAbs(p) {
+		p = filepath.Join(c.PathSrvKubernetes(), filename)
+	}
+
 	ctx.AddTask(&nodetasks.File{
-		Path:     filepath.Join(c.PathSrvKubernetes(), filename),
+		Path:     p,
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0600"),
@@ -397,8 +402,13 @@ func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, na
 		return err
 	}
 
+	p := filename
+	if !filepath.IsAbs(p) {
+		p = filepath.Join(c.PathSrvKubernetes(), filename)
+	}
+
 	ctx.AddTask(&nodetasks.File{
-		Path:     filepath.Join(c.PathSrvKubernetes(), filename),
+		Path:     p,
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0600"),
