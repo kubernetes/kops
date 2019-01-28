@@ -74,7 +74,9 @@ func NewLBPoolTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecy
 		a.Loadbalancer = loadbalancerTask
 	}
 	if find != nil {
+		// Update all search terms
 		find.ID = a.ID
+		find.Name = a.Name
 	}
 	return a, nil
 }
