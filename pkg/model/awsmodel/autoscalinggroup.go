@@ -111,17 +111,9 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				InstanceType:           s(strings.Split(ig.Spec.MachineType, ",")[0]),
 				RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
 				RootVolumeSize:         i64(int64(volumeSize)),
-				RootVolumeType:         s(volumeType),
-<<<<<<< HEAD
-				SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
-=======
-				RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
-<<<<<<< HEAD
 				RootVolumeTermination:  ig.Spec.RootVolumeTermination,
->>>>>>> Carry the Spec value through
-=======
-				RootVolumeTermination:  rootVolumeTermination,
->>>>>>> Default to true
+				RootVolumeType:         s(volumeType),
+				SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
 			}
 
 			if volumeType == ec2.VolumeTypeIo1 {
