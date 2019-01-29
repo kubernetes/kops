@@ -450,7 +450,6 @@ type terraformLaunchConfiguration struct {
 	AssociatePublicIpAddress *bool                   `json:"associate_public_ip_address,omitempty"`
 	UserData                 *terraform.Literal      `json:"user_data,omitempty"`
 	RootBlockDevice          *terraformBlockDevice   `json:"root_block_device,omitempty"`
-	EbsDeleteOnTermination   *bool                   `json:"delete_on_termination,omitempty"`
 	EBSOptimized             *bool                   `json:"ebs_optimized,omitempty"`
 	EBSBlockDevice           []*terraformBlockDevice `json:"ebs_block_device,omitempty"`
 	EphemeralBlockDevice     []*terraformBlockDevice `json:"ephemeral_block_device,omitempty"`

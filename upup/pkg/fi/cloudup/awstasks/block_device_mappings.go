@@ -28,7 +28,7 @@ import (
 type BlockDeviceMapping struct {
 	// DeviceName is the device name of the EBS
 	DeviceName *string
-	// EbsDeleteOnTermination indicates the volume should be delete on instance termination
+	// EbsDeleteOnTermination indicates the volume should be deleted on instance termination
 	EbsDeleteOnTermination *bool
 	// EbsEncrypted indicates the volume should be encrypted
 	EbsEncrypted *bool

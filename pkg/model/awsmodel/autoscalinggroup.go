@@ -109,7 +109,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				InstanceType:           s(strings.Split(ig.Spec.MachineType, ",")[0]),
 				RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
 				RootVolumeSize:         i64(int64(volumeSize)),
-				RootVolumeTermination:  ig.Spec.RootVolumeTermination,
+				RootVolumeTermination:  rootVolumeTermination,
 				RootVolumeType:         s(volumeType),
 				SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
 			}
