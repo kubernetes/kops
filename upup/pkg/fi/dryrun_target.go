@@ -403,6 +403,17 @@ func (t *DryRunTarget) Finish(taskMap map[string]Task) error {
 	return t.PrintReport(taskMap, t.out)
 }
 
+// Changes returns all changed tasks
+func (t *DryRunTarget) Changes() []Task {
+	var tasks []Task
+	for _, r := range t.changes {
+		if r.aIsNil {
+			tasks = append(tasks, r.changes)
+		}
+	}
+	return tasks
+}
+
 // HasChanges returns true iff any changes would have been made
 func (t *DryRunTarget) HasChanges() bool {
 	return len(t.changes)+len(t.deletions) != 0
