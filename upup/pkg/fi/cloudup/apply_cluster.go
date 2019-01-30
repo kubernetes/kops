@@ -70,6 +70,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
+	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -121,7 +122,7 @@ type ApplyClusterCmd struct {
 	// Formats:
 	//  raw url: http://... or https://...
 	//  url with hash: <hex>@http://... or <hex>@https://...
-	Assets []string
+	Assets []*MirroredAsset
 
 	Clientset simple.Clientset
 
@@ -1140,27 +1141,39 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		if err != nil {
 			return err
 		}
-		c.Assets = append(c.Assets, hash.Hex()+"@"+u.String())
+		c.Assets = append(c.Assets, BuildMirroredAsset(u, hash))
 	}
 
 	if usesCNI(c.Cluster) {
-		cniAsset, cniAssetHashString, err := findCNIAssets(c.Cluster, assetBuilder)
+		cniAsset, cniAssetHash, err := findCNIAssets(c.Cluster, assetBuilder)
 		if err != nil {
 			return err
 		}
 
-		c.Assets = append(c.Assets, cniAssetHashString+"@"+cniAsset.String())
+		c.Assets = append(c.Assets, BuildMirroredAsset(cniAsset, cniAssetHash))
 	}
 
 	if c.Cluster.Spec.Networking.LyftVPC != nil {
-		lyftVPCDownloadURL := os.Getenv("LYFT_VPC_DOWNLOAD_URL")
-		if lyftVPCDownloadURL == "" {
-			lyftVPCDownloadURL = "bfdc65028a3bf8ffe14388fca28ede3600e7e2dee4e781908b6a23f9e79f86ad@https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.4.2/cni-ipvlan-vpc-k8s-v0.4.2.tar.gz"
+		var hash *hashing.Hash
+
+		urlString := os.Getenv("LYFT_VPC_DOWNLOAD_URL")
+		if urlString == "" {
+			urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.4.2/cni-ipvlan-vpc-k8s-v0.4.2.tar.gz"
+			hash, err = hashing.FromString("bfdc65028a3bf8ffe14388fca28ede3600e7e2dee4e781908b6a23f9e79f86ad")
+			if err != nil {
+				// Should be impossible
+				return fmt.Errorf("invalid hard-coded hash for lyft url")
+			}
 		} else {
-			glog.Warningf("Using url from LYFT_VPC_DOWNLOAD_URL env var: %q", lyftVPCDownloadURL)
+			glog.Warningf("Using url from LYFT_VPC_DOWNLOAD_URL env var: %q", urlString)
 		}
 
-		c.Assets = append(c.Assets, lyftVPCDownloadURL)
+		u, err := url.Parse(urlString)
+		if err != nil {
+			return fmt.Errorf("unable to parse lyft-vpc URL %q", urlString)
+		}
+
+		c.Assets = append(c.Assets, BuildMirroredAsset(u, hash))
 	}
 
 	// TODO figure out if we can only do this for CoreOS only and GCE Container OS
@@ -1173,7 +1186,7 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		if err != nil {
 			return err
 		}
-		c.Assets = append(c.Assets, hash.Hex()+"@"+utilsLocation.String())
+		c.Assets = append(c.Assets, BuildMirroredAsset(utilsLocation, hash))
 	}
 
 	n, hash, err := NodeUpLocation(assetBuilder)
@@ -1265,7 +1278,9 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 		config.Tags = append(config.Tags, tag)
 	}
 
-	config.Assets = c.Assets
+	for _, a := range c.Assets {
+		config.Assets = append(config.Assets, a.CompactString())
+	}
 	config.ClusterName = cluster.ObjectMeta.Name
 	config.ConfigBase = fi.String(configBase.Path())
 	config.InstanceGroupName = ig.ObjectMeta.Name

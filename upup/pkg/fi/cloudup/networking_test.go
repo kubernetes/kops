@@ -36,7 +36,7 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 	cluster.Spec.KubernetesVersion = "v1.9.0"
 
 	assetBuilder := assets.NewAssetBuilder(cluster, "")
-	cniAsset, cniAssetHashString, err := findCNIAssets(cluster, assetBuilder)
+	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder)
 
 	if err != nil {
 		t.Errorf("Unable to parse k8s version %s", err)
@@ -46,8 +46,8 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 		t.Errorf("Expected CNI version from Environment variable %q, but got %q instead", desiredCNIVersion, cniAsset)
 	}
 
-	if cniAssetHashString != "" {
-		t.Errorf("Expected Empty CNI Version Hash String, but got %q instead", cniAssetHashString)
+	if cniAssetHash != nil {
+		t.Errorf("Expected Empty CNI Version Hash String, but got %v instead", cniAssetHash)
 	}
 }
 
@@ -56,7 +56,7 @@ func Test_FindCNIAssetDefaultValue1_6(t *testing.T) {
 	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.7.0"
 	assetBuilder := assets.NewAssetBuilder(cluster, "")
-	cniAsset, cniAssetHashString, err := findCNIAssets(cluster, assetBuilder)
+	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder)
 
 	if err != nil {
 		t.Errorf("Unable to parse k8s version %s", err)
@@ -66,8 +66,8 @@ func Test_FindCNIAssetDefaultValue1_6(t *testing.T) {
 		t.Errorf("Expected default CNI version %q and got %q", defaultCNIAssetK8s1_5, cniAsset)
 	}
 
-	if cniAssetHashString != defaultCNIAssetHashStringK8s1_6 {
-		t.Errorf("Expected default CNI Version Hash String %q and got %q", defaultCNIAssetHashStringK8s1_5, cniAssetHashString)
+	if cniAssetHash.Hex() != defaultCNIAssetHashStringK8s1_6 {
+		t.Errorf("Expected default CNI Version Hash String %q and got %v", defaultCNIAssetHashStringK8s1_5, cniAssetHash)
 	}
 
 }
@@ -77,7 +77,7 @@ func Test_FindCNIAssetDefaultValue1_5(t *testing.T) {
 	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.5.12"
 	assetBuilder := assets.NewAssetBuilder(cluster, "")
-	cniAsset, cniAssetHashString, err := findCNIAssets(cluster, assetBuilder)
+	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder)
 
 	if err != nil {
 		t.Errorf("Unable to parse k8s version %s", err)
@@ -87,8 +87,8 @@ func Test_FindCNIAssetDefaultValue1_5(t *testing.T) {
 		t.Errorf("Expected default CNI version %q and got %q", defaultCNIAssetK8s1_5, cniAsset)
 	}
 
-	if cniAssetHashString != defaultCNIAssetHashStringK8s1_5 {
-		t.Errorf("Expected default CNI Version Hash String %q and got %q", defaultCNIAssetHashStringK8s1_5, cniAssetHashString)
+	if cniAssetHash.Hex() != defaultCNIAssetHashStringK8s1_5 {
+		t.Errorf("Expected default CNI Version Hash String %q and got %v", defaultCNIAssetHashStringK8s1_5, cniAssetHash)
 	}
 
 }
