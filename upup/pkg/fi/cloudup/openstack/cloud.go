@@ -20,6 +20,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"k8s.io/kops/pkg/dns"
@@ -430,8 +431,37 @@ func (c *openstackCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	return nil, fmt.Errorf("openstackCloud::FindVPCInfo not implemented")
 }
 
+// DeleteGroup in openstack will delete servergroup, instances and ports
 func (c *openstackCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
-	return fmt.Errorf("openstackCloud::DeleteGroup not implemented")
+	grp := g.Raw.(*servergroups.ServerGroup)
+
+	for _, id := range grp.Members {
+		err := c.DeleteInstanceWithID(id)
+		if err != nil {
+			return fmt.Errorf("Could not delete instance %q: %v", id, err)
+		}
+	}
+
+	ports, err := c.ListPorts(ports.ListOpts{})
+	if err != nil {
+		return fmt.Errorf("Could not list ports %v", err)
+	}
+
+	for _, port := range ports {
+		if strings.Contains(port.Name, grp.Name) {
+			err := c.DeletePort(port.ID)
+			if err != nil {
+				return fmt.Errorf("Could not delete port %q: %v", port.ID, err)
+			}
+		}
+	}
+
+	err := c.DeleteServerGroup(grp.ID)
+	if err != nil {
+		return fmt.Errorf("Could not server group %q: %v", grp.ID, err)
+	}
+
+	return nil
 }
 
 func (c *openstackCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
