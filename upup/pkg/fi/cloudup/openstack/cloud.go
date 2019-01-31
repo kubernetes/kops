@@ -101,6 +101,9 @@ type OpenstackCloud interface {
 	// CreateInstance will create an openstack server provided create opts
 	CreateInstance(servers.CreateOptsBuilder) (*servers.Server, error)
 
+	//DeleteInstanceWithID will delete instance
+	DeleteInstanceWithID(instanceID string) error
+
 	// SetVolumeTags will set the tags for the Cinder volume
 	SetVolumeTags(id string, tags map[string]string) error
 
@@ -115,11 +118,17 @@ type OpenstackCloud interface {
 
 	AttachVolume(serverID string, opt volumeattach.CreateOpts) (*volumeattach.VolumeAttachment, error)
 
+	//DeleteVolume will delete volume
+	DeleteVolume(volumeID string) error
+
 	//ListSecurityGroups will return the Neutron security groups which match the options
 	ListSecurityGroups(opt sg.ListOpts) ([]sg.SecGroup, error)
 
 	//CreateSecurityGroup will create a new Neutron security group
 	CreateSecurityGroup(opt sg.CreateOptsBuilder) (*sg.SecGroup, error)
+
+	//DeleteSecurityGroup will delete securitygroup
+	DeleteSecurityGroup(sgID string) error
 
 	//ListSecurityGroupRules will return the Neutron security group rules which match the options
 	ListSecurityGroupRules(opt sgr.ListOpts) ([]sgr.SecGroupRule, error)
@@ -139,11 +148,20 @@ type OpenstackCloud interface {
 	//CreateNetwork will create a new Neutron network
 	CreateNetwork(opt networks.CreateOptsBuilder) (*networks.Network, error)
 
+	//DeleteNetwork will delete neutron network
+	DeleteNetwork(networkID string) error
+
 	//ListRouters will return the Neutron routers which match the options
 	ListRouters(opt routers.ListOpts) ([]routers.Router, error)
 
 	//CreateRouter will create a new Neutron router
 	CreateRouter(opt routers.CreateOptsBuilder) (*routers.Router, error)
+
+	//DeleteRouter will delete neutron router
+	DeleteRouter(routerID string) error
+
+	//DeleteSubnet will delete neutron subnet
+	DeleteSubnet(subnetID string) error
 
 	//ListSubnets will return the Neutron subnets which match the options
 	ListSubnets(opt subnets.ListOptsBuilder) ([]subnets.Subnet, error)
@@ -154,6 +172,12 @@ type OpenstackCloud interface {
 	// GetKeypair will return the Nova keypair
 	GetKeypair(name string) (*keypairs.KeyPair, error)
 
+	// ListKeypairs will return the all Nova keypairs
+	ListKeypairs() ([]keypairs.KeyPair, error)
+
+	// DeleteKeyPair will delete a Nova keypair
+	DeleteKeyPair(name string) error
+
 	// CreateKeypair will create a new Nova Keypair
 	CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error)
 
@@ -162,14 +186,23 @@ type OpenstackCloud interface {
 	//ListPorts will return the Neutron ports which match the options
 	ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error)
 
+	// DeletePort will delete a neutron port
+	DeletePort(portID string) error
+
 	//CreateRouterInterface will create a new Neutron router interface
 	CreateRouterInterface(routerID string, opt routers.AddInterfaceOptsBuilder) (*routers.InterfaceInfo, error)
+
+	//DeleteRouterInterface will delete router interface from subnet
+	DeleteRouterInterface(routerID string, opt routers.RemoveInterfaceOptsBuilder) error
 
 	// CreateServerGroup will create a new server group.
 	CreateServerGroup(opt servergroups.CreateOptsBuilder) (*servergroups.ServerGroup, error)
 
 	// ListServerGroups will list available server groups
 	ListServerGroups() ([]servergroups.ServerGroup, error)
+
+	// DeleteServerGroup will delete a nova server group
+	DeleteServerGroup(groupID string) error
 
 	// ListDNSZones will list available DNS zones
 	ListDNSZones(opt zones.ListOptsBuilder) ([]zones.Zone, error)
@@ -182,6 +215,9 @@ type OpenstackCloud interface {
 	CreateLB(opt loadbalancers.CreateOptsBuilder) (*loadbalancers.LoadBalancer, error)
 
 	ListLBs(opt loadbalancers.ListOptsBuilder) ([]loadbalancers.LoadBalancer, error)
+
+	// DeleteLB will delete loadbalancer
+	DeleteLB(lbID string, opt loadbalancers.DeleteOpts) error
 
 	GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
 
@@ -201,9 +237,15 @@ type OpenstackCloud interface {
 
 	ListPools(v2pools.ListOpts) ([]v2pools.Pool, error)
 
+	// DeletePool will delete loadbalancer pool
+	DeletePool(poolID string) error
+
 	ListListeners(opts listeners.ListOpts) ([]listeners.Listener, error)
 
 	CreateListener(opts listeners.CreateOpts) (*listeners.Listener, error)
+
+	// DeleteListener will delete loadbalancer listener
+	DeleteListener(listenerID string) error
 
 	GetStorageAZFromCompute(azName string) (*az.AvailabilityZone, error)
 
@@ -455,4 +497,18 @@ func (c *openstackCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiI
 	}
 
 	return ingresses, nil
+}
+
+func isNotFound(err error) bool {
+	if _, ok := err.(gophercloud.ErrDefault404); ok {
+		return true
+	}
+
+	if errCode, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok {
+		if errCode.Actual == http.StatusNotFound {
+			return true
+		}
+	}
+
+	return false
 }

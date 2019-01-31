@@ -114,3 +114,20 @@ func (c *openstackCloud) SetVolumeTags(id string, tags map[string]string) error 
 		return wait.ErrWaitTimeout
 	}
 }
+
+func (c *openstackCloud) DeleteVolume(volumeID string) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err := cinder.Delete(c.cinderClient, volumeID).ExtractErr()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting volume: %v", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}

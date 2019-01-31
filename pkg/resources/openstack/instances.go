@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,45 +17,36 @@ limitations under the License.
 package openstack
 
 import (
-	"fmt"
-
-	"github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
 const (
-	typeVolume = "Volume"
+	typeInstance = "Instance"
 )
 
-var listBlockStorageFunctions = []listFn{
-	listVolumes,
-}
-
-func listVolumes(cloud openstack.OpenstackCloud, clusterName string) ([]*resources.Resource, error) {
+func (os *clusterDiscoveryOS) ListInstances() ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
-
-	opts := volumes.ListOpts{
-		Metadata: cloud.GetCloudTags(),
+	opt := servers.ListOpts{
+		Name: os.clusterName + "?",
 	}
-	vs, err := cloud.ListVolumes(opts)
+	instances, err := os.osCloud.ListInstances(opt)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list volumes: %s", err)
+		return resourceTrackers, err
 	}
 
-	for _, v := range vs {
+	for _, instance := range instances {
 		resourceTracker := &resources.Resource{
-			Name: v.Name,
-			ID:   v.ID,
-			Type: typeVolume,
+			Name: instance.Name,
+			ID:   instance.ID,
+			Type: typeInstance,
 			Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
-				return volumes.Delete(cloud.(openstack.OpenstackCloud).BlockStorageClient(), r.ID).ExtractErr()
+				return cloud.(openstack.OpenstackCloud).DeleteInstanceWithID(r.ID)
 			},
-			Obj: v,
 		}
 		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
-
 	return resourceTrackers, nil
 }
