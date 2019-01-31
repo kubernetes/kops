@@ -88,3 +88,37 @@ func (c *openstackCloud) CreateRouterInterface(routerID string, opt routers.AddI
 		return i, wait.ErrWaitTimeout
 	}
 }
+
+func (c *openstackCloud) DeleteRouterInterface(routerID string, opt routers.RemoveInterfaceOptsBuilder) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		_, err := routers.RemoveInterface(c.neutronClient, routerID, opt).Extract()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting router interface: %v", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) DeleteRouter(routerID string) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err := routers.Delete(c.neutronClient, routerID).ExtractErr()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting router: %v", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}

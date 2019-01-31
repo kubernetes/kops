@@ -68,3 +68,20 @@ func (c *openstackCloud) ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, err
 		return p, wait.ErrWaitTimeout
 	}
 }
+
+func (c *openstackCloud) DeletePort(portID string) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err := ports.Delete(c.neutronClient, portID).ExtractErr()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting port: %v", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}
