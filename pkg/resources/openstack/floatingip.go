@@ -37,11 +37,11 @@ func DeleteL3FloatingIP(cloud fi.Cloud, r *resources.Resource) error {
 
 func (os *clusterDiscoveryOS) listL3FloatingIPs(routerID string) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
-	l3floatingIPs, err := os.osCloud.ListL3FloatingIPs(l3floatingip.ListOpts{})
+	floatingIPs, err := os.osCloud.ListL3FloatingIPs(l3floatingip.ListOpts{})
 	if err != nil {
 		return resourceTrackers, err
 	}
-	for _, floatingIP := range l3floatingIPs {
+	for _, floatingIP := range floatingIPs {
 		if floatingIP.RouterID == routerID {
 			resourceTracker := &resources.Resource{
 				Name:    floatingIP.FloatingIP,
