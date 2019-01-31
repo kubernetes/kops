@@ -147,11 +147,8 @@ func (c *openstackCloud) DeleteFloatingIP(id string) (err error) {
 		}
 		return true, nil
 	})
-	if !done {
-		if err == nil {
-			err = wait.ErrWaitTimeout
-		}
-		return err
+	if !done && err == nil {
+		err = wait.ErrWaitTimeout
 	}
 	return err
 }
@@ -165,11 +162,8 @@ func (c *openstackCloud) DeleteL3FloatingIP(id string) (err error) {
 		}
 		return true, nil
 	})
-	if !done {
-		if err == nil {
-			err = wait.ErrWaitTimeout
-		}
-		return err
+	if !done && err == nil {
+		err = wait.ErrWaitTimeout
 	}
 	return err
 }

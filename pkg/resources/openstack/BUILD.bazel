@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "dns.go",
+        "floatingip.go",
         "instances.go",
         "lb.go",
         "network.go",
@@ -27,6 +28,7 @@ go_library(
         "//vendor/github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/networks:go_default_library",
