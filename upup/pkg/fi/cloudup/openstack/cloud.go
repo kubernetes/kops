@@ -252,10 +252,13 @@ type OpenstackCloud interface {
 	GetFloatingIP(id string) (fip *floatingips.FloatingIP, err error)
 
 	AssociateFloatingIPToInstance(serverID string, opts floatingips.AssociateOpts) (err error)
+
 	ListFloatingIPs() (fips []floatingips.FloatingIP, err error)
 	ListL3FloatingIPs(opts l3floatingip.ListOpts) (fips []l3floatingip.FloatingIP, err error)
 	CreateFloatingIP(opts floatingips.CreateOpts) (*floatingips.FloatingIP, error)
 	CreateL3FloatingIP(opts l3floatingip.CreateOpts) (fip *l3floatingip.FloatingIP, err error)
+	DeleteFloatingIP(id string) error
+	DeleteL3FloatingIP(id string) error
 }
 
 type openstackCloud struct {
