@@ -153,9 +153,12 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
 		glog.V(2).Infof("Found instance group with name %s and role %v.", ig.Name, ig.Spec.Role)
 		sgTask := &openstacktasks.ServerGroup{
-			Name:      s(fmt.Sprintf("%s-%s", clusterName, ig.Name)),
-			Policies:  []string{"anti-affinity"},
-			Lifecycle: b.Lifecycle,
+			Name:        s(fmt.Sprintf("%s-%s", clusterName, ig.Name)),
+			ClusterName: s(clusterName),
+			IGName:      s(ig.Name),
+			Policies:    []string{"anti-affinity"},
+			Lifecycle:   b.Lifecycle,
+			MaxSize:     ig.Spec.MaxSize,
 		}
 		c.AddTask(sgTask)
 
