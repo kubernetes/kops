@@ -456,7 +456,7 @@ func (c *openstackCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error
 		}
 	}
 
-	err := c.DeleteServerGroup(grp.ID)
+	err = c.DeleteServerGroup(grp.ID)
 	if err != nil {
 		return fmt.Errorf("Could not server group %q: %v", grp.ID, err)
 	}
