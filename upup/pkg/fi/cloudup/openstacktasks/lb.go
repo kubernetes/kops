@@ -72,11 +72,13 @@ func NewLBTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle,
 		Lifecycle: lifecycle,
 		PortID:    fi.String(lb.VipPortID),
 		Subnet:    fi.String(sub.Name),
+		VipSubnet: fi.String(lb.VipSubnetID),
 	}
 
 	if find != nil {
 		find.ID = actual.ID
-		find.PortID = fi.String(lb.VipPortID)
+		find.PortID = actual.PortID
+		find.VipSubnet = actual.VipSubnet
 	}
 	return actual, nil
 }
