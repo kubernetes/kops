@@ -19,6 +19,7 @@ package openstack
 import (
 	"strings"
 
+	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	v2pools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
@@ -63,6 +64,11 @@ func (os *clusterDiscoveryOS) ListLB() ([]*resources.Resource, error) {
 func (os *clusterDiscoveryOS) ListLBPools() ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
 
+	if os.osCloud.UseOctavia() {
+		glog.V(2).Info("skipping ListLBPools because using Octavia")
+		return nil, nil
+	}
+
 	pools, err := os.osCloud.ListPools(v2pools.ListOpts{})
 	if err != nil {
 		return nil, err
@@ -86,6 +92,11 @@ func (os *clusterDiscoveryOS) ListLBPools() ([]*resources.Resource, error) {
 
 func (os *clusterDiscoveryOS) ListLBListener() ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
+
+	if os.osCloud.UseOctavia() {
+		glog.V(2).Info("skipping ListLBListener because using Octavia")
+		return nil, nil
+	}
 
 	listeners, err := os.osCloud.ListListeners(listeners.ListOpts{})
 	if err != nil {

@@ -152,6 +152,9 @@ type CreateClusterOptions struct {
 	OpenstackExternalNet     string
 	OpenstackStorageIgnoreAZ bool
 
+	// OpenstackLBOctavia is boolean value should we use octavia or old loadbalancer api
+	OpenstackLBOctavia bool
+
 	// ConfigBase is the location where we will store the configuration, it defaults to the state store
 	ConfigBase string
 
@@ -379,6 +382,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		// Openstack flags
 		cmd.Flags().StringVar(&options.OpenstackExternalNet, "os-ext-net", options.OpenstackExternalNet, "The name of the external network to use with the openstack router")
 		cmd.Flags().BoolVar(&options.OpenstackStorageIgnoreAZ, "os-kubelet-ignore-az", options.OpenstackStorageIgnoreAZ, "If true kubernetes may attach volumes across availability zones")
+		cmd.Flags().BoolVar(&options.OpenstackLBOctavia, "os-octavia", options.OpenstackLBOctavia, "If true octavia loadbalancer api will be used")
 	}
 
 	return cmd
@@ -887,6 +891,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			if cluster.Spec.CloudConfig == nil {
 				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
 			}
+			provider := "haproxy"
+			if c.OpenstackLBOctavia {
+				provider = "octavia"
+			}
 			cluster.Spec.CloudConfig.Openstack = &api.OpenstackConfiguration{
 				Router: &api.OpenstackRouter{
 					ExternalNetwork: fi.String(c.OpenstackExternalNet),
@@ -894,8 +902,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				Loadbalancer: &api.OpenstackLoadbalancerConfig{
 					FloatingNetwork: fi.String(c.OpenstackExternalNet),
 					Method:          fi.String("ROUND_ROBIN"),
-					Provider:        fi.String("haproxy"),
-					UseOctavia:      fi.Bool(false),
+					Provider:        fi.String(provider),
+					UseOctavia:      fi.Bool(c.OpenstackLBOctavia),
 				},
 				BlockStorage: &api.OpenstackBlockStorageConfig{
 					Version:  fi.String("v2"),

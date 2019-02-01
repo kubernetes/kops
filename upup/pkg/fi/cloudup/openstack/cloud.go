@@ -88,6 +88,7 @@ type OpenstackCloud interface {
 	NetworkingClient() *gophercloud.ServiceClient
 	LoadBalancerClient() *gophercloud.ServiceClient
 	DNSClient() *gophercloud.ServiceClient
+	UseOctavia() bool
 
 	// Region returns the region which cloud will run on
 	Region() string
@@ -270,6 +271,7 @@ type openstackCloud struct {
 	extNetworkName *string
 	tags           map[string]string
 	region         string
+	useOctavia     bool
 }
 
 var _ fi.Cloud = &openstackCloud{}
@@ -351,24 +353,17 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 		}
 	}
 
-	lbClient, err := os.NewLoadBalancerV2(provider, gophercloud.EndpointOpts{
-		Type:   "network",
-		Region: region,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error building lb client: %v", err)
-	}
-
 	c := &openstackCloud{
 		cinderClient:  cinderClient,
 		neutronClient: neutronClient,
 		novaClient:    novaClient,
-		lbClient:      lbClient,
 		dnsClient:     dnsClient,
 		tags:          tags,
 		region:        region,
+		useOctavia:    false,
 	}
 
+	octavia := false
 	if spec != nil &&
 		spec.CloudConfig != nil &&
 		spec.CloudConfig.Openstack != nil &&
@@ -388,9 +383,35 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 			}
 			spec.CloudConfig.Openstack.Loadbalancer.FloatingNetworkID = fi.String(lbNet[0].ID)
 		}
+		if spec.CloudConfig.Openstack.Loadbalancer.UseOctavia != nil {
+			octavia = fi.BoolValue(spec.CloudConfig.Openstack.Loadbalancer.UseOctavia)
+		}
 	}
-
+	c.useOctavia = octavia
+	var lbClient *gophercloud.ServiceClient
+	if octavia {
+		glog.V(2).Infof("Openstack using Octavia lbaasv2 api")
+		lbClient, err = os.NewLoadBalancerV2(provider, gophercloud.EndpointOpts{
+			Region: region,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error building lb client: %v", err)
+		}
+	} else {
+		glog.V(2).Infof("Openstack using deprecated lbaasv2 api")
+		lbClient, err = os.NewNetworkV2(provider, gophercloud.EndpointOpts{
+			Region: region,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error building lb client: %v", err)
+		}
+	}
+	c.lbClient = lbClient
 	return c, nil
+}
+
+func (c *openstackCloud) UseOctavia() bool {
+	return c.useOctavia
 }
 
 func (c *openstackCloud) ComputeClient() *gophercloud.ServiceClient {

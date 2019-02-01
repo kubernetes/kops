@@ -125,6 +125,12 @@ func (_ *LBPool) CheckChanges(a, e, changes *LBPool) error {
 func (_ *LBPool) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *LBPool) error {
 	if a == nil {
 
+		// wait that lb is in ACTIVE state
+		provisioningStatus, err := waitLoadbalancerActiveProvisioningStatus(t.Cloud.LoadBalancerClient(), fi.StringValue(e.Loadbalancer.ID))
+		if err != nil {
+			return fmt.Errorf("failed to loadbalancer ACTIVE provisioning status %v: %v", provisioningStatus, err)
+		}
+
 		poolopts := v2pools.CreateOpts{
 			Name:           fi.StringValue(e.Name),
 			LBMethod:       v2pools.LBMethodRoundRobin,
