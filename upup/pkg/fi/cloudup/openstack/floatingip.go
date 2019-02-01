@@ -97,7 +97,7 @@ func (c *openstackCloud) CreateL3FloatingIP(opts l3floatingip.CreateOpts) (fip *
 func (c *openstackCloud) ListFloatingIPs() (fips []floatingips.FloatingIP, err error) {
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		pages, err := floatingips.List(c.novaClient).AllPages()
+		pages, err := floatingips.List(c.ComputeClient()).AllPages()
 		if err != nil {
 			return false, fmt.Errorf("Failed to list floating ip: %v", err)
 		}
@@ -136,4 +136,34 @@ func (c *openstackCloud) ListL3FloatingIPs(opts l3floatingip.ListOpts) (fips []l
 		return fips, err
 	}
 	return fips, nil
+}
+
+func (c *openstackCloud) DeleteFloatingIP(id string) (err error) {
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err = l3floatingip.Delete(c.ComputeClient(), id).ExtractErr()
+		if err != nil {
+			return false, fmt.Errorf("Failed to delete floating ip %s: %v", id, err)
+		}
+		return true, nil
+	})
+	if !done && err == nil {
+		err = wait.ErrWaitTimeout
+	}
+	return err
+}
+
+func (c *openstackCloud) DeleteL3FloatingIP(id string) (err error) {
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err = l3floatingip.Delete(c.NetworkingClient(), id).ExtractErr()
+		if err != nil {
+			return false, fmt.Errorf("Failed to delete L3 floating ip %s: %v", id, err)
+		}
+		return true, nil
+	})
+	if !done && err == nil {
+		err = wait.ErrWaitTimeout
+	}
+	return err
 }

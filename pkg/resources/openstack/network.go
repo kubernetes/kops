@@ -55,6 +55,14 @@ func (os *clusterDiscoveryOS) ListNetwork() ([]*resources.Resource, error) {
 			return resourceTrackers, err
 		}
 		for _, router := range routers {
+
+			// Get the floating IP's associated to this router
+			floatingIPs, err := os.listL3FloatingIPs(router.ID)
+			if err != nil {
+				return resourceTrackers, err
+			}
+			resourceTrackers = append(resourceTrackers, floatingIPs...)
+
 			resourceTracker := &resources.Resource{
 				Name: router.Name,
 				ID:   router.ID,

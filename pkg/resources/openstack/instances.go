@@ -38,6 +38,14 @@ func (os *clusterDiscoveryOS) ListInstances() ([]*resources.Resource, error) {
 	}
 
 	for _, instance := range instances {
+
+		// Clean up any bound floating IP's
+		floatingIPs, err := os.listFloatingIPs(instance.ID)
+		if err != nil {
+			return resourceTrackers, err
+		}
+		resourceTrackers = append(resourceTrackers, floatingIPs...)
+
 		resourceTracker := &resources.Resource{
 			Name: instance.Name,
 			ID:   instance.ID,
