@@ -23,7 +23,7 @@ import (
 	compute "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/storage/v1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	dnsproviderclouddns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 	"k8s.io/kops/pkg/apis/kops"

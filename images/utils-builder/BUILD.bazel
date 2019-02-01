@@ -1,0 +1,38 @@
+# Download and build socat from source
+# Relies on system C++ compiler etc, so this is really only good for building from prow
+# Note: not yet used
+#genrule(
+#    name = "build-socat",
+#    srcs = ["build-socat.sh"],
+#    outs = ["socat"],
+#    cmd = "./$(location build-socat.sh) $@",
+#)
+
+genrule(
+    name = "extract_socat",
+    srcs = ["@utils_tar_gz//file"],
+    outs = ["socat"],
+    cmd = "tar -x -z --no-same-owner -f ./$(location @utils_tar_gz//file) utils/socat && mv utils/socat \"$@\"",
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "extract_conntrack",
+    srcs = ["@utils_tar_gz//file"],
+    outs = ["conntrack"],
+    cmd = "tar -x -z --no-same-owner -f ./$(location @utils_tar_gz//file) utils/conntrack && mv utils/conntrack \"$@\"",
+    visibility = ["//visibility:public"],
+)
+
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+
+pkg_tar(
+    name = "utils",
+    extension = "tar.gz",
+    package_dir = "utils",
+    srcs = [
+        "socat",
+        "conntrack",
+    ],
+    mode = "0755",
+)

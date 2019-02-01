@@ -70,7 +70,7 @@ func run() error {
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
 	flag.BoolVar(&initializeRBAC, "initialize-rbac", initializeRBAC, "Set if we should initialize RBAC")
 	flag.BoolVar(&master, "master", master, "Whether or not this node is a master")
-	flag.StringVar(&cloud, "cloud", "aws", "CloudProvider we are using (aws,digitalocean,gce)")
+	flag.StringVar(&cloud, "cloud", "aws", "CloudProvider we are using (aws,digitalocean,gce,openstack)")
 	flag.StringVar(&clusterID, "cluster-id", clusterID, "Cluster ID")
 	flag.StringVar(&dnsInternalSuffix, "dns-internal-suffix", dnsInternalSuffix, "DNS suffix for internal domain names")
 	flag.StringVar(&dnsServer, "dns-server", dnsServer, "DNS Server")
@@ -179,6 +179,22 @@ func run() error {
 			}
 			internalIP = ip
 		}
+	} else if cloud == "openstack" {
+		glog.Info("Initializing openstack volumes")
+		osVolumes, err := protokube.NewOpenstackVolumes()
+		if err != nil {
+			glog.Errorf("Error initializing openstack: %q", err)
+			os.Exit(1)
+		}
+		volumes = osVolumes
+		if internalIP == nil {
+			internalIP = osVolumes.InternalIP()
+		}
+
+		if clusterID == "" {
+			clusterID = osVolumes.ClusterID()
+		}
+
 	} else {
 		glog.Errorf("Unknown cloud %q", cloud)
 		os.Exit(1)
@@ -235,6 +251,12 @@ func run() error {
 				return err
 			}
 			gossipName = volumes.(*protokube.GCEVolumes).InstanceName()
+		} else if cloud == "openstack" {
+			gossipSeeds, err = volumes.(*protokube.OpenstackVolumes).GossipSeeds()
+			if err != nil {
+				return err
+			}
+			gossipName = volumes.(*protokube.OpenstackVolumes).InstanceName()
 		} else {
 			glog.Fatalf("seed provider for %q not yet implemented", cloud)
 		}

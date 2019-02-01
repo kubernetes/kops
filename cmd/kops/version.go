@@ -17,10 +17,11 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
+	"io"
 
 	"github.com/spf13/cobra"
-	"k8s.io/kops"
+	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/commands"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
@@ -35,37 +36,25 @@ var (
 	versionShort = i18n.T(`Print the kops version information.`)
 )
 
-type VersionCmd struct {
-	cobraCommand *cobra.Command
-}
+// NewCmdVersion builds a cobra command for the kops version command
+func NewCmdVersion(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &commands.VersionOptions{}
 
-var versionCmd = VersionCmd{
-	cobraCommand: &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "version",
 		Short:   versionShort,
 		Long:    versionLong,
 		Example: versionExample,
-	},
-}
-
-func init() {
-	cmd := versionCmd.cobraCommand
-	rootCommand.cobraCommand.AddCommand(cmd)
+	}
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
-		err := versionCmd.Run()
+		err := commands.RunVersion(f, out, options)
 		if err != nil {
 			exitWithError(err)
 		}
 	}
-}
 
-func (c *VersionCmd) Run() error {
-	s := "Version " + kops.Version
-	if kops.GitVersion != "" {
-		s += " (git-" + kops.GitVersion + ")"
-	}
-	fmt.Println(s)
+	cmd.Flags().BoolVar(&options.Short, "short", options.Short, "only print the main kops version, useful for scripting")
 
-	return nil
+	return cmd
 }

@@ -14,19 +14,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package openstack
+package commands
 
 import (
-	"k8s.io/kops/pkg/resources"
-	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"fmt"
+	"io"
+
+	"k8s.io/kops"
+	"k8s.io/kops/cmd/kops/util"
 )
 
-type listFn func(openstack.OpenstackCloud, string) ([]*resources.Resource, error)
+type VersionOptions struct {
+	Short bool
+}
 
-func ListResources(cloud openstack.OpenstackCloud, clusterName string) (map[string]*resources.Resource, error) {
-	resourceTrackers := make(map[string]*resources.Resource)
+// RunVersion implements the version command logic
+func RunVersion(f *util.Factory, out io.Writer, options *VersionOptions) error {
+	var s string
+	if options.Short {
+		s = kops.Version
+	} else {
+		s = "Version " + kops.Version
+		if kops.GitVersion != "" {
+			s += " (git-" + kops.GitVersion + ")"
+		}
+	}
 
-	// TODO(lmb): Implement resource list
-
-	return resourceTrackers, nil
+	_, err := fmt.Fprintf(out, "%s\n", s)
+	return err
 }

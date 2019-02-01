@@ -26,12 +26,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
-
-	"github.com/golang/glog"
 )
 
 const (
@@ -328,7 +327,7 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 				} else {
 					startedAtTime, err := time.Parse("Mon 2006-01-02 15:04:05 MST", startedAt)
 					if err != nil {
-						return fmt.Errorf("unable to parse service ExecMainStartTimestamp: %q", startedAt)
+						return fmt.Errorf("unable to parse service ExecMainStartTimestamp %q: %v", startedAt, err)
 					}
 					if startedAtTime.Before(newest) {
 						glog.V(2).Infof("will restart service %q because dependency changed after service start", serviceName)

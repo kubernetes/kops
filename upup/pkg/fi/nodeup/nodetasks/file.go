@@ -33,9 +33,14 @@ import (
 	"github.com/golang/glog"
 )
 
-const FileType_Symlink = "symlink"
-const FileType_Directory = "directory"
-const FileType_File = "file"
+const (
+	// FileType_Symlink defines a symlink
+	FileType_Symlink = "symlink"
+	// FileType_Directory defines a directory
+	FileType_Directory = "directory"
+	// FileType_File is a regualar file
+	FileType_File = "file"
+)
 
 type File struct {
 	AfterFiles      []string    `json:"afterfiles,omitempty"`
