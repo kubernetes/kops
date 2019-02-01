@@ -179,6 +179,8 @@ type KubeletConfigSpec struct {
 	AuthenticationTokenWebhook *bool `json:"authenticationTokenWebhook,omitempty" flag:"authentication-token-webhook"`
 	// AuthenticationTokenWebhook sets the duration to cache responses from the webhook token authenticator. Default is 2m. (default 2m0s)
 	AuthenticationTokenWebhookCacheTTL *metav1.Duration `json:"authenticationTokenWebhookCacheTtl,omitempty" flag:"authentication-token-webhook-cache-ttl"`
+	APIQPS                             *int32           `json:"kubeApiQps,omitempty" flag:"kube-api-qps"`
+	ApiBurst                           *int32           `json:"kubeApiBurst,omitempty" flag:"kube-api-burst"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
@@ -435,6 +437,8 @@ type KubeControllerManagerConfig struct {
 	HorizontalPodAutoscalerUseRestClients *bool `json:"horizontalPodAutoscalerUseRestClients,omitempty" flag:"horizontal-pod-autoscaler-use-rest-clients"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
+	APIQPS       *float32          `json:"kubeApiQps,omitempty" flag:"kube-api-qps"`
+	ApiBurst     *int32            `json:"kubeApiBurst,omitempty" flag:"kube-api-burst"`
 }
 
 // CloudControllerManagerConfig is the configuration of the cloud controller
@@ -478,6 +482,8 @@ type KubeSchedulerConfig struct {
 	UsePolicyConfigMap *bool `json:"usePolicyConfigMap,omitempty"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
+	APIQPS       *float32          `json:"kubeApiQps,omitempty" flag:"kube-api-qps"`
+	ApiBurst     *int32            `json:"kubeApiBurst,omitempty" flag:"kube-api-burst"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election

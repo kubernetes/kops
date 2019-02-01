@@ -2613,6 +2613,16 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 			(*out)[key] = val
 		}
 	}
+	if in.APIQPS != nil {
+		in, out := &in.APIQPS, &out.APIQPS
+		*out = new(float32)
+		**out = **in
+	}
+	if in.ApiBurst != nil {
+		in, out := &in.ApiBurst, &out.ApiBurst
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 
@@ -2768,6 +2778,16 @@ func (in *KubeSchedulerConfig) DeepCopyInto(out *KubeSchedulerConfig) {
 		for key, val := range *in {
 			(*out)[key] = val
 		}
+	}
+	if in.APIQPS != nil {
+		in, out := &in.APIQPS, &out.APIQPS
+		*out = new(float32)
+		**out = **in
+	}
+	if in.ApiBurst != nil {
+		in, out := &in.ApiBurst, &out.ApiBurst
+		*out = new(int32)
+		**out = **in
 	}
 	return
 }
@@ -3097,6 +3117,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 			*out = new(v1.Duration)
 			**out = **in
 		}
+	}
+	if in.ApiBurst != nil {
+		in, out := &in.ApiBurst, &out.ApiBurst
+		*out = new(int32)
+		**out = **in
 	}
 	return
 }
