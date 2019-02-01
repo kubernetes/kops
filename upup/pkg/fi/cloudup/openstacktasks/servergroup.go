@@ -64,7 +64,7 @@ func (s *ServerGroup) Find(context *fi.Context) (*ServerGroup, error) {
 			actual = &ServerGroup{
 				Name:      fi.String(serverGroup.Name),
 				ID:        fi.String(serverGroup.ID),
-				Members:   nil, // TODO implement logic how servergrp members are updated
+				Members:   serverGroup.Members,
 				Lifecycle: s.Lifecycle,
 				Policies:  serverGroup.Policies,
 			}
@@ -74,6 +74,7 @@ func (s *ServerGroup) Find(context *fi.Context) (*ServerGroup, error) {
 		return nil, nil
 	}
 	s.ID = actual.ID
+	s.Members = actual.Members
 	return actual, nil
 }
 
