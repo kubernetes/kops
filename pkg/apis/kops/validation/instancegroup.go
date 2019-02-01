@@ -18,12 +18,15 @@ package validation
 
 import (
 	"fmt"
-	"regexp"
+	"strings"
 
-	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/slice"
+
+	"github.com/aws/aws-sdk-go/aws/arn"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
 // ValidateInstanceGroup is responsible for validating the configuration of a instancegroup
@@ -87,8 +90,72 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 		}
 	}
 
+	// @step: iterate and check the volume specs
+	for i, x := range g.Spec.Volumes {
+		devices := make(map[string]bool, 0)
+		path := field.NewPath("volumes").Index(i)
+
+		if err := validateVolumeSpec(path, x); err != nil {
+			return err
+		}
+
+		// @check the device name has not been used already
+		if _, found := devices[x.Device]; found {
+			return field.Invalid(path.Child("device"), x.Device, "duplicate device name found in volumes")
+		}
+
+		devices[x.Device] = true
+	}
+
+	// @step: iterate and check the volume mount specs
+	for i, x := range g.Spec.VolumeMounts {
+		used := make(map[string]bool, 0)
+		path := field.NewPath("volumeMounts").Index(i)
+
+		if err := validateVolumeMountSpec(path, x); err != nil {
+			return err
+		}
+		if _, found := used[x.Device]; found {
+			return field.Invalid(path.Child("device"), x.Device, "duplicate device reference")
+		}
+		if _, found := used[x.Path]; found {
+			return field.Invalid(path.Child("path"), x.Path, "duplicate mount path specified")
+		}
+	}
+
 	if err := validateInstanceProfile(g.Spec.IAM, field.NewPath("iam")); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// validateVolumeSpec is responsible for checking a volume spec is ok
+func validateVolumeSpec(path *field.Path, v *kops.VolumeSpec) error {
+	if v.Device == "" {
+		return field.Required(path.Child("device"), "device name required")
+	}
+	if v.Size <= 0 {
+		return field.Invalid(path.Child("size"), v.Size, "must be greater than zero")
+	}
+
+	return nil
+}
+
+// validateVolumeMountSpec is responsible for checking the volume mount is ok
+func validateVolumeMountSpec(path *field.Path, spec *kops.VolumeMountSpec) error {
+	if spec.Device == "" {
+		return field.Required(path.Child("device"), "device name required")
+	}
+	if spec.Filesystem == "" {
+		return field.Required(path.Child("filesystem"), "filesystem type required")
+	}
+	if spec.Path == "" {
+		return field.Required(path.Child("path"), "mount path required")
+	}
+	if !slice.Contains(kops.SupportedFilesystems, spec.Filesystem) {
+		return field.Invalid(path.Child("filesystem"), spec.Filesystem,
+			fmt.Sprintf("unsupported filesystem, available types: %s", strings.Join(kops.SupportedFilesystems, ",")))
 	}
 
 	return nil
@@ -171,15 +238,13 @@ func validateExtraUserData(userData *kops.UserData) error {
 	return nil
 }
 
-// format is arn:aws:iam::123456789012:instance-profile/S3Access
-var validARN = regexp.MustCompile(`^arn:aws:iam::\d+:instance-profile\/\S+$`)
-
 // validateInstanceProfile checks the String values for the AuthProfile
 func validateInstanceProfile(v *kops.IAMProfileSpec, fldPath *field.Path) *field.Error {
 	if v != nil && v.Profile != nil {
-		arn := *v.Profile
-		if !validARN.MatchString(arn) {
-			return field.Invalid(fldPath.Child("Profile"), arn,
+		instanceProfileARN := *v.Profile
+		parsedARN, err := arn.Parse(instanceProfileARN)
+		if err != nil || !strings.HasPrefix(parsedARN.Resource, "instance-profile") {
+			return field.Invalid(fldPath.Child("Profile"), instanceProfileARN,
 				"Instance Group IAM Instance Profile must be a valid aws arn such as arn:aws:iam::123456789012:instance-profile/KopsExampleRole")
 		}
 	}

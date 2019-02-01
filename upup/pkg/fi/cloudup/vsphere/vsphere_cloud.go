@@ -36,7 +36,7 @@ import (
 	"github.com/vmware/govmomi/vim25/mo"
 	"github.com/vmware/govmomi/vim25/soap"
 	"github.com/vmware/govmomi/vim25/types"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	k8scoredns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/coredns"
 	"k8s.io/kops/pkg/apis/kops"

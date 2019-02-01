@@ -211,7 +211,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	if kubeDNS.Provider == "CoreDNS" {
 		{
 			key := "coredns.addons.k8s.io"
-			version := "1.2.6-kops.1"
+			version := "1.3.0-kops.1"
 
 			{
 				location := key + "/k8s-1.6.yaml"
@@ -266,6 +266,29 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	}
 
 	{
+		// Adding the kubelet-api-admin binding: this is required when switching to webhook authorization on the kubelet
+		// docs: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#other-component-roles
+		// issue: https://github.com/kubernetes/kops/issues/5176
+		key := "kubelet-api.rbac.addons.k8s.io"
+		version := "v0.0.1"
+
+		{
+			location := key + "/k8s-1.9.yaml"
+			id := "k8s-1.9"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          map[string]string{"k8s-addon": key},
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.9.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
+	}
+
+	{
 		key := "limit-range.addons.k8s.io"
 		version := "1.5.0"
 		location := key + "/v" + version + ".yaml"
@@ -284,7 +307,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	if externalDNS == nil || !externalDNS.Disable {
 		{
 			key := "dns-controller.addons.k8s.io"
-			version := "1.11.0-alpha.1"
+			version := "1.12.0-alpha.1"
 
 			{
 				location := key + "/pre-k8s-1.6.yaml"
@@ -645,7 +668,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 			"pre-k8s-1.6": "2.4.2-kops.1",
 			"k8s-1.6":     "2.6.9-kops.1",
 			"k8s-1.7":     "2.6.9-kops.1",
-			"k8s-1.7-v3":  "3.3.1-kops.3",
+			"k8s-1.7-v3":  "3.4.0-kops.3",
 		}
 
 		if b.cluster.Spec.Networking.Calico.MajorVersion == "v3" {

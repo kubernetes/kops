@@ -17,6 +17,7 @@ limitations under the License.
 package validation
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -562,11 +563,14 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	// Egress specification support
 	{
 		for i, s := range c.Spec.Subnets {
-			fieldSubnet := fieldSpec.Child("Subnets").Index(i)
-			if s.Egress != "" && !strings.HasPrefix(s.Egress, "nat-") && !strings.HasPrefix(s.Egress, "i-") {
-				return field.Invalid(fieldSubnet.Child("Egress"), s.Egress, "egress must be of type NAT Gateway or NAT EC2 Instance")
+			if s.Egress == "" {
+				continue
 			}
-			if s.Egress != "" && !(s.Type == "Private") {
+			fieldSubnet := fieldSpec.Child("Subnets").Index(i)
+			if !strings.HasPrefix(s.Egress, "nat-") && !strings.HasPrefix(s.Egress, "i-") && s.Egress != kops.EgressExternal {
+				return field.Invalid(fieldSubnet.Child("Egress"), s.Egress, "egress must be of type NAT Gateway or NAT EC2 Instance or 'External'")
+			}
+			if s.Egress != kops.EgressExternal && s.Type != "Private" {
 				return field.Invalid(fieldSubnet.Child("Egress"), s.Egress, "egress can only be specified for Private subnets")
 			}
 		}
@@ -800,6 +804,10 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool) er
 			errs := awsValidateInstanceGroup(g)
 			if len(errs) != 0 {
 				return errs[0]
+			}
+		default:
+			if len(g.Spec.Volumes) > 0 {
+				return errors.New("instancegroup volumes are only available with aws at present")
 			}
 		}
 	}
