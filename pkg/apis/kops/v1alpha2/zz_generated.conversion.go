@@ -2613,6 +2613,8 @@ func autoConvert_v1alpha2_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.HorizontalPodAutoscalerUpscaleDelay = in.HorizontalPodAutoscalerUpscaleDelay
 	out.HorizontalPodAutoscalerUseRestClients = in.HorizontalPodAutoscalerUseRestClients
 	out.FeatureGates = in.FeatureGates
+	out.APIQPS = in.APIQPS
+	out.ApiBurst = in.ApiBurst
 	return nil
 }
 
@@ -2655,6 +2657,8 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerMana
 	out.HorizontalPodAutoscalerUpscaleDelay = in.HorizontalPodAutoscalerUpscaleDelay
 	out.HorizontalPodAutoscalerUseRestClients = in.HorizontalPodAutoscalerUseRestClients
 	out.FeatureGates = in.FeatureGates
+	out.APIQPS = in.APIQPS
+	out.ApiBurst = in.ApiBurst
 	return nil
 }
 
@@ -2874,11 +2878,8 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.RootDir = in.RootDir
 	out.AuthenticationTokenWebhook = in.AuthenticationTokenWebhook
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
-<<<<<<< HEAD
-=======
 	out.APIQPS = in.APIQPS
 	out.ApiBurst = in.ApiBurst
->>>>>>> 6bb7b83a4... finished qps. added burst
 	return nil
 }
 
@@ -2956,11 +2957,8 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.RootDir = in.RootDir
 	out.AuthenticationTokenWebhook = in.AuthenticationTokenWebhook
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
-<<<<<<< HEAD
-=======
 	out.APIQPS = in.APIQPS
 	out.ApiBurst = in.ApiBurst
->>>>>>> 6bb7b83a4... finished qps. added burst
 	return nil
 }
 
