@@ -56,10 +56,8 @@ func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
 		if err != nil {
 			return nil, err
 		}
-		if len(fips) == 1 {
-			if fips[0].PortID == fi.StringValue(e.LB.PortID) {
-				return &fips[0].FloatingIP, nil
-			}
+		if len(fips) == 1 && fips[0].PortID == fi.StringValue(e.LB.PortID) {
+			return &fips[0].FloatingIP, nil
 		}
 		// not found
 		return nil, nil
