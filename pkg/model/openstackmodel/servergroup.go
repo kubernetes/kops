@@ -58,6 +58,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 
 		igMeta[openstack.TagClusterName] = b.ClusterName()
 	}
+	igMeta["k8s"] = b.ClusterName()
 
 	startupScript, err := b.BootstrapScript.ResourceNodeUp(ig, b.Cluster)
 	if err != nil {
@@ -81,7 +82,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		// FIXME: Must ensure 63 or less characters
 		instanceName := fi.String(
 			strings.ToLower(
-				fmt.Sprintf("%s-%d", *sg.Name, i+1),
+				fmt.Sprintf("%s-%d.%s", ig.Name, i+1, b.ClusterName()),
 			),
 		)
 		securityGroupName := b.SecurityGroupName(ig.Spec.Role)
