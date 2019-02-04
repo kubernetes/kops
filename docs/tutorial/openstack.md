@@ -64,3 +64,32 @@ kops delete cluster my-cluster.k8s.local --yes
 * `--os-kubelet-ignore-az=true` Nova and Cinder have different availability zones, more information [Kubernetes docs](https://kubernetes.io/docs/concepts/cluster-administration/cloud-providers/#block-storage)
 * `--os-octavia=true` If Octavia Loadbalancer api should be used instead of old lbaas v2 api.
 
+
+# Using external cloud controller manager
+If you want use [External CCM](https://github.com/kubernetes/cloud-provider-openstack) in your installation, this section contains instructions what you should do to get it up and running.
+
+Enable featureflag:
+
+```
+export KOPS_FEATURE_FLAGS=AlphaAllowOpenstack,+EnableExternalCloudController
+```
+
+Create cluster without `--yes` flag (or modify existing cluster):
+
+```
+kops edit cluster <cluster>
+```
+
+Add following to clusterspec:
+
+```
+  cloudControllerManager:
+    image: jesseh/occm:latest <- you can use this or compile your own
+    logLevel: 2
+```
+
+Finally
+
+```
+kops update cluster --name <cluster> --yes
+```
