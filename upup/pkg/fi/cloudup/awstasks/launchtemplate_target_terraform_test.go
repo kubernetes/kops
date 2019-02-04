@@ -82,6 +82,84 @@ terraform = {
 }
 `,
 		},
+		{
+			Resource: &LaunchTemplate{
+				Name:              fi.String("test"),
+				AssociatePublicIP: fi.Bool(true),
+				IAMInstanceProfile: &IAMInstanceProfile{
+					Name: fi.String("nodes"),
+				},
+				BlockDeviceMappings: []*BlockDeviceMapping{
+					{
+						DeviceName:             fi.String("/dev/xvdd"),
+						EbsVolumeType:          fi.String("gp2"),
+						EbsVolumeSize:          fi.Int64(100),
+						EbsDeleteOnTermination: fi.Bool(true),
+						EbsEncrypted:           fi.Bool(true),
+					},
+				},
+				ID:                     fi.String("test-11"),
+				InstanceMonitoring:     fi.Bool(true),
+				InstanceType:           fi.String("t2.medium"),
+				RootVolumeOptimization: fi.Bool(true),
+				RootVolumeIops:         fi.Int64(100),
+				RootVolumeSize:         fi.Int64(64),
+				SSHKey: &SSHKey{
+					Name: fi.String("mykey"),
+				},
+				SecurityGroups: []*SecurityGroup{
+					{Name: fi.String("nodes-1"), ID: fi.String("1111")},
+					{Name: fi.String("nodes-2"), ID: fi.String("2222")},
+				},
+				Tenancy: fi.String("dedicated"),
+			},
+			Expected: `provider "aws" {
+  region = "eu-west-2"
+}
+
+resource "aws_launch_template" "test" {
+  name_prefix = "test-"
+
+  lifecycle = {
+    create_before_destroy = true
+  }
+
+  block_device_mappings = {
+    device_name = "/dev/xvdd"
+
+    ebs = {
+      volume_type           = "gp2"
+      volume_size           = 100
+      delete_on_termination = true
+      encrypted             = true
+    }
+  }
+
+  ebs_optimized = true
+
+  iam_instance_profile = {
+    name = "${aws_iam_instance_profile.nodes.id}"
+  }
+
+  instance_type = "t2.medium"
+  key_name      = "${aws_key_pair.mykey.id}"
+
+  network_interfaces = {
+    associate_public_ip_address = true
+  }
+
+  placement = {
+    tenancy = "dedicated"
+  }
+
+  vpc_security_group_ids = ["${aws_security_group.nodes-1.id}", "${aws_security_group.nodes-2.id}"]
+}
+
+terraform = {
+  required_version = ">= 0.9.3"
+}
+`,
+		},
 	}
 	doRenderTests(t, "RenderTerraform", cases)
 }

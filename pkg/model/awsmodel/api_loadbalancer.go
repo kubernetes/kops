@@ -204,14 +204,13 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			// Allow ICMP traffic required for PMTU discovery
 			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:      s("icmp-pmtu-api-elb-" + cidr),
-				Lifecycle: b.SecurityLifecycle,
-
+				Name:          fi.String("icmp-pmtu-api-elb-" + cidr),
+				Lifecycle:     b.SecurityLifecycle,
+				CIDR:          fi.String(cidr),
+				FromPort:      fi.Int64(3),
+				Protocol:      fi.String("icmp"),
 				SecurityGroup: lbSG,
-				CIDR:          s(cidr),
-				FromPort:      i64(3),
-				ToPort:        i64(4),
-				Protocol:      s("icmp"),
+				ToPort:        fi.Int64(4),
 			})
 		}
 	}

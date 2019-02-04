@@ -54,21 +54,21 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 	lc := input.LaunchTemplateData
 
 	// @step: add the the actual block device mappings
-	rootDevice, err := t.buildRootDevice(c.Cloud)
+	rootDevices, err := t.buildRootDevice(c.Cloud)
 	if err != nil {
 		return err
 	}
-	ephemeralDevices, err := FindEphemeralDevices(c.Cloud, fi.StringValue(t.InstanceType))
+	ephemeralDevices, err := buildEphemeralDevices(c.Cloud, fi.StringValue(t.InstanceType))
 	if err != nil {
 		return err
 	}
-	if len(rootDevice) != 0 || len(ephemeralDevices) != 0 {
-		lc.BlockDeviceMappings = []*ec2.LaunchTemplateBlockDeviceMappingRequest{}
-		for device, bdm := range rootDevice {
-			lc.BlockDeviceMappings = append(lc.BlockDeviceMappings, bdm.ToLaunchTemplateBootDeviceRequest(device))
-		}
-		for device, bdm := range ephemeralDevices {
-			lc.BlockDeviceMappings = append(lc.BlockDeviceMappings, bdm.ToLaunchTemplateBootDeviceRequest(device))
+	additionalDevices, err := buildAdditionalDevices(t.BlockDeviceMappings)
+	if err != nil {
+		return err
+	}
+	for _, x := range []map[string]*BlockDeviceMapping{rootDevices, ephemeralDevices, additionalDevices} {
+		for name, device := range x {
+			input.LaunchTemplateData.BlockDeviceMappings = append(input.LaunchTemplateData.BlockDeviceMappings, device.ToLaunchTemplateBootDeviceRequest(name))
 		}
 	}
 
@@ -127,7 +127,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 					}
 					glog.V(4).Infof("got an error indicating that the IAM instance profile %q is not ready: %q", fi.StringValue(ep.IAMInstanceProfile.Name), message)
 
-					time.Sleep(10 * time.Second)
+					time.Sleep(5 * time.Second)
 					continue
 				}
 				glog.V(4).Infof("ErrorCode=%q, Message=%q", awsup.AWSErrorCode(err), awsup.AWSErrorMessage(err))
@@ -164,13 +164,13 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 	glog.V(3).Infof("found existing LaunchTemplate: %s", fi.StringValue(lt.LaunchTemplateName))
 
 	actual := &LaunchTemplate{
-		AssociatePublicIP:  fi.Bool(false),
-		ID:                 lt.LaunchTemplateName,
-		ImageID:            lt.LaunchTemplateData.ImageId,
-		InstanceMonitoring: fi.Bool(false),
-		InstanceType:       lt.LaunchTemplateData.InstanceType,
-		Lifecycle:          t.Lifecycle,
-		Name:               t.Name,
+		AssociatePublicIP:      fi.Bool(false),
+		ID:                     lt.LaunchTemplateName,
+		ImageID:                lt.LaunchTemplateData.ImageId,
+		InstanceMonitoring:     fi.Bool(false),
+		InstanceType:           lt.LaunchTemplateData.InstanceType,
+		Lifecycle:              t.Lifecycle,
+		Name:                   t.Name,
 		RootVolumeOptimization: lt.LaunchTemplateData.EbsOptimized,
 	}
 

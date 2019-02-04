@@ -129,6 +129,7 @@ func BlockDeviceMappingFromLaunchTemplateBootDeviceRequest(i *ec2.LaunchTemplate
 		o.EbsDeleteOnTermination = i.Ebs.DeleteOnTermination
 		o.EbsVolumeSize = i.Ebs.VolumeSize
 		o.EbsVolumeType = i.Ebs.VolumeType
+		o.EbsEncrypted = i.Ebs.Encrypted
 	}
 
 	return aws.StringValue(i.DeviceName), o
@@ -139,9 +140,10 @@ func (i *BlockDeviceMapping) ToLaunchTemplateBootDeviceRequest(deviceName string
 	o := &ec2.LaunchTemplateBlockDeviceMappingRequest{}
 	o.DeviceName = aws.String(deviceName)
 	o.VirtualName = i.VirtualName
-	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || i.EbsVolumeType != nil || i.EbsVolumeIops != nil {
+	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || i.EbsVolumeType != nil || i.EbsVolumeIops != nil || i.EbsEncrypted != nil {
 		o.Ebs = &ec2.LaunchTemplateEbsBlockDeviceRequest{
 			DeleteOnTermination: i.EbsDeleteOnTermination,
+			Encrypted:           i.EbsEncrypted,
 			VolumeSize:          i.EbsVolumeSize,
 			VolumeType:          i.EbsVolumeType,
 			Iops:                i.EbsVolumeIops,

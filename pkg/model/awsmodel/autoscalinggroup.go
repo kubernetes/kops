@@ -103,6 +103,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		Name:                   fi.String(name),
 		Lifecycle:              b.Lifecycle,
 		AssociatePublicIP:      lc.AssociatePublicIP,
+		BlockDeviceMappings:    lc.BlockDeviceMappings,
 		IAMInstanceProfile:     lc.IAMInstanceProfile,
 		ImageID:                lc.ImageID,
 		InstanceMonitoring:     lc.InstanceMonitoring,
@@ -121,28 +122,18 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 
 // buildLaunchConfigurationTask is responsible for building a launch configuration task into the model
 func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchConfiguration, error) {
-
-	// @step: add the volume type, size and spec
-	volumeType := &DefaultVolumeType
-	var volumeIops *int64
-
-	size, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+	// @step: lets add the root volume settings
+	volumeSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
 	if err != nil {
 		return nil, err
 	}
-	volumeSize := fi.Int64(int64(size))
+	if fi.Int32Value(ig.Spec.RootVolumeSize) > 0 {
+		volumeSize = fi.Int32Value(ig.Spec.RootVolumeSize)
+	}
 
-	if ig.Spec.RootVolumeSize != nil {
-		volumeSize = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeSize)))
-	}
-	if ig.Spec.RootVolumeType != nil {
-		volumeType = ig.Spec.RootVolumeType
-	}
-	if fi.StringValue(volumeType) == ec2.VolumeTypeIo1 {
-		volumeIops = DefaultVolumeIops
-		if ig.Spec.RootVolumeIops != nil {
-			volumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
-		}
+	volumeType := fi.StringValue(ig.Spec.RootVolumeType)
+	if volumeType == "" {
+		volumeType = DefaultVolumeType
 	}
 
 	// @step: if required we add the override for the security group for this instancegroup
@@ -170,10 +161,17 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		InstanceMonitoring:     ig.Spec.DetailedInstanceMonitoring,
 		InstanceType:           fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
 		RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
-		RootVolumeSize:         volumeSize,
-		RootVolumeIops:         volumeIops,
-		RootVolumeType:         volumeType,
+		RootVolumeSize:         fi.Int64(int64(volumeSize)),
+		RootVolumeType:         fi.String(volumeType),
 		SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
+	}
+
+	if volumeType == ec2.VolumeTypeIo1 {
+		if fi.Int32Value(ig.Spec.RootVolumeIops) <= 0 {
+			t.RootVolumeIops = fi.Int64(int64(DefaultVolumeIops))
+		} else {
+			t.RootVolumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
+		}
 	}
 
 	if ig.Spec.Tenancy != "" {
@@ -192,6 +190,28 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 			return nil, err
 		}
 		t.SecurityGroups = append(t.SecurityGroups, sgTask)
+	}
+
+	// @step: add any additional block devices to the launch configuration
+	for _, x := range ig.Spec.Volumes {
+		if x.Type == "" {
+			x.Type = DefaultVolumeType
+		}
+		if x.Type == ec2.VolumeTypeIo1 {
+			if x.Iops == nil {
+				x.Iops = fi.Int64(DefaultVolumeIops)
+			}
+		} else {
+			x.Iops = nil
+		}
+		t.BlockDeviceMappings = append(t.BlockDeviceMappings, &awstasks.BlockDeviceMapping{
+			DeviceName:             fi.String(x.Device),
+			EbsDeleteOnTermination: fi.Bool(true),
+			EbsEncrypted:           x.Encrypted,
+			EbsVolumeIops:          x.Iops,
+			EbsVolumeSize:          fi.Int64(x.Size),
+			EbsVolumeType:          fi.String(x.Type),
+		})
 	}
 
 	// @step: attach the ssh key to the instancegroup

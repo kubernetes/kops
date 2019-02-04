@@ -36,6 +36,8 @@ type LaunchTemplate struct {
 
 	// AssociatePublicIP indicates if a public ip address is assigned to instabces
 	AssociatePublicIP *bool
+	// BlockDeviceMappings is a block device mappings
+	BlockDeviceMappings []*BlockDeviceMapping
 	// IAMInstanceProfile is the IAM profile to assign to the nodes
 	IAMInstanceProfile *IAMInstanceProfile
 	// ID is the launch configuration name
