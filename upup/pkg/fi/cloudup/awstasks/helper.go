@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"errors"
 	"fmt"
 
 	"k8s.io/kops/upup/pkg/fi"
@@ -37,4 +38,19 @@ func buildEphemeralDevices(cloud awsup.AWSCloud, machineType string) (map[string
 	}
 
 	return blockDeviceMappings, nil
+}
+
+// buildAdditionalDevices is responsible for creating additional volumes in this lc
+func buildAdditionalDevices(volumes []*BlockDeviceMapping) (map[string]*BlockDeviceMapping, error) {
+	devices := make(map[string]*BlockDeviceMapping, 0)
+
+	// @step: iterate the volumes and create devices from them
+	for _, x := range volumes {
+		if x.DeviceName == nil {
+			return nil, errors.New("DeviceName not set for volume")
+		}
+		devices[*x.DeviceName] = x
+	}
+
+	return devices, nil
 }

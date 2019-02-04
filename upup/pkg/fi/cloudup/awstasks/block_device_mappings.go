@@ -122,7 +122,7 @@ func (i *BlockDeviceMapping) ToAutoscaling(deviceName string) *autoscaling.Block
 }
 
 // BlockDeviceMappingFromLaunchTemplateBootDeviceRequest coverts the launch template device mappings to an interval block device mapping
-func BlockDeviceMappingFromLaunchTemplateBootDeviceRequest(i *ec2.LaunchTemplateBlockDeviceMappingRequest) (string, *BlockDeviceMapping) {
+func BlockDeviceMappingFromLaunchTemplateBootDeviceRequest(i *ec2.LaunchTemplateBlockDeviceMapping) (string, *BlockDeviceMapping) {
 	o := &BlockDeviceMapping{}
 	o.VirtualName = i.VirtualName
 	if i.Ebs != nil {
