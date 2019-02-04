@@ -58,6 +58,8 @@ type LaunchConfiguration struct {
 
 	// AssociatePublicIP indicates if a public ip address is assigned to instabces
 	AssociatePublicIP *bool
+	// BlockDeviceMappings is a block device mappings
+	BlockDeviceMappings []*BlockDeviceMapping
 	// IAMInstanceProfile is the IAM profile to assign to the nodes
 	IAMInstanceProfile *IAMInstanceProfile
 	// ID is the launch configuration name
@@ -248,53 +250,6 @@ func buildAdditionalDevices(volumes []*BlockDeviceMapping) (map[string]*BlockDev
 	return devices, nil
 }
 
-// buildEphemeralDevices is responsible for mapping ephemeral devices for this instance type
-func buildEphemeralDevices(instanceTypeName *string) (map[string]*BlockDeviceMapping, error) {
-	bm := make(map[string]*BlockDeviceMapping)
-
-	// TODO: Any reason not to always attach the ephemeral devices?
-	if instanceTypeName == nil {
-		return nil, fi.RequiredField("InstanceType")
-	}
-
-	instanceType, err := awsup.GetMachineTypeInfo(*instanceTypeName)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, x := range instanceType.EphemeralDevices() {
-		bm[x.DeviceName] = &BlockDeviceMapping{VirtualName: fi.String(x.VirtualName)}
-	}
-
-	return bm, nil
-}
-
-// buildRootDevice is responsible for creating a block device mapping for the root volume
-func (e *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]*BlockDeviceMapping, error) {
-	imageID := fi.StringValue(e.ImageID)
-	image, err := cloud.ResolveImage(imageID)
-	if err != nil {
-		return nil, fmt.Errorf("unable to resolve image: %q: %v", imageID, err)
-	} else if image == nil {
-		return nil, fmt.Errorf("unable to resolve image: %q: not found", imageID)
-	}
-
-	rootDeviceName := aws.StringValue(image.RootDeviceName)
-
-	blockDeviceMappings := make(map[string]*BlockDeviceMapping)
-
-	rootDeviceMapping := &BlockDeviceMapping{
-		EbsDeleteOnTermination: aws.Bool(true),
-		EbsVolumeSize:          e.RootVolumeSize,
-		EbsVolumeType:          e.RootVolumeType,
-		EbsVolumeIops:          e.RootVolumeIops,
-	}
-
-	blockDeviceMappings[rootDeviceName] = rootDeviceMapping
-
-	return blockDeviceMappings, nil
-}
-
 func (e *LaunchConfiguration) Run(c *fi.Context) error {
 	// TODO: Make Normalize a standard method
 	e.Normalize()
@@ -371,8 +326,7 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 		if err != nil {
 			return err
 		}
-
-		ephemeralDevices, err := FindEphemeralDevices(t.Cloud, fi.StringValue(e.InstanceType))
+		ephemeralDevices, err := buildEphemeralDevices(t.Cloud, fi.StringValue(e.InstanceType))
 		if err != nil {
 			return err
 		}
@@ -381,22 +335,10 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 			return err
 		}
 
-                /*
 		// @step: add all the devices to the block device mappings
 		for _, x := range []map[string]*BlockDeviceMapping{rootDevices, ephemeralDevices, additionalDevices} {
 			for name, device := range x {
 				request.BlockDeviceMappings = append(request.BlockDeviceMappings, device.ToAutoscaling(name))
-			}
-		}
-		*/
-
-		if len(rootDevices) != 0 || len(ephemeralDevices) != 0 {
-			request.BlockDeviceMappings = []*autoscaling.BlockDeviceMapping{}
-			for device, bdm := range rootDevices {
-				request.BlockDeviceMappings = append(request.BlockDeviceMappings, bdm.ToAutoscaling(device))
-			}
-			for device, bdm := range ephemeralDevices {
-				request.BlockDeviceMappings = append(request.BlockDeviceMappings, bdm.ToAutoscaling(device))
 			}
 		}
 	}
@@ -549,8 +491,7 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 		if err != nil {
 			return err
 		}
-
-		ephemeralDevices, err := FindEphemeralDevices(cloud, fi.StringValue(e.InstanceType))
+		ephemeralDevices, err := buildEphemeralDevices(cloud, fi.StringValue(e.InstanceType))
 		if err != nil {
 			return err
 		}
@@ -700,8 +641,7 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 		if err != nil {
 			return err
 		}
-
-		ephemeralDevices, err := FindEphemeralDevices(cloud, fi.StringValue(e.InstanceType))
+		ephemeralDevices, err := buildEphemeralDevices(cloud, fi.StringValue(e.InstanceType))
 		if err != nil {
 			return err
 		}

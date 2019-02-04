@@ -23,8 +23,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
-// FindEphemeralDevices looks up the machine type and discovery any ephemeral device mappings
-func FindEphemeralDevices(cloud awsup.AWSCloud, machineType string) (map[string]*BlockDeviceMapping, error) {
+// buildEphemeralDevices looks up the machine type and discovery any ephemeral device mappings
+func buildEphemeralDevices(cloud awsup.AWSCloud, machineType string) (map[string]*BlockDeviceMapping, error) {
 	mt, err := awsup.GetMachineTypeInfo(machineType)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find instance type details on: %s, error: %s", machineType, err)

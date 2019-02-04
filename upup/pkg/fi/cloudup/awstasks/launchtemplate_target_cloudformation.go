@@ -82,6 +82,8 @@ type cloudformationLaunchTemplateBlockDeviceEBS struct {
 	IOPS *int64 `json:"Iops,omitempty"`
 	// DeleteOnTermination indicates the volume should die with the instance
 	DeleteOnTermination *bool `json:"DeleteOnTermination,omitempty"`
+	// Encrypted indicates the device is encrypted
+	Encrypted *bool `json:"Encrypted,omitempty"`
 }
 
 type cloudformationLaunchTemplateBlockDevice struct {
@@ -191,6 +193,10 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 	if err != nil {
 		return err
 	}
+	additionals, err := buildAdditionalDevices(e.BlockDeviceMappings)
+	if err != nil {
+		return err
+	}
 	for name, x := range devices {
 		data.BlockDeviceMappings = append(data.BlockDeviceMappings, &cloudformationLaunchTemplateBlockDevice{
 			DeviceName: fi.String(name),
@@ -202,7 +208,20 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 			},
 		})
 	}
-	devices, err = FindEphemeralDevices(cloud, fi.StringValue(e.InstanceType))
+	for name, x := range additionals {
+		data.BlockDeviceMappings = append(data.BlockDeviceMappings, &cloudformationLaunchTemplateBlockDevice{
+			DeviceName: fi.String(name),
+			EBS: &cloudformationLaunchTemplateBlockDeviceEBS{
+				DeleteOnTermination: fi.Bool(true),
+				IOPS:                x.EbsVolumeIops,
+				VolumeSize:          x.EbsVolumeSize,
+				VolumeType:          x.EbsVolumeType,
+				Encrypted:           x.EbsEncrypted,
+			},
+		})
+	}
+
+	devices, err = buildEphemeralDevices(cloud, fi.StringValue(e.InstanceType))
 	if err != nil {
 		return err
 	}

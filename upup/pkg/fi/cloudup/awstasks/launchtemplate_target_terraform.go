@@ -83,6 +83,8 @@ type terraformLaunchTemplateBlockDeviceEBS struct {
 	IOPS *int64 `json:"iops,omitempty"`
 	// DeleteOnTermination indicates the volume should die with the instance
 	DeleteOnTermination *bool `json:"delete_on_termination,omitempty"`
+	// Encrypted indicates the device should be encrypted
+	Encrypted *bool `json:"encrypted,omitempty"`
 }
 
 type terraformLaunchTemplateBlockDevice struct {
@@ -202,7 +204,26 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 			},
 		})
 	}
-	devices, err = FindEphemeralDevices(cloud, fi.StringValue(e.InstanceType))
+	additionals, err := buildAdditionalDevices(e.BlockDeviceMappings)
+	if err != nil {
+		return err
+	}
+	for n, x := range additionals {
+		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, &terraformLaunchTemplateBlockDevice{
+			DeviceName: fi.String(n),
+			EBS: []*terraformLaunchTemplateBlockDeviceEBS{
+				{
+					DeleteOnTermination: fi.Bool(true),
+					Encrypted:           x.EbsEncrypted,
+					IOPS:                x.EbsVolumeIops,
+					VolumeSize:          x.EbsVolumeSize,
+					VolumeType:          x.EbsVolumeType,
+				},
+			},
+		})
+	}
+
+	devices, err = buildEphemeralDevices(cloud, fi.StringValue(e.InstanceType))
 	if err != nil {
 		return err
 	}
