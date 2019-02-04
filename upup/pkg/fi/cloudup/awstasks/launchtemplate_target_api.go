@@ -202,14 +202,26 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 	}
 	sort.Sort(OrderSecurityGroupsById(actual.SecurityGroups))
 
+	// @step: get the image is order to find out the root device name as using the index
+	// is not vaiable, under conditions they move
+	image, err := cloud.ResolveImage(fi.StringValue(t.ImageID))
+	if err != nil {
+		return nil, err
+	}
+
 	// @step: find the root volume
 	for _, b := range lt.LaunchTemplateData.BlockDeviceMappings {
-		if b.Ebs == nil || b.Ebs.SnapshotId != nil {
+		if b.Ebs == nil {
 			continue
 		}
-		actual.RootVolumeSize = b.Ebs.VolumeSize
-		actual.RootVolumeType = b.Ebs.VolumeType
-		actual.RootVolumeIops = b.Ebs.Iops
+		if b.DeviceName != nil && fi.StringValue(b.DeviceName) == fi.StringValue(image.RootDeviceName) {
+			actual.RootVolumeSize = b.Ebs.VolumeSize
+			actual.RootVolumeType = b.Ebs.VolumeType
+			actual.RootVolumeIops = b.Ebs.Iops
+		} else {
+			_, d := BlockDeviceMappingFromLaunchTemplateBootDeviceRequest(b)
+			actual.BlockDeviceMappings = append(actual.BlockDeviceMappings, d)
+		}
 	}
 
 	if lt.LaunchTemplateData.UserData != nil {

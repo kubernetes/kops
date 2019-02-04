@@ -18,7 +18,6 @@ package awstasks
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"math"
 	"sort"
@@ -233,21 +232,6 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	}
 
 	return actual, nil
-}
-
-// buildAdditionalDevices is responsible for creating additional volumes in this lc
-func buildAdditionalDevices(volumes []*BlockDeviceMapping) (map[string]*BlockDeviceMapping, error) {
-	devices := make(map[string]*BlockDeviceMapping, 0)
-
-	// @step: iterate the volumes and create devices from them
-	for _, x := range volumes {
-		if x.DeviceName == nil {
-			return nil, errors.New("DeviceName not set for volume")
-		}
-		devices[*x.DeviceName] = x
-	}
-
-	return devices, nil
 }
 
 func (e *LaunchConfiguration) Run(c *fi.Context) error {
