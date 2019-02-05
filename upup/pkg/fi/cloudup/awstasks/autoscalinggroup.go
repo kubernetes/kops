@@ -312,7 +312,8 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			changes.LaunchConfiguration = nil
 		}
 		if changes.LaunchTemplate != nil {
-			// @step: update the launch template revesion
+			// @note: at the moment we are only using launch templates when using mixed instance policies,
+			// but this might change
 			request.MixedInstancesPolicy = &autoscaling.MixedInstancesPolicy{
 				InstancesDistribution: &autoscaling.InstancesDistribution{},
 				LaunchTemplate: &autoscaling.LaunchTemplate{
@@ -357,14 +358,14 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			changes.MaxSize = nil
 		}
 		if changes.Subnets != nil {
-			request.VPCZoneIdentifier = aws.String(strings.Join(changes.AutoscalingGroupSubnets(), ","))
+			request.VPCZoneIdentifier = aws.String(strings.Join(e.AutoscalingGroupSubnets(), ","))
 			changes.Subnets = nil
 		}
 
 		var updateTagsRequest *autoscaling.CreateOrUpdateTagsInput
 		var deleteTagsRequest *autoscaling.DeleteTagsInput
 		if changes.Tags != nil {
-			updateTagsRequest = &autoscaling.CreateOrUpdateTagsInput{Tags: changes.AutoscalingGroupTags()}
+			updateTagsRequest = &autoscaling.CreateOrUpdateTagsInput{Tags: e.AutoscalingGroupTags()}
 
 			if a != nil && len(a.Tags) > 0 {
 				deleteTagsRequest = &autoscaling.DeleteTagsInput{}
@@ -428,15 +429,14 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			return fmt.Errorf("error updating AutoscalingGroup: %v", err)
 		}
 
-		if updateTagsRequest != nil {
-			if _, err := t.Cloud.Autoscaling().CreateOrUpdateTags(updateTagsRequest); err != nil {
-				return fmt.Errorf("error updating AutoscalingGroup tags: %v", err)
-			}
-		}
-
 		if deleteTagsRequest != nil && len(deleteTagsRequest.Tags) > 0 {
 			if _, err := t.Cloud.Autoscaling().DeleteTags(deleteTagsRequest); err != nil {
 				return fmt.Errorf("error deleting old AutoscalingGroup tags: %v", err)
+			}
+		}
+		if updateTagsRequest != nil {
+			if _, err := t.Cloud.Autoscaling().CreateOrUpdateTags(updateTagsRequest); err != nil {
+				return fmt.Errorf("error updating AutoscalingGroup tags: %v", err)
 			}
 		}
 	}
