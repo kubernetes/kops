@@ -2,5 +2,5 @@ approvers:
 - dims # just for bootstrapping the provider
 - zetaab
 reviewers:
-- dims # just for bootstrapping the provider
+- drekle
 - zetaab
