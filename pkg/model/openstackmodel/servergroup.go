@@ -85,6 +85,10 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 				fmt.Sprintf("%s-%d.%s", ig.Name, i+1, b.ClusterName()),
 			),
 		)
+
+		// replace all dots with -, this is needed to get external cloudprovider working
+		instanceName = strings.Replace(instanceName, ".", "-", -1)
+
 		securityGroupName := b.SecurityGroupName(ig.Spec.Role)
 		securityGroup := b.LinkToSecurityGroup(securityGroupName)
 
