@@ -80,14 +80,9 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			return fmt.Errorf("Failed to create UUID for instance: %v", err)
 		}
 		// FIXME: Must ensure 63 or less characters
-		instanceName := fi.String(
-			strings.ToLower(
-				fmt.Sprintf("%s-%d.%s", ig.Name, i+1, b.ClusterName()),
-			),
-		)
-
 		// replace all dots with -, this is needed to get external cloudprovider working
-		instanceName = strings.Replace(instanceName, ".", "-", -1)
+		iName := strings.ToLower(fmt.Sprintf("%s-%d.%s", ig.Name, i+1, b.ClusterName()))
+		instanceName := fi.String(strings.Replace(iName, ".", "-", -1))
 
 		securityGroupName := b.SecurityGroupName(ig.Spec.Role)
 		securityGroup := b.LinkToSecurityGroup(securityGroupName)
