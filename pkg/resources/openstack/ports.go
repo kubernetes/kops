@@ -38,7 +38,8 @@ func (os *clusterDiscoveryOS) ListPorts() ([]*resources.Resource, error) {
 	}
 
 	for _, port := range ports {
-		if strings.Contains(port.Name, os.clusterName) {
+		clusteReplaced := strings.Replace(os.clusterName, ".", "-", -1)
+		if strings.HasSuffix(port.Name, clusteReplaced) {
 			resourceTracker := &resources.Resource{
 				Name: port.Name,
 				ID:   port.ID,
