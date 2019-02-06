@@ -525,6 +525,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				subnet = &api.ClusterSubnetSpec{
 					Name:   subnetName,
 					Region: region,
+					Zone:   zoneName, // Needed for bastion creation code
 				}
 				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
 			}

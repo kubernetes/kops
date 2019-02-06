@@ -280,14 +280,17 @@ func (e *InstanceTemplate) mapToGCE(project string) (*compute.InstanceTemplate, 
 
 	var metadataItems []*compute.MetadataItems
 	for key, r := range e.Metadata {
-		v, err := r.AsString()
-		if err != nil {
-			return nil, fmt.Errorf("error rendering InstanceTemplate metadata %q: %v", key, err)
+		// TODO: check resource holder is not nil, things blow up if it is.
+		if r != nil {
+			v, err := r.AsString()
+			if err != nil {
+				return nil, fmt.Errorf("error rendering InstanceTemplate metadata %q: %v", key, err)
+			}
+			metadataItems = append(metadataItems, &compute.MetadataItems{
+				Key:   key,
+				Value: fi.String(v),
+			})
 		}
-		metadataItems = append(metadataItems, &compute.MetadataItems{
-			Key:   key,
-			Value: fi.String(v),
-		})
 	}
 
 	i := &compute.InstanceTemplate{

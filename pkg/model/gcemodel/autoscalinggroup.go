@@ -68,11 +68,16 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				volumeType = DefaultVolumeType
 			}
 
-			// GCP does not have "private networks". We can achieve this by
-			// creating internal-only instances (instances
-			// with no external IP) and setting up a NAT Gateway at a later point.
-			// https://cloud.google.com/vpc/docs/special-configurations#natgateway
-			// TODO: improve topology action code. What to do if Masters != Nodes?
+			/*
+				GCP does not have "private networks". We can achieve this by
+				 creating internal-only instances (instances
+				 with no external IP) and setting up a NAT Gateway at a later point.
+				 https://cloud.google.com/vpc/docs/special-configurations#natgateway
+				 NOTE: for private networks both master and node topologies are set to private,
+
+				 So the following check for private topology should work.
+				 See cmd/kops/create_cluster.go:946
+			*/
 			internalOnly := false
 			if b.Cluster.Spec.Topology.Masters == "private" {
 				internalOnly = true
@@ -137,6 +142,11 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			case kops.InstanceGroupRoleNode:
 				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
+
+			case kops.InstanceGroupRoleBastion:
+				// TODO: Bastion instances should have public IPs or should they?
+				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleBastion))
+				t.InternalOnly = fi.Bool(false)
 			}
 
 			//labels, err := b.CloudTagsForInstanceGroup(ig)
