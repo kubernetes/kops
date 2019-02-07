@@ -412,15 +412,18 @@ func (t *DryRunTarget) Deletions() []string {
 	return deletions
 }
 
-// Changes returns all changed task names
-func (t *DryRunTarget) Changes() []string {
-	var changes []string
+// Changes returns tasks which is going to be created or updated
+func (t *DryRunTarget) Changes() (map[string]Task, map[string]Task) {
+	creates := make(map[string]Task)
+	updates := make(map[string]Task)
 	for _, r := range t.changes {
 		if r.aIsNil {
-			changes = append(changes, getTaskName(r.changes))
+			creates[getTaskName(r.changes)] = r.changes
+		} else {
+			updates[getTaskName(r.changes)] = r.changes
 		}
 	}
-	return changes
+	return creates, updates
 }
 
 // HasChanges returns true iff any changes would have been made
