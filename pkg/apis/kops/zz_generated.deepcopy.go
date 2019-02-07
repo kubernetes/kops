@@ -1897,6 +1897,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.OIDCRequiredClaim != nil {
+		in, out := &in.OIDCRequiredClaim, &out.OIDCRequiredClaim
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.OIDCCAFile != nil {
 		in, out := &in.OIDCCAFile, &out.OIDCCAFile
 		*out = new(string)
