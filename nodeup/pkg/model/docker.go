@@ -501,6 +501,20 @@ var dockerVersions = []dockerVersion{
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
 
+	// 18.06.2 - Xenial
+	{
+		DockerVersion: "18.06.2",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionXenial},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.06.2~ce~3-0~ubuntu",
+		Source:        "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~ubuntu_amd64.deb",
+		Hash:          "03e5eaae9c84b144e1140d9b418e43fce0311892",
+		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
+		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
+	},
+
 	// 17.09.0 - Centos / Rhel7 (two packages)
 	{
 		DockerVersion: "17.09.0",
@@ -571,7 +585,7 @@ var dockerVersions = []dockerVersion{
 		Name:          "docker-ce",
 		Distros:       []distros.Distribution{distros.DistributionDebian9},
 		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "18.06.2~ce-0~debian",
+		Version:       "18.06.2~ce~3-0~debian",
 		Source:        "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~debian_amd64.deb",
 		Hash:          "aad1efd2c90725034e996c6a368ccc2bf41ca5b8",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
