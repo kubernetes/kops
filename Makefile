@@ -791,7 +791,7 @@ prow-postsubmit: bazel-version-dist
 	${UPLOAD} ${BAZELUPLOAD}/kops/${VERSION}/ ${UPLOAD_DEST}/${KOPS_RELEASE_VERSION}-${GITSHA}/
 
 #-----------------------------------------------------------
-# static html documentation  
+# static html documentation
 
 .PHONY: live-docs
 live-docs:
@@ -801,8 +801,9 @@ live-docs:
 build-docs:
 	@docker run --rm -it -v ${PWD}:/docs aledbf/mkdocs:0.1 build
 
+# Update machine_types.go
 .PHONY: update-machine-types
-update-machine-types: #Update machine_types.go
+update-machine-types:
 	go build -o hack/machine_types/machine_types  ${KOPS_ROOT}/hack/machine_types/
 	hack/machine_types/machine_types --out upup/pkg/fi/cloudup/awsup/machine_types.go
 	go fmt upup/pkg/fi/cloudup/awsup/machine_types.go
