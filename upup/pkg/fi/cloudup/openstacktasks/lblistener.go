@@ -63,7 +63,7 @@ func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Li
 	}
 
 	for _, pool := range lb.Pools {
-		poolTask, err := NewLBPoolTaskFromCloud(cloud, lifecycle, &pool, nil)
+		poolTask, err := NewLBPoolTaskFromCloud(cloud, lifecycle, &pool, find.Pool)
 		if err != nil {
 			return nil, fmt.Errorf("NewLBListenerTaskFromCloud: Failed to create new LBListener task for pool %s: %v", pool.Name, err)
 		}
@@ -72,7 +72,10 @@ func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Li
 		break
 	}
 	if find != nil {
+		// Update all search terms
 		find.ID = listenerTask.ID
+		find.Name = listenerTask.Name
+		find.Pool = listenerTask.Pool
 	}
 	return listenerTask, nil
 }
