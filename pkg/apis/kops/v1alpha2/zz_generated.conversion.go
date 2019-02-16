@@ -1157,6 +1157,7 @@ func Convert_kops_CalicoNetworkingSpec_To_v1alpha2_CalicoNetworkingSpec(in *kops
 func autoConvert_v1alpha2_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *CanalNetworkingSpec, out *kops.CanalNetworkingSpec, s conversion.Scope) error {
 	out.ChainInsertMode = in.ChainInsertMode
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
+	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
 	out.LogSeveritySys = in.LogSeveritySys
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
@@ -1173,6 +1174,7 @@ func Convert_v1alpha2_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *CanalN
 func autoConvert_kops_CanalNetworkingSpec_To_v1alpha2_CanalNetworkingSpec(in *kops.CanalNetworkingSpec, out *CanalNetworkingSpec, s conversion.Scope) error {
 	out.ChainInsertMode = in.ChainInsertMode
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
+	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
 	out.LogSeveritySys = in.LogSeveritySys
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
