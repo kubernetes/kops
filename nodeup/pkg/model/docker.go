@@ -591,6 +591,18 @@ var dockerVersions = []dockerVersion{
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
+	// 18.06.2 - Jessie
+	{
+		DockerVersion: "18.06.2",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionJessie},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "ce_18.06.2~ce~3-0~debian",
+		Source:        "https://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~debian_amd64.deb",
+		Hash:          "1a2500311230aff37aa81dd1292a88302fb0a2e1",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
 	// 18.06.1 - CentOS / Rhel7 (two packages)
 	{
 		DockerVersion: "18.06.1",
