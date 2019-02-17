@@ -21,6 +21,7 @@ import (
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -84,4 +85,22 @@ func (c *openstackCloud) DeleteSubnet(subnetID string) error {
 	} else {
 		return wait.ErrWaitTimeout
 	}
+}
+
+func (c *openstackCloud) GetLBFloatingSubnet() (subnet *subnets.Subnet, err error) {
+	if c.floatingSubnet == nil {
+		return nil, nil
+	}
+
+	subnets, err := c.ListSubnets(subnets.ListOpts{
+		Name: fi.StringValue(c.floatingSubnet),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(subnets) == 1 {
+		return &subnets[0], nil
+	}
+	return nil, fmt.Errorf("did not find floatingsubnet for LB")
 }

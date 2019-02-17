@@ -4320,6 +4320,7 @@ func autoConvert_v1alpha2_OpenstackLoadbalancerConfig_To_kops_OpenstackLoadbalan
 	out.UseOctavia = in.UseOctavia
 	out.FloatingNetwork = in.FloatingNetwork
 	out.FloatingNetworkID = in.FloatingNetworkID
+	out.FloatingSubnet = in.FloatingSubnet
 	out.SubnetID = in.SubnetID
 	return nil
 }
@@ -4335,6 +4336,7 @@ func autoConvert_kops_OpenstackLoadbalancerConfig_To_v1alpha2_OpenstackLoadbalan
 	out.UseOctavia = in.UseOctavia
 	out.FloatingNetwork = in.FloatingNetwork
 	out.FloatingNetworkID = in.FloatingNetworkID
+	out.FloatingSubnet = in.FloatingSubnet
 	out.SubnetID = in.SubnetID
 	return nil
 }

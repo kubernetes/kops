@@ -147,6 +147,9 @@ type OpenstackCloud interface {
 	//ListExternalNetworks will return the Neutron networks with the router:external property
 	GetExternalNetwork() (*networks.Network, error)
 
+	// GetLBFloatingSubnet will return the subnet for floatingip which is used in lb
+	GetLBFloatingSubnet() (*subnets.Subnet, error)
+
 	//CreateNetwork will create a new Neutron network
 	CreateNetwork(opt networks.CreateOptsBuilder) (*networks.Network, error)
 
@@ -270,6 +273,7 @@ type openstackCloud struct {
 	dnsClient      *gophercloud.ServiceClient
 	lbClient       *gophercloud.ServiceClient
 	extNetworkName *string
+	floatingSubnet *string
 	tags           map[string]string
 	region         string
 	useOctavia     bool
@@ -386,6 +390,9 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 		}
 		if spec.CloudConfig.Openstack.Loadbalancer.UseOctavia != nil {
 			octavia = fi.BoolValue(spec.CloudConfig.Openstack.Loadbalancer.UseOctavia)
+		}
+		if spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet != nil {
+			c.floatingSubnet = spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet
 		}
 	}
 	c.useOctavia = octavia
