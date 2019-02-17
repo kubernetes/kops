@@ -510,6 +510,7 @@ type OpenstackLoadbalancerConfig struct {
 	UseOctavia        *bool   `json:"useOctavia,omitempty"`
 	FloatingNetwork   *string `json:"floatingNetwork,omitempty"`
 	FloatingNetworkID *string `json:"floatingNetworkID,omitempty"`
+	FloatingSubnet    *string `json:"floatingSubnet,omitempty"`
 	SubnetID          *string `json:"subnetID,omitempty"`
 }
 
