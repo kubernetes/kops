@@ -87,6 +87,24 @@ func (c *openstackCloud) DeleteSubnet(subnetID string) error {
 	}
 }
 
+func (c *openstackCloud) GetExternalSubnet() (subnet *subnets.Subnet, err error) {
+	if c.extSubnetName == nil {
+		return nil, nil
+	}
+
+	subnets, err := c.ListSubnets(subnets.ListOpts{
+		Name: fi.StringValue(c.extSubnetName),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(subnets) == 1 {
+		return &subnets[0], nil
+	}
+	return nil, fmt.Errorf("did not find floatingsubnet for external router")
+}
+
 func (c *openstackCloud) GetLBFloatingSubnet() (subnet *subnets.Subnet, err error) {
 	if c.floatingSubnet == nil {
 		return nil, nil

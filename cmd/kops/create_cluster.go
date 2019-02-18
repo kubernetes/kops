@@ -151,6 +151,7 @@ type CreateClusterOptions struct {
 
 	// OpenstackExternalNet is the name of the external network for the openstack router
 	OpenstackExternalNet     string
+	OpenstackExternalSubnet  string
 	OpenstackStorageIgnoreAZ bool
 	OpenstackDNSServers      string
 	OpenstackLbSubnet        string
@@ -384,6 +385,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	if cloudup.AlphaAllowOpenstack.Enabled() {
 		// Openstack flags
 		cmd.Flags().StringVar(&options.OpenstackExternalNet, "os-ext-net", options.OpenstackExternalNet, "The name of the external network to use with the openstack router")
+		cmd.Flags().StringVar(&options.OpenstackExternalSubnet, "os-ext-subnet", options.OpenstackExternalSubnet, "The name of the external floating subnet to use with the openstack router")
 		cmd.Flags().StringVar(&options.OpenstackLbSubnet, "os-lb-floating-subnet", options.OpenstackLbSubnet, "The name of the external subnet to use with the kubernetes api")
 		cmd.Flags().BoolVar(&options.OpenstackStorageIgnoreAZ, "os-kubelet-ignore-az", options.OpenstackStorageIgnoreAZ, "If true kubernetes may attach volumes across availability zones")
 		cmd.Flags().BoolVar(&options.OpenstackLBOctavia, "os-octavia", options.OpenstackLBOctavia, "If true octavia loadbalancer api will be used")
@@ -936,6 +938,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 			if c.OpenstackDNSServers != "" {
 				cluster.Spec.CloudConfig.Openstack.Router.DNSServers = fi.String(c.OpenstackDNSServers)
+			}
+			if c.OpenstackExternalSubnet != "" {
+				cluster.Spec.CloudConfig.Openstack.Router.ExternalSubnet = fi.String(c.OpenstackExternalSubnet)
 			}
 			if c.OpenstackLbSubnet != "" {
 				cluster.Spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet = fi.String(c.OpenstackLbSubnet)

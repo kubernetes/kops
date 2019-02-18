@@ -147,6 +147,9 @@ type OpenstackCloud interface {
 	//ListExternalNetworks will return the Neutron networks with the router:external property
 	GetExternalNetwork() (*networks.Network, error)
 
+	// GetExternalSubnet will return the subnet for floatingip which is used in external router
+	GetExternalSubnet() (*subnets.Subnet, error)
+
 	// GetLBFloatingSubnet will return the subnet for floatingip which is used in lb
 	GetLBFloatingSubnet() (*subnets.Subnet, error)
 
@@ -273,6 +276,7 @@ type openstackCloud struct {
 	dnsClient      *gophercloud.ServiceClient
 	lbClient       *gophercloud.ServiceClient
 	extNetworkName *string
+	extSubnetName  *string
 	floatingSubnet *string
 	tags           map[string]string
 	region         string
@@ -376,6 +380,9 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 
 		c.extNetworkName = spec.CloudConfig.Openstack.Router.ExternalNetwork
 
+		if spec.CloudConfig.Openstack.Router.ExternalSubnet != nil {
+			c.extSubnetName = spec.CloudConfig.Openstack.Router.ExternalSubnet
+		}
 		if spec.CloudConfig.Openstack.Loadbalancer != nil &&
 			spec.CloudConfig.Openstack.Loadbalancer.FloatingNetworkID == nil &&
 			spec.CloudConfig.Openstack.Loadbalancer.FloatingNetwork != nil {
