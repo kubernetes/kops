@@ -29,32 +29,31 @@ const (
 
 func (os *clusterDiscoveryOS) ListInstances() ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
-	opt := servers.ListOpts{
-		Name: os.clusterName + "?",
-	}
-	instances, err := os.osCloud.ListInstances(opt)
+	instances, err := os.osCloud.ListInstances(servers.ListOpts{})
 	if err != nil {
 		return resourceTrackers, err
 	}
 
 	for _, instance := range instances {
+		val, ok := instance.Metadata["k8s"]
+		if ok && val == os.clusterName {
+			// Clean up any bound floating IP's
+			floatingIPs, err := os.listFloatingIPs(instance.ID)
+			if err != nil {
+				return resourceTrackers, err
+			}
+			resourceTrackers = append(resourceTrackers, floatingIPs...)
 
-		// Clean up any bound floating IP's
-		floatingIPs, err := os.listFloatingIPs(instance.ID)
-		if err != nil {
-			return resourceTrackers, err
+			resourceTracker := &resources.Resource{
+				Name: instance.Name,
+				ID:   instance.ID,
+				Type: typeInstance,
+				Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
+					return cloud.(openstack.OpenstackCloud).DeleteInstanceWithID(r.ID)
+				},
+			}
+			resourceTrackers = append(resourceTrackers, resourceTracker)
 		}
-		resourceTrackers = append(resourceTrackers, floatingIPs...)
-
-		resourceTracker := &resources.Resource{
-			Name: instance.Name,
-			ID:   instance.ID,
-			Type: typeInstance,
-			Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
-				return cloud.(openstack.OpenstackCloud).DeleteInstanceWithID(r.ID)
-			},
-		}
-		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
 	return resourceTrackers, nil
 }
