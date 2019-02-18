@@ -198,7 +198,8 @@ spec:
     oidcGroupsClaim: user_roles
     oidcGroupsPrefix: "oidc:"
     oidcCAFile: /etc/kubernetes/ssl/kc-ca.pem
-
+    oidcRequiredClaim:
+    	- "key=value"
 ```
 
 #### audit logging

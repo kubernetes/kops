@@ -318,6 +318,10 @@ type KubeAPIServerConfig struct {
 	// OIDCClientID is the client ID for the OpenID Connect client, must be set
 	// if oidc-issuer-url is set.
 	OIDCClientID *string `json:"oidcClientID,omitempty" flag:"oidc-client-id"`
+	// A key=value pair that describes a required claim in the ID Token.
+	// If set, the claim is verified to be present in the ID Token with a matching value.
+	// Repeat this flag to specify multiple claims.
+	OIDCRequiredClaim []string `json:"oidcRequiredClaim,omitempty" flag:"oidc-required-claim,repeat"`
 	// OIDCCAFile if set, the OpenID server's certificate will be verified by one
 	// of the authorities in the oidc-ca-file
 	OIDCCAFile *string `json:"oidcCAFile,omitempty" flag:"oidc-ca-file"`
