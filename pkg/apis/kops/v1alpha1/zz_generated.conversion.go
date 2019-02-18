@@ -3181,6 +3181,7 @@ func autoConvert_v1alpha1_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyC
 	out.HostnameOverride = in.HostnameOverride
 	out.BindAddress = in.BindAddress
 	out.Master = in.Master
+	out.MetricsBindAddress = in.MetricsBindAddress
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
 	out.IPVSExcludeCIDRS = in.IPVSExcludeCIDRS
@@ -3209,6 +3210,7 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha1_KubeProxyConfig(in *kops.KubeP
 	out.HostnameOverride = in.HostnameOverride
 	out.BindAddress = in.BindAddress
 	out.Master = in.Master
+	out.MetricsBindAddress = in.MetricsBindAddress
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
 	out.IPVSExcludeCIDRS = in.IPVSExcludeCIDRS
