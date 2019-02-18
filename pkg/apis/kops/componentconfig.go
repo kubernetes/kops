@@ -207,6 +207,8 @@ type KubeProxyConfig struct {
 	BindAddress string `json:"bindAddress,omitempty" flag:"bind-address"`
 	// Master is the address of the Kubernetes API server (overrides any value in kubeconfig)
 	Master string `json:"master,omitempty" flag:"master"`
+	// MetricsBindAddress is the IP address and port for the metrics server to serve on
+	MetricsBindAddress *string `json:"metricsBindAddress,omitempty" flag:"metrics-bind-address"`
 	// Enabled allows enabling or disabling kube-proxy
 	Enabled *bool `json:"enabled,omitempty"`
 	// Which proxy mode to use: (userspace, iptables(default), ipvs)
