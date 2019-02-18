@@ -9,33 +9,9 @@ The Cloud Config used by the kubernetes API server and kubelet will be construct
 source openstack.rc
 ```
 
-**--OR--**
-## Create config file
-The config file contains the OpenStack credentials required to create a cluster. The config file has the following format:
-
-```ini
-[Default]
-identity=<OS_AUTH_URL>
-user=mk8s=<OS_USERNAME>
-password=<OS_PASSWORD>
-domain_name=<OS_USER_DOMAIN_NAME>
-tenant_id=<OS_PROJECT_ID>
-
-[Swift]
-service_type=object-store
-region=<OS_REGION_NAME>
-
-[Cinder]
-service_type=volumev3
-region=<OS_REGION_NAME>
-
-[Neutron]
-service_type=network
-region=<OS_REGION_NAME>
-
-[Nova]
-service_type=compute
-region=<OS_REGION_NAME>
+If you are authenticating by username `OS_DOMAIN_NAME` or `OS_DOMAIN_ID` must manually be set.
+```bash
+export OS_DOMAIN_NAME=<USER_DOMAIN_NAME>
 ```
 
 ## Environment Variables
@@ -43,7 +19,6 @@ region=<OS_REGION_NAME>
 It is important to set the following environment variables:
 
 ```bash
-export OPENSTACK_CREDENTIAL_FILE=<config-file> # where <config-file> is the path of the config file
 export KOPS_STATE_STORE=swift://<bucket-name> # where <bucket-name> is the name of the Swift container to use for kops state
 
 # this is required since OpenStack support is currently in alpha so it is feature gated
