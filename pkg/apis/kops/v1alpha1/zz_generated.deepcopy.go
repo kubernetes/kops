@@ -2716,6 +2716,11 @@ func (in *OpenstackRouter) DeepCopyInto(out *OpenstackRouter) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ExternalSubnet != nil {
+		in, out := &in.ExternalSubnet, &out.ExternalSubnet
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 
