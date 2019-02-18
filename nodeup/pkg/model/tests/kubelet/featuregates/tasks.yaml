@@ -7,3 +7,25 @@ contents: |
   HOME="/root"
 path: /etc/sysconfig/kubelet
 type: file
+---
+Name: kubelet.service
+definition: |
+  [Unit]
+  Description=Kubernetes Kubelet Server
+  Documentation=https://github.com/kubernetes/kubernetes
+  After=docker.service
+
+  [Service]
+  EnvironmentFile=/etc/sysconfig/kubelet
+  ExecStart=/usr/local/bin/kubelet "$DAEMON_ARGS"
+  Restart=always
+  RestartSec=2s
+  StartLimitInterval=0
+  KillMode=process
+  User=root
+  CPUAccounting=true
+  MemoryAccounting=true
+enabled: true
+manageState: true
+running: true
+smartRestart: true
