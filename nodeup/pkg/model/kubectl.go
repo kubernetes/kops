@@ -106,6 +106,8 @@ func (b *KubectlBuilder) findKubeconfigUser() (*fi.User, *fi.Group, error) {
 	switch b.Distribution {
 	case distros.DistributionJessie, distros.DistributionDebian9:
 		users = []string{"admin", "root"}
+	case distros.DistributionCentos7:
+		users = []string{"centos"}
 	default:
 		glog.Warningf("Unknown distro; won't write kubeconfig to homedir %s", b.Distribution)
 		return nil, nil, nil
