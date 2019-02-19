@@ -37,10 +37,9 @@ import (
 type Package struct {
 	Name string
 
-	Version      *string `json:"version,omitempty"`
-	Source       *string `json:"source,omitempty"`
-	Hash         *string `json:"hash,omitempty"`
-	PreventStart *bool   `json:"preventStart,omitempty"`
+	Version *string `json:"version,omitempty"`
+	Source  *string `json:"source,omitempty"`
+	Hash    *string `json:"hash,omitempty"`
 
 	// Healthy is true if the package installation did not fail
 	Healthy *bool `json:"healthy,omitempty"`
@@ -240,6 +239,7 @@ func (e *Package) findYum(c *fi.Context) (*Package, error) {
 		return nil, nil
 	}
 
+	// Prevent spurious changes
 	return &Package{
 		Name:    e.Name,
 		Version: fi.String(installedVersion),
@@ -346,6 +346,10 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 				return fmt.Errorf("unsupported package system")
 			}
 		}
+
+		// Make out fields we can't read / can't do anything about
+		changes.Source = nil
+		changes.Hash = nil
 
 		if !reflect.DeepEqual(changes, &Package{}) {
 			klog.Warningf("cannot apply package changes for %q: %v", e.Name, changes)

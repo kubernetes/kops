@@ -894,9 +894,6 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 					Source:  s(dv.Source),
 					Hash:    s(dv.Hash),
 					Deps:    extraPkgs,
-
-					// TODO: PreventStart is now unused?
-					PreventStart: fi.Bool(true),
 				}
 				c.AddTask(packageTask)
 			}
