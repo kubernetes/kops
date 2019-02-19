@@ -203,6 +203,21 @@ func (f *FloatingIP) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 			if err := e.Server.WaitForStatusActive(t); err != nil {
 				return fmt.Errorf("Failed to associate floating IP to instance %s", *e.Name)
 			}
+
+			// recheck is there floatingip already in port
+			// this can happen for instance when recreating bastion host
+			fips, err := cloud.ListFloatingIPs()
+			if err != nil {
+				return fmt.Errorf("Failed to list floating ip's: %v", err)
+			}
+			for _, fip := range fips {
+				if fip.InstanceID == fi.StringValue(e.Server.ID) {
+					e.ID = fi.String(fip.ID)
+					glog.V(2).Infof("Openstack::RenderOpenstack floatingip found after server is active")
+					return nil
+				}
+			}
+
 			fip, err := cloud.CreateFloatingIP(floatingips.CreateOpts{
 				Pool: external.Name,
 			})
