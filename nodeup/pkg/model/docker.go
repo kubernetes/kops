@@ -675,6 +675,18 @@ func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro 
 	return true
 }
 
+func (b *DockerBuilder) dockerVersion() string {
+	dockerVersion := ""
+	if b.Cluster.Spec.Docker != nil {
+		dockerVersion = fi.StringValue(b.Cluster.Spec.Docker.Version)
+	}
+	if dockerVersion == "" {
+		dockerVersion = DefaultDockerVersion
+		glog.Warningf("DockerVersion not specified; using default %q", dockerVersion)
+	}
+	return dockerVersion
+}
+
 // Build is responsible for configuring the docker daemon
 func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 
@@ -705,14 +717,7 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	dockerVersion := ""
-	if b.Cluster.Spec.Docker != nil {
-		dockerVersion = fi.StringValue(b.Cluster.Spec.Docker.Version)
-	}
-	if dockerVersion == "" {
-		dockerVersion = DefaultDockerVersion
-		glog.Warningf("DockerVersion not specified; using default %q", dockerVersion)
-	}
+	dockerVersion := b.dockerVersion()
 
 	// Add packages
 	{
@@ -987,6 +992,21 @@ func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 				glog.Infof("/etc/docker/daemon.json has storage-driver: %q", storageDriver)
 			}
 			docker.Storage = nil
+		}
+	}
+
+	// RHEL-family / docker has a bug with 17.x where it fails to use overlay2 because it does a broken kernel check
+	if b.Distribution.IsRHELFamily() {
+		dockerVersion := b.dockerVersion()
+		if strings.HasPrefix(dockerVersion, "17.") {
+			storageOpts := strings.Join(docker.StorageOpts, ",")
+			if strings.Contains(storageOpts, "overlay2.override_kernel_check=1") {
+				// Already there
+			} else if !strings.Contains(storageOpts, "overlay2.override_kernel_check") {
+				docker.StorageOpts = append(docker.StorageOpts, "overlay2.override_kernel_check=1")
+			} else {
+				glog.Infof("detected image was RHEL and overlay2.override_kernel_check=1 was probably needed, but overlay2.override_kernel_check was already set (%q) so won't set", storageOpts)
+			}
 		}
 	}
 
