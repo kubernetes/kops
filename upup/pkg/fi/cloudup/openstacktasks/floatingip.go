@@ -48,6 +48,20 @@ func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
 	}
 
 	cloud := context.Cloud.(openstack.OpenstackCloud)
+	// try to find using portid, the floatingips always attached to port
+	if e.ID == nil && e.LB != nil && e.LB.PortID != nil {
+		fips, err := cloud.ListL3FloatingIPs(l3floatingip.ListOpts{
+			PortID: fi.StringValue(e.LB.PortID),
+		})
+		if err != nil {
+			return nil, err
+		}
+		if len(fips) == 1 && fips[0].PortID == fi.StringValue(e.LB.PortID) {
+			return &fips[0].FloatingIP, nil
+		}
+		// not found
+		return nil, nil
+	}
 
 	fip, err := cloud.GetFloatingIP(fi.StringValue(e.ID))
 	if err != nil {
