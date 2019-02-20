@@ -76,9 +76,10 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 	if t.SSHKey != nil {
 		lc.KeyName = t.SSHKey.Name
 	}
+	var securityGroups []*string
 	// @step: add the security groups
 	for _, sg := range t.SecurityGroups {
-		lc.SecurityGroupIds = append(lc.SecurityGroupIds, sg.ID)
+		securityGroups = append(securityGroups, sg.ID)
 	}
 	// @step: add any tenacy details
 	if t.Tenancy != nil {
@@ -101,7 +102,11 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 			&ec2.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{
 				AssociatePublicIpAddress: t.AssociatePublicIP,
 				DeleteOnTermination:      aws.Bool(true),
+				DeviceIndex:              fi.Int64(0),
+				Groups:                   securityGroups,
 			})
+	} else {
+		lc.SecurityGroupIds = securityGroups
 	}
 	// @step: add the userdata
 	if t.UserData != nil {
