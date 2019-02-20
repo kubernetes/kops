@@ -273,7 +273,7 @@ type MixedInstancesPolicySpec struct {
 	OnDemandAboveBase *int64 `json:"onDemandAboveBase,omitempty"`
 	// SpotAllocationStrategy diversifies your Spot capacity across multiple instance types to
 	// find the best pricing. Higher Spot availability may result from a larger number of
-	// instance types to choose from.
+	// instance types to choose from https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet.html#spot-fleet-allocation-strategy
 	SpotAllocationStrategy *string `json:"spotAllocationStrategy,omitempty"`
 	// SpotInstancePools is the number of Spot pools to use to allocate your Spot capacity (defaults to 2)
 	// pools are determined from the different instance types in the Overrides array of LaunchTemplate
@@ -281,7 +281,9 @@ type MixedInstancesPolicySpec struct {
 }
 ```
 
-> Note: as of writing this the kube cluster autoscaler does not support mixed instance groups, in the sense it will still scale groups up and down based on capacity but some of the simulations it does might be wrong as it's not aware of the instance type coming into the group.
+Note: as of writing this the kube cluster autoscaler does not support mixed instance groups, in the sense it will still scale groups up and down based on capacity but some of the simulations it does might be wrong as it's not aware of the instance type coming into the group.
+
+Note: when upgrading from a launchconfiguration to launchtemplate with mixed instance policy the launchconfiguration is left undeleted as has to be manually removed.
 
 ## Moving from one instance group spanning multiple AZs to one instance group per AZ
 
