@@ -62,3 +62,5 @@ kops delete cluster my-cluster.k8s.local --yes
 
 #### Optional flags
 * `--os-kubelet-ignore-az=true` Nova and Cinder have different availability zones, more information [Kubernetes docs](https://kubernetes.io/docs/concepts/cluster-administration/cloud-providers/#block-storage)
+* `--os-octavia=true` If Octavia Loadbalancer api should be used instead of old lbaas v2 api.
+
