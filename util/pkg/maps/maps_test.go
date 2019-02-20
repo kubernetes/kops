@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,19 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package awsmodel
+package maps
 
 import (
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/model"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-// AWSModelContext provides the context for the aws model
-type AWSModelContext struct {
-	*model.KopsModelContext
+func TestKeys(t *testing.T) {
+	m := map[string]bool{
+		"key0": true,
+		"key1": true,
+		"key2": true,
+	}
+	assert.Equal(t, 3, len(Keys(m)))
 }
 
-// UseLaunchTemplate checks if we need to use a launch template rather than configuration
-func UseLaunchTemplate(ig *kops.InstanceGroup) bool {
-	return ig.Spec.MixedInstancesPolicy != nil
+func TestSortedKeys(t *testing.T) {
+	m := map[string]bool{
+		"key2": true,
+		"key1": true,
+		"key0": true,
+	}
+	assert.Equal(t, []string{"key0", "key1", "key2"}, SortedKeys(m))
 }

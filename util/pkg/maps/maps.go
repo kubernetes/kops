@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,21 +14,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package awsmodel
+package maps
 
-import "k8s.io/kops/upup/pkg/fi"
+import (
+	"fmt"
+	"reflect"
+	"sort"
+)
 
-// s is a helper that builds a *string from a string value
-func s(v string) *string {
-	return fi.String(v)
+// Keys returns the keys of a map
+func Keys(m interface{}) []string {
+	var list []string
+
+	v := reflect.ValueOf(m)
+	if v.Kind() == reflect.Map {
+		for _, x := range v.MapKeys() {
+			list = append(list, fmt.Sprintf("%s", x))
+		}
+	}
+
+	return list
 }
 
-// i64 is a helper that builds a *int64 from an int64 value
-func i64(v int64) *int64 {
-	return fi.Int64(v)
-}
+// SortedKeys returns a list of sorted keys
+func SortedKeys(m interface{}) []string {
+	list := Keys(m)
+	sort.Strings(list)
 
-// i32 is a helper that builds a *int32 from an int32 value
-func i32(v int32) *int32 {
-	return fi.Int32(v)
+	return list
 }

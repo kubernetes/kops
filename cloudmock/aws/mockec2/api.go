@@ -55,6 +55,8 @@ type MockEC2 struct {
 
 	InternetGateways map[string]*ec2.InternetGateway
 
+	LaunchTemplates map[string]*ec2.ResponseLaunchTemplateData
+
 	NatGateways map[string]*ec2.NatGateway
 
 	idsMutex sync.Mutex
