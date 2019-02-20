@@ -76,12 +76,13 @@ The following steps are known:
 * You must accept the agreement at http://aws.amazon.com/marketplace/pp?sku=aw0evgkw8e5c1q413zgy5pjce
 * Specify the AMI by id (there are no tags): us-east-1: `ami-6d1c2007`
 * You may find images from the [CentOS AWS page](https://wiki.centos.org/Cloud/AWS)
-* You can also query by product-code: `aws ec2 describe-images --region=us-west-2 --filters Name=product-code,Values=aw0evgkw8e5c1q413zgy5pjce`
+* You can also query by product-code: `aws ec2 describe-images --region=us-west-2 --filters Name=product-code,Values=aw0evgkw8e5c1q413zgy5pjce Name=architecture,Values=x86_64 'Name=name,Values=CentOS*' --query 'sort_by(Images,&Name)'`
 
 Be aware of the following limitations:
 
 * CentOS 7.2 is the recommended minimum version
 * CentOS7 AMIs are running an older kernel than we prefer to run elsewhere
+
 
 ## RHEL7
 
@@ -89,7 +90,7 @@ RHEL7 support is still experimental, but should work. Please report any issues.
 
 The following steps are known:
 
-* Redhat AMIs can be found using `aws ec2 describe-images --region=us-east-1 --owner=309956199498 --filters Name=virtualization-type,Values=hvm`
+* Redhat AMIs can be found using `aws ec2 describe-images --region=us-east-1 --owner=309956199498 --filters Name=virtualization-type,Values=hvm 'Name=name,Values=RHEL-*GA*' Name=architecture,Values=x86_64 --query 'sort_by(Images,&Name)'`
 * You can specify the name using the `redhat.com` owner alias, for example `redhat.com/RHEL-7.2_HVM-20161025-x86_64-1-Hourly2-GP2`
 
 Be aware of the following limitations:

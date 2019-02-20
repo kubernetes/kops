@@ -76,6 +76,7 @@ type CreateClusterOptions struct {
 	MasterVolumeSize     int32
 	NodeVolumeSize       int32
 	EncryptEtcdStorage   bool
+	EtcdStorageType      string
 	Project              string
 	KubernetesVersion    string
 	OutDir               string
@@ -146,6 +147,13 @@ type CreateClusterOptions struct {
 	// Spotinst options
 	SpotinstProduct     string
 	SpotinstOrientation string
+
+	// OpenstackExternalNet is the name of the external network for the openstack router
+	OpenstackExternalNet     string
+	OpenstackStorageIgnoreAZ bool
+
+	// OpenstackLBOctavia is boolean value should we use octavia or old loadbalancer api
+	OpenstackLBOctavia bool
 
 	// ConfigBase is the location where we will store the configuration, it defaults to the state store
 	ConfigBase string
@@ -277,7 +285,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		cmd.Flags().StringVar(&options.ConfigBase, "config-base", options.ConfigBase, "A cluster-readable location where we mirror configuration information, separate from the state store.  Allows for a state store that is not accessible from the cluster.")
 	}
 
-	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws, vsphere")
+	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws, vsphere, openstack")
 
 	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
 	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
@@ -303,10 +311,11 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().Int32Var(&options.MasterCount, "master-count", options.MasterCount, "Set the number of masters.  Defaults to one master per master-zone")
 	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set the number of nodes")
 	cmd.Flags().BoolVar(&options.EncryptEtcdStorage, "encrypt-etcd-storage", options.EncryptEtcdStorage, "Generate key in aws kms and use it for encrypt etcd volumes")
+	cmd.Flags().StringVar(&options.EtcdStorageType, "etcd-storage-type", options.EtcdStorageType, "The default storage type for etc members")
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use for all instances.")
 
-	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium.")
+	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium, cni.")
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
@@ -334,7 +343,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.Bastion, "bastion", options.Bastion, "Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.")
 
 	// Allow custom tags from the CLI
-	cmd.Flags().StringVar(&options.CloudLabels, "cloud-labels", options.CloudLabels, "A list of KV pairs used to tag all instance groups in AWS (eg \"Owner=John Doe,Team=Some Team\").")
+	cmd.Flags().StringVar(&options.CloudLabels, "cloud-labels", options.CloudLabels, "A list of KV pairs used to tag all instance groups in AWS (e.g. \"Owner=John Doe,Team=Some Team\").")
 
 	// Master and Node Tenancy
 	cmd.Flags().StringVar(&options.MasterTenancy, "master-tenancy", options.MasterTenancy, "The tenancy of the master group on AWS. Can either be default or dedicated.")
@@ -367,6 +376,13 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		// Spotinst flags
 		cmd.Flags().StringVar(&options.SpotinstProduct, "spotinst-product", options.SpotinstProduct, "Set the product description (valid values: Linux/UNIX, Linux/UNIX (Amazon VPC), Windows and Windows (Amazon VPC))")
 		cmd.Flags().StringVar(&options.SpotinstOrientation, "spotinst-orientation", options.SpotinstOrientation, "Set the prediction strategy (valid values: balanced, cost, equal-distribution and availability)")
+	}
+
+	if cloudup.AlphaAllowOpenstack.Enabled() {
+		// Openstack flags
+		cmd.Flags().StringVar(&options.OpenstackExternalNet, "os-ext-net", options.OpenstackExternalNet, "The name of the external network to use with the openstack router")
+		cmd.Flags().BoolVar(&options.OpenstackStorageIgnoreAZ, "os-kubelet-ignore-az", options.OpenstackStorageIgnoreAZ, "If true kubernetes may attach volumes across availability zones")
+		cmd.Flags().BoolVar(&options.OpenstackLBOctavia, "os-octavia", options.OpenstackLBOctavia, "If true octavia loadbalancer api will be used")
 	}
 
 	return cmd
@@ -717,6 +733,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				if c.EncryptEtcdStorage {
 					m.EncryptedVolume = &c.EncryptEtcdStorage
 				}
+				if len(c.EtcdStorageType) > 0 {
+					m.VolumeType = fi.String(c.EtcdStorageType)
+				}
 				m.Name = names[i]
 
 				m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
@@ -867,6 +886,36 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				cluster.Spec.CloudConfig.SpotinstOrientation = fi.String(c.SpotinstOrientation)
 			}
 		}
+
+		if cloudup.AlphaAllowOpenstack.Enabled() && c.Cloud == "openstack" {
+			if cluster.Spec.CloudConfig == nil {
+				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
+			}
+			provider := "haproxy"
+			if c.OpenstackLBOctavia {
+				provider = "octavia"
+			}
+			cluster.Spec.CloudConfig.Openstack = &api.OpenstackConfiguration{
+				Router: &api.OpenstackRouter{
+					ExternalNetwork: fi.String(c.OpenstackExternalNet),
+				},
+				Loadbalancer: &api.OpenstackLoadbalancerConfig{
+					FloatingNetwork: fi.String(c.OpenstackExternalNet),
+					Method:          fi.String("ROUND_ROBIN"),
+					Provider:        fi.String(provider),
+					UseOctavia:      fi.Bool(c.OpenstackLBOctavia),
+				},
+				BlockStorage: &api.OpenstackBlockStorageConfig{
+					Version:  fi.String("v2"),
+					IgnoreAZ: fi.Bool(c.OpenstackStorageIgnoreAZ),
+				},
+				Monitor: &api.OpenstackMonitor{
+					Delay:      fi.String("1m"),
+					Timeout:    fi.String("30s"),
+					MaxRetries: fi.Int(3),
+				},
+			}
+		}
 	}
 
 	// Populate project
@@ -982,7 +1031,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	case api.TopologyPrivate:
 		if !supportsPrivateTopology(cluster.Spec.Networking) {
-			return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan (or kopeio)', '--networking weave', '--networking flannel', '--networking calico', '--networking canal', '--networking kube-router', '--networking romana', '--networking amazon-vpc-routed-eni' '--networking lyftvpc' are supported for private topologies", c.Networking)
+			return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan (or kopeio)', '--networking weave', '--networking flannel', '--networking calico', '--networking canal', '--networking kube-router', '--networking romana', '--networking amazon-vpc-routed-eni' '--networking lyftvpc' '--networking cni' are supported for private topologies", c.Networking)
 		}
 		cluster.Spec.Topology = &api.TopologySpec{
 			Masters: api.TopologyPrivate,
@@ -1292,7 +1341,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				fmt.Fprintf(&sb, " * edit your master instance group: kops edit ig --name=%s %s\n", clusterName, masters[0].ObjectMeta.Name)
 			}
 			fmt.Fprintf(&sb, "\n")
-			fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster %s --yes\n", clusterName)
+			fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster --name %s --yes\n", clusterName)
 			fmt.Fprintf(&sb, "\n")
 
 			_, err := out.Write(sb.Bytes())

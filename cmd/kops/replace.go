@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/cli-runtime/pkg/genericclioptions/resource"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/commands"
@@ -32,7 +33,6 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/kubectl/genericclioptions/resource"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
@@ -94,11 +94,6 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 		return err
 	}
 
-	// Codecs provides access to encoding and decoding for the scheme
-	codecs := kopscodecs.Codecs //serializer.NewCodecFactory(scheme)
-
-	codec := codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
-
 	for _, f := range c.Filenames {
 		var contents []byte
 		if f == "-" {
@@ -115,7 +110,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 		sections := bytes.Split(contents, []byte("\n---\n"))
 
 		for _, section := range sections {
-			o, gvk, err := codec.Decode(section, nil, nil)
+			o, gvk, err := kopscodecs.Decode(section, nil)
 			if err != nil {
 				return fmt.Errorf("error parsing file %q: %v", f, err)
 			}

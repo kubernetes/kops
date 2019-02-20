@@ -12,8 +12,8 @@ The command `kops create cluster` does not support specifying addons to be added
 ```yaml
 spec:
   addons:
-  - kubernetes-dashboard
-  - s3://kops-addons/addon.yaml
+  - manifest: kubernetes-dashboard
+  - manifest: s3://kops-addons/addon.yaml
 ```
 
 This document describes how to install some common addons and how to create your own custom ones. 
@@ -74,7 +74,7 @@ spec:
         }
       ]
 ```
-The masters will poll for changes changes in the bucket and keep the addons up to date.
+The masters will poll for changes in the bucket and keep the addons up to date.
 
 
 ### Dashboard
@@ -83,7 +83,7 @@ The [dashboard project](https://github.com/kubernetes/dashboard) provides a nice
 
 Install using:
 ```
-kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.8.3.yaml
+kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.10.0.yaml
 ```
 
 And then navigate to `https://api.<clustername>/ui`
@@ -126,7 +126,7 @@ Install using:
 ```
 kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/monitoring-standalone/v1.11.0.yaml
 ```
-Please note that [heapster is deprecated](https://github.com/kubernetes/heapster/blob/master/docs/deprecation.md). Consider using [metrics-server](https://github.com/kubernetes-incubator/metrics-server) and a third party metrics pipeline to gather Prometheus-format metrics instead.
+Please note that [heapster is retired](https://github.com/kubernetes/heapster/blob/master/docs/deprecation.md). Consider using [metrics-server](https://github.com/kubernetes-incubator/metrics-server) and a third party metrics pipeline to gather Prometheus-format metrics instead.
 
 ### Monitoring with Prometheus Operator + kube-prometheus
 
@@ -135,7 +135,7 @@ The [Prometheus Operator](https://github.com/coreos/prometheus-operator/) makes 
 [kube-prometheus](https://github.com/coreos/prometheus-operator/blob/master/contrib/kube-prometheus) combines the Prometheus Operator with a collection of manifests to help getting started with monitoring Kubernetes itself and applications running on top of it.
 
 ```console
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/prometheus-operator/v0.19.0.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/prometheus-operator/v0.26.0.yaml
 ```
 
 ### Route53 Mapper

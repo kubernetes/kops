@@ -116,7 +116,7 @@ func (o KopsServerOptions) Config() (*apiserver.Config, error) {
 	if err := o.RecommendedOptions.Etcd.ApplyTo(&config.Config); err != nil {
 		return nil, err
 	}
-	if err := o.RecommendedOptions.SecureServing.ApplyTo(&config.Config); err != nil {
+	if err := o.RecommendedOptions.SecureServing.ApplyTo(&config.Config.SecureServing, &config.Config.LoopbackClientConfig); err != nil {
 		return nil, err
 	}
 

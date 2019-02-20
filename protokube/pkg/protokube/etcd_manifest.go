@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/util/pkg/exec"
@@ -152,7 +152,7 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 	return pod
 }
 
-// buildEtcdEnvironmentOptions is responsible for building the environment variabled for etcd
+// buildEtcdEnvironmentOptions is responsible for building the environment variables for etcd
 // @question should we perhaps make this version specific in prep for v3 support?
 func buildEtcdEnvironmentOptions(c *EtcdCluster) []v1.EnvVar {
 	var options []v1.EnvVar

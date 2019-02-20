@@ -20,17 +20,20 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
-
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/golang/glog"
 )
 
 const (
-	DefaultVolumeType = "gp2"
+	// DefaultVolumeType is the default volume type
+	DefaultVolumeType = ec2.VolumeTypeGp2
+	// DefaultVolumeIops is the default volume iops
 	DefaultVolumeIops = 100
 )
 
@@ -38,14 +41,14 @@ const (
 type AutoscalingGroupModelBuilder struct {
 	*AWSModelContext
 
-	BootstrapScript *model.BootstrapScript
-	Lifecycle       *fi.Lifecycle
-
+	BootstrapScript   *model.BootstrapScript
+	Lifecycle         *fi.Lifecycle
 	SecurityLifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
 
+// Build is responsible for constructing the aws autoscaling group from the kops spec
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	var err error
 	for _, ig := range b.InstanceGroups {
@@ -74,7 +77,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			link, err := b.LinkToIAMInstanceProfile(ig)
 			if err != nil {
-				return fmt.Errorf("unable to find iam profile link for instance group %q: %v", ig.ObjectMeta.Name, err)
+				return fmt.Errorf("unable to find IAM profile link for instance group %q: %v", ig.ObjectMeta.Name, err)
 			}
 
 			var sgLink *awstasks.SecurityGroup
@@ -95,20 +98,17 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Name:      s(name),
 				Lifecycle: b.Lifecycle,
 
-				SecurityGroups: []*awstasks.SecurityGroup{
-					sgLink,
-				},
-				IAMInstanceProfile: link,
-				ImageID:            s(ig.Spec.Image),
-				InstanceType:       s(strings.Split(ig.Spec.MachineType, ",")[0]),
-				InstanceMonitoring: ig.Spec.DetailedInstanceMonitoring,
-
+				IAMInstanceProfile:     link,
+				ImageID:                s(ig.Spec.Image),
+				InstanceMonitoring:     ig.Spec.DetailedInstanceMonitoring,
+				InstanceType:           s(strings.Split(ig.Spec.MachineType, ",")[0]),
+				RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
 				RootVolumeSize:         i64(int64(volumeSize)),
 				RootVolumeType:         s(volumeType),
-				RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
+				SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
 			}
 
-			if volumeType == "io1" {
+			if volumeType == ec2.VolumeTypeIo1 {
 				t.RootVolumeIops = i64(int64(volumeIops))
 			}
 
@@ -116,18 +116,40 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				t.Tenancy = s(ig.Spec.Tenancy)
 			}
 
+			// @step: add any additional security groups to the instance
 			for _, id := range ig.Spec.AdditionalSecurityGroups {
 				sgTask := &awstasks.SecurityGroup{
-					Name:   fi.String(id),
-					ID:     fi.String(id),
-					Shared: fi.Bool(true),
-
+					Name:      fi.String(id),
+					ID:        fi.String(id),
 					Lifecycle: b.SecurityLifecycle,
+					Shared:    fi.Bool(true),
 				}
 				if err := c.EnsureTask(sgTask); err != nil {
 					return err
 				}
 				t.SecurityGroups = append(t.SecurityGroups, sgTask)
+			}
+
+			// @step: add any additional block devices to the launch configuration
+			for _, x := range ig.Spec.Volumes {
+				if x.Type == "" {
+					x.Type = DefaultVolumeType
+				}
+				if x.Type == ec2.VolumeTypeIo1 {
+					if x.Iops == nil {
+						x.Iops = fi.Int64(DefaultVolumeIops)
+					}
+				} else {
+					x.Iops = nil
+				}
+				t.BlockDeviceMappings = append(t.BlockDeviceMappings, &awstasks.BlockDeviceMapping{
+					DeviceName:             fi.String(x.Device),
+					EbsDeleteOnTermination: fi.Bool(true),
+					EbsEncrypted:           x.Encrypted,
+					EbsVolumeIops:          x.Iops,
+					EbsVolumeSize:          fi.Int64(x.Size),
+					EbsVolumeType:          fi.String(x.Type),
+				})
 			}
 
 			if t.SSHKey, err = b.LinkToSSHKey(); err != nil {
@@ -199,16 +221,15 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				Granularity: s("1Minute"),
 				Metrics: []string{
-					"GroupMinSize",
-					"GroupMaxSize",
 					"GroupDesiredCapacity",
 					"GroupInServiceInstances",
+					"GroupMaxSize",
+					"GroupMinSize",
 					"GroupPendingInstances",
 					"GroupStandbyInstances",
 					"GroupTerminatingInstances",
 					"GroupTotalInstances",
 				},
-
 				LaunchConfiguration: launchConfiguration,
 			}
 

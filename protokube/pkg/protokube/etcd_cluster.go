@@ -214,7 +214,7 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 	pod := BuildEtcdManifest(c)
 	manifest, err := k8scodecs.ToVersionedYaml(pod)
 	if err != nil {
-		return fmt.Errorf("error marshalling pod to yaml: %v", err)
+		return fmt.Errorf("error marshaling pod to yaml: %v", err)
 	}
 
 	// Time to write the manifest!

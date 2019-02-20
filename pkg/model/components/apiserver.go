@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -35,7 +35,7 @@ type KubeAPIServerOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &KubeAPIServerOptionsBuilder{}
 
-// BuildOptions is resposible for filling in the default settings for the kube apiserver
+// BuildOptions is responsible for filling in the default settings for the kube apiserver
 func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 	if clusterSpec.KubeAPIServer == nil {
@@ -255,9 +255,25 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 	// Based on recommendations from:
 	// https://kubernetes.io/docs/admin/admission-controllers/#is-there-a-recommended-set-of-admission-controllers-to-use
-	if b.IsKubernetesGTE("1.10") {
+	if b.IsKubernetesGTE("1.10") && b.IsKubernetesLT("1.12") {
 		c.EnableAdmissionPlugins = []string{
 			"Initializers",
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"DefaultTolerationSeconds",
+			"MutatingAdmissionWebhook",
+			"ValidatingAdmissionWebhook",
+			"NodeRestriction",
+			"ResourceQuota",
+		}
+	}
+	// Based on recommendations from:
+	// https://kubernetes.io/docs/admin/admission-controllers/#is-there-a-recommended-set-of-admission-controllers-to-use
+	if b.IsKubernetesGTE("1.12") {
+		c.EnableAdmissionPlugins = []string{
 			"NamespaceLifecycle",
 			"LimitRanger",
 			"ServiceAccount",
@@ -282,7 +298,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	return nil
 }
 
-// buildAPIServerCount calculates the count of the api servers, essentuially the number of node marked as Master role
+// buildAPIServerCount calculates the count of the api servers, essentially the number of node marked as Master role
 func (b *KubeAPIServerOptionsBuilder) buildAPIServerCount(clusterSpec *kops.ClusterSpec) int {
 	// The --apiserver-count flag is (generally agreed) to be something we need to get rid of in k8s
 

@@ -55,8 +55,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	for _, sp := range b.Cluster.Spec.Subnets {
+		subnetName := sp.Name + "." + b.ClusterName()
 		t := &openstacktasks.Subnet{
-			Name:      s(sp.Name),
+			Name:      s(subnetName),
 			Network:   b.LinkToNetwork(),
 			CIDR:      s(sp.CIDR),
 			Lifecycle: b.Lifecycle,
@@ -65,7 +66,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		t1 := &openstacktasks.RouterInterface{
 			Name:      s("ri-" + sp.Name),
-			Subnet:    b.LinkToSubnet(s(sp.Name)),
+			Subnet:    b.LinkToSubnet(s(subnetName)),
 			Router:    b.LinkToRouter(s(routerName)),
 			Lifecycle: b.Lifecycle,
 		}

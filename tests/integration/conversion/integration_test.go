@@ -25,7 +25,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/diff"
@@ -54,8 +53,6 @@ func runTest(t *testing.T, srcDir string, fromVersion string, toVersion string) 
 		t.Fatalf("unexpected error reading expectedPath %q: %v", expectedPath, err)
 	}
 
-	codec := kopscodecs.Codecs.UniversalDecoder(kops.SchemeGroupVersion)
-
 	defaults := &schema.GroupVersionKind{
 		Group:   v1alpha1.SchemeGroupVersion.Group,
 		Version: v1alpha1.SchemeGroupVersion.Version,
@@ -77,12 +74,10 @@ func runTest(t *testing.T, srcDir string, fromVersion string, toVersion string) 
 		t.Fatalf("unknown version %q", toVersion)
 	}
 
-	//decoder := k8sapi.Codecs.DecoderToVersion(yaml.Serializer, kops.SchemeGroupVersion)
-
 	var actual []string
 
 	for _, s := range strings.Split(string(sourceBytes), "\n---\n") {
-		o, gvk, err := codec.Decode([]byte(s), defaults, nil)
+		o, gvk, err := kopscodecs.Decode([]byte(s), defaults)
 		if err != nil {
 			t.Fatalf("error parsing file %q: %v", sourcePath, err)
 		}

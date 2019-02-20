@@ -26,13 +26,13 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-// ConfirmArgs encapsulates the arguments that can he passed to GetConfirm
+// ConfirmArgs encapsulates the arguments that can be passed to GetConfirm
 type ConfirmArgs struct {
 	Out        io.Writer // os.Stdout or &bytes.Buffer used to output the message above the confirmation
 	Message    string    // what you want to say to the user before confirming
 	Default    string    // if you hit enter instead of yes or no should it approve or deny
 	TestVal    string    // if you need to test without the interactive prompt then set the user response here
-	Retries    int       // how many tines to ask for a valid confirmation before giving up
+	Retries    int       // how many times to ask for a valid confirmation before giving up
 	retryCount int       // how many attempts have been made
 }
 

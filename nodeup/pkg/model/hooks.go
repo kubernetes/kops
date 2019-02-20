@@ -48,7 +48,7 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 				continue
 			}
 
-			// i dont want to effect those whom are already using the hooks, so i'm gonna try an keep the name for now
+			// I don't want to affect those whom are already using the hooks, so I'm going to try to keep the name for now
 			// i.e. use the default naming convention - kops-hook-<index>, only those using the Name or hooks in IG should alter
 			var name string
 			switch hook.Name {
@@ -72,7 +72,7 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 				enabled := false
 				managed := true
 				c.AddTask(&nodetasks.Service{
-					Name:        ensureSystemdSuffix(name),
+					Name:        h.EnsureSystemdSuffix(name),
 					ManageState: &managed,
 					Enabled:     &enabled,
 					Running:     &enabled,
@@ -92,15 +92,6 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
-}
-
-// ensureSystemdSuffix ensures that the hook name ends with a valid systemd unit file extension. If it
-// doesn't, it adds ".service" for backwards-compatibility with older versions of Kops
-func ensureSystemdSuffix(name string) string {
-	if !systemd.UnitFileExtensionValid(name) {
-		name += ".service"
-	}
-	return name
 }
 
 // buildSystemdService is responsible for generating the service
@@ -145,7 +136,7 @@ func (h *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*no
 	}
 
 	service := &nodetasks.Service{
-		Name:       ensureSystemdSuffix(name),
+		Name:       h.EnsureSystemdSuffix(name),
 		Definition: definition,
 	}
 
@@ -180,7 +171,7 @@ func (h *HookBuilder) buildDockerService(unit *systemd.Manifest, hook *kops.Hook
 	return nil
 }
 
-// isValidExecContainerAction checks the validatity of the execContainer - personally i think this validation
+// isValidExecContainerAction checks the validity of the execContainer - personally i think this validation
 // should be done high up the chain, but
 func isValidExecContainerAction(action *kops.ExecContainerAction) error {
 	action.Image = strings.TrimSpace(action.Image)

@@ -35,10 +35,41 @@ type Subnet struct {
 	Lifecycle *fi.Lifecycle
 }
 
+// GetDependencies returns the dependencies of the Port task
+func (e *Subnet) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
+	for _, task := range tasks {
+		if _, ok := task.(*Network); ok {
+			deps = append(deps, task)
+		}
+	}
+	return deps
+}
+
 var _ fi.CompareWithID = &Subnet{}
 
 func (s *Subnet) CompareWithID() *string {
 	return s.ID
+}
+
+func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, subnet *subnets.Subnet, find *Subnet) (*Subnet, error) {
+
+	network, err := cloud.GetNetwork(subnet.NetworkID)
+	if err != nil {
+		return nil, fmt.Errorf("NewSubnetTaskFromCloud: Failed to get network with ID %s: %v", subnet.NetworkID, err)
+	}
+	networkTask, err := NewNetworkTaskFromCloud(cloud, lifecycle, network)
+	actual := &Subnet{
+		ID:        fi.String(subnet.ID),
+		Name:      fi.String(subnet.Name),
+		Network:   networkTask,
+		CIDR:      fi.String(subnet.CIDR),
+		Lifecycle: lifecycle,
+	}
+	if find != nil {
+		find.ID = actual.ID
+	}
+	return actual, nil
 }
 
 func (s *Subnet) Find(context *fi.Context) (*Subnet, error) {
@@ -60,15 +91,7 @@ func (s *Subnet) Find(context *fi.Context) (*Subnet, error) {
 	} else if len(rs) != 1 {
 		return nil, fmt.Errorf("found multiple subnets with name: %s", fi.StringValue(s.Name))
 	}
-	v := rs[0]
-	actual := &Subnet{
-		ID:        fi.String(v.ID),
-		Name:      fi.String(v.Name),
-		Network:   &Network{ID: fi.String(v.NetworkID)},
-		CIDR:      fi.String(v.CIDR),
-		Lifecycle: s.Lifecycle,
-	}
-	return actual, nil
+	return NewSubnetTaskFromCloud(cloud, s.Lifecycle, &rs[0], s)
 }
 
 func (s *Subnet) Run(context *fi.Context) error {

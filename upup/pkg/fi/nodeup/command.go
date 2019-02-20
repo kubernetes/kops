@@ -28,13 +28,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -48,12 +41,20 @@ import (
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // MaxTaskDuration is the amount of time to keep trying for; we retry for a long time - there is not really any great fallback
 const MaxTaskDuration = 365 * 24 * time.Hour
 
-// NodeUpCommand the configiruation for nodeup
+// NodeUpCommand is the configuration for nodeup
 type NodeUpCommand struct {
 	CacheDir       string
 	ConfigLocation string
@@ -224,6 +225,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader := NewLoader(c.config, c.cluster, assetStore, nodeTags)
 	loader.Builders = append(loader.Builders, &model.DirectoryBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.UpdateServiceBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.VolumesBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.ProtokubeBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.CloudConfigBuilder{NodeupModelContext: modelContext})
@@ -243,6 +245,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.KubeAPIServerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeControllerManagerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeSchedulerBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.EtcdManagerTLSBuilder{NodeupModelContext: modelContext})
 	if c.cluster.Spec.Networking.Kuberouter == nil {
 		loader.Builders = append(loader.Builders, &model.KubeProxyBuilder{NodeupModelContext: modelContext})
 	} else {
@@ -451,12 +454,12 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 		if len(domains) == 0 {
 			glog.Warningf("Local hostname from AWS metadata service was empty")
 			return "", nil
-		} else {
-			domain := domains[0]
-			glog.Infof("Using hostname from AWS metadata service: %s", domain)
-
-			return domain, nil
 		}
+
+		domain := domains[0]
+		glog.Infof("Using hostname from AWS metadata service: %s", domain)
+
+		return domain, nil
 	}
 
 	if k == "@digitalocean" {
@@ -493,12 +496,12 @@ func evaluateBindAddress(bindAddress string) (string, error) {
 		if len(ips) == 0 {
 			glog.Warningf("Local IP from AWS metadata service was empty")
 			return "", nil
-		} else {
-			ip := ips[0]
-			glog.Infof("Using IP from AWS metadata service: %s", ip)
-
-			return ip, nil
 		}
+
+		ip := ips[0]
+		glog.Infof("Using IP from AWS metadata service: %s", ip)
+
+		return ip, nil
 	}
 
 	if net.ParseIP(bindAddress) == nil {

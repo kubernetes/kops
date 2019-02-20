@@ -83,7 +83,7 @@ type ClusterSpec struct {
 	SecretStore string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored
 	KeyStore string `json:"keyStore,omitempty"`
-	// ConfigStore is the VFS path to where the configuration (Cluster, InstanceGroupss etc) is stored
+	// ConfigStore is the VFS path to where the configuration (Cluster, InstanceGroups etc) is stored
 	ConfigStore string `json:"configStore,omitempty"`
 	// DNSZone is the DNS zone we should use when configuring DNS
 	// This is because some clouds let us define a managed zone foo.bar, and then have
@@ -107,7 +107,7 @@ type ClusterSpec struct {
 	// AdminAccess determines the permitted access to the admin endpoints (SSH & master HTTPS)
 	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
 	AdminAccess []string `json:"adminAccess,omitempty"`
-	// IsolatesMasters determines whether we should lock down masters so that they are not on the pod network.
+	// IsolateMasters determines whether we should lock down masters so that they are not on the pod network.
 	// true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master
 	// if they have hostNetwork=true.
 	// false is now the default, and it will:
@@ -293,7 +293,7 @@ type AlwaysAllowAuthorizationSpec struct {
 
 // AccessSpec provides configuration details related to kubeapi dns and ELB access
 type AccessSpec struct {
-	// DNS will be used to provide config on kube-apiserver elb dns
+	// DNS will be used to provide config on kube-apiserver ELB DNS
 	DNS *DNSAccessSpec `json:"dns,omitempty"`
 	// LoadBalancer is the configuration for the kube-apiserver ELB
 	LoadBalancer *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
@@ -417,11 +417,11 @@ type EtcdMemberSpec struct {
 	Name string `json:"name,omitempty"`
 	// Zone is the zone the member lives
 	Zone *string `json:"zone,omitempty"`
-	// VolumeType is the underlining cloud storage class
+	// VolumeType is the underlying cloud storage class
 	VolumeType *string `json:"volumeType,omitempty"`
 	// If volume type is io1, then we need to specify the number of Iops.
 	VolumeIops *int32 `json:"volumeIops,omitempty"`
-	// VolumeSize is the underlining cloud volume size
+	// VolumeSize is the underlying cloud volume size
 	VolumeSize *int32 `json:"volumeSize,omitempty"`
 	// KmsKeyId is a AWS KMS ID used to encrypt the volume
 	KmsKeyId *string `json:"kmsKeyId,omitempty"`

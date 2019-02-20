@@ -27,7 +27,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -187,7 +187,6 @@ func validateClusterOutputTable(result *validation.ValidationCluster, cluster *a
 
 	fmt.Fprintln(out, "INSTANCE GROUPS")
 	err := t.Render(instanceGroups, out, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "SUBNETS")
-
 	if err != nil {
 		return fmt.Errorf("cannot render nodes for %q: %v", cluster.Name, err)
 	}

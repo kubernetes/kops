@@ -44,6 +44,7 @@ type InstanceGroup struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// InstanceGroupList is a collection in instancegroups
 type InstanceGroupList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
@@ -55,8 +56,11 @@ type InstanceGroupList struct {
 type InstanceGroupRole string
 
 const (
-	InstanceGroupRoleMaster  InstanceGroupRole = "Master"
-	InstanceGroupRoleNode    InstanceGroupRole = "Node"
+	// InstanceGroupRoleMaster defines the node as a master
+	InstanceGroupRoleMaster InstanceGroupRole = "Master"
+	// InstanceGroupRoleNode defines the node as a worker
+	InstanceGroupRoleNode InstanceGroupRole = "Node"
+	// InstanceGroupRoleBastion defines the node as a bastion host
 	InstanceGroupRoleBastion InstanceGroupRole = "Bastion"
 )
 
@@ -66,6 +70,20 @@ var AllInstanceGroupRoles = []InstanceGroupRole{
 	InstanceGroupRoleMaster,
 	InstanceGroupRoleBastion,
 }
+
+const (
+	// BtfsFilesystem indicates a btfs filesystem
+	BtfsFilesystem = "btfs"
+	// Ext4Filesystem indicates a ext3 filesystem
+	Ext4Filesystem = "ext4"
+	// XFSFilesystem indicates a xfs filesystem
+	XFSFilesystem = "xfs"
+)
+
+var (
+	// SupportedFilesystems is a list of supported filesystems to format as
+	SupportedFilesystems = []string{BtfsFilesystem, Ext4Filesystem, XFSFilesystem}
+)
 
 // InstanceGroupSpec is the specification for a instanceGroup
 type InstanceGroupSpec struct {
@@ -87,6 +105,10 @@ type InstanceGroupSpec struct {
 	RootVolumeIops *int32 `json:"rootVolumeIops,omitempty"`
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
+	// Volumes is a collection of additional volumes to create for instances within this InstanceGroup
+	Volumes []*VolumeSpec `json:"volumes,omitempty"`
+	// VolumeMounts a collection of volume mounts
+	VolumeMounts []*VolumeMountSpec `json:"volumeMounts,omitempty"`
 	// Subnets is the names of the Subnets (as specified in the Cluster) where machines in this instance group should be placed
 	Subnets []string `json:"subnets,omitempty"`
 	// Zones is the names of the Zones where machines in this instance group should be placed
@@ -106,8 +128,7 @@ type InstanceGroupSpec struct {
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
 	// FileAssets is a collection of file assets for this instance group
 	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
-	// Describes the tenancy of the instance group. Can be either default or dedicated.
-	// Currently only applies to AWS.
+	// Describes the tenancy of the instance group. Can be either default or dedicated. Currently only applies to AWS.
 	Tenancy string `json:"tenancy,omitempty"`
 	// Kubelet overrides kubelet config from the ClusterSpec
 	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
@@ -121,7 +142,7 @@ type InstanceGroupSpec struct {
 	ExternalLoadBalancers []LoadBalancer `json:"externalLoadBalancers,omitempty"`
 	// DetailedInstanceMonitoring defines if detailed-monitoring is enabled (AWS only)
 	DetailedInstanceMonitoring *bool `json:"detailedInstanceMonitoring,omitempty"`
-	// IAMProfileSpec defines the identity of the cloud group iam profile (AWS only).
+	// IAMProfileSpec defines the identity of the cloud group IAM profile (AWS only).
 	IAM *IAMProfileSpec `json:"iam,omitempty"`
 	// SecurityGroupOverride overrides the default security group created by Kops for this IG (AWS only).
 	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
@@ -135,6 +156,34 @@ type UserData struct {
 	Type string `json:"type,omitempty"`
 	// Content is the user-data content
 	Content string `json:"content,omitempty"`
+}
+
+// VolumeSpec defined the spec for an additional volume attached to the instance group
+type VolumeSpec struct {
+	// Device is an optional device name of the block device
+	Device string `json:"device,omitempty"`
+	// Encrypted indicates you want to encrypt the volume
+	Encrypted *bool `json:"encrypted,omitempty"`
+	// Iops is the provision iops for this iops (think io1 in aws)
+	Iops *int64 `json:"iops,omitempty"`
+	// Size is the size of the volume in GB
+	Size int64 `json:"size,omitempty"`
+	// Type is the type of volume to create and is cloud specific
+	Type string `json:"type,omitempty"`
+}
+
+// VolumeMountSpec defines the specification for mounting a device
+type VolumeMountSpec struct {
+	// Device is the device name to provision and mount
+	Device string `json:"device,omitempty"`
+	// Filesystem is the filesystem to mount
+	Filesystem string `json:"filesystem,omitempty"`
+	// FormatOptions is a collection of options passed when formatting the device
+	FormatOptions []string `json:"formatOptions,omitempty"`
+	// MountOptions is a collection of mount options - @TODO need to be added
+	MountOptions []string `json:"mountOptions,omitempty"`
+	// Path is the location to mount the device
+	Path string `json:"path,omitempty"`
 }
 
 // IAMProfileSpec is the AWS IAM Profile to attach to instances in this instance

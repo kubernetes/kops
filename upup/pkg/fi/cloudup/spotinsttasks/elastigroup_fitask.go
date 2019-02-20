@@ -26,10 +26,10 @@ import (
 
 // Elastigroup
 
-// JSON marshalling boilerplate
+// JSON marshaling boilerplate
 type realElastigroup Elastigroup
 
-// UnmarshalJSON implements conversion to JSON, supporitng an alternate specification of the object as a string
+// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
 func (o *Elastigroup) UnmarshalJSON(data []byte) error {
 	var jsonName string
 	if err := json.Unmarshal(data, &jsonName); err == nil {

@@ -22,6 +22,6 @@ instanceGroup <br /> *string*    | InstanceGroup is the instanceGroup this volum
 kmsKeyId <br /> *string*    | KmsKeyId is a AWS KMS ID used to encrypt the volume
 name <br /> *string*    | Name is the name of the member within the etcd cluster
 volumeIops <br /> *integer*    | If volume type is io1, then we need to specify the number of Iops.
-volumeSize <br /> *integer*    | VolumeSize is the underlining cloud volume size
-volumeType <br /> *string*    | VolumeType is the underlining cloud storage class
+volumeSize <br /> *integer*    | VolumeSize is the underlying cloud volume size
+volumeType <br /> *string*    | VolumeType is the underlying cloud storage class
 

@@ -504,6 +504,8 @@ func guessSSHUser(image *ec2.Image) string {
 	switch owner {
 	case awsup.WellKnownAccountAmazonSystemLinux2:
 		return "ec2-user"
+	case awsup.WellKnownAccountRedhat:
+		return "ec2-user"
 	case awsup.WellKnownAccountCoreOS:
 		return "core"
 	case awsup.WellKnownAccountKopeio:
@@ -511,6 +513,14 @@ func guessSSHUser(image *ec2.Image) string {
 	case awsup.WellKnownAccountUbuntu:
 		return "ubuntu"
 	}
+
+	name := aws.StringValue(image.Name)
+	name = strings.ToLower(name)
+	if strings.HasPrefix(name, "centos") {
+		// We could check the marketplace id, but this is just a guess anyway...
+		return "centos"
+	}
+
 	return ""
 }
 

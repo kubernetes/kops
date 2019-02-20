@@ -18,18 +18,21 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 
 	rbacv1 "k8s.io/api/rbac/v1"
+	rbacv1alpha1 "k8s.io/api/rbac/v1alpha1"
+	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/cli-runtime/pkg/genericclioptions/printers"
+	"k8s.io/cli-runtime/pkg/genericclioptions/resource"
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	rbacv1client "k8s.io/client-go/kubernetes/typed/rbac/v1"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/kubectl/genericclioptions"
-	"k8s.io/kubernetes/pkg/kubectl/genericclioptions/printers"
-	"k8s.io/kubernetes/pkg/kubectl/genericclioptions/resource"
 	"k8s.io/kubernetes/pkg/kubectl/scheme"
 	"k8s.io/kubernetes/pkg/registry/rbac/reconciliation"
 )
@@ -37,9 +40,11 @@ import (
 // ReconcileOptions is the start of the data required to perform the operation.  As new fields are added, add them here instead of
 // referencing the cmd.Flags()
 type ReconcileOptions struct {
-	PrintFlags      *genericclioptions.PrintFlags
-	FilenameOptions *resource.FilenameOptions
-	DryRun          bool
+	PrintFlags             *genericclioptions.PrintFlags
+	FilenameOptions        *resource.FilenameOptions
+	DryRun                 bool
+	RemoveExtraPermissions bool
+	RemoveExtraSubjects    bool
 
 	Visitor         resource.Visitor
 	RBACClient      rbacv1client.RbacV1Interface
@@ -89,6 +94,8 @@ func NewCmdReconcile(f cmdutil.Factory, streams genericclioptions.IOStreams) *co
 
 	cmdutil.AddFilenameOptionFlags(cmd, o.FilenameOptions, "identifying the resource to reconcile.")
 	cmd.Flags().BoolVar(&o.DryRun, "dry-run", o.DryRun, "If true, display results but do not submit changes")
+	cmd.Flags().BoolVar(&o.RemoveExtraPermissions, "remove-extra-permissions", o.RemoveExtraPermissions, "If true, removes extra permissions added to roles")
+	cmd.Flags().BoolVar(&o.RemoveExtraSubjects, "remove-extra-subjects", o.RemoveExtraSubjects, "If true, removes extra subjects added to rolebindings")
 	cmd.MarkFlagRequired("filename")
 
 	return cmd
@@ -174,7 +181,7 @@ func (o *ReconcileOptions) RunReconcile() error {
 		case *rbacv1.Role:
 			reconcileOptions := reconciliation.ReconcileRoleOptions{
 				Confirm:                !o.DryRun,
-				RemoveExtraPermissions: false,
+				RemoveExtraPermissions: o.RemoveExtraPermissions,
 				Role: reconciliation.RoleRuleOwner{Role: t},
 				Client: reconciliation.RoleModifier{
 					NamespaceClient: o.NamespaceClient.Namespaces(),
@@ -190,7 +197,7 @@ func (o *ReconcileOptions) RunReconcile() error {
 		case *rbacv1.ClusterRole:
 			reconcileOptions := reconciliation.ReconcileRoleOptions{
 				Confirm:                !o.DryRun,
-				RemoveExtraPermissions: false,
+				RemoveExtraPermissions: o.RemoveExtraPermissions,
 				Role: reconciliation.ClusterRoleRuleOwner{ClusterRole: t},
 				Client: reconciliation.ClusterRoleModifier{
 					Client: o.RBACClient.ClusterRoles(),
@@ -205,7 +212,7 @@ func (o *ReconcileOptions) RunReconcile() error {
 		case *rbacv1.RoleBinding:
 			reconcileOptions := reconciliation.ReconcileRoleBindingOptions{
 				Confirm:             !o.DryRun,
-				RemoveExtraSubjects: false,
+				RemoveExtraSubjects: o.RemoveExtraSubjects,
 				RoleBinding:         reconciliation.RoleBindingAdapter{RoleBinding: t},
 				Client: reconciliation.RoleBindingClientAdapter{
 					Client:          o.RBACClient,
@@ -221,7 +228,7 @@ func (o *ReconcileOptions) RunReconcile() error {
 		case *rbacv1.ClusterRoleBinding:
 			reconcileOptions := reconciliation.ReconcileRoleBindingOptions{
 				Confirm:             !o.DryRun,
-				RemoveExtraSubjects: false,
+				RemoveExtraSubjects: o.RemoveExtraSubjects,
 				RoleBinding:         reconciliation.ClusterRoleBindingAdapter{ClusterRoleBinding: t},
 				Client: reconciliation.ClusterRoleBindingClientAdapter{
 					Client: o.RBACClient.ClusterRoleBindings(),
@@ -232,6 +239,16 @@ func (o *ReconcileOptions) RunReconcile() error {
 				return err
 			}
 			o.PrintObject(result.RoleBinding.GetObject(), o.Out)
+
+		case *rbacv1beta1.Role,
+			*rbacv1beta1.RoleBinding,
+			*rbacv1beta1.ClusterRole,
+			*rbacv1beta1.ClusterRoleBinding,
+			*rbacv1alpha1.Role,
+			*rbacv1alpha1.RoleBinding,
+			*rbacv1alpha1.ClusterRole,
+			*rbacv1alpha1.ClusterRoleBinding:
+			return fmt.Errorf("only rbac.authorization.k8s.io/v1 is supported: not %T", t)
 
 		default:
 			glog.V(1).Infof("skipping %#v", info.Object.GetObjectKind())

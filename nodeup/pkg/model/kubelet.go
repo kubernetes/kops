@@ -28,7 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/golang/glog"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apiserver/pkg/authentication/user"
 
 	"k8s.io/kops/nodeup/pkg/distros"
@@ -268,6 +268,8 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Service", "StartLimitInterval", "0")
 	manifest.Set("Service", "KillMode", "process")
 	manifest.Set("Service", "User", "root")
+	manifest.Set("Service", "CPUAccounting", "true")
+	manifest.Set("Service", "MemoryAccounting", "true")
 	manifestString := manifest.Render()
 
 	glog.V(8).Infof("Built service manifest %q\n%s", "kubelet", manifestString)

@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "decorated_watcher.go",
         "doc.go",
+        "dryrun.go",
         "storage_factory.go",
         "store.go",
     ],
@@ -32,10 +33,12 @@ go_library(
         "//vendor/k8s.io/apiserver/pkg/registry/generic:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/registry/rest:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/storage:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/storage/cacher:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/storage/errors:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/storage/etcd:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/storage/etcd/metrics:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/storage/storagebackend:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/storage/storagebackend/factory:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/util/dryrun:go_default_library",
     ],
 )

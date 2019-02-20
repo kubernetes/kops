@@ -52,6 +52,7 @@ You can use a valid SSL Certificate for your API Server Load Balancer. Currently
 spec:
   api:
     loadBalancer:
+      type: Public
       sslCertificate: arn:aws:acm:<region>:<accountId>:certificate/<uuid>
 ```
 
@@ -154,6 +155,18 @@ spec:
     zone: us-east-1a
 ```
 
+In the case that you don't use NAT gateways or internet gateways, you can use the "External" flag for egress to force kops to ignore egress for the subnet. This can be useful when other tools are used to manage egress for the subnet such as virtual private gateways. Please note that your cluster may need to have access to the internet upon creation, so egress must be available upon initializing a cluster. This is intended for use when egress is managed external to kops, typically with an existing cluster.
+
+```
+spec:
+  subnets:
+  - cidr: 10.20.64.0/21
+    name: us-east-1a
+    egress: External
+    type: Private
+    zone: us-east-1a
+```
+
 #### publicIP
 The IP of an existing EIP that you would like to attach to the NAT gateway.
 
@@ -185,7 +198,8 @@ spec:
     oidcGroupsClaim: user_roles
     oidcGroupsPrefix: "oidc:"
     oidcCAFile: /etc/kubernetes/ssl/kc-ca.pem
-
+    oidcRequiredClaim:
+    	- "key=value"
 ```
 
 #### audit logging
@@ -376,6 +390,8 @@ Specifying KubeDNS will install kube-dns as the default service discovery.
 
 This will install [CoreDNS](https://coredns.io/) instead of kube-dns.
 
+**Note:** If you are upgrading to CoreDNS, kube-dns will be left in place and must be removed manually (you can scale the kube-dns and kube-dns-autoscaler deployments in the `kube-system` namespace to 0 as a starting point). The `kube-dns` Service itself should be left in place, as this retains the ClusterIP and eliminates the possibility of DNS outages in your cluster. If you would like to continue autoscaling, update the `kube-dns-autoscaler` Deployment container command for `--target=Deployment/kube-dns` to be `--target=Deployment/coredns`. 
+
 ### kubeControllerManager
 This block contains configurations for the `controller-manager`.
 
@@ -385,6 +401,7 @@ spec:
     horizontalPodAutoscalerSyncPeriod: 15s
     horizontalPodAutoscalerDownscaleDelay: 5m0s
     horizontalPodAutoscalerUpscaleDelay: 3m0s
+    horizontalPodAutoscalerTolerance: 0.1
 ```
 
 For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [Kops guides on how to set it up](horizontal_pod_autoscaling.md).
