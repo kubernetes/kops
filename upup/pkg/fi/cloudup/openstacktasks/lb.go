@@ -18,10 +18,13 @@ package openstacktasks
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/golang/glog"
+	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -34,6 +37,50 @@ type LB struct {
 	VipSubnet *string
 	Lifecycle *fi.Lifecycle
 	PortID    *string
+}
+
+const (
+	// loadbalancerActive* is configuration of exponential backoff for
+	// going into ACTIVE loadbalancer provisioning status. Starting with 1
+	// seconds, multiplying by 1.2 with each step and taking 22 steps at maximum
+	// it will time out after 326s, which roughly corresponds to about 5 minutes
+	loadbalancerActiveInitDelay = 1 * time.Second
+	loadbalancerActiveFactor    = 1.2
+	loadbalancerActiveSteps     = 22
+
+	activeStatus = "ACTIVE"
+	errorStatus  = "ERROR"
+)
+
+func waitLoadbalancerActiveProvisioningStatus(client *gophercloud.ServiceClient, loadbalancerID string) (string, error) {
+	backoff := wait.Backoff{
+		Duration: loadbalancerActiveInitDelay,
+		Factor:   loadbalancerActiveFactor,
+		Steps:    loadbalancerActiveSteps,
+	}
+
+	var provisioningStatus string
+	err := wait.ExponentialBackoff(backoff, func() (bool, error) {
+		loadbalancer, err := loadbalancers.Get(client, loadbalancerID).Extract()
+		if err != nil {
+			return false, err
+		}
+		provisioningStatus = loadbalancer.ProvisioningStatus
+		if loadbalancer.ProvisioningStatus == activeStatus {
+			return true, nil
+		} else if loadbalancer.ProvisioningStatus == errorStatus {
+			return true, fmt.Errorf("loadbalancer has gone into ERROR state")
+		} else {
+			glog.Infof("Waiting for Loadbalancer to be ACTIVE...")
+			return false, nil
+		}
+
+	})
+
+	if err == wait.ErrWaitTimeout {
+		err = fmt.Errorf("loadbalancer failed to go into ACTIVE provisioning status within allotted time")
+	}
+	return provisioningStatus, err
 }
 
 // GetDependencies returns the dependencies of the Instance task
