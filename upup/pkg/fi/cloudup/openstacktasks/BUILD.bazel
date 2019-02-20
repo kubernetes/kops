@@ -42,6 +42,7 @@ go_library(
         "//pkg/pki:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/openstack:go_default_library",
+        "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes:go_default_library",

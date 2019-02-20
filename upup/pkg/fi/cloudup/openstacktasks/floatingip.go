@@ -18,12 +18,15 @@ package openstacktasks
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 //go:generate fitask -type=FloatingIP
@@ -37,6 +40,36 @@ type FloatingIP struct {
 
 var _ fi.HasAddress = &FloatingIP{}
 
+var readBackoff = wait.Backoff{
+	Duration: time.Second,
+	Factor:   1.5,
+	Jitter:   0.1,
+	Steps:    10,
+}
+
+// this function tries to find l3 floating, and retries x times to find that. In some cases the floatingip is not in place in first request
+func findL3Floating(cloud openstack.OpenstackCloud, opts l3floatingip.ListOpts) ([]l3floatingip.FloatingIP, error) {
+	var result []l3floatingip.FloatingIP
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		fips, err := cloud.ListL3FloatingIPs(opts)
+		if err != nil {
+			return false, fmt.Errorf("Failed to list L3 floating ip: %v", err)
+		}
+		if len(fips) == 0 {
+			return false, nil
+		}
+		result = fips
+		return true, nil
+	})
+	if !done {
+		if err == nil {
+			err = wait.ErrWaitTimeout
+		}
+		return result, err
+	}
+	return result, nil
+}
+
 func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
 	if e.ID == nil {
 		if e.Server != nil && e.Server.ID == nil {
@@ -48,9 +81,9 @@ func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
 	}
 
 	cloud := context.Cloud.(openstack.OpenstackCloud)
-	// try to find using portid, the floatingips always attached to port
+	// try to find ip address using LB port
 	if e.ID == nil && e.LB != nil && e.LB.PortID != nil {
-		fips, err := cloud.ListL3FloatingIPs(l3floatingip.ListOpts{
+		fips, err := findL3Floating(cloud, l3floatingip.ListOpts{
 			PortID: fi.StringValue(e.LB.PortID),
 		})
 		if err != nil {
@@ -59,7 +92,7 @@ func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
 		if len(fips) == 1 && fips[0].PortID == fi.StringValue(e.LB.PortID) {
 			return &fips[0].FloatingIP, nil
 		}
-		// not found
+		glog.V(2).Infof("Could not find port floatingips port=%s", fi.StringValue(e.LB.PortID))
 		return nil, nil
 	}
 
