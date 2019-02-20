@@ -311,42 +311,57 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			request.LaunchConfigurationName = e.LaunchConfiguration.ID
 			changes.LaunchConfiguration = nil
 		}
+		setup := func(req *autoscaling.UpdateAutoScalingGroupInput) *autoscaling.MixedInstancesPolicy {
+			if req.MixedInstancesPolicy == nil {
+				req.MixedInstancesPolicy = &autoscaling.MixedInstancesPolicy{
+					InstancesDistribution: &autoscaling.InstancesDistribution{},
+				}
+			}
+
+			return req.MixedInstancesPolicy
+		}
+
 		if changes.LaunchTemplate != nil {
 			// @note: at the moment we are only using launch templates when using mixed instance policies,
 			// but this might change
-			request.MixedInstancesPolicy = &autoscaling.MixedInstancesPolicy{
-				InstancesDistribution: &autoscaling.InstancesDistribution{},
-				LaunchTemplate: &autoscaling.LaunchTemplate{
-					LaunchTemplateSpecification: &autoscaling.LaunchTemplateSpecification{
-						LaunchTemplateName: changes.LaunchTemplate.ID,
-					},
+			setup(request).LaunchTemplate = &autoscaling.LaunchTemplate{
+				LaunchTemplateSpecification: &autoscaling.LaunchTemplateSpecification{
+					LaunchTemplateName: changes.LaunchTemplate.ID,
 				},
 			}
-
-			if changes.MixedOnDemandAboveBase != nil {
-				request.MixedInstancesPolicy.InstancesDistribution.OnDemandPercentageAboveBaseCapacity = e.MixedOnDemandAboveBase
-				changes.MixedOnDemandAboveBase = nil
-			}
-			if changes.MixedOnDemandBase != nil {
-				request.MixedInstancesPolicy.InstancesDistribution.OnDemandBaseCapacity = e.MixedOnDemandBase
-				changes.MixedOnDemandBase = nil
-			}
-			if changes.MixedSpotAllocationStrategy != nil {
-				request.MixedInstancesPolicy.InstancesDistribution.SpotAllocationStrategy = e.MixedSpotAllocationStrategy
-				changes.MixedSpotAllocationStrategy = nil
-			}
-			if changes.MixedSpotInstancePools != nil {
-				request.MixedInstancesPolicy.InstancesDistribution.SpotInstancePools = e.MixedSpotInstancePools
-				changes.MixedSpotInstancePools = nil
-			}
-			if changes.MixedInstanceOverrides != nil {
-				p := request.MixedInstancesPolicy.LaunchTemplate
-				for _, x := range changes.MixedInstanceOverrides {
-					p.Overrides = append(p.Overrides, &autoscaling.LaunchTemplateOverrides{InstanceType: fi.String(x)})
-				}
-				changes.MixedInstanceOverrides = nil
-			}
 			changes.LaunchTemplate = nil
+		}
+
+		if changes.MixedOnDemandAboveBase != nil {
+			setup(request).InstancesDistribution.OnDemandPercentageAboveBaseCapacity = e.MixedOnDemandAboveBase
+			changes.MixedOnDemandAboveBase = nil
+		}
+		if changes.MixedOnDemandBase != nil {
+			setup(request).InstancesDistribution.OnDemandBaseCapacity = e.MixedOnDemandBase
+			changes.MixedOnDemandBase = nil
+		}
+		if changes.MixedSpotAllocationStrategy != nil {
+			setup(request).InstancesDistribution.SpotAllocationStrategy = e.MixedSpotAllocationStrategy
+			changes.MixedSpotAllocationStrategy = nil
+		}
+		if changes.MixedSpotInstancePools != nil {
+			setup(request).InstancesDistribution.SpotInstancePools = e.MixedSpotInstancePools
+			changes.MixedSpotInstancePools = nil
+		}
+		if changes.MixedInstanceOverrides != nil {
+			if setup(request).LaunchTemplate == nil {
+				setup(request).LaunchTemplate = &autoscaling.LaunchTemplate{
+					LaunchTemplateSpecification: &autoscaling.LaunchTemplateSpecification{
+						LaunchTemplateName: e.LaunchTemplate.ID,
+					},
+				}
+			}
+
+			p := request.MixedInstancesPolicy.LaunchTemplate
+			for _, x := range changes.MixedInstanceOverrides {
+				p.Overrides = append(p.Overrides, &autoscaling.LaunchTemplateOverrides{InstanceType: fi.String(x)})
+			}
+			changes.MixedInstanceOverrides = nil
 		}
 
 		if changes.MinSize != nil {
@@ -423,7 +438,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			glog.Warningf("cannot apply changes to AutoScalingGroup: %v", changes)
 		}
 
-		glog.V(2).Infof("Updating autoscaling group %s", *e.Name)
+		glog.V(2).Infof("Updating autoscaling group %s", fi.StringValue(e.Name))
 
 		if _, err := t.Cloud.Autoscaling().UpdateAutoScalingGroup(request); err != nil {
 			return fmt.Errorf("error updating AutoscalingGroup: %v", err)
