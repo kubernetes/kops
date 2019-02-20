@@ -11,6 +11,7 @@ go_library(
         "instances.go",
         "internetgateways.go",
         "keypairs.go",
+        "launch_templates.go",
         "natgateway.go",
         "routetable.go",
         "securitygroups.go",

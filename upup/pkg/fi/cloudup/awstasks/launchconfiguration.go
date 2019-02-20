@@ -18,7 +18,6 @@ package awstasks
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"math"
 	"sort"
@@ -49,28 +48,28 @@ func RetainLaunchConfigurationCount() int {
 	return defaultRetainLaunchConfigurationCount
 }
 
-// LaunchConfiguration is the specification of a launch configuration
+// LaunchConfiguration is the specification for a launch configuration
 type LaunchConfiguration struct {
-	// Name is the name of the resource
+	// Name is the name of the configuration
 	Name *string
-	// Lifecycle is the lifecycle of the resource
+	// Lifecycle is the resource lifecycle
 	Lifecycle *fi.Lifecycle
 
-	// AssociatePublicIP indicates if a public ip should be associated
+	// AssociatePublicIP indicates if a public ip address is assigned to instabces
 	AssociatePublicIP *bool
 	// BlockDeviceMappings is a block device mappings
 	BlockDeviceMappings []*BlockDeviceMapping
-	// IAMInstanceProfile is the instance profile we should use
+	// IAMInstanceProfile is the IAM profile to assign to the nodes
 	IAMInstanceProfile *IAMInstanceProfile
-	// ID is the aws id for the resource
+	// ID is the launch configuration name
 	ID *string
-	// ImageID is the AMI id to use
+	// ImageID is the AMI to use for the instances
 	ImageID *string
-	// InstanceMonitoring indicates is monitoring should be enabled
+	// InstanceMonitoring indicates if monitoring is enabled
 	InstanceMonitoring *bool
-	// InstanceType is the aws instance type to use
+	// InstanceType is the machine type to use
 	InstanceType *string
-	// RootVolumeIops, if volume type is io1, then we need to specify the number of Iops.
+	// If volume type is io1, then we need to specify the number of Iops.
 	RootVolumeIops *int64
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool
@@ -78,15 +77,15 @@ type LaunchConfiguration struct {
 	RootVolumeSize *int64
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
 	RootVolumeType *string
-	// SSHKey is the key to use for the instance
+	// SSHKey is the ssh key for the instances
 	SSHKey *SSHKey
-	// SecurityGroups is a collection of security groups
+	// SecurityGroups is a list of security group associated
 	SecurityGroups []*SecurityGroup
 	// SpotPrice is set to the spot-price bid if this is a spot pricing request
 	SpotPrice string
 	// Tenancy. Can be either default or dedicated.
 	Tenancy *string
-	// UserData is the userdata for the instances
+	// UserData is the user data configuration
 	UserData *fi.ResourceHolder
 }
 
@@ -235,68 +234,6 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	return actual, nil
 }
 
-// buildAdditionalDevices is responsible for creating additional volumes in this lc
-func buildAdditionalDevices(volumes []*BlockDeviceMapping) (map[string]*BlockDeviceMapping, error) {
-	devices := make(map[string]*BlockDeviceMapping, 0)
-
-	// @step: iterate the volumes and create devices from them
-	for _, x := range volumes {
-		if x.DeviceName == nil {
-			return nil, errors.New("DeviceName not set for volume")
-		}
-		devices[*x.DeviceName] = x
-	}
-
-	return devices, nil
-}
-
-// buildEphemeralDevices is responsible for mapping ephemeral devices for this instance type
-func buildEphemeralDevices(instanceTypeName *string) (map[string]*BlockDeviceMapping, error) {
-	bm := make(map[string]*BlockDeviceMapping)
-
-	// TODO: Any reason not to always attach the ephemeral devices?
-	if instanceTypeName == nil {
-		return nil, fi.RequiredField("InstanceType")
-	}
-
-	instanceType, err := awsup.GetMachineTypeInfo(*instanceTypeName)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, x := range instanceType.EphemeralDevices() {
-		bm[x.DeviceName] = &BlockDeviceMapping{VirtualName: fi.String(x.VirtualName)}
-	}
-
-	return bm, nil
-}
-
-// buildRootDevice is responsible for creating a block device mapping for the root volume
-func (e *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]*BlockDeviceMapping, error) {
-	imageID := fi.StringValue(e.ImageID)
-	image, err := cloud.ResolveImage(imageID)
-	if err != nil {
-		return nil, fmt.Errorf("unable to resolve image: %q: %v", imageID, err)
-	} else if image == nil {
-		return nil, fmt.Errorf("unable to resolve image: %q: not found", imageID)
-	}
-
-	rootDeviceName := aws.StringValue(image.RootDeviceName)
-
-	blockDeviceMappings := make(map[string]*BlockDeviceMapping)
-
-	rootDeviceMapping := &BlockDeviceMapping{
-		EbsDeleteOnTermination: aws.Bool(true),
-		EbsVolumeSize:          e.RootVolumeSize,
-		EbsVolumeType:          e.RootVolumeType,
-		EbsVolumeIops:          e.RootVolumeIops,
-	}
-
-	blockDeviceMappings[rootDeviceName] = rootDeviceMapping
-
-	return blockDeviceMappings, nil
-}
-
 func (e *LaunchConfiguration) Run(c *fi.Context) error {
 	// TODO: Make Normalize a standard method
 	e.Normalize()
@@ -362,6 +299,7 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	}
 
 	request.SecurityGroups = securityGroupIDs
+	request.AssociatePublicIpAddress = e.AssociatePublicIP
 	if e.SpotPrice != "" {
 		request.SpotPrice = aws.String(e.SpotPrice)
 	}
@@ -372,7 +310,7 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 		if err != nil {
 			return err
 		}
-		ephemeralDevices, err := buildEphemeralDevices(e.InstanceType)
+		ephemeralDevices, err := buildEphemeralDevices(t.Cloud, fi.StringValue(e.InstanceType))
 		if err != nil {
 			return err
 		}
@@ -438,6 +376,30 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	return nil // No tags on a launch configuration
 }
 
+// buildRootDevice is responsible for retrieving a boot device mapping from the image name
+func (t *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]*BlockDeviceMapping, error) {
+	image := fi.StringValue(t.ImageID)
+
+	// @step: resolve the image ami
+	img, err := cloud.ResolveImage(image)
+	if err != nil {
+		return nil, fmt.Errorf("unable to resolve image: %q: %v", image, err)
+	} else if img == nil {
+		return nil, fmt.Errorf("unable to resolve image: %q: not found", image)
+	}
+
+	bm := make(map[string]*BlockDeviceMapping)
+
+	bm[aws.StringValue(img.RootDeviceName)] = &BlockDeviceMapping{
+		EbsDeleteOnTermination: aws.Bool(true),
+		EbsVolumeSize:          t.RootVolumeSize,
+		EbsVolumeType:          t.RootVolumeType,
+		EbsVolumeIops:          t.RootVolumeIops,
+	}
+
+	return bm, nil
+}
+
 type terraformLaunchConfiguration struct {
 	NamePrefix               *string                 `json:"name_prefix,omitempty"`
 	ImageID                  *string                 `json:"image_id,omitempty"`
@@ -461,6 +423,7 @@ type terraformBlockDevice struct {
 	// For ephemeral devices
 	DeviceName  *string `json:"device_name,omitempty"`
 	VirtualName *string `json:"virtual_name,omitempty"`
+
 	// For root
 	VolumeType *string `json:"volume_type,omitempty"`
 	VolumeSize *int64  `json:"volume_size,omitempty"`
@@ -470,6 +433,7 @@ type terraformBlockDevice struct {
 	DeleteOnTermination *bool `json:"delete_on_termination,omitempty"`
 }
 
+// RenderTerraform is responsible for rendering the terraform json
 func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LaunchConfiguration) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 
@@ -504,7 +468,6 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 	}
 
 	tf.AssociatePublicIpAddress = e.AssociatePublicIP
-
 	tf.EBSOptimized = e.RootVolumeOptimization
 
 	{
@@ -512,12 +475,10 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 		if err != nil {
 			return err
 		}
-
-		ephemeralDevices, err := buildEphemeralDevices(e.InstanceType)
+		ephemeralDevices, err := buildEphemeralDevices(cloud, fi.StringValue(e.InstanceType))
 		if err != nil {
 			return err
 		}
-
 		additionalDevices, err := buildAdditionalDevices(e.BlockDeviceMappings)
 		if err != nil {
 			return err
@@ -580,11 +541,12 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 	// So that we can update configurations
 	tf.Lifecycle = &terraform.Lifecycle{CreateBeforeDestroy: fi.Bool(true)}
 
-	return t.RenderResource("aws_launch_configuration", *e.Name, tf)
+	return t.RenderResource("aws_launch_configuration", fi.StringValue(e.Name), tf)
 }
 
+// TerraformLink returns the terraform reference
 func (e *LaunchConfiguration) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("aws_launch_configuration", *e.Name, "id")
+	return terraform.LiteralProperty("aws_launch_configuration", fi.StringValue(e.Name), "id")
 }
 
 type cloudformationLaunchConfiguration struct {
@@ -600,9 +562,6 @@ type cloudformationLaunchConfiguration struct {
 	UserData                 *string                      `json:"UserData,omitempty"`
 	PlacementTenancy         *string                      `json:"PlacementTenancy,omitempty"`
 	InstanceMonitoring       *bool                        `json:"InstanceMonitoring,omitempty"`
-
-	//NamePrefix               *string                 `json:"name_prefix,omitempty"`
-	//Lifecycle                *cloudformation.Lifecycle    `json:"lifecycle,omitempty"`
 }
 
 type cloudformationBlockDevice struct {
@@ -666,12 +625,10 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 		if err != nil {
 			return err
 		}
-
-		ephemeralDevices, err := buildEphemeralDevices(e.InstanceType)
+		ephemeralDevices, err := buildEphemeralDevices(cloud, fi.StringValue(e.InstanceType))
 		if err != nil {
 			return err
 		}
-
 		additionalDevices, err := buildAdditionalDevices(e.BlockDeviceMappings)
 		if err != nil {
 			return err

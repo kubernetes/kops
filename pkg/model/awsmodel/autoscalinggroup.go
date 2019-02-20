@@ -27,7 +27,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
 )
 
 const (
@@ -50,256 +49,300 @@ var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
 
 // Build is responsible for constructing the aws autoscaling group from the kops spec
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	var err error
 	for _, ig := range b.InstanceGroups {
 		name := b.AutoscalingGroupName(ig)
 
-		// LaunchConfiguration
-		var launchConfiguration *awstasks.LaunchConfiguration
-		{
-			volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
-			if volumeSize == 0 {
-				volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
-				if err != nil {
-					return err
-				}
+		// @check if his instancegroup is backed by a fleet and overide with a launch template
+		task, err := func() (fi.Task, error) {
+			switch UseLaunchTemplate(ig) {
+			case true:
+				return b.buildLaunchTemplateTask(c, name, ig)
+			default:
+				return b.buildLaunchConfigurationTask(c, name, ig)
 			}
+		}()
+		if err != nil {
+			return err
+		}
+		c.AddTask(task)
 
-			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
-			if volumeType == "" {
-				volumeType = DefaultVolumeType
-			}
-
-			volumeIops := fi.Int32Value(ig.Spec.RootVolumeIops)
-			if volumeIops <= 0 {
-				volumeIops = DefaultVolumeIops
-			}
-
-			link, err := b.LinkToIAMInstanceProfile(ig)
-			if err != nil {
-				return fmt.Errorf("unable to find IAM profile link for instance group %q: %v", ig.ObjectMeta.Name, err)
-			}
-
-			var sgLink *awstasks.SecurityGroup
-			if ig.Spec.SecurityGroupOverride != nil {
-				glog.V(1).Infof("WARNING: You are overwriting the Instance Groups, Security Group. When this is done you are responsible for ensure the correct rules!")
-
-				sgName := fmt.Sprintf("%v-%v", fi.StringValue(ig.Spec.SecurityGroupOverride), ig.Spec.Role)
-				sgLink = &awstasks.SecurityGroup{
-					Name:   &sgName,
-					ID:     ig.Spec.SecurityGroupOverride,
-					Shared: fi.Bool(true),
-				}
-			} else {
-				sgLink = b.LinkToSecurityGroup(ig.Spec.Role)
-			}
-
-			t := &awstasks.LaunchConfiguration{
-				Name:      s(name),
-				Lifecycle: b.Lifecycle,
-
-				IAMInstanceProfile:     link,
-				ImageID:                s(ig.Spec.Image),
-				InstanceMonitoring:     ig.Spec.DetailedInstanceMonitoring,
-				InstanceType:           s(strings.Split(ig.Spec.MachineType, ",")[0]),
-				RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
-				RootVolumeSize:         i64(int64(volumeSize)),
-				RootVolumeType:         s(volumeType),
-				SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
-			}
-
-			if volumeType == ec2.VolumeTypeIo1 {
-				t.RootVolumeIops = i64(int64(volumeIops))
-			}
-
-			if ig.Spec.Tenancy != "" {
-				t.Tenancy = s(ig.Spec.Tenancy)
-			}
-
-			// @step: add any additional security groups to the instance
-			for _, id := range ig.Spec.AdditionalSecurityGroups {
-				sgTask := &awstasks.SecurityGroup{
-					Name:      fi.String(id),
-					ID:        fi.String(id),
-					Lifecycle: b.SecurityLifecycle,
-					Shared:    fi.Bool(true),
-				}
-				if err := c.EnsureTask(sgTask); err != nil {
-					return err
-				}
-				t.SecurityGroups = append(t.SecurityGroups, sgTask)
-			}
-
-			// @step: add any additional block devices to the launch configuration
-			for _, x := range ig.Spec.Volumes {
-				if x.Type == "" {
-					x.Type = DefaultVolumeType
-				}
-				if x.Type == ec2.VolumeTypeIo1 {
-					if x.Iops == nil {
-						x.Iops = fi.Int64(DefaultVolumeIops)
-					}
-				} else {
-					x.Iops = nil
-				}
-				t.BlockDeviceMappings = append(t.BlockDeviceMappings, &awstasks.BlockDeviceMapping{
-					DeviceName:             fi.String(x.Device),
-					EbsDeleteOnTermination: fi.Bool(true),
-					EbsEncrypted:           x.Encrypted,
-					EbsVolumeIops:          x.Iops,
-					EbsVolumeSize:          fi.Int64(x.Size),
-					EbsVolumeType:          fi.String(x.Type),
-				})
-			}
-
-			if t.SSHKey, err = b.LinkToSSHKey(); err != nil {
-				return err
-			}
-
-			if t.UserData, err = b.BootstrapScript.ResourceNodeUp(ig, b.Cluster); err != nil {
-				return err
-			}
-
-			if fi.StringValue(ig.Spec.MaxPrice) != "" {
-				spotPrice := fi.StringValue(ig.Spec.MaxPrice)
-				t.SpotPrice = spotPrice
-			}
-
-			{
-				// TODO: Wrapper / helper class to analyze clusters
-				subnetMap := make(map[string]*kops.ClusterSubnetSpec)
-				for i := range b.Cluster.Spec.Subnets {
-					subnet := &b.Cluster.Spec.Subnets[i]
-					subnetMap[subnet.Name] = subnet
-				}
-
-				var subnetType kops.SubnetType
-				for _, subnetName := range ig.Spec.Subnets {
-					subnet := subnetMap[subnetName]
-					if subnet == nil {
-						return fmt.Errorf("InstanceGroup %q uses subnet %q that does not exist", ig.ObjectMeta.Name, subnetName)
-					}
-					if subnetType != "" && subnetType != subnet.Type {
-						return fmt.Errorf("InstanceGroup %q cannot be in subnets of different Type", ig.ObjectMeta.Name)
-					}
-					subnetType = subnet.Type
-				}
-
-				associatePublicIP := true
-				switch subnetType {
-				case kops.SubnetTypePublic, kops.SubnetTypeUtility:
-					associatePublicIP = true
-					if ig.Spec.AssociatePublicIP != nil {
-						associatePublicIP = *ig.Spec.AssociatePublicIP
-					}
-
-				case kops.SubnetTypePrivate:
-					associatePublicIP = false
-					if ig.Spec.AssociatePublicIP != nil {
-						// This isn't meaningful - private subnets can't have public ip
-						//associatePublicIP = *ig.Spec.AssociatePublicIP
-						if *ig.Spec.AssociatePublicIP {
-							glog.Warningf("Ignoring AssociatePublicIP=true for private InstanceGroup %q", ig.ObjectMeta.Name)
-						}
-					}
-
-				default:
-					return fmt.Errorf("unknown subnet type %q", subnetType)
-				}
-				t.AssociatePublicIP = &associatePublicIP
-			}
-			c.AddTask(t)
-
-			launchConfiguration = t
+		// @step: now lets build the autoscaling group task
+		tsk, err := b.buildAutoScalingGroupTask(c, name, ig)
+		if err != nil {
+			return err
+		}
+		switch UseLaunchTemplate(ig) {
+		case true:
+			tsk.LaunchTemplate = task.(*awstasks.LaunchTemplate)
+		default:
+			tsk.LaunchConfiguration = task.(*awstasks.LaunchConfiguration)
 		}
 
-		// AutoscalingGroup
-		{
-			t := &awstasks.AutoscalingGroup{
-				Name:      s(name),
-				Lifecycle: b.Lifecycle,
+		c.AddTask(tsk)
 
-				Granularity: s("1Minute"),
-				Metrics: []string{
-					"GroupDesiredCapacity",
-					"GroupInServiceInstances",
-					"GroupMaxSize",
-					"GroupMinSize",
-					"GroupPendingInstances",
-					"GroupStandbyInstances",
-					"GroupTerminatingInstances",
-					"GroupTotalInstances",
-				},
-				LaunchConfiguration: launchConfiguration,
-			}
+		// @step: add any external load balancer attachments
+		if err := b.buildExternalLoadBalancerTasks(c, ig); err != nil {
+			return err
+		}
+	}
 
-			minSize := int32(1)
-			maxSize := int32(1)
-			if ig.Spec.MinSize != nil {
-				minSize = fi.Int32Value(ig.Spec.MinSize)
-			} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
-				minSize = 2
-			}
-			if ig.Spec.MaxSize != nil {
-				maxSize = *ig.Spec.MaxSize
-			} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
-				maxSize = 2
-			}
+	return nil
+}
 
-			t.MinSize = i64(int64(minSize))
-			t.MaxSize = i64(int64(maxSize))
+// buildLaunchTemplateTask is responsible for creating the template task into the aws model
+func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchTemplate, error) {
+	lc, err := b.buildLaunchConfigurationTask(c, name, ig)
+	if err != nil {
+		return nil, err
+	}
 
-			subnets, err := b.GatherSubnets(ig)
-			if err != nil {
-				return err
-			}
-			if len(subnets) == 0 {
-				return fmt.Errorf("could not determine any subnets for InstanceGroup %q; subnets was %s", ig.ObjectMeta.Name, ig.Spec.Subnets)
-			}
-			for _, subnet := range subnets {
-				t.Subnets = append(t.Subnets, b.LinkToSubnet(subnet))
-			}
+	// @TODO check if there any a better way of doing this .. initially I had a type LaunchTemplate which included
+	// LaunchConfiguration as an anonymous field, bit given up the task dependency walker works this caused issues, due
+	// to the creation of a implicit dependency
+	return &awstasks.LaunchTemplate{
+		Name:                   fi.String(name),
+		Lifecycle:              b.Lifecycle,
+		AssociatePublicIP:      lc.AssociatePublicIP,
+		BlockDeviceMappings:    lc.BlockDeviceMappings,
+		IAMInstanceProfile:     lc.IAMInstanceProfile,
+		ImageID:                lc.ImageID,
+		InstanceMonitoring:     lc.InstanceMonitoring,
+		InstanceType:           lc.InstanceType,
+		RootVolumeOptimization: lc.RootVolumeOptimization,
+		RootVolumeSize:         lc.RootVolumeSize,
+		RootVolumeIops:         lc.RootVolumeIops,
+		RootVolumeType:         lc.RootVolumeType,
+		SSHKey:                 lc.SSHKey,
+		SecurityGroups:         lc.SecurityGroups,
+		SpotPrice:              lc.SpotPrice,
+		Tenancy:                lc.Tenancy,
+		UserData:               lc.UserData,
+	}, nil
+}
 
-			tags, err := b.CloudTagsForInstanceGroup(ig)
-			if err != nil {
-				return fmt.Errorf("error building cloud tags: %v", err)
-			}
-			t.Tags = tags
+// buildLaunchConfigurationTask is responsible for building a launch configuration task into the model
+func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchConfiguration, error) {
+	// @step: lets add the root volume settings
+	volumeSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+	if err != nil {
+		return nil, err
+	}
+	if fi.Int32Value(ig.Spec.RootVolumeSize) > 0 {
+		volumeSize = fi.Int32Value(ig.Spec.RootVolumeSize)
+	}
 
-			processes := []string{}
-			for _, p := range ig.Spec.SuspendProcesses {
-				processes = append(processes, p)
-			}
-			t.SuspendProcesses = &processes
+	volumeType := fi.StringValue(ig.Spec.RootVolumeType)
+	if volumeType == "" {
+		volumeType = DefaultVolumeType
+	}
 
-			c.AddTask(t)
+	// @step: if required we add the override for the security group for this instancegroup
+	sgLink := b.LinkToSecurityGroup(ig.Spec.Role)
+	if ig.Spec.SecurityGroupOverride != nil {
+		sgName := fmt.Sprintf("%v-%v", fi.StringValue(ig.Spec.SecurityGroupOverride), ig.Spec.Role)
+		sgLink = &awstasks.SecurityGroup{
+			ID:     ig.Spec.SecurityGroupOverride,
+			Name:   &sgName,
+			Shared: fi.Bool(true),
+		}
+	}
+
+	// @step: add the iam instance profile
+	link, err := b.LinkToIAMInstanceProfile(ig)
+	if err != nil {
+		return nil, fmt.Errorf("unable to find iam profile link for instance group %q: %v", ig.ObjectMeta.Name, err)
+	}
+
+	t := &awstasks.LaunchConfiguration{
+		Name:                   fi.String(name),
+		Lifecycle:              b.Lifecycle,
+		IAMInstanceProfile:     link,
+		ImageID:                fi.String(ig.Spec.Image),
+		InstanceMonitoring:     ig.Spec.DetailedInstanceMonitoring,
+		InstanceType:           fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
+		RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
+		RootVolumeSize:         fi.Int64(int64(volumeSize)),
+		RootVolumeType:         fi.String(volumeType),
+		SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
+	}
+
+	if volumeType == ec2.VolumeTypeIo1 {
+		if fi.Int32Value(ig.Spec.RootVolumeIops) <= 0 {
+			t.RootVolumeIops = fi.Int64(int64(DefaultVolumeIops))
+		} else {
+			t.RootVolumeIops = fi.Int64(int64(fi.Int32Value(ig.Spec.RootVolumeIops)))
+		}
+	}
+
+	if ig.Spec.Tenancy != "" {
+		t.Tenancy = fi.String(ig.Spec.Tenancy)
+	}
+
+	// @step: add any additional security groups to the instancegroup
+	for _, id := range ig.Spec.AdditionalSecurityGroups {
+		sgTask := &awstasks.SecurityGroup{
+			ID:        fi.String(id),
+			Lifecycle: b.SecurityLifecycle,
+			Name:      fi.String(id),
+			Shared:    fi.Bool(true),
+		}
+		if err := c.EnsureTask(sgTask); err != nil {
+			return nil, err
+		}
+		t.SecurityGroups = append(t.SecurityGroups, sgTask)
+	}
+
+	// @step: add any additional block devices to the launch configuration
+	for _, x := range ig.Spec.Volumes {
+		if x.Type == "" {
+			x.Type = DefaultVolumeType
+		}
+		if x.Type == ec2.VolumeTypeIo1 {
+			if x.Iops == nil {
+				x.Iops = fi.Int64(DefaultVolumeIops)
+			}
+		} else {
+			x.Iops = nil
+		}
+		t.BlockDeviceMappings = append(t.BlockDeviceMappings, &awstasks.BlockDeviceMapping{
+			DeviceName:             fi.String(x.Device),
+			EbsDeleteOnTermination: fi.Bool(true),
+			EbsEncrypted:           x.Encrypted,
+			EbsVolumeIops:          x.Iops,
+			EbsVolumeSize:          fi.Int64(x.Size),
+			EbsVolumeType:          fi.String(x.Type),
+		})
+	}
+
+	// @step: attach the ssh key to the instancegroup
+	if t.SSHKey, err = b.LinkToSSHKey(); err != nil {
+		return nil, err
+	}
+
+	// @step: add the instancegroup userdata
+	if t.UserData, err = b.BootstrapScript.ResourceNodeUp(ig, b.Cluster); err != nil {
+		return nil, err
+	}
+
+	// @step: set up instnce spot pricing
+	if fi.StringValue(ig.Spec.MaxPrice) != "" {
+		spotPrice := fi.StringValue(ig.Spec.MaxPrice)
+		t.SpotPrice = spotPrice
+	}
+
+	// @step: check the subnets are ok and pull together an array for us
+	subnets, err := b.GatherSubnets(ig)
+	if err != nil {
+		return nil, err
+	}
+
+	// @step: check if we can add an public ip to this subnet
+	switch subnets[0].Type {
+	case kops.SubnetTypePublic, kops.SubnetTypeUtility:
+		t.AssociatePublicIP = fi.Bool(true)
+		if ig.Spec.AssociatePublicIP != nil {
+			t.AssociatePublicIP = ig.Spec.AssociatePublicIP
+		}
+	case kops.SubnetTypePrivate:
+		t.AssociatePublicIP = fi.Bool(false)
+	}
+
+	return t, nil
+}
+
+// buildAutoscalingGroupTask is responsible for building the autoscaling task into the model
+func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.AutoscalingGroup, error) {
+
+	t := &awstasks.AutoscalingGroup{
+		Name:      fi.String(name),
+		Lifecycle: b.Lifecycle,
+
+		Granularity: fi.String("1Minute"),
+		Metrics: []string{
+			"GroupDesiredCapacity",
+			"GroupInServiceInstances",
+			"GroupMaxSize",
+			"GroupMinSize",
+			"GroupPendingInstances",
+			"GroupStandbyInstances",
+			"GroupTerminatingInstances",
+			"GroupTotalInstances",
+		},
+	}
+
+	minSize := int32(1)
+	maxSize := int32(1)
+	if ig.Spec.MinSize != nil {
+		minSize = fi.Int32Value(ig.Spec.MinSize)
+	} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
+		minSize = 2
+	}
+	if ig.Spec.MaxSize != nil {
+		maxSize = *ig.Spec.MaxSize
+	} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
+		maxSize = 2
+	}
+
+	t.MinSize = fi.Int64(int64(minSize))
+	t.MaxSize = fi.Int64(int64(maxSize))
+
+	subnets, err := b.GatherSubnets(ig)
+	if err != nil {
+		return nil, err
+	}
+	if len(subnets) == 0 {
+		return nil, fmt.Errorf("could not determine any subnets for InstanceGroup %q; subnets was %s", ig.ObjectMeta.Name, ig.Spec.Subnets)
+	}
+	for _, subnet := range subnets {
+		t.Subnets = append(t.Subnets, b.LinkToSubnet(subnet))
+	}
+
+	tags, err := b.CloudTagsForInstanceGroup(ig)
+	if err != nil {
+		return nil, fmt.Errorf("error building cloud tags: %v", err)
+	}
+	t.Tags = tags
+
+	processes := []string{}
+	for _, p := range ig.Spec.SuspendProcesses {
+		processes = append(processes, p)
+	}
+	t.SuspendProcesses = &processes
+
+	// @step: are we using a mixed instance policy
+	if ig.Spec.MixedInstancesPolicy != nil {
+		spec := ig.Spec.MixedInstancesPolicy
+
+		t.MixedInstanceOverrides = spec.Instances
+		t.MixedOnDemandAboveBase = spec.OnDemandAboveBase
+		t.MixedOnDemandAllocationStrategy = spec.OnDemandAllocationStrategy
+		t.MixedOnDemandBase = spec.OnDemandBase
+		t.MixedSpotAllocationStrategy = spec.SpotAllocationStrategy
+		t.MixedSpotInstancePools = spec.SpotInstancePools
+	}
+
+	return t, nil
+}
+
+// buildExternlLoadBalancerTasks is responsible for adding any ELB attachment tasks to the model
+func (b *AutoscalingGroupModelBuilder) buildExternalLoadBalancerTasks(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) error {
+	for _, x := range ig.Spec.ExternalLoadBalancers {
+		if x.LoadBalancerName != nil {
+			c.AddTask(&awstasks.ExternalLoadBalancerAttachment{
+				Name:             fi.String("extlb-" + *x.LoadBalancerName + "-" + ig.Name),
+				Lifecycle:        b.Lifecycle,
+				LoadBalancerName: *x.LoadBalancerName,
+				AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+			})
 		}
 
-		// External Load Balancer/TargetGroup Attachments
-		{
-			for _, lb := range ig.Spec.ExternalLoadBalancers {
-				if lb.LoadBalancerName != nil {
-					t := &awstasks.ExternalLoadBalancerAttachment{
-						Name:             s("extlb-" + *lb.LoadBalancerName + "-" + ig.Name),
-						Lifecycle:        b.Lifecycle,
-						LoadBalancerName: *lb.LoadBalancerName,
-						AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
-					}
-
-					c.AddTask(t)
-				}
-
-				if lb.TargetGroupARN != nil {
-					t := &awstasks.ExternalTargetGroupAttachment{
-						Name:             s("exttg-" + *lb.TargetGroupARN + "-" + ig.Name),
-						Lifecycle:        b.Lifecycle,
-						TargetGroupARN:   *lb.TargetGroupARN,
-						AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
-					}
-
-					c.AddTask(t)
-				}
-			}
+		if x.TargetGroupARN != nil {
+			c.AddTask(&awstasks.ExternalTargetGroupAttachment{
+				Name:             fi.String("exttg-" + *x.TargetGroupARN + "-" + ig.Name),
+				Lifecycle:        b.Lifecycle,
+				TargetGroupARN:   *x.TargetGroupARN,
+				AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+			})
 		}
 	}
 
