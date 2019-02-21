@@ -28,7 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/golang/glog"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apiserver/pkg/authentication/user"
 
 	"k8s.io/kops/nodeup/pkg/distros"
@@ -581,7 +581,7 @@ func (b *KubeletBuilder) buildMasterKubeletKubeconfig() (*nodetasks.File, error)
 
 	template := &x509.Certificate{
 		BasicConstraintsValid: true,
-		IsCA: false,
+		IsCA:                  false,
 	}
 
 	template.Subject = pkix.Name{
