@@ -290,7 +290,7 @@ kops-dist: crossbuild-in-docker
 	(${SHASUMCMD} ${DIST}/windows/amd64/kops.exe | cut -d' ' -f1) > ${DIST}/windows/amd64/kops.exe.sha1
 
 .PHONY: version-dist
-version-dist: nodeup-dist kops-dist protokube-export utils-dist
+version-dist: nodeup-dist kops-dist protokube-export utils-dist patched-runc-dist
 	rm -rf ${UPLOAD}
 	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/amd64/
 	mkdir -p ${UPLOAD}/kops/${VERSION}/darwin/amd64/
@@ -306,6 +306,8 @@ version-dist: nodeup-dist kops-dist protokube-export utils-dist
 	cp ${DIST}/darwin/amd64/kops.sha1 ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
 	cp ${DIST}/linux/amd64/utils.tar.gz ${UPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz
 	cp ${DIST}/linux/amd64/utils.tar.gz.sha1 ${UPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
+	cp ${DIST}/linux/amd64/runc-17.03.2 ${UPLOAD}/kops/${VERSION}/linux/amd64/runc-17.03.2
+	cp ${DIST}/linux/amd64/runc-17.03.2.sha1 ${UPLOAD}/kops/${VERSION}/linux/amd64/runc-17.03.2.sha1
 
 .PHONY: vsphere-version-dist
 vsphere-version-dist: nodeup-dist protokube-export
@@ -468,6 +470,19 @@ utils-dist:
 .PHONY: bazel-utils-dist
 bazel-utils-dist:
 	bazel build //images/utils-builder:utils
+
+# --------------------------------------------------
+# patched runc
+
+.PHONY: patched-runc-dist
+patched-runc-dist:
+	docker build -t runc-builder images/runc-builder
+	mkdir -p ${DIST}/linux/amd64/
+	docker run -v `pwd`/.build/dist/linux/amd64/:/dist --entrypoint /extract.sh runc-builder
+
+.PHONY: bazel-patched-runc-dist
+bazel-patched-runc-dist:
+	bazel build //images/patched-runc-builder:utils
 
 # --------------------------------------------------
 # development targets
