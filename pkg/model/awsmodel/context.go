@@ -33,7 +33,8 @@ func UseLaunchTemplate(ig *kops.InstanceGroup) bool {
 		return true
 	}
 	// @note: this mixed instance polices was added before the feature flag, to keep the
-	// same behviour we also check this
+	// same behviour we also check this. But since the feature hasn't been cut into a tagged
+	// release it possible to use just the feature flag??
 	if ig.Spec.MixedInstancesPolicy != nil {
 		return true
 	}
