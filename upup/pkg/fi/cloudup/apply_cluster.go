@@ -84,6 +84,8 @@ var (
 	AlphaAllowDO = featureflag.New("AlphaAllowDO", featureflag.Bool(false))
 	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
 	AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
+	// AlphaAllowOpenstack is a feature flag that gates OpenStack support while it is alpha
+	AlphaAllowOpenstack = featureflag.New("AlphaAllowOpenstack", featureflag.Bool(false))
 	// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
 	AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
 	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha
@@ -512,14 +514,28 @@ func (c *ApplyClusterCmd) Run() error {
 
 	case kops.CloudProviderOpenstack:
 		{
+			if !AlphaAllowOpenstack.Enabled() {
+				return fmt.Errorf("Openstack support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowOpenstack")
+			}
+
 			osCloud := cloud.(openstack.OpenstackCloud)
 			region = osCloud.Region()
 
 			l.AddTypes(map[string]interface{}{
-				"sshKey": &openstacktasks.SSHKey{},
+				// Compute
+				"sshKey":      &openstacktasks.SSHKey{},
+				"serverGroup": &openstacktasks.ServerGroup{},
+				"instance":    &openstacktasks.Instance{},
 				// Networking
-				"network": &openstacktasks.Network{},
-				"router":  &openstacktasks.Router{},
+				"network":           &openstacktasks.Network{},
+				"subnet":            &openstacktasks.Subnet{},
+				"router":            &openstacktasks.Router{},
+				"securityGroup":     &openstacktasks.SecurityGroup{},
+				"securityGroupRule": &openstacktasks.SecurityGroupRule{},
+				// BlockStorage
+				"volume": &openstacktasks.Volume{},
+				// LB
+				"lb": &openstacktasks.LB{},
 			})
 
 			if len(sshPublicKeys) == 0 {
@@ -677,8 +693,11 @@ func (c *ApplyClusterCmd) Run() error {
 				}
 
 				l.Builders = append(l.Builders,
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+					// &openstackmodel.APILBModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &clusterLifecycle},
 					&openstackmodel.NetworkModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &networkLifecycle},
 					&openstackmodel.SSHKeyModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
+					&openstackmodel.FirewallModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
 				)
 
 			default:
@@ -778,6 +797,15 @@ func (c *ApplyClusterCmd) Run() error {
 		// BareMetal tasks will go here
 
 	case kops.CloudProviderOpenstack:
+		openstackModelContext := &openstackmodel.OpenstackModelContext{
+			KopsModelContext: modelContext,
+		}
+
+		l.Builders = append(l.Builders, &openstackmodel.ServerGroupModelBuilder{
+			OpenstackModelContext: openstackModelContext,
+			BootstrapScript:       bootstrapScriptBuilder,
+			Lifecycle:             &clusterLifecycle,
+		})
 
 	default:
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)

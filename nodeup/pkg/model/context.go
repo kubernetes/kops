@@ -27,9 +27,11 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/kubeconfig"
+	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/util/mount"
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
@@ -85,6 +87,58 @@ func (c *NodeupModelContext) SSLHostPaths() []string {
 	}
 
 	return paths
+}
+
+// VolumesServiceName is the name of the service which is downstream of any volume mounts
+func (c *NodeupModelContext) VolumesServiceName() string {
+	return c.EnsureSystemdSuffix("kops-volume-mounts")
+}
+
+// EnsureSystemdSuffix ensures that the hook name ends with a valid systemd unit file extension. If it
+// doesn't, it adds ".service" for backwards-compatibility with older versions of Kops
+func (c *NodeupModelContext) EnsureSystemdSuffix(name string) string {
+	if !systemd.UnitFileExtensionValid(name) {
+		name += ".service"
+	}
+
+	return name
+}
+
+// EnsureDirectory ensures the directory exists or creates it
+func (c *NodeupModelContext) EnsureDirectory(path string) error {
+	st, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return os.MkdirAll(path, 0755)
+		}
+
+		return err
+	}
+
+	if !st.IsDir() {
+		return fmt.Errorf("path: %s already exists but is not a directory", path)
+	}
+
+	return nil
+}
+
+// IsMounted checks if the device is mount
+func (c *NodeupModelContext) IsMounted(m mount.Interface, device, path string) (bool, error) {
+	list, err := m.List()
+	if err != nil {
+		return false, err
+	}
+
+	for _, x := range list {
+		if x.Device == device {
+			glog.V(3).Infof("Found mountpoint device: %s, path: %s, type: %s", x.Device, x.Path, x.Type)
+			if strings.TrimSuffix(x.Path, "/") == strings.TrimSuffix(path, "/") {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
 
 // PathSrvKubernetes returns the path for the kubernetes service files
@@ -245,6 +299,16 @@ func (c *NodeupModelContext) UseEtcdTLS() bool {
 	return false
 }
 
+// UseVolumeMounts is used to check if we have volume mounts enabled as we need to
+// insert requires and afters in various places
+func (c *NodeupModelContext) UseVolumeMounts() bool {
+	if c.InstanceGroup != nil {
+		return len(c.InstanceGroup.Spec.VolumeMounts) > 0
+	}
+
+	return false
+}
+
 // UseEtcdTLSAuth checks the peer-auth is set in both cluster
 // @NOTE: in retrospect i think we should have consolidated the common config in the wrapper struct; it
 // feels weird we set things like version, tls etc per cluster since they both have to be the same.
@@ -371,8 +435,13 @@ func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, n
 		return err
 	}
 
+	p := filename
+	if !filepath.IsAbs(p) {
+		p = filepath.Join(c.PathSrvKubernetes(), filename)
+	}
+
 	ctx.AddTask(&nodetasks.File{
-		Path:     filepath.Join(c.PathSrvKubernetes(), filename),
+		Path:     p,
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0600"),
@@ -397,8 +466,13 @@ func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, na
 		return err
 	}
 
+	p := filename
+	if !filepath.IsAbs(p) {
+		p = filepath.Join(c.PathSrvKubernetes(), filename)
+	}
+
 	ctx.AddTask(&nodetasks.File{
-		Path:     filepath.Join(c.PathSrvKubernetes(), filename),
+		Path:     p,
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0600"),

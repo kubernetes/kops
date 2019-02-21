@@ -25,7 +25,8 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	scheme "k8s.io/client-go/kubernetes/scheme"
@@ -99,6 +100,8 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
+		format := string(fi.KeysetFormatV1Alpha2)
+
 		c.AddTask(&fitasks.ManagedFile{
 			Contents:  fi.WrapResource(fi.NewBytesResource(d)),
 			Lifecycle: b.Lifecycle,
@@ -106,14 +109,22 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Location: fi.String("backups/etcd/" + etcdCluster.Name + "/control/etcd-cluster-spec"),
 			Name:     fi.String("etcd-cluster-spec-" + name),
 		})
+
+		// We create a CA keypair to enable secure communication
+		c.AddTask(&fitasks.Keypair{
+			Name:    fi.String("etcd-manager-ca-" + etcdCluster.Name),
+			Subject: "cn=etcd-manager-ca-" + etcdCluster.Name,
+			Type:    "ca",
+			Format:  format,
+		})
 	}
 
 	return nil
 }
 
 type etcdClusterSpec struct {
-	MemberCount int32  `json:"member_count,omitempty"`
-	EtcdVersion string `json:"etcd_version,omitempty"`
+	MemberCount int32  `json:"memberCount,omitempty"`
+	EtcdVersion string `json:"etcdVersion,omitempty"`
 }
 
 func (b *EtcdManagerBuilder) buildManifest(etcdCluster *kops.EtcdClusterSpec) (*v1.Pod, error) {
@@ -158,7 +169,7 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-  - image: kopeio/etcd-manager:1.0.20181001
+  - image: kopeio/etcd-manager:3.0.20190125
     name: etcd-manager
     resources:
       requests:
@@ -174,6 +185,8 @@ spec:
     # We write artificial hostnames into etc hosts for the etcd nodes, so they have stable names
     - mountPath: /etc/hosts
       name: hosts
+    - mountPath: /etc/kubernetes/pki/etcd-manager
+      name: pki
   hostNetwork: true
   hostPID: true # helps with mounting volumes from inside a container
   volumes:
@@ -185,6 +198,10 @@ spec:
       path: /etc/hosts
       type: File
     name: hosts
+  - hostPath:
+      path: /etc/kubernetes/pki/etcd-manager
+      type: DirectoryOrCreate
+    name: pki
 `
 
 // buildPod creates the pod spec, based on the EtcdClusterSpec
@@ -298,6 +315,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		BackupStore:   backupStore,
 		GrpcPort:      grpcPort,
 		DNSSuffix:     dnsInternalSuffix,
+		EtcdInsecure:  !isTLS,
 	}
 
 	config.LogVerbosity = 8
@@ -387,10 +405,28 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 				},
 			},
 		})
+	}
 
-		if isTLS {
-			return nil, fmt.Errorf("TLS not supported for etcd-manager")
+	{
+		foundPKI := false
+		for i := range pod.Spec.Volumes {
+			v := &pod.Spec.Volumes[i]
+			if v.Name == "pki" {
+				if v.HostPath == nil {
+					return nil, fmt.Errorf("found PKI volume, but HostPath was nil")
+				}
+				dirname := "etcd-manager-" + etcdCluster.Name
+				v.HostPath.Path = "/etc/kubernetes/pki/" + dirname
+				foundPKI = true
+			}
 		}
+		if !foundPKI {
+			return nil, fmt.Errorf("did not find PKI volume")
+		}
+	}
+
+	if isTLS {
+		return nil, fmt.Errorf("TLS not supported for etcd-manager")
 	}
 
 	kubemanifest.MarkPodAsCritical(pod)
@@ -405,6 +441,15 @@ type config struct {
 
 	// Containerized is set if etcd-manager is running in a container
 	Containerized bool `flag:"containerized"`
+
+	// PKIDir is set to the directory for PKI keys, used to secure commucations between etcd-manager peers
+	PKIDir string `flag:"pki-dir"`
+
+	// Insecure can be used to turn off tls for etcd-manager (compare with EtcdInsecure)
+	Insecure bool `flag:"insecure"`
+
+	// EtcdInsecure can be used to turn off tls for etcd itself (compare with Insecure)
+	EtcdInsecure bool `flag:"etcd-insecure"`
 
 	Address              string   `flag:"address"`
 	PeerUrls             string   `flag:"peer-urls"`

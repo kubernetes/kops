@@ -58,7 +58,7 @@ unexport KOPS_BASE_URL KOPS_CLUSTER_NAME KOPS_RUN_OBSOLETE_VERSION KOPS_STATE_ST
 unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCESS_KEY VSPHERE_USERNAME VSPHERE_PASSWORD
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.11.0-alpha.1
+DNS_CONTROLLER_TAG=1.12.0-alpha.1
 
 # Keep in sync with logic in get_workspace_status
 # TODO: just invoke tools/get_workspace_status.sh?
@@ -465,6 +465,10 @@ utils-dist:
 	mkdir -p ${DIST}/linux/amd64/
 	docker run -v `pwd`/.build/dist/linux/amd64/:/dist utils-builder /extract.sh
 
+.PHONY: bazel-utils-dist
+bazel-utils-dist:
+	bazel build //images/utils-builder:utils
+
 # --------------------------------------------------
 # development targets
 
@@ -756,7 +760,7 @@ bazel-protokube-export:
 	(${SHASUMCMD} ${BAZELIMAGES}/protokube.tar.gz | cut -d' ' -f1) > ${BAZELIMAGES}/protokube.tar.gz.sha1
 
 .PHONY: bazel-version-dist
-bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokube-export utils-dist
+bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokube-export bazel-utils-dist
 	rm -rf ${BAZELUPLOAD}
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/
@@ -773,8 +777,8 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokub
 	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
 	cp bazel-bin/cmd/kops/windows_amd64_pure_stripped/kops.exe ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
 	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha1
-	cp ${DIST}/linux/amd64/utils.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz
-	cp ${DIST}/linux/amd64/utils.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
+	cp bazel-bin/images/utils-builder/utils.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz
+	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
 
 .PHONY: bazel-upload
 bazel-upload: bazel-version-dist # Upload kops to S3
@@ -787,7 +791,7 @@ prow-postsubmit: bazel-version-dist
 	${UPLOAD} ${BAZELUPLOAD}/kops/${VERSION}/ ${UPLOAD_DEST}/${KOPS_RELEASE_VERSION}-${GITSHA}/
 
 #-----------------------------------------------------------
-# static html documentation  
+# static html documentation
 
 .PHONY: live-docs
 live-docs:
@@ -797,8 +801,9 @@ live-docs:
 build-docs:
 	@docker run --rm -it -v ${PWD}:/docs aledbf/mkdocs:0.1 build
 
+# Update machine_types.go
 .PHONY: update-machine-types
-update-machine-types: #Update machine_types.go
+update-machine-types:
 	go build -o hack/machine_types/machine_types  ${KOPS_ROOT}/hack/machine_types/
 	hack/machine_types/machine_types --out upup/pkg/fi/cloudup/awsup/machine_types.go
 	go fmt upup/pkg/fi/cloudup/awsup/machine_types.go
