@@ -77,7 +77,6 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		default:
 			tsk.LaunchConfiguration = task.(*awstasks.LaunchConfiguration)
 		}
-
 		c.AddTask(tsk)
 
 		// @step: add any external load balancer attachments

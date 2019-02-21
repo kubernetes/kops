@@ -266,7 +266,6 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		if e.UseMixedInstancesPolicy() {
 			// we can zero this out for now and use the mixed instance policy for definition
 			request.LaunchTemplate = nil
-			// add the mixed instance policy
 			request.MixedInstancesPolicy = &autoscaling.MixedInstancesPolicy{
 				InstancesDistribution: &autoscaling.InstancesDistribution{
 					OnDemandPercentageAboveBaseCapacity: e.MixedOnDemandAboveBase,
@@ -475,12 +474,21 @@ func (e *AutoscalingGroup) UseMixedInstancesPolicy() bool {
 	if e.LaunchTemplate == nil {
 		return false
 	}
-	items := []interface{}{e.MixedOnDemandAboveBase, e.MixedOnDemandBase, e.MixedSpotAllocationStrategy, e.MixedSpotInstancePools}
-
-	for _, x := range items {
-		if x != nil {
-			return true
-		}
+	// @check if any of the mixed instance policies settings are toggled
+	if e.MixedOnDemandAboveBase != nil {
+		return true
+	}
+	if e.MixedOnDemandBase != nil {
+		return true
+	}
+	if e.MixedSpotAllocationStrategy != nil {
+		return true
+	}
+	if e.MixedSpotInstancePools != nil {
+		return true
+	}
+	if len(e.MixedInstanceOverrides) > 0 {
+		return true
 	}
 
 	return false
