@@ -252,10 +252,21 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			VPCZoneIdentifier:    fi.String(strings.Join(e.AutoscalingGroupSubnets(), ",")),
 		}
 
+		// @check are we using a launchconfiguation
 		if e.LaunchConfiguration != nil {
 			request.LaunchConfigurationName = e.LaunchConfiguration.ID
 		}
+		// @check are we using launch template
+		if e.LaunchTemplate != nil {
+			request.LaunchTemplate = &autoscaling.LaunchTemplateSpecification{
+				LaunchTemplateName: e.LaunchTemplate.ID,
+			}
+		}
+		// @check if we are using mixed instance policies
 		if e.UseMixedInstancesPolicy() {
+			// we can zero this out for now and use the mixed instance policy for definition
+			request.LaunchTemplate = nil
+			// add the mixed instance policy
 			request.MixedInstancesPolicy = &autoscaling.MixedInstancesPolicy{
 				InstancesDistribution: &autoscaling.InstancesDistribution{
 					OnDemandPercentageAboveBaseCapacity: e.MixedOnDemandAboveBase,
