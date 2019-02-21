@@ -6,6 +6,7 @@ go_library(
         "archive.go",
         "asset.go",
         "bindmount.go",
+        "chattr.go",
         "createsdir.go",
         "file.go",
         "group.go",
