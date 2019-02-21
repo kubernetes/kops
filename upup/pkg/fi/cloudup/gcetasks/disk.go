@@ -165,18 +165,30 @@ func (_ *Disk) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Disk) error {
 }
 
 type terraformDisk struct {
-	Name       *string `json:"name"`
-	VolumeType *string `json:"type"`
-	SizeGB     *int64  `json:"size"`
-	Zone       *string `json:"zone"`
+	Name       *string           `json:"name"`
+	VolumeType *string           `json:"type"`
+	SizeGB     *int64            `json:"size"`
+	Zone       *string           `json:"zone"`
+	Labels     map[string]string `json:"labels,omitempty"`
 }
 
 func (_ *Disk) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Disk) error {
+	cloud := t.Cloud.(gce.GCECloud)
+
+	labels := make(map[string]string)
+	for k, v := range cloud.Labels() {
+		labels[k] = v
+	}
+	for k, v := range e.Labels {
+		labels[k] = v
+	}
+
 	tf := &terraformDisk{
 		Name:       e.Name,
 		VolumeType: e.VolumeType,
 		SizeGB:     e.SizeGB,
 		Zone:       e.Zone,
+		Labels:     labels,
 	}
 	return t.RenderResource("google_compute_disk", *e.Name, tf)
 }

@@ -713,6 +713,15 @@ resource "aws_security_group_rule" "https-elb-to-master-sg-master-1b" {
   protocol                 = "tcp"
 }
 
+resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
+  type              = "ingress"
+  security_group_id = "sg-elb"
+  from_port         = 3
+  to_port           = 4
+  protocol          = "icmp"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
 resource "aws_security_group_rule" "master-egress" {
   type              = "egress"
   security_group_id = "${aws_security_group.masters-existingsg-example-com.id}"

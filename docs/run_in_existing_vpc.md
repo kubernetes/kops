@@ -1,7 +1,8 @@
 ## Running in a shared VPC
 
-When launching into a shared VPC, the VPC & the Internet Gateway will be reused. By default we create a new subnet per zone,
-and a new route table, but you can also use a shared subnet (see [below](#shared-subnets)).
+When launching into a shared VPC, the VPC & the Internet Gateway will be reused. If you are not using an internet gateway
+ or NAT gateway you can tell _kops_ to ignore egress. By default we create a new subnet per zone, and a new route table, 
+ but you can also use a shared subnet (see [below](#shared-subnets)).
 
 1. Use `kops create cluster` with the `--vpc` argument for your existing VPC:
 
@@ -205,6 +206,33 @@ Please note:
 * kops won't create a route-table at all if we're not creating subnets.
 * In the example above the first subnet is using a shared NAT Gateway while the
   second one is using a shared NAT Instance
+  
+### Externally Managed Egress
+
+If you are using an unsupported egress configuration in your VPC, _kops_ can be told to ignore egress by using a configuration like:
+
+```yaml
+spec:
+  subnets:
+  - cidr: 10.20.64.0/21
+    name: us-east-1a
+    egress: External
+    type: Private
+    zone: us-east-1a
+  - cidr: 10.20.96.0/21
+    name: us-east-1b
+    egress: External
+    type: Private
+    zone: us-east-1a
+  - cidr: 10.20.32.0/21
+    name: utility-us-east-1a
+    type: Utility
+    zone: us-east-1a
+    egress: External
+```
+
+This tells _kops_ that egress is being managed externally. This is preferable when using virtual private gateways 
+(currently unsupported) or using other configurations to handle egress routing. 
 
 ### Proxy VPC Egress
 

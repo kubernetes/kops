@@ -74,7 +74,7 @@ spec:
         }
       ]
 ```
-The masters will poll for changes changes in the bucket and keep the addons up to date.
+The masters will poll for changes in the bucket and keep the addons up to date.
 
 
 ### Dashboard

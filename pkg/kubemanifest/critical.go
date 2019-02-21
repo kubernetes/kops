@@ -17,7 +17,7 @@ limitations under the License.
 package kubemanifest
 
 import (
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 )
 
 // MarkPodAsCritical adds the required annotations for a pod to be considered critical

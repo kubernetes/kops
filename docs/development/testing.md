@@ -77,7 +77,7 @@ To use S3:
 export S3_BUCKET_NAME=<yourbucketname>
 make kops-install dev-upload UPLOAD_DEST=s3://${S3_BUCKET_NAME}
 
-KOPS_VERSION=`bazel run //cmd/kops version | cut -f2 -d ' '`
+KOPS_VERSION=`bazel run //cmd/kops version -- --short`
 export KOPS_BASE_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/${KOPS_VERSION}/
 ```
 
@@ -86,7 +86,7 @@ To use GCS:
 export GCS_BUCKET_NAME=kops-dev-${USER}
 make kops-install dev-upload UPLOAD_DEST=gs://${GCS_BUCKET_NAME}
 
-KOPS_VERSION=`bazel run //cmd/kops version | cut -f2 -d ' '`
+KOPS_VERSION=`bazel run //cmd/kops version -- --short`
 export KOPS_BASE_URL=https://${GCS_BUCKET_NAME}.storage.googleapis.com/kops/${KOPS_VERSION}/
 ```
 
