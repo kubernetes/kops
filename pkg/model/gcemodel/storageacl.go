@@ -46,7 +46,7 @@ func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("error fetching ServiceAccount: %v", err)
 	}
 
-	if featureflag.GoogleCloudBucketAcl.Enabled() {
+	if featureflag.GoogleCloudBucketACL.Enabled() {
 		clusterPath := b.Cluster.Spec.ConfigBase
 		p, err := vfs.Context.BuildVfsPath(clusterPath)
 		if err != nil {
