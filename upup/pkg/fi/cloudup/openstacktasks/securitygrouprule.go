@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ type SecurityGroupRule struct {
 	PortRangeMax   *int
 	Protocol       *string
 	RemoteIPPrefix *string
+	RemoteGroup    *SecurityGroup
 	Lifecycle      *fi.Lifecycle
 }
 
@@ -81,6 +82,9 @@ func (r *SecurityGroupRule) Find(context *fi.Context) (*SecurityGroupRule, error
 		RemoteIPPrefix: fi.StringValue(r.RemoteIPPrefix),
 		SecGroupID:     fi.StringValue(r.SecGroup.ID),
 	}
+	if r.RemoteGroup != nil {
+		opt.RemoteGroupID = fi.StringValue(r.RemoteGroup.ID)
+	}
 	rs, err := cloud.ListSecurityGroupRules(opt)
 	if err != nil {
 		return nil, err
@@ -100,8 +104,11 @@ func (r *SecurityGroupRule) Find(context *fi.Context) (*SecurityGroupRule, error
 		PortRangeMin:   Int(rule.PortRangeMin),
 		Protocol:       fi.String(rule.Protocol),
 		RemoteIPPrefix: fi.String(rule.RemoteIPPrefix),
-		SecGroup:       &SecurityGroup{ID: fi.String(rule.SecGroupID)},
-		Lifecycle:      r.Lifecycle,
+		RemoteGroup: &SecurityGroup{
+			ID: fi.String(rule.RemoteGroupID),
+		},
+		SecGroup:  &SecurityGroup{ID: fi.String(rule.SecGroupID)},
+		Lifecycle: r.Lifecycle,
 	}
 	r.ID = actual.ID
 	return actual, nil
@@ -152,10 +159,13 @@ func (_ *SecurityGroupRule) RenderOpenstack(t *openstack.OpenstackAPITarget, a, 
 			Protocol:       sgr.RuleProtocol(fi.StringValue(e.Protocol)),
 			RemoteIPPrefix: fi.StringValue(e.RemoteIPPrefix),
 		}
+		if e.RemoteGroup != nil {
+			opt.RemoteGroupID = fi.StringValue(e.RemoteGroup.ID)
+		}
 
 		r, err := t.Cloud.CreateSecurityGroupRule(opt)
 		if err != nil {
-			return fmt.Errorf("error creating SecurityGroupRule: %v", err)
+			return fmt.Errorf("error creating SecurityGroupRule in SG %s: %v", fi.StringValue(e.SecGroup.GetName()), err)
 		}
 
 		e.ID = fi.String(r.ID)
