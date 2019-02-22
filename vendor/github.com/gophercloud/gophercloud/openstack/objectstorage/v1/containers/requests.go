@@ -74,6 +74,7 @@ type CreateOpts struct {
 	DetectContentType bool   `h:"X-Detect-Content-Type"`
 	IfNoneMatch       string `h:"If-None-Match"`
 	VersionsLocation  string `h:"X-Versions-Location"`
+	HistoryLocation   string `h:"X-History-Location"`
 }
 
 // ToContainerCreateMap formats a CreateOpts into a map of headers.
@@ -137,6 +138,8 @@ type UpdateOpts struct {
 	DetectContentType      bool   `h:"X-Detect-Content-Type"`
 	RemoveVersionsLocation string `h:"X-Remove-Versions-Location"`
 	VersionsLocation       string `h:"X-Versions-Location"`
+	RemoveHistoryLocation  string `h:"X-Remove-History-Location"`
+	HistoryLocation        string `h:"X-History-Location"`
 }
 
 // ToContainerUpdateMap formats a UpdateOpts into a map of headers.

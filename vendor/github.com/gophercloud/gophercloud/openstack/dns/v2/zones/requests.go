@@ -134,7 +134,7 @@ type UpdateOpts struct {
 	Masters []string `json:"masters,omitempty"`
 
 	// Description of the zone.
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 }
 
 // ToZoneUpdateMap formats an UpdateOpts structure into a request body.

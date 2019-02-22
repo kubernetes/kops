@@ -43,8 +43,11 @@ Example to Update a Listener
 	listenerID := "d67d56a6-4a86-4688-a282-f46444705c64"
 
 	i1001 := 1001
+	i181000 := 181000
 	updateOpts := listeners.UpdateOpts{
 		ConnLimit: &i1001,
+		TimeoutClientData: &i181000,
+		TimeoutMemberData: &i181000,
 	}
 
 	listener, err := listeners.Update(networkClient, listenerID, updateOpts).Extract()
