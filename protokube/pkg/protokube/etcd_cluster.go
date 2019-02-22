@@ -39,8 +39,10 @@ type EtcdCluster struct {
 	ClusterName string
 	// ClusterToken is the cluster token
 	ClusterToken string
-	// CPURequest is the pod limits
-	CPURequest resource.Quantity
+	// CPURequest is the pod request for CPU
+	CPURequest *resource.Quantity
+	// MemoryRequest is the pod request for Memory
+	MemoryRequest *resource.Quantity
 	// DataDirName is the path to the data directory
 	DataDirName string
 	// ImageSource is the docker image to use
@@ -105,8 +107,14 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *etcd.EtcdClusterSpec
 		kubeBoot: kubeBoot,
 	}
 
+	// prepare parse variables for cpu and memory requests
+	cpuRequest100 := resource.MustParse("100m")
+	cpuRequest200 := resource.MustParse("200m")
+	memoryRequest := resource.MustParse("100Mi")
+
 	cluster := &EtcdCluster{
-		CPURequest:        resource.MustParse("100m"),
+		CPURequest:        &cpuRequest100,
+		MemoryRequest:     &memoryRequest,
 		ClientPort:        4001,
 		ClusterName:       "etcd-" + spec.ClusterKey,
 		DataDirName:       "data-" + spec.ClusterKey,
@@ -132,7 +140,7 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *etcd.EtcdClusterSpec
 		cluster.ClusterName = "etcd"
 		cluster.DataDirName = "data"
 		cluster.PodName = "etcd-server"
-		cluster.CPURequest = resource.MustParse("200m")
+		cluster.CPURequest = &cpuRequest200
 
 		// Because we can only specify a single EtcdBackupStore at the moment, we only backup main, not events
 		cluster.BackupImage = kubeBoot.EtcdBackupImage
@@ -186,6 +194,32 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 
 	if c.ClusterToken == "" {
 		c.ClusterToken = "etcd-cluster-token-" + name
+	}
+
+	// By default we use 100Mi for etcd memory
+	if c.MemoryRequest == nil || c.MemoryRequest.IsZero() {
+		memoryRequest, err := resource.ParseQuantity("100Mi")
+		if err != nil {
+			return fmt.Errorf("error parsing memory request for etcd (%s): %v", "100Mi", err)
+		}
+		c.MemoryRequest = &memoryRequest
+	}
+
+	// By default we use 100m for etcd cpu, unless the name is 'main', then we use 200m by default
+	if c.CPURequest == nil || c.CPURequest.IsZero() {
+		if c.ClusterName == "main" {
+			cpuRequest, err := resource.ParseQuantity("200m")
+			if err != nil {
+				return fmt.Errorf("error parsing cpu request for etcd (%s): %v", "200m", err)
+			}
+			c.CPURequest = &cpuRequest
+		} else {
+			cpuRequest, err := resource.ParseQuantity("100m")
+			if err != nil {
+				return fmt.Errorf("error parsing cpu request for etcd (%s): %v", "100m", err)
+			}
+			c.CPURequest = &cpuRequest
+		}
 	}
 
 	var nodes []*EtcdNode

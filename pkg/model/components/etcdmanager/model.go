@@ -26,7 +26,6 @@ import (
 
 	"github.com/golang/glog"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	scheme "k8s.io/client-go/kubernetes/scheme"
@@ -174,6 +173,7 @@ spec:
     resources:
       requests:
         cpu: 100m
+        memory: 100Mi
     # TODO: Would be nice to reduce these permissions; needed for volume mounting
     securityContext:
       privileged: true
@@ -250,7 +250,6 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 
 	isTLS := etcdCluster.EnableEtcdTLS
 
-	cpuRequest := resource.MustParse("100m")
 	clientPort := 4001
 
 	clusterName := "etcd-" + etcdCluster.Name
@@ -287,7 +286,6 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	switch etcdCluster.Name {
 	case "main":
 		clusterName = "etcd"
-		cpuRequest = resource.MustParse("200m")
 
 	case "events":
 		clientPort = 4002
@@ -383,10 +381,10 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	{
 		container.Command = exec.WithTee("/etcd-manager", args, "/var/log/etcd.log")
 
-		// TODO: Should we try to incorporate the resources in the manifest?
 		container.Resources = v1.ResourceRequirements{
 			Requests: v1.ResourceList{
-				v1.ResourceCPU: cpuRequest,
+				v1.ResourceCPU:    *etcdCluster.CPURequest,
+				v1.ResourceMemory: *etcdCluster.MemoryRequest,
 			},
 		}
 

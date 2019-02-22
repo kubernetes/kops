@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/util/pkg/exec"
@@ -29,6 +30,7 @@ import (
 
 // BuildEtcdManifest creates the pod spec, based on the etcd cluster
 func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
+
 	pod := &v1.Pod{}
 	pod.APIVersion = "v1"
 	pod.Kind = "Pod"
@@ -36,13 +38,28 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 	pod.Namespace = "kube-system"
 	pod.Labels = map[string]string{"k8s-app": c.PodName}
 	pod.Spec.HostNetwork = true
+
+	// dereference our resource requests if they exist
+	// cpu
+	var cpuRequest resource.Quantity
+	if c.CPURequest != nil {
+		cpuRequest = *c.CPURequest
+	}
+
+	// memory
+	var memoryRequest resource.Quantity
+	if c.MemoryRequest != nil {
+		memoryRequest = *c.MemoryRequest
+	}
+
 	{
 		container := v1.Container{
 			Name:  "etcd-container",
 			Image: c.ImageSource,
 			Resources: v1.ResourceRequirements{
 				Requests: v1.ResourceList{
-					v1.ResourceCPU: c.CPURequest,
+					v1.ResourceCPU:    cpuRequest,
+					v1.ResourceMemory: memoryRequest,
 				},
 			},
 			Command: exec.WithTee("/usr/local/bin/etcd", []string{}, "/var/log/etcd.log"),

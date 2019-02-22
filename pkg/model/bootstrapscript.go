@@ -171,10 +171,19 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 				spec["masterKubelet"] = cs.MasterKubelet
 
 				for _, etcdCluster := range cs.EtcdClusters {
-					spec["etcdClusters"].(map[string]kops.EtcdClusterSpec)[etcdCluster.Name] = kops.EtcdClusterSpec{
+					c := kops.EtcdClusterSpec{
 						Image:   etcdCluster.Image,
 						Version: etcdCluster.Version,
 					}
+					// if the user has not specified memory or cpu allotments for etcd, do not
+					// apply one.  Described in PR #6313.
+					if etcdCluster.CPURequest != nil {
+						c.CPURequest = etcdCluster.CPURequest
+					}
+					if etcdCluster.MemoryRequest != nil {
+						c.MemoryRequest = etcdCluster.MemoryRequest
+					}
+					spec["etcdClusters"].(map[string]kops.EtcdClusterSpec)[etcdCluster.Name] = c
 				}
 			}
 

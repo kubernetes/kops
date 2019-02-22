@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha2
 
 import (
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -396,6 +397,10 @@ type EtcdClusterSpec struct {
 	Backups *EtcdBackupSpec `json:"backups,omitempty"`
 	// Manager describes the manager configuration
 	Manager *EtcdManagerSpec `json:"manager,omitempty"`
+	// MemoryRequest specifies the memory requests of each etcd container in the cluster.
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
+	// CPURequest specifies the cpu requests of each etcd container in the cluster.
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 }
 
 // EtcdBackupSpec describes how we want to do backups of etcd
