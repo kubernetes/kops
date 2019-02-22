@@ -616,7 +616,7 @@
   revision = "0c5108395e2debce0d731cf0287ddf7242066aba"
 
 [[projects]]
-  digest = "1:a59e42230741fb00ffd95d61a731b6ee13500ad18400c5e0dd651acd3d30e4ba"
+  digest = "1:33cfd57691761d62c8f84c2748e3ea2690234b4d8b622856539a5175b7fc3bfd"
   name = "github.com/gophercloud/gophercloud"
   packages = [
     ".",
@@ -636,6 +636,7 @@
     "openstack/identity/v2/tenants",
     "openstack/identity/v2/tokens",
     "openstack/identity/v3/tokens",
+    "openstack/loadbalancer/v2/l7policies",
     "openstack/loadbalancer/v2/listeners",
     "openstack/loadbalancer/v2/loadbalancers",
     "openstack/loadbalancer/v2/monitors",
@@ -655,7 +656,7 @@
     "pagination",
   ]
   pruneopts = "UT"
-  revision = "f29afc2cceca860199ee88cd355a4d0a37b3fad2"
+  revision = "dcc6e84aef1b6713accea7d7d7252ad2bc0e7034"
 
 [[projects]]
   digest = "1:c79fb010be38a59d657c48c6ba1d003a8aa651fa56b579d959d74573b7dff8e1"
