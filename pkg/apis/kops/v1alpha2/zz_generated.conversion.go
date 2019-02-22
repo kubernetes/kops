@@ -2613,7 +2613,7 @@ func autoConvert_v1alpha2_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.HorizontalPodAutoscalerUpscaleDelay = in.HorizontalPodAutoscalerUpscaleDelay
 	out.HorizontalPodAutoscalerUseRestClients = in.HorizontalPodAutoscalerUseRestClients
 	out.FeatureGates = in.FeatureGates
-	out.APIQPS = in.APIQPS
+	out.ApiQps = in.ApiQps
 	out.ApiBurst = in.ApiBurst
 	return nil
 }
@@ -2657,7 +2657,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerMana
 	out.HorizontalPodAutoscalerUpscaleDelay = in.HorizontalPodAutoscalerUpscaleDelay
 	out.HorizontalPodAutoscalerUseRestClients = in.HorizontalPodAutoscalerUseRestClients
 	out.FeatureGates = in.FeatureGates
-	out.APIQPS = in.APIQPS
+	out.ApiQps = in.ApiQps
 	out.ApiBurst = in.ApiBurst
 	return nil
 }
@@ -2774,7 +2774,7 @@ func autoConvert_v1alpha2_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(in *Ku
 	}
 	out.UsePolicyConfigMap = in.UsePolicyConfigMap
 	out.FeatureGates = in.FeatureGates
-	out.APIQPS = in.APIQPS
+	out.ApiQps = in.ApiQps
 	out.ApiBurst = in.ApiBurst
 	return nil
 }
@@ -2799,7 +2799,7 @@ func autoConvert_kops_KubeSchedulerConfig_To_v1alpha2_KubeSchedulerConfig(in *ko
 	}
 	out.UsePolicyConfigMap = in.UsePolicyConfigMap
 	out.FeatureGates = in.FeatureGates
-	out.APIQPS = in.APIQPS
+	out.ApiQps = in.ApiQps
 	out.ApiBurst = in.ApiBurst
 	return nil
 }
@@ -2878,7 +2878,7 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.RootDir = in.RootDir
 	out.AuthenticationTokenWebhook = in.AuthenticationTokenWebhook
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
-	out.APIQPS = in.APIQPS
+	out.ApiQps = in.ApiQps
 	out.ApiBurst = in.ApiBurst
 	return nil
 }
@@ -2957,7 +2957,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.RootDir = in.RootDir
 	out.AuthenticationTokenWebhook = in.AuthenticationTokenWebhook
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
-	out.APIQPS = in.APIQPS
+	out.ApiQps = in.ApiQps
 	out.ApiBurst = in.ApiBurst
 	return nil
 }
