@@ -43,10 +43,16 @@ type DockerBuilder struct {
 var _ fi.ModelBuilder = &DockerBuilder{}
 
 type dockerVersion struct {
-	Name    string
+	Name string
+
+	// Version is the version of docker, as specified in the kops
 	Version string
-	Source  string
-	Hash    string
+
+	// Source is the url where the package/tarfile can be found
+	Source string
+
+	// Hash is the sha1 hash of the file
+	Hash string
 
 	DockerVersion string
 	Distros       []distros.Distribution
@@ -584,14 +590,93 @@ var dockerVersions = []dockerVersion{
 	// 18.06.2 - CentOS / Rhel7 (two packages)
 	{
 		DockerVersion: "18.06.2",
-		Name:          "container-selinux-2",
+		Name:          "container-selinux",
 		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
 		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "18.06.2.ce",
+		Version:       "2.68",
 		Source:        "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
 		Hash:          "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
 		Dependencies:  []string{"policycoreutils-python"},
 	},
+	{
+		DockerVersion: "18.06.2",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.06.2.ce",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.2.ce-3.el7.x86_64.rpm",
+		Hash:          "456eb7c5bfb37fac342e9ade21b602c076c5b367",
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
+	},
+
+	// 18.06.3 (contains fix for CVE-2019-5736)
+
+	// 18.06.3 - Bionic
+	{
+		DockerVersion: "18.06.3",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionBionic},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.06.3~ce~3-0~ubuntu",
+		Source:        "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb",
+		Hash:          "b396678a8b70f0503a7b944fa6e3297ab27b345b",
+		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
+		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
+	},
+
+	// 18.06.3 - Debian Stretch
+	{
+
+		DockerVersion: "18.06.3",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionDebian9},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.06.3~ce~3-0~debian",
+		Source:        "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
+		Hash:          "93b5a055a39462867d79109b00db1367e3d9e32f",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 18.06.3 - Jessie
+	{
+		DockerVersion: "18.06.3",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionJessie},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "ce_18.06.3~ce~3-0~debian",
+		Source:        "https://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
+		Hash:          "058bcd4b055560866b8cad978c7aa224694602da",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 18.06.3 - CentOS / Rhel7 (two packages)
+	{
+		DockerVersion: "18.06.3",
+		Name:          "container-selinux",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "2.68",
+		Source:        "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
+		Hash:          "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
+		Dependencies:  []string{"policycoreutils-python"},
+	},
+	{
+		DockerVersion: "18.06.3",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.06.3.ce",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.3.ce-3.el7.x86_64.rpm",
+		Hash:          "5369602f88406d4fb9159dc1d3fd44e76fb4cab8",
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
+	},
+
+	// TIP: When adding the next version, copy the previous
+	// version, string replace the version, run `VERIFY_HASHES=1
+	// go test ./nodeup/pkg/model` (you might want to temporarily
+	// comment out older versions on a slower connection), and
+	// then validate the dependencies etc
 }
 
 func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro distros.Distribution) bool {
