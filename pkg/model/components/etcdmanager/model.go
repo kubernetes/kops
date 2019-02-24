@@ -169,7 +169,7 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-  - image: kopeio/etcd-manager:3.0.20190125
+  - image: kopeio/etcd-manager:3.0.20190224
     name: etcd-manager
     resources:
       requests:
