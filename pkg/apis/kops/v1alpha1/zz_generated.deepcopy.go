@@ -2696,6 +2696,11 @@ func (in *OpenstackRouter) DeepCopyInto(out *OpenstackRouter) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.DNSServers != nil {
+		in, out := &in.DNSServers, &out.DNSServers
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 
