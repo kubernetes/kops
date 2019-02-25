@@ -42,6 +42,15 @@ type FirewallModelBuilder struct {
 
 var _ fi.ModelBuilder = &FirewallModelBuilder{}
 
+func (b *FirewallModelBuilder) usesOctavia() bool {
+	if b.Cluster.Spec.CloudConfig != nil &&
+		b.Cluster.Spec.CloudConfig.Openstack != nil &&
+		b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer != nil {
+		return fi.BoolValue(b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer.UseOctavia)
+	}
+	return false
+}
+
 // addDirectionalGroupRule - create a rule on the source group to the dest group provided a securityGroupRuleTask
 //  Example
 //  Create an Ingress rule on source allowing traffic from dest with the options in the SecurityGroupRule
@@ -79,14 +88,6 @@ func (b *FirewallModelBuilder) addSSHRules(c *fi.ModelBuilderContext, sgMap map[
 		PortRangeMin: i(22),
 		PortRangeMax: i(22),
 	}
-	sshEgress := &openstacktasks.SecurityGroupRule{
-		Lifecycle:    b.Lifecycle,
-		Direction:    s(string(rules.DirEgress)),
-		Protocol:     s(string(rules.ProtocolTCP)),
-		EtherType:    s(string(rules.EtherType4)),
-		PortRangeMin: i(22),
-		PortRangeMax: i(22),
-	}
 
 	if b.UsesSSHBastion() {
 		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
@@ -104,9 +105,6 @@ func (b *FirewallModelBuilder) addSSHRules(c *fi.ModelBuilderContext, sgMap map[
 		//Allpw ingress ssh from the bastion on the masters and nodes
 		addDirectionalGroupRule(c, masterSG, bastionSG, sshIngress)
 		addDirectionalGroupRule(c, nodeSG, bastionSG, sshIngress)
-		//Allow the bastion to ssh to the masters and nodes
-		addDirectionalGroupRule(c, bastionSG, masterSG, sshEgress)
-		addDirectionalGroupRule(c, bastionSG, nodeSG, sshEgress)
 	} else {
 		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
 			sshRule := &openstacktasks.SecurityGroupRule{
@@ -133,29 +131,26 @@ func (b *FirewallModelBuilder) addETCDRules(c *fi.ModelBuilderContext, sgMap map
 	masterSG := sgMap[masterName]
 	nodeSG := sgMap[nodeName]
 
-	for _, direction := range []string{string(rules.DirIngress), string(rules.DirEgress)} {
-		{
-			// ETCD Peer Discovery
-			etcdRule := &openstacktasks.SecurityGroupRule{
-				Lifecycle:    b.Lifecycle,
-				Direction:    s(direction),
-				Protocol:     s(string(rules.ProtocolTCP)),
-				EtherType:    s(IPV4),
-				PortRangeMin: i(4001),
-				PortRangeMax: i(4002),
-			}
-			etcdPeerRule := &openstacktasks.SecurityGroupRule{
-				Lifecycle:    b.Lifecycle,
-				Direction:    s(direction),
-				Protocol:     s(string(rules.ProtocolTCP)),
-				EtherType:    s(IPV4),
-				PortRangeMin: i(2380),
-				PortRangeMax: i(2381),
-			}
-			addDirectionalGroupRule(c, masterSG, masterSG, etcdRule)
-			addDirectionalGroupRule(c, masterSG, masterSG, etcdPeerRule)
-		}
+	// ETCD Peer Discovery
+	etcdRule := &openstacktasks.SecurityGroupRule{
+		Lifecycle:    b.Lifecycle,
+		Direction:    s(string(rules.DirIngress)),
+		Protocol:     s(string(rules.ProtocolTCP)),
+		EtherType:    s(IPV4),
+		PortRangeMin: i(4001),
+		PortRangeMax: i(4002),
 	}
+	etcdPeerRule := &openstacktasks.SecurityGroupRule{
+		Lifecycle:    b.Lifecycle,
+		Direction:    s(string(rules.DirIngress)),
+		Protocol:     s(string(rules.ProtocolTCP)),
+		EtherType:    s(IPV4),
+		PortRangeMin: i(2380),
+		PortRangeMax: i(2381),
+	}
+	addDirectionalGroupRule(c, masterSG, masterSG, etcdRule)
+	addDirectionalGroupRule(c, masterSG, masterSG, etcdPeerRule)
+
 	if b.Cluster.Spec.Networking.Romana != nil ||
 		b.Cluster.Spec.Networking.Cilium != nil ||
 		b.Cluster.Spec.Networking.Calico != nil {
@@ -214,14 +209,6 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 	masterSG := sgMap[masterName]
 	nodeSG := sgMap[nodeName]
 
-	httpsEgress := &openstacktasks.SecurityGroupRule{
-		Lifecycle:    b.Lifecycle,
-		Direction:    s(string(rules.DirEgress)),
-		Protocol:     s(IpProtocolTCP),
-		EtherType:    s(IPV4),
-		PortRangeMin: i(443),
-		PortRangeMax: i(443),
-	}
 	httpsIngress := &openstacktasks.SecurityGroupRule{
 		Lifecycle:    b.Lifecycle,
 		Direction:    s(string(rules.DirIngress)),
@@ -250,10 +237,21 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 				RemoteIPPrefix: s(apiAccess),
 			})
 		}
-		//Allow Egress to the masters from the lb
-		addDirectionalGroupRule(c, lbSG, masterSG, httpsEgress)
 		//Allow masters ingress from the sg
 		addDirectionalGroupRule(c, masterSG, lbSG, httpsIngress)
+
+		//FIXME: Octavia port traffic appears to be denied though its port is in lbSG
+		if b.usesOctavia() {
+			addDirectionalGroupRule(c, masterSG, nil, &openstacktasks.SecurityGroupRule{
+				Lifecycle:      b.Lifecycle,
+				Direction:      s(string(rules.DirIngress)),
+				Protocol:       s(IpProtocolTCP),
+				EtherType:      s(IPV4),
+				PortRangeMin:   i(443),
+				PortRangeMax:   i(443),
+				RemoteIPPrefix: s(b.Cluster.Spec.NetworkCIDR),
+			})
+		}
 
 	} else {
 		// Allow the masters to receive connections from KubernetesAPIAccess
@@ -305,20 +303,18 @@ func (b *FirewallModelBuilder) addDNSRules(c *fi.ModelBuilderContext, sgMap map[
 	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 	masterSG := sgMap[masterName]
 	nodeSG := sgMap[nodeName]
-	for _, direction := range []string{string(rules.DirIngress), string(rules.DirEgress)} {
-		for _, protocol := range []string{IpProtocolTCP, IpProtocolUDP} {
-			dnsRule := &openstacktasks.SecurityGroupRule{
-				Lifecycle:    b.Lifecycle,
-				Direction:    s(direction),
-				Protocol:     s(protocol),
-				EtherType:    s(IPV4),
-				PortRangeMin: i(53),
-				PortRangeMax: i(53),
-			}
-			addDirectionalGroupRule(c, masterSG, nodeSG, dnsRule)
-			addDirectionalGroupRule(c, nodeSG, masterSG, dnsRule)
-			addDirectionalGroupRule(c, masterSG, masterSG, dnsRule)
+	for _, protocol := range []string{IpProtocolTCP, IpProtocolUDP} {
+		dnsRule := &openstacktasks.SecurityGroupRule{
+			Lifecycle:    b.Lifecycle,
+			Direction:    s(string(rules.DirIngress)),
+			Protocol:     s(protocol),
+			EtherType:    s(IPV4),
+			PortRangeMin: i(53),
+			PortRangeMax: i(53),
 		}
+		addDirectionalGroupRule(c, masterSG, nodeSG, dnsRule)
+		addDirectionalGroupRule(c, nodeSG, masterSG, dnsRule)
+		addDirectionalGroupRule(c, masterSG, masterSG, dnsRule)
 	}
 	return nil
 }
@@ -378,45 +374,39 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 	nodeSG := sgMap[nodeName]
 
 	for _, udpPort := range udpPorts {
-		for _, direction := range []string{string(rules.DirIngress), string(rules.DirEgress)} {
-			udpRule := &openstacktasks.SecurityGroupRule{
-				Lifecycle:      b.Lifecycle,
-				Direction:      s(direction),
-				Protocol:       s(string(rules.ProtocolUDP)),
-				EtherType:      s(string(rules.EtherType4)),
-				PortRangeMin:   i(udpPort),
-				PortRangeMax:   i(udpPort),
-				RemoteIPPrefix: s(b.Cluster.Spec.NetworkCIDR),
-			}
-			addDirectionalGroupRule(c, masterSG, nil, udpRule)
-			addDirectionalGroupRule(c, nodeSG, nil, udpRule)
+		udpRule := &openstacktasks.SecurityGroupRule{
+			Lifecycle:      b.Lifecycle,
+			Direction:      s(string(rules.DirIngress)),
+			Protocol:       s(string(rules.ProtocolUDP)),
+			EtherType:      s(string(rules.EtherType4)),
+			PortRangeMin:   i(udpPort),
+			PortRangeMax:   i(udpPort),
+			RemoteIPPrefix: s(b.Cluster.Spec.NetworkCIDR),
 		}
+		addDirectionalGroupRule(c, masterSG, nil, udpRule)
+		addDirectionalGroupRule(c, nodeSG, nil, udpRule)
 	}
 	for _, tcpPort := range tcpPorts {
-		for _, direction := range []string{string(rules.DirIngress), string(rules.DirEgress)} {
-			tcpRule := &openstacktasks.SecurityGroupRule{
-				Lifecycle:      b.Lifecycle,
-				Direction:      s(direction),
-				Protocol:       s(string(rules.ProtocolTCP)),
-				EtherType:      s(string(rules.EtherType4)),
-				PortRangeMin:   i(tcpPort),
-				PortRangeMax:   i(tcpPort),
-				RemoteIPPrefix: s(b.Cluster.Spec.NetworkCIDR),
-			}
-			addDirectionalGroupRule(c, masterSG, nil, tcpRule)
-			addDirectionalGroupRule(c, nodeSG, nil, tcpRule)
+		tcpRule := &openstacktasks.SecurityGroupRule{
+			Lifecycle:      b.Lifecycle,
+			Direction:      s(string(rules.DirIngress)),
+			Protocol:       s(string(rules.ProtocolTCP)),
+			EtherType:      s(string(rules.EtherType4)),
+			PortRangeMin:   i(tcpPort),
+			PortRangeMax:   i(tcpPort),
+			RemoteIPPrefix: s(b.Cluster.Spec.NetworkCIDR),
 		}
+		addDirectionalGroupRule(c, masterSG, nil, tcpRule)
+		addDirectionalGroupRule(c, nodeSG, nil, tcpRule)
 	}
 	for _, protocol := range protocols {
-		for _, direction := range []string{string(rules.DirIngress), string(rules.DirEgress)} {
-			protocolRule := &openstacktasks.SecurityGroupRule{
-				Lifecycle: b.Lifecycle,
-				Direction: s(direction),
-				Protocol:  s(protocol),
-				EtherType: s(string(rules.EtherType4)),
-			}
-			addDirectionalGroupRule(c, nodeSG, masterSG, protocolRule)
+		protocolRule := &openstacktasks.SecurityGroupRule{
+			Lifecycle: b.Lifecycle,
+			Direction: s(string(rules.DirIngress)),
+			Protocol:  s(protocol),
+			EtherType: s(string(rules.EtherType4)),
 		}
+		addDirectionalGroupRule(c, nodeSG, masterSG, protocolRule)
 	}
 
 	return nil
@@ -430,18 +420,18 @@ func (b *FirewallModelBuilder) addProtokubeRules(c *fi.ModelBuilderContext, sgMa
 		nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 		masterSG := sgMap[masterName]
 		nodeSG := sgMap[nodeName]
-		for _, direction := range []string{string(rules.DirIngress), string(rules.DirEgress)} {
-			protokubeRule := &openstacktasks.SecurityGroupRule{
-				Lifecycle:    b.Lifecycle,
-				Direction:    s(direction),
-				Protocol:     s(string(rules.ProtocolTCP)),
-				EtherType:    s(string(rules.EtherType4)),
-				PortRangeMin: i(3998),
-				PortRangeMax: i(3999),
-			}
-			addDirectionalGroupRule(c, masterSG, nodeSG, protokubeRule)
-			addDirectionalGroupRule(c, nodeSG, masterSG, protokubeRule)
+		protokubeRule := &openstacktasks.SecurityGroupRule{
+			Lifecycle:    b.Lifecycle,
+			Direction:    s(string(rules.DirIngress)),
+			Protocol:     s(string(rules.ProtocolTCP)),
+			EtherType:    s(string(rules.EtherType4)),
+			PortRangeMin: i(3998),
+			PortRangeMax: i(3999),
 		}
+		addDirectionalGroupRule(c, masterSG, nodeSG, protokubeRule)
+		addDirectionalGroupRule(c, nodeSG, masterSG, protokubeRule)
+		addDirectionalGroupRule(c, masterSG, masterSG, protokubeRule)
+		addDirectionalGroupRule(c, nodeSG, nodeSG, protokubeRule)
 	}
 	return nil
 }
