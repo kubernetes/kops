@@ -4366,6 +4366,7 @@ func Convert_kops_OpenstackMonitor_To_v1alpha2_OpenstackMonitor(in *kops.Opensta
 
 func autoConvert_v1alpha2_OpenstackRouter_To_kops_OpenstackRouter(in *OpenstackRouter, out *kops.OpenstackRouter, s conversion.Scope) error {
 	out.ExternalNetwork = in.ExternalNetwork
+	out.DNSServers = in.DNSServers
 	return nil
 }
 
@@ -4376,6 +4377,7 @@ func Convert_v1alpha2_OpenstackRouter_To_kops_OpenstackRouter(in *OpenstackRoute
 
 func autoConvert_kops_OpenstackRouter_To_v1alpha2_OpenstackRouter(in *kops.OpenstackRouter, out *OpenstackRouter, s conversion.Scope) error {
 	out.ExternalNetwork = in.ExternalNetwork
+	out.DNSServers = in.DNSServers
 	return nil
 }
 
