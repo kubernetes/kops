@@ -86,7 +86,15 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 
 		securityGroupName := b.SecurityGroupName(ig.Spec.Role)
 		securityGroup := b.LinkToSecurityGroup(securityGroupName)
-
+		var az *string
+		if len(ig.Spec.Subnets) > 0 {
+			// bastion subnet name is not actual zone name, it contains "utility-" prefix
+			if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+				az = fi.String(strings.Replace(ig.Spec.Subnets[int(i)%len(ig.Spec.Subnets)], "utility-", "", 1))
+			} else {
+				az = fi.String(ig.Spec.Subnets[int(i)%len(ig.Spec.Subnets)])
+			}
+		}
 		// Create instance port task
 		portTask := &openstacktasks.Port{
 			Name:           fi.String(fmt.Sprintf("%s-%s", "port", *instanceName)),
@@ -97,16 +105,17 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		c.AddTask(portTask)
 
 		instanceTask := &openstacktasks.Instance{
-			Name:        instanceName,
-			Region:      fi.String(b.Cluster.Spec.Subnets[0].Region),
-			Flavor:      fi.String(ig.Spec.MachineType),
-			Image:       fi.String(ig.Spec.Image),
-			SSHKey:      fi.String(sshKeyName),
-			ServerGroup: sg,
-			Tags:        []string{clusterTag},
-			Role:        fi.String(string(ig.Spec.Role)),
-			Port:        portTask,
-			Metadata:    igMeta,
+			Name:             instanceName,
+			Region:           fi.String(b.Cluster.Spec.Subnets[0].Region),
+			Flavor:           fi.String(ig.Spec.MachineType),
+			Image:            fi.String(ig.Spec.Image),
+			SSHKey:           fi.String(sshKeyName),
+			ServerGroup:      sg,
+			Tags:             []string{clusterTag},
+			Role:             fi.String(string(ig.Spec.Role)),
+			Port:             portTask,
+			Metadata:         igMeta,
+			AvailabilityZone: az,
 		}
 		if igUserData != nil {
 			instanceTask.UserData = igUserData
