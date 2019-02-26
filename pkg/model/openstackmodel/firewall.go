@@ -27,11 +27,10 @@ import (
 )
 
 const (
-	IpProtocolTCP     = string(rules.ProtocolTCP)
-	IpProtocolUDP     = string(rules.ProtocolUDP)
-	IPV4              = string(rules.EtherType4)
-	ProtocolIPv4Encap = "4"
-	ProtocolIPIPEncap = "94"
+	IPProtocolTCP   = string(rules.ProtocolTCP)
+	IPProtocolUDP   = string(rules.ProtocolUDP)
+	IPV4            = string(rules.EtherType4)
+	ProtocolIPEncap = "4" // IP in IPv4/IPv6
 )
 
 // FirewallModelBuilder configures firewall network objects
@@ -102,7 +101,7 @@ func (b *FirewallModelBuilder) addSSHRules(c *fi.ModelBuilderContext, sgMap map[
 			}
 			addDirectionalGroupRule(c, bastionSG, nil, sshRule)
 		}
-		//Allpw ingress ssh from the bastion on the masters and nodes
+		//Allow ingress ssh from the bastion on the masters and nodes
 		addDirectionalGroupRule(c, masterSG, bastionSG, sshIngress)
 		addDirectionalGroupRule(c, nodeSG, bastionSG, sshIngress)
 	} else {
@@ -183,7 +182,7 @@ func (b *FirewallModelBuilder) addNodePortRules(c *fi.ModelBuilderContext, sgMap
 			return err
 		}
 
-		for _, protocol := range []string{IpProtocolTCP, IpProtocolUDP} {
+		for _, protocol := range []string{IPProtocolTCP, IPProtocolUDP} {
 			nodePortRule := &openstacktasks.SecurityGroupRule{
 				Lifecycle:      b.Lifecycle,
 				Direction:      s(string(rules.DirIngress)),
@@ -212,7 +211,7 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 	httpsIngress := &openstacktasks.SecurityGroupRule{
 		Lifecycle:    b.Lifecycle,
 		Direction:    s(string(rules.DirIngress)),
-		Protocol:     s(IpProtocolTCP),
+		Protocol:     s(IPProtocolTCP),
 		EtherType:    s(IPV4),
 		PortRangeMin: i(443),
 		PortRangeMax: i(443),
@@ -221,8 +220,6 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 	//Allow all local communication for kubernetes.svc and to the api.internal lb/gossip for kubelet's
 	addDirectionalGroupRule(c, masterSG, nodeSG, httpsIngress)
 	addDirectionalGroupRule(c, masterSG, masterSG, httpsIngress)
-	addDirectionalGroupRule(c, nodeSG, masterSG, httpsIngress)
-	addDirectionalGroupRule(c, nodeSG, nodeSG, httpsIngress)
 
 	if b.UseLoadBalancerForAPI() {
 		//Allow API Access to the lb sg
@@ -230,7 +227,7 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 			addDirectionalGroupRule(c, lbSG, nil, &openstacktasks.SecurityGroupRule{
 				Lifecycle:      b.Lifecycle,
 				Direction:      s(string(rules.DirIngress)),
-				Protocol:       s(IpProtocolTCP),
+				Protocol:       s(IPProtocolTCP),
 				EtherType:      s(IPV4),
 				PortRangeMin:   i(443),
 				PortRangeMax:   i(443),
@@ -245,7 +242,7 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 			addDirectionalGroupRule(c, masterSG, nil, &openstacktasks.SecurityGroupRule{
 				Lifecycle:      b.Lifecycle,
 				Direction:      s(string(rules.DirIngress)),
-				Protocol:       s(IpProtocolTCP),
+				Protocol:       s(IPProtocolTCP),
 				EtherType:      s(IPV4),
 				PortRangeMin:   i(443),
 				PortRangeMax:   i(443),
@@ -260,7 +257,7 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 			addDirectionalGroupRule(c, masterSG, nil, &openstacktasks.SecurityGroupRule{
 				Lifecycle:      b.Lifecycle,
 				Direction:      s(string(rules.DirIngress)),
-				Protocol:       s(IpProtocolTCP),
+				Protocol:       s(IPProtocolTCP),
 				EtherType:      s(IPV4),
 				PortRangeMin:   i(443),
 				PortRangeMax:   i(443),
@@ -285,7 +282,7 @@ func (b *FirewallModelBuilder) addKubeletRules(c *fi.ModelBuilderContext, sgMap 
 			addDirectionalGroupRule(c, sgName, nil, &openstacktasks.SecurityGroupRule{
 				Lifecycle:      b.Lifecycle,
 				Direction:      s(string(rules.DirIngress)),
-				Protocol:       s(IpProtocolTCP),
+				Protocol:       s(IPProtocolTCP),
 				EtherType:      s(IPV4),
 				PortRangeMin:   i(10250),
 				PortRangeMax:   i(10250),
@@ -303,7 +300,7 @@ func (b *FirewallModelBuilder) addDNSRules(c *fi.ModelBuilderContext, sgMap map[
 	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 	masterSG := sgMap[masterName]
 	nodeSG := sgMap[nodeName]
-	for _, protocol := range []string{IpProtocolTCP, IpProtocolUDP} {
+	for _, protocol := range []string{IPProtocolTCP, IPProtocolUDP} {
 		dnsRule := &openstacktasks.SecurityGroupRule{
 			Lifecycle:    b.Lifecycle,
 			Direction:    s(string(rules.DirIngress)),
@@ -332,6 +329,7 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 	if b.Cluster.Spec.Networking != nil {
 		if b.Cluster.Spec.Networking.Kopeio != nil {
 			// VXLAN over UDP
+			// https://tools.ietf.org/html/rfc7348
 			udpPorts = append(udpPorts, 4789)
 		}
 
@@ -339,7 +337,7 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 			udpPorts = append(udpPorts, 6783)
 			tcpPorts = append(tcpPorts, 6783)
 			udpPorts = append(udpPorts, 6784)
-			protocols = append(protocols, ProtocolIPv4Encap)
+			protocols = append(protocols, ProtocolIPEncap)
 		}
 
 		if b.Cluster.Spec.Networking.Flannel != nil {
@@ -347,7 +345,7 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 			case "", "udp":
 				udpPorts = append(udpPorts, 8285)
 			case "vxlan":
-				protocols = append(protocols, ProtocolIPv4Encap)
+				protocols = append(protocols, ProtocolIPEncap)
 				udpPorts = append(udpPorts, 8472)
 			default:
 				glog.Warningf("unknown flannel networking backend %q", b.Cluster.Spec.Networking.Flannel.Backend)
@@ -356,7 +354,7 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 
 		if b.Cluster.Spec.Networking.Calico != nil {
 			tcpPorts = append(tcpPorts, 179)
-			protocols = append(protocols, ProtocolIPIPEncap)
+			protocols = append(protocols, ProtocolIPEncap)
 		}
 
 		if b.Cluster.Spec.Networking.Romana != nil {
@@ -364,7 +362,7 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 		}
 
 		if b.Cluster.Spec.Networking.Kuberouter != nil {
-			protocols = append(protocols, ProtocolIPIPEncap)
+			protocols = append(protocols, ProtocolIPEncap)
 		}
 	}
 
