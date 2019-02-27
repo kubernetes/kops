@@ -4050,6 +4050,7 @@ func autoConvert_v1alpha1_OpenstackLoadbalancerConfig_To_kops_OpenstackLoadbalan
 	out.UseOctavia = in.UseOctavia
 	out.FloatingNetwork = in.FloatingNetwork
 	out.FloatingNetworkID = in.FloatingNetworkID
+	out.FloatingSubnet = in.FloatingSubnet
 	out.SubnetID = in.SubnetID
 	return nil
 }
@@ -4065,6 +4066,7 @@ func autoConvert_kops_OpenstackLoadbalancerConfig_To_v1alpha1_OpenstackLoadbalan
 	out.UseOctavia = in.UseOctavia
 	out.FloatingNetwork = in.FloatingNetwork
 	out.FloatingNetworkID = in.FloatingNetworkID
+	out.FloatingSubnet = in.FloatingSubnet
 	out.SubnetID = in.SubnetID
 	return nil
 }
@@ -4101,6 +4103,7 @@ func Convert_kops_OpenstackMonitor_To_v1alpha1_OpenstackMonitor(in *kops.Opensta
 func autoConvert_v1alpha1_OpenstackRouter_To_kops_OpenstackRouter(in *OpenstackRouter, out *kops.OpenstackRouter, s conversion.Scope) error {
 	out.ExternalNetwork = in.ExternalNetwork
 	out.DNSServers = in.DNSServers
+	out.ExternalSubnet = in.ExternalSubnet
 	return nil
 }
 
@@ -4112,6 +4115,7 @@ func Convert_v1alpha1_OpenstackRouter_To_kops_OpenstackRouter(in *OpenstackRoute
 func autoConvert_kops_OpenstackRouter_To_v1alpha1_OpenstackRouter(in *kops.OpenstackRouter, out *OpenstackRouter, s conversion.Scope) error {
 	out.ExternalNetwork = in.ExternalNetwork
 	out.DNSServers = in.DNSServers
+	out.ExternalSubnet = in.ExternalSubnet
 	return nil
 }
 

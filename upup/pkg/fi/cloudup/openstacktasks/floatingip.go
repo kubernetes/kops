@@ -221,10 +221,19 @@ func (f *FloatingIP) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 
 		if e.LB != nil {
 			//Layer 3
-			fip, err := cloud.CreateL3FloatingIP(l3floatingip.CreateOpts{
+
+			opts := l3floatingip.CreateOpts{
 				FloatingNetworkID: external.ID,
 				PortID:            fi.StringValue(e.LB.PortID),
-			})
+			}
+			lbSubnet, err := cloud.GetLBFloatingSubnet()
+			if err != nil {
+				return fmt.Errorf("Failed to find floatingip subnet: %v", err)
+			}
+			if lbSubnet != nil {
+				opts.SubnetID = lbSubnet.ID
+			}
+			fip, err := cloud.CreateL3FloatingIP(opts)
 			if err != nil {
 				return fmt.Errorf("Failed to create floating IP: %v", err)
 			}

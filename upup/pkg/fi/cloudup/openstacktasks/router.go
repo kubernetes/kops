@@ -102,6 +102,18 @@ func (_ *Router) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 			NetworkID: floatingNet.ID,
 		}
 
+		routerFloatingSubnet, err := t.Cloud.GetExternalSubnet()
+		if err != nil {
+			return fmt.Errorf("Failed to find floatingip subnet: %v", err)
+		}
+		if routerFloatingSubnet != nil {
+			opt.GatewayInfo.ExternalFixedIPs = []routers.ExternalFixedIP{
+				{
+					SubnetID: routerFloatingSubnet.ID,
+				},
+			}
+		}
+
 		v, err := t.Cloud.CreateRouter(opt)
 		if err != nil {
 			return fmt.Errorf("Error creating router: %v", err)
