@@ -447,6 +447,9 @@ type KubeControllerManagerConfig struct {
 	// HorizontalPodAutoscalerUseRestClients determines if the new-style clients
 	// should be used if support for custom metrics is enabled.
 	HorizontalPodAutoscalerUseRestClients *bool `json:"horizontalPodAutoscalerUseRestClients,omitempty" flag:"horizontal-pod-autoscaler-use-rest-clients"`
+	// ExperimentalClusterSigningDuration is the duration that determines
+	// the length of duration that the signed certificates will be given. (default 8760h0m0s)
+	ExperimentalClusterSigningDuration *metav1.Duration `json:"experimentalClusterSigningDuration,omitempty" flag:"experimental-cluster-signing-duration"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }
