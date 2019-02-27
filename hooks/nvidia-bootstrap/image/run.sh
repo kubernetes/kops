@@ -34,12 +34,14 @@ CACHE_DIR_CONTAINER="${ROOTFS_DIR}${CACHE_DIR_HOST}"
 declare -A class_to_driver_file
 class_to_driver_file=( \
     ["g3"]="http://us.download.nvidia.com/XFree86/Linux-x86_64/367.124/NVIDIA-Linux-x86_64-367.124.run" \
+    ["g3s"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
     ["p2"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
     ["p3"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
 )
 declare -A class_to_driver_checksum
 class_to_driver_checksum=( \
     ["g3"]="77f37939efeea4b6505842bed50445971992e303" \
+    ["g3s"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
     ["p2"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
     ["p3"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
 )
@@ -76,7 +78,7 @@ if [[ -z $AWS_INSTANCE_TYPE ]] || [[ -z $AWS_INSTANCE_CLASS ]]; then
   exit 0
 fi
 
-classnames=${!class_to_driver_file[@]} # e.g. [ "g3", "p2", "p3" ]
+classnames=${!class_to_driver_file[@]} # e.g. [ "g3", "g3s", "p2", "p3" ]
 if ! containsElement $AWS_INSTANCE_CLASS $classnames; then
   echo "This machine is an AWS instance, but not a GPU instance"
   echo "  Exiting without installing GPU drivers"
@@ -198,7 +200,7 @@ chroot ${ROOTFS_DIR} nvidia-smi --auto-boost-permission=0
 
 # Custom configurations per class of nvidia video card
 case "$AWS_INSTANCE_CLASS" in
-"g2" | "g3")
+"g2" | "g3" | "g3s")
   chroot ${ROOTFS_DIR} nvidia-smi -ac 2505,1177
   ;;
 "p2")
