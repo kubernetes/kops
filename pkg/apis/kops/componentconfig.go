@@ -528,6 +528,7 @@ type OpenstackMonitor struct {
 // OpenstackRouter defines the config for a router
 type OpenstackRouter struct {
 	ExternalNetwork *string `json:"externalNetwork,omitempty"`
+	DNSServers      *string `json:"dnsServers,omitempty"`
 }
 
 // OpenstackConfiguration defines cloud config elements for the openstack cloud provider
