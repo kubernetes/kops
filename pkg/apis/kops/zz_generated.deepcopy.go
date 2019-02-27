@@ -2934,6 +2934,11 @@ func (in *OpenstackLoadbalancerConfig) DeepCopyInto(out *OpenstackLoadbalancerCo
 		*out = new(string)
 		**out = **in
 	}
+	if in.FloatingSubnet != nil {
+		in, out := &in.FloatingSubnet, &out.FloatingSubnet
+		*out = new(string)
+		**out = **in
+	}
 	if in.SubnetID != nil {
 		in, out := &in.SubnetID, &out.SubnetID
 		*out = new(string)
@@ -2993,6 +2998,11 @@ func (in *OpenstackRouter) DeepCopyInto(out *OpenstackRouter) {
 	}
 	if in.DNSServers != nil {
 		in, out := &in.DNSServers, &out.DNSServers
+		*out = new(string)
+		**out = **in
+	}
+	if in.ExternalSubnet != nil {
+		in, out := &in.ExternalSubnet, &out.ExternalSubnet
 		*out = new(string)
 		**out = **in
 	}

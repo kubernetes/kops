@@ -510,6 +510,7 @@ type OpenstackLoadbalancerConfig struct {
 	UseOctavia        *bool   `json:"useOctavia,omitempty"`
 	FloatingNetwork   *string `json:"floatingNetwork,omitempty"`
 	FloatingNetworkID *string `json:"floatingNetworkID,omitempty"`
+	FloatingSubnet    *string `json:"floatingSubnet,omitempty"`
 	SubnetID          *string `json:"subnetID,omitempty"`
 }
 
@@ -529,6 +530,7 @@ type OpenstackMonitor struct {
 type OpenstackRouter struct {
 	ExternalNetwork *string `json:"externalNetwork,omitempty"`
 	DNSServers      *string `json:"dnsServers,omitempty"`
+	ExternalSubnet  *string `json:"externalSubnet,omitempty"`
 }
 
 // OpenstackConfiguration defines cloud config elements for the openstack cloud provider
