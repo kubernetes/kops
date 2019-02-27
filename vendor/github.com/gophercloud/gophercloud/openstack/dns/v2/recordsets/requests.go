@@ -119,7 +119,7 @@ type UpdateOptsBuilder interface {
 // RecordSet.
 type UpdateOpts struct {
 	// Description is a description of the RecordSet.
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 
 	// TTL is the time to live of the RecordSet.
 	TTL int `json:"ttl,omitempty"`

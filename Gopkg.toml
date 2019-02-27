@@ -455,4 +455,4 @@ required = [
   revision = "bf70f2a70fb1b1f36d90d671a72795984eab0fcb"
 [[override]]
   name = "github.com/gophercloud/gophercloud"
-  revision = "f29afc2cceca860199ee88cd355a4d0a37b3fad2"
+  revision = "dcc6e84aef1b6713accea7d7d7252ad2bc0e7034"
