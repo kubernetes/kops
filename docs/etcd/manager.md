@@ -41,7 +41,7 @@ it won't change the configuration:
 
 ```bash
 # Enable etcd-manager
-kops set cluster cluster.spec.etcdClusters[*].manager.image=kopeio/etcd-manager:latest
+kops set cluster cluster.spec.etcdClusters[*].provider=Manager
 
 kops update cluster --yes
 kops rolling-update cluster --yes
