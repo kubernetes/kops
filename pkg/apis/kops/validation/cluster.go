@@ -44,7 +44,9 @@ func ValidateClusterUpdate(obj *kops.Cluster, status *kops.ClusterStatus, old *k
 			fp := field.NewPath("spec", "etcdClusters").Key(k)
 
 			oldCluster := oldClusters[k]
-			allErrs = append(allErrs, validateEtcdClusterUpdate(fp, newCluster, status, oldCluster)...)
+			if oldCluster != nil {
+				allErrs = append(allErrs, validateEtcdClusterUpdate(fp, newCluster, status, oldCluster)...)
+			}
 		}
 		for k := range oldClusters {
 			newCluster := newClusters[k]
