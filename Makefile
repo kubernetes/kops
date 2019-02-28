@@ -773,8 +773,14 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokub
 bazel-upload: bazel-version-dist # Upload kops to S3
 	aws s3 sync --acl public-read ${BAZELUPLOAD}/ ${S3_BUCKET}
 
-#-----------------------------------------------------------  
-# static html documentation  
+# prow-postsubmit is run by the prow postsubmit job
+# It uploads a build to a staging directory, which in theory we can publish as a release
+.PHONY: prow-postsubmit
+prow-postsubmit: bazel-version-dist
+	${UPLOAD} ${BAZELUPLOAD}/kops/${VERSION}/ ${UPLOAD_DEST}/${KOPS_RELEASE_VERSION}-${GITSHA}/
+
+#-----------------------------------------------------------
+# static html documentation
 
 .PHONY: live-docs
 live-docs:
@@ -784,8 +790,9 @@ live-docs:
 build-docs:
 	@docker run --rm -it -v ${PWD}:/docs aledbf/mkdocs:0.1 build
 
+# Update machine_types.go
 .PHONY: update-machine-types
-update-machine-types: #Update machine_types.go
-	go build -o hack/machine_types/machine_types  ${KOPS_ROOT}/hack/machine_types/machine_types.go ${KOPS_ROOT}/hack/machine_types/vpc_ip_resource_limit.go
+update-machine-types:
+	go build -o hack/machine_types/machine_types  ${KOPS_ROOT}/hack/machine_types/
 	hack/machine_types/machine_types --out upup/pkg/fi/cloudup/awsup/machine_types.go
 	go fmt upup/pkg/fi/cloudup/awsup/machine_types.go
