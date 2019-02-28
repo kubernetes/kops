@@ -55,6 +55,9 @@ type dockerVersion struct {
 
 	// PlainBinary indicates that the Source is not an OS, but a "bare" tar.gz
 	PlainBinary bool
+
+	// MarkImmutable is a list of files on which we should perform a `chattr +i <file>`
+	MarkImmutable []string
 }
 
 // DefaultDockerVersion is the (legacy) docker version we use if one is not specified in the manifest.
@@ -379,6 +382,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "http://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_17.03.2~ce-0~debian-stretch_amd64.deb",
 		Hash:          "36773361cf44817371770cb4e6e6823590d10297",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 17.03.2 - Jessie
@@ -391,6 +395,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "http://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_17.03.2~ce-0~debian-jessie_amd64.deb",
 		Hash:          "a7ac54aaa7d33122ca5f7a2df817cbefb5cdbfc7",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 17.03.2 - Jessie on ARM
@@ -403,6 +408,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "http://download.docker.com/linux/debian/dists/jessie/pool/stable/armhf/docker-ce_17.03.2~ce-0~debian-jessie_armhf.deb",
 		Hash:          "71e425b83ce0ef49d6298d61e61c4efbc76b9c65",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 17.03.2 - Xenial
@@ -415,6 +421,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.03.2~ce-0~ubuntu-xenial_amd64.deb",
 		Hash:          "4dcee1a05ec592e8a76e53e5b464ea43085a2849",
 		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 17.03.2 - Ubuntu Bionic via binary download (no packages available)
@@ -426,6 +433,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "http://download.docker.com/linux/static/stable/x86_64/docker-17.03.2-ce.tgz",
 		Hash:          "141716ae046016a1792ce232a0f4c8eed7fe37d1",
 		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 17.03.2 - Centos / Rhel7 (two packages)
@@ -438,6 +446,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.03.2.ce-1.el7.centos.x86_64.rpm",
 		Hash:          "494ca888f5b1553f93b9d9a5dad4a67f76cf9eb5",
 		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 	{
 		DockerVersion: "17.03.2",
@@ -635,19 +644,21 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			count++
 
+			var packageTask fi.Task
 			if dv.PlainBinary {
-				c.AddTask(&nodetasks.Archive{
+				packageTask = &nodetasks.Archive{
 					Name:            "docker",
 					Source:          dv.Source,
 					Hash:            dv.Hash,
 					TargetDir:       "/usr/bin/",
 					StripComponents: 1,
-				})
+				}
+				c.AddTask(packageTask)
 
 				c.AddTask(b.buildDockerGroup())
 				c.AddTask(b.buildSystemdSocket())
 			} else {
-				c.AddTask(&nodetasks.Package{
+				packageTask = &nodetasks.Package{
 					Name:    dv.Name,
 					Version: s(dv.Version),
 					Source:  s(dv.Source),
@@ -655,6 +666,16 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 					// TODO: PreventStart is now unused?
 					PreventStart: fi.Bool(true),
+				}
+				c.AddTask(packageTask)
+			}
+
+			// As a mitigation for CVE-2019-5736 (possibly a fix, definitely defense-in-depth) we chattr docker-runc to be immutable
+			for _, f := range dv.MarkImmutable {
+				c.AddTask(&nodetasks.Chattr{
+					File: f,
+					Mode: "+i",
+					Deps: []fi.Task{packageTask},
 				})
 			}
 
