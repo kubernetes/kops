@@ -516,13 +516,27 @@ var dockerVersions = []dockerVersion{
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
 
+	// 18.06.2 - Xenial
+	{
+		DockerVersion: "18.06.2",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionXenial},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.06.2~ce~3-0~ubuntu",
+		Source:        "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~ubuntu_amd64.deb",
+		Hash:          "03e5eaae9c84b144e1140d9b418e43fce0311892",
+		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
+		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
+	},
+
 	// 17.09.0 - Centos / Rhel7 (two packages)
 	{
 		DockerVersion: "17.09.0",
-		Name:          "container-selinux-2",
+		Name:          "container-selinux",
 		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
 		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "17.09.0.ce",
+		Version:       "2.68",
 		Source:        "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
 		Hash:          "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
 		Dependencies:  []string{"policycoreutils-python"},
@@ -540,6 +554,20 @@ var dockerVersions = []dockerVersion{
 
 	// 18.03.1 - Bionic
 	{
+		DockerVersion: "18.03.1",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionBionic},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.03.1~ce~3-0~ubuntu",
+		Source:        "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.03.1~ce~3-0~ubuntu_amd64.deb",
+		Hash:          "b55b32bd0e9176dd32b1e6128ad9fda10a65cc8b",
+		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
+		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
+	},
+
+	// 18.06.2 - Bionic
+	{
 		DockerVersion: "18.06.2",
 		Name:          "docker-ce",
 		Distros:       []distros.Distribution{distros.DistributionBionic},
@@ -552,6 +580,19 @@ var dockerVersions = []dockerVersion{
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
 
+	// 18.06.1 - Debian Stretch
+	{
+
+		DockerVersion: "18.06.1",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionDebian9},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.06.1~ce-0~debian",
+		Source:        "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.1~ce~3-0~debian_amd64.deb",
+		Hash:          "18473b80e61b6d4eb8b52d87313abd71261287e5",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
 	// 18.06.2 - Debian Stretch
 	{
 
@@ -559,31 +600,43 @@ var dockerVersions = []dockerVersion{
 		Name:          "docker-ce",
 		Distros:       []distros.Distribution{distros.DistributionDebian9},
 		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "18.06.2~ce-0~debian",
+		Version:       "18.06.2~ce~3-0~debian",
 		Source:        "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~debian_amd64.deb",
 		Hash:          "aad1efd2c90725034e996c6a368ccc2bf41ca5b8",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 18.06.2 - Jessie
+	{
+		DockerVersion: "18.06.2",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionJessie},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "ce_18.06.2~ce~3-0~debian",
+		Source:        "https://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~debian_amd64.deb",
+		Hash:          "1a2500311230aff37aa81dd1292a88302fb0a2e1",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.06.1 - CentOS / Rhel7 (two packages)
 	{
 		DockerVersion: "18.06.1",
-		Name:          "container-selinux-2",
+		Name:          "container-selinux",
 		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
 		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "18.06.1.ce",
+		Version:       "2.68",
 		Source:        "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
 		Hash:          "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
 		Dependencies:  []string{"policycoreutils-python"},
 	},
 	{
-		DockerVersion: "18.06.2",
+		DockerVersion: "18.06.1",
 		Name:          "docker-ce",
 		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
 		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "18.06.2.ce",
-		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.2.ce-3.el7.x86_64.rpm",
-		Hash:          "456eb7c5bfb37fac342e9ade21b602c076c5b367",
+		Version:       "18.06.1.ce",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.1.ce-3.el7.x86_64.rpm",
+		Hash:          "0a1325e570c5e54111a79623c9fd0c0c714d3a11",
 		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
 	},
 
