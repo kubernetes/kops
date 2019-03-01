@@ -26,6 +26,7 @@ import (
 
 	"github.com/golang/glog"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	scheme "k8s.io/client-go/kubernetes/scheme"
@@ -381,10 +382,19 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	{
 		container.Command = exec.WithTee("/etcd-manager", args, "/var/log/etcd.log")
 
+		cpuRequest := resource.MustParse("200m")
+		if etcdCluster.CPURequest != nil {
+			cpuRequest = *etcdCluster.CPURequest
+		}
+		memoryRequest := resource.MustParse("100Mi")
+		if etcdCluster.MemoryRequest != nil {
+			memoryRequest = *etcdCluster.MemoryRequest
+		}
+
 		container.Resources = v1.ResourceRequirements{
 			Requests: v1.ResourceList{
-				v1.ResourceCPU:    *etcdCluster.CPURequest,
-				v1.ResourceMemory: *etcdCluster.MemoryRequest,
+				v1.ResourceCPU:    cpuRequest,
+				v1.ResourceMemory: memoryRequest,
 			},
 		}
 
