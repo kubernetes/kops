@@ -925,17 +925,12 @@ func (b *DockerBuilder) buildSystemdSocket() *nodetasks.Service {
 func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int64, dockerVersionMinor int64) *nodetasks.Service {
 	oldDocker := dockerVersionMajor <= 1 && dockerVersionMinor <= 11
 	usesDockerSocket := true
-	hasDockerBabysitter := false
 
 	var dockerdCommand string
 	if oldDocker {
 		dockerdCommand = "/usr/bin/docker daemon"
 	} else {
 		dockerdCommand = "/usr/bin/dockerd"
-	}
-
-	if b.Distribution.IsDebianFamily() {
-		hasDockerBabysitter = true
 	}
 
 	manifest := &systemd.Manifest{}
@@ -1004,10 +999,6 @@ func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int64, dockerVers
 
 	// set delegate yes so that systemd does not reset the cgroups of docker containers
 	manifest.Set("Service", "Delegate", "yes")
-
-	if hasDockerBabysitter {
-		manifest.Set("Service", "ExecStartPre", "/opt/kubernetes/helpers/docker-prestart")
-	}
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
