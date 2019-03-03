@@ -96,6 +96,7 @@ go_library(
         "//upup/pkg/fi/utils:go_default_library",
         "//upup/pkg/kutil:go_default_library",
         "//util/pkg/tables:go_default_library",
+        "//util/pkg/text:go_default_library",
         "//util/pkg/ui:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
