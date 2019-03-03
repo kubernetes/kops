@@ -790,17 +790,6 @@ bazel-upload: bazel-version-dist # Upload kops to S3
 prow-postsubmit: bazel-version-dist
 	${UPLOAD} ${BAZELUPLOAD}/kops/${VERSION}/ ${UPLOAD_DEST}/${KOPS_RELEASE_VERSION}-${GITSHA}/
 
-#-----------------------------------------------------------
-# static html documentation
-
-.PHONY: live-docs
-live-docs:
-	@docker run --rm -it -p 3000:3000 -v ${PWD}:/docs aledbf/mkdocs:0.1
-
-.PHONY: build-docs
-build-docs:
-	@docker run --rm -it -v ${PWD}:/docs aledbf/mkdocs:0.1 build
-
 # Update machine_types.go
 .PHONY: update-machine-types
 update-machine-types:
