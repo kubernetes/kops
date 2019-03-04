@@ -440,6 +440,9 @@ type KubeControllerManagerConfig struct {
 	// long the autoscaler has to wait before another upscale operation can
 	// be performed after the current one has completed.
 	HorizontalPodAutoscalerUpscaleDelay *metav1.Duration `json:"horizontalPodAutoscalerUpscaleDelay,omitempty" flag:"horizontal-pod-autoscaler-upscale-delay"`
+	// HorizontalPodAutoscalerInitialReadinessDelay is the period after pod start
+	// during which readiness changes will be treated as initial readiness
+	HorizontalPodAutoscalerInitialReadinessDelay *metav1.Duration `json:"horizontalPodAutoscalerInitialReadinessDelay,omitempty" flag:"horizontal-pod-autoscaler-initial-readiness-delay"`
 	// HorizontalPodAutoscalerTolerance is the minimum change (from 1.0) in the
 	// desired-to-actual metrics ratio for the horizontal pod autoscaler to
 	// consider scaling.
