@@ -405,6 +405,7 @@ spec:
     horizontalPodAutoscalerSyncPeriod: 15s
     horizontalPodAutoscalerDownscaleDelay: 5m0s
     horizontalPodAutoscalerUpscaleDelay: 3m0s
+    horizontalPodAutoscalerInitialReadinessDelay: 30s
     horizontalPodAutoscalerTolerance: 0.1
     experimentalClusterSigningDuration: 8760h0m0s
 ```
