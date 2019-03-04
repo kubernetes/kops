@@ -19,6 +19,7 @@ package openstack
 import (
 	"fmt"
 
+	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/pkg/cloudinstances"
@@ -46,7 +47,8 @@ func (c *openstackCloud) CreateInstance(opt servers.CreateOptsBuilder) (*servers
 }
 
 func (c *openstackCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
-	return fmt.Errorf("openstackCloud::DeleteInstance not implemented")
+	glog.Warning("This does not work without running kops update cluster --yes in another terminal")
+	return c.DeleteInstanceWithID(i.ID)
 }
 
 func (c *openstackCloud) DeleteInstanceWithID(instanceID string) error {
