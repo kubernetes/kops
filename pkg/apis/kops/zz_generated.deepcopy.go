@@ -2110,6 +2110,11 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.HorizontalPodAutoscalerInitialReadinessDelay != nil {
+		in, out := &in.HorizontalPodAutoscalerInitialReadinessDelay, &out.HorizontalPodAutoscalerInitialReadinessDelay
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	if in.HorizontalPodAutoscalerTolerance != nil {
 		in, out := &in.HorizontalPodAutoscalerTolerance, &out.HorizontalPodAutoscalerTolerance
 		*out = new(float64)
