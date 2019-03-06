@@ -2061,6 +2061,7 @@ func autoConvert_v1alpha1_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.IPMasq = in.IPMasq
 	out.IPTables = in.IPTables
 	out.InsecureRegistry = in.InsecureRegistry
+	out.InsecureRegistries = in.InsecureRegistries
 	out.LiveRestore = in.LiveRestore
 	out.LogDriver = in.LogDriver
 	out.LogLevel = in.LogLevel
@@ -2092,6 +2093,7 @@ func autoConvert_kops_DockerConfig_To_v1alpha1_DockerConfig(in *kops.DockerConfi
 	out.IPMasq = in.IPMasq
 	out.IPTables = in.IPTables
 	out.InsecureRegistry = in.InsecureRegistry
+	out.InsecureRegistries = in.InsecureRegistries
 	out.LiveRestore = in.LiveRestore
 	out.LogDriver = in.LogDriver
 	out.LogLevel = in.LogLevel
