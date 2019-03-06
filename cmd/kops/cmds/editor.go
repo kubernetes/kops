@@ -14,22 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main // import "k8s.io/kops/cmd/kops"
+package cmds
 
-import (
-	"fmt"
-	"os"
-
-	"k8s.io/kops/cmd/kops/cmds"
-)
-
-func main() {
-	cmds.Execute()
-}
-
-// exitWithError will terminate execution with an error result
-// It prints the error to stderr and exits with a non-zero exit code
-func exitWithError(err error) {
-	fmt.Fprintf(os.Stderr, "\n%v\n", err)
-	os.Exit(1)
-}
+var editorEnvs = []string{"KUBE_EDITOR", "EDITOR"}

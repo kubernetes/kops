@@ -14,22 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main // import "k8s.io/kops/cmd/kops"
+package cmds
 
 import (
-	"fmt"
-	"os"
+	"io"
 
-	"k8s.io/kops/cmd/kops/cmds"
+	"github.com/spf13/cobra"
+	"k8s.io/kops/cmd/kops/util"
 )
 
-func main() {
-	cmds.Execute()
-}
+func NewCmdRollingUpdate(f *util.Factory, out io.Writer) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "rolling-update",
+		Short:   rollingupdateShort,
+		Long:    rollingupdateLong,
+		Example: rollingupdateExample,
+	}
 
-// exitWithError will terminate execution with an error result
-// It prints the error to stderr and exits with a non-zero exit code
-func exitWithError(err error) {
-	fmt.Fprintf(os.Stderr, "\n%v\n", err)
-	os.Exit(1)
+	// create subcommands
+	cmd.AddCommand(NewCmdRollingUpdateCluster(f, out))
+
+	return cmd
 }
