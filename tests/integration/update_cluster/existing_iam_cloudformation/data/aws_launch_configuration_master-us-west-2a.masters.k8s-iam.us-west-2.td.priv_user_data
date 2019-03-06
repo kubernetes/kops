@@ -221,7 +221,6 @@ kubeScheduler:
     leaderElect: true
   logLevel: 2
 kubelet:
-  allowPrivileged: true
   cgroupRoot: /
   cloudProvider: aws
   clusterDNS: 100.64.0.10
@@ -239,7 +238,6 @@ kubelet:
   podManifestPath: /etc/kubernetes/manifests
   requireKubeconfig: true
 masterKubelet:
-  allowPrivileged: true
   cgroupRoot: /
   cloudProvider: aws
   clusterDNS: 100.64.0.10
