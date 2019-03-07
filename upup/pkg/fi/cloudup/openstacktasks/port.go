@@ -41,6 +41,12 @@ func (e *Port) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		if _, ok := task.(*Subnet); ok {
 			deps = append(deps, task)
 		}
+		if _, ok := task.(*SecurityGroup); ok {
+			deps = append(deps, task)
+		}
+		if _, ok := task.(*Network); ok {
+			deps = append(deps, task)
+		}
 	}
 	return deps
 }

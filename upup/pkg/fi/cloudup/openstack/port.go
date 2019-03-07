@@ -44,6 +44,26 @@ func (c *openstackCloud) CreatePort(opt ports.CreateOptsBuilder) (*ports.Port, e
 	}
 }
 
+func (c *openstackCloud) GetPort(id string) (*ports.Port, error) {
+	var p *ports.Port
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		port, err := ports.Get(c.neutronClient, id).Extract()
+		if err != nil {
+			return false, err
+		}
+		p = port
+		return true, nil
+	})
+	if err != nil {
+		return p, err
+	} else if done {
+		return p, nil
+	} else {
+		return p, wait.ErrWaitTimeout
+	}
+}
+
 func (c *openstackCloud) ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error) {
 	var p []ports.Port
 

@@ -184,9 +184,10 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.UseLoadBalancerForAPI() {
 		lbSubnetName := b.MasterInstanceGroups()[0].Spec.Subnets[0]
 		lbTask := &openstacktasks.LB{
-			Name:      fi.String(b.Cluster.Spec.MasterPublicName),
-			Subnet:    fi.String(lbSubnetName + "." + b.ClusterName()),
-			Lifecycle: b.Lifecycle,
+			Name:          fi.String(b.Cluster.Spec.MasterPublicName),
+			Subnet:        fi.String(lbSubnetName + "." + b.ClusterName()),
+			Lifecycle:     b.Lifecycle,
+			SecurityGroup: b.LinkToSecurityGroup(b.Cluster.Spec.MasterPublicName),
 		}
 		c.AddTask(lbTask)
 

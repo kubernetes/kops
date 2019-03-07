@@ -191,6 +191,9 @@ type OpenstackCloud interface {
 
 	CreatePort(opt ports.CreateOptsBuilder) (*ports.Port, error)
 
+	//GetPort will return a Neutron port by ID
+	GetPort(id string) (*ports.Port, error)
+
 	//ListPorts will return the Neutron ports which match the options
 	ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error)
 
