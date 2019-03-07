@@ -386,23 +386,24 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 		if spec.CloudConfig.Openstack.Router.ExternalSubnet != nil {
 			c.extSubnetName = spec.CloudConfig.Openstack.Router.ExternalSubnet
 		}
-		if spec.CloudConfig.Openstack.Loadbalancer != nil &&
-			spec.CloudConfig.Openstack.Loadbalancer.FloatingNetworkID == nil &&
-			spec.CloudConfig.Openstack.Loadbalancer.FloatingNetwork != nil {
-			// This field is derived
-			lbNet, err := c.ListNetworks(networks.ListOpts{
-				Name: fi.StringValue(spec.CloudConfig.Openstack.Loadbalancer.FloatingNetwork),
-			})
-			if err != nil || len(lbNet) != 1 {
-				return c, fmt.Errorf("could not establish floating network id.")
+		if spec.CloudConfig.Openstack.Loadbalancer != nil {
+			if spec.CloudConfig.Openstack.Loadbalancer.FloatingNetworkID == nil &&
+				spec.CloudConfig.Openstack.Loadbalancer.FloatingNetwork != nil {
+				// This field is derived
+				lbNet, err := c.ListNetworks(networks.ListOpts{
+					Name: fi.StringValue(spec.CloudConfig.Openstack.Loadbalancer.FloatingNetwork),
+				})
+				if err != nil || len(lbNet) != 1 {
+					return c, fmt.Errorf("could not establish floating network id.")
+				}
+				spec.CloudConfig.Openstack.Loadbalancer.FloatingNetworkID = fi.String(lbNet[0].ID)
 			}
-			spec.CloudConfig.Openstack.Loadbalancer.FloatingNetworkID = fi.String(lbNet[0].ID)
-		}
-		if spec.CloudConfig.Openstack.Loadbalancer.UseOctavia != nil {
-			octavia = fi.BoolValue(spec.CloudConfig.Openstack.Loadbalancer.UseOctavia)
-		}
-		if spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet != nil {
-			c.floatingSubnet = spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet
+			if spec.CloudConfig.Openstack.Loadbalancer.UseOctavia != nil {
+				octavia = fi.BoolValue(spec.CloudConfig.Openstack.Loadbalancer.UseOctavia)
+			}
+			if spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet != nil {
+				c.floatingSubnet = spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet
+			}
 		}
 	}
 	c.useOctavia = octavia
@@ -540,7 +541,7 @@ func (c *openstackCloud) GetCloudTags() map[string]string {
 
 func (c *openstackCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
 	var ingresses []kops.ApiIngressStatus
-	if cluster.Spec.MasterPublicName != "" {
+	if cluster.Spec.CloudConfig.Openstack.Loadbalancer != nil {
 		// Note that this must match OpenstackModel lb name
 		glog.V(2).Infof("Querying Openstack to find Loadbalancers for API (%q)", cluster.Name)
 		lbList, err := c.ListLBs(loadbalancers.ListOpts{
@@ -563,6 +564,34 @@ func (c *openstackCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiI
 						IP: fip.IP,
 					})
 				}
+			}
+		}
+	} else {
+		// See if the master nodes have ports that are associated to a loadbalancer
+		masters, err := c.ListInstances(servers.ListOpts{
+			Name: "master",
+		})
+		if err != nil {
+			return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list master nodes: %v", err)
+		}
+		fips, err := c.ListFloatingIPs()
+		if err != nil {
+			return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list floating IP's: %v", err)
+		}
+		fixedFloatingMap := make(map[string]string)
+		for _, fip := range fips {
+			fixedFloatingMap[fip.FixedIP] = fip.IP
+		}
+		for _, master := range masters {
+			fixed, err := GetServerFixedIP(&master, c.tags[TagClusterName])
+			if err != nil {
+				glog.V(2).Infof("Could not establish fixed ip for server %s: %v", master.Name, err)
+				continue
+			}
+			if floating, ok := fixedFloatingMap[fixed]; ok {
+				ingresses = append(ingresses, kops.ApiIngressStatus{
+					IP: floating,
+				})
 			}
 		}
 	}

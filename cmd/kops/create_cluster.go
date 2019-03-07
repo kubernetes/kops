@@ -920,12 +920,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				Router: &api.OpenstackRouter{
 					ExternalNetwork: fi.String(c.OpenstackExternalNet),
 				},
-				Loadbalancer: &api.OpenstackLoadbalancerConfig{
-					FloatingNetwork: fi.String(c.OpenstackExternalNet),
-					Method:          fi.String("ROUND_ROBIN"),
-					Provider:        fi.String(provider),
-					UseOctavia:      fi.Bool(c.OpenstackLBOctavia),
-				},
 				BlockStorage: &api.OpenstackBlockStorageConfig{
 					Version:  fi.String("v2"),
 					IgnoreAZ: fi.Bool(c.OpenstackStorageIgnoreAZ),
@@ -935,6 +929,15 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 					Timeout:    fi.String("30s"),
 					MaxRetries: fi.Int(3),
 				},
+			}
+			if c.APILoadBalancerType != "" {
+				// Set defaults for an openstack LB
+				cluster.Spec.CloudConfig.Openstack.Loadbalancer = &api.OpenstackLoadbalancerConfig{
+					FloatingNetwork: fi.String(c.OpenstackExternalNet),
+					Method:          fi.String("ROUND_ROBIN"),
+					Provider:        fi.String(provider),
+					UseOctavia:      fi.Bool(c.OpenstackLBOctavia),
+				}
 			}
 			if c.OpenstackDNSServers != "" {
 				cluster.Spec.CloudConfig.Openstack.Router.DNSServers = fi.String(c.OpenstackDNSServers)
