@@ -580,22 +580,21 @@ func findAutoscalingGroupLaunchConfiguration(g *autoscaling.Group) (string, erro
 }
 
 // findInstanceLaunchConfiguration is responsible for discoverying the launch configuration for an instance
-func findInstanceLaunchConfiguration(i *autoscaling.Instance) (string, error) {
+func findInstanceLaunchConfiguration(i *autoscaling.Instance) string {
 	name := aws.StringValue(i.LaunchConfigurationName)
 	if name != "" {
-		return name, nil
+		return name
 	}
 
 	// else we need to check the launch template
 	if i.LaunchTemplate != nil {
 		name = aws.StringValue(i.LaunchTemplate.LaunchTemplateName)
 		if name != "" {
-			return name, nil
+			return name
 		}
 	}
 
-	return "", fmt.Errorf("error finding the launch configuration or template for instance: %s", aws.StringValue(i.InstanceId))
-
+	return ""
 }
 
 func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
@@ -618,10 +617,13 @@ func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscali
 			glog.Warningf("ignoring instance with no instance id: %s in autoscaling group: %s", id, cg.HumanName)
 			continue
 		}
-		currentConfigName, err := findInstanceLaunchConfiguration(i)
-		if err != nil {
-			return nil, err
+		// @step: check if the instance is terminating
+		if aws.StringValue(i.LifecycleState) == autoscaling.LifecycleStateTerminating {
+			glog.Warningf("ignoring instance  as it is terminating: %s in autoscaling group: %s", id, cg.HumanName)
+			continue
 		}
+		currentConfigName := findInstanceLaunchConfiguration(i)
+
 		if err := cg.NewCloudInstanceGroupMember(id, newConfigName, currentConfigName, nodeMap); err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 		}
