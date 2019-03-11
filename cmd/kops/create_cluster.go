@@ -938,15 +938,15 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 					Provider:        fi.String(provider),
 					UseOctavia:      fi.Bool(c.OpenstackLBOctavia),
 				}
+				if c.OpenstackLbSubnet != "" {
+					cluster.Spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet = fi.String(c.OpenstackLbSubnet)
+				}
 			}
 			if c.OpenstackDNSServers != "" {
 				cluster.Spec.CloudConfig.Openstack.Router.DNSServers = fi.String(c.OpenstackDNSServers)
 			}
 			if c.OpenstackExternalSubnet != "" {
 				cluster.Spec.CloudConfig.Openstack.Router.ExternalSubnet = fi.String(c.OpenstackExternalSubnet)
-			}
-			if c.OpenstackLbSubnet != "" {
-				cluster.Spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet = fi.String(c.OpenstackLbSubnet)
 			}
 		}
 	}
