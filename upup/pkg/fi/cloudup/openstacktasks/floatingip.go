@@ -70,6 +70,32 @@ func findL3Floating(cloud openstack.OpenstackCloud, opts l3floatingip.ListOpts) 
 	return result, nil
 }
 
+func (e *FloatingIP) findServerFloatingIP(context *fi.Context, cloud openstack.OpenstackCloud) (*string, error) {
+
+	server, err := cloud.GetInstance(fi.StringValue(e.Server.ID))
+	if err != nil {
+		return nil, fmt.Errorf("Failed to find server with id (\"%s\"): %v", fi.StringValue(e.Server.ID), err)
+	}
+	fixed, err := openstack.GetServerFixedIP(server, context.Cluster.Name)
+	if err != nil {
+		return nil, fmt.Errorf("Could not establish fixed ip for server %s: %v", fi.StringValue(e.Name), err)
+	}
+
+	fips, err := cloud.ListFloatingIPs()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to list floating IP's: %v", err)
+	}
+	fixedFloatingMap := make(map[string]string)
+	for _, fip := range fips {
+		fixedFloatingMap[fip.FixedIP] = fip.IP
+	}
+
+	if floating, ok := fixedFloatingMap[fixed]; ok {
+		return fi.String(floating), nil
+	}
+	return nil, fmt.Errorf("Could not find floating ip associated to server (\"%s\")", fi.StringValue(e.Server.Name))
+}
+
 func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
 	if e.ID == nil {
 		if e.Server != nil && e.Server.ID == nil {
@@ -92,8 +118,13 @@ func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
 		if len(fips) == 1 && fips[0].PortID == fi.StringValue(e.LB.PortID) {
 			return &fips[0].FloatingIP, nil
 		}
-		glog.V(2).Infof("Could not find port floatingips port=%s", fi.StringValue(e.LB.PortID))
-		return nil, nil
+		return nil, fmt.Errorf("Could not find port floatingips port=%s", fi.StringValue(e.LB.PortID))
+	} else if e.ID == nil && e.Server != nil {
+		floating, err := e.findServerFloatingIP(context, cloud)
+		if err != nil {
+			return nil, fmt.Errorf("Could not find server (\"%s\") floating ip: %v", fi.StringValue(e.Server.ID), err)
+		}
+		return floating, nil
 	}
 
 	fip, err := cloud.GetFloatingIP(fi.StringValue(e.ID))
@@ -164,14 +195,14 @@ func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
 			return nil, nil
 		}
 		var actual *FloatingIP
-		for _, fip := range fips {
+		for i, fip := range fips {
 			if fip.InstanceID == fi.StringValue(e.Server.ID) {
 				if actual != nil {
 					return nil, fmt.Errorf("Multiple floating ip's associated to server: %s", fi.StringValue(e.Server.ID))
 				}
 				actual = &FloatingIP{
 					Name:      e.Name,
-					ID:        fi.String(fips[0].ID),
+					ID:        fi.String(fips[i].ID),
 					Server:    e.Server,
 					Lifecycle: e.Lifecycle,
 				}

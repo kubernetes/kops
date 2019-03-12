@@ -26,6 +26,10 @@ type OpenstackModelContext struct {
 	*model.KopsModelContext
 }
 
+func (c *OpenstackModelContext) useOpenstackLoadbalancer() bool {
+	return c.Cluster.Spec.CloudConfig.Openstack.Loadbalancer != nil
+}
+
 func (c *OpenstackModelContext) LinkToNetwork() *openstacktasks.Network {
 	return &openstacktasks.Network{Name: s(c.ClusterName())}
 }
