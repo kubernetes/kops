@@ -855,6 +855,11 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.InsecureRegistries != nil {
+		in, out := &in.InsecureRegistries, &out.InsecureRegistries
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.LiveRestore != nil {
 		in, out := &in.LiveRestore, &out.LiveRestore
 		*out = new(bool)
