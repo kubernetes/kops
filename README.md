@@ -133,6 +133,11 @@ chmod +x kops-linux-amd64
 sudo mv kops-linux-amd64 /usr/local/bin/kops
 ```
 
+### Windows
+
+1) Get `kops-windows-amd64` from our [releases](https://github.com/kubernetes/kops/releases/latest).
+2) Rename `kops-windows-amd64` to `kops.exe` and store it in a preferred path.
+3) Make sure the path you chose is added to your `Path` environment variable.
 
 ## Release History
 
