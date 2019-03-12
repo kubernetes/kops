@@ -18,33 +18,64 @@ distributed under the License is distributed on an "AS IS" BASIS,
 
 package build
 
-import "strings"
+import (
+	"path/filepath"
+	"strings"
+)
 
 // A Rule represents a single BUILD rule.
 type Rule struct {
-	Call *CallExpr
+	Call         *CallExpr
+	ImplicitName string // The name which should be used if the name attribute is not set. See the comment on File.implicitRuleName.
+}
+
+// NewRule is a simple constructor for Rule.
+func NewRule(call *CallExpr) *Rule {
+	return &Rule{call, ""}
+}
+
+func (f *File) Rule(call *CallExpr) *Rule {
+	r := &Rule{call, ""}
+	if r.AttrString("name") == "" {
+		r.ImplicitName = f.implicitRuleName()
+	}
+	return r
 }
 
 // Rules returns the rules in the file of the given kind (such as "go_library").
 // If kind == "", Rules returns all rules in the file.
 func (f *File) Rules(kind string) []*Rule {
 	var all []*Rule
+
 	for _, stmt := range f.Stmt {
-		call, ok := stmt.(*CallExpr)
-		if !ok {
-			continue
-		}
-		rule := &Rule{call}
-		if kind != "" && rule.Kind() != kind {
-			continue
-		}
-		all = append(all, rule)
+		Walk(stmt, func(x Expr, stk []Expr) {
+			call, ok := x.(*CallExpr)
+			if !ok {
+				return
+			}
+
+			// Skip nested calls.
+			for _, frame := range stk {
+				if _, ok := frame.(*CallExpr); ok {
+					return
+				}
+			}
+
+			// Check if the rule kind is correct.
+			rule := f.Rule(call)
+			if kind != "" && rule.Kind() != kind {
+				return
+			}
+			all = append(all, rule)
+		})
 	}
+
 	return all
 }
 
 // RuleAt returns the rule in the file that starts at the specified line, or null if no such rule.
 func (f *File) RuleAt(linenum int) *Rule {
+
 	for _, stmt := range f.Stmt {
 		call, ok := stmt.(*CallExpr)
 		if !ok {
@@ -52,7 +83,7 @@ func (f *File) RuleAt(linenum int) *Rule {
 		}
 		start, end := call.X.Span()
 		if start.Line <= linenum && linenum <= end.Line {
-			return &Rule{call}
+			return f.Rule(call)
 		}
 	}
 	return nil
@@ -65,9 +96,9 @@ func (f *File) DelRules(kind, name string) int {
 	var i int
 	for _, stmt := range f.Stmt {
 		if call, ok := stmt.(*CallExpr); ok {
-			r := &Rule{call}
+			r := f.Rule(call)
 			if (kind == "" || r.Kind() == kind) &&
-				(name == "" || r.AttrString("name") == name) {
+				(name == "" || r.Name() == name) {
 				continue
 			}
 		}
@@ -77,6 +108,42 @@ func (f *File) DelRules(kind, name string) int {
 	n := len(f.Stmt) - i
 	f.Stmt = f.Stmt[:i]
 	return n
+}
+
+// If a build file contains exactly one unnamed rule, and no rules in the file explicitly have the
+// same name as the name of the directory the build file is in, we treat the unnamed rule as if it
+// had the name of the directory containing the BUILD file.
+// This is following a convention used in the Pants build system to cut down on boilerplate.
+func (f *File) implicitRuleName() string {
+	// We disallow empty names in the top-level BUILD files.
+	dir := filepath.Dir(f.Path)
+	if dir == "." {
+		return ""
+	}
+	sawAnonymousRule := false
+	possibleImplicitName := filepath.Base(dir)
+
+	for _, stmt := range f.Stmt {
+		call, ok := stmt.(*CallExpr)
+		if !ok {
+			continue
+		}
+		temp := &Rule{call, ""}
+		if temp.AttrString("name") == possibleImplicitName {
+			// A target explicitly has the name of the dir, so no implicit targets are allowed.
+			return ""
+		}
+		if temp.Kind() != "" && temp.AttrString("name") == "" {
+			if sawAnonymousRule {
+				return ""
+			}
+			sawAnonymousRule = true
+		}
+	}
+	if sawAnonymousRule {
+		return possibleImplicitName
+	}
+	return ""
 }
 
 // Kind returns the rule's kind (such as "go_library").
@@ -94,11 +161,11 @@ func (r *Rule) Kind() string {
 		names = append(names, x.Name)
 		expr = x.X
 	}
-	x, ok := expr.(*LiteralExpr)
+	x, ok := expr.(*Ident)
 	if !ok {
 		return ""
 	}
-	names = append(names, x.Token)
+	names = append(names, x.Name)
 	// Reverse the elements since the deepest expression contains the leading literal
 	for l, r := 0, len(names)-1; l < r; l, r = l+1, r-1 {
 		names[l], names[r] = names[r], names[l]
@@ -110,7 +177,7 @@ func (r *Rule) Kind() string {
 func (r *Rule) SetKind(kind string) {
 	names := strings.Split(kind, ".")
 	var expr Expr
-	expr = &LiteralExpr{Token: names[0]}
+	expr = &Ident{Name: names[0]}
 	for _, name := range names[1:] {
 		expr = &DotExpr{X: expr, Name: name}
 	}
@@ -118,9 +185,13 @@ func (r *Rule) SetKind(kind string) {
 }
 
 // Name returns the rule's target name.
-// If the rule has no target name, Name returns the empty string.
+// If the rule has no explicit target name, Name returns the implicit name if there is one, else the empty string.
 func (r *Rule) Name() string {
-	return r.AttrString("name")
+	explicitName := r.AttrString("name")
+	if explicitName == "" && r.Kind() != "package" {
+		return r.ImplicitName
+	}
+	return explicitName
 }
 
 // AttrKeys returns the keys of all the rule's attributes.
@@ -128,8 +199,8 @@ func (r *Rule) AttrKeys() []string {
 	var keys []string
 	for _, expr := range r.Call.List {
 		if binExpr, ok := expr.(*BinaryExpr); ok && binExpr.Op == "=" {
-			if keyExpr, ok := binExpr.X.(*LiteralExpr); ok {
-				keys = append(keys, keyExpr.Token)
+			if keyExpr, ok := binExpr.X.(*Ident); ok {
+				keys = append(keys, keyExpr.Name)
 			}
 		}
 	}
@@ -145,8 +216,8 @@ func (r *Rule) AttrDefn(key string) *BinaryExpr {
 		if !ok || as.Op != "=" {
 			continue
 		}
-		k, ok := as.X.(*LiteralExpr)
-		if !ok || k.Token != key {
+		k, ok := as.X.(*Ident)
+		if !ok || k.Name != key {
 			continue
 		}
 		return as
@@ -174,8 +245,8 @@ func (r *Rule) DelAttr(key string) Expr {
 		if !ok || as.Op != "=" {
 			continue
 		}
-		k, ok := as.X.(*LiteralExpr)
-		if !ok || k.Token != key {
+		k, ok := as.X.(*Ident)
+		if !ok || k.Name != key {
 			continue
 		}
 		copy(list[i:], list[i+1:])
@@ -197,7 +268,7 @@ func (r *Rule) SetAttr(key string, val Expr) {
 
 	r.Call.List = append(r.Call.List,
 		&BinaryExpr{
-			X:  &LiteralExpr{Token: key},
+			X:  &Ident{Name: key},
 			Op: "=",
 			Y:  val,
 		},
@@ -210,11 +281,14 @@ func (r *Rule) SetAttr(key string, val Expr) {
 // If the rule has no such attribute or the attribute is not an identifier or number,
 // AttrLiteral returns "".
 func (r *Rule) AttrLiteral(key string) string {
-	lit, ok := r.Attr(key).(*LiteralExpr)
-	if !ok {
-		return ""
+	value := r.Attr(key)
+	if ident, ok := value.(*Ident); ok {
+		return ident.Name
 	}
-	return lit.Token
+	if literal, ok := value.(*LiteralExpr); ok {
+		return literal.Token
+	}
+	return ""
 }
 
 // AttrString returns the value of the rule's attribute
