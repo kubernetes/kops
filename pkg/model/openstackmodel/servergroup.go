@@ -58,6 +58,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 
 		igMeta[openstack.TagClusterName] = b.ClusterName()
 	}
+	igMeta["k8s"] = b.ClusterName()
 
 	startupScript, err := b.BootstrapScript.ResourceNodeUp(ig, b.Cluster)
 	if err != nil {
@@ -79,14 +80,21 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			return fmt.Errorf("Failed to create UUID for instance: %v", err)
 		}
 		// FIXME: Must ensure 63 or less characters
-		instanceName := fi.String(
-			strings.ToLower(
-				fmt.Sprintf("%s-%d", *sg.Name, i+1),
-			),
-		)
+		// replace all dots with -, this is needed to get external cloudprovider working
+		iName := strings.ToLower(fmt.Sprintf("%s-%d.%s", ig.Name, i+1, b.ClusterName()))
+		instanceName := fi.String(strings.Replace(iName, ".", "-", -1))
+
 		securityGroupName := b.SecurityGroupName(ig.Spec.Role)
 		securityGroup := b.LinkToSecurityGroup(securityGroupName)
-
+		var az *string
+		if len(ig.Spec.Subnets) > 0 {
+			// bastion subnet name is not actual zone name, it contains "utility-" prefix
+			if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+				az = fi.String(strings.Replace(ig.Spec.Subnets[int(i)%len(ig.Spec.Subnets)], "utility-", "", 1))
+			} else {
+				az = fi.String(ig.Spec.Subnets[int(i)%len(ig.Spec.Subnets)])
+			}
+		}
 		// Create instance port task
 		portTask := &openstacktasks.Port{
 			Name:           fi.String(fmt.Sprintf("%s-%s", "port", *instanceName)),
@@ -97,16 +105,17 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		c.AddTask(portTask)
 
 		instanceTask := &openstacktasks.Instance{
-			Name:        instanceName,
-			Region:      fi.String(b.Cluster.Spec.Subnets[0].Region),
-			Flavor:      fi.String(ig.Spec.MachineType),
-			Image:       fi.String(ig.Spec.Image),
-			SSHKey:      fi.String(sshKeyName),
-			ServerGroup: sg,
-			Tags:        []string{clusterTag},
-			Role:        fi.String(string(ig.Spec.Role)),
-			Port:        portTask,
-			Metadata:    igMeta,
+			Name:             instanceName,
+			Region:           fi.String(b.Cluster.Spec.Subnets[0].Region),
+			Flavor:           fi.String(ig.Spec.MachineType),
+			Image:            fi.String(ig.Spec.Image),
+			SSHKey:           fi.String(sshKeyName),
+			ServerGroup:      sg,
+			Tags:             []string{clusterTag},
+			Role:             fi.String(string(ig.Spec.Role)),
+			Port:             portTask,
+			Metadata:         igMeta,
+			AvailabilityZone: az,
 		}
 		if igUserData != nil {
 			instanceTask.UserData = igUserData
@@ -153,9 +162,12 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
 		glog.V(2).Infof("Found instance group with name %s and role %v.", ig.Name, ig.Spec.Role)
 		sgTask := &openstacktasks.ServerGroup{
-			Name:      s(fmt.Sprintf("%s-%s", clusterName, ig.Name)),
-			Policies:  []string{"anti-affinity"},
-			Lifecycle: b.Lifecycle,
+			Name:        s(fmt.Sprintf("%s-%s", clusterName, ig.Name)),
+			ClusterName: s(clusterName),
+			IGName:      s(ig.Name),
+			Policies:    []string{"anti-affinity"},
+			Lifecycle:   b.Lifecycle,
+			MaxSize:     ig.Spec.MaxSize,
 		}
 		c.AddTask(sgTask)
 
@@ -172,9 +184,10 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.UseLoadBalancerForAPI() {
 		lbSubnetName := b.MasterInstanceGroups()[0].Spec.Subnets[0]
 		lbTask := &openstacktasks.LB{
-			Name:      fi.String(b.Cluster.Spec.MasterPublicName),
-			Subnet:    fi.String(lbSubnetName + "." + b.ClusterName()),
-			Lifecycle: b.Lifecycle,
+			Name:          fi.String(b.Cluster.Spec.MasterPublicName),
+			Subnet:        fi.String(lbSubnetName + "." + b.ClusterName()),
+			Lifecycle:     b.Lifecycle,
+			SecurityGroup: b.LinkToSecurityGroup(b.Cluster.Spec.MasterPublicName),
 		}
 		c.AddTask(lbTask)
 

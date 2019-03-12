@@ -122,3 +122,20 @@ func (c *openstackCloud) osBuildCloudInstanceGroup(ig *kops.InstanceGroup, g *se
 	}
 	return cg, nil
 }
+
+func (c *openstackCloud) DeleteServerGroup(groupID string) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err := servergroups.Delete(c.novaClient, groupID).ExtractErr()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting server group: %v", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}

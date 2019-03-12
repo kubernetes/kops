@@ -31,6 +31,7 @@ Example to Create a Load Balancer
 		VipAddress:   "10.30.176.48",
 		Flavor:       "medium",
 		Provider:     "haproxy",
+		Tags:         []string{"test", "stage"},
 	}
 
 	lb, err := loadbalancers.Create(networkClient, createOpts).Extract()
@@ -41,12 +42,10 @@ Example to Create a Load Balancer
 Example to Update a Load Balancer
 
 	lbID := "d67d56a6-4a86-4688-a282-f46444705c64"
-
-	i1001 := 1001
+	name := "new-name"
 	updateOpts := loadbalancers.UpdateOpts{
-		Name: "new-name",
+		Name: &name,
 	}
-
 	lb, err := loadbalancers.Update(networkClient, lbID, updateOpts).Extract()
 	if err != nil {
 		panic(err)
@@ -77,6 +76,15 @@ Example to Get the Statistics of a Load Balancer
 
 	lbID := "d67d56a6-4a86-4688-a282-f46444705c64"
 	stats, err := loadbalancers.GetStats(networkClient, LBID).Extract()
+	if err != nil {
+		panic(err)
+	}
+
+Example to Failover a Load Balancers
+
+	lbID := "d67d56a6-4a86-4688-a282-f46444705c64"
+
+	err := loadbalancers.Failover(networkClient, lbID).ExtractErr()
 	if err != nil {
 		panic(err)
 	}

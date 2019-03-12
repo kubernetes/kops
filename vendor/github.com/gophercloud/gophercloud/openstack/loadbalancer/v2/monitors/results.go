@@ -74,6 +74,9 @@ type Monitor struct {
 	// The provisioning status of the Monitor.
 	// This value is ACTIVE, PENDING_* or ERROR.
 	ProvisioningStatus string `json:"provisioning_status"`
+
+	// The operating status of the monitor.
+	OperatingStatus string `json:"operating_status"`
 }
 
 // MonitorPage is the page returned by a pager when traversing over a

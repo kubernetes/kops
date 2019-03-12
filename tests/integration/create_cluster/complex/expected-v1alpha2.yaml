@@ -12,13 +12,17 @@ spec:
   cloudProvider: aws
   configBase: memfs://tests/complex.example.com
   etcdClusters:
-  - etcdMembers:
+  - cpuRequest: 200m
+    etcdMembers:
     - instanceGroup: master-us-test-1a
       name: a
+    memoryRequest: 100Mi
     name: main
-  - etcdMembers:
+  - cpuRequest: 100m
+    etcdMembers:
     - instanceGroup: master-us-test-1a
       name: a
+    memoryRequest: 100Mi
     name: events
   iam:
     allowContainerRegistry: true

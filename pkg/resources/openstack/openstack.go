@@ -17,64 +17,52 @@ limitations under the License.
 package openstack
 
 import (
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	"k8s.io/kops/pkg/resources"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
-type listFn func(openstack.OpenstackCloud, string) ([]*resources.Resource, error)
+type openstackListFn func() ([]*resources.Resource, error)
+
+type clusterDiscoveryOS struct {
+	cloud       fi.Cloud
+	osCloud     openstack.OpenstackCloud
+	clusterName string
+
+	zones []string
+}
 
 // ListResources lists the OpenStack resources kops manages
 func ListResources(cloud openstack.OpenstackCloud, clusterName string) (map[string]*resources.Resource, error) {
-	rts := make(map[string]*resources.Resource)
+	resources := make(map[string]*resources.Resource)
 
-	keypairs, err := listKeypairs(cloud, clusterName)
-	if err != nil {
-		return rts, err
-	}
-	keypairIDs := make([]string, len(keypairs))
-	for i, t := range keypairs {
-		id := t.Type + ":" + t.ID
-		rts[id] = t
-		keypairIDs[i] = id
+	os := &clusterDiscoveryOS{
+		cloud:       cloud,
+		osCloud:     cloud,
+		clusterName: clusterName,
 	}
 
-	serverGroups, err := listServerGroups(cloud, clusterName)
-	if err != nil {
-		return rts, err
+	listFunctions := []openstackListFn{
+		os.ListKeypairs,
+		os.ListInstances,
+		os.ListServerGroups,
+		os.ListVolumes,
+		os.ListLBListener,
+		os.ListLBPools,
+		os.ListLB,
+		os.ListPorts,
+		os.ListSecurityGroups,
+		os.ListNetwork,
+		os.ListDNSRecordsets,
 	}
-	serverGroupIDs := make([]string, len(serverGroups))
-	for _, t := range serverGroups {
-		id := t.Type + ":" + t.ID
-		for _, m := range t.Obj.(servergroups.ServerGroup).Members {
-			t.Blocked = append(t.Blocks, typeServer+":"+m)
+	for _, fn := range listFunctions {
+		resourceTrackers, err := fn()
+		if err != nil {
+			return nil, err
 		}
-		serverGroupIDs = append(serverGroupIDs, id)
-		rts[id] = t
-	}
-
-	instances, err := listInstances(cloud, clusterName)
-	if err != nil {
-		return rts, err
-	}
-	for _, t := range instances {
-		rts[t.Type+":"+t.ID] = t
-	}
-
-	lbs, err := listLBs(cloud, clusterName)
-	if err != nil {
-		return rts, err
-	}
-	for _, t := range lbs {
-		listeners := t.Obj.(loadbalancers.LoadBalancer).Listeners
-		for _, l := range listeners {
-			for _, p := range l.Pools {
-				t.Blocks = append(t.Blocks, typeSubnet+":"+p.SubnetID)
-			}
+		for _, t := range resourceTrackers {
+			resources[t.Type+":"+t.ID] = t
 		}
-		rts[t.Type+":"+t.ID] = t
 	}
-
-	return rts, nil
+	return resources, nil
 }

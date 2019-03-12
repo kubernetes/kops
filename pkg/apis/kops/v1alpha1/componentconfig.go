@@ -208,6 +208,8 @@ type KubeProxyConfig struct {
 	BindAddress string `json:"bindAddress,omitempty" flag:"bind-address"`
 	// Master is the address of the Kubernetes API server (overrides any value in kubeconfig)
 	Master string `json:"master,omitempty" flag:"master"`
+	// MetricsBindAddress is the IP address and port for the metrics server to serve on
+	MetricsBindAddress *string `json:"metricsBindAddress,omitempty" flag:"metrics-bind-address"`
 	// Enabled allows enabling or disabling kube-proxy
 	Enabled *bool `json:"enabled,omitempty"`
 	// Which proxy mode to use: (userspace, iptables(default), ipvs)
@@ -319,6 +321,10 @@ type KubeAPIServerConfig struct {
 	// OIDCClientID is the client ID for the OpenID Connect client, must be set
 	// if oidc-issuer-url is set.
 	OIDCClientID *string `json:"oidcClientID,omitempty" flag:"oidc-client-id"`
+	// A key=value pair that describes a required claim in the ID Token.
+	// If set, the claim is verified to be present in the ID Token with a matching value.
+	// Repeat this flag to specify multiple claims.
+	OIDCRequiredClaim []string `json:"oidcRequiredClaim,omitempty" flag:"oidc-required-claim,repeat"`
 	// OIDCCAFile if set, the OpenID server's certificate will be verified by one
 	// of the authorities in the oidc-ca-file
 	OIDCCAFile *string `json:"oidcCAFile,omitempty" flag:"oidc-ca-file"`
@@ -444,6 +450,9 @@ type KubeControllerManagerConfig struct {
 	// HorizontalPodAutoscalerUseRestClients determines if the new-style clients
 	// should be used if support for custom metrics is enabled.
 	HorizontalPodAutoscalerUseRestClients *bool `json:"horizontalPodAutoscalerUseRestClients,omitempty" flag:"horizontal-pod-autoscaler-use-rest-clients"`
+	// ExperimentalClusterSigningDuration is the duration that determines
+	// the length of duration that the signed certificates will be given. (default 8760h0m0s)
+	ExperimentalClusterSigningDuration *metav1.Duration `json:"experimentalClusterSigningDuration,omitempty" flag:"experimental-cluster-signing-duration"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }
@@ -507,6 +516,7 @@ type OpenstackLoadbalancerConfig struct {
 	UseOctavia        *bool   `json:"useOctavia,omitempty"`
 	FloatingNetwork   *string `json:"floatingNetwork,omitempty"`
 	FloatingNetworkID *string `json:"floatingNetworkID,omitempty"`
+	FloatingSubnet    *string `json:"floatingSubnet,omitempty"`
 	SubnetID          *string `json:"subnetID,omitempty"`
 }
 
@@ -525,6 +535,8 @@ type OpenstackMonitor struct {
 // OpenstackRouter defines the config for a router
 type OpenstackRouter struct {
 	ExternalNetwork *string `json:"externalNetwork,omitempty"`
+	DNSServers      *string `json:"dnsServers,omitempty"`
+	ExternalSubnet  *string `json:"externalSubnet,omitempty"`
 }
 
 // OpenstackConfiguration defines cloud config elements for the openstack cloud provider

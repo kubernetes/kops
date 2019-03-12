@@ -12,7 +12,8 @@ spec:
   cloudProvider: aws
   configBase: memfs://tests/ha.example.com
   etcdClusters:
-  - etcdMembers:
+  - cpuRequest: 200m
+    etcdMembers:
     - encryptedVolume: true
       instanceGroup: master-us-test-1a
       name: a
@@ -22,8 +23,10 @@ spec:
     - encryptedVolume: true
       instanceGroup: master-us-test-1c
       name: c
+    memoryRequest: 100Mi
     name: main
-  - etcdMembers:
+  - cpuRequest: 100m
+    etcdMembers:
     - encryptedVolume: true
       instanceGroup: master-us-test-1a
       name: a
@@ -33,6 +36,7 @@ spec:
     - encryptedVolume: true
       instanceGroup: master-us-test-1c
       name: c
+    memoryRequest: 100Mi
     name: events
   iam:
     allowContainerRegistry: true

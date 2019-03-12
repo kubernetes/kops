@@ -6,8 +6,8 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 http_archive(
     name = "io_bazel_rules_go",
-    url = "https://github.com/bazelbuild/rules_go/releases/download/0.16.6/rules_go-0.16.6.tar.gz",
-    sha256 = "ade51a315fa17347e5c31201fdc55aa5ffb913377aa315dceb56ee9725e620ee",
+    urls = ["https://github.com/bazelbuild/rules_go/releases/download/0.17.0/rules_go-0.17.0.tar.gz"],
+    sha256 = "492c3ac68ed9dcf527a07e6a1b2dcbf199c6bf8b35517951467ac32e421c06c1",
 )
 
 http_archive(
@@ -16,7 +16,7 @@ http_archive(
     sha256 = "7949fc6cc17b5b191103e97481cf8889217263acf52e00b560683413af204fcb",
 )
 
-load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
+load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains")
 
 go_rules_dependencies()
 
@@ -77,8 +77,8 @@ dpkg_src(
     name = "debian_stretch",
     arch = "amd64",
     distro = "stretch",
-    sha256 = "4cb2fac3e32292613b92d3162e99eb8a1ed7ce47d1b142852b0de3092b25910c",
-    snapshot = "20180406T154421Z",
+    sha256 = "4b981bd2445d85cf1d93ea9f2d2dc235d20543ecdadd0d8065a10793b94eab9b",
+    snapshot = "20190131T155411Z",
     url = "http://snapshot.debian.org/archive",
 )
 
@@ -110,6 +110,6 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 
 http_file(
     name = "utils_tar_gz",
-    urls = ["https://kubeupv2.s3.amazonaws.com/kops/1.11.0-alpha.1/linux/amd64/utils.tar.gz"],
-    sha256 = "74ff5d81ba62f7a153da1138ae0890594867816bcc9fc40cfe1c96fe06110d43",
+    urls = ["https://kubeupv2.s3.amazonaws.com/kops/1.11.0/linux/amd64/utils.tar.gz"],
+    sha256 = "7b288b4ab499186120f1f251d7a16b430073487bda8571574fcc9243925d6a30",
 )

@@ -52,6 +52,14 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"kernel.softlockup_all_cpu_backtrace = 1",
 			"")
 
+		// See https://github.com/kubernetes/kops/issues/6342
+		portRange := b.Cluster.Spec.KubeAPIServer.ServiceNodePortRange
+		if portRange == "" {
+			portRange = "30000-32767" // Default kube-apiserver ServiceNodePortRange
+		}
+		sysctls = append(sysctls, "net.ipv4.ip_local_reserved_ports = "+portRange,
+			"")
+
 		// See https://github.com/kubernetes/kube-deploy/issues/261
 		sysctls = append(sysctls,
 			"# Increase the number of connections",

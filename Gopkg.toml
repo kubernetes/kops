@@ -393,7 +393,7 @@ required = [
   revision = "517734cc7d6470c0d07130e40fd40bdeb9bcd3fd"
 [[override]]
   name = "github.com/Masterminds/sprig"
-  revision = "e039e20e500c2c025d9145be375e27cf42a94174"
+  revision = "544a9b1d90f323f6509491b389714fbbd126bee3"
 [[override]]
   name = "github.com/coreos/pkg"
   revision = "fa29b1d70f0beaddd4c7021607cc3c3be8ce94b8"
@@ -411,7 +411,7 @@ required = [
   revision = "8cc3a55af3bcf171a1c23a90c4df9cf591706104"
 [[override]]
   name = "github.com/huandu/xstrings"
-  revision = "3959339b333561bf62a38b424fd41517c2c90f40"
+  revision = "f02667b379e2fb5916c3cda2cf31e0eb885d79f8"
 [[override]]
   name = "github.com/miekg/coredns"
   revision = "20e25559d5eada5a68a0720816a6e947b94860ce"
@@ -455,4 +455,4 @@ required = [
   revision = "bf70f2a70fb1b1f36d90d671a72795984eab0fcb"
 [[override]]
   name = "github.com/gophercloud/gophercloud"
-  revision = "f29afc2cceca860199ee88cd355a4d0a37b3fad2"
+  revision = "dcc6e84aef1b6713accea7d7d7252ad2bc0e7034"

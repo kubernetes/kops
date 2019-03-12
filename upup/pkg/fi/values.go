@@ -42,10 +42,26 @@ func String(s string) *string {
 	return &s
 }
 
+// Float64 returns a point to a flot64
+func Float64(v float64) *float64 {
+	return &v
+}
+
+// Float64Value returns the value of the float
+func Float64Value(v *float64) float64 {
+	if v == nil {
+		return 0.0
+	}
+
+	return *v
+}
+
+// Bool returns a pointer to a bool
 func Bool(v bool) *bool {
 	return &v
 }
 
+// BoolValue returns the value of bool pointer or false
 func BoolValue(v *bool) bool {
 	if v == nil {
 		return false

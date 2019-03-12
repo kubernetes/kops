@@ -403,6 +403,29 @@ func (t *DryRunTarget) Finish(taskMap map[string]Task) error {
 	return t.PrintReport(taskMap, t.out)
 }
 
+// Deletions returns all task names which is going to be deleted
+func (t *DryRunTarget) Deletions() []string {
+	var deletions []string
+	for _, d := range t.deletions {
+		deletions = append(deletions, d.TaskName())
+	}
+	return deletions
+}
+
+// Changes returns tasks which is going to be created or updated
+func (t *DryRunTarget) Changes() (map[string]Task, map[string]Task) {
+	creates := make(map[string]Task)
+	updates := make(map[string]Task)
+	for _, r := range t.changes {
+		if r.aIsNil {
+			creates[getTaskName(r.changes)] = r.changes
+		} else {
+			updates[getTaskName(r.changes)] = r.changes
+		}
+	}
+	return creates, updates
+}
+
 // HasChanges returns true iff any changes would have been made
 func (t *DryRunTarget) HasChanges() bool {
 	return len(t.changes)+len(t.deletions) != 0

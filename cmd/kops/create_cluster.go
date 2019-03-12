@@ -31,6 +31,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -150,7 +151,13 @@ type CreateClusterOptions struct {
 
 	// OpenstackExternalNet is the name of the external network for the openstack router
 	OpenstackExternalNet     string
+	OpenstackExternalSubnet  string
 	OpenstackStorageIgnoreAZ bool
+	OpenstackDNSServers      string
+	OpenstackLbSubnet        string
+
+	// OpenstackLBOctavia is boolean value should we use octavia or old loadbalancer api
+	OpenstackLBOctavia bool
 
 	// ConfigBase is the location where we will store the configuration, it defaults to the state store
 	ConfigBase string
@@ -378,7 +385,11 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	if cloudup.AlphaAllowOpenstack.Enabled() {
 		// Openstack flags
 		cmd.Flags().StringVar(&options.OpenstackExternalNet, "os-ext-net", options.OpenstackExternalNet, "The name of the external network to use with the openstack router")
+		cmd.Flags().StringVar(&options.OpenstackExternalSubnet, "os-ext-subnet", options.OpenstackExternalSubnet, "The name of the external floating subnet to use with the openstack router")
+		cmd.Flags().StringVar(&options.OpenstackLbSubnet, "os-lb-floating-subnet", options.OpenstackLbSubnet, "The name of the external subnet to use with the kubernetes api")
 		cmd.Flags().BoolVar(&options.OpenstackStorageIgnoreAZ, "os-kubelet-ignore-az", options.OpenstackStorageIgnoreAZ, "If true kubernetes may attach volumes across availability zones")
+		cmd.Flags().BoolVar(&options.OpenstackLBOctavia, "os-octavia", options.OpenstackLBOctavia, "If true octavia loadbalancer api will be used")
+		cmd.Flags().StringVar(&options.OpenstackDNSServers, "os-dns-servers", options.OpenstackDNSServers, "comma separated list of DNS Servers which is used in network")
 	}
 
 	return cmd
@@ -713,6 +724,20 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			etcd := &api.EtcdClusterSpec{}
 			etcd.Name = etcdCluster
 
+			// if this is the main cluster, we use 200 millicores by default.
+			// otherwise we use 100 millicores by default.  100Mi is always default
+			// for event and main clusters.  This is changeable in the kops cluster
+			// configuration.
+			if etcd.Name == "main" {
+				cpuRequest := resource.MustParse("200m")
+				etcd.CPURequest = &cpuRequest
+			} else {
+				cpuRequest := resource.MustParse("100m")
+				etcd.CPURequest = &cpuRequest
+			}
+			memoryRequest := resource.MustParse("100Mi")
+			etcd.MemoryRequest = &memoryRequest
+
 			var names []string
 			for _, ig := range masters {
 				name := ig.ObjectMeta.Name
@@ -887,6 +912,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			if cluster.Spec.CloudConfig == nil {
 				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
 			}
+			provider := "haproxy"
+			if c.OpenstackLBOctavia {
+				provider = "octavia"
+			}
 			cluster.Spec.CloudConfig.Openstack = &api.OpenstackConfiguration{
 				Router: &api.OpenstackRouter{
 					ExternalNetwork: fi.String(c.OpenstackExternalNet),
@@ -894,8 +923,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				Loadbalancer: &api.OpenstackLoadbalancerConfig{
 					FloatingNetwork: fi.String(c.OpenstackExternalNet),
 					Method:          fi.String("ROUND_ROBIN"),
-					Provider:        fi.String("haproxy"),
-					UseOctavia:      fi.Bool(false),
+					Provider:        fi.String(provider),
+					UseOctavia:      fi.Bool(c.OpenstackLBOctavia),
 				},
 				BlockStorage: &api.OpenstackBlockStorageConfig{
 					Version:  fi.String("v2"),
@@ -906,6 +935,15 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 					Timeout:    fi.String("30s"),
 					MaxRetries: fi.Int(3),
 				},
+			}
+			if c.OpenstackDNSServers != "" {
+				cluster.Spec.CloudConfig.Openstack.Router.DNSServers = fi.String(c.OpenstackDNSServers)
+			}
+			if c.OpenstackExternalSubnet != "" {
+				cluster.Spec.CloudConfig.Openstack.Router.ExternalSubnet = fi.String(c.OpenstackExternalSubnet)
+			}
+			if c.OpenstackLbSubnet != "" {
+				cluster.Spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet = fi.String(c.OpenstackLbSubnet)
 			}
 		}
 	}

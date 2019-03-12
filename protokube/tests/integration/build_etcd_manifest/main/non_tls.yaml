@@ -2,6 +2,7 @@ clientPort: 4001
 clusterName: etcd-main
 clusterToken: token-main
 cpuRequest: "200m"
+memoryRequest: "100Mi"
 dataDirName: data-main
 imageSource: k8s.gcr.io/etcd:2.2.1
 logFile: /var/log/etcd.log
@@ -76,6 +77,7 @@ spec:
     resources:
       requests:
         cpu: 200m
+        memory: 100Mi
     volumeMounts:
     - mountPath: /var/etcd/data-main
       name: varetcdata

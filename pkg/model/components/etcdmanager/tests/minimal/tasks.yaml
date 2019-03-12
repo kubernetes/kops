@@ -1,8 +1,26 @@
+Lifecycle: null
+Name: etcd-manager-ca-events
+Signer: null
+alternateNameTasks: null
+alternateNames: null
+format: v1alpha2
+subject: cn=etcd-manager-ca-events
+type: ca
+---
+Lifecycle: null
+Name: etcd-manager-ca-main
+Signer: null
+alternateNameTasks: null
+alternateNames: null
+format: v1alpha2
+subject: cn=etcd-manager-ca-main
+type: ca
+---
 Contents:
   Name: ""
   Resource: |-
     {
-      "member_count": 1
+      "memberCount": 1
     }
 Lifecycle: null
 Location: backups/etcd/events/control/etcd-cluster-spec
@@ -12,7 +30,7 @@ Contents:
   Name: ""
   Resource: |-
     {
-      "member_count": 1
+      "memberCount": 1
     }
 Lifecycle: null
 Location: backups/etcd/main/control/etcd-cluster-spec
@@ -39,15 +57,17 @@ Contents:
         - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
           --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-events
           --client-urls=http://__name__:4002 --cluster-name=etcd-events --containerized=true
-          --dns-suffix=.internal.minimal.example.com --grpc-port=3997 --peer-urls=http://__name__:2381
-          --quarantine-client-urls=http://__name__:3995 --v=8 --volume-name-tag=k8s.io/etcd/events
-          --volume-provider=aws --volume-tag=k8s.io/etcd/events --volume-tag=k8s.io/role/master=1
-          --volume-tag=kubernetes.io/cluster/minimal.example.com=owned > /tmp/pipe 2>&1
-        image: kopeio/etcd-manager:1.0.20181001
+          --dns-suffix=.internal.minimal.example.com --etcd-insecure=true --grpc-port=3997
+          --insecure=false --peer-urls=http://__name__:2381 --quarantine-client-urls=http://__name__:3995
+          --v=8 --volume-name-tag=k8s.io/etcd/events --volume-provider=aws --volume-tag=k8s.io/etcd/events
+          --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
+          > /tmp/pipe 2>&1
+        image: kopeio/etcd-manager:3.0.20190224
         name: etcd-manager
         resources:
           requests:
             cpu: 100m
+            memory: 100Mi
         securityContext:
           privileged: true
         volumeMounts:
@@ -55,6 +75,8 @@ Contents:
           name: rootfs
         - mountPath: /etc/hosts
           name: hosts
+        - mountPath: /etc/kubernetes/pki/etcd-manager
+          name: pki
         - mountPath: /var/log/etcd.log
           name: varlogetcd
       hostNetwork: true
@@ -71,6 +93,10 @@ Contents:
           path: /etc/hosts
           type: File
         name: hosts
+      - hostPath:
+          path: /etc/kubernetes/pki/etcd-manager-events
+          type: DirectoryOrCreate
+        name: pki
       - hostPath:
           path: /var/log/etcd-events.log
           type: FileOrCreate
@@ -101,15 +127,17 @@ Contents:
         - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
           --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-main
           --client-urls=http://__name__:4001 --cluster-name=etcd --containerized=true
-          --dns-suffix=.internal.minimal.example.com --grpc-port=3996 --peer-urls=http://__name__:2380
-          --quarantine-client-urls=http://__name__:3994 --v=8 --volume-name-tag=k8s.io/etcd/main
-          --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/master=1
-          --volume-tag=kubernetes.io/cluster/minimal.example.com=owned > /tmp/pipe 2>&1
-        image: kopeio/etcd-manager:1.0.20181001
+          --dns-suffix=.internal.minimal.example.com --etcd-insecure=true --grpc-port=3996
+          --insecure=false --peer-urls=http://__name__:2380 --quarantine-client-urls=http://__name__:3994
+          --v=8 --volume-name-tag=k8s.io/etcd/main --volume-provider=aws --volume-tag=k8s.io/etcd/main
+          --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
+          > /tmp/pipe 2>&1
+        image: kopeio/etcd-manager:3.0.20190224
         name: etcd-manager
         resources:
           requests:
             cpu: 200m
+            memory: 100Mi
         securityContext:
           privileged: true
         volumeMounts:
@@ -117,6 +145,8 @@ Contents:
           name: rootfs
         - mountPath: /etc/hosts
           name: hosts
+        - mountPath: /etc/kubernetes/pki/etcd-manager
+          name: pki
         - mountPath: /var/log/etcd.log
           name: varlogetcd
       hostNetwork: true
@@ -133,6 +163,10 @@ Contents:
           path: /etc/hosts
           type: File
         name: hosts
+      - hostPath:
+          path: /etc/kubernetes/pki/etcd-manager-main
+          type: DirectoryOrCreate
+        name: pki
       - hostPath:
           path: /var/log/etcd.log
           type: FileOrCreate

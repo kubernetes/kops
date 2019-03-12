@@ -18,20 +18,25 @@ package openstacktasks
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
 //go:generate fitask -type=ServerGroup
 type ServerGroup struct {
-	ID        *string
-	Name      *string
-	Members   []string
-	Policies  []string
-	Lifecycle *fi.Lifecycle
+	ID          *string
+	Name        *string
+	ClusterName *string
+	IGName      *string
+	Members     []string
+	Policies    []string
+	MaxSize     *int32
+	Lifecycle   *fi.Lifecycle
 }
 
 var _ fi.CompareWithID = &ServerGroup{}
@@ -62,18 +67,28 @@ func (s *ServerGroup) Find(context *fi.Context) (*ServerGroup, error) {
 				return nil, fmt.Errorf("Found multiple server groups with name %s", fi.StringValue(s.Name))
 			}
 			actual = &ServerGroup{
-				Name:      fi.String(serverGroup.Name),
-				ID:        fi.String(serverGroup.ID),
-				Members:   nil, // TODO implement logic how servergrp members are updated
-				Lifecycle: s.Lifecycle,
-				Policies:  serverGroup.Policies,
+				Name:        fi.String(serverGroup.Name),
+				ClusterName: s.ClusterName,
+				IGName:      s.IGName,
+				ID:          fi.String(serverGroup.ID),
+				Members:     serverGroup.Members,
+				Lifecycle:   s.Lifecycle,
+				Policies:    serverGroup.Policies,
+				MaxSize:     fi.Int32(int32(len(serverGroup.Members))),
 			}
 		}
 	}
 	if actual == nil {
 		return nil, nil
 	}
+
+	// ignore if IG is scaled up, this is handled in instancetasks
+	if fi.Int32Value(actual.MaxSize) < fi.Int32Value(s.MaxSize) {
+		s.MaxSize = actual.MaxSize
+	}
+
 	s.ID = actual.ID
+	s.Members = actual.Members
 	return actual, nil
 }
 
@@ -112,6 +127,31 @@ func (_ *ServerGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, cha
 		}
 		e.ID = fi.String(g.ID)
 		return nil
+	} else if changes.MaxSize != nil && fi.Int32Value(a.MaxSize) > fi.Int32Value(changes.MaxSize) {
+		currentLastIndex := fi.Int32Value(a.MaxSize)
+
+		for currentLastIndex > fi.Int32Value(changes.MaxSize) {
+			iName := strings.ToLower(fmt.Sprintf("%s-%d.%s", fi.StringValue(a.IGName), currentLastIndex, fi.StringValue(a.ClusterName)))
+			instanceName := strings.Replace(iName, ".", "-", -1)
+			opts := servers.ListOpts{
+				Name: fmt.Sprintf("^%s$", instanceName),
+			}
+			instances, err := t.Cloud.ListInstances(opts)
+			if err != nil {
+				return fmt.Errorf("error fetching instance list: %v", err)
+			}
+
+			if len(instances) == 1 {
+				glog.V(2).Infof("Openstack task ServerGroup scaling down instance %s", instanceName)
+				err := t.Cloud.DeleteInstanceWithID(instances[0].ID)
+				if err != nil {
+					return fmt.Errorf("Could not delete instance %s: %v", instanceName, err)
+				}
+			} else {
+				return fmt.Errorf("found %d instances with name: %s", len(instances), instanceName)
+			}
+			currentLastIndex -= 1
+		}
 	}
 
 	glog.V(2).Infof("Openstack task ServerGroup::RenderOpenstack did nothing")

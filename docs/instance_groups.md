@@ -225,6 +225,65 @@ So the procedure is:
 * Apply: `kops update cluster <clustername> --yes`
 * (no instances need to be relaunched, so no rolling-update is needed)
 
+## Creating a instance group of mixed instances types (AWS Only)
+
+AWS permits the creation of EC2 Fleet Autoscaling Group using a [mixed instance policy](https://aws.amazon.com/blogs/aws/ec2-fleet-manage-thousands-of-on-demand-and-spot-instances-with-one-request/), allowing the users to build a target capacity and make up of on-demand and spot instances while offloading the allocation strategy to AWS. In order to create a mixed instance policy instancegroup.
+
+```YAML
+---
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: your.cluster.name
+  name: compute
+spec:
+  cloudLabels:
+    role: compute
+  image: coreos.com/CoreOS-stable-1911.4.0-hvm
+  machineType: m4.large
+  maxSize: 50
+  minSize: 10
+  # add the mixed instance here
+  mixedInstancesPolicy:
+    instances:
+    - m5.large
+    - m5.xlarge
+    - t2.medium
+    onDemandAboveBase: 5
+    spotInstancePools: 3
+```
+
+The mixed instance policy permits setting the following configurable below, but for more details please check against the AWS documentation.
+
+```Go
+// MixedInstancesPolicySpec defines the specification for an autoscaling backed by a ec2 fleet
+type MixedInstancesPolicySpec struct {
+	// Instances is a list of instance types which we are willing to run in the EC2 fleet
+	Instances []string `json:"instances,omitempty"`
+	// OnDemandAllocationStrategy indicates how to allocate instance types to fulfill On-Demand capacity
+	OnDemandAllocationStrategy *string `json:"onDemandAllocationStrategy,omitempty"`
+	// OnDemandBase is the minimum amount of the Auto Scaling group's capacity that must be
+	// fulfilled by On-Demand Instances. This base portion is provisioned first as your group scales.
+	OnDemandBase *int64 `json:"onDemandBase,omitempty"`
+	// OnDemandAboveBase controls the percentages of On-Demand Instances and Spot Instances for your
+	// additional capacity beyond OnDemandBase. The range is 0–100. The default value is 100. If you
+	// leave this parameter set to 100, the percentages are 100% for On-Demand Instances and 0% for
+	// Spot Instances.
+	OnDemandAboveBase *int64 `json:"onDemandAboveBase,omitempty"`
+	// SpotAllocationStrategy diversifies your Spot capacity across multiple instance types to
+	// find the best pricing. Higher Spot availability may result from a larger number of
+	// instance types to choose from https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet.html#spot-fleet-allocation-strategy
+	SpotAllocationStrategy *string `json:"spotAllocationStrategy,omitempty"`
+	// SpotInstancePools is the number of Spot pools to use to allocate your Spot capacity (defaults to 2)
+	// pools are determined from the different instance types in the Overrides array of LaunchTemplate
+	SpotInstancePools *int64 `json:"spotInstancePools,omitempty"`
+}
+```
+
+Note: as of writing this the kube cluster autoscaler does not support mixed instance groups, in the sense it will still scale groups up and down based on capacity but some of the simulations it does might be wrong as it's not aware of the instance type coming into the group.
+
+Note: when upgrading from a launchconfiguration to launchtemplate with mixed instance policy the launchconfiguration is left undeleted as has to be manually removed.
 
 ## Moving from one instance group spanning multiple AZs to one instance group per AZ
 
