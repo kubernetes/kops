@@ -380,6 +380,11 @@ type KubeAPIServerConfig struct {
 
 	// Memory limit for apiserver in MB (used to configure sizes of caches, etc.)
 	TargetRamMb int32 `json:"targetRamMb,omitempty" flag:"target-ram-mb" flag-empty:"0"`
+
+	// File containing PEM-encoded x509 RSA or ECDSA private or public keys, used to verify ServiceAccount tokens.
+	// The specified file can contain multiple keys, and the flag can be specified multiple times with different files.
+	// If unspecified, --tls-private-key-file is used.
+	ServiceAccountKeyFile []string `json:"serviceAccountKeyFile,omitempty" flag:"service-account-key-file"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
