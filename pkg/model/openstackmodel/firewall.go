@@ -337,7 +337,6 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 			udpPorts = append(udpPorts, 6783)
 			tcpPorts = append(tcpPorts, 6783)
 			udpPorts = append(udpPorts, 6784)
-			protocols = append(protocols, ProtocolIPEncap)
 		}
 
 		if b.Cluster.Spec.Networking.Flannel != nil {
@@ -345,7 +344,6 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 			case "", "udp":
 				udpPorts = append(udpPorts, 8285)
 			case "vxlan":
-				protocols = append(protocols, ProtocolIPEncap)
 				udpPorts = append(udpPorts, 8472)
 			default:
 				glog.Warningf("unknown flannel networking backend %q", b.Cluster.Spec.Networking.Flannel.Backend)
