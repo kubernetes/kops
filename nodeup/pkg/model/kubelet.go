@@ -95,7 +95,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 			if err != nil {
 				return err
 			}
-			c.AddTask(t)
+			c.EnsureTask(t)
 		}
 	}
 	{
