@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestSetClusterFields(t *testing.T) {
@@ -32,9 +33,22 @@ func TestSetClusterFields(t *testing.T) {
 		{
 			Fields: []string{
 				"spec.kubernetesVersion=1.8.2",
+				"spec.kubelet.authorizationMode=Webhook",
+				"spec.kubelet.authenticationTokenWebhook=true",
+			},
+			Input: kops.Cluster{
+				Spec: kops.ClusterSpec{
+					Kubelet: &kops.KubeletConfigSpec{},
+				},
 			},
 			Output: kops.Cluster{
-				Spec: kops.ClusterSpec{KubernetesVersion: "1.8.2"},
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "1.8.2",
+					Kubelet: &kops.KubeletConfigSpec{
+						AuthorizationMode:          "Webhook",
+						AuthenticationTokenWebhook: fi.Bool(true),
+					},
+				},
 			},
 		},
 	}

@@ -35,5 +35,8 @@ go_test(
     name = "go_default_test",
     srcs = ["set_cluster_test.go"],
     embed = [":go_default_library"],
-    deps = ["//pkg/apis/kops:go_default_library"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+    ],
 )
