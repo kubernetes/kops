@@ -1219,40 +1219,61 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	}
 
 	if featureflag.EnableExternalCloudController.Enabled() && b.cluster.Spec.ExternalCloudControllerManager != nil {
-		{
-			key := "core.addons.k8s.io"
-			version := "1.7.0"
+		// cloudprovider specific out-of-tree controller
+		if kops.CloudProviderID(b.cluster.Spec.CloudProvider) == kops.CloudProviderOpenstack {
+			{
+				key := "openstack.addons.k8s.io"
+				version := "1.11.0"
 
-			location := key + "/k8s-1.7.yaml"
-			id := "k8s-1.7-ccm"
+				location := key + "/k8s-1.11.yaml"
+				id := "k8s-1.11-ccm"
 
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Selector:          map[string]string{"k8s-addon": key},
-				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.7.0 <1.12.0",
-				Id:                id,
-			})
-			manifests[key+"-"+id] = "addons/" + location
-		}
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Manifest:          fi.String(location),
+					Selector:          map[string]string{"k8s-addon": key},
+					KubernetesVersion: ">=1.11.0",
+					Id:                id,
+				})
+				manifests[key+"-"+id] = "addons/" + location
+			}
+		} else {
+			{
+				key := "core.addons.k8s.io"
+				version := "1.7.0"
 
-		{
-			key := "core.addons.k8s.io"
-			version := "1.12.0"
+				location := key + "/k8s-1.7.yaml"
+				id := "k8s-1.7-ccm"
 
-			location := key + "/k8s-1.12.yaml"
-			id := "k8s-1.12-ccm"
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          map[string]string{"k8s-addon": key},
+					Manifest:          fi.String(location),
+					KubernetesVersion: ">=1.7.0 <1.12.0",
+					Id:                id,
+				})
+				manifests[key+"-"+id] = "addons/" + location
+			}
 
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Selector:          map[string]string{"k8s-addon": key},
-				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.12.0",
-				Id:                id,
-			})
-			manifests[key+"-"+id] = "addons/" + location
+			{
+				key := "core.addons.k8s.io"
+				version := "1.12.0"
+
+				location := key + "/k8s-1.12.yaml"
+				id := "k8s-1.12-ccm"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          map[string]string{"k8s-addon": key},
+					Manifest:          fi.String(location),
+					KubernetesVersion: ">=1.12.0",
+					Id:                id,
+				})
+				manifests[key+"-"+id] = "addons/" + location
+			}
 		}
 	}
 
