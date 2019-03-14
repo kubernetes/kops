@@ -42,6 +42,10 @@ then
   sudo yum install -y epel-release 
   sudo yum install -y jq || exit
 fi
+if [[ -f /usr/local/bin/brew && ! -f /usr/local/bin/jq ]]
+then
+  brew install jq || exit
+fi
 
 
 echo "7️⃣  Set up Autoscaling"
