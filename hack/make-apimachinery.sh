@@ -28,7 +28,8 @@ trap cleanup EXIT
 mkdir -p ${WORK_DIR}/go/
 ln -s ${GOPATH}/src/k8s.io/kops/vendor/ ${WORK_DIR}/go/src
 
-GOPATH=${WORK_DIR}/go/ go install k8s.io/code-generator/cmd/conversion-gen/
+unset GOBIN
+GOPATH=${WORK_DIR}/go/ go install -v k8s.io/code-generator/cmd/conversion-gen/
 cp ${WORK_DIR}/go/bin/conversion-gen ${GOPATH}/bin/
 
 GOPATH=${WORK_DIR}/go/ go install k8s.io/code-generator/cmd/deepcopy-gen/

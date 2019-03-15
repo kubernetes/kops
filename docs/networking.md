@@ -363,6 +363,11 @@ $ kops create cluster \
     "Resource": [
       "*"
     ]
+  },
+  {
+    "Effect": "Allow",
+    "Action": "ec2:CreateTags",
+    "Resource": "arn:aws:ec2:*:*:network-interface/*"
   }
 ```
 

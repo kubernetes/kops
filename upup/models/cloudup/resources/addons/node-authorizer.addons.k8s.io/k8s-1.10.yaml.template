@@ -1,3 +1,4 @@
+{{- $proxy := .EgressProxy }}
 {{- $na := .NodeAuthorization.NodeAuthorizer }}
 {{- $name := "node-authorizer" }}
 {{- $namespace := "kube-system" }}
@@ -165,6 +166,15 @@ spec:
             - --tls-client-ca=/config/ca.pem
             - --tls-private-key=/config/tls-key.pem
             - --token-ttl={{ $na.TokenTTL.Duration }}
+          {{- if $proxy }}
+          env:
+            - name: http_proxy
+              value: {{ $proxy.HTTPProxy.Host }}:{{ $proxy.HTTPProxy.Port }}
+            {{- if $proxy.ProxyExcludes }}
+            - name: no_proxy
+              value: {{ $proxy.ProxyExcludes }}
+            {{- end }}
+          {{- end }}
           resources:
             limits:
               cpu: 100m

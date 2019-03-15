@@ -59,10 +59,25 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	// Standard options
 	clusterSpec.Kubelet.EnableDebuggingHandlers = fi.Bool(true)
 	clusterSpec.Kubelet.PodManifestPath = "/etc/kubernetes/manifests"
-	clusterSpec.Kubelet.AllowPrivileged = fi.Bool(true)
 	clusterSpec.Kubelet.LogLevel = fi.Int32(2)
 	clusterSpec.Kubelet.ClusterDomain = clusterSpec.ClusterDNSDomain
 	clusterSpec.Kubelet.NonMasqueradeCIDR = clusterSpec.NonMasqueradeCIDR
+
+	// AllowPrivileged is deprecated and removed in v1.14.
+	// See https://github.com/kubernetes/kubernetes/pull/71835
+	if kubernetesVersion.Major == 1 && kubernetesVersion.Minor >= 14 {
+		if clusterSpec.Kubelet.AllowPrivileged != nil {
+			// If it is explicitly set to false, return an error, because this
+			// behavior is no longer supported in v1.14 (the default was true, prior).
+			if *clusterSpec.Kubelet.AllowPrivileged == false {
+				glog.Warningf("Kubelet's --allow-privileged flag is no longer supported in v1.14.")
+			}
+			// Explicitly set it to nil, so it won't be passed on the command line.
+			clusterSpec.Kubelet.AllowPrivileged = nil
+		}
+	} else {
+		clusterSpec.Kubelet.AllowPrivileged = fi.Bool(true)
+	}
 
 	if clusterSpec.Kubelet.ClusterDNS == "" {
 		ip, err := WellKnownServiceIP(clusterSpec, 10)

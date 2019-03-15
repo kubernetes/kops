@@ -41,6 +41,10 @@ func (s *SecurityGroup) CompareWithID() *string {
 
 func (s *SecurityGroup) Find(context *fi.Context) (*SecurityGroup, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
+	return s.getSecurityGroupByName(cloud)
+}
+
+func (s *SecurityGroup) getSecurityGroupByName(cloud openstack.OpenstackCloud) (*SecurityGroup, error) {
 	opt := sg.ListOpts{
 		Name: fi.StringValue(s.Name),
 	}
@@ -61,6 +65,7 @@ func (s *SecurityGroup) Find(context *fi.Context) (*SecurityGroup, error) {
 		Description: fi.String(g.Description),
 		Lifecycle:   s.Lifecycle,
 	}
+	s.ID = actual.ID
 	return actual, nil
 }
 

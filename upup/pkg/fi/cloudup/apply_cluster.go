@@ -70,6 +70,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
+	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -84,6 +85,8 @@ var (
 	AlphaAllowDO = featureflag.New("AlphaAllowDO", featureflag.Bool(false))
 	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
 	AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
+	// AlphaAllowOpenstack is a feature flag that gates OpenStack support while it is alpha
+	AlphaAllowOpenstack = featureflag.New("AlphaAllowOpenstack", featureflag.Bool(false))
 	// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
 	AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
 	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha
@@ -119,7 +122,7 @@ type ApplyClusterCmd struct {
 	// Formats:
 	//  raw url: http://... or https://...
 	//  url with hash: <hex>@http://... or <hex>@https://...
-	Assets []string
+	Assets []*MirroredAsset
 
 	Clientset simple.Clientset
 
@@ -512,14 +515,28 @@ func (c *ApplyClusterCmd) Run() error {
 
 	case kops.CloudProviderOpenstack:
 		{
+			if !AlphaAllowOpenstack.Enabled() {
+				return fmt.Errorf("Openstack support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowOpenstack")
+			}
+
 			osCloud := cloud.(openstack.OpenstackCloud)
 			region = osCloud.Region()
 
 			l.AddTypes(map[string]interface{}{
-				"sshKey": &openstacktasks.SSHKey{},
+				// Compute
+				"sshKey":      &openstacktasks.SSHKey{},
+				"serverGroup": &openstacktasks.ServerGroup{},
+				"instance":    &openstacktasks.Instance{},
 				// Networking
-				"network": &openstacktasks.Network{},
-				"router":  &openstacktasks.Router{},
+				"network":           &openstacktasks.Network{},
+				"subnet":            &openstacktasks.Subnet{},
+				"router":            &openstacktasks.Router{},
+				"securityGroup":     &openstacktasks.SecurityGroup{},
+				"securityGroupRule": &openstacktasks.SecurityGroupRule{},
+				// BlockStorage
+				"volume": &openstacktasks.Volume{},
+				// LB
+				"lb": &openstacktasks.LB{},
 			})
 
 			if len(sshPublicKeys) == 0 {
@@ -677,8 +694,11 @@ func (c *ApplyClusterCmd) Run() error {
 				}
 
 				l.Builders = append(l.Builders,
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+					// &openstackmodel.APILBModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &clusterLifecycle},
 					&openstackmodel.NetworkModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &networkLifecycle},
 					&openstackmodel.SSHKeyModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
+					&openstackmodel.FirewallModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
 				)
 
 			default:
@@ -778,6 +798,15 @@ func (c *ApplyClusterCmd) Run() error {
 		// BareMetal tasks will go here
 
 	case kops.CloudProviderOpenstack:
+		openstackModelContext := &openstackmodel.OpenstackModelContext{
+			KopsModelContext: modelContext,
+		}
+
+		l.Builders = append(l.Builders, &openstackmodel.ServerGroupModelBuilder{
+			OpenstackModelContext: openstackModelContext,
+			BootstrapScript:       bootstrapScriptBuilder,
+			Lifecycle:             &clusterLifecycle,
+		})
 
 	default:
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
@@ -1112,27 +1141,39 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		if err != nil {
 			return err
 		}
-		c.Assets = append(c.Assets, hash.Hex()+"@"+u.String())
+		c.Assets = append(c.Assets, BuildMirroredAsset(u, hash))
 	}
 
 	if usesCNI(c.Cluster) {
-		cniAsset, cniAssetHashString, err := findCNIAssets(c.Cluster, assetBuilder)
+		cniAsset, cniAssetHash, err := findCNIAssets(c.Cluster, assetBuilder)
 		if err != nil {
 			return err
 		}
 
-		c.Assets = append(c.Assets, cniAssetHashString+"@"+cniAsset.String())
+		c.Assets = append(c.Assets, BuildMirroredAsset(cniAsset, cniAssetHash))
 	}
 
 	if c.Cluster.Spec.Networking.LyftVPC != nil {
-		lyftVPCDownloadURL := os.Getenv("LYFT_VPC_DOWNLOAD_URL")
-		if lyftVPCDownloadURL == "" {
-			lyftVPCDownloadURL = "bfdc65028a3bf8ffe14388fca28ede3600e7e2dee4e781908b6a23f9e79f86ad@https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.4.2/cni-ipvlan-vpc-k8s-v0.4.2.tar.gz"
+		var hash *hashing.Hash
+
+		urlString := os.Getenv("LYFT_VPC_DOWNLOAD_URL")
+		if urlString == "" {
+			urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.4.2/cni-ipvlan-vpc-k8s-v0.4.2.tar.gz"
+			hash, err = hashing.FromString("bfdc65028a3bf8ffe14388fca28ede3600e7e2dee4e781908b6a23f9e79f86ad")
+			if err != nil {
+				// Should be impossible
+				return fmt.Errorf("invalid hard-coded hash for lyft url")
+			}
 		} else {
-			glog.Warningf("Using url from LYFT_VPC_DOWNLOAD_URL env var: %q", lyftVPCDownloadURL)
+			glog.Warningf("Using url from LYFT_VPC_DOWNLOAD_URL env var: %q", urlString)
 		}
 
-		c.Assets = append(c.Assets, lyftVPCDownloadURL)
+		u, err := url.Parse(urlString)
+		if err != nil {
+			return fmt.Errorf("unable to parse lyft-vpc URL %q", urlString)
+		}
+
+		c.Assets = append(c.Assets, BuildMirroredAsset(u, hash))
 	}
 
 	// TODO figure out if we can only do this for CoreOS only and GCE Container OS
@@ -1145,7 +1186,7 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		if err != nil {
 			return err
 		}
-		c.Assets = append(c.Assets, hash.Hex()+"@"+utilsLocation.String())
+		c.Assets = append(c.Assets, BuildMirroredAsset(utilsLocation, hash))
 	}
 
 	n, hash, err := NodeUpLocation(assetBuilder)
@@ -1237,7 +1278,9 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 		config.Tags = append(config.Tags, tag)
 	}
 
-	config.Assets = c.Assets
+	for _, a := range c.Assets {
+		config.Assets = append(config.Assets, a.CompactString())
+	}
 	config.ClusterName = cluster.ObjectMeta.Name
 	config.ConfigBase = fi.String(configBase.Path())
 	config.InstanceGroupName = ig.ObjectMeta.Name

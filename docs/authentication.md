@@ -34,7 +34,7 @@ spec:
 ## AWS IAM Authenticator
 
 If you want to turn on AWS IAM Authenticator, you can add this block 
-to your cluster running Kubernetes 1.10 or newer:
+to your cluster running Kubernetes 1.10 or newer via `kops edit cluster ${CLUSTER_NAME}`:
 
 ```
 authentication:
@@ -55,7 +55,8 @@ spec:
     rbac: {}
 ```
 
-Once the cluster is up, or after you've performed a rolling update to an existing cluster with `kops rolling-update cluster ${CLUSTER_NAME} --instance-group-roles=Master --force --yes`, you will need to create the AWS IAM authenticator
+Once done you need to run `kops update cluster ${CLUSTER_NAME} --yes; kops rolling-update cluster ${CLUSTER_NAME} --instance-group-roles=Master --cloudonly --force --yes`.
+Next, you will need to create the AWS IAM authenticator
 config as a config map. (This can also be done when boostrapping a cluster using addons)
 For more details on AWS IAM authenticator please visit [kubernetes-sigs/aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator)
 

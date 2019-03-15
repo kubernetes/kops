@@ -17,6 +17,11 @@ limitations under the License.
 package model
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
+	"io"
+	"net/http"
+	"os"
 	"path"
 	"testing"
 
@@ -25,6 +30,35 @@ import (
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
 )
+
+func TestDockerHashes(t *testing.T) {
+	if os.Getenv("VERIFY_HASHES") == "" {
+		t.Skip("VERIFY_HASHES not set, won't download & verify docker hashes")
+	}
+
+	for _, dockerVersion := range dockerVersions {
+		u := dockerVersion.Source
+
+		resp, err := http.Get(u)
+		if err != nil {
+			t.Errorf("%s: error fetching: %v", u, err)
+			continue
+		}
+		defer resp.Body.Close()
+
+		hasher := sha1.New()
+		if _, err := io.Copy(hasher, resp.Body); err != nil {
+			t.Errorf("%s: error reading: %v", u, err)
+			continue
+		}
+
+		hash := hex.EncodeToString(hasher.Sum(nil))
+		if hash != dockerVersion.Hash {
+			t.Errorf("%s: hash was %q", dockerVersion.Source, hash)
+			continue
+		}
+	}
+}
 
 func TestDockerBuilder_Simple(t *testing.T) {
 	runDockerBuilderTest(t, "simple")

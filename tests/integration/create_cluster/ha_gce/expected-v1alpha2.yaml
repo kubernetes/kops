@@ -12,21 +12,25 @@ spec:
   cloudProvider: gce
   configBase: memfs://tests/ha-gce.example.com
   etcdClusters:
-  - etcdMembers:
+  - cpuRequest: 200m
+    etcdMembers:
     - instanceGroup: master-us-test1-a
       name: a
     - instanceGroup: master-us-test1-b
       name: b
     - instanceGroup: master-us-test1-c
       name: c
+    memoryRequest: 100Mi
     name: main
-  - etcdMembers:
+  - cpuRequest: 100m
+    etcdMembers:
     - instanceGroup: master-us-test1-a
       name: a
     - instanceGroup: master-us-test1-b
       name: b
     - instanceGroup: master-us-test1-c
       name: c
+    memoryRequest: 100Mi
     name: events
   iam:
     allowContainerRegistry: true

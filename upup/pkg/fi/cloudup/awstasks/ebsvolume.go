@@ -19,13 +19,14 @@ package awstasks
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/golang/glog"
 )
 
 //go:generate fitask -type=EBSVolume
@@ -33,14 +34,14 @@ type EBSVolume struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
 
-	ID               *string
 	AvailabilityZone *string
-	VolumeType       *string
-	SizeGB           *int64
-	VolumeIops       *int64
-	KmsKeyId         *string
 	Encrypted        *bool
+	ID               *string
+	KmsKeyId         *string
+	SizeGB           *int64
 	Tags             map[string]string
+	VolumeIops       *int64
+	VolumeType       *string
 }
 
 var _ fi.CompareWithID = &EBSVolume{}
@@ -63,6 +64,7 @@ func (e *EBSVolume) FindResourceID(c fi.Cloud) (*string, error) {
 	if actual == nil {
 		return nil, nil
 	}
+
 	return actual.ID, nil
 }
 
@@ -71,6 +73,7 @@ func (e *EBSVolume) Find(context *fi.Context) (*EBSVolume, error) {
 	if actual != nil && err == nil {
 		e.ID = actual.ID
 	}
+
 	return actual, err
 }
 

@@ -74,7 +74,7 @@ spec:
         }
       ]
 ```
-The masters will poll for changes changes in the bucket and keep the addons up to date.
+The masters will poll for changes in the bucket and keep the addons up to date.
 
 
 ### Dashboard
@@ -83,7 +83,7 @@ The [dashboard project](https://github.com/kubernetes/dashboard) provides a nice
 
 Install using:
 ```
-kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.10.0.yaml
+kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.10.1.yaml
 ```
 
 And then navigate to `https://api.<clustername>/ui`

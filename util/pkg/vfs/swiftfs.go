@@ -18,9 +18,11 @@ package vfs
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/hex"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -43,20 +45,46 @@ import (
 func NewSwiftClient() (*gophercloud.ServiceClient, error) {
 	config := OpenstackConfig{}
 
+	// Check if env credentials are valid first
 	authOption, err := config.GetCredential()
 	if err != nil {
 		return nil, err
 	}
-	provider, err := openstack.AuthenticatedClient(authOption)
+
+	pc, err := openstack.NewClient(authOption.IdentityEndpoint)
+	if err != nil {
+		return nil, fmt.Errorf("error building openstack provider client: %v", err)
+	}
+
+	tlsconfig := &tls.Config{}
+	tlsconfig.InsecureSkipVerify = true
+	transport := &http.Transport{TLSClientConfig: tlsconfig}
+	pc.HTTPClient = http.Client{
+		Transport: transport,
+	}
+
+	glog.V(2).Info("authenticating to keystone")
+
+	err = openstack.Authenticate(pc, authOption)
 	if err != nil {
 		return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
 	}
-	endpointOpt, err := config.GetServiceConfig("Swift")
-	if err != nil {
-		return nil, err
+
+	var endpointOpt gophercloud.EndpointOpts
+	if region, err := config.GetRegion(); err != nil {
+		glog.Warningf("Retrieving swift configuration from openstack config file: %v", err)
+		endpointOpt, err = config.GetServiceConfig("Swift")
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		endpointOpt = gophercloud.EndpointOpts{
+			Type:   "object-store",
+			Region: region,
+		}
 	}
 
-	client, err := openstack.NewObjectStorageV1(provider, endpointOpt)
+	client, err := openstack.NewObjectStorageV1(pc, endpointOpt)
 	if err != nil {
 		return nil, fmt.Errorf("error building swift client: %v", err)
 	}
@@ -103,6 +131,40 @@ func (oc OpenstackConfig) getSection(name string, items []string) (map[string]st
 }
 
 func (oc OpenstackConfig) GetCredential() (gophercloud.AuthOptions, error) {
+
+	// prioritize environment config
+	env, enverr := openstack.AuthOptionsFromEnv()
+	if enverr != nil {
+		glog.Warningf("Could not initialize swift from environment: %v", enverr)
+		// fallback to config file
+		return oc.getCredentialFromFile()
+	}
+	return env, nil
+
+}
+
+func (oc OpenstackConfig) GetRegion() (string, error) {
+
+	var region string
+	if region = os.Getenv("OS_REGION_NAME"); region != "" {
+		if len(region) > 1 {
+			if region[0] == '\'' && region[len(region)-1] == '\'' {
+				region = region[1 : len(region)-1]
+			}
+		}
+		return region, nil
+	}
+
+	items := []string{"region"}
+	// TODO: Unsure if this is the correct section for region
+	values, err := oc.getSection("Global", items)
+	if err != nil {
+		return "", fmt.Errorf("Region not provided in OS_REGION_NAME or openstack config section GLOBAL")
+	}
+	return values["region"], nil
+}
+
+func (oc OpenstackConfig) getCredentialFromFile() (gophercloud.AuthOptions, error) {
 	opt := gophercloud.AuthOptions{}
 	name := "Default"
 	items := []string{"identity", "user", "user_id", "password", "domain_id", "domain_name", "tenant_id", "tenant_name"}

@@ -999,6 +999,16 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks:    nil,
 	},
 
+	{
+		Name:              "m5.metal",
+		MemoryGB:          384,
+		ECU:               345,
+		Cores:             96,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
 	// m5a family
 	{
 		Name:              "m5a.large",
@@ -1113,6 +1123,16 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 
 	{
 		Name:              "m5d.24xlarge",
+		MemoryGB:          384,
+		ECU:               345,
+		Cores:             96,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{900, 900, 900, 900},
+	},
+
+	{
+		Name:              "m5d.metal",
 		MemoryGB:          384,
 		ECU:               345,
 		Cores:             96,
@@ -1374,6 +1394,16 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks:    nil,
 	},
 
+	{
+		Name:              "r5.metal",
+		MemoryGB:          768,
+		ECU:               347,
+		Cores:             96,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
 	// r5a family
 	{
 		Name:              "r5a.large",
@@ -1488,6 +1518,16 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 
 	{
 		Name:              "r5d.24xlarge",
+		MemoryGB:          768,
+		ECU:               347,
+		Cores:             96,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{900, 900, 900, 900},
+	},
+
+	{
+		Name:              "r5d.metal",
 		MemoryGB:          768,
 		ECU:               347,
 		Cores:             96,
@@ -1799,6 +1839,16 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 
 	{
 		Name:              "z1d.12xlarge",
+		MemoryGB:          384,
+		ECU:               271,
+		Cores:             48,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{900, 900},
+	},
+
+	{
+		Name:              "z1d.metal",
 		MemoryGB:          384,
 		ECU:               271,
 		Cores:             48,

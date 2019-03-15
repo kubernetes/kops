@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -67,6 +67,9 @@ func hasPlaceHolderIP(clusterName string) (bool, error) {
 	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		clientcmd.NewDefaultClientConfigLoadingRules(),
 		&clientcmd.ConfigOverrides{CurrentContext: clusterName}).ClientConfig()
+	if err != nil {
+		return false, fmt.Errorf("error building configuration: %v", err)
+	}
 
 	apiAddr, err := url.Parse(config.Host)
 	if err != nil {

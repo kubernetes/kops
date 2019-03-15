@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -45,7 +46,7 @@ func (e *SSHKey) CompareWithID() *string {
 
 func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 	cloud := c.Cloud.(openstack.OpenstackCloud)
-	rs, err := cloud.ListKeypair(openstackKeyPairName(fi.StringValue(e.Name)))
+	rs, err := cloud.GetKeypair(openstackKeyPairName(fi.StringValue(e.Name)))
 	if err != nil {
 		return nil, err
 	}
@@ -69,6 +70,19 @@ func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 }
 
 func (e *SSHKey) Run(c *fi.Context) error {
+	if e.KeyFingerprint == nil && e.PublicKey != nil {
+		publicKey, err := e.PublicKey.AsString()
+		if err != nil {
+			return fmt.Errorf("error reading SSH public key: %v", err)
+		}
+
+		keyFingerprint, err := pki.ComputeOpenSSHKeyFingerprint(publicKey)
+		if err != nil {
+			return fmt.Errorf("error computing key fingerprint for SSH key: %v", err)
+		}
+		glog.V(2).Infof("Computed SSH key fingerprint as %q", keyFingerprint)
+		e.KeyFingerprint = &keyFingerprint
+	}
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

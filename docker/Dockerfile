@@ -1,4 +1,4 @@
-# Copyright 2017 The Kubernetes Authors.
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.6
+FROM alpine:3.8
 
-ARG GO_VERSION=1.8.1
+ARG GO_VERSION=1.10.8
 
 # KOPS_GITISH: Modify to build at an explicit tag/gitish
 ARG KOPS_GITISH=release
