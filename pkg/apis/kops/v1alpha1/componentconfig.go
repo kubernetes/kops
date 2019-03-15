@@ -179,6 +179,10 @@ type KubeletConfigSpec struct {
 	AuthenticationTokenWebhook *bool `json:"authenticationTokenWebhook,omitempty" flag:"authentication-token-webhook"`
 	// AuthenticationTokenWebhook sets the duration to cache responses from the webhook token authenticator. Default is 2m. (default 2m0s)
 	AuthenticationTokenWebhookCacheTTL *metav1.Duration `json:"authenticationTokenWebhookCacheTtl,omitempty" flag:"authentication-token-webhook-cache-ttl"`
+	// CPUCFSQuota enables CPU CFS quota enforcement for containers that specify CPU limits
+	CPUCFSQuota *bool `json:"cpuCFSQuota,omitempty" flag:"cpu-cfs-quota"`
+	// CPUCFSQuotaPeriod sets CPU CFS quota period value, cpu.cfs_period_us, defaults to Linux Kernel default
+	CPUCFSQuotaPeriod *metav1.Duration `json:"cpuCFSQuotaPeriod,omitempty" flag:"cpu-cfs-quota-period"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
@@ -203,6 +207,8 @@ type KubeProxyConfig struct {
 	BindAddress string `json:"bindAddress,omitempty" flag:"bind-address"`
 	// Master is the address of the Kubernetes API server (overrides any value in kubeconfig)
 	Master string `json:"master,omitempty" flag:"master"`
+	// MetricsBindAddress is the IP address and port for the metrics server to serve on
+	MetricsBindAddress *string `json:"metricsBindAddress,omitempty" flag:"metrics-bind-address"`
 	// Enabled allows enabling or disabling kube-proxy
 	Enabled *bool `json:"enabled,omitempty"`
 	// Which proxy mode to use: (userspace, iptables(default), ipvs)
@@ -314,6 +320,10 @@ type KubeAPIServerConfig struct {
 	// OIDCClientID is the client ID for the OpenID Connect client, must be set
 	// if oidc-issuer-url is set.
 	OIDCClientID *string `json:"oidcClientID,omitempty" flag:"oidc-client-id"`
+	// A key=value pair that describes a required claim in the ID Token.
+	// If set, the claim is verified to be present in the ID Token with a matching value.
+	// Repeat this flag to specify multiple claims.
+	OIDCRequiredClaim []string `json:"oidcRequiredClaim,omitempty" flag:"oidc-required-claim,repeat"`
 	// OIDCCAFile if set, the OpenID server's certificate will be verified by one
 	// of the authorities in the oidc-ca-file
 	OIDCCAFile *string `json:"oidcCAFile,omitempty" flag:"oidc-ca-file"`
@@ -370,6 +380,11 @@ type KubeAPIServerConfig struct {
 
 	// Memory limit for apiserver in MB (used to configure sizes of caches, etc.)
 	TargetRamMb int32 `json:"targetRamMb,omitempty" flag:"target-ram-mb" flag-empty:"0"`
+
+	// File containing PEM-encoded x509 RSA or ECDSA private or public keys, used to verify ServiceAccount tokens.
+	// The specified file can contain multiple keys, and the flag can be specified multiple times with different files.
+	// If unspecified, --tls-private-key-file is used.
+	ServiceAccountKeyFile []string `json:"serviceAccountKeyFile,omitempty" flag:"service-account-key-file"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
@@ -437,6 +452,9 @@ type KubeControllerManagerConfig struct {
 	// HorizontalPodAutoscalerUseRestClients determines if the new-style clients
 	// should be used if support for custom metrics is enabled.
 	HorizontalPodAutoscalerUseRestClients *bool `json:"horizontalPodAutoscalerUseRestClients,omitempty" flag:"horizontal-pod-autoscaler-use-rest-clients"`
+	// ExperimentalClusterSigningDuration is the duration that determines
+	// the length of duration that the signed certificates will be given. (default 8760h0m0s)
+	ExperimentalClusterSigningDuration *metav1.Duration `json:"experimentalClusterSigningDuration,omitempty" flag:"experimental-cluster-signing-duration"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }
@@ -493,6 +511,44 @@ type LeaderElectionConfiguration struct {
 	LeaderElect *bool `json:"leaderElect,omitempty" flag:"leader-elect"`
 }
 
+// OpenstackLoadbalancerConfig defines the config for a neutron loadbalancer
+type OpenstackLoadbalancerConfig struct {
+	Method            *string `json:"method,omitempty"`
+	Provider          *string `json:"provider,omitempty"`
+	UseOctavia        *bool   `json:"useOctavia,omitempty"`
+	FloatingNetwork   *string `json:"floatingNetwork,omitempty"`
+	FloatingNetworkID *string `json:"floatingNetworkID,omitempty"`
+	FloatingSubnet    *string `json:"floatingSubnet,omitempty"`
+	SubnetID          *string `json:"subnetID,omitempty"`
+}
+
+type OpenstackBlockStorageConfig struct {
+	Version  *string `json:"bs-version,omitempty"`
+	IgnoreAZ *bool   `json:"ignore-volume-az,omitempty"`
+}
+
+// OpenstackMonitor defines the config for a health monitor
+type OpenstackMonitor struct {
+	Delay      *string `json:"delay,omitempty"`
+	Timeout    *string `json:"timeout,omitempty"`
+	MaxRetries *int    `json:"maxRetries,omitempty"`
+}
+
+// OpenstackRouter defines the config for a router
+type OpenstackRouter struct {
+	ExternalNetwork *string `json:"externalNetwork,omitempty"`
+	DNSServers      *string `json:"dnsServers,omitempty"`
+	ExternalSubnet  *string `json:"externalSubnet,omitempty"`
+}
+
+// OpenstackConfiguration defines cloud config elements for the openstack cloud provider
+type OpenstackConfiguration struct {
+	Loadbalancer *OpenstackLoadbalancerConfig `json:"loadbalancer,omitempty"`
+	Monitor      *OpenstackMonitor            `json:"monitor,omitempty"`
+	Router       *OpenstackRouter             `json:"router,omitempty"`
+	BlockStorage *OpenstackBlockStorageConfig `json:"blockStorage,omitempty"`
+}
+
 // CloudConfiguration defines the cloud provider configuration
 type CloudConfiguration struct {
 	// GCE cloud-config options
@@ -513,6 +569,8 @@ type CloudConfiguration struct {
 	// Spotinst cloud-config specs
 	SpotinstProduct     *string `json:"spotinstProduct,omitempty"`
 	SpotinstOrientation *string `json:"spotinstOrientation,omitempty"`
+	// Openstack cloud-config options
+	Openstack *OpenstackConfiguration `json:"openstack,omitempty"`
 }
 
 // HasAdmissionController checks if a specific admission controller is enabled

@@ -68,6 +68,9 @@ type Subnet struct {
 	// Human-readable name for the subnet. Might not be unique.
 	Name string `json:"name"`
 
+	// Description for the subnet.
+	Description string `json:"description"`
+
 	// IP version, either `4' or `6'.
 	IPVersion int `json:"ip_version"`
 
@@ -106,6 +109,9 @@ type Subnet struct {
 
 	// SubnetPoolID is the id of the subnet pool associated with the subnet.
 	SubnetPoolID string `json:"subnetpool_id"`
+
+	// Tags optionally set via extensions/attributestags
+	Tags []string `json:"tags"`
 }
 
 // SubnetPage is the page returned by a pager when traversing over a collection

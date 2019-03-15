@@ -106,6 +106,10 @@ func indent(spaces int, v string) string {
 	return pad + strings.Replace(v, "\n", "\n"+pad, -1)
 }
 
+func nindent(spaces int, v string) string {
+	return "\n" + indent(spaces, v)
+}
+
 func replace(old, new, src string) string {
 	return strings.Replace(src, old, new, -1)
 }
@@ -172,6 +176,15 @@ func join(sep string, v interface{}) string {
 
 func split(sep, orig string) map[string]string {
 	parts := strings.Split(orig, sep)
+	res := make(map[string]string, len(parts))
+	for i, v := range parts {
+		res["_"+strconv.Itoa(i)] = v
+	}
+	return res
+}
+
+func splitn(sep string, n int, orig string) map[string]string {
+	parts := strings.SplitN(orig, sep, n)
 	res := make(map[string]string, len(parts))
 	for i, v := range parts {
 		res["_"+strconv.Itoa(i)] = v

@@ -32,3 +32,8 @@ func i64(v int64) *int64 {
 func i32(v int32) *int32 {
 	return fi.Int32(v)
 }
+
+// i is a helper that builds a *int from an int value
+func i(v int) *int {
+	return fi.Int(v)
+}

@@ -57,11 +57,11 @@
   revision = "517734cc7d6470c0d07130e40fd40bdeb9bcd3fd"
 
 [[projects]]
-  digest = "1:b125ffa3363b22cec9699f14b6c926299240acd77267c08a4199e8a0cd5fed3d"
+  digest = "1:e6cdc43eba27f9d29f0d6497414597e45ea812c2e51ffd42a1f8f1bb0c1a9d98"
   name = "github.com/Masterminds/sprig"
   packages = ["."]
   pruneopts = "UT"
-  revision = "e039e20e500c2c025d9145be375e27cf42a94174"
+  revision = "544a9b1d90f323f6509491b389714fbbd126bee3"
 
 [[projects]]
   digest = "1:20695cc3d37c69d8a95420452e9d1afd29cc67cf54934a5d5738404e0831aad8"
@@ -100,10 +100,11 @@
   version = "v1.0.1"
 
 [[projects]]
-  digest = "1:0d21da686e2049238ad19662260c31414f1941b27e3547aa9799293dbf05bb1d"
+  digest = "1:bc64ec2fe484ee175b0bd8f9306ff392d8b730ebf2de85a736bfa145be6cce13"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
+    "aws/arn",
     "aws/awserr",
     "aws/awsutil",
     "aws/client",
@@ -158,8 +159,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "cae66ecf52e0171f937f1fa80e12130fbb652474"
-  version = "v1.16.9"
+  revision = "3991042237b45cf58c9d5f34295942d5533c28c6"
+  version = "v1.16.11"
 
 [[projects]]
   digest = "1:8b019763cb155094c7919d577530604dc070a05315f24b3a2b102a8f9570725f"
@@ -596,6 +597,14 @@
   revision = "44d81051d367757e1c7c6a5a86423ece9afcf63c"
 
 [[projects]]
+  digest = "1:236d7e1bdb50d8f68559af37dbcf9d142d56b431c9b2176d41e2a009b664cda8"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8"
+  version = "v1.1.0"
+
+[[projects]]
   digest = "1:75eb87381d25cc75212f52358df9c3a2719584eaa9685cd510ce28699122f39d"
   name = "github.com/googleapis/gnostic"
   packages = [
@@ -607,21 +616,33 @@
   revision = "0c5108395e2debce0d731cf0287ddf7242066aba"
 
 [[projects]]
-  digest = "1:dc8be055c0a43584d2b728953be6d507c8a48a9b6e055c2dffdb8d8414eb703b"
+  digest = "1:33cfd57691761d62c8f84c2748e3ea2690234b4d8b622856539a5175b7fc3bfd"
   name = "github.com/gophercloud/gophercloud"
   packages = [
     ".",
     "openstack",
     "openstack/blockstorage/v2/volumes",
+    "openstack/compute/v2/extensions/availabilityzones",
+    "openstack/compute/v2/extensions/floatingips",
     "openstack/compute/v2/extensions/keypairs",
     "openstack/compute/v2/extensions/schedulerhints",
     "openstack/compute/v2/extensions/servergroups",
+    "openstack/compute/v2/extensions/volumeattach",
     "openstack/compute/v2/flavors",
     "openstack/compute/v2/images",
     "openstack/compute/v2/servers",
+    "openstack/dns/v2/recordsets",
+    "openstack/dns/v2/zones",
     "openstack/identity/v2/tenants",
     "openstack/identity/v2/tokens",
     "openstack/identity/v3/tokens",
+    "openstack/loadbalancer/v2/l7policies",
+    "openstack/loadbalancer/v2/listeners",
+    "openstack/loadbalancer/v2/loadbalancers",
+    "openstack/loadbalancer/v2/monitors",
+    "openstack/loadbalancer/v2/pools",
+    "openstack/networking/v2/extensions/external",
+    "openstack/networking/v2/extensions/layer3/floatingips",
     "openstack/networking/v2/extensions/layer3/routers",
     "openstack/networking/v2/extensions/security/groups",
     "openstack/networking/v2/extensions/security/rules",
@@ -635,7 +656,7 @@
     "pagination",
   ]
   pruneopts = "UT"
-  revision = "f29afc2cceca860199ee88cd355a4d0a37b3fad2"
+  revision = "dcc6e84aef1b6713accea7d7d7252ad2bc0e7034"
 
 [[projects]]
   digest = "1:c79fb010be38a59d657c48c6ba1d003a8aa651fa56b579d959d74573b7dff8e1"
@@ -699,11 +720,11 @@
   revision = "d8c773c4cba11b11539e3d45f93daeaa5dcf1fa1"
 
 [[projects]]
-  digest = "1:80544abec6a93301c477926d6ed12dffce5029ddb34101435d88277f98006844"
+  digest = "1:f9a5e090336881be43cfc1cf468330c1bdd60abdc9dd194e0b1ab69f4b94dd7c"
   name = "github.com/huandu/xstrings"
   packages = ["."]
   pruneopts = "UT"
-  revision = "3959339b333561bf62a38b424fd41517c2c90f40"
+  revision = "f02667b379e2fb5916c3cda2cf31e0eb885d79f8"
 
 [[projects]]
   digest = "1:3e260afa138eab6492b531a3b3d10ab4cb70512d423faa78b8949dec76e66a21"
@@ -1007,13 +1028,6 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "300106c228d52c8941d4b3de6054a6062a86dda3"
-
-[[projects]]
-  digest = "1:e589afe1921e2b183b1cc58a06d7b36ee703a1fdb3cfc41370903c75a5d00b2a"
-  name = "github.com/satori/go.uuid"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "5bf94b69c6b68ee1b541973bb8e1144db23a194b"
 
 [[projects]]
   digest = "1:8f9dbaa6f7247268be0b1248eeb7b2a4216a3de96b97d9ce1924842a8c3af28e"
@@ -2173,6 +2187,7 @@
     "github.com/MakeNowJust/heredoc",
     "github.com/Masterminds/sprig",
     "github.com/aws/aws-sdk-go/aws",
+    "github.com/aws/aws-sdk-go/aws/arn",
     "github.com/aws/aws-sdk-go/aws/awserr",
     "github.com/aws/aws-sdk-go/aws/client",
     "github.com/aws/aws-sdk-go/aws/credentials",
@@ -2222,9 +2237,21 @@
     "github.com/gophercloud/gophercloud",
     "github.com/gophercloud/gophercloud/openstack",
     "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes",
+    "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones",
+    "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips",
     "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs",
     "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints",
     "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups",
+    "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach",
+    "github.com/gophercloud/gophercloud/openstack/compute/v2/flavors",
+    "github.com/gophercloud/gophercloud/openstack/compute/v2/servers",
+    "github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets",
+    "github.com/gophercloud/gophercloud/openstack/dns/v2/zones",
+    "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners",
+    "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers",
+    "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools",
+    "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external",
+    "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips",
     "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers",
     "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups",
     "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules",

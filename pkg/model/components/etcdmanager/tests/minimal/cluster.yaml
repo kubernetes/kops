@@ -10,16 +10,20 @@ spec:
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
   etcdClusters:
-  - etcdMembers:
+  - cpuRequest: 200m
+    etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
+    memoryRequest: 100Mi
     name: main
     provider: Manager
     backups:
       backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd-main
-  - etcdMembers:
+  - cpuRequest: 100m
+    etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
+    memoryRequest: 100Mi
     name: events
     provider: Manager
     backups:
@@ -79,5 +83,3 @@ spec:
   role: Master
   subnets:
   - us-test-1a
-
-

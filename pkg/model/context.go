@@ -96,6 +96,7 @@ func (m *KopsModelContext) GetELBName32(prefix string) string {
 	return s
 }
 
+// ClusterName returns the cluster name
 func (m *KopsModelContext) ClusterName() string {
 	return m.Cluster.ObjectMeta.Name
 }
@@ -103,6 +104,8 @@ func (m *KopsModelContext) ClusterName() string {
 // GatherSubnets maps the subnet names in an InstanceGroup to the ClusterSubnetSpec objects (which are stored on the Cluster)
 func (m *KopsModelContext) GatherSubnets(ig *kops.InstanceGroup) ([]*kops.ClusterSubnetSpec, error) {
 	var subnets []*kops.ClusterSubnetSpec
+	var subnetType kops.SubnetType
+
 	for _, subnetName := range ig.Spec.Subnets {
 		var matches []*kops.ClusterSubnetSpec
 		for i := range m.Cluster.Spec.Subnets {
@@ -118,7 +121,18 @@ func (m *KopsModelContext) GatherSubnets(ig *kops.InstanceGroup) ([]*kops.Cluste
 			return nil, fmt.Errorf("found multiple subnets with name: %q", subnetName)
 		}
 		subnets = append(subnets, matches[0])
+
+		// @step: check the instance is not cross subnet types
+		switch subnetType {
+		case "":
+			subnetType = matches[0].Type
+		default:
+			if matches[0].Type != subnetType {
+				return nil, fmt.Errorf("found subnets of different types: %v", strings.Join([]string{string(subnetType), string(matches[0].Type)}, ","))
+			}
+		}
 	}
+
 	return subnets, nil
 }
 
@@ -285,7 +299,7 @@ func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 	return m.Cluster.Spec.API.LoadBalancer != nil
 }
 
-// If true then we will use the created loadbalancer for internal kubelet
+// UseLoadBalancerForInternalAPI check if true then we will use the created loadbalancer for internal kubelet
 // connections.  The intention here is to make connections to apiserver more
 // HA - see https://github.com/kubernetes/kops/issues/4252
 func (m *KopsModelContext) UseLoadBalancerForInternalAPI() bool {
@@ -313,8 +327,8 @@ func (m *KopsModelContext) UsePrivateDNS() bool {
 }
 
 // UseEtcdTLS checks to see if etcd tls is enabled
-func (c *KopsModelContext) UseEtcdTLS() bool {
-	for _, x := range c.Cluster.Spec.EtcdClusters {
+func (m *KopsModelContext) UseEtcdTLS() bool {
+	for _, x := range m.Cluster.Spec.EtcdClusters {
 		if x.EnableEtcdTLS {
 			return true
 		}
@@ -324,10 +338,10 @@ func (c *KopsModelContext) UseEtcdTLS() bool {
 }
 
 // KubernetesVersion parses the semver version of kubernetes, from the cluster spec
-func (c *KopsModelContext) KubernetesVersion() semver.Version {
+func (m *KopsModelContext) KubernetesVersion() semver.Version {
 	// TODO: Remove copy-pasting c.f. https://github.com/kubernetes/kops/blob/master/pkg/model/components/context.go#L32
 
-	kubernetesVersion := c.Cluster.Spec.KubernetesVersion
+	kubernetesVersion := m.Cluster.Spec.KubernetesVersion
 
 	if kubernetesVersion == "" {
 		glog.Fatalf("KubernetesVersion is required")
@@ -342,20 +356,21 @@ func (c *KopsModelContext) KubernetesVersion() semver.Version {
 }
 
 // IsKubernetesGTE checks if the kubernetes version is at least version, ignoring prereleases / patches
-func (c *KopsModelContext) IsKubernetesGTE(version string) bool {
-	return util.IsKubernetesGTE(version, c.KubernetesVersion())
+func (m *KopsModelContext) IsKubernetesGTE(version string) bool {
+	return util.IsKubernetesGTE(version, m.KubernetesVersion())
 }
 
-func (c *KopsModelContext) WellKnownServiceIP(id int) (net.IP, error) {
-	return components.WellKnownServiceIP(&c.Cluster.Spec, id)
+// WellKnownServiceIP returns a service ip with the service cidr
+func (m *KopsModelContext) WellKnownServiceIP(id int) (net.IP, error) {
+	return components.WellKnownServiceIP(&m.Cluster.Spec, id)
 }
 
 // NodePortRange returns the range of ports allocated to NodePorts
-func (c *KopsModelContext) NodePortRange() (utilnet.PortRange, error) {
+func (m *KopsModelContext) NodePortRange() (utilnet.PortRange, error) {
 	// defaultServiceNodePortRange is the default port range for NodePort services.
 	defaultServiceNodePortRange := utilnet.PortRange{Base: 30000, Size: 2768}
 
-	kubeApiServer := c.Cluster.Spec.KubeAPIServer
+	kubeApiServer := m.Cluster.Spec.KubeAPIServer
 	if kubeApiServer != nil && kubeApiServer.ServiceNodePortRange != "" {
 		err := defaultServiceNodePortRange.Set(kubeApiServer.ServiceNodePortRange)
 		if err != nil {
