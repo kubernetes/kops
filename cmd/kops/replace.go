@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 
@@ -30,6 +29,7 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/util/pkg/text"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
@@ -107,7 +107,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 				return fmt.Errorf("error reading file %q: %v", f, err)
 			}
 		}
-		sections := bytes.Split(contents, []byte("\n---\n"))
+		sections := text.SplitContentToSections(contents)
 
 		for _, section := range sections {
 			o, gvk, err := kopscodecs.Decode(section, nil)
