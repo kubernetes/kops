@@ -138,6 +138,7 @@ k8s.io/kops/pkg/values
 k8s.io/kops/protokube/cmd/protokube
 k8s.io/kops/protokube/pkg/etcd
 k8s.io/kops/protokube/pkg/gossip
+k8s.io/kops/protokube/pkg/gossip/ali
 k8s.io/kops/protokube/pkg/gossip/aws
 k8s.io/kops/protokube/pkg/gossip/dns
 k8s.io/kops/protokube/pkg/gossip/dns/hosts
