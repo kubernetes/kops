@@ -81,7 +81,7 @@ spec:
       serviceAccountName: metrics-server
       containers:
         - name: metrics-server
-          image: gcr.io/google_containers/metrics-server-amd64:v0.1.0
+          image: k8s.gcr.io/metrics-server-amd64:v0.1.0
           imagePullPolicy: Always
           command:
             - /metrics-server
