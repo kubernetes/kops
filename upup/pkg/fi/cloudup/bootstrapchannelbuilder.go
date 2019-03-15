@@ -1047,7 +1047,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.AmazonVPC != nil {
 		key := "networking.amazon-vpc-routed-eni"
-		version := "1.3.0-kops.1"
+		version := "1.3.0-kops.2"
 
 		{
 			id := "k8s-1.7"
