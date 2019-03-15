@@ -282,7 +282,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 				if fi.StringValue(pkg.Hash) != "" {
 					parsed, err := hashing.FromString(fi.StringValue(pkg.Hash))
 					if err != nil {
-						return fmt.Errorf("error paring hash: %v", err)
+						return fmt.Errorf("error parsing hash: %v", err)
 					}
 					hash = parsed
 				}
