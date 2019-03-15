@@ -26,6 +26,7 @@ go_library(
     importpath = "google.golang.org/grpc",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/github.com/golang/protobuf/proto:go_default_library",
         "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/golang.org/x/net/http2:go_default_library",
         "//vendor/golang.org/x/net/trace:go_default_library",
@@ -45,6 +46,5 @@ go_library(
         "//vendor/google.golang.org/grpc/status:go_default_library",
         "//vendor/google.golang.org/grpc/tap:go_default_library",
         "//vendor/google.golang.org/grpc/transport:go_default_library",
-        "@com_github_golang_protobuf//proto:go_default_library",
     ],
 )
