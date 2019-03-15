@@ -17,7 +17,6 @@ limitations under the License.
 package testutils
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -32,6 +31,7 @@ import (
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/text"
 )
 
 type Model struct {
@@ -49,7 +49,7 @@ func LoadModel(basedir string) (*Model, error) {
 
 	spec := &Model{}
 
-	sections := bytes.Split(clusterYaml, []byte("\n---\n"))
+	sections := text.SplitContentToSections(clusterYaml)
 	for _, section := range sections {
 		defaults := &schema.GroupVersionKind{
 			Group:   v1alpha2.SchemeGroupVersion.Group,
