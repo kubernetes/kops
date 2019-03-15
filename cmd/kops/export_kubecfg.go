@@ -20,6 +20,7 @@ import (
 	"io"
 
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/kubeconfig"
@@ -44,8 +45,9 @@ var (
 )
 
 type ExportKubecfgOptions struct {
-	tmpdir   string
-	keyStore fi.CAStore
+	tmpdir         string
+	keyStore       fi.CAStore
+	KubeConfigPath string
 }
 
 func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
@@ -63,6 +65,8 @@ func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
 			}
 		},
 	}
+
+	cmd.Flags().StringVar(&options.KubeConfigPath, "kubeconfig", options.KubeConfigPath, "The location of the kubeconfig file to create.")
 
 	return cmd
 }
@@ -93,10 +97,22 @@ func RunExportKubecfg(f *util.Factory, out io.Writer, options *ExportKubecfgOpti
 		return err
 	}
 
-	conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{})
+	conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{}, buildPathOptions(options))
 	if err != nil {
 		return err
 	}
 
 	return conf.WriteKubecfg()
+}
+
+func buildPathOptions(options *ExportKubecfgOptions) *clientcmd.PathOptions {
+	pathOptions := clientcmd.NewDefaultPathOptions()
+
+	if len(options.KubeConfigPath) > 0 {
+		pathOptions.GlobalFile = options.KubeConfigPath
+		pathOptions.EnvVar = ""
+		pathOptions.GlobalFileSubpath = ""
+	}
+
+	return pathOptions
 }
