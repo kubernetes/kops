@@ -484,7 +484,7 @@ manually create a load balancer and link it to the instance group. Traffic to th
 automatically go to one of the nodes.
 
 You can specify either `loadBalancerName` to link the instance group to an AWS Classic ELB or you can
-specify `targetGroupARN` to link the instance group to a target group, which are used by Application
+specify `targetGroupArn` to link the instance group to a target group, which are used by Application
 load balancers and Network load balancers.
 
 ```
@@ -501,7 +501,7 @@ spec:
   minSize: 2
   role: Node
   externalLoadBalancers:
-  - targetGroupARN: arn:aws:elasticloadbalancing:eu-west-1:123456789012:targetgroup/my-ingress-target-group/0123456789abcdef
+  - targetGroupArn: arn:aws:elasticloadbalancing:eu-west-1:123456789012:targetgroup/my-ingress-target-group/0123456789abcdef
   - loadBalancerName: my-elb-classic-load-balancer
 ```
 
