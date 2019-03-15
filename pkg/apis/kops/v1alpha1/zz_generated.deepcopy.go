@@ -2653,12 +2653,8 @@ func (in *NetworkingSpec) DeepCopyInto(out *NetworkingSpec) {
 	}
 	if in.GCE != nil {
 		in, out := &in.GCE, &out.GCE
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(GCENetworkingSpec)
-			**out = **in
-		}
+		*out = new(GCENetworkingSpec)
+		**out = **in
 	}
 	return
 }
