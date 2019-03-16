@@ -161,6 +161,8 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		// for baremetal, we don't specify a cloudprovider to apiserver
 	case kops.CloudProviderOpenstack:
 		c.CloudProvider = "openstack"
+	case kops.CloudProviderALI:
+		c.CloudProvider = "alicloud"
 	default:
 		return fmt.Errorf("unknown cloudprovider %q", clusterSpec.CloudProvider)
 	}
