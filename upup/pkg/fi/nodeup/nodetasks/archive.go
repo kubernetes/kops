@@ -149,7 +149,7 @@ func (_ *Archive) RenderLocal(t *local.LocalTarget, a, e, changes *Archive) erro
 		if e.Hash != "" {
 			parsed, err := hashing.FromString(e.Hash)
 			if err != nil {
-				return fmt.Errorf("error paring hash: %v", err)
+				return fmt.Errorf("error parsing hash: %v", err)
 			}
 			hash = parsed
 		}
