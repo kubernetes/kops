@@ -17,7 +17,19 @@
 # This script is intended to be run periodically, to check the health
 # of docker.  If it detects a failure, it will restart docker using systemctl.
 
-if timeout 60 docker ps > /dev/null; then
+healthcheck() {
+   if output=`timeout 60 docker network ls`; then
+       echo "$output" | fgrep -qw host || {
+          echo "docker 'host' network missing"
+          return 1
+       }
+   else
+       echo "docker returned $?"
+       return 1
+   fi
+}
+
+if healthcheck; then
   echo "docker healthy"
   exit 0
 fi
@@ -26,7 +38,7 @@ echo "docker failed"
 echo "Giving docker 30 seconds grace before restarting"
 sleep 30
 
-if timeout 60 docker ps > /dev/null; then
+if healthcheck; then
   echo "docker recovered"
   exit 0
 fi
@@ -43,7 +55,7 @@ systemctl start docker
 echo "Waiting 120 seconds to give docker time to start"
 sleep 60
 
-if timeout 60 docker ps > /dev/null; then
+if healthcheck; then
   echo "docker recovered"
   exit 0
 fi
