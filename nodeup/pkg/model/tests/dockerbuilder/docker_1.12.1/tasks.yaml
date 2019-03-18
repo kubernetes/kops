@@ -248,7 +248,6 @@ definition: |
   RestartSec=2s
   StartLimitInterval=0
   Delegate=yes
-  ExecStartPre=/opt/kubernetes/helpers/docker-prestart
 
   [Install]
   WantedBy=multi-user.target
