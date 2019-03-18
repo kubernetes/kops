@@ -1157,6 +1157,29 @@
   revision = "1f158d31de55abf9f97bbaa0a260e2b8023a3785"
 
 [[projects]]
+  digest = "1:1af1920a0f0dc25426ba2e57154b9c091ec2ed83be9107abcf83d23c6c9a4194"
+  name = "go.opencensus.io"
+  packages = [
+    ".",
+    "exemplar",
+    "internal",
+    "internal/tagencoding",
+    "plugin/ochttp",
+    "plugin/ochttp/propagation/b3",
+    "stats",
+    "stats/internal",
+    "stats/view",
+    "tag",
+    "trace",
+    "trace/internal",
+    "trace/propagation",
+    "trace/tracestate",
+  ]
+  pruneopts = "UT"
+  revision = "f305e5c4e2cf345eba88de13d10de1126fa45a61"
+  version = "v0.19.1"
+
+[[projects]]
   digest = "1:3c1a69cdae3501bf75e76d0d86dc6f2b0a7421bc205c0cb7b96b19eed464a34d"
   name = "go.uber.org/atomic"
   packages = ["."]
@@ -1298,7 +1321,7 @@
   revision = "2382e3994d48b1d22acc2c86bcad0a2aff028e32"
 
 [[projects]]
-  digest = "1:3fc6b3e498940f9d85232eb3dbd2a8a616b9ff006ad8cdd1d6ec157b515890a6"
+  digest = "1:7a7b687af10aa6fe59e7b42412538cc21725406a7398dbd1112f32e4d3e08e69"
   name = "google.golang.org/api"
   packages = [
     "compute/v0.alpha",
@@ -1309,13 +1332,18 @@
     "gensupport",
     "googleapi",
     "googleapi/internal/uritemplates",
+    "googleapi/transport",
     "iam/v1",
+    "internal",
     "oauth2/v2",
+    "option",
     "storage/v1",
     "tpu/v1",
+    "transport/http",
+    "transport/http/internal/propagation",
   ]
   pruneopts = "UT"
-  revision = "8e296ef260056b6323d10727db40512dac6d92d5"
+  revision = "1c80eec94674e565089c385972ea2b7a7a9c4c13"
 
 [[projects]]
   digest = "1:a48f97fb737d5d61cf13e81cfef040942d217d086766b823757d39d4f6a4c547"

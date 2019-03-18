@@ -163,7 +163,7 @@ required = [
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
 [[override]]
   name = "google.golang.org/api"
-  revision = "8e296ef260056b6323d10727db40512dac6d92d5"
+  revision = "1c80eec94674e565089c385972ea2b7a7a9c4c13"
 # UNKNOWN dep github.com/petar/GoLLRB
 [[override]]
   name = "github.com/Microsoft/go-winio"
