@@ -138,6 +138,7 @@ k8s.io/kops/pkg/values
 k8s.io/kops/protokube/cmd/protokube
 k8s.io/kops/protokube/pkg/etcd
 k8s.io/kops/protokube/pkg/gossip
+k8s.io/kops/protokube/pkg/gossip/ali
 k8s.io/kops/protokube/pkg/gossip/aws
 k8s.io/kops/protokube/pkg/gossip/dns
 k8s.io/kops/protokube/pkg/gossip/dns/hosts
@@ -191,5 +192,6 @@ k8s.io/kops/util/pkg/maps
 k8s.io/kops/util/pkg/reflectutils
 k8s.io/kops/util/pkg/slice
 k8s.io/kops/util/pkg/tables
+k8s.io/kops/util/pkg/text
 k8s.io/kops/util/pkg/ui
 k8s.io/kops/util/pkg/vfs

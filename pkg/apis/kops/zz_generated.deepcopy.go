@@ -979,6 +979,11 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.InsecureRegistries != nil {
+		in, out := &in.InsecureRegistries, &out.InsecureRegistries
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.LiveRestore != nil {
 		in, out := &in.LiveRestore, &out.LiveRestore
 		*out = new(bool)
@@ -1958,6 +1963,26 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.AuditWebhookBatchBufferSize != nil {
+		in, out := &in.AuditWebhookBatchBufferSize, &out.AuditWebhookBatchBufferSize
+		*out = new(int32)
+		**out = **in
+	}
+	if in.AuditWebhookBatchMaxSize != nil {
+		in, out := &in.AuditWebhookBatchMaxSize, &out.AuditWebhookBatchMaxSize
+		*out = new(int32)
+		**out = **in
+	}
+	if in.AuditWebhookBatchThrottleBurst != nil {
+		in, out := &in.AuditWebhookBatchThrottleBurst, &out.AuditWebhookBatchThrottleBurst
+		*out = new(int32)
+		**out = **in
+	}
+	if in.AuditWebhookBatchThrottleQps != nil {
+		in, out := &in.AuditWebhookBatchThrottleQps, &out.AuditWebhookBatchThrottleQps
+		*out = new(float64)
+		**out = **in
+	}
 	if in.AuthenticationTokenWebhookConfigFile != nil {
 		in, out := &in.AuthenticationTokenWebhookConfigFile, &out.AuthenticationTokenWebhookConfigFile
 		*out = new(string)
@@ -2028,6 +2053,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 			*out = new(core_v1.ResourceRequirements)
 			(*in).DeepCopyInto(*out)
 		}
+	}
+	if in.ServiceAccountKeyFile != nil {
+		in, out := &in.ServiceAccountKeyFile, &out.ServiceAccountKeyFile
+		*out = make([]string, len(*in))
+		copy(*out, *in)
 	}
 	return
 }

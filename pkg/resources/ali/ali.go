@@ -48,6 +48,8 @@ const (
 	typeVolume            = "Volume"
 	typeSSHKey            = "SSHKey"
 	typeVPC               = "VPC"
+	typeNatGateway        = "NatGateway"
+	typeEIP               = "EIP"
 )
 
 type clusterDiscoveryALI struct {
@@ -596,6 +598,8 @@ func (d *clusterDiscoveryALI) ListVPC() ([]*resources.Resource, error) {
 			}
 			resourceTrackers = append(resourceTrackers, resourceTracker)
 		}
+
+		ListNatGateway(d, vpcsToDelete[0], &resourceTrackers)
 	}
 
 	return resourceTrackers, nil
@@ -686,6 +690,141 @@ func DeleteVolume(cloud fi.Cloud, r *resources.Resource) error {
 	err := c.EcsClient().DeleteDisk(r.ID)
 	if err != nil {
 		return fmt.Errorf("err deleting volume:%v", err)
+	}
+	return nil
+}
+
+func ListNatGateway(d *clusterDiscoveryALI, vpcID string, resourceTrackers *[]*resources.Resource) error {
+
+	// Delete NateGateway with specified name. All of the EIPs will be deleted.
+	// We think the NateGateway which owns the designated name is owned.
+	natGatewaysToDelete := []string{}
+	eipToDelete := []string{}
+
+	name := d.clusterName
+	pageNumber := 1
+	pageSize := 50
+	for {
+		describeNatGatewaysArgs := &ecs.DescribeNatGatewaysArgs{
+			RegionId: common.Region(d.aliCloud.Region()),
+			VpcId:    vpcID,
+			Pagination: common.Pagination{
+				PageNumber: pageNumber,
+				PageSize:   pageSize,
+			},
+		}
+
+		natGateways, _, err := d.aliCloud.VpcClient().DescribeNatGateways(describeNatGatewaysArgs)
+		if err != nil {
+			return fmt.Errorf("err listing NatGateway:%v", err)
+		}
+
+		if len(natGateways) != 0 {
+			for _, nateGateway := range natGateways {
+				natGatewaysToDelete = append(natGatewaysToDelete, nateGateway.NatGatewayId)
+				for _, ip := range nateGateway.IpLists.IpList {
+					eipToDelete = append(eipToDelete, ip.AllocationId)
+				}
+			}
+		}
+		if len(natGateways) < pageSize {
+			break
+		} else {
+			pageNumber++
+		}
+	}
+
+	if len(natGatewaysToDelete) > 1 {
+		glog.V(8).Infof("Found multiple natGateways with name %q", name)
+	} else if len(natGatewaysToDelete) == 1 {
+		natGatwayTracker := &resources.Resource{
+			Name:    name,
+			ID:      natGatewaysToDelete[0],
+			Type:    typeNatGateway,
+			Deleter: DeleteNatGateway,
+		}
+		*resourceTrackers = append(*resourceTrackers, natGatwayTracker)
+		natGatwayTracker.Blocks = append(natGatwayTracker.Blocks, typeVPC+":"+vpcID)
+		for _, eip := range eipToDelete {
+
+			resourceTracker := &resources.Resource{
+				Name:    name,
+				ID:      eip,
+				Type:    typeEIP,
+				Deleter: DeleteEIP,
+			}
+			resourceTracker.Blocked = append(resourceTracker.Blocked, typeNatGateway+":"+natGatwayTracker.ID)
+			*resourceTrackers = append(*resourceTrackers, resourceTracker)
+		}
+	}
+
+	return nil
+}
+
+func DeleteNatGateway(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(aliup.ALICloud)
+
+	describeNatGatewaysArgs := &ecs.DescribeNatGatewaysArgs{
+		RegionId:     common.Region(c.Region()),
+		NatGatewayId: r.ID,
+	}
+
+	natGateways, _, err := c.VpcClient().DescribeNatGateways(describeNatGatewaysArgs)
+	if err != nil {
+		return fmt.Errorf("err listing NatGateway:%v", err)
+	}
+
+	if len(natGateways) > 1 {
+		glog.V(8).Infof("Found multiple natGateways with ID %q", r.ID)
+	} else if len(natGateways) == 1 {
+		for _, snatTableId := range natGateways[0].SnatTableIds.SnatTableId {
+			describeSnatTableEntriesArgs := &ecs.DescribeSnatTableEntriesArgs{
+				RegionId:    common.Region(c.Region()),
+				SnatTableId: snatTableId,
+			}
+			snatTableEntries, _, err := c.VpcClient().DescribeSnatTableEntries(describeSnatTableEntriesArgs)
+			if err != nil {
+				return fmt.Errorf("err Listing snatTableEntries:%v", err)
+			}
+			for _, snatTableEntry := range snatTableEntries {
+				deleteSnatEntryArgs := &ecs.DeleteSnatEntryArgs{
+					RegionId:    common.Region(c.Region()),
+					SnatTableId: snatTableId,
+					SnatEntryId: snatTableEntry.SnatEntryId,
+				}
+				err := c.VpcClient().DeleteSnatEntry(deleteSnatEntryArgs)
+				if err != nil {
+					return fmt.Errorf("err deleting SnatEntryArgs:%v", err)
+				}
+			}
+		}
+		for _, ip := range natGateways[0].IpLists.IpList {
+			err := c.VpcClient().UnassociateEipAddress(ip.AllocationId, r.ID)
+			if err != nil {
+				return fmt.Errorf("err unassociating EIP:%v", err)
+			}
+		}
+	}
+
+	glog.V(2).Infof("Removing NatGateway with Id %s", r.ID)
+	deleteNatGatewayArgs := &ecs.DeleteNatGatewayArgs{
+		RegionId:     common.Region(c.Region()),
+		NatGatewayId: r.ID,
+	}
+	err = c.EcsClient().DeleteNatGateway(deleteNatGatewayArgs)
+	if err != nil {
+		return fmt.Errorf("err deleting NatGateway:%v", err)
+	}
+	return nil
+}
+
+func DeleteEIP(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(aliup.ALICloud)
+	glog.V(2).Infof("Removing EIP with Id %s", r.ID)
+
+	err := c.VpcClient().ReleaseEipAddress(r.ID)
+	if err != nil {
+		return fmt.Errorf("err deleting EIP:%v", err)
 	}
 	return nil
 }

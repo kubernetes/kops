@@ -2168,6 +2168,7 @@ func autoConvert_v1alpha2_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.IPMasq = in.IPMasq
 	out.IPTables = in.IPTables
 	out.InsecureRegistry = in.InsecureRegistry
+	out.InsecureRegistries = in.InsecureRegistries
 	out.LiveRestore = in.LiveRestore
 	out.LogDriver = in.LogDriver
 	out.LogLevel = in.LogLevel
@@ -2199,6 +2200,7 @@ func autoConvert_kops_DockerConfig_To_v1alpha2_DockerConfig(in *kops.DockerConfi
 	out.IPMasq = in.IPMasq
 	out.IPTables = in.IPTables
 	out.InsecureRegistry = in.InsecureRegistry
+	out.InsecureRegistries = in.InsecureRegistries
 	out.LiveRestore = in.LiveRestore
 	out.LogDriver = in.LogDriver
 	out.LogLevel = in.LogLevel
@@ -3223,6 +3225,15 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AuditLogMaxBackups = in.AuditLogMaxBackups
 	out.AuditLogMaxSize = in.AuditLogMaxSize
 	out.AuditPolicyFile = in.AuditPolicyFile
+	out.AuditWebhookBatchBufferSize = in.AuditWebhookBatchBufferSize
+	out.AuditWebhookBatchMaxSize = in.AuditWebhookBatchMaxSize
+	out.AuditWebhookBatchMaxWait = in.AuditWebhookBatchMaxWait
+	out.AuditWebhookBatchThrottleBurst = in.AuditWebhookBatchThrottleBurst
+	out.AuditWebhookBatchThrottleEnable = in.AuditWebhookBatchThrottleEnable
+	out.AuditWebhookBatchThrottleQps = in.AuditWebhookBatchThrottleQps
+	out.AuditWebhookConfigFile = in.AuditWebhookConfigFile
+	out.AuditWebhookInitialBackoff = in.AuditWebhookInitialBackoff
+	out.AuditWebhookMode = in.AuditWebhookMode
 	out.AuthenticationTokenWebhookConfigFile = in.AuthenticationTokenWebhookConfigFile
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
 	out.AuthorizationMode = in.AuthorizationMode
@@ -3240,6 +3251,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.MinRequestTimeout = in.MinRequestTimeout
 	out.TargetRamMb = in.TargetRamMb
 	out.Resources = in.Resources
+	out.ServiceAccountKeyFile = in.ServiceAccountKeyFile
 	return nil
 }
 
@@ -3299,6 +3311,15 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.AuditLogMaxBackups = in.AuditLogMaxBackups
 	out.AuditLogMaxSize = in.AuditLogMaxSize
 	out.AuditPolicyFile = in.AuditPolicyFile
+	out.AuditWebhookBatchBufferSize = in.AuditWebhookBatchBufferSize
+	out.AuditWebhookBatchMaxSize = in.AuditWebhookBatchMaxSize
+	out.AuditWebhookBatchMaxWait = in.AuditWebhookBatchMaxWait
+	out.AuditWebhookBatchThrottleBurst = in.AuditWebhookBatchThrottleBurst
+	out.AuditWebhookBatchThrottleEnable = in.AuditWebhookBatchThrottleEnable
+	out.AuditWebhookBatchThrottleQps = in.AuditWebhookBatchThrottleQps
+	out.AuditWebhookConfigFile = in.AuditWebhookConfigFile
+	out.AuditWebhookInitialBackoff = in.AuditWebhookInitialBackoff
+	out.AuditWebhookMode = in.AuditWebhookMode
 	out.AuthenticationTokenWebhookConfigFile = in.AuthenticationTokenWebhookConfigFile
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
 	out.AuthorizationMode = in.AuthorizationMode
@@ -3316,6 +3337,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.MinRequestTimeout = in.MinRequestTimeout
 	out.TargetRamMb = in.TargetRamMb
 	out.Resources = in.Resources
+	out.ServiceAccountKeyFile = in.ServiceAccountKeyFile
 	return nil
 }
 

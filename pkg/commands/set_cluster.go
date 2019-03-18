@@ -81,6 +81,14 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 
 		// For now we have hard-code the values we want to support; we'll get test coverage and then do this properly...
 		switch kv[0] {
+		case "spec.kubelet.authorizationMode":
+			cluster.Spec.Kubelet.AuthorizationMode = kv[1]
+		case "spec.kubelet.authenticationTokenWebhook":
+			v, err := strconv.ParseBool(kv[1])
+			if err != nil {
+				return fmt.Errorf("unknown boolean value: %q", kv[1])
+			}
+			cluster.Spec.Kubelet.AuthenticationTokenWebhook = &v
 		case "cluster.spec.nodePortAccess":
 			cluster.Spec.NodePortAccess = append(cluster.Spec.NodePortAccess, kv[1])
 		case "spec.kubernetesVersion":

@@ -20,8 +20,6 @@ import (
 	"fmt"
 	"io"
 
-	"bytes"
-
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -32,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/sshcredentials"
+	"k8s.io/kops/util/pkg/text"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
@@ -115,7 +114,7 @@ func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 			}
 		}
 
-		sections := bytes.Split(contents, []byte("\n---\n"))
+		sections := text.SplitContentToSections(contents)
 		for _, section := range sections {
 			defaults := &schema.GroupVersionKind{
 				Group:   v1alpha1.SchemeGroupVersion.Group,

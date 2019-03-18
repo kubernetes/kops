@@ -163,39 +163,39 @@
   version = "v1.16.11"
 
 [[projects]]
-  digest = "1:8b019763cb155094c7919d577530604dc070a05315f24b3a2b102a8f9570725f"
+  digest = "1:578040aa4b1d7e1f57f0654996de74a4c522887f567f824ed58eccf513104ceb"
   name = "github.com/bazelbuild/bazel-gazelle"
   packages = [
     "cmd/gazelle",
-    "internal/config",
-    "internal/flag",
-    "internal/label",
-    "internal/language",
-    "internal/language/go",
-    "internal/language/proto",
-    "internal/merger",
-    "internal/pathtools",
-    "internal/repos",
-    "internal/resolve",
-    "internal/rule",
+    "config",
+    "flag",
     "internal/version",
-    "internal/walk",
     "internal/wspace",
+    "label",
+    "language",
+    "language/go",
+    "language/proto",
+    "merger",
+    "pathtools",
+    "repo",
+    "resolve",
+    "rule",
+    "walk",
   ]
   pruneopts = "UT"
-  revision = "6a1b93cc9b1c7e55e7d05a6d324bcf9d87ea3ab1"
-  version = "0.14.0"
+  revision = "e443c54b396a236e0d3823f46c6a931e1c9939f2"
+  version = "0.17.0"
 
 [[projects]]
-  digest = "1:331f668c3b6315145093a3b104c1da6be2835a3b1e7c873ad5fba82667330d44"
+  digest = "1:f6fd9834f9a1b421395cbe15fa964b949c38bb31fb43bc6ba88ad912b36c664e"
   name = "github.com/bazelbuild/buildtools"
   packages = [
     "build",
     "tables",
   ]
   pruneopts = "UT"
-  revision = "a05406a1a855c6d8ebfc368555ace7638d83c0d9"
-  version = "0.6.0"
+  revision = "55b64c3d2ddfb57f06477c1d94ef477419c96bd6"
+  version = "0.22.0"
 
 [[projects]]
   digest = "1:2daf57e573d4174757646e9d416d25e4dbe4533237961a90b986091a2de12830"
@@ -290,12 +290,13 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:c208e46a2c410d62b3e5c97f1f1db797d8d0862307b7800c4783dac5be1c83fa"
+  digest = "1:2beb133a93078255768c2445096e4a549a845c15c0ce7614f8c8aa35b43c0850"
   name = "github.com/denverdino/aliyungo"
   packages = [
     "common",
     "ecs",
     "ess",
+    "metadata",
     "oss",
     "ram",
     "slb",
@@ -2217,6 +2218,7 @@
     "github.com/denverdino/aliyungo/common",
     "github.com/denverdino/aliyungo/ecs",
     "github.com/denverdino/aliyungo/ess",
+    "github.com/denverdino/aliyungo/metadata",
     "github.com/denverdino/aliyungo/oss",
     "github.com/denverdino/aliyungo/ram",
     "github.com/denverdino/aliyungo/slb",

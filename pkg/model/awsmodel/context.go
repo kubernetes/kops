@@ -18,6 +18,7 @@ package awsmodel
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
 )
 
@@ -26,7 +27,16 @@ type AWSModelContext struct {
 	*model.KopsModelContext
 }
 
+// UseMixedInstancePolicies indicates if we are using mixed instance policies
+func UseMixedInstancePolicies(ig *kops.InstanceGroup) bool {
+	return ig.Spec.MixedInstancesPolicy != nil
+}
+
 // UseLaunchTemplate checks if we need to use a launch template rather than configuration
 func UseLaunchTemplate(ig *kops.InstanceGroup) bool {
-	return ig.Spec.MixedInstancesPolicy != nil
+	if featureflag.EnableLaunchTemplates.Enabled() {
+		return true
+	}
+
+	return UseMixedInstancePolicies(ig)
 }

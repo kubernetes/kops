@@ -165,6 +165,21 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 		buffer.WriteString("\" ")
 	}
 
+	if os.Getenv("OSS_REGION") != "" {
+		buffer.WriteString("\"OSS_REGION=")
+		buffer.WriteString(os.Getenv("OSS_REGION"))
+		buffer.WriteString("\" ")
+	}
+
+	if os.Getenv("ALIYUN_ACCESS_KEY_ID") != "" {
+		buffer.WriteString("\"ALIYUN_ACCESS_KEY_ID=")
+		buffer.WriteString(os.Getenv("ALIYUN_ACCESS_KEY_ID"))
+		buffer.WriteString("\" ")
+		buffer.WriteString("\"ALIYUN_ACCESS_KEY_SECRET=")
+		buffer.WriteString(os.Getenv("ALIYUN_ACCESS_KEY_SECRET"))
+		buffer.WriteString("\" ")
+	}
+
 	if buffer.String() != "" {
 		manifest.Set("Service", "Environment", buffer.String())
 	}

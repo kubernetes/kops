@@ -23,19 +23,30 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/bazelbuild/bazel-gazelle/internal/config"
-	"github.com/bazelbuild/bazel-gazelle/internal/merger"
-	"github.com/bazelbuild/bazel-gazelle/internal/repos"
-	"github.com/bazelbuild/bazel-gazelle/internal/rule"
+	"github.com/bazelbuild/bazel-gazelle/config"
+	gzflag "github.com/bazelbuild/bazel-gazelle/flag"
+	"github.com/bazelbuild/bazel-gazelle/merger"
+	"github.com/bazelbuild/bazel-gazelle/repo"
+	"github.com/bazelbuild/bazel-gazelle/rule"
 )
 
 type updateReposFn func(c *updateReposConfig, oldFile *rule.File, kinds map[string]rule.KindInfo) error
 
 type updateReposConfig struct {
-	fn           updateReposFn
-	lockFilename string
-	importPaths  []string
+	fn                      updateReposFn
+	lockFilename            string
+	importPaths             []string
+	buildExternalAttr       string
+	buildFileNamesAttr      string
+	buildFileGenerationAttr string
+	buildTagsAttr           string
+	buildFileProtoModeAttr  string
+	buildExtraArgsAttr      string
 }
+
+var validBuildExternalAttr = []string{"external", "vendored"}
+var validBuildFileGenerationAttr = []string{"auto", "on", "off"}
+var validBuildFileProtoModeAttr = []string{"default", "legacy", "disable", "disable_global", "package"}
 
 const updateReposName = "_update-repos"
 
@@ -49,6 +60,12 @@ func (_ *updateReposConfigurer) RegisterFlags(fs *flag.FlagSet, cmd string, c *c
 	uc := &updateReposConfig{}
 	c.Exts[updateReposName] = uc
 	fs.StringVar(&uc.lockFilename, "from_file", "", "Gazelle will translate repositories listed in this file into repository rules in WORKSPACE. Currently only dep's Gopkg.lock is supported.")
+	fs.StringVar(&uc.buildFileNamesAttr, "build_file_names", "", "Sets the build_file_name attribute for the generated go_repository rule(s).")
+	fs.Var(&gzflag.AllowedStringFlag{Value: &uc.buildExternalAttr, Allowed: validBuildExternalAttr}, "build_external", "Sets the build_external attribute for the generated go_repository rule(s).")
+	fs.Var(&gzflag.AllowedStringFlag{Value: &uc.buildFileGenerationAttr, Allowed: validBuildFileGenerationAttr}, "build_file_generation", "Sets the build_file_generation attribute for the generated go_repository rule(s).")
+	fs.StringVar(&uc.buildTagsAttr, "build_tags", "", "Sets the build_tags attribute for the generated go_repository rule(s).")
+	fs.Var(&gzflag.AllowedStringFlag{Value: &uc.buildFileProtoModeAttr, Allowed: validBuildFileProtoModeAttr}, "build_file_proto_mode", "Sets the build_file_proto_mode attribute for the generated go_repository rule(s).")
+	fs.StringVar(&uc.buildExtraArgsAttr, "build_extra_args", "", "Sets the build_extra_args attribute for the generated go_repository rule(s).")
 }
 
 func (_ *updateReposConfigurer) CheckFlags(fs *flag.FlagSet, c *config.Config) error {
@@ -75,12 +92,11 @@ func (_ *updateReposConfigurer) KnownDirectives() []string { return nil }
 func (_ *updateReposConfigurer) Configure(c *config.Config, rel string, f *rule.File) {}
 
 func updateRepos(args []string) error {
-	cexts := make([]config.Configurer, 0, len(languages)+2)
+	cexts := make([]config.Configurer, 0, 2)
 	cexts = append(cexts, &config.CommonConfigurer{}, &updateReposConfigurer{})
 	kinds := make(map[string]rule.KindInfo)
 	loads := []rule.LoadInfo{}
 	for _, lang := range languages {
-		cexts = append(cexts, lang)
 		loads = append(loads, lang.Loads()...)
 		for kind, info := range lang.Kinds() {
 			kinds[kind] = info
@@ -93,7 +109,7 @@ func updateRepos(args []string) error {
 	uc := getUpdateReposConfig(c)
 
 	workspacePath := filepath.Join(c.RepoRoot, "WORKSPACE")
-	f, err := rule.LoadFile(workspacePath, "")
+	f, err := rule.LoadWorkspaceFile(workspacePath, "")
 	if err != nil {
 		return fmt.Errorf("error loading %q: %v", workspacePath, err)
 	}
@@ -154,11 +170,12 @@ file (currently only deps' Gopkg.lock is supported).
 FLAGS:
 
 `)
+	fs.PrintDefaults()
 }
 
 func updateImportPaths(c *updateReposConfig, f *rule.File, kinds map[string]rule.KindInfo) error {
-	rs := repos.ListRepositories(f)
-	rc := repos.NewRemoteCache(rs)
+	rs := repo.ListRepositories(f)
+	rc := repo.NewRemoteCache(rs)
 
 	genRules := make([]*rule.Rule, len(c.importPaths))
 	errs := make([]error, len(c.importPaths))
@@ -167,14 +184,15 @@ func updateImportPaths(c *updateReposConfig, f *rule.File, kinds map[string]rule
 	for i, imp := range c.importPaths {
 		go func(i int, imp string) {
 			defer wg.Done()
-			repo, err := repos.UpdateRepo(rc, imp)
+			r, err := repo.UpdateRepo(rc, imp)
 			if err != nil {
 				errs[i] = err
 				return
 			}
-			repo.Remote = "" // don't set these explicitly
-			repo.VCS = ""
-			rule := repos.GenerateRule(repo)
+			r.Remote = "" // don't set these explicitly
+			r.VCS = ""
+			rule := repo.GenerateRule(r)
+			applyBuildAttributes(c, rule)
 			genRules[i] = rule
 		}(i, imp)
 	}
@@ -190,11 +208,37 @@ func updateImportPaths(c *updateReposConfig, f *rule.File, kinds map[string]rule
 }
 
 func importFromLockFile(c *updateReposConfig, f *rule.File, kinds map[string]rule.KindInfo) error {
-	genRules, err := repos.ImportRepoRules(c.lockFilename)
+	rs := repo.ListRepositories(f)
+	rc := repo.NewRemoteCache(rs)
+	genRules, err := repo.ImportRepoRules(c.lockFilename, rc)
 	if err != nil {
 		return err
+	}
+	for i := range genRules {
+		applyBuildAttributes(c, genRules[i])
 	}
 
 	merger.MergeFile(f, nil, genRules, merger.PreResolve, kinds)
 	return nil
+}
+
+func applyBuildAttributes(c *updateReposConfig, r *rule.Rule) {
+	if c.buildExternalAttr != "" {
+		r.SetAttr("build_external", c.buildExternalAttr)
+	}
+	if c.buildFileNamesAttr != "" {
+		r.SetAttr("build_file_name", c.buildFileNamesAttr)
+	}
+	if c.buildFileGenerationAttr != "" {
+		r.SetAttr("build_file_generation", c.buildFileGenerationAttr)
+	}
+	if c.buildTagsAttr != "" {
+		r.SetAttr("build_tags", c.buildTagsAttr)
+	}
+	if c.buildFileProtoModeAttr != "" {
+		r.SetAttr("build_file_proto_mode", c.buildFileProtoModeAttr)
+	}
+	if c.buildExtraArgsAttr != "" {
+		r.SetAttr("build_extra_args", c.buildExtraArgsAttr)
+	}
 }

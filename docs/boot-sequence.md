@@ -50,6 +50,10 @@ On nodes:
 
 * kube-proxy (which configures iptables so that the k8s-network will work)
 
+It is possible to add custom static pods by using `fileAssets` in the
+cluster spec. This might be useful for any custom bootstraping that
+doesn't fit into `additionalUserData` or `hooks`.
+
 ## kubelet start
 
 Kubelet starts up, starts (and restarts) all the containers in /etc/kubernetes/manifests.

@@ -438,6 +438,25 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 		buffer.WriteString(" ")
 	}
 
+	if os.Getenv("OSS_REGION") != "" {
+		buffer.WriteString(" ")
+		buffer.WriteString("-e 'OSS_REGION=")
+		buffer.WriteString(os.Getenv("OSS_REGION"))
+		buffer.WriteString("'")
+		buffer.WriteString(" ")
+	}
+
+	if os.Getenv("ALIYUN_ACCESS_KEY_ID") != "" {
+		buffer.WriteString(" ")
+		buffer.WriteString("-e 'ALIYUN_ACCESS_KEY_ID=")
+		buffer.WriteString(os.Getenv("ALIYUN_ACCESS_KEY_ID"))
+		buffer.WriteString("'")
+		buffer.WriteString(" -e 'ALIYUN_ACCESS_KEY_SECRET=")
+		buffer.WriteString(os.Getenv("ALIYUN_ACCESS_KEY_SECRET"))
+		buffer.WriteString("'")
+		buffer.WriteString(" ")
+	}
+
 	t.writeProxyEnvVars(&buffer)
 
 	return buffer.String()

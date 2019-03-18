@@ -24,6 +24,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/apis/kops"
@@ -31,8 +32,6 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-
-	"github.com/golang/glog"
 )
 
 // DockerBuilder install docker (just the packages at the moment)
@@ -41,6 +40,12 @@ type DockerBuilder struct {
 }
 
 var _ fi.ModelBuilder = &DockerBuilder{}
+
+type packageInfo struct {
+	Version string // Package version
+	Source  string // URL to download the package from
+	Hash    string // sha1sum of the package file
+}
 
 type dockerVersion struct {
 	Name string
@@ -54,8 +59,19 @@ type dockerVersion struct {
 	// Hash is the sha1 hash of the file
 	Hash string
 
+	// Extra packages to install during the same dpkg/yum transaction.
+	// This is used for:
+	//   - On RHEL/CentOS, the SELinux policy needs to be installed.
+	//   - Starting from Docker 18.09, the Docker package has been split in 3
+	//     separate packages: one for the daemon, one for the CLI, one for
+	//     containerd.  All 3 must be installed at the same time when
+	//     upgrading from an older version of Docker.
+	ExtraPackages map[string]packageInfo
+
 	DockerVersion string
 	Distros       []distros.Distribution
+	// List of dependencies that can be installed using the system's package
+	// manager (e.g. apt-get install or yum install).
 	Dependencies  []string
 	Architectures []Architecture
 
@@ -104,16 +120,14 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.11.2",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.11.2-1.el7.centos.x86_64.rpm",
 		Hash:          "432e6d7948df9e05f4190fce2f423eedbfd673d5",
-		Dependencies:  []string{"libtool-ltdl"},
-	},
-	{
-		DockerVersion: "1.11.2",
-		Name:          "docker-engine-selinux",
-		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.11.2",
-		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.11.2-1.el7.centos.noarch.rpm",
-		Hash:          "f6da608fa8eeb2be8071489086ed9ff035f6daba",
+		ExtraPackages: map[string]packageInfo{
+			"docker-engine-selinux": {
+				Version: "1.11.2",
+				Source:  "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.11.2-1.el7.centos.noarch.rpm",
+				Hash:    "f6da608fa8eeb2be8071489086ed9ff035f6daba",
+			},
+		},
+		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// 1.12.1 - Jessie
@@ -149,16 +163,14 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.12.1",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.1-1.el7.centos.x86_64.rpm",
 		Hash:          "636471665665546224444052c3b48001397036be",
-		Dependencies:  []string{"libtool-ltdl"},
-	},
-	{
-		DockerVersion: "1.12.1",
-		Name:          "docker-engine-selinux",
-		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.12.1",
-		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.12.1-1.el7.centos.noarch.rpm",
-		Hash:          "52ec22128e70acc2f76b3a8e87ff96785995116a",
+		ExtraPackages: map[string]packageInfo{
+			"docker-engine-selinux": {
+				Version: "1.12.1",
+				Source:  "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.12.1-1.el7.centos.noarch.rpm",
+				Hash:    "52ec22128e70acc2f76b3a8e87ff96785995116a",
+			},
+		},
+		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// 1.12.3 - k8s 1.5
@@ -210,16 +222,14 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.12.3",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.3-1.el7.centos.x86_64.rpm",
 		Hash:          "67fbb78cfb9526aaf8142c067c10384df199d8f9",
-		Dependencies:  []string{"libtool-ltdl", "libseccomp"},
-	},
-	{
-		DockerVersion: "1.12.3",
-		Name:          "docker-engine-selinux",
-		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.12.3",
-		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.12.3-1.el7.centos.noarch.rpm",
-		Hash:          "a6b0243af348140236ed96f2e902b259c590eefa",
+		ExtraPackages: map[string]packageInfo{
+			"docker-engine-selinux": {
+				Version: "1.12.3",
+				Source:  "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.12.3-1.el7.centos.noarch.rpm",
+				Hash:    "a6b0243af348140236ed96f2e902b259c590eefa",
+			},
+		},
+		Dependencies: []string{"libtool-ltdl", "libseccomp"},
 	},
 
 	// 1.12.6 - k8s 1.6
@@ -286,17 +296,14 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.12.6",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.6-1.el7.centos.x86_64.rpm",
 		Hash:          "776dbefa9dc7733000e46049293555a9a422c50e",
-		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
-	},
-	{
-		DockerVersion: "1.12.6",
-		Name:          "docker-engine-selinux",
-		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.12.6",
-		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.12.6-1.el7.centos.noarch.rpm",
-		Hash:          "9a6ee0d631ca911b6927450a3c396e9a5be75047",
-		Dependencies:  []string{"policycoreutils-python"},
+		ExtraPackages: map[string]packageInfo{
+			"docker-engine-selinux": {
+				Version: "1.12.6",
+				Source:  "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.12.6-1.el7.centos.noarch.rpm",
+				Hash:    "9a6ee0d631ca911b6927450a3c396e9a5be75047",
+			},
+		},
+		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
 	},
 
 	// 1.13.1 - k8s 1.8
@@ -363,17 +370,14 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.13.1",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.13.1-1.el7.centos.x86_64.rpm",
 		Hash:          "b18f7fd8057665e7d2871d29640e214173f70fe1",
-		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
-	},
-	{
-		DockerVersion: "1.13.1",
-		Name:          "docker-engine-selinux",
-		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.13.1",
-		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.13.1-1.el7.centos.noarch.rpm",
-		Hash:          "948c518a610af631fa98aa32d9bcd43e9ddd5ebc",
-		Dependencies:  []string{"policycoreutils-python", "selinux-policy-base", "selinux-policy-targeted"},
+		ExtraPackages: map[string]packageInfo{
+			"docker-engine-selinux": {
+				Version: "1.13.1",
+				Source:  "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.13.1-1.el7.centos.noarch.rpm",
+				Hash:    "948c518a610af631fa98aa32d9bcd43e9ddd5ebc",
+			},
+		},
+		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python", "selinux-policy-base", "selinux-policy-targeted"},
 	},
 
 	// 17.03.2 - k8s 1.8
@@ -451,18 +455,15 @@ var dockerVersions = []dockerVersion{
 		Version:       "17.03.2.ce",
 		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.03.2.ce-1.el7.centos.x86_64.rpm",
 		Hash:          "494ca888f5b1553f93b9d9a5dad4a67f76cf9eb5",
-		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-selinux": {
+				Version: "17.03.2.ce",
+				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-selinux-17.03.2.ce-1.el7.centos.noarch.rpm",
+				Hash:    "4659c937b66519c88ef2a82a906bb156db29d191",
+			},
+		},
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
 		MarkImmutable: []string{"/usr/bin/docker-runc"},
-	},
-	{
-		DockerVersion: "17.03.2",
-		Name:          "docker-ce-selinux",
-		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "17.03.2.ce",
-		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-selinux-17.03.2.ce-1.el7.centos.noarch.rpm",
-		Hash:          "4659c937b66519c88ef2a82a906bb156db29d191",
-		Dependencies:  []string{"policycoreutils-python"},
 	},
 	// 17.09.0 - k8s 1.8
 
@@ -533,23 +534,20 @@ var dockerVersions = []dockerVersion{
 	// 17.09.0 - Centos / Rhel7 (two packages)
 	{
 		DockerVersion: "17.09.0",
-		Name:          "container-selinux",
-		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "2.68",
-		Source:        "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
-		Hash:          "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
-		Dependencies:  []string{"policycoreutils-python"},
-	},
-	{
-		DockerVersion: "17.09.0",
 		Name:          "docker-ce",
 		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "17.09.0.ce",
 		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.09.0.ce-1.el7.centos.x86_64.rpm",
 		Hash:          "b4ce72e80ff02926de943082821bbbe73958f87a",
-		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
+		ExtraPackages: map[string]packageInfo{
+			"container-selinux": {
+				Version: "2.68",
+				Source:  "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
+				Hash:    "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
+			},
+		},
+		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
 	},
 
 	// 18.03.1 - Bionic
@@ -582,12 +580,11 @@ var dockerVersions = []dockerVersion{
 
 	// 18.06.1 - Debian Stretch
 	{
-
 		DockerVersion: "18.06.1",
 		Name:          "docker-ce",
 		Distros:       []distros.Distribution{distros.DistributionDebian9},
 		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "18.06.1~ce-0~debian",
+		Version:       "18.06.1~ce~3-0~debian",
 		Source:        "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.1~ce~3-0~debian_amd64.deb",
 		Hash:          "18473b80e61b6d4eb8b52d87313abd71261287e5",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
@@ -612,7 +609,7 @@ var dockerVersions = []dockerVersion{
 		Name:          "docker-ce",
 		Distros:       []distros.Distribution{distros.DistributionJessie},
 		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "ce_18.06.2~ce~3-0~debian",
+		Version:       "18.06.2~ce~3-0~debian",
 		Source:        "https://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~debian_amd64.deb",
 		Hash:          "1a2500311230aff37aa81dd1292a88302fb0a2e1",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
@@ -621,23 +618,44 @@ var dockerVersions = []dockerVersion{
 	// 18.06.1 - CentOS / Rhel7 (two packages)
 	{
 		DockerVersion: "18.06.1",
-		Name:          "container-selinux",
-		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "2.68",
-		Source:        "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
-		Hash:          "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
-		Dependencies:  []string{"policycoreutils-python"},
-	},
-	{
-		DockerVersion: "18.06.1",
 		Name:          "docker-ce",
 		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "18.06.1.ce",
 		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.1.ce-3.el7.x86_64.rpm",
 		Hash:          "0a1325e570c5e54111a79623c9fd0c0c714d3a11",
-		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
+		ExtraPackages: map[string]packageInfo{
+			"container-selinux": {
+				Version: "2.68",
+				Source:  "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
+				Hash:    "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
+			},
+		},
+		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+	},
+
+	// 18.09.3 - Debian Stretch
+	{
+		DockerVersion: "18.09.3",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionDebian9},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.09.3~3-0~debian-stretch",
+		Source:        "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.09.3~3-0~debian-stretch_amd64.deb",
+		Hash:          "009b9a2d8bfaa97c74773fe4ec25b6bb396b10d0",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "18.09.3~3-0~debian-stretch",
+				Source:  "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce-cli_18.09.3~3-0~debian-stretch_amd64.deb",
+				Hash:    "557f868ec63e5251639ebd1d8669eb0c61dd555c",
+			},
+			"containerd.io": {
+				Version: "1.2.4-1",
+				Source:  "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/containerd.io_1.2.4-1_amd64.deb",
+				Hash:    "48c6ab0c908316af9a183de5aad64703bc516bdf",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7"},
 	},
 
 	// 18.06.2 - CentOS / Rhel7 (two packages)
@@ -697,7 +715,7 @@ var dockerVersions = []dockerVersion{
 		Name:          "docker-ce",
 		Distros:       []distros.Distribution{distros.DistributionJessie},
 		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "ce_18.06.3~ce~3-0~debian",
+		Version:       "18.06.3~ce~3-0~debian",
 		Source:        "https://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
 		Hash:          "058bcd4b055560866b8cad978c7aa224694602da",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
@@ -706,23 +724,20 @@ var dockerVersions = []dockerVersion{
 	// 18.06.3 - CentOS / Rhel7 (two packages)
 	{
 		DockerVersion: "18.06.3",
-		Name:          "container-selinux",
-		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "2.68",
-		Source:        "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
-		Hash:          "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
-		Dependencies:  []string{"policycoreutils-python"},
-	},
-	{
-		DockerVersion: "18.06.3",
 		Name:          "docker-ce",
 		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "18.06.3.ce",
 		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.3.ce-3.el7.x86_64.rpm",
 		Hash:          "5369602f88406d4fb9159dc1d3fd44e76fb4cab8",
-		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
+		ExtraPackages: map[string]packageInfo{
+			"container-selinux": {
+				Version: "2.68",
+				Source:  "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
+				Hash:    "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
+			},
+		},
+		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
 	},
 
 	// TIP: When adding the next version, copy the previous
@@ -828,11 +843,23 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 				c.AddTask(b.buildDockerGroup())
 				c.AddTask(b.buildSystemdSocket())
 			} else {
+				var extraPkgs []*nodetasks.Package
+				for name, pkg := range dv.ExtraPackages {
+					dep := &nodetasks.Package{
+						Name:         name,
+						Version:      s(pkg.Version),
+						Source:       s(pkg.Source),
+						Hash:         s(pkg.Hash),
+						PreventStart: fi.Bool(true),
+					}
+					extraPkgs = append(extraPkgs, dep)
+				}
 				packageTask = &nodetasks.Package{
 					Name:    dv.Name,
 					Version: s(dv.Version),
 					Source:  s(dv.Source),
 					Hash:    s(dv.Hash),
+					Deps:    extraPkgs,
 
 					// TODO: PreventStart is now unused?
 					PreventStart: fi.Bool(true),
@@ -925,17 +952,12 @@ func (b *DockerBuilder) buildSystemdSocket() *nodetasks.Service {
 func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int64, dockerVersionMinor int64) *nodetasks.Service {
 	oldDocker := dockerVersionMajor <= 1 && dockerVersionMinor <= 11
 	usesDockerSocket := true
-	hasDockerBabysitter := false
 
 	var dockerdCommand string
 	if oldDocker {
 		dockerdCommand = "/usr/bin/docker daemon"
 	} else {
 		dockerdCommand = "/usr/bin/dockerd"
-	}
-
-	if b.Distribution.IsDebianFamily() {
-		hasDockerBabysitter = true
 	}
 
 	manifest := &systemd.Manifest{}
@@ -1004,10 +1026,6 @@ func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int64, dockerVers
 
 	// set delegate yes so that systemd does not reset the cgroups of docker containers
 	manifest.Set("Service", "Delegate", "yes")
-
-	if hasDockerBabysitter {
-		manifest.Set("Service", "ExecStartPre", "/opt/kubernetes/helpers/docker-prestart")
-	}
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 

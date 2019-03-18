@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "config.go",
+        "walk.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/bazelbuild/bazel-gazelle/walk",
+    importpath = "github.com/bazelbuild/bazel-gazelle/walk",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/bazelbuild/bazel-gazelle/config:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/flag:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/pathtools:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/rule:go_default_library",
+    ],
+)
