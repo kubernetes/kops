@@ -252,10 +252,20 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			VPCZoneIdentifier:    fi.String(strings.Join(e.AutoscalingGroupSubnets(), ",")),
 		}
 
+		// @check are we using a launchconfiguation
 		if e.LaunchConfiguration != nil {
 			request.LaunchConfigurationName = e.LaunchConfiguration.ID
 		}
+		// @check are we using launch template
+		if e.LaunchTemplate != nil {
+			request.LaunchTemplate = &autoscaling.LaunchTemplateSpecification{
+				LaunchTemplateName: e.LaunchTemplate.ID,
+			}
+		}
+		// @check if we are using mixed instance policies
 		if e.UseMixedInstancesPolicy() {
+			// we can zero this out for now and use the mixed instance policy for definition
+			request.LaunchTemplate = nil
 			request.MixedInstancesPolicy = &autoscaling.MixedInstancesPolicy{
 				InstancesDistribution: &autoscaling.InstancesDistribution{
 					OnDemandPercentageAboveBaseCapacity: e.MixedOnDemandAboveBase,
@@ -464,12 +474,21 @@ func (e *AutoscalingGroup) UseMixedInstancesPolicy() bool {
 	if e.LaunchTemplate == nil {
 		return false
 	}
-	items := []interface{}{e.MixedOnDemandAboveBase, e.MixedOnDemandBase, e.MixedSpotAllocationStrategy, e.MixedSpotInstancePools}
-
-	for _, x := range items {
-		if x != nil {
-			return true
-		}
+	// @check if any of the mixed instance policies settings are toggled
+	if e.MixedOnDemandAboveBase != nil {
+		return true
+	}
+	if e.MixedOnDemandBase != nil {
+		return true
+	}
+	if e.MixedSpotAllocationStrategy != nil {
+		return true
+	}
+	if e.MixedSpotInstancePools != nil {
+		return true
+	}
+	if len(e.MixedInstanceOverrides) > 0 {
+		return true
 	}
 
 	return false
