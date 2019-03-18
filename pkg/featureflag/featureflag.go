@@ -32,67 +32,84 @@ import (
 	"github.com/golang/glog"
 )
 
-// Bool returns a pointer to the boolean value
-func Bool(b bool) *bool {
-	return &b
-}
-
-// ExperimentalClusterDNS allows for setting the kubelet dns flag to experimental values.
-// It allows for experiments with alternative DNS configurations - in particular local proxies.
-var ExperimentalClusterDNS = New("ExperimentalClusterDNS", Bool(false))
-
-// KeepLaunchConfigurations can be set to prevent garbage collection of old launch configurations
-var KeepLaunchConfigurations = New("KeepLaunchConfigurations", Bool(false))
-
-// DNSPreCreate controls whether we pre-create DNS records.
-var DNSPreCreate = New("DNSPreCreate", Bool(true))
-
-// DrainAndValidateRollingUpdate if set will use new rolling update code that will drain and validate.
-var DrainAndValidateRollingUpdate = New("DrainAndValidateRollingUpdate", Bool(true))
-
-// VPCSkipEnableDNSSupport if set will make that a VPC does not need DNSSupport enabled.
-var VPCSkipEnableDNSSupport = New("VPCSkipEnableDNSSupport", Bool(false))
-
-// SkipTerraformFormat if set will mean that we will not `tf fmt` the generated terraform.
-var SkipTerraformFormat = New("SkipTerraformFormat", Bool(false))
-
-var VSphereCloudProvider = New("VSphereCloudProvider", Bool(false))
-
-var EnableExternalDNS = New("EnableExternalDNS", Bool(false))
-
-//EnableExternalCloudController toggles the use of cloud-controller-manager introduced in v1.7
-var EnableExternalCloudController = New("EnableExternalCloudController", Bool(false))
-
-// EnableSeparateConfigBase allows a config-base that is different from the state store
-var EnableSeparateConfigBase = New("EnableSeparateConfigBase", Bool(false))
-
-// SpecOverrideFlag allows setting spec values on create
-var SpecOverrideFlag = New("SpecOverrideFlag", Bool(false))
-
-// GoogleCloudBucketAcl means the ACL will be set on a bucket when using GCS
-// In particular, this is the only (?) way to grant the bucket.list permission
-// However we should no longer need it, with the keyset.yaml fix
-var GoogleCloudBucketAcl = New("GoogleCloudBucketAcl", Bool(false))
-
-// EnableNodeAuthorization enables the node authorization features
-var EnableNodeAuthorization = New("EnableNodeAuthorization", Bool(false))
-
-// Spotinst toggles the use of Spotinst integration.
-var Spotinst = New("Spotinst", Bool(false))
-
-var flags = make(map[string]*FeatureFlag)
-var flagsMutex sync.Mutex
+const (
+	// Name is the name of the environment variable which encapsulates feature flags
+	Name = "KOPS_FEATURE_FLAGS"
+)
 
 func init() {
-	ParseFlags(os.Getenv("KOPS_FEATURE_FLAGS"))
+	ParseFlags(os.Getenv(Name))
 }
 
+var (
+	flags      = make(map[string]*FeatureFlag)
+	flagsMutex sync.Mutex
+)
+
+var (
+	// DNSPreCreate controls whether we pre-create DNS records.
+	DNSPreCreate = New("DNSPreCreate", Bool(true))
+	// DrainAndValidateRollingUpdate if set will use new rolling update code that will drain and validate.
+	DrainAndValidateRollingUpdate = New("DrainAndValidateRollingUpdate", Bool(true))
+	// EnableLaunchTemplates indicates we wish to switch to using launch templates rather than launchconfigurations
+	EnableLaunchTemplates = New("EnableLaunchTemplates", Bool(false))
+	//EnableExternalCloudController toggles the use of cloud-controller-manager introduced in v1.7
+	EnableExternalCloudController = New("EnableExternalCloudController", Bool(false))
+	// EnableExternalDNS enables external DNS
+	EnableExternalDNS = New("EnableExternalDNS", Bool(false))
+	// EnableNodeAuthorization enables the node authorization features
+	EnableNodeAuthorization = New("EnableNodeAuthorization", Bool(false))
+	// EnableSeparateConfigBase allows a config-base that is different from the state store
+	EnableSeparateConfigBase = New("EnableSeparateConfigBase", Bool(false))
+	// ExperimentalClusterDNS allows for setting the kubelet dns flag to experimental values.
+	ExperimentalClusterDNS = New("ExperimentalClusterDNS", Bool(false))
+	// GoogleCloudBucketACL means the ACL will be set on a bucket when using GCS
+	GoogleCloudBucketACL = New("GoogleCloudBucketAcl", Bool(false))
+	// KeepLaunchConfigurations can be set to prevent garbage collection of old launch configurations
+	KeepLaunchConfigurations = New("KeepLaunchConfigurations", Bool(false))
+	// SkipTerraformFormat if set means we will not `tf fmt` the generated terraform.
+	// However we should no longer need it, with the keyset.yaml fix
+	// In particular, this is the only (?) way to grant the bucket.list permission
+	// It allows for experiments with alternative DNS configurations - in particular local proxies.
+	SkipTerraformFormat = New("SkipTerraformFormat", Bool(false))
+	// SpecOverrideFlag allows setting spec values on create
+	SpecOverrideFlag = New("SpecOverrideFlag", Bool(false))
+	// Spotinst toggles the use of Spotinst integration.
+	Spotinst = New("Spotinst", Bool(false))
+	// VPCSkipEnableDNSSupport if set will make that a VPC does not need DNSSupport enabled.
+	VPCSkipEnableDNSSupport = New("VPCSkipEnableDNSSupport", Bool(false))
+	// VSphereCloudProvider enables the vsphere cloud provider
+	VSphereCloudProvider = New("VSphereCloudProvider", Bool(false))
+)
+
+// FeatureFlag defines a feature flag
 type FeatureFlag struct {
 	Key          string
 	enabled      *bool
 	defaultValue *bool
 }
 
+// New creates a new feature flag
+func New(key string, defaultValue *bool) *FeatureFlag {
+	flagsMutex.Lock()
+	defer flagsMutex.Unlock()
+
+	f := flags[key]
+	if f == nil {
+		f = &FeatureFlag{
+			Key: key,
+		}
+		flags[key] = f
+	}
+
+	if f.defaultValue == nil {
+		f.defaultValue = defaultValue
+	}
+
+	return f
+}
+
+// Enabled checks if the flag is enabled
 func (f *FeatureFlag) Enabled() bool {
 	if f.enabled != nil {
 		return *f.enabled
@@ -103,6 +120,12 @@ func (f *FeatureFlag) Enabled() bool {
 	return false
 }
 
+// Bool returns a pointer to the boolean value
+func Bool(b bool) *bool {
+	return &b
+}
+
+// ParseFlags responsible for parse out the feature flag usage
 func ParseFlags(f string) {
 	f = strings.TrimSpace(f)
 	for _, s := range strings.Split(f, ",") {
@@ -123,23 +146,4 @@ func ParseFlags(f string) {
 		glog.Infof("FeatureFlag %q=%v", ff.Key, enabled)
 		ff.enabled = &enabled
 	}
-}
-
-func New(key string, defaultValue *bool) *FeatureFlag {
-	flagsMutex.Lock()
-	defer flagsMutex.Unlock()
-
-	f := flags[key]
-	if f == nil {
-		f = &FeatureFlag{
-			Key: key,
-		}
-		flags[key] = f
-	}
-
-	if f.defaultValue == nil {
-		f.defaultValue = defaultValue
-	}
-
-	return f
 }

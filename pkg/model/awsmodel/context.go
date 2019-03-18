@@ -18,6 +18,7 @@ package awsmodel
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
 )
 
@@ -28,5 +29,15 @@ type AWSModelContext struct {
 
 // UseLaunchTemplate checks if we need to use a launch template rather than configuration
 func UseLaunchTemplate(ig *kops.InstanceGroup) bool {
-	return ig.Spec.MixedInstancesPolicy != nil
+	if featureflag.EnableLaunchTemplates.Enabled() {
+		return true
+	}
+	// @note: this mixed instance polices was added before the feature flag, to keep the
+	// same behviour we also check this. But since the feature hasn't been cut into a tagged
+	// release it possible to use just the feature flag??
+	if ig.Spec.MixedInstancesPolicy != nil {
+		return true
+	}
+
+	return false
 }
