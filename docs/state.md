@@ -9,15 +9,14 @@ though we have to copy the data from the state store to a file where components 
 
 The state store uses kops's VFS implementation, so can in theory be stored anywhere.
 As of now the following state stores are supported:
-
-* Amazon AWS S3 (s3://)
-* local filesystem (file://)
-* Digital Ocean (do://)
+* Amazon AWS S3 (`s3://`)
+* local filesystem (`file://`) (only for dry-run purposes, see [note](#local-filesystem-state-stores) below)
+* Digital Ocean (`do://`)
 * MemFS (memfs://)
-* Google Cloud (gs://)
-* Kubernetes (k8s://)
-* OpenStack Swift (swift://)
-* AliCloud (oss://)
+* Google Cloud (`gs://`)
+* Kubernetes (`k8s://`)
+* OpenStack Swift (`swift://`)
+* AliCloud (`oss://`)
 
 The state store is just files; you can copy the files down and put them into git (or your preferred version control system).
 
@@ -46,6 +45,16 @@ There are a few ways to configure your state store.  In priority order:
 + environment variable `export KOPS_STATE_STORE=s3://yourstatestore`
 + config file `$HOME/.kops.yaml`
 + config file `$HOME/.kops/config`
+
+## Local filesystem state stores
+
+The local filesystem state store (`file://`) is **not** functional for running clusters. It is permitted so as to enable review workflows.
+
+For example, in a review workflow, it can be desirable to check a set of untrusted changes before they are applied to real infrastructure. If submitted untrusted changes to configuration files are naively run by `kops replace`, then Kops would overwrite the state store used by production infrastructure with changes which have not yet been approved. This is dangerous.
+
+Instead, a review workflow may download the contents of the state bucket to a local directory (using `aws s3 sync` or similar), set the state store to the local directory (e.g. `--state file:///path/to/state/store`), and then run `kops replace` and `kops update` (but for a dry-run only - _not_ `kops update --yes`). This allows the review process to make changes to a local copy of the state bucket, and check those changes, without touching the production state bucket or production infrastructure.
+
+Trying to use a local filesystem state store for real (i.e. `kops update --yes`) clusters will not work since the Kubernetes nodes in the cluster need to be able to read from the same state bucket, and the local filesystem will not be mounted to all of the Kubernetes nodes. In theory, a cluster administrator could put the state store on a shared NFS volume that is mounted to the same directory on each of the nodes; however, that use case is not supported as of yet.
 
 ### Configuration file example:
 
