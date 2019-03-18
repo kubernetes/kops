@@ -477,6 +477,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "http://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_17.09.0~ce-0~debian_amd64.deb",
 		Hash:          "430ba87f8aa36fedcac1a48e909cbe1830b53845",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 17.09.0 - Jessie on ARM
@@ -489,6 +490,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "http://download.docker.com/linux/debian/dists/jessie/pool/stable/armhf/docker-ce_17.09.0~ce-0~debian_armhf.deb",
 		Hash:          "5001a1defec7c33aa58ddebbd3eae6ebb5f36479",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 17.09.0 - Debian9 (stretch)
@@ -501,6 +503,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "http://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_17.09.0~ce-0~debian_amd64.deb",
 		Hash:          "70aa5f96cf00f11374b6593ccf4ed120a65375d2",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 17.09.0 - Xenial
@@ -515,6 +518,7 @@ var dockerVersions = []dockerVersion{
 		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
 		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 18.06.2 - Xenial
@@ -529,6 +533,7 @@ var dockerVersions = []dockerVersion{
 		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
 		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 17.09.0 - Centos / Rhel7 (two packages)
@@ -547,7 +552,8 @@ var dockerVersions = []dockerVersion{
 				Hash:    "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 18.03.1 - Bionic
@@ -562,6 +568,7 @@ var dockerVersions = []dockerVersion{
 		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
 		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 18.06.2 - Bionic
@@ -576,6 +583,7 @@ var dockerVersions = []dockerVersion{
 		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
 		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 18.06.1 - Debian Stretch
@@ -588,6 +596,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.1~ce~3-0~debian_amd64.deb",
 		Hash:          "18473b80e61b6d4eb8b52d87313abd71261287e5",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 18.06.2 - Debian Stretch
@@ -601,6 +610,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~debian_amd64.deb",
 		Hash:          "aad1efd2c90725034e996c6a368ccc2bf41ca5b8",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 18.06.2 - Jessie
@@ -613,6 +623,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "https://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~debian_amd64.deb",
 		Hash:          "1a2500311230aff37aa81dd1292a88302fb0a2e1",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 18.06.1 - CentOS / Rhel7 (two packages)
@@ -631,7 +642,8 @@ var dockerVersions = []dockerVersion{
 				Hash:    "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 18.09.3 - Debian Stretch
@@ -655,7 +667,8 @@ var dockerVersions = []dockerVersion{
 				Hash:    "48c6ab0c908316af9a183de5aad64703bc516bdf",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7"},
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 18.06.2 - CentOS / Rhel7 (two packages)
@@ -668,6 +681,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
 		Hash:          "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
 		Dependencies:  []string{"policycoreutils-python"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 	{
 		DockerVersion: "18.06.2",
@@ -678,6 +692,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.2.ce-3.el7.x86_64.rpm",
 		Hash:          "456eb7c5bfb37fac342e9ade21b602c076c5b367",
 		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 18.06.3 (contains fix for CVE-2019-5736)
@@ -694,6 +709,7 @@ var dockerVersions = []dockerVersion{
 		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
 		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 18.06.3 - Debian Stretch
@@ -707,6 +723,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
 		Hash:          "93b5a055a39462867d79109b00db1367e3d9e32f",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 18.06.3 - Jessie
@@ -719,6 +736,7 @@ var dockerVersions = []dockerVersion{
 		Source:        "https://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
 		Hash:          "058bcd4b055560866b8cad978c7aa224694602da",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// 18.06.3 - CentOS / Rhel7 (two packages)
@@ -737,7 +755,8 @@ var dockerVersions = []dockerVersion{
 				Hash:    "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 
 	// TIP: When adding the next version, copy the previous
