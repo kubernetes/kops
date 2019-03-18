@@ -2694,6 +2694,11 @@ func (in *OpenstackLoadbalancerConfig) DeepCopyInto(out *OpenstackLoadbalancerCo
 		*out = new(string)
 		**out = **in
 	}
+	if in.ManageSecGroups != nil {
+		in, out := &in.ManageSecGroups, &out.ManageSecGroups
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
