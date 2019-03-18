@@ -538,6 +538,7 @@ type OpenstackLoadbalancerConfig struct {
 	FloatingNetworkID *string `json:"floatingNetworkID,omitempty"`
 	FloatingSubnet    *string `json:"floatingSubnet,omitempty"`
 	SubnetID          *string `json:"subnetID,omitempty"`
+	ManageSecGroups   *bool   `json:"manageSecurityGroups,omitempty"`
 }
 
 type OpenstackBlockStorageConfig struct {
