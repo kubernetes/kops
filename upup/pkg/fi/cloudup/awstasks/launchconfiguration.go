@@ -237,32 +237,6 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	return actual, nil
 }
 
-// buildRootDevice is responsible for creating a block device mapping for the root volume
-func (e *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]*BlockDeviceMapping, error) {
-	imageID := fi.StringValue(e.ImageID)
-	image, err := cloud.ResolveImage(imageID)
-	if err != nil {
-		return nil, fmt.Errorf("unable to resolve image: %q: %v", imageID, err)
-	} else if image == nil {
-		return nil, fmt.Errorf("unable to resolve image: %q: not found", imageID)
-	}
-
-	rootDeviceName := aws.StringValue(image.RootDeviceName)
-
-	blockDeviceMappings := make(map[string]*BlockDeviceMapping)
-
-	rootDeviceMapping := &BlockDeviceMapping{
-		EbsDeleteOnTermination: e.RootVolumeTermination,
-		EbsVolumeSize:          e.RootVolumeSize,
-		EbsVolumeType:          e.RootVolumeType,
-		EbsVolumeIops:          e.RootVolumeIops,
-	}
-
-	blockDeviceMappings[rootDeviceName] = rootDeviceMapping
-
-	return blockDeviceMappings, nil
-}
-
 func (e *LaunchConfiguration) Run(c *fi.Context) error {
 	// TODO: Make Normalize a standard method
 	e.Normalize()
@@ -403,6 +377,32 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	e.ID = fi.String(launchConfigurationName)
 
 	return nil // No tags on a launch configuration
+}
+
+// buildRootDevice is responsible for creating a block device mapping for the root volume
+func (e *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]*BlockDeviceMapping, error) {
+	imageID := fi.StringValue(e.ImageID)
+	image, err := cloud.ResolveImage(imageID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to resolve image: %q: %v", imageID, err)
+	} else if image == nil {
+		return nil, fmt.Errorf("unable to resolve image: %q: not found", imageID)
+	}
+
+	rootDeviceName := aws.StringValue(image.RootDeviceName)
+
+	blockDeviceMappings := make(map[string]*BlockDeviceMapping)
+
+	rootDeviceMapping := &BlockDeviceMapping{
+		EbsDeleteOnTermination: e.RootVolumeTermination,
+		EbsVolumeSize:          e.RootVolumeSize,
+		EbsVolumeType:          e.RootVolumeType,
+		EbsVolumeIops:          e.RootVolumeIops,
+	}
+
+	blockDeviceMappings[rootDeviceName] = rootDeviceMapping
+
+	return blockDeviceMappings, nil
 }
 
 type terraformLaunchConfiguration struct {
