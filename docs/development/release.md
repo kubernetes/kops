@@ -112,3 +112,8 @@ Once we are satisfied the release is sound:
 Once we are satisfied the release is stable:
 
 * Bump the kops recommended version in the stable channel
+
+## Update conformance results with CNCF
+
+Use the following instructions: https://github.com/cncf/k8s-conformance/blob/master/instructions.md
+
