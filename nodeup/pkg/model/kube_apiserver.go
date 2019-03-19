@@ -289,7 +289,14 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		kubeAPIServer.BasicAuthFile = filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv")
 	}
 
-	if b.UseEtcdTLS() {
+	if b.UseEtcdManager() && b.UseEtcdTLS() {
+		basedir := "/etc/kubernetes/pki/kube-apiserver"
+		kubeAPIServer.EtcdCAFile = filepath.Join(basedir, "etcd-ca.crt")
+		kubeAPIServer.EtcdCertFile = filepath.Join(basedir, "etcd-client.crt")
+		kubeAPIServer.EtcdKeyFile = filepath.Join(basedir, "etcd-client.key")
+		kubeAPIServer.EtcdServers = []string{"https://127.0.0.1:4001"}
+		kubeAPIServer.EtcdServersOverrides = []string{"/events#https://127.0.0.1:4002"}
+	} else if b.UseEtcdTLS() {
 		kubeAPIServer.EtcdCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 		kubeAPIServer.EtcdCertFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client.pem")
 		kubeAPIServer.EtcdKeyFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client-key.pem")
@@ -420,6 +427,19 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	addHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log").ReadOnly = false
+
+	if b.UseEtcdManager() {
+		volumeType := v1.HostPathDirectoryOrCreate
+		addHostPathVolume(pod, container,
+			v1.HostPathVolumeSource{
+				Path: "/etc/kubernetes/pki/kube-apiserver",
+				Type: &volumeType,
+			},
+			v1.VolumeMount{
+				Name:     "pki",
+				ReadOnly: false,
+			})
+	}
 
 	// Add cloud config file if needed
 	if b.Cluster.Spec.CloudConfig != nil {

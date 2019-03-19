@@ -18,6 +18,7 @@ package components
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -72,6 +73,29 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 				c.Version = DefaultEtcd3Version_1_11
 			} else {
 				c.Version = DefaultEtcd2Version
+			}
+		}
+
+		// From 1.12, we enable TLS if we're running EtcdManager & etcd3
+		//
+		// (Moving to etcd3 is a disruptive upgrade, so we
+		// force TLS at the same time as we enable
+		// etcd-manager by default).
+		if c.Provider == kops.EtcdProviderTypeManager {
+			etcdV3 := true
+			version := c.Version
+			version = strings.TrimPrefix(version, "v")
+			if strings.HasPrefix(version, "2.") {
+				etcdV3 = false
+			} else if strings.HasPrefix(version, "3.") {
+				etcdV3 = true
+			} else {
+				return fmt.Errorf("unexpected etcd version %q", c.Version)
+			}
+
+			if b.IsKubernetesGTE("1.12.0") && etcdV3 {
+				c.EnableEtcdTLS = true
+				c.EnableTLSAuth = true
 			}
 		}
 	}

@@ -287,6 +287,17 @@ func (c *NodeupModelContext) IsKubernetesGTE(version string) bool {
 	return util.IsKubernetesGTE(version, c.kubernetesVersion)
 }
 
+// UseEtcdManager checks if the etcd cluster has etcd-manager enabled
+func (c *NodeupModelContext) UseEtcdManager() bool {
+	for _, x := range c.Cluster.Spec.EtcdClusters {
+		if x.Provider == kops.EtcdProviderTypeManager {
+			return true
+		}
+	}
+
+	return false
+}
+
 // UseEtcdTLS checks if the etcd cluster has TLS enabled bool
 func (c *NodeupModelContext) UseEtcdTLS() bool {
 	// @note: because we enforce that 'both' have to be enabled for TLS we only need to check one here.
