@@ -1339,8 +1339,8 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(int32)
 		**out = **in
 	}
-	if in.RootVolumeTermination != nil {
-		in, out := &in.RootVolumeTermination, &out.RootVolumeTermination
+	if in.RetainVolumeOnTermination != nil {
+		in, out := &in.RetainVolumeOnTermination, &out.RetainVolumeOnTermination
 		*out = new(bool)
 		**out = **in
 	}
