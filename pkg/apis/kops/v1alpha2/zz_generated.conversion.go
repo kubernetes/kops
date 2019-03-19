@@ -4346,6 +4346,7 @@ func autoConvert_v1alpha2_OpenstackLoadbalancerConfig_To_kops_OpenstackLoadbalan
 	out.FloatingNetworkID = in.FloatingNetworkID
 	out.FloatingSubnet = in.FloatingSubnet
 	out.SubnetID = in.SubnetID
+	out.ManageSecGroups = in.ManageSecGroups
 	return nil
 }
 
@@ -4362,6 +4363,7 @@ func autoConvert_kops_OpenstackLoadbalancerConfig_To_v1alpha2_OpenstackLoadbalan
 	out.FloatingNetworkID = in.FloatingNetworkID
 	out.FloatingSubnet = in.FloatingSubnet
 	out.SubnetID = in.SubnetID
+	out.ManageSecGroups = in.ManageSecGroups
 	return nil
 }
 
