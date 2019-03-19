@@ -25,14 +25,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func stringPointer(s string) *string {
-	return &s
-}
-
-func int32Pointer(i32 int32) *int32 {
-	return &i32
-}
-
 func TestBuildKCMFlags(t *testing.T) {
 	grid := []struct {
 		Config   interface{}
@@ -89,13 +81,13 @@ func TestKubeletConfigSpec(t *testing.T) {
 		},
 		{
 			Config: &kops.KubeletConfigSpec{
-				LogLevel: new(int32),
+				LogLevel: fi.Int32(0),
 			},
 			Expected: "",
 		},
 		{
 			Config: &kops.KubeletConfigSpec{
-				LogLevel: int32Pointer(2),
+				LogLevel: fi.Int32(2),
 			},
 			Expected: "--v=2",
 		},
@@ -103,13 +95,13 @@ func TestKubeletConfigSpec(t *testing.T) {
 		// Test string pointers without the "flag-include-empty" tag
 		{
 			Config: &kops.KubeletConfigSpec{
-				EvictionHard: stringPointer("memory.available<100Mi"),
+				EvictionHard: fi.String("memory.available<100Mi"),
 			},
 			Expected: "--eviction-hard=memory.available<100Mi",
 		},
 		{
 			Config: &kops.KubeletConfigSpec{
-				EvictionHard: stringPointer(""),
+				EvictionHard: fi.String(""),
 			},
 			Expected: "",
 		},
@@ -121,13 +113,13 @@ func TestKubeletConfigSpec(t *testing.T) {
 		},
 		{
 			Config: &kops.KubeletConfigSpec{
-				ResolverConfig: stringPointer("test"),
+				ResolverConfig: fi.String("test"),
 			},
 			Expected: "--resolv-conf=test",
 		},
 		{
 			Config: &kops.KubeletConfigSpec{
-				ResolverConfig: stringPointer(""),
+				ResolverConfig: fi.String(""),
 			},
 			Expected: "--resolv-conf=",
 		},
@@ -136,6 +128,61 @@ func TestKubeletConfigSpec(t *testing.T) {
 				ResolverConfig: nil,
 			},
 			Expected: "",
+		},
+	}
+
+	for _, test := range grid {
+		actual, err := BuildFlags(test.Config)
+		if err != nil {
+			t.Errorf("error from BuildFlags: %v", err)
+			continue
+		}
+
+		if actual != test.Expected {
+			t.Errorf("unexpected flags.  actual=%q expected=%q", actual, test.Expected)
+			continue
+		}
+	}
+}
+
+func TestBuildAPIServerFlags(t *testing.T) {
+	grid := []struct {
+		Config   interface{}
+		Expected string
+	}{
+		{
+			Config:   &kops.KubeAPIServerConfig{},
+			Expected: "--insecure-port=0 --secure-port=0",
+		},
+		{
+			Config: &kops.KubeAPIServerConfig{
+				AuditWebhookBatchThrottleQps: fi.Float32(3.14),
+			},
+			Expected: "--audit-webhook-batch-throttle-qps=3.14 --insecure-port=0 --secure-port=0",
+		},
+		{
+			Config: &kops.KubeAPIServerConfig{
+				AuditWebhookBatchThrottleEnable: fi.Bool(true),
+			},
+			Expected: "--audit-webhook-batch-throttle-enable=true --insecure-port=0 --secure-port=0",
+		},
+		{
+			Config: &kops.KubeAPIServerConfig{
+				AuditWebhookBatchThrottleEnable: fi.Bool(false),
+			},
+			Expected: "--audit-webhook-batch-throttle-enable=false --insecure-port=0 --secure-port=0",
+		},
+		{
+			Config: &kops.KubeAPIServerConfig{
+				AuditWebhookInitialBackoff: &metav1.Duration{Duration: 120 * time.Second},
+			},
+			Expected: "--audit-webhook-initial-backoff=2m0s --insecure-port=0 --secure-port=0",
+		},
+		{
+			Config: &kops.KubeAPIServerConfig{
+				AuditWebhookBatchMaxSize: fi.Int32(1000),
+			},
+			Expected: "--audit-webhook-batch-max-size=1000 --insecure-port=0 --secure-port=0",
 		},
 	}
 
