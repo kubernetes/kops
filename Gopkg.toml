@@ -206,7 +206,7 @@ required = [
   revision = "5b3c4e850e90a4cf6a20ebd46c8b32a0a3afcb9e"
 [[override]]
   name = "golang.org/x/oauth2"
-  revision = "a6bd8cefa1811bd24b86f8902872e4e8225f74c4"
+  revision = "e64efc72b421e893cbf63f17ba2221e7d6d0b0f3"
 # UNKNOWN dep github.com/aokoli/goutils
 [[override]]
   name = "github.com/MakeNowJust/heredoc"
