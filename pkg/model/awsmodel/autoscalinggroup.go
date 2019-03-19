@@ -75,7 +75,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				volumeIops = DefaultVolumeIops
 			}
 
-			rootVolumeTermination := ig.Spec.RootVolumeTermination
+			rootVolumeTermination := ig.Spec.RetainVolumeOnTermination
 			if rootVolumeTermination == nil {
 				rootVolumeTermination = fi.Bool(true)
 			}
