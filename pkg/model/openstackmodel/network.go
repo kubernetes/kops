@@ -62,6 +62,14 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			CIDR:      s(sp.CIDR),
 			Lifecycle: b.Lifecycle,
 		}
+		if b.Cluster.Spec.CloudConfig.Openstack.Router.DNSServers != nil {
+			dnsSplitted := strings.Split(fi.StringValue(b.Cluster.Spec.CloudConfig.Openstack.Router.DNSServers), ",")
+			dnsNameSrv := make([]*string, len(dnsSplitted))
+			for i, ns := range dnsSplitted {
+				dnsNameSrv[i] = fi.String(ns)
+			}
+			t.DNSServers = dnsNameSrv
+		}
 		c.AddTask(t)
 
 		t1 := &openstacktasks.RouterInterface{

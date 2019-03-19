@@ -18,22 +18,71 @@ package openstacktasks
 
 import (
 	"fmt"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"time"
 
 	"github.com/golang/glog"
+	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
 //go:generate fitask -type=LB
 type LB struct {
-	ID        *string
-	Name      *string
-	Subnet    *string
-	VipSubnet *string
-	Lifecycle *fi.Lifecycle
-	PortID    *string
+	ID            *string
+	Name          *string
+	Subnet        *string
+	VipSubnet     *string
+	Lifecycle     *fi.Lifecycle
+	PortID        *string
+	SecurityGroup *SecurityGroup
+}
+
+const (
+	// loadbalancerActive* is configuration of exponential backoff for
+	// going into ACTIVE loadbalancer provisioning status. Starting with 1
+	// seconds, multiplying by 1.2 with each step and taking 22 steps at maximum
+	// it will time out after 326s, which roughly corresponds to about 5 minutes
+	loadbalancerActiveInitDelay = 1 * time.Second
+	loadbalancerActiveFactor    = 1.2
+	loadbalancerActiveSteps     = 22
+
+	activeStatus = "ACTIVE"
+	errorStatus  = "ERROR"
+)
+
+func waitLoadbalancerActiveProvisioningStatus(client *gophercloud.ServiceClient, loadbalancerID string) (string, error) {
+	backoff := wait.Backoff{
+		Duration: loadbalancerActiveInitDelay,
+		Factor:   loadbalancerActiveFactor,
+		Steps:    loadbalancerActiveSteps,
+	}
+
+	var provisioningStatus string
+	err := wait.ExponentialBackoff(backoff, func() (bool, error) {
+		loadbalancer, err := loadbalancers.Get(client, loadbalancerID).Extract()
+		if err != nil {
+			return false, err
+		}
+		provisioningStatus = loadbalancer.ProvisioningStatus
+		if loadbalancer.ProvisioningStatus == activeStatus {
+			return true, nil
+		} else if loadbalancer.ProvisioningStatus == errorStatus {
+			return true, fmt.Errorf("loadbalancer has gone into ERROR state")
+		} else {
+			glog.Infof("Waiting for Loadbalancer to be ACTIVE...")
+			return false, nil
+		}
+
+	})
+
+	if err == wait.ErrWaitTimeout {
+		err = fmt.Errorf("loadbalancer failed to go into ACTIVE provisioning status within allotted time")
+	}
+	return provisioningStatus, err
 }
 
 // GetDependencies returns the dependencies of the Instance task
@@ -47,6 +96,9 @@ func (e *LB) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 			deps = append(deps, task)
 		}
 		if _, ok := task.(*Instance); ok {
+			deps = append(deps, task)
+		}
+		if _, ok := task.(*SecurityGroup); ok {
 			deps = append(deps, task)
 		}
 	}
@@ -72,11 +124,13 @@ func NewLBTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle,
 		Lifecycle: lifecycle,
 		PortID:    fi.String(lb.VipPortID),
 		Subnet:    fi.String(sub.Name),
+		VipSubnet: fi.String(lb.VipSubnetID),
 	}
 
 	if find != nil {
 		find.ID = actual.ID
-		find.PortID = fi.String(lb.VipPortID)
+		find.PortID = actual.PortID
+		find.VipSubnet = actual.VipSubnet
 	}
 	return actual, nil
 }
@@ -153,6 +207,31 @@ func (_ *LB) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *LB)
 		e.PortID = fi.String(lb.VipPortID)
 		e.VipSubnet = fi.String(lb.VipSubnetID)
 
+		opts := ports.UpdateOpts{
+			SecurityGroups: &[]string{fi.StringValue(e.SecurityGroup.ID)},
+		}
+		_, err = ports.Update(t.Cloud.NetworkingClient(), lb.VipPortID, opts).Extract()
+		if err != nil {
+			return fmt.Errorf("Failed to update security group for port %s: %v", lb.VipPortID, err)
+		}
+		return nil
+	}
+	// We may have failed to update the security groups on the load balancer
+	port, err := t.Cloud.GetPort(fi.StringValue(a.PortID))
+	if err != nil {
+		return fmt.Errorf("Failed to get port with id %s: %v", fi.StringValue(a.PortID), err)
+	}
+	// Ensure the loadbalancer port has one security group and it is the one specified,
+	if e.SecurityGroup != nil &&
+		(len(port.SecurityGroups) < 1 || port.SecurityGroups[0] != fi.StringValue(e.SecurityGroup.ID)) {
+
+		opts := ports.UpdateOpts{
+			SecurityGroups: &[]string{fi.StringValue(e.SecurityGroup.ID)},
+		}
+		_, err = ports.Update(t.Cloud.NetworkingClient(), fi.StringValue(a.PortID), opts).Extract()
+		if err != nil {
+			return fmt.Errorf("Failed to update security group for port %s: %v", fi.StringValue(a.PortID), err)
+		}
 		return nil
 	}
 

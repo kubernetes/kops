@@ -95,10 +95,17 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 			if err != nil {
 				return err
 			}
-			c.AddTask(t)
+			c.EnsureTask(t)
 		}
 	}
 	{
+		// We always create the directory, avoids circular dependency on a bind-mount
+		c.AddTask(&nodetasks.File{
+			Path: filepath.Dir(b.KubeletKubeConfig()),
+			Type: nodetasks.FileType_Directory,
+			Mode: s("0755"),
+		})
+
 		// @check if bootstrap tokens are enabled and create the appropreiate certificates
 		if b.UseBootstrapTokens() {
 			// @check if a master and if so, we bypass the token strapping and instead generate our own kubeconfig
@@ -268,6 +275,8 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Service", "StartLimitInterval", "0")
 	manifest.Set("Service", "KillMode", "process")
 	manifest.Set("Service", "User", "root")
+	manifest.Set("Service", "CPUAccounting", "true")
+	manifest.Set("Service", "MemoryAccounting", "true")
 	manifestString := manifest.Render()
 
 	glog.V(8).Infof("Built service manifest %q\n%s", "kubelet", manifestString)

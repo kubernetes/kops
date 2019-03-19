@@ -18,6 +18,7 @@ package cloudup
 
 import (
 	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 	"testing"
@@ -128,7 +129,11 @@ func runChannelBuilderTest(t *testing.T, key string) {
 	if strings.TrimSpace(string(expectedManifest)) != strings.TrimSpace(actualManifest) {
 		diffString := diff.FormatDiff(string(expectedManifest), actualManifest)
 		t.Logf("diff:\n%s\n", diffString)
-
-		t.Fatalf("manifest differed from expected for test %q", key)
+		t.Errorf("manifest differed from expected for test %q", key)
+		if os.Getenv("UPDATE_CHANNEL_BUILDER_TEST_FIXTURES") == "true" {
+			ioutil.WriteFile(expectedManifestPath, []byte(actualManifest), 0755)
+		} else {
+			t.Logf("to update fixtures automatically, run with UPDATE_CHANNEL_BUILDER_TEST_FIXTURES=true")
+		}
 	}
 }

@@ -15,16 +15,19 @@ Our goal is to have an official kops release no later than a month after the cor
 A rough outline of the timeline/release cycle with respect to the Kubernetes release follows. We are revising the automation around the release process so that we can get alpha and beta releases out to the community and other developers much faster for testing and to get more eyes on open issues.
 
 Example release timeline based on Kubernetes quarterly release cycle:
-July 1: Kubernetes 1.W.0 is released.
-July 7: kops 1.W.beta1
-July 21: kops 1.W.0 released
-August 15: kops 1.W+1alpha1
-August 31: kops 1.W+1alpha2
-etc...
-September 25: Kubernetes1.W+1.RC-X
-Oct 1: Kubernetes 1.W+1.0
-Oct 7: kops 1.W+1beta1
-Oct 21: kops 1.W+1.0
+
+July 1: Kubernetes 1.W.0 is released.  
+July 7: kops 1.W.beta1  
+July 21: kops 1.W.0 released  
+August 15: kops 1.W+1alpha1  
+August 31: kops 1.W+1alpha2  
+
+... etc
+
+September 25: Kubernetes1.W+1.RC-X  
+Oct 1: Kubernetes 1.W+1.0  
+Oct 7: kops 1.W+1beta1  
+Oct 21: kops 1.W+1.0  
 
 
 ## UPCOMING RELEASES

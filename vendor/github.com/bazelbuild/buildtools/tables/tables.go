@@ -97,6 +97,11 @@ var LabelBlacklist = map[string]bool{
 	"package_group.includes": true,
 }
 
+// By default, edit.types.IsList consults lang.TypeOf to determine if an arg is a list.
+// You may override this using IsListArg. Specifying a name here overrides any value
+// in lang.TypeOf.
+var IsListArg = map[string]bool{}
+
 // IsSortableListArg: a named argument to a rule call is considered to be a sortable list
 // if the name is one of these names. There is a separate blacklist for
 // rule-specific exceptions.
@@ -194,25 +199,38 @@ var NamePriority = map[string]int{
 	"implementation": 5,
 	"implements":     6,
 	"alwayslink":     7,
+	// default condition in a dictionary literal passed to select should be
+	// the last one by convention.
+	"//conditions:default": 50,
 }
 
+var StripLabelLeadingSlashes = false
+
+var ShortenAbsoluteLabelsToRelative = false
+
 // OverrideTables allows a user of the build package to override the special-case rules. The user-provided tables replace the built-in tables.
-func OverrideTables(labelArg, blacklist, sortableListArg, sortBlacklist, sortWhitelist map[string]bool, namePriority map[string]int) {
+func OverrideTables(labelArg, blacklist, listArg, sortableListArg, sortBlacklist, sortWhitelist map[string]bool, namePriority map[string]int, stripLabelLeadingSlashes, shortenAbsoluteLabelsToRelative bool) {
 	IsLabelArg = labelArg
 	LabelBlacklist = blacklist
+	IsListArg = listArg
 	IsSortableListArg = sortableListArg
 	SortableBlacklist = sortBlacklist
 	SortableWhitelist = sortWhitelist
 	NamePriority = namePriority
+	StripLabelLeadingSlashes = stripLabelLeadingSlashes
+	ShortenAbsoluteLabelsToRelative = shortenAbsoluteLabelsToRelative
 }
 
 // MergeTables allows a user of the build package to override the special-case rules. The user-provided tables are merged into the built-in tables.
-func MergeTables(labelArg, blacklist, sortableListArg, sortBlacklist, sortWhitelist map[string]bool, namePriority map[string]int) {
+func MergeTables(labelArg, blacklist, listArg, sortableListArg, sortBlacklist, sortWhitelist map[string]bool, namePriority map[string]int, stripLabelLeadingSlashes, shortenAbsoluteLabelsToRelative bool) {
 	for k, v := range labelArg {
 		IsLabelArg[k] = v
 	}
 	for k, v := range blacklist {
 		LabelBlacklist[k] = v
+	}
+	for k, v := range listArg {
+		IsListArg[k] = v
 	}
 	for k, v := range sortableListArg {
 		IsSortableListArg[k] = v
@@ -226,4 +244,6 @@ func MergeTables(labelArg, blacklist, sortableListArg, sortBlacklist, sortWhitel
 	for k, v := range namePriority {
 		NamePriority[k] = v
 	}
+	StripLabelLeadingSlashes = stripLabelLeadingSlashes || StripLabelLeadingSlashes
+	ShortenAbsoluteLabelsToRelative = shortenAbsoluteLabelsToRelative || ShortenAbsoluteLabelsToRelative
 }

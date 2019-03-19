@@ -102,6 +102,9 @@ type CanalNetworkingSpec struct {
 	// for traffic between pod to host after calico rules have been processed.
 	// Default: ACCEPT (other options: DROP, RETURN)
 	DefaultEndpointToHostAction string `json:"defaultEndpointToHostAction,omitempty"`
+	// DisableFlannelForwardRules configures Flannel to NOT add the
+	// default ACCEPT traffic rules to the iptables FORWARD chain
+	DisableFlannelForwardRules bool `json:"disableFlannelForwardRules,omitempty"`
 	// LogSeveritySys the severity to set for logs which are sent to syslog
 	// Default: INFO (other options: DEBUG, WARNING, ERROR, CRITICAL, NONE)
 	LogSeveritySys string `json:"logSeveritySys,omitempty"`

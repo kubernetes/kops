@@ -29,18 +29,19 @@ import (
 
 //go:generate fitask -type=Instance
 type Instance struct {
-	ID          *string
-	Name        *string
-	Port        *Port
-	Region      *string
-	Flavor      *string
-	Image       *string
-	SSHKey      *string
-	ServerGroup *ServerGroup
-	Tags        []string
-	Role        *string
-	UserData    *string
-	Metadata    map[string]string
+	ID               *string
+	Name             *string
+	Port             *Port
+	Region           *string
+	Flavor           *string
+	Image            *string
+	SSHKey           *string
+	ServerGroup      *ServerGroup
+	Tags             []string
+	Role             *string
+	UserData         *string
+	Metadata         map[string]string
+	AvailabilityZone *string
 
 	Lifecycle *fi.Lifecycle
 }
@@ -92,10 +93,11 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 
 	server := serverList[0]
 	actual := &Instance{
-		ID:        fi.String(server.ID),
-		Name:      fi.String(server.Name),
-		SSHKey:    fi.String(server.KeyName),
-		Lifecycle: e.Lifecycle,
+		ID:               fi.String(server.ID),
+		Name:             fi.String(server.Name),
+		SSHKey:           fi.String(server.KeyName),
+		Lifecycle:        e.Lifecycle,
+		AvailabilityZone: e.AvailabilityZone,
 	}
 	e.ID = actual.ID
 
@@ -144,6 +146,9 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 		}
 		if e.UserData != nil {
 			opt.UserData = []byte(*e.UserData)
+		}
+		if e.AvailabilityZone != nil {
+			opt.AvailabilityZone = fi.StringValue(e.AvailabilityZone)
 		}
 		keyext := keypairs.CreateOptsExt{
 			CreateOptsBuilder: opt,

@@ -27,11 +27,62 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
+func (c *openstackCloud) DeletePool(poolID string) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err := v2pools.Delete(c.LoadBalancerClient(), poolID).ExtractErr()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting pool: %v", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) DeleteListener(listenerID string) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err := listeners.Delete(c.LoadBalancerClient(), listenerID).ExtractErr()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting listener: %v", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) DeleteLB(lbID string, opts loadbalancers.DeleteOpts) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err := loadbalancers.Delete(c.LoadBalancerClient(), lbID, opts).ExtractErr()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting loadbalancer: %v", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}
+
 func (c *openstackCloud) CreateLB(opt loadbalancers.CreateOptsBuilder) (*loadbalancers.LoadBalancer, error) {
 	var i *loadbalancers.LoadBalancer
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		v, err := loadbalancers.Create(c.lbClient, opt).Extract()
+		v, err := loadbalancers.Create(c.LoadBalancerClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating loadbalancer: %v", err)
 		}
@@ -50,7 +101,7 @@ func (c *openstackCloud) CreateLB(opt loadbalancers.CreateOptsBuilder) (*loadbal
 func (c *openstackCloud) GetLB(loadbalancerID string) (lb *loadbalancers.LoadBalancer, err error) {
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		lb, err = loadbalancers.Get(c.neutronClient, loadbalancerID).Extract()
+		lb, err = loadbalancers.Get(c.LoadBalancerClient(), loadbalancerID).Extract()
 		if err != nil {
 			return false, err
 		}
@@ -69,7 +120,7 @@ func (c *openstackCloud) GetLB(loadbalancerID string) (lb *loadbalancers.LoadBal
 func (c *openstackCloud) ListLBs(opt loadbalancers.ListOptsBuilder) (lbs []loadbalancers.LoadBalancer, err error) {
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := loadbalancers.List(c.lbClient, opt).AllPages()
+		allPages, err := loadbalancers.List(c.LoadBalancerClient(), opt).AllPages()
 		if err != nil {
 			return false, fmt.Errorf("failed to list loadbalancers: %s", err)
 		}
@@ -90,7 +141,7 @@ func (c *openstackCloud) ListLBs(opt loadbalancers.ListOptsBuilder) (lbs []loadb
 
 func (c *openstackCloud) GetPool(poolID string, memberID string) (member *v2pools.Member, err error) {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		member, err = v2pools.GetMember(c.neutronClient, poolID, memberID).Extract()
+		member, err = v2pools.GetMember(c.LoadBalancerClient(), poolID, memberID).Extract()
 		if err != nil {
 			return false, err
 		}
@@ -108,10 +159,10 @@ func (c *openstackCloud) GetPool(poolID string, memberID string) (member *v2pool
 func (c *openstackCloud) AssociateToPool(server *servers.Server, poolID string, opts v2pools.CreateMemberOpts) (association *v2pools.Member, err error) {
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		association, err = v2pools.GetMember(c.NetworkingClient(), poolID, server.ID).Extract()
+		association, err = v2pools.GetMember(c.LoadBalancerClient(), poolID, server.ID).Extract()
 		if err != nil || association == nil {
 			// Pool association does not exist.  Create it
-			association, err = v2pools.CreateMember(c.NetworkingClient(), poolID, opts).Extract()
+			association, err = v2pools.CreateMember(c.LoadBalancerClient(), poolID, opts).Extract()
 			if err != nil {
 				return false, fmt.Errorf("Failed to create pool association: %v", err)
 			}

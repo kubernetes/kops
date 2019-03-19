@@ -18,13 +18,17 @@ spec:
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
   etcdClusters:
-  - etcdMembers:
+  - cpuRequest: 200m
+    etcdMembers:
     - name: us-test-1a
       zone: us-test-1a
+    memoryRequest: 100Mi
     name: main
-  - etcdMembers:
+  - cpuRequest: 200m
+    etcdMembers:
     - name: us-test-1a
       zone: us-test-1a
+    memoryRequest: 100Mi
     name: events
   iam:
     legacy: true
@@ -81,5 +85,3 @@ spec:
   role: Master
   zones:
   - us-test-1a
-
-

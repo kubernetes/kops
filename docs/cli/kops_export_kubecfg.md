@@ -23,7 +23,8 @@ kops export kubecfg CLUSTERNAME [flags]
 ### Options
 
 ```
-  -h, --help   help for kubecfg
+  -h, --help                help for kubecfg
+      --kubeconfig string   The location of the kubeconfig file to create.
 ```
 
 ### Options inherited from parent commands

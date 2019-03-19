@@ -1,6 +1,6 @@
 # xstrings #
 
-[![Build Status](https://travis-ci.org/huandu/xstrings.png?branch=master)](https://travis-ci.org/huandu/xstrings)
+[![Build Status](https://travis-ci.org/huandu/xstrings.svg?branch=master)](https://travis-ci.org/huandu/xstrings)
 [![GoDoc](https://godoc.org/github.com/huandu/xstrings?status.svg)](https://godoc.org/github.com/huandu/xstrings)
 
 Go package [xstrings](https://godoc.org/github.com/huandu/xstrings) is a collection of string functions, which are widely used in other languages but absent in Go package [strings](http://golang.org/pkg/strings).
@@ -55,6 +55,7 @@ Here is a list of functions in [strings](http://golang.org/pkg/strings) and [xst
 | [Successor](https://godoc.org/github.com/huandu/xstrings#Successor) | `String#succ` or `String#next` in Ruby | [#22](https://github.com/huandu/xstrings/issues/22) |
 | [SwapCase](https://godoc.org/github.com/huandu/xstrings#SwapCase) | `str.swapcase` in Python; `String#swapcase` in Ruby | [#12](https://github.com/huandu/xstrings/issues/12) |
 | [ToCamelCase](https://godoc.org/github.com/huandu/xstrings#ToCamelCase) | `String#camelize` in RoR | [#1](https://github.com/huandu/xstrings/issues/1) |
+| [ToKebab](https://godoc.org/github.com/huandu/xstrings#ToKebabCase) | - | [#41](https://github.com/huandu/xstrings/issues/41) |
 | [ToSnakeCase](https://godoc.org/github.com/huandu/xstrings#ToSnakeCase) | `String#underscore` in RoR | [#1](https://github.com/huandu/xstrings/issues/1) |
 | [Translate](https://godoc.org/github.com/huandu/xstrings#Translate) | `str.translate` in Python; `String#tr` in Ruby; `strtr` in PHP; `tr///` in Perl | [#21](https://github.com/huandu/xstrings/issues/21) |
 | [Width](https://godoc.org/github.com/huandu/xstrings#Width) | `mb_strwidth` in PHP | [#26](https://github.com/huandu/xstrings/issues/26) |

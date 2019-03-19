@@ -83,12 +83,13 @@ Example to Create a Member
 
 	poolID := "d67d56a6-4a86-4688-a282-f46444705c64"
 
+	weight := 10
 	createOpts := pools.CreateMemberOpts{
 		Name:         "db",
 		SubnetID:     "1981f108-3c48-48d2-b908-30f7d28532c9",
 		Address:      "10.0.2.11",
 		ProtocolPort: 80,
-		Weight:       10,
+		Weight:       &weight,
 	}
 
 	member, err := pools.CreateMember(networkClient, poolID, createOpts).Extract()
@@ -101,9 +102,10 @@ Example to Update a Member
 	poolID := "d67d56a6-4a86-4688-a282-f46444705c64"
 	memberID := "64dba99f-8af8-4200-8882-e32a0660f23e"
 
+	weight := 4
 	updateOpts := pools.UpdateMemberOpts{
 		Name:   "new-name",
-		Weight: 4,
+		Weight: &weight,
 	}
 
 	member, err := pools.UpdateMember(networkClient, poolID, memberID, updateOpts).Extract()
@@ -117,6 +119,34 @@ Example to Delete a Member
 	memberID := "64dba99f-8af8-4200-8882-e32a0660f23e"
 
 	err := pools.DeleteMember(networkClient, poolID, memberID).ExtractErr()
+	if err != nil {
+		panic(err)
+	}
+
+Example to Update Members:
+
+	poolID := "d67d56a6-4a86-4688-a282-f46444705c64"
+
+	weight_1 := 20
+	member1 := pools.BatchUpdateMemberOpts{
+		Address:      "192.0.2.16",
+		ProtocolPort: 80,
+		Name:         "web-server-1",
+		SubnetID:     "bbb35f84-35cc-4b2f-84c2-a6a29bba68aa",
+		Weight:       &weight_1,
+	}
+
+	weight_2 := 10
+	member2 := pools.BatchUpdateMemberOpts{
+		Address:      "192.0.2.17",
+		ProtocolPort: 80,
+		Name:         "web-server-2",
+		Weight:       &weight_2,
+		SubnetID:     "bbb35f84-35cc-4b2f-84c2-a6a29bba68aa",
+	}
+	members := []pools.BatchUpdateMemberOpts{member1, member2}
+
+	err := pools.BatchUpdateMembers(networkClient, poolID, members).ExtractErr()
 	if err != nil {
 		panic(err)
 	}

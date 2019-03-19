@@ -189,6 +189,10 @@ type CreateOpts struct {
 	// ServiceClient will allow calls to be made to retrieve an image or
 	// flavor ID by name.
 	ServiceClient *gophercloud.ServiceClient `json:"-"`
+
+	// Tags allows a server to be tagged with single-word metadata.
+	// Requires microversion 2.52 or later.
+	Tags []string `json:"tags,omitempty"`
 }
 
 // ToServerCreateMap assembles a request body based on the contents of a

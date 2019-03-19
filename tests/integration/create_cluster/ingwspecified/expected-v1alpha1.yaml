@@ -15,13 +15,17 @@ spec:
   cloudProvider: aws
   configBase: memfs://tests/private.example.com
   etcdClusters:
-  - etcdMembers:
+  - cpuRequest: 200m
+    etcdMembers:
     - name: a
       zone: us-test-1a
+    memoryRequest: 100Mi
     name: main
-  - etcdMembers:
+  - cpuRequest: 100m
+    etcdMembers:
     - name: a
       zone: us-test-1a
+    memoryRequest: 100Mi
     name: events
   iam:
     allowContainerRegistry: true

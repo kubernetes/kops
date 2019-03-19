@@ -159,7 +159,6 @@ kubeProxy:
   image: gcr.io/google_containers/kube-proxy:v1.8.4
   logLevel: 2
 kubelet:
-  allowPrivileged: true
   cgroupRoot: /
   cloudProvider: aws
   clusterDNS: 100.64.0.10

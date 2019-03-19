@@ -154,45 +154,67 @@ func hashFromHttpHeader(url string) (*hashing.Hash, error) {
 // Add an asset into the store, in one of the recognized formats (see Assets in types package)
 func (a *AssetStore) Add(id string) error {
 	if strings.HasPrefix(id, "http://") || strings.HasPrefix(id, "https://") {
-		return a.addURL(id, nil)
+		return a.addURLs(strings.Split(id, ","), nil)
 	}
 	i := strings.Index(id, "@http://")
 	if i == -1 {
 		i = strings.Index(id, "@https://")
 	}
 	if i != -1 {
-		url := id[i+1:]
+		urls := strings.Split(id[i+1:], ",")
 		hash, err := hashing.FromString(id[:i])
 		if err != nil {
 			return err
 		}
-		return a.addURL(url, hash)
+		return a.addURLs(urls, hash)
 	}
 	// TODO: local files!
 	return fmt.Errorf("unknown asset format: %q", id)
 }
 
-func (a *AssetStore) addURL(url string, hash *hashing.Hash) error {
-	var err error
+func (a *AssetStore) addURLs(urls []string, hash *hashing.Hash) error {
+	if len(urls) == 0 {
+		return fmt.Errorf("no urls were specified")
+	}
 
+	var err error
 	if hash == nil {
-		hash, err = hashFromHttpHeader(url)
+		for _, url := range urls {
+			hash, err = hashFromHttpHeader(url)
+			if err != nil {
+				glog.Warningf("unable to get hash from %q: %v", url, err)
+				continue
+			} else {
+				break
+			}
+		}
 		if err != nil {
 			return err
 		}
 	}
 
-	localFile := path.Join(a.cacheDir, hash.String()+"_"+utils.SanitizeString(url))
-	_, err = DownloadURL(url, localFile, hash)
+	// We assume the first url is the "main" url, and download to that _name_, wherever we get it from
+	primaryURL := urls[0]
+	localFile := path.Join(a.cacheDir, hash.String()+"_"+utils.SanitizeString(primaryURL))
+
+	for _, url := range urls {
+		_, err = DownloadURL(url, localFile, hash)
+		if err != nil {
+			glog.Warningf("error downloading url %q: %v", url, err)
+			continue
+		} else {
+			break
+		}
+	}
 	if err != nil {
 		return err
 	}
 
-	key := path.Base(url)
-	assetPath := url
+	key := path.Base(primaryURL)
+	assetPath := primaryURL
 	r := NewFileResource(localFile)
 
-	source := &Source{URL: url, Hash: hash}
+	source := &Source{URL: primaryURL, Hash: hash}
 
 	asset := &asset{
 		Key:       key,

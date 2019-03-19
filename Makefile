@@ -1,4 +1,4 @@
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
 GOPATH_1ST:=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
-GOVERSION=1.10.3
+GOVERSION=1.10.8
 BUILD=$(GOPATH_1ST)/src/k8s.io/kops/.build
 LOCAL=$(BUILD)/local
 BINDATA_TARGETS=upup/models/bindata.go
@@ -791,7 +791,7 @@ prow-postsubmit: bazel-version-dist
 	${UPLOAD} ${BAZELUPLOAD}/kops/${VERSION}/ ${UPLOAD_DEST}/${KOPS_RELEASE_VERSION}-${GITSHA}/
 
 #-----------------------------------------------------------
-# static html documentation  
+# static html documentation
 
 .PHONY: live-docs
 live-docs:
@@ -801,8 +801,9 @@ live-docs:
 build-docs:
 	@docker run --rm -it -v ${PWD}:/docs aledbf/mkdocs:0.1 build
 
+# Update machine_types.go
 .PHONY: update-machine-types
-update-machine-types: #Update machine_types.go
+update-machine-types:
 	go build -o hack/machine_types/machine_types  ${KOPS_ROOT}/hack/machine_types/
 	hack/machine_types/machine_types --out upup/pkg/fi/cloudup/awsup/machine_types.go
 	go fmt upup/pkg/fi/cloudup/awsup/machine_types.go

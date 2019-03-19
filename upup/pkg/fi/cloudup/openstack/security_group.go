@@ -114,3 +114,20 @@ func (c *openstackCloud) CreateSecurityGroupRule(opt sgr.CreateOptsBuilder) (*sg
 		return rule, wait.ErrWaitTimeout
 	}
 }
+
+func (c *openstackCloud) DeleteSecurityGroup(sgID string) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err := sg.Delete(c.neutronClient, sgID).ExtractErr()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting network: %v", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}

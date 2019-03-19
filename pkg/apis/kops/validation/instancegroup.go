@@ -81,6 +81,12 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 		}
 	}
 
+	if g.Spec.MixedInstancesPolicy != nil {
+		if errs := validatedMixedInstancesPolicy(field.NewPath(g.Name), g.Spec.MixedInstancesPolicy, g); len(errs) > 0 {
+			return errs.ToAggregate()
+		}
+	}
+
 	if len(g.Spec.AdditionalUserData) > 0 {
 		for _, UserDataInfo := range g.Spec.AdditionalUserData {
 			err := validateExtraUserData(&UserDataInfo)
@@ -128,6 +134,43 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 	}
 
 	return nil
+}
+
+// validatedMixedInstancesPolicy is responsible for validating the user input of a mixed instance policy
+func validatedMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstancesPolicySpec, ig *kops.InstanceGroup) field.ErrorList {
+	var errs field.ErrorList
+
+	if len(spec.Instances) < 2 {
+		errs = append(errs, field.Invalid(path.Child("instances"), spec.Instances, "must be 2 or more instance types"))
+	}
+	// @step: check the instances are validate
+	for i, x := range spec.Instances {
+		errs = append(errs, awsValidateMachineType(path.Child("instances").Index(i).Child("instanceType"), x)...)
+	}
+
+	if spec.OnDemandBase != nil {
+		if fi.Int64Value(spec.OnDemandBase) < 0 {
+			errs = append(errs, field.Invalid(path.Child("onDemandBase"), spec.OnDemandBase, "cannot be less than zero"))
+		}
+		if fi.Int64Value(spec.OnDemandBase) > int64(fi.Int32Value(ig.Spec.MaxSize)) {
+			errs = append(errs, field.Invalid(path.Child("onDemandBase"), spec.OnDemandBase, "cannot be greater than max size"))
+		}
+	}
+
+	if spec.OnDemandAboveBase != nil {
+		if fi.Int64Value(spec.OnDemandAboveBase) < 0 {
+			errs = append(errs, field.Invalid(path.Child("onDemandAboveBase"), spec.OnDemandAboveBase, "cannot be less than 0"))
+		}
+		if fi.Int64Value(spec.OnDemandAboveBase) > 100 {
+			errs = append(errs, field.Invalid(path.Child("onDemandAboveBase"), spec.OnDemandAboveBase, "cannot be greater than 100"))
+		}
+	}
+
+	if spec.SpotAllocationStrategy != nil && !slice.Contains(kops.SpotAllocationStrategies, fi.StringValue(spec.SpotAllocationStrategy)) {
+		errs = append(errs, field.Invalid(path.Child("spotAllocationStrategy"), spec.SpotAllocationStrategy, "unsupported spot allocation strategy"))
+	}
+
+	return errs
 }
 
 // validateVolumeSpec is responsible for checking a volume spec is ok

@@ -121,6 +121,41 @@ func (i *BlockDeviceMapping) ToAutoscaling(deviceName string) *autoscaling.Block
 	return o
 }
 
+// BlockDeviceMappingFromLaunchTemplateBootDeviceRequest coverts the launch template device mappings to an interval block device mapping
+func BlockDeviceMappingFromLaunchTemplateBootDeviceRequest(i *ec2.LaunchTemplateBlockDeviceMapping) (string, *BlockDeviceMapping) {
+	o := &BlockDeviceMapping{
+		DeviceName:  i.DeviceName,
+		VirtualName: i.VirtualName,
+	}
+	if i.Ebs != nil {
+		o.EbsDeleteOnTermination = i.Ebs.DeleteOnTermination
+		o.EbsVolumeSize = i.Ebs.VolumeSize
+		o.EbsVolumeType = i.Ebs.VolumeType
+		o.EbsEncrypted = i.Ebs.Encrypted
+	}
+
+	return aws.StringValue(i.DeviceName), o
+}
+
+// ToLaunchTemplateBootDeviceRequest coverts in the internal block device mapping to a launcg template request
+func (i *BlockDeviceMapping) ToLaunchTemplateBootDeviceRequest(deviceName string) *ec2.LaunchTemplateBlockDeviceMappingRequest {
+	o := &ec2.LaunchTemplateBlockDeviceMappingRequest{
+		DeviceName:  aws.String(deviceName),
+		VirtualName: i.VirtualName,
+	}
+	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || i.EbsVolumeType != nil || i.EbsVolumeIops != nil || i.EbsEncrypted != nil {
+		o.Ebs = &ec2.LaunchTemplateEbsBlockDeviceRequest{
+			DeleteOnTermination: i.EbsDeleteOnTermination,
+			Encrypted:           i.EbsEncrypted,
+			VolumeSize:          i.EbsVolumeSize,
+			VolumeType:          i.EbsVolumeType,
+			Iops:                i.EbsVolumeIops,
+		}
+	}
+
+	return o
+}
+
 var _ fi.HasDependencies = &BlockDeviceMapping{}
 
 // GetDependencies is for future use

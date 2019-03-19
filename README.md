@@ -76,8 +76,8 @@ release number.  kops version 1.8.0 has a minor version of 8. The numbering
 follows the semantic versioning specification, MAJOR.MINOR.PATCH.
 
 For example, kops 1.8.0 does not support Kubernetes 1.9.2, but kops 1.9.0
-supports Kubernetes 1.9.2 and previous Kubernetes versions. Only when kops minor
-version matches, the Kubernetes minor version does kops officially support the
+supports Kubernetes 1.9.2 and previous Kubernetes versions. Only when the kops minor
+version matches the Kubernetes minor version does kops officially support the
 Kubernetes release.  kops does not stop a user from installing mismatching
 versions of K8s, but Kubernetes releases always require kops to install specific
 versions of components like docker, that tested against the particular
@@ -88,11 +88,11 @@ Kubernetes version.
 
 | kops version  | k8s 1.8.x | k8s 1.9.x | k8s 1.10.x | k8s 1.11.x | k8s 1.12.x |
 |---------------|-----------|-----------|------------|------------|------------|
-| 1.12.x - Alpha| Y         | Y         | Y          | Y          | Y         |
-| 1.11.x        | Y         | Y         | Y          | Y          | N          |
-| 1.10.x        | Y         | Y         | Y          | N          | N          |
-| ~~1.9.x~~         | Y         | Y         | N          | N          | N          |
-| ~~1.8.x~~         | Y         | N         | N          | N          | N          |
+| 1.12.x - Alpha| ✔         | ✔         | ✔          | ✔          | ✔         |
+| 1.11.x        | ✔         | ✔         | ✔          | ✔          | ❌          |
+| 1.10.x        | ✔         | ✔         | ✔          | ❌          | ❌          |
+| ~~1.9.x~~         | ✔         | ✔         | ❌          | ❌          | ❌          |
+| ~~1.8.x~~         | ✔         | ❌         | ❌          | ❌          | ❌          |
 
 Use the latest version of kops for all releases of Kubernetes, with the caveat
 that higher versions of Kubernetes are not _officially_ supported by kops. Releases who are ~~crossed out~~ _should_ work but we suggest should be upgraded soon.
@@ -133,6 +133,11 @@ chmod +x kops-linux-amd64
 sudo mv kops-linux-amd64 /usr/local/bin/kops
 ```
 
+### Windows
+
+1) Get `kops-windows-amd64` from our [releases](https://github.com/kubernetes/kops/releases/latest).
+2) Rename `kops-windows-amd64` to `kops.exe` and store it in a preferred path.
+3) Make sure the path you chose is added to your `Path` environment variable.
 
 ## Release History
 

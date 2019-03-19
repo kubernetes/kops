@@ -88,6 +88,8 @@ etcdClusters:
 
 By default, the Volumes created for the etcd clusters are `gp2` and 20GB each. The volume size, type and Iops( for `io1`) can be configured via their parameters. Conversion between `gp2` and `io1` is not supported, nor are size changes.
 
+It is also possible to specify the requests for your etcd cluster members using the `cpuRequest` and `memoryRequest` parameters.
+
 ```yaml
 etcdClusters:
 - etcdMembers:
@@ -104,6 +106,8 @@ etcdClusters:
     volumeIops: 100
     volumeSize: 21
   name: events
+  cpuRequest: 150m
+  memoryRequest: 512Mi
 ```
 
 ### sshAccess
@@ -198,7 +202,8 @@ spec:
     oidcGroupsClaim: user_roles
     oidcGroupsPrefix: "oidc:"
     oidcCAFile: /etc/kubernetes/ssl/kc-ca.pem
-
+    oidcRequiredClaim:
+    	- "key=value"
 ```
 
 #### audit logging
@@ -401,6 +406,7 @@ spec:
     horizontalPodAutoscalerDownscaleDelay: 5m0s
     horizontalPodAutoscalerUpscaleDelay: 3m0s
     horizontalPodAutoscalerTolerance: 0.1
+    experimentalClusterSigningDuration: 8760h0m0s
 ```
 
 For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [Kops guides on how to set it up](horizontal_pod_autoscaling.md).
