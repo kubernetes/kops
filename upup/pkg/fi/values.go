@@ -42,7 +42,21 @@ func String(s string) *string {
 	return &s
 }
 
-// Float64 returns a point to a flot64
+// Float32 returns a point to a float32
+func Float32(v float32) *float32 {
+	return &v
+}
+
+// Float32Value returns the value of the float
+func Float32Value(v *float32) float32 {
+	if v == nil {
+		return 0.0
+	}
+
+	return *v
+}
+
+// Float64 returns a point to a float64
 func Float64(v float64) *float64 {
 	return &v
 }
