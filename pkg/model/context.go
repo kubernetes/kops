@@ -326,6 +326,17 @@ func (m *KopsModelContext) UsePrivateDNS() bool {
 	return false
 }
 
+// UseEtcdManager checks to see if etcd manager is enabled
+func (c *KopsModelContext) UseEtcdManager() bool {
+	for _, x := range c.Cluster.Spec.EtcdClusters {
+		if x.Provider == kops.EtcdProviderTypeManager {
+			return true
+		}
+	}
+
+	return false
+}
+
 // UseEtcdTLS checks to see if etcd tls is enabled
 func (m *KopsModelContext) UseEtcdTLS() bool {
 	for _, x := range m.Cluster.Spec.EtcdClusters {

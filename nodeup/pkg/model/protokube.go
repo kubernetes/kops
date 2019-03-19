@@ -68,7 +68,7 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 		})
 
 		// retrieve the etcd peer certificates and private keys from the keystore
-		if t.UseEtcdTLS() {
+		if !t.UseEtcdManager() && t.UseEtcdTLS() {
 			for _, x := range []string{"etcd", "etcd-peer", "etcd-client"} {
 				if err := t.BuildCertificateTask(c, x, fmt.Sprintf("%s.pem", x)); err != nil {
 					return err
@@ -222,6 +222,10 @@ type ProtokubeFlags struct {
 
 	// ManageEtcd is true if protokube should manage etcd; being replaced by etcd-manager
 	ManageEtcd bool `json:"manageEtcd,omitempty" flag:"manage-etcd"`
+
+	// RemoveDNSNames allows us to remove dns records, so that they can be managed elsewhere
+	// We use it e.g. for the switch to etcd-manager
+	RemoveDNSNames string `json:"removeDNSNames,omitempty" flag:"remove-dns-names"`
 }
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
@@ -362,6 +366,30 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 
 	if k8sVersion.Major == 1 && k8sVersion.Minor <= 5 {
 		f.ApplyTaints = fi.Bool(true)
+	}
+
+	// Remove DNS names if we're using etcd-manager
+	if !f.ManageEtcd {
+		var names []string
+
+		// Mirroring the logic used to construct DNS names in protokube/pkg/protokube/etcd_cluster.go
+		suffix := fi.StringValue(f.DNSInternalSuffix)
+		if !strings.HasPrefix(suffix, ".") {
+			suffix = "." + suffix
+		}
+
+		for _, c := range t.Cluster.Spec.EtcdClusters {
+			clusterName := "etcd-" + c.Name
+			if clusterName == "etcd-main" {
+				clusterName = "etcd"
+			}
+			for _, m := range c.Members {
+				name := clusterName + "-" + m.Name + suffix
+				names = append(names, name)
+			}
+		}
+
+		f.RemoveDNSNames = strings.Join(names, ",")
 	}
 
 	return f, nil

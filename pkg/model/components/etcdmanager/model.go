@@ -117,6 +117,24 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Type:    "ca",
 			Format:  format,
 		})
+
+		// We create a CA for etcd peers and a separate one for clients
+		c.AddTask(&fitasks.Keypair{
+			Name:    fi.String("etcd-peers-ca-" + etcdCluster.Name),
+			Subject: "cn=etcd-peers-ca-" + etcdCluster.Name,
+			Type:    "ca",
+			Format:  format,
+		})
+
+		// Because API server can only have a single client-cert, we need to share a client CA
+		if err := c.EnsureTask(&fitasks.Keypair{
+			Name:    fi.String("etcd-clients-ca"),
+			Subject: "cn=etcd-clients-ca",
+			Type:    "ca",
+			Format:  format,
+		}); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -249,7 +267,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		container.Image = remapped
 	}
 
-	isTLS := etcdCluster.EnableEtcdTLS
+	etcdInsecure := !b.UseEtcdTLS()
 
 	clientPort := 4001
 
@@ -315,17 +333,13 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		BackupStore:   backupStore,
 		GrpcPort:      grpcPort,
 		DNSSuffix:     dnsInternalSuffix,
-		EtcdInsecure:  !isTLS,
+		EtcdInsecure:  etcdInsecure,
 	}
 
-	config.LogVerbosity = 8
+	config.LogVerbosity = 6
 
 	{
-		// @check if we are using TLS
-		scheme := "http"
-		if isTLS {
-			scheme = "https"
-		}
+		scheme := "https"
 
 		config.PeerUrls = fmt.Sprintf("%s://__name__:%d", scheme, peerPort)
 		config.ClientUrls = fmt.Sprintf("%s://__name__:%d", scheme, clientPort)
@@ -340,10 +354,6 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		if etcdCluster.HeartbeatInterval != nil {
 			// 	envs = append(envs, v1.EnvVar{Name: "ETCD_HEARTBEAT_INTERVAL", Value: convEtcdSettingsToMs(etcdClusterSpec.HeartbeatInterval)})
 			return nil, fmt.Errorf("HeartbeatInterval not supported by etcd-manager")
-		}
-
-		if isTLS {
-			return nil, fmt.Errorf("TLS not supported for etcd-manager")
 		}
 	}
 
@@ -432,10 +442,6 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		if !foundPKI {
 			return nil, fmt.Errorf("did not find PKI volume")
 		}
-	}
-
-	if isTLS {
-		return nil, fmt.Errorf("TLS not supported for etcd-manager")
 	}
 
 	kubemanifest.MarkPodAsCritical(pod)

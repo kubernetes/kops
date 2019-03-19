@@ -10,10 +10,6 @@ built into kops, but it addresses some limitations also:
 * allows etcd2 -> etcd3 upgrade (along with minor upgrades)
 * allows cluster resizing (e.g. going from 1 to 3 nodes)
 
-etcd-manager is currently in early alpha - it is undergoing testing. However, if
-you have a test cluster where you don't mind if it erases all your data, please
-do try it out and provide feedback.
-
 If using kubernetes >= 1.12 (which will not formally be supported until kops 1.12), note that etcd-manager will be used by default.  You can override this with the `cluster.spec.etcdClusters[*].provider=Legacy` override.  This can be specified:
 
 * as an argument to `kops create cluster`: `--overrides cluster.spec.etcdClusters[*].provider=Legacy`
@@ -24,8 +20,8 @@ If using kubernetes >= 1.12 (which will not formally be supported until kops 1.1
 
 ## How to use etcd-manager
 
-Reminder: etcd-manager is alpha, and may cause you to lose the data in your
-kubernetes cluster.
+Reminder: etcd-manager is alpha, and we encourage you to back up the data in
+your kubernetes cluster.
 
 To create a test cluster:
 ```bash
@@ -67,7 +63,7 @@ kops delete cluster example.k8s.local --yes
 ```
 
 You can also do this for existing clusters. though remember that this is still
-an early alpha, so don't use for clusters with important data.  You just run the
+young software, so please back up important cluster data first.  You just run the
 two `kops set cluster` commands.  Note that `kops set cluster` is just an easy
 command line way to set some fields in the cluster spec - if you're using a
 GitOps approach you can change the manifest files directly. You can also `kops

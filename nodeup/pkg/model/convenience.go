@@ -119,6 +119,23 @@ func addHostPathMapping(pod *v1.Pod, container *v1.Container, name, path string)
 	return &container.VolumeMounts[len(container.VolumeMounts)-1]
 }
 
+// addHostPathVolume is shorthand for mapping a host path into a container
+func addHostPathVolume(pod *v1.Pod, container *v1.Container, hostPath v1.HostPathVolumeSource, volumeMount v1.VolumeMount) {
+	vol := v1.Volume{
+		Name: volumeMount.Name,
+		VolumeSource: v1.VolumeSource{
+			HostPath: &hostPath,
+		},
+	}
+
+	if volumeMount.MountPath == "" {
+		volumeMount.MountPath = hostPath.Path
+	}
+
+	pod.Spec.Volumes = append(pod.Spec.Volumes, vol)
+	container.VolumeMounts = append(container.VolumeMounts, volumeMount)
+}
+
 // convEtcdSettingsToMs converts etcd settings to a string rep of int milliseconds
 func convEtcdSettingsToMs(dur *metav1.Duration) string {
 	return strconv.FormatInt(dur.Nanoseconds()/1000000, 10)

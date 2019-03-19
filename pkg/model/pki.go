@@ -116,11 +116,13 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	// check if we need to generate certificates for etcd peers certificates from a different CA?
-	// @question i think we should use another KeyStore for this, perhaps registering a EtcdKeyStore given
-	// that mutual tls used to verify between the peers we don't want certificates for kubernetes able to act as a peer.
-	// For clients assuming we are using etcdv3 is can switch on user authentication and map the common names for auth.
-	if b.UseEtcdTLS() {
+	if b.UseEtcdManager() {
+		// We generate keypairs in the etcdmanager task itself
+	} else if b.UseEtcdTLS() {
+		// check if we need to generate certificates for etcd peers certificates from a different CA?
+		// @question i think we should use another KeyStore for this, perhaps registering a EtcdKeyStore given
+		// that mutual tls used to verify between the peers we don't want certificates for kubernetes able to act as a peer.
+		// For clients assuming we are using etcdv3 is can switch on user authentication and map the common names for auth.
 		servingNames := []string{fmt.Sprintf("*.internal.%s", b.ClusterName()), "localhost", "127.0.0.1"}
 		// @question should wildcard's be here instead of generating per node. If we ever provide the
 		// ability to resize the master, this will become a blocker
@@ -155,12 +157,13 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(&fitasks.Keypair{
 			AlternateNames: peerNames,
-			Lifecycle:      b.Lifecycle,
-			Name:           fi.String("etcd-peer"),
-			Subject:        "cn=etcd-peer",
-			Type:           "clientServer",
-			Signer:         defaultCA,
-			Format:         format,
+
+			Lifecycle: b.Lifecycle,
+			Name:      fi.String("etcd-peer"),
+			Subject:   "cn=etcd-peer",
+			Type:      "clientServer",
+			Signer:    defaultCA,
+			Format:    format,
 		})
 
 		c.AddTask(&fitasks.Keypair{
