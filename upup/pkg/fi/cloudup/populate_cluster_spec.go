@@ -157,10 +157,11 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 					//if clusterSubnets[zone] == nil {
 					//	return fmt.Errorf("EtcdMembers for %q is configured in zone %q, but that is not configured at the k8s-cluster level", etcd.Name, m.Zone)
 					//}
+					etcdNames[m.Name] = m
 					etcdInstanceGroups[instanceGroupName] = m
 				}
 
-				if (len(etcdInstanceGroups) % 2) == 0 {
+				if (len(etcdNames) % 2) == 0 {
 					// Not technically a requirement, but doesn't really make sense to allow
 					return fmt.Errorf("there should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zones and --master-zones to declare node zones and master zones separately")
 				}
