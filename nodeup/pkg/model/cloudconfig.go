@@ -137,6 +137,7 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 				fmt.Sprintf("lb-method=%s", fi.StringValue(lb.Method)),
 				fmt.Sprintf("lb-provider=%s", fi.StringValue(lb.Provider)),
 				fmt.Sprintf("use-octavia=%t", fi.BoolValue(lb.UseOctavia)),
+				fmt.Sprintf("manage-security-groups=%t", fi.BoolValue(lb.ManageSecGroups)),
 				"",
 			)
 
