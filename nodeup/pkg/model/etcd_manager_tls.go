@@ -138,17 +138,16 @@ func (b *EtcdManagerTLSBuilder) buildKubeAPIServerKeypair() error {
 
 	certBytes := certutil.EncodeCertPEM(cert)
 
+	p := filepath.Join(dir, name)
 	{
-		p := filepath.Join(dir, name+".crt")
-		if err := ioutil.WriteFile(p, certBytes, 0644); err != nil {
-			return fmt.Errorf("error writing certificate key file %q: %v", p, err)
+		if err := ioutil.WriteFile(p+".crt", certBytes, 0644); err != nil {
+			return fmt.Errorf("error writing certificate key file %q: %v", p+".crt", err)
 		}
 	}
 
 	{
-		p := filepath.Join(dir, name+".key")
-		if err := ioutil.WriteFile(p, privateKeyBytes, 0600); err != nil {
-			return fmt.Errorf("error writing private key file %q: %v", p, err)
+		if err := ioutil.WriteFile(p+".key", privateKeyBytes, 0600); err != nil {
+			return fmt.Errorf("error writing private key file %q: %v", p+".key", err)
 		}
 	}
 
