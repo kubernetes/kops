@@ -134,7 +134,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			}
 			c.AddTask(t)
 		case kops.InstanceGroupRoleMaster:
-			if !b.useOpenstackLoadbalancer() {
+			if !b.UseLoadBalancerForAPI() {
 				t := &openstacktasks.FloatingIP{
 					Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
 					Server:    instanceTask,
@@ -197,7 +197,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if b.useOpenstackLoadbalancer() {
+	if b.UseLoadBalancerForAPI() {
 		lbSubnetName := b.MasterInstanceGroups()[0].Spec.Subnets[0]
 		lbTask := &openstacktasks.LB{
 			Name:          fi.String(b.Cluster.Spec.MasterPublicName),

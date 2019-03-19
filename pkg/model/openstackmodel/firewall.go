@@ -221,7 +221,7 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 	addDirectionalGroupRule(c, masterSG, nodeSG, httpsIngress)
 	addDirectionalGroupRule(c, masterSG, masterSG, httpsIngress)
 
-	if b.useOpenstackLoadbalancer() {
+	if b.UseLoadBalancerForAPI() {
 		//Allow API Access to the lb sg
 		for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
 			addDirectionalGroupRule(c, lbSG, nil, &openstacktasks.SecurityGroupRule{
@@ -444,7 +444,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	sgMap := make(map[string]*openstacktasks.SecurityGroup)
 
-	if b.useOpenstackLoadbalancer() {
+	if b.UseLoadBalancerForAPI() {
 		sg := &openstacktasks.SecurityGroup{
 			Name:      s(b.Cluster.Spec.MasterPublicName),
 			Lifecycle: b.Lifecycle,

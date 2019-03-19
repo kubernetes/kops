@@ -912,10 +912,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			if cluster.Spec.CloudConfig == nil {
 				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
 			}
-			provider := "haproxy"
-			if c.OpenstackLBOctavia {
-				provider = "octavia"
-			}
 			cluster.Spec.CloudConfig.Openstack = &api.OpenstackConfiguration{
 				Router: &api.OpenstackRouter{
 					ExternalNetwork: fi.String(c.OpenstackExternalNet),
@@ -929,18 +925,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 					Timeout:    fi.String("30s"),
 					MaxRetries: fi.Int(3),
 				},
-			}
-			if c.APILoadBalancerType != "" {
-				// Set defaults for an openstack LB
-				cluster.Spec.CloudConfig.Openstack.Loadbalancer = &api.OpenstackLoadbalancerConfig{
-					FloatingNetwork: fi.String(c.OpenstackExternalNet),
-					Method:          fi.String("ROUND_ROBIN"),
-					Provider:        fi.String(provider),
-					UseOctavia:      fi.Bool(c.OpenstackLBOctavia),
-				}
-				if c.OpenstackLbSubnet != "" {
-					cluster.Spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet = fi.String(c.OpenstackLbSubnet)
-				}
 			}
 			if c.OpenstackDNSServers != "" {
 				cluster.Spec.CloudConfig.Openstack.Router.DNSServers = fi.String(c.OpenstackDNSServers)
@@ -1168,6 +1152,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if cluster.Spec.API.IsEmpty() {
 		if c.APILoadBalancerType != "" {
 			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+		} else if c.Cloud == "openstack" {
+			// Openstack will create floating IP's for each master and use these for discovery
+			initializeOpenstackAPI(c, cluster)
 		} else {
 			switch cluster.Spec.Topology.Masters {
 			case api.TopologyPublic:
@@ -1417,6 +1404,25 @@ func trimCommonPrefix(names []string) []string {
 	}
 
 	return names
+}
+
+func initializeOpenstackAPI(c *CreateClusterOptions, cluster *api.Cluster) {
+	if c.APILoadBalancerType != "" {
+		provider := "haproxy"
+		if c.OpenstackLBOctavia {
+			provider = "octavia"
+		}
+		// Set defaults for an openstack LB
+		cluster.Spec.CloudConfig.Openstack.Loadbalancer = &api.OpenstackLoadbalancerConfig{
+			FloatingNetwork: fi.String(c.OpenstackExternalNet),
+			Method:          fi.String("ROUND_ROBIN"),
+			Provider:        fi.String(provider),
+			UseOctavia:      fi.Bool(c.OpenstackLBOctavia),
+		}
+		if c.OpenstackLbSubnet != "" {
+			cluster.Spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet = fi.String(c.OpenstackLbSubnet)
+		}
+	}
 }
 
 // parseCloudLabels takes a CSV list of key=value records and parses them into a map. Nested '='s are supported via

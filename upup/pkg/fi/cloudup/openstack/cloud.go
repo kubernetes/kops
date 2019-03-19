@@ -404,28 +404,28 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 			if spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet != nil {
 				c.floatingSubnet = spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet
 			}
+			c.useOctavia = octavia
+			var lbClient *gophercloud.ServiceClient
+			if octavia {
+				glog.V(2).Infof("Openstack using Octavia lbaasv2 api")
+				lbClient, err = os.NewLoadBalancerV2(provider, gophercloud.EndpointOpts{
+					Region: region,
+				})
+				if err != nil {
+					return nil, fmt.Errorf("error building lb client: %v", err)
+				}
+			} else {
+				glog.V(2).Infof("Openstack using deprecated lbaasv2 api")
+				lbClient, err = os.NewNetworkV2(provider, gophercloud.EndpointOpts{
+					Region: region,
+				})
+				if err != nil {
+					return nil, fmt.Errorf("error building lb client: %v", err)
+				}
+			}
+			c.lbClient = lbClient
 		}
 	}
-	c.useOctavia = octavia
-	var lbClient *gophercloud.ServiceClient
-	if octavia {
-		glog.V(2).Infof("Openstack using Octavia lbaasv2 api")
-		lbClient, err = os.NewLoadBalancerV2(provider, gophercloud.EndpointOpts{
-			Region: region,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("error building lb client: %v", err)
-		}
-	} else {
-		glog.V(2).Infof("Openstack using deprecated lbaasv2 api")
-		lbClient, err = os.NewNetworkV2(provider, gophercloud.EndpointOpts{
-			Region: region,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("error building lb client: %v", err)
-		}
-	}
-	c.lbClient = lbClient
 	return c, nil
 }
 
