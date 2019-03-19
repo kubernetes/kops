@@ -127,7 +127,8 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				ResourceType:       s("A"),
 				TargetLoadBalancer: b.LinkToELB("api"),
 			}
-			c.AddTask(internalApiDnsName)
+			// Using EnsureTask as MasterInternalName and MasterPublicName could be the same
+			c.EnsureTask(internalApiDnsName)
 		}
 	}
 
