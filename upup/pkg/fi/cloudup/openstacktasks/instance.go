@@ -75,7 +75,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		return nil, nil
 	}
 	serverPage, err := servers.List(c.Cloud.(openstack.OpenstackCloud).ComputeClient(), servers.ListOpts{
-		Name: fi.StringValue(e.Name),
+		Name: fmt.Sprintf("^%s$", fi.StringValue(e.Name)),
 	}).AllPages()
 	if err != nil {
 		return nil, fmt.Errorf("error finding server with name %s: %v", fi.StringValue(e.Name), err)
