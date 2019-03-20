@@ -228,6 +228,8 @@ resource "aws_elb" "api-complex-example-com" {
   tags = {
     KubernetesCluster = "complex.example.com"
     Name              = "api.complex.example.com"
+    Owner             = "John Doe"
+    "foo/bar"         = "fib+baz"
   }
 }
 
