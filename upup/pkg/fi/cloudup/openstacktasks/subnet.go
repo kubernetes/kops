@@ -105,28 +105,28 @@ func (s *Subnet) Run(context *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(s, context)
 }
 
-func (_ *Subnet) CheckChanges(actual, expected, changes *Subnet) error {
-	if actual == nil {
-		if expected.Name == nil {
+func (_ *Subnet) CheckChanges(a, e, changes *Subnet) error {
+	if a == nil {
+		if e.Name == nil {
 			return fi.RequiredField("Name")
 		}
-		if expected.Network == nil {
+		if e.Network == nil {
 			return fi.RequiredField("Network")
 		}
-		if expected.CIDR == nil {
+		if e.CIDR == nil {
 			return fi.RequiredField("CIDR")
 		}
 	} else {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
 		}
-		if changes.DNSServers != nil {
+		if e.DNSServers != nil {
 			return fi.CannotChangeField("DNSServers")
 		}
-		if fi.StringValue(actual.Network.ID) != fi.StringValue(expected.Network.ID) {
+		if e.Network != nil {
 			return fi.CannotChangeField("Network")
 		}
-		if changes.CIDR != nil {
+		if e.CIDR != nil {
 			return fi.CannotChangeField("CIDR")
 		}
 	}
