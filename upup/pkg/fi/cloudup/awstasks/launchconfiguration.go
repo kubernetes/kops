@@ -380,29 +380,27 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 }
 
 // buildRootDevice is responsible for creating a block device mapping for the root volume
-func (e *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]*BlockDeviceMapping, error) {
-	imageID := fi.StringValue(e.ImageID)
-	image, err := cloud.ResolveImage(imageID)
+func (t *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]*BlockDeviceMapping, error) {
+	image := fi.StringValue(t.ImageID)
+
+	// @step: resolve the image ami
+	img, err := cloud.ResolveImage(image)
 	if err != nil {
-		return nil, fmt.Errorf("unable to resolve image: %q: %v", imageID, err)
-	} else if image == nil {
-		return nil, fmt.Errorf("unable to resolve image: %q: not found", imageID)
+		return nil, fmt.Errorf("unable to resolve image: %q: %v", image, err)
+	} else if img == nil {
+		return nil, fmt.Errorf("unable to resolve image: %q: not found", image)
 	}
 
-	rootDeviceName := aws.StringValue(image.RootDeviceName)
+	bm := make(map[string]*BlockDeviceMapping)
 
-	blockDeviceMappings := make(map[string]*BlockDeviceMapping)
-
-	rootDeviceMapping := &BlockDeviceMapping{
-		EbsDeleteOnTermination: e.RootVolumeTermination,
-		EbsVolumeSize:          e.RootVolumeSize,
-		EbsVolumeType:          e.RootVolumeType,
-		EbsVolumeIops:          e.RootVolumeIops,
+	bm[aws.StringValue(img.RootDeviceName)] = &BlockDeviceMapping{
+		EbsDeleteOnTermination: t.RootVolumeTermination,
+		EbsVolumeSize:          t.RootVolumeSize,
+		EbsVolumeType:          t.RootVolumeType,
+		EbsVolumeIops:          t.RootVolumeIops,
 	}
 
-	blockDeviceMappings[rootDeviceName] = rootDeviceMapping
-
-	return blockDeviceMappings, nil
+	return bm, nil
 }
 
 type terraformLaunchConfiguration struct {
