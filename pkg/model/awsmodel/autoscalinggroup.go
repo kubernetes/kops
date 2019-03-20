@@ -84,6 +84,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
