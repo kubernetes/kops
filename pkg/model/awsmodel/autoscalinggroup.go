@@ -152,8 +152,8 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		return nil, fmt.Errorf("unable to find iam profile link for instance group %q: %v", ig.ObjectMeta.Name, err)
 	}
 
-	rootVolumeTermination := ig.Spec.RetainVolumeOnTermination
-	if rootVolumeTermination == nil {
+	rootVolumeTermination := fi.Bool(false)
+	if ig.Spec.RetainVolumeOnTermination == nil || ig.Spec.RetainVolumeOnTermination == fi.Bool(false) {
 		rootVolumeTermination = fi.Bool(true)
 	}
 
