@@ -211,7 +211,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		}
 		t.BlockDeviceMappings = append(t.BlockDeviceMappings, &awstasks.BlockDeviceMapping{
 			DeviceName:             fi.String(x.Device),
-			EbsDeleteOnTermination: fi.Bool(true),
+			EbsDeleteOnTermination: rootVolumeTermination,
 			EbsEncrypted:           x.Encrypted,
 			EbsVolumeIops:          x.Iops,
 			EbsVolumeSize:          fi.Int64(x.Size),
