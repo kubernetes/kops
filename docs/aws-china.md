@@ -163,7 +163,6 @@ Another tweak we can adopt here is to add a `docker` section to change the mirro
 ```yaml
 spec:
   docker:
-    logDriver: ""
     registryMirrors:
     - https://registry.docker-cn.com
 ```
