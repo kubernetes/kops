@@ -28,7 +28,7 @@ kops create cluster $NAME              \
    --node-count=3                      \
    --node-size="$WORKER_SIZE"          \
    --master-size="$MASTER_SIZE"        \
-   --network-cidr=${NETWORKCIDR}      \
+   --network-cidr=${NETWORKCIDR}       \
    --dns-zone=ZVO7KL181S5AP            \
    --ssh-public-key=$HOME/.ssh/lab_no_password.pub
 ```
