@@ -11,7 +11,7 @@ Note: if you want to upgrade from a `kube-up` installation, please see the instr
 ### Manual update
 
 * `kops edit cluster $NAME`
-* set the kubernetesVersion to the target version (e.g. `v1.3.5`)
+* set the kubernetesVersion to the target version (e.g. `v1.3.5`) Note the verb used below is `update`, not `upgrade`.
 * `kops update cluster $NAME` to preview, then `kops update cluster $NAME --yes`
 * `kops rolling-update cluster $NAME` to preview, then `kops rolling-update cluster $NAME --yes`
 
