@@ -542,8 +542,9 @@ type OpenstackLoadbalancerConfig struct {
 }
 
 type OpenstackBlockStorageConfig struct {
-	Version  *string `json:"bs-version,omitempty"`
-	IgnoreAZ *bool   `json:"ignore-volume-az,omitempty"`
+	Version    *string `json:"bs-version,omitempty"`
+	IgnoreAZ   *bool   `json:"ignore-volume-az,omitempty"`
+	OverrideAZ *string `json:"override-volume-az,omitempty"`
 }
 
 // OpenstackMonitor defines the config for a health monitor

@@ -3959,6 +3959,7 @@ func Convert_kops_NodeAuthorizerSpec_To_v1alpha1_NodeAuthorizerSpec(in *kops.Nod
 func autoConvert_v1alpha1_OpenstackBlockStorageConfig_To_kops_OpenstackBlockStorageConfig(in *OpenstackBlockStorageConfig, out *kops.OpenstackBlockStorageConfig, s conversion.Scope) error {
 	out.Version = in.Version
 	out.IgnoreAZ = in.IgnoreAZ
+	out.OverrideAZ = in.OverrideAZ
 	return nil
 }
 
@@ -3970,6 +3971,7 @@ func Convert_v1alpha1_OpenstackBlockStorageConfig_To_kops_OpenstackBlockStorageC
 func autoConvert_kops_OpenstackBlockStorageConfig_To_v1alpha1_OpenstackBlockStorageConfig(in *kops.OpenstackBlockStorageConfig, out *OpenstackBlockStorageConfig, s conversion.Scope) error {
 	out.Version = in.Version
 	out.IgnoreAZ = in.IgnoreAZ
+	out.OverrideAZ = in.OverrideAZ
 	return nil
 }
 

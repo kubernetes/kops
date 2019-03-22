@@ -262,6 +262,10 @@ func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.ModelBuilderContext, name
 	// This says "only mount on a master"
 	tags[openstack.TagNameRolePrefix+"master"] = "1"
 
+	// override zone
+	if b.Cluster.Spec.CloudConfig.Openstack.BlockStorage != nil && b.Cluster.Spec.CloudConfig.Openstack.BlockStorage.OverrideAZ != nil {
+		zone = fi.StringValue(b.Cluster.Spec.CloudConfig.Openstack.BlockStorage.OverrideAZ)
+	}
 	t := &openstacktasks.Volume{
 		Name:             s(name),
 		AvailabilityZone: s(zone),
