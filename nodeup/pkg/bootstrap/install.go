@@ -151,11 +151,11 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 			"OS_AUTH_URL",
 			"OS_REGION_NAME",
 		} {
-			buffer.WriteString("\"")
+			buffer.WriteString("'")
 			buffer.WriteString(envVar)
 			buffer.WriteString("=")
 			buffer.WriteString(os.Getenv(envVar))
-			buffer.WriteString("\" ")
+			buffer.WriteString("' ")
 		}
 	}
 
