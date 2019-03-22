@@ -83,7 +83,7 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 			"OS_AUTH_URL",
 			"OS_REGION_NAME",
 		} {
-			env[envVar] = os.Getenv(envVar)
+			env[envVar] = fmt.Sprintf("'%s'", os.Getenv(envVar))
 		}
 	}
 
