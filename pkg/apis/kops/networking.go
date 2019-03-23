@@ -69,6 +69,8 @@ type WeaveNetworkingSpec struct {
 type FlannelNetworkingSpec struct {
 	// Backend is the backend overlay type we want to use (vxlan or udp)
 	Backend string `json:"backend,omitempty"`
+	// IptablesResyncSeconds sets resync period for iptables rules, in seconds
+	IptablesResyncSeconds *int32 `json:"iptablesResyncSeconds,omitempty"`
 }
 
 // CalicoNetworkingSpec declares that we want Calico networking
