@@ -440,6 +440,19 @@ For support with Cilium Network Policies you can reach out on Slack or Github:
 - [Cilium Github](https://github.com/cilium/cilium)
 - [Cilium Slack](https://cilium.io/slack)
 
+### Flannel Example for CNI
+
+#### Configuraing Flannel iptables resync period
+
+Flannel iptables resync option is configurable via editing a cluster and adding
+`iptablesResyncSeconds` option to spec:
+
+```
+  networking:
+    flannel:
+      iptablesResyncSeconds: 360
+```
+
 ### Validating CNI Installation
 
 You will notice that `kube-dns` fails to start properly until you deploy your CNI provider.
