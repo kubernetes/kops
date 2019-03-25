@@ -603,11 +603,12 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		}
 	}
 
-	if err := t.AddELBTags(loadBalancerName, e.Tags); err != nil {
-		return err
+	var tags map[string]string = t.Cloud.BuildTags(e.Name)
+	for k, v := range e.Tags {
+		tags[k] = v
 	}
-
-	if err := t.AddELBTags(loadBalancerName, t.Cloud.BuildTags(e.Name)); err != nil {
+	
+	if err := t.AddELBTags(loadBalancerName, tags); err != nil {
 		return err
 	}
 
@@ -888,7 +889,12 @@ func (_ *LoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarg
 		tf.CrossZoneLoadBalancing = e.CrossZoneLoadBalancing.Enabled
 	}
 
-	tf.Tags = buildCloudformationTags(cloud.BuildTags(e.Name))
+	var tags map[string]string = cloud.BuildTags(e.Name)
+	for k, v := range e.Tags {
+		tags[k] = v
+	}
+
+	tf.Tags = buildCloudformationTags(tags)
 
 	return t.RenderResource("AWS::ElasticLoadBalancing::LoadBalancer", *e.Name, tf)
 }
