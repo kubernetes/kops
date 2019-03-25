@@ -607,7 +607,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 	for k, v := range e.Tags {
 		tags[k] = v
 	}
-	
+
 	if err := t.AddELBTags(loadBalancerName, tags); err != nil {
 		return err
 	}
