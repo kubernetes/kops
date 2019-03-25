@@ -34,6 +34,10 @@ type KubeletConfigSpec struct {
 	TLSCertFile string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
 	// TODO: Remove unused TLSPrivateKeyFile
 	TLSPrivateKeyFile string `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
+	// TLSCipherSuites indicates the allowed TLS cipher suite
+	TLSCipherSuites []string `json:"tlsCipherSuites,omitempty" flag:"tls-cipher-suites"`
+	// TLSMinVersion indicates the minimum TLS version allowed
+	TLSMinVersion string `json:"tlsMinVersion,omitempty" flag:"tls-min-version"`
 	// KubeconfigPath is the path of kubeconfig for the kubelet
 	KubeconfigPath string `json:"kubeconfigPath,omitempty" flag:"kubeconfig"`
 	// RequireKubeconfig indicates a kubeconfig is required
@@ -281,6 +285,10 @@ type KubeAPIServerConfig struct {
 	TLSCertFile string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
 	// TODO: Remove unused TLSPrivateKeyFile
 	TLSPrivateKeyFile string `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
+	// TLSCipherSuites indicates the allowed TLS cipher suite
+	TLSCipherSuites []string `json:"tlsCipherSuites,omitempty" flag:"tls-cipher-suites"`
+	// TLSMinVersion indicates the minimum TLS version allowed
+	TLSMinVersion string `json:"tlsMinVersion,omitempty" flag:"tls-min-version"`
 	// TODO: Remove unused TokenAuthFile
 	TokenAuthFile string `json:"tokenAuthFile,omitempty" flag:"token-auth-file"`
 	// AllowPrivileged indicates if we can run privileged containers
@@ -475,6 +483,10 @@ type KubeControllerManagerConfig struct {
 	ExperimentalClusterSigningDuration *metav1.Duration `json:"experimentalClusterSigningDuration,omitempty" flag:"experimental-cluster-signing-duration"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
+	// TLSCipherSuites indicates the allowed TLS cipher suite
+	TLSCipherSuites []string `json:"tlsCipherSuites,omitempty" flag:"tls-cipher-suites"`
+	// TLSMinVersion indicates the minimum TLS version allowed
+	TLSMinVersion string `json:"tlsMinVersion,omitempty" flag:"tls-min-version"`
 }
 
 // CloudControllerManagerConfig is the configuration of the cloud controller
