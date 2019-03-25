@@ -269,6 +269,13 @@ func buildEtcdBackupManagerContainer(c *EtcdCluster) *v1.Container {
 	command = append(command, "--cluster-name", c.ClusterName)
 	command = append(command, "--data-dir", "/var/etcd/"+c.DataDirName)
 
+	if c.isTLS() {
+		command = append(command, "--client-url", "https://127.0.0.1:4001")
+		command = append(command, "--client-ca-file", c.TLSCA)
+		command = append(command, "--client-cert-file", c.TLSCert)
+		command = append(command, "--client-key-file", c.TLSKey)
+	}
+
 	container := v1.Container{
 		Name:    "etcd-backup",
 		Image:   c.BackupImage,
