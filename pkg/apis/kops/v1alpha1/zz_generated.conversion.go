@@ -2932,6 +2932,8 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
+	out.TLSCipherSuites = in.TLSCipherSuites
+	out.TLSMinVersion = in.TLSMinVersion
 	out.TokenAuthFile = in.TokenAuthFile
 	out.AllowPrivileged = in.AllowPrivileged
 	out.APIServerCount = in.APIServerCount
@@ -3017,6 +3019,8 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
+	out.TLSCipherSuites = in.TLSCipherSuites
+	out.TLSMinVersion = in.TLSMinVersion
 	out.TokenAuthFile = in.TokenAuthFile
 	out.AllowPrivileged = in.AllowPrivileged
 	out.APIServerCount = in.APIServerCount
@@ -3112,6 +3116,8 @@ func autoConvert_v1alpha1_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.HorizontalPodAutoscalerUseRestClients = in.HorizontalPodAutoscalerUseRestClients
 	out.ExperimentalClusterSigningDuration = in.ExperimentalClusterSigningDuration
 	out.FeatureGates = in.FeatureGates
+	out.TLSCipherSuites = in.TLSCipherSuites
+	out.TLSMinVersion = in.TLSMinVersion
 	return nil
 }
 
@@ -3156,6 +3162,8 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerMana
 	out.HorizontalPodAutoscalerUseRestClients = in.HorizontalPodAutoscalerUseRestClients
 	out.ExperimentalClusterSigningDuration = in.ExperimentalClusterSigningDuration
 	out.FeatureGates = in.FeatureGates
+	out.TLSCipherSuites = in.TLSCipherSuites
+	out.TLSMinVersion = in.TLSMinVersion
 	return nil
 }
 
@@ -3312,6 +3320,8 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
+	out.TLSCipherSuites = in.TLSCipherSuites
+	out.TLSMinVersion = in.TLSMinVersion
 	out.KubeconfigPath = in.KubeconfigPath
 	out.RequireKubeconfig = in.RequireKubeconfig
 	out.LogLevel = in.LogLevel
@@ -3391,6 +3401,8 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
+	out.TLSCipherSuites = in.TLSCipherSuites
+	out.TLSMinVersion = in.TLSMinVersion
 	out.KubeconfigPath = in.KubeconfigPath
 	out.RequireKubeconfig = in.RequireKubeconfig
 	out.LogLevel = in.LogLevel

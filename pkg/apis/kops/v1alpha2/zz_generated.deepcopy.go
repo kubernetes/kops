@@ -1678,6 +1678,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.TLSCipherSuites != nil {
+		in, out := &in.TLSCipherSuites, &out.TLSCipherSuites
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.AllowPrivileged != nil {
 		in, out := &in.AllowPrivileged, &out.AllowPrivileged
 		*out = new(bool)
@@ -2000,6 +2005,11 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 			(*out)[key] = val
 		}
 	}
+	if in.TLSCipherSuites != nil {
+		in, out := &in.TLSCipherSuites, &out.TLSCipherSuites
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
@@ -2152,6 +2162,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		in, out := &in.AnonymousAuth, &out.AnonymousAuth
 		*out = new(bool)
 		**out = **in
+	}
+	if in.TLSCipherSuites != nil {
+		in, out := &in.TLSCipherSuites, &out.TLSCipherSuites
+		*out = make([]string, len(*in))
+		copy(*out, *in)
 	}
 	if in.RequireKubeconfig != nil {
 		in, out := &in.RequireKubeconfig, &out.RequireKubeconfig
