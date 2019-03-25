@@ -108,6 +108,10 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		if c.Spec.NetworkCIDR != "" {
 			return field.Invalid(fieldSpec.Child("NetworkCIDR"), c.Spec.NetworkCIDR, "NetworkCIDR should not be set on DigitalOcean")
 		}
+	case kops.CloudProviderALI:
+		requiresSubnets = false
+		requiresSubnetCIDR = false
+		requiresNetworkCIDR = false
 	case kops.CloudProviderAWS:
 	case kops.CloudProviderVSphere:
 	case kops.CloudProviderOpenstack:
@@ -335,6 +339,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 			k8sCloudProvider = ""
 		case kops.CloudProviderOpenstack:
 			k8sCloudProvider = "openstack"
+		case kops.CloudProviderALI:
+			k8sCloudProvider = "alicloud"
 		default:
 			return field.Invalid(fieldSpec.Child("CloudProvider"), c.Spec.CloudProvider, "unknown cloudprovider")
 		}
