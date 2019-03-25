@@ -2693,6 +2693,11 @@ func (in *OpenstackBlockStorageConfig) DeepCopyInto(out *OpenstackBlockStorageCo
 		*out = new(bool)
 		**out = **in
 	}
+	if in.OverrideAZ != nil {
+		in, out := &in.OverrideAZ, &out.OverrideAZ
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 
