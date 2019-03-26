@@ -1308,23 +1308,25 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 			}
 
 			image := &nodeup.Image{
-				Source: u.String(),
-				Hash:   hash.Hex(),
+				Sources: []string{u.String()},
+				Hash:    hash.Hex(),
 			}
 			images = append(images, image)
 		}
 	}
 
 	{
-		location, hash, err := ProtokubeImageSource(assetBuilder)
+		u, hash, err := ProtokubeImageSource(assetBuilder)
 		if err != nil {
 			return nil, err
 		}
 
+		asset := BuildMirroredAsset(u, hash)
+
 		config.ProtokubeImage = &nodeup.Image{
-			Name:   kopsbase.DefaultProtokubeImageName(),
-			Source: location.String(),
-			Hash:   hash.Hex(),
+			Name:    kopsbase.DefaultProtokubeImageName(),
+			Sources: asset.Locations,
+			Hash:    asset.Hash.Hex(),
 		}
 	}
 

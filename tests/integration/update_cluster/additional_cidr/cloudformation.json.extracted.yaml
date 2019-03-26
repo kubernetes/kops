@@ -269,7 +269,9 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
   protokubeImage:
     hash: 0b1f26208f8f6cc02468368706d0236670fec8a2
     name: protokube:1.8.1
-    source: https://kubeupv2.s3.amazonaws.com/kops/1.8.1/images/protokube.tar.gz
+    sources:
+    - https://github.com/kubernetes/kops/releases/download/1.8.1/images/protokube.tar.gz
+    - https://kubeupv2.s3.amazonaws.com/kops/1.8.1/images/protokube.tar.gz
 
   __EOF_KUBE_ENV
 
@@ -477,7 +479,9 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionalcidrexamplecom.Propert
   protokubeImage:
     hash: 0b1f26208f8f6cc02468368706d0236670fec8a2
     name: protokube:1.8.1
-    source: https://kubeupv2.s3.amazonaws.com/kops/1.8.1/images/protokube.tar.gz
+    sources:
+    - https://github.com/kubernetes/kops/releases/download/1.8.1/images/protokube.tar.gz
+    - https://kubeupv2.s3.amazonaws.com/kops/1.8.1/images/protokube.tar.gz
 
   __EOF_KUBE_ENV
 
