@@ -35,6 +35,7 @@ const defaultKopsBaseUrl = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
 const defaultKopsMirrorBase = "https://kubeupv2.s3.amazonaws.com/kops/"
 
 // defaultKopsMirrors is a list of our well-known mirrors
+// Note that we download in order
 var defaultKopsMirrors = []string{
 	"https://github.com/kubernetes/kops/releases/download/",
 	// We do need to include defaultKopsMirrorBase - the list replaces the base url
