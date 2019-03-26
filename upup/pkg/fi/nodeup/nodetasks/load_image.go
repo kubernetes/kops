@@ -35,8 +35,8 @@ const dockerService = "docker.service"
 
 // LoadImageTask is responsible for downloading a docker image
 type LoadImageTask struct {
-	Source string
-	Hash   string
+	Sources []string
+	Hash    string
 }
 
 var _ fi.Task = &LoadImageTask{}
@@ -56,7 +56,7 @@ func (t *LoadImageTask) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 }
 
 func (t *LoadImageTask) String() string {
-	return fmt.Sprintf("LoadImageTask: %s", t.Source)
+	return fmt.Sprintf("LoadImageTask: %v", t.Sources)
 }
 
 func (e *LoadImageTask) Find(c *fi.Context) (*LoadImageTask, error) {
@@ -78,13 +78,27 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 		return err
 	}
 
-	url := e.Source
+	urls := e.Sources
+	if len(urls) == 0 {
+		return fmt.Errorf("no sources specified: %v", err)
+	}
 
-	localFile := path.Join(t.CacheDir, hash.String()+"_"+utils.SanitizeString(url))
-	_, err = fi.DownloadURL(url, localFile, hash)
+	// We assume the first url is the "main" url, and download to that _name_, wherever we get it from
+	primaryURL := urls[0]
+	localFile := path.Join(t.CacheDir, hash.String()+"_"+utils.SanitizeString(primaryURL))
+
+	for _, url := range urls {
+		_, err = fi.DownloadURL(url, localFile, hash)
+		if err != nil {
+			glog.Warningf("error downloading url %q: %v", url, err)
+			continue
+		} else {
+			break
+		}
+	}
 	if err != nil {
 		// Hack to try to avoid failed downloads causing massive bandwidth bills
-		backoff.DoGlobalBackoff(fmt.Errorf("failed to download image %s: %v", url, err))
+		backoff.DoGlobalBackoff(fmt.Errorf("failed to download image %s: %v", primaryURL, err))
 		return err
 	}
 

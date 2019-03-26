@@ -293,14 +293,14 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	for i, image := range c.config.Images {
 		taskMap["LoadImage."+strconv.Itoa(i)] = &nodetasks.LoadImageTask{
-			Source: image.Source,
-			Hash:   image.Hash,
+			Sources: image.Sources,
+			Hash:    image.Hash,
 		}
 	}
 	if c.config.ProtokubeImage != nil {
 		taskMap["LoadImage.protokube"] = &nodetasks.LoadImageTask{
-			Source: c.config.ProtokubeImage.Source,
-			Hash:   c.config.ProtokubeImage.Hash,
+			Sources: c.config.ProtokubeImage.Sources,
+			Hash:    c.config.ProtokubeImage.Hash,
 		}
 	}
 
