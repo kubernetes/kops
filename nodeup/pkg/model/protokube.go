@@ -176,20 +176,20 @@ func (t *ProtokubeBuilder) ProtokubeImageName() string {
 
 // ProtokubeImagePullCommand returns the command to pull the image
 func (t *ProtokubeBuilder) ProtokubeImagePullCommand() string {
-	source := ""
+	var sources []string
 	if t.NodeupConfig.ProtokubeImage != nil {
-		source = t.NodeupConfig.ProtokubeImage.Source
+		sources = t.NodeupConfig.ProtokubeImage.Sources
 	}
-	if source == "" {
+	if len(sources) == 0 {
 		// Nothing to pull; return dummy value
 		return "/bin/true"
 	}
-	if strings.HasPrefix(source, "http:") || strings.HasPrefix(source, "https:") || strings.HasPrefix(source, "s3:") {
+	if strings.HasPrefix(sources[0], "http:") || strings.HasPrefix(sources[0], "https:") || strings.HasPrefix(sources[0], "s3:") {
 		// We preloaded the image; return a dummy value
 		return "/bin/true"
 	}
 
-	return "/usr/bin/docker pull " + t.NodeupConfig.ProtokubeImage.Source
+	return "/usr/bin/docker pull " + sources[0]
 }
 
 // ProtokubeFlags are the flags for protokube
