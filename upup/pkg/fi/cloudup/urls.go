@@ -32,14 +32,23 @@ import (
 const defaultKopsBaseUrl = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
 
 // defaultKopsMirrorBase will be detected and automatically set to pull from the defaultKopsMirrors
-const defaultKopsMirrorBase = "https://kubeupv2.s3.amazonaws.com/kops/"
+const defaultKopsMirrorBase = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
+
+// mirror holds the configuration for a mirror
+type mirror struct {
+	// URL is the base url
+	URL string
+
+	// Replace is a set of string replacements, so that we can follow the mirror's naming rules
+	Replace map[string]string
+}
 
 // defaultKopsMirrors is a list of our well-known mirrors
 // Note that we download in order
-var defaultKopsMirrors = []string{
-	"https://github.com/kubernetes/kops/releases/download/",
+var defaultKopsMirrors = []mirror{
+	{URL: "https://github.com/kubernetes/kops/releases/download/%s/", Replace: map[string]string{"/": "-"}},
 	// We do need to include defaultKopsMirrorBase - the list replaces the base url
-	"https://kubeupv2.s3.amazonaws.com/kops/",
+	{URL: "https://kubeupv2.s3.amazonaws.com/kops/%s/"},
 }
 
 var kopsBaseUrl *url.URL
@@ -201,7 +210,7 @@ type MirroredAsset struct {
 
 // BuildMirroredAsset checks to see if this is a file under the standard base location, and if so constructs some mirror locations
 func BuildMirroredAsset(u *url.URL, hash *hashing.Hash) *MirroredAsset {
-	baseUrlString := defaultKopsMirrorBase
+	baseUrlString := fmt.Sprintf(defaultKopsMirrorBase, kops.Version)
 	if !strings.HasSuffix(baseUrlString, "/") {
 		baseUrlString += "/"
 	}
@@ -222,7 +231,12 @@ func BuildMirroredAsset(u *url.URL, hash *hashing.Hash) *MirroredAsset {
 			// This is under our base url - add our well-known mirrors
 			a.Locations = []string{}
 			for _, m := range defaultKopsMirrors {
-				a.Locations = append(a.Locations, m+suffix)
+				filename := suffix
+				for k, v := range m.Replace {
+					filename = strings.Replace(filename, k, v, -1)
+				}
+				base := fmt.Sprintf(m.URL, kops.Version)
+				a.Locations = append(a.Locations, base+filename)
 			}
 		}
 	}
