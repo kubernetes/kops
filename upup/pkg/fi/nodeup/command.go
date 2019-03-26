@@ -30,6 +30,7 @@ import (
 
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model"
+	"k8s.io/kops/nodeup/pkg/model/resources"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/nodeup"
@@ -182,7 +183,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	glog.Infof("OS tags: %v", osTags)
 
 	modelContext := &model.NodeupModelContext{
-		Architecture:  model.ArchitectureAmd64,
+		Architecture:  resources.ArchitectureAmd64,
 		Assets:        assetStore,
 		Cluster:       c.cluster,
 		Distribution:  distribution,

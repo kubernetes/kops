@@ -11,6 +11,7 @@ go_library(
     deps = [
         "//nodeup/pkg/distros:go_default_library",
         "//nodeup/pkg/model:go_default_library",
+        "//nodeup/pkg/model/resources:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/registry:go_default_library",
         "//pkg/apis/nodeup:go_default_library",

@@ -16,6 +16,83 @@ limitations under the License.
 
 package resources
 
+import "k8s.io/kops/nodeup/pkg/distros"
+
+type packageInfo struct {
+	Version string // Package version
+	Source  string // URL to download the package from
+	Hash    string // sha1sum of the package file
+}
+
+type dockerVersion struct {
+	Name string
+
+	// Version is the version of docker, as specified in the kops
+	Version string
+
+	// Source is the url where the package/tarfile can be found
+	Source string
+
+	// Hash is the sha1 hash of the file
+	Hash string
+
+	// Extra packages to install during the same dpkg/yum transaction.
+	// This is used for:
+	//   - On RHEL/CentOS, the SELinux policy needs to be installed.
+	//   - Starting from Docker 18.09, the Docker package has been split in 3
+	//     separate packages: one for the daemon, one for the CLI, one for
+	//     containerd.  All 3 must be installed at the same time when
+	//     upgrading from an older version of Docker.
+	ExtraPackages map[string]packageInfo
+
+	DockerVersion string
+	Distros       []distros.Distribution
+	// List of dependencies that can be installed using the system's package
+	// manager (e.g. apt-get install or yum install).
+	Dependencies  []string
+	Architectures []Architecture
+
+	// PlainBinary indicates that the Source is not an OS, but a "bare" tar.gz
+	PlainBinary bool
+
+	// MarkImmutable is a list of files on which we should perform a `chattr +i <file>`
+	MarkImmutable []string
+}
+
+// DockerVersions is a complete list of all supported docker versions for
+// CentOS, RHEL, Debian and Ubuntu
+var DockerVersions = append(
+	dockerVersionsCentos,
+	append(dockerVersionsDebian, dockerVersionsUbuntu...)...,
+)
+
+func (d *dockerVersion) Matches(arch Architecture, dockerVersion string, distro distros.Distribution) bool {
+	if d.DockerVersion != dockerVersion {
+		return false
+	}
+	foundDistro := false
+	for _, d := range d.Distros {
+		if d == distro {
+			foundDistro = true
+		}
+	}
+	if !foundDistro {
+		return false
+	}
+
+	foundArch := false
+	for _, a := range d.Architectures {
+		if a == arch {
+			foundArch = true
+		}
+	}
+	if !foundArch {
+		return false
+	}
+
+	return true
+}
+
 var DockerApache2License = `
 
                                  Apache License

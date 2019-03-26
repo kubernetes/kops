@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"k8s.io/kops/nodeup/pkg/distros"
+	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
@@ -39,7 +40,7 @@ import (
 
 // NodeupModelContext is the context supplied the nodeup tasks
 type NodeupModelContext struct {
-	Architecture  Architecture
+	Architecture  resources.Architecture
 	Assets        *fi.AssetStore
 	Cluster       *kops.Cluster
 	Distribution  distros.Distribution
