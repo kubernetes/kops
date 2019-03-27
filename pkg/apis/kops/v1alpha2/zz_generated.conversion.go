@@ -3666,7 +3666,8 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.CPUCFSQuota = in.CPUCFSQuota
 	out.CPUCFSQuotaPeriod = in.CPUCFSQuotaPeriod
 	out.CpuManagerPolicy = in.CpuManagerPolicy
-	out.RegistryQPS = in.RegistryQPS
+	out.RegistryPullQPS = in.RegistryPullQPS
+	out.RegistryBurst = in.RegistryBurst
 	return nil
 }
 
@@ -3749,7 +3750,8 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.CPUCFSQuota = in.CPUCFSQuota
 	out.CPUCFSQuotaPeriod = in.CPUCFSQuotaPeriod
 	out.CpuManagerPolicy = in.CpuManagerPolicy
-	out.RegistryQPS = in.RegistryQPS
+	out.RegistryPullQPS = in.RegistryPullQPS
+	out.RegistryBurst = in.RegistryBurst
 	return nil
 }
 
