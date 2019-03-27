@@ -579,7 +579,7 @@ type terraformAutoscalingLaunchTemplate struct {
 	// LaunchTemplateSpecification is the definition for a LT
 	LaunchTemplateSpecification []*terraformAutoscalingLaunchTemplateSpecification `json:"launch_template_specification,omitempty"`
 	// Override the is machine type override
-	Override []*terraformAutoscalingLaunchTemplateOverride `json:"overrides,omitempty"`
+	Override []*terraformAutoscalingLaunchTemplateOverride `json:"override,omitempty"`
 }
 
 type terraformAutoscalingInstanceDistribution struct {
