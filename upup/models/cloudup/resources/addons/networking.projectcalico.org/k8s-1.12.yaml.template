@@ -347,6 +347,9 @@ metadata:
     k8s-app: calico-kube-controllers
     role.kubernetes.io/networking: "1"
 spec:
+  selector:
+    matchLabels:
+      k8s-app: calico-kube-controllers
   # The controllers can only have a single active instance.
   replicas: 0
   strategy:
