@@ -267,7 +267,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 					Version:           fi.String(version),
 					Selector:          map[string]string{"k8s-addon": key},
 					Manifest:          fi.String(location),
-					KubernetesVersion: ">=1.6.0 <1.12.0",
+					KubernetesVersion: ">=1.6.0 <1.14.0",
 					Id:                id,
 				})
 				manifests[key+"-"+id] = "addons/" + location
@@ -276,18 +276,18 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 		{
 			key := "coredns.addons.k8s.io"
-			version := "1.3.0-kops.1"
+			version := "1.4.0"
 
 			{
-				location := key + "/k8s-1.12.yaml"
-				id := "k8s-1.12"
+				location := key + "/k8s-1.14.yaml"
+				id := "k8s-1.14"
 
 				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 					Name:              fi.String(key),
 					Version:           fi.String(version),
 					Selector:          map[string]string{"k8s-addon": key},
 					Manifest:          fi.String(location),
-					KubernetesVersion: ">=1.12.0",
+					KubernetesVersion: ">=1.14.0",
 					Id:                id,
 				})
 				manifests[key+"-"+id] = "addons/" + location
