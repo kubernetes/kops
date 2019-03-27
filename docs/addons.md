@@ -5,7 +5,7 @@ With kops you manage addons by using kubectl.
 (For a description of the addon-manager, please see [addon_manager.md](addon_manager.md).)
 
 Addons in Kubernetes are traditionally done by copying files to `/etc/kubernetes/addons` on the master.  But this
-doesn't really make sense in HA master configurations.  We also have kubectl available, and addons are just a thin
+doesn't really make sense in highly available (HA) master configurations.  We also have kubectl available, and addons are just a thin
 wrapper over calling kubectl.
 
 The command `kops create cluster` does not support specifying addons to be added to the cluster when it is created. Instead they can be added after cluster creation using kubectl. Alternatively when creating a cluster from a yaml manifest, addons can be specified using `spec.addons`.
