@@ -389,7 +389,7 @@ func TestAutoscalingGroupCloudformationRender(t *testing.T) {
             "LaunchTemplateSpecification": {
               "LaunchTemplateName": "test_lt"
             },
-            "Override": [
+            "Overrides": [
               {
                 "InstanceType": "t2.medium"
               },
