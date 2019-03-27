@@ -579,7 +579,7 @@ type terraformAutoscalingLaunchTemplate struct {
 	// LaunchTemplateSpecification is the definition for a LT
 	LaunchTemplateSpecification []*terraformAutoscalingLaunchTemplateSpecification `json:"launch_template_specification,omitempty"`
 	// Override the is machine type override
-	Overrides []*terraformAutoscalingLaunchTemplateOverride `json:"overrides,omitempty"`
+	Override []*terraformAutoscalingLaunchTemplateOverride `json:"override,omitempty"`
 }
 
 type terraformAutoscalingInstanceDistribution struct {
@@ -665,7 +665,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		}
 
 		for _, x := range e.MixedInstanceOverrides {
-			tf.MixedInstancesPolicy[0].LaunchTemplate[0].Overrides = append(tf.MixedInstancesPolicy[0].LaunchTemplate[0].Overrides, &terraformAutoscalingLaunchTemplateOverride{InstanceType: fi.String(x)})
+			tf.MixedInstancesPolicy[0].LaunchTemplate[0].Override = append(tf.MixedInstancesPolicy[0].LaunchTemplate[0].Override, &terraformAutoscalingLaunchTemplateOverride{InstanceType: fi.String(x)})
 		}
 	}
 
