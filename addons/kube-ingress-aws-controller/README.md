@@ -87,13 +87,14 @@ kube-ingress-aws-controller, which we will use:
   "Effect": "Allow",
   "Action": [
     "acm:ListCertificates",
+    "acm:GetCertificate",
     "acm:DescribeCertificate",
     "autoscaling:DescribeAutoScalingGroups",
-    "autoscaling:DescribeLoadBalancerTargetGroups",
     "autoscaling:AttachLoadBalancers",
     "autoscaling:DetachLoadBalancers",
     "autoscaling:DetachLoadBalancerTargetGroups",
     "autoscaling:AttachLoadBalancerTargetGroups",
+    "autoscaling:DescribeLoadBalancerTargetGroups",
     "cloudformation:*",
     "elasticloadbalancing:*",
     "elasticloadbalancingv2:*",
@@ -102,8 +103,11 @@ kube-ingress-aws-controller, which we will use:
     "ec2:DescribeSecurityGroups",
     "ec2:DescribeRouteTables",
     "ec2:DescribeVpcs",
+    "ec2:DescribeAccountAttributes",
+    "ec2:DescribeInternetGateways",
     "iam:GetServerCertificate",
-    "iam:ListServerCertificates"
+    "iam:ListServerCertificates",
+    "iam:CreateServiceLinkedRole"
   ],
   "Resource": [
     "*"
