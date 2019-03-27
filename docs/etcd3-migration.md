@@ -51,8 +51,8 @@ If you are using calico the switch to CRDs will effectively cause a network part
 
 ```bash
 # Roll masters and nodes as quickly as possible
-kops rolling-update cluster --cloudonly --instance-group-roles master --master-interval=1s --node-interval=1s
-kops rolling-update cluster --cloudonly --instance-group-roles master --master-interval=1s --node-interval=1s --yes
+kops rolling-update cluster --cloudonly --master-interval=1s --node-interval=1s
+kops rolling-update cluster --cloudonly --master-interval=1s --node-interval=1s --yes
 ```
 
 ## Gradual updates
