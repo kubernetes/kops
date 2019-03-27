@@ -286,11 +286,11 @@ resource "aws_autoscaling_group" "test1" {
         launch_template_name = "${aws_launch_template.test_lt.id}"
       }
 
-      overrides = {
+      override = {
         instance_type = "t2.medium"
       }
 
-      overrides = {
+      override = {
         instance_type = "t2.large"
       }
     }
@@ -389,7 +389,7 @@ func TestAutoscalingGroupCloudformationRender(t *testing.T) {
             "LaunchTemplateSpecification": {
               "LaunchTemplateName": "test_lt"
             },
-            "Overrides": [
+            "Override": [
               {
                 "InstanceType": "t2.medium"
               },

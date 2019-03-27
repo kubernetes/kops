@@ -665,7 +665,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		}
 
 		for _, x := range e.MixedInstanceOverrides {
-			tf.MixedInstancesPolicy[0].LaunchTemplate[0].Overrides = append(tf.MixedInstancesPolicy[0].LaunchTemplate[0].Overrides, &terraformAutoscalingLaunchTemplateOverride{InstanceType: fi.String(x)})
+			tf.MixedInstancesPolicy[0].LaunchTemplate[0].Override = append(tf.MixedInstancesPolicy[0].LaunchTemplate[0].Overrides, &terraformAutoscalingLaunchTemplateOverride{InstanceType: fi.String(x)})
 		}
 	}
 
