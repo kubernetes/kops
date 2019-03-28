@@ -111,25 +111,20 @@ func (_ *VPCCIDRBlock) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPCCIDRBl
 	return nil // no tags
 }
 
-// type terraformVPCCIDRBlock struct {
-// 	VPCID     *terraform.Literal `json:"vpc_id"`
-// 	CIDRBlock *string            `json:"ipv4_cidr_block"`
-// }
+type terraformVPCCIDRBlock struct {
+	VPCID     *terraform.Literal `json:"vpc_id"`
+	CIDRBlock *string            `json:"cidr_block"`
+}
 
 func (_ *VPCCIDRBlock) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPCCIDRBlock) error {
 
-	// https://github.com/terraform-providers/terraform-provider-aws/issues/3403
-	return fmt.Errorf("terraform does not support AdditionalCIDRs on VPCs")
-
-	// The code below is based on https://github.com/terraform-providers/terraform-provider-aws/pull/1568
-	// and can be un-commented once it is landed.
 	// When this has been enabled please fix test TestAdditionalCIDR in integration_test.go to run runTestAWS.
-	// tf := &terraformVPCCIDRBlock{
-	// 	VPCID:     e.VPC.TerraformLink(),
-	// 	CIDRBlock: e.CIDRBlock,
-	// }
+	tf := &terraformVPCCIDRBlock{
+		VPCID:     e.VPC.TerraformLink(),
+		CIDRBlock: e.CIDRBlock,
+	}
 
-	// return t.RenderResource("aws_vpc_associate_cidr_block", *e.Name, tf)
+	return t.RenderResource("aws_vpc_ipv4_cidr_block_association", *e.Name, tf)
 }
 
 type cloudformationVPCCIDRBlock struct {
