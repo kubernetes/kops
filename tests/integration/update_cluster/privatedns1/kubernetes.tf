@@ -271,8 +271,9 @@ resource "aws_elb" "api-privatedns1-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "api.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "api.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -300,8 +301,9 @@ resource "aws_elb" "bastion-privatedns1-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "bastion.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "bastion.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 

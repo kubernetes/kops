@@ -133,8 +133,9 @@ resource "aws_elb" "bastion-lifecyclephases-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "lifecyclephases.example.com"
-    Name              = "bastion.lifecyclephases.example.com"
+    KubernetesCluster                                   = "lifecyclephases.example.com"
+    Name                                                = "bastion.lifecyclephases.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
