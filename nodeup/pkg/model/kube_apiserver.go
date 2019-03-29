@@ -385,8 +385,13 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	} else if kubeAPIServer.SecurePort != 0 {
 		probeAction.Port = intstr.FromInt(int(kubeAPIServer.SecurePort))
 		probeAction.Scheme = v1.URISchemeHTTPS
+	} 
+	
+	requestCPU := resource.MustParse("150m")
+	if b.Cluster.Spec.KubeAPIServer.CPURequest != nil {
+		requestCPU = resource.MustParse(b.Cluster.Spec.KubeAPIServer.CPURequest)
 	}
-
+	
 	container := &v1.Container{
 		Name:  "kube-apiserver",
 		Image: b.Cluster.Spec.KubeAPIServer.Image,
@@ -416,7 +421,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		},
 		Resources: v1.ResourceRequirements{
 			Requests: v1.ResourceList{
-				v1.ResourceCPU: resource.MustParse(b.Cluster.Spec.KubeAPIServer.CPURequest),
+				v1.ResourceCPU: requestCPU
 			},
 		},
 	}
