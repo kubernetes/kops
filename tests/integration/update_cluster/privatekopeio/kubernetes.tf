@@ -276,8 +276,9 @@ resource "aws_elb" "api-privatekopeio-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "privatekopeio.example.com"
-    Name              = "api.privatekopeio.example.com"
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "api.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
 }
 
@@ -305,8 +306,9 @@ resource "aws_elb" "bastion-privatekopeio-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "privatekopeio.example.com"
-    Name              = "bastion.privatekopeio.example.com"
+    KubernetesCluster                                 = "privatekopeio.example.com"
+    Name                                              = "bastion.privatekopeio.example.com"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
 }
 

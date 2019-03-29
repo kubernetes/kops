@@ -162,6 +162,10 @@ func (c *MockAWSCloud) CreateELBTags(loadBalancerName string, tags map[string]st
 	return createELBTags(c, loadBalancerName, tags)
 }
 
+func (c *MockAWSCloud) RemoveELBTags(loadBalancerName string, tags map[string]string) error {
+	return removeELBTags(c, loadBalancerName, tags)
+}
+
 func (c *MockAWSCloud) GetELBV2Tags(ResourceArn string) (map[string]string, error) {
 	return getELBV2Tags(c, ResourceArn)
 }

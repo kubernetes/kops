@@ -271,8 +271,9 @@ resource "aws_elb" "api-bastionuserdata-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "api.bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "api.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
@@ -300,8 +301,9 @@ resource "aws_elb" "bastion-bastionuserdata-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "bastionuserdata.example.com"
-    Name              = "bastion.bastionuserdata.example.com"
+    KubernetesCluster                                   = "bastionuserdata.example.com"
+    Name                                                = "bastion.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
 
