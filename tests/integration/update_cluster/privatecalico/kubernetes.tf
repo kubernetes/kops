@@ -271,8 +271,9 @@ resource "aws_elb" "api-privatecalico-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "privatecalico.example.com"
-    Name              = "api.privatecalico.example.com"
+    KubernetesCluster                                 = "privatecalico.example.com"
+    Name                                              = "api.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
 }
 
@@ -300,8 +301,9 @@ resource "aws_elb" "bastion-privatecalico-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "privatecalico.example.com"
-    Name              = "bastion.privatecalico.example.com"
+    KubernetesCluster                                 = "privatecalico.example.com"
+    Name                                              = "bastion.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
 }
 
