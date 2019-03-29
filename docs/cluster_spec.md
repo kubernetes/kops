@@ -354,6 +354,16 @@ spec:
     enableCustomMetrics: true
 ```
 
+#### Setting kubelet CPU management policies
+To enable cpu management policies in kubernetes as per [cpu management doc](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#cpu-management-policies)
+we have to set the flag `--cpu-manager-policy` to the appropriate value on all the kubelets. This must be specified in the `kubelet` spec in our cluster.yml.
+
+```
+spec:
+  kubelet:
+    cpuManagerPolicy: static
+```
+
 #### Setting kubelet configurations together with the Amazon VPC backend
 Setting kubelet configurations together with the networking Amazon VPC backend requires to also set the `cloudProvider: aws` setting in this block. Example:
 
