@@ -413,6 +413,9 @@ type KubeAPIServerConfig struct {
 	// The specified file can contain multiple keys, and the flag can be specified multiple times with different files.
 	// If unspecified, --tls-private-key-file is used.
 	ServiceAccountKeyFile []string `json:"serviceAccountKeyFile,omitempty" flag:"service-account-key-file"`
+
+	// CPURequest, cpu request compute resource for kube proxy e.g. "20m"
+	CPURequest string `json:"cpuRequest,omitempty"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
