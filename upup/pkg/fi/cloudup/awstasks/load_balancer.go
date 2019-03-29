@@ -612,12 +612,11 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		}
 	}
 
-	var tags map[string]string = t.Cloud.BuildTags(e.Name)
-	for k, v := range e.Tags {
-		tags[k] = v
+	if err := t.AddELBTags(loadBalancerName, e.Tags); err != nil {
+		return err
 	}
 
-	if err := t.AddELBTags(loadBalancerName, tags); err != nil {
+	if err := t.RemoveELBTags(loadBalancerName, e.Tags); err != nil {
 		return err
 	}
 

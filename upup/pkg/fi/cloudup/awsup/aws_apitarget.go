@@ -80,6 +80,32 @@ func (t *AWSAPITarget) AddELBTags(loadBalancerName string, expected map[string]s
 	return nil
 }
 
+func (t *AWSAPITarget) RemoveELBTags(loadBalancerName string, expected map[string]string) error {
+	actual, err := t.Cloud.GetELBTags(loadBalancerName)
+	if err != nil {
+		return fmt.Errorf("unexpected error fetching tags for resource: %v", err)
+	}
+
+	extra := map[string]string{}
+	for k, v := range actual {
+		expectedValue, found := expected[k]
+		if found && expectedValue == v {
+			continue
+		}
+		extra[k] = v
+	}
+
+	if len(extra) != 0 {
+		glog.V(4).Infof("removing tags from %q: %v", loadBalancerName, extra)
+		err := t.Cloud.RemoveELBTags(loadBalancerName, extra)
+		if err != nil {
+			return fmt.Errorf("error removing tags from ELB %q: %v", loadBalancerName, err)
+		}
+	}
+
+	return nil
+}
+
 func (t *AWSAPITarget) WaitForInstanceRunning(instanceID string) error {
 	attempt := 0
 	for {
