@@ -388,7 +388,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	requestCPU := resource.MustParse("150m")
-	if b.Cluster.Spec.KubeAPIServer.CPURequest != nil {
+	if b.Cluster.Spec.KubeAPIServer.CPURequest != "" {
 		requestCPU = resource.MustParse(b.Cluster.Spec.KubeAPIServer.CPURequest)
 	}
 
