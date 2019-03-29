@@ -251,8 +251,9 @@ resource "aws_elb" "api-private-shared-subnet-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "private-shared-subnet.example.com"
-    Name              = "api.private-shared-subnet.example.com"
+    KubernetesCluster                                         = "private-shared-subnet.example.com"
+    Name                                                      = "api.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
 }
 
@@ -280,8 +281,9 @@ resource "aws_elb" "bastion-private-shared-subnet-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "private-shared-subnet.example.com"
-    Name              = "bastion.private-shared-subnet.example.com"
+    KubernetesCluster                                         = "private-shared-subnet.example.com"
+    Name                                                      = "bastion.private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
 }
 

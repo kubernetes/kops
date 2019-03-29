@@ -271,8 +271,9 @@ resource "aws_elb" "api-privateflannel-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "privateflannel.example.com"
-    Name              = "api.privateflannel.example.com"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "api.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 
@@ -300,8 +301,9 @@ resource "aws_elb" "bastion-privateflannel-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "privateflannel.example.com"
-    Name              = "bastion.privateflannel.example.com"
+    KubernetesCluster                                  = "privateflannel.example.com"
+    Name                                               = "bastion.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
 

@@ -335,8 +335,9 @@ resource "aws_elb" "api-existingsg-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "existingsg.example.com"
-    Name              = "api.existingsg.example.com"
+    KubernetesCluster                              = "existingsg.example.com"
+    Name                                           = "api.existingsg.example.com"
+    "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
 }
 
