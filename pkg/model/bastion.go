@@ -208,6 +208,13 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			idleTimeout = time.Second * time.Duration(*b.Cluster.Spec.Topology.Bastion.IdleTimeoutSeconds)
 		}
 
+		tags := b.CloudTags(loadBalancerName, false)
+		for k, v := range b.Cluster.Spec.CloudLabels {
+			tags[k] = v
+		}
+		// Override the returned name to be the expected ELB name
+		tags["Name"] = "bastion." + b.ClusterName()
+
 		elb = &awstasks.LoadBalancer{
 			Name:      s("bastion." + b.ClusterName()),
 			Lifecycle: b.Lifecycle,
@@ -232,6 +239,8 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			ConnectionSettings: &awstasks.LoadBalancerConnectionSettings{
 				IdleTimeout: i64(int64(idleTimeout.Seconds())),
 			},
+
+			Tags: tags,
 		}
 
 		c.AddTask(elb)
