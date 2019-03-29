@@ -123,6 +123,8 @@ type AWSCloud interface {
 
 	// CreateELBTags will add tags to the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 	CreateELBTags(loadBalancerName string, tags map[string]string) error
+	// RemoveELBTags will remove tags from the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
+	RemoveELBTags(loadBalancerName string, tags map[string]string) error
 
 	// DeleteTags will delete tags from the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 	DeleteTags(id string, tags map[string]string) error
@@ -904,6 +906,39 @@ func createELBTags(c AWSCloud, loadBalancerName string, tags map[string]string) 
 		}
 
 		_, err := c.ELB().AddTags(request)
+		if err != nil {
+			return fmt.Errorf("error creating tags on %v: %v", loadBalancerName, err)
+		}
+
+		return nil
+	}
+}
+
+// RemoveELBTags will remove tags to the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
+func (c *awsCloudImplementation) RemoveELBTags(loadBalancerName string, tags map[string]string) error {
+	return removeELBTags(c, loadBalancerName, tags)
+}
+
+func removeELBTags(c AWSCloud, loadBalancerName string, tags map[string]string) error {
+	if len(tags) == 0 {
+		return nil
+	}
+
+	elbTagKeysOnly := []*elb.TagKeyOnly{}
+	for k := range tags {
+		elbTagKeysOnly = append(elbTagKeysOnly, &elb.TagKeyOnly{Key: aws.String(k)})
+	}
+
+	attempt := 0
+	for {
+		attempt++
+
+		request := &elb.RemoveTagsInput{
+			Tags:              elbTagKeysOnly,
+			LoadBalancerNames: []*string{&loadBalancerName},
+		}
+
+		_, err := c.ELB().RemoveTags(request)
 		if err != nil {
 			return fmt.Errorf("error creating tags on %v: %v", loadBalancerName, err)
 		}
