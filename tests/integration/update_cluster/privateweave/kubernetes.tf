@@ -271,8 +271,9 @@ resource "aws_elb" "api-privateweave-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "api.privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "api.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
@@ -300,8 +301,9 @@ resource "aws_elb" "bastion-privateweave-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "bastion.privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "bastion.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 

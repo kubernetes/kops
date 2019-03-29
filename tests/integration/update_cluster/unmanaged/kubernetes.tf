@@ -256,8 +256,9 @@ resource "aws_elb" "api-unmanaged-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "unmanaged.example.com"
-    Name              = "api.unmanaged.example.com"
+    KubernetesCluster                             = "unmanaged.example.com"
+    Name                                          = "api.unmanaged.example.com"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
   }
 }
 
@@ -285,8 +286,9 @@ resource "aws_elb" "bastion-unmanaged-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "unmanaged.example.com"
-    Name              = "bastion.unmanaged.example.com"
+    KubernetesCluster                             = "unmanaged.example.com"
+    Name                                          = "bastion.unmanaged.example.com"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
   }
 }
 
