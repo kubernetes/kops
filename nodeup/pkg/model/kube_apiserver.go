@@ -416,7 +416,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		},
 		Resources: v1.ResourceRequirements{
 			Requests: v1.ResourceList{
-				v1.ResourceCPU: resource.MustParse("150m"),
+				v1.ResourceCPU: resource.MustParse(b.Cluster.Spec.KubeAPIServer.CPURequest),
 			},
 		},
 	}
