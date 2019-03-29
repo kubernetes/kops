@@ -119,6 +119,13 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			glog.V(1).Infof("WARNING: You are overwriting the Load Balancers, Security Group. When this is done you are responsible for ensure the correct rules!")
 		}
 
+		tags := b.CloudTags(loadBalancerName, false)
+		for k, v := range b.Cluster.Spec.CloudLabels {
+			tags[k] = v
+		}
+		// Override the returned name to be the expected ELB name
+		tags["Name"] = "api." + b.ClusterName()
+
 		elb = &awstasks.LoadBalancer{
 			Name:      fi.String("api." + b.ClusterName()),
 			Lifecycle: b.Lifecycle,
@@ -143,7 +150,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				IdleTimeout: fi.Int64(int64(idleTimeout.Seconds())),
 			},
 
-			Tags: b.Cluster.Spec.CloudLabels,
+			Tags: tags,
 		}
 
 		switch lbSpec.Type {

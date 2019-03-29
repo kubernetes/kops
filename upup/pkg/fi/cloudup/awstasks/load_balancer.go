@@ -297,6 +297,15 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	actual.Scheme = lb.Scheme
 	actual.Lifecycle = e.Lifecycle
 
+	tagMap, err := describeLoadBalancerTags(cloud, []string{*lb.LoadBalancerName})
+	if err != nil {
+		return nil, err
+	}
+	actual.Tags = make(map[string]string)
+	for _, tag := range tagMap[*e.LoadBalancerName] {
+		actual.Tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
+	}
+
 	for _, subnet := range lb.Subnets {
 		actual.Subnets = append(actual.Subnets, &Subnet{ID: subnet})
 	}
@@ -603,12 +612,11 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		}
 	}
 
-	var tags map[string]string = t.Cloud.BuildTags(e.Name)
-	for k, v := range e.Tags {
-		tags[k] = v
+	if err := t.AddELBTags(loadBalancerName, e.Tags); err != nil {
+		return err
 	}
 
-	if err := t.AddELBTags(loadBalancerName, tags); err != nil {
+	if err := t.RemoveELBTags(loadBalancerName, e.Tags); err != nil {
 		return err
 	}
 
