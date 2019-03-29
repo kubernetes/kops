@@ -187,8 +187,6 @@ type KubeletConfigSpec struct {
 	CPUCFSQuota *bool `json:"cpuCFSQuota,omitempty" flag:"cpu-cfs-quota"`
 	// CPUCFSQuotaPeriod sets CPU CFS quota period value, cpu.cfs_period_us, defaults to Linux Kernel default
 	CPUCFSQuotaPeriod *metav1.Duration `json:"cpuCFSQuotaPeriod,omitempty" flag:"cpu-cfs-quota-period"`
-	// CpuManagementPolicy allows for changing the default policy of None to static
-	CpuManagementPolicy string `json:"cpuManagementPolicy,omitempty" flag:"cpu-manager-policy"`
 	// CpuManagerPolicy allows for changing the default policy of None to static
 	CpuManagerPolicy string `json:"cpuManagerPolicy,omitempty" flag:"cpu-manager-policy"`
 }
