@@ -159,10 +159,19 @@ func (s *state) merge(message *KVState, changes *KVState) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
-	changed := mergeKVState(&s.data, message, changes)
+	var c KVState
+	if s.data.Records != nil {
+		c.Records = make(map[string]*KVStateRecord)
+		for k, v := range s.data.Records {
+			c.Records[k] = v
+		}
+	}
+
+	changed := mergeKVState(&c, message, changes)
 
 	if changed {
 		s.version++
+		s.data = c
 	}
 }
 
