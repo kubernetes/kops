@@ -1,0 +1,9 @@
+kind: Addons
+metadata:
+  name: ingress-citrix
+spec:
+  addons:
+  - version: 1.1.1
+    selector:
+      k8s-addon: ingress-citrix.addons.k8s.io
+    manifest: v1.1.1.yaml
