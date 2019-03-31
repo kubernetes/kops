@@ -69,6 +69,8 @@ spec:
             value: "yes"
           - name: "KUBERNETES_TASK_ID"
             value: ""
+          - name: "CLOUD"
+            value: "AZURE"
           #This is required for Health check to succeed
           readinessProbe:
             failureThreshold: 3
