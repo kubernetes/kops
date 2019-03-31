@@ -118,7 +118,6 @@ metadata:
   labels:
     app: cpx-service
 spec:
-  externalTrafficPolicy: Local
   type: LoadBalancer
   ports:
   - port: 80
