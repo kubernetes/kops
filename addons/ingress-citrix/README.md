@@ -19,11 +19,3 @@ To deploy in AWS, use the below command
 ```
 kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/ingress-citrix/v1.1.1-aws.yaml
 ```
-
-## AZURE
- 
-To deploy in Azure, use the below command 
-
-```
-kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/ingress-citrix/v1.1.1-azure.yaml
-```
