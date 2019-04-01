@@ -58,5 +58,35 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeDNS.Domain = clusterSpec.ClusterDNSDomain
 	}
 
+	if clusterSpec.KubeDNS.MemoryRequest != "" {
+		MemoryRequest, err := resource.ParseQuantity(clusterSpec.KubeDNS.MemoryRequest)
+		if err != nil {
+			return fmt.Errorf("Error parsing MemoryRequest=%q", clusterSpec.KubeDNS.MemoryRequest)
+		}
+		resourceLimits["cpu"] = MemoryRequest
+	}else{
+		clusterSpec.KubeDNS.MemoryRequest="70m"
+	}
+
+	if clusterSpec.KubeDNS.CPURequest != "" {
+		CPURequest, err := resource.ParseQuantity(clusterSpec.KubeDNS.CPURequest)
+		if err != nil {
+			return fmt.Errorf("Error parsing CPURequest=%q", clusterSpec.KubeDNS.CPURequest)
+		}
+		resourceLimits["cpu"] = CPURequest
+	}else{
+		clusterSpec.KubeDNS.CPURequest="100m"
+	}
+
+	if clusterSpec.KubeDNS.MemoryLimit != "" {
+		MemoryLimit, err := resource.ParseQuantity(clusterSpec.KubeDNS.MemoryLimit)
+		if err != nil {
+			return fmt.Errorf("Error parsing MemoryLimit=%q", clusterSpec.KubeDNS.MemoryLimit)
+		}
+		resourceLimits["cpu"] = MemoryLimit
+	}else{
+		clusterSpec.KubeDNS.MemoryLimit="170m"
+	}
+
 	return nil
 }
