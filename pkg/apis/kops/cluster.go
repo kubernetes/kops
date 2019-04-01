@@ -345,7 +345,7 @@ type KubeDNSConfig struct {
 	// Replicas is the number of pod replicas - @deprecated as this is now in the addon and controlled by autoscaler
 	Replicas int `json:"replicas,omitempty"`
 	// Provider indicates whether CoreDNS or kube-dns will be the default service discovery.
-	v string `json:"provider,omitempty"`
+	Provider string `json:"provider,omitempty"`
 	// ServerIP is the server ip
 	ServerIP string `json:"serverIP,omitempty"`
 	// StubDomains redirects a domains to another DNS service
