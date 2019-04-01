@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
@@ -58,34 +59,22 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeDNS.Domain = clusterSpec.ClusterDNSDomain
 	}
 
-	if clusterSpec.KubeDNS.MemoryRequest != "" {
-		MemoryRequest, err := resource.ParseQuantity(clusterSpec.KubeDNS.MemoryRequest)
-		if err != nil {
-			return fmt.Errorf("Error parsing MemoryRequest=%q", clusterSpec.KubeDNS.MemoryRequest)
-		}
-		resourceLimits["cpu"] = MemoryRequest
-	}else{
-		clusterSpec.KubeDNS.MemoryRequest="70m"
+	if !clusterSpec.KubeDNS.MemoryRequest.IsZero() {
+		clusterSpec.KubeDNS.MemoryRequest = clusterSpec.KubeDNS.MemoryRequest
+	} else {
+		clusterSpec.KubeDNS.MemoryRequest = resource.MustParse("70m")
 	}
 
-	if clusterSpec.KubeDNS.CPURequest != "" {
-		CPURequest, err := resource.ParseQuantity(clusterSpec.KubeDNS.CPURequest)
-		if err != nil {
-			return fmt.Errorf("Error parsing CPURequest=%q", clusterSpec.KubeDNS.CPURequest)
-		}
-		resourceLimits["cpu"] = CPURequest
-	}else{
-		clusterSpec.KubeDNS.CPURequest="100m"
+	if !clusterSpec.KubeDNS.CPURequest.IsZero() {
+		clusterSpec.KubeDNS.CPURequest = clusterSpec.KubeDNS.CPURequest
+	} else {
+		clusterSpec.KubeDNS.CPURequest = resource.MustParse("100m")
 	}
 
-	if clusterSpec.KubeDNS.MemoryLimit != "" {
-		MemoryLimit, err := resource.ParseQuantity(clusterSpec.KubeDNS.MemoryLimit)
-		if err != nil {
-			return fmt.Errorf("Error parsing MemoryLimit=%q", clusterSpec.KubeDNS.MemoryLimit)
-		}
-		resourceLimits["cpu"] = MemoryLimit
-	}else{
-		clusterSpec.KubeDNS.MemoryLimit="170m"
+	if !clusterSpec.KubeDNS.MemoryLimit.IsZero() {
+		clusterSpec.KubeDNS.MemoryLimit = clusterSpec.KubeDNS.MemoryLimit
+	} else {
+		clusterSpec.KubeDNS.MemoryLimit = resource.MustParse("170m")
 	}
 
 	return nil
