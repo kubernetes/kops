@@ -345,13 +345,19 @@ type KubeDNSConfig struct {
 	// Replicas is the number of pod replicas - @deprecated as this is now in the addon and controlled by autoscaler
 	Replicas int `json:"replicas,omitempty"`
 	// Provider indicates whether CoreDNS or kube-dns will be the default service discovery.
-	Provider string `json:"provider,omitempty"`
+	v string `json:"provider,omitempty"`
 	// ServerIP is the server ip
 	ServerIP string `json:"serverIP,omitempty"`
 	// StubDomains redirects a domains to another DNS service
 	StubDomains map[string][]string `json:"stubDomains,omitempty"`
 	// UpstreamNameservers sets the upstream nameservers for queries not on the cluster domain
 	UpstreamNameservers []string `json:"upstreamNameservers,omitempty"`
+	// MemoryRequest specifies the memory requests of each dns container in the cluster. Default 70m.
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
+	// CPURequest specifies the cpu requests of each dns container in the cluster. Defualt 100m.
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+	// MemoryLimit specifies the memory limit of each dns container in the cluster. Default 170m.
+	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
 }
 
 // ExternalDNSConfig are options of the dns-controller
