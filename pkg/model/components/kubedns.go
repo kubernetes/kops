@@ -59,22 +59,19 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeDNS.Domain = clusterSpec.ClusterDNSDomain
 	}
 
-	if !clusterSpec.KubeDNS.MemoryRequest.IsZero() {
-		clusterSpec.KubeDNS.MemoryRequest = clusterSpec.KubeDNS.MemoryRequest
-	} else {
-		clusterSpec.KubeDNS.MemoryRequest = resource.MustParse("70m")
+	if clusterSpec.KubeDNS.MemoryRequest.IsZero() {
+		defualtMemoryRequest := resource.MustParse("70m")
+		clusterSpec.KubeDNS.MemoryRequest = &defualtMemoryRequest
 	}
 
-	if !clusterSpec.KubeDNS.CPURequest.IsZero() {
-		clusterSpec.KubeDNS.CPURequest = clusterSpec.KubeDNS.CPURequest
-	} else {
-		clusterSpec.KubeDNS.CPURequest = resource.MustParse("100m")
+	if clusterSpec.KubeDNS.CPURequest.IsZero() {
+		defaultCPURequest := resource.MustParse("100m")
+		clusterSpec.KubeDNS.CPURequest = &defaultCPURequest
 	}
 
-	if !clusterSpec.KubeDNS.MemoryLimit.IsZero() {
-		clusterSpec.KubeDNS.MemoryLimit = clusterSpec.KubeDNS.MemoryLimit
-	} else {
-		clusterSpec.KubeDNS.MemoryLimit = resource.MustParse("170m")
+	if clusterSpec.KubeDNS.MemoryLimit.IsZero() {
+		defaultMemoryLimit := resource.MustParse("170m")
+		clusterSpec.KubeDNS.MemoryLimit = &defaultMemoryLimit
 	}
 
 	return nil
