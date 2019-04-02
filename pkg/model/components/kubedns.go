@@ -60,8 +60,8 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if clusterSpec.KubeDNS.MemoryRequest == nil || clusterSpec.KubeDNS.MemoryRequest.IsZero() {
-		defualtMemoryRequest := resource.MustParse("70Mi")
-		clusterSpec.KubeDNS.MemoryRequest = &defualtMemoryRequest
+		defaultMemoryRequest := resource.MustParse("70Mi")
+		clusterSpec.KubeDNS.MemoryRequest = &defaultMemoryRequest
 	}
 
 	if clusterSpec.KubeDNS.CPURequest == nil || clusterSpec.KubeDNS.CPURequest.IsZero() {
