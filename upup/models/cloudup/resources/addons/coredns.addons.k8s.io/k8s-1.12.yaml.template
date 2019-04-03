@@ -98,6 +98,16 @@ spec:
       labels:
         k8s-app: kube-dns
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: k8s-app
+                operator: In
+                values:
+                - kube-dns
+            topologyKey: kubernetes.io/hostname
       priorityClassName: system-cluster-critical
       serviceAccountName: coredns
       tolerations:
