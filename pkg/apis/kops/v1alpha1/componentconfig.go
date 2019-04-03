@@ -412,7 +412,7 @@ type KubeAPIServerConfig struct {
 	// If unspecified, --tls-private-key-file is used.
 	ServiceAccountKeyFile []string `json:"serviceAccountKeyFile,omitempty" flag:"service-account-key-file"`
 
-	// CPURequest, cpu request compute resource for kube proxy e.g. "20m"
+	// CPURequest, cpu request compute resource for api server. Defaults to "150m"
 	CPURequest string `json:"cpuRequest,omitempty"`
 }
 
