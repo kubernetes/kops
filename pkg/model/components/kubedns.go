@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
@@ -56,6 +57,21 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if clusterSpec.KubeDNS.Domain == "" {
 		clusterSpec.KubeDNS.Domain = clusterSpec.ClusterDNSDomain
+	}
+
+	if clusterSpec.KubeDNS.MemoryRequest == nil || clusterSpec.KubeDNS.MemoryRequest.IsZero() {
+		defaultMemoryRequest := resource.MustParse("70Mi")
+		clusterSpec.KubeDNS.MemoryRequest = &defaultMemoryRequest
+	}
+
+	if clusterSpec.KubeDNS.CPURequest == nil || clusterSpec.KubeDNS.CPURequest.IsZero() {
+		defaultCPURequest := resource.MustParse("100m")
+		clusterSpec.KubeDNS.CPURequest = &defaultCPURequest
+	}
+
+	if clusterSpec.KubeDNS.MemoryLimit == nil || clusterSpec.KubeDNS.MemoryLimit.IsZero() {
+		defaultMemoryLimit := resource.MustParse("170Mi")
+		clusterSpec.KubeDNS.MemoryLimit = &defaultMemoryLimit
 	}
 
 	return nil

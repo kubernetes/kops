@@ -111,10 +111,10 @@ spec:
         imagePullPolicy: IfNotPresent
         resources:
           limits:
-            memory: 170Mi
+            memory: {{ KubeDNS.MemoryLimit }}
           requests:
-            cpu: 100m
-            memory: 70Mi
+            cpu: {{ KubeDNS.CPURequest }}
+            memory: {{ KubeDNS.MemoryRequest }}
         args: [ "-conf", "/etc/coredns/Corefile" ]
         volumeMounts:
         - name: config-volume
