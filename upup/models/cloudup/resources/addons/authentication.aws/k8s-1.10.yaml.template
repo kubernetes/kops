@@ -34,7 +34,7 @@ spec:
       # - output (output kubeconfig to plug into your apiserver configuration, mounted from the host)
       containers:
       - name: aws-iam-authenticator
-        image: gcr.io/heptio-images/authenticator:v0.3.0
+        image: {{ or .Authentication.Aws.Image "gcr.io/heptio-images/authenticator:v0.3.0" }}
         args:
         - server
         - --config=/etc/aws-iam-authenticator/config.yaml
