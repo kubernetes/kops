@@ -276,6 +276,8 @@ type KopeioAuthenticationSpec struct {
 }
 
 type AwsAuthenticationSpec struct {
+	// Image is the AWS IAM Authenticator docker image to uses
+	Image string `json:"image,omitempty"`
 }
 
 type AuthorizationSpec struct {

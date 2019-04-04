@@ -1051,6 +1051,7 @@ func Convert_kops_AuthorizationSpec_To_v1alpha1_AuthorizationSpec(in *kops.Autho
 }
 
 func autoConvert_v1alpha1_AwsAuthenticationSpec_To_kops_AwsAuthenticationSpec(in *AwsAuthenticationSpec, out *kops.AwsAuthenticationSpec, s conversion.Scope) error {
+	out.Image = in.Image
 	return nil
 }
 
@@ -1060,6 +1061,7 @@ func Convert_v1alpha1_AwsAuthenticationSpec_To_kops_AwsAuthenticationSpec(in *Aw
 }
 
 func autoConvert_kops_AwsAuthenticationSpec_To_v1alpha1_AwsAuthenticationSpec(in *kops.AwsAuthenticationSpec, out *AwsAuthenticationSpec, s conversion.Scope) error {
+	out.Image = in.Image
 	return nil
 }
 
