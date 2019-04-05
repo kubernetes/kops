@@ -487,6 +487,9 @@ type KubeControllerManagerConfig struct {
 	TLSCipherSuites []string `json:"tlsCipherSuites,omitempty" flag:"tls-cipher-suites"`
 	// TLSMinVersion indicates the minimum TLS version allowed
 	TLSMinVersion string `json:"tlsMinVersion,omitempty" flag:"tls-min-version"`
+	// MinResyncPeriod indicates the resync period in reflectors.
+	// The resync period will be random between MinResyncPeriod and 2*MinResyncPeriod. (default 12h0m0s)
+	MinResyncPeriod string `json:"minResyncPeriod,omitempty" flag:"min-resync-period"`
 }
 
 // CloudControllerManagerConfig is the configuration of the cloud controller
