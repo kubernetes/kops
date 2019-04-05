@@ -283,7 +283,7 @@ resource "aws_autoscaling_group" "test1" {
   mixed_instances_policy = {
     launch_template = {
       launch_template_specification = {
-        launch_template_name = "${aws_launch_template.test_lt.id}"
+        launch_template_id = "${aws_launch_template.test_lt.id}"
       }
 
       override = {
