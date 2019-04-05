@@ -17,8 +17,6 @@ limitations under the License.
 package awstasks
 
 import (
-	"encoding/base64"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -183,11 +181,11 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		}
 	}
 	if e.UserData != nil {
-		d, err := e.UserData.AsBytes()
+		d, err := t.UserData.AsString()
 		if err != nil {
 			return err
 		}
-		data.UserData = aws.String(base64.StdEncoding.EncodeToString(d))
+		data.UserData = aws.String(d)
 	}
 	devices, err := e.buildRootDevice(cloud)
 	if err != nil {
