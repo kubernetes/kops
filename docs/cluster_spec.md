@@ -446,6 +446,21 @@ Will result in the flag `--feature-gates=Accelerators=true,AllowExtTrafficLocalE
 
 NOTE: Feature gate `ExperimentalCriticalPodAnnotation` is enabled by default because some critical components like `kube-proxy` depend on its presence.
 
+Some feature gates also require the `featureGates` setting to be used on other components - e.g. `PodShareProcessNamespace` requires
+the feature gate to be enabled on the api server:
+
+```yaml
+spec:
+  kubelet:
+    featureGates:
+      PodShareProcessNamespace: "true"
+  kubeAPIServer:
+    featureGates:
+      PodShareProcessNamespace: "true"
+```
+
+For more information, see the [feature gate documentation](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/)
+
 ####  Compute Resources Reservation
 
 ```yaml
