@@ -27,6 +27,8 @@ type terraformLaunchTemplateNetworkInterfaces struct {
 	AssociatePublicIPAddress *bool `json:"associate_public_ip_address,omitempty"`
 	// DeleteOnTermination indicates whether the network interface should be destroyed on instance termination.
 	DeleteOnTermination *bool `json:"delete_on_termination,omitempty"`
+	// SecurityGroups is a list of security group ids
+	SecurityGroups []*terraform.Literal `json:"security_groups,omitempty"`
 }
 
 type terraformLaunchTemplateMonitoring struct {
@@ -124,8 +126,6 @@ type terraformLaunchTemplate struct {
 	Placement []*terraformLaunchTemplatePlacement `json:"placement,omitempty"`
 	// UserData is the user data for the instances
 	UserData *terraform.Literal `json:"user_data,omitempty"`
-	// VpcSecurityGroupIDs is a list of security group ids
-	VpcSecurityGroupIDs []*terraform.Literal `json:"vpc_security_group_ids,omitempty"`
 }
 
 // TerraformLink returns the terraform reference
@@ -173,7 +173,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		}
 	}
 	for _, x := range e.SecurityGroups {
-		tf.VpcSecurityGroupIDs = append(tf.VpcSecurityGroupIDs, x.TerraformLink())
+		tf.NetworkInterfaces[0].SecurityGroups = append(tf.NetworkInterfaces[0].SecurityGroups, x.TerraformLink())
 	}
 	if e.SSHKey != nil {
 		tf.KeyName = e.SSHKey.TerraformLink()
