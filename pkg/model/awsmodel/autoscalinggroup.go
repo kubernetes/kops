@@ -17,6 +17,7 @@ limitations under the License.
 package awsmodel
 
 import (
+	"encoding/base64"
 	"fmt"
 	"strings"
 
@@ -95,6 +96,14 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		return nil, err
 	}
 
+	// Launch template needs the User Data to be Base64 encoded.
+	d, err := lc.UserData.AsBytes()
+	if err != nil {
+		return nil, err
+	}
+	b64d := base64.StdEncoding.EncodeToString(d)
+	b64UserDataResource := fi.WrapResource(fi.NewStringResource(b64d))
+
 	// @TODO check if there any a better way of doing this .. initially I had a type LaunchTemplate which included
 	// LaunchConfiguration as an anonymous field, bit given up the task dependency walker works this caused issues, due
 	// to the creation of a implicit dependency
@@ -115,7 +124,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		SecurityGroups:         lc.SecurityGroups,
 		SpotPrice:              lc.SpotPrice,
 		Tenancy:                lc.Tenancy,
-		UserData:               lc.UserData,
+		UserData:               b64UserDataResource,
 	}, nil
 }
 

@@ -110,11 +110,11 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 	}
 	// @step: add the userdata
 	if t.UserData != nil {
-		d, err := t.UserData.AsBytes()
+		d, err := t.UserData.AsString()
 		if err != nil {
 			return fmt.Errorf("error rendering LaunchTemplate UserData: %v", err)
 		}
-		lc.UserData = aws.String(base64.StdEncoding.EncodeToString(d))
+		lc.UserData = aws.String(d)
 	}
 
 	// @step: attempt to create the launch template
