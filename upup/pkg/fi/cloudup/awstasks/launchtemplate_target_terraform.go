@@ -133,6 +133,11 @@ func (t *LaunchTemplate) TerraformLink() *terraform.Literal {
 	return terraform.LiteralProperty("aws_launch_template", fi.StringValue(t.Name), "id")
 }
 
+// VersionLink returns the terraform version reference
+func (t *LaunchTemplate) VersionLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_launch_template", fi.StringValue(t.Name), "latest_version")
+}
+
 // RenderTerraform is responsible for rendering the terraform json
 func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e, changes *LaunchTemplate) error {
 	var err error
