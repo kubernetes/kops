@@ -399,7 +399,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 			Handler: v1.Handler{
 				HTTPGet: probeAction,
 			},
-			InitialDelaySeconds: 15,
+			InitialDelaySeconds: 45,
 			TimeoutSeconds:      15,
 		},
 		Ports: []v1.ContainerPort{
