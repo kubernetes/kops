@@ -67,7 +67,7 @@ kops rolling-update cluster [flags]
 ### Options
 
 ```
-      --bastion-interval duration      Time to wait between restarting bastions (default 5m0s)
+      --bastion-interval duration      Time to wait between restarting bastions (default 15s)
       --cloudonly                      Perform rolling update without confirming progress with k8s
       --fail-on-drain-error            The rolling-update will fail if draining a node fails. (default true)
       --fail-on-validate-error         The rolling-update will fail if the cluster fails to validate. (default true)
@@ -76,10 +76,10 @@ kops rolling-update cluster [flags]
       --instance-group strings         List of instance groups to update (defaults to all if not specified)
       --instance-group-roles strings   If specified, only instance groups of the specified role will be updated (e.g. Master,Node,Bastion)
   -i, --interactive                    Prompt to continue after each instance is updated
-      --master-interval duration       Time to wait between restarting masters (default 5m0s)
-      --node-interval duration         Time to wait between restarting nodes (default 4m0s)
-      --post-drain-delay duration      Time to wait after draining each node (default 1m30s)
-      --validation-timeout duration    Maximum time to wait for a cluster to validate (default 5m0s)
+      --master-interval duration       Time to wait between restarting masters (default 15s)
+      --node-interval duration         Time to wait between restarting nodes (default 15s)
+      --post-drain-delay duration      Time to wait after draining each node (default 5s)
+      --validation-timeout duration    Maximum time to wait for a cluster to validate (default 15m0s)
   -y, --yes                            Perform rolling update immediately, without --yes rolling-update executes a dry-run
 ```
 
