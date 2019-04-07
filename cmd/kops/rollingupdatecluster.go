@@ -151,14 +151,13 @@ func (o *RollingUpdateOptions) InitDefaults() {
 	o.FailOnDrainError = false
 	o.FailOnValidate = true
 
-	o.MasterInterval = 5 * time.Minute
-	o.NodeInterval = 4 * time.Minute
-	o.BastionInterval = 5 * time.Minute
+	o.MasterInterval = 15 * time.Second
+	o.NodeInterval = 15 * time.Second
+	o.BastionInterval = 15 * time.Second
 	o.Interactive = false
 
-	o.PostDrainDelay = 90 * time.Second
-	o.ValidationTimeout = 5 * time.Minute
-
+	o.PostDrainDelay = 5 * time.Second
+	o.ValidationTimeout = 15 * time.Minute
 }
 
 func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
