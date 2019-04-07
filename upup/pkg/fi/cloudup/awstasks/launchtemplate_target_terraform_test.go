@@ -68,13 +68,12 @@ resource "aws_launch_template" "test" {
 
   network_interfaces = {
     associate_public_ip_address = true
+    security_groups             = ["${aws_security_group.nodes-1.id}", "${aws_security_group.nodes-2.id}"]
   }
 
   placement = {
     tenancy = "dedicated"
   }
-
-  vpc_security_group_ids = ["${aws_security_group.nodes-1.id}", "${aws_security_group.nodes-2.id}"]
 }
 
 terraform = {
@@ -146,13 +145,12 @@ resource "aws_launch_template" "test" {
 
   network_interfaces = {
     associate_public_ip_address = true
+    security_groups             = ["${aws_security_group.nodes-1.id}", "${aws_security_group.nodes-2.id}"]
   }
 
   placement = {
     tenancy = "dedicated"
   }
-
-  vpc_security_group_ids = ["${aws_security_group.nodes-1.id}", "${aws_security_group.nodes-2.id}"]
 }
 
 terraform = {

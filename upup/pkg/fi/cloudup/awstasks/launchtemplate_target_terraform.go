@@ -17,6 +17,8 @@ limitations under the License.
 package awstasks
 
 import (
+	"encoding/base64"
+
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -27,6 +29,8 @@ type terraformLaunchTemplateNetworkInterfaces struct {
 	AssociatePublicIPAddress *bool `json:"associate_public_ip_address,omitempty"`
 	// DeleteOnTermination indicates whether the network interface should be destroyed on instance termination.
 	DeleteOnTermination *bool `json:"delete_on_termination,omitempty"`
+	// SecurityGroups is a list of security group ids
+	SecurityGroups []*terraform.Literal `json:"security_groups,omitempty"`
 }
 
 type terraformLaunchTemplateMonitoring struct {
@@ -124,13 +128,16 @@ type terraformLaunchTemplate struct {
 	Placement []*terraformLaunchTemplatePlacement `json:"placement,omitempty"`
 	// UserData is the user data for the instances
 	UserData *terraform.Literal `json:"user_data,omitempty"`
-	// VpcSecurityGroupIDs is a list of security group ids
-	VpcSecurityGroupIDs []*terraform.Literal `json:"vpc_security_group_ids,omitempty"`
 }
 
 // TerraformLink returns the terraform reference
 func (t *LaunchTemplate) TerraformLink() *terraform.Literal {
 	return terraform.LiteralProperty("aws_launch_template", fi.StringValue(t.Name), "id")
+}
+
+// VersionLink returns the terraform version reference
+func (t *LaunchTemplate) VersionLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_launch_template", fi.StringValue(t.Name), "latest_version")
 }
 
 // RenderTerraform is responsible for rendering the terraform json
@@ -168,7 +175,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		}
 	}
 	for _, x := range e.SecurityGroups {
-		tf.VpcSecurityGroupIDs = append(tf.VpcSecurityGroupIDs, x.TerraformLink())
+		tf.NetworkInterfaces[0].SecurityGroups = append(tf.NetworkInterfaces[0].SecurityGroups, x.TerraformLink())
 	}
 	if e.SSHKey != nil {
 		tf.KeyName = e.SSHKey.TerraformLink()
@@ -182,7 +189,14 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		}
 	}
 	if e.UserData != nil {
-		tf.UserData, err = target.AddFile("aws_launch_template", fi.StringValue(e.Name), "user_data", e.UserData)
+		d, err := e.UserData.AsBytes()
+		if err != nil {
+			return err
+		}
+		b64d := base64.StdEncoding.EncodeToString(d)
+		b64UserDataResource := fi.WrapResource(fi.NewStringResource(b64d))
+
+		tf.UserData, err = target.AddFile("aws_launch_template", fi.StringValue(e.Name), "user_data", b64UserDataResource)
 		if err != nil {
 			return err
 		}
