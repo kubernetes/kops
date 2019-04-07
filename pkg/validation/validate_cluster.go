@@ -66,6 +66,9 @@ func hasPlaceHolderIP(clusterName string) (bool, error) {
 	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		clientcmd.NewDefaultClientConfigLoadingRules(),
 		&clientcmd.ConfigOverrides{CurrentContext: clusterName}).ClientConfig()
+	if err != nil {
+		return false, fmt.Errorf("error building configuration: %v", err)
+	}
 
 	apiAddr, err := url.Parse(config.Host)
 	if err != nil {
