@@ -566,8 +566,10 @@ type terraformASGTag struct {
 }
 
 type terraformAutoscalingLaunchTemplateSpecification struct {
-	// LaunchTemplateName is the name of the template to use
-	LaunchTemplateName *terraform.Literal `json:"launch_template_name,omitempty"`
+	// LaunchTemplateID is the ID of the template to use
+	LaunchTemplateID *terraform.Literal `json:"launch_template_id,omitempty"`
+	// Version is the version of the Launch Template to use
+	Version *terraform.Literal `json:"version,omitempty"`
 }
 
 type terraformAutoscalingLaunchTemplateOverride struct {
@@ -647,7 +649,8 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 					{
 						LaunchTemplateSpecification: []*terraformAutoscalingLaunchTemplateSpecification{
 							{
-								LaunchTemplateName: e.LaunchTemplate.TerraformLink(),
+								LaunchTemplateID: e.LaunchTemplate.TerraformLink(),
+								Version:          e.LaunchTemplate.VersionLink(),
 							},
 						},
 					},
