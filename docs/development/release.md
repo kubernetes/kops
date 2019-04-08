@@ -65,8 +65,8 @@ Make sure you are on the release branch `git checkout release-1.X`
 
 ```
 make release-tag
-git push
-git push --tags
+git push git@github.com:kubernetes/kops
+git push --tags git@github.com:kubernetes/kops
 ```
 
 ## Update release branch
