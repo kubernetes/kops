@@ -134,5 +134,5 @@ kubectl get pods -n kube-system | grep aws-iam-authenticator | awk '{print $1}' 
 
 * Create an aws-iam-authenticator configMap on the cluster `kubectl apply -f aws-iam-authenticator_example-config.yaml`
 * Edit the clusters configuration `kops edit cluster ${NAME}` and add the Authentication and Authorization configs to the YAML config.
-* Update the clusters configiguration `kops update cluster ${CLUSTER_NAME} --yes`
+* Update the clusters configuration `kops update cluster ${CLUSTER_NAME} --yes`
 * Perform a rolling update of the masters `kops rolling-update cluster ${CLUSTER_NAME} --instance-group-roles=Master --force --yes`
