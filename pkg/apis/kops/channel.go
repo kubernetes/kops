@@ -30,8 +30,10 @@ import (
 
 var DefaultChannelBase = "https://raw.githubusercontent.com/kubernetes/kops/master/channels/"
 
-const DefaultChannel = "stable"
-const AlphaChannel = "alpha"
+const (
+	DefaultChannel = "stable"
+	AlphaChannel   = "alpha"
+)
 
 type Channel struct {
 	v1.TypeMeta `json:",inline"`
