@@ -26,8 +26,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
 
-const BastionELBSecurityGroupPrefix = "bastion"
-const BastionELBDefaultIdleTimeout = 5 * time.Minute
+const (
+	BastionELBSecurityGroupPrefix = "bastion"
+	BastionELBDefaultIdleTimeout  = 5 * time.Minute
+)
 
 // BastionModelBuilder adds model objects to support bastions
 //
