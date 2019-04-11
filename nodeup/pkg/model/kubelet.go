@@ -440,13 +440,15 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.ModelBuilderContext) erro
 	return nil
 }
 
-const RoleLabelName15 = "kubernetes.io/role"
-const RoleLabelName16 = "kubernetes.io/role"
-const RoleMasterLabelValue15 = "master"
-const RoleNodeLabelValue15 = "node"
+const (
+	RoleLabelName15        = "kubernetes.io/role"
+	RoleLabelName16        = "kubernetes.io/role"
+	RoleMasterLabelValue15 = "master"
+	RoleNodeLabelValue15   = "node"
 
-const RoleLabelMaster16 = "node-role.kubernetes.io/master"
-const RoleLabelNode16 = "node-role.kubernetes.io/node"
+	RoleLabelMaster16 = "node-role.kubernetes.io/master"
+	RoleLabelNode16   = "node-role.kubernetes.io/node"
+)
 
 // NodeLabels are defined in the InstanceGroup, but set flags on the kubelet config.
 // We have a conflict here: on the one hand we want an easy to use abstract specification
