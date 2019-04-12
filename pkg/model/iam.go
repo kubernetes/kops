@@ -77,6 +77,9 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("unable to parse instance profile name from arn %q: %v", profileARN, err)
 		}
 		err = b.buildIAMTasks(igRole, iamName, c, true)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Generate IAM tasks for each managed role
