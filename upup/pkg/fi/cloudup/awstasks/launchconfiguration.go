@@ -427,6 +427,7 @@ type terraformBlockDevice struct {
 	// For root
 	VolumeType *string `json:"volume_type,omitempty"`
 	VolumeSize *int64  `json:"volume_size,omitempty"`
+	Iops       *int64  `json:"iops,omitempty"`
 	// Encryption
 	Encrypted *bool `json:"encrypted,omitempty"`
 	// Termination
@@ -493,6 +494,7 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 				tf.RootBlockDevice = &terraformBlockDevice{
 					VolumeType:          bdm.EbsVolumeType,
 					VolumeSize:          bdm.EbsVolumeSize,
+					Iops:                bdm.EbsVolumeIops,
 					DeleteOnTermination: fi.Bool(true),
 				}
 			}
@@ -576,6 +578,7 @@ type cloudformationBlockDevice struct {
 type cloudformationBlockDeviceEBS struct {
 	VolumeType          *string `json:"VolumeType,omitempty"`
 	VolumeSize          *int64  `json:"VolumeSize,omitempty"`
+	Iops                *int64  `json:"Iops,omitempty"`
 	DeleteOnTermination *bool   `json:"DeleteOnTermination,omitempty"`
 	Encrypted           *bool   `json:"Encrypted,omitempty"`
 }
@@ -645,6 +648,7 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 					Ebs: &cloudformationBlockDeviceEBS{
 						VolumeType:          bdm.EbsVolumeType,
 						VolumeSize:          bdm.EbsVolumeSize,
+						Iops:                bdm.EbsVolumeIops,
 						DeleteOnTermination: fi.Bool(true),
 					},
 				}
