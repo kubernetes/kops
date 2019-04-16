@@ -143,7 +143,7 @@ spec:
       containers:
       - name: romana-daemon
         image: quay.io/romana/daemon:v2.0.2
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: 10m
@@ -179,7 +179,7 @@ spec:
       containers:
       - name: romana-listener
         image: quay.io/romana/listener:v2.0.2
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: 10m
@@ -218,7 +218,7 @@ spec:
       containers:
       - name: romana-agent
         image: quay.io/romana/agent:v2.0.2
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: 25m
@@ -326,7 +326,7 @@ spec:
       containers:
       - name: romana-aws
         image: quay.io/romana/aws:v2.0.2
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: 10m
@@ -360,7 +360,7 @@ spec:
       containers:
       - name: romana-vpcrouter
         image: quay.io/romana/vpcrouter-romana-plugin:1.1.17
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           requests:
             cpu: 45m
