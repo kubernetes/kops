@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +20,9 @@ import (
 	"fmt"
 
 	"github.com/spotinst/spotinst-sdk-go/service/elastigroup"
-	"github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws"
+	awseg "github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws"
+	"github.com/spotinst/spotinst-sdk-go/service/ocean"
+	awsoc "github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/credentials"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/log"
@@ -30,16 +32,27 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 )
 
-// NewService returns a Service interface for the specified cloud provider.
-func NewService(cloudProviderID kops.CloudProviderID) (Service, error) {
-	svc := elastigroup.New(session.New(NewConfig()))
+// NewCloud returns a Cloud interface for the specified cloud provider.
+func NewCloud(cloudProviderID kops.CloudProviderID) (Cloud, error) {
+	var (
+		cloud Cloud
+		sess  = session.New(NewConfig())
+		eg    = elastigroup.New(sess)
+		oc    = ocean.New(sess)
+	)
 
 	switch cloudProviderID {
 	case kops.CloudProviderAWS:
-		return &awsService{svc.CloudProviderAWS()}, nil
+		cloud = &awsCloud{
+			eg: &awsElastigroupService{eg.CloudProviderAWS()},
+			oc: &awsOceanService{oc.CloudProviderAWS()},
+			ls: &awsOceanLaunchSpecService{oc.CloudProviderAWS()},
+		}
 	default:
 		return nil, fmt.Errorf("spotinst: unsupported cloud provider: %s", cloudProviderID)
 	}
+
+	return cloud, nil
 }
 
 // NewConfig returns a new configuration object.
@@ -68,13 +81,52 @@ func NewStdLogger() log.Logger {
 	})
 }
 
-// NewElastigroup returns an Elastigroup wrapper for the specified cloud provider.
-func NewElastigroup(cloudProviderID kops.CloudProviderID,
-	obj interface{}) (Elastigroup, error) {
+// NewInstanceGroups returns an InstanceGroup wrapper for the specified cloud provider.
+func NewInstanceGroup(cloudProviderID kops.CloudProviderID,
+	instanceGroupType InstanceGroupType, obj interface{}) (InstanceGroup, error) {
 
 	switch cloudProviderID {
 	case kops.CloudProviderAWS:
-		return &awsElastigroup{obj.(*aws.Group)}, nil
+		{
+			switch instanceGroupType {
+			case InstanceGroupElastigroup:
+				return &awsElastigroupInstanceGroup{obj.(*awseg.Group)}, nil
+			case InstanceGroupOcean:
+				return &awsOceanInstanceGroup{obj.(*awsoc.Cluster)}, nil
+			default:
+				return nil, fmt.Errorf("spotinst: unsupported instance group type: %s", instanceGroupType)
+			}
+		}
+	default:
+		return nil, fmt.Errorf("spotinst: unsupported cloud provider: %s", cloudProviderID)
+	}
+}
+
+// NewElastigroup returns an Elastigroup wrapper for the specified cloud provider.
+func NewElastigroup(cloudProviderID kops.CloudProviderID,
+	obj interface{}) (InstanceGroup, error) {
+
+	return NewInstanceGroup(
+		cloudProviderID,
+		InstanceGroupElastigroup,
+		obj)
+}
+
+// NewOcean returns an Ocean wrapper for the specified cloud provider.
+func NewOcean(cloudProviderID kops.CloudProviderID,
+	obj interface{}) (InstanceGroup, error) {
+
+	return NewInstanceGroup(
+		cloudProviderID,
+		InstanceGroupOcean,
+		obj)
+}
+
+// NewLaunchSpec returns a LaunchSpec wrapper for the specified cloud provider.
+func NewLaunchSpec(cloudProviderID kops.CloudProviderID, obj interface{}) (LaunchSpec, error) {
+	switch cloudProviderID {
+	case kops.CloudProviderAWS:
+		return &awsOceanLaunchSpec{obj.(*awsoc.LaunchSpec)}, nil
 	default:
 		return nil, fmt.Errorf("spotinst: unsupported cloud provider: %s", cloudProviderID)
 	}

@@ -439,6 +439,8 @@ func (c *ApplyClusterCmd) Run() error {
 
 				// Spotinst
 				"spotinstElastigroup": &spotinsttasks.Elastigroup{},
+				"spotinstOcean":       &spotinsttasks.Ocean{},
+				"spotinstLaunchSpec":  &spotinsttasks.LaunchSpec{},
 			})
 
 			if len(sshPublicKeys) == 0 && c.Cluster.Spec.SSHKeyName == "" {
@@ -731,7 +733,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		if featureflag.Spotinst.Enabled() {
-			l.Builders = append(l.Builders, &spotinstmodel.ElastigroupModelBuilder{
+			l.Builders = append(l.Builders, &spotinstmodel.InstanceGroupModelBuilder{
 				AWSModelContext:   awsModelContext,
 				BootstrapScript:   bootstrapScriptBuilder,
 				Lifecycle:         &clusterLifecycle,

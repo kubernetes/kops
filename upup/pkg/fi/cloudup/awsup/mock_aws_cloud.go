@@ -79,7 +79,7 @@ type MockCloud struct {
 	MockRoute53        route53iface.Route53API
 	MockELB            elbiface.ELBAPI
 	MockELBV2          elbv2iface.ELBV2API
-	MockSpotinst       spotinst.Service
+	MockSpotinst       spotinst.Cloud
 }
 
 func (c *MockAWSCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
@@ -242,7 +242,7 @@ func (c *MockAWSCloud) Route53() route53iface.Route53API {
 	return c.MockRoute53
 }
 
-func (c *MockAWSCloud) Spotinst() spotinst.Service {
+func (c *MockAWSCloud) Spotinst() spotinst.Cloud {
 	if c.MockSpotinst == nil {
 		klog.Fatalf("MockSpotinst not set")
 	}

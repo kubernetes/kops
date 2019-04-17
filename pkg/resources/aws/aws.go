@@ -86,8 +86,8 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 	}
 
 	if featureflag.Spotinst.Enabled() {
-		// Spotinst Elastigroups
-		listFunctions = append(listFunctions, ListSpotinstElastigroups)
+		// Spotinst resources
+		listFunctions = append(listFunctions, ListSpotinstResources)
 	} else {
 		// AutoScaling Groups
 		listFunctions = append(listFunctions, ListAutoScalingGroups)
@@ -2111,8 +2111,8 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*resources.R
 	return resourceTrackers, nil
 }
 
-func ListSpotinstElastigroups(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
-	return spotinst.ListGroups(cloud.(awsup.AWSCloud).Spotinst(), clusterName)
+func ListSpotinstResources(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	return spotinst.ListResources(cloud.(awsup.AWSCloud).Spotinst(), clusterName)
 }
 
 func FindName(tags []*ec2.Tag) string {
