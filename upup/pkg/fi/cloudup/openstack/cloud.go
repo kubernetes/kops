@@ -57,10 +57,12 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
-const TagNameRolePrefix = "k8s.io/role/"
-const TagClusterName = "KubernetesCluster"
-const TagRoleMaster = "master"
+const (
+	TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+	TagNameRolePrefix        = "k8s.io/role/"
+	TagClusterName           = "KubernetesCluster"
+	TagRoleMaster            = "master"
+)
 
 // ErrNotFound is used to inform that the object is not found
 var ErrNotFound = "Resource not found"

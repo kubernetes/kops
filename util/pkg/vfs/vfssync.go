@@ -37,9 +37,11 @@ func NewVFSScan(base Path) *VFSScan {
 
 type ChangeType string
 
-const ChangeType_Added ChangeType = "ADDED"
-const ChangeType_Removed ChangeType = "REMOVED"
-const ChangeType_Modified ChangeType = "MODIFIED"
+const (
+	ChangeType_Added    ChangeType = "ADDED"
+	ChangeType_Removed  ChangeType = "REMOVED"
+	ChangeType_Modified ChangeType = "MODIFIED"
+)
 
 type Change struct {
 	ChangeType ChangeType

@@ -29,10 +29,12 @@ import (
 	"k8s.io/kops/util/pkg/hashing"
 )
 
-const defaultKopsBaseUrl = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
+const (
+	defaultKopsBaseUrl = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
 
-// defaultKopsMirrorBase will be detected and automatically set to pull from the defaultKopsMirrors
-const defaultKopsMirrorBase = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
+	// defaultKopsMirrorBase will be detected and automatically set to pull from the defaultKopsMirrors
+	defaultKopsMirrorBase = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
+)
 
 // mirror holds the configuration for a mirror
 type mirror struct {

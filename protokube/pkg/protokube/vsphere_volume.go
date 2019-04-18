@@ -33,8 +33,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 )
 
-const VolumeMetaDataFile = "/vol-metadata/metadata.json"
-const VolStatusValue = "attached"
+const (
+	VolumeMetaDataFile = "/vol-metadata/metadata.json"
+	VolStatusValue     = "attached"
+)
 
 // VSphereVolumes represents vSphere volume and implements Volumes interface.
 type VSphereVolumes struct{}
