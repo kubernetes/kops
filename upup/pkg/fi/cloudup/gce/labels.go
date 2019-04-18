@@ -23,11 +23,13 @@ import (
 	"strings"
 )
 
-// The tag name we use to differentiate multiple logically independent clusters running in the same region
-const GceLabelNameKubernetesCluster = "k8s-io-cluster-name"
+const (
+	// The tag name we use to differentiate multiple logically independent clusters running in the same region
+	GceLabelNameKubernetesCluster = "k8s-io-cluster-name"
 
-const GceLabelNameRolePrefix = "k8s-io-role-"
-const GceLabelNameEtcdClusterPrefix = "k8s-io-etcd-"
+	GceLabelNameRolePrefix        = "k8s-io-role-"
+	GceLabelNameEtcdClusterPrefix = "k8s-io-etcd-"
+)
 
 // EncodeGCELabel encodes a string into an RFC1035 compatible value, suitable for use as GCE label key or value
 // We use a URI inspired escaping, but with - instead of %.

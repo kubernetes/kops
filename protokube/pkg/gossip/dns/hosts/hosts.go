@@ -27,8 +27,10 @@ import (
 	"github.com/golang/glog"
 )
 
-const GUARD_BEGIN = "# Begin host entries managed by kops - do not edit"
-const GUARD_END = "# End host entries managed by kops"
+const (
+	GUARD_BEGIN = "# Begin host entries managed by kops - do not edit"
+	GUARD_END   = "# End host entries managed by kops"
+)
 
 func UpdateHostsFileWithRecords(p string, addrToHosts map[string][]string) error {
 	stat, err := os.Stat(p)
