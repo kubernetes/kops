@@ -36,10 +36,12 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-const TagClusterName = "KubernetesCluster"
-const TagNameRolePrefix = "k8s.io/role/"
-const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
-const TagRoleMaster = "master"
+const (
+	TagClusterName           = "KubernetesCluster"
+	TagNameRolePrefix        = "k8s.io/role/"
+	TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+	TagRoleMaster            = "master"
+)
 
 // This is for statistic purpose.
 var KubernetesKopsIdentity = fmt.Sprintf("Kubernetes.Kops/%s", prj.Version)
