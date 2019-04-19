@@ -164,7 +164,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 			if u.Node != nil {
 				glog.Infof("Draining the node: %q.", nodeName)
 
-				if err = r.DrainNode(u, rollingUpdateData); err != nil {
+				if err = drainNode(u, rollingUpdateData.ClientGetter, rollingUpdateData.PostDrainDelay); err != nil {
 					if rollingUpdateData.FailOnDrainError {
 						return fmt.Errorf("failed to drain node %q: %v", nodeName, err)
 					} else {
@@ -313,16 +313,16 @@ func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInsta
 
 }
 
-// DrainNode drains a K8s node.
-func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGroupMember, rollingUpdateData *RollingUpdateCluster) error {
-	if rollingUpdateData.ClientGetter == nil {
+// drainNode drains a K8s node.
+func drainNode(u *cloudinstances.CloudInstanceGroupMember, clientGetter genericclioptions.RESTClientGetter, delay time.Duration) error {
+	if clientGetter == nil {
 		return fmt.Errorf("ClientGetter not set")
 	}
 
 	if u.Node.Name == "" {
 		return fmt.Errorf("node name not set")
 	}
-	f := cmdutil.NewFactory(rollingUpdateData.ClientGetter)
+	f := cmdutil.NewFactory(clientGetter)
 
 	streams := genericclioptions.IOStreams{
 		Out:    os.Stdout,
@@ -354,9 +354,9 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 		return fmt.Errorf("error draining node: %v", err)
 	}
 
-	if rollingUpdateData.PostDrainDelay > 0 {
-		glog.Infof("Waiting for %s for pods to stabilize after draining.", rollingUpdateData.PostDrainDelay)
-		time.Sleep(rollingUpdateData.PostDrainDelay)
+	if delay > 0 {
+		glog.Infof("Waiting for %s for pods to stabilize after draining.", delay)
+		time.Sleep(delay)
 	}
 
 	return nil
