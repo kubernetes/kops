@@ -20,7 +20,7 @@
 
 WORK_DIR=`mktemp -d`
 
-function cleanup {
+cleanup() {
   rm -rf "$WORK_DIR"
 }
 trap cleanup EXIT
