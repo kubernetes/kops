@@ -29,13 +29,15 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
-const CloudConfigFilePath = "/etc/kubernetes/cloud.config"
+const (
+	CloudConfigFilePath = "/etc/kubernetes/cloud.config"
 
-// Required for vSphere CloudProvider
-const MinimumVersionForVMUUID = "1.5.3"
+	// Required for vSphere CloudProvider
+	MinimumVersionForVMUUID = "1.5.3"
 
-// VM UUID is set by cloud-init
-const VM_UUID_FILE_PATH = "/etc/vmware/vm_uuid"
+	// VM UUID is set by cloud-init
+	VM_UUID_FILE_PATH = "/etc/vmware/vm_uuid"
+)
 
 // CloudConfigBuilder creates the cloud configuration file
 type CloudConfigBuilder struct {

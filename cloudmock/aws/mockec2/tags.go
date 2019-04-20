@@ -27,9 +27,11 @@ import (
 	"github.com/golang/glog"
 )
 
-// Not (yet?) in aws-sdk-go
-const ResourceTypeNatGateway = "nat-gateway"
-const ResourceTypeAddress = "elastic-ip"
+const (
+	// Not (yet?) in aws-sdk-go
+	ResourceTypeNatGateway = "nat-gateway"
+	ResourceTypeAddress    = "elastic-ip"
+)
 
 func (m *MockEC2) CreateTagsRequest(*ec2.CreateTagsInput) (*request.Request, *ec2.CreateTagsOutput) {
 	panic("Not implemented")
