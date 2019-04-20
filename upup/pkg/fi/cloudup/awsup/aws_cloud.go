@@ -41,7 +41,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
@@ -123,6 +123,8 @@ type AWSCloud interface {
 
 	// CreateELBTags will add tags to the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 	CreateELBTags(loadBalancerName string, tags map[string]string) error
+	// RemoveELBTags will remove tags from the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
+	RemoveELBTags(loadBalancerName string, tags map[string]string) error
 
 	// DeleteTags will delete tags from the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 	DeleteTags(id string, tags map[string]string) error
@@ -548,8 +550,66 @@ func matchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription
 	return true
 }
 
+// findAutoscalingGroupLaunchConfiguration is responsible for finding the launch - which could be a launchconfiguration, a template or a mixed instance policy template
+func findAutoscalingGroupLaunchConfiguration(g *autoscaling.Group) (string, error) {
+	name := aws.StringValue(g.LaunchConfigurationName)
+	if name != "" {
+		return name, nil
+	}
+
+	// @check the launch template then
+	if g.LaunchTemplate != nil {
+		name = aws.StringValue(g.LaunchTemplate.LaunchTemplateName)
+		version := aws.StringValue(g.LaunchTemplate.Version)
+		if name != "" {
+			launchTemplate := name + ":" + version
+			return launchTemplate, nil
+		}
+	}
+
+	// @check: ok, lets check the mixed instance policy
+	if g.MixedInstancesPolicy != nil {
+		if g.MixedInstancesPolicy.LaunchTemplate != nil {
+			if g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification != nil {
+				// honestly!!
+				name = aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.LaunchTemplateName)
+				version := aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.Version)
+				if name != "" {
+					launchTemplate := name + ":" + version
+					return launchTemplate, nil
+				}
+			}
+		}
+	}
+
+	return "", fmt.Errorf("error finding launch template or configuration for autoscaling group: %s", aws.StringValue(g.AutoScalingGroupName))
+}
+
+// findInstanceLaunchConfiguration is responsible for discoverying the launch configuration for an instance
+func findInstanceLaunchConfiguration(i *autoscaling.Instance) string {
+	name := aws.StringValue(i.LaunchConfigurationName)
+	if name != "" {
+		return name
+	}
+
+	// else we need to check the launch template
+	if i.LaunchTemplate != nil {
+		name = aws.StringValue(i.LaunchTemplate.LaunchTemplateName)
+		version := aws.StringValue(i.LaunchTemplate.Version)
+		if name != "" {
+			launchTemplate := name + ":" + version
+			return launchTemplate
+		}
+	}
+
+	return ""
+}
+
 func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
-	newLaunchConfigName := aws.StringValue(g.LaunchConfigurationName)
+	newConfigName, err := findAutoscalingGroupLaunchConfiguration(g)
+	if err != nil {
+		return nil, err
+	}
 
 	cg := &cloudinstances.CloudInstanceGroup{
 		HumanName:     aws.StringValue(g.AutoScalingGroupName),
@@ -560,13 +620,19 @@ func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscali
 	}
 
 	for _, i := range g.Instances {
-		instanceId := aws.StringValue(i.InstanceId)
-		if instanceId == "" {
-			glog.Warningf("ignoring instance with no instance id: %s", i)
+		id := aws.StringValue(i.InstanceId)
+		if id == "" {
+			glog.Warningf("ignoring instance with no instance id: %s in autoscaling group: %s", id, cg.HumanName)
 			continue
 		}
-		err := cg.NewCloudInstanceGroupMember(instanceId, newLaunchConfigName, aws.StringValue(i.LaunchConfigurationName), nodeMap)
-		if err != nil {
+		// @step: check if the instance is terminating
+		if aws.StringValue(i.LifecycleState) == autoscaling.LifecycleStateTerminating {
+			glog.Warningf("ignoring instance  as it is terminating: %s in autoscaling group: %s", id, cg.HumanName)
+			continue
+		}
+		currentConfigName := findInstanceLaunchConfiguration(i)
+
+		if err := cg.NewCloudInstanceGroupMember(id, newConfigName, currentConfigName, nodeMap); err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 		}
 	}
@@ -846,6 +912,39 @@ func createELBTags(c AWSCloud, loadBalancerName string, tags map[string]string) 
 		}
 
 		_, err := c.ELB().AddTags(request)
+		if err != nil {
+			return fmt.Errorf("error creating tags on %v: %v", loadBalancerName, err)
+		}
+
+		return nil
+	}
+}
+
+// RemoveELBTags will remove tags to the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
+func (c *awsCloudImplementation) RemoveELBTags(loadBalancerName string, tags map[string]string) error {
+	return removeELBTags(c, loadBalancerName, tags)
+}
+
+func removeELBTags(c AWSCloud, loadBalancerName string, tags map[string]string) error {
+	if len(tags) == 0 {
+		return nil
+	}
+
+	elbTagKeysOnly := []*elb.TagKeyOnly{}
+	for k := range tags {
+		elbTagKeysOnly = append(elbTagKeysOnly, &elb.TagKeyOnly{Key: aws.String(k)})
+	}
+
+	attempt := 0
+	for {
+		attempt++
+
+		request := &elb.RemoveTagsInput{
+			Tags:              elbTagKeysOnly,
+			LoadBalancerNames: []*string{&loadBalancerName},
+		}
+
+		_, err := c.ELB().RemoveTags(request)
 		if err != nil {
 			return fmt.Errorf("error creating tags on %v: %v", loadBalancerName, err)
 		}

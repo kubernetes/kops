@@ -21,7 +21,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/util/pkg/exec"
@@ -29,6 +30,7 @@ import (
 
 // BuildEtcdManifest creates the pod spec, based on the etcd cluster
 func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
+
 	pod := &v1.Pod{}
 	pod.APIVersion = "v1"
 	pod.Kind = "Pod"
@@ -36,13 +38,28 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 	pod.Namespace = "kube-system"
 	pod.Labels = map[string]string{"k8s-app": c.PodName}
 	pod.Spec.HostNetwork = true
+
+	// dereference our resource requests if they exist
+	// cpu
+	var cpuRequest resource.Quantity
+	if c.CPURequest != nil {
+		cpuRequest = *c.CPURequest
+	}
+
+	// memory
+	var memoryRequest resource.Quantity
+	if c.MemoryRequest != nil {
+		memoryRequest = *c.MemoryRequest
+	}
+
 	{
 		container := v1.Container{
 			Name:  "etcd-container",
 			Image: c.ImageSource,
 			Resources: v1.ResourceRequirements{
 				Requests: v1.ResourceList{
-					v1.ResourceCPU: c.CPURequest,
+					v1.ResourceCPU:    cpuRequest,
+					v1.ResourceMemory: memoryRequest,
 				},
 			},
 			Command: exec.WithTee("/usr/local/bin/etcd", []string{}, "/var/log/etcd.log"),
@@ -152,7 +169,7 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 	return pod
 }
 
-// buildEtcdEnvironmentOptions is responsible for building the environment variabled for etcd
+// buildEtcdEnvironmentOptions is responsible for building the environment variables for etcd
 // @question should we perhaps make this version specific in prep for v3 support?
 func buildEtcdEnvironmentOptions(c *EtcdCluster) []v1.EnvVar {
 	var options []v1.EnvVar
@@ -251,6 +268,13 @@ func buildEtcdBackupManagerContainer(c *EtcdCluster) *v1.Container {
 	command = append(command, "--backup-store", c.BackupStore)
 	command = append(command, "--cluster-name", c.ClusterName)
 	command = append(command, "--data-dir", "/var/etcd/"+c.DataDirName)
+
+	if c.isTLS() {
+		command = append(command, "--client-url", "https://127.0.0.1:4001")
+		command = append(command, "--client-ca-file", c.TLSCA)
+		command = append(command, "--client-cert-file", c.TLSCert)
+		command = append(command, "--client-key-file", c.TLSKey)
+	}
 
 	container := v1.Container{
 		Name:    "etcd-backup",

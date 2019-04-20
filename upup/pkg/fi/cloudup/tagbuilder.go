@@ -60,6 +60,10 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 
 	case api.CloudProviderOpenstack:
 
+	case api.CloudProviderALI:
+		{
+			tags.Insert("_ali")
+		}
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}

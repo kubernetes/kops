@@ -100,6 +100,7 @@ type GetHeader struct {
 	Read             []string  `json:"-"`
 	TransID          string    `json:"X-Trans-Id"`
 	VersionsLocation string    `json:"X-Versions-Location"`
+	HistoryLocation  string    `json:"X-History-Location"`
 	Write            []string  `json:"-"`
 	StoragePolicy    string    `json:"X-Storage-Policy"`
 }

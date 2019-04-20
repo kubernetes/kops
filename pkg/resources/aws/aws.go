@@ -19,6 +19,7 @@ package aws
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -147,8 +148,11 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 		if err != nil {
 			return nil, err
 		}
-
-		for _, t := range lcs {
+		lts, err := FindAutoScalingLaunchTemplateConfigurations(cloud, securityGroups)
+		if err != nil {
+			return nil, err
+		}
+		for _, t := range append(lcs, lts...) {
 			resourceTrackers[t.Type+":"+t.ID] = t
 		}
 	}
@@ -504,6 +508,8 @@ func guessSSHUser(image *ec2.Image) string {
 	switch owner {
 	case awsup.WellKnownAccountAmazonSystemLinux2:
 		return "ec2-user"
+	case awsup.WellKnownAccountRedhat:
+		return "ec2-user"
 	case awsup.WellKnownAccountCoreOS:
 		return "core"
 	case awsup.WellKnownAccountKopeio:
@@ -511,6 +517,14 @@ func guessSSHUser(image *ec2.Image) string {
 	case awsup.WellKnownAccountUbuntu:
 		return "ubuntu"
 	}
+
+	name := aws.StringValue(image.Name)
+	name = strings.ToLower(name)
+	if strings.HasPrefix(name, "centos") {
+		// We could check the marketplace id, but this is just a guess anyway...
+		return "centos"
+	}
+
 	return ""
 }
 
@@ -1159,7 +1173,12 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*resources.Res
 			}
 			blocks = append(blocks, "subnet:"+subnet)
 		}
-		blocks = append(blocks, TypeAutoscalingLaunchConfig+":"+aws.StringValue(asg.LaunchConfigurationName))
+		if asg.LaunchConfigurationName != nil {
+			blocks = append(blocks, TypeAutoscalingLaunchConfig+":"+aws.StringValue(asg.LaunchConfigurationName))
+		}
+		if asg.LaunchTemplate != nil {
+			blocks = append(blocks, TypeAutoscalingLaunchConfig+":"+aws.StringValue(asg.LaunchTemplate.LaunchTemplateName))
+		}
 
 		resourceTracker.Blocks = blocks
 
@@ -1169,11 +1188,52 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*resources.Res
 	return resourceTrackers, nil
 }
 
+// FindAutoScalingLaunchTemplateConfigurations finds any launch configurations which reference the security groups
+func FindAutoScalingLaunchTemplateConfigurations(cloud fi.Cloud, securityGroups sets.String) ([]*resources.Resource, error) {
+	var list []*resources.Resource
+
+	c, ok := cloud.(awsup.AWSCloud)
+	if !ok {
+		return nil, errors.New("expected a aws cloud provider")
+	}
+	glog.V(2).Infof("Finding all Autoscaling LaunchTemplates associated to security groups")
+
+	resp, err := c.EC2().DescribeLaunchTemplates(&ec2.DescribeLaunchTemplatesInput{MaxResults: fi.Int64(100)})
+	if err != nil {
+		return list, nil
+	}
+
+	for _, x := range resp.LaunchTemplates {
+		// @step: grab the actual launch template
+		req, err := c.EC2().DescribeLaunchTemplateVersions(&ec2.DescribeLaunchTemplateVersionsInput{
+			LaunchTemplateName: x.LaunchTemplateName,
+		})
+		if err != nil {
+			return list, err
+		}
+		for _, j := range req.LaunchTemplateVersions {
+			// @check if the security group references the security group above
+			for _, y := range j.LaunchTemplateData.SecurityGroupIds {
+				if securityGroups.Has(fi.StringValue(y)) {
+					list = append(list, &resources.Resource{
+						Name:    aws.StringValue(x.LaunchTemplateName),
+						ID:      aws.StringValue(x.LaunchTemplateName),
+						Type:    TypeAutoscalingLaunchConfig,
+						Deleter: DeleteAutoScalingGroupLaunchTemplate,
+					})
+				}
+			}
+		}
+	}
+
+	return list, nil
+}
+
+// FindAutoScalingLaunchConfigurations finds all launch configurations which has a reference to the security groups
 func FindAutoScalingLaunchConfigurations(cloud fi.Cloud, securityGroups sets.String) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	glog.V(2).Infof("Finding all Autoscaling LaunchConfigurations by security group")
-
 	var resourceTrackers []*resources.Resource
 
 	request := &autoscaling.DescribeLaunchConfigurationsInput{}
@@ -1350,6 +1410,24 @@ func extractClusterName(userData string) string {
 	return clusterName
 
 }
+
+// DeleteAutoScalingGroupLaunchTemplate deletes
+func DeleteAutoScalingGroupLaunchTemplate(cloud fi.Cloud, r *resources.Resource) error {
+	c, ok := cloud.(awsup.AWSCloud)
+	if !ok {
+		return errors.New("expected a aws.Cloud provider")
+	}
+	glog.V(2).Infof("Deleting EC2 LaunchTemplate %q", r.ID)
+
+	if _, err := c.EC2().DeleteLaunchTemplate(&ec2.DeleteLaunchTemplateInput{
+		LaunchTemplateName: fi.String(r.ID),
+	}); err != nil {
+		return fmt.Errorf("error deleting ec2 LaunchTemplate %q: %v", r.ID, err)
+	}
+
+	return nil
+}
+
 func DeleteAutoscalingLaunchConfiguration(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(awsup.AWSCloud)
 

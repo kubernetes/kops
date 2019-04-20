@@ -25,3 +25,13 @@ subdirectory.
 `Gopkg.lock` and `Gopkg.toml`.
 1. Open a pull request with these changes separately from other work
 so that it is easier to review.
+
+## Updating a dependency in the vendor directory (e.g. aws-sdk-go)
+
+1. Update the locked version as specified in Gopkg.toml
+1. Run `make dep-ensure`.
+1. Review the changes to ensure that they are as intended / trustworthy.
+1. Commit any changes, including changes to the `vendor` directory,
+`Gopkg.lock` and `Gopkg.toml`.
+1. Open a pull request with these changes separately from other work so that it
+is easier to review.  Please include any significant changes you observed.

@@ -56,7 +56,7 @@ type Policy struct {
 func (p *Policy) AsJSON() (string, error) {
 	j, err := json.MarshalIndent(p, "", "  ")
 	if err != nil {
-		return "", fmt.Errorf("error marshalling policy to JSON: %v", err)
+		return "", fmt.Errorf("error marshaling policy to JSON: %v", err)
 	}
 	return string(j), nil
 }
@@ -185,7 +185,7 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName(), b.IAMPrefix())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
@@ -222,7 +222,7 @@ func (b *PolicyBuilder) BuildAWSPolicyNode() (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName(), b.IAMPrefix())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
@@ -502,7 +502,7 @@ func (b *PolicyResource) Open() (io.Reader, error) {
 }
 
 // UseBootstrapTokens check if we are using bootstrap tokens - @TODO, i don't like this we should probably pass in
-// the kops model into the builder rather than duplicating the code. I'll leave for anothe PR
+// the kops model into the builder rather than duplicating the code. I'll leave for another PR
 func (b *PolicyBuilder) UseBootstrapTokens() bool {
 	if b.Cluster.Spec.KubeAPIServer == nil {
 		return false
@@ -855,7 +855,7 @@ func addLyftVPCPermissions(p *Policy, resource stringorslice.StringOrSlice, lega
 	)
 }
 
-func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string) {
+func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string, iamPrefix string) {
 	if legacyIAM {
 		// Legacy IAM provides ec2:*, so no additional permissions required
 		return
@@ -877,6 +877,14 @@ func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice,
 			}),
 			Resource: resource,
 		},
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:CreateTags",
+			}),
+			Resource: stringorslice.Slice([]string{
+				strings.Join([]string{iamPrefix, ":ec2:*:*:network-interface/*"}, ""),
+			})},
 	)
 }
 

@@ -70,7 +70,7 @@ func run() error {
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
 	flag.BoolVar(&initializeRBAC, "initialize-rbac", initializeRBAC, "Set if we should initialize RBAC")
 	flag.BoolVar(&master, "master", master, "Whether or not this node is a master")
-	flag.StringVar(&cloud, "cloud", "aws", "CloudProvider we are using (aws,digitalocean,gce)")
+	flag.StringVar(&cloud, "cloud", "aws", "CloudProvider we are using (aws,digitalocean,gce,openstack)")
 	flag.StringVar(&clusterID, "cluster-id", clusterID, "Cluster ID")
 	flag.StringVar(&dnsInternalSuffix, "dns-internal-suffix", dnsInternalSuffix, "DNS suffix for internal domain names")
 	flag.StringVar(&dnsServer, "dns-server", dnsServer, "DNS Server")
@@ -95,6 +95,9 @@ func run() error {
 
 	manageEtcd := false
 	flag.BoolVar(&manageEtcd, "manage-etcd", manageEtcd, "Set to manage etcd (deprecated in favor of etcd-manager)")
+
+	var removeDNSNames string
+	flag.StringVar(&removeDNSNames, "remove-dns-names", removeDNSNames, "If set, will remove the DNS records specified")
 
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
@@ -179,6 +182,44 @@ func run() error {
 			}
 			internalIP = ip
 		}
+	} else if cloud == "openstack" {
+		glog.Info("Initializing openstack volumes")
+		osVolumes, err := protokube.NewOpenstackVolumes()
+		if err != nil {
+			glog.Errorf("Error initializing openstack: %q", err)
+			os.Exit(1)
+		}
+		volumes = osVolumes
+		if internalIP == nil {
+			internalIP = osVolumes.InternalIP()
+		}
+
+		if clusterID == "" {
+			clusterID = osVolumes.ClusterID()
+		}
+	} else if cloud == "alicloud" {
+		glog.Info("Initializing AliCloud volumes")
+		aliVolumes, err := protokube.NewALIVolumes()
+		if err != nil {
+			glog.Errorf("Error initializing Aliyun: %q", err)
+			os.Exit(1)
+		}
+		volumes = aliVolumes
+	} else if cloud == "alicloud" {
+		glog.Info("Initializing AliCloud volumes")
+		aliVolumes, err := protokube.NewALIVolumes()
+		if err != nil {
+			glog.Errorf("Error initializing Aliyun: %q", err)
+			os.Exit(1)
+		}
+		volumes = aliVolumes
+
+		if clusterID == "" {
+			clusterID = aliVolumes.ClusterID()
+		}
+		if internalIP == nil {
+			internalIP = aliVolumes.InternalIP()
+		}
 	} else {
 		glog.Errorf("Unknown cloud %q", cloud)
 		os.Exit(1)
@@ -235,6 +276,18 @@ func run() error {
 				return err
 			}
 			gossipName = volumes.(*protokube.GCEVolumes).InstanceName()
+		} else if cloud == "openstack" {
+			gossipSeeds, err = volumes.(*protokube.OpenstackVolumes).GossipSeeds()
+			if err != nil {
+				return err
+			}
+			gossipName = volumes.(*protokube.OpenstackVolumes).InstanceName()
+		} else if cloud == "alicloud" {
+			gossipSeeds, err = volumes.(*protokube.ALIVolumes).GossipSeeds()
+			if err != nil {
+				return err
+			}
+			gossipName = volumes.(*protokube.ALIVolumes).InstanceID()
 		} else {
 			glog.Fatalf("seed provider for %q not yet implemented", cloud)
 		}
@@ -319,6 +372,11 @@ func run() error {
 			DNSController: dnsController,
 		}
 	}
+
+	go func() {
+		removeDNSRecords(removeDNSNames, dnsProvider)
+	}()
+
 	modelDir := "model/etcd"
 
 	var channels []string

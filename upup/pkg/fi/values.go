@@ -42,10 +42,40 @@ func String(s string) *string {
 	return &s
 }
 
+// Float32 returns a point to a float32
+func Float32(v float32) *float32 {
+	return &v
+}
+
+// Float32Value returns the value of the float
+func Float32Value(v *float32) float32 {
+	if v == nil {
+		return 0.0
+	}
+
+	return *v
+}
+
+// Float64 returns a point to a float64
+func Float64(v float64) *float64 {
+	return &v
+}
+
+// Float64Value returns the value of the float
+func Float64Value(v *float64) float64 {
+	if v == nil {
+		return 0.0
+	}
+
+	return *v
+}
+
+// Bool returns a pointer to a bool
 func Bool(v bool) *bool {
 	return &v
 }
 
+// BoolValue returns the value of bool pointer or false
 func BoolValue(v *bool) bool {
 	if v == nil {
 		return false
@@ -150,7 +180,7 @@ func DebugPrint(o interface{}) string {
 func DebugAsJsonString(v interface{}) string {
 	data, err := json.Marshal(v)
 	if err != nil {
-		return fmt.Sprintf("error marshalling: %v", err)
+		return fmt.Sprintf("error marshaling: %v", err)
 	}
 	return string(data)
 }
@@ -158,7 +188,7 @@ func DebugAsJsonString(v interface{}) string {
 func DebugAsJsonStringIndent(v interface{}) string {
 	data, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
-		return fmt.Sprintf("error marshalling: %v", err)
+		return fmt.Sprintf("error marshaling: %v", err)
 	}
 	return string(data)
 }

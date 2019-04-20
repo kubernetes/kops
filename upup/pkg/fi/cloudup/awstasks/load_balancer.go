@@ -64,6 +64,8 @@ type LoadBalancer struct {
 	ConnectionSettings     *LoadBalancerConnectionSettings
 	CrossZoneLoadBalancing *LoadBalancerCrossZoneLoadBalancing
 	SSLCertificateID       string
+
+	Tags map[string]string
 }
 
 var _ fi.CompareWithID = &LoadBalancer{}
@@ -294,6 +296,15 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	actual.HostedZoneId = lb.CanonicalHostedZoneNameID
 	actual.Scheme = lb.Scheme
 	actual.Lifecycle = e.Lifecycle
+
+	tagMap, err := describeLoadBalancerTags(cloud, []string{*lb.LoadBalancerName})
+	if err != nil {
+		return nil, err
+	}
+	actual.Tags = make(map[string]string)
+	for _, tag := range tagMap[*e.LoadBalancerName] {
+		actual.Tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
+	}
 
 	for _, subnet := range lb.Subnets {
 		actual.Subnets = append(actual.Subnets, &Subnet{ID: subnet})
@@ -601,7 +612,11 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		}
 	}
 
-	if err := t.AddELBTags(loadBalancerName, t.Cloud.BuildTags(e.Name)); err != nil {
+	if err := t.AddELBTags(loadBalancerName, e.Tags); err != nil {
+		return err
+	}
+
+	if err := t.RemoveELBTags(loadBalancerName, e.Tags); err != nil {
 		return err
 	}
 
@@ -749,7 +764,11 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 		tf.CrossZoneLoadBalancing = e.CrossZoneLoadBalancing.Enabled
 	}
 
-	tf.Tags = cloud.BuildTags(e.Name)
+	var tags map[string]string = cloud.BuildTags(e.Name)
+	for k, v := range e.Tags {
+		tags[k] = v
+	}
+	tf.Tags = tags
 
 	return t.RenderResource("aws_elb", *e.Name, tf)
 }
@@ -878,7 +897,12 @@ func (_ *LoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarg
 		tf.CrossZoneLoadBalancing = e.CrossZoneLoadBalancing.Enabled
 	}
 
-	tf.Tags = buildCloudformationTags(cloud.BuildTags(e.Name))
+	var tags map[string]string = cloud.BuildTags(e.Name)
+	for k, v := range e.Tags {
+		tags[k] = v
+	}
+
+	tf.Tags = buildCloudformationTags(tags)
 
 	return t.RenderResource("AWS::ElasticLoadBalancing::LoadBalancer", *e.Name, tf)
 }

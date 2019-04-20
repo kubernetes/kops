@@ -95,13 +95,13 @@ echo "Starting build"
 
 # removing CI=1 because it forces a new upload every time
 # export CI=1
-make && S3_BUCKET=s3://${NODEUP_BUCKET} make upload
+make && UPLOAD_DEST=s3://${NODEUP_BUCKET} make upload
 
 # removing make test since it relies on the files in the bucket
 # && make test
 
-KOPS_CHANNEL=$(kops version | awk '{ print $2 }' |sed 's/\+/%2B/')
-KOPS_BASE_URL="http://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${KOPS_CHANNEL}/"
+KOPS_VERSION=$(kops version --short)
+KOPS_BASE_URL="http://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${KOPS_VERSION}/"
 
 echo "KOPS_BASE_URL=${KOPS_BASE_URL}"
 echo "NODEUP_URL=${KOPS_BASE_URL}linux/amd64/nodeup"

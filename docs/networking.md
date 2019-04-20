@@ -363,6 +363,11 @@ $ kops create cluster \
     "Resource": [
       "*"
     ]
+  },
+  {
+    "Effect": "Allow",
+    "Action": "ec2:CreateTags",
+    "Resource": "arn:aws:ec2:*:*:network-interface/*"
   }
 ```
 
@@ -434,6 +439,19 @@ For support with Cilium Network Policies you can reach out on Slack or Github:
 
 - [Cilium Github](https://github.com/cilium/cilium)
 - [Cilium Slack](https://cilium.io/slack)
+
+### Flannel Example for CNI
+
+#### Configuraing Flannel iptables resync period
+
+Flannel iptables resync option is configurable via editing a cluster and adding
+`iptablesResyncSeconds` option to spec:
+
+```
+  networking:
+    flannel:
+      iptablesResyncSeconds: 360
+```
 
 ### Validating CNI Installation
 

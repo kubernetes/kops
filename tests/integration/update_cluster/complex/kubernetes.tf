@@ -226,8 +226,11 @@ resource "aws_elb" "api-complex-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "complex.example.com"
-    Name              = "api.complex.example.com"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "api.complex.example.com"
+    Owner                                       = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
@@ -452,6 +455,15 @@ resource "aws_security_group_rule" "https-elb-to-master" {
   from_port                = 443
   to_port                  = 443
   protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
+  type              = "ingress"
+  security_group_id = "${aws_security_group.api-elb-complex-example-com.id}"
+  from_port         = 3
+  to_port           = 4
+  protocol          = "icmp"
+  cidr_blocks       = ["0.0.0.0/0"]
 }
 
 resource "aws_security_group_rule" "master-egress" {

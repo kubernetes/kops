@@ -141,6 +141,11 @@ func TestPrivateKopeio(t *testing.T) {
 	runTestAWS(t, "privatekopeio.example.com", "privatekopeio", "v1alpha2", true, 1, true, nil)
 }
 
+// TestUnmanaged is a test where all the subnets opt-out of route management
+func TestUnmanaged(t *testing.T) {
+	runTestAWS(t, "unmanaged.example.com", "unmanaged", "v1alpha2", true, 1, true, nil)
+}
+
 // TestPrivateSharedSubnet runs the test on a configuration with private topology & shared subnets
 func TestPrivateSharedSubnet(t *testing.T) {
 	runTestAWS(t, "private-shared-subnet.example.com", "private-shared-subnet", "v1alpha2", true, 1, true, nil)
@@ -174,6 +179,7 @@ func TestExistingIAM(t *testing.T) {
 
 // TestAdditionalCIDR runs the test on a configuration with a shared VPC
 func TestAdditionalCIDR(t *testing.T) {
+	runTestAWS(t, "additionalcidr.example.com", "additional_cidr", "v1alpha3", false, 3, true, nil)
 	runTestCloudformation(t, "additionalcidr.example.com", "additional_cidr", "v1alpha2", false, nil)
 }
 

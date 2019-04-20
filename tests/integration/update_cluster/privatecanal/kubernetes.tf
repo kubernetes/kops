@@ -271,8 +271,9 @@ resource "aws_elb" "api-privatecanal-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "api.privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "api.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -300,8 +301,9 @@ resource "aws_elb" "bastion-privatecanal-example-com" {
   idle_timeout = 300
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "bastion.privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "bastion.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -657,6 +659,15 @@ resource "aws_security_group_rule" "https-elb-to-master" {
   from_port                = 443
   to_port                  = 443
   protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
+  type              = "ingress"
+  security_group_id = "${aws_security_group.api-elb-privatecanal-example-com.id}"
+  from_port         = 3
+  to_port           = 4
+  protocol          = "icmp"
+  cidr_blocks       = ["0.0.0.0/0"]
 }
 
 resource "aws_security_group_rule" "master-egress" {

@@ -22,6 +22,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kubeconfig"
@@ -202,7 +203,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 		}
 	}
 
-	b := kubeconfig.NewKubeconfigBuilder()
+	b := kubeconfig.NewKubeconfigBuilder(clientcmd.NewDefaultPathOptions())
 	b.Context = clusterName
 	err = b.DeleteKubeConfig()
 	if err != nil {

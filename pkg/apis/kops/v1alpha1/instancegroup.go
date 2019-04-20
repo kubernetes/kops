@@ -33,6 +33,7 @@ type InstanceGroup struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// InstanceGroupList is a list of instance groups
 type InstanceGroupList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
@@ -44,8 +45,33 @@ type InstanceGroupList struct {
 type InstanceGroupRole string
 
 const (
+	// InstanceGroupRoleMaster is a master role
 	InstanceGroupRoleMaster InstanceGroupRole = "Master"
-	InstanceGroupRoleNode   InstanceGroupRole = "Node"
+	// InstanceGroupRoleNode is a node role
+	InstanceGroupRoleNode InstanceGroupRole = "Node"
+	// InstanceGroupRoleBastion is a bastion role
+	InstanceGroupRoleBastion InstanceGroupRole = "Bastion"
+)
+
+// AllInstanceGroupRoles is a slice of all valid InstanceGroupRole values
+var AllInstanceGroupRoles = []InstanceGroupRole{
+	InstanceGroupRoleNode,
+	InstanceGroupRoleMaster,
+	InstanceGroupRoleBastion,
+}
+
+const (
+	// BtfsFilesystem indicates a btfs filesystem
+	BtfsFilesystem = "btfs"
+	// Ext4Filesystem indicates a ext3 filesystem
+	Ext4Filesystem = "ext4"
+	// XFSFilesystem indicates a xfs filesystem
+	XFSFilesystem = "xfs"
+)
+
+var (
+	// SupportedFilesystems is a list of supported filesystems to format as
+	SupportedFilesystems = []string{BtfsFilesystem, Ext4Filesystem, XFSFilesystem}
 )
 
 // InstanceGroupSpec is the specification for a instanceGroup
@@ -68,6 +94,10 @@ type InstanceGroupSpec struct {
 	RootVolumeIops *int32 `json:"rootVolumeIops,omitempty"`
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
+	// Volumes is a collection of additional volumes to create for instances within this InstanceGroup
+	Volumes []*VolumeSpec `json:"volumes,omitempty"`
+	// VolumeMounts a collection of volume mounts
+	VolumeMounts []*VolumeMountSpec `json:"volumeMounts,omitempty"`
 	// Hooks is a list of hooks for this instanceGroup, note: these can override the cluster wide ones if required
 	Hooks []HookSpec `json:"hooks,omitempty"`
 	// MaxPrice indicates this is a spot-pricing group, with the specified value as our max-price bid
@@ -89,6 +119,8 @@ type InstanceGroupSpec struct {
 	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
 	// Taints indicates the kubernetes taints for nodes in this group
 	Taints []string `json:"taints,omitempty"`
+	// MixedInstancesPolicy defined a optional backing of an AWS ASG by a EC2 Fleet (AWS Only)
+	MixedInstancesPolicy *MixedInstancesPolicySpec `json:"mixedInstancesPolicy,omitempty"`
 	// AdditionalUserData is any additional user-data to be passed to the host
 	AdditionalUserData []UserData `json:"additionalUserData,omitempty"`
 	// Zones is the names of the Zones where machines in this instance group should be placed
@@ -100,16 +132,49 @@ type InstanceGroupSpec struct {
 	ExternalLoadBalancers []LoadBalancer `json:"externalLoadBalancers,omitempty"`
 	// DetailedInstanceMonitoring defines if detailed-monitoring is enabled (AWS only)
 	DetailedInstanceMonitoring *bool `json:"detailedInstanceMonitoring,omitempty"`
-	// IAMProfileSpec defines the identity of the cloud group iam profile (AWS only).
+	// IAMProfileSpec defines the identity of the cloud group IAM profile (AWS only).
 	IAM *IAMProfileSpec `json:"iam,omitempty"`
 	// SecurityGroupOverride overrides the default security group created by Kops for this IG (AWS only).
 	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
 }
 
+const (
+	// SpotAllocationStrategyLowestPrices indicates a lowest price strategy
+	SpotAllocationStrategyLowestPrices = "LowestPrice"
+	// SpotAllocationStrategyDiversified indicates a diversified strategy
+	SpotAllocationStrategyDiversified = "Diversified"
+)
+
+// SpotAllocationStrategies is a collection of supported strategies
+var SpotAllocationStrategies = []string{SpotAllocationStrategyLowestPrices, SpotAllocationStrategyDiversified}
+
+// MixedInstancesPolicySpec defines the specification for an autoscaling backed by a ec2 fleet
+type MixedInstancesPolicySpec struct {
+	// Instances is a list of instance types which we are willing to run in the EC2 fleet
+	Instances []string `json:"instances,omitempty"`
+	// OnDemandAllocationStrategy indicates how to allocate instance types to fulfill On-Demand capacity
+	OnDemandAllocationStrategy *string `json:"onDemandAllocationStrategy,omitempty"`
+	// OnDemandBase is the minimum amount of the Auto Scaling group's capacity that must be
+	// fulfilled by On-Demand Instances. This base portion is provisioned first as your group scales.
+	OnDemandBase *int64 `json:"onDemandBase,omitempty"`
+	// OnDemandAboveBase controls the percentages of On-Demand Instances and Spot Instances for your
+	// additional capacity beyond OnDemandBase. The range is 0–100. The default value is 100. If you
+	// leave this parameter set to 100, the percentages are 100% for On-Demand Instances and 0% for
+	// Spot Instances.
+	OnDemandAboveBase *int64 `json:"onDemandAboveBase,omitempty"`
+	// SpotAllocationStrategy diversifies your Spot capacity across multiple instance types to
+	// find the best pricing. Higher Spot availability may result from a larger number of
+	// instance types to choose from.
+	SpotAllocationStrategy *string `json:"spotAllocationStrategy,omitempty"`
+	// SpotInstancePools is the number of Spot pools to use to allocate your Spot capacity (defaults to 2)
+	// pools are determined from the different instance types in the Overrides array of LaunchTemplate
+	SpotInstancePools *int64 `json:"spotInstancePools,omitempty"`
+}
+
 // IAMProfileSpec is the AWS IAM Profile to attach to instances in this instance
 // group. Specify the ARN for the IAM instance profile (AWS only).
 type IAMProfileSpec struct {
-	// Profile of the cloud group iam profile. In aws this is the arn
+	// Profile of the cloud group IAM profile. In aws this is the arn
 	// for the iam instance profile
 	Profile *string `json:"profile,omitempty"`
 }
@@ -124,7 +189,38 @@ type UserData struct {
 	Content string `json:"content,omitempty"`
 }
 
-// LoadBalancers defines a load balancer
+// VolumeSpec defined the spec for an additional volume attached to the instance group
+type VolumeSpec struct {
+	// Device is an optional device name of the block device
+	Device string `json:"device,omitempty"`
+	// Encrypted indicates you want to encrypt the volume
+	Encrypted *bool `json:"encrypted,omitempty"`
+	// Iops is the provision iops for this iops (think io1 in aws)
+	Iops *int64 `json:"iops,omitempty"`
+	// Size is the size of the volume in GB
+	Size int64 `json:"size,omitempty"`
+	// Type is the type of volume to create and is cloud specific
+	Type string `json:"type,omitempty"`
+}
+
+// VolumeMountSpec defines the specification for mounting a device
+type VolumeMountSpec struct {
+	// Device is the device name to provision and mount
+	Device string `json:"device,omitempty"`
+	// Filesystem is the filesystem to mount
+	Filesystem string `json:"filesystem,omitempty"`
+	// FormatOptions is a collection of options passed when formatting the device
+	FormatOptions []string `json:"formatOptions,omitempty"`
+	// MountOptions is a collection of mount options
+	MountOptions []string `json:"mountOptions,omitempty"`
+	// Path is the location to mount the device
+	Path string `json:"path,omitempty"`
+}
+
+// Ext4FileSystemSpec defines a specification for a ext4 filesystem on a instancegroup volume
+type Ext4FileSystemSpec struct{}
+
+// LoadBalancer defines a load balancer
 type LoadBalancer struct {
 	// LoadBalancerName to associate with this instance group (AWS ELB)
 	LoadBalancerName *string `json:"loadBalancerName,omitempty"`

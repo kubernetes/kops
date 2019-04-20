@@ -26,7 +26,7 @@ import (
 
 // DNSZone
 
-// JSON marshalling boilerplate
+// JSON marshaling boilerplate
 type realDNSZone DNSZone
 
 // UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string

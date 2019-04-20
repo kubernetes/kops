@@ -45,9 +45,9 @@ type KubeconfigBuilder struct {
 }
 
 // Create new KubeconfigBuilder
-func NewKubeconfigBuilder() *KubeconfigBuilder {
+func NewKubeconfigBuilder(configAccess clientcmd.ConfigAccess) *KubeconfigBuilder {
 	c := &KubeconfigBuilder{}
-	c.configAccess = clientcmd.NewDefaultPathOptions()
+	c.configAccess = configAccess
 	return c
 }
 

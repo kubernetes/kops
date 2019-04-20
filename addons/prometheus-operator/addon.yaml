@@ -7,3 +7,9 @@ spec:
     selector:
       k8s-addon: prometheus-operator.addons.k8s.io
     manifest: v0.19.0.yaml
+    kubernetesVersion: ">=1.8.0"
+  - version: 0.26.0
+    selector:
+      k8s-addon: prometheus-operator.addons.k8s.io
+    manifest: v0.26.0.yaml
+    kubernetesVersion: ">=1.8.0"

@@ -26,7 +26,7 @@ import (
 
 // Address
 
-// JSON marshalling boilerplate
+// JSON marshaling boilerplate
 type realAddress Address
 
 // UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string

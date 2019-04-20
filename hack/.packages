@@ -26,6 +26,7 @@ k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns
 k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal
 k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/interfaces
 k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/stubs
+k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/openstack/designate
 k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype
 k8s.io/kops/dnsprovider/pkg/dnsprovider/tests
 k8s.io/kops/examples/kops-api-example
@@ -137,12 +138,14 @@ k8s.io/kops/pkg/values
 k8s.io/kops/protokube/cmd/protokube
 k8s.io/kops/protokube/pkg/etcd
 k8s.io/kops/protokube/pkg/gossip
+k8s.io/kops/protokube/pkg/gossip/ali
 k8s.io/kops/protokube/pkg/gossip/aws
 k8s.io/kops/protokube/pkg/gossip/dns
 k8s.io/kops/protokube/pkg/gossip/dns/hosts
 k8s.io/kops/protokube/pkg/gossip/dns/provider
 k8s.io/kops/protokube/pkg/gossip/gce
 k8s.io/kops/protokube/pkg/gossip/mesh
+k8s.io/kops/protokube/pkg/gossip/openstack
 k8s.io/kops/protokube/pkg/protokube
 k8s.io/kops/protokube/tests/integration/build_etcd_manifest
 k8s.io/kops/tests
@@ -185,8 +188,10 @@ k8s.io/kops/upup/tools/generators/fitask
 k8s.io/kops/upup/tools/generators/pkg/codegen
 k8s.io/kops/util/pkg/exec
 k8s.io/kops/util/pkg/hashing
+k8s.io/kops/util/pkg/maps
 k8s.io/kops/util/pkg/reflectutils
 k8s.io/kops/util/pkg/slice
 k8s.io/kops/util/pkg/tables
+k8s.io/kops/util/pkg/text
 k8s.io/kops/util/pkg/ui
 k8s.io/kops/util/pkg/vfs

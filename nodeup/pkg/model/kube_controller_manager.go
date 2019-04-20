@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -28,7 +29,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/exec"
 
-	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -63,7 +63,7 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		manifest, err := k8scodecs.ToVersionedYaml(pod)
 		if err != nil {
-			return fmt.Errorf("error marshalling pod to yaml: %v", err)
+			return fmt.Errorf("error marshaling pod to yaml: %v", err)
 		}
 
 		c.AddTask(&nodetasks.File{

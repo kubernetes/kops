@@ -29,7 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	"k8s.io/kops/pkg/apis/kops"
@@ -160,6 +160,10 @@ func (c *MockAWSCloud) GetELBTags(loadBalancerName string) (map[string]string, e
 
 func (c *MockAWSCloud) CreateELBTags(loadBalancerName string, tags map[string]string) error {
 	return createELBTags(c, loadBalancerName, tags)
+}
+
+func (c *MockAWSCloud) RemoveELBTags(loadBalancerName string, tags map[string]string) error {
+	return removeELBTags(c, loadBalancerName, tags)
 }
 
 func (c *MockAWSCloud) GetELBV2Tags(ResourceArn string) (map[string]string, error) {

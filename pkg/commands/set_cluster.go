@@ -81,6 +81,14 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 
 		// For now we have hard-code the values we want to support; we'll get test coverage and then do this properly...
 		switch kv[0] {
+		case "spec.kubelet.authorizationMode":
+			cluster.Spec.Kubelet.AuthorizationMode = kv[1]
+		case "spec.kubelet.authenticationTokenWebhook":
+			v, err := strconv.ParseBool(kv[1])
+			if err != nil {
+				return fmt.Errorf("unknown boolean value: %q", kv[1])
+			}
+			cluster.Spec.Kubelet.AuthenticationTokenWebhook = &v
 		case "cluster.spec.nodePortAccess":
 			cluster.Spec.NodePortAccess = append(cluster.Spec.NodePortAccess, kv[1])
 		case "spec.kubernetesVersion":
@@ -109,8 +117,12 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 				c.Version = kv[1]
 			}
 		case "cluster.spec.etcdClusters[*].provider":
+			p, err := toEtcdProviderType(kv[1])
+			if err != nil {
+				return err
+			}
 			for _, etcd := range cluster.Spec.EtcdClusters {
-				etcd.Provider = api.EtcdProviderType(kv[1])
+				etcd.Provider = p
 			}
 		case "cluster.spec.etcdClusters[*].manager.image":
 			for _, etcd := range cluster.Spec.EtcdClusters {
@@ -124,4 +136,16 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 		}
 	}
 	return nil
+}
+
+func toEtcdProviderType(in string) (api.EtcdProviderType, error) {
+	s := strings.ToLower(in)
+	switch s {
+	case "legacy":
+		return api.EtcdProviderTypeLegacy, nil
+	case "manager":
+		return api.EtcdProviderTypeManager, nil
+	default:
+		return api.EtcdProviderTypeManager, fmt.Errorf("unknown etcd provider type %q", in)
+	}
 }

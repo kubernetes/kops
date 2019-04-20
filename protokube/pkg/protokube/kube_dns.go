@@ -27,6 +27,10 @@ const defaultTTL = time.Minute
 
 type DNSProvider interface {
 	Replace(fqdn string, values []string) error
+
+	// RemoveRecordsImmediate deletes the specified DNS records, without batching etc
+	RemoveRecordsImmediate(records []dns.Record) error
+
 	Run()
 }
 
@@ -49,6 +53,10 @@ type KopsDnsProvider struct {
 }
 
 var _ DNSProvider = &KopsDnsProvider{}
+
+func (p *KopsDnsProvider) RemoveRecordsImmediate(records []dns.Record) error {
+	return p.DNSController.RemoveRecordsImmediate(records)
+}
 
 func (p *KopsDnsProvider) Replace(fqdn string, values []string) error {
 	ttl := defaultTTL

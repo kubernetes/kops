@@ -20,21 +20,20 @@ import (
 	"fmt"
 	"io"
 
-	"bytes"
-
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/cli-runtime/pkg/genericclioptions/resource"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/sshcredentials"
+	"k8s.io/kops/util/pkg/text"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/kubectl/genericclioptions/resource"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
@@ -97,9 +96,6 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
-	// Codecs provides access to encoding and decoding for the scheme
-	codec := kopscodecs.Codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
-
 	// We could have more than one cluster in a manifest so we are using a set
 	deletedClusters := sets.NewString()
 
@@ -118,13 +114,13 @@ func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 			}
 		}
 
-		sections := bytes.Split(contents, []byte("\n---\n"))
+		sections := text.SplitContentToSections(contents)
 		for _, section := range sections {
 			defaults := &schema.GroupVersionKind{
 				Group:   v1alpha1.SchemeGroupVersion.Group,
 				Version: v1alpha1.SchemeGroupVersion.Version,
 			}
-			o, gvk, err := codec.Decode(section, defaults, nil)
+			o, gvk, err := kopscodecs.Decode(section, defaults)
 			if err != nil {
 				return fmt.Errorf("error parsing file %q: %v", f, err)
 			}

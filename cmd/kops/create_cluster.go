@@ -31,6 +31,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -76,6 +77,7 @@ type CreateClusterOptions struct {
 	MasterVolumeSize     int32
 	NodeVolumeSize       int32
 	EncryptEtcdStorage   bool
+	EtcdStorageType      string
 	Project              string
 	KubernetesVersion    string
 	OutDir               string
@@ -146,6 +148,16 @@ type CreateClusterOptions struct {
 	// Spotinst options
 	SpotinstProduct     string
 	SpotinstOrientation string
+
+	// OpenstackExternalNet is the name of the external network for the openstack router
+	OpenstackExternalNet     string
+	OpenstackExternalSubnet  string
+	OpenstackStorageIgnoreAZ bool
+	OpenstackDNSServers      string
+	OpenstackLbSubnet        string
+
+	// OpenstackLBOctavia is boolean value should we use octavia or old loadbalancer api
+	OpenstackLBOctavia bool
 
 	// ConfigBase is the location where we will store the configuration, it defaults to the state store
 	ConfigBase string
@@ -277,7 +289,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		cmd.Flags().StringVar(&options.ConfigBase, "config-base", options.ConfigBase, "A cluster-readable location where we mirror configuration information, separate from the state store.  Allows for a state store that is not accessible from the cluster.")
 	}
 
-	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws, vsphere")
+	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws, vsphere, openstack")
 
 	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
 	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
@@ -303,6 +315,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().Int32Var(&options.MasterCount, "master-count", options.MasterCount, "Set the number of masters.  Defaults to one master per master-zone")
 	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set the number of nodes")
 	cmd.Flags().BoolVar(&options.EncryptEtcdStorage, "encrypt-etcd-storage", options.EncryptEtcdStorage, "Generate key in aws kms and use it for encrypt etcd volumes")
+	cmd.Flags().StringVar(&options.EtcdStorageType, "etcd-storage-type", options.EtcdStorageType, "The default storage type for etc members")
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use for all instances.")
 
@@ -334,7 +347,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.Bastion, "bastion", options.Bastion, "Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.")
 
 	// Allow custom tags from the CLI
-	cmd.Flags().StringVar(&options.CloudLabels, "cloud-labels", options.CloudLabels, "A list of KV pairs used to tag all instance groups in AWS (eg \"Owner=John Doe,Team=Some Team\").")
+	cmd.Flags().StringVar(&options.CloudLabels, "cloud-labels", options.CloudLabels, "A list of KV pairs used to tag all instance groups in AWS (e.g. \"Owner=John Doe,Team=Some Team\").")
 
 	// Master and Node Tenancy
 	cmd.Flags().StringVar(&options.MasterTenancy, "master-tenancy", options.MasterTenancy, "The tenancy of the master group on AWS. Can either be default or dedicated.")
@@ -367,6 +380,16 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		// Spotinst flags
 		cmd.Flags().StringVar(&options.SpotinstProduct, "spotinst-product", options.SpotinstProduct, "Set the product description (valid values: Linux/UNIX, Linux/UNIX (Amazon VPC), Windows and Windows (Amazon VPC))")
 		cmd.Flags().StringVar(&options.SpotinstOrientation, "spotinst-orientation", options.SpotinstOrientation, "Set the prediction strategy (valid values: balanced, cost, equal-distribution and availability)")
+	}
+
+	if cloudup.AlphaAllowOpenstack.Enabled() {
+		// Openstack flags
+		cmd.Flags().StringVar(&options.OpenstackExternalNet, "os-ext-net", options.OpenstackExternalNet, "The name of the external network to use with the openstack router")
+		cmd.Flags().StringVar(&options.OpenstackExternalSubnet, "os-ext-subnet", options.OpenstackExternalSubnet, "The name of the external floating subnet to use with the openstack router")
+		cmd.Flags().StringVar(&options.OpenstackLbSubnet, "os-lb-floating-subnet", options.OpenstackLbSubnet, "The name of the external subnet to use with the kubernetes api")
+		cmd.Flags().BoolVar(&options.OpenstackStorageIgnoreAZ, "os-kubelet-ignore-az", options.OpenstackStorageIgnoreAZ, "If true kubernetes may attach volumes across availability zones")
+		cmd.Flags().BoolVar(&options.OpenstackLBOctavia, "os-octavia", options.OpenstackLBOctavia, "If true octavia loadbalancer api will be used")
+		cmd.Flags().StringVar(&options.OpenstackDNSServers, "os-dns-servers", options.OpenstackDNSServers, "comma separated list of DNS Servers which is used in network")
 	}
 
 	return cmd
@@ -701,6 +724,20 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			etcd := &api.EtcdClusterSpec{}
 			etcd.Name = etcdCluster
 
+			// if this is the main cluster, we use 200 millicores by default.
+			// otherwise we use 100 millicores by default.  100Mi is always default
+			// for event and main clusters.  This is changeable in the kops cluster
+			// configuration.
+			if etcd.Name == "main" {
+				cpuRequest := resource.MustParse("200m")
+				etcd.CPURequest = &cpuRequest
+			} else {
+				cpuRequest := resource.MustParse("100m")
+				etcd.CPURequest = &cpuRequest
+			}
+			memoryRequest := resource.MustParse("100Mi")
+			etcd.MemoryRequest = &memoryRequest
+
 			var names []string
 			for _, ig := range masters {
 				name := ig.ObjectMeta.Name
@@ -716,6 +753,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				m := &api.EtcdMemberSpec{}
 				if c.EncryptEtcdStorage {
 					m.EncryptedVolume = &c.EncryptEtcdStorage
+				}
+				if len(c.EtcdStorageType) > 0 {
+					m.VolumeType = fi.String(c.EtcdStorageType)
 				}
 				m.Name = names[i]
 
@@ -865,6 +905,45 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 			if c.SpotinstOrientation != "" {
 				cluster.Spec.CloudConfig.SpotinstOrientation = fi.String(c.SpotinstOrientation)
+			}
+		}
+
+		if cloudup.AlphaAllowOpenstack.Enabled() && c.Cloud == "openstack" {
+			if cluster.Spec.CloudConfig == nil {
+				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
+			}
+			provider := "haproxy"
+			if c.OpenstackLBOctavia {
+				provider = "octavia"
+			}
+			cluster.Spec.CloudConfig.Openstack = &api.OpenstackConfiguration{
+				Router: &api.OpenstackRouter{
+					ExternalNetwork: fi.String(c.OpenstackExternalNet),
+				},
+				Loadbalancer: &api.OpenstackLoadbalancerConfig{
+					FloatingNetwork: fi.String(c.OpenstackExternalNet),
+					Method:          fi.String("ROUND_ROBIN"),
+					Provider:        fi.String(provider),
+					UseOctavia:      fi.Bool(c.OpenstackLBOctavia),
+				},
+				BlockStorage: &api.OpenstackBlockStorageConfig{
+					Version:  fi.String("v2"),
+					IgnoreAZ: fi.Bool(c.OpenstackStorageIgnoreAZ),
+				},
+				Monitor: &api.OpenstackMonitor{
+					Delay:      fi.String("1m"),
+					Timeout:    fi.String("30s"),
+					MaxRetries: fi.Int(3),
+				},
+			}
+			if c.OpenstackDNSServers != "" {
+				cluster.Spec.CloudConfig.Openstack.Router.DNSServers = fi.String(c.OpenstackDNSServers)
+			}
+			if c.OpenstackExternalSubnet != "" {
+				cluster.Spec.CloudConfig.Openstack.Router.ExternalSubnet = fi.String(c.OpenstackExternalSubnet)
+			}
+			if c.OpenstackLbSubnet != "" {
+				cluster.Spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet = fi.String(c.OpenstackLbSubnet)
 			}
 		}
 	}
@@ -1292,7 +1371,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				fmt.Fprintf(&sb, " * edit your master instance group: kops edit ig --name=%s %s\n", clusterName, masters[0].ObjectMeta.Name)
 			}
 			fmt.Fprintf(&sb, "\n")
-			fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster %s --yes\n", clusterName)
+			fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster --name %s --yes\n", clusterName)
 			fmt.Fprintf(&sb, "\n")
 
 			_, err := out.Write(sb.Bytes())

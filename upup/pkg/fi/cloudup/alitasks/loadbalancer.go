@@ -207,7 +207,7 @@ func (_ *LoadBalancer) RenderALI(t *aliup.ALIAPITarget, a, e, changes *LoadBalan
 	return nil
 }
 
-// getDiskTagsToDelete loops through the currently set tags and builds a list of tags to be deleted from the specificated disk
+// getDiskTagsToDelete loops through the currently set tags and builds a list of tags to be deleted from the specified disk
 func (l *LoadBalancer) getLoadBalancerTagsToDelete(currentTags map[string]string) map[string]string {
 	tagsToDelete := map[string]string{}
 	for k, v := range currentTags {

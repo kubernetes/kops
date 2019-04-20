@@ -44,6 +44,13 @@ type Package struct {
 
 	// Healthy is true if the package installation did not fail
 	Healthy *bool `json:"healthy,omitempty"`
+
+	// Additional dependencies that must be installed before this package.
+	// These will actually be passed together with this package to rpm/dpkg,
+	// which will then figure out the correct order in which to install them.
+	// This means that Deps don't get installed unless this package needs to
+	// get installed.
+	Deps []*Package `json:"deps,omitempty"`
 }
 
 const (
@@ -162,7 +169,7 @@ func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
 			installed = true
 			installedVersion = version
 			healthy = fi.Bool(true)
-		case "iF":
+		case "iF", "iU":
 			installed = true
 			installedVersion = version
 			healthy = fi.Bool(false)
@@ -257,37 +264,43 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 	defer packageManagerLock.Unlock()
 
 	if a == nil || changes.Version != nil {
-		glog.Infof("Installing package %q", e.Name)
+		glog.Infof("Installing package %q (dependencies: %v)", e.Name, e.Deps)
 
 		if e.Source != nil {
-			// Install a deb
-			local := path.Join(localPackageDir, e.Name)
+			// Install a deb or rpm.
 			err := os.MkdirAll(localPackageDir, 0755)
 			if err != nil {
-				return fmt.Errorf("error creating directories %q: %v", path.Dir(local), err)
+				return fmt.Errorf("error creating directories %q: %v", localPackageDir, err)
 			}
 
-			var hash *hashing.Hash
-			if fi.StringValue(e.Hash) != "" {
-				parsed, err := hashing.FromString(fi.StringValue(e.Hash))
-				if err != nil {
-					return fmt.Errorf("error paring hash: %v", err)
+			// Download all the debs/rpms.
+			localPkgs := make([]string, 1+len(e.Deps))
+			for i, pkg := range append([]*Package{e}, e.Deps...) {
+				local := path.Join(localPackageDir, pkg.Name)
+				localPkgs[i] = local
+				var hash *hashing.Hash
+				if fi.StringValue(pkg.Hash) != "" {
+					parsed, err := hashing.FromString(fi.StringValue(pkg.Hash))
+					if err != nil {
+						return fmt.Errorf("error parsing hash: %v", err)
+					}
+					hash = parsed
 				}
-				hash = parsed
-			}
-			_, err = fi.DownloadURL(fi.StringValue(e.Source), local, hash)
-			if err != nil {
-				return err
+				_, err = fi.DownloadURL(fi.StringValue(pkg.Source), local, hash)
+				if err != nil {
+					return err
+				}
 			}
 
 			var args []string
 			if t.HasTag(tags.TagOSFamilyDebian) {
-				args = []string{"dpkg", "-i", local}
+				args = []string{"dpkg", "-i"}
 			} else if t.HasTag(tags.TagOSFamilyRHEL) {
-				args = []string{"/usr/bin/rpm", "-i", local}
+				args = []string{"/usr/bin/rpm", "-i"}
 			} else {
 				return fmt.Errorf("unsupported package system")
 			}
+			args = append(args, localPkgs...)
 			glog.Infof("running command %s", args)
 			cmd := exec.Command(args[0], args[1:]...)
 			output, err := cmd.CombinedOutput()

@@ -56,7 +56,7 @@ make dns-controller-push DOCKER_REGISTRY=kope
 
 ```
 # export AWS_PROFILE=??? # If needed
-make upload S3_BUCKET=s3://kubeupv2
+make upload UPLOAD_DEST=s3://kubeupv2
 ```
 
 ## Tag new version
@@ -65,8 +65,8 @@ Make sure you are on the release branch `git checkout release-1.X`
 
 ```
 make release-tag
-git push
-git push --tags
+git push git@github.com:kubernetes/kops
+git push --tags git@github.com:kubernetes/kops
 ```
 
 ## Update release branch
@@ -92,8 +92,8 @@ make release-github
 e.g.
 
 ```
-git log 1.8.0-beta.1..1.8.0-beta.2 --oneline | grep Merge.pull | cut -f 5 -d ' ' | tac  > ~/shipbot/prs
-
+git log 1.11.0-beta.1..1.11.0 --oneline | grep Merge.pull | cut -f 5 -d ' ' | tac  > ~/shipbot/prs
+relnotes  -config .shipbot.yaml  < ~/shipbot/prs  >> docs/releases/1.11-NOTES.md
 ```
 
 ## On github
@@ -112,3 +112,8 @@ Once we are satisfied the release is sound:
 Once we are satisfied the release is stable:
 
 * Bump the kops recommended version in the stable channel
+
+## Update conformance results with CNCF
+
+Use the following instructions: https://github.com/cncf/k8s-conformance/blob/master/instructions.md
+

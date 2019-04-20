@@ -26,7 +26,7 @@ import (
 
 // Router
 
-// JSON marshalling boilerplate
+// JSON marshaling boilerplate
 type realRouter Router
 
 // UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string

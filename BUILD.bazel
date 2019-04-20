@@ -1,4 +1,5 @@
 # gazelle:prefix k8s.io/kops
+# gazelle:proto disable_global
 
 load("@bazel_gazelle//:def.bzl", "gazelle")
 
@@ -10,7 +11,6 @@ gazelle(
     name = "gazelle",
     command = "fix",
     external = "vendored",
-    prefix = "k8s.io/kops",
 )
 
 go_library(

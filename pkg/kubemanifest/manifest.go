@@ -17,11 +17,11 @@ limitations under the License.
 package kubemanifest
 
 import (
-	"bytes"
 	"fmt"
 
 	"github.com/ghodss/yaml"
 	"github.com/golang/glog"
+	"k8s.io/kops/util/pkg/text"
 )
 
 type Manifest struct {
@@ -32,7 +32,7 @@ func LoadManifestsFrom(contents []byte) ([]*Manifest, error) {
 	var manifests []*Manifest
 
 	// TODO: Support more separators?
-	sections := bytes.Split(contents, []byte("\n---\n"))
+	sections := text.SplitContentToSections(contents)
 
 	for _, section := range sections {
 		data := make(map[string]interface{})
@@ -54,7 +54,7 @@ func LoadManifestsFrom(contents []byte) ([]*Manifest, error) {
 func (m *Manifest) ToYAML() ([]byte, error) {
 	b, err := yaml.Marshal(m.data)
 	if err != nil {
-		return nil, fmt.Errorf("error marshalling manifest to yaml: %v", err)
+		return nil, fmt.Errorf("error marshaling manifest to yaml: %v", err)
 	}
 	return b, nil
 }

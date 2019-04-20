@@ -19,6 +19,7 @@ package kops
 import (
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -112,7 +113,7 @@ type ClusterSpec struct {
 	SSHKeyName string `json:"sshKeyName,omitempty"`
 	// KubernetesAPIAccess is a list of the CIDRs that can access the Kubernetes API endpoint (master HTTPS)
 	KubernetesAPIAccess []string `json:"kubernetesApiAccess,omitempty"`
-	// IsolatesMasters determines whether we should lock down masters so that they are not on the pod network.
+	// IsolateMasters determines whether we should lock down masters so that they are not on the pod network.
 	// true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master
 	// if they have hostNetwork=true.
 	// false is now the default, and it will:
@@ -275,6 +276,8 @@ type KopeioAuthenticationSpec struct {
 }
 
 type AwsAuthenticationSpec struct {
+	// Image is the AWS IAM Authenticator docker image to use
+	Image string `json:"imagew,omitempty"`
 }
 
 type AuthorizationSpec struct {
@@ -294,7 +297,7 @@ type AlwaysAllowAuthorizationSpec struct {
 
 // AccessSpec provides configuration details related to kubeapi dns and ELB access
 type AccessSpec struct {
-	// DNS will be used to provide config on kube-apiserver elb dns
+	// DNS will be used to provide config on kube-apiserver ELB DNS
 	DNS *DNSAccessSpec `json:"dns,omitempty"`
 	// LoadBalancer is the configuration for the kube-apiserver ELB
 	LoadBalancer *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
@@ -351,6 +354,12 @@ type KubeDNSConfig struct {
 	StubDomains map[string][]string `json:"stubDomains,omitempty"`
 	// UpstreamNameservers sets the upstream nameservers for queries not on the cluster domain
 	UpstreamNameservers []string `json:"upstreamNameservers,omitempty"`
+	// MemoryRequest specifies the memory requests of each dns container in the cluster. Default 70m.
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
+	// CPURequest specifies the cpu requests of each dns container in the cluster. Default 100m.
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+	// MemoryLimit specifies the memory limit of each dns container in the cluster. Default 170m.
+	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
 }
 
 // ExternalDNSConfig are options of the dns-controller
@@ -396,6 +405,10 @@ type EtcdClusterSpec struct {
 	Backups *EtcdBackupSpec `json:"backups,omitempty"`
 	// Manager describes the manager configuration
 	Manager *EtcdManagerSpec `json:"manager,omitempty"`
+	// MemoryRequest specifies the memory requests of each etcd container in the cluster.
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
+	// CPURequest specifies the cpu requests of each etcd container in the cluster.
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 }
 
 // EtcdBackupSpec describes how we want to do backups of etcd
@@ -418,11 +431,11 @@ type EtcdMemberSpec struct {
 	Name string `json:"name,omitempty"`
 	// InstanceGroup is the instanceGroup this volume is associated
 	InstanceGroup *string `json:"instanceGroup,omitempty"`
-	// VolumeType is the underlining cloud storage class
+	// VolumeType is the underlying cloud storage class
 	VolumeType *string `json:"volumeType,omitempty"`
 	// If volume type is io1, then we need to specify the number of Iops.
 	VolumeIops *int32 `json:"volumeIops,omitempty"`
-	// VolumeSize is the underlining cloud volume size
+	// VolumeSize is the underlying cloud volume size
 	VolumeSize *int32 `json:"volumeSize,omitempty"`
 	// KmsKeyId is a AWS KMS ID used to encrypt the volume
 	KmsKeyId *string `json:"kmsKeyId,omitempty"`
@@ -441,6 +454,9 @@ const (
 	// SubnetTypeUtility mean the subnet is used for utility services, such as the bastion
 	SubnetTypeUtility SubnetType = "Utility"
 )
+
+// EgressExternal means that egress configuration is done externally (preconfigured)
+const EgressExternal = "External"
 
 // ClusterSubnetSpec defines a subnet
 type ClusterSubnetSpec struct {

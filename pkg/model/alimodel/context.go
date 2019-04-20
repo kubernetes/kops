@@ -49,6 +49,33 @@ func (c *ALIModelContext) GetNameForVSwitch(subnetName string) string {
 	return subnetName + "." + c.ClusterName()
 }
 
+// LinkToNateGateway returns the NatGateway object the cluster is located in
+func (c *ALIModelContext) LinkToNatGateway() *alitasks.NatGateway {
+	return &alitasks.NatGateway{Name: s(c.GetNameForNatGateway())}
+}
+
+func (c *ALIModelContext) GetNameForNatGateway() string {
+	return c.ClusterName()
+}
+
+// LinkToEIP returns the EIP object the NateGatway is associated to
+func (c *ALIModelContext) LinkToEIP() *alitasks.EIP {
+	return &alitasks.EIP{Name: s(c.GetNameForEIP())}
+}
+
+func (c *ALIModelContext) GetNameForEIP() string {
+	return c.ClusterName()
+}
+
+// LinkToVSwitchSNAT returns the VSwitchSNAT object the cluster is located in
+func (c *ALIModelContext) LinkToVSwitchSNAT(subnetName string) *alitasks.VSwitch {
+	return &alitasks.VSwitch{Name: s(c.GetNameForVSwitch(subnetName))}
+}
+
+func (c *ALIModelContext) GetNameForVSwitchSNAT(subnetName string) string {
+	return subnetName + "." + c.ClusterName()
+}
+
 // LinkLoadBalancer returns the LoadBalancer object the cluster is located in
 func (c *ALIModelContext) LinkLoadBalancer() *alitasks.LoadBalancer {
 	return &alitasks.LoadBalancer{Name: s(c.GetNameForLoadBalancer())}
@@ -132,7 +159,7 @@ func (c *ALIModelContext) GetScalingGroupName(ig *kops.InstanceGroup) string {
 }
 
 // CloudTagsForInstanceGroup computes the tags to apply to instances in the specified InstanceGroup
-// Copy from contex.go, adjust parameters length to meet AliCloud requirements
+// Copy from context.go, adjust parameters length to meet AliCloud requirements
 func (c *ALIModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (map[string]string, error) {
 	labels := make(map[string]string)
 

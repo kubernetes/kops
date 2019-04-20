@@ -30,7 +30,9 @@ type DockerConfig struct {
 	DefaultUlimit []string `json:"defaultUlimit,omitempty" flag:"default-ulimit,repeat"`
 	// ExecRoot is the root directory for execution state files (default "/var/run/docker")
 	ExecRoot *string `json:"execRoot,omitempty" flag:"exec-root"`
-	// Hosts enables you to configure the endpoints the docker daemon listens on i.e tcp://0.0.0.0.2375 or unix:///var/run/docker.sock etc
+	// Experimental features permits enabling new features such as dockerd metrics
+	Experimental *bool `json:"experimental,omitempty" flag:"experimental"`
+	// Hosts enables you to configure the endpoints the docker daemon listens on i.e. tcp://0.0.0.0.2375 or unix:///var/run/docker.sock etc
 	Hosts []string `json:"hosts,omitempty" flag:"host,repeat"`
 	// IPMasq enables ip masquerading for containers
 	IPMasq *bool `json:"ipMasq,omitempty" flag:"ip-masq"`
@@ -38,6 +40,8 @@ type DockerConfig struct {
 	IPTables *bool `json:"ipTables,omitempty" flag:"iptables"`
 	// InsecureRegistry enable insecure registry communication @question according to dockers this a list??
 	InsecureRegistry *string `json:"insecureRegistry,omitempty" flag:"insecure-registry"`
+	// InsecureRegistries enables multiple insecure docker registry communications
+	InsecureRegistries []string `json:"insecureRegistries,omitempty" flag:"insecure-registry"`
 	// LiveRestore enables live restore of docker when containers are still running
 	LiveRestore *bool `json:"liveRestore,omitempty" flag:"live-restore"`
 	// LogDriver is the default driver for container logs (default "json-file")
@@ -46,6 +50,8 @@ type DockerConfig struct {
 	LogLevel *string `json:"logLevel,omitempty" flag:"log-level"`
 	// Logopt is a series of options given to the log driver options for containers
 	LogOpt []string `json:"logOpt,omitempty" flag:"log-opt,repeat"`
+	// Metrics address is the endpoint to serve with Prometheus format metrics
+	MetricsAddress *string `json:"metricsAddress,omitempty" flag:"metrics-addr"`
 	// MTU is the containers network MTU
 	MTU *int32 `json:"mtu,omitempty" flag:"mtu"`
 	// RegistryMirrors is a referred list of docker registry mirror

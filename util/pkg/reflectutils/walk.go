@@ -47,11 +47,11 @@ func JsonMergeStruct(dest, src interface{}) {
 	// Not the most efficient approach, but simple & relatively well defined
 	j, err := json.Marshal(src)
 	if err != nil {
-		glog.Fatalf("error marshalling config: %v", err)
+		glog.Fatalf("error marshaling config: %v", err)
 	}
 	err = json.Unmarshal(j, dest)
 	if err != nil {
-		glog.Fatalf("error unmarshalling config: %v", err)
+		glog.Fatalf("error unmarshaling config: %v", err)
 	}
 }
 
@@ -237,7 +237,7 @@ func FormatValue(value interface{}) string {
 		return fmt.Sprintf("%s", t.String())
 	default:
 		// fallback to raw struct
-		// TODO: internal types have panic guards against json.Marshalling to prevent
+		// TODO: internal types have panic guards against json.Marshaling to prevent
 		// accidental use of internal types in external serialized form.  For now, use
 		// %#v, although it would be better to show a more expressive output in the future
 		return fmt.Sprintf("%#v", value)

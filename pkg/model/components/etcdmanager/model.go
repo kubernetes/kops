@@ -25,7 +25,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/yaml"
@@ -80,7 +80,7 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		manifestYAML, err := k8scodecs.ToVersionedYaml(manifest)
 		if err != nil {
-			return fmt.Errorf("error marshalling manifest to yaml: %v", err)
+			return fmt.Errorf("error marshaling manifest to yaml: %v", err)
 		}
 
 		c.AddTask(&fitasks.ManagedFile{
@@ -100,6 +100,8 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
+		format := string(fi.KeysetFormatV1Alpha2)
+
 		c.AddTask(&fitasks.ManagedFile{
 			Contents:  fi.WrapResource(fi.NewBytesResource(d)),
 			Lifecycle: b.Lifecycle,
@@ -107,14 +109,40 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Location: fi.String("backups/etcd/" + etcdCluster.Name + "/control/etcd-cluster-spec"),
 			Name:     fi.String("etcd-cluster-spec-" + name),
 		})
+
+		// We create a CA keypair to enable secure communication
+		c.AddTask(&fitasks.Keypair{
+			Name:    fi.String("etcd-manager-ca-" + etcdCluster.Name),
+			Subject: "cn=etcd-manager-ca-" + etcdCluster.Name,
+			Type:    "ca",
+			Format:  format,
+		})
+
+		// We create a CA for etcd peers and a separate one for clients
+		c.AddTask(&fitasks.Keypair{
+			Name:    fi.String("etcd-peers-ca-" + etcdCluster.Name),
+			Subject: "cn=etcd-peers-ca-" + etcdCluster.Name,
+			Type:    "ca",
+			Format:  format,
+		})
+
+		// Because API server can only have a single client-cert, we need to share a client CA
+		if err := c.EnsureTask(&fitasks.Keypair{
+			Name:    fi.String("etcd-clients-ca"),
+			Subject: "cn=etcd-clients-ca",
+			Type:    "ca",
+			Format:  format,
+		}); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
 type etcdClusterSpec struct {
-	MemberCount int32  `json:"member_count,omitempty"`
-	EtcdVersion string `json:"etcd_version,omitempty"`
+	MemberCount int32  `json:"memberCount,omitempty"`
+	EtcdVersion string `json:"etcdVersion,omitempty"`
 }
 
 func (b *EtcdManagerBuilder) buildManifest(etcdCluster *kops.EtcdClusterSpec) (*v1.Pod, error) {
@@ -159,11 +187,12 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-  - image: kopeio/etcd-manager:1.0.20181001
+  - image: kopeio/etcd-manager:3.0.20190328
     name: etcd-manager
     resources:
       requests:
         cpu: 100m
+        memory: 100Mi
     # TODO: Would be nice to reduce these permissions; needed for volume mounting
     securityContext:
       privileged: true
@@ -174,6 +203,8 @@ spec:
     # We write artificial hostnames into etc hosts for the etcd nodes, so they have stable names
     - mountPath: /etc/hosts
       name: hosts
+    - mountPath: /etc/kubernetes/pki/etcd-manager
+      name: pki
   hostNetwork: true
   hostPID: true # helps with mounting volumes from inside a container
   volumes:
@@ -185,6 +216,10 @@ spec:
       path: /etc/hosts
       type: File
     name: hosts
+  - hostPath:
+      path: /etc/kubernetes/pki/etcd-manager
+      type: DirectoryOrCreate
+    name: pki
 `
 
 // buildPod creates the pod spec, based on the EtcdClusterSpec
@@ -232,9 +267,8 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		container.Image = remapped
 	}
 
-	isTLS := etcdCluster.EnableEtcdTLS
+	etcdInsecure := !b.UseEtcdTLS()
 
-	cpuRequest := resource.MustParse("100m")
 	clientPort := 4001
 
 	clusterName := "etcd-" + etcdCluster.Name
@@ -271,7 +305,6 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	switch etcdCluster.Name {
 	case "main":
 		clusterName = "etcd"
-		cpuRequest = resource.MustParse("200m")
 
 	case "events":
 		clientPort = 4002
@@ -300,16 +333,13 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		BackupStore:   backupStore,
 		GrpcPort:      grpcPort,
 		DNSSuffix:     dnsInternalSuffix,
+		EtcdInsecure:  etcdInsecure,
 	}
 
-	config.LogVerbosity = 8
+	config.LogVerbosity = 6
 
 	{
-		// @check if we are using TLS
-		scheme := "http"
-		if isTLS {
-			scheme = "https"
-		}
+		scheme := "https"
 
 		config.PeerUrls = fmt.Sprintf("%s://__name__:%d", scheme, peerPort)
 		config.ClientUrls = fmt.Sprintf("%s://__name__:%d", scheme, clientPort)
@@ -324,10 +354,6 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		if etcdCluster.HeartbeatInterval != nil {
 			// 	envs = append(envs, v1.EnvVar{Name: "ETCD_HEARTBEAT_INTERVAL", Value: convEtcdSettingsToMs(etcdClusterSpec.HeartbeatInterval)})
 			return nil, fmt.Errorf("HeartbeatInterval not supported by etcd-manager")
-		}
-
-		if isTLS {
-			return nil, fmt.Errorf("TLS not supported for etcd-manager")
 		}
 	}
 
@@ -366,10 +392,19 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	{
 		container.Command = exec.WithTee("/etcd-manager", args, "/var/log/etcd.log")
 
-		// TODO: Should we try to incorporate the resources in the manifest?
+		cpuRequest := resource.MustParse("200m")
+		if etcdCluster.CPURequest != nil {
+			cpuRequest = *etcdCluster.CPURequest
+		}
+		memoryRequest := resource.MustParse("100Mi")
+		if etcdCluster.MemoryRequest != nil {
+			memoryRequest = *etcdCluster.MemoryRequest
+		}
+
 		container.Resources = v1.ResourceRequirements{
 			Requests: v1.ResourceList{
-				v1.ResourceCPU: cpuRequest,
+				v1.ResourceCPU:    cpuRequest,
+				v1.ResourceMemory: memoryRequest,
 			},
 		}
 
@@ -389,9 +424,23 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 				},
 			},
 		})
+	}
 
-		if isTLS {
-			return nil, fmt.Errorf("TLS not supported for etcd-manager")
+	{
+		foundPKI := false
+		for i := range pod.Spec.Volumes {
+			v := &pod.Spec.Volumes[i]
+			if v.Name == "pki" {
+				if v.HostPath == nil {
+					return nil, fmt.Errorf("found PKI volume, but HostPath was nil")
+				}
+				dirname := "etcd-manager-" + etcdCluster.Name
+				v.HostPath.Path = "/etc/kubernetes/pki/" + dirname
+				foundPKI = true
+			}
+		}
+		if !foundPKI {
+			return nil, fmt.Errorf("did not find PKI volume")
 		}
 	}
 
@@ -407,6 +456,15 @@ type config struct {
 
 	// Containerized is set if etcd-manager is running in a container
 	Containerized bool `flag:"containerized"`
+
+	// PKIDir is set to the directory for PKI keys, used to secure commucations between etcd-manager peers
+	PKIDir string `flag:"pki-dir"`
+
+	// Insecure can be used to turn off tls for etcd-manager (compare with EtcdInsecure)
+	Insecure bool `flag:"insecure"`
+
+	// EtcdInsecure can be used to turn off tls for etcd itself (compare with Insecure)
+	EtcdInsecure bool `flag:"etcd-insecure"`
 
 	Address              string   `flag:"address"`
 	PeerUrls             string   `flag:"peer-urls"`

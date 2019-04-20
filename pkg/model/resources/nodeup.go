@@ -183,13 +183,13 @@ download-release
 echo "== nodeup node config done =="
 `
 
-// AWSNodeUpTemplate returns a Mime Multi Part Archive containing the nodeup (bootstrap) script
+// AWSNodeUpTemplate returns a MIME Multi Part Archive containing the nodeup (bootstrap) script
 // and any additional User Data passed to using AdditionalUserData in the IG Spec
 func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 
 	userDataTemplate := NodeUpTemplate
 
-	if len(ig.Spec.AdditionalUserData) > 0 {
+	if len(ig.Spec.AdditionalUserData) > 0 || ig.Spec.MixedInstancesPolicy != nil {
 		/* Create a buffer to hold the user-data*/
 		buffer := bytes.NewBufferString("")
 		writer := bufio.NewWriter(buffer)

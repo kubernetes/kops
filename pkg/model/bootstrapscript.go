@@ -72,6 +72,21 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		env["S3_SECRET_ACCESS_KEY"] = os.Getenv("S3_SECRET_ACCESS_KEY")
 	}
 
+	// Pass in required credentials when using user-defined swift endpoint
+	if os.Getenv("OS_AUTH_URL") != "" {
+		for _, envVar := range []string{
+			"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_ID", "OS_PROJECT_NAME",
+			"OS_PROJECT_DOMAIN_NAME", "OS_PROJECT_DOMAIN_ID",
+			"OS_DOMAIN_NAME", "OS_DOMAIN_ID",
+			"OS_USERNAME",
+			"OS_PASSWORD",
+			"OS_AUTH_URL",
+			"OS_REGION_NAME",
+		} {
+			env[envVar] = fmt.Sprintf("'%s'", os.Getenv(envVar))
+		}
+	}
+
 	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderDO {
 		doToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 		if doToken != "" {
@@ -88,6 +103,23 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 			glog.Warningf("unable to determine cluster region")
 		} else {
 			env["AWS_REGION"] = region
+		}
+	}
+
+	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderALI {
+		region := os.Getenv("OSS_REGION")
+		if region != "" {
+			env["OSS_REGION"] = os.Getenv("OSS_REGION")
+		}
+
+		aliID := os.Getenv("ALIYUN_ACCESS_KEY_ID")
+		if aliID != "" {
+			env["ALIYUN_ACCESS_KEY_ID"] = os.Getenv("ALIYUN_ACCESS_KEY_ID")
+		}
+
+		aliSecret := os.Getenv("ALIYUN_ACCESS_KEY_SECRET")
+		if aliSecret != "" {
+			env["ALIYUN_ACCESS_KEY_SECRET"] = os.Getenv("ALIYUN_ACCESS_KEY_SECRET")
 		}
 	}
 
@@ -156,10 +188,19 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 				spec["masterKubelet"] = cs.MasterKubelet
 
 				for _, etcdCluster := range cs.EtcdClusters {
-					spec["etcdClusters"].(map[string]kops.EtcdClusterSpec)[etcdCluster.Name] = kops.EtcdClusterSpec{
+					c := kops.EtcdClusterSpec{
 						Image:   etcdCluster.Image,
 						Version: etcdCluster.Version,
 					}
+					// if the user has not specified memory or cpu allotments for etcd, do not
+					// apply one.  Described in PR #6313.
+					if etcdCluster.CPURequest != nil {
+						c.CPURequest = etcdCluster.CPURequest
+					}
+					if etcdCluster.MemoryRequest != nil {
+						c.MemoryRequest = etcdCluster.MemoryRequest
+					}
+					spec["etcdClusters"].(map[string]kops.EtcdClusterSpec)[etcdCluster.Name] = c
 				}
 			}
 

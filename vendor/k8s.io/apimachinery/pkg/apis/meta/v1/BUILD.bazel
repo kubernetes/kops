@@ -39,6 +39,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/selection:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
     ],
 )

@@ -32,8 +32,8 @@ import (
 	"k8s.io/apiserver/pkg/server"
 	"k8s.io/apiserver/pkg/server/healthz"
 	serverstorage "k8s.io/apiserver/pkg/server/storage"
-	"k8s.io/apiserver/pkg/storage/etcd3/preflight"
 	"k8s.io/apiserver/pkg/storage/storagebackend"
+	storagefactory "k8s.io/apiserver/pkg/storage/storagebackend/factory"
 )
 
 type EtcdOptions struct {
@@ -181,29 +181,30 @@ func (s *EtcdOptions) ApplyTo(c *server.Config) error {
 	if s == nil {
 		return nil
 	}
-
-	s.addEtcdHealthEndpoint(c)
+	if err := s.addEtcdHealthEndpoint(c); err != nil {
+		return err
+	}
 	c.RESTOptionsGetter = &SimpleRestOptionsFactory{Options: *s}
 	return nil
 }
 
 func (s *EtcdOptions) ApplyWithStorageFactoryTo(factory serverstorage.StorageFactory, c *server.Config) error {
-	s.addEtcdHealthEndpoint(c)
-	c.RESTOptionsGetter = &storageFactoryRestOptionsFactory{Options: *s, StorageFactory: factory}
+	if err := s.addEtcdHealthEndpoint(c); err != nil {
+		return err
+	}
+	c.RESTOptionsGetter = &StorageFactoryRestOptionsFactory{Options: *s, StorageFactory: factory}
 	return nil
 }
 
-func (s *EtcdOptions) addEtcdHealthEndpoint(c *server.Config) {
+func (s *EtcdOptions) addEtcdHealthEndpoint(c *server.Config) error {
+	healthCheck, err := storagefactory.CreateHealthCheck(s.StorageConfig)
+	if err != nil {
+		return err
+	}
 	c.HealthzChecks = append(c.HealthzChecks, healthz.NamedCheck("etcd", func(r *http.Request) error {
-		done, err := preflight.EtcdConnection{ServerList: s.StorageConfig.ServerList}.CheckEtcdServers()
-		if !done {
-			return fmt.Errorf("etcd failed")
-		}
-		if err != nil {
-			return err
-		}
-		return nil
+		return healthCheck()
 	}))
+	return nil
 }
 
 type SimpleRestOptionsFactory struct {
@@ -233,12 +234,12 @@ func (f *SimpleRestOptionsFactory) GetRESTOptions(resource schema.GroupResource)
 	return ret, nil
 }
 
-type storageFactoryRestOptionsFactory struct {
+type StorageFactoryRestOptionsFactory struct {
 	Options        EtcdOptions
 	StorageFactory serverstorage.StorageFactory
 }
 
-func (f *storageFactoryRestOptionsFactory) GetRESTOptions(resource schema.GroupResource) (generic.RESTOptions, error) {
+func (f *StorageFactoryRestOptionsFactory) GetRESTOptions(resource schema.GroupResource) (generic.RESTOptions, error) {
 	storageConfig, err := f.StorageFactory.NewConfig(resource)
 	if err != nil {
 		return generic.RESTOptions{}, fmt.Errorf("unable to find storage destination for %v, due to %v", resource, err.Error())

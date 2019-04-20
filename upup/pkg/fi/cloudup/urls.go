@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-
 	"path"
+	"strings"
 
 	"github.com/golang/glog"
 	"k8s.io/kops"
@@ -29,7 +29,29 @@ import (
 	"k8s.io/kops/util/pkg/hashing"
 )
 
-const defaultKopsBaseUrl = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
+const (
+	defaultKopsBaseUrl = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
+
+	// defaultKopsMirrorBase will be detected and automatically set to pull from the defaultKopsMirrors
+	defaultKopsMirrorBase = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
+)
+
+// mirror holds the configuration for a mirror
+type mirror struct {
+	// URL is the base url
+	URL string
+
+	// Replace is a set of string replacements, so that we can follow the mirror's naming rules
+	Replace map[string]string
+}
+
+// defaultKopsMirrors is a list of our well-known mirrors
+// Note that we download in order
+var defaultKopsMirrors = []mirror{
+	{URL: "https://github.com/kubernetes/kops/releases/download/%s/", Replace: map[string]string{"/": "-"}},
+	// We do need to include defaultKopsMirrorBase - the list replaces the base url
+	{URL: "https://kubeupv2.s3.amazonaws.com/kops/%s/"},
+}
 
 var kopsBaseUrl *url.URL
 
@@ -181,4 +203,54 @@ func KopsFileUrl(file string, assetBuilder *assets.AssetBuilder) (*url.URL, *has
 	}
 
 	return fileUrl, hash, nil
+}
+
+type MirroredAsset struct {
+	Locations []string
+	Hash      *hashing.Hash
+}
+
+// BuildMirroredAsset checks to see if this is a file under the standard base location, and if so constructs some mirror locations
+func BuildMirroredAsset(u *url.URL, hash *hashing.Hash) *MirroredAsset {
+	baseUrlString := fmt.Sprintf(defaultKopsMirrorBase, kops.Version)
+	if !strings.HasSuffix(baseUrlString, "/") {
+		baseUrlString += "/"
+	}
+
+	a := &MirroredAsset{
+		Hash: hash,
+	}
+
+	urlString := u.String()
+	a.Locations = []string{urlString}
+
+	// Look at mirrors
+	if strings.HasPrefix(urlString, baseUrlString) {
+		if hash == nil {
+			glog.Warningf("not using mirrors for asset %s as it does not have a known hash", u.String())
+		} else {
+			suffix := strings.TrimPrefix(urlString, baseUrlString)
+			// This is under our base url - add our well-known mirrors
+			a.Locations = []string{}
+			for _, m := range defaultKopsMirrors {
+				filename := suffix
+				for k, v := range m.Replace {
+					filename = strings.Replace(filename, k, v, -1)
+				}
+				base := fmt.Sprintf(m.URL, kops.Version)
+				a.Locations = append(a.Locations, base+filename)
+			}
+		}
+	}
+
+	return a
+}
+
+func (a *MirroredAsset) CompactString() string {
+	var s string
+	if a.Hash != nil {
+		s = a.Hash.Hex()
+	}
+	s += "@" + strings.Join(a.Locations, ",")
+	return s
 }
