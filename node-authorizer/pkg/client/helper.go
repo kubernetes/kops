@@ -98,7 +98,7 @@ func makeKubeconfig(ctx context.Context, config *Config, token string) ([]byte, 
 			{
 				Name: clusterName,
 				Cluster: v1.Cluster{
-					Server: config.KubeAPI,
+					Server:                   config.KubeAPI,
 					CertificateAuthorityData: content,
 				},
 			},
