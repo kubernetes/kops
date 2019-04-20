@@ -41,13 +41,15 @@ func main() {
 	}
 	fmt.Printf("nodeup version %s%s\n", kops.Version, gitVersion)
 
-	var flagConf string
+	var (
+		flagConf     string
+		flagCacheDir string
+		flagRootFS   string
+		flagRetries  int
+	)
 	flag.StringVar(&flagConf, "conf", "node.yaml", "configuration location")
-	var flagCacheDir string
 	flag.StringVar(&flagCacheDir, "cache", "/var/cache/nodeup", "the location for the local asset cache")
-	var flagRootFS string
 	flag.StringVar(&flagRootFS, "rootfs", "/", "the location of the machine root (for running in a container)")
-	var flagRetries int
 	flag.IntVar(&flagRetries, "retries", -1, "maximum number of retries on failure: -1 means retry forever")
 
 	dryrun := false
