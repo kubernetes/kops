@@ -3,8 +3,8 @@ os:
   - linux
   - osx
 go:
-  # 1.10 is now best-effort; we recommend 1.11; 1.12 is in the wild but not the k8s recommended version
-  #- "1.10" gofmt changes mean this fails testing
+  # 1.10 & 1.11 are now best-effort; we recommend 1.12
+  # - "1.10" gofmt changes mean 1.10 fails testing
   - "1.11"
   - "1.12"
 
