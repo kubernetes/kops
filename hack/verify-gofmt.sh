@@ -16,9 +16,9 @@
 
 . $(dirname "${BASH_SOURCE}")/common.sh
 
-GOFMT="gofmt -s -w"
+GOFMT="bazel run //:gofmt -- -s -w"
 
-bad_files=$(git ls-files "*.go" | grep -v vendor | xargs -I {} $GOFMT -l {})
+bad_files=$(git ls-files "*.go" | grep -v vendor | xargs $GOFMT -l)
 if [[ -n "${bad_files}" ]]; then
   echo "FAIL: '$GOFMT' needs to be run on the following files: "
   echo "${bad_files}"
