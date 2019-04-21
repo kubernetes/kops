@@ -27,28 +27,36 @@ import (
 )
 
 func Test_RunEtcdManagerBuilder(t *testing.T) {
-	basedir := "tests/minimal"
+	for _, name := range []string{"minimal", "embedded"} {
+		name := name
+		t.Run(name, func(t *testing.T) {
+			h := testutils.NewIntegrationTestHarness(t)
+			defer h.Close()
 
-	context := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
-	}
-	kopsModelContext, err := LoadKopsModelContext(basedir)
-	if err != nil {
-		t.Fatalf("error loading model %q: %v", basedir, err)
-		return
-	}
+			basedir := "tests/" + name
 
-	builder := EtcdManagerBuilder{
-		KopsModelContext: kopsModelContext,
-		AssetBuilder:     assets.NewAssetBuilder(kopsModelContext.Cluster, ""),
-	}
+			context := &fi.ModelBuilderContext{
+				Tasks: make(map[string]fi.Task),
+			}
+			kopsModelContext, err := LoadKopsModelContext(basedir)
+			if err != nil {
+				t.Fatalf("error loading model %q: %v", basedir, err)
+				return
+			}
 
-	if err := builder.Build(context); err != nil {
-		t.Fatalf("error from Build: %v", err)
-		return
-	}
+			builder := EtcdManagerBuilder{
+				KopsModelContext: kopsModelContext,
+				AssetBuilder:     assets.NewAssetBuilder(kopsModelContext.Cluster, ""),
+			}
 
-	testutils.ValidateTasks(t, basedir, context)
+			if err := builder.Build(context); err != nil {
+				t.Fatalf("error from Build: %v", err)
+				return
+			}
+
+			testutils.ValidateTasks(t, basedir, context)
+		})
+	}
 }
 
 func LoadKopsModelContext(basedir string) (*model.KopsModelContext, error) {

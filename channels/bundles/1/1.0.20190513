@@ -1,0 +1,6 @@
+apiVersion: bundle.gke.io/v1alpha1
+kind: ComponentSet
+spec:
+  components:
+  - componentName: etcd-manager
+    version: 3.0.20190513

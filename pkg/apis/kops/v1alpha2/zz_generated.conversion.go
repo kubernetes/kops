@@ -1526,6 +1526,7 @@ func Convert_kops_ClusterList_To_v1alpha2_ClusterList(in *kops.ClusterList, out 
 
 func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops.ClusterSpec, s conversion.Scope) error {
 	out.Channel = in.Channel
+	out.Bundle = in.Bundle
 	if in.Addons != nil {
 		in, out := &in.Addons, &out.Addons
 		*out = make([]kops.AddonSpec, len(*in))
@@ -1808,6 +1809,7 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 
 func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out *ClusterSpec, s conversion.Scope) error {
 	out.Channel = in.Channel
+	out.Bundle = in.Bundle
 	if in.Addons != nil {
 		in, out := &in.Addons, &out.Addons
 		*out = make([]AddonSpec, len(*in))

@@ -52,6 +52,9 @@ type ChannelSpec struct {
 
 	// KubernetesVersions allows us to recommend/requires kubernetes versions
 	KubernetesVersions []KubernetesVersionSpec `json:"kubernetesVersions,omitempty"`
+
+	// Bundles specifies the bundles we recommend
+	Bundles []BundleVersionSpec `json:"bundles,omitempty"`
 }
 
 type KopsVersionSpec struct {
@@ -64,6 +67,12 @@ type KopsVersionSpec struct {
 	RequiredVersion string `json:"requiredVersion,omitempty"`
 
 	// KubernetesVersion is the default version of kubernetes to use with this kops version e.g. for new clusters
+	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
+}
+
+type BundleVersionSpec struct {
+	Bundle string `json:"bundle,omitempty"`
+
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 }
 
@@ -324,4 +333,37 @@ func RecommendedKubernetesVersion(c *Channel, kopsVersionString string) *semver.
 	}
 
 	return nil
+}
+
+// FindBundleVersion returns the recommended release for the kubernetes version, or nil if not found
+func (c *Channel) FindBundleVersion(kubernetesVersion semver.Version) *BundleVersionSpec {
+	var matches []*BundleVersionSpec
+
+	for i := range c.Spec.Bundles {
+		release := &c.Spec.Bundles[i]
+
+		if release.KubernetesVersion != "" {
+			versionRange, err := semver.ParseRange(release.KubernetesVersion)
+			if err != nil {
+				klog.Warningf("cannot parse KubernetesVersion=%q", release.KubernetesVersion)
+				continue
+			}
+
+			if !versionRange(kubernetesVersion) {
+				klog.V(2).Infof("kubernetes version %q does not match range: %s", kubernetesVersion, release.KubernetesVersion)
+				continue
+			}
+		}
+		matches = append(matches, release)
+	}
+
+	if len(matches) == 0 {
+		klog.V(2).Infof("no matching releases for %v", kubernetesVersion)
+		return nil
+	}
+
+	if len(matches) != 1 {
+		klog.Warningf("multiple matching releases for %v", kubernetesVersion)
+	}
+	return matches[0]
 }

@@ -42,6 +42,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/bundles"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
@@ -1222,6 +1223,12 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	err = cloudup.PerformAssignments(cluster)
 	if err != nil {
 		return fmt.Errorf("error populating configuration: %v", err)
+	}
+	if featureflag.UseBundles.Enabled() {
+		err = bundles.AssignBundle(cluster)
+		if err != nil {
+			return fmt.Errorf("error populating component versions: %v", err)
+		}
 	}
 	err = api.PerformAssignmentsInstanceGroups(instanceGroups)
 	if err != nil {

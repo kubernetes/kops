@@ -42,6 +42,7 @@ go_test(
         "aws_test.go",
         "vpc_test.go",
     ],
+    data = ["//channels:channeldata"],
     embed = [":go_default_library"],
     deps = [
         "//cloudmock/aws/mockec2:go_default_library",

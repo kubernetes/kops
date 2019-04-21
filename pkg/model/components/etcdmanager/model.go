@@ -32,6 +32,7 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/bundles"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
@@ -227,17 +228,34 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	var pod *v1.Pod
 	var container *v1.Container
 
-	var manifest []byte
+	var objects []runtime.Object
 
-	// TODO: pull from bundle
-	bundle := "(embedded etcd manifest)"
-	manifest = []byte(defaultManifest)
+	// TODO: Allow selective override
+	bundle := b.Cluster.Spec.Bundle
+	if bundle == "" {
+		bundle = "(embedded etcd manifest)"
 
-	{
-		objects, err := parseManifest(manifest)
+		manifest := []byte(defaultManifest)
+
+		parsed, err := parseManifest(manifest)
 		if err != nil {
 			return nil, err
 		}
+		objects = parsed
+	} else {
+		component, err := bundles.LoadComponent(&b.Cluster.Spec, bundle, "etcd-manager")
+		if err != nil {
+			return nil, err
+		}
+
+		parsed, err := bundles.ParseToTypedObjects(component, k8scodecs.Scheme)
+		if err != nil {
+			return nil, err
+		}
+		objects = parsed
+	}
+
+	{
 		if len(objects) != 1 {
 			return nil, fmt.Errorf("expected exactly one object in manifest %s, found %d", bundle, len(objects))
 		}

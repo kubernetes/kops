@@ -3,6 +3,9 @@ filegroup(
     srcs = [
         "alpha",
         "stable",
-    ],
+    ] + glob([
+        "bundles/**",
+        "components/**",
+    ]),
     visibility = ["//visibility:public"],
 )

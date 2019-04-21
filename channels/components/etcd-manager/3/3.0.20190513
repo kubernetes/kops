@@ -1,0 +1,46 @@
+apiVersion: bundle.gke.io/v1alpha1
+kind: Component
+spec:
+  componentName: etcd-manager
+  version: 3.0.20190513
+  objects:
+  - apiVersion: v1
+    kind: Pod
+    metadata:
+      name: etcd-manager
+      namespace: kube-system
+    spec:
+      containers:
+      - image: kopeio/etcd-manager:3.0.20190513
+        name: etcd-manager
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        # TODO: Would be nice to reduce these permissions; needed for volume mounting
+        securityContext:
+          privileged: true
+        volumeMounts:
+        # TODO: Would be nice to scope this more tightly, but needed for volume mounting
+        - mountPath: /rootfs
+          name: rootfs
+        # We write artificial hostnames into etc hosts for the etcd nodes, so they have stable names
+        - mountPath: /etc/hosts
+          name: hosts
+        - mountPath: /etc/kubernetes/pki/etcd-manager
+          name: pki
+      hostNetwork: true
+      hostPID: true # helps with mounting volumes from inside a container
+      volumes:
+      - hostPath:
+          path: /
+          type: Directory
+        name: rootfs
+      - hostPath:
+          path: /etc/hosts
+          type: File
+        name: hosts
+      - hostPath:
+          path: /etc/kubernetes/pki/etcd-manager
+          type: DirectoryOrCreate
+        name: pki

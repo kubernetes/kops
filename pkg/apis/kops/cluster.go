@@ -48,6 +48,9 @@ type ClusterList struct {
 type ClusterSpec struct {
 	// The Channel we are following
 	Channel string `json:"channel,omitempty"`
+	// TODO: Multiple releases / bundles??
+	// Bundle specifies the release we are currently pinned to; Channel recommends updates to our bundle
+	Bundle string `json:"bundle,omitempty"`
 	// Additional addons that should be installed on the cluster
 	Addons []AddonSpec `json:"addons,omitempty"`
 	// ConfigBase is the path where we store configuration for the cluster

@@ -47,6 +47,8 @@ var (
 )
 
 var (
+	// UseBundles controls whether we use bundles.
+	UseBundles = New("UseBundles", Bool(false))
 	// DNSPreCreate controls whether we pre-create DNS records.
 	DNSPreCreate = New("DNSPreCreate", Bool(true))
 	// DrainAndValidateRollingUpdate if set will use new rolling update code that will drain and validate.

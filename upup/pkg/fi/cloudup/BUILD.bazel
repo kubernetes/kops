@@ -103,6 +103,7 @@ go_test(
         "validation_test.go",
     ],
     data = [
+        "//channels:channeldata",
         "//upup/pkg/fi/cloudup/tests:exported_testdata",  # keep
     ],
     embed = [":go_default_library"],

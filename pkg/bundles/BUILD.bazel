@@ -1,0 +1,29 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "assign.go",
+        "doc.go",
+        "manifest.go",
+        "parser.go",
+        "types.go",
+        "zz_generated.deepcopy.go",
+    ],
+    importpath = "k8s.io/kops/pkg/bundles",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/apis/kops/util:go_default_library",
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/blang/semver:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1/unstructured:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer/json:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer/streaming:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)

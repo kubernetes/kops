@@ -19,7 +19,6 @@ package testutils
 import (
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"testing"
 
@@ -55,6 +54,33 @@ type IntegrationTestHarness struct {
 	originalPKIDefaultPrivateKeySize int
 }
 
+func findDirectory(t *testing.T, name string) string {
+	d, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("error getting working directory: %v", err)
+	}
+
+	d, err = filepath.Abs(d)
+	if err != nil {
+		t.Fatalf("error doing filepath.Abs(%q): %v", d, err)
+	}
+	for {
+		probe := filepath.Join(d, name)
+		_, err := os.Stat(probe)
+		if err == nil {
+			return probe
+		}
+		if !os.IsNotExist(err) {
+			t.Fatalf("error doing stat on %s: %v", probe, err)
+		}
+		parent := filepath.Dir(d)
+		if parent == d {
+			t.Fatalf("unable to find repo root")
+		}
+		d = parent
+	}
+}
+
 func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
 	h := &IntegrationTestHarness{}
 	tempDir, err := ioutil.TempDir("", "test")
@@ -71,10 +97,7 @@ func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
 
 	// Replace the default channel path with a local filesystem path, so we don't try to retrieve it from a server
 	{
-		channelPath, err := filepath.Abs(path.Join("../../channels/"))
-		if err != nil {
-			t.Fatalf("error resolving stable channel path: %v", err)
-		}
+		channelPath := findDirectory(t, "channels")
 		channelPath += "/"
 		h.originalDefaultChannelBase = kops.DefaultChannelBase
 
