@@ -500,20 +500,7 @@ dep-ensure: dep-prereqs
 
 .PHONY: gofmt
 gofmt:
-	gofmt -w -s channels/
-	gofmt -w -s cloudmock/
-	gofmt -w -s cmd/
-	gofmt -w -s examples/
-	gofmt -w -s nodeup/
-	gofmt -w -s util/
-	gofmt -w -s upup/pkg/
-	gofmt -w -s pkg/
-	gofmt -w -s tests/
-	gofmt -w -s protokube/cmd
-	gofmt -w -s protokube/pkg
-	gofmt -w -s protokube/tests
-	gofmt -w -s dns-controller/cmd
-	gofmt -w -s dns-controller/pkg
+	find -name "*.go" | grep -v vendor | xargs bazel run //:gofmt -- -w -s
 
 .PHONY: goimports
 goimports:
