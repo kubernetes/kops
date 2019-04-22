@@ -21,7 +21,7 @@ GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
 GOPATH_1ST:=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
-GOVERSION=1.10.8
+GOVERSION=1.11.5
 BUILD=$(GOPATH_1ST)/src/k8s.io/kops/.build
 LOCAL=$(BUILD)/local
 BINDATA_TARGETS=upup/models/bindata.go
@@ -500,20 +500,7 @@ dep-ensure: dep-prereqs
 
 .PHONY: gofmt
 gofmt:
-	gofmt -w -s channels/
-	gofmt -w -s cloudmock/
-	gofmt -w -s cmd/
-	gofmt -w -s examples/
-	gofmt -w -s nodeup/
-	gofmt -w -s util/
-	gofmt -w -s upup/pkg/
-	gofmt -w -s pkg/
-	gofmt -w -s tests/
-	gofmt -w -s protokube/cmd
-	gofmt -w -s protokube/pkg
-	gofmt -w -s protokube/tests
-	gofmt -w -s dns-controller/cmd
-	gofmt -w -s dns-controller/pkg
+	find -name "*.go" | grep -v vendor | xargs bazel run //:gofmt -- -w -s
 
 .PHONY: goimports
 goimports:
@@ -562,12 +549,20 @@ verify-gendocs: ${KOPS}
 .PHONY: verify-bazel
 verify-bazel:
 	hack/verify-bazel.sh
-#
+
+# ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 # verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendoc generates the bindata file.
 .PHONY: ci
 ci: govet verify-gofmt verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+	echo "Done!"
+
+# travis-ci is the target that travis-ci calls
+# we skip tasks that rely on bazel and are covered by other jobs
+#  verify-gofmt: uses bazel, covered by pull-kops-verify-gofmt
+.PHONY: travis-ci
+travis-ci: govet verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
