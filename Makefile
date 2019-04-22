@@ -549,12 +549,20 @@ verify-gendocs: ${KOPS}
 .PHONY: verify-bazel
 verify-bazel:
 	hack/verify-bazel.sh
-#
+
+# ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 # verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendoc generates the bindata file.
 .PHONY: ci
 ci: govet verify-gofmt verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+	echo "Done!"
+
+# travis-ci is the target that travis-ci calls
+# we skip tasks that rely on bazel and are covered by other jobs
+#  verify-gofmt: uses bazel, covered by pull-kops-verify-gofmt
+.PHONY: travis-ci
+travis-ci: govet verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
