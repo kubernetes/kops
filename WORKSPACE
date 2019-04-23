@@ -21,7 +21,7 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_to
 go_rules_dependencies()
 
 go_register_toolchains(
-    go_version = "1.10.8",
+    go_version = "1.12.1",
 )
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
@@ -112,4 +112,11 @@ http_file(
     name = "utils_tar_gz",
     urls = ["https://kubeupv2.s3.amazonaws.com/kops/1.11.1/linux/amd64/utils.tar.gz"],
     sha256 = "0e685eb751a32f782705311049b2592c4724add6f19ffdad1e7ce4f55816d7d8",
+)
+
+git_repository(
+    name = "io_k8s_repo_infra",
+    commit = "4ce715fbe67d8fbed05ec2bb47a148e754100a4b",
+    remote = "https://github.com/kubernetes/repo-infra.git",
+    shallow_since = "1517262872 -0800",
 )
