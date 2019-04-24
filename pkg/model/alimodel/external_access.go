@@ -25,8 +25,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/alitasks"
 )
 
-const IpProtocolTCP = "tcp"
-const IpProtocolUDP = "udp"
+const (
+	IpProtocolTCP = "tcp"
+	IpProtocolUDP = "udp"
+)
 
 // ExternalAccessModelBuilder configures security group rules for external access
 // (SSHAccess, KubernetesAPIAccess)
