@@ -1129,6 +1129,7 @@ func autoConvert_v1alpha1_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *Ca
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
 	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
 	out.LogSeveritySys = in.LogSeveritySys
+	out.MTU = in.MTU
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
@@ -1146,6 +1147,7 @@ func autoConvert_kops_CanalNetworkingSpec_To_v1alpha1_CanalNetworkingSpec(in *ko
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
 	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
 	out.LogSeveritySys = in.LogSeveritySys
+	out.MTU = in.MTU
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
