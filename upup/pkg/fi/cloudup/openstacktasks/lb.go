@@ -18,8 +18,9 @@ package openstacktasks
 
 import (
 	"fmt"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"time"
+
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 
 	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
