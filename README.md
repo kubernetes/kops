@@ -113,7 +113,7 @@ encountered.
 
 ### Prerequisite
 
-`kubectl` is required, see [here](http://kubernetes.io/docs/user-guide/prereqs/).
+`kubectl` is required, see [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 
 
 ### OSX From Homebrew
