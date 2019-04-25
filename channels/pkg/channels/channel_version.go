@@ -123,12 +123,11 @@ func (c *ChannelVersion) replaces(existing *ChannelVersion) bool {
 		} else {
 			// Same version; check ids
 			if c.Id == existing.Id {
-				return false
-			}
-			glog.V(4).Infof("Channels had same version %q but different ids (%q vs %q); will replace", *c.Version, c.Id, existing.Id)
-			// Same version; check ids
-			if c.ManifestHash == existing.ManifestHash {
-				return false
+				// Same id; check manifests
+				if c.ManifestHash == existing.ManifestHash {
+					return false
+				}
+				glog.V(4).Infof("Channels had same version and ids %q, %q but different ManifestHash (%q vs %q); will replace", *c.Version, c.Id, c.ManifestHash, existing.ManifestHash)
 			}
 			glog.V(4).Infof("Channels had same version and ids %q, %q but different ManifestHash (%q vs %q); will replace", *c.Version, c.Id, c.ManifestHash, existing.ManifestHash)
 
