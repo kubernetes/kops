@@ -18,6 +18,8 @@ go_library(
         "instancegroupmanager_fitask.go",
         "instancetemplate.go",
         "instancetemplate_fitask.go",
+        "natgateway.go",
+        "natgateway_fitask.go",
         "network.go",
         "network_fitask.go",
         "storagebucketacl.go",
