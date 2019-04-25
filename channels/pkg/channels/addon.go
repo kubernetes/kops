@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/kops/channels/pkg/api"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // Addon is a wrapper around a single version of an addon
@@ -66,10 +67,15 @@ func (m *AddonMenu) MergeAddons(o *AddonMenu) {
 }
 
 func (a *Addon) ChannelVersion() *ChannelVersion {
+	manifestHash, err := utils.HashString(a.Spec.Manifest)
+	if err != nil {
+		manifestHash = ""
+	}
 	return &ChannelVersion{
-		Channel: &a.ChannelName,
-		Version: a.Spec.Version,
-		Id:      a.Spec.Id,
+		Channel:      &a.ChannelName,
+		Version:      a.Spec.Version,
+		Id:           a.Spec.Id,
+		ManifestHash: manifestHash,
 	}
 }
 

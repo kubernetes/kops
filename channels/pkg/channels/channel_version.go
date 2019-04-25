@@ -37,9 +37,10 @@ type Channel struct {
 }
 
 type ChannelVersion struct {
-	Version *string `json:"version,omitempty"`
-	Channel *string `json:"channel,omitempty"`
-	Id      string  `json:"id,omitempty"`
+	Version      *string `json:"version,omitempty"`
+	Channel      *string `json:"channel,omitempty"`
+	Id           string  `json:"id,omitempty"`
+	ManifestHash string  `json:"manifestHash,omitempty"`
 }
 
 func stringValue(s *string) string {
@@ -53,6 +54,9 @@ func (c *ChannelVersion) String() string {
 	s := "Version=" + stringValue(c.Version) + " Channel=" + stringValue(c.Channel)
 	if c.Id != "" {
 		s += " Id=" + c.Id
+	}
+	if c.ManifestHash != "" {
+		s += " ManifestHash=" + c.ManifestHash
 	}
 	return s
 }
@@ -122,6 +126,12 @@ func (c *ChannelVersion) replaces(existing *ChannelVersion) bool {
 				return false
 			}
 			glog.V(4).Infof("Channels had same version %q but different ids (%q vs %q); will replace", *c.Version, c.Id, existing.Id)
+			// Same version; check ids
+			if c.ManifestHash == existing.ManifestHash {
+				return false
+			}
+			glog.V(4).Infof("Channels had same version and ids %q, %q but different ManifestHash (%q vs %q); will replace", *c.Version, c.Id, c.ManifestHash, existing.ManifestHash)
+
 		}
 	}
 
