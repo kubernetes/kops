@@ -1826,6 +1826,84 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Burstable:         true,
 	},
 
+	// t3a family
+	{
+		Name:              "t3a.nano",
+		MemoryGB:          0.5,
+		ECU:               0 * BurstableCreditsToECUS,
+		Cores:             2,
+		InstanceENIs:      2,
+		InstanceIPsPerENI: 2,
+		EphemeralDisks:    nil,
+		Burstable:         true,
+	},
+
+	{
+		Name:              "t3a.micro",
+		MemoryGB:          1,
+		ECU:               0 * BurstableCreditsToECUS,
+		Cores:             2,
+		InstanceENIs:      2,
+		InstanceIPsPerENI: 2,
+		EphemeralDisks:    nil,
+		Burstable:         true,
+	},
+
+	{
+		Name:              "t3a.small",
+		MemoryGB:          2,
+		ECU:               0 * BurstableCreditsToECUS,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 4,
+		EphemeralDisks:    nil,
+		Burstable:         true,
+	},
+
+	{
+		Name:              "t3a.medium",
+		MemoryGB:          4,
+		ECU:               0 * BurstableCreditsToECUS,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 6,
+		EphemeralDisks:    nil,
+		Burstable:         true,
+	},
+
+	{
+		Name:              "t3a.large",
+		MemoryGB:          8,
+		ECU:               0 * BurstableCreditsToECUS,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 12,
+		EphemeralDisks:    nil,
+		Burstable:         true,
+	},
+
+	{
+		Name:              "t3a.xlarge",
+		MemoryGB:          16,
+		ECU:               0 * BurstableCreditsToECUS,
+		Cores:             4,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+		Burstable:         true,
+	},
+
+	{
+		Name:              "t3a.2xlarge",
+		MemoryGB:          32,
+		ECU:               0 * BurstableCreditsToECUS,
+		Cores:             8,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+		Burstable:         true,
+	},
+
 	// x1 family
 	{
 		Name:              "x1.16xlarge",

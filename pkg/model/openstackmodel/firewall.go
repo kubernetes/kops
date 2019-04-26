@@ -21,6 +21,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
+
 	//TODO: Replace with klog
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/dns"
