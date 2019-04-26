@@ -19,7 +19,7 @@ package kubeconfig
 import (
 	"reflect"
 	"testing"
-	
+
 	"crypto/x509"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/pkg/apis/kops"
@@ -33,7 +33,7 @@ const privatekeyData = "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA4JwpEpr
 
 // mock a fake status store.
 type fakeStatusStore struct {
-	FindClusterStatusFn func(cluster *kops.Cluster) (*kops.ClusterStatus, error)
+	FindClusterStatusFn   func(cluster *kops.Cluster) (*kops.ClusterStatus, error)
 	GetApiIngressStatusFn func(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
 }
 
@@ -47,15 +47,15 @@ func (f fakeStatusStore) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiI
 
 // mock a fake key store
 type fakeKeyStore struct {
-	FindKeypairFn      func(name string) (*pki.Certificate, *pki.PrivateKey, fi.KeysetFormat, error)
-	
-	CreateKeypairFn    func(signer string, name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error)
+	FindKeypairFn func(name string) (*pki.Certificate, *pki.PrivateKey, fi.KeysetFormat, error)
+
+	CreateKeypairFn func(signer string, name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error)
 
 	// StoreKeypair writes the keypair to the store
-	StoreKeypairFn     func(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error
+	StoreKeypairFn func(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error
 
 	// MirrorTo will copy secrets to a vfs.Path, which is often easier for a machine to read
-	MirrorToFn         func(basedir vfs.Path) error
+	MirrorToFn func(basedir vfs.Path) error
 }
 
 func (f fakeKeyStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, fi.KeysetFormat, error) {
@@ -91,7 +91,7 @@ func buildMinimalCluster(clusterName string, masterPublicName string) *kops.Clus
 	c.Spec.Topology = &kops.TopologySpec{
 		Masters: kops.TopologyPublic,
 		Nodes:   kops.TopologyPublic,
-		DNS:     &kops.DNSSpec{
+		DNS: &kops.DNSSpec{
 			Type: kops.DNSTypePublic,
 		},
 	}
@@ -108,15 +108,15 @@ func buildMinimalCluster(clusterName string, masterPublicName string) *kops.Clus
 }
 
 // create a fake certificate
-func fakeCertificate() (*pki.Certificate) {
+func fakeCertificate() *pki.Certificate {
 	cert, _ := pki.ParsePEMCertificate([]byte(certData))
 	return cert
 }
 
 // create a fake private key
-func fakePrivateKey() (*pki.PrivateKey) {
+func fakePrivateKey() *pki.PrivateKey {
 	key, _ := pki.ParsePEMPrivateKey([]byte(privatekeyData))
-	return key;
+	return key
 }
 
 func TestBuildKubecfg(t *testing.T) {
@@ -131,7 +131,7 @@ func TestBuildKubecfg(t *testing.T) {
 	publiccluster := buildMinimalCluster("testcluster", "testcluster.test.com")
 	emptyMasterPublicNameCluster := buildMinimalCluster("emptyMasterPublicNameCluster", "")
 	gossipCluster := buildMinimalCluster("testgossipcluster.k8s.local", "")
-	
+
 	tests := []struct {
 		name    string
 		args    args
@@ -140,69 +140,65 @@ func TestBuildKubecfg(t *testing.T) {
 	}{
 		{
 			"Test Kube Config Data For Public DNS",
-			args {
+			args{
 				publiccluster,
 				fakeKeyStore{
 					FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, fi.KeysetFormat, error) {
-							return fakeCertificate(),
+						return fakeCertificate(),
 							fakePrivateKey(),
 							fi.KeysetFormatLegacy,
 							nil
-						},
+					},
 				},
 				nil,
-				fakeStatusStore{
-
-				},
+				fakeStatusStore{},
 				nil,
 			},
 			&KubeconfigBuilder{
-				Context: "testcluster",
-				Server: "https://testcluster.test.com",
-				CACert: []byte(certData),
+				Context:    "testcluster",
+				Server:     "https://testcluster.test.com",
+				CACert:     []byte(certData),
 				ClientCert: []byte(certData),
-				ClientKey: []byte(privatekeyData),
+				ClientKey:  []byte(privatekeyData),
 			},
 			false,
 		},
 		{
 			"Test Kube Config Data For Public DNS with Empty Master Name",
-			args {
+			args{
 				emptyMasterPublicNameCluster,
 				fakeKeyStore{
 					FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, fi.KeysetFormat, error) {
-							return fakeCertificate(),
+						return fakeCertificate(),
 							fakePrivateKey(),
 							fi.KeysetFormatLegacy,
 							nil
-						},
+					},
 				},
 				nil,
-				fakeStatusStore{
-
-				},
+				fakeStatusStore{},
 				nil,
 			},
 			&KubeconfigBuilder{
-				Context: "emptyMasterPublicNameCluster",
-				Server: "https://api.emptyMasterPublicNameCluster",
-				CACert: []byte(certData),
+				Context:    "emptyMasterPublicNameCluster",
+				Server:     "https://api.emptyMasterPublicNameCluster",
+				CACert:     []byte(certData),
 				ClientCert: []byte(certData),
-				ClientKey: []byte(privatekeyData),
+				ClientKey:  []byte(privatekeyData),
 			},
 			false,
 		},
 		{
 			"Test Kube Config Data For Gossip cluster",
-			args {
+			args{
 				gossipCluster,
 				fakeKeyStore{
 					FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, fi.KeysetFormat, error) {
-							return fakeCertificate(),
+						return fakeCertificate(),
 							fakePrivateKey(),
 							fi.KeysetFormatLegacy,
 							nil
-						},
+					},
 				},
 				nil,
 				fakeStatusStore{
@@ -211,17 +207,17 @@ func TestBuildKubecfg(t *testing.T) {
 							{
 								Hostname: "elbHostName",
 							},
-						},nil
+						}, nil
 					},
 				},
 				nil,
 			},
 			&KubeconfigBuilder{
-				Context: "testgossipcluster.k8s.local",
-				Server: "https://elbHostName",
-				CACert: []byte(certData),
+				Context:    "testgossipcluster.k8s.local",
+				Server:     "https://elbHostName",
+				CACert:     []byte(certData),
 				ClientCert: []byte(certData),
-				ClientKey: []byte(privatekeyData),
+				ClientKey:  []byte(privatekeyData),
 			},
 			false,
 		},
