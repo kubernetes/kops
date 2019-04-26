@@ -110,6 +110,8 @@ type CanalNetworkingSpec struct {
 	// LogSeveritySys the severity to set for logs which are sent to syslog
 	// Default: INFO (other options: DEBUG, WARNING, ERROR, CRITICAL, NONE)
 	LogSeveritySys string `json:"logSeveritySys,omitempty"`
+	// MTU to be set in the cni-network-config (default: 1500)
+	MTU *int32 `json:"mtu,omitempty"`
 	// PrometheusGoMetricsEnabled enables Prometheus Go runtime metrics collection
 	PrometheusGoMetricsEnabled bool `json:"prometheusGoMetricsEnabled,omitempty"`
 	// PrometheusMetricsEnabled can be set to enable the experimental Prometheus
