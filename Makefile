@@ -561,8 +561,9 @@ ci: govet verify-gofmt verify-boilerplate verify-bazel verify-misspelling nodeup
 # travis-ci is the target that travis-ci calls
 # we skip tasks that rely on bazel and are covered by other jobs
 #  verify-gofmt: uses bazel, covered by pull-kops-verify-gofmt
+#  verify-bazel: uses bazel, covered by pull-kops-verify-bazel
 .PHONY: travis-ci
-travis-ci: govet verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+travis-ci: govet verify-boilerplate verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
