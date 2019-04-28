@@ -22,7 +22,12 @@ import (
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
+// +kubebuilder:printcolumn:name="role",type="string",JSONPath=".spec.role",description="Role",priority=0
+// +kubebuilder:printcolumn:name="machineType",type="string",JSONPath=".spec.machineType",description="Machine Type",priority=0
+// +kubebuilder:printcolumn:name="min",type="integer",JSONPath=".spec.minSize",description="Min",priority=0
+// +kubebuilder:printcolumn:name="max",type="integer",JSONPath=".spec.maxSize",description="Max",priority=0
+// +kubebuilder:printcolumn:name="zones",type="string",JSONPath=".spec.zones",description="Zones",priority=0
+// +kubebuilder:resource:shortName=ig
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {
 	metav1.TypeMeta   `json:",inline"`
