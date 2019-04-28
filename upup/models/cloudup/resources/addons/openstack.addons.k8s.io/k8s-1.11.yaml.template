@@ -173,6 +173,8 @@ metadata:
   labels:
     k8s-app: openstack-cloud-provider
     k8s-addon: openstack.addons.k8s.io
+  annotations:
+    scheduler.alpha.kubernetes.io/critical-pod: ""
 spec:
   updateStrategy:
     type: RollingUpdate
@@ -193,18 +195,10 @@ spec:
         runAsUser: 1001
       serviceAccountName: cloud-controller-manager
       tolerations:
-      # this is required so CCM can bootstrap itself
-      - key: node.cloudprovider.kubernetes.io/uninitialized
-        value: "true"
-        effect: NoSchedule
-      # this is to have the daemonset runnable on master nodes
-      # the taint may vary depending on your cluster setup
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
-      # this is to restrict CCM to only run on master nodes
-      # the node selector may vary depending on your cluster setup
-      - key: "CriticalAddonsOnly"
-        operator: "Exists"
+      - effect: NoSchedule
+        operator: Exists
+      - key: CriticalAddonsOnly
+        operator: Exists
       containers:
       - name: openstack-cloud-controller-manager
         image: "{{- .ExternalCloudControllerManager.Image }}"
