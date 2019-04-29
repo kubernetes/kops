@@ -28,8 +28,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 )
 
 // LoadBalancerDefaultIdleTimeout is the default idle time for the ELB
@@ -116,7 +116,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		if lbSpec.SecurityGroupOverride != nil {
-			glog.V(1).Infof("WARNING: You are overwriting the Load Balancers, Security Group. When this is done you are responsible for ensure the correct rules!")
+			klog.V(1).Infof("WARNING: You are overwriting the Load Balancers, Security Group. When this is done you are responsible for ensure the correct rules!")
 		}
 
 		tags := b.CloudTags(loadBalancerName, false)
@@ -349,7 +349,7 @@ func (b *APILoadBalancerBuilder) chooseBestSubnetForELB(zone string, subnets []*
 	sort.Sort(ByScoreDescending(scoredSubnets))
 
 	if scoredSubnets[0].score == scoredSubnets[1].score {
-		glog.V(2).Infof("Making arbitrary choice between subnets in zone %q to attach to ELB (%q vs %q)", zone, scoredSubnets[0].subnet.Name, scoredSubnets[1].subnet.Name)
+		klog.V(2).Infof("Making arbitrary choice between subnets in zone %q to attach to ELB (%q vs %q)", zone, scoredSubnets[0].subnet.Name, scoredSubnets[1].subnet.Name)
 	}
 
 	return scoredSubnets[0].subnet

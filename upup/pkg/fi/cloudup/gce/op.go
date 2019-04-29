@@ -23,10 +23,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/googleapi"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog"
 )
 
 const (
@@ -104,11 +104,11 @@ func waitForOp(op *compute.Operation, getOperation func(operationName string) (*
 		//gce.operationPollRateLimiter.Accept()
 		duration := time.Now().Sub(start)
 		if duration > 5*time.Second {
-			glog.Infof("pollOperation: throttled %v for %v", duration, opName)
+			klog.Infof("pollOperation: throttled %v for %v", duration, opName)
 		}
 		pollOp, err := getOperation(opName)
 		if err != nil {
-			glog.Warningf("GCE poll operation %s failed: pollOp: [%v] err: [%v] getErrorFromOp: [%v]", opName, pollOp, err, getErrorFromOp(pollOp))
+			klog.Warningf("GCE poll operation %s failed: pollOp: [%v] err: [%v] getErrorFromOp: [%v]", opName, pollOp, err, getErrorFromOp(pollOp))
 		}
 		done := opIsDone(pollOp)
 		if done {
@@ -117,9 +117,9 @@ func waitForOp(op *compute.Operation, getOperation func(operationName string) (*
 				// Log the JSON. It's cleaner than the %v structure.
 				enc, err := pollOp.MarshalJSON()
 				if err != nil {
-					glog.Warningf("waitForOperation: long operation (%v): %v (failed to encode to JSON: %v)", duration, pollOp, err)
+					klog.Warningf("waitForOperation: long operation (%v): %v (failed to encode to JSON: %v)", duration, pollOp, err)
 				} else {
-					glog.Infof("waitForOperation: long operation (%v): %v", duration, string(enc))
+					klog.Infof("waitForOperation: long operation (%v): %v", duration, string(enc))
 				}
 			}
 		}
@@ -133,7 +133,7 @@ func getErrorFromOp(op *compute.Operation) error {
 			Code:    int(op.HttpErrorStatusCode),
 			Message: op.Error.Errors[0].Message,
 		}
-		glog.Errorf("GCE operation failed: %v", err)
+		klog.Errorf("GCE operation failed: %v", err)
 		return err
 	}
 

@@ -24,8 +24,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/golang/glog"
 	certutil "k8s.io/client-go/util/cert"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -57,7 +57,7 @@ func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
 				return err
 			}
 			if cert == nil {
-				glog.Warningf("keypair %q not found, won't configure", keystoreName)
+				klog.Warningf("keypair %q not found, won't configure", keystoreName)
 				continue
 			}
 
@@ -89,11 +89,11 @@ func (b *EtcdManagerTLSBuilder) buildKubeAPIServerKeypair() error {
 	}
 
 	if etcdClientsCACertificate == nil {
-		glog.Errorf("unable to find etcd-clients-ca certificate, won't build key for apiserver")
+		klog.Errorf("unable to find etcd-clients-ca certificate, won't build key for apiserver")
 		return nil
 	}
 	if etcdClientsCAPrivateKey == nil {
-		glog.Errorf("unable to find etcd-clients-ca private key, won't build key for apiserver")
+		klog.Errorf("unable to find etcd-clients-ca private key, won't build key for apiserver")
 		return nil
 	}
 
@@ -130,7 +130,7 @@ func (b *EtcdManagerTLSBuilder) buildKubeAPIServerKeypair() error {
 		return fmt.Errorf("etcd-clients-ca private key had unexpected type %T", etcdClientsCAPrivateKey.Key)
 	}
 
-	glog.Infof("signing certificate for %q", humanName)
+	klog.Infof("signing certificate for %q", humanName)
 	cert, err := certutil.NewSignedCert(certConfig, privateKey, etcdClientsCACertificate.Certificate, signingKey)
 	if err != nil {
 		return fmt.Errorf("error signing certificate for %q: %v", humanName, err)

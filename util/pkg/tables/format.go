@@ -24,7 +24,7 @@ import (
 	"sort"
 	"text/tabwriter"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/util/pkg/reflectutils"
 )
@@ -100,7 +100,7 @@ func (t *Table) findColumns(columnNames ...string) ([]*TableColumn, error) {
 func (t *Table) Render(items interface{}, out io.Writer, columnNames ...string) error {
 	itemsValue := reflect.ValueOf(items)
 	if itemsValue.Kind() != reflect.Slice {
-		glog.Fatal("unexpected kind for items: ", itemsValue.Kind())
+		klog.Fatal("unexpected kind for items: ", itemsValue.Kind())
 	}
 
 	columns, err := t.findColumns(columnNames...)

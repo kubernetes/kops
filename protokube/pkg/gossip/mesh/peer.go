@@ -17,8 +17,8 @@ limitations under the License.
 package mesh
 
 import (
-	"github.com/golang/glog"
 	"github.com/weaveworks/mesh"
+	"k8s.io/klog"
 	"k8s.io/kops/protokube/pkg/gossip"
 )
 
@@ -80,7 +80,7 @@ func (p *peer) updateValues(removeKeys []string, putEntries map[string]string) e
 			gossipData := p.st.getData()
 			p.send.GossipBroadcast(gossipData)
 		} else {
-			glog.Warningf("no sender configured; not broadcasting update right now")
+			klog.Warningf("no sender configured; not broadcasting update right now")
 		}
 	}
 	<-c
@@ -94,7 +94,7 @@ func (p *peer) stop() {
 // Return a copy of our complete state.
 func (p *peer) Gossip() (complete mesh.GossipData) {
 	data := p.st.getData()
-	glog.V(4).Infof("Gossip => complete %v", data)
+	klog.V(4).Infof("Gossip => complete %v", data)
 	return data
 }
 
@@ -103,7 +103,7 @@ func (p *peer) Gossip() (complete mesh.GossipData) {
 func (p *peer) OnGossip(buf []byte) (delta mesh.GossipData, err error) {
 	message, err := DecodeKVState(buf)
 	if err != nil {
-		glog.Warningf("error decoding OnGossip: %v", err)
+		klog.Warningf("error decoding OnGossip: %v", err)
 		return nil, err
 	}
 
@@ -112,10 +112,10 @@ func (p *peer) OnGossip(buf []byte) (delta mesh.GossipData, err error) {
 
 	if len(deltas.Records) == 0 {
 		// per OnGossip requirements
-		glog.V(4).Infof("OnGossip %v => delta empty", message)
+		klog.V(4).Infof("OnGossip %v => delta empty", message)
 		return nil, nil
 	} else {
-		glog.V(4).Infof("OnGossip %v => delta %v", message, deltas)
+		klog.V(4).Infof("OnGossip %v => delta %v", message, deltas)
 		return deltas, nil
 	}
 }
@@ -125,14 +125,14 @@ func (p *peer) OnGossip(buf []byte) (delta mesh.GossipData, err error) {
 func (p *peer) OnGossipBroadcast(src mesh.PeerName, buf []byte) (received mesh.GossipData, err error) {
 	message, err := DecodeKVState(buf)
 	if err != nil {
-		glog.Warningf("error decoding OnGossipBroadcast: %v", err)
+		klog.Warningf("error decoding OnGossipBroadcast: %v", err)
 		return nil, err
 	}
 
 	deltas := &KVState{}
 	p.st.merge(message, deltas)
 
-	glog.V(4).Infof("OnGossipBroadcast %s %v => delta %v", src, message, deltas)
+	klog.V(4).Infof("OnGossipBroadcast %s %v => delta %v", src, message, deltas)
 
 	return deltas, nil
 }
@@ -141,12 +141,12 @@ func (p *peer) OnGossipBroadcast(src mesh.PeerName, buf []byte) (received mesh.G
 func (p *peer) OnGossipUnicast(src mesh.PeerName, buf []byte) error {
 	message, err := DecodeKVState(buf)
 	if err != nil {
-		glog.Warningf("error decoding OnGossipUnicast: %v", err)
+		klog.Warningf("error decoding OnGossipUnicast: %v", err)
 		return err
 	}
 
 	p.st.merge(message, nil)
 
-	glog.V(4).Infof("OnGossipUnicast %s %v => complete %v", src, message, p.st)
+	klog.V(4).Infof("OnGossipUnicast %s %v => complete %v", src, message, p.st)
 	return nil
 }

@@ -21,8 +21,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi"
@@ -105,7 +105,7 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 func TestValidateFull_Default_Validates(t *testing.T) {
 	c := buildDefaultCluster(t)
 	if err := validation.ValidateCluster(c, false); err != nil {
-		glog.Infof("Cluster: %v", c)
+		klog.Infof("Cluster: %v", c)
 		t.Fatalf("Validate gave unexpected error (strict=false): %v", err)
 	}
 	if err := validation.ValidateCluster(c, true); err != nil {

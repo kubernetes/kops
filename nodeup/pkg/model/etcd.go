@@ -21,7 +21,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // EtcdBuilder installs etcd
@@ -39,11 +39,11 @@ func (b *EtcdBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	switch b.Distribution {
 	case distros.DistributionCoreOS:
-		glog.Infof("Detected CoreOS; skipping etcd user installation")
+		klog.Infof("Detected CoreOS; skipping etcd user installation")
 		return nil
 
 	case distros.DistributionContainerOS:
-		glog.Infof("Detected ContainerOS; skipping etcd user installation")
+		klog.Infof("Detected ContainerOS; skipping etcd user installation")
 		return nil
 	}
 

@@ -17,7 +17,7 @@ limitations under the License.
 package fitasks
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
@@ -53,7 +53,7 @@ func (e *MirrorSecrets) Find(c *fi.Context) (*MirrorSecrets, error) {
 	}
 
 	// TODO: implement Find so that we aren't always mirroring
-	glog.V(2).Infof("MirrorSecrets::Find not implemented; always copying (inefficient)")
+	klog.V(2).Infof("MirrorSecrets::Find not implemented; always copying (inefficient)")
 	return nil, nil
 }
 

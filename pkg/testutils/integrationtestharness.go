@@ -26,7 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	kopsroot "k8s.io/kops"
 	"k8s.io/kops/cloudmock/aws/mockautoscaling"
 	"k8s.io/kops/cloudmock/aws/mockec2"
@@ -88,7 +88,7 @@ func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
 func (h *IntegrationTestHarness) Close() {
 	if h.TempDir != "" {
 		if os.Getenv("KEEP_TEMP_DIR") != "" {
-			glog.Infof("NOT removing temp directory, because KEEP_TEMP_DIR is set: %s", h.TempDir)
+			klog.Infof("NOT removing temp directory, because KEEP_TEMP_DIR is set: %s", h.TempDir)
 		} else {
 			err := os.RemoveAll(h.TempDir)
 			if err != nil {

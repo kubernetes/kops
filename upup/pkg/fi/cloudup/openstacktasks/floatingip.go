@@ -20,10 +20,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/util/pkg/vfs"
@@ -92,7 +92,7 @@ func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
 		if len(fips) == 1 && fips[0].PortID == fi.StringValue(e.LB.PortID) {
 			return &fips[0].FloatingIP, nil
 		}
-		glog.V(2).Infof("Could not find port floatingips port=%s", fi.StringValue(e.LB.PortID))
+		klog.V(2).Infof("Could not find port floatingips port=%s", fi.StringValue(e.LB.PortID))
 		return nil, nil
 	}
 
@@ -255,7 +255,7 @@ func (f *FloatingIP) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 			for _, fip := range fips {
 				if fip.InstanceID == fi.StringValue(e.Server.ID) {
 					e.ID = fi.String(fip.ID)
-					glog.V(2).Infof("Openstack::RenderOpenstack floatingip found after server is active")
+					klog.V(2).Infof("Openstack::RenderOpenstack floatingip found after server is active")
 					return nil
 				}
 			}
@@ -281,6 +281,6 @@ func (f *FloatingIP) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 		return nil
 	}
 
-	glog.V(2).Infof("Openstack task Instance::RenderOpenstack did nothing")
+	klog.V(2).Infof("Openstack task Instance::RenderOpenstack did nothing")
 	return nil
 }

@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
@@ -224,7 +224,7 @@ func (c *aliCloudImplementation) CreateTags(resourceId string, resourceType stri
 	if len(tags) == 0 {
 		return nil
 	} else if len(tags) > 10 {
-		glog.V(4).Infof("The number of specified resource's tags exceeds 10, resourceId:%q", resourceId)
+		klog.V(4).Infof("The number of specified resource's tags exceeds 10, resourceId:%q", resourceId)
 	}
 	if resourceId == "" {
 		return errors.New("resourceId not provided to CreateTags")
@@ -296,7 +296,7 @@ func (c *aliCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]k
 		return nil, nil
 	}
 	if len(responseLoadBalancers) > 1 {
-		glog.V(4).Infof("The number of specified loadbalancer with the same name exceeds 1, loadbalancerName:%q", name)
+		klog.V(4).Infof("The number of specified loadbalancer with the same name exceeds 1, loadbalancerName:%q", name)
 	}
 
 	address := responseLoadBalancers[0].Address

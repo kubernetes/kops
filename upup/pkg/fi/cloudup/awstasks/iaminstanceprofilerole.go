@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -42,7 +42,7 @@ func (e *IAMInstanceProfileRole) Find(c *fi.Context) (*IAMInstanceProfileRole, e
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if e.Role == nil || e.Role.ID == nil {
-		glog.V(2).Infof("Role/RoleID not set")
+		klog.V(2).Infof("Role/RoleID not set")
 		return nil, nil
 	}
 	roleID := *e.Role.ID

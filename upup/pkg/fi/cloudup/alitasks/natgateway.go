@@ -21,7 +21,7 @@ import (
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -45,7 +45,7 @@ func (e *NatGateway) CompareWithID() *string {
 
 func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 	if e.VPC == nil || e.VPC.ID == nil {
-		glog.V(4).Infof("VPC / VPCID not found for %s, skipping Find", fi.StringValue(e.Name))
+		klog.V(4).Infof("VPC / VPCID not found for %s, skipping Find", fi.StringValue(e.Name))
 		return nil, nil
 	}
 
@@ -76,7 +76,7 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 	actual.Region = e.Region
 
 	e.ID = actual.ID
-	glog.V(4).Infof("found matching NatGateway %v", actual)
+	klog.V(4).Infof("found matching NatGateway %v", actual)
 	return actual, nil
 }
 

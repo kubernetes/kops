@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
@@ -105,7 +105,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			if len(storagePaths) == 0 {
 				t.Scopes = append(t.Scopes, "storage-ro")
 			} else {
-				glog.Warningf("enabling storage-rw for etcd backups")
+				klog.Warningf("enabling storage-rw for etcd backups")
 				t.Scopes = append(t.Scopes, "storage-rw")
 			}
 

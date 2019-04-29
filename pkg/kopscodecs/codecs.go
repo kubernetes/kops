@@ -20,11 +20,11 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/install"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
@@ -42,7 +42,7 @@ func init() {
 func encoder(gv runtime.GroupVersioner, mediaType string) runtime.Encoder {
 	e, ok := runtime.SerializerInfoForMediaType(Codecs.SupportedMediaTypes(), mediaType)
 	if !ok {
-		glog.Fatalf("no %s serializer registered", mediaType)
+		klog.Fatalf("no %s serializer registered", mediaType)
 	}
 	return Codecs.EncoderForVersion(e.Serializer, gv)
 }
