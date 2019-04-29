@@ -52,6 +52,7 @@ type ExternalNetworkingSpec struct {
 // but this is useful for arbitrary network modes or for modes that don't need additional configuration.
 type CNINetworkingSpec struct {
 	UsesSecondaryIP bool `json:"usesSecondaryIP,omitempty"`
+	UsesNAT         bool `json:"usesNAT,omitempty"`
 }
 
 // KopeioNetworkingSpec declares that we want Kopeio networking

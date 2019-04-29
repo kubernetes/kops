@@ -196,7 +196,11 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 			return field.Invalid(fieldSpec.Child("NonMasqueradeCIDR"), nonMasqueradeCIDRString, "Cluster had an invalid NonMasqueradeCIDR")
 		}
 
-		if networkCIDR != nil && subnet.Overlap(nonMasqueradeCIDR, networkCIDR) && c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC == nil && c.Spec.Networking.LyftVPC == nil {
+		if networkCIDR != nil && subnet.Overlap(nonMasqueradeCIDR, networkCIDR) &&
+			c.Spec.Networking != nil &&
+			(c.Spec.Networking.CNI == nil || c.Spec.Networking.CNI.UsesNAT) &&
+			c.Spec.Networking.AmazonVPC == nil &&
+			c.Spec.Networking.LyftVPC == nil {
 
 			return field.Invalid(fieldSpec.Child("NonMasqueradeCIDR"), nonMasqueradeCIDRString, fmt.Sprintf("NonMasqueradeCIDR %q cannot overlap with NetworkCIDR %q", nonMasqueradeCIDRString, c.Spec.NetworkCIDR))
 		}
