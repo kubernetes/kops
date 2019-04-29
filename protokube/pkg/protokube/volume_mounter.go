@@ -25,7 +25,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/util/mount"
-	"k8s.io/kubernetes/pkg/util/nsenter"
+	"k8s.io/kubernetes/pkg/util/nsenter" // moves to k8s.io/utils/nsenter in 1.14
 	utilsexec "k8s.io/utils/exec"
 )
 
