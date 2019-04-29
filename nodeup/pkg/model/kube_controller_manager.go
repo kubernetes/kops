@@ -110,6 +110,8 @@ func (b *KubeControllerManagerBuilder) useCertificateSigner() bool {
 // buildPod is responsible for building the kubernetes manifest for the controller-manager
 func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 
+	fmt.Printf("Building KubeControllerManager Pod\n")
+
 	kcm := b.Cluster.Spec.KubeControllerManager
 	kcm.RootCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 	kcm.ServiceAccountPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
@@ -160,7 +162,9 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 		// If volume-plugin-dir flag is set in kubelet, match dir in kube-controller
 		flags = append(flags, "--flex-volume-plugin-dir="+volumePluginDir)
 	}
-	
+
+	fmt.Printf("Volume Plugin Dir: %s\n", volumePluginDir)
+
 	container := &v1.Container{
 		Name:  "kube-controller-manager",
 		Image: b.Cluster.Spec.KubeControllerManager.Image,
@@ -204,6 +208,7 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 
 	addHostPathMapping(pod, container, "logfile", "/var/log/kube-controller-manager.log").ReadOnly = false
 	addHostPathMapping(pod, container, "varlibkcm", "/var/lib/kube-controller-manager")
+
 	addHostPathMapping(pod, container, "volplugins", volumePluginDir).ReadOnly = false
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
