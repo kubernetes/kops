@@ -32,7 +32,6 @@ go_library(
         "//protokube/pkg/etcd:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//util/pkg/vfs:go_default_library",
-        "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes:go_default_library",
@@ -59,5 +58,6 @@ go_library(
         "//vendor/github.com/gophercloud/gophercloud/pagination:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
     ],
 )
