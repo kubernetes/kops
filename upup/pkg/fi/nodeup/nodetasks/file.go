@@ -30,7 +30,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/utils"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 const (
@@ -89,7 +89,7 @@ func (e *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		ownerTask := tasks["user/"+*e.Owner]
 		if ownerTask == nil {
 			// The user might be a pre-existing user (e.g. admin)
-			glog.Warningf("Unable to find task %q", "user/"+*e.Owner)
+			klog.Warningf("Unable to find task %q", "user/"+*e.Owner)
 		} else {
 			deps = append(deps, ownerTask)
 		}
@@ -130,7 +130,7 @@ func (f *File) GetName() *string {
 }
 
 func (f *File) SetName(name string) {
-	glog.Fatalf("SetName not supported for File task")
+	klog.Fatalf("SetName not supported for File task")
 }
 
 func (f *File) String() string {
@@ -235,7 +235,7 @@ func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
 
 	if a != nil {
 		if e.IfNotExists {
-			glog.V(2).Infof("file exists and IfNotExists set; skipping %q", e.Path)
+			klog.V(2).Infof("file exists and IfNotExists set; skipping %q", e.Path)
 			return nil
 		}
 	}
@@ -245,7 +245,7 @@ func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
 		if changes.Symlink != nil {
 			// This will currently fail if the target already exists.
 			// That's probably a good thing for now ... it is hard to know what to do here!
-			glog.Infof("Creating symlink %q -> %q", e.Path, *changes.Symlink)
+			klog.Infof("Creating symlink %q -> %q", e.Path, *changes.Symlink)
 			err := os.Symlink(*changes.Symlink, e.Path)
 			if err != nil {
 				return fmt.Errorf("error creating symlink %q -> %q: %v", e.Path, *changes.Symlink, err)
@@ -298,7 +298,7 @@ func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
 		for _, args := range e.OnChangeExecute {
 			human := strings.Join(args, " ")
 
-			glog.Infof("Changed; will execute OnChangeExecute command: %q", human)
+			klog.Infof("Changed; will execute OnChangeExecute command: %q", human)
 
 			cmd := exec.Command(args[0], args[1:]...)
 			output, err := cmd.CombinedOutput()

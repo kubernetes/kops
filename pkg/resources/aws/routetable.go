@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
@@ -33,7 +33,7 @@ func DescribeRouteTables(cloud fi.Cloud, clusterName string) (map[string]*ec2.Ro
 	c := cloud.(awsup.AWSCloud)
 
 	routeTables := make(map[string]*ec2.RouteTable)
-	glog.V(2).Info("Listing EC2 RouteTables")
+	klog.V(2).Info("Listing EC2 RouteTables")
 	for _, filters := range buildEC2FiltersForCluster(clusterName) {
 		request := &ec2.DescribeRouteTablesInput{
 			Filters: filters,

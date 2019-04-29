@@ -22,7 +22,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/backoff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
@@ -60,7 +60,7 @@ func (t *LoadImageTask) String() string {
 }
 
 func (e *LoadImageTask) Find(c *fi.Context) (*LoadImageTask, error) {
-	glog.Warningf("LoadImageTask checking if image present not yet implemented")
+	klog.Warningf("LoadImageTask checking if image present not yet implemented")
 	return nil, nil
 }
 
@@ -90,7 +90,7 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 	for _, url := range urls {
 		_, err = fi.DownloadURL(url, localFile, hash)
 		if err != nil {
-			glog.Warningf("error downloading url %q: %v", url, err)
+			klog.Warningf("error downloading url %q: %v", url, err)
 			continue
 		} else {
 			break
@@ -106,7 +106,7 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 	args := []string{"docker", "load", "-i", localFile}
 	human := strings.Join(args, " ")
 
-	glog.Infof("running command %s", human)
+	klog.Infof("running command %s", human)
 	cmd := exec.Command(args[0], args[1:]...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {

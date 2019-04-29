@@ -21,7 +21,7 @@ import (
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
@@ -73,10 +73,10 @@ func (d *Disk) Find(c *fi.Context) (*Disk, error) {
 		return nil, nil
 	}
 	if len(responseDisks) > 1 {
-		glog.V(4).Infof("The number of specified disk with the same name and ClusterTags exceeds 1, diskName:%q", *d.Name)
+		klog.V(4).Infof("The number of specified disk with the same name and ClusterTags exceeds 1, diskName:%q", *d.Name)
 	}
 
-	glog.V(2).Infof("found matching Disk with name: %q", *d.Name)
+	klog.V(2).Infof("found matching Disk with name: %q", *d.Name)
 
 	actual := &Disk{}
 	actual.Name = fi.String(responseDisks[0].DiskName)
@@ -88,7 +88,7 @@ func (d *Disk) Find(c *fi.Context) (*Disk, error) {
 	tags, err := cloud.GetTags(fi.StringValue(actual.DiskId), DiskResource)
 
 	if err != nil {
-		glog.V(4).Infof("Error getting tags on resourceId:%q", *actual.DiskId)
+		klog.V(4).Infof("Error getting tags on resourceId:%q", *actual.DiskId)
 	}
 	actual.Tags = tags
 
@@ -125,7 +125,7 @@ func (_ *Disk) CheckChanges(a, e, changes *Disk) error {
 //Disk can only modify tags.
 func (_ *Disk) RenderALI(t *aliup.ALIAPITarget, a, e, changes *Disk) error {
 	if a == nil {
-		glog.V(2).Infof("Creating Disk with Name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating Disk with Name:%q", fi.StringValue(e.Name))
 
 		request := &ecs.CreateDiskArgs{
 			DiskName:     fi.StringValue(e.Name),
@@ -143,7 +143,7 @@ func (_ *Disk) RenderALI(t *aliup.ALIAPITarget, a, e, changes *Disk) error {
 	}
 
 	if changes != nil && changes.Tags != nil {
-		glog.V(2).Infof("Modifying tags of disk with Name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Modifying tags of disk with Name:%q", fi.StringValue(e.Name))
 		if err := t.Cloud.CreateTags(*e.DiskId, DiskResource, e.Tags); err != nil {
 			return fmt.Errorf("error adding Tags to ALI YunPan: %v", err)
 		}
@@ -153,7 +153,7 @@ func (_ *Disk) RenderALI(t *aliup.ALIAPITarget, a, e, changes *Disk) error {
 
 		tagsToDelete := e.getDiskTagsToDelete(a.Tags)
 		if len(tagsToDelete) > 0 {
-			glog.V(2).Infof("Deleting tags of disk with Name:%q", fi.StringValue(e.Name))
+			klog.V(2).Infof("Deleting tags of disk with Name:%q", fi.StringValue(e.Name))
 			if err := t.Cloud.RemoveTags(*e.DiskId, DiskResource, tagsToDelete); err != nil {
 				return fmt.Errorf("error removing Tags from ALI YunPan: %v", err)
 			}

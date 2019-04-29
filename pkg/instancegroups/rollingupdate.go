@@ -21,9 +21,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
@@ -61,7 +61,7 @@ type RollingUpdateCluster struct {
 // RollingUpdate performs a rolling update on a K8s Cluster.
 func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.CloudInstanceGroup, cluster *api.Cluster, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
-		glog.Info("Cloud Instance Group length is zero. Not doing a rolling-update.")
+		klog.Info("Cloud Instance Group length is zero. Not doing a rolling-update.")
 		return nil
 	}
 
@@ -181,6 +181,6 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 		}
 	}
 
-	glog.Infof("Rolling update completed for cluster %q!", c.ClusterName)
+	klog.Infof("Rolling update completed for cluster %q!", c.ClusterName)
 	return nil
 }

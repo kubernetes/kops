@@ -22,7 +22,7 @@ import (
 	"os/exec"
 	"syscall"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -62,7 +62,7 @@ func (s *UpdatePackages) CheckChanges(a, e, changes *UpdatePackages) error {
 
 func (_ *UpdatePackages) RenderLocal(t *local.LocalTarget, a, e, changes *UpdatePackages) error {
 	if os.Getenv("SKIP_PACKAGE_UPDATE") != "" {
-		glog.Infof("SKIP_PACKAGE_UPDATE was set; skipping package update")
+		klog.Infof("SKIP_PACKAGE_UPDATE was set; skipping package update")
 		return nil
 	}
 	var args []string
@@ -75,7 +75,7 @@ func (_ *UpdatePackages) RenderLocal(t *local.LocalTarget, a, e, changes *Update
 	} else {
 		return fmt.Errorf("unsupported package system")
 	}
-	glog.Infof("running command %s", args)
+	klog.Infof("running command %s", args)
 	cmd := exec.Command(args[0], args[1:]...)
 	output, err := cmd.CombinedOutput()
 	// 'yum check-update' exits with 100 if it finds updates; treat it like a success

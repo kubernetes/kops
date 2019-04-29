@@ -19,7 +19,7 @@ package protokube
 import (
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/dns-controller/pkg/dns"
 )
 
@@ -37,7 +37,7 @@ type DNSProvider interface {
 // CreateInternalDNSNameRecord maps a FQDN to the internal IP address of the current machine
 func (k *KubeBoot) CreateInternalDNSNameRecord(fqdn string) error {
 	values := []string{k.InternalIP.String()}
-	glog.Infof("Creating DNS record: %s => %s", fqdn, values)
+	klog.Infof("Creating DNS record: %s => %s", fqdn, values)
 	return k.DNS.Replace(fqdn, values)
 }
 
@@ -61,7 +61,7 @@ func (p *KopsDnsProvider) RemoveRecordsImmediate(records []dns.Record) error {
 func (p *KopsDnsProvider) Replace(fqdn string, values []string) error {
 	ttl := defaultTTL
 	if ttl != dns.DefaultTTL {
-		glog.Infof("Ignoring ttl %v for %q", ttl, fqdn)
+		klog.Infof("Ignoring ttl %v for %q", ttl, fqdn)
 	}
 
 	var records []dns.Record

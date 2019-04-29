@@ -19,8 +19,8 @@ package openstacktasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -91,7 +91,7 @@ func (_ *SecurityGroup) CheckChanges(a, e, changes *SecurityGroup) error {
 
 func (_ *SecurityGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *SecurityGroup) error {
 	if a == nil {
-		glog.V(2).Infof("Creating SecurityGroup with Name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating SecurityGroup with Name:%q", fi.StringValue(e.Name))
 
 		opt := sg.CreateOpts{
 			Name:        fi.StringValue(e.Name),
@@ -107,6 +107,6 @@ func (_ *SecurityGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, c
 		return nil
 	}
 
-	glog.V(2).Infof("Openstack task SecurityGroup::RenderOpenstack did nothing")
+	klog.V(2).Infof("Openstack task SecurityGroup::RenderOpenstack did nothing")
 	return nil
 }

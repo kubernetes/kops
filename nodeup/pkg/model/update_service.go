@@ -23,7 +23,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // UpdateServiceBuilder disables the OS automatic updates
@@ -39,21 +39,21 @@ var _ fi.ModelBuilder = &UpdateServiceBuilder{}
 // Build is responsible for creating the relevant systemd service based on OS
 func (b *UpdateServiceBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.Cluster.Spec.UpdatePolicy == nil || *b.Cluster.Spec.UpdatePolicy != kops.UpdatePolicyExternal {
-		glog.Infof("UpdatePolicy not set in Cluster Spec; skipping creation of %s", ServiceName)
+		klog.Infof("UpdatePolicy not set in Cluster Spec; skipping creation of %s", ServiceName)
 		return nil
 	}
 
 	for _, spec := range [][]kops.HookSpec{b.InstanceGroup.Spec.Hooks, b.Cluster.Spec.Hooks} {
 		for _, hook := range spec {
 			if hook.Name == ServiceName || hook.Name == ServiceName+".service" {
-				glog.Infof("Detected kops Hook for '%s'; skipping creation", ServiceName)
+				klog.Infof("Detected kops Hook for '%s'; skipping creation", ServiceName)
 				return nil
 			}
 		}
 	}
 
 	if b.Distribution == distros.DistributionCoreOS {
-		glog.Infof("Detected OS %s; building %s service to disable update scheduler", ServiceName, b.Distribution)
+		klog.Infof("Detected OS %s; building %s service to disable update scheduler", ServiceName, b.Distribution)
 		c.AddTask(b.buildCoreOSSystemdService())
 	}
 
@@ -69,7 +69,7 @@ func (b *UpdateServiceBuilder) buildCoreOSSystemdService() *nodetasks.Service {
 	manifest.Set("Service", "ExecStart", "/usr/bin/systemctl mask --now locksmithd.service")
 
 	manifestString := manifest.Render()
-	glog.V(8).Infof("Built service manifest %q\n%s", ServiceName, manifestString)
+	klog.V(8).Infof("Built service manifest %q\n%s", ServiceName, manifestString)
 
 	service := &nodetasks.Service{
 		Name:       ServiceName + ".service",

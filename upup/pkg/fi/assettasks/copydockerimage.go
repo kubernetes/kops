@@ -19,7 +19,7 @@ package assettasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -62,7 +62,7 @@ func (e *CopyDockerImage) Find(c *fi.Context) (*CopyDockerImage, error) {
 	//	return nil, err
 	//}
 	//if targetImage == nil {
-	//	glog.V(4).Infof("target image %q not found", target)
+	//	klog.V(4).Infof("target image %q not found", target)
 	//	return nil, nil
 	//}
 	//
@@ -84,11 +84,11 @@ func (e *CopyDockerImage) Find(c *fi.Context) (*CopyDockerImage, error) {
 	//	actual.Name = e.Name
 	//	actual.SourceImage = e.SourceImage
 	//	actual.TargetImage = e.TargetImage
-	//	glog.Infof("Found image %q = %s", target, sourceImage.ID)
+	//	klog.Infof("Found image %q = %s", target, sourceImage.ID)
 	//	return actual, nil
 	//}
 	//
-	//glog.V(2).Infof("Target image %q does not match source %q: %q vs %q",
+	//klog.V(2).Infof("Target image %q does not match source %q: %q vs %q",
 	//	target, source,
 	//	targetImage.ID, sourceImage.ID)
 	//
@@ -127,7 +127,7 @@ func (_ *CopyDockerImage) Render(c *fi.Context, a, e, changes *CopyDockerImage) 
 	source := fi.StringValue(e.SourceImage)
 	target := fi.StringValue(e.TargetImage)
 
-	glog.Infof("copying docker image from %q to %q", source, target)
+	klog.Infof("copying docker image from %q to %q", source, target)
 
 	err = cli.pullImage(source)
 	if err != nil {

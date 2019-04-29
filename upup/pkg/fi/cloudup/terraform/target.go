@@ -25,8 +25,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/golang/glog"
 	hcl_parser "github.com/hashicorp/hcl/json/parser"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -309,7 +309,7 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 		}
 	}
 
-	glog.Infof("Terraform output is in %s", t.outDir)
+	klog.Infof("Terraform output is in %s", t.outDir)
 
 	return nil
 }

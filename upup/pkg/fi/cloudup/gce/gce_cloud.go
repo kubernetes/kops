@@ -24,13 +24,13 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/golang/glog"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/iam/v1"
 	oauth2 "google.golang.org/api/oauth2/v2"
 	"google.golang.org/api/storage/v1"
+	"k8s.io/klog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 	"k8s.io/kops/pkg/apis/kops"
@@ -98,12 +98,12 @@ func DefaultProject() (string, error) {
 	cmd.Stderr = &stderr
 
 	human := strings.Join(cmd.Args, " ")
-	glog.V(2).Infof("Running command: %s", human)
+	klog.V(2).Infof("Running command: %s", human)
 	err := cmd.Run()
 	if err != nil {
-		glog.Infof("error running %s", human)
-		glog.Info(stdout.String())
-		glog.Info(stderr.String())
+		klog.Infof("error running %s", human)
+		klog.Info(stdout.String())
+		klog.Info(stderr.String())
 		return "", fmt.Errorf("error running %s: %v", human, err)
 	}
 
@@ -122,7 +122,7 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 	ctx := context.Background()
 
 	if os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") != "" {
-		glog.Infof("Will load GOOGLE_APPLICATION_CREDENTIALS from %s", os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+		klog.Infof("Will load GOOGLE_APPLICATION_CREDENTIALS from %s", os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"))
 	}
 
 	// TODO: should we create different clients with per-service scopes?
@@ -155,9 +155,9 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 		// At least until we get e2e running, we're doing this always
 		tokenInfo, err := c.getTokenInfo(client)
 		if err != nil {
-			glog.Infof("unable to get token info: %v", err)
+			klog.Infof("unable to get token info: %v", err)
 		} else {
-			glog.V(2).Infof("running with GCE credentials: email=%s, scope=%s", tokenInfo.Email, tokenInfo.Scope)
+			klog.V(2).Infof("running with GCE credentials: email=%s, scope=%s", tokenInfo.Email, tokenInfo.Scope)
 		}
 	}
 
@@ -207,7 +207,7 @@ func (c *gceCloudImplementation) Project() string {
 func (c *gceCloudImplementation) ServiceAccount() (string, error) {
 	if c.projectInfo == nil {
 		// Find the project info from the compute API, which includes the default service account
-		glog.V(2).Infof("fetching project %q from compute API", c.project)
+		klog.V(2).Infof("fetching project %q from compute API", c.project)
 		p, err := c.compute.Projects.Get(c.project).Do()
 		if err != nil {
 			return "", fmt.Errorf("error fetching info for project %q: %v", c.project, err)
@@ -232,7 +232,7 @@ func (c *gceCloudImplementation) DNS() (dnsprovider.Interface, error) {
 }
 
 func (c *gceCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
-	glog.Warningf("FindVPCInfo not (yet) implemented on GCE")
+	klog.Warningf("FindVPCInfo not (yet) implemented on GCE")
 	return nil, nil
 }
 
@@ -270,7 +270,7 @@ func (c *gceCloudImplementation) Zones() ([]string, error) {
 		return nil, fmt.Errorf("unable to determine zones in region %q", c.Region())
 	}
 
-	glog.Infof("Scanning zones: %v", zones)
+	klog.Infof("Scanning zones: %v", zones)
 	return zones, nil
 }
 
@@ -284,7 +284,7 @@ func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]k
 	// Note that this must match GCEModelContext::NameForForwardingRule
 	name := SafeObjectName("api", cluster.ObjectMeta.Name)
 
-	glog.V(2).Infof("Querying GCE to find ForwardingRules for API (%q)", name)
+	klog.V(2).Infof("Querying GCE to find ForwardingRules for API (%q)", name)
 	forwardingRule, err := c.compute.ForwardingRules.Get(c.project, c.region, name).Do()
 	if err != nil {
 		if !IsNotFound(err) {

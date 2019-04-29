@@ -19,7 +19,7 @@ package alimodel
 import (
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi/cloudup/alitasks"
@@ -108,7 +108,7 @@ func (c *ALIModelContext) GetNameForSecurityGroup(role kops.InstanceGroupRole) s
 		return "nodes." + c.ClusterName()
 
 	default:
-		glog.Fatalf("unknown InstanceGroup Role: %q", role)
+		klog.Fatalf("unknown InstanceGroup Role: %q", role)
 		return ""
 	}
 }
@@ -128,7 +128,7 @@ func (c *ALIModelContext) GetNameForRAM(role kops.InstanceGroupRole) string {
 		name = "nodes." + c.ClusterName()
 
 	default:
-		glog.Fatalf("unknown InstanceGroup Role: %q", role)
+		klog.Fatalf("unknown InstanceGroup Role: %q", role)
 		return ""
 	}
 
@@ -153,7 +153,7 @@ func (c *ALIModelContext) GetScalingGroupName(ig *kops.InstanceGroup) string {
 		return "bastions." + c.ClusterName()
 
 	default:
-		glog.Fatalf("unknown InstanceGroup Role: %v", ig.Spec.Role)
+		klog.Fatalf("unknown InstanceGroup Role: %v", ig.Spec.Role)
 		return ""
 	}
 }

@@ -26,10 +26,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
 	"golang.org/x/crypto/ssh"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
 	"k8s.io/kops/pkg/pki"
@@ -148,7 +148,7 @@ func parseKeyset(o *kops.Keyset) (*keyset, error) {
 		if len(key.PublicMaterial) != 0 {
 			cert, err := pki.ParsePEMCertificate(key.PublicMaterial)
 			if err != nil {
-				glog.Warningf("key public material was %s", key.PublicMaterial)
+				klog.Warningf("key public material was %s", key.PublicMaterial)
 				return nil, fmt.Errorf("error loading certificate %s/%s: %v", name, key.Id, err)
 			}
 			ki.certificate = cert
@@ -196,7 +196,7 @@ func (k *keyset) findPrimary() *keysetItem {
 	for _, item := range k.items {
 		version, ok := big.NewInt(0).SetString(item.id, 10)
 		if !ok {
-			glog.Warningf("Ignoring key item with non-integer version: %q", item.id)
+			klog.Warningf("Ignoring key item with non-integer version: %q", item.id)
 			continue
 		}
 
@@ -216,7 +216,7 @@ func FindPrimary(keyset *kops.Keyset) *kops.KeysetItem {
 		item := &keyset.Spec.Keys[i]
 		version, ok := big.NewInt(0).SetString(item.Id, 10)
 		if !ok {
-			glog.Warningf("Ignoring key item with non-integer version: %q", item.Id)
+			klog.Warningf("Ignoring key item with non-integer version: %q", item.Id)
 			continue
 		}
 
@@ -233,7 +233,7 @@ func (c *ClientsetCAStore) CertificatePool(id string, createIfMissing bool) (*Ce
 	cert, err := c.FindCertificatePool(id)
 	if err == nil && cert == nil {
 		if !createIfMissing {
-			glog.Warningf("using empty certificate, because running with DryRun")
+			klog.Warningf("using empty certificate, because running with DryRun")
 			return &CertificatePool{}, err
 		}
 		return nil, fmt.Errorf("cannot find certificate pool %q", id)
@@ -353,7 +353,7 @@ func (c *ClientsetCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
 
 // IssueCert implements CAStore::IssueCert
 func (c *ClientsetCAStore) IssueCert(signer string, name string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
-	glog.Infof("Issuing new certificate: %q", name)
+	klog.Infof("Issuing new certificate: %q", name)
 
 	template.SerialNumber = serial
 
@@ -418,7 +418,7 @@ func (c *ClientsetCAStore) StoreKeypair(name string, cert *pki.Certificate, priv
 
 // AddCert implements CAStore::AddCert
 func (c *ClientsetCAStore) AddCert(name string, cert *pki.Certificate) error {
-	glog.Infof("Adding TLS certificate: %q", name)
+	klog.Infof("Adding TLS certificate: %q", name)
 
 	// We add with a timestamp of zero so this will never be the newest cert
 	serial := pki.BuildPKISerial(0)

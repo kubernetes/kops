@@ -23,20 +23,20 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockEC2) DescribeDhcpOptions(request *ec2.DescribeDhcpOptionsInput) (*ec2.DescribeDhcpOptionsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DescribeDhcpOptions: %v", request)
+	klog.Infof("DescribeDhcpOptions: %v", request)
 
 	if request.DryRun != nil {
-		glog.Fatalf("DryRun not implemented")
+		klog.Fatalf("DryRun not implemented")
 	}
 	if request.DhcpOptionsIds != nil {
-		glog.Fatalf("DhcpOptionsIds not implemented")
+		klog.Fatalf("DhcpOptionsIds not implemented")
 	}
 
 	response := &ec2.DescribeDhcpOptionsOutput{}
@@ -87,10 +87,10 @@ func (m *MockEC2) AssociateDhcpOptions(request *ec2.AssociateDhcpOptionsInput) (
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("AssociateDhcpOptions: %v", request)
+	klog.Infof("AssociateDhcpOptions: %v", request)
 
 	if request.DryRun != nil {
-		glog.Fatalf("DryRun")
+		klog.Fatalf("DryRun")
 	}
 
 	dopt := m.DhcpOptions[*request.DhcpOptionsId]
@@ -119,10 +119,10 @@ func (m *MockEC2) CreateDhcpOptions(request *ec2.CreateDhcpOptionsInput) (*ec2.C
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("CreateDhcpOptions: %v", request)
+	klog.Infof("CreateDhcpOptions: %v", request)
 
 	if request.DryRun != nil {
-		glog.Fatalf("DryRun")
+		klog.Fatalf("DryRun")
 	}
 
 	n := len(m.DhcpOptions) + 1
@@ -162,7 +162,7 @@ func (m *MockEC2) DeleteDhcpOptions(request *ec2.DeleteDhcpOptionsInput) (*ec2.D
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DeleteDhcpOptions: %v", request)
+	klog.Infof("DeleteDhcpOptions: %v", request)
 
 	id := aws.StringValue(request.DhcpOptionsId)
 	o := m.DhcpOptions[id]

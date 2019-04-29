@@ -22,7 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // LoggingRetryer adds some logging when we are retrying, so we have some idea what is happening
@@ -57,7 +57,7 @@ func (l LoggingRetryer) RetryRules(r *request.Request) time.Duration {
 		errorDescription = fmt.Sprintf("%d %s", r.HTTPResponse.StatusCode, r.HTTPResponse.Status)
 	}
 
-	glog.V(2).Infof("Retryable error (%s) from %s - will retry after delay of %v", errorDescription, methodDescription, duration)
+	klog.V(2).Infof("Retryable error (%s) from %s - will retry after delay of %v", errorDescription, methodDescription, duration)
 
 	return duration
 }

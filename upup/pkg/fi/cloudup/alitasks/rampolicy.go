@@ -21,7 +21,7 @@ import (
 
 	"github.com/denverdino/aliyungo/ram"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -62,7 +62,7 @@ func (r *RAMPolicy) Find(c *fi.Context) (*RAMPolicy, error) {
 	for _, policy := range policyList.Policies.Policy {
 		if policy.PolicyName == fi.StringValue(r.Name) {
 
-			glog.V(2).Infof("found matching RamPolicy with name: %q", *r.Name)
+			klog.V(2).Infof("found matching RamPolicy with name: %q", *r.Name)
 			actual := &RAMPolicy{}
 			actual.Name = fi.String(policy.PolicyName)
 			actual.PolicyType = fi.String(string(policy.PolicyType))
@@ -97,7 +97,7 @@ func (_ *RAMPolicy) RenderALI(t *aliup.ALIAPITarget, a, e, changes *RAMPolicy) e
 	policyRequest := ram.PolicyRequest{}
 
 	if a == nil {
-		glog.V(2).Infof("Creating RAMPolicy with Name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating RAMPolicy with Name:%q", fi.StringValue(e.Name))
 
 		policyRequest = ram.PolicyRequest{
 			PolicyName:     fi.StringValue(e.Name),

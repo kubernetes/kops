@@ -21,7 +21,7 @@ import (
 	"encoding/hex"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // EscapeCommand is used to escape a command
@@ -63,7 +63,7 @@ func escapeArg(s string) string {
 			b.WriteString("\\\\")
 
 		default:
-			glog.Warningf("Unusual character in systemd command: %v", s)
+			klog.Warningf("Unusual character in systemd command: %v", s)
 			b.WriteString("\\x")
 			b.WriteString(hex.EncodeToString([]byte{c}))
 		}

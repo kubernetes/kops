@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"sort"
 	"strings"
@@ -102,25 +102,25 @@ func NewDNSController(dnsProviders []dnsprovider.Interface, zoneRules *ZoneRules
 
 // Run starts the DnsController.
 func (c *DNSController) Run() {
-	glog.Infof("starting DNS controller")
+	klog.Infof("starting DNS controller")
 
 	stopCh := c.StopChannel()
 	go c.runWatcher(stopCh)
 
 	<-stopCh
-	glog.Infof("shutting down DNS controller")
+	klog.Infof("shutting down DNS controller")
 }
 
 func (c *DNSController) runWatcher(stopCh <-chan struct{}) {
 	for {
 		err := c.runOnce()
 		if c.StopRequested() {
-			glog.Infof("exiting dns controller loop")
+			klog.Infof("exiting dns controller loop")
 			return
 		}
 
 		if err != nil {
-			glog.Warningf("Unexpected error in DNS controller, will retry: %v", err)
+			klog.Warningf("Unexpected error in DNS controller, will retry: %v", err)
 			time.Sleep(2 * c.updateInterval)
 		} else {
 			// Simple debouncing; DNS servers are typically pretty slow anyway
@@ -148,14 +148,14 @@ func (c *DNSController) snapshotIfChangedAndReady() *snapshot {
 	aliasTargets := make(map[string][]Record)
 
 	if c.lastSuccessfulSnapshot != nil && s.changeCount == c.lastSuccessfulSnapshot.changeCount {
-		glog.V(6).Infof("No changes since DNS values last successfully applied")
+		klog.V(6).Infof("No changes since DNS values last successfully applied")
 		return nil
 	}
 
 	recordCount := 0
 	for _, scope := range c.scopes {
 		if !scope.Ready {
-			glog.Infof("scope not yet ready: %s", scope.ScopeName)
+			klog.Infof("scope not yet ready: %s", scope.ScopeName)
 			return nil
 		}
 		for _, scopeRecords := range scope.Records {
@@ -202,7 +202,7 @@ func (c *DNSController) runOnce() error {
 			if r.RecordType == RecordTypeAlias {
 				aliasRecords := snapshot.aliasTargets[r.Value]
 				if len(aliasRecords) == 0 {
-					glog.Infof("Alias in record specified %q, but no records were found for that name", r.Value)
+					klog.Infof("Alias in record specified %q, but no records were found for that name", r.Value)
 				}
 				for _, aliasRecord := range aliasRecords {
 					key := recordKey{
@@ -252,14 +252,14 @@ func (c *DNSController) runOnce() error {
 		oldValues := oldValueMap[k]
 
 		if util.StringSlicesEqual(newValues, oldValues) {
-			glog.V(4).Infof("no change to records for %s", k)
+			klog.V(4).Infof("no change to records for %s", k)
 			continue
 		}
 
 		ttl := DefaultTTL
-		glog.Infof("Using default TTL of %v", ttl)
+		klog.Infof("Using default TTL of %v", ttl)
 
-		glog.V(4).Infof("updating records for %s: %v -> %v", k, oldValues, newValues)
+		klog.V(4).Infof("updating records for %s: %v -> %v", k, oldValues, newValues)
 
 		// Duplicate records are a hard-error on e.g. Route53
 		var dedup []string
@@ -272,7 +272,7 @@ func (c *DNSController) runOnce() error {
 				}
 			}
 			if alreadyExists {
-				glog.V(2).Infof("skipping duplicate record %s", s)
+				klog.V(2).Infof("skipping duplicate record %s", s)
 				continue
 			}
 			dedup = append(dedup, s)
@@ -280,7 +280,7 @@ func (c *DNSController) runOnce() error {
 
 		err := op.updateRecords(k, dedup, int64(ttl.Seconds()))
 		if err != nil {
-			glog.Infof("error updating records for %s: %v", k, err)
+			klog.Infof("error updating records for %s: %v", k, err)
 			errors = append(errors, err)
 		}
 	}
@@ -295,16 +295,16 @@ func (c *DNSController) runOnce() error {
 		if newValues == nil {
 			err := op.deleteRecords(k)
 			if err != nil {
-				glog.Infof("error deleting records for %s: %v", k, err)
+				klog.Infof("error deleting records for %s: %v", k, err)
 				errors = append(errors, err)
 			}
 		}
 	}
 
 	for key, changeset := range op.changesets {
-		glog.V(2).Infof("applying DNS changeset for zone %s", key)
+		klog.V(2).Infof("applying DNS changeset for zone %s", key)
 		if err := changeset.Apply(); err != nil {
-			glog.Warningf("error applying DNS changeset for zone %s: %v", key, err)
+			klog.Warningf("error applying DNS changeset for zone %s: %v", key, err)
 			errors = append(errors, fmt.Errorf("error applying DNS changeset for zone %s: %v", key, err))
 		}
 	}
@@ -337,15 +337,15 @@ func (c *DNSController) RemoveRecordsImmediate(records []Record) error {
 
 		err := op.deleteRecords(k)
 		if err != nil {
-			glog.Infof("error deleting records for %s: %v", k, err)
+			klog.Infof("error deleting records for %s: %v", k, err)
 			errors = append(errors, err)
 		}
 	}
 
 	for key, changeset := range op.changesets {
-		glog.V(2).Infof("applying DNS changeset for zone %s", key)
+		klog.V(2).Infof("applying DNS changeset for zone %s", key)
 		if err := changeset.Apply(); err != nil {
-			glog.Warningf("error applying DNS changeset for zone %s: %v", key, err)
+			klog.Warningf("error applying DNS changeset for zone %s: %v", key, err)
 			errors = append(errors, fmt.Errorf("error applying DNS changeset for zone %s: %v", key, err))
 		}
 	}
@@ -397,7 +397,7 @@ func newDNSOp(zoneRules *ZoneRules, dnsCache *dnsCache) (*dnsOp, error) {
 		if len(matches) == 1 {
 			zoneMap[name] = matches[0]
 		} else if len(matches) > 1 {
-			glog.Warningf("Found multiple zones for name %q, won't manage zone (To fix: provide zone mapping flag with ID of zone)", name)
+			klog.Warningf("Found multiple zones for name %q, won't manage zone (To fix: provide zone mapping flag with ID of zone)", name)
 		}
 	}
 
@@ -459,7 +459,7 @@ func (o *dnsOp) listRecords(zone dnsprovider.Zone) ([]dnsprovider.ResourceRecord
 			return nil, fmt.Errorf("zone does not support resource records %q", zone.Name())
 		}
 
-		glog.V(2).Infof("Querying all dnsprovider records for zone %q", zone.Name())
+		klog.V(2).Infof("Querying all dnsprovider records for zone %q", zone.Name())
 		var err error
 		rrs, err = rrsProvider.List()
 		if err != nil {
@@ -473,7 +473,7 @@ func (o *dnsOp) listRecords(zone dnsprovider.Zone) ([]dnsprovider.ResourceRecord
 }
 
 func (o *dnsOp) deleteRecords(k recordKey) error {
-	glog.V(2).Infof("Deleting all records for %s", k)
+	klog.V(2).Infof("Deleting all records for %s", k)
 
 	fqdn := EnsureDotSuffix(k.FQDN)
 
@@ -502,7 +502,7 @@ func (o *dnsOp) deleteRecords(k recordKey) error {
 					return err
 				}
 
-				glog.V(2).Infof("Deleting resource record %s %s", fqdn, k.RecordType)
+				klog.V(2).Infof("Deleting resource record %s %s", fqdn, k.RecordType)
 				cs.Remove(dnsRecord)
 			}
 		}
@@ -524,15 +524,15 @@ func (o *dnsOp) deleteRecords(k recordKey) error {
 	for _, rr := range rrs {
 		rrName := EnsureDotSuffix(rr.Name())
 		if rrName != fqdn {
-			glog.V(8).Infof("Skipping delete of record %q (name != %s)", rrName, fqdn)
+			klog.V(8).Infof("Skipping delete of record %q (name != %s)", rrName, fqdn)
 			continue
 		}
 		if string(rr.Type()) != string(k.RecordType) {
-			glog.V(8).Infof("Skipping delete of record %q (type %s != %s)", rrName, rr.Type(), k.RecordType)
+			klog.V(8).Infof("Skipping delete of record %q (type %s != %s)", rrName, rr.Type(), k.RecordType)
 			continue
 		}
 
-		glog.V(2).Infof("Deleting resource record %s %s", rrName, rr.Type())
+		klog.V(2).Infof("Deleting resource record %s %s", rrName, rr.Type())
 		cs.Remove(rr)
 	}
 
@@ -572,7 +572,7 @@ func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error
 
 		for _, dnsRecord := range dnsRecords {
 			if string(dnsRecord.Type()) == string(k.RecordType) {
-				glog.V(8).Infof("Found matching record: %s %s", k.RecordType, fqdn)
+				klog.V(8).Infof("Found matching record: %s %s", k.RecordType, fqdn)
 				existing = dnsRecord
 			}
 		}
@@ -586,18 +586,18 @@ func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error
 		for _, rr := range rrs {
 			rrName := EnsureDotSuffix(FixWildcards(rr.Name()))
 			if rrName != fqdn {
-				glog.V(8).Infof("Skipping record %q (name != %s)", rrName, fqdn)
+				klog.V(8).Infof("Skipping record %q (name != %s)", rrName, fqdn)
 				continue
 			}
 			if string(rr.Type()) != string(k.RecordType) {
-				glog.V(8).Infof("Skipping record %q (type %s != %s)", rrName, rr.Type(), k.RecordType)
+				klog.V(8).Infof("Skipping record %q (type %s != %s)", rrName, rr.Type(), k.RecordType)
 				continue
 			}
 
 			if existing != nil {
-				glog.Warningf("Found multiple matching records: %v and %v", existing, rr)
+				klog.Warningf("Found multiple matching records: %v and %v", existing, rr)
 			} else {
-				glog.V(8).Infof("Found matching record: %s %s", k.RecordType, rrName)
+				klog.V(8).Infof("Found matching record: %s %s", k.RecordType, rrName)
 			}
 			existing = rr
 		}
@@ -608,7 +608,7 @@ func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error
 		return err
 	}
 
-	glog.V(2).Infof("Adding DNS changes to batch %s %s", k, newRecords)
+	klog.V(2).Infof("Adding DNS changes to batch %s %s", k, newRecords)
 	rr := rrsProvider.New(fqdn, newRecords, ttl, rrstype.RrsType(k.RecordType))
 	cs.Upsert(rr)
 
@@ -634,21 +634,21 @@ func (s *DNSControllerScope) Replace(recordName string, records []Record) {
 
 	if len(records) == 0 {
 		if !exists {
-			glog.V(6).Infof("skipping spurious removal of record %s/%s", s.ScopeName, recordName)
+			klog.V(6).Infof("skipping spurious removal of record %s/%s", s.ScopeName, recordName)
 			return
 		}
 
 		delete(s.Records, recordName)
 	} else {
 		if recordsSliceEquals(existing, records) {
-			glog.V(6).Infof("skipping spurious update of record %s/%s=%+v", s.ScopeName, recordName, records)
+			klog.V(6).Infof("skipping spurious update of record %s/%s=%+v", s.ScopeName, recordName, records)
 			return
 		}
 
 		s.Records[recordName] = records
 	}
 
-	glog.V(2).Infof("Update desired state: %s/%s: %v", s.ScopeName, recordName, records)
+	klog.V(2).Infof("Update desired state: %s/%s: %v", s.ScopeName, recordName, records)
 	s.parent.recordChange()
 }
 

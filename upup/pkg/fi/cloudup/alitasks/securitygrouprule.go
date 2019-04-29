@@ -21,7 +21,7 @@ import (
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
@@ -49,7 +49,7 @@ func (s *SecurityGroupRule) CompareWithID() *string {
 
 func (s *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 	if s.SecurityGroup == nil || s.SecurityGroup.SecurityGroupId == nil {
-		glog.V(4).Infof("SecurityGroup / SecurityGroupId not found for %s, skipping Find", fi.StringValue(s.Name))
+		klog.V(4).Infof("SecurityGroup / SecurityGroupId not found for %s, skipping Find", fi.StringValue(s.Name))
 		return nil, nil
 	}
 
@@ -94,7 +94,7 @@ func (s *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 			continue
 		}
 
-		glog.V(2).Infof("found matching SecurityGroupRule of securityGroup: %q", *s.SecurityGroup.SecurityGroupId)
+		klog.V(2).Infof("found matching SecurityGroupRule of securityGroup: %q", *s.SecurityGroup.SecurityGroupId)
 
 		actual.PortRange = fi.String(securityGroupRule.PortRange)
 		actual.SourceCidrIp = fi.String(securityGroupRule.SourceCidrIp)
@@ -141,7 +141,7 @@ func (_ *SecurityGroupRule) RenderALI(t *aliup.ALIAPITarget, a, e, changes *Secu
 
 	if a == nil {
 		if fi.BoolValue(e.In) == true {
-			glog.V(2).Infof("Creating SecurityGroupRule of SecurityGroup:%q", fi.StringValue(e.SecurityGroup.SecurityGroupId))
+			klog.V(2).Infof("Creating SecurityGroupRule of SecurityGroup:%q", fi.StringValue(e.SecurityGroup.SecurityGroupId))
 
 			authorizeSecurityGroupArgs := &ecs.AuthorizeSecurityGroupArgs{
 				SecurityGroupId: fi.StringValue(e.SecurityGroup.SecurityGroupId),

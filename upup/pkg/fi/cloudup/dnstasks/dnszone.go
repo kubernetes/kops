@@ -21,7 +21,7 @@ import (
 
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -116,7 +116,7 @@ func (_ *DNSZone) Render(c *fi.Context, a, e, changes *DNSZone) error {
 	if a == nil {
 		name := fi.StringValue(e.Name)
 
-		glog.V(2).Infof("Creating DNS Zone with Name %q", name)
+		klog.V(2).Infof("Creating DNS Zone with Name %q", name)
 		zone, err := zonesProvider.New(name)
 		if err != nil {
 			return fmt.Errorf("error creating DNS Zone %q: %v", name, err)

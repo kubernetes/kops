@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type executor struct {
@@ -69,7 +69,7 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 		for _, dep := range dependencies[k] {
 			d := taskStates[dep]
 			if d == nil {
-				glog.Fatalf("did not find task state for dependency: %q", k)
+				klog.Fatalf("did not find task state for dependency: %q", k)
 			}
 			ts.dependencies = append(ts.dependencies, d)
 		}
@@ -100,7 +100,7 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 			}
 		}
 
-		glog.Infof("Tasks: %d done / %d total; %d can run", doneCount, len(taskStates), len(canRun))
+		klog.Infof("Tasks: %d done / %d total; %d can run", doneCount, len(taskStates), len(canRun))
 		if len(canRun) == 0 {
 			break
 		}
@@ -119,7 +119,7 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 			if err != nil {
 				//  print warning message and continue like the task succeeded
 				if _, ok := err.(*ExistsAndWarnIfChangesError); ok {
-					glog.Warningf(err.Error())
+					klog.Warningf(err.Error())
 					ts.done = true
 					ts.lastError = nil
 					progress = true
@@ -127,7 +127,7 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 				}
 
 				remaining := time.Second * time.Duration(int(ts.deadline.Sub(time.Now()).Seconds()))
-				glog.Warningf("error running task %q (%v remaining to succeed): %v", ts.key, remaining, err)
+				klog.Warningf("error running task %q (%v remaining to succeed): %v", ts.key, remaining, err)
 				errors = append(errors, err)
 				ts.lastError = err
 			} else {
@@ -142,7 +142,7 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 				// Logic error!
 				panic("did not make progress executing tasks; but no errors reported")
 			}
-			glog.Infof("No progress made, sleeping before retrying %d failed task(s)", len(errors))
+			klog.Infof("No progress made, sleeping before retrying %d failed task(s)", len(errors))
 			time.Sleep(e.options.WaitAfterAllTasksFailed)
 		}
 	}
@@ -175,7 +175,7 @@ func (e *executor) forkJoin(tasks []*taskState) []error {
 		go func(ts *taskState, index int) {
 			results[index] = fmt.Errorf("function panic")
 			defer wg.Done()
-			glog.V(2).Infof("Executing task %q: %v\n", ts.key, ts.task)
+			klog.V(2).Infof("Executing task %q: %v\n", ts.key, ts.task)
 			results[index] = ts.task.Run(e.context)
 		}(tasks[i], i)
 	}

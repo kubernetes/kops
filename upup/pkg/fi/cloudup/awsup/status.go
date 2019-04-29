@@ -22,7 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -37,7 +37,7 @@ func (c *awsCloudImplementation) FindClusterStatus(cluster *kops.Cluster) (*kops
 	status := &kops.ClusterStatus{
 		EtcdClusters: etcdStatus,
 	}
-	glog.V(2).Infof("Cluster status (from cloud): %v", fi.DebugAsJsonString(status))
+	klog.V(2).Infof("Cluster status (from cloud): %v", fi.DebugAsJsonString(status))
 	return status, nil
 }
 
@@ -54,7 +54,7 @@ func (c *MockAWSCloud) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterSt
 
 // findEtcdStatus discovers the status of etcd, by looking for the tagged etcd volumes
 func findEtcdStatus(c AWSCloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, error) {
-	glog.V(2).Infof("Querying AWS for etcd volumes")
+	klog.V(2).Infof("Querying AWS for etcd volumes")
 	statusMap := make(map[string]*kops.EtcdClusterStatus)
 
 	tags := c.Tags()
@@ -65,7 +65,7 @@ func findEtcdStatus(c AWSCloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus
 	}
 
 	var volumes []*ec2.Volume
-	glog.V(2).Infof("Listing EC2 Volumes")
+	klog.V(2).Infof("Listing EC2 Volumes")
 	err := c.EC2().DescribeVolumesPages(request, func(p *ec2.DescribeVolumesOutput, lastPage bool) bool {
 		for _, volume := range p.Volumes {
 			volumes = append(volumes, volume)

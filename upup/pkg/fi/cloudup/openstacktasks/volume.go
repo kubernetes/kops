@@ -19,8 +19,8 @@ package openstacktasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	cinderv2 "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -123,7 +123,7 @@ func (_ *Volume) CheckChanges(a, e, changes *Volume) error {
 
 func (_ *Volume) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Volume) error {
 	if a == nil {
-		glog.V(2).Infof("Creating PersistentVolume with Name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating PersistentVolume with Name:%q", fi.StringValue(e.Name))
 
 		storageAZ, err := t.Cloud.GetStorageAZFromCompute(fi.StringValue(e.AvailabilityZone))
 		if err != nil {
@@ -149,7 +149,7 @@ func (_ *Volume) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 	}
 
 	if changes != nil && changes.Tags != nil {
-		glog.V(2).Infof("Update the tags on volume %q: %v, the differences are %v", fi.StringValue(e.ID), e.Tags, changes.Tags)
+		klog.V(2).Infof("Update the tags on volume %q: %v, the differences are %v", fi.StringValue(e.ID), e.Tags, changes.Tags)
 
 		err := t.Cloud.SetVolumeTags(fi.StringValue(e.ID), e.Tags)
 		if err != nil {
@@ -157,6 +157,6 @@ func (_ *Volume) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 		}
 	}
 
-	glog.V(2).Infof("Openstack task Volume::RenderOpenstack did nothing")
+	klog.V(2).Infof("Openstack task Volume::RenderOpenstack did nothing")
 	return nil
 }

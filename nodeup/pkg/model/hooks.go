@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // HookBuilder configures the hooks
@@ -62,7 +62,7 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			if _, found := hookNames[name]; found {
-				glog.V(2).Infof("Skipping the hook: %v as we've already processed a similar service name", name)
+				klog.V(2).Infof("Skipping the hook: %v as we've already processed a similar service name", name)
 				continue
 			}
 			hookNames[name] = true
@@ -98,12 +98,12 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 func (h *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*nodetasks.Service, error) {
 	// perform some basic validation
 	if hook.ExecContainer == nil && hook.Manifest == "" {
-		glog.Warningf("hook: %s has neither a raw unit or exec image configured", name)
+		klog.Warningf("hook: %s has neither a raw unit or exec image configured", name)
 		return nil, nil
 	}
 	if hook.ExecContainer != nil {
 		if err := isValidExecContainerAction(hook.ExecContainer); err != nil {
-			glog.Warningf("invalid hook action, name: %s, error: %v", name, err)
+			klog.Warningf("invalid hook action, name: %s, error: %v", name, err)
 			return nil, nil
 		}
 	}
