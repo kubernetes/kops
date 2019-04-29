@@ -61,7 +61,7 @@ required = [
   revision = "1bd4f387aa67de2eec07a362c10bc8bd7fe74237" # Latest
 [[override]]
   name = "k8s.io/kube-openapi"
-  revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803" # version specified in 1.12.3
+  revision = "c5d3b0f4bee0a2c36e3f715a6b15dcc231c64adc"
 [[override]]
   name = "k8s.io/client-go"
   version = "kubernetes-1.13.5"
@@ -378,7 +378,7 @@ required = [
   revision = "593d64559f7600f29581a3ee42177f5dbded27a9"
 [[override]]
   name = "github.com/evanphx/json-patch"
-  revision = "36442dbdb585210f8d5a1b45e67aa323c197d5c4"
+  revision = "5858425f75500d40c52783dce87d085a483ce135"
 [[override]]
   name = "github.com/pmezard/go-difflib"
   revision = "d8ed2627bdf02c080bf22230dbb337003b7aba2d"

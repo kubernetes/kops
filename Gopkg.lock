@@ -410,11 +410,11 @@
   revision = "dcef7f55730566d41eae5db10e7d6981829720f6"
 
 [[projects]]
-  digest = "1:e28563a1502222b269250bf79e7807da0574ab03f238f880275fdc1a02baeb39"
+  digest = "1:36a5ff9459163d104f2af9776c8db63f3eb4339f527a00a9835c8d562eb116ba"
   name = "github.com/evanphx/json-patch"
   packages = ["."]
   pruneopts = "UT"
-  revision = "36442dbdb585210f8d5a1b45e67aa323c197d5c4"
+  revision = "5858425f75500d40c52783dce87d085a483ce135"
 
 [[projects]]
   branch = "master"
@@ -878,6 +878,14 @@
   pruneopts = "UT"
   revision = "4b7aa43c6742a2c18fdef89dd197aaae7dac7ccd"
   version = "1.0.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:b873cc12dfa9c81eead5283300565e38a8f47e7b5adc78cf525aae9607207f7b"
+  name = "github.com/munnerz/goautoneg"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "2ae31c8b6b30d2f4c8100c20d527b571e9c433bb"
 
 [[projects]]
   digest = "1:37423212694a4316f48e0bbac8e4f1fd366a384a286fbaa7d80baf99d86f0416"
@@ -1913,7 +1921,7 @@
   version = "v0.3.0"
 
 [[projects]]
-  digest = "1:3ed676d888b0a53cc0de46209ed8b27672a188fcf66886cdb1791029ec5d5028"
+  digest = "1:2ff455945a4fe5c21f1a6f94e13bca5253856766b2b85567e5e4a78aa17795a2"
   name = "k8s.io/kube-openapi"
   packages = [
     "cmd/openapi-gen/args",
@@ -1928,7 +1936,7 @@
     "pkg/util/sets",
   ]
   pruneopts = "UT"
-  revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803"
+  revision = "c5d3b0f4bee0a2c36e3f715a6b15dcc231c64adc"
 
 [[projects]]
   digest = "1:833cbe929e2b28ef7bb59d0fa6de792413d2b02e511677397ffa0dfc22cad574"
