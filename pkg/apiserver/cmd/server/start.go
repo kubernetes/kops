@@ -41,6 +41,8 @@ import (
 
 const defaultEtcdPathPrefix = "/registry/kops.kubernetes.io"
 
+var processInfo genericoptions.ProcessInfo
+
 type KopsServerOptions struct {
 	RecommendedOptions *genericoptions.RecommendedOptions
 
@@ -54,12 +56,12 @@ type KopsServerOptions struct {
 func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 	o := &KopsServerOptions{
 		RecommendedOptions: genericoptions.NewRecommendedOptions(defaultEtcdPathPrefix,
-			apiserver.Codecs.LegacyCodec(v1alpha2.SchemeGroupVersion)),
+			apiserver.Codecs.LegacyCodec(v1alpha2.SchemeGroupVersion), &processInfo),
 
 		StdOut: out,
 		StdErr: err,
 	}
-	o.RecommendedOptions.Etcd.StorageConfig.Type = storagebackend.StorageTypeETCD2
+	//o.RecommendedOptions.Etcd.StorageConfig.Type = storagebackend.StorageTypeETCD2
 	o.RecommendedOptions.Etcd.StorageConfig.Codec = apiserver.Codecs.LegacyCodec(v1alpha2.SchemeGroupVersion)
 	//o.SecureServing.ServingOptions.BindPort = 443
 
@@ -131,9 +133,9 @@ func (o KopsServerOptions) Config() (*apiserver.Config, error) {
 		glog.Warningf("Authentication/Authorization disabled")
 	}
 
-	if err := o.RecommendedOptions.Audit.ApplyTo(&config.Config); err != nil {
-		return nil, err
-	}
+	//if err := o.RecommendedOptions.Audit.ApplyTo(&config.Config); err != nil {
+	//	return nil, err
+	//}
 	if err := o.RecommendedOptions.Features.ApplyTo(&config.Config); err != nil {
 		return nil, err
 	}
