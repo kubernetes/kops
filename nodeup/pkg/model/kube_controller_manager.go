@@ -110,7 +110,7 @@ func (b *KubeControllerManagerBuilder) useCertificateSigner() bool {
 // buildPod is responsible for building the kubernetes manifest for the controller-manager
 func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 
-	fmt.Printf("Kube-Controller-Manager: Building Pod\n")
+	glog.V(4).Infof("Kube-Controller-Manager: Building Pod")
 
 	kcm := b.Cluster.Spec.KubeControllerManager
 	kcm.RootCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
@@ -163,7 +163,7 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 		flags = append(flags, "--flex-volume-plugin-dir="+volumePluginDir)
 	}
 
-	fmt.Printf("Kube-Controller-Manager: Volume Plugin Dir: %s\n", volumePluginDir)
+	glog.V(4).Infof("Kube-Controller-Manager: Volume Plugin Dir: %s", volumePluginDir)
 
 	container := &v1.Container{
 		Name:  "kube-controller-manager",
