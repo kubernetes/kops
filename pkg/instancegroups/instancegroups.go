@@ -33,7 +33,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/kubectl/cmd"
+	cmd "k8s.io/kubernetes/pkg/kubectl/cmd/drain"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 )
 

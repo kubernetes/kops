@@ -49,13 +49,13 @@ required = [
 # Core kubernetes components
 [[override]]
   name = "k8s.io/code-generator"
-  version = "kubernetes-1.12.3"
+  version = "kubernetes-1.12.8"
 [[override]]
   name = "k8s.io/apimachinery"
-  version = "kubernetes-1.12.3"
+  version = "kubernetes-1.13.5"
 [[override]]
   name = "k8s.io/api"
-  version = "kubernetes-1.12.3"
+  version = "kubernetes-1.13.5"
 [[override]]
   name = "k8s.io/utils"
   revision = "1bd4f387aa67de2eec07a362c10bc8bd7fe74237" # Latest
@@ -64,19 +64,19 @@ required = [
   revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803" # version specified in 1.12.3
 [[override]]
   name = "k8s.io/client-go"
-  version = "kubernetes-1.12.3"
+  version = "kubernetes-1.13.5"
 [[override]]
   name = "k8s.io/apiserver"
-  version = "kubernetes-1.12.3"
+  version = "kubernetes-1.13.5"
 [[override]]
   name = "k8s.io/metrics"
-  version = "kubernetes-1.12.3"
+  version = "kubernetes-1.13.5"
 [[override]]
   name = "k8s.io/apiextensions-apiserver"
-  version = "kubernetes-1.12.3"
+  version = "kubernetes-1.13.5"
 [[override]]
   name = "k8s.io/kubernetes"
-  version = "v1.12.3"
+  version = "v1.13.5"
 
 # Needed for docs generation
 [[override]]
@@ -241,7 +241,7 @@ required = [
   revision = "d6e3b3328b783f23731bc4d058875b0371ff8109"
 [[override]]
   name = "github.com/Azure/go-autorest"
-  revision = "bca49d5b51a50dc5bb17bbf6204c711c6dbded06"
+  revision = "ea233b6412b0421a65dc6160e16c893364664a95"
 [[override]]
   name = "golang.org/x/net"
   revision = "1c05540f6879653db88113bc4a2b70aec4bd491f"
