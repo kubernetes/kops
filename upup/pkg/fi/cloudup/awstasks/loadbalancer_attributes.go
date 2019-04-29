@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -106,7 +106,7 @@ func (_ *LoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e,
 		changes.ConnectionDraining == nil &&
 		changes.ConnectionSettings == nil &&
 		changes.CrossZoneLoadBalancing == nil {
-		glog.V(4).Infof("No LoadBalancerAttribute changes; skipping update")
+		klog.V(4).Infof("No LoadBalancerAttribute changes; skipping update")
 		return nil
 	}
 
@@ -167,14 +167,14 @@ func (_ *LoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e,
 		request.LoadBalancerAttributes.ConnectionSettings.IdleTimeout = e.ConnectionSettings.IdleTimeout
 	}
 
-	glog.V(2).Infof("Configuring ELB attributes for ELB %q", loadBalancerName)
+	klog.V(2).Infof("Configuring ELB attributes for ELB %q", loadBalancerName)
 
 	response, err := t.Cloud.ELB().ModifyLoadBalancerAttributes(request)
 	if err != nil {
 		return fmt.Errorf("error configuring ELB attributes for ELB %q: %v", loadBalancerName, err)
 	}
 
-	glog.V(4).Infof("modified ELB attributes for ELB %q, response %+v", loadBalancerName, response)
+	klog.V(4).Infof("modified ELB attributes for ELB %q, response %+v", loadBalancerName, response)
 
 	return nil
 }

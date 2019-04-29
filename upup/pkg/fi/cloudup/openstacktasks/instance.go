@@ -19,10 +19,10 @@ package openstacktasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -130,7 +130,7 @@ func (_ *Instance) ShouldCreate(a, e, changes *Instance) (bool, error) {
 
 func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Instance) error {
 	if a == nil {
-		glog.V(2).Infof("Creating Instance with name: %q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating Instance with name: %q", fi.StringValue(e.Name))
 
 		opt := servers.CreateOpts{
 			Name:       fi.StringValue(e.Name),
@@ -168,11 +168,11 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 		e.ID = fi.String(v.ID)
 		e.ServerGroup.Members = append(e.ServerGroup.Members, fi.StringValue(e.ID))
 
-		glog.V(2).Infof("Creating a new Openstack instance, id=%s", v.ID)
+		klog.V(2).Infof("Creating a new Openstack instance, id=%s", v.ID)
 
 		return nil
 	}
 
-	glog.V(2).Infof("Openstack task Instance::RenderOpenstack did nothing")
+	klog.V(2).Infof("Openstack task Instance::RenderOpenstack did nothing")
 	return nil
 }

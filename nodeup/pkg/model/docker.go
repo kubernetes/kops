@@ -24,7 +24,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/apis/kops"
@@ -795,7 +795,7 @@ func (b *DockerBuilder) dockerVersion() string {
 	}
 	if dockerVersion == "" {
 		dockerVersion = DefaultDockerVersion
-		glog.Warningf("DockerVersion not specified; using default %q", dockerVersion)
+		klog.Warningf("DockerVersion not specified; using default %q", dockerVersion)
 	}
 	return dockerVersion
 }
@@ -806,14 +806,14 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 	// @check: neither coreos or containeros need provision docker.service, just the docker daemon options
 	switch b.Distribution {
 	case distros.DistributionCoreOS:
-		glog.Infof("Detected CoreOS; won't install Docker")
+		klog.Infof("Detected CoreOS; won't install Docker")
 		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
 			return err
 		}
 		return nil
 
 	case distros.DistributionContainerOS:
-		glog.Infof("Detected ContainerOS; won't install Docker")
+		klog.Infof("Detected ContainerOS; won't install Docker")
 		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
 			return err
 		}
@@ -898,7 +898,7 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		if count == 0 {
-			glog.Warningf("Did not find docker package for %s %s %s", b.Distribution, b.Architecture, dockerVersion)
+			klog.Warningf("Did not find docker package for %s %s %s", b.Distribution, b.Architecture, dockerVersion)
 		}
 	}
 
@@ -951,7 +951,7 @@ func (b *DockerBuilder) buildSystemdSocket() *nodetasks.Service {
 	manifest.Set("Install", "WantedBy", "sockets.target")
 
 	manifestString := manifest.Render()
-	glog.V(8).Infof("Built docker.socket manifest\n%s", manifestString)
+	klog.V(8).Infof("Built docker.socket manifest\n%s", manifestString)
 
 	service := &nodetasks.Service{
 		Name:       "docker.socket",
@@ -1044,7 +1044,7 @@ func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int64, dockerVers
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
 	manifestString := manifest.Render()
-	glog.V(8).Infof("Built service manifest %q\n%s", "docker", manifestString)
+	klog.V(8).Infof("Built service manifest %q\n%s", "docker", manifestString)
 
 	service := &nodetasks.Service{
 		Name:       "docker.service",
@@ -1106,18 +1106,18 @@ func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 		// So that we can support older COS images though, we do check for /etc/docker/daemon.json
 		if b, err := ioutil.ReadFile("/etc/docker/daemon.json"); err != nil {
 			if os.IsNotExist(err) {
-				glog.V(2).Infof("/etc/docker/daemon.json not found")
+				klog.V(2).Infof("/etc/docker/daemon.json not found")
 			} else {
-				glog.Warningf("error reading /etc/docker/daemon.json: %v", err)
+				klog.Warningf("error reading /etc/docker/daemon.json: %v", err)
 			}
 		} else {
 			// Maybe we get smarter here?
 			data := make(map[string]interface{})
 			if err := json.Unmarshal(b, &data); err != nil {
-				glog.Warningf("error deserializing /etc/docker/daemon.json: %v", err)
+				klog.Warningf("error deserializing /etc/docker/daemon.json: %v", err)
 			} else {
 				storageDriver := data["storage-driver"]
-				glog.Infof("/etc/docker/daemon.json has storage-driver: %q", storageDriver)
+				klog.Infof("/etc/docker/daemon.json has storage-driver: %q", storageDriver)
 			}
 			docker.Storage = nil
 		}
@@ -1133,7 +1133,7 @@ func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 			} else if !strings.Contains(storageOpts, "overlay2.override_kernel_check") {
 				docker.StorageOpts = append(docker.StorageOpts, "overlay2.override_kernel_check=1")
 			} else {
-				glog.Infof("detected image was RHEL and overlay2.override_kernel_check=1 was probably needed, but overlay2.override_kernel_check was already set (%q) so won't set", storageOpts)
+				klog.Infof("detected image was RHEL and overlay2.override_kernel_check=1 was probably needed, but overlay2.override_kernel_check was already set (%q) so won't set", storageOpts)
 			}
 		}
 	}

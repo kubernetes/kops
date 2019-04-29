@@ -21,7 +21,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/upup/pkg/fi"
@@ -103,7 +103,7 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 			case kops.CloudProviderVSphere:
 				b.addVSphereVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			case kops.CloudProviderBareMetal:
-				glog.Fatalf("BareMetal not implemented")
+				klog.Fatalf("BareMetal not implemented")
 			case kops.CloudProviderOpenstack:
 				err = b.addOpenstackVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 				if err != nil {

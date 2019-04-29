@@ -31,7 +31,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 
 	"github.com/blang/semver"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // OptionsContext is the context object for options builders
@@ -155,14 +155,14 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 
 	// TODO path.Join here?
 	tagURL := baseURL + "/bin/linux/amd64/" + component + ".docker_tag"
-	glog.V(2).Infof("Downloading docker tag for %s from: %s", component, tagURL)
+	klog.V(2).Infof("Downloading docker tag for %s from: %s", component, tagURL)
 
 	b, err := vfs.Context.ReadFile(tagURL)
 	if err != nil {
 		return "", fmt.Errorf("error reading tag file %q: %v", tagURL, err)
 	}
 	tag := strings.TrimSpace(string(b))
-	glog.V(2).Infof("Found tag %q for %q", tag, component)
+	klog.V(2).Infof("Found tag %q for %q", tag, component)
 
 	image := "k8s.gcr.io/" + component + ":" + tag
 

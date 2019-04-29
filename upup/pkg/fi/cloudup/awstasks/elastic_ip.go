@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -87,7 +87,7 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 		}
 
 		if ngw == nil {
-			glog.V(2).Infof("AssociatedNatGatewayRouteTable not found")
+			klog.V(2).Infof("AssociatedNatGatewayRouteTable not found")
 		} else {
 			if len(ngw.NatGatewayAddresses) == 0 {
 				return nil, fmt.Errorf("NatGateway %q has no addresses", *ngw.NatGatewayId)
@@ -99,7 +99,7 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 			if allocationID == nil {
 				return nil, fmt.Errorf("NatGateway %q has nil addresses", *ngw.NatGatewayId)
 			} else {
-				glog.V(2).Infof("Found ElasticIP AllocationID %q via NatGateway", *allocationID)
+				klog.V(2).Infof("Found ElasticIP AllocationID %q via NatGateway", *allocationID)
 			}
 		}
 	}
@@ -129,7 +129,7 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 		}
 		t := response.Tags[0]
 		publicIP = t.Value
-		glog.V(2).Infof("Found public IP via tag: %v", *publicIP)
+		klog.V(2).Infof("Found public IP via tag: %v", *publicIP)
 	}
 
 	if publicIP != nil || allocationID != nil {
@@ -234,7 +234,7 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 
 	// If this is a new ElasticIP
 	if a == nil {
-		glog.V(2).Infof("Creating ElasticIP for VPC")
+		klog.V(2).Infof("Creating ElasticIP for VPC")
 
 		request := &ec2.AllocateAddressInput{}
 		request.Domain = aws.String(ec2.DomainTypeVpc)
@@ -272,7 +272,7 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 	} else {
 		// TODO: Figure out what we can do.  We're sort of stuck between wanting to have one code-path with
 		// terraform, and having a bigger "window of loss" here before we create the NATGateway
-		glog.V(2).Infof("ElasticIP %q not tagged on subnet; risk of leaking", fi.StringValue(publicIp))
+		klog.V(2).Infof("ElasticIP %q not tagged on subnet; risk of leaking", fi.StringValue(publicIp))
 	}
 
 	return nil

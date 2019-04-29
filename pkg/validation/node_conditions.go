@@ -17,8 +17,8 @@ limitations under the License.
 package validation
 
 import (
-	"github.com/golang/glog"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/klog"
 )
 
 func getNodeReadyStatus(node *v1.Node) v1.ConditionStatus {
@@ -46,22 +46,22 @@ func findNodeCondition(node *v1.Node, conditionType v1.NodeConditionType) *v1.No
 func isNodeReady(node *v1.Node) bool {
 	nodeReadyCondition := findNodeCondition(node, v1.NodeReady)
 	if nodeReadyCondition == nil {
-		glog.Warningf("v1.NodeReady condition not set on node %s", node.Name)
+		klog.Warningf("v1.NodeReady condition not set on node %s", node.Name)
 		return false
 	}
 	if nodeReadyCondition.Status != v1.ConditionTrue {
-		glog.V(4).Infof("node %q not ready: %v", node.Name, nodeReadyCondition)
+		klog.V(4).Infof("node %q not ready: %v", node.Name, nodeReadyCondition)
 		return false
 	}
 
 	networkUnavailableCondition := findNodeCondition(node, v1.NodeNetworkUnavailable)
 	if networkUnavailableCondition != nil {
 		if networkUnavailableCondition.Status != v1.ConditionFalse && networkUnavailableCondition.Status != v1.ConditionUnknown {
-			glog.V(4).Infof("node %q not ready: %v", node.Name, networkUnavailableCondition)
+			klog.V(4).Infof("node %q not ready: %v", node.Name, networkUnavailableCondition)
 			return false
 		}
 	} else {
-		glog.V(4).Infof("v1.NodeNetworkUnavailable condition not set on node %s", node.Name)
+		klog.V(4).Infof("v1.NodeNetworkUnavailable condition not set on node %s", node.Name)
 	}
 
 	return true

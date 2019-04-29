@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func TestRoundTrip(t *testing.T) {
@@ -63,7 +63,7 @@ func TestRoundTrip(t *testing.T) {
 			t.Errorf("error encoding StringOrSlice %s to json: %v", g.Value, err)
 		}
 
-		glog.V(8).Infof("marshalled %s -> %q", g.Value, actualJson)
+		klog.V(8).Infof("marshalled %s -> %q", g.Value, actualJson)
 
 		if g.JSON != string(actualJson) {
 			t.Errorf("Unexpected JSON encoding.  Actual=%q, Expected=%q", string(actualJson), g.JSON)

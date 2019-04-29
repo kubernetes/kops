@@ -19,7 +19,7 @@ package vspheretasks
 // vmpoweron houses task that powers on VM on vSphere cloud.
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 )
@@ -39,7 +39,7 @@ func (o *VMPowerOn) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
 	attachISOTask := tasks["AttachISO/"+*o.AttachISO.Name]
 	if attachISOTask == nil {
-		glog.Fatalf("Unable to find attachISO task %s dependency for VMPowerOn %s", *o.AttachISO.Name, *o.Name)
+		klog.Fatalf("Unable to find attachISO task %s dependency for VMPowerOn %s", *o.AttachISO.Name, *o.Name)
 	}
 	deps = append(deps, attachISOTask)
 	return deps
@@ -57,25 +57,25 @@ func (o *VMPowerOn) SetName(name string) {
 
 // Run executes DefaultDeltaRunMethod for this task.
 func (e *VMPowerOn) Run(c *fi.Context) error {
-	glog.Info("VMPowerOn.Run invoked!")
+	klog.Info("VMPowerOn.Run invoked!")
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
 // Find is a no-op for vSphere cloud, for now.
 func (e *VMPowerOn) Find(c *fi.Context) (*VMPowerOn, error) {
-	glog.Info("VMPowerOn.Find invoked!")
+	klog.Info("VMPowerOn.Find invoked!")
 	return nil, nil
 }
 
 // CheckChanges is a no-op for vSphere cloud, for now.
 func (_ *VMPowerOn) CheckChanges(a, e, changes *VMPowerOn) error {
-	glog.Info("VMPowerOn.CheckChanges invoked!")
+	klog.Info("VMPowerOn.CheckChanges invoked!")
 	return nil
 }
 
 // RenderVSphere executes the actual power on operation for VM on vSphere cloud.
 func (_ *VMPowerOn) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *VMPowerOn) error {
-	glog.V(2).Infof("VMPowerOn.RenderVSphere invoked for vm %s", *changes.AttachISO.VM.Name)
+	klog.V(2).Infof("VMPowerOn.RenderVSphere invoked for vm %s", *changes.AttachISO.VM.Name)
 	err := t.Cloud.PowerOn(*changes.AttachISO.VM.Name)
 	return err
 }

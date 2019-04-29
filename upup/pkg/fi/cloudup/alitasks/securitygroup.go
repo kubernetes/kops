@@ -19,7 +19,7 @@ package alitasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
@@ -48,7 +48,7 @@ func (s *SecurityGroup) CompareWithID() *string {
 
 func (s *SecurityGroup) Find(c *fi.Context) (*SecurityGroup, error) {
 	if s.VPC == nil || s.VPC.ID == nil {
-		glog.V(4).Infof("VPC / VPCId not found for %s, skipping Find", fi.StringValue(s.Name))
+		klog.V(4).Infof("VPC / VPCId not found for %s, skipping Find", fi.StringValue(s.Name))
 		return nil, nil
 	}
 
@@ -95,7 +95,7 @@ func (s *SecurityGroup) Find(c *fi.Context) (*SecurityGroup, error) {
 		}
 
 		if find {
-			glog.V(2).Infof("found matching SecurityGroup with name: %q", *s.Name)
+			klog.V(2).Infof("found matching SecurityGroup with name: %q", *s.Name)
 			actual.Name = fi.String(securityGroup.SecurityGroupName)
 			actual.SecurityGroupId = fi.String(securityGroup.SecurityGroupId)
 			// Ignore "system" fields
@@ -136,7 +136,7 @@ func (_ *SecurityGroup) CheckChanges(a, e, changes *SecurityGroup) error {
 func (_ *SecurityGroup) RenderALI(t *aliup.ALIAPITarget, a, e, changes *SecurityGroup) error {
 
 	if a == nil {
-		glog.V(2).Infof("Creating SecurityGroup with Name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating SecurityGroup with Name:%q", fi.StringValue(e.Name))
 
 		createSecurityGroupArgs := &ecs.CreateSecurityGroupArgs{
 			RegionId:          common.Region(t.Cloud.Region()),
@@ -159,7 +159,7 @@ func (_ *SecurityGroup) RenderALI(t *aliup.ALIAPITarget, a, e, changes *Security
 	}
 
 	if a != nil && (len(a.Tags) > 0) {
-		glog.V(2).Infof("Modifying SecurityGroup with Name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Modifying SecurityGroup with Name:%q", fi.StringValue(e.Name))
 
 		tagsToDelete := e.getGroupTagsToDelete(a.Tags)
 		if len(tagsToDelete) > 0 {

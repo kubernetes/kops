@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // Stoppable implements the standard stop / shutdown logic
@@ -59,7 +59,7 @@ func (s *Stoppable) Stop() error {
 		s.stopChannel = make(chan struct{})
 	}
 	close(s.stopChannel)
-	glog.Infof("shutting down controller")
+	klog.Infof("shutting down controller")
 	s.shutdown = true
 
 	return nil

@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/util/pkg/reflectutils"
 )
@@ -53,7 +53,7 @@ func FindTaskDependencies(tasks map[string]Task) map[string][]string {
 		for _, dep := range dependencies {
 			dependencyKey, found := taskToId[dep]
 			if !found {
-				glog.Fatalf("dependency not found: %v", dep)
+				klog.Fatalf("dependency not found: %v", dep)
 			}
 			dependencyKeys = append(dependencyKeys, dependencyKey)
 		}
@@ -61,9 +61,9 @@ func FindTaskDependencies(tasks map[string]Task) map[string][]string {
 		edges[k] = dependencyKeys
 	}
 
-	glog.V(4).Infof("Dependencies:")
+	klog.V(4).Infof("Dependencies:")
 	for k, v := range edges {
-		glog.V(4).Infof("\t%s:\t%v", k, v)
+		klog.V(4).Infof("\t%s:\t%v", k, v)
 	}
 
 	return edges
@@ -115,13 +115,13 @@ func getDependencies(tasks map[string]Task, v reflect.Value) []Task {
 			return reflectutils.SkipReflection
 
 		default:
-			glog.Infof("Unhandled kind for %q: %T", path, v.Interface())
+			klog.Infof("Unhandled kind for %q: %T", path, v.Interface())
 			return fmt.Errorf("Unhandled kind for %q: %v", path, v.Kind())
 		}
 	})
 
 	if err != nil {
-		glog.Fatalf("unexpected error finding dependencies %v", err)
+		klog.Fatalf("unexpected error finding dependencies %v", err)
 	}
 
 	return dependencies

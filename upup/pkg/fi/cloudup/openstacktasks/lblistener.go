@@ -19,7 +19,7 @@ package openstacktasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	// "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 	"k8s.io/kops/upup/pkg/fi"
@@ -125,7 +125,7 @@ func (_ *LBListener) CheckChanges(a, e, changes *LBListener) error {
 
 func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *LBListener) error {
 	if a == nil {
-		glog.V(2).Infof("Creating LB with Name: %q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating LB with Name: %q", fi.StringValue(e.Name))
 		listeneropts := listeners.CreateOpts{
 			Name:           fi.StringValue(e.Name),
 			DefaultPoolID:  *e.Pool.ID,
@@ -141,6 +141,6 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 		return nil
 	}
 
-	glog.V(2).Infof("Openstack task LB::RenderOpenstack did nothing")
+	klog.V(2).Infof("Openstack task LB::RenderOpenstack did nothing")
 	return nil
 }

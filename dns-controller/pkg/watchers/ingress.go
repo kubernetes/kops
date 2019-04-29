@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog"
 
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
@@ -55,19 +55,19 @@ func NewIngressController(client kubernetes.Interface, dns dns.Context, namespac
 
 // Run starts the IngressController.
 func (c *IngressController) Run() {
-	glog.Infof("starting ingress controller")
+	klog.Infof("starting ingress controller")
 
 	stopCh := c.StopChannel()
 	go c.runWatcher(stopCh)
 
 	<-stopCh
-	glog.Infof("shutting down ingress controller")
+	klog.Infof("shutting down ingress controller")
 }
 
 func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
 		var listOpts metav1.ListOptions
-		glog.V(4).Infof("querying without label filter")
+		klog.V(4).Infof("querying without label filter")
 
 		allKeys := c.scope.AllKeys()
 		ingressList, err := c.client.ExtensionsV1beta1().Ingresses(c.namespace).List(listOpts)
@@ -77,14 +77,14 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 		foundKeys := make(map[string]bool)
 		for i := range ingressList.Items {
 			ingress := &ingressList.Items[i]
-			glog.V(4).Infof("found ingress: %v", ingress.Name)
+			klog.V(4).Infof("found ingress: %v", ingress.Name)
 			key := c.updateIngressRecords(ingress)
 			foundKeys[key] = true
 		}
 		for _, key := range allKeys {
 			if !foundKeys[key] {
 				// The ingress previously existed, but no longer exists; delete it from the scope
-				glog.V(2).Infof("removing ingress not found in list: %s", key)
+				klog.V(2).Infof("removing ingress not found in list: %s", key)
 				c.scope.Replace(key, nil)
 			}
 		}
@@ -100,16 +100,16 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 		for {
 			select {
 			case <-stopCh:
-				glog.Infof("Got stop signal")
+				klog.Infof("Got stop signal")
 				return true, nil
 			case event, ok := <-ch:
 				if !ok {
-					glog.Infof("ingress watch channel closed")
+					klog.Infof("ingress watch channel closed")
 					return false, nil
 				}
 
 				ingress := event.Object.(*v1beta1.Ingress)
-				glog.V(4).Infof("ingress changed: %s %v", event.Type, ingress.Name)
+				klog.V(4).Infof("ingress changed: %s %v", event.Type, ingress.Name)
 
 				switch event.Type {
 				case watch.Added, watch.Modified:
@@ -119,7 +119,7 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 					c.scope.Replace(ingress.Namespace+"/"+ingress.Name, nil)
 
 				default:
-					glog.Warningf("Unknown event type: %v", event.Type)
+					klog.Warningf("Unknown event type: %v", event.Type)
 				}
 			}
 		}
@@ -132,7 +132,7 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 		}
 
 		if err != nil {
-			glog.Warningf("Unexpected error in event watch, will retry: %v", err)
+			klog.Warningf("Unexpected error in event watch, will retry: %v", err)
 			time.Sleep(10 * time.Second)
 		}
 	}

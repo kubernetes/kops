@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 )
@@ -63,7 +63,7 @@ func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(instanceId string, newG
 	if node != nil {
 		cm.Node = node
 	} else {
-		glog.V(8).Infof("unable to find node for instance: %s", instanceId)
+		klog.V(8).Infof("unable to find node for instance: %s", instanceId)
 	}
 
 	if newGroupName == currentGroupName {

@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -65,7 +65,7 @@ func (e *InstanceVolumeAttachment) Find(c *fi.Context) (*InstanceVolumeAttachmen
 			Volume:   &EBSVolume{ID: bdm.Ebs.VolumeId},
 		}
 
-		glog.V(2).Infof("found matching InstanceVolumeAttachmen")
+		klog.V(2).Infof("found matching InstanceVolumeAttachmen")
 		return actual, nil
 	}
 

@@ -19,7 +19,7 @@ package alitasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
@@ -50,15 +50,15 @@ func (v *VSwitchSNAT) CompareWithID() *string {
 
 func (v *VSwitchSNAT) Find(c *fi.Context) (*VSwitchSNAT, error) {
 	if v.VSwitch == nil || v.VSwitch.VSwitchId == nil {
-		glog.V(4).Infof("VSwitch / VSwitchId not found for %s, skipping Find", fi.StringValue(v.Name))
+		klog.V(4).Infof("VSwitch / VSwitchId not found for %s, skipping Find", fi.StringValue(v.Name))
 		return nil, nil
 	}
 	if v.NatGateway == nil || v.NatGateway.ID == nil {
-		glog.V(4).Infof("NatGateway / NatGatewayId not found for %s, skipping Find", fi.StringValue(v.Name))
+		klog.V(4).Infof("NatGateway / NatGatewayId not found for %s, skipping Find", fi.StringValue(v.Name))
 		return nil, nil
 	}
 	if v.EIP == nil || v.EIP.IpAddress == nil {
-		glog.V(4).Infof("EIP / EIP not found for %s, skipping Find", fi.StringValue(v.Name))
+		klog.V(4).Infof("EIP / EIP not found for %s, skipping Find", fi.StringValue(v.Name))
 		return nil, nil
 	}
 
@@ -74,7 +74,7 @@ func (v *VSwitchSNAT) Find(c *fi.Context) (*VSwitchSNAT, error) {
 		return nil, fmt.Errorf("error listing NatGateways: %v", err)
 	}
 	if len(natGateways) == 0 {
-		glog.V(4).Infof("NatGateway not found for %s, skipping Find", fi.StringValue(v.Name))
+		klog.V(4).Infof("NatGateway not found for %s, skipping Find", fi.StringValue(v.Name))
 		return nil, nil
 	}
 	if len(natGateways[0].SnatTableIds.SnatTableId) == 0 {

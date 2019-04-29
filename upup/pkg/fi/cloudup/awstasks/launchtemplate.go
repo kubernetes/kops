@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // LaunchTemplate defines the specificate for a template
@@ -158,7 +158,7 @@ func (t *LaunchTemplate) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 		removals = append(removals, &deleteLaunchTemplate{lc: configuration})
 	}
 
-	glog.V(2).Infof("will delete launch template: %v", removals)
+	klog.V(2).Infof("will delete launch template: %v", removals)
 
 	return removals, nil
 }

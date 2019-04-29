@@ -17,7 +17,7 @@ limitations under the License.
 package distros
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
 )
 
@@ -55,7 +55,7 @@ func (d Distribution) BuildTags() []string {
 	case DistributionContainerOS:
 		t = []string{"_containeros"}
 	default:
-		glog.Fatalf("unknown distribution: %s", d)
+		klog.Fatalf("unknown distribution: %s", d)
 		return nil
 	}
 
@@ -81,7 +81,7 @@ func (d Distribution) IsDebianFamily() bool {
 	case DistributionCoreOS, DistributionContainerOS:
 		return false
 	default:
-		glog.Fatalf("unknown distribution: %s", d)
+		klog.Fatalf("unknown distribution: %s", d)
 		return false
 	}
 }
@@ -95,7 +95,7 @@ func (d Distribution) IsRHELFamily() bool {
 	case DistributionCoreOS, DistributionContainerOS:
 		return false
 	default:
-		glog.Fatalf("unknown distribution: %s", d)
+		klog.Fatalf("unknown distribution: %s", d)
 		return false
 	}
 }
@@ -111,7 +111,7 @@ func (d Distribution) IsSystemd() bool {
 	case DistributionContainerOS:
 		return true
 	default:
-		glog.Fatalf("unknown distribution: %s", d)
+		klog.Fatalf("unknown distribution: %s", d)
 		return false
 	}
 }

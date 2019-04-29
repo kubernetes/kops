@@ -30,8 +30,8 @@ import (
 	"time"
 
 	"github.com/denverdino/aliyungo/oss"
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -71,7 +71,7 @@ type listOption struct {
 
 // WriteTo implements io.WriteTo
 func (p *OSSPath) WriteTo(out io.Writer) (int64, error) {
-	glog.V(4).Infof("Reading file %q", p)
+	klog.V(4).Infof("Reading file %q", p)
 
 	b := p.client.Bucket(p.bucket)
 	headers := http.Header{}
@@ -132,7 +132,7 @@ func (p *OSSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 	b := p.client.Bucket(p.bucket)
 
 	done, err := RetryWithBackoff(ossWriteBackoff, func() (bool, error) {
-		glog.V(4).Infof("Writing file %q", p)
+		klog.V(4).Infof("Writing file %q", p)
 
 		var perm oss.ACL
 		var ok bool
@@ -199,7 +199,7 @@ func (p *OSSPath) Remove() error {
 	b := p.client.Bucket(p.bucket)
 
 	done, err := RetryWithBackoff(ossWriteBackoff, func() (bool, error) {
-		glog.V(8).Infof("removing file %s", p)
+		klog.V(8).Infof("removing file %s", p)
 
 		err := b.Del(p.key)
 		if err != nil {
@@ -336,7 +336,7 @@ func (p *OSSPath) listPath(opt listOption) ([]Path, error) {
 				break
 			}
 		}
-		glog.V(8).Infof("Listed files in %v: %v", p, paths)
+		klog.V(8).Infof("Listed files in %v: %v", p, paths)
 		ret = paths
 		return true, nil
 	})
