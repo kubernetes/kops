@@ -27,7 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -99,7 +99,7 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 			}
 
 			if reflect.DeepEqual(actualJson, expectedJson) {
-				glog.V(2).Infof("actual RolePolicyDocument was json-equal to expected; returning expected value")
+				klog.V(2).Infof("actual RolePolicyDocument was json-equal to expected; returning expected value")
 				actualPolicy = expectedPolicy
 			}
 		}
@@ -107,7 +107,7 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 		actual.RolePolicyDocument = fi.WrapResource(fi.NewStringResource(actualPolicy))
 	}
 
-	glog.V(2).Infof("found matching IAMRole %q", aws.StringValue(actual.ID))
+	klog.V(2).Infof("found matching IAMRole %q", aws.StringValue(actual.ID))
 	e.ID = actual.ID
 
 	// Avoid spurious changes
@@ -141,7 +141,7 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 	}
 
 	if a == nil {
-		glog.V(2).Infof("Creating IAMRole with Name:%q", *e.Name)
+		klog.V(2).Infof("Creating IAMRole with Name:%q", *e.Name)
 
 		request := &iam.CreateRoleInput{}
 		request.AssumeRolePolicyDocument = aws.String(policy)
@@ -155,7 +155,7 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 		e.ID = response.Role.RoleId
 	} else {
 		if changes.RolePolicyDocument != nil {
-			glog.V(2).Infof("Updating IAMRole AssumeRolePolicy %q", *e.Name)
+			klog.V(2).Infof("Updating IAMRole AssumeRolePolicy %q", *e.Name)
 
 			var err error
 
@@ -168,10 +168,10 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 			}
 
 			if actualPolicy == policy {
-				glog.Warning("Policies were actually the same")
+				klog.Warning("Policies were actually the same")
 			} else {
 				d := diff.FormatDiff(actualPolicy, policy)
-				glog.V(2).Infof("diff: %s", d)
+				klog.V(2).Infof("diff: %s", d)
 			}
 
 			request := &iam.UpdateAssumeRolePolicyInput{}

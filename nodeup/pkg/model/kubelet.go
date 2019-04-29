@@ -26,7 +26,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apiserver/pkg/authentication/user"
@@ -110,7 +110,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		if b.UseBootstrapTokens() {
 			// @check if a master and if so, we bypass the token strapping and instead generate our own kubeconfig
 			if b.IsMaster {
-				glog.V(3).Info("kubelet bootstrap tokens are enabled and running on a master")
+				klog.V(3).Info("kubelet bootstrap tokens are enabled and running on a master")
 
 				task, err := b.buildMasterKubeletKubeconfig()
 				if err != nil {
@@ -185,7 +185,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	if kubeletConfig.ExperimentalAllowedUnsafeSysctls != nil {
 		// The ExperimentalAllowedUnsafeSysctls flag was renamed in k/k #63717
 		if b.IsKubernetesGTE("1.11") {
-			glog.V(1).Info("ExperimentalAllowedUnsafeSysctls was renamed in k8s 1.11+, please use AllowedUnsafeSysctls instead.")
+			klog.V(1).Info("ExperimentalAllowedUnsafeSysctls was renamed in k8s 1.11+, please use AllowedUnsafeSysctls instead.")
 			kubeletConfig.AllowedUnsafeSysctls = append(kubeletConfig.ExperimentalAllowedUnsafeSysctls, kubeletConfig.AllowedUnsafeSysctls...)
 			kubeletConfig.ExperimentalAllowedUnsafeSysctls = nil
 		}
@@ -279,7 +279,7 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Service", "MemoryAccounting", "true")
 	manifestString := manifest.Render()
 
-	glog.V(8).Infof("Built service manifest %q\n%s", "kubelet", manifestString)
+	klog.V(8).Infof("Built service manifest %q\n%s", "kubelet", manifestString)
 
 	service := &nodetasks.Service{
 		Name:       "kubelet.service",
@@ -299,7 +299,7 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 // buildKubeletConfig is responsible for creating the kubelet configuration
 func (b *KubeletBuilder) buildKubeletConfig() (*kops.KubeletConfigSpec, error) {
 	if b.InstanceGroup == nil {
-		glog.Fatalf("InstanceGroup was not set")
+		klog.Fatalf("InstanceGroup was not set")
 	}
 
 	kubeletConfigSpec, err := b.buildKubeletConfigSpec()

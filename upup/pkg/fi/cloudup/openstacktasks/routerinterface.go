@@ -19,9 +19,9 @@ package openstacktasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -123,7 +123,7 @@ func (_ *RouterInterface) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 	if a == nil {
 		routerID := fi.StringValue(e.Router.ID)
 		subnetID := fi.StringValue(e.Subnet.ID)
-		glog.V(2).Infof("Creating RouterInterface for router:%s and subnet:%s", routerID, subnetID)
+		klog.V(2).Infof("Creating RouterInterface for router:%s and subnet:%s", routerID, subnetID)
 
 		opt := routers.AddInterfaceOpts{SubnetID: subnetID}
 		v, err := t.Cloud.CreateRouterInterface(routerID, opt)
@@ -132,10 +132,10 @@ func (_ *RouterInterface) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 		}
 
 		e.ID = fi.String(v.PortID)
-		glog.V(2).Infof("Creating a new Openstack router interface, id=%s", v.PortID)
+		klog.V(2).Infof("Creating a new Openstack router interface, id=%s", v.PortID)
 		return nil
 	}
 	e.ID = a.ID
-	glog.V(2).Infof("Using an existing Openstack router interface, id=%s", fi.StringValue(e.ID))
+	klog.V(2).Infof("Using an existing Openstack router interface, id=%s", fi.StringValue(e.ID))
 	return nil
 }

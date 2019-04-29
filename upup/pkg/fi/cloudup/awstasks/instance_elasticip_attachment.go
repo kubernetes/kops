@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -57,7 +57,7 @@ func (e *InstanceElasticIPAttachment) Find(c *fi.Context) (*InstanceElasticIPAtt
 	}
 
 	if len(response.Addresses) != 1 {
-		glog.Fatalf("found multiple ElasticIPs for public IP")
+		klog.Fatalf("found multiple ElasticIPs for public IP")
 	}
 
 	a := response.Addresses[0]

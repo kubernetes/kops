@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type rolePolicy struct {
@@ -66,7 +66,7 @@ func (m *MockIAM) PutRolePolicy(request *iam.PutRolePolicyInput) (*iam.PutRolePo
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("PutRolePolicy: %v", request)
+	klog.Infof("PutRolePolicy: %v", request)
 
 	for _, rp := range m.RolePolicies {
 		if rp.PolicyName != aws.StringValue(request.PolicyName) {
@@ -101,7 +101,7 @@ func (m *MockIAM) ListRolePolicies(request *iam.ListRolePoliciesInput) (*iam.Lis
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("ListRolePolicies: %v", request)
+	klog.Infof("ListRolePolicies: %v", request)
 
 	var policyNames []string
 
@@ -149,7 +149,7 @@ func (m *MockIAM) DeleteRolePolicy(request *iam.DeleteRolePolicyInput) (*iam.Del
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DeleteRolePolicy: %v", request)
+	klog.Infof("DeleteRolePolicy: %v", request)
 
 	found := false
 	var newRolePolicies []*rolePolicy

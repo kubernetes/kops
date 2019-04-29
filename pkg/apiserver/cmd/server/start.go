@@ -24,7 +24,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -34,6 +33,7 @@ import (
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
 	"k8s.io/apiserver/pkg/storage/storagebackend"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/apiserver"
 	"k8s.io/kops/pkg/openapi"
@@ -128,7 +128,7 @@ func (o KopsServerOptions) Config() (*apiserver.Config, error) {
 			return nil, err
 		}
 
-		glog.Warningf("Authentication/Authorization disabled")
+		klog.Warningf("Authentication/Authorization disabled")
 	}
 
 	if err := o.RecommendedOptions.Audit.ApplyTo(&config.Config); err != nil {

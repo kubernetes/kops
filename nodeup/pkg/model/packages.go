@@ -20,7 +20,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // PackagesBuilder adds miscellaneous OS packages that we need
@@ -47,7 +47,7 @@ func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(&nodetasks.Package{Name: "socat"})
 	} else {
 		// Hopefully it's already installed
-		glog.Infof("ebtables package not known for distro %q", b.Distribution)
+		klog.Infof("ebtables package not known for distro %q", b.Distribution)
 	}
 
 	return nil

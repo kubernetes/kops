@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -67,7 +67,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		if sharedVPC && b.IsKubernetesGTE("1.5") {
 			// If we're running k8s 1.5, and we have e.g.  --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP,LegacyHostIP
 			// then we don't need EnableDNSHostnames any more
-			glog.V(4).Infof("Kubernetes version %q; skipping EnableDNSHostnames requirement on VPC", b.KubernetesVersion())
+			klog.V(4).Infof("Kubernetes version %q; skipping EnableDNSHostnames requirement on VPC", b.KubernetesVersion())
 		} else {
 			// In theory we don't need to enable it for >= 1.5,
 			// but seems safer to stick with existing behaviour
@@ -197,9 +197,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// Apply tags so that Kubernetes knows which subnets should be used for internal/external ELBs
 		if b.Cluster.Spec.DisableSubnetTags {
-			glog.V(2).Infof("skipping subnet tags. Ensure these are maintained externally.")
+			klog.V(2).Infof("skipping subnet tags. Ensure these are maintained externally.")
 		} else {
-			glog.V(2).Infof("applying subnet tags")
+			klog.V(2).Infof("applying subnet tags")
 			tags = b.CloudTags(subnetName, sharedSubnet)
 			tags["SubnetType"] = string(subnetSpec.Type)
 
@@ -211,7 +211,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				tags[aws.TagNameSubnetInternalELB] = "1"
 
 			default:
-				glog.V(2).Infof("unable to properly tag subnet %q because it has unknown type %q. Load balancers may be created in incorrect subnets", subnetSpec.Name, subnetSpec.Type)
+				klog.V(2).Infof("unable to properly tag subnet %q because it has unknown type %q. Load balancers may be created in incorrect subnets", subnetSpec.Name, subnetSpec.Type)
 			}
 		}
 
@@ -288,7 +288,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 		}
 		if allUnmanaged {
-			glog.V(4).Infof("skipping network configuration in zone %s - all subnets unmanaged", zone)
+			klog.V(4).Infof("skipping network configuration in zone %s - all subnets unmanaged", zone)
 			continue
 		}
 

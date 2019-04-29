@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/protokube/pkg/protokube"
 )
@@ -46,9 +46,9 @@ func removeDNSRecords(nameList string, dnsProvider protokube.DNSProvider) {
 		}
 
 		if err := dnsProvider.RemoveRecordsImmediate(removeRecords); err != nil {
-			glog.Warningf("error removing records %q, will retry: %v", nameList, err)
+			klog.Warningf("error removing records %q, will retry: %v", nameList, err)
 		} else {
-			glog.Infof("removed DNS records %q", nameList)
+			klog.Infof("removed DNS records %q", nameList)
 			return
 		}
 		time.Sleep(5 * time.Second)

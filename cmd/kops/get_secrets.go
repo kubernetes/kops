@@ -22,8 +22,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/sshcredentials"
@@ -140,7 +140,7 @@ func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, sshCredentialS
 		for i := range l {
 			id, err := sshcredentials.Fingerprint(l[i].Spec.PublicKey)
 			if err != nil {
-				glog.Warningf("unable to compute fingerprint for public key %q", l[i].Name)
+				klog.Warningf("unable to compute fingerprint for public key %q", l[i].Name)
 			}
 			item := &fi.KeystoreItem{
 				Name: l[i].Name,

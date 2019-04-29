@@ -24,7 +24,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // BuildPKISerial produces a serial number for certs that is vanishingly unlikely to collide
@@ -35,7 +35,7 @@ func BuildPKISerial(timestamp int64) *big.Int {
 	randomLimit := new(big.Int).Lsh(big.NewInt(1), 32)
 	randomComponent, err := crypto_rand.Int(crypto_rand.Reader, randomLimit)
 	if err != nil {
-		glog.Fatalf("error generating random number: %v", err)
+		klog.Fatalf("error generating random number: %v", err)
 	}
 
 	serial := big.NewInt(timestamp)

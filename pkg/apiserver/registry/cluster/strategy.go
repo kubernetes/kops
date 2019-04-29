@@ -28,7 +28,7 @@ import (
 	"k8s.io/apiserver/pkg/storage"
 	"k8s.io/apiserver/pkg/storage/names"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
 )
@@ -69,7 +69,7 @@ func (clusterStrategy) Canonicalize(obj runtime.Object) {
 }
 
 func (clusterStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
-	glog.Warningf("Performing cluster update without status validation")
+	klog.Warningf("Performing cluster update without status validation")
 	var status *kops.ClusterStatus
 	return validation.ValidateClusterUpdate(obj.(*kops.Cluster), status, old.(*kops.Cluster))
 }

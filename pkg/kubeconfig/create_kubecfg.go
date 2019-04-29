@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/golang/glog"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
@@ -73,10 +73,10 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 
 		sort.Strings(targets)
 		if len(targets) == 0 {
-			glog.Warningf("Did not find API endpoint for gossip hostname; may not be able to reach cluster")
+			klog.Warningf("Did not find API endpoint for gossip hostname; may not be able to reach cluster")
 		} else {
 			if len(targets) != 1 {
-				glog.Warningf("Found multiple API endpoints (%v), choosing arbitrarily", targets)
+				klog.Warningf("Found multiple API endpoints (%v), choosing arbitrarily", targets)
 			}
 			server = "https://" + targets[0]
 		}

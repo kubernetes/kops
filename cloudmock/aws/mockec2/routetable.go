@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockEC2) AddRouteTable(rt *ec2.RouteTable) {
@@ -51,10 +51,10 @@ func (m *MockEC2) DescribeRouteTables(request *ec2.DescribeRouteTablesInput) (*e
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DescribeRouteTables: %v", request)
+	klog.Infof("DescribeRouteTables: %v", request)
 
 	if request.DryRun != nil {
-		glog.Fatalf("DryRun not implemented")
+		klog.Fatalf("DryRun not implemented")
 	}
 
 	if len(request.RouteTableIds) != 0 {
@@ -104,7 +104,7 @@ func (m *MockEC2) DescribeRouteTables(request *ec2.DescribeRouteTablesInput) (*e
 }
 
 func (m *MockEC2) CreateRouteTable(request *ec2.CreateRouteTableInput) (*ec2.CreateRouteTableOutput, error) {
-	glog.Infof("CreateRouteTable: %v", request)
+	klog.Infof("CreateRouteTable: %v", request)
 
 	id := m.allocateId("rtb")
 	return m.CreateRouteTableWithId(request, id)
@@ -115,7 +115,7 @@ func (m *MockEC2) CreateRouteTableWithId(request *ec2.CreateRouteTableInput, id 
 	defer m.mutex.Unlock()
 
 	if request.DryRun != nil {
-		glog.Fatalf("DryRun")
+		klog.Fatalf("DryRun")
 	}
 
 	rt := &ec2.RouteTable{
@@ -146,10 +146,10 @@ func (m *MockEC2) CreateRoute(request *ec2.CreateRouteInput) (*ec2.CreateRouteOu
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("CreateRoute: %v", request)
+	klog.Infof("CreateRoute: %v", request)
 
 	if request.DryRun != nil {
-		glog.Fatalf("DryRun")
+		klog.Fatalf("DryRun")
 	}
 
 	rt := m.RouteTables[aws.StringValue(request.RouteTableId)]
@@ -182,7 +182,7 @@ func (m *MockEC2) DeleteRouteTable(request *ec2.DeleteRouteTableInput) (*ec2.Del
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DeleteRouteTable: %v", request)
+	klog.Infof("DeleteRouteTable: %v", request)
 
 	id := aws.StringValue(request.RouteTableId)
 	o := m.RouteTables[id]

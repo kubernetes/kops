@@ -26,7 +26,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -139,7 +139,7 @@ func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
 	args := []string{"dpkg-query", "-f", "${db:Status-Abbrev}${Version}\\n", "-W", e.Name}
 	human := strings.Join(args, " ")
 
-	glog.V(2).Infof("Listing installed packages: %s", human)
+	klog.V(2).Infof("Listing installed packages: %s", human)
 	cmd := exec.Command(args[0], args[1:]...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -183,7 +183,7 @@ func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
 			// not installed
 			installed = false
 		default:
-			glog.Warningf("unknown package state %q for %q in line %q", state, e.Name, line)
+			klog.Warningf("unknown package state %q for %q in line %q", state, e.Name, line)
 			return nil, fmt.Errorf("unknown package state %q for %q in line %q", state, e.Name, line)
 		}
 	}
@@ -203,7 +203,7 @@ func (e *Package) findYum(c *fi.Context) (*Package, error) {
 	args := []string{"/usr/bin/rpm", "-q", e.Name, "--queryformat", "%{NAME} %{VERSION}"}
 	human := strings.Join(args, " ")
 
-	glog.V(2).Infof("Listing installed packages: %s", human)
+	klog.V(2).Infof("Listing installed packages: %s", human)
 	cmd := exec.Command(args[0], args[1:]...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -264,7 +264,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 	defer packageManagerLock.Unlock()
 
 	if a == nil || changes.Version != nil {
-		glog.Infof("Installing package %q (dependencies: %v)", e.Name, e.Deps)
+		klog.Infof("Installing package %q (dependencies: %v)", e.Name, e.Deps)
 
 		if e.Source != nil {
 			// Install a deb or rpm.
@@ -301,7 +301,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 				return fmt.Errorf("unsupported package system")
 			}
 			args = append(args, localPkgs...)
-			glog.Infof("running command %s", args)
+			klog.Infof("running command %s", args)
 			cmd := exec.Command(args[0], args[1:]...)
 			output, err := cmd.CombinedOutput()
 			if err != nil {
@@ -319,7 +319,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 				return fmt.Errorf("unsupported package system")
 			}
 
-			glog.Infof("running command %s", args)
+			klog.Infof("running command %s", args)
 			cmd := exec.Command(args[0], args[1:]...)
 			cmd.Env = env
 			output, err := cmd.CombinedOutput()
@@ -331,7 +331,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 		if changes.Healthy != nil {
 			if t.HasTag(tags.TagOSFamilyDebian) {
 				args := []string{"dpkg", "--configure", "-a"}
-				glog.Infof("package is not healthy; running command %s", args)
+				klog.Infof("package is not healthy; running command %s", args)
 				cmd := exec.Command(args[0], args[1:]...)
 				output, err := cmd.CombinedOutput()
 				if err != nil {
@@ -348,7 +348,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 		}
 
 		if !reflect.DeepEqual(changes, &Package{}) {
-			glog.Warningf("cannot apply package changes for %q: %v", e.Name, changes)
+			klog.Warningf("cannot apply package changes for %q: %v", e.Name, changes)
 		}
 	}
 

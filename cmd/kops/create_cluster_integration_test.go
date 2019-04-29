@@ -27,7 +27,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -270,7 +270,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 			}
 		}
 
-		glog.Infof("Actual YAML:\n%s\n", actualYAML)
+		klog.Infof("Actual YAML:\n%s\n", actualYAML)
 
 		diffString := diff.FormatDiff(expectedYAML, actualYAML)
 		t.Logf("diff:\n%s\n", diffString)

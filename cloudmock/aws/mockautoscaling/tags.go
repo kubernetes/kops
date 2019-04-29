@@ -20,7 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockAutoscaling) DescribeTags(request *autoscaling.DescribeTagsInput) (*autoscaling.DescribeTagsOutput, error) {
@@ -42,7 +42,7 @@ func (m *MockAutoscaling) DescribeTags(request *autoscaling.DescribeTagsInput) (
 					}
 
 				default:
-					glog.Fatalf("Unsupported filter: %v", filter)
+					klog.Fatalf("Unsupported filter: %v", filter)
 				}
 
 				if !match {
@@ -63,12 +63,12 @@ func (m *MockAutoscaling) DescribeTags(request *autoscaling.DescribeTagsInput) (
 }
 
 func (m *MockAutoscaling) DescribeTagsWithContext(aws.Context, *autoscaling.DescribeTagsInput, ...request.Option) (*autoscaling.DescribeTagsOutput, error) {
-	glog.Fatalf("Not implemented")
+	klog.Fatalf("Not implemented")
 	return nil, nil
 }
 
 func (m *MockAutoscaling) DescribeTagsRequest(*autoscaling.DescribeTagsInput) (*request.Request, *autoscaling.DescribeTagsOutput) {
-	glog.Fatalf("Not implemented")
+	klog.Fatalf("Not implemented")
 	return nil, nil
 }
 
@@ -85,6 +85,6 @@ func (m *MockAutoscaling) DescribeTagsPages(request *autoscaling.DescribeTagsInp
 }
 
 func (m *MockAutoscaling) DescribeTagsPagesWithContext(aws.Context, *autoscaling.DescribeTagsInput, func(*autoscaling.DescribeTagsOutput, bool) bool, ...request.Option) error {
-	glog.Fatalf("Not implemented")
+	klog.Fatalf("Not implemented")
 	return nil
 }

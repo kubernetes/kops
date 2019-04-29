@@ -17,7 +17,7 @@ limitations under the License.
 package dns
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/protokube/pkg/gossip/dns/hosts"
 )
 
@@ -29,7 +29,7 @@ type HostsFile struct {
 var _ DNSTarget = &HostsFile{}
 
 func (h *HostsFile) Update(snapshot *DNSViewSnapshot) error {
-	glog.V(2).Infof("Updating hosts file with snapshot version %v", snapshot.version)
+	klog.V(2).Infof("Updating hosts file with snapshot version %v", snapshot.version)
 
 	addrToHosts := make(map[string][]string)
 
@@ -39,7 +39,7 @@ func (h *HostsFile) Update(snapshot *DNSViewSnapshot) error {
 
 		for _, record := range records {
 			if record.RrsType != "A" {
-				glog.Warningf("skipping record of unhandled type: %v", record)
+				klog.Warningf("skipping record of unhandled type: %v", record)
 				continue
 			}
 

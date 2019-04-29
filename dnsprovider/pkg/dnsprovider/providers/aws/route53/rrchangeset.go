@@ -22,7 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
 
@@ -133,14 +133,14 @@ func (c *ResourceRecordChangeset) Apply() error {
 			break
 		}
 
-		if glog.V(8) {
+		if klog.V(8) {
 			var sb bytes.Buffer
 			for _, change := range batch {
 				sb.WriteString(fmt.Sprintf("\t%s %s %s\n", aws.StringValue(change.Action), aws.StringValue(change.ResourceRecordSet.Type), aws.StringValue(change.ResourceRecordSet.Name)))
 			}
 
-			glog.V(8).Infof("Route53 MaxBatchSize: %v\n", MaxBatchSize)
-			glog.V(8).Infof("Route53 Changeset:\n%s", sb.String())
+			klog.V(8).Infof("Route53 MaxBatchSize: %v\n", MaxBatchSize)
+			klog.V(8).Infof("Route53 Changeset:\n%s", sb.String())
 		}
 
 		service := c.zone.zones.interface_.service

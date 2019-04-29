@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type MockELBV2 struct {
@@ -48,13 +48,13 @@ func (m *MockELBV2) DescribeLoadBalancers(request *elbv2.DescribeLoadBalancersIn
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.V(2).Infof("DescribeLoadBalancers v2 %v", request)
+	klog.V(2).Infof("DescribeLoadBalancers v2 %v", request)
 
 	if request.PageSize != nil {
-		glog.Warningf("PageSize not implemented")
+		klog.Warningf("PageSize not implemented")
 	}
 	if request.Marker != nil {
-		glog.Fatalf("Marker not implemented")
+		klog.Fatalf("Marker not implemented")
 	}
 
 	var elbs []*elbv2.LoadBalancer
@@ -97,13 +97,13 @@ func (m *MockELBV2) DescribeTargetGroups(request *elbv2.DescribeTargetGroupsInpu
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.V(2).Infof("DescribeTargetGroups %v", request)
+	klog.V(2).Infof("DescribeTargetGroups %v", request)
 
 	if request.PageSize != nil {
-		glog.Warningf("PageSize not implemented")
+		klog.Warningf("PageSize not implemented")
 	}
 	if request.Marker != nil {
-		glog.Fatalf("Marker not implemented")
+		klog.Fatalf("Marker not implemented")
 	}
 
 	var tgs []*elbv2.TargetGroup

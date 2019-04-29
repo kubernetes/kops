@@ -22,11 +22,11 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/golang/glog"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/cloudinstances"
@@ -288,7 +288,7 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 
 				v.Nodes = append(v.Nodes, n)
 			} else {
-				glog.Warningf("ignoring node with role %q", n.Role)
+				klog.Warningf("ignoring node with role %q", n.Role)
 			}
 		}
 	}

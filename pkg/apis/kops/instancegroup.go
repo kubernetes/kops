@@ -19,8 +19,8 @@ package kops
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog"
 )
 
 const (
@@ -267,7 +267,7 @@ func (g *InstanceGroup) IsMaster() bool {
 	case InstanceGroupRoleBastion:
 		return false
 	default:
-		glog.Fatalf("Role not set in group %v", g)
+		klog.Fatalf("Role not set in group %v", g)
 		return false
 	}
 }
@@ -282,7 +282,7 @@ func (g *InstanceGroup) IsBastion() bool {
 	case InstanceGroupRoleBastion:
 		return true
 	default:
-		glog.Fatalf("Role not set in group %v", g)
+		klog.Fatalf("Role not set in group %v", g)
 		return false
 	}
 }

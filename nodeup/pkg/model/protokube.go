@@ -34,7 +34,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
 	"github.com/blang/semver"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // ProtokubeBuilder configures protokube
@@ -50,7 +50,7 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// check is not a master and we are not using gossip (https://github.com/kubernetes/kops/pull/3091)
 	if !t.IsMaster && !useGossip {
-		glog.V(2).Infof("skipping the provisioning of protokube on the nodes")
+		klog.V(2).Infof("skipping the provisioning of protokube on the nodes")
 		return nil
 	}
 
@@ -149,7 +149,7 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
 	manifestString := manifest.Render()
-	glog.V(8).Infof("Built service manifest %q\n%s", "protokube", manifestString)
+	klog.V(8).Infof("Built service manifest %q\n%s", "protokube", manifestString)
 
 	service := &nodetasks.Service{
 		Name:       "protokube.service",
@@ -256,7 +256,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 
 	f.ManageEtcd = false
 	if len(t.NodeupConfig.EtcdManifests) == 0 {
-		glog.V(4).Infof("no EtcdManifests; protokube will manage etcd")
+		klog.V(4).Infof("no EtcdManifests; protokube will manage etcd")
 		f.ManageEtcd = true
 	}
 
@@ -323,13 +323,13 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 			f.Zone = append(f.Zone, "*/"+zone)
 		}
 	} else {
-		glog.Warningf("DNSZone not specified; protokube won't be able to update DNS")
+		klog.Warningf("DNSZone not specified; protokube won't be able to update DNS")
 		// @TODO: Should we permit wildcard updates if zone is not specified?
 		//argv = append(argv, "--zone=*/*")
 	}
 
 	if dns.IsGossipHostname(t.Cluster.Spec.MasterInternalName) {
-		glog.Warningf("MasterInternalName %q implies gossip DNS", t.Cluster.Spec.MasterInternalName)
+		klog.Warningf("MasterInternalName %q implies gossip DNS", t.Cluster.Spec.MasterInternalName)
 		f.DNSProvider = fi.String("gossip")
 
 		// @TODO: This is hacky, but we want it so that we can have a different internal & external name
@@ -355,7 +355,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 				f.ClusterID = fi.String(t.Cluster.ObjectMeta.Name)
 				f.DNSServer = fi.String(*t.Cluster.Spec.CloudConfig.VSphereCoreDNSServer)
 			default:
-				glog.Warningf("Unknown cloudprovider %q; won't set DNS provider", t.Cluster.Spec.CloudProvider)
+				klog.Warningf("Unknown cloudprovider %q; won't set DNS provider", t.Cluster.Spec.CloudProvider)
 			}
 		}
 	}

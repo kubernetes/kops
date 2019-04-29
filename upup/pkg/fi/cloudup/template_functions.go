@@ -43,8 +43,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 )
 
 // TemplateFunctions provides a collection of methods used throughout the templates
@@ -114,7 +114,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	if tf.cluster.Spec.Networking != nil && tf.cluster.Spec.Networking.Flannel != nil {
 		flannelBackendType := tf.cluster.Spec.Networking.Flannel.Backend
 		if flannelBackendType == "" {
-			glog.Warningf("Defaulting flannel backend to udp (not a recommended configuration)")
+			klog.Warningf("Defaulting flannel backend to udp (not a recommended configuration)")
 			flannelBackendType = "udp"
 		}
 		dest["FlannelBackendType"] = func() string { return flannelBackendType }
@@ -128,7 +128,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			if err != nil {
 				return err
 			}
-			glog.V(4).Info("Weave secret function successfully registered")
+			klog.V(4).Info("Weave secret function successfully registered")
 		}
 
 		dest["WeaveSecret"] = func() string { return weavesecretString }
@@ -187,7 +187,7 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	if tf.cluster.Spec.ExternalDNS == nil {
 		argv = append(argv, []string{"--watch-ingress=false"}...)
 
-		glog.V(4).Infof("watch-ingress=false set on dns-controller")
+		klog.V(4).Infof("watch-ingress=false set on dns-controller")
 	} else {
 		// @check if the watch ingress is set
 		var watchIngress bool
@@ -196,8 +196,8 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 		}
 
 		if watchIngress {
-			glog.Warningln("--watch-ingress=true set on dns-controller")
-			glog.Warningln("this may cause problems with previously defined services: https://github.com/kubernetes/kops/issues/2496")
+			klog.Warningln("--watch-ingress=true set on dns-controller")
+			klog.Warningln("this may cause problems with previously defined services: https://github.com/kubernetes/kops/issues/2496")
 		}
 		argv = append(argv, fmt.Sprintf("--watch-ingress=%t", watchIngress))
 		if tf.cluster.Spec.ExternalDNS.WatchNamespace != "" {

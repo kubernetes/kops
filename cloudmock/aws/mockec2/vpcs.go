@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type vpcInfo struct {
@@ -79,10 +79,10 @@ func (m *MockEC2) CreateVpcWithId(request *ec2.CreateVpcInput, id string) (*ec2.
 }
 
 func (m *MockEC2) CreateVpc(request *ec2.CreateVpcInput) (*ec2.CreateVpcOutput, error) {
-	glog.Infof("CreateVpc: %v", request)
+	klog.Infof("CreateVpc: %v", request)
 
 	if request.DryRun != nil {
-		glog.Fatalf("DryRun")
+		klog.Fatalf("DryRun")
 	}
 
 	id := m.allocateId("vpc")
@@ -102,7 +102,7 @@ func (m *MockEC2) DescribeVpcs(request *ec2.DescribeVpcsInput) (*ec2.DescribeVpc
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DescribeVpcs: %v", request)
+	klog.Infof("DescribeVpcs: %v", request)
 
 	if len(request.VpcIds) != 0 {
 		request.Filters = append(request.Filters, &ec2.Filter{Name: s("vpc-id"), Values: request.VpcIds})
@@ -157,7 +157,7 @@ func (m *MockEC2) DescribeVpcAttribute(request *ec2.DescribeVpcAttributeInput) (
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DescribeVpcs: %v", request)
+	klog.Infof("DescribeVpcs: %v", request)
 
 	vpc := m.Vpcs[*request.VpcId]
 	if vpc == nil {
@@ -178,7 +178,7 @@ func (m *MockEC2) ModifyVpcAttribute(request *ec2.ModifyVpcAttributeInput) (*ec2
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("ModifyVpcAttribute: %v", request)
+	klog.Infof("ModifyVpcAttribute: %v", request)
 
 	vpc := m.Vpcs[*request.VpcId]
 	if vpc == nil {
@@ -208,7 +208,7 @@ func (m *MockEC2) DeleteVpc(request *ec2.DeleteVpcInput) (*ec2.DeleteVpcOutput, 
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DeleteVpc: %v", request)
+	klog.Infof("DeleteVpc: %v", request)
 
 	id := aws.StringValue(request.VpcId)
 	o := m.Vpcs[id]

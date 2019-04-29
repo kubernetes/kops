@@ -24,11 +24,11 @@ import (
 	"k8s.io/kops/dns-controller/pkg/util"
 	kopsutil "k8s.io/kops/pkg/apis/kops/util"
 
-	"github.com/golang/glog"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog"
 )
 
 // NodeController watches for nodes
@@ -54,19 +54,19 @@ func NewNodeController(client kubernetes.Interface, dns dns.Context) (*NodeContr
 
 // Run starts the NodeController.
 func (c *NodeController) Run() {
-	glog.Infof("starting node controller")
+	klog.Infof("starting node controller")
 
 	stopCh := c.StopChannel()
 	go c.runWatcher(stopCh)
 
 	<-stopCh
-	glog.Infof("shutting down node controller")
+	klog.Infof("shutting down node controller")
 }
 
 func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
 		var listOpts metav1.ListOptions
-		glog.V(4).Infof("querying without field filter")
+		klog.V(4).Infof("querying without field filter")
 
 		// Note we need to watch all the nodes, to set up alias targets
 		allKeys := c.scope.AllKeys()
@@ -77,14 +77,14 @@ func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 		foundKeys := make(map[string]bool)
 		for i := range nodeList.Items {
 			node := &nodeList.Items[i]
-			glog.V(4).Infof("found node: %v", node.Name)
+			klog.V(4).Infof("found node: %v", node.Name)
 			key := c.updateNodeRecords(node)
 			foundKeys[key] = true
 		}
 		for _, key := range allKeys {
 			if !foundKeys[key] {
 				// The node previously existed, but no longer exists; delete it from the scope
-				glog.V(2).Infof("removing node not found in list: %s", key)
+				klog.V(2).Infof("removing node not found in list: %s", key)
 				c.scope.Replace(key, nil)
 			}
 		}
@@ -100,16 +100,16 @@ func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 		for {
 			select {
 			case <-stopCh:
-				glog.Infof("Got stop signal")
+				klog.Infof("Got stop signal")
 				return true, nil
 			case event, ok := <-ch:
 				if !ok {
-					glog.Infof("node watch channel closed")
+					klog.Infof("node watch channel closed")
 					return false, nil
 				}
 
 				node := event.Object.(*v1.Node)
-				glog.V(4).Infof("node changed: %s %v", event.Type, node.Name)
+				klog.V(4).Infof("node changed: %s %v", event.Type, node.Name)
 
 				switch event.Type {
 				case watch.Added, watch.Modified:
@@ -129,7 +129,7 @@ func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 		}
 
 		if err != nil {
-			glog.Warningf("Unexpected error in event watch, will retry: %v", err)
+			klog.Warningf("Unexpected error in event watch, will retry: %v", err)
 			time.Sleep(10 * time.Second)
 		}
 	}
