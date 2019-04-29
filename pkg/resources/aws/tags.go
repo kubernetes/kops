@@ -19,7 +19,7 @@ package aws
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
@@ -45,7 +45,7 @@ func HasOwnedTag(description string, tags []*ec2.Tag, clusterName string) bool {
 			return false
 
 		default:
-			glog.Warningf("unknown cluster tag on %s: %q=%q", description, tagKey, tagValue)
+			klog.Warningf("unknown cluster tag on %s: %q=%q", description, tagKey, tagValue)
 			return false
 		}
 	}
@@ -64,6 +64,6 @@ func HasOwnedTag(description string, tags []*ec2.Tag, clusterName string) bool {
 	}
 
 	// We warn here, because we shouldn't have found the object other than via a tag
-	glog.Warningf("cluster tag not found on %s", description)
+	klog.Warningf("cluster tag not found on %s", description)
 	return false
 }

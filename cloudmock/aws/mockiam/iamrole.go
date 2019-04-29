@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockIAM) GetRole(request *iam.GetRoleInput) (*iam.GetRoleOutput, error) {
@@ -52,7 +52,7 @@ func (m *MockIAM) CreateRole(request *iam.CreateRoleInput) (*iam.CreateRoleOutpu
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("CreateRole: %v", request)
+	klog.Infof("CreateRole: %v", request)
 
 	roleID := m.createID()
 	r := &iam.Role{
@@ -83,10 +83,10 @@ func (m *MockIAM) ListRoles(request *iam.ListRolesInput) (*iam.ListRolesOutput, 
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("ListRoles: %v", request)
+	klog.Infof("ListRoles: %v", request)
 
 	if request.PathPrefix != nil {
-		glog.Fatalf("MockIAM ListRoles PathPrefix not implemented")
+		klog.Fatalf("MockIAM ListRoles PathPrefix not implemented")
 	}
 
 	var roles []*iam.Role
@@ -130,7 +130,7 @@ func (m *MockIAM) DeleteRole(request *iam.DeleteRoleInput) (*iam.DeleteRoleOutpu
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DeleteRole: %v", request)
+	klog.Infof("DeleteRole: %v", request)
 
 	id := aws.StringValue(request.RoleName)
 	o := m.Roles[id]

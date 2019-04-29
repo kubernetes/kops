@@ -26,7 +26,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -74,7 +74,7 @@ func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		case *Service, *LoadImageTask:
 			// ignore
 		default:
-			glog.Warningf("Unhandled type %T in Service::GetDependencies: %v", v, v)
+			klog.Warningf("Unhandled type %T in Service::GetDependencies: %v", v, v)
 			deps = append(deps, v)
 		}
 	}
@@ -120,7 +120,7 @@ func (s *Service) InitDefaults() {
 }
 
 func getSystemdStatus(name string) (map[string]string, error) {
-	glog.V(2).Infof("querying state of service %q", name)
+	klog.V(2).Infof("querying state of service %q", name)
 	cmd := exec.Command("systemctl", "show", "--all", name)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -133,7 +133,7 @@ func getSystemdStatus(name string) (map[string]string, error) {
 		}
 		tokens := strings.SplitN(line, "=", 2)
 		if len(tokens) != 2 {
-			glog.Warningf("Ignoring line in systemd show output: %q", line)
+			klog.Warningf("Ignoring line in systemd show output: %q", line)
 			continue
 		}
 		properties[tokens[0]] = tokens[1]
@@ -199,7 +199,7 @@ func (e *Service) Find(c *fi.Context) (*Service, error) {
 	case "failed", "inactive":
 		actual.Running = fi.Bool(false)
 	default:
-		glog.Warningf("Unknown ActiveState=%q; will treat as not running", activeState)
+		klog.Warningf("Unknown ActiveState=%q; will treat as not running", activeState)
 		actual.Running = fi.Bool(false)
 	}
 
@@ -213,7 +213,7 @@ func (e *Service) Find(c *fi.Context) (*Service, error) {
 		actual.Enabled = fi.Bool(true)
 
 	default:
-		glog.Warningf("Unknown WantedBy=%q; will treat as not enabled", wantedBy)
+		klog.Warningf("Unknown WantedBy=%q; will treat as not enabled", wantedBy)
 		actual.Enabled = fi.Bool(false)
 	}
 
@@ -239,7 +239,7 @@ func getSystemdDependencies(serviceName string, definition string) ([]string, er
 			// We extract the first argument (only)
 			tokens := strings.SplitN(v, " ", 2)
 			dependencies = append(dependencies, tokens[0])
-			glog.V(2).Infof("extracted dependency from %q: %q", line, tokens[0])
+			klog.V(2).Infof("extracted dependency from %q: %q", line, tokens[0])
 		}
 	}
 	return dependencies, nil
@@ -278,7 +278,7 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 			return fmt.Errorf("error writing systemd service file: %v", err)
 		}
 
-		glog.Infof("Reloading systemd configuration")
+		klog.Infof("Reloading systemd configuration")
 		cmd := exec.Command("systemctl", "daemon-reload")
 		output, err := cmd.CombinedOutput()
 		if err != nil {
@@ -306,7 +306,7 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 			for _, dependency := range dependencies {
 				stat, err := os.Stat(dependency)
 				if err != nil {
-					glog.Infof("Ignoring error checking service dependency %q: %v", dependency, err)
+					klog.Infof("Ignoring error checking service dependency %q: %v", dependency, err)
 					continue
 				}
 				modTime := stat.ModTime()
@@ -323,17 +323,17 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 
 				startedAt := properties["ExecMainStartTimestamp"]
 				if startedAt == "" {
-					glog.Warningf("service was running, but did not have ExecMainStartTimestamp: %q", serviceName)
+					klog.Warningf("service was running, but did not have ExecMainStartTimestamp: %q", serviceName)
 				} else {
 					startedAtTime, err := time.Parse("Mon 2006-01-02 15:04:05 MST", startedAt)
 					if err != nil {
 						return fmt.Errorf("unable to parse service ExecMainStartTimestamp %q: %v", startedAt, err)
 					}
 					if startedAtTime.Before(newest) {
-						glog.V(2).Infof("will restart service %q because dependency changed after service start", serviceName)
+						klog.V(2).Infof("will restart service %q because dependency changed after service start", serviceName)
 						action = "restart"
 					} else {
-						glog.V(2).Infof("will not restart service %q - started after dependencies", serviceName)
+						klog.V(2).Infof("will not restart service %q - started after dependencies", serviceName)
 					}
 				}
 			}
@@ -341,7 +341,7 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 	}
 
 	if action != "" && fi.BoolValue(e.ManageState) {
-		glog.Infof("Restarting service %q", serviceName)
+		klog.Infof("Restarting service %q", serviceName)
 		cmd := exec.Command("systemctl", action, serviceName)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
@@ -352,10 +352,10 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 	if changes.Enabled != nil && fi.BoolValue(e.ManageState) {
 		var args []string
 		if fi.BoolValue(e.Enabled) {
-			glog.Infof("Enabling service %q", serviceName)
+			klog.Infof("Enabling service %q", serviceName)
 			args = []string{"enable", serviceName}
 		} else {
-			glog.Infof("Disabling service %q", serviceName)
+			klog.Infof("Disabling service %q", serviceName)
 			args = []string{"disable", serviceName}
 		}
 		cmd := exec.Command("systemctl", args...)
@@ -398,5 +398,5 @@ func (f *Service) GetName() *string {
 }
 
 func (f *Service) SetName(name string) {
-	glog.Fatalf("SetName not supported for Service task")
+	klog.Fatalf("SetName not supported for Service task")
 }

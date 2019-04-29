@@ -17,7 +17,7 @@ limitations under the License.
 package gcemodel
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
@@ -33,13 +33,13 @@ type ExternalAccessModelBuilder struct {
 var _ fi.ModelBuilder = &ExternalAccessModelBuilder{}
 
 func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	glog.Warningf("TODO: Harmonize gcemodel ExternalAccessModelBuilder with awsmodel")
+	klog.Warningf("TODO: Harmonize gcemodel ExternalAccessModelBuilder with awsmodel")
 	if len(b.Cluster.Spec.KubernetesAPIAccess) == 0 {
-		glog.Warningf("KubernetesAPIAccess is empty")
+		klog.Warningf("KubernetesAPIAccess is empty")
 	}
 
 	if len(b.Cluster.Spec.SSHAccess) == 0 {
-		glog.Warningf("SSHAccess is empty")
+		klog.Warningf("SSHAccess is empty")
 	}
 
 	// SSH is open to AdminCIDR set
@@ -47,7 +47,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// If we are using a bastion, we only access through the bastion
 		// This is admittedly a little odd... adding a bastion shuts down direct access to the masters/nodes
 		// But I think we can always add more permissions in this case later, but we can't easily take them away
-		glog.V(2).Infof("bastion is in use; won't configure SSH access to master / node instances")
+		klog.V(2).Infof("bastion is in use; won't configure SSH access to master / node instances")
 	} else {
 		c.AddTask(&gcetasks.FirewallRule{
 			Name:         s(b.SafeObjectName("ssh-external-to-master")),

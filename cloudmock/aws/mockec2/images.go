@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockEC2) DescribeImageAttributeRequest(*ec2.DescribeImageAttributeInput) (*request.Request, *ec2.DescribeImageAttributeOutput) {
@@ -43,7 +43,7 @@ func (m *MockEC2) DescribeImagesWithContext(aws.Context, *ec2.DescribeImagesInpu
 }
 
 func (m *MockEC2) DescribeImages(request *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
-	glog.Infof("DescribeImages: %v", request)
+	klog.Infof("DescribeImages: %v", request)
 
 	var images []*ec2.Image
 

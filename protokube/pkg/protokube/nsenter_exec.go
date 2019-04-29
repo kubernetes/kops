@@ -17,7 +17,7 @@ limitations under the License.
 package protokube
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kubernetes/pkg/util/mount"
 	"k8s.io/utils/exec"
 )
@@ -47,7 +47,7 @@ func (e *nsEnterExec) Run(cmd string, args ...string) ([]byte, error) {
 		cmd,
 	}
 	nsenterArgs = append(nsenterArgs, args...)
-	glog.V(5).Infof("Running command : %v %v", nsenterPath, nsenterArgs)
+	klog.V(5).Infof("Running command : %v %v", nsenterPath, nsenterArgs)
 	exe := exec.New()
 	return exe.Command(nsenterPath, nsenterArgs...).CombinedOutput()
 }

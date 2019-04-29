@@ -21,8 +21,8 @@ import (
 	"crypto/md5"
 	"fmt"
 
-	"github.com/golang/glog"
 	"golang.org/x/crypto/ssh"
+	"k8s.io/klog"
 )
 
 func Fingerprint(pubkey string) (string, error) {
@@ -66,7 +66,7 @@ func insertFingerprintColons(id string) string {
 			buf.WriteString(":")
 		}
 		if len(remaining) < 2 {
-			glog.Warningf("unexpected format for SSH public key id: %q", id)
+			klog.Warningf("unexpected format for SSH public key id: %q", id)
 			buf.WriteString(remaining)
 			break
 		} else {

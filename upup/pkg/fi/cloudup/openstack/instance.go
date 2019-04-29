@@ -19,9 +19,9 @@ package openstack
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -47,7 +47,7 @@ func (c *openstackCloud) CreateInstance(opt servers.CreateOptsBuilder) (*servers
 }
 
 func (c *openstackCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
-	glog.Warning("This does not work without running kops update cluster --yes in another terminal")
+	klog.Warning("This does not work without running kops update cluster --yes in another terminal")
 	return c.DeleteInstanceWithID(i.ID)
 }
 

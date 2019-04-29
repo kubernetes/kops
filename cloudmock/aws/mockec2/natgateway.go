@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockEC2) CreateNatGatewayWithId(request *ec2.CreateNatGatewayInput, id string) (*ec2.CreateNatGatewayOutput, error) {
@@ -66,7 +66,7 @@ func (m *MockEC2) CreateNatGatewayWithId(request *ec2.CreateNatGatewayInput, id 
 }
 
 func (m *MockEC2) CreateNatGateway(request *ec2.CreateNatGatewayInput) (*ec2.CreateNatGatewayOutput, error) {
-	glog.Infof("CreateNatGateway: %v", request)
+	klog.Infof("CreateNatGateway: %v", request)
 
 	id := m.allocateId("nat")
 	return m.CreateNatGatewayWithId(request, id)
@@ -76,7 +76,7 @@ func (m *MockEC2) WaitUntilNatGatewayAvailable(request *ec2.DescribeNatGatewaysI
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("WaitUntilNatGatewayAvailable: %v", request)
+	klog.Infof("WaitUntilNatGatewayAvailable: %v", request)
 
 	if len(request.NatGatewayIds) != 1 {
 		return fmt.Errorf("we only support WaitUntilNatGatewayAvailable with one NatGatewayId")
@@ -107,7 +107,7 @@ func (m *MockEC2) DescribeNatGateways(request *ec2.DescribeNatGatewaysInput) (*e
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DescribeNatGateways: %v", request)
+	klog.Infof("DescribeNatGateways: %v", request)
 
 	var ngws []*ec2.NatGateway
 
@@ -173,7 +173,7 @@ func (m *MockEC2) DeleteNatGateway(request *ec2.DeleteNatGatewayInput) (*ec2.Del
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DeleteNatGateway: %v", request)
+	klog.Infof("DeleteNatGateway: %v", request)
 
 	id := aws.StringValue(request.NatGatewayId)
 	o := m.NatGateways[id]

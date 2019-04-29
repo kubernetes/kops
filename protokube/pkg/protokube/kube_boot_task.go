@@ -20,7 +20,7 @@ package protokube
 //import (
 //	"encoding/json"
 //	"fmt"
-//	"github.com/golang/glog"
+//	"k8s.io/klog"
 //	"io"
 //	"io/ioutil"
 //	"os"
@@ -61,7 +61,7 @@ package protokube
 //		if len(dirs) != 0 {
 //			break
 //		}
-//		glog.Infof("No entries found in %q", BootstrapDir)
+//		klog.Infof("No entries found in %q", BootstrapDir)
 //		time.Sleep(10 * time.Second)
 //	}
 //
@@ -77,7 +77,7 @@ package protokube
 //		}
 //
 //		if len(files) == 0 {
-//			glog.Infof("No files in %q; ignoring", p)
+//			klog.Infof("No files in %q; ignoring", p)
 //			continue
 //		}
 //
@@ -151,7 +151,7 @@ package protokube
 //	_, err := io.Copy(dst, src)
 //	if err != nil {
 //		// Not entirely sure if we need to do something special in this case?
-//		glog.Warningf("error copying stream: %v", err)
+//		klog.Warningf("error copying stream: %v", err)
 //	}
 //	waitGroup.Done()
 //}

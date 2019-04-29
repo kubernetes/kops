@@ -33,8 +33,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
 	cinderv2 "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -49,14 +49,14 @@ func (c *openstackCloud) FindClusterStatus(cluster *kops.Cluster) (*kops.Cluster
 	status := &kops.ClusterStatus{
 		EtcdClusters: etcdStatus,
 	}
-	glog.V(2).Infof("Cluster status (from cloud): %v", fi.DebugAsJsonString(status))
+	klog.V(2).Infof("Cluster status (from cloud): %v", fi.DebugAsJsonString(status))
 	return status, nil
 }
 
 // findEtcdStatus discovers the status of etcd, by looking for the tagged etcd volumes
 func findEtcdStatus(c *openstackCloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, error) {
 	statusMap := make(map[string]*kops.EtcdClusterStatus)
-	glog.V(2).Infof("Querying Openstack for etcd volumes")
+	klog.V(2).Infof("Querying Openstack for etcd volumes")
 	opt := cinderv2.ListOpts{
 		Metadata: c.tags,
 	}

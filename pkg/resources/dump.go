@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -51,7 +51,7 @@ func BuildDump(ctx context.Context, cloud fi.Cloud, resources map[string]*Resour
 
 	for k, r := range resources {
 		if r.Dumper == nil {
-			glog.V(8).Infof("skipping dump of %q (does not implement Dumpable)", k)
+			klog.V(8).Infof("skipping dump of %q (does not implement Dumpable)", k)
 			continue
 		}
 

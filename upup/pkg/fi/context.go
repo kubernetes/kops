@@ -24,7 +24,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/vfs"
@@ -88,11 +88,11 @@ func (c *Context) RunTasks(options RunTasksOptions) error {
 }
 
 func (c *Context) Close() {
-	glog.V(2).Infof("deleting temp dir: %q", c.Tmpdir)
+	klog.V(2).Infof("deleting temp dir: %q", c.Tmpdir)
 	if c.Tmpdir != "" {
 		err := os.RemoveAll(c.Tmpdir)
 		if err != nil {
-			glog.Warningf("unable to delete temporary directory %q: %v", c.Tmpdir, err)
+			klog.Warningf("unable to delete temporary directory %q: %v", c.Tmpdir, err)
 		}
 	}
 }
@@ -218,7 +218,7 @@ func (c *Context) Render(a, e, changes Task) error {
 	rendererArgs = append(rendererArgs, reflect.ValueOf(a))
 	rendererArgs = append(rendererArgs, reflect.ValueOf(e))
 	rendererArgs = append(rendererArgs, reflect.ValueOf(changes))
-	glog.V(11).Infof("Calling method %s on %T", renderer.Name, e)
+	klog.V(11).Infof("Calling method %s on %T", renderer.Name, e)
 	m := v.MethodByName(renderer.Name)
 	rv := m.Call(rendererArgs)
 	var rvErr error
@@ -238,7 +238,7 @@ func (c *Context) AddWarning(task Task, message string) {
 	// We don't actually do anything with these warnings yet, other than log them to glog below.
 	// In future we might produce a structured warning report.
 	c.warnings = append(c.warnings, warning)
-	glog.Warningf("warning during task %s: %s", task, message)
+	klog.Warningf("warning during task %s: %s", task, message)
 }
 
 // ExistsAndWarnIfChangesError is the custom error return for fi.LifecycleExistsAndWarnIfChanges.

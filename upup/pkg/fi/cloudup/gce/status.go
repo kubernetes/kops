@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -60,7 +60,7 @@ func (c *gceCloudImplementation) FindClusterStatus(cluster *kops.Cluster) (*kops
 	status := &kops.ClusterStatus{
 		EtcdClusters: etcdClusters,
 	}
-	glog.V(2).Infof("Cluster status (from cloud): %v", fi.DebugAsJsonString(status))
+	klog.V(2).Infof("Cluster status (from cloud): %v", fi.DebugAsJsonString(status))
 	return status, nil
 }
 
@@ -82,7 +82,7 @@ func (c *gceCloudImplementation) findEtcdStatus(cluster *kops.Cluster) ([]kops.E
 	for _, zone := range zones {
 		err := c.compute.Disks.List(c.project, zone).Pages(ctx, func(page *compute.DiskList) error {
 			for _, d := range page.Items {
-				glog.V(4).Infof("Found disk %q with labels %v", d.Name, d.Labels)
+				klog.V(4).Infof("Found disk %q with labels %v", d.Name, d.Labels)
 
 				match := true
 				for k, v := range labels {

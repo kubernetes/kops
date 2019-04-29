@@ -24,12 +24,12 @@ import (
 	"sort"
 	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
@@ -53,7 +53,7 @@ func (c *commonVFS) init(kind string, basePath vfs.Path, storeVersion runtime.Gr
 	codecs := kopscodecs.Codecs
 	yaml, ok := runtime.SerializerInfoForMediaType(codecs.SupportedMediaTypes(), "application/yaml")
 	if !ok {
-		glog.Fatalf("no YAML serializer registered")
+		klog.Fatalf("no YAML serializer registered")
 	}
 	c.encoder = codecs.EncoderForVersion(yaml.Serializer, storeVersion)
 
@@ -168,7 +168,7 @@ func (c *commonVFS) writeConfig(cluster *kops.Cluster, configPath vfs.Path, o ru
 	}
 	if err != nil {
 		if create && os.IsExist(err) {
-			glog.Warningf("failed to create file as already exists: %v", configPath)
+			klog.Warningf("failed to create file as already exists: %v", configPath)
 			return err
 		}
 		return fmt.Errorf("error writing configuration file %s: %v", configPath, err)

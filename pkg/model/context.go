@@ -33,8 +33,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
 	"github.com/blang/semver"
-	"github.com/golang/glog"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
+	"k8s.io/klog"
 )
 
 const (
@@ -64,7 +64,7 @@ func (m *KopsModelContext) GetELBName32(prefix string) string {
 		if len(s) > 32 {
 			s = s[:32]
 		}
-		glog.Infof("UseLegacyELBName feature-flag is set; built legacy name %q", s)
+		klog.Infof("UseLegacyELBName feature-flag is set; built legacy name %q", s)
 		return s
 	}
 
@@ -79,7 +79,7 @@ func (m *KopsModelContext) GetELBName32(prefix string) string {
 	// But we always compute the hash and add it, lest we trick users into assuming that we never do this
 	h := fnv.New32a()
 	if _, err := h.Write([]byte(s)); err != nil {
-		glog.Fatalf("error hashing values: %v", err)
+		klog.Fatalf("error hashing values: %v", err)
 	}
 	hashString := base32.HexEncoding.EncodeToString(h.Sum(nil))
 	hashString = strings.ToLower(hashString)
@@ -232,7 +232,7 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 	case kops.CloudProviderAWS:
 		if shared {
 			// If the resource is shared, we don't try to set the Name - we presume that is managed externally
-			glog.V(4).Infof("Skipping Name tag for shared resource")
+			klog.V(4).Infof("Skipping Name tag for shared resource")
 		} else {
 			if name != "" {
 				tags["Name"] = name
@@ -245,7 +245,7 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 			// For the moment, we only skip the legacy tag for shared resources
 			// (other people may be using it)
 			if shared {
-				glog.V(4).Infof("Skipping %q tag for shared resource", awsup.TagClusterName)
+				klog.V(4).Infof("Skipping %q tag for shared resource", awsup.TagClusterName)
 				setLegacyTag = false
 			}
 		}
@@ -318,7 +318,7 @@ func (m *KopsModelContext) UsePrivateDNS() bool {
 			return true
 
 		default:
-			glog.Warningf("Unknown DNS type %q", topology.DNS.Type)
+			klog.Warningf("Unknown DNS type %q", topology.DNS.Type)
 			return false
 		}
 	}
@@ -355,12 +355,12 @@ func (m *KopsModelContext) KubernetesVersion() semver.Version {
 	kubernetesVersion := m.Cluster.Spec.KubernetesVersion
 
 	if kubernetesVersion == "" {
-		glog.Fatalf("KubernetesVersion is required")
+		klog.Fatalf("KubernetesVersion is required")
 	}
 
 	sv, err := util.ParseKubernetesVersion(kubernetesVersion)
 	if err != nil {
-		glog.Fatalf("unable to determine kubernetes version from %q", kubernetesVersion)
+		klog.Fatalf("unable to determine kubernetes version from %q", kubernetesVersion)
 	}
 
 	return *sv

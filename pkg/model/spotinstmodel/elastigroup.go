@@ -21,7 +21,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/awsmodel"
@@ -70,7 +70,7 @@ var _ fi.ModelBuilder = &ElastigroupModelBuilder{}
 
 func (b *ElastigroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
-		glog.V(2).Infof("Building instance group %q", b.AutoscalingGroupName(ig))
+		klog.V(2).Infof("Building instance group %q", b.AutoscalingGroupName(ig))
 
 		group := &spotinsttasks.Elastigroup{
 			Lifecycle:            b.Lifecycle,
@@ -231,7 +231,7 @@ func (b *ElastigroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			associatePublicIP = false
 			if ig.Spec.AssociatePublicIP != nil {
 				if *ig.Spec.AssociatePublicIP {
-					glog.Warningf("Ignoring AssociatePublicIP=true for private InstanceGroup %q", ig.ObjectMeta.Name)
+					klog.Warningf("Ignoring AssociatePublicIP=true for private InstanceGroup %q", ig.ObjectMeta.Name)
 				}
 			}
 		default:
