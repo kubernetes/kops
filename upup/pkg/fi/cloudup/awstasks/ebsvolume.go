@@ -26,7 +26,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 //go:generate fitask -type=EBSVolume
@@ -95,7 +95,7 @@ func (e *EBSVolume) find(cloud awsup.AWSCloud) (*EBSVolume, error) {
 	if len(response.Volumes) != 1 {
 		return nil, fmt.Errorf("found multiple Volumes with name: %s", *e.Name)
 	}
-	glog.V(2).Info("found existing volume")
+	klog.V(2).Info("found existing volume")
 	v := response.Volumes[0]
 	actual := &EBSVolume{
 		ID:               v.VolumeId,
@@ -137,7 +137,7 @@ func (_ *EBSVolume) CheckChanges(a, e, changes *EBSVolume) error {
 
 func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) error {
 	if a == nil {
-		glog.V(2).Infof("Creating PersistentVolume with Name:%q", *e.Name)
+		klog.V(2).Infof("Creating PersistentVolume with Name:%q", *e.Name)
 
 		request := &ec2.CreateVolumeInput{
 			Size:             e.SizeGB,

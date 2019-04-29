@@ -21,9 +21,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/rest"
+	"k8s.io/klog"
 	gceacls "k8s.io/kops/pkg/acls/gce"
 	s3acls "k8s.io/kops/pkg/acls/s3"
 	kopsclient "k8s.io/kops/pkg/client/clientset_generated/clientset"
@@ -65,7 +65,7 @@ Trailing slash will be trimmed.`
 func (f *Factory) Clientset() (simple.Clientset, error) {
 	if f.clientset == nil {
 		registryPath := f.options.RegistryPath
-		glog.V(2).Infof("state store %s", registryPath)
+		klog.V(2).Infof("state store %s", registryPath)
 		if registryPath == "" {
 			return nil, field.Required(field.NewPath("State Store"), STATE_ERROR)
 		}
@@ -84,7 +84,7 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 				Host: u.Scheme + "://" + u.Host,
 			}
 
-			glog.Warning("Using insecure TLS")
+			klog.Warning("Using insecure TLS")
 			config.Insecure = true
 
 			kopsClient, err := kopsclient.NewForConfig(config)

@@ -19,8 +19,8 @@ package openstacktasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -87,7 +87,7 @@ func (_ *Router) CheckChanges(a, e, changes *Router) error {
 
 func (_ *Router) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Router) error {
 	if a == nil {
-		glog.V(2).Infof("Creating Router with name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating Router with name:%q", fi.StringValue(e.Name))
 
 		opt := routers.CreateOpts{
 			Name:         fi.StringValue(e.Name),
@@ -119,10 +119,10 @@ func (_ *Router) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 			return fmt.Errorf("Error creating router: %v", err)
 		}
 		e.ID = fi.String(v.ID)
-		glog.V(2).Infof("Creating a new Openstack router, id=%s", v.ID)
+		klog.V(2).Infof("Creating a new Openstack router, id=%s", v.ID)
 		return nil
 	}
 	e.ID = a.ID
-	glog.V(2).Infof("Using an existing Openstack router, id=%s", fi.StringValue(e.ID))
+	klog.V(2).Infof("Using an existing Openstack router, id=%s", fi.StringValue(e.ID))
 	return nil
 }

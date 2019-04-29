@@ -19,10 +19,10 @@ package openstack
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -96,7 +96,7 @@ func (c *openstackCloud) SetVolumeTags(id string, tags map[string]string) error 
 	if id == "" {
 		return fmt.Errorf("error setting tags to unknown volume")
 	}
-	glog.V(4).Infof("setting tags to cinder volume %q: %v", id, tags)
+	klog.V(4).Infof("setting tags to cinder volume %q: %v", id, tags)
 
 	opt := cinder.UpdateOpts{Metadata: tags}
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {

@@ -21,7 +21,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/vfs"
 
@@ -118,12 +118,12 @@ func ensureKubernetesVersion(c *kops.Cluster) error {
 			kubernetesVersion := kops.RecommendedKubernetesVersion(channel, kopsversion.Version)
 			if kubernetesVersion != nil {
 				c.Spec.KubernetesVersion = kubernetesVersion.String()
-				glog.Infof("Using KubernetesVersion %q from channel %q", c.Spec.KubernetesVersion, c.Spec.Channel)
+				klog.Infof("Using KubernetesVersion %q from channel %q", c.Spec.KubernetesVersion, c.Spec.Channel)
 			} else {
-				glog.Warningf("Cannot determine recommended kubernetes version from channel %q", c.Spec.Channel)
+				klog.Warningf("Cannot determine recommended kubernetes version from channel %q", c.Spec.Channel)
 			}
 		} else {
-			glog.Warningf("Channel is not set; cannot determine KubernetesVersion from channel")
+			klog.Warningf("Channel is not set; cannot determine KubernetesVersion from channel")
 		}
 	}
 
@@ -132,7 +132,7 @@ func ensureKubernetesVersion(c *kops.Cluster) error {
 		if err != nil {
 			return err
 		}
-		glog.Infof("Using kubernetes latest stable version: %s", latestVersion)
+		klog.Infof("Using kubernetes latest stable version: %s", latestVersion)
 		c.Spec.KubernetesVersion = latestVersion
 	}
 	return nil
@@ -143,7 +143,7 @@ func ensureKubernetesVersion(c *kops.Cluster) error {
 // This shouldn't be used any more; we prefer reading the stable channel
 func FindLatestKubernetesVersion() (string, error) {
 	stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
-	glog.Warningf("Loading latest kubernetes version from %q", stableURL)
+	klog.Warningf("Loading latest kubernetes version from %q", stableURL)
 	b, err := vfs.Context.ReadFile(stableURL)
 	if err != nil {
 		return "", fmt.Errorf("KubernetesVersion not specified, and unable to download latest version from %q: %v", stableURL, err)
@@ -204,13 +204,13 @@ func assignProxy(cluster *kops.Cluster) (*kops.EgressProxySpec, error) {
 				egressSlice = append(egressSlice, cluster.Spec.NetworkCIDR)
 			}
 		} else {
-			glog.Warningf("No NetworkCIDR defined (yet), not adding to egressProxy.excludes")
+			klog.Warningf("No NetworkCIDR defined (yet), not adding to egressProxy.excludes")
 		}
 
 		egressProxy.ProxyExcludes = strings.Join(egressSlice, ",")
-		glog.V(8).Infof("Completed setting up Proxy excludes as follows: %q", egressProxy.ProxyExcludes)
+		klog.V(8).Infof("Completed setting up Proxy excludes as follows: %q", egressProxy.ProxyExcludes)
 	} else {
-		glog.V(8).Info("Not setting up Proxy Excludes")
+		klog.V(8).Info("Not setting up Proxy Excludes")
 	}
 
 	return egressProxy, nil

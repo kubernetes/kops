@@ -23,7 +23,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -46,7 +46,7 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if e.Zone == nil || e.Zone.ZoneID == nil {
-		glog.V(4).Infof("Zone / ZoneID not found for %s, skipping Find", fi.StringValue(e.Name))
+		klog.V(4).Infof("Zone / ZoneID not found for %s, skipping Find", fi.StringValue(e.Name))
 		return nil, nil
 	}
 
@@ -73,7 +73,7 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 			resourceType := aws.StringValue(rr.Type)
 			name := aws.StringValue(rr.Name)
 
-			glog.V(4).Infof("Found DNS resource %q %q", resourceType, name)
+			klog.V(4).Infof("Found DNS resource %q %q", resourceType, name)
 
 			if findType != resourceType {
 				continue
@@ -108,7 +108,7 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 
 	if found.AliasTarget != nil {
 		dnsName := aws.StringValue(found.AliasTarget.DNSName)
-		glog.Infof("AliasTarget for %q is %q", aws.StringValue(found.Name), dnsName)
+		klog.Infof("AliasTarget for %q is %q", aws.StringValue(found.Name), dnsName)
 		if dnsName != "" {
 			// TODO: check "looks like" an ELB?
 			lb, err := findLoadBalancerByAlias(cloud, found.AliasTarget)
@@ -116,7 +116,7 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 				return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
 			}
 			if lb == nil {
-				glog.Warningf("Unable to find load balancer with DNS name: %q", dnsName)
+				klog.Warningf("Unable to find load balancer with DNS name: %q", dnsName)
 			} else {
 				loadBalancerName := aws.StringValue(lb.LoadBalancerName)
 				tagMap, err := describeLoadBalancerTags(cloud, []string{loadBalancerName})
@@ -175,14 +175,14 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 	request.HostedZoneId = e.Zone.ZoneID
 	request.ChangeBatch = changeBatch
 
-	glog.V(2).Infof("Updating DNS record %q", *e.Name)
+	klog.V(2).Infof("Updating DNS record %q", *e.Name)
 
 	response, err := t.Cloud.Route53().ChangeResourceRecordSets(request)
 	if err != nil {
 		return fmt.Errorf("error creating ResourceRecordSets: %v", err)
 	}
 
-	glog.V(2).Infof("Change id is %q", aws.StringValue(response.ChangeInfo.Id))
+	klog.V(2).Infof("Change id is %q", aws.StringValue(response.ChangeInfo.Id))
 
 	return nil
 }

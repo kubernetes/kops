@@ -23,7 +23,7 @@ import (
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ess"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
@@ -68,10 +68,10 @@ func (s *ScalingGroup) Find(c *fi.Context) (*ScalingGroup, error) {
 	}
 
 	if len(groupList) > 1 {
-		glog.V(4).Infof("The number of specified scalingGroup with the same name and ClusterTags exceeds 1, diskName:%q", *s.Name)
+		klog.V(4).Infof("The number of specified scalingGroup with the same name and ClusterTags exceeds 1, diskName:%q", *s.Name)
 	}
 
-	glog.V(2).Infof("found matching ScalingGroup with Name: %q", *s.Name)
+	klog.V(2).Infof("found matching ScalingGroup with Name: %q", *s.Name)
 
 	actual := &ScalingGroup{}
 	actual.Name = fi.String(groupList[0].ScalingGroupName)
@@ -130,7 +130,7 @@ func (_ *ScalingGroup) RenderALI(t *aliup.ALIAPITarget, a, e, changes *ScalingGr
 	}
 
 	if a == nil {
-		glog.V(2).Infof("Creating ScalingGroup with Name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating ScalingGroup with Name:%q", fi.StringValue(e.Name))
 
 		createScalingGroupArgs := &ess.CreateScalingGroupArgs{
 			ScalingGroupName: fi.StringValue(e.Name),
@@ -157,7 +157,7 @@ func (_ *ScalingGroup) RenderALI(t *aliup.ALIAPITarget, a, e, changes *ScalingGr
 	} else {
 		//only support to update size
 		if changes.MinSize != nil || changes.MaxSize != nil {
-			glog.V(2).Infof("Modifying AutoscalingGroup with Name:%q", fi.StringValue(e.Name))
+			klog.V(2).Infof("Modifying AutoscalingGroup with Name:%q", fi.StringValue(e.Name))
 
 			modifyScalingGroupArgs := &ess.ModifyScalingGroupArgs{
 				ScalingGroupId: fi.StringValue(a.ScalingGroupId),

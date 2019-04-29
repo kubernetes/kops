@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -146,7 +146,7 @@ func (_ *Disk) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Disk) error {
 		for k, v := range e.Labels {
 			labelsRequest.Labels[k] = v
 		}
-		glog.V(2).Infof("Setting labels on disk %q: %v", disk.Name, labelsRequest.Labels)
+		klog.V(2).Infof("Setting labels on disk %q: %v", disk.Name, labelsRequest.Labels)
 		_, err = t.Cloud.Compute().Disks.SetLabels(t.Cloud.Project(), *e.Zone, disk.Name, labelsRequest).Do()
 		if err != nil {
 			return fmt.Errorf("error setting labels on created Disk: %v", err)

@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/pkg/pki"
 )
@@ -43,7 +43,7 @@ func (m *MockEC2) ImportKeyPair(request *ec2.ImportKeyPairInput) (*ec2.ImportKey
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("ImportKeyPair: %v", request)
+	klog.Infof("ImportKeyPair: %v", request)
 
 	fp, err := pki.ComputeAWSKeyFingerprint(string(request.PublicKeyMaterial))
 	if err != nil {
@@ -78,7 +78,7 @@ func (m *MockEC2) DescribeKeyPairs(request *ec2.DescribeKeyPairsInput) (*ec2.Des
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DescribeKeyPairs: %v", request)
+	klog.Infof("DescribeKeyPairs: %v", request)
 
 	var keypairs []*ec2.KeyPairInfo
 
@@ -136,7 +136,7 @@ func (m *MockEC2) DeleteKeyPair(request *ec2.DeleteKeyPairInput) (*ec2.DeleteKey
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DeleteKeyPair: %v", request)
+	klog.Infof("DeleteKeyPair: %v", request)
 
 	id := aws.StringValue(request.KeyName)
 	o := m.KeyPairs[id]

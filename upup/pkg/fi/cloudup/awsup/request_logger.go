@@ -18,17 +18,17 @@ package awsup
 
 import (
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // RequestLogger logs every AWS request
 type RequestLogger struct {
-	logLevel glog.Level
+	logLevel klog.Level
 }
 
 func newRequestLogger(logLevel int) func(r *request.Request) {
 	rl := &RequestLogger{
-		logLevel: glog.Level(logLevel),
+		logLevel: klog.Level(logLevel),
 	}
 	return rl.log
 }
@@ -42,5 +42,5 @@ func (l *RequestLogger) log(r *request.Request) {
 	}
 	methodDescription := service + "/" + name
 
-	glog.V(l.logLevel).Infof("AWS request: %s", methodDescription)
+	klog.V(l.logLevel).Infof("AWS request: %s", methodDescription)
 }

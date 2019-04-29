@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -97,7 +97,7 @@ func (e *RouteTable) Find(c *fi.Context) (*RouteTable, error) {
 		Name: e.Name,
 		Tags: intersectTags(rt.Tags, e.Tags),
 	}
-	glog.V(2).Infof("found matching RouteTable %q", *actual.ID)
+	klog.V(2).Infof("found matching RouteTable %q", *actual.ID)
 	e.ID = actual.ID
 
 	// Prevent spurious changes
@@ -171,7 +171,7 @@ func (_ *RouteTable) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *RouteTable)
 			return fi.RequiredField("VPC.ID")
 		}
 
-		glog.V(2).Infof("Creating RouteTable with VPC: %q", *vpcID)
+		klog.V(2).Infof("Creating RouteTable with VPC: %q", *vpcID)
 
 		request := &ec2.CreateRouteTableInput{
 			VpcId: vpcID,

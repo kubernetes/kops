@@ -28,7 +28,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/pkg/try"
 )
@@ -66,7 +66,7 @@ func (ha HashAlgorithm) NewHasher() hash.Hash {
 		return sha256.New()
 	}
 
-	glog.Exitf("Unknown hash algorithm: %v", ha)
+	klog.Exitf("Unknown hash algorithm: %v", ha)
 	return nil
 }
 

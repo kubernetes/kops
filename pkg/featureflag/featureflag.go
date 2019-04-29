@@ -29,7 +29,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 const (
@@ -143,7 +143,7 @@ func ParseFlags(f string) {
 		} else {
 			ff = New(s, nil)
 		}
-		glog.Infof("FeatureFlag %q=%v", ff.Key, enabled)
+		klog.Infof("FeatureFlag %q=%v", ff.Key, enabled)
 		ff.enabled = &enabled
 	}
 }

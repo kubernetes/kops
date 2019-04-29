@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
@@ -41,7 +41,7 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *resources.Resource) error {
 		response, err := c.EC2().DescribeSecurityGroups(request)
 		if err != nil {
 			if awsup.AWSErrorCode(err) == "InvalidGroup.NotFound" {
-				glog.V(2).Infof("Got InvalidGroup.NotFound error describing SecurityGroup %q; will treat as already-deleted", id)
+				klog.V(2).Infof("Got InvalidGroup.NotFound error describing SecurityGroup %q; will treat as already-deleted", id)
 				return nil
 			}
 			return fmt.Errorf("error describing SecurityGroup %q: %v", id, err)
@@ -68,7 +68,7 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *resources.Resource) error {
 	}
 
 	{
-		glog.V(2).Infof("Deleting EC2 SecurityGroup %q", id)
+		klog.V(2).Infof("Deleting EC2 SecurityGroup %q", id)
 		request := &ec2.DeleteSecurityGroupInput{
 			GroupId: &id,
 		}
@@ -126,7 +126,7 @@ func DescribeSecurityGroups(cloud fi.Cloud, clusterName string) (map[string]*ec2
 	c := cloud.(awsup.AWSCloud)
 
 	groups := make(map[string]*ec2.SecurityGroup)
-	glog.V(2).Infof("Listing EC2 SecurityGroups")
+	klog.V(2).Infof("Listing EC2 SecurityGroups")
 	for _, filters := range buildEC2FiltersForCluster(clusterName) {
 		request := &ec2.DescribeSecurityGroupsInput{
 			Filters: filters,

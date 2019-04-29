@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog"
 	"k8s.io/kops/channels/pkg/api"
 )
 
@@ -127,7 +127,7 @@ func (a *Addon) EnsureUpdated(k8sClient kubernetes.Interface) (*AddonUpdate, err
 	if !manifestURL.IsAbs() {
 		manifestURL = a.ChannelLocation.ResolveReference(manifestURL)
 	}
-	glog.Infof("Applying update from %q", manifestURL)
+	klog.Infof("Applying update from %q", manifestURL)
 
 	err = Apply(manifestURL.String())
 	if err != nil {

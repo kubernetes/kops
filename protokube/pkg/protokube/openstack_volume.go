@@ -25,9 +25,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golang/glog"
 	cinderv2 "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
+	"k8s.io/klog"
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipos "k8s.io/kops/protokube/pkg/gossip/openstack"
@@ -141,7 +141,7 @@ func (a *OpenstackVolumes) discoverTags() error {
 		if a.clusterName == "" {
 			return fmt.Errorf("cluster name metadata was empty")
 		}
-		glog.Infof("Found cluster name=%q", a.clusterName)
+		klog.Infof("Found cluster name=%q", a.clusterName)
 	}
 
 	// Project ID
@@ -150,7 +150,7 @@ func (a *OpenstackVolumes) discoverTags() error {
 		if a.project == "" {
 			return fmt.Errorf("project metadata was empty")
 		}
-		glog.Infof("Found project=%q", a.project)
+		klog.Infof("Found project=%q", a.project)
 	}
 
 	// Storage Availability Zone
@@ -159,7 +159,7 @@ func (a *OpenstackVolumes) discoverTags() error {
 		return fmt.Errorf("Could not establish storage availability zone: %v", err)
 	}
 	a.storageZone = az.ZoneName
-	glog.Infof("Found zone=%q", a.storageZone)
+	klog.Infof("Found zone=%q", a.storageZone)
 
 	// Instance Name
 	{
@@ -167,7 +167,7 @@ func (a *OpenstackVolumes) discoverTags() error {
 		if a.instanceName == "" {
 			return fmt.Errorf("instance name metadata was empty")
 		}
-		glog.Infof("Found instanceName=%q", a.instanceName)
+		klog.Infof("Found instanceName=%q", a.instanceName)
 	}
 
 	// Internal IP
@@ -178,7 +178,7 @@ func (a *OpenstackVolumes) discoverTags() error {
 			return fmt.Errorf("error querying InternalIP from name: %v", err)
 		}
 		a.internalIP = net.ParseIP(ip)
-		glog.Infof("Found internalIP=%q", a.internalIP)
+		klog.Infof("Found internalIP=%q", a.internalIP)
 	}
 
 	return nil
@@ -221,7 +221,7 @@ func (v *OpenstackVolumes) buildOpenstackVolume(d *cinderv2.Volume) (*Volume, er
 func (v *OpenstackVolumes) FindVolumes() ([]*Volume, error) {
 	var volumes []*Volume
 
-	glog.V(2).Infof("Listing Openstack disks in %s/%s", v.project, v.meta.AvailabilityZone)
+	klog.V(2).Infof("Listing Openstack disks in %s/%s", v.project, v.meta.AvailabilityZone)
 
 	vols, err := v.cloud.ListVolumes(cinderv2.ListOpts{
 		TenantID: v.project,
@@ -235,7 +235,7 @@ func (v *OpenstackVolumes) FindVolumes() ([]*Volume, error) {
 			if _, isMasterRole := volume.Metadata[openstack.TagNameRolePrefix+"master"]; isMasterRole {
 				vol, err := v.buildOpenstackVolume(&volume)
 				if err != nil {
-					glog.Errorf("FindVolumes: Failed to build openstack volume %s: %v", volume.Name, err)
+					klog.Errorf("FindVolumes: Failed to build openstack volume %s: %v", volume.Name, err)
 					continue
 				}
 				volumes = append(volumes, vol)

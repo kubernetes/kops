@@ -29,7 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -90,7 +90,7 @@ func (p *S3Path) Remove() error {
 		return err
 	}
 
-	glog.V(8).Infof("removing file %s", p)
+	klog.V(8).Infof("removing file %s", p)
 
 	request := &s3.DeleteObjectInput{}
 	request.Bucket = aws.String(p.bucket)
@@ -125,7 +125,7 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 		return err
 	}
 
-	glog.V(4).Infof("Writing file %q", p)
+	klog.V(4).Infof("Writing file %q", p)
 
 	request := &s3.PutObjectInput{}
 	request.Body = data
@@ -151,7 +151,7 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 	acl := os.Getenv("KOPS_STATE_S3_ACL")
 	acl = strings.TrimSpace(acl)
 	if acl != "" {
-		glog.V(8).Infof("Using KOPS_STATE_S3_ACL=%s", acl)
+		klog.V(8).Infof("Using KOPS_STATE_S3_ACL=%s", acl)
 		request.ACL = aws.String(acl)
 	} else if aclObj != nil {
 		s3Acl, ok := aclObj.(*S3Acl)
@@ -163,7 +163,7 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208
 
-	glog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q SSE=%q ACL=%q", p.bucket, p.key, sseLog, acl)
+	klog.V(8).Infof("Calling S3 PutObject Bucket=%q Key=%q SSE=%q ACL=%q", p.bucket, p.key, sseLog, acl)
 
 	_, err = client.PutObject(request)
 	if err != nil {
@@ -217,7 +217,7 @@ func (p *S3Path) WriteTo(out io.Writer) (int64, error) {
 		return 0, err
 	}
 
-	glog.V(4).Infof("Reading file %q", p)
+	klog.V(4).Infof("Reading file %q", p)
 
 	request := &s3.GetObjectInput{}
 	request.Bucket = aws.String(p.bucket)
@@ -254,7 +254,7 @@ func (p *S3Path) ReadDir() ([]Path, error) {
 	request.Prefix = aws.String(prefix)
 	request.Delimiter = aws.String("/")
 
-	glog.V(4).Infof("Listing objects in S3 bucket %q with prefix %q", p.bucket, prefix)
+	klog.V(4).Infof("Listing objects in S3 bucket %q with prefix %q", p.bucket, prefix)
 	var paths []Path
 	err = client.ListObjectsPages(request, func(page *s3.ListObjectsOutput, lastPage bool) bool {
 		for _, o := range page.Contents {
@@ -264,7 +264,7 @@ func (p *S3Path) ReadDir() ([]Path, error) {
 				// And this will indeed happen if the directory has been created as a file,
 				// which seems to happen if you use some external tools to manipulate the S3 bucket.
 				// We need to tolerate that, so skip the parent directory.
-				glog.V(4).Infof("Skipping read of directory: %q", key)
+				klog.V(4).Infof("Skipping read of directory: %q", key)
 				continue
 			}
 			child := &S3Path{
@@ -282,7 +282,7 @@ func (p *S3Path) ReadDir() ([]Path, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error listing %s: %v", p, err)
 	}
-	glog.V(8).Infof("Listed files in %v: %v", p, paths)
+	klog.V(8).Infof("Listed files in %v: %v", p, paths)
 	return paths, nil
 }
 

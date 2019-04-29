@@ -30,7 +30,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // CloudTagInstanceGroupRolePrefix is a cloud tag that defined the instance role
@@ -183,14 +183,14 @@ func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group
 			// Check for "Delete in progress" (the only use .Status). We won't be able to update or create while
 			// this is true, but filtering it out here makes the messages slightly clearer.
 			if g.Status != nil {
-				glog.Warningf("Skipping AutoScalingGroup %v: %v", fi.StringValue(g.AutoScalingGroupName), fi.StringValue(g.Status))
+				klog.Warningf("Skipping AutoScalingGroup %v: %v", fi.StringValue(g.AutoScalingGroupName), fi.StringValue(g.Status))
 				continue
 			}
 
 			if aws.StringValue(g.AutoScalingGroupName) == name {
 				found = append(found, g)
 			} else {
-				glog.Warningf("Got ASG with unexpected name %q", fi.StringValue(g.AutoScalingGroupName))
+				klog.Warningf("Got ASG with unexpected name %q", fi.StringValue(g.AutoScalingGroupName))
 			}
 		}
 
@@ -242,7 +242,7 @@ func (e *AutoscalingGroup) CheckChanges(a, ex, changes *AutoscalingGroup) error 
 func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingGroup) error {
 	// @step: did we find an autoscaling group?
 	if a == nil {
-		glog.V(2).Infof("Creating autoscaling group with name: %s", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating autoscaling group with name: %s", fi.StringValue(e.Name))
 
 		request := &autoscaling.CreateAutoScalingGroupInput{
 			AutoScalingGroupName: e.Name,
@@ -445,10 +445,10 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 
 		empty := &AutoscalingGroup{}
 		if !reflect.DeepEqual(empty, changes) {
-			glog.Warningf("cannot apply changes to AutoScalingGroup: %v", changes)
+			klog.Warningf("cannot apply changes to AutoScalingGroup: %v", changes)
 		}
 
-		glog.V(2).Infof("Updating autoscaling group %s", fi.StringValue(e.Name))
+		klog.V(2).Infof("Updating autoscaling group %s", fi.StringValue(e.Name))
 
 		if _, err := t.Cloud.Autoscaling().UpdateAutoScalingGroup(request); err != nil {
 			return fmt.Errorf("error updating AutoscalingGroup: %v", err)

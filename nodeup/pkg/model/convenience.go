@@ -24,9 +24,9 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 
-	"github.com/golang/glog"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog"
 )
 
 // s is a helper that builds a *string from a string value
@@ -67,12 +67,12 @@ func buildDockerEnvironmentVars(env map[string]string) []string {
 
 func getProxyEnvVars(proxies *kops.EgressProxySpec) []v1.EnvVar {
 	if proxies == nil {
-		glog.V(8).Info("proxies is == nil, returning empty list")
+		klog.V(8).Info("proxies is == nil, returning empty list")
 		return []v1.EnvVar{}
 	}
 
 	if proxies.HTTPProxy.Host == "" {
-		glog.Warning("EgressProxy set but no proxy host provided")
+		klog.Warning("EgressProxy set but no proxy host provided")
 	}
 
 	var httpProxyURL string

@@ -19,10 +19,10 @@ package gce
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/pagination"
+	"k8s.io/klog"
 	"k8s.io/kops/protokube/pkg/gossip"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -52,7 +52,7 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 				var err error
 				addr, err := openstack.GetServerFixedIP(&server, clusterName)
 				if err != nil {
-					glog.Warningf("Failed to list seeds: %v", err)
+					klog.Warningf("Failed to list seeds: %v", err)
 					continue
 				}
 				seeds = append(seeds, addr)

@@ -21,7 +21,7 @@ package main
 //	"fmt"
 //
 //	"crypto/x509"
-//	"github.com/golang/glog"
+//	"k8s.io/klog"
 //	"github.com/spf13/cobra"
 //	"k8s.io/kops/upup/pkg/fi"
 //	"net"
