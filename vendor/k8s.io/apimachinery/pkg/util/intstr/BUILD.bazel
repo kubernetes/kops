@@ -11,7 +11,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/gogo/protobuf/proto:go_default_library",
-        "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/google/gofuzz:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
     ],
 )
