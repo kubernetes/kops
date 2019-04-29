@@ -1,0 +1,6 @@
+approvers:
+- sig-auth-authorizers-approvers
+reviewers:
+- sig-auth-authorizers-reviewers
+labels:
+- sig/auth

@@ -286,8 +286,8 @@ const (
 )
 
 // OwnerReference contains enough information to let you identify an owning
-// object. Currently, an owning object must be in the same namespace, so there
-// is no namespace field.
+// object. An owning object must be in the same namespace as the dependent, or
+// be cluster-scoped, so there is no namespace field.
 type OwnerReference struct {
 	// API version of the referent.
 	APIVersion string `json:"apiVersion" protobuf:"bytes,5,opt,name=apiVersion"`
@@ -712,6 +712,10 @@ const (
 	// API calls that return NotAcceptable can never succeed.
 	// Status code 406
 	StatusReasonNotAcceptable StatusReason = "NotAcceptable"
+
+	// StatusReasonRequestEntityTooLarge means that the request entity is too large.
+	// Status code 413
+	StatusReasonRequestEntityTooLarge StatusReason = "RequestEntityTooLarge"
 
 	// StatusReasonUnsupportedMediaType means that the content type sent by the client is not acceptable
 	// to the server - for instance, attempting to send protobuf for a resource that supports only json and yaml.
