@@ -7,7 +7,7 @@ go_library(
     importpath = "k8s.io/apiserver/pkg/util/feature",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/spf13/pflag:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
     ],
 )
