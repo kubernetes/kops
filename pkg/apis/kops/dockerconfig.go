@@ -69,3 +69,35 @@ type DockerConfig struct {
 	// Version is consumed by the nodeup and used to pick the docker version
 	Version *string `json:"version,omitempty"`
 }
+
+type DockerInstallSpec struct {
+	SourceOverrides []DockerSource `json:"sourceOverrides,omitempty"`
+}
+
+type DockerSource struct {
+	Name string `json:"name,omitempty"`
+	// Version is the version of docker
+	Version string `json:"version,omitempty"`
+	// Source is the URL to download the package from
+	Source string `json:"source"`
+	// Hash is the SHA1 hash of the file
+	Hash string `json:"hash"`
+	// ExtraPackages is a list of packages to be installed during the same dpkg/yum transaction
+	ExtraPackages []ExtraPackage `json:"extraPackages,omitempty"`
+	// Dependencies is a list of dependencies that can be installed by the system's package manager (e.e apt-get install or yum install)
+	Dependencies []string `json:"dependencies,omitempty"`
+	// PlainBinary indicates that the Source is not an OS, but a "bare" tar.gz
+	PlainBinary bool `json:"plainBinary,omitempty"`
+	// MarkImmutable is a list of files on which we should perform a `chattr +i <file>`
+	MarkImmutable []string `json:"markImmutable,omitempty"`
+}
+
+type ExtraPackage struct {
+	Name string `json:"name"`
+	// Version is the package's version
+	Version string `json:"version,omitempty"`
+	// Source is the URL to download the package from
+	Source string `json:"source,omitempty"`
+	// Hash is the SHA1 hash of the package file
+	Hash string `json:"hash,omitempty"`
+}

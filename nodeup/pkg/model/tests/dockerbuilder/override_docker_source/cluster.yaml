@@ -1,0 +1,55 @@
+apiVersion: kops/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2016-12-10T22:42:27Z"
+  name: dockeroverride.example.com
+spec:
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  channel: stable
+  cloudProvider: aws
+  configBase: memfs://clusters.example.com/dockeroverride.example.com
+  dockerInstall:
+    sourceOverrides:
+    - name: docker-ce
+      version: 17.03.2.ce
+      source: https://docker-mirror.example.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.03.2.ce-1.el7.centos.x86_64.rpm
+      hash: 494ca888f5b1553f93b9d9a5dad4a67f76cf9eb5
+      extraPackages:
+      - name: docker-ce-selinux
+        version: 17.03.2.ce
+        source: https://docker-mirror.example.com/linux/centos/7/x86_64/stable/Packages/docker-ce-selinux-17.03.2.ce-1.el7.centos.noarch.rpm
+        hash: 4659c937b66519c88ef2a82a906bb156db29d191
+      dependencies:
+      - libtool-ltdl
+      - libseccomp
+      - libcgroup
+      - policycoreutils-python
+      markImmutable:
+      - /usr/bin/docker-runc
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: master-us-test-1a
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: master-us-test-1a
+    name: events
+  kubernetesVersion: v1.4.6
+  masterInternalName: api.internal.dockeroverride.example.com
+  masterPublicName: api.dockeroverride.example.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+    - 0.0.0.0/0
+  topology:
+    masters: public
+    nodes: public
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-test-1a
+    type: Public
+    zone: us-test-1a

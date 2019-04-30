@@ -187,6 +187,18 @@ func TestDockerBuilder_BuildFlags(t *testing.T) {
 	}
 }
 
+func TestDockerBuilder_OverrideDockerSource(t *testing.T) {
+	runDockerBuilderTest(t, "override_docker_source")
+}
+
+func TestDockerBuilder_OverrideDockerSourceTwoPackages(t *testing.T) {
+	runDockerBuilderTest(t, "override_docker_source_two_packages")
+}
+
+func TestDockerBuilder_OverrideDockerSourcePlainBinary(t *testing.T) {
+	runDockerBuilderTest(t, "override_docker_source_plain_binary")
+}
+
 func runDockerBuilderTest(t *testing.T, key string) {
 	basedir := path.Join("tests/dockerbuilder/", key)
 

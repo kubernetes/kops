@@ -865,82 +865,72 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	dockerVersion := b.dockerVersion()
+	v := b.dockerVersion()
 
-	// Add packages
-	{
-		count := 0
-		for i := range dockerVersions {
-			dv := &dockerVersions[i]
-			if !dv.matches(b.Architecture, dockerVersion, b.Distribution) {
-				continue
+	var dv []dockerVersion
+
+	dv, err := b.findDockerVersions(v)
+	if err != nil {
+		klog.Warningf("No Docker versions found: %s", err)
+	}
+
+	for _, d := range dv {
+		var packageTask fi.Task
+		if d.PlainBinary {
+			packageTask = &nodetasks.Archive{
+				Name:            "docker",
+				Source:          d.Source,
+				Hash:            d.Hash,
+				TargetDir:       "/usr/bin/",
+				StripComponents: 1,
 			}
+			c.AddTask(packageTask)
 
-			count++
-
-			var packageTask fi.Task
-			if dv.PlainBinary {
-				packageTask = &nodetasks.Archive{
-					Name:            "docker",
-					Source:          dv.Source,
-					Hash:            dv.Hash,
-					TargetDir:       "/usr/bin/",
-					StripComponents: 1,
-				}
-				c.AddTask(packageTask)
-
-				c.AddTask(b.buildDockerGroup())
-				c.AddTask(b.buildSystemdSocket())
-			} else {
-				var extraPkgs []*nodetasks.Package
-				for name, pkg := range dv.ExtraPackages {
-					dep := &nodetasks.Package{
-						Name:         name,
-						Version:      s(pkg.Version),
-						Source:       s(pkg.Source),
-						Hash:         s(pkg.Hash),
-						PreventStart: fi.Bool(true),
-					}
-					extraPkgs = append(extraPkgs, dep)
-				}
-				packageTask = &nodetasks.Package{
-					Name:    dv.Name,
-					Version: s(dv.Version),
-					Source:  s(dv.Source),
-					Hash:    s(dv.Hash),
-					Deps:    extraPkgs,
-
-					// TODO: PreventStart is now unused?
+			c.AddTask(b.buildDockerGroup())
+			c.AddTask(b.buildSystemdSocket())
+		} else {
+			var extraPkgs []*nodetasks.Package
+			for name, pkg := range d.ExtraPackages {
+				dep := &nodetasks.Package{
+					Name:         name,
+					Version:      s(pkg.Version),
+					Source:       s(pkg.Source),
+					Hash:         s(pkg.Hash),
 					PreventStart: fi.Bool(true),
 				}
-				c.AddTask(packageTask)
+				extraPkgs = append(extraPkgs, dep)
 			}
+			packageTask = &nodetasks.Package{
+				Name:    d.Name,
+				Version: s(d.Version),
+				Source:  s(d.Source),
+				Hash:    s(d.Hash),
+				Deps:    extraPkgs,
 
-			// As a mitigation for CVE-2019-5736 (possibly a fix, definitely defense-in-depth) we chattr docker-runc to be immutable
-			for _, f := range dv.MarkImmutable {
-				c.AddTask(&nodetasks.Chattr{
-					File: f,
-					Mode: "+i",
-					Deps: []fi.Task{packageTask},
-				})
+				// TODO: PreventStart is now unused?
+				PreventStart: fi.Bool(true),
 			}
-
-			for _, dep := range dv.Dependencies {
-				c.AddTask(&nodetasks.Package{Name: dep})
-			}
-
-			// Note we do _not_ stop looping... centos/rhel comprises multiple packages
+			c.AddTask(packageTask)
 		}
 
-		if count == 0 {
-			klog.Warningf("Did not find docker package for %s %s %s", b.Distribution, b.Architecture, dockerVersion)
+		// As a mitigation for CVE-2019-5736 (possibly a fix, definitely defense-in-depth) we chattr docker-runc to be immutable
+		for _, f := range d.MarkImmutable {
+			c.AddTask(&nodetasks.Chattr{
+				File: f,
+				Mode: "+i",
+				Deps: []fi.Task{packageTask},
+			})
+		}
+
+		for _, dep := range d.Dependencies {
+			c.AddTask(&nodetasks.Package{Name: dep})
 		}
 	}
 
 	// Split into major.minor.(patch+pr+meta)
-	parts := strings.SplitN(dockerVersion, ".", 3)
+	parts := strings.SplitN(v, ".", 3)
 	if len(parts) != 3 {
-		return fmt.Errorf("error parsing docker version %q, no Major.Minor.Patch elements found", dockerVersion)
+		return fmt.Errorf("error parsing docker version %q, no Major.Minor.Patch elements found", v)
 	}
 
 	// Validate major
@@ -962,6 +952,58 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
+}
+
+func (b *DockerBuilder) findDockerVersions(v string) ([]dockerVersion, error) {
+	var dv []dockerVersion
+
+	// Check for overrides
+	if b.Cluster.Spec.DockerInstall != nil {
+		for _, s := range b.Cluster.Spec.DockerInstall.SourceOverrides {
+			extraPackages := make(map[string]packageInfo)
+
+			for _, p := range s.ExtraPackages {
+				extraPackage := packageInfo{
+					Version: p.Version,
+					Source:  p.Source,
+					Hash:    p.Hash,
+				}
+
+				extraPackages[p.Name] = extraPackage
+			}
+
+			dockerVersion := dockerVersion{
+				Name:          s.Name,
+				Version:       s.Version,
+				Source:        s.Source,
+				Hash:          s.Hash,
+				ExtraPackages: extraPackages,
+				Dependencies:  s.Dependencies,
+				PlainBinary:   s.PlainBinary,
+				MarkImmutable: s.MarkImmutable,
+			}
+
+			dv = append(dv, dockerVersion)
+		}
+	}
+
+	// No overrides found. Use default docker versions
+	if len(dv) == 0 {
+		for i := range dockerVersions {
+			dockerVersion := &dockerVersions[i]
+			if dockerVersion.matches(b.Architecture, v, b.Distribution) {
+				dv = append(dv, *dockerVersion)
+			}
+			// Note we do _not_ stop looping... centos/rhel comprises multiple packages
+		}
+	}
+
+	// No docker versions found at all
+	if len(dv) == 0 {
+		return nil, fmt.Errorf("did not find docker package for %s %s %s", b.Distribution, b.Architecture, v)
+	}
+
+	return dv, nil
 }
 
 // buildDockerGroup creates the docker group, which owns the docker.socket
