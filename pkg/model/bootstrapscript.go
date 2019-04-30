@@ -173,7 +173,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 			if cs.NodeAuthorization != nil {
 				spec["nodeAuthorization"] = cs.NodeAuthorization
 			}
-			if cs.KubeAPIServer.EnableBootstrapAuthToken != nil {
+			if cs.KubeAPIServer != nil && cs.KubeAPIServer.EnableBootstrapAuthToken != nil {
 				spec["kubeAPIServer"] = map[string]interface{}{
 					"enableBootstrapAuthToken": cs.KubeAPIServer.EnableBootstrapAuthToken,
 				}
