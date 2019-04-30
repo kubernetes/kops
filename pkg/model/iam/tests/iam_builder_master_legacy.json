@@ -19,7 +19,8 @@
         "autoscaling:DescribeTags",
         "autoscaling:SetDesiredCapacity",
         "autoscaling:TerminateInstanceInAutoScalingGroup",
-        "autoscaling:UpdateAutoScalingGroup"
+        "autoscaling:UpdateAutoScalingGroup",
+        "ec2:DescribeLaunchTemplateVersions"
       ],
       "Resource": [
         "*"
