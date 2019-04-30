@@ -566,13 +566,6 @@
   revision = "7d79101e329e5a3adf994758c578dab82b90c017"
 
 [[projects]]
-  digest = "1:ef985937fb7a6a7cf752a0e84bd7b61dd337da7c15635f65bc05508209a50289"
-  name = "github.com/google/cadvisor"
-  packages = ["pages/static"]
-  pruneopts = "UT"
-  revision = "fc17731afdcf184832482e324913c8f1a91b54ee"
-
-[[projects]]
   branch = "master"
   digest = "1:a63cff6b5d8b95638bfe300385d93b2a6d9d687734b863da8e09dc834510a690"
   name = "github.com/google/go-querystring"
@@ -2253,7 +2246,6 @@
     "github.com/gogo/protobuf/sortkeys",
     "github.com/golang/glog",
     "github.com/golang/protobuf/proto",
-    "github.com/google/cadvisor/pages/static",
     "github.com/gophercloud/gophercloud",
     "github.com/gophercloud/gophercloud/openstack",
     "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes",
