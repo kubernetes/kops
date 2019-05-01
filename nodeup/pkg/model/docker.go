@@ -788,6 +788,12 @@ func (b *DockerBuilder) dockerVersion() string {
 
 // Build is responsible for configuring the docker daemon
 func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
+	di := b.Cluster.Spec.DockerInstall
+
+	if di != nil && di.SkipInstall == true {
+		klog.Infof("SkipDockerInstall is set to true; won't install Docker")
+		return nil
+	}
 
 	// @check: neither coreos or containeros need provision docker.service, just the docker daemon options
 	switch b.Distribution {
