@@ -67,3 +67,8 @@ type DockerConfig struct {
 	// Version is consumed by the nodeup and used to pick the docker version
 	Version *string `json:"version,omitempty"`
 }
+
+type DockerInstallSpec struct {
+	// SkipInstall when set to true will prevent kops from installing and modifying Docker in any way
+	SkipInstall bool `json:"skipInstall,omitempty"`
+}
