@@ -745,6 +745,39 @@ spec:
 
 **NOTE:** When this field is set to `true`, it is entirely up to the user to install and configure Docker.
 
+### Docker Install
+
+You can also change how kops installs Docker.
+
+
+#### Source Overrides
+
+You can override the Docker install location with the `sourceOverrides` field:
+
+```yaml
+spec:
+  dockerInstall:
+    sourceOverrides:
+    - name: docker-ce
+      version: 17.03.2.ce
+      source: https://docker-mirror.example.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.03.2.ce-1.el7.centos.x86_64.rpm
+      hash: 494ca888f5b1553f93b9d9a5dad4a67f76cf9eb5
+      extraPackages:
+      - name: docker-ce-selinux
+        version: 17.03.2.ce
+        source: https://docker-mirror.example.com/linux/centos/7/x86_64/stable/Packages/docker-ce-selinux-17.03.2.ce-1.el7.centos.noarch.rpm
+        hash: 4659c937b66519c88ef2a82a906bb156db29d191
+      dependencies:
+      - libtool-ltdl
+      - libseccomp
+      - libcgroup
+      - policycoreutils-python
+      markImmutable:
+      - /usr/bin/docker-runc
+```
+
+Full details about the options can be found in [`dockerconfig.go`](../pkg/apis/kops/dockerconfig.go). You can find kops' defaults in [`docker.go`](../nodeup/pkg/model/docker.go).
+
 #### storage
 
 The Docker [Storage Driver](https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-storage-driver) can be specified in order to override the default. Be sure the driver you choose is supported by your operating system and docker version.
