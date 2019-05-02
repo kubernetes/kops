@@ -23,6 +23,9 @@ set -x
 
 CACHE_DIR=/nvidia-device-plugin
 
+apt-get install -y -q --no-install-recommends libxml2
+apt-get install -y -q --no-install-recommends libxml2-dev
+
 # AWS Instance Types to Nvidia Card Mapping (cut and pasted from AWS docs)
 # Load the correct driver for the correct instance type
 #   Instances  Product Type  Product Series  Product
@@ -35,18 +38,18 @@ CACHE_DIR=/nvidia-device-plugin
 declare -A class_to_driver_file
 class_to_driver_file=( \
     ["g2"]="http://us.download.nvidia.com/XFree86/Linux-x86_64/367.124/NVIDIA-Linux-x86_64-367.124.run" \
-    ["g3"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
-    ["g3s"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
-    ["p2"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
-    ["p3"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
+    ["p2"]="http://us.download.nvidia.com/tesla/418.40.04/NVIDIA-Linux-x86_64-418.40.04.run" \
+    ["g3"]="http://us.download.nvidia.com/tesla/418.40.04/NVIDIA-Linux-x86_64-418.40.04.run" \
+    ["g3s"]="http://us.download.nvidia.com/tesla/418.40.04/NVIDIA-Linux-x86_64-418.40.04.run" \
+    ["p3"]="http://us.download.nvidia.com/tesla/418.40.04/NVIDIA-Linux-x86_64-418.40.04.run"
 )
 declare -A class_to_driver_checksum
 class_to_driver_checksum=( \
     ["g2"]="77f37939efeea4b6505842bed50445971992e303" \
-    ["g3"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
-    ["g3s"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
-    ["p2"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
-    ["p3"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
+    ["p2"]="fe7842869eb0b4d8f30fb554c11d613312f96245" \
+    ["g3"]="fe7842869eb0b4d8f30fb554c11d613312f96245" \
+    ["g3s"]="fe7842869eb0b4d8f30fb554c11d613312f96245" \
+    ["p3"]="fe7842869eb0b4d8f30fb554c11d613312f96245"
 )
 
 # CUDA Files that need to be installed ~1.4GB
@@ -54,17 +57,12 @@ class_to_driver_checksum=( \
 #   Subsequent files are patches which need to be applied in order
 #   Order in the arrays below matters
 # https://developer.nvidia.com/cuda-downloads
+
 cuda_files=( \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/local_installers/cuda_9.1.85_387.26_linux" \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/1/cuda_9.1.85.1_linux" \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/2/cuda_9.1.85.2_linux" \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/3/cuda_9.1.85.3_linux" \
+             "https://developer.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.105_418.39_linux.run"
 )
 cuda_files_checksums=( \
-  "1540658f4fe657dddd8b0899555b7468727d4aa8" \
-  "7ec6970ecd81163b0d02ef30d35599e7fd6e97d8" \
-  "cfa3b029b58fc117d8ce510a70efc848924dd565" \
-  "6269a2c5784b08997edb97ea0020fb4e6c8769ed" \
+  "b5bb35bc24ff07dc4ce54a37f58a5d762c384b3c" \
 )
 
 containsElement () { for e in "${@:2}"; do [[ "$e" = "$1" ]] && return 0; done; return 1; }
@@ -152,7 +150,7 @@ for (( i=0; i<${length}; i++ )); do
       touch $filepath_installed # Mark successful installation
     elif [[ $download =~ .*local_installers.*cuda.* ]]; then
       # Install the primary cuda library
-      $filepath --toolkit --silent --verbose
+      $filepath --toolkit --silent
       touch $filepath_installed # Mark successful installation
     elif [[ $download =~ .*patches.*cuda.* ]]; then
       # Install an update to the primary cuda library
