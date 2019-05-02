@@ -88,6 +88,7 @@ kube-ingress-aws-controller, which we will use:
   "Action": [
     "acm:ListCertificates",
     "acm:DescribeCertificate",
+    "acm:GetCertificate",
     "autoscaling:DescribeAutoScalingGroups",
     "autoscaling:DescribeLoadBalancerTargetGroups",
     "autoscaling:AttachLoadBalancers",
