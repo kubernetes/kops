@@ -35,16 +35,16 @@ You can also put this in your `~/.bashrc` or similar.
 ```
 PROJECT=`gcloud config get-value project`
 export KOPS_FEATURE_FLAGS=AlphaAllowGCE # to unlock the GCE features
-kops create cluster simple.k8s.local --zones us-central1-a --state ${KOPS_STATE_STORE}/ --project=${PROJECT}
+kops create cluster simple.k8s.local --zones us-central1-a --project=${PROJECT}
 ```
 
 You can now list the Cluster objects in your kops state store (the GCS bucket
 we created).
 
-```
-kops get cluster --state ${KOPS_STATE_STORE}
 
 ```
+> kops get cluster
+
 NAME                CLOUD        ZONES
 simple.k8s.local    gce          us-central1-a
 ```
@@ -60,8 +60,9 @@ objects on a kubernetes cluster.
 
 You can see the details of your Cluster object by doing:
 
-`> kops get cluster --state ${KOPS_STATE_STORE}/ simple.k8s.local -oyaml`
 ```
+> kops get cluster simple.k8s.local -oyaml
+
 apiVersion: kops/v1alpha2
 kind: Cluster
 metadata:
@@ -110,8 +111,9 @@ spec:
 
 Similarly, you can also see your InstanceGroups using:
 
-`kops get instancegroup --state ${KOPS_STATE_STORE}/ --name simple.k8s.local`
 ```
+> kops get instancegroup --name simple.k8s.local
+
 NAME                    ROLE    MACHINETYPE     MIN    MAX    SUBNETS
 master-us-central1-a    Master  n1-standard-1   1      1      us-central1
 nodes                   Node    n1-standard-2   2      2      us-central1
