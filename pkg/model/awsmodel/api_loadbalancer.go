@@ -153,6 +153,13 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Tags: tags,
 		}
 
+		// Only set if specified so we don't change existing logic
+		if lbSpec.CrossZoneLoadBalancing != nil {
+			elb.CrossZoneLoadBalancing = &awstasks.LoadBalancerCrossZoneLoadBalancing{
+				Enabled: lbSpec.CrossZoneLoadBalancing,
+			}
+		}
+
 		switch lbSpec.Type {
 		case kops.LoadBalancerTypeInternal:
 			elb.Scheme = fi.String("internal")
