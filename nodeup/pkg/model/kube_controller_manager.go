@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"github.com/golang/glog"
 	"path/filepath"
 	"strings"
 
@@ -162,9 +163,7 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 		// If volume-plugin-dir flag is set in kubelet, match dir in kube-controller
 		flags = append(flags, "--flex-volume-plugin-dir="+volumePluginDir)
 	}
-
-	glog.V(4).Infof("Kube-Controller-Manager: Volume Plugin Dir: %s", volumePluginDir)
-
+	
 	container := &v1.Container{
 		Name:  "kube-controller-manager",
 		Image: b.Cluster.Spec.KubeControllerManager.Image,
