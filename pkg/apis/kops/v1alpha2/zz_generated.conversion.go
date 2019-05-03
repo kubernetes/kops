@@ -1114,6 +1114,7 @@ func Convert_kops_BastionSpec_To_v1alpha2_BastionSpec(in *kops.BastionSpec, out 
 
 func autoConvert_v1alpha2_CNINetworkingSpec_To_kops_CNINetworkingSpec(in *CNINetworkingSpec, out *kops.CNINetworkingSpec, s conversion.Scope) error {
 	out.UsesSecondaryIP = in.UsesSecondaryIP
+	out.AllowProtocolIPIP = in.AllowProtocolIPIP
 	return nil
 }
 
@@ -1124,6 +1125,7 @@ func Convert_v1alpha2_CNINetworkingSpec_To_kops_CNINetworkingSpec(in *CNINetwork
 
 func autoConvert_kops_CNINetworkingSpec_To_v1alpha2_CNINetworkingSpec(in *kops.CNINetworkingSpec, out *CNINetworkingSpec, s conversion.Scope) error {
 	out.UsesSecondaryIP = in.UsesSecondaryIP
+	out.AllowProtocolIPIP = in.AllowProtocolIPIP
 	return nil
 }
 

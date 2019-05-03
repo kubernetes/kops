@@ -1072,6 +1072,7 @@ func Convert_kops_AwsAuthenticationSpec_To_v1alpha1_AwsAuthenticationSpec(in *ko
 
 func autoConvert_v1alpha1_CNINetworkingSpec_To_kops_CNINetworkingSpec(in *CNINetworkingSpec, out *kops.CNINetworkingSpec, s conversion.Scope) error {
 	out.UsesSecondaryIP = in.UsesSecondaryIP
+	out.AllowProtocolIPIP = in.AllowProtocolIPIP
 	return nil
 }
 
@@ -1082,6 +1083,7 @@ func Convert_v1alpha1_CNINetworkingSpec_To_kops_CNINetworkingSpec(in *CNINetwork
 
 func autoConvert_kops_CNINetworkingSpec_To_v1alpha1_CNINetworkingSpec(in *kops.CNINetworkingSpec, out *CNINetworkingSpec, s conversion.Scope) error {
 	out.UsesSecondaryIP = in.UsesSecondaryIP
+	out.AllowProtocolIPIP = in.AllowProtocolIPIP
 	return nil
 }
 

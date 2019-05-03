@@ -175,6 +175,11 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 		if b.Cluster.Spec.Networking.Kuberouter != nil {
 			protocols = append(protocols, ProtocolIPIP)
 		}
+
+		if b.Cluster.Spec.Networking.CNI != nil && b.Cluster.Spec.Networking.CNI.AllowProtocolIPIP == true {
+			glog.V(4).Infof("Allow ProtocolIPIP for CNI as AllowProtocolIPIP == true.")
+			protocols = append(protocols, ProtocolIPIP)
+		}
 	}
 
 	for _, udpPort := range udpPorts {
@@ -267,6 +272,11 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 	}
 
 	if b.Cluster.Spec.Networking.Kuberouter != nil {
+		protocols = append(protocols, ProtocolIPIP)
+	}
+
+	if b.Cluster.Spec.Networking.CNI != nil && b.Cluster.Spec.Networking.CNI.AllowProtocolIPIP == true {
+		glog.V(4).Infof("Allow ProtocolIPIP for CNI as AllowProtocolIPIP == true.")
 		protocols = append(protocols, ProtocolIPIP)
 	}
 
