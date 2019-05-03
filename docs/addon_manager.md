@@ -50,12 +50,15 @@ a few more protocols than `kubectl` - for example `s3://...` for S3 hosted manif
 
 The `version` field gives meaning to the alternative manifests.  This is interpreted as a
 semver.  The channels tool keeps track of the current version installed (currently by means
-of an annotation on the `kube-system` namespace), and it will not reapply the same version
-of the manifest.  This means that a user can edit a deployed addon, and changes will not
-be replaced, until a new version of the addon is installed.
+of an annotation on the `kube-system` namespace).
 
-The long-term direction here is that addons will mostly be configured through a ConfigMap or Secret object,
-and that the addon manager will (TODO) not replace the ConfigMap.
+The channel tool updates the installed version when any of the following conditions apply. 
+* The version declared in the addon manifest is greater then the currently installed version.
+* The version number's match, but the ids are different
+* The version number and ids match, but the hash of the addon's manifest has changed since it was installed.
+
+
+This means that a user can edit a deployed addon, and changes will not be replaced, until a new version of the addon is installed. The long-term direction here is that addons will mostly be configured through a ConfigMap or Secret object, and that the addon manager will (TODO) not replace the ConfigMap.
 
 The `selector` determines the objects which make up the addon.  This will be used
 to construct a `--prune` argument (TODO), so that objects that existed in the
