@@ -23,6 +23,13 @@ with a `kubectl apply -f https://...` or with the channels tool.
 In future, we may as a convenience make it easy to add optional addons to the kops manifest,
 though this will just be a convenience wrapper around doing it manually.
 
+## Update BootStrap Addons
+
+If you want to update the bootstrap addons, you can run the following command to show you which addons need updating. Add `--yes` to actually apply the updates.
+
+**channels apply channel s3://*KOPS_S3_BUCKET*/*CLUSTER_NAME*/addons/bootstrap-channel.yaml**
+
+
 ## Versioning
 
 The channels tool adds a manifest-of-manifests file, of `Kind: Addons`, which allows for a description
