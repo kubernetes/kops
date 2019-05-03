@@ -102,13 +102,15 @@ func (c *Channel) AnnotationName() string {
 }
 
 func (c *ChannelVersion) replaces(existing *ChannelVersion) bool {
+	glog.V(4).Infof("Checking existing channel: %v compared to new channel: %v", existing, c)
 	if existing.Version != nil {
 		if c.Version == nil {
+			glog.V(4).Infof("New Version info missing")
 			return false
 		}
 		cVersion, err := semver.ParseTolerant(*c.Version)
 		if err != nil {
-			glog.Warningf("error parsing version %q; will ignore this version", *c.Version)
+			glog.Warningf("error parsing new version %q; will ignore this version", *c.Version)
 			return false
 		}
 		existingVersion, err := semver.ParseTolerant(*existing.Version)
@@ -117,14 +119,17 @@ func (c *ChannelVersion) replaces(existing *ChannelVersion) bool {
 			return true
 		}
 		if cVersion.LT(existingVersion) {
+			glog.V(4).Infof("New Version is less then old")
 			return false
 		} else if cVersion.GT(existingVersion) {
+			glog.V(4).Infof("New Version is greater then old")
 			return true
 		} else {
 			// Same version; check ids
 			if c.Id == existing.Id {
 				// Same id; check manifests
 				if c.ManifestHash == existing.ManifestHash {
+					glog.V(4).Infof("Manifest Match")
 					return false
 				}
 				glog.V(4).Infof("Channels had same version and ids %q, %q but different ManifestHash (%q vs %q); will replace", *c.Version, c.Id, c.ManifestHash, existing.ManifestHash)
@@ -132,10 +137,12 @@ func (c *ChannelVersion) replaces(existing *ChannelVersion) bool {
 			glog.V(4).Infof("Channels had same version and ids %q, %q but different ManifestHash (%q vs %q); will replace", *c.Version, c.Id, c.ManifestHash, existing.ManifestHash)
 
 		}
+	} else {
+		glog.Warningf("Existing ChannelVersion did not have a version; can't perform real version check")
 	}
 
-	glog.Warningf("ChannelVersion did not have a version; can't perform real version check")
 	if c.Version == nil {
+		glog.Warningf("New ChannelVersion did not have a version; can't perform real version check")
 		return false
 	}
 
