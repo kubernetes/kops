@@ -67,11 +67,15 @@ git_repository(
 load(
     "@distroless//package_manager:package_manager.bzl",
     "package_manager_repositories",
-    "dpkg_src",
-    "dpkg_list",
 )
 
 package_manager_repositories()
+
+load(
+    "@distroless//package_manager:dpkg.bzl",
+    "dpkg_src",
+    "dpkg_list",
+)
 
 dpkg_src(
     name = "debian_stretch",
