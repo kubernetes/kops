@@ -499,7 +499,7 @@ dep-ensure: dep-prereqs
 	rm -rf vendor/k8s.io/code-generator/cmd/go-to-protobuf/
 	rm -rf vendor/k8s.io/code-generator/cmd/import-boss/
 	rm -rf vendor/github.com/docker/docker/contrib/
-	make bazel-gazelle
+	make gazelle
 
 
 .PHONY: gofmt
@@ -723,9 +723,13 @@ bazel-push-aws-run: bazel-push
 	ssh ${TARGET} chmod +x /tmp/nodeup
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
 
-.PHONY: bazel-gazelle
-bazel-gazelle:
+.PHONY: gazelle
+gazelle:
 	hack/update-bazel.sh
+
+.PHONY: bazel-gazelle
+bazel-gazelle: gazelle
+	echo "bazel-gazelle is deprecated; please just use 'make gazelle'"
 
 .PHONY: check-markdown-links
 check-markdown-links:
