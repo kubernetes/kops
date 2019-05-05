@@ -119,7 +119,7 @@ func (c *FakeInstanceGroups) DeleteCollection(options *v1.DeleteOptions, listOpt
 // Patch applies the patch and returns the patched instanceGroup.
 func (c *FakeInstanceGroups) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *kops.InstanceGroup, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(instancegroupsResource, c.ns, name, data, subresources...), &kops.InstanceGroup{})
+		Invokes(testing.NewPatchSubresourceAction(instancegroupsResource, c.ns, name, pt, data, subresources...), &kops.InstanceGroup{})
 
 	if obj == nil {
 		return nil, err
