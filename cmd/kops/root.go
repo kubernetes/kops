@@ -102,6 +102,8 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
+	klog.InitFlags(nil)
+
 	factory := util.NewFactory(&rootCommand.FactoryOptions)
 	rootCommand.factory = factory
 
