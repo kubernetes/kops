@@ -27,7 +27,7 @@ make bazel-test
 
 Regenerate bazel files using gazelle:
 ```
-make bazel-gazelle
+make gazelle
 ```
 
 ## Other changes needed
