@@ -17,12 +17,14 @@ limitations under the License.
 package hosts
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 
 	"k8s.io/klog"
 )
@@ -32,7 +34,13 @@ const (
 	GUARD_END   = "# End host entries managed by kops"
 )
 
+var hostsFileMutex sync.Mutex
+
 func UpdateHostsFileWithRecords(p string, addrToHosts map[string][]string) error {
+	// For safety / sanity, we avoid concurrent updates from one process
+	hostsFileMutex.Lock()
+	defer hostsFileMutex.Unlock()
+
 	stat, err := os.Stat(p)
 	if err != nil {
 		return fmt.Errorf("error getting file status of %q: %v", p, err)
@@ -44,19 +52,28 @@ func UpdateHostsFileWithRecords(p string, addrToHosts map[string][]string) error
 	}
 
 	var out []string
-	depth := 0
+	inGuardBlock := false
 	for _, line := range strings.Split(string(data), "\n") {
 		k := strings.TrimSpace(line)
 		if k == GUARD_BEGIN {
-			depth++
+			if inGuardBlock {
+				klog.Warningf("/etc/hosts guard-block begin seen while in guard block; will ignore")
+			}
+			inGuardBlock = true
 		}
 
-		if depth <= 0 {
+		if !inGuardBlock {
 			out = append(out, line)
 		}
 
 		if k == GUARD_END {
-			depth--
+			if !inGuardBlock {
+				klog.Warningf("/etc/hosts guard-block end seen before guard-block start; will ignore end")
+				// Don't output the line
+				out = out[:len(out)-1]
+			}
+
+			inGuardBlock = false
 		}
 	}
 
@@ -74,18 +91,30 @@ func UpdateHostsFileWithRecords(p string, addrToHosts map[string][]string) error
 	}
 	out = append(out, "")
 
-	out = append(out, GUARD_BEGIN)
+	var block []string
 	for addr, hosts := range addrToHosts {
 		sort.Strings(hosts)
-		out = append(out, addr+"\t"+strings.Join(hosts, " "))
+		block = append(block, addr+"\t"+strings.Join(hosts, " "))
 	}
+	// Sort into a consistent order to minimize updates
+	sort.Strings(block)
+
+	out = append(out, GUARD_BEGIN)
+	out = append(out, block...)
 	out = append(out, GUARD_END)
 	out = append(out, "")
+
+	updated := []byte(strings.Join(out, "\n"))
+
+	if bytes.Equal(updated, data) {
+		klog.V(2).Infof("skipping update of unchanged /etc/hosts")
+		return nil
+	}
 
 	// Note that because we are bind mounting /etc/hosts, we can't do a normal atomic file write
 	// (where we write a temp file and rename it)
 	// TODO: We should just hold the file open while we read & write it
-	err = ioutil.WriteFile(p, []byte(strings.Join(out, "\n")), stat.Mode().Perm())
+	err = ioutil.WriteFile(p, updated, stat.Mode().Perm())
 	if err != nil {
 		return fmt.Errorf("error writing file %q: %v", p, err)
 	}
