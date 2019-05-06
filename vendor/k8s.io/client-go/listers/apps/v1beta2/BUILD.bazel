@@ -11,7 +11,6 @@ go_library(
         "expansion_generated.go",
         "replicaset.go",
         "replicaset_expansion.go",
-        "scale.go",
         "statefulset.go",
         "statefulset_expansion.go",
     ],
