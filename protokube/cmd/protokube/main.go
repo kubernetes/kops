@@ -48,6 +48,8 @@ var (
 )
 
 func main() {
+	klog.InitFlags(nil)
+
 	fmt.Printf("protokube version %s\n", BuildVersion)
 
 	if err := run(); err != nil {
