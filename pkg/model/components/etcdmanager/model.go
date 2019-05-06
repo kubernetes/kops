@@ -200,9 +200,6 @@ spec:
     # TODO: Would be nice to scope this more tightly, but needed for volume mounting
     - mountPath: /rootfs
       name: rootfs
-    # We write artificial hostnames into etc hosts for the etcd nodes, so they have stable names
-    - mountPath: /etc/hosts
-      name: hosts
     - mountPath: /etc/kubernetes/pki/etcd-manager
       name: pki
   hostNetwork: true
@@ -212,10 +209,6 @@ spec:
       path: /
       type: Directory
     name: rootfs
-  - hostPath:
-      path: /etc/hosts
-      type: File
-    name: hosts
   - hostPath:
       path: /etc/kubernetes/pki/etcd-manager
       type: DirectoryOrCreate
