@@ -35,6 +35,8 @@ const (
 )
 
 func main() {
+	klog.InitFlags(nil)
+
 	gitVersion := ""
 	if kops.GitVersion != "" {
 		gitVersion = " (git-" + kops.GitVersion + ")"
