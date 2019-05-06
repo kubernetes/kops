@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/golang/glog"
 )
@@ -32,7 +33,13 @@ const (
 	GUARD_END   = "# End host entries managed by kops"
 )
 
+var hostsFileMutex sync.Mutex
+
 func UpdateHostsFileWithRecords(p string, addrToHosts map[string][]string) error {
+	// For safety / sanity, we avoid concurrent updates from one process
+	hostsFileMutex.Lock()
+	defer hostsFileMutex.Unlock()
+
 	stat, err := os.Stat(p)
 	if err != nil {
 		return fmt.Errorf("error getting file status of %q: %v", p, err)
