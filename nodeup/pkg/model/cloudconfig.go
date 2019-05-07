@@ -29,13 +29,15 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
-const CloudConfigFilePath = "/etc/kubernetes/cloud.config"
+const (
+	CloudConfigFilePath = "/etc/kubernetes/cloud.config"
 
-// Required for vSphere CloudProvider
-const MinimumVersionForVMUUID = "1.5.3"
+	// Required for vSphere CloudProvider
+	MinimumVersionForVMUUID = "1.5.3"
 
-// VM UUID is set by cloud-init
-const VM_UUID_FILE_PATH = "/etc/vmware/vm_uuid"
+	// VM UUID is set by cloud-init
+	VM_UUID_FILE_PATH = "/etc/vmware/vm_uuid"
+)
 
 // CloudConfigBuilder creates the cloud configuration file
 type CloudConfigBuilder struct {
@@ -104,6 +106,62 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		// We need this to support Kubernetes vSphere CloudProvider < v1.5.3
 		lines = append(lines, "[disk]")
 		lines = append(lines, "scsicontrollertype = pvscsi")
+	case "openstack":
+		osc := cloudConfig.Openstack
+		if osc == nil {
+			break
+		}
+		//Support mapping of older keystone API
+		tenantName := os.Getenv("OS_TENANT_NAME")
+		if tenantName == "" {
+			tenantName = os.Getenv("OS_PROJECT_NAME")
+		}
+		tenantID := os.Getenv("OS_TENANT_ID")
+		if tenantID == "" {
+			tenantID = os.Getenv("OS_PROJECT_ID")
+		}
+		lines = append(lines,
+			fmt.Sprintf("auth-url=\"%s\"", os.Getenv("OS_AUTH_URL")),
+			fmt.Sprintf("username=\"%s\"", os.Getenv("OS_USERNAME")),
+			fmt.Sprintf("password=\"%s\"", os.Getenv("OS_PASSWORD")),
+			fmt.Sprintf("region=\"%s\"", os.Getenv("OS_REGION_NAME")),
+			fmt.Sprintf("tenant-id=\"%s\"", tenantID),
+			fmt.Sprintf("tenant-name=\"%s\"", tenantName),
+			fmt.Sprintf("domain-name=\"%s\"", os.Getenv("OS_DOMAIN_NAME")),
+			fmt.Sprintf("domain-id=\"%s\"", os.Getenv("OS_DOMAIN_ID")),
+			"",
+		)
+
+		if lb := osc.Loadbalancer; lb != nil {
+			lines = append(lines,
+				"[LoadBalancer]",
+				fmt.Sprintf("floating-network-id=%s", fi.StringValue(lb.FloatingNetworkID)),
+				fmt.Sprintf("lb-method=%s", fi.StringValue(lb.Method)),
+				fmt.Sprintf("lb-provider=%s", fi.StringValue(lb.Provider)),
+				fmt.Sprintf("use-octavia=%t", fi.BoolValue(lb.UseOctavia)),
+				fmt.Sprintf("manage-security-groups=%t", fi.BoolValue(lb.ManageSecGroups)),
+				"",
+			)
+
+			if monitor := osc.Monitor; monitor != nil {
+				lines = append(lines,
+					"create-monitor=yes",
+					fmt.Sprintf("monitor-delay=%s", fi.StringValue(monitor.Delay)),
+					fmt.Sprintf("monitor-timeout=%s", fi.StringValue(monitor.Timeout)),
+					fmt.Sprintf("monitor-max-retries=%d", fi.IntValue(monitor.MaxRetries)),
+					"",
+				)
+			}
+		}
+
+		if bs := osc.BlockStorage; bs != nil {
+			//Block Storage Config
+			lines = append(lines,
+				"[BlockStorage]",
+				fmt.Sprintf("bs-version=%s", fi.StringValue(bs.Version)),
+				fmt.Sprintf("ignore-volume-az=%t", fi.BoolValue(bs.IgnoreAZ)),
+				"")
+		}
 	}
 
 	config := "[global]\n" + strings.Join(lines, "\n") + "\n"

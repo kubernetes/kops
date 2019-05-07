@@ -56,6 +56,17 @@ spec:
       sslCertificate: arn:aws:acm:<region>:<accountId>:certificate/<uuid>
 ```
 
+It is possible to use the load balancer internally by setting the `useForInternalApi: true`.
+This will point both `masterPublicName` and `masterInternalName` to the load balancer. You can therefore set both of these to the same value in this configuration.
+
+```yaml
+spec:
+  api:
+    loadBalancer:
+      type: Internal
+      useForInternalApi: true
+```
+
 ### etcdClusters v3 & tls
 
 Although kops doesn't presently default to etcd3, it is possible to turn on both v3 and TLS authentication for communication amongst cluster members. These options may be enabled via the cluster spec (manifests only i.e. no command line options as yet). An upfront warning; at present no upgrade path exists for migrating from v2 to v3 so **DO NOT** try to enable this on a v2 running cluster as it must be done on cluster creation. The below example snippet assumes a HA cluster of three masters.
@@ -88,6 +99,8 @@ etcdClusters:
 
 By default, the Volumes created for the etcd clusters are `gp2` and 20GB each. The volume size, type and Iops( for `io1`) can be configured via their parameters. Conversion between `gp2` and `io1` is not supported, nor are size changes.
 
+It is also possible to specify the requests for your etcd cluster members using the `cpuRequest` and `memoryRequest` parameters.
+
 ```yaml
 etcdClusters:
 - etcdMembers:
@@ -104,6 +117,8 @@ etcdClusters:
     volumeIops: 100
     volumeSize: 21
   name: events
+  cpuRequest: 150m
+  memoryRequest: 512Mi
 ```
 
 ### sshAccess
@@ -155,6 +170,18 @@ spec:
     zone: us-east-1a
 ```
 
+In the case that you don't use NAT gateways or internet gateways, you can use the "External" flag for egress to force kops to ignore egress for the subnet. This can be useful when other tools are used to manage egress for the subnet such as virtual private gateways. Please note that your cluster may need to have access to the internet upon creation, so egress must be available upon initializing a cluster. This is intended for use when egress is managed external to kops, typically with an existing cluster.
+
+```
+spec:
+  subnets:
+  - cidr: 10.20.64.0/21
+    name: us-east-1a
+    egress: External
+    type: Private
+    zone: us-east-1a
+```
+
 #### publicIP
 The IP of an existing EIP that you would like to attach to the NAT gateway.
 
@@ -186,7 +213,8 @@ spec:
     oidcGroupsClaim: user_roles
     oidcGroupsPrefix: "oidc:"
     oidcCAFile: /etc/kubernetes/ssl/kc-ca.pem
-
+    oidcRequiredClaim:
+    	- "key=value"
 ```
 
 #### audit logging
@@ -326,6 +354,16 @@ spec:
     enableCustomMetrics: true
 ```
 
+#### Setting kubelet CPU management policies
+To enable cpu management policies in kubernetes as per [cpu management doc](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#cpu-management-policies)
+we have to set the flag `--cpu-manager-policy` to the appropriate value on all the kubelets. This must be specified in the `kubelet` spec in our cluster.yml.
+
+```
+spec:
+  kubelet:
+    cpuManagerPolicy: static
+```
+
 #### Setting kubelet configurations together with the Amazon VPC backend
 Setting kubelet configurations together with the networking Amazon VPC backend requires to also set the `cloudProvider: aws` setting in this block. Example:
 
@@ -377,6 +415,8 @@ Specifying KubeDNS will install kube-dns as the default service discovery.
 
 This will install [CoreDNS](https://coredns.io/) instead of kube-dns.
 
+**Note:** If you are upgrading to CoreDNS, kube-dns will be left in place and must be removed manually (you can scale the kube-dns and kube-dns-autoscaler deployments in the `kube-system` namespace to 0 as a starting point). The `kube-dns` Service itself should be left in place, as this retains the ClusterIP and eliminates the possibility of DNS outages in your cluster. If you would like to continue autoscaling, update the `kube-dns-autoscaler` Deployment container command for `--target=Deployment/kube-dns` to be `--target=Deployment/coredns`. 
+
 ### kubeControllerManager
 This block contains configurations for the `controller-manager`.
 
@@ -387,6 +427,7 @@ spec:
     horizontalPodAutoscalerDownscaleDelay: 5m0s
     horizontalPodAutoscalerUpscaleDelay: 3m0s
     horizontalPodAutoscalerTolerance: 0.1
+    experimentalClusterSigningDuration: 8760h0m0s
 ```
 
 For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [Kops guides on how to set it up](horizontal_pod_autoscaling.md).
@@ -404,6 +445,21 @@ spec:
 Will result in the flag `--feature-gates=Accelerators=true,AllowExtTrafficLocalEndpoints=false`
 
 NOTE: Feature gate `ExperimentalCriticalPodAnnotation` is enabled by default because some critical components like `kube-proxy` depend on its presence.
+
+Some feature gates also require the `featureGates` setting to be used on other components - e.g. `PodShareProcessNamespace` requires
+the feature gate to be enabled on the api server:
+
+```yaml
+spec:
+  kubelet:
+    featureGates:
+      PodShareProcessNamespace: "true"
+  kubeAPIServer:
+    featureGates:
+      PodShareProcessNamespace: "true"
+```
+
+For more information, see the [feature gate documentation](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/)
 
 ####  Compute Resources Reservation
 

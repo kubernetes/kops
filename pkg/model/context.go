@@ -33,8 +33,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
 	"github.com/blang/semver"
-	"github.com/golang/glog"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
+	"k8s.io/klog"
 )
 
 const (
@@ -64,7 +64,7 @@ func (m *KopsModelContext) GetELBName32(prefix string) string {
 		if len(s) > 32 {
 			s = s[:32]
 		}
-		glog.Infof("UseLegacyELBName feature-flag is set; built legacy name %q", s)
+		klog.Infof("UseLegacyELBName feature-flag is set; built legacy name %q", s)
 		return s
 	}
 
@@ -79,7 +79,7 @@ func (m *KopsModelContext) GetELBName32(prefix string) string {
 	// But we always compute the hash and add it, lest we trick users into assuming that we never do this
 	h := fnv.New32a()
 	if _, err := h.Write([]byte(s)); err != nil {
-		glog.Fatalf("error hashing values: %v", err)
+		klog.Fatalf("error hashing values: %v", err)
 	}
 	hashString := base32.HexEncoding.EncodeToString(h.Sum(nil))
 	hashString = strings.ToLower(hashString)
@@ -96,6 +96,7 @@ func (m *KopsModelContext) GetELBName32(prefix string) string {
 	return s
 }
 
+// ClusterName returns the cluster name
 func (m *KopsModelContext) ClusterName() string {
 	return m.Cluster.ObjectMeta.Name
 }
@@ -103,6 +104,8 @@ func (m *KopsModelContext) ClusterName() string {
 // GatherSubnets maps the subnet names in an InstanceGroup to the ClusterSubnetSpec objects (which are stored on the Cluster)
 func (m *KopsModelContext) GatherSubnets(ig *kops.InstanceGroup) ([]*kops.ClusterSubnetSpec, error) {
 	var subnets []*kops.ClusterSubnetSpec
+	var subnetType kops.SubnetType
+
 	for _, subnetName := range ig.Spec.Subnets {
 		var matches []*kops.ClusterSubnetSpec
 		for i := range m.Cluster.Spec.Subnets {
@@ -118,7 +121,18 @@ func (m *KopsModelContext) GatherSubnets(ig *kops.InstanceGroup) ([]*kops.Cluste
 			return nil, fmt.Errorf("found multiple subnets with name: %q", subnetName)
 		}
 		subnets = append(subnets, matches[0])
+
+		// @step: check the instance is not cross subnet types
+		switch subnetType {
+		case "":
+			subnetType = matches[0].Type
+		default:
+			if matches[0].Type != subnetType {
+				return nil, fmt.Errorf("found subnets of different types: %v", strings.Join([]string{string(subnetType), string(matches[0].Type)}, ","))
+			}
+		}
 	}
+
 	return subnets, nil
 }
 
@@ -218,7 +232,7 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 	case kops.CloudProviderAWS:
 		if shared {
 			// If the resource is shared, we don't try to set the Name - we presume that is managed externally
-			glog.V(4).Infof("Skipping Name tag for shared resource")
+			klog.V(4).Infof("Skipping Name tag for shared resource")
 		} else {
 			if name != "" {
 				tags["Name"] = name
@@ -231,7 +245,7 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 			// For the moment, we only skip the legacy tag for shared resources
 			// (other people may be using it)
 			if shared {
-				glog.V(4).Infof("Skipping %q tag for shared resource", awsup.TagClusterName)
+				klog.V(4).Infof("Skipping %q tag for shared resource", awsup.TagClusterName)
 				setLegacyTag = false
 			}
 		}
@@ -285,7 +299,7 @@ func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 	return m.Cluster.Spec.API.LoadBalancer != nil
 }
 
-// If true then we will use the created loadbalancer for internal kubelet
+// UseLoadBalancerForInternalAPI check if true then we will use the created loadbalancer for internal kubelet
 // connections.  The intention here is to make connections to apiserver more
 // HA - see https://github.com/kubernetes/kops/issues/4252
 func (m *KopsModelContext) UseLoadBalancerForInternalAPI() bool {
@@ -304,7 +318,7 @@ func (m *KopsModelContext) UsePrivateDNS() bool {
 			return true
 
 		default:
-			glog.Warningf("Unknown DNS type %q", topology.DNS.Type)
+			klog.Warningf("Unknown DNS type %q", topology.DNS.Type)
 			return false
 		}
 	}
@@ -312,9 +326,20 @@ func (m *KopsModelContext) UsePrivateDNS() bool {
 	return false
 }
 
-// UseEtcdTLS checks to see if etcd tls is enabled
-func (c *KopsModelContext) UseEtcdTLS() bool {
+// UseEtcdManager checks to see if etcd manager is enabled
+func (c *KopsModelContext) UseEtcdManager() bool {
 	for _, x := range c.Cluster.Spec.EtcdClusters {
+		if x.Provider == kops.EtcdProviderTypeManager {
+			return true
+		}
+	}
+
+	return false
+}
+
+// UseEtcdTLS checks to see if etcd tls is enabled
+func (m *KopsModelContext) UseEtcdTLS() bool {
+	for _, x := range m.Cluster.Spec.EtcdClusters {
 		if x.EnableEtcdTLS {
 			return true
 		}
@@ -324,38 +349,39 @@ func (c *KopsModelContext) UseEtcdTLS() bool {
 }
 
 // KubernetesVersion parses the semver version of kubernetes, from the cluster spec
-func (c *KopsModelContext) KubernetesVersion() semver.Version {
+func (m *KopsModelContext) KubernetesVersion() semver.Version {
 	// TODO: Remove copy-pasting c.f. https://github.com/kubernetes/kops/blob/master/pkg/model/components/context.go#L32
 
-	kubernetesVersion := c.Cluster.Spec.KubernetesVersion
+	kubernetesVersion := m.Cluster.Spec.KubernetesVersion
 
 	if kubernetesVersion == "" {
-		glog.Fatalf("KubernetesVersion is required")
+		klog.Fatalf("KubernetesVersion is required")
 	}
 
 	sv, err := util.ParseKubernetesVersion(kubernetesVersion)
 	if err != nil {
-		glog.Fatalf("unable to determine kubernetes version from %q", kubernetesVersion)
+		klog.Fatalf("unable to determine kubernetes version from %q", kubernetesVersion)
 	}
 
 	return *sv
 }
 
 // IsKubernetesGTE checks if the kubernetes version is at least version, ignoring prereleases / patches
-func (c *KopsModelContext) IsKubernetesGTE(version string) bool {
-	return util.IsKubernetesGTE(version, c.KubernetesVersion())
+func (m *KopsModelContext) IsKubernetesGTE(version string) bool {
+	return util.IsKubernetesGTE(version, m.KubernetesVersion())
 }
 
-func (c *KopsModelContext) WellKnownServiceIP(id int) (net.IP, error) {
-	return components.WellKnownServiceIP(&c.Cluster.Spec, id)
+// WellKnownServiceIP returns a service ip with the service cidr
+func (m *KopsModelContext) WellKnownServiceIP(id int) (net.IP, error) {
+	return components.WellKnownServiceIP(&m.Cluster.Spec, id)
 }
 
 // NodePortRange returns the range of ports allocated to NodePorts
-func (c *KopsModelContext) NodePortRange() (utilnet.PortRange, error) {
+func (m *KopsModelContext) NodePortRange() (utilnet.PortRange, error) {
 	// defaultServiceNodePortRange is the default port range for NodePort services.
 	defaultServiceNodePortRange := utilnet.PortRange{Base: 30000, Size: 2768}
 
-	kubeApiServer := c.Cluster.Spec.KubeAPIServer
+	kubeApiServer := m.Cluster.Spec.KubeAPIServer
 	if kubeApiServer != nil && kubeApiServer.ServiceNodePortRange != "" {
 		err := defaultServiceNodePortRange.Set(kubeApiServer.ServiceNodePortRange)
 		if err != nil {

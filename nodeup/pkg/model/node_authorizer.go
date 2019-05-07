@@ -27,7 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // NodeAuthorizationBuilder is responsible for node authorization
@@ -63,15 +63,15 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	glog.V(3).Infof("bootstrap: %t, node authorization: %t, node authorizer: %t", b.UseBootstrapTokens(),
+	klog.V(3).Infof("bootstrap: %t, node authorization: %t, node authorizer: %t", b.UseBootstrapTokens(),
 		b.UseNodeAuthorization(), b.UseNodeAuthorizer())
 
 	// @check if the NodeAuthorizer provision the client service for nodes
 	if b.UseNodeAuthorizer() && !b.IsMaster {
 		na := b.Cluster.Spec.NodeAuthorization.NodeAuthorizer
 
-		glog.V(3).Infof("node authorization service is enabled, authorizer: %s", na.Authorizer)
-		glog.V(3).Infof("node authorization url: %s", na.NodeURL)
+		klog.V(3).Infof("node authorization service is enabled, authorizer: %s", na.Authorizer)
+		klog.V(3).Infof("node authorization url: %s", na.NodeURL)
 
 		// @step: create the systemd unit to run the node authorization client
 		man := &systemd.Manifest{}

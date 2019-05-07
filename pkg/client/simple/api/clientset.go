@@ -21,9 +21,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
@@ -54,7 +54,7 @@ func (c *RESTClientset) CreateCluster(cluster *kops.Cluster) (*kops.Cluster, err
 
 // UpdateCluster implements the UpdateCluster method of Clientset for a kubernetes-API state store
 func (c *RESTClientset) UpdateCluster(cluster *kops.Cluster, status *kops.ClusterStatus) (*kops.Cluster, error) {
-	glog.Warningf("validating cluster update client side; needs to move to server")
+	klog.Warningf("validating cluster update client side; needs to move to server")
 	old, err := c.GetCluster(cluster.Name)
 	if err != nil {
 		return nil, err
@@ -129,7 +129,7 @@ func (c *RESTClientset) DeleteCluster(cluster *kops.Cluster) error {
 			if err != nil {
 				if errors.IsNotFound(err) {
 					// Unlikely...
-					glog.Warningf("Keyset was concurrently deleted")
+					klog.Warningf("Keyset was concurrently deleted")
 				} else {
 					return fmt.Errorf("error deleting Keyset %q: %v", keyset.Name, err)
 				}
@@ -149,7 +149,7 @@ func (c *RESTClientset) DeleteCluster(cluster *kops.Cluster) error {
 			if err != nil {
 				if errors.IsNotFound(err) {
 					// Unlikely...
-					glog.Warningf("instance group was concurrently deleted")
+					klog.Warningf("instance group was concurrently deleted")
 				} else {
 					return fmt.Errorf("error deleting instance group %q: %v", ig.Name, err)
 				}
@@ -161,7 +161,7 @@ func (c *RESTClientset) DeleteCluster(cluster *kops.Cluster) error {
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Unlikely...
-			glog.Warningf("cluster %q was concurrently deleted", name)
+			klog.Warningf("cluster %q was concurrently deleted", name)
 		} else {
 			return fmt.Errorf("error deleting cluster%q: %v", name, err)
 		}

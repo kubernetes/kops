@@ -30,7 +30,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // DefaultPrivateKeySize is the key size to use when generating private keys
@@ -58,7 +58,7 @@ func GeneratePrivateKey() (*PrivateKey, error) {
 			return nil, fmt.Errorf("error parsing KOPS_RSA_PRIVATE_KEY_SIZE=%s as integer", s)
 		} else {
 			rsaKeySize = int(v)
-			glog.V(4).Infof("Generating key of size %d, set by KOPS_RSA_PRIVATE_KEY_SIZE env var", rsaKeySize)
+			klog.V(4).Infof("Generating key of size %d, set by KOPS_RSA_PRIVATE_KEY_SIZE env var", rsaKeySize)
 		}
 	}
 
@@ -114,7 +114,7 @@ func (k *PrivateKey) UnmarshalJSON(b []byte) (err error) {
 			if err2 == nil {
 				r2, err2 := parsePEMPrivateKey(d)
 				if err2 == nil {
-					glog.Warningf("used base64 decode of PrivateKey")
+					klog.Warningf("used base64 decode of PrivateKey")
 					r = r2
 					err = nil
 				}
@@ -173,17 +173,17 @@ func parsePEMPrivateKey(pemData []byte) (crypto.PrivateKey, error) {
 		}
 
 		if block.Type == "RSA PRIVATE KEY" {
-			glog.V(10).Infof("Parsing pem block: %q", block.Type)
+			klog.V(10).Infof("Parsing pem block: %q", block.Type)
 			return x509.ParsePKCS1PrivateKey(block.Bytes)
 		} else if block.Type == "PRIVATE KEY" {
-			glog.V(10).Infof("Parsing pem block: %q", block.Type)
+			klog.V(10).Infof("Parsing pem block: %q", block.Type)
 			k, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 			if err != nil {
 				return nil, err
 			}
 			return k.(crypto.PrivateKey), nil
 		} else {
-			glog.Infof("Ignoring unexpected PEM block: %q", block.Type)
+			klog.Infof("Ignoring unexpected PEM block: %q", block.Type)
 		}
 
 		pemData = rest

@@ -33,8 +33,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/util/stringorslice"
@@ -185,7 +185,7 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName(), b.IAMPrefix())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
@@ -222,7 +222,7 @@ func (b *PolicyBuilder) BuildAWSPolicyNode() (*Policy, error) {
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName(), b.IAMPrefix())
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
@@ -297,12 +297,12 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 					continue
 				}
 				if strings.HasPrefix(l, locations[j]) {
-					glog.V(4).Infof("Ignoring location %q because found parent %q", l, locations[j])
+					klog.V(4).Infof("Ignoring location %q because found parent %q", l, locations[j])
 					isTopLevel = false
 				}
 			}
 			if isTopLevel {
-				glog.V(4).Infof("Found root location %q", l)
+				klog.V(4).Infof("Found root location %q", l)
 				roots = append(roots, l)
 			}
 		}
@@ -399,7 +399,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 			}
 		} else if _, ok := vfsPath.(*vfs.MemFSPath); ok {
 			// Tests -ignore - nothing we can do in terms of IAM policy
-			glog.Warningf("ignoring memfs path %q for IAM policy builder", vfsPath)
+			klog.Warningf("ignoring memfs path %q for IAM policy builder", vfsPath)
 		} else {
 			// We could implement this approach, but it seems better to
 			// get all clouds using cluster-readable storage
@@ -425,7 +425,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 				),
 			})
 		} else {
-			glog.Warningf("unknown writeable path, can't apply IAM policy: %q", vfsPath)
+			klog.Warningf("unknown writeable path, can't apply IAM policy: %q", vfsPath)
 		}
 	}
 
@@ -739,6 +739,7 @@ func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, legacy
 				"autoscaling:SetDesiredCapacity",
 				"autoscaling:TerminateInstanceInAutoScalingGroup",
 				"autoscaling:UpdateAutoScalingGroup",
+				"ec2:DescribeLaunchTemplateVersions",
 			}),
 			Resource: resource,
 		})
@@ -752,6 +753,7 @@ func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, legacy
 					"autoscaling:DescribeAutoScalingGroups",    // aws_instancegroups.go
 					"autoscaling:DescribeLaunchConfigurations", // aws.go
 					"autoscaling:DescribeTags",                 // auto_scaling.go
+					"ec2:DescribeLaunchTemplateVersions",
 				),
 				Resource: resource,
 			},
@@ -855,7 +857,7 @@ func addLyftVPCPermissions(p *Policy, resource stringorslice.StringOrSlice, lega
 	)
 }
 
-func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string) {
+func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string, iamPrefix string) {
 	if legacyIAM {
 		// Legacy IAM provides ec2:*, so no additional permissions required
 		return
@@ -877,6 +879,14 @@ func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice,
 			}),
 			Resource: resource,
 		},
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:CreateTags",
+			}),
+			Resource: stringorslice.Slice([]string{
+				strings.Join([]string{iamPrefix, ":ec2:*:*:network-interface/*"}, ""),
+			})},
 	)
 }
 

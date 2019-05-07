@@ -20,16 +20,38 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-
 	"path"
+	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
-const defaultKopsBaseUrl = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
+const (
+	defaultKopsBaseUrl = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
+
+	// defaultKopsMirrorBase will be detected and automatically set to pull from the defaultKopsMirrors
+	defaultKopsMirrorBase = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
+)
+
+// mirror holds the configuration for a mirror
+type mirror struct {
+	// URL is the base url
+	URL string
+
+	// Replace is a set of string replacements, so that we can follow the mirror's naming rules
+	Replace map[string]string
+}
+
+// defaultKopsMirrors is a list of our well-known mirrors
+// Note that we download in order
+var defaultKopsMirrors = []mirror{
+	{URL: "https://github.com/kubernetes/kops/releases/download/%s/", Replace: map[string]string{"/": "-"}},
+	// We do need to include defaultKopsMirrorBase - the list replaces the base url
+	{URL: "https://kubeupv2.s3.amazonaws.com/kops/%s/"},
+}
 
 var kopsBaseUrl *url.URL
 
@@ -50,7 +72,7 @@ func BaseUrl() (*url.URL, error) {
 	// returning cached value
 	// Avoid repeated logging
 	if kopsBaseUrl != nil {
-		glog.V(8).Infof("Using cached kopsBaseUrl url: %q", kopsBaseUrl.String())
+		klog.V(8).Infof("Using cached kopsBaseUrl url: %q", kopsBaseUrl.String())
 		return copyBaseURL(kopsBaseUrl)
 	}
 
@@ -58,7 +80,7 @@ func BaseUrl() (*url.URL, error) {
 	var err error
 	if baseUrlString == "" {
 		baseUrlString = fmt.Sprintf(defaultKopsBaseUrl, kops.Version)
-		glog.V(8).Infof("Using default base url: %q", baseUrlString)
+		klog.V(8).Infof("Using default base url: %q", baseUrlString)
 		kopsBaseUrl, err = url.Parse(baseUrlString)
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse %q as a url: %v", baseUrlString, err)
@@ -68,7 +90,7 @@ func BaseUrl() (*url.URL, error) {
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse env var KOPS_BASE_URL %q as a url: %v", baseUrlString, err)
 		}
-		glog.Warningf("Using base url from KOPS_BASE_URL env var: %q", baseUrlString)
+		klog.Warningf("Using base url from KOPS_BASE_URL env var: %q", baseUrlString)
 	}
 
 	return copyBaseURL(kopsBaseUrl)
@@ -102,7 +124,7 @@ func NodeUpLocation(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash
 	// Avoid repeated logging
 	if nodeUpLocation != nil && nodeUpHash != nil {
 		// Avoid repeated logging
-		glog.V(8).Infof("Using cached nodeup location: %q", nodeUpLocation.String())
+		klog.V(8).Infof("Using cached nodeup location: %q", nodeUpLocation.String())
 		return nodeUpLocation, nodeUpHash, nil
 	}
 	env := os.Getenv("NODEUP_URL")
@@ -112,7 +134,7 @@ func NodeUpLocation(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash
 		if err != nil {
 			return nil, nil, err
 		}
-		glog.V(8).Infof("Using default nodeup location: %q", nodeUpLocation.String())
+		klog.V(8).Infof("Using default nodeup location: %q", nodeUpLocation.String())
 	} else {
 		nodeUpLocation, err = url.Parse(env)
 		if err != nil {
@@ -123,7 +145,7 @@ func NodeUpLocation(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash
 		if err != nil {
 			return nil, nil, err
 		}
-		glog.Warningf("Using nodeup location from NODEUP_URL env var: %q", nodeUpLocation.String())
+		klog.Warningf("Using nodeup location from NODEUP_URL env var: %q", nodeUpLocation.String())
 	}
 
 	return nodeUpLocation, nodeUpHash, nil
@@ -139,7 +161,7 @@ func NodeUpLocation(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash
 func ProtokubeImageSource(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash, error) {
 	// Avoid repeated logging
 	if protokubeLocation != nil && protokubeHash != nil {
-		glog.V(8).Infof("Using cached protokube location: %q", protokubeLocation)
+		klog.V(8).Infof("Using cached protokube location: %q", protokubeLocation)
 		return protokubeLocation, protokubeHash, nil
 	}
 	env := os.Getenv("PROTOKUBE_IMAGE")
@@ -149,7 +171,7 @@ func ProtokubeImageSource(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashin
 		if err != nil {
 			return nil, nil, err
 		}
-		glog.V(8).Infof("Using default protokube location: %q", protokubeLocation)
+		klog.V(8).Infof("Using default protokube location: %q", protokubeLocation)
 	} else {
 		protokubeImageSource, err := url.Parse(env)
 		if err != nil {
@@ -160,7 +182,7 @@ func ProtokubeImageSource(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashin
 		if err != nil {
 			return nil, nil, err
 		}
-		glog.Warningf("Using protokube location from PROTOKUBE_IMAGE env var: %q", protokubeLocation)
+		klog.Warningf("Using protokube location from PROTOKUBE_IMAGE env var: %q", protokubeLocation)
 	}
 
 	return protokubeLocation, protokubeHash, nil
@@ -181,4 +203,54 @@ func KopsFileUrl(file string, assetBuilder *assets.AssetBuilder) (*url.URL, *has
 	}
 
 	return fileUrl, hash, nil
+}
+
+type MirroredAsset struct {
+	Locations []string
+	Hash      *hashing.Hash
+}
+
+// BuildMirroredAsset checks to see if this is a file under the standard base location, and if so constructs some mirror locations
+func BuildMirroredAsset(u *url.URL, hash *hashing.Hash) *MirroredAsset {
+	baseUrlString := fmt.Sprintf(defaultKopsMirrorBase, kops.Version)
+	if !strings.HasSuffix(baseUrlString, "/") {
+		baseUrlString += "/"
+	}
+
+	a := &MirroredAsset{
+		Hash: hash,
+	}
+
+	urlString := u.String()
+	a.Locations = []string{urlString}
+
+	// Look at mirrors
+	if strings.HasPrefix(urlString, baseUrlString) {
+		if hash == nil {
+			klog.Warningf("not using mirrors for asset %s as it does not have a known hash", u.String())
+		} else {
+			suffix := strings.TrimPrefix(urlString, baseUrlString)
+			// This is under our base url - add our well-known mirrors
+			a.Locations = []string{}
+			for _, m := range defaultKopsMirrors {
+				filename := suffix
+				for k, v := range m.Replace {
+					filename = strings.Replace(filename, k, v, -1)
+				}
+				base := fmt.Sprintf(m.URL, kops.Version)
+				a.Locations = append(a.Locations, base+filename)
+			}
+		}
+	}
+
+	return a
+}
+
+func (a *MirroredAsset) CompactString() string {
+	var s string
+	if a.Hash != nil {
+		s = a.Hash.Hex()
+	}
+	s += "@" + strings.Join(a.Locations, ",")
+	return s
 }

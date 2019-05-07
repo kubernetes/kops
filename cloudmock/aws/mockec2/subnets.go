@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type subnetInfo struct {
@@ -88,7 +88,7 @@ func (m *MockEC2) CreateSubnetWithId(request *ec2.CreateSubnetInput, id string) 
 }
 
 func (m *MockEC2) CreateSubnet(request *ec2.CreateSubnetInput) (*ec2.CreateSubnetOutput, error) {
-	glog.Infof("CreateSubnet: %v", request)
+	klog.Infof("CreateSubnet: %v", request)
 
 	id := m.allocateId("subnet")
 	return m.CreateSubnetWithId(request, id)
@@ -106,7 +106,7 @@ func (m *MockEC2) DescribeSubnets(request *ec2.DescribeSubnetsInput) (*ec2.Descr
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DescribeSubnets: %v", request)
+	klog.Infof("DescribeSubnets: %v", request)
 
 	if len(request.SubnetIds) != 0 {
 		request.Filters = append(request.Filters, &ec2.Filter{Name: s("subnet-id"), Values: request.SubnetIds})
@@ -163,7 +163,7 @@ func (m *MockEC2) AssociateRouteTable(request *ec2.AssociateRouteTableInput) (*e
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("AuthorizeSecurityGroupIngress: %v", request)
+	klog.Infof("AuthorizeSecurityGroupIngress: %v", request)
 
 	if aws.StringValue(request.SubnetId) == "" {
 		return nil, fmt.Errorf("SubnetId not specified")
@@ -173,7 +173,7 @@ func (m *MockEC2) AssociateRouteTable(request *ec2.AssociateRouteTableInput) (*e
 	}
 
 	if request.DryRun != nil {
-		glog.Fatalf("DryRun")
+		klog.Fatalf("DryRun")
 	}
 
 	subnet := m.subnets[*request.SubnetId]
@@ -214,7 +214,7 @@ func (m *MockEC2) DeleteSubnet(request *ec2.DeleteSubnetInput) (*ec2.DeleteSubne
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DeleteSubnet: %v", request)
+	klog.Infof("DeleteSubnet: %v", request)
 
 	id := aws.StringValue(request.SubnetId)
 	o := m.subnets[id]

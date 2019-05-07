@@ -1,4 +1,4 @@
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: 2017-01-01T00:00:00Z
@@ -12,21 +12,25 @@ spec:
   cloudProvider: aws
   configBase: memfs://tests/ha.example.com
   etcdClusters:
-  - etcdMembers:
+  - cpuRequest: 200m
+    etcdMembers:
     - instanceGroup: master-us-test-1a
       name: a
     - instanceGroup: master-us-test-1b
       name: b
     - instanceGroup: master-us-test-1c
       name: c
+    memoryRequest: 100Mi
     name: main
-  - etcdMembers:
+  - cpuRequest: 100m
+    etcdMembers:
     - instanceGroup: master-us-test-1a
       name: a
     - instanceGroup: master-us-test-1b
       name: b
     - instanceGroup: master-us-test-1c
       name: c
+    memoryRequest: 100Mi
     name: events
   iam:
     allowContainerRegistry: true
@@ -62,7 +66,7 @@ spec:
 
 ---
 
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-01-01T00:00:00Z
@@ -82,7 +86,7 @@ spec:
 
 ---
 
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-01-01T00:00:00Z
@@ -102,7 +106,7 @@ spec:
 
 ---
 
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-01-01T00:00:00Z
@@ -122,7 +126,7 @@ spec:
 
 ---
 
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-01-01T00:00:00Z

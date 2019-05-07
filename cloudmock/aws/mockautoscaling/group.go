@@ -23,14 +23,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockAutoscaling) AttachInstances(input *autoscaling.AttachInstancesInput) (*autoscaling.AttachInstancesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.V(2).Infof("AttachInstances %v", input)
+	klog.V(2).Infof("AttachInstances %v", input)
 
 	g := m.Groups[aws.StringValue(input.AutoScalingGroupName)]
 	if g == nil {
@@ -48,7 +48,7 @@ func (m *MockAutoscaling) CreateAutoScalingGroup(input *autoscaling.CreateAutoSc
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.V(2).Infof("CreateAutoScalingGroup %v", input)
+	klog.V(2).Infof("CreateAutoScalingGroup %v", input)
 	createdTime := time.Now().UTC()
 
 	g := &autoscaling.Group{
@@ -58,13 +58,13 @@ func (m *MockAutoscaling) CreateAutoScalingGroup(input *autoscaling.CreateAutoSc
 		DefaultCooldown:      input.DefaultCooldown,
 		DesiredCapacity:      input.DesiredCapacity,
 		// EnabledMetrics:          input.EnabledMetrics,
-		HealthCheckGracePeriod:  input.HealthCheckGracePeriod,
-		HealthCheckType:         input.HealthCheckType,
-		Instances:               []*autoscaling.Instance{},
-		LaunchConfigurationName: input.LaunchConfigurationName,
-		LoadBalancerNames:       input.LoadBalancerNames,
-		MaxSize:                 input.MaxSize,
-		MinSize:                 input.MinSize,
+		HealthCheckGracePeriod:           input.HealthCheckGracePeriod,
+		HealthCheckType:                  input.HealthCheckType,
+		Instances:                        []*autoscaling.Instance{},
+		LaunchConfigurationName:          input.LaunchConfigurationName,
+		LoadBalancerNames:                input.LoadBalancerNames,
+		MaxSize:                          input.MaxSize,
+		MinSize:                          input.MinSize,
 		NewInstancesProtectedFromScaleIn: input.NewInstancesProtectedFromScaleIn,
 		PlacementGroup:                   input.PlacementGroup,
 		// Status:                           input.Status,
@@ -97,7 +97,7 @@ func (m *MockAutoscaling) EnableMetricsCollection(request *autoscaling.EnableMet
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("EnableMetricsCollection: %v", request)
+	klog.Infof("EnableMetricsCollection: %v", request)
 
 	g := m.Groups[*request.AutoScalingGroupName]
 	if g == nil {
@@ -170,20 +170,20 @@ func (m *MockAutoscaling) TerminateInstanceInAutoScalingGroup(input *autoscaling
 }
 
 func (m *MockAutoscaling) DescribeAutoScalingGroupsWithContext(aws.Context, *autoscaling.DescribeAutoScalingGroupsInput, ...request.Option) (*autoscaling.DescribeAutoScalingGroupsOutput, error) {
-	glog.Fatalf("Not implemented")
+	klog.Fatalf("Not implemented")
 	return nil, nil
 }
 func (m *MockAutoscaling) DescribeAutoScalingGroupsRequest(*autoscaling.DescribeAutoScalingGroupsInput) (*request.Request, *autoscaling.DescribeAutoScalingGroupsOutput) {
-	glog.Fatalf("Not implemented")
+	klog.Fatalf("Not implemented")
 	return nil, nil
 }
 
 func (m *MockAutoscaling) DescribeAutoScalingGroupsPages(request *autoscaling.DescribeAutoScalingGroupsInput, callback func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool) error {
 	if request.MaxRecords != nil {
-		glog.Fatalf("MaxRecords not implemented")
+		klog.Fatalf("MaxRecords not implemented")
 	}
 	if request.NextToken != nil {
-		glog.Fatalf("NextToken not implemented")
+		klog.Fatalf("NextToken not implemented")
 	}
 
 	// For the mock, we just send everything in one page
@@ -198,7 +198,7 @@ func (m *MockAutoscaling) DescribeAutoScalingGroupsPages(request *autoscaling.De
 }
 
 func (m *MockAutoscaling) DescribeAutoScalingGroupsPagesWithContext(aws.Context, *autoscaling.DescribeAutoScalingGroupsInput, func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool, ...request.Option) error {
-	glog.Fatalf("Not implemented")
+	klog.Fatalf("Not implemented")
 	return nil
 }
 
@@ -206,7 +206,7 @@ func (m *MockAutoscaling) DeleteAutoScalingGroup(request *autoscaling.DeleteAuto
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DeleteAutoScalingGroup: %v", request)
+	klog.Infof("DeleteAutoScalingGroup: %v", request)
 
 	id := aws.StringValue(request.AutoScalingGroupName)
 	o := m.Groups[id]
@@ -219,10 +219,10 @@ func (m *MockAutoscaling) DeleteAutoScalingGroup(request *autoscaling.DeleteAuto
 }
 
 func (m *MockAutoscaling) DeleteAutoScalingGroupWithContext(aws.Context, *autoscaling.DeleteAutoScalingGroupInput, ...request.Option) (*autoscaling.DeleteAutoScalingGroupOutput, error) {
-	glog.Fatalf("Not implemented")
+	klog.Fatalf("Not implemented")
 	return nil, nil
 }
 func (m *MockAutoscaling) DeleteAutoScalingGroupRequest(*autoscaling.DeleteAutoScalingGroupInput) (*request.Request, *autoscaling.DeleteAutoScalingGroupOutput) {
-	glog.Fatalf("Not implemented")
+	klog.Fatalf("Not implemented")
 	return nil, nil
 }

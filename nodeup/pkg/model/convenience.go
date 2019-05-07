@@ -24,9 +24,9 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 
-	"github.com/golang/glog"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog"
 )
 
 // s is a helper that builds a *string from a string value
@@ -67,12 +67,12 @@ func buildDockerEnvironmentVars(env map[string]string) []string {
 
 func getProxyEnvVars(proxies *kops.EgressProxySpec) []v1.EnvVar {
 	if proxies == nil {
-		glog.V(8).Info("proxies is == nil, returning empty list")
+		klog.V(8).Info("proxies is == nil, returning empty list")
 		return []v1.EnvVar{}
 	}
 
 	if proxies.HTTPProxy.Host == "" {
-		glog.Warning("EgressProxy set but no proxy host provided")
+		klog.Warning("EgressProxy set but no proxy host provided")
 	}
 
 	var httpProxyURL string
@@ -117,6 +117,23 @@ func addHostPathMapping(pod *v1.Pod, container *v1.Container, name, path string)
 	})
 
 	return &container.VolumeMounts[len(container.VolumeMounts)-1]
+}
+
+// addHostPathVolume is shorthand for mapping a host path into a container
+func addHostPathVolume(pod *v1.Pod, container *v1.Container, hostPath v1.HostPathVolumeSource, volumeMount v1.VolumeMount) {
+	vol := v1.Volume{
+		Name: volumeMount.Name,
+		VolumeSource: v1.VolumeSource{
+			HostPath: &hostPath,
+		},
+	}
+
+	if volumeMount.MountPath == "" {
+		volumeMount.MountPath = hostPath.Path
+	}
+
+	pod.Spec.Volumes = append(pod.Spec.Volumes, vol)
+	container.VolumeMounts = append(container.VolumeMounts, volumeMount)
 }
 
 // convEtcdSettingsToMs converts etcd settings to a string rep of int milliseconds

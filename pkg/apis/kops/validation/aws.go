@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -96,7 +96,7 @@ func awsValidateAMIforNVMe(fieldPath *field.Path, ig *kops.InstanceGroup) field.
 	for _, prefix := range NVMe_INSTANCE_PREFIXES {
 		for _, machineType := range strings.Split(ig.Spec.MachineType, ",") {
 			if strings.Contains(strings.ToUpper(machineType), strings.ToUpper(prefix)) {
-				glog.V(2).Infof("machineType %s requires an image based on stretch to operate. Trying to check compatibility", machineType)
+				klog.V(2).Infof("machineType %s requires an image based on stretch to operate. Trying to check compatibility", machineType)
 				if strings.Contains(ig.Spec.Image, "jessie") {
 					errString := fmt.Sprintf("%s cannot use machineType %s with image based on Debian jessie.", ig.Name, machineType)
 					allErrs = append(allErrs, field.Forbidden(fieldPath, errString))

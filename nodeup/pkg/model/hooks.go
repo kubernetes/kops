@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // HookBuilder configures the hooks
@@ -62,7 +62,7 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			if _, found := hookNames[name]; found {
-				glog.V(2).Infof("Skipping the hook: %v as we've already processed a similar service name", name)
+				klog.V(2).Infof("Skipping the hook: %v as we've already processed a similar service name", name)
 				continue
 			}
 			hookNames[name] = true
@@ -72,7 +72,7 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 				enabled := false
 				managed := true
 				c.AddTask(&nodetasks.Service{
-					Name:        ensureSystemdSuffix(name),
+					Name:        h.EnsureSystemdSuffix(name),
 					ManageState: &managed,
 					Enabled:     &enabled,
 					Running:     &enabled,
@@ -94,25 +94,16 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-// ensureSystemdSuffix ensures that the hook name ends with a valid systemd unit file extension. If it
-// doesn't, it adds ".service" for backwards-compatibility with older versions of Kops
-func ensureSystemdSuffix(name string) string {
-	if !systemd.UnitFileExtensionValid(name) {
-		name += ".service"
-	}
-	return name
-}
-
 // buildSystemdService is responsible for generating the service
 func (h *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*nodetasks.Service, error) {
 	// perform some basic validation
 	if hook.ExecContainer == nil && hook.Manifest == "" {
-		glog.Warningf("hook: %s has neither a raw unit or exec image configured", name)
+		klog.Warningf("hook: %s has neither a raw unit or exec image configured", name)
 		return nil, nil
 	}
 	if hook.ExecContainer != nil {
 		if err := isValidExecContainerAction(hook.ExecContainer); err != nil {
-			glog.Warningf("invalid hook action, name: %s, error: %v", name, err)
+			klog.Warningf("invalid hook action, name: %s, error: %v", name, err)
 			return nil, nil
 		}
 	}
@@ -145,7 +136,7 @@ func (h *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*no
 	}
 
 	service := &nodetasks.Service{
-		Name:       ensureSystemdSuffix(name),
+		Name:       h.EnsureSystemdSuffix(name),
 		Definition: definition,
 	}
 

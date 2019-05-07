@@ -19,8 +19,8 @@ package gcemodel
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/iam"
@@ -46,7 +46,7 @@ func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("error fetching ServiceAccount: %v", err)
 	}
 
-	if featureflag.GoogleCloudBucketAcl.Enabled() {
+	if featureflag.GoogleCloudBucketACL.Enabled() {
 		clusterPath := b.Cluster.Spec.ConfigBase
 		p, err := vfs.Context.BuildVfsPath(clusterPath)
 		if err != nil {
@@ -68,7 +68,7 @@ func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	glog.Warningf("we need to split master / node roles")
+	klog.Warningf("we need to split master / node roles")
 	role := kops.InstanceGroupRoleMaster
 	writeablePaths, err := iam.WriteableVFSPaths(b.Cluster, role)
 	if err != nil {
@@ -83,7 +83,7 @@ func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
 				continue
 			}
 
-			glog.Warningf("adding bucket level write ACL to gs://%s to support etcd backup", bucket)
+			klog.Warningf("adding bucket level write ACL to gs://%s to support etcd backup", bucket)
 
 			c.AddTask(&gcetasks.StorageBucketAcl{
 				Name:      s("serviceaccount-backup-readwrite-" + bucket),
@@ -95,7 +95,7 @@ func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			buckets.Insert(bucket)
 		} else {
-			glog.Warningf("unknown path, can't apply IAM policy: %q", p)
+			klog.Warningf("unknown path, can't apply IAM policy: %q", p)
 		}
 	}
 

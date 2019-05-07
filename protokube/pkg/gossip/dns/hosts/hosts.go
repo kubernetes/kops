@@ -24,11 +24,13 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
-const GUARD_BEGIN = "# Begin host entries managed by kops - do not edit"
-const GUARD_END = "# End host entries managed by kops"
+const (
+	GUARD_BEGIN = "# Begin host entries managed by kops - do not edit"
+	GUARD_END   = "# End host entries managed by kops"
+)
 
 func UpdateHostsFileWithRecords(p string, addrToHosts map[string][]string) error {
 	stat, err := os.Stat(p)
@@ -105,13 +107,13 @@ func atomicWriteFile(filename string, data []byte, perm os.FileMode) error {
 	defer func() {
 		if mustClose {
 			if err := tempFile.Close(); err != nil {
-				glog.Warningf("error closing temp file: %v", err)
+				klog.Warningf("error closing temp file: %v", err)
 			}
 		}
 
 		if mustRemove {
 			if err := os.Remove(tempFile.Name()); err != nil {
-				glog.Warningf("error removing temp file %q: %v", tempFile.Name(), err)
+				klog.Warningf("error removing temp file %q: %v", tempFile.Name(), err)
 			}
 		}
 	}()

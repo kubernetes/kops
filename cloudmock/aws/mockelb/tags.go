@@ -21,14 +21,14 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockELB) DescribeTags(request *elb.DescribeTagsInput) (*elb.DescribeTagsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DescribeTags %v", request)
+	klog.Infof("DescribeTags %v", request)
 
 	var tags []*elb.TagDescription
 
@@ -71,7 +71,7 @@ func (m *MockELB) AddTags(request *elb.AddTagsInput) (*elb.AddTagsOutput, error)
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("AddTags %v", request)
+	klog.Infof("AddTags %v", request)
 
 	for _, name := range request.LoadBalancerNames {
 		elb := m.LoadBalancers[*name]

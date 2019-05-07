@@ -19,8 +19,8 @@ package openstacktasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -38,6 +38,18 @@ func (n *Router) CompareWithID() *string {
 	return n.ID
 }
 
+func NewRouterTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, router *routers.Router, find *Router) (*Router, error) {
+	actual := &Router{
+		ID:        fi.String(router.ID),
+		Name:      fi.String(router.Name),
+		Lifecycle: lifecycle,
+	}
+	if find != nil {
+		find.ID = actual.ID
+	}
+	return actual, nil
+}
+
 func (n *Router) Find(context *fi.Context) (*Router, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	opt := routers.ListOpts{
@@ -53,13 +65,7 @@ func (n *Router) Find(context *fi.Context) (*Router, error) {
 	} else if len(rs) != 1 {
 		return nil, fmt.Errorf("found multiple routers with name: %s", fi.StringValue(n.Name))
 	}
-	v := rs[0]
-	actual := &Router{
-		ID:        fi.String(v.ID),
-		Name:      fi.String(v.Name),
-		Lifecycle: n.Lifecycle,
-	}
-	return actual, nil
+	return NewRouterTaskFromCloud(cloud, n.Lifecycle, &rs[0], n)
 }
 
 func (c *Router) Run(context *fi.Context) error {
@@ -81,23 +87,42 @@ func (_ *Router) CheckChanges(a, e, changes *Router) error {
 
 func (_ *Router) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Router) error {
 	if a == nil {
-		glog.V(2).Infof("Creating Router with name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating Router with name:%q", fi.StringValue(e.Name))
 
 		opt := routers.CreateOpts{
 			Name:         fi.StringValue(e.Name),
 			AdminStateUp: fi.Bool(true),
+		}
+		floatingNet, err := t.Cloud.GetExternalNetwork()
+		if err != nil {
+			return fmt.Errorf("Error creating router.  Could not list external networks for gateway: %v", err)
+		}
+
+		opt.GatewayInfo = &routers.GatewayInfo{
+			NetworkID: floatingNet.ID,
+		}
+
+		routerFloatingSubnet, err := t.Cloud.GetExternalSubnet()
+		if err != nil {
+			return fmt.Errorf("Failed to find floatingip subnet: %v", err)
+		}
+		if routerFloatingSubnet != nil {
+			opt.GatewayInfo.ExternalFixedIPs = []routers.ExternalFixedIP{
+				{
+					SubnetID: routerFloatingSubnet.ID,
+				},
+			}
 		}
 
 		v, err := t.Cloud.CreateRouter(opt)
 		if err != nil {
 			return fmt.Errorf("Error creating router: %v", err)
 		}
-
 		e.ID = fi.String(v.ID)
-		glog.V(2).Infof("Creating a new Openstack router, id=%s", v.ID)
+		klog.V(2).Infof("Creating a new Openstack router, id=%s", v.ID)
 		return nil
 	}
 	e.ID = a.ID
-	glog.V(2).Infof("Using an existing Openstack router, id=%s", fi.StringValue(e.ID))
+	klog.V(2).Infof("Using an existing Openstack router, id=%s", fi.StringValue(e.ID))
 	return nil
 }

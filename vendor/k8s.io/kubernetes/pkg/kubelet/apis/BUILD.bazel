@@ -10,7 +10,9 @@ go_library(
     importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/kubelet/apis",
     importpath = "k8s.io/kubernetes/pkg/kubelet/apis",
     visibility = ["//visibility:public"],
-    deps = select({
+    deps = [
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+    ] + select({
         "@io_bazel_rules_go//go/platform:windows": [
             "//vendor/k8s.io/apiserver/pkg/util/feature:go_default_library",
             "//vendor/k8s.io/kubernetes/pkg/features:go_default_library",

@@ -19,8 +19,8 @@ package openstacktasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -38,11 +38,24 @@ func (n *Network) CompareWithID() *string {
 	return n.ID
 }
 
+func NewNetworkTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, network *networks.Network) (*Network, error) {
+	task := &Network{
+		ID:        fi.String(network.ID),
+		Name:      fi.String(network.Name),
+		Lifecycle: lifecycle,
+	}
+	return task, nil
+}
+
 func (n *Network) Find(context *fi.Context) (*Network, error) {
+	if n.Name == nil && n.ID == nil {
+		return nil, nil
+	}
+
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	opt := networks.ListOpts{
-		Name: fi.StringValue(n.Name),
 		ID:   fi.StringValue(n.ID),
+		Name: fi.StringValue(n.Name),
 	}
 	ns, err := cloud.ListNetworks(opt)
 	if err != nil {
@@ -54,11 +67,11 @@ func (n *Network) Find(context *fi.Context) (*Network, error) {
 		return nil, fmt.Errorf("found multiple networks with name: %s", fi.StringValue(n.Name))
 	}
 	v := ns[0]
-	actual := &Network{
-		ID:        fi.String(v.ID),
-		Name:      fi.String(v.Name),
-		Lifecycle: n.Lifecycle,
+	actual, err := NewNetworkTaskFromCloud(cloud, n.Lifecycle, &v)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create new Network object: %v", err)
 	}
+	n.ID = actual.ID
 	return actual, nil
 }
 
@@ -88,7 +101,7 @@ func (_ *Network) ShouldCreate(a, e, changes *Network) (bool, error) {
 
 func (_ *Network) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Network) error {
 	if a == nil {
-		glog.V(2).Infof("Creating Network with name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating Network with name:%q", fi.StringValue(e.Name))
 
 		opt := networks.CreateOpts{
 			Name:         fi.StringValue(e.Name),
@@ -101,10 +114,10 @@ func (_ *Network) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes
 		}
 
 		e.ID = fi.String(v.ID)
-		glog.V(2).Infof("Creating a new Openstack network, id=%s", v.ID)
+		klog.V(2).Infof("Creating a new Openstack network, id=%s", v.ID)
 		return nil
 	}
 
-	glog.V(2).Infof("Openstack task Network::RenderOpenstack did nothing")
+	klog.V(2).Infof("Openstack task Network::RenderOpenstack did nothing")
 	return nil
 }

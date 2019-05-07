@@ -23,10 +23,10 @@ import (
 	"path"
 	"sync"
 
-	"github.com/golang/glog"
 	"github.com/vmware/govmomi/object"
 	"github.com/vmware/govmomi/vim25/mo"
 	"github.com/vmware/govmomi/vim25/types"
+	"k8s.io/klog"
 )
 
 var snapshotLock sync.Mutex
@@ -39,7 +39,7 @@ func createSnapshot(ctx context.Context, vm *object.VirtualMachine, snapshotName
 	if err != nil {
 		return nil, err
 	}
-	glog.V(4).Infof("Template VM is %s and snapshot is %s", vm, snapshotRef)
+	klog.V(4).Infof("Template VM is %s and snapshot is %s", vm, snapshotRef)
 	if snapshotRef != nil {
 		return snapshotRef, nil
 	}
@@ -53,7 +53,7 @@ func createSnapshot(ctx context.Context, vm *object.VirtualMachine, snapshotName
 	if err != nil {
 		return nil, err
 	}
-	glog.Infof("taskInfo.Result is %s", taskInfo.Result)
+	klog.Infof("taskInfo.Result is %s", taskInfo.Result)
 	return taskInfo.Result.(object.Reference), nil
 }
 
@@ -100,7 +100,7 @@ func findSnapshot(v *object.VirtualMachine, ctx context.Context, name string) (o
 	case 1:
 		return s[0], nil
 	default:
-		glog.Warningf("VM %s seems to have more than one snapshots with name %s. Using a random snapshot.", v, name)
+		klog.Warningf("VM %s seems to have more than one snapshots with name %s. Using a random snapshot.", v, name)
 		return s[0], nil
 	}
 }

@@ -23,8 +23,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
@@ -93,12 +93,12 @@ func (t *CloudInitTarget) fetch(p *fi.Source, destPath string) {
 	// We could probably move this to fi.Source - it is likely to be the same for every provider
 	if p.URL != "" {
 		if p.Parent != nil {
-			glog.Fatalf("unexpected parent with SourceURL in FetchInstructions: %v", p)
+			klog.Fatalf("unexpected parent with SourceURL in FetchInstructions: %v", p)
 		}
 		t.AddDownloadCommand(Once, p.URL, destPath)
 	} else if p.ExtractFromArchive != "" {
 		if p.Parent == nil {
-			glog.Fatalf("unexpected ExtractFromArchive without parent in FetchInstructions: %v", p)
+			klog.Fatalf("unexpected ExtractFromArchive without parent in FetchInstructions: %v", p)
 		}
 
 		// TODO: Remove duplicate commands?
@@ -112,7 +112,7 @@ func (t *CloudInitTarget) fetch(p *fi.Source, destPath string) {
 		// Always because this shouldn't happen and we want an indication that it happened
 		t.AddCommand(Always, "cp", path.Join(extractDir, p.ExtractFromArchive), destPath)
 	} else {
-		glog.Fatalf("unknown FetchInstructions: %v", p)
+		klog.Fatalf("unknown FetchInstructions: %v", p)
 	}
 }
 
@@ -164,14 +164,14 @@ func (t *CloudInitTarget) AddCommand(addBehaviour AddBehaviour, args ...string) 
 	case Once:
 		for _, c := range t.Config.RunCommmands {
 			if utils.StringSlicesEqual(args, c) {
-				glog.V(2).Infof("skipping pre-existing command because AddBehaviour=Once: %q", args)
+				klog.V(2).Infof("skipping pre-existing command because AddBehaviour=Once: %q", args)
 				return
 			}
 		}
 		break
 
 	default:
-		glog.Fatalf("unknown AddBehaviour: %v", addBehaviour)
+		klog.Fatalf("unknown AddBehaviour: %v", addBehaviour)
 	}
 
 	t.Config.RunCommmands = append(t.Config.RunCommmands, args)

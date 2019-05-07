@@ -20,12 +20,12 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/golang/glog"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/klog"
 )
 
 var Scheme = runtime.NewScheme()
@@ -40,7 +40,7 @@ func init() {
 func encoder() runtime.Encoder {
 	yaml, ok := runtime.SerializerInfoForMediaType(Codecs.SupportedMediaTypes(), "application/yaml")
 	if !ok {
-		glog.Fatalf("no YAML serializer registered")
+		klog.Fatalf("no YAML serializer registered")
 	}
 	gv := corev1.SchemeGroupVersion
 	return Codecs.EncoderForVersion(yaml.Serializer, gv)

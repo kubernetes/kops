@@ -35,7 +35,7 @@ import (
 	"k8s.io/kops/node-authorizer/pkg/authorizers/aws"
 	"k8s.io/kops/node-authorizer/pkg/server"
 
-	"k8s.io/client-go/tools/clientcmd/api/v1"
+	v1 "k8s.io/client-go/tools/clientcmd/api/v1"
 )
 
 // makeHTTPClient is responsible for making a http client
@@ -98,7 +98,7 @@ func makeKubeconfig(ctx context.Context, config *Config, token string) ([]byte, 
 			{
 				Name: clusterName,
 				Cluster: v1.Cluster{
-					Server: config.KubeAPI,
+					Server:                   config.KubeAPI,
 					CertificateAuthorityData: content,
 				},
 			},

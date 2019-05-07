@@ -17,7 +17,7 @@ limitations under the License.
 package fi
 
 import (
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
@@ -142,6 +142,12 @@ var zonesToCloud = map[string]kops.CloudProviderID{
 	"ap-northeast-2c": kops.CloudProviderAWS,
 	"ap-northeast-2d": kops.CloudProviderAWS,
 	"ap-northeast-2e": kops.CloudProviderAWS,
+
+	"ap-east-1a": kops.CloudProviderAWS,
+	"ap-east-1b": kops.CloudProviderAWS,
+	"ap-east-1c": kops.CloudProviderAWS,
+	"ap-east-1d": kops.CloudProviderAWS,
+	"ap-east-1e": kops.CloudProviderAWS,
 
 	"sa-east-1a": kops.CloudProviderAWS,
 	"sa-east-1b": kops.CloudProviderAWS,

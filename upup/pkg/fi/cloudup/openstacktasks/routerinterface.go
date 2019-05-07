@@ -19,9 +19,9 @@ package openstacktasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -35,6 +35,20 @@ type RouterInterface struct {
 	Lifecycle *fi.Lifecycle
 }
 
+// GetDependencies returns the dependencies of the RouterInterface task
+func (e *RouterInterface) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
+	for _, task := range tasks {
+		if _, ok := task.(*Router); ok {
+			deps = append(deps, task)
+		}
+		if _, ok := task.(*Subnet); ok {
+			deps = append(deps, task)
+		}
+	}
+	return deps
+}
+
 var _ fi.CompareWithID = &RouterInterface{}
 
 func (i *RouterInterface) CompareWithID() *string {
@@ -44,10 +58,9 @@ func (i *RouterInterface) CompareWithID() *string {
 func (i *RouterInterface) Find(context *fi.Context) (*RouterInterface, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	opt := ports.ListOpts{
-		NetworkID:   fi.StringValue(i.Subnet.Network.ID),
-		DeviceOwner: "network:router_interface",
-		DeviceID:    fi.StringValue(i.Router.ID),
-		ID:          fi.StringValue(i.ID),
+		NetworkID: fi.StringValue(i.Subnet.Network.ID),
+		DeviceID:  fi.StringValue(i.Router.ID),
+		ID:        fi.StringValue(i.ID),
 	}
 	ps, err := cloud.ListPorts(opt)
 	if err != nil {
@@ -57,34 +70,27 @@ func (i *RouterInterface) Find(context *fi.Context) (*RouterInterface, error) {
 		return nil, nil
 	}
 
+	var actual *RouterInterface
+
 	subnetID := fi.StringValue(i.Subnet.ID)
-	iID := ""
-	n := 0
 	for _, p := range ps {
 		for _, ip := range p.FixedIPs {
 			if ip.SubnetID == subnetID {
-				n += 1
-				iID = p.ID
-				break
+				if actual != nil {
+					return nil, fmt.Errorf("find multiple interfaces which subnet:%s attach to", subnetID)
+				}
+				actual = &RouterInterface{
+					ID:        fi.String(p.ID),
+					Name:      i.Name,
+					Router:    i.Router,
+					Subnet:    i.Subnet,
+					Lifecycle: i.Lifecycle,
+				}
+				i.ID = actual.ID
 			}
 		}
 	}
-	switch n {
-	case 0:
-		return nil, nil
-	case 1:
-		actual := &RouterInterface{
-			ID:        fi.String(iID),
-			Name:      i.Name,
-			Router:    i.Router,
-			Subnet:    i.Subnet,
-			Lifecycle: i.Lifecycle,
-		}
-
-		return actual, nil
-	default:
-		return nil, fmt.Errorf("find multiple interfaces which subnet:%s attach to", subnetID)
-	}
+	return actual, nil
 }
 
 func (i *RouterInterface) Run(context *fi.Context) error {
@@ -117,7 +123,7 @@ func (_ *RouterInterface) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 	if a == nil {
 		routerID := fi.StringValue(e.Router.ID)
 		subnetID := fi.StringValue(e.Subnet.ID)
-		glog.V(2).Infof("Creating RouterInterface for router:%s and subnet:%s", routerID, subnetID)
+		klog.V(2).Infof("Creating RouterInterface for router:%s and subnet:%s", routerID, subnetID)
 
 		opt := routers.AddInterfaceOpts{SubnetID: subnetID}
 		v, err := t.Cloud.CreateRouterInterface(routerID, opt)
@@ -126,10 +132,10 @@ func (_ *RouterInterface) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 		}
 
 		e.ID = fi.String(v.PortID)
-		glog.V(2).Infof("Creating a new Openstack router interface, id=%s", v.PortID)
+		klog.V(2).Infof("Creating a new Openstack router interface, id=%s", v.PortID)
 		return nil
 	}
 	e.ID = a.ID
-	glog.V(2).Infof("Using an existing Openstack router interface, id=%s", fi.StringValue(e.ID))
+	klog.V(2).Infof("Using an existing Openstack router interface, id=%s", fi.StringValue(e.ID))
 	return nil
 }

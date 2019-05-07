@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func pkixNameToString(name *pkix.Name) string {
@@ -139,7 +139,7 @@ var extKeyUsageStrings = map[x509.ExtKeyUsage]string{
 func extKeyUsageToString(u x509.ExtKeyUsage) string {
 	s := extKeyUsageStrings[u]
 	if s == "" {
-		glog.Warningf("Unhandled ExtKeyUsage: %v", u)
+		klog.Warningf("Unhandled ExtKeyUsage: %v", u)
 		s = fmt.Sprintf("ExtKeyUsage:%v", u)
 	}
 	return s

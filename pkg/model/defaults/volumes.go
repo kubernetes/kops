@@ -23,9 +23,12 @@ import (
 )
 
 const (
-	DefaultVolumeSizeNode    = 128
-	DefaultVolumeSizeMaster  = 64
+	// DefaultVolumeSizeBastion is the default root disk size of a bastion
 	DefaultVolumeSizeBastion = 32
+	// DefaultVolumeSizeMaster is the default root disk size of a master
+	DefaultVolumeSizeMaster = 64
+	// DefaultVolumeSizeNode is the default root disk size of a node
+	DefaultVolumeSizeNode = 128
 )
 
 // DefaultInstanceGroupVolumeSize returns the default volume size for nodes in an InstanceGroup with the specified role

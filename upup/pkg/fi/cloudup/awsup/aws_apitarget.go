@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -70,10 +70,36 @@ func (t *AWSAPITarget) AddELBTags(loadBalancerName string, expected map[string]s
 	}
 
 	if len(missing) != 0 {
-		glog.V(4).Infof("adding tags to %q: %v", loadBalancerName, missing)
+		klog.V(4).Infof("adding tags to %q: %v", loadBalancerName, missing)
 		err := t.Cloud.CreateELBTags(loadBalancerName, missing)
 		if err != nil {
 			return fmt.Errorf("error adding tags to ELB %q: %v", loadBalancerName, err)
+		}
+	}
+
+	return nil
+}
+
+func (t *AWSAPITarget) RemoveELBTags(loadBalancerName string, expected map[string]string) error {
+	actual, err := t.Cloud.GetELBTags(loadBalancerName)
+	if err != nil {
+		return fmt.Errorf("unexpected error fetching tags for resource: %v", err)
+	}
+
+	extra := map[string]string{}
+	for k, v := range actual {
+		expectedValue, found := expected[k]
+		if found && expectedValue == v {
+			continue
+		}
+		extra[k] = v
+	}
+
+	if len(extra) != 0 {
+		klog.V(4).Infof("removing tags from %q: %v", loadBalancerName, extra)
+		err := t.Cloud.RemoveELBTags(loadBalancerName, extra)
+		if err != nil {
+			return fmt.Errorf("error removing tags from ELB %q: %v", loadBalancerName, err)
 		}
 	}
 
@@ -100,7 +126,7 @@ func (t *AWSAPITarget) WaitForInstanceRunning(instanceID string) error {
 		if state == "running" {
 			return nil
 		}
-		glog.Infof("Waiting for instance %q to be running (current state is %q)", instanceID, state)
+		klog.Infof("Waiting for instance %q to be running (current state is %q)", instanceID, state)
 
 		time.Sleep(10 * time.Second)
 		attempt++

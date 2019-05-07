@@ -22,15 +22,15 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/sshcredentials"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/tables"
-	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/templates"
 )
 
 // SecretTypeSSHPublicKey is set in a KeysetItem.Type for an SSH public keypair
@@ -140,7 +140,7 @@ func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, sshCredentialS
 		for i := range l {
 			id, err := sshcredentials.Fingerprint(l[i].Spec.PublicKey)
 			if err != nil {
-				glog.Warningf("unable to compute fingerprint for public key %q", l[i].Name)
+				klog.Warningf("unable to compute fingerprint for public key %q", l[i].Name)
 			}
 			item := &fi.KeystoreItem{
 				Name: l[i].Name,

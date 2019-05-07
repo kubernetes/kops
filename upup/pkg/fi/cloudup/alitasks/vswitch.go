@@ -19,7 +19,7 @@ package alitasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
@@ -50,7 +50,7 @@ func (v *VSwitch) CompareWithID() *string {
 
 func (v *VSwitch) Find(c *fi.Context) (*VSwitch, error) {
 	if v.VPC == nil || v.VPC.ID == nil {
-		glog.V(4).Infof("VPC / VPCID not found for %s, skipping Find", fi.StringValue(v.Name))
+		klog.V(4).Infof("VPC / VPCID not found for %s, skipping Find", fi.StringValue(v.Name))
 		return nil, nil
 	}
 	cloud := c.Cloud.(aliup.ALICloud)
@@ -74,7 +74,7 @@ func (v *VSwitch) Find(c *fi.Context) (*VSwitch, error) {
 		if len(vswitchList) != 1 {
 			return nil, fmt.Errorf("found multiple VSwitchs for %q", fi.StringValue(v.VSwitchId))
 		} else {
-			glog.V(2).Infof("found matching VSwitch with name: %q", *v.Name)
+			klog.V(2).Infof("found matching VSwitch with name: %q", *v.Name)
 
 			actual := &VSwitch{
 				Name:      fi.String(vswitchList[0].VSwitchName),
@@ -99,7 +99,7 @@ func (v *VSwitch) Find(c *fi.Context) (*VSwitch, error) {
 	for _, vswitch := range vswitchList {
 		if vswitch.CidrBlock == fi.StringValue(v.CidrBlock) && !fi.BoolValue(v.Shared) {
 
-			glog.V(2).Infof("found matching VSwitch with name: %q", *v.Name)
+			klog.V(2).Infof("found matching VSwitch with name: %q", *v.Name)
 			actual := &VSwitch{
 				Name:      fi.String(vswitch.VSwitchName),
 				VSwitchId: fi.String(vswitch.VSwitchId),
@@ -146,11 +146,11 @@ func (_ *VSwitch) RenderALI(t *aliup.ALIAPITarget, a, e, changes *VSwitch) error
 	}
 	if a == nil {
 		if e.VSwitchId != nil && fi.StringValue(e.VSwitchId) != "" {
-			glog.V(2).Infof("Shared VSwitch with VSwitchID: %q", *e.VSwitchId)
+			klog.V(2).Infof("Shared VSwitch with VSwitchID: %q", *e.VSwitchId)
 			return nil
 		}
 
-		glog.V(2).Infof("Creating VSwitch with name: %q", *e.Name)
+		klog.V(2).Infof("Creating VSwitch with name: %q", *e.Name)
 
 		createVSwitchArgs := &ecs.CreateVSwitchArgs{
 			ZoneId:      fi.StringValue(e.ZoneId),

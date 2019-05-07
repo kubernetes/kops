@@ -21,7 +21,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
@@ -77,6 +77,9 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("unable to parse instance profile name from arn %q: %v", profileARN, err)
 		}
 		err = b.buildIAMTasks(igRole, iamName, c, true)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Generate IAM tasks for each managed role
@@ -128,7 +131,7 @@ func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName s
 			if found {
 				iamPolicy.DNSZone = dnsZoneTask.(*awstasks.DNSZone)
 			} else {
-				glog.V(2).Infof("Task %q not found; won't set route53 permissions in IAM", "DNSZone/"+b.NameForDNSZone())
+				klog.V(2).Infof("Task %q not found; won't set route53 permissions in IAM", "DNSZone/"+b.NameForDNSZone())
 			}
 
 			t := &awstasks.IAMRolePolicy{

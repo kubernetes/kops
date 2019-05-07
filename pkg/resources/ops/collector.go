@@ -22,11 +22,13 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
+	"k8s.io/kops/pkg/resources/ali"
 	"k8s.io/kops/pkg/resources/aws"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/resources/gce"
 	"k8s.io/kops/pkg/resources/openstack"
 	"k8s.io/kops/upup/pkg/fi"
+	cloudali "k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	cloudgce "k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	cloudopenstack "k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -46,6 +48,8 @@ func ListResources(cloud fi.Cloud, cluster *api.Cluster, clusterName string, reg
 		return openstack.ListResources(cloud.(cloudopenstack.OpenstackCloud), clusterName)
 	case kops.CloudProviderVSphere:
 		return resources.ListResourcesVSphere(cloud.(*vsphere.VSphereCloud), clusterName)
+	case kops.CloudProviderALI:
+		return ali.ListResourcesALI(cloud.(cloudali.ALICloud), clusterName, region)
 	default:
 		return nil, fmt.Errorf("delete on clusters on %q not (yet) supported", cloud.ProviderID())
 	}

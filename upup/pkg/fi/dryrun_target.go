@@ -25,7 +25,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/util/pkg/reflectutils"
@@ -122,7 +122,7 @@ func idForTask(taskMap map[string]Task, t Task) string {
 			return k
 		}
 	}
-	glog.Fatalf("unknown task: %v", t)
+	klog.Fatalf("unknown task: %v", t)
 	return "?"
 }
 
@@ -252,19 +252,19 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 	}
 
 	if len(t.assetBuilder.ContainerAssets) != 0 {
-		glog.V(4).Infof("ContainerAssets:")
+		klog.V(4).Infof("ContainerAssets:")
 		for _, a := range t.assetBuilder.ContainerAssets {
-			glog.V(4).Infof("  %s %s", a.DockerImage, a.CanonicalLocation)
+			klog.V(4).Infof("  %s %s", a.DockerImage, a.CanonicalLocation)
 		}
 	}
 
 	if len(t.assetBuilder.FileAssets) != 0 {
-		glog.V(4).Infof("FileAssets:")
+		klog.V(4).Infof("FileAssets:")
 		for _, a := range t.assetBuilder.FileAssets {
-			if a.FileURL != nil && a.CanonicalFileURL != nil {
-				glog.V(4).Infof("  %s %s", a.FileURL.String(), a.CanonicalFileURL.String())
-			} else if a.FileURL != nil {
-				glog.V(4).Infof("  %s", a.FileURL.String())
+			if a.DownloadURL != nil && a.CanonicalURL != nil {
+				klog.V(4).Infof("  %s %s", a.DownloadURL.String(), a.CanonicalURL.String())
+			} else if a.DownloadURL != nil {
+				klog.V(4).Infof("  %s", a.DownloadURL.String())
 			}
 		}
 	}
@@ -373,7 +373,7 @@ func tryResourceAsString(v reflect.Value) (string, bool) {
 	if res, ok := intf.(Resource); ok {
 		s, err := ResourceAsString(res)
 		if err != nil {
-			glog.Warningf("error converting to resource: %v", err)
+			klog.Warningf("error converting to resource: %v", err)
 			return "", false
 		}
 		return s, true
@@ -381,7 +381,7 @@ func tryResourceAsString(v reflect.Value) (string, bool) {
 	if res, ok := intf.(*ResourceHolder); ok {
 		s, err := res.AsString()
 		if err != nil {
-			glog.Warningf("error converting to resource: %v", err)
+			klog.Warningf("error converting to resource: %v", err)
 			return "", false
 		}
 		return s, true
@@ -401,6 +401,29 @@ func getTaskName(t Task) string {
 // Finish is called at the end of a run, and prints a list of changes to the configured Writer
 func (t *DryRunTarget) Finish(taskMap map[string]Task) error {
 	return t.PrintReport(taskMap, t.out)
+}
+
+// Deletions returns all task names which is going to be deleted
+func (t *DryRunTarget) Deletions() []string {
+	var deletions []string
+	for _, d := range t.deletions {
+		deletions = append(deletions, d.TaskName())
+	}
+	return deletions
+}
+
+// Changes returns tasks which is going to be created or updated
+func (t *DryRunTarget) Changes() (map[string]Task, map[string]Task) {
+	creates := make(map[string]Task)
+	updates := make(map[string]Task)
+	for _, r := range t.changes {
+		if r.aIsNil {
+			creates[getTaskName(r.changes)] = r.changes
+		} else {
+			updates[getTaskName(r.changes)] = r.changes
+		}
+	}
+	return creates, updates
 }
 
 // HasChanges returns true iff any changes would have been made

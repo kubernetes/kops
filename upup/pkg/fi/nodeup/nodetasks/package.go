@@ -26,7 +26,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -44,6 +44,13 @@ type Package struct {
 
 	// Healthy is true if the package installation did not fail
 	Healthy *bool `json:"healthy,omitempty"`
+
+	// Additional dependencies that must be installed before this package.
+	// These will actually be passed together with this package to rpm/dpkg,
+	// which will then figure out the correct order in which to install them.
+	// This means that Deps don't get installed unless this package needs to
+	// get installed.
+	Deps []*Package `json:"deps,omitempty"`
 }
 
 const (
@@ -132,7 +139,7 @@ func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
 	args := []string{"dpkg-query", "-f", "${db:Status-Abbrev}${Version}\\n", "-W", e.Name}
 	human := strings.Join(args, " ")
 
-	glog.V(2).Infof("Listing installed packages: %s", human)
+	klog.V(2).Infof("Listing installed packages: %s", human)
 	cmd := exec.Command(args[0], args[1:]...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -162,7 +169,7 @@ func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
 			installed = true
 			installedVersion = version
 			healthy = fi.Bool(true)
-		case "iF":
+		case "iF", "iU":
 			installed = true
 			installedVersion = version
 			healthy = fi.Bool(false)
@@ -176,7 +183,7 @@ func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
 			// not installed
 			installed = false
 		default:
-			glog.Warningf("unknown package state %q for %q in line %q", state, e.Name, line)
+			klog.Warningf("unknown package state %q for %q in line %q", state, e.Name, line)
 			return nil, fmt.Errorf("unknown package state %q for %q in line %q", state, e.Name, line)
 		}
 	}
@@ -196,7 +203,7 @@ func (e *Package) findYum(c *fi.Context) (*Package, error) {
 	args := []string{"/usr/bin/rpm", "-q", e.Name, "--queryformat", "%{NAME} %{VERSION}"}
 	human := strings.Join(args, " ")
 
-	glog.V(2).Infof("Listing installed packages: %s", human)
+	klog.V(2).Infof("Listing installed packages: %s", human)
 	cmd := exec.Command(args[0], args[1:]...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -257,38 +264,44 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 	defer packageManagerLock.Unlock()
 
 	if a == nil || changes.Version != nil {
-		glog.Infof("Installing package %q", e.Name)
+		klog.Infof("Installing package %q (dependencies: %v)", e.Name, e.Deps)
 
 		if e.Source != nil {
-			// Install a deb
-			local := path.Join(localPackageDir, e.Name)
+			// Install a deb or rpm.
 			err := os.MkdirAll(localPackageDir, 0755)
 			if err != nil {
-				return fmt.Errorf("error creating directories %q: %v", path.Dir(local), err)
+				return fmt.Errorf("error creating directories %q: %v", localPackageDir, err)
 			}
 
-			var hash *hashing.Hash
-			if fi.StringValue(e.Hash) != "" {
-				parsed, err := hashing.FromString(fi.StringValue(e.Hash))
-				if err != nil {
-					return fmt.Errorf("error paring hash: %v", err)
+			// Download all the debs/rpms.
+			localPkgs := make([]string, 1+len(e.Deps))
+			for i, pkg := range append([]*Package{e}, e.Deps...) {
+				local := path.Join(localPackageDir, pkg.Name)
+				localPkgs[i] = local
+				var hash *hashing.Hash
+				if fi.StringValue(pkg.Hash) != "" {
+					parsed, err := hashing.FromString(fi.StringValue(pkg.Hash))
+					if err != nil {
+						return fmt.Errorf("error parsing hash: %v", err)
+					}
+					hash = parsed
 				}
-				hash = parsed
-			}
-			_, err = fi.DownloadURL(fi.StringValue(e.Source), local, hash)
-			if err != nil {
-				return err
+				_, err = fi.DownloadURL(fi.StringValue(pkg.Source), local, hash)
+				if err != nil {
+					return err
+				}
 			}
 
 			var args []string
 			if t.HasTag(tags.TagOSFamilyDebian) {
-				args = []string{"dpkg", "-i", local}
+				args = []string{"dpkg", "-i"}
 			} else if t.HasTag(tags.TagOSFamilyRHEL) {
-				args = []string{"/usr/bin/rpm", "-i", local}
+				args = []string{"/usr/bin/rpm", "-i"}
 			} else {
 				return fmt.Errorf("unsupported package system")
 			}
-			glog.Infof("running command %s", args)
+			args = append(args, localPkgs...)
+			klog.Infof("running command %s", args)
 			cmd := exec.Command(args[0], args[1:]...)
 			output, err := cmd.CombinedOutput()
 			if err != nil {
@@ -306,7 +319,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 				return fmt.Errorf("unsupported package system")
 			}
 
-			glog.Infof("running command %s", args)
+			klog.Infof("running command %s", args)
 			cmd := exec.Command(args[0], args[1:]...)
 			cmd.Env = env
 			output, err := cmd.CombinedOutput()
@@ -318,7 +331,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 		if changes.Healthy != nil {
 			if t.HasTag(tags.TagOSFamilyDebian) {
 				args := []string{"dpkg", "--configure", "-a"}
-				glog.Infof("package is not healthy; running command %s", args)
+				klog.Infof("package is not healthy; running command %s", args)
 				cmd := exec.Command(args[0], args[1:]...)
 				output, err := cmd.CombinedOutput()
 				if err != nil {
@@ -335,7 +348,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 		}
 
 		if !reflect.DeepEqual(changes, &Package{}) {
-			glog.Warningf("cannot apply package changes for %q: %v", e.Name, changes)
+			klog.Warningf("cannot apply package changes for %q: %v", e.Name, changes)
 		}
 	}
 

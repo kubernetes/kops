@@ -19,8 +19,8 @@ package openstacktasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
-	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	cinderv2 "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -44,9 +44,9 @@ func (c *Volume) CompareWithID() *string {
 
 func (c *Volume) Find(context *fi.Context) (*Volume, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
-	opt := cinder.ListOpts{
+	opt := cinderv2.ListOpts{
 		Name:     fi.StringValue(c.Name),
-		Metadata: cloud.GetCloudTags(),
+		Metadata: c.Tags,
 	}
 	volumes, err := cloud.ListVolumes(opt)
 	if err != nil {
@@ -68,6 +68,16 @@ func (c *Volume) Find(context *fi.Context) (*Volume, error) {
 		Tags:             v.Metadata,
 		Lifecycle:        c.Lifecycle,
 	}
+	// remove tags "readonly" and "attached_mode", openstack are adding these and if not removed
+	// kops will always try to update volumes
+	if _, ok := actual.Tags["readonly"]; ok {
+		delete(actual.Tags, "readonly")
+	}
+	if _, ok := actual.Tags["attached_mode"]; ok {
+		delete(actual.Tags, "attached_mode")
+	}
+	c.ID = actual.ID
+	c.AvailabilityZone = actual.AvailabilityZone
 	return actual, nil
 }
 
@@ -113,11 +123,16 @@ func (_ *Volume) CheckChanges(a, e, changes *Volume) error {
 
 func (_ *Volume) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Volume) error {
 	if a == nil {
-		glog.V(2).Infof("Creating PersistentVolume with Name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating PersistentVolume with Name:%q", fi.StringValue(e.Name))
 
-		opt := cinder.CreateOpts{
+		storageAZ, err := t.Cloud.GetStorageAZFromCompute(fi.StringValue(e.AvailabilityZone))
+		if err != nil {
+			return fmt.Errorf("Failed to get storage availability zone: %s", err)
+		}
+
+		opt := cinderv2.CreateOpts{
 			Size:             int(*e.SizeGB),
-			AvailabilityZone: fi.StringValue(e.AvailabilityZone),
+			AvailabilityZone: storageAZ.ZoneName,
 			Metadata:         e.Tags,
 			Name:             fi.StringValue(e.Name),
 			VolumeType:       fi.StringValue(e.VolumeType),
@@ -129,11 +144,12 @@ func (_ *Volume) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 		}
 
 		e.ID = fi.String(v.ID)
+		e.AvailabilityZone = fi.String(v.AvailabilityZone)
 		return nil
 	}
 
 	if changes != nil && changes.Tags != nil {
-		glog.V(2).Infof("Update the tags on volume %q: %v, the differences are %v", fi.StringValue(e.ID), e.Tags, changes.Tags)
+		klog.V(2).Infof("Update the tags on volume %q: %v, the differences are %v", fi.StringValue(e.ID), e.Tags, changes.Tags)
 
 		err := t.Cloud.SetVolumeTags(fi.StringValue(e.ID), e.Tags)
 		if err != nil {
@@ -141,6 +157,6 @@ func (_ *Volume) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 		}
 	}
 
-	glog.V(2).Infof("Openstack task Volume::RenderOpenstack did nothing")
+	klog.V(2).Infof("Openstack task Volume::RenderOpenstack did nothing")
 	return nil
 }

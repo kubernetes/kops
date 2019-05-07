@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -38,6 +38,10 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 type zoneInfo struct {
 	PrivateSubnets []*kops.ClusterSubnetSpec
+}
+
+func isUnmanaged(subnet *kops.ClusterSubnetSpec) bool {
+	return subnet.Egress == kops.EgressExternal
 }
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
@@ -63,7 +67,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		if sharedVPC && b.IsKubernetesGTE("1.5") {
 			// If we're running k8s 1.5, and we have e.g.  --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP,LegacyHostIP
 			// then we don't need EnableDNSHostnames any more
-			glog.V(4).Infof("Kubernetes version %q; skipping EnableDNSHostnames requirement on VPC", b.KubernetesVersion())
+			klog.V(4).Infof("Kubernetes version %q; skipping EnableDNSHostnames requirement on VPC", b.KubernetesVersion())
 		} else {
 			// In theory we don't need to enable it for >= 1.5,
 			// but seems safer to stick with existing behaviour
@@ -120,6 +124,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// TODO: would be good to create these as shared, to verify them
 	}
 
+	allSubnetsUnmanaged := true
 	allSubnetsShared := true
 	allSubnetsSharedInZone := make(map[string]bool)
 	for i := range b.Cluster.Spec.Subnets {
@@ -134,11 +139,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			allSubnetsShared = false
 			allSubnetsSharedInZone[subnetSpec.Zone] = false
 		}
+
+		if !isUnmanaged(subnetSpec) {
+			allSubnetsUnmanaged = false
+		}
 	}
 
 	// We always have a public route table, though for private networks it is only used for NGWs and ELBs
 	var publicRouteTable *awstasks.RouteTable
-	{
+	if !allSubnetsUnmanaged {
 		// The internet gateway is the main entry point to the cluster.
 		igw := &awstasks.InternetGateway{
 			Name:      s(b.ClusterName()),
@@ -188,9 +197,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// Apply tags so that Kubernetes knows which subnets should be used for internal/external ELBs
 		if b.Cluster.Spec.DisableSubnetTags {
-			glog.V(2).Infof("skipping subnet tags. Ensure these are maintained externally.")
+			klog.V(2).Infof("skipping subnet tags. Ensure these are maintained externally.")
 		} else {
-			glog.V(2).Infof("applying subnet tags")
+			klog.V(2).Infof("applying subnet tags")
 			tags = b.CloudTags(subnetName, sharedSubnet)
 			tags["SubnetType"] = string(subnetSpec.Type)
 
@@ -202,7 +211,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				tags[aws.TagNameSubnetInternalELB] = "1"
 
 			default:
-				glog.V(2).Infof("unable to properly tag subnet %q because it has unknown type %q. Load balancers may be created in incorrect subnets", subnetSpec.Name, subnetSpec.Type)
+				klog.V(2).Infof("unable to properly tag subnet %q because it has unknown type %q. Load balancers may be created in incorrect subnets", subnetSpec.Name, subnetSpec.Type)
 			}
 		}
 
@@ -224,7 +233,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		switch subnetSpec.Type {
 		case kops.SubnetTypePublic, kops.SubnetTypeUtility:
-			if !sharedSubnet {
+			if !sharedSubnet && !isUnmanaged(subnetSpec) {
 				c.AddTask(&awstasks.RouteTableAssociation{
 					Name:       s(subnetSpec.Name + "." + b.ClusterName()),
 					Lifecycle:  b.Lifecycle,
@@ -236,7 +245,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		case kops.SubnetTypePrivate:
 			// Private subnets get a Network Gateway, and their own route table to associate them with the network gateway
 
-			if !sharedSubnet {
+			if !sharedSubnet && !isUnmanaged(subnetSpec) {
 				// Private Subnet Route Table Associations
 				//
 				// Map the Private subnet to the Private route table
@@ -271,6 +280,17 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		egress := info.PrivateSubnets[0].Egress
 		publicIP := info.PrivateSubnets[0].PublicIP
+
+		allUnmanaged := true
+		for _, subnetSpec := range info.PrivateSubnets {
+			if !isUnmanaged(subnetSpec) {
+				allUnmanaged = false
+			}
+		}
+		if allUnmanaged {
+			klog.V(4).Infof("skipping network configuration in zone %s - all subnets unmanaged", zone)
+			continue
+		}
 
 		// Verify we don't have mixed values for egress/publicIP - the code doesn't handle it
 		for _, subnet := range info.PrivateSubnets {
@@ -312,6 +332,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				c.AddTask(in)
 
+			} else if egress == "External" {
+				// Nothing to do here
 			} else {
 				return fmt.Errorf("kops currently only supports re-use of either NAT EC2 Instances or NAT Gateways. We will support more eventually! Please see https://github.com/kubernetes/kops/issues/1530")
 			}

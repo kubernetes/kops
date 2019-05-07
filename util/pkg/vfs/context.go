@@ -27,12 +27,12 @@ import (
 	"time"
 
 	"github.com/denverdino/aliyungo/oss"
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	storage "google.golang.org/api/storage/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog"
 )
 
 // VFSContext is a 'context' for VFS, that is normally a singleton
@@ -156,7 +156,7 @@ func (c *VFSContext) readHttpLocation(httpURL string, httpHeaders map[string]str
 	var body []byte
 
 	done, err := RetryWithBackoff(backoff, func() (bool, error) {
-		glog.V(4).Infof("Performing HTTP request: GET %s", httpURL)
+		klog.V(4).Infof("Performing HTTP request: GET %s", httpURL)
 		req, err := http.NewRequest("GET", httpURL, nil)
 		if err != nil {
 			return false, err
@@ -224,11 +224,11 @@ func RetryWithBackoff(backoff wait.Backoff, condition func() (bool, error)) (boo
 		}
 		noMoreRetries := i >= backoff.Steps
 		if !noMoreRetries && err != nil {
-			glog.V(2).Infof("retrying after error %v", err)
+			klog.V(2).Infof("retrying after error %v", err)
 		}
 
 		if noMoreRetries {
-			glog.Infof("hit maximum retries %d with error %v", i, err)
+			klog.Infof("hit maximum retries %d with error %v", i, err)
 			return done, err
 		}
 	}

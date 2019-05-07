@@ -29,8 +29,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
@@ -117,7 +117,7 @@ func (s *VFSCAStore) readCAKeypairs(id string) (*keyset, *keyset, error) {
 		}
 
 		if caPrivateKeys == nil {
-			glog.Warningf("CA private key was not found")
+			klog.Warningf("CA private key was not found")
 			//return nil, fmt.Errorf("error loading CA private key - key not found")
 		}
 	}
@@ -144,7 +144,7 @@ func BuildCAX509Template() *x509.Certificate {
 		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
 		ExtKeyUsage:           []x509.ExtKeyUsage{},
 		BasicConstraintsValid: true,
-		IsCA: true,
+		IsCA:                  true,
 	}
 	return template
 }
@@ -322,7 +322,7 @@ func serializeKeysetBundle(o *kops.Keyset) ([]byte, error) {
 	codecs := kopscodecs.Codecs
 	yaml, ok := runtime.SerializerInfoForMediaType(codecs.SupportedMediaTypes(), "application/yaml")
 	if !ok {
-		glog.Fatalf("no YAML serializer registered")
+		klog.Fatalf("no YAML serializer registered")
 	}
 	encoder := codecs.EncoderForVersion(yaml.Serializer, v1alpha2.SchemeGroupVersion)
 
@@ -349,7 +349,7 @@ func SerializeKeyset(o *kops.Keyset) ([]byte, error) {
 		codecs := kopscodecs.Codecs
 		yaml, ok := runtime.SerializerInfoForMediaType(codecs.SupportedMediaTypes(), "application/yaml")
 		if !ok {
-			glog.Fatalf("no YAML serializer registered")
+			klog.Fatalf("no YAML serializer registered")
 		}
 		encoder := codecs.EncoderForVersion(yaml.Serializer, v1alpha2.SchemeGroupVersion)
 
@@ -372,9 +372,9 @@ func (c *VFSCAStore) loadCertificates(p vfs.Path, useBundle bool) (*keyset, erro
 		}
 
 		if err != nil {
-			glog.Warningf("unable to read bundle %q, falling back to directory-list method: %v", bundlePath, err)
+			klog.Warningf("unable to read bundle %q, falling back to directory-list method: %v", bundlePath, err)
 		} else if bundle == nil {
-			glog.V(2).Infof("no certificate bundle %q, falling back to directory-list method", bundlePath)
+			klog.V(2).Infof("no certificate bundle %q, falling back to directory-list method", bundlePath)
 		} else {
 			return bundle, nil
 		}
@@ -443,7 +443,7 @@ func (c *VFSCAStore) CertificatePool(id string, createIfMissing bool) (*Certific
 	cert, err := c.FindCertificatePool(id)
 	if err == nil && cert == nil {
 		if !createIfMissing {
-			glog.Warningf("using empty certificate pool for %q, because createIfMissing=false", id)
+			klog.Warningf("using empty certificate pool for %q, because createIfMissing=false", id)
 			return &CertificatePool{}, err
 		}
 		return nil, fmt.Errorf("cannot find certificate pool %q", id)
@@ -553,7 +553,7 @@ func (c *VFSCAStore) ListKeysets() ([]*kops.Keyset, error) {
 
 			tokens := strings.Split(relativePath, "/")
 			if len(tokens) != 2 {
-				glog.V(2).Infof("ignoring unexpected file in keystore: %q", f)
+				klog.V(2).Infof("ignoring unexpected file in keystore: %q", f)
 				continue
 			}
 
@@ -602,7 +602,7 @@ func (c *VFSCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
 
 			tokens := strings.Split(relativePath, "/")
 			if len(tokens) != 2 {
-				glog.V(2).Infof("ignoring unexpected file in keystore: %q", f)
+				klog.V(2).Infof("ignoring unexpected file in keystore: %q", f)
 				continue
 			}
 
@@ -624,10 +624,10 @@ func (c *VFSCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
 // MirrorTo will copy keys to a vfs.Path, which is often easier for a machine to read
 func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 	if basedir.Path() == c.basedir.Path() {
-		glog.V(2).Infof("Skipping key store mirror from %q to %q (same paths)", c.basedir, basedir)
+		klog.V(2).Infof("Skipping key store mirror from %q to %q (same paths)", c.basedir, basedir)
 		return nil
 	}
-	glog.V(2).Infof("Mirroring key store from %q to %q", c.basedir, basedir)
+	klog.V(2).Infof("Mirroring key store from %q to %q", c.basedir, basedir)
 
 	keysets, err := c.ListKeysets()
 	if err != nil {
@@ -726,7 +726,7 @@ func mirrorSSHCredential(cluster *kops.Cluster, basedir vfs.Path, sshCredential 
 }
 
 func (c *VFSCAStore) IssueCert(signer string, id string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
-	glog.Infof("Issuing new certificate: %q", id)
+	klog.Infof("Issuing new certificate: %q", id)
 
 	template.SerialNumber = serial
 
@@ -793,7 +793,7 @@ func (c *VFSCAStore) StoreKeypair(name string, cert *pki.Certificate, privateKey
 }
 
 func (c *VFSCAStore) AddCert(name string, cert *pki.Certificate) error {
-	glog.Infof("Adding TLS certificate: %q", name)
+	klog.Infof("Adding TLS certificate: %q", name)
 
 	// We add with a timestamp of zero so this will never be the newest cert
 	serial := pki.BuildPKISerial(0).String()
@@ -826,9 +826,9 @@ func (c *VFSCAStore) loadPrivateKeys(p vfs.Path, useBundle bool) (*keyset, error
 		}
 
 		if err != nil {
-			glog.Warningf("unable to read bundle %q, falling back to directory-list method: %v", bundlePath, err)
+			klog.Warningf("unable to read bundle %q, falling back to directory-list method: %v", bundlePath, err)
 		} else if bundle == nil {
-			glog.V(2).Infof("no private key bundle %q, falling back to directory-list method", bundlePath)
+			klog.V(2).Infof("no private key bundle %q, falling back to directory-list method", bundlePath)
 		} else {
 			return bundle, nil
 		}
@@ -1129,7 +1129,7 @@ func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, erro
 		data, err := f.ReadFile()
 		if err != nil {
 			if os.IsNotExist(err) {
-				glog.V(2).Infof("Ignoring not-found issue reading %q", f)
+				klog.V(2).Infof("Ignoring not-found issue reading %q", f)
 				continue
 			}
 			return nil, fmt.Errorf("error loading SSH item %q: %v", f, err)
@@ -1172,14 +1172,14 @@ func (c *VFSCAStore) DeleteKeysetItem(item *kops.Keyset, id string) error {
 			return fmt.Errorf("error deleting certificate: %v", err)
 		}
 		if !removed {
-			glog.Warningf("certificate %s:%s was not found", item.Name, id)
+			klog.Warningf("certificate %s:%s was not found", item.Name, id)
 		}
 		removed, err = c.deletePrivateKey(item.Name, id)
 		if err != nil {
 			return fmt.Errorf("error deleting private key: %v", err)
 		}
 		if !removed {
-			glog.Warningf("private key %s:%s was not found", item.Name, id)
+			klog.Warningf("private key %s:%s was not found", item.Name, id)
 		}
 		return nil
 

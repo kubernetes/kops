@@ -20,14 +20,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/iam"
+	"k8s.io/klog"
 )
 
 //go:generate fitask -type=IAMInstanceProfile
@@ -110,7 +111,7 @@ func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAM
 			return fmt.Errorf("instance role profile with id %q not found", fi.StringValue(e.ID))
 		}
 	} else if a == nil {
-		glog.V(2).Infof("Creating IAMInstanceProfile with Name:%q", *e.Name)
+		klog.V(2).Infof("Creating IAMInstanceProfile with Name:%q", *e.Name)
 
 		request := &iam.CreateInstanceProfileInput{
 			InstanceProfileName: e.Name,
@@ -129,18 +130,18 @@ func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAM
 		attempt := 0
 		for {
 			if attempt > 10 {
-				glog.Warningf("unable to retrieve newly-created IAM instance profile %q; timed out", *e.Name)
+				klog.Warningf("unable to retrieve newly-created IAM instance profile %q; timed out", *e.Name)
 				break
 			}
 
 			ip, err := findIAMInstanceProfile(t.Cloud, *e.Name)
 			if err != nil {
-				glog.Warningf("ignoring error while retrieving newly-created IAM instance profile %q: %v", *e.Name, err)
+				klog.Warningf("ignoring error while retrieving newly-created IAM instance profile %q: %v", *e.Name, err)
 			}
 
 			if ip != nil {
 				// Found
-				glog.V(4).Infof("Found IAM instance profile %q", *e.Name)
+				klog.V(4).Infof("Found IAM instance profile %q", *e.Name)
 				break
 			}
 

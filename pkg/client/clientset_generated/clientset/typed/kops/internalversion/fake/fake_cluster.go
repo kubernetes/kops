@@ -34,9 +34,9 @@ type FakeClusters struct {
 	ns   string
 }
 
-var clustersResource = schema.GroupVersionResource{Group: "kops", Version: "", Resource: "clusters"}
+var clustersResource = schema.GroupVersionResource{Group: "kops.k8s.io", Version: "", Resource: "clusters"}
 
-var clustersKind = schema.GroupVersionKind{Group: "kops", Version: "", Kind: "Cluster"}
+var clustersKind = schema.GroupVersionKind{Group: "kops.k8s.io", Version: "", Kind: "Cluster"}
 
 // Get takes name of the cluster, and returns the corresponding cluster object, and an error if there is any.
 func (c *FakeClusters) Get(name string, options v1.GetOptions) (result *kops.Cluster, err error) {
@@ -119,7 +119,7 @@ func (c *FakeClusters) DeleteCollection(options *v1.DeleteOptions, listOptions v
 // Patch applies the patch and returns the patched cluster.
 func (c *FakeClusters) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *kops.Cluster, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(clustersResource, c.ns, name, data, subresources...), &kops.Cluster{})
+		Invokes(testing.NewPatchSubresourceAction(clustersResource, c.ns, name, pt, data, subresources...), &kops.Cluster{})
 
 	if obj == nil {
 		return nil, err

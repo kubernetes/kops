@@ -19,8 +19,8 @@ package gcetasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -82,7 +82,7 @@ func (_ *TargetPool) RenderGCE(t *gce.GCEAPITarget, a, e, changes *TargetPool) e
 	}
 
 	if a == nil {
-		glog.V(4).Infof("Creating TargetPool %q", o.Name)
+		klog.V(4).Infof("Creating TargetPool %q", o.Name)
 
 		op, err := t.Cloud.Compute().TargetPools.Insert(t.Cloud.Project(), t.Cloud.Region(), o).Do()
 		if err != nil {

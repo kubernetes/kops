@@ -20,7 +20,7 @@ authentication:
 For example:
 
 ```
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   name: cluster.example.com
@@ -33,8 +33,12 @@ spec:
 
 ## AWS IAM Authenticator
 
-If you want to turn on AWS IAM Authenticator, you can add this block 
-to your cluster running Kubernetes 1.10 or newer:
+
+:exclamation:AWS IAM Authenticator requires Kops 1.10 or newer and Kubernetes 1.10 or newer
+
+
+To turn on AWS IAM Authenticator, you'll need to add the stanza bellow
+to your cluster configuration.
 
 ```
 authentication:
@@ -44,7 +48,7 @@ authentication:
 For example:
 
 ```
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   name: cluster.example.com
@@ -55,8 +59,7 @@ spec:
     rbac: {}
 ```
 
-Once the cluster is up, or after you've performed a rolling update to an existing cluster with `kops rolling-update cluster ${CLUSTER_NAME} --instance-group-roles=Master --force --yes`, you will need to create the AWS IAM authenticator
-config as a config map. (This can also be done when boostrapping a cluster using addons)
+The creation of a AWS IAM authenticator config as a ConfigMap is also required.
 For more details on AWS IAM authenticator please visit [kubernetes-sigs/aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator)
 
 Example config:
@@ -113,3 +116,23 @@ data:
         groups:
         - system:masters
 ```
+
+### Creating a new cluster with IAM Authenticator on.
+
+* Create a cluster following the [AWS getting started guide](https://github.com/kubernetes/kops/blob/master/docs/aws.md)
+* When you reach the "Customize Cluster Configuration" section of the guide modify the cluster spec and add the Authentication and Authorization configs to the YAML config.
+* Continue following the cluster creation guide to build the cluster.
+    * :warning: When the cluster first comes up the aws-iam-authenticator PODs will be in a bad state.
+as it is trying to find the aws-iam-authenticator ConfigMap and we have not yet created it.
+* Once the cluster is up, you'll need to create an aws-iam-authenticator configMap on the cluster `kubectl apply -f aws-iam-authenticator_example-config.yaml`
+* Once the configuration is created you need to delete the initially created aws-iam-authenticator PODs, this will force new ones to come and and correctly find the ConfigMap.
+```
+kubectl get pods -n kube-system | grep aws-iam-authenticator | awk '{print $1}' | xargs kubectl delete pod -n kube-system
+```
+
+### Turning on IAM Authenticator on an existing cluster.
+
+* Create an aws-iam-authenticator configMap on the cluster `kubectl apply -f aws-iam-authenticator_example-config.yaml`
+* Edit the clusters configuration `kops edit cluster ${NAME}` and add the Authentication and Authorization configs to the YAML config.
+* Update the clusters configuration `kops update cluster ${CLUSTER_NAME} --yes`
+* Perform a rolling update of the masters `kops rolling-update cluster ${CLUSTER_NAME} --instance-group-roles=Master --force --yes`

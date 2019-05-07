@@ -27,7 +27,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type Certificate struct {
@@ -49,14 +49,14 @@ func (c *Certificate) UnmarshalJSON(b []byte) error {
 			if err2 == nil {
 				r2, err2 := ParsePEMCertificate(d)
 				if err2 == nil {
-					glog.Warningf("used base64 decode of certificate")
+					klog.Warningf("used base64 decode of certificate")
 					r = r2
 					err = nil
 				}
 			}
 
 			if err != nil {
-				glog.Infof("Invalid certificate data: %q", string(b))
+				klog.Infof("Invalid certificate data: %q", string(b))
 				return fmt.Errorf("error parsing certificate: %v", err)
 			}
 		}
@@ -100,10 +100,10 @@ func parsePEMCertificate(pemData []byte) (*x509.Certificate, error) {
 		}
 
 		if block.Type == "CERTIFICATE" {
-			glog.V(10).Infof("Parsing pem block: %q", block.Type)
+			klog.V(10).Infof("Parsing pem block: %q", block.Type)
 			return x509.ParseCertificate(block.Bytes)
 		} else {
-			glog.Infof("Ignoring unexpected PEM block: %q", block.Type)
+			klog.Infof("Ignoring unexpected PEM block: %q", block.Type)
 		}
 
 		pemData = rest

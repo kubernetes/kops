@@ -19,10 +19,10 @@ package kubeconfig
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	"k8s.io/klog"
 )
 
 // KubeconfigBuilder builds a kubecfg file
@@ -45,9 +45,9 @@ type KubeconfigBuilder struct {
 }
 
 // Create new KubeconfigBuilder
-func NewKubeconfigBuilder() *KubeconfigBuilder {
+func NewKubeconfigBuilder(configAccess clientcmd.ConfigAccess) *KubeconfigBuilder {
 	c := &KubeconfigBuilder{}
-	c.configAccess = clientcmd.NewDefaultPathOptions()
+	c.configAccess = configAccess
 	return c
 }
 
@@ -58,7 +58,7 @@ func (b *KubeconfigBuilder) DeleteKubeConfig() error {
 	}
 
 	if config == nil || clientcmdapi.IsConfigEmpty(config) {
-		glog.V(2).Info("kubeconfig is empty")
+		klog.V(2).Info("kubeconfig is empty")
 		return nil
 	}
 

@@ -13,3 +13,11 @@ assets:
     githubName: kops-windows-amd64
   - source: .build/dist/windows/amd64/kops.exe.sha1
     githubName: kops-windows-amd64-sha1
+  - source: .build/dist/images/protokube.tar.gz
+    githubName: images-protokube.tar.gz
+  - source: .build/dist/images/protokube.tar.gz.sha1
+    githubName: images-protokube.tar.gz.sha1
+  - source: .build/dist/linux/amd64/utils.tar.gz
+    githubName: linux-amd64-utils.tar.gz
+  - source: .build/dist/linux/amd64/utils.tar.gz.sha1
+    githubName: linux-amd64-utils.tar.gz.sha1

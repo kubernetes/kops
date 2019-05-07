@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockIAM) GetInstanceProfile(request *iam.GetInstanceProfileInput) (*iam.GetInstanceProfileOutput, error) {
@@ -50,7 +50,7 @@ func (m *MockIAM) CreateInstanceProfile(request *iam.CreateInstanceProfileInput)
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("CreateInstanceProfile: %v", request)
+	klog.Infof("CreateInstanceProfile: %v", request)
 
 	p := &iam.InstanceProfile{
 		InstanceProfileName: request.InstanceProfileName,
@@ -90,7 +90,7 @@ func (m *MockIAM) AddRoleToInstanceProfile(request *iam.AddRoleToInstanceProfile
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("AddRoleToInstanceProfile: %v", request)
+	klog.Infof("AddRoleToInstanceProfile: %v", request)
 
 	ip := m.InstanceProfiles[aws.StringValue(request.InstanceProfileName)]
 	if ip == nil {
@@ -118,7 +118,7 @@ func (m *MockIAM) RemoveRoleFromInstanceProfile(request *iam.RemoveRoleFromInsta
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("RemoveRoleFromInstanceProfile: %v", request)
+	klog.Infof("RemoveRoleFromInstanceProfile: %v", request)
 
 	ip := m.InstanceProfiles[aws.StringValue(request.InstanceProfileName)]
 	if ip == nil {
@@ -154,10 +154,10 @@ func (m *MockIAM) ListInstanceProfiles(request *iam.ListInstanceProfilesInput) (
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("ListInstanceProfiles: %v", request)
+	klog.Infof("ListInstanceProfiles: %v", request)
 
 	if request.PathPrefix != nil {
-		glog.Fatalf("MockIAM ListInstanceProfiles PathPrefix not implemented")
+		klog.Fatalf("MockIAM ListInstanceProfiles PathPrefix not implemented")
 	}
 
 	var instanceProfiles []*iam.InstanceProfile
@@ -202,7 +202,7 @@ func (m *MockIAM) DeleteInstanceProfile(request *iam.DeleteInstanceProfileInput)
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DeleteInstanceProfile: %v", request)
+	klog.Infof("DeleteInstanceProfile: %v", request)
 
 	id := aws.StringValue(request.InstanceProfileName)
 	o := m.InstanceProfiles[id]

@@ -14,10 +14,10 @@ By default, a cluster has:
 
 ## Instance Groups Disclaimer
 
-* When there is only one availability zone in a region (eu-central-1) and you would like to run multiple masters, 
-  you have to define multiple instance groups for each of those masters. (e.g. `master-eu-central-1-a` and 
+* When there is only one availability zone in a region (eu-central-1) and you would like to run multiple masters,
+  you have to define multiple instance groups for each of those masters. (e.g. `master-eu-central-1-a` and
   `master-eu-central-1-b` and so on...)
-* If instance groups are not defined correctly (particularly when there are an even number of master or multiple 
+* If instance groups are not defined correctly (particularly when there are an even number of master or multiple
   groups of masters into one availability zone in a single region), etcd servers will not start and master nodes will not check in. This is because etcd servers are configured per availability zone. DNS and Route53 would be the first places to check when these problems are happening.
 
 
@@ -112,6 +112,103 @@ spec:
   rootVolumeIops: 200
 ```
 
+## Adding additional storage to the instance groups
+
+You can add additional storage _(note, presently confined to AWS)_ via the instancegroup specification.
+
+```YAML
+---
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: my-beloved-cluster
+  name: compute
+spec:
+  cloudLabels:
+    role: compute
+  image: coreos.com/CoreOS-stable-1855.4.0-hvm
+  machineType: m4.large
+  ...
+  volumes:
+  - device: /dev/xvdd
+    encrypted: true
+    size: 20
+    type: gp2
+```
+
+In AWS the above example shows how to add an additional 20gb EBS volume, which applies to each node within the instancegroup.
+
+## Automatically formatting and mounting the additional storage
+
+You can add additional storage via the above `volumes` collection though this only provisions the storage itself. Assuming you don't wish to handle the mechanics of formatting and mounting the device yourself _(perhaps via a hook)_ you can utilize the `volumeMounts` section of the instancegroup to handle this for you.
+
+```
+---
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: my-beloved-cluster
+  name: compute
+spec:
+  cloudLabels:
+    role: compute
+  image: coreos.com/CoreOS-stable-1855.4.0-hvm
+  machineType: m4.large
+  ...
+  volumeMounts:
+  - device: /dev/xvdd
+    filesystem: ext4
+    path: /var/lib/docker
+  volumes:
+  - device: /dev/xvdd
+    encrypted: true
+    size: 20
+    type: gp2
+```
+
+The above will provision the additional storage, format and mount the device into the node. Note this feature is purposely distinct from `volumes` so that it may be reused in areas such as ephemeral storage. Using a `c5d.large` instance as an example, which comes with a 50gb SSD drive; we can use the `volumeMounts` to mount this into `/var/lib/docker` for us.
+
+```YAML
+---
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: my-beloved-cluster
+  name: compute
+spec:
+  cloudLabels:
+    role: compute
+  image: coreos.com/CoreOS-stable-1855.4.0-hvm
+  machineType: c5d.large
+  ...
+  volumeMounts:
+  - device: /dev/nvme1n1
+    filesystem: ext4
+    path: /data
+  # -- mount the instance storage --
+  - device: /dev/nvme2n1
+    filesystem: ext4
+    path: /var/lib/docker
+  volumes:
+  - device: /dev/nvme1n1
+    encrypted: true
+    size: 20
+    type: gp2
+```
+
+For AWS you can find more information on device naming conventions [here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html)
+
+```shell
+$ df -h | grep nvme[12]
+/dev/nvme1n1      20G   45M   20G   1% /data
+/dev/nvme2n1      46G  633M   45G   2% /var/lib/docker
+```
+
+> Note: at present its up to the user ensure the correct device names.
+
 ## Creating a new instance group
 
 Suppose you want to add a new group of nodes, perhaps with a different instance type.  You do this using `kops create ig <InstanceGroupName> --subnet <zone(s)>`. Currently the
@@ -128,6 +225,65 @@ So the procedure is:
 * Apply: `kops update cluster <clustername> --yes`
 * (no instances need to be relaunched, so no rolling-update is needed)
 
+## Creating a instance group of mixed instances types (AWS Only)
+
+AWS permits the creation of EC2 Fleet Autoscaling Group using a [mixed instance policy](https://aws.amazon.com/blogs/aws/ec2-fleet-manage-thousands-of-on-demand-and-spot-instances-with-one-request/), allowing the users to build a target capacity and make up of on-demand and spot instances while offloading the allocation strategy to AWS. In order to create a mixed instance policy instancegroup.
+
+```YAML
+---
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: your.cluster.name
+  name: compute
+spec:
+  cloudLabels:
+    role: compute
+  image: coreos.com/CoreOS-stable-1911.4.0-hvm
+  machineType: m4.large
+  maxSize: 50
+  minSize: 10
+  # add the mixed instance here
+  mixedInstancesPolicy:
+    instances:
+    - m5.large
+    - m5.xlarge
+    - t2.medium
+    onDemandAboveBase: 5
+    spotInstancePools: 3
+```
+
+The mixed instance policy permits setting the following configurable below, but for more details please check against the AWS documentation.
+
+```Go
+// MixedInstancesPolicySpec defines the specification for an autoscaling backed by a ec2 fleet
+type MixedInstancesPolicySpec struct {
+	// Instances is a list of instance types which we are willing to run in the EC2 fleet
+	Instances []string `json:"instances,omitempty"`
+	// OnDemandAllocationStrategy indicates how to allocate instance types to fulfill On-Demand capacity
+	OnDemandAllocationStrategy *string `json:"onDemandAllocationStrategy,omitempty"`
+	// OnDemandBase is the minimum amount of the Auto Scaling group's capacity that must be
+	// fulfilled by On-Demand Instances. This base portion is provisioned first as your group scales.
+	OnDemandBase *int64 `json:"onDemandBase,omitempty"`
+	// OnDemandAboveBase controls the percentages of On-Demand Instances and Spot Instances for your
+	// additional capacity beyond OnDemandBase. The range is 0–100. The default value is 100. If you
+	// leave this parameter set to 100, the percentages are 100% for On-Demand Instances and 0% for
+	// Spot Instances.
+	OnDemandAboveBase *int64 `json:"onDemandAboveBase,omitempty"`
+	// SpotAllocationStrategy diversifies your Spot capacity across multiple instance types to
+	// find the best pricing. Higher Spot availability may result from a larger number of
+	// instance types to choose from https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet.html#spot-fleet-allocation-strategy
+	SpotAllocationStrategy *string `json:"spotAllocationStrategy,omitempty"`
+	// SpotInstancePools is the number of Spot pools to use to allocate your Spot capacity (defaults to 2)
+	// pools are determined from the different instance types in the Overrides array of LaunchTemplate
+	SpotInstancePools *int64 `json:"spotInstancePools,omitempty"`
+}
+```
+
+Note: as of writing this the kube cluster autoscaler does not support mixed instance groups, in the sense it will still scale groups up and down based on capacity but some of the simulations it does might be wrong as it's not aware of the instance type coming into the group.
+
+Note: when upgrading from a launchconfiguration to launchtemplate with mixed instance policy the launchconfiguration is left undeleted as has to be manually removed.
 
 ## Moving from one instance group spanning multiple AZs to one instance group per AZ
 
@@ -275,7 +431,7 @@ If you need to add tags on auto scaling groups or instances (propagate ASG tags)
 
 ```
 # Example for nodes
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -303,7 +459,7 @@ will rescale the ASG without warning.
 
 ```
 # Example for nodes
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -328,12 +484,12 @@ manually create a load balancer and link it to the instance group. Traffic to th
 automatically go to one of the nodes.
 
 You can specify either `loadBalancerName` to link the instance group to an AWS Classic ELB or you can
-specify `targetGroupARN` to link the instance group to a target group, which are used by Application
+specify `targetGroupArn` to link the instance group to a target group, which are used by Application
 load balancers and Network load balancers.
 
 ```
 # Example ingress nodes
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -345,7 +501,7 @@ spec:
   minSize: 2
   role: Node
   externalLoadBalancers:
-  - targetGroupARN: arn:aws:elasticloadbalancing:eu-west-1:123456789012:targetgroup/my-ingress-target-group/0123456789abcdef
+  - targetGroupArn: arn:aws:elasticloadbalancing:eu-west-1:123456789012:targetgroup/my-ingress-target-group/0123456789abcdef
   - loadBalancerName: my-elb-classic-load-balancer
 ```
 
@@ -357,7 +513,7 @@ Detailed-Monitoring will cause the monitoring data to be available every 1 minut
 
 ```
 # Example for nodes
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:

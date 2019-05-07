@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 var SkipReflection = errors.New("skip this value")
@@ -47,11 +47,11 @@ func JsonMergeStruct(dest, src interface{}) {
 	// Not the most efficient approach, but simple & relatively well defined
 	j, err := json.Marshal(src)
 	if err != nil {
-		glog.Fatalf("error marshaling config: %v", err)
+		klog.Fatalf("error marshaling config: %v", err)
 	}
 	err = json.Unmarshal(j, dest)
 	if err != nil {
-		glog.Fatalf("error unmarshaling config: %v", err)
+		klog.Fatalf("error unmarshaling config: %v", err)
 	}
 }
 
@@ -71,7 +71,7 @@ func InvokeMethod(target interface{}, name string, args ...interface{}) ([]refle
 	for _, a := range args {
 		argValues = append(argValues, reflect.ValueOf(a))
 	}
-	glog.V(12).Infof("Calling method %s on %T", method.Name, target)
+	klog.V(12).Infof("Calling method %s on %T", method.Name, target)
 	m := v.MethodByName(method.Name)
 	rv := m.Call(argValues)
 	return rv, nil
@@ -90,7 +90,7 @@ func BuildTypeName(t reflect.Type) string {
 	case reflect.Map:
 		return "map[" + BuildTypeName(t.Key()) + "]" + BuildTypeName(t.Elem())
 	default:
-		glog.Errorf("cannot find type name for: %v, assuming %s", t, t.Name())
+		klog.Errorf("cannot find type name for: %v, assuming %s", t, t.Name())
 		return t.Name()
 	}
 }
@@ -208,7 +208,7 @@ func IsPrimitiveValue(v reflect.Value) bool {
 		return false
 
 	default:
-		glog.Fatalf("Unhandled kind: %v", v.Kind())
+		klog.Fatalf("Unhandled kind: %v", v.Kind())
 		return false
 	}
 }

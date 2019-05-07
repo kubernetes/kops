@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha2
 
 import (
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -275,6 +276,8 @@ type KopeioAuthenticationSpec struct {
 }
 
 type AwsAuthenticationSpec struct {
+	// Image is the AWS IAM Authenticator docker image to uses
+	Image string `json:"image,omitempty"`
 }
 
 type AuthorizationSpec struct {
@@ -351,6 +354,12 @@ type KubeDNSConfig struct {
 	StubDomains map[string][]string `json:"stubDomains,omitempty"`
 	// UpstreamNameservers sets the upstream nameservers for queries not on the cluster domain
 	UpstreamNameservers []string `json:"upstreamNameservers,omitempty"`
+	// MemoryRequest specifies the memory requests of each dns container in the cluster. Default 70m.
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
+	// CPURequest specifies the cpu requests of each dns container in the cluster. Default 100m.
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+	// MemoryLimit specifies the memory limit of each dns container in the cluster. Default 170m.
+	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
 }
 
 // ExternalDNSConfig are options of the dns-controller
@@ -396,6 +405,10 @@ type EtcdClusterSpec struct {
 	Backups *EtcdBackupSpec `json:"backups,omitempty"`
 	// Manager describes the manager configuration
 	Manager *EtcdManagerSpec `json:"manager,omitempty"`
+	// MemoryRequest specifies the memory requests of each etcd container in the cluster.
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
+	// CPURequest specifies the cpu requests of each etcd container in the cluster.
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 }
 
 // EtcdBackupSpec describes how we want to do backups of etcd

@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
@@ -36,10 +36,12 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-const TagClusterName = "KubernetesCluster"
-const TagNameRolePrefix = "k8s.io/role/"
-const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
-const TagRoleMaster = "master"
+const (
+	TagClusterName           = "KubernetesCluster"
+	TagNameRolePrefix        = "k8s.io/role/"
+	TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+	TagRoleMaster            = "master"
+)
 
 // This is for statistic purpose.
 var KubernetesKopsIdentity = fmt.Sprintf("Kubernetes.Kops/%s", prj.Version)
@@ -51,6 +53,7 @@ type ALICloud interface {
 	SlbClient() *slb.Client
 	RamClient() *ram.RamClient
 	EssClient() *ess.Client
+	VpcClient() *ecs.Client
 
 	Region() string
 	AddClusterTags(tags map[string]string)
@@ -67,6 +70,7 @@ type aliCloudImplementation struct {
 	slbClient *slb.Client
 	ramClient *ram.RamClient
 	essClient *ess.Client
+	vpcClient *ecs.Client
 
 	region string
 	tags   map[string]string
@@ -95,6 +99,7 @@ func NewALICloud(region string, tags map[string]string) (ALICloud, error) {
 	ramclient := ram.NewClient(accessKeyId, accessKeySecret)
 	c.ramClient = ramclient.(*ram.RamClient)
 	c.essClient = ess.NewClient(accessKeyId, accessKeySecret)
+	c.vpcClient = ecs.NewVPCClient(accessKeyId, accessKeySecret, common.Region(region))
 
 	c.tags = tags
 
@@ -115,6 +120,10 @@ func (c *aliCloudImplementation) RamClient() *ram.RamClient {
 
 func (c *aliCloudImplementation) EssClient() *ess.Client {
 	return c.essClient
+}
+
+func (c *aliCloudImplementation) VpcClient() *ecs.Client {
+	return c.vpcClient
 }
 
 func (c *aliCloudImplementation) Region() string {
@@ -215,7 +224,7 @@ func (c *aliCloudImplementation) CreateTags(resourceId string, resourceType stri
 	if len(tags) == 0 {
 		return nil
 	} else if len(tags) > 10 {
-		glog.V(4).Infof("The number of specified resource's tags exceeds 10, resourceId:%q", resourceId)
+		klog.V(4).Infof("The number of specified resource's tags exceeds 10, resourceId:%q", resourceId)
 	}
 	if resourceId == "" {
 		return errors.New("resourceId not provided to CreateTags")
@@ -287,7 +296,7 @@ func (c *aliCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]k
 		return nil, nil
 	}
 	if len(responseLoadBalancers) > 1 {
-		glog.V(4).Infof("The number of specified loadbalancer with the same name exceeds 1, loadbalancerName:%q", name)
+		klog.V(4).Infof("The number of specified loadbalancer with the same name exceeds 1, loadbalancerName:%q", name)
 	}
 
 	address := responseLoadBalancers[0].Address

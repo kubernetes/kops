@@ -19,13 +19,13 @@ package protokube
 import (
 	"fmt"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // applyRBAC is responsible for initializing RBAC
@@ -49,7 +49,7 @@ func applyRBAC(kubeContext *KubernetesContext) error {
 	if len(errors) != 0 {
 		if len(errors) != 1 {
 			for _, err := range errors {
-				glog.Warningf("Error configuring RBAC: %v", err)
+				klog.Warningf("Error configuring RBAC: %v", err)
 			}
 		}
 		return errors[0]

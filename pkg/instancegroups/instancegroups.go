@@ -23,17 +23,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/kubectl/cmd"
+	cmddrain "k8s.io/kubernetes/pkg/kubectl/cmd/drain"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 )
 
@@ -75,15 +75,15 @@ func promptInteractive(upgradedHostId, upgradedHostName string) (stopPrompting b
 	stopPrompting = false
 	scanner := bufio.NewScanner(os.Stdin)
 	if upgradedHostName != "" {
-		glog.Infof("Pausing after finished %q, node %q", upgradedHostId, upgradedHostName)
+		klog.Infof("Pausing after finished %q, node %q", upgradedHostId, upgradedHostName)
 	} else {
-		glog.Infof("Pausing after finished %q", upgradedHostId)
+		klog.Infof("Pausing after finished %q", upgradedHostId)
 	}
 	fmt.Print("Continue? (Y)es, (N)o, (A)lwaysYes: [Y] ")
 	scanner.Scan()
 	err = scanner.Err()
 	if err != nil {
-		glog.Infof("unable to interpret input: %v", err)
+		klog.Infof("unable to interpret input: %v", err)
 		return stopPrompting, err
 	}
 	val := scanner.Text()
@@ -91,10 +91,10 @@ func promptInteractive(upgradedHostId, upgradedHostName string) (stopPrompting b
 	val = strings.ToLower(val)
 	switch val {
 	case "n":
-		glog.Info("User signaled to stop")
+		klog.Info("User signaled to stop")
 		os.Exit(3)
 	case "a":
-		glog.Info("Always Yes, stop prompting for rest of hosts")
+		klog.Info("Always Yes, stop prompting for rest of hosts")
 		stopPrompting = true
 	}
 	return stopPrompting, err
@@ -131,16 +131,16 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 	}
 
 	if isBastion {
-		glog.V(3).Info("Not validating the cluster as instance is a bastion.")
+		klog.V(3).Info("Not validating the cluster as instance is a bastion.")
 	} else if rollingUpdateData.CloudOnly {
-		glog.V(3).Info("Not validating cluster as validation is turned off via the cloud-only flag.")
+		klog.V(3).Info("Not validating cluster as validation is turned off via the cloud-only flag.")
 	} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 		if err = r.ValidateCluster(rollingUpdateData, cluster, instanceGroupList); err != nil {
 			if rollingUpdateData.FailOnValidate {
 				return fmt.Errorf("error validating cluster: %v", err)
 			} else {
-				glog.V(2).Infof("Ignoring cluster validation error: %v", err)
-				glog.Info("Cluster validation failed, but proceeding since fail-on-validate-error is set to false")
+				klog.V(2).Infof("Ignoring cluster validation error: %v", err)
+				klog.Info("Cluster validation failed, but proceeding since fail-on-validate-error is set to false")
 			}
 		}
 	}
@@ -157,22 +157,22 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 			// We don't want to validate for bastions - they aren't part of the cluster
 		} else if rollingUpdateData.CloudOnly {
 
-			glog.Warning("Not draining cluster nodes as 'cloudonly' flag is set.")
+			klog.Warning("Not draining cluster nodes as 'cloudonly' flag is set.")
 
 		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 
 			if u.Node != nil {
-				glog.Infof("Draining the node: %q.", nodeName)
+				klog.Infof("Draining the node: %q.", nodeName)
 
 				if err = r.DrainNode(u, rollingUpdateData); err != nil {
 					if rollingUpdateData.FailOnDrainError {
 						return fmt.Errorf("failed to drain node %q: %v", nodeName, err)
 					} else {
-						glog.Infof("Ignoring error draining node %q: %v", nodeName, err)
+						klog.Infof("Ignoring error draining node %q: %v", nodeName, err)
 					}
 				}
 			} else {
-				glog.Warningf("Skipping drain of instance %q, because it is not registered in kubernetes", instanceId)
+				klog.Warningf("Skipping drain of instance %q, because it is not registered in kubernetes", instanceId)
 			}
 		}
 
@@ -180,9 +180,9 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		// (It often seems like GCE tries to re-use names)
 		if !isBastion && !rollingUpdateData.CloudOnly {
 			if u.Node == nil {
-				glog.Warningf("no kubernetes Node associated with %s, skipping node deletion", instanceId)
+				klog.Warningf("no kubernetes Node associated with %s, skipping node deletion", instanceId)
 			} else {
-				glog.Infof("deleting node %q from kubernetes", nodeName)
+				klog.Infof("deleting node %q from kubernetes", nodeName)
 				if err := r.deleteNode(u.Node, rollingUpdateData); err != nil {
 					return fmt.Errorf("error deleting node %q: %v", nodeName, err)
 				}
@@ -190,32 +190,32 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		}
 
 		if err = r.DeleteInstance(u); err != nil {
-			glog.Errorf("error deleting instance %q, node %q: %v", instanceId, nodeName, err)
+			klog.Errorf("error deleting instance %q, node %q: %v", instanceId, nodeName, err)
 			return err
 		}
 
 		// Wait for the minimum interval
-		glog.Infof("waiting for %v after terminating instance", sleepAfterTerminate)
+		klog.Infof("waiting for %v after terminating instance", sleepAfterTerminate)
 		time.Sleep(sleepAfterTerminate)
 
 		if isBastion {
-			glog.Infof("Deleted a bastion instance, %s, and continuing with rolling-update.", instanceId)
+			klog.Infof("Deleted a bastion instance, %s, and continuing with rolling-update.", instanceId)
 
 			continue
 		} else if rollingUpdateData.CloudOnly {
-			glog.Warningf("Not validating cluster as cloudonly flag is set.")
+			klog.Warningf("Not validating cluster as cloudonly flag is set.")
 
 		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
-			glog.Info("Validating the cluster.")
+			klog.Info("Validating the cluster.")
 
 			if err = r.ValidateClusterWithDuration(rollingUpdateData, cluster, instanceGroupList, validationTimeout); err != nil {
 
 				if rollingUpdateData.FailOnValidate {
-					glog.Errorf("Cluster did not validate within %s", validationTimeout)
+					klog.Errorf("Cluster did not validate within %s", validationTimeout)
 					return fmt.Errorf("error validating cluster after removing a node: %v", err)
 				}
 
-				glog.Warningf("Cluster validation failed after removing instance, proceeding since fail-on-validate is set to false: %v", err)
+				klog.Warningf("Cluster validation failed after removing instance, proceeding since fail-on-validate is set to false: %v", err)
 			}
 		}
 
@@ -267,13 +267,13 @@ func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *Rolli
 	result, err := validation.ValidateCluster(cluster, instanceGroupList, rollingUpdateData.K8sClient)
 
 	if err != nil {
-		glog.Infof("Cluster did not validate, will try again in %q until duration %q expires: %v.", tickDuration, duration, err)
+		klog.Infof("Cluster did not validate, will try again in %q until duration %q expires: %v.", tickDuration, duration, err)
 		return false
 	} else if len(result.Failures) > 0 {
-		glog.Infof("Cluster did not pass validation, will try again in %q until duration %q expires: %v.", tickDuration, duration, result.Failures[0].Message)
+		klog.Infof("Cluster did not pass validation, will try again in %q until duration %q expires: %v.", tickDuration, duration, result.Failures[0].Message)
 		return false
 	} else {
-		glog.Info("Cluster validated.")
+		klog.Info("Cluster validated.")
 		return true
 	}
 }
@@ -296,9 +296,9 @@ func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInsta
 		nodeName = u.Node.Name
 	}
 	if nodeName != "" {
-		glog.Infof("Stopping instance %q, node %q, in group %q (this may take a while).", id, nodeName, r.CloudGroup.HumanName)
+		klog.Infof("Stopping instance %q, node %q, in group %q (this may take a while).", id, nodeName, r.CloudGroup.HumanName)
 	} else {
-		glog.Infof("Stopping instance %q, in group %q (this may take a while).", id, r.CloudGroup.HumanName)
+		klog.Infof("Stopping instance %q, in group %q (this may take a while).", id, r.CloudGroup.HumanName)
 	}
 
 	if err := r.Cloud.DeleteInstance(u); err != nil {
@@ -329,9 +329,9 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 		ErrOut: os.Stderr,
 	}
 
-	drain := cmd.NewCmdDrain(f, streams)
+	drain := cmddrain.NewCmdDrain(f, streams)
 	args := []string{u.Node.Name}
-	options := cmd.NewDrainOptions(f, streams)
+	options := cmddrain.NewDrainOptions(f, streams)
 
 	// Override some options
 	options.IgnoreDaemonsets = true
@@ -355,7 +355,7 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 	}
 
 	if rollingUpdateData.PostDrainDelay > 0 {
-		glog.Infof("Waiting for %s for pods to stabilize after draining.", rollingUpdateData.PostDrainDelay)
+		klog.Infof("Waiting for %s for pods to stabilize after draining.", rollingUpdateData.PostDrainDelay)
 		time.Sleep(rollingUpdateData.PostDrainDelay)
 	}
 

@@ -24,9 +24,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/commands"
@@ -35,8 +36,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
-	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/templates"
 )
 
 var (
@@ -191,7 +192,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 			return results, fmt.Errorf("error adding SSH public key: %v", err)
 		}
 
-		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
+		klog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
 	}
 
 	var phase cloudup.Phase
@@ -275,7 +276,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	if !isDryrun && c.CreateKubecfg {
 		hasKubecfg, err := hasKubecfg(cluster.ObjectMeta.Name)
 		if err != nil {
-			glog.Warningf("error reading kubecfg: %v", err)
+			klog.Warningf("error reading kubecfg: %v", err)
 			hasKubecfg = true
 		}
 		firstRun = !hasKubecfg
@@ -283,12 +284,12 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		kubecfgCert, err := keyStore.FindCert("kubecfg")
 		if err != nil {
 			// This is only a convenience; don't error because of it
-			glog.Warningf("Ignoring error trying to fetch kubecfg cert - won't export kubecfg: %v", err)
+			klog.Warningf("Ignoring error trying to fetch kubecfg cert - won't export kubecfg: %v", err)
 			kubecfgCert = nil
 		}
 		if kubecfgCert != nil {
-			glog.Infof("Exporting kubecfg for cluster")
-			conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{})
+			klog.Infof("Exporting kubecfg for cluster")
+			conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{}, clientcmd.NewDefaultPathOptions())
 			if err != nil {
 				return nil, err
 			}
@@ -297,7 +298,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 				return nil, err
 			}
 		} else {
-			glog.Infof("kubecfg cert not found; won't export kubecfg")
+			klog.Infof("kubecfg cert not found; won't export kubecfg")
 		}
 	}
 

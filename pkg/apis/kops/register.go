@@ -38,7 +38,7 @@ var (
 //var ParameterCodec = runtime.NewParameterCodec(Scheme)
 
 // GroupName is the group name use in this package
-const GroupName = "kops"
+const GroupName = "kops.k8s.io"
 
 // SchemeGroupVersion is the group version used to register these objects
 var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: runtime.APIVersionInternal}

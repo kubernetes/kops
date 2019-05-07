@@ -34,9 +34,9 @@ type FakeInstanceGroups struct {
 	ns   string
 }
 
-var instancegroupsResource = schema.GroupVersionResource{Group: "kops", Version: "v1alpha2", Resource: "instancegroups"}
+var instancegroupsResource = schema.GroupVersionResource{Group: "kops.k8s.io", Version: "v1alpha2", Resource: "instancegroups"}
 
-var instancegroupsKind = schema.GroupVersionKind{Group: "kops", Version: "v1alpha2", Kind: "InstanceGroup"}
+var instancegroupsKind = schema.GroupVersionKind{Group: "kops.k8s.io", Version: "v1alpha2", Kind: "InstanceGroup"}
 
 // Get takes name of the instanceGroup, and returns the corresponding instanceGroup object, and an error if there is any.
 func (c *FakeInstanceGroups) Get(name string, options v1.GetOptions) (result *v1alpha2.InstanceGroup, err error) {
@@ -119,7 +119,7 @@ func (c *FakeInstanceGroups) DeleteCollection(options *v1.DeleteOptions, listOpt
 // Patch applies the patch and returns the patched instanceGroup.
 func (c *FakeInstanceGroups) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha2.InstanceGroup, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(instancegroupsResource, c.ns, name, data, subresources...), &v1alpha2.InstanceGroup{})
+		Invokes(testing.NewPatchSubresourceAction(instancegroupsResource, c.ns, name, pt, data, subresources...), &v1alpha2.InstanceGroup{})
 
 	if obj == nil {
 		return nil, err
