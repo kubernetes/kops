@@ -26,9 +26,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/pflag"
+	"k8s.io/klog"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -60,7 +60,7 @@ func main() {
 	var updateInterval int
 
 	// Be sure to get the glog flags
-	glog.Flush()
+	klog.Flush()
 
 	flag.StringVar(&dnsServer, "dns-server", "", "DNS Server")
 	flags.BoolVar(&watchIngress, "watch-ingress", true, "Configure hostnames found in ingress resources")
@@ -90,19 +90,19 @@ func main() {
 
 	zoneRules, err := dns.ParseZoneRules(zones)
 	if err != nil {
-		glog.Errorf("unexpected zone flags: %q", err)
+		klog.Errorf("unexpected zone flags: %q", err)
 		os.Exit(1)
 	}
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		glog.Errorf("error building client configuration: %v", err)
+		klog.Errorf("error building client configuration: %v", err)
 		os.Exit(1)
 	}
 
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		glog.Fatalf("error building REST client: %v", err)
+		klog.Fatalf("error building REST client: %v", err)
 	}
 
 	var dnsProviders []dnsprovider.Interface
@@ -117,11 +117,11 @@ func main() {
 		}
 		dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderID, file)
 		if err != nil {
-			glog.Errorf("Error initializing DNS provider %q: %v", dnsProviderID, err)
+			klog.Errorf("Error initializing DNS provider %q: %v", dnsProviderID, err)
 			os.Exit(1)
 		}
 		if dnsProvider == nil {
-			glog.Errorf("DNS provider was nil %q: %v", dnsProviderID, err)
+			klog.Errorf("DNS provider was nil %q: %v", dnsProviderID, err)
 			os.Exit(1)
 		}
 		dnsProviders = append(dnsProviders, dnsProvider)
@@ -132,34 +132,34 @@ func main() {
 
 		id := os.Getenv("HOSTNAME")
 		if id == "" {
-			glog.Fatalf("Unable to fetch HOSTNAME for use as node identifier")
+			klog.Fatalf("Unable to fetch HOSTNAME for use as node identifier")
 		}
 		gossipName := "dns-controller." + id
 
 		channelName := "dns"
 		gossipState, err := mesh.NewMeshGossiper(gossipListen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
 		if err != nil {
-			glog.Errorf("Error initializing gossip: %v", err)
+			klog.Errorf("Error initializing gossip: %v", err)
 			os.Exit(1)
 		}
 
 		go func() {
 			err := gossipState.Start()
 			if err != nil {
-				glog.Fatalf("gossip exited unexpectedly: %v", err)
+				klog.Fatalf("gossip exited unexpectedly: %v", err)
 			} else {
-				glog.Fatalf("gossip exited unexpectedly, but without error")
+				klog.Fatalf("gossip exited unexpectedly, but without error")
 			}
 		}()
 
 		dnsView := gossipdns.NewDNSView(gossipState)
 		dnsProvider, err := gossipdnsprovider.New(dnsView)
 		if err != nil {
-			glog.Errorf("Error initializing gossip DNS provider: %v", err)
+			klog.Errorf("Error initializing gossip DNS provider: %v", err)
 			os.Exit(1)
 		}
 		if dnsProvider == nil {
-			glog.Errorf("Gossip DNS provider was nil: %v", err)
+			klog.Errorf("Gossip DNS provider was nil: %v", err)
 			os.Exit(1)
 		}
 		dnsProviders = append(dnsProviders, dnsProvider)
@@ -167,13 +167,13 @@ func main() {
 
 	dnsController, err := dns.NewDNSController(dnsProviders, zoneRules, updateInterval)
 	if err != nil {
-		glog.Errorf("Error building DNS controller: %v", err)
+		klog.Errorf("Error building DNS controller: %v", err)
 		os.Exit(1)
 	}
 
 	// @step: initialize the watchers
 	if err := initializeWatchers(client, dnsController, watchNamespace, watchIngress); err != nil {
-		glog.Errorf("%s", err)
+		klog.Errorf("%s", err)
 		os.Exit(1)
 	}
 
@@ -183,7 +183,7 @@ func main() {
 
 // initializeWatchers is responsible for creating the watchers
 func initializeWatchers(client kubernetes.Interface, dnsctl *dns.DNSController, namespace string, watchIngress bool) error {
-	glog.V(1).Infof("initializing the watch controllers, namespace: %q", namespace)
+	klog.V(1).Infof("initializing the watch controllers, namespace: %q", namespace)
 
 	nodeController, err := watchers.NewNodeController(client, dnsctl)
 	if err != nil {
@@ -207,7 +207,7 @@ func initializeWatchers(client kubernetes.Interface, dnsctl *dns.DNSController, 
 			return fmt.Errorf("failed to initialize the ingress controller, error: %v", err)
 		}
 	} else {
-		glog.Infof("Ingress controller disabled")
+		klog.Infof("Ingress controller disabled")
 	}
 
 	go nodeController.Run()

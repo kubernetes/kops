@@ -22,7 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
@@ -85,10 +85,10 @@ func (e *SSHKey) find(cloud awsup.AWSCloud) (*SSHKey, error) {
 
 	// Avoid spurious changes
 	if fi.StringValue(actual.KeyFingerprint) == fi.StringValue(e.KeyFingerprint) {
-		glog.V(2).Infof("SSH key fingerprints match; assuming public keys match")
+		klog.V(2).Infof("SSH key fingerprints match; assuming public keys match")
 		actual.PublicKey = e.PublicKey
 	} else {
-		glog.V(2).Infof("Computed SSH key fingerprint mismatch: %q %q", fi.StringValue(e.KeyFingerprint), fi.StringValue(actual.KeyFingerprint))
+		klog.V(2).Infof("Computed SSH key fingerprint mismatch: %q %q", fi.StringValue(e.KeyFingerprint), fi.StringValue(actual.KeyFingerprint))
 	}
 	actual.Lifecycle = e.Lifecycle
 
@@ -106,7 +106,7 @@ func (e *SSHKey) Run(c *fi.Context) error {
 		if err != nil {
 			return fmt.Errorf("error computing key fingerprint for SSH key: %v", err)
 		}
-		glog.V(2).Infof("Computed SSH key fingerprint as %q", keyFingerprint)
+		klog.V(2).Infof("Computed SSH key fingerprint as %q", keyFingerprint)
 		e.KeyFingerprint = &keyFingerprint
 	}
 	return fi.DefaultDeltaRunMethod(e, c)
@@ -122,7 +122,7 @@ func (s *SSHKey) CheckChanges(a, e, changes *SSHKey) error {
 }
 
 func (e *SSHKey) createKeypair(cloud awsup.AWSCloud) error {
-	glog.V(2).Infof("Creating SSHKey with Name:%q", *e.Name)
+	klog.V(2).Infof("Creating SSHKey with Name:%q", *e.Name)
 
 	request := &ec2.ImportKeyPairInput{
 		KeyName: e.Name,
@@ -183,7 +183,7 @@ func (e *SSHKey) TerraformLink() *terraform.Literal {
 func (_ *SSHKey) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *SSHKey) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 
-	glog.Warningf("Cloudformation does not manage SSH keys; pre-creating SSH key")
+	klog.Warningf("Cloudformation does not manage SSH keys; pre-creating SSH key")
 
 	a, err := e.find(cloud)
 	if err != nil {

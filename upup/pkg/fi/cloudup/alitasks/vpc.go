@@ -21,7 +21,7 @@ import (
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -74,7 +74,7 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 				Lifecycle: e.Lifecycle,
 			}
 			e.ID = actual.ID
-			glog.V(4).Infof("found matching VPC %v", actual)
+			klog.V(4).Infof("found matching VPC %v", actual)
 			return actual, nil
 		}
 	}
@@ -94,7 +94,7 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 				Lifecycle: e.Lifecycle,
 			}
 			e.ID = actual.ID
-			glog.V(4).Infof("found matching VPC %v", actual)
+			klog.V(4).Infof("found matching VPC %v", actual)
 			return actual, nil
 		}
 	}
@@ -132,10 +132,10 @@ func (_ *VPC) RenderALI(t *aliup.ALIAPITarget, a, e, changes *VPC) error {
 
 	if a == nil {
 		if e.ID != nil && fi.StringValue(e.ID) != "" {
-			glog.V(2).Infof("Shared VPC with VPCID: %q", *e.ID)
+			klog.V(2).Infof("Shared VPC with VPCID: %q", *e.ID)
 			return nil
 		}
-		glog.V(2).Infof("Creating VPC with CIDR: %q", *e.CIDR)
+		klog.V(2).Infof("Creating VPC with CIDR: %q", *e.CIDR)
 
 		request := &ecs.CreateVpcArgs{
 			RegionId:  common.Region(t.Cloud.Region()),

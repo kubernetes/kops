@@ -24,8 +24,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -211,7 +211,7 @@ func (e *InstanceTemplate) mapToGCE(project string) (*compute.InstanceTemplate, 
 		}
 	}
 
-	glog.Infof("We should be using NVME for GCE")
+	klog.Infof("We should be using NVME for GCE")
 
 	var disks []*compute.AttachedDisk
 	disks = append(disks, &compute.AttachedDisk{
@@ -335,11 +335,11 @@ func matches(l, r *compute.InstanceTemplate) bool {
 	normalizedR := normalize(r)
 
 	if !reflect.DeepEqual(normalizedL, normalizedR) {
-		if glog.V(10) {
+		if klog.V(10) {
 			ls := fi.DebugAsJsonStringIndent(normalizedL)
 			rs := fi.DebugAsJsonStringIndent(normalizedR)
-			glog.V(10).Infof("Not equal")
-			glog.V(10).Infof(diff.FormatDiff(ls, rs))
+			klog.V(10).Infof("Not equal")
+			klog.V(10).Infof(diff.FormatDiff(ls, rs))
 		}
 		return false
 	}
@@ -363,7 +363,7 @@ func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instanc
 	}
 
 	if a == nil {
-		glog.V(4).Infof("Creating InstanceTemplate %v", i)
+		klog.V(4).Infof("Creating InstanceTemplate %v", i)
 
 		name := fi.StringValue(e.NamePrefix) + "-" + strconv.FormatInt(time.Now().Unix(), 10)
 		e.ID = &name

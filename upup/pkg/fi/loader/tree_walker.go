@@ -22,8 +22,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -95,7 +95,7 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 			Tags:         parent.Tags,
 		}
 
-		glog.V(4).Infof("visit %q", f)
+		klog.V(4).Infof("visit %q", f)
 
 		hasMeta := false
 		{
@@ -118,11 +118,11 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 				// Only descend into the tag directory if we have the tag
 				_, found := t.Tags[fileName]
 				if !found {
-					glog.V(2).Infof("Skipping directory %q as tag %q not present", f, fileName)
+					klog.V(2).Infof("Skipping directory %q as tag %q not present", f, fileName)
 					continue
 				} else {
 					i.Tags = append(i.Tags, fileName)
-					glog.V(2).Infof("Descending into directory, as tag is present: %q", f)
+					klog.V(2).Infof("Descending into directory, as tag is present: %q", f)
 					err = t.walkDirectory(i)
 				}
 			} else if _, found := t.Contexts[fileName]; found {
@@ -143,7 +143,7 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 
 			// So that we can manage directories, we do not ignore directories which have a .meta file
 			if hasMeta {
-				glog.V(4).Infof("Found .meta file for directory %q; will process", f)
+				klog.V(4).Infof("Found .meta file for directory %q; will process", f)
 			} else {
 				continue
 			}

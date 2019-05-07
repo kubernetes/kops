@@ -25,8 +25,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/golang/glog"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/kubeconfig"
 )
 
@@ -80,7 +80,7 @@ func (k *Kubectl) GetConfig(minify bool) (*kubeconfig.KubectlConfig, error) {
 	}
 	configString = strings.TrimSpace(configString)
 
-	glog.V(8).Infof("config = %q", configString)
+	klog.V(8).Infof("config = %q", configString)
 
 	config := &kubeconfig.KubectlConfig{}
 	err = json.Unmarshal([]byte(configString), config)
@@ -101,7 +101,7 @@ func (k *Kubectl) Apply(context string, data []byte) error {
 
 	defer func() {
 		if err := os.Remove(localManifestFile.Name()); err != nil {
-			glog.Warningf("error deleting temp file %q: %v", localManifestFile.Name(), err)
+			klog.Warningf("error deleting temp file %q: %v", localManifestFile.Name(), err)
 		}
 	}()
 
@@ -128,12 +128,12 @@ func (k *Kubectl) execKubectl(args ...string) (string, string, error) {
 	cmd.Stderr = &stderr
 
 	human := strings.Join(cmd.Args, " ")
-	glog.V(2).Infof("Running command: %s", human)
+	klog.V(2).Infof("Running command: %s", human)
 	err := cmd.Run()
 	if err != nil {
-		glog.Infof("error running %s", human)
-		glog.Info(stdout.String())
-		glog.Info(stderr.String())
+		klog.Infof("error running %s", human)
+		klog.Info(stdout.String())
+		klog.Info(stderr.String())
 		return stdout.String(), stderr.String(), fmt.Errorf("error running kubectl: %v", err)
 	}
 

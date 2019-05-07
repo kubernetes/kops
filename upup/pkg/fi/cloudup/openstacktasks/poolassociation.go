@@ -21,8 +21,8 @@ import (
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 
-	"github.com/golang/glog"
 	v2pools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -164,9 +164,9 @@ func (_ *PoolAssociation) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 		return nil
 	} else {
 		//TODO: Update Member, this is covered as `a` will always be nil
-		glog.V(2).Infof("Openstack task PoolAssociation::RenderOpenstack Update not implemented!")
+		klog.V(2).Infof("Openstack task PoolAssociation::RenderOpenstack Update not implemented!")
 	}
 
-	glog.V(2).Infof("Openstack task PoolAssociation::RenderOpenstack did nothing")
+	klog.V(2).Infof("Openstack task PoolAssociation::RenderOpenstack did nothing")
 	return nil
 }

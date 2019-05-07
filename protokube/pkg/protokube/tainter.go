@@ -25,7 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type nodePatch struct {
@@ -58,7 +58,7 @@ func applyMasterTaints(kubeContext *KubernetesContext) error {
 	options := metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(labels.Set{"kubernetes.io/role": "master"}).String(),
 	}
-	glog.V(2).Infof("Querying k8s for nodes with selector %q", options.LabelSelector)
+	klog.V(2).Infof("Querying k8s for nodes with selector %q", options.LabelSelector)
 	nodes, err := client.CoreV1().Nodes().List(options)
 	if err != nil {
 		return fmt.Errorf("error querying nodes: %v", err)
@@ -76,7 +76,7 @@ func applyMasterTaints(kubeContext *KubernetesContext) error {
 		nodeTaintJSON := node.Annotations[TaintsAnnotationKey]
 		if nodeTaintJSON != "" {
 			if nodeTaintJSON != string(taintJSON) {
-				glog.Infof("Node %q is registered with taint: %v", node.Name, nodeTaintJSON)
+				klog.Infof("Node %q is registered with taint: %v", node.Name, nodeTaintJSON)
 			}
 			continue
 		}
@@ -97,7 +97,7 @@ func applyMasterTaints(kubeContext *KubernetesContext) error {
 			return fmt.Errorf("error building node patch: %v", err)
 		}
 
-		glog.V(2).Infof("sending patch for node %q: %q", node.Name, string(nodePatchJson))
+		klog.V(2).Infof("sending patch for node %q: %q", node.Name, string(nodePatchJson))
 
 		_, err = client.CoreV1().Nodes().Patch(node.Name, types.StrategicMergePatchType, nodePatchJson)
 		if err != nil {

@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/resources"
 	gce "k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
@@ -60,7 +60,7 @@ func DumpManagedInstance(op *resources.DumpOperation, r *resources.Resource) err
 
 	instanceDetails := instanceMap[u.Name]
 	if instanceDetails == nil {
-		glog.Warningf("instance %q not found", instance.Instance)
+		klog.Warningf("instance %q not found", instance.Instance)
 	} else {
 		for _, ni := range instanceDetails.NetworkInterfaces {
 			for _, ac := range ni.AccessConfigs {

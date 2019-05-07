@@ -28,8 +28,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
-	"github.com/golang/glog"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/klog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	"k8s.io/kops/pkg/apis/kops"
@@ -195,56 +195,56 @@ func (c *MockAWSCloud) WithTags(tags map[string]string) AWSCloud {
 
 func (c *MockAWSCloud) CloudFormation() *cloudformation.CloudFormation {
 	if c.MockEC2 == nil {
-		glog.Fatalf("MockAWSCloud MockCloudFormation not set")
+		klog.Fatalf("MockAWSCloud MockCloudFormation not set")
 	}
 	return c.MockCloudFormation
 }
 
 func (c *MockAWSCloud) EC2() ec2iface.EC2API {
 	if c.MockEC2 == nil {
-		glog.Fatalf("MockAWSCloud MockEC2 not set")
+		klog.Fatalf("MockAWSCloud MockEC2 not set")
 	}
 	return c.MockEC2
 }
 
 func (c *MockAWSCloud) IAM() iamiface.IAMAPI {
 	if c.MockIAM == nil {
-		glog.Fatalf("MockAWSCloud MockIAM not set")
+		klog.Fatalf("MockAWSCloud MockIAM not set")
 	}
 	return c.MockIAM
 }
 
 func (c *MockAWSCloud) ELB() elbiface.ELBAPI {
 	if c.MockELB == nil {
-		glog.Fatalf("MockAWSCloud MockELB not set")
+		klog.Fatalf("MockAWSCloud MockELB not set")
 	}
 	return c.MockELB
 }
 
 func (c *MockAWSCloud) ELBV2() elbv2iface.ELBV2API {
 	if c.MockELBV2 == nil {
-		glog.Fatalf("MockAWSCloud MockELBV2 not set")
+		klog.Fatalf("MockAWSCloud MockELBV2 not set")
 	}
 	return c.MockELBV2
 }
 
 func (c *MockAWSCloud) Autoscaling() autoscalingiface.AutoScalingAPI {
 	if c.MockAutoscaling == nil {
-		glog.Fatalf("MockAWSCloud Autoscaling not set")
+		klog.Fatalf("MockAWSCloud Autoscaling not set")
 	}
 	return c.MockAutoscaling
 }
 
 func (c *MockAWSCloud) Route53() route53iface.Route53API {
 	if c.MockRoute53 == nil {
-		glog.Fatalf("MockRoute53 not set")
+		klog.Fatalf("MockRoute53 not set")
 	}
 	return c.MockRoute53
 }
 
 func (c *MockAWSCloud) Spotinst() spotinst.Service {
 	if c.MockSpotinst == nil {
-		glog.Fatalf("MockSpotinst not set")
+		klog.Fatalf("MockSpotinst not set")
 	}
 	return c.MockSpotinst
 }

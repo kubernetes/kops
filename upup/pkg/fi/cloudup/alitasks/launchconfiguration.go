@@ -24,7 +24,7 @@ import (
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ess"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
@@ -61,7 +61,7 @@ func (l *LaunchConfiguration) CompareWithID() *string {
 func (l *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) {
 
 	if l.ScalingGroup == nil || l.ScalingGroup.ScalingGroupId == nil {
-		glog.V(4).Infof("ScalingGroup / ScalingGroupId not found for %s, skipping Find", fi.StringValue(l.Name))
+		klog.V(4).Infof("ScalingGroup / ScalingGroupId not found for %s, skipping Find", fi.StringValue(l.Name))
 		return nil, nil
 	}
 
@@ -86,10 +86,10 @@ func (l *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		return nil, nil
 	}
 	if len(configList) > 1 {
-		glog.V(4).Infof("The number of specified ScalingConfigurations with the same name and ScalingGroupId exceeds 1, diskName:%q", *l.Name)
+		klog.V(4).Infof("The number of specified ScalingConfigurations with the same name and ScalingGroupId exceeds 1, diskName:%q", *l.Name)
 	}
 
-	glog.V(2).Infof("found matching LaunchConfiguration: %q", *l.Name)
+	klog.V(2).Infof("found matching LaunchConfiguration: %q", *l.Name)
 
 	actual := &LaunchConfiguration{}
 	actual.ImageId = fi.String(configList[0].ImageId)
@@ -160,7 +160,7 @@ func (_ *LaunchConfiguration) CheckChanges(a, e, changes *LaunchConfiguration) e
 
 func (_ *LaunchConfiguration) RenderALI(t *aliup.ALIAPITarget, a, e, changes *LaunchConfiguration) error {
 
-	glog.V(2).Infof("Creating LaunchConfiguration for ScalingGroup:%q", fi.StringValue(e.ScalingGroup.ScalingGroupId))
+	klog.V(2).Infof("Creating LaunchConfiguration for ScalingGroup:%q", fi.StringValue(e.ScalingGroup.ScalingGroupId))
 
 	createScalingConfiguration := &ess.CreateScalingConfigurationArgs{
 		ScalingGroupId:      fi.StringValue(e.ScalingGroup.ScalingGroupId),
@@ -205,7 +205,7 @@ func (_ *LaunchConfiguration) RenderALI(t *aliup.ALIAPITarget, a, e, changes *La
 	// If the ScalingGroup is active, we can not execute EnableScalingGroup.
 	if e.ScalingGroup.Active != nil && fi.BoolValue(e.ScalingGroup.Active) {
 
-		glog.V(2).Infof("Disabling LoadBalancer with id:%q", fi.StringValue(e.ScalingGroup.ScalingGroupId))
+		klog.V(2).Infof("Disabling LoadBalancer with id:%q", fi.StringValue(e.ScalingGroup.ScalingGroupId))
 
 		disableScalingGroupArgs := &ess.DisableScalingGroupArgs{
 			ScalingGroupId: fi.StringValue(e.ScalingGroup.ScalingGroupId),
@@ -222,7 +222,7 @@ func (_ *LaunchConfiguration) RenderALI(t *aliup.ALIAPITarget, a, e, changes *La
 		ActiveScalingConfigurationId: fi.StringValue(e.ConfigurationId),
 	}
 
-	glog.V(2).Infof("Enabling new LaunchConfiguration of LoadBalancer with id:%q", fi.StringValue(e.ScalingGroup.ScalingGroupId))
+	klog.V(2).Infof("Enabling new LaunchConfiguration of LoadBalancer with id:%q", fi.StringValue(e.ScalingGroup.ScalingGroupId))
 
 	_, err = t.Cloud.EssClient().EnableScalingGroup(enableScalingGroupArgs)
 	if err != nil {

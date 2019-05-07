@@ -22,11 +22,11 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/golang/glog"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
@@ -53,7 +53,7 @@ func NewKubernetesKeystore(client kubernetes.Interface, namespace string) fi.Key
 }
 
 func (c *KubernetesKeystore) issueCert(signer string, id string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
-	glog.Infof("Issuing new certificate: %q", id)
+	klog.Infof("Issuing new certificate: %q", id)
 
 	template.SerialNumber = serial
 

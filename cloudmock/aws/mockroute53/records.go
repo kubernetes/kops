@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockRoute53) ListResourceRecordSetsRequest(*route53.ListResourceRecordSetsInput) (*request.Request, *route53.ListResourceRecordSetsOutput) {
@@ -45,7 +45,7 @@ func (m *MockRoute53) ListResourceRecordSetsPages(request *route53.ListResourceR
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("ListResourceRecordSetsPages %v", request)
+	klog.Infof("ListResourceRecordSetsPages %v", request)
 
 	if request.HostedZoneId == nil {
 		// TODO: Use correct error
@@ -53,7 +53,7 @@ func (m *MockRoute53) ListResourceRecordSetsPages(request *route53.ListResourceR
 	}
 
 	if request.StartRecordIdentifier != nil || request.StartRecordName != nil || request.StartRecordType != nil || request.MaxItems != nil {
-		glog.Fatalf("Unsupported options: %v", request)
+		klog.Fatalf("Unsupported options: %v", request)
 	}
 
 	zone := m.findZone(*request.HostedZoneId)
@@ -86,7 +86,7 @@ func (m *MockRoute53) ChangeResourceRecordSets(request *route53.ChangeResourceRe
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("ChangeResourceRecordSets %v", request)
+	klog.Infof("ChangeResourceRecordSets %v", request)
 
 	if request.HostedZoneId == nil {
 		// TODO: Use correct error

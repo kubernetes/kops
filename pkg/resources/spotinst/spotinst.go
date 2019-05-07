@@ -19,13 +19,13 @@ package spotinst
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/spotinst/spotinst-sdk-go/service/elastigroup"
 	"github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/credentials"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/log"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/session"
+	"k8s.io/klog"
 	kopsv "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
 )
@@ -64,7 +64,7 @@ func NewCredentials() *credentials.Credentials {
 // NewStdLogger returns a new Logger.
 func NewStdLogger() log.Logger {
 	return log.LoggerFunc(func(format string, args ...interface{}) {
-		glog.V(2).Infof(format, args...)
+		klog.V(2).Infof(format, args...)
 	})
 }
 

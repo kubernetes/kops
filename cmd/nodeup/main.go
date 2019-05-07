@@ -22,7 +22,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops"
 	"k8s.io/kops/nodeup/pkg/bootstrap"
 	"k8s.io/kops/upup/models"
@@ -35,6 +35,8 @@ const (
 )
 
 func main() {
+	klog.InitFlags(nil)
+
 	gitVersion := ""
 	if kops.GitVersion != "" {
 		gitVersion = " (git-" + kops.GitVersion + ")"
@@ -66,7 +68,7 @@ func main() {
 	flag.Parse()
 
 	if flagConf == "" {
-		glog.Exitf("--conf is required")
+		klog.Exitf("--conf is required")
 	}
 
 	retries := flagRetries
@@ -85,20 +87,20 @@ func main() {
 				if i == 0 {
 					// We could also try to evaluate based on cwd
 					if _, err := os.Stat(procSelfExe); os.IsNotExist(err) {
-						glog.Fatalf("file %v does not exist", procSelfExe)
+						klog.Fatalf("file %v does not exist", procSelfExe)
 					}
 
 					fi, err := os.Lstat(procSelfExe)
 					if err != nil {
-						glog.Fatalf("error doing lstat on %q: %v", procSelfExe, err)
+						klog.Fatalf("error doing lstat on %q: %v", procSelfExe, err)
 					}
 					if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
-						glog.Fatalf("file %v is not a symlink", procSelfExe)
+						klog.Fatalf("file %v is not a symlink", procSelfExe)
 					}
 
 					s, err = os.Readlink(procSelfExe)
 					if err != nil {
-						glog.Fatalf("error reading %v link: %v", procSelfExe, err)
+						klog.Fatalf("error reading %v link: %v", procSelfExe, err)
 					}
 				}
 				command = append(command, s)
@@ -131,7 +133,7 @@ func main() {
 		}
 
 		if retries == 0 {
-			glog.Exitf("error running nodeup: %v", err)
+			klog.Exitf("error running nodeup: %v", err)
 			os.Exit(1)
 		}
 
@@ -139,7 +141,7 @@ func main() {
 			retries--
 		}
 
-		glog.Warningf("got error running nodeup (will retry in %s): %v", retryInterval, err)
+		klog.Warningf("got error running nodeup (will retry in %s): %v", retryInterval, err)
 		time.Sleep(retryInterval)
 	}
 }

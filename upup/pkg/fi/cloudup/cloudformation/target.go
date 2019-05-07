@@ -25,7 +25,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -95,7 +95,7 @@ func (t *CloudformationTarget) RenderResource(resourceType string, resourceName 
 func (t *CloudformationTarget) Find(ref *Literal) (interface{}, bool) {
 	key := ref.extractRef()
 	if key == "" {
-		glog.Warningf("Unable to extract ref from %v", ref)
+		klog.Warningf("Unable to extract ref from %v", ref)
 		return nil, false
 	}
 
@@ -168,7 +168,7 @@ func (t *CloudformationTarget) Finish(taskMap map[string]fi.Task) error {
 		}
 	}
 
-	glog.Infof("Cloudformation output is in %s", t.outDir)
+	klog.Infof("Cloudformation output is in %s", t.outDir)
 
 	return nil
 }

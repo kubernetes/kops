@@ -25,9 +25,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/miekg/dns"
 	"github.com/spf13/pflag"
+	"k8s.io/klog"
 	"k8s.io/kops/protokube/pkg/gossip/dns/hosts"
 )
 
@@ -41,7 +41,7 @@ func main() {
 	fmt.Printf("kube-discovery version %s\n", BuildVersion)
 
 	if err := run(); err != nil {
-		glog.Errorf("unexpected error: %v", err)
+		klog.Errorf("unexpected error: %v", err)
 		os.Exit(1)
 	}
 	os.Exit(0)
@@ -77,9 +77,9 @@ func run() error {
 	flags.Parse(os.Args)
 
 	if o.ClusterID == "" {
-		glog.Infof("updating records for all discovered clusters")
+		klog.Infof("updating records for all discovered clusters")
 	} else {
-		glog.Infof("updating records for cluster %q", o.ClusterID)
+		klog.Infof("updating records for cluster %q", o.ClusterID)
 	}
 
 	c := &DiscoveryController{
@@ -96,7 +96,7 @@ func (c *DiscoveryController) Run() error {
 	for {
 		err := c.runOnce()
 		if err != nil {
-			glog.Warningf("error updating records: %v", err)
+			klog.Warningf("error updating records: %v", err)
 		}
 		time.Sleep(c.Options.Interval)
 	}
@@ -115,7 +115,7 @@ func (c *DiscoveryController) runOnce() error {
 		return fmt.Errorf("error from dns resolve: %v", err)
 	}
 
-	glog.Infof("clusters: %v", clusters)
+	klog.Infof("clusters: %v", clusters)
 
 	hostsPath := filepath.Join(rootfs, "etc/hosts")
 
@@ -123,7 +123,7 @@ func (c *DiscoveryController) runOnce() error {
 	for k, addrs := range clusters {
 		if o.ClusterID != "" {
 			if k != o.ClusterID {
-				glog.V(2).Infof("skipping discovered cluster %q as does not match configured %q", k, o.ClusterID)
+				klog.V(2).Infof("skipping discovered cluster %q as does not match configured %q", k, o.ClusterID)
 				continue
 			}
 		}
@@ -137,7 +137,7 @@ func (c *DiscoveryController) runOnce() error {
 
 	if len(addrToHosts) == 0 {
 		// We don't update if there are no records remaining, just in case it is a transient blip
-		glog.Warningf("no records found; skipping update")
+		klog.Warningf("no records found; skipping update")
 		return nil
 	}
 
@@ -147,7 +147,7 @@ func (c *DiscoveryController) runOnce() error {
 	if err := hosts.UpdateHostsFileWithRecords(hostsPath, addrToHosts); err != nil {
 		return fmt.Errorf("error updating hosts file: %v", err)
 	}
-	glog.Infof("updated %s", hostsPath)
+	klog.Infof("updated %s", hostsPath)
 
 	return nil
 }
@@ -162,7 +162,7 @@ func discoverKubernetesClusters(timeout time.Duration) (map[string][]net.IP, err
 	defer func() {
 		err := connection.Close()
 		if err != nil {
-			glog.Warningf("error closing multicast connection: %v", err)
+			klog.Warningf("error closing multicast connection: %v", err)
 		}
 	}()
 
@@ -204,30 +204,30 @@ func discoverKubernetesClusters(timeout time.Duration) (map[string][]net.IP, err
 		}
 		msg := new(dns.Msg)
 		if err := msg.Unpack(buf[:n]); err != nil {
-			glog.Warningf("got unparseable DNS packet: %v", err)
+			klog.Warningf("got unparseable DNS packet: %v", err)
 			continue
 		}
-		glog.V(4).Infof("got response: %v", msg)
+		klog.V(4).Infof("got response: %v", msg)
 
 		for _, rr := range msg.Answer {
 			switch rr := rr.(type) {
 			case *dns.PTR:
-				glog.V(4).Infof("PTR %v", rr)
+				klog.V(4).Infof("PTR %v", rr)
 				ptrs[rr.Hdr.Name] = append(ptrs[rr.Hdr.Name], rr)
 			case *dns.TXT:
-				glog.V(4).Infof("TXT %v", rr)
+				klog.V(4).Infof("TXT %v", rr)
 				txts[rr.Hdr.Name] = append(txts[rr.Hdr.Name], rr)
 			case *dns.SRV:
-				glog.V(4).Infof("SRV %v", rr)
+				klog.V(4).Infof("SRV %v", rr)
 				srvs[rr.Hdr.Name] = append(srvs[rr.Hdr.Name], rr)
 			case *dns.AAAA:
-				glog.V(4).Infof("AAAA %v", rr)
+				klog.V(4).Infof("AAAA %v", rr)
 				aaaas[rr.Hdr.Name] = append(aaaas[rr.Hdr.Name], rr)
 			case *dns.A:
-				glog.V(4).Infof("A %v", rr)
+				klog.V(4).Infof("A %v", rr)
 				as[rr.Hdr.Name] = append(as[rr.Hdr.Name], rr)
 			default:
-				glog.V(2).Infof("ignoring answer of unknown type %T: %v", rr, rr)
+				klog.V(2).Infof("ignoring answer of unknown type %T: %v", rr, rr)
 			}
 		}
 	}

@@ -24,7 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
 
@@ -50,7 +50,7 @@ func route53HandlerLogger(req *request.Request) {
 		name = req.Operation.Name
 	}
 
-	glog.V(4).Infof("AWS request: %s %s", service, name)
+	klog.V(4).Infof("AWS request: %s %s", service, name)
 }
 
 // newRoute53 creates a new instance of an AWS Route53 DNS Interface.

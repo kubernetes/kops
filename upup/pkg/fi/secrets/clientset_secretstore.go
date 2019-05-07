@@ -23,9 +23,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
@@ -179,7 +179,7 @@ func (c *ClientsetSecretStore) GetOrCreateSecret(name string, secret *fi.Secret)
 		_, err = c.createSecret(secret, name, false)
 		if err != nil {
 			if errors.IsAlreadyExists(err) && i == 0 {
-				glog.Infof("Got already-exists error when writing secret; likely due to concurrent creation.  Will retry")
+				klog.Infof("Got already-exists error when writing secret; likely due to concurrent creation.  Will retry")
 				continue
 			} else {
 				return nil, false, err
@@ -194,7 +194,7 @@ func (c *ClientsetSecretStore) GetOrCreateSecret(name string, secret *fi.Secret)
 	// Make double-sure it round-trips
 	s, err := c.loadSecret(name)
 	if err != nil {
-		glog.Fatalf("unable to load secret immediately after creation %v: %v", name, err)
+		klog.Fatalf("unable to load secret immediately after creation %v: %v", name, err)
 		return nil, false, err
 	}
 	return s, true, nil

@@ -34,7 +34,7 @@ import (
 	"k8s.io/kubernetes/pkg/util/mount"
 
 	"github.com/blang/semver"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // NodeupModelContext is the context supplied the nodeup tasks
@@ -63,7 +63,7 @@ func (c *NodeupModelContext) Init() error {
 	c.kubernetesVersion = *k8sVersion
 
 	if c.InstanceGroup == nil {
-		glog.Warningf("cannot determine role, InstanceGroup not set")
+		klog.Warningf("cannot determine role, InstanceGroup not set")
 	} else if c.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {
 		c.IsMaster = true
 	}
@@ -131,7 +131,7 @@ func (c *NodeupModelContext) IsMounted(m mount.Interface, device, path string) (
 
 	for _, x := range list {
 		if x.Device == device {
-			glog.V(3).Infof("Found mountpoint device: %s, path: %s, type: %s", x.Device, x.Path, x.Type)
+			klog.V(3).Infof("Found mountpoint device: %s, path: %s, type: %s", x.Device, x.Path, x.Type)
 			if strings.TrimSuffix(x.Path, "/") == strings.TrimSuffix(path, "/") {
 				return true, nil
 			}
@@ -282,7 +282,7 @@ func (c *NodeupModelContext) BuildKubeConfig(username string, ca, certificate, p
 // IsKubernetesGTE checks if the version is greater-than-or-equal
 func (c *NodeupModelContext) IsKubernetesGTE(version string) bool {
 	if c.kubernetesVersion.Major == 0 {
-		glog.Fatalf("kubernetesVersion not set (%s); Init not called", c.kubernetesVersion)
+		klog.Fatalf("kubernetesVersion not set (%s); Init not called", c.kubernetesVersion)
 	}
 	return util.IsKubernetesGTE(version, c.kubernetesVersion)
 }
@@ -509,7 +509,7 @@ func (c *NodeupModelContext) NodeName() (string, error) {
 	if nodeName == "" {
 		hostname, err := os.Hostname()
 		if err != nil {
-			glog.Fatalf("Couldn't determine hostname: %v", err)
+			klog.Fatalf("Couldn't determine hostname: %v", err)
 		}
 		nodeName = hostname
 	}
@@ -540,12 +540,12 @@ func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
 	// the first one as the hostname.
 	domains := strings.Fields(string(vBytes))
 	if len(domains) == 0 {
-		glog.Warningf("Local hostname from AWS metadata service was empty")
+		klog.Warningf("Local hostname from AWS metadata service was empty")
 		return "", nil
 	}
 	domain := domains[0]
 
-	glog.Infof("Using hostname from AWS metadata service: %s", domain)
+	klog.Infof("Using hostname from AWS metadata service: %s", domain)
 
 	return domain, nil
 }
