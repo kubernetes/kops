@@ -19,7 +19,7 @@ package baremetal
 import (
 	"fmt"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -53,20 +53,20 @@ func (c *Cloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 // GetCloudGroups is not implemented yet, that needs to return the instances and groups that back a kops cluster.
 // Baremetal may not support this.
 func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	glog.V(8).Infof("baremetal cloud GetCloudGroups not implemented yet")
+	klog.V(8).Infof("baremetal cloud GetCloudGroups not implemented yet")
 	return nil, fmt.Errorf("baremetal provider does not support getting cloud groups at this time")
 }
 
 // DeleteGroup is not implemented yet, is a func that needs to delete a DO instance group.
 // Baremetal may not support this.
 func (c *Cloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
-	glog.V(8).Infof("baremetal cloud provider DeleteGroup not implemented yet")
+	klog.V(8).Infof("baremetal cloud provider DeleteGroup not implemented yet")
 	return fmt.Errorf("baremetal cloud provider does not support deleting cloud groups at this time")
 }
 
 //DeleteInstance is not implemented yet, is func needs to delete a DO instance.
 //Baremetal may not support this.
 func (c *Cloud) DeleteInstance(instance *cloudinstances.CloudInstanceGroupMember) error {
-	glog.V(8).Infof("baremetal cloud provider DeleteInstance not implemented yet")
+	klog.V(8).Infof("baremetal cloud provider DeleteInstance not implemented yet")
 	return fmt.Errorf("baremetal cloud provider does not support deleting cloud instances at this time")
 }

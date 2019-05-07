@@ -21,14 +21,14 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockELB) ModifyLoadBalancerAttributes(request *elb.ModifyLoadBalancerAttributesInput) (*elb.ModifyLoadBalancerAttributesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("ModifyLoadBalancerAttributes: %v", request)
+	klog.Infof("ModifyLoadBalancerAttributes: %v", request)
 
 	lb := m.LoadBalancers[aws.StringValue(request.LoadBalancerName)]
 	if lb == nil {
@@ -49,7 +49,7 @@ func (m *MockELB) DescribeLoadBalancerAttributes(request *elb.DescribeLoadBalanc
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DescribeLoadBalancerAttributes: %v", request)
+	klog.Infof("DescribeLoadBalancerAttributes: %v", request)
 
 	lb := m.LoadBalancers[aws.StringValue(request.LoadBalancerName)]
 	if lb == nil {

@@ -21,7 +21,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -118,7 +118,7 @@ func IsClusterReadable(p Path) bool {
 		return false
 
 	default:
-		glog.Fatalf("IsClusterReadable not implemented for type %T", p)
+		klog.Fatalf("IsClusterReadable not implemented for type %T", p)
 		return false
 	}
 }

@@ -22,7 +22,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kubernetes/pkg/util/mount"
 )
 
@@ -96,7 +96,7 @@ func (k *KubeBoot) Init(volumesProvider Volumes) {
 func (k *KubeBoot) RunSyncLoop() {
 	for {
 		if err := k.syncOnce(); err != nil {
-			glog.Warningf("error during attempt to bootstrap (will sleep and retry): %v", err)
+			klog.Warningf("error during attempt to bootstrap (will sleep and retry): %v", err)
 		}
 
 		time.Sleep(1 * time.Minute)
@@ -116,10 +116,10 @@ func (k *KubeBoot) syncOnce() error {
 				key := etcdSpec.ClusterKey + "::" + etcdSpec.NodeName
 				etcdController := k.etcdControllers[key]
 				if etcdController == nil {
-					glog.Infof("Found etcd cluster spec on volume %q: %v", v.ID, etcdSpec)
+					klog.Infof("Found etcd cluster spec on volume %q: %v", v.ID, etcdSpec)
 					etcdController, err := newEtcdController(k, v, etcdSpec)
 					if err != nil {
-						glog.Warningf("error building etcd controller: %v", err)
+						klog.Warningf("error building etcd controller: %v", err)
 					} else {
 						k.etcdControllers[key] = etcdController
 						go etcdController.RunSyncLoop()
@@ -128,9 +128,9 @@ func (k *KubeBoot) syncOnce() error {
 			}
 		}
 	} else if k.ManageEtcd {
-		glog.V(4).Infof("Not in role master; won't scan for volumes")
+		klog.V(4).Infof("Not in role master; won't scan for volumes")
 	} else {
-		glog.V(4).Infof("protokube management of etcd not enabled; won't scan for volumes")
+		klog.V(4).Infof("protokube management of etcd not enabled; won't scan for volumes")
 	}
 
 	// Ensure kubelet is running. We avoid doing this automatically so
@@ -138,23 +138,23 @@ func (k *KubeBoot) syncOnce() error {
 	// and DNS are available, avoiding the scenario where
 	// etcd/apiserver retry too many times and go into backoff.
 	if err := startKubeletService(); err != nil {
-		glog.Warningf("error ensuring kubelet started: %v", err)
+		klog.Warningf("error ensuring kubelet started: %v", err)
 	}
 
 	if k.Master {
 		if k.ApplyTaints {
 			if err := applyMasterTaints(k.Kubernetes); err != nil {
-				glog.Warningf("error updating master taints: %v", err)
+				klog.Warningf("error updating master taints: %v", err)
 			}
 		}
 		if k.InitializeRBAC {
 			if err := applyRBAC(k.Kubernetes); err != nil {
-				glog.Warningf("error initializing rbac: %v", err)
+				klog.Warningf("error initializing rbac: %v", err)
 			}
 		}
 		for _, channel := range k.Channels {
 			if err := applyChannel(channel); err != nil {
-				glog.Warningf("error applying channel %q: %v", channel, err)
+				klog.Warningf("error applying channel %q: %v", channel, err)
 			}
 		}
 	}
@@ -166,7 +166,7 @@ func (k *KubeBoot) syncOnce() error {
 func startKubeletService() error {
 	// TODO: Check/log status of kubelet
 	// (in particular, we want to avoid kubernetes/kubernetes#40123 )
-	glog.V(2).Infof("ensuring that kubelet systemd service is running")
+	klog.V(2).Infof("ensuring that kubelet systemd service is running")
 
 	// We run systemctl from the hostfs so we don't need systemd in our image
 	// (and we don't risk version skew)
@@ -179,25 +179,25 @@ func startKubeletService() error {
 	systemctlCommand := "systemctl"
 
 	output, err := exec.Run(systemctlCommand, "status", "--no-block", "kubelet")
-	glog.V(2).Infof("'systemctl status kubelet' output:\n%s", string(output))
+	klog.V(2).Infof("'systemctl status kubelet' output:\n%s", string(output))
 	if err == nil {
-		glog.V(2).Infof("kubelet systemd service already running")
+		klog.V(2).Infof("kubelet systemd service already running")
 		return nil
 	}
 
-	glog.Infof("kubelet systemd service not running. Starting")
+	klog.Infof("kubelet systemd service not running. Starting")
 	output, err = exec.Run(systemctlCommand, "start", "--no-block", "kubelet")
 	if err != nil {
 		return fmt.Errorf("error starting kubelet: %v\nOutput: %s", err, output)
 	}
-	glog.V(2).Infof("'systemctl start kubelet' output:\n%s", string(output))
+	klog.V(2).Infof("'systemctl start kubelet' output:\n%s", string(output))
 
 	return nil
 }
 
 func pathFor(hostPath string) string {
 	if hostPath[0] != '/' {
-		glog.Fatalf("path was not absolute: %q", hostPath)
+		klog.Fatalf("path was not absolute: %q", hostPath)
 	}
 	return RootFS + hostPath[1:]
 }

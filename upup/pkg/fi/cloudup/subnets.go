@@ -21,7 +21,7 @@ import (
 	"net"
 	"sort"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/util/subnet"
 	"k8s.io/kops/upup/pkg/fi"
@@ -46,7 +46,7 @@ func assignCIDRsToSubnets(c *kops.Cluster) error {
 	// for now we'll require users to set CIDRs themselves
 
 	if allSubnetsHaveCIDRs(c) {
-		glog.V(4).Infof("All subnets have CIDRs; skipping assignment logic")
+		klog.V(4).Infof("All subnets have CIDRs; skipping assignment logic")
 		return nil
 	}
 
@@ -93,7 +93,7 @@ func assignCIDRsToSubnets(c *kops.Cluster) error {
 	}
 
 	if allSubnetsHaveCIDRs(c) {
-		glog.V(4).Infof("All subnets have CIDRs; skipping assignment logic")
+		klog.V(4).Infof("All subnets have CIDRs; skipping assignment logic")
 		return nil
 	}
 
@@ -181,7 +181,7 @@ func assignCIDRsToSubnets(c *kops.Cluster) error {
 			return fmt.Errorf("insufficient (big) CIDRs remaining for automatic CIDR allocation to subnet %q", subnet.Name)
 		}
 		subnet.CIDR = bigCIDRs[0].String()
-		glog.Infof("Assigned CIDR %s to subnet %s", subnet.CIDR, subnet.Name)
+		klog.Infof("Assigned CIDR %s to subnet %s", subnet.CIDR, subnet.Name)
 
 		bigCIDRs = bigCIDRs[1:]
 	}
@@ -195,7 +195,7 @@ func assignCIDRsToSubnets(c *kops.Cluster) error {
 			return fmt.Errorf("insufficient (little) CIDRs remaining for automatic CIDR allocation to subnet %q", subnet.Name)
 		}
 		subnet.CIDR = littleCIDRs[0].String()
-		glog.Infof("Assigned CIDR %s to subnet %s", subnet.CIDR, subnet.Name)
+		klog.Infof("Assigned CIDR %s to subnet %s", subnet.CIDR, subnet.Name)
 
 		littleCIDRs = littleCIDRs[1:]
 	}

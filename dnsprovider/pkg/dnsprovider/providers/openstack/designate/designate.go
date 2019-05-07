@@ -22,8 +22,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack"
+	"k8s.io/klog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -64,7 +64,7 @@ func newDesignate(_ io.Reader) (*Interface, error) {
 		Transport: transport,
 	}
 
-	glog.V(2).Info("authenticating to keystone")
+	klog.V(2).Info("authenticating to keystone")
 
 	err = openstack.Authenticate(provider, ao)
 	if err != nil {

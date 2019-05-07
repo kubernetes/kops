@@ -19,7 +19,7 @@ package vspheretasks
 // virtualmachine houses task that creates VM on vSphere cloud.
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 )
@@ -51,31 +51,31 @@ func (o *VirtualMachine) String() string {
 
 // CompareWithID is returning name of this VirtualMachine.
 func (e *VirtualMachine) CompareWithID() *string {
-	glog.V(4).Info("VirtualMachine.CompareWithID invoked!")
+	klog.V(4).Info("VirtualMachine.CompareWithID invoked!")
 	return e.Name
 }
 
 // Find is a no-op for vSphere.
 func (e *VirtualMachine) Find(c *fi.Context) (*VirtualMachine, error) {
-	glog.V(4).Info("VirtualMachine.Find invoked!")
+	klog.V(4).Info("VirtualMachine.Find invoked!")
 	return nil, nil
 }
 
 // Run executes DefaultDeltaRunMethod for this task.
 func (e *VirtualMachine) Run(c *fi.Context) error {
-	glog.V(4).Info("VirtualMachine.Run invoked!")
+	klog.V(4).Info("VirtualMachine.Run invoked!")
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
 // CheckChanges is a no-op for vSphere, for now.
 func (_ *VirtualMachine) CheckChanges(a, e, changes *VirtualMachine) error {
-	glog.V(4).Info("VirtualMachine.CheckChanges invoked!")
+	klog.V(4).Info("VirtualMachine.CheckChanges invoked!")
 	return nil
 }
 
 // RenderVSphere executes the actual VM clone creation for vSphere cloud.
 func (_ *VirtualMachine) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *VirtualMachine) error {
-	glog.V(4).Infof("VirtualMachine.RenderVSphere invoked with a(%+v) e(%+v) and changes(%+v)", a, e, changes)
+	klog.V(4).Infof("VirtualMachine.RenderVSphere invoked with a(%+v) e(%+v) and changes(%+v)", a, e, changes)
 	_, err := t.Cloud.CreateLinkClonedVm(changes.Name, changes.VMTemplateName)
 	if err != nil {
 		return err

@@ -19,7 +19,7 @@ package instancegroups
 import (
 	"fmt"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/fi"
@@ -48,7 +48,7 @@ func (d *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) erro
 
 	// TODO should we drain nodes and validate the cluster?
 	for _, g := range groups {
-		glog.Infof("Deleting %q", group.ObjectMeta.Name)
+		klog.Infof("Deleting %q", group.ObjectMeta.Name)
 
 		err = d.Cloud.DeleteGroup(g)
 		if err != nil {

@@ -26,7 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -114,7 +114,7 @@ func findLoadBalancerByLoadBalancerName(cloud awsup.AWSCloud, loadBalancerName s
 			return true
 		}
 
-		glog.Warningf("Got ELB with unexpected name: %q", aws.StringValue(lb.LoadBalancerName))
+		klog.Warningf("Got ELB with unexpected name: %q", aws.StringValue(lb.LoadBalancerName))
 		return false
 	})
 
@@ -180,7 +180,7 @@ func findLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53.AliasTarget) (
 
 func FindLoadBalancerByNameTag(cloud awsup.AWSCloud, findNameTag string) (*elb.LoadBalancerDescription, error) {
 	// TODO: Any way around this?
-	glog.V(2).Infof("Listing all ELBs for findLoadBalancerByNameTag")
+	klog.V(2).Infof("Listing all ELBs for findLoadBalancerByNameTag")
 
 	request := &elb.DescribeLoadBalancersInput{}
 	// ELB DescribeTags has a limit of 20 names, so we set the page size here to 20 also
@@ -265,7 +265,7 @@ func describeLoadBalancerTags(cloud awsup.AWSCloud, loadBalancerNames []string) 
 	request.LoadBalancerNames = aws.StringSlice(loadBalancerNames)
 
 	// TODO: Cache?
-	glog.V(2).Infof("Querying ELB tags for %s", loadBalancerNames)
+	klog.V(2).Infof("Querying ELB tags for %s", loadBalancerNames)
 	response, err := cloud.ELB().DescribeTags(request)
 	if err != nil {
 		return nil, err
@@ -337,7 +337,7 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	if err != nil {
 		return nil, err
 	}
-	glog.V(4).Infof("ELB attributes: %+v", lbAttributes)
+	klog.V(4).Infof("ELB attributes: %+v", lbAttributes)
 
 	if lbAttributes != nil {
 		actual.AccessLog = &LoadBalancerAccessLog{}
@@ -391,14 +391,14 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	// 1. We don't want to force a rename of the ELB, because that is a destructive operation
 	// 2. We were creating ELBs with insufficiently qualified names previously
 	if fi.StringValue(e.LoadBalancerName) != fi.StringValue(actual.LoadBalancerName) {
-		glog.V(2).Infof("Reusing existing load balancer with name: %q", aws.StringValue(actual.LoadBalancerName))
+		klog.V(2).Infof("Reusing existing load balancer with name: %q", aws.StringValue(actual.LoadBalancerName))
 		e.LoadBalancerName = actual.LoadBalancerName
 	}
 
 	// TODO: Make Normalize a standard method
 	actual.Normalize()
 
-	glog.V(4).Infof("Found ELB %+v", actual)
+	klog.V(4).Infof("Found ELB %+v", actual)
 
 	return actual, nil
 }
@@ -505,7 +505,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 			request.Listeners = append(request.Listeners, awsListener)
 		}
 
-		glog.V(2).Infof("Creating ELB with Name:%q", loadBalancerName)
+		klog.V(2).Infof("Creating ELB with Name:%q", loadBalancerName)
 
 		response, err := t.Cloud.ELB().CreateLoadBalancer(request)
 		if err != nil {
@@ -544,7 +544,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 				request.SetLoadBalancerName(loadBalancerName)
 				request.SetSubnets(aws.StringSlice(oldSubnetIDs))
 
-				glog.V(2).Infof("Detaching Load Balancer from old subnets")
+				klog.V(2).Infof("Detaching Load Balancer from old subnets")
 				if _, err := t.Cloud.ELB().DetachLoadBalancerFromSubnets(request); err != nil {
 					return fmt.Errorf("Error detaching Load Balancer from old subnets: %v", err)
 				}
@@ -556,7 +556,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 				request.SetLoadBalancerName(loadBalancerName)
 				request.SetSubnets(aws.StringSlice(newSubnetIDs))
 
-				glog.V(2).Infof("Attaching Load Balancer to new subnets")
+				klog.V(2).Infof("Attaching Load Balancer to new subnets")
 				if _, err := t.Cloud.ELB().AttachLoadBalancerToSubnets(request); err != nil {
 					return fmt.Errorf("Error attaching Load Balancer to new subnets: %v", err)
 				}
@@ -570,7 +570,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 				request.SecurityGroups = append(request.SecurityGroups, sg.ID)
 			}
 
-			glog.V(2).Infof("Updating Load Balancer Security Groups")
+			klog.V(2).Infof("Updating Load Balancer Security Groups")
 			if _, err := t.Cloud.ELB().ApplySecurityGroupsToLoadBalancer(request); err != nil {
 				return fmt.Errorf("Error updating security groups on Load Balancer: %v", err)
 			}
@@ -603,7 +603,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 				request.Listeners = append(request.Listeners, awsListener)
 			}
 
-			glog.V(2).Infof("Creating LoadBalancer listeners")
+			klog.V(2).Infof("Creating LoadBalancer listeners")
 
 			_, err = t.Cloud.ELB().CreateLoadBalancerListeners(request)
 			if err != nil {
@@ -631,7 +631,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 			Timeout:            e.HealthCheck.Timeout,
 		}
 
-		glog.V(2).Infof("Configuring health checks on ELB %q", loadBalancerName)
+		klog.V(2).Infof("Configuring health checks on ELB %q", loadBalancerName)
 
 		_, err := t.Cloud.ELB().ConfigureHealthCheck(request)
 		if err != nil {
@@ -640,7 +640,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 	}
 
 	if err := e.modifyLoadBalancerAttributes(t, a, e, changes); err != nil {
-		glog.Infof("error modifying ELB attributes: %v", err)
+		klog.Infof("error modifying ELB attributes: %v", err)
 		return err
 	}
 

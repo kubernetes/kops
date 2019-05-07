@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -96,7 +96,7 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 		Tags: intersectTags(igw.Tags, e.Tags),
 	}
 
-	glog.V(2).Infof("found matching InternetGateway %q", *actual.ID)
+	klog.V(2).Infof("found matching InternetGateway %q", *actual.ID)
 
 	for _, attachment := range igw.Attachments {
 		actual.VPC = &VPC{ID: attachment.VpcId}
@@ -147,7 +147,7 @@ func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Intern
 	}
 
 	if a == nil {
-		glog.V(2).Infof("Creating InternetGateway")
+		klog.V(2).Infof("Creating InternetGateway")
 
 		request := &ec2.CreateInternetGatewayInput{}
 
@@ -160,7 +160,7 @@ func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Intern
 	}
 
 	if a == nil || (changes != nil && changes.VPC != nil) {
-		glog.V(2).Infof("Creating InternetGatewayAttachment")
+		klog.V(2).Infof("Creating InternetGatewayAttachment")
 
 		attachRequest := &ec2.AttachInternetGatewayInput{
 			VpcId:             e.VPC.ID,
@@ -199,7 +199,7 @@ func (_ *InternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, ch
 				return err
 			}
 			if igw == nil {
-				glog.Warningf("Cannot find internet gateway for VPC %q", vpcID)
+				klog.Warningf("Cannot find internet gateway for VPC %q", vpcID)
 			} else {
 				e.ID = igw.InternetGatewayId
 			}
@@ -220,10 +220,10 @@ func (e *InternetGateway) TerraformLink() *terraform.Literal {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		if e.ID == nil {
-			glog.Fatalf("ID must be set, if InternetGateway is shared: %s", e)
+			klog.Fatalf("ID must be set, if InternetGateway is shared: %s", e)
 		}
 
-		glog.V(4).Infof("reusing existing InternetGateway with id %q", *e.ID)
+		klog.V(4).Infof("reusing existing InternetGateway with id %q", *e.ID)
 		return terraform.LiteralFromStringValue(*e.ID)
 	}
 
@@ -257,7 +257,7 @@ func (_ *InternetGateway) RenderCloudformation(t *cloudformation.CloudformationT
 				return err
 			}
 			if igw == nil {
-				glog.Warningf("Cannot find internet gateway for VPC %q", vpcID)
+				klog.Warningf("Cannot find internet gateway for VPC %q", vpcID)
 			} else {
 				e.ID = igw.InternetGatewayId
 			}
@@ -296,10 +296,10 @@ func (e *InternetGateway) CloudformationLink() *cloudformation.Literal {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		if e.ID == nil {
-			glog.Fatalf("ID must be set, if InternetGateway is shared: %s", e)
+			klog.Fatalf("ID must be set, if InternetGateway is shared: %s", e)
 		}
 
-		glog.V(4).Infof("reusing existing InternetGateway with id %q", *e.ID)
+		klog.V(4).Infof("reusing existing InternetGateway with id %q", *e.ID)
 		return cloudformation.LiteralString(*e.ID)
 	}
 

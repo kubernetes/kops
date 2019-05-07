@@ -23,8 +23,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -57,7 +57,7 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 	}
 
 	if e.SourceGroup != nil && e.SourceGroup.ID == nil {
-		glog.V(4).Infof("Skipping find of SecurityGroupRule %s, because SourceGroup was not found", fi.StringValue(e.Name))
+		klog.V(4).Infof("Skipping find of SecurityGroupRule %s, because SourceGroup was not found", fi.StringValue(e.Name))
 		return nil, nil
 	}
 
@@ -77,10 +77,10 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 	}
 
 	if len(response.SecurityGroups) != 1 {
-		glog.Fatalf("found multiple security groups for id=%s", *e.SecurityGroup.ID)
+		klog.Fatalf("found multiple security groups for id=%s", *e.SecurityGroup.ID)
 	}
 	sg := response.SecurityGroups[0]
-	//glog.V(2).Info("found existing security group")
+	//klog.V(2).Info("found existing security group")
 
 	var foundRule *ec2.IpPermission
 
@@ -164,7 +164,7 @@ func (e *SecurityGroupRule) matches(rule *ec2.IpPermission) bool {
 			}
 
 			if e.SourceGroup.ID == nil {
-				glog.Warningf("SourceGroup had nil ID: %v", e.SourceGroup)
+				klog.Warningf("SourceGroup had nil ID: %v", e.SourceGroup)
 				continue
 			}
 
@@ -264,7 +264,7 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 			}
 			request.IpPermissions = []*ec2.IpPermission{ipPermission}
 
-			glog.V(2).Infof("%s: Calling EC2 AuthorizeSecurityGroupEgress (%s)", name, description)
+			klog.V(2).Infof("%s: Calling EC2 AuthorizeSecurityGroupEgress (%s)", name, description)
 			_, err := t.Cloud.EC2().AuthorizeSecurityGroupEgress(request)
 			if err != nil {
 				return fmt.Errorf("error creating SecurityGroupEgress: %v", err)
@@ -275,7 +275,7 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 			}
 			request.IpPermissions = []*ec2.IpPermission{ipPermission}
 
-			glog.V(2).Infof("%s: Calling EC2 AuthorizeSecurityGroupIngress (%s)", name, description)
+			klog.V(2).Infof("%s: Calling EC2 AuthorizeSecurityGroupIngress (%s)", name, description)
 			_, err := t.Cloud.EC2().AuthorizeSecurityGroupIngress(request)
 			if err != nil {
 				return fmt.Errorf("error creating SecurityGroupIngress: %v", err)

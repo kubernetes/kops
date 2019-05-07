@@ -17,7 +17,7 @@ limitations under the License.
 package gcemodel
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
@@ -32,7 +32,7 @@ type FirewallModelBuilder struct {
 var _ fi.ModelBuilder = &FirewallModelBuilder{}
 
 func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	glog.Warningf("TODO: Harmonize gcemodel with awsmodel for firewall - GCE model is way too open")
+	klog.Warningf("TODO: Harmonize gcemodel with awsmodel for firewall - GCE model is way too open")
 
 	//// Allow all traffic from vms in our network
 	//// TODO: Is this a good idea?
@@ -60,8 +60,8 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// The traffic is not recognized if it's on the overlay network?
-	glog.Warningf("Adding overlay network for X -> node rule - HACK")
-	glog.Warningf("We should probably use subnets?")
+	klog.Warningf("Adding overlay network for X -> node rule - HACK")
+	klog.Warningf("We should probably use subnets?")
 
 	{
 		t := &gcetasks.FirewallRule{
@@ -115,7 +115,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// The traffic is not recognized if it's on the overlay network?
-	glog.Warningf("Adding overlay network for X -> master rule - HACK")
+	klog.Warningf("Adding overlay network for X -> master rule - HACK")
 	{
 		t := &gcetasks.FirewallRule{
 			Name:         s(b.SafeObjectName("cidr-to-master")),

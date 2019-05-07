@@ -19,8 +19,8 @@ package openstacktasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -148,7 +148,7 @@ func (_ *SecurityGroupRule) CheckChanges(a, e, changes *SecurityGroupRule) error
 
 func (_ *SecurityGroupRule) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *SecurityGroupRule) error {
 	if a == nil {
-		glog.V(2).Infof("Creating SecurityGroupRule")
+		klog.V(2).Infof("Creating SecurityGroupRule")
 
 		opt := sgr.CreateOpts{
 			Direction:      sgr.RuleDirection(fi.StringValue(e.Direction)),
@@ -172,6 +172,6 @@ func (_ *SecurityGroupRule) RenderOpenstack(t *openstack.OpenstackAPITarget, a, 
 		return nil
 	}
 
-	glog.V(2).Infof("Openstack task SecurityGroupRule::RenderOpenstack did nothing")
+	klog.V(2).Infof("Openstack task SecurityGroupRule::RenderOpenstack did nothing")
 	return nil
 }

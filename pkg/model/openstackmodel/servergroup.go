@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
@@ -160,7 +160,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	var masters []*openstacktasks.ServerGroup
 	for _, ig := range b.InstanceGroups {
-		glog.V(2).Infof("Found instance group with name %s and role %v.", ig.Name, ig.Spec.Role)
+		klog.V(2).Infof("Found instance group with name %s and role %v.", ig.Name, ig.Spec.Role)
 		sgTask := &openstacktasks.ServerGroup{
 			Name:        s(fmt.Sprintf("%s-%s", clusterName, ig.Name)),
 			ClusterName: s(clusterName),
