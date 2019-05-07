@@ -108,6 +108,16 @@ func (e *SSHKey) Run(c *fi.Context) error {
 		}
 		klog.V(2).Infof("Computed SSH key fingerprint as %q", keyFingerprint)
 		e.KeyFingerprint = &keyFingerprint
+	} else if e.IsExistingKey() && *e.Name != "" {
+		a, err := e.Find(c)
+		if err != nil {
+			return err
+		}
+		if a == nil {
+			return fmt.Errorf("unable to find specified SSH key %q", *e.Name)
+		}
+
+		e.KeyFingerprint = a.KeyFingerprint
 	}
 	return fi.DefaultDeltaRunMethod(e, c)
 }
@@ -161,6 +171,10 @@ type terraformSSHKey struct {
 }
 
 func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SSHKey) error {
+	// We don't want to render a key definition when we're using one that already exists
+	if e.IsExistingKey() {
+		return nil
+	}
 	tfName := strings.Replace(*e.Name, ":", "", -1)
 	publicKey, err := t.AddFile("aws_key_pair", tfName, "public_key", e.PublicKey)
 	if err != nil {
@@ -175,7 +189,16 @@ func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SS
 	return t.RenderResource("aws_key_pair", tfName, tf)
 }
 
+// IsExistingKey will be true if the task has been initialized without using a public key
+// this is when we want to use a key that is already present in AWS.
+func (e *SSHKey) IsExistingKey() bool {
+	return e.PublicKey == nil
+}
+
 func (e *SSHKey) TerraformLink() *terraform.Literal {
+	if e.IsExistingKey() {
+		return terraform.LiteralFromStringValue(*e.Name)
+	}
 	tfName := strings.Replace(*e.Name, ":", "", -1)
 	return terraform.LiteralProperty("aws_key_pair", tfName, "id")
 }
