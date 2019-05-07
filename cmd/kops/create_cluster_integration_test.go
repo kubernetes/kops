@@ -216,7 +216,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 
 	for _, cluster := range clusters.Items {
 		cluster.ObjectMeta.CreationTimestamp = MagicTimestamp
-		actualYAMLBytes, err := kopscodecs.ToVersionedYamlWithVersion(&cluster, schema.GroupVersion{Group: "kops", Version: version})
+		actualYAMLBytes, err := kopscodecs.ToVersionedYamlWithVersion(&cluster, schema.GroupVersion{Group: "kops.k8s.io", Version: version})
 		if err != nil {
 			t.Fatalf("unexpected error serializing cluster: %v", err)
 		}
@@ -235,7 +235,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 	for _, ig := range instanceGroups.Items {
 		ig.ObjectMeta.CreationTimestamp = MagicTimestamp
 
-		actualYAMLBytes, err := kopscodecs.ToVersionedYamlWithVersion(&ig, schema.GroupVersion{Group: "kops", Version: version})
+		actualYAMLBytes, err := kopscodecs.ToVersionedYamlWithVersion(&ig, schema.GroupVersion{Group: "kops.k8s.io", Version: version})
 		if err != nil {
 			t.Fatalf("unexpected error serializing InstanceGroup: %v", err)
 		}
