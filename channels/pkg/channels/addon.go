@@ -75,10 +75,10 @@ func (a *Addon) ChannelVersion() *ChannelVersion {
 		return &ChannelVersion{}
 	}
 	manifest := string(data)
-	glog.V(4).Infof("Manifest %v", manifest)
+	klog.V(4).Infof("Manifest %v", manifest)
 
 	manifestHash, err := utils.HashString(&manifest)
-	glog.V(4).Infof("hash %s", manifestHash)
+	klog.V(4).Infof("hash %s", manifestHash)
 	if err != nil {
 		manifestHash = ""
 	}
