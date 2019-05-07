@@ -24,7 +24,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -102,7 +102,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		return nil, fmt.Errorf("found multiple Instances with name: %s", *e.Name)
 	}
 
-	glog.V(2).Info("found existing instance")
+	klog.V(2).Info("found existing instance")
 	i := instances[0]
 
 	if i.InstanceId == nil {
@@ -169,11 +169,11 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	if e.ImageID != nil && actual.ImageID != nil && *actual.ImageID != *e.ImageID {
 		image, err := cloud.ResolveImage(*e.ImageID)
 		if err != nil {
-			glog.Warningf("unable to resolve image: %q: %v", *e.ImageID, err)
+			klog.Warningf("unable to resolve image: %q: %v", *e.ImageID, err)
 		} else if image == nil {
-			glog.Warningf("unable to resolve image: %q: not found", *e.ImageID)
+			klog.Warningf("unable to resolve image: %q: not found", *e.ImageID)
 		} else if aws.StringValue(image.ImageId) == *actual.ImageID {
-			glog.V(4).Infof("Returning matching ImageId as expected name: %q -> %q", *actual.ImageID, *e.ImageID)
+			klog.V(4).Infof("Returning matching ImageId as expected name: %q -> %q", *actual.ImageID, *e.ImageID)
 			actual.ImageID = e.ImageID
 		}
 	}
@@ -189,7 +189,7 @@ func nameFromIAMARN(arn *string) *string {
 	last := tokens[len(tokens)-1]
 
 	if !strings.HasPrefix(last, "instance-profile/") {
-		glog.Warningf("Unexpected ARN for instance profile: %q", *arn)
+		klog.Warningf("Unexpected ARN for instance profile: %q", *arn)
 	}
 
 	name := strings.TrimPrefix(last, "instance-profile/")
@@ -224,7 +224,7 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 			return err
 		}
 
-		glog.V(2).Infof("Creating Instance with Name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating Instance with Name:%q", fi.StringValue(e.Name))
 		request := &ec2.RunInstancesInput{
 			ImageId:      image.ImageId,
 			InstanceType: e.InstanceType,
@@ -301,7 +301,7 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 func (e *Instance) TerraformLink() *terraform.Literal {
 	if fi.BoolValue(e.Shared) {
 		if e.ID == nil {
-			glog.Fatalf("ID must be set, if NAT Instance is shared: %s", e)
+			klog.Fatalf("ID must be set, if NAT Instance is shared: %s", e)
 		}
 
 		return terraform.LiteralFromStringValue(*e.ID)

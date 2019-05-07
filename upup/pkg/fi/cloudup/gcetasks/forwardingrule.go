@@ -19,8 +19,8 @@ package gcetasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -123,7 +123,7 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 	}
 
 	if a == nil {
-		glog.V(4).Infof("Creating ForwardingRule %q", o.Name)
+		klog.V(4).Infof("Creating ForwardingRule %q", o.Name)
 
 		_, err := t.Cloud.Compute().ForwardingRules.Insert(t.Cloud.Project(), t.Cloud.Region(), o).Do()
 		if err != nil {

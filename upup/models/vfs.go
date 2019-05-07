@@ -23,7 +23,6 @@ import (
 	"path"
 	"strings"
 
-	_ "github.com/google/cadvisor/pages/static"
 	"k8s.io/kops/util/pkg/vfs"
 )
 

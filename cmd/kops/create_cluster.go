@@ -28,13 +28,13 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/klog"
 	"k8s.io/kops"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -53,8 +53,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/templates"
 )
 
 const (
@@ -516,7 +516,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		for _, zone := range allZones.List() {
 			cloud, known := fi.GuessCloudForZone(zone)
 			if known {
-				glog.Infof("Inferred --cloud=%s from zone %q", cloud, zone)
+				klog.Infof("Inferred --cloud=%s from zone %q", cloud, zone)
 				cluster.Spec.CloudProvider = string(cloud)
 				break
 			}
@@ -686,7 +686,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 			subnet := zoneToSubnetMap[zone]
 			if subnet == nil {
-				glog.Fatalf("subnet not found in zoneToSubnetMap")
+				klog.Fatalf("subnet not found in zoneToSubnetMap")
 			}
 
 			g.Spec.Subnets = []string{subnet.Name}
@@ -717,7 +717,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 
 		if duplicateAZs {
-			glog.Warningf("Running with masters in the same AZs; redundancy will be reduced")
+			klog.Warningf("Running with masters in the same AZs; redundancy will be reduced")
 		}
 
 		for _, etcdCluster := range cloudup.EtcdClusters {
@@ -775,7 +775,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		for _, zone := range c.Zones {
 			subnet := zoneToSubnetMap[zone]
 			if subnet == nil {
-				glog.Fatalf("subnet not found in zoneToSubnetMap")
+				klog.Fatalf("subnet not found in zoneToSubnetMap")
 			}
 			subnetNames.Insert(subnet.Name)
 		}
@@ -956,11 +956,11 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		if cluster.Spec.Project == "" {
 			project, err := gce.DefaultProject()
 			if err != nil {
-				glog.Warningf("unable to get default google cloud project: %v", err)
+				klog.Warningf("unable to get default google cloud project: %v", err)
 			} else if project == "" {
-				glog.Warningf("default google cloud project not set (try `gcloud config set project <name>`")
+				klog.Warningf("default google cloud project not set (try `gcloud config set project <name>`")
 			} else {
-				glog.Infof("using google cloud project: %s", project)
+				klog.Infof("using google cloud project: %s", project)
 			}
 			cluster.Spec.Project = project
 		}
@@ -996,7 +996,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			Backend: "vxlan",
 		}
 	case "flannel-udp":
-		glog.Warningf("flannel UDP mode is not recommended; consider flannel-vxlan instead")
+		klog.Warningf("flannel UDP mode is not recommended; consider flannel-vxlan instead")
 		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
 			Backend: "udp",
 		}
@@ -1028,7 +1028,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("unknown networking mode %q", c.Networking)
 	}
 
-	glog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
+	klog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
 
 	if c.NetworkCIDR != "" {
 		cluster.Spec.NetworkCIDR = c.NetworkCIDR
@@ -1037,7 +1037,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	// Network Topology
 	if c.Topology == "" {
 		// The flag default should have set this, but we might be being called as a library
-		glog.Infof("Empty topology. Defaulting to public topology")
+		klog.Infof("Empty topology. Defaulting to public topology")
 		c.Topology = api.TopologyPublic
 	}
 
@@ -1118,7 +1118,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	// DNS
 	if c.DNSType == "" {
 		// The flag default should have set this, but we might be being called as a library
-		glog.Infof("Empty DNS. Defaulting to public DNS")
+		klog.Infof("Empty DNS. Defaulting to public DNS")
 		c.DNSType = string(api.DNSTypePublic)
 	}
 
@@ -1307,7 +1307,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			if err != nil {
 				// Don't wrap file-not-found
 				if os.IsNotExist(err) {
-					glog.V(2).Infof("ssh key not found at %s", sshPublicKeyPath)
+					klog.V(2).Infof("ssh key not found at %s", sshPublicKeyPath)
 				} else {
 					return fmt.Errorf("error reading SSH key file %q: %v", sshPublicKeyPath, err)
 				}
@@ -1483,7 +1483,7 @@ func loadSSHPublicKeys(sshPublicKey string) (map[string][]byte, error) {
 			return nil, err
 		}
 		sshPublicKeys[fi.SecretNameSSHPrimary] = authorized
-		glog.Infof("Using SSH public key: %v\n", sshPublicKey)
+		klog.Infof("Using SSH public key: %v\n", sshPublicKey)
 	}
 	return sshPublicKeys, nil
 }

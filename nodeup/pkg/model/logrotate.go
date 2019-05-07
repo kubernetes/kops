@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // LogrotateBuilder installs logrotate.d and configures log rotation for kubernetes logs
@@ -41,10 +41,10 @@ func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	switch b.Distribution {
 	case distros.DistributionContainerOS:
-		glog.Infof("Detected ContainerOS; won't install logrotate")
+		klog.Infof("Detected ContainerOS; won't install logrotate")
 		return nil
 	case distros.DistributionCoreOS:
-		glog.Infof("Detected CoreOS; won't install logrotate")
+		klog.Infof("Detected CoreOS; won't install logrotate")
 	default:
 		c.AddTask(&nodetasks.Package{Name: "logrotate"})
 	}

@@ -21,11 +21,11 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions/resource"
+	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
@@ -33,9 +33,9 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/text"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/templates"
 )
 
 type CreateOptions struct {
@@ -217,7 +217,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				fmt.Fprintf(&sb, "Added ssh credential\n")
 
 			default:
-				glog.V(2).Infof("Type of object was %T", v)
+				klog.V(2).Infof("Type of object was %T", v)
 				return fmt.Errorf("Unhandled kind %q in %s", gvk, f)
 			}
 		}

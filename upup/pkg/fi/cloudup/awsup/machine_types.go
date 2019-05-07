@@ -19,7 +19,7 @@ package awsup
 import (
 	"fmt"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // I believe one vCPU ~ 3 ECUS, and 60 CPU credits would be needed to use one vCPU for an hour
@@ -53,7 +53,7 @@ func (m *AWSMachineTypeInfo) EphemeralDevices() []*EphemeralDevice {
 
 		if i >= 20 {
 			// TODO: What drive letters do we use?
-			glog.Fatalf("ephemeral devices for > 20 not yet implemented")
+			klog.Fatalf("ephemeral devices for > 20 not yet implemented")
 		}
 		d.DeviceName = "/dev/sd" + string('c'+i)
 		d.VirtualName = fmt.Sprintf("ephemeral%d", i)

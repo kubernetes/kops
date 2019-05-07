@@ -26,7 +26,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -187,7 +187,7 @@ func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error
 			}
 		}
 
-		glog.V(2).Infof("Creating Route53 HostedZone with Name %q", name)
+		klog.V(2).Infof("Creating Route53 HostedZone with Name %q", name)
 
 		response, err := t.Cloud.Route53().CreateHostedZone(request)
 		if err != nil {
@@ -207,7 +207,7 @@ func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error
 
 			changes.PrivateVPC = nil
 
-			glog.V(2).Infof("Updating DNSZone %q", name)
+			klog.V(2).Infof("Updating DNSZone %q", name)
 
 			_, err := t.Cloud.Route53().AssociateVPCWithHostedZone(request)
 			if err != nil {
@@ -217,7 +217,7 @@ func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error
 
 		empty := &DNSZone{}
 		if !reflect.DeepEqual(empty, changes) {
-			glog.Warningf("cannot apply changes to DNSZone %q: %v", name, changes)
+			klog.Warningf("cannot apply changes to DNSZone %q: %v", name, changes)
 		}
 	}
 
@@ -239,14 +239,14 @@ func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 	// As a special case, we check for an existing zone
 	// It is really painful to have TF create a new one...
 	// (you have to reconfigure the DNS NS records)
-	glog.Infof("Check for existing route53 zone to re-use with name %q", dnsName)
+	klog.Infof("Check for existing route53 zone to re-use with name %q", dnsName)
 	z, err := e.findExisting(cloud)
 	if err != nil {
 		return err
 	}
 
 	if z != nil {
-		glog.Infof("Existing zone %q found; will configure TF to reuse", aws.StringValue(z.HostedZone.Name))
+		klog.Infof("Existing zone %q found; will configure TF to reuse", aws.StringValue(z.HostedZone.Name))
 
 		e.ZoneID = z.HostedZone.Id
 
@@ -260,7 +260,7 @@ func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 				vpcName = *e.PrivateVPC.ID
 				for _, vpc := range z.VPCs {
 					if *vpc.VPCId == vpcName {
-						glog.Infof("VPC %q already associated with zone %q", vpcName, aws.StringValue(z.HostedZone.Name))
+						klog.Infof("VPC %q already associated with zone %q", vpcName, aws.StringValue(z.HostedZone.Name))
 						assocNeeded = false
 					}
 				}
@@ -269,7 +269,7 @@ func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 			}
 
 			if assocNeeded {
-				glog.Infof("No association between VPC %q and zone %q; adding", vpcName, aws.StringValue(z.HostedZone.Name))
+				klog.Infof("No association between VPC %q and zone %q; adding", vpcName, aws.StringValue(z.HostedZone.Name))
 				tf := &terraformRoute53ZoneAssociation{
 					ZoneID: terraform.LiteralFromStringValue(*e.ZoneID),
 					VPCID:  e.PrivateVPC.TerraformLink(),
@@ -292,7 +292,7 @@ func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 
 func (e *DNSZone) TerraformLink() *terraform.Literal {
 	if e.ZoneID != nil {
-		glog.V(4).Infof("reusing existing route53 zone with id %q", *e.ZoneID)
+		klog.V(4).Infof("reusing existing route53 zone with id %q", *e.ZoneID)
 		return terraform.LiteralFromStringValue(*e.ZoneID)
 	}
 
@@ -313,14 +313,14 @@ func (_ *DNSZone) RenderCloudformation(t *cloudformation.CloudformationTarget, a
 	// As a special case, we check for an existing zone
 	// It is really painful to have TF create a new one...
 	// (you have to reconfigure the DNS NS records)
-	glog.Infof("Check for existing route53 zone to re-use with name %q", dnsName)
+	klog.Infof("Check for existing route53 zone to re-use with name %q", dnsName)
 	z, err := e.findExisting(cloud)
 	if err != nil {
 		return err
 	}
 
 	if z != nil {
-		glog.Infof("Existing zone %q found; will configure cloudformation to reuse", aws.StringValue(z.HostedZone.Name))
+		klog.Infof("Existing zone %q found; will configure cloudformation to reuse", aws.StringValue(z.HostedZone.Name))
 
 		e.ZoneID = z.HostedZone.Id
 
@@ -344,7 +344,7 @@ func (_ *DNSZone) RenderCloudformation(t *cloudformation.CloudformationTarget, a
 
 func (e *DNSZone) CloudformationLink() *cloudformation.Literal {
 	if e.ZoneID != nil {
-		glog.V(4).Infof("reusing existing route53 zone with id %q", *e.ZoneID)
+		klog.V(4).Infof("reusing existing route53 zone with id %q", *e.ZoneID)
 		return cloudformation.LiteralString(*e.ZoneID)
 	}
 

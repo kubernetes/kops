@@ -23,7 +23,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -151,7 +151,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 					instanceGroupName := fi.StringValue(m.InstanceGroup)
 
 					if etcdInstanceGroups[instanceGroupName] != nil {
-						glog.Warningf("EtcdMembers are in the same InstanceGroup %q in etcd-cluster %q (fault-tolerance may be reduced)", instanceGroupName, etcd.Name)
+						klog.Warningf("EtcdMembers are in the same InstanceGroup %q in etcd-cluster %q (fault-tolerance may be reduced)", instanceGroupName, etcd.Name)
 					}
 
 					//if clusterSubnets[zone] == nil {
@@ -226,7 +226,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		versionWithoutV = versionWithoutV[1:]
 	}
 	if cluster.Spec.KubernetesVersion != versionWithoutV {
-		glog.V(2).Infof("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
+		klog.V(2).Infof("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
 	cloud, err := BuildCloud(cluster)
@@ -250,7 +250,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 			return fmt.Errorf("error determining default DNS zone: %v", err)
 		}
 
-		glog.V(2).Infof("Defaulting DNS zone to: %s", dnsZone)
+		klog.V(2).Infof("Defaulting DNS zone to: %s", dnsZone)
 		cluster.Spec.DNSZone = dnsZone
 	}
 
@@ -338,7 +338,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 
 func (c *populateClusterSpec) assignSubnets(cluster *api.Cluster) error {
 	if cluster.Spec.NonMasqueradeCIDR == "" {
-		glog.Warningf("NonMasqueradeCIDR not set; can't auto-assign dependent subnets")
+		klog.Warningf("NonMasqueradeCIDR not set; can't auto-assign dependent subnets")
 		return nil
 	}
 
@@ -368,14 +368,14 @@ func (c *populateClusterSpec) assignSubnets(cluster *api.Cluster) error {
 
 		cidr := net.IPNet{IP: ip, Mask: net.CIDRMask(nmOnes+1, nmBits)}
 		cluster.Spec.KubeControllerManager.ClusterCIDR = cidr.String()
-		glog.V(2).Infof("Defaulted KubeControllerManager.ClusterCIDR to %v", cluster.Spec.KubeControllerManager.ClusterCIDR)
+		klog.V(2).Infof("Defaulted KubeControllerManager.ClusterCIDR to %v", cluster.Spec.KubeControllerManager.ClusterCIDR)
 	}
 
 	if cluster.Spec.ServiceClusterIPRange == "" {
 		// Allocate from the '0' subnet; but only carve off 1/4 of that (i.e. add 1 + 2 bits to the netmask)
 		cidr := net.IPNet{IP: nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask), Mask: net.CIDRMask(nmOnes+3, nmBits)}
 		cluster.Spec.ServiceClusterIPRange = cidr.String()
-		glog.V(2).Infof("Defaulted ServiceClusterIPRange to %v", cluster.Spec.ServiceClusterIPRange)
+		klog.V(2).Infof("Defaulted ServiceClusterIPRange to %v", cluster.Spec.ServiceClusterIPRange)
 	}
 
 	return nil

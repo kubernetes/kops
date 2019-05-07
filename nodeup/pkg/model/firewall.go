@@ -17,7 +17,7 @@ limitations under the License.
 package model
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -50,7 +50,7 @@ func (b *FirewallBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Install", "WantedBy", "basic.target")
 
 	manifestString := manifest.Render()
-	glog.V(8).Infof("Built service manifest %q\n%s", "kubernetes-iptables-setup", manifestString)
+	klog.V(8).Infof("Built service manifest %q\n%s", "kubernetes-iptables-setup", manifestString)
 
 	service := &nodetasks.Service{
 		Name:       "kubernetes-iptables-setup.service",

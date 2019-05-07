@@ -17,7 +17,7 @@ limitations under the License.
 package kops
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // StatusStore abstracts the key status functions; and lets us introduce status gradually
@@ -72,11 +72,11 @@ var _ StatusStore = &NoopStatusStore{}
 
 // FindClusterStatus discovers the status of the cluster, by inspecting the cloud objects
 func (s *NoopStatusStore) FindClusterStatus(cluster *Cluster) (*ClusterStatus, error) {
-	glog.Warningf("FindClusterStatus called on NoopStore")
+	klog.Warningf("FindClusterStatus called on NoopStore")
 	return nil, nil
 }
 
 func (s *NoopStatusStore) GetApiIngressStatus(cluster *Cluster) ([]ApiIngressStatus, error) {
-	glog.Warningf("GetApiIngressStatus called on NoopStore")
+	klog.Warningf("GetApiIngressStatus called on NoopStore")
 	return nil, nil
 }

@@ -20,11 +20,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockEC2) DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
-	glog.Warningf("MockEc2::DescribeInstances is stub-implemented")
+	klog.Warningf("MockEc2::DescribeInstances is stub-implemented")
 	return &ec2.DescribeInstancesOutput{}, nil
 }
 

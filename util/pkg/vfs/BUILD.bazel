@@ -33,7 +33,6 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/service/s3:go_default_library",
         "//vendor/github.com/denverdino/aliyungo/oss:go_default_library",
         "//vendor/github.com/go-ini/ini:go_default_library",
-        "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers:go_default_library",
@@ -47,6 +46,7 @@ go_library(
         "//vendor/google.golang.org/api/storage/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
         "//vendor/k8s.io/client-go/util/homedir:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
     ],
 )
 

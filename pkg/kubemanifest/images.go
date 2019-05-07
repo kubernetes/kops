@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type ImageRemapFunction func(image string) (string, error)
@@ -51,12 +51,12 @@ func (m *imageRemapVisitor) VisitString(path []string, v string, mutator func(st
 	//	- spec.template.spec.containers.[2].image
 	//  - spec.template.spec.initContainers.[2].image
 	if n < 3 || (path[n-3] != "containers" && path[n-3] != "initContainers") {
-		glog.Warningf("Skipping likely image field: %s", strings.Join(path, "."))
+		klog.Warningf("Skipping likely image field: %s", strings.Join(path, "."))
 		return nil
 	}
 
 	image := v
-	glog.V(4).Infof("Consider image for re-mapping: %q", image)
+	klog.V(4).Infof("Consider image for re-mapping: %q", image)
 	remapped, err := m.mapper(v)
 	if err != nil {
 		return fmt.Errorf("error remapping image %q: %v", image, err)

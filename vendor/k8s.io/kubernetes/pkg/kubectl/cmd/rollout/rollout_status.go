@@ -36,11 +36,11 @@ import (
 	"k8s.io/client-go/tools/cache"
 	watchtools "k8s.io/client-go/tools/watch"
 	"k8s.io/kubernetes/pkg/kubectl"
-	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/polymorphichelpers"
 	"k8s.io/kubernetes/pkg/kubectl/scheme"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/templates"
 	"k8s.io/kubernetes/pkg/util/interrupt"
 )
 
@@ -71,9 +71,9 @@ type RolloutStatusOptions struct {
 	Revision int64
 	Timeout  time.Duration
 
-	StatusViewer  func(*meta.RESTMapping) (kubectl.StatusViewer, error)
-	Builder       func() *resource.Builder
-	DynamicClient dynamic.Interface
+	StatusViewerFn func(*meta.RESTMapping) (kubectl.StatusViewer, error)
+	Builder        func() *resource.Builder
+	DynamicClient  dynamic.Interface
 
 	FilenameOptions *resource.FilenameOptions
 	genericclioptions.IOStreams
@@ -95,11 +95,11 @@ func NewCmdRolloutStatus(f cmdutil.Factory, streams genericclioptions.IOStreams)
 	validArgs := []string{"deployment", "daemonset", "statefulset"}
 
 	cmd := &cobra.Command{
-		Use: "status (TYPE NAME | TYPE/NAME) [flags]",
+		Use:                   "status (TYPE NAME | TYPE/NAME) [flags]",
 		DisableFlagsInUseLine: true,
-		Short:   i18n.T("Show the status of the rollout"),
-		Long:    status_long,
-		Example: status_example,
+		Short:                 i18n.T("Show the status of the rollout"),
+		Long:                  status_long,
+		Example:               status_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			cmdutil.CheckErr(o.Complete(f, args))
 			cmdutil.CheckErr(o.Validate())
@@ -127,9 +127,7 @@ func (o *RolloutStatusOptions) Complete(f cmdutil.Factory, args []string) error 
 	}
 
 	o.BuilderArgs = args
-	o.StatusViewer = func(mapping *meta.RESTMapping) (kubectl.StatusViewer, error) {
-		return polymorphichelpers.StatusViewerFn(f, mapping)
-	}
+	o.StatusViewerFn = polymorphichelpers.StatusViewerFn
 
 	clientConfig, err := f.ToRESTConfig()
 	if err != nil {
@@ -180,7 +178,7 @@ func (o *RolloutStatusOptions) Run() error {
 	info := infos[0]
 	mapping := info.ResourceMapping()
 
-	statusViewer, err := o.StatusViewer(mapping)
+	statusViewer, err := o.StatusViewerFn(mapping)
 	if err != nil {
 		return err
 	}

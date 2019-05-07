@@ -21,7 +21,7 @@ import (
 
 	"k8s.io/kops/upup/pkg/fi"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kubernetes/pkg/util/mount"
 )
 
@@ -36,7 +36,7 @@ var _ fi.ModelBuilder = &VolumesBuilder{}
 func (b *VolumesBuilder) Build(c *fi.ModelBuilderContext) error {
 	// @step: check if the instancegroup has any volumes to mount
 	if !b.UseVolumeMounts() {
-		glog.V(1).Info("Skipping the volume builder, no volumes defined for this instancegroup")
+		klog.V(1).Info("Skipping the volume builder, no volumes defined for this instancegroup")
 
 		return nil
 	}
@@ -57,14 +57,14 @@ func (b *VolumesBuilder) Build(c *fi.ModelBuilderContext) error {
 		if found, err := b.IsMounted(m, x.Device, x.Path); err != nil {
 			return fmt.Errorf("Failed to check if device: %s is mounted, error: %s", x.Device, err)
 		} else if found {
-			glog.V(3).Infof("Skipping device: %s, path: %s as already mounted", x.Device, x.Path)
+			klog.V(3).Infof("Skipping device: %s, path: %s as already mounted", x.Device, x.Path)
 			continue
 		}
 
-		glog.Infof("Attempting to format and mount device: %s, path: %s", x.Device, x.Path)
+		klog.Infof("Attempting to format and mount device: %s, path: %s", x.Device, x.Path)
 
 		if err := m.FormatAndMount(x.Device, x.Path, x.Filesystem, x.MountOptions); err != nil {
-			glog.Errorf("Failed to mount the device: %s on: %s, error: %s", x.Device, x.Path, err)
+			klog.Errorf("Failed to mount the device: %s on: %s, error: %s", x.Device, x.Path, err)
 
 			return err
 		}

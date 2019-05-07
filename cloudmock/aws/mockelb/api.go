@@ -24,7 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elb/elbiface"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 const elbZoneID = "FAKEZONE-CLOUDMOCK-ELB"
@@ -47,13 +47,13 @@ func (m *MockELB) DescribeLoadBalancers(request *elb.DescribeLoadBalancersInput)
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.V(2).Infof("DescribeLoadBalancers %v", request)
+	klog.V(2).Infof("DescribeLoadBalancers %v", request)
 
 	if request.PageSize != nil {
-		glog.Warningf("PageSize not implemented")
+		klog.Warningf("PageSize not implemented")
 	}
 	if request.Marker != nil {
-		glog.Fatalf("Marker not implemented")
+		klog.Fatalf("Marker not implemented")
 	}
 
 	var elbs []*elb.LoadBalancerDescription
@@ -96,7 +96,7 @@ func (m *MockELB) CreateLoadBalancer(request *elb.CreateLoadBalancerInput) (*elb
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.V(2).Infof("CreateLoadBalancer %v", request)
+	klog.V(2).Infof("CreateLoadBalancer %v", request)
 	createdTime := time.Now().UTC()
 
 	dnsName := *request.LoadBalancerName + ".elb.cloudmock.com"
@@ -146,7 +146,7 @@ func (m *MockELB) DeleteLoadBalancer(request *elb.DeleteLoadBalancerInput) (*elb
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DeleteLoadBalancer: %v", request)
+	klog.Infof("DeleteLoadBalancer: %v", request)
 
 	id := aws.StringValue(request.LoadBalancerName)
 	o := m.LoadBalancers[id]

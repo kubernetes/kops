@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -48,7 +48,7 @@ func (f *GroupTask) GetName() *string {
 }
 
 func (f *GroupTask) SetName(name string) {
-	glog.Fatalf("SetName not supported for Group task")
+	klog.Fatalf("SetName not supported for Group task")
 }
 
 func (e *GroupTask) Find(c *fi.Context) (*GroupTask, error) {
@@ -95,9 +95,9 @@ func buildGroupaddArgs(e *GroupTask) []string {
 func (_ *GroupTask) RenderLocal(t *local.LocalTarget, a, e, changes *GroupTask) error {
 	if a == nil {
 		args := buildGroupaddArgs(e)
-		glog.Infof("Creating group %q", e.Name)
+		klog.Infof("Creating group %q", e.Name)
 		cmd := exec.Command("groupadd", args...)
-		glog.V(2).Infof("running command: groupadd %s", strings.Join(args, " "))
+		klog.V(2).Infof("running command: groupadd %s", strings.Join(args, " "))
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("error creating group: %v\nOutput: %s", err, output)
@@ -111,9 +111,9 @@ func (_ *GroupTask) RenderLocal(t *local.LocalTarget, a, e, changes *GroupTask) 
 
 		if len(args) != 0 {
 			args = append(args, e.Name)
-			glog.Infof("Reconfiguring group %q", e.Name)
+			klog.Infof("Reconfiguring group %q", e.Name)
 			cmd := exec.Command("groupmod", args...)
-			glog.V(2).Infof("running command: groupmod %s", strings.Join(args, " "))
+			klog.V(2).Infof("running command: groupmod %s", strings.Join(args, " "))
 			output, err := cmd.CombinedOutput()
 			if err != nil {
 				return fmt.Errorf("error reconfiguring group: %v\nOutput: %s", err, output)
@@ -128,7 +128,7 @@ func (_ *GroupTask) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes 
 	args := buildGroupaddArgs(e)
 	cmd := []string{"groupadd"}
 	cmd = append(cmd, args...)
-	glog.Infof("Creating group %q", e.Name)
+	klog.Infof("Creating group %q", e.Name)
 	t.AddCommand(cloudinit.Once, cmd...)
 
 	return nil

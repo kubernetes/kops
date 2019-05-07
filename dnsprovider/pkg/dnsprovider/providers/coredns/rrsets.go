@@ -22,9 +22,9 @@ import (
 	"net"
 
 	etcdc "github.com/coreos/etcd/client"
-	"github.com/golang/glog"
 	dnsmsg "github.com/miekg/coredns/middleware/etcd/msg"
 	"golang.org/x/net/context"
+	"k8s.io/klog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 )
@@ -49,13 +49,13 @@ func (rrsets ResourceRecordSets) Get(name string) ([]dnsprovider.ResourceRecordS
 	response, err := rrsets.zone.zones.intf.etcdKeysAPI.Get(context.Background(), dnsmsg.Path(name, etcdPathPrefix), getOpts)
 	if err != nil {
 		if etcdc.IsKeyNotFound(err) {
-			glog.V(2).Infof("Subdomain %q does not exist", name)
+			klog.V(2).Infof("Subdomain %q does not exist", name)
 			return nil, nil
 		}
 		return nil, fmt.Errorf("Failed to get service from etcd, err: %v", err)
 	}
 	if emptyResponse(response) {
-		glog.V(2).Infof("Subdomain %q does not exist in etcd", name)
+		klog.V(2).Infof("Subdomain %q does not exist in etcd", name)
 		return nil, nil
 	}
 

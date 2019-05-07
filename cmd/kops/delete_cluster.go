@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kubeconfig"
@@ -32,8 +32,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/util/pkg/tables"
-	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/templates"
 )
 
 type DeleteClusterOptions struct {
@@ -207,7 +207,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 	b.Context = clusterName
 	err = b.DeleteKubeConfig()
 	if err != nil {
-		glog.Warningf("error removing kube config: %v", err)
+		klog.Warningf("error removing kube config: %v", err)
 	}
 
 	fmt.Fprintf(out, "\nDeleted cluster: %q\n", clusterName)

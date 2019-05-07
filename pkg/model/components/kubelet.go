@@ -19,7 +19,7 @@ package components
 import (
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -70,7 +70,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 			// If it is explicitly set to false, return an error, because this
 			// behavior is no longer supported in v1.14 (the default was true, prior).
 			if *clusterSpec.Kubelet.AllowPrivileged == false {
-				glog.Warningf("Kubelet's --allow-privileged flag is no longer supported in v1.14.")
+				klog.Warningf("Kubelet's --allow-privileged flag is no longer supported in v1.14.")
 			}
 			// Explicitly set it to nil, so it won't be passed on the command line.
 			clusterSpec.Kubelet.AllowPrivileged = nil
@@ -168,7 +168,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	clusterSpec.Kubelet.CgroupRoot = "/"
 
-	glog.V(1).Infof("Cloud Provider: %s", cloudProvider)
+	klog.V(1).Infof("Cloud Provider: %s", cloudProvider)
 	if cloudProvider == kops.CloudProviderAWS {
 		clusterSpec.Kubelet.CloudProvider = "aws"
 

@@ -23,7 +23,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // KubectlBuilder install kubectl
@@ -109,14 +109,14 @@ func (b *KubectlBuilder) findKubeconfigUser() (*fi.User, *fi.Group, error) {
 	case distros.DistributionCentos7:
 		users = []string{"centos"}
 	default:
-		glog.Warningf("Unknown distro; won't write kubeconfig to homedir %s", b.Distribution)
+		klog.Warningf("Unknown distro; won't write kubeconfig to homedir %s", b.Distribution)
 		return nil, nil, nil
 	}
 
 	for _, s := range users {
 		user, err := fi.LookupUser(s)
 		if err != nil {
-			glog.Warningf("error looking up user %q: %v", s, err)
+			klog.Warningf("error looking up user %q: %v", s, err)
 			continue
 		}
 		if user == nil {
@@ -124,7 +124,7 @@ func (b *KubectlBuilder) findKubeconfigUser() (*fi.User, *fi.Group, error) {
 		}
 		group, err := fi.LookupGroupById(user.Gid)
 		if err != nil {
-			glog.Warningf("unable to find group %d for user %q", user.Gid, s)
+			klog.Warningf("unable to find group %d for user %q", user.Gid, s)
 			continue
 		}
 		if group == nil {

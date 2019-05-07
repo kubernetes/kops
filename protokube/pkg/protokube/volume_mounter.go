@@ -22,10 +22,10 @@ import (
 	"sort"
 	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 	"k8s.io/kubernetes/pkg/util/mount"
-	"k8s.io/kubernetes/pkg/util/nsenter"
+	"k8s.io/kubernetes/pkg/util/nsenter" // moves to k8s.io/utils/nsenter in 1.14
 	utilsexec "k8s.io/utils/exec"
 )
 
@@ -57,7 +57,7 @@ func (k *VolumeMountController) mountMasterVolumes() ([]*Volume, error) {
 			continue
 		}
 
-		glog.V(2).Infof("Master volume %q is attached at %q", v.ID, v.LocalDevice)
+		klog.V(2).Infof("Master volume %q is attached at %q", v.ID, v.LocalDevice)
 
 		mountpoint := "/mnt/master-" + v.ID
 
@@ -71,15 +71,15 @@ func (k *VolumeMountController) mountMasterVolumes() ([]*Volume, error) {
 			mountpoint = "/mnt/disks/master-" + v.ID
 		}
 
-		glog.Infof("Doing safe-format-and-mount of %s to %s", v.LocalDevice, mountpoint)
+		klog.Infof("Doing safe-format-and-mount of %s to %s", v.LocalDevice, mountpoint)
 		fstype := ""
 		err = k.safeFormatAndMount(v, mountpoint, fstype)
 		if err != nil {
-			glog.Warningf("unable to mount master volume: %q", err)
+			klog.Warningf("unable to mount master volume: %q", err)
 			continue
 		}
 
-		glog.Infof("mounted master volume %q on %s", v.ID, mountpoint)
+		klog.Infof("mounted master volume %q on %s", v.ID, mountpoint)
 
 		v.Mountpoint = mountpoint
 		k.mounted[v.ID] = v
@@ -106,10 +106,10 @@ func (k *VolumeMountController) safeFormatAndMount(volume *Volume, mountpoint st
 			break
 		}
 
-		glog.Infof("Waiting for volume %q to be attached", volume.ID)
+		klog.Infof("Waiting for volume %q to be attached", volume.ID)
 		time.Sleep(1 * time.Second)
 	}
-	glog.Infof("Found volume %q mounted at device %q", volume.ID, device)
+	klog.Infof("Found volume %q mounted at device %q", volume.ID, device)
 
 	safeFormatAndMount := &mount.SafeFormatAndMount{}
 
@@ -143,7 +143,7 @@ func (k *VolumeMountController) safeFormatAndMount(volume *Volume, mountpoint st
 	var existing []*mount.MountPoint
 	for i := range mounts {
 		m := &mounts[i]
-		glog.V(8).Infof("found existing mount: %v", m)
+		klog.V(8).Infof("found existing mount: %v", m)
 		// Note: when containerized, we still list mounts in the host, so we don't need to call pathFor(mountpoint)
 		if m.Path == mountpoint {
 			existing = append(existing, m)
@@ -154,31 +154,31 @@ func (k *VolumeMountController) safeFormatAndMount(volume *Volume, mountpoint st
 	if len(existing) == 0 {
 		options := []string{}
 
-		glog.Infof("Creating mount directory %q", pathFor(mountpoint))
+		klog.Infof("Creating mount directory %q", pathFor(mountpoint))
 		if err := os.MkdirAll(pathFor(mountpoint), 0750); err != nil {
 			return err
 		}
 
-		glog.Infof("Mounting device %q on %q", device, mountpoint)
+		klog.Infof("Mounting device %q on %q", device, mountpoint)
 
 		err = safeFormatAndMount.FormatAndMount(device, mountpoint, fstype, options)
 		if err != nil {
 			return fmt.Errorf("error formatting and mounting disk %q on %q: %v", device, mountpoint, err)
 		}
 	} else {
-		glog.Infof("Device already mounted on %q, verifying it is our device", mountpoint)
+		klog.Infof("Device already mounted on %q, verifying it is our device", mountpoint)
 
 		if len(existing) != 1 {
-			glog.Infof("Existing mounts unexpected")
+			klog.Infof("Existing mounts unexpected")
 
 			for i := range mounts {
 				m := &mounts[i]
-				glog.Infof("%s\t%s", m.Device, m.Path)
+				klog.Infof("%s\t%s", m.Device, m.Path)
 			}
 
 			return fmt.Errorf("found multiple existing mounts of %q at %q", device, mountpoint)
 		} else {
-			glog.Infof("Found existing mount of %q at %q", device, mountpoint)
+			klog.Infof("Found existing mount of %q at %q", device, mountpoint)
 		}
 	}
 
@@ -202,7 +202,7 @@ func (k *VolumeMountController) safeFormatAndMount(volume *Volume, mountpoint st
 				return fmt.Errorf("device already mounted at %s, but is %s and we want %s or %s", target, mountedDevice, source, device)
 			}
 		} else {
-			glog.Infof("mounting inside container: %s -> %s", source, target)
+			klog.Infof("mounting inside container: %s -> %s", source, target)
 			if err := mounter.Mount(source, target, fstype, options); err != nil {
 				return fmt.Errorf("error mounting %s inside container at %s: %v", source, target, err)
 			}
@@ -258,19 +258,19 @@ func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 		}
 
 		if alreadyMounted != "" {
-			glog.V(2).Infof("Skipping mount of master volume %q, because etcd cluster %q is already mounted", v.ID, alreadyMounted)
+			klog.V(2).Infof("Skipping mount of master volume %q, because etcd cluster %q is already mounted", v.ID, alreadyMounted)
 			continue
 		}
 
-		glog.V(2).Infof("Trying to mount master volume: %q", v.ID)
+		klog.V(2).Infof("Trying to mount master volume: %q", v.ID)
 
 		err := k.provider.AttachVolume(v)
 		if err != nil {
 			// We are racing with other instances here; this can happen
-			glog.Warningf("Error attaching volume %q: %v", v.ID, err)
+			klog.Warningf("Error attaching volume %q: %v", v.ID, err)
 		} else {
 			if v.LocalDevice == "" {
-				glog.Fatalf("AttachVolume did not set LocalDevice")
+				klog.Fatalf("AttachVolume did not set LocalDevice")
 			}
 			attached = append(attached, v)
 
@@ -281,14 +281,14 @@ func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 		}
 	}
 
-	glog.V(2).Infof("Currently attached volumes: %v", attached)
+	klog.V(2).Infof("Currently attached volumes: %v", attached)
 	return attached, nil
 }
 
 // doNotMountVolume tests that the volume has an Etcd Cluster associated
 func doNotMountVolume(v *Volume) bool {
 	if len(v.Info.EtcdClusters) == 0 {
-		glog.Warningf("Local device: %q, volume id: %q is being skipped and will not mounted, since it does not have a etcd cluster", v.LocalDevice, v.ID)
+		klog.Warningf("Local device: %q, volume id: %q is being skipped and will not mounted, since it does not have a etcd cluster", v.LocalDevice, v.ID)
 		return true
 	}
 	return false

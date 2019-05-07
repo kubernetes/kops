@@ -499,7 +499,7 @@ dep-ensure: dep-prereqs
 	rm -rf vendor/k8s.io/code-generator/cmd/go-to-protobuf/
 	rm -rf vendor/k8s.io/code-generator/cmd/import-boss/
 	rm -rf vendor/github.com/docker/docker/contrib/
-	make bazel-gazelle
+	make gazelle
 
 
 .PHONY: gofmt
@@ -566,8 +566,10 @@ ci: govet verify-gofmt verify-boilerplate verify-bazel verify-misspelling nodeup
 # we skip tasks that rely on bazel and are covered by other jobs
 #  verify-gofmt: uses bazel, covered by pull-kops-verify-gofmt
 #  verify-bazel: uses bazel, covered by pull-kops-verify-bazel
+#  govet: covered by pull-kops-verify-govet
+#  verify-boilerplate: covered by pull-kops-verify-boilerplate
 .PHONY: travis-ci
-travis-ci: govet verify-boilerplate verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+travis-ci: verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
@@ -723,9 +725,13 @@ bazel-push-aws-run: bazel-push
 	ssh ${TARGET} chmod +x /tmp/nodeup
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
 
-.PHONY: bazel-gazelle
-bazel-gazelle:
+.PHONY: gazelle
+gazelle:
 	hack/update-bazel.sh
+
+.PHONY: bazel-gazelle
+bazel-gazelle: gazelle
+	echo "bazel-gazelle is deprecated; please just use 'make gazelle'"
 
 .PHONY: check-markdown-links
 check-markdown-links:

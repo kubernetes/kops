@@ -20,20 +20,20 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions/resource"
+	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/util/pkg/text"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/templates"
 )
 
 var (
@@ -177,7 +177,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 				}
 				switch ig {
 				case nil:
-					glog.Infof("instanceGroup: %v was not found, creating resource now", igName)
+					klog.Infof("instanceGroup: %v was not found, creating resource now", igName)
 					_, err = clientset.InstanceGroupsFor(cluster).Create(v)
 					if err != nil {
 						return fmt.Errorf("error creating instanceGroup: %v", err)
@@ -213,7 +213,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 					return fmt.Errorf("error replacing SSHCredential: %v", err)
 				}
 			default:
-				glog.V(2).Infof("Type of object was %T", v)
+				klog.V(2).Infof("Type of object was %T", v)
 				return fmt.Errorf("Unhandled kind %q in %q", gvk, f)
 			}
 		}

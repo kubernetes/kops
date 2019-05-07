@@ -19,7 +19,7 @@ package awsup
 import (
 	"fmt"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 )
 
@@ -36,7 +36,7 @@ func matchInstanceGroup(name string, clusterName string, instancegroups []*kops.
 		case kops.InstanceGroupRoleBastion:
 			groupName = g.ObjectMeta.Name + "." + clusterName
 		default:
-			glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
+			klog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
 			continue
 		}
 

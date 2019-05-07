@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -114,7 +114,7 @@ func (_ *ServerGroup) CheckChanges(a, e, changes *ServerGroup) error {
 
 func (_ *ServerGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *ServerGroup) error {
 	if a == nil {
-		glog.V(2).Infof("Creating ServerGroup with Name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating ServerGroup with Name:%q", fi.StringValue(e.Name))
 
 		opt := servergroups.CreateOpts{
 			Name:     fi.StringValue(e.Name),
@@ -142,7 +142,7 @@ func (_ *ServerGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, cha
 			}
 
 			if len(instances) == 1 {
-				glog.V(2).Infof("Openstack task ServerGroup scaling down instance %s", instanceName)
+				klog.V(2).Infof("Openstack task ServerGroup scaling down instance %s", instanceName)
 				err := t.Cloud.DeleteInstanceWithID(instances[0].ID)
 				if err != nil {
 					return fmt.Errorf("Could not delete instance %s: %v", instanceName, err)
@@ -154,6 +154,6 @@ func (_ *ServerGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, cha
 		}
 	}
 
-	glog.V(2).Infof("Openstack task ServerGroup::RenderOpenstack did nothing")
+	klog.V(2).Infof("Openstack task ServerGroup::RenderOpenstack did nothing")
 	return nil
 }
