@@ -105,6 +105,11 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"# Increase size of file handles and inode cache",
 			"fs.file-max = 2097152",
 			"",
+				 
+		        "# Decrease the keepalive timeout to solve connection timeout bug in case of IPVS",
+			"# https://success.docker.com/article/ipvs-connection-timeout-issue",	 
+			"net.ipv4.tcp_keepalive_time = 600",
+			"",
 
 			"# Max number of inotify instances and watches for a user",
 			"# Since dockerd runs as a single user, the default instances value of 128 per user is too low",
