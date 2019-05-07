@@ -431,7 +431,7 @@ If you need to add tags on auto scaling groups or instances (propagate ASG tags)
 
 ```
 # Example for nodes
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -459,7 +459,7 @@ will rescale the ASG without warning.
 
 ```
 # Example for nodes
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -489,7 +489,7 @@ load balancers and Network load balancers.
 
 ```
 # Example ingress nodes
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -513,7 +513,7 @@ Detailed-Monitoring will cause the monitoring data to be available every 1 minut
 
 ```
 # Example for nodes
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:

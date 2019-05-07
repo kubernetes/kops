@@ -38,6 +38,12 @@ func TestConversionMinimal(t *testing.T) {
 
 	runTest(t, "minimal", "v1alpha0", "v1alpha1")
 	runTest(t, "minimal", "v1alpha0", "v1alpha2")
+
+	runTest(t, "minimal", "legacy-v1alpha1", "v1alpha1")
+	runTest(t, "minimal", "legacy-v1alpha1", "v1alpha2")
+
+	runTest(t, "minimal", "legacy-v1alpha2", "v1alpha1")
+	runTest(t, "minimal", "legacy-v1alpha2", "v1alpha2")
 }
 
 func runTest(t *testing.T, srcDir string, fromVersion string, toVersion string) {
@@ -82,7 +88,7 @@ func runTest(t *testing.T, srcDir string, fromVersion string, toVersion string) 
 			t.Fatalf("error parsing file %q: %v", sourcePath, err)
 		}
 
-		expectVersion := fromVersion
+		expectVersion := strings.TrimPrefix(fromVersion, "legacy-")
 		if expectVersion == "v1alpha0" {
 			// Our version before we had v1alpha1
 			expectVersion = "v1alpha1"

@@ -20,7 +20,7 @@ authentication:
 For example:
 
 ```
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   name: cluster.example.com
@@ -48,7 +48,7 @@ authentication:
 For example:
 
 ```
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   name: cluster.example.com

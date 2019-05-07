@@ -28,7 +28,7 @@ Note: it is currently not possible to delete secrets from the keystore that have
 
 ### adding ssh credential from spec file
 ```bash
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: SSHCredential
 metadata:
   labels:
