@@ -20,6 +20,9 @@ required = [
 
   # Needed for spell checking
   "github.com/client9/misspell/cmd/misspell",
+
+  # Needed for CRD generation
+  "sigs.k8s.io/controller-tools/cmd/controller-gen",
 ]
 
 [prune]
