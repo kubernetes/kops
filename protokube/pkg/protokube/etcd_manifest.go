@@ -165,6 +165,7 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 	}
 
 	kubemanifest.MarkPodAsCritical(pod)
+	kubemanifest.MarkPodAsClusterCritical(pod)
 
 	return pod
 }
