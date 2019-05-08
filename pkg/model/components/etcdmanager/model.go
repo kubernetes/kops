@@ -445,6 +445,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	}
 
 	kubemanifest.MarkPodAsCritical(pod)
+	kubemanifest.MarkPodAsClusterCritical(pod)
 
 	return pod, nil
 }

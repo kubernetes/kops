@@ -87,6 +87,7 @@ spec:
       name: hosts
       readOnly: true
   hostNetwork: true
+  priorityClassName: system-cluster-critical
   tolerations:
   - key: CriticalAddonsOnly
     operator: Exists
