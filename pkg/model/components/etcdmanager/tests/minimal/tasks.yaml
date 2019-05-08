@@ -108,6 +108,7 @@ Contents:
           name: varlogetcd
       hostNetwork: true
       hostPID: true
+      priorityClassName: system-cluster-critical
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
@@ -178,6 +179,7 @@ Contents:
           name: varlogetcd
       hostNetwork: true
       hostPID: true
+      priorityClassName: system-cluster-critical
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
