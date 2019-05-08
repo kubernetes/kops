@@ -6,6 +6,7 @@ go_library(
         "critical.go",
         "images.go",
         "manifest.go",
+        "priority.go",
         "visitor.go",
         "volumes.go",
     ],
