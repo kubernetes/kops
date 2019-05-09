@@ -20,11 +20,13 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	math_rand "math/rand"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/golang/glog"
 )
@@ -111,13 +113,48 @@ func UpdateHostsFileWithRecords(p string, addrToHosts map[string][]string) error
 
 	// Note that because we are bind mounting /etc/hosts, we can't do a normal atomic file write
 	// (where we write a temp file and rename it)
-	// TODO: We should just hold the file open while we read & write it
-	err = ioutil.WriteFile(p, updated, stat.Mode().Perm())
-	if err != nil {
+	if err := pseudoAtomicWrite(p, updated, stat.Mode()); err != nil {
 		return fmt.Errorf("error writing file %q: %v", p, err)
 	}
 
 	return nil
+}
+
+// Because we are bind-mounting /etc/hosts, we can't do a normal
+// atomic file write (where we write a temp file and rename it);
+// instead we write the file, pause, re-read and see if anyone else
+// wrote in the meantime; if so we rewrite again.  By pausing for a
+// random amount of time, eventually we'll win the write race and
+// exit.  This doesn't guarantee fairness, but it should mean that the
+// end-result is not malformed (i.e. partial writes).
+func pseudoAtomicWrite(p string, b []byte, mode os.FileMode) error {
+	attempt := 0
+	for {
+		attempt++
+		if attempt > 10 {
+			return fmt.Errorf("failed to consistently write file %q - too many retries", p)
+		}
+
+		if err := ioutil.WriteFile(p, b, mode); err != nil {
+			glog.Warningf("error writing file %q: %v", p, err)
+			continue
+		}
+
+		n := 1 + math_rand.Intn(20)
+		time.Sleep(time.Duration(n) * time.Millisecond)
+
+		contents, err := ioutil.ReadFile(p)
+		if err != nil {
+			glog.Warningf("error re-reading file %q: %v", p, err)
+			continue
+		}
+
+		if bytes.Equal(contents, b) {
+			return nil
+		}
+
+		glog.Warningf("detected concurrent write to file %q, will retry", p)
+	}
 }
 
 func atomicWriteFile(filename string, data []byte, perm os.FileMode) error {
