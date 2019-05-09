@@ -41,7 +41,6 @@ func main() {
 	flag.StringVar(&outputPath, "out", outputPath, "file to write")
 
 	flag.Parse()
-	flag.Lookup("logtostderr").Value.Set("true")
 
 	if err := run(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
