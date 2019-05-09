@@ -129,6 +129,7 @@ and add this to your node policy:
           "Action": [
             "acm:ListCertificates",
             "acm:DescribeCertificate",
+            "acm:GetCertificate",
             "autoscaling:DescribeAutoScalingGroups",
             "autoscaling:DescribeLoadBalancerTargetGroups",
             "autoscaling:AttachLoadBalancers",
