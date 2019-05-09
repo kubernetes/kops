@@ -43,7 +43,7 @@ if healthcheck; then
   exit 0
 fi
 
-echo "docker still unresposive; triggering docker restart"
+echo "docker still unresponsive; triggering docker restart"
 systemctl stop docker
 
 echo "wait all tcp sockets to close"
