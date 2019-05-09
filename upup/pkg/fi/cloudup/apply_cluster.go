@@ -441,7 +441,7 @@ func (c *ApplyClusterCmd) Run() error {
 				"spotinstLaunchSpec":  &spotinsttasks.LaunchSpec{},
 			})
 
-			if len(sshPublicKeys) == 0 && c.Cluster.Spec.SSHKeyName == "" {
+			if len(sshPublicKeys) == 0 && c.Cluster.Spec.SSHKeyName == nil {
 				return fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 

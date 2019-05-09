@@ -77,6 +77,7 @@ go_library(
     importpath = "k8s.io/kops/upup/pkg/fi/cloudup/awstasks",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/apis/kops:go_default_library",
         "//pkg/diff:go_default_library",
         "//pkg/featureflag:go_default_library",
         "//pkg/pki:go_default_library",
