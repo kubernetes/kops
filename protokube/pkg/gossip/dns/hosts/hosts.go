@@ -55,7 +55,7 @@ func UpdateHostsFileWithRecords(p string, addrToHosts map[string][]string) error
 		k := strings.TrimSpace(line)
 		if k == GUARD_BEGIN {
 			if inGuardBlock {
-				klog.Warningf("/etc/hosts guard-block begin seen while in guard block; will ignore")
+				glog.Warningf("/etc/hosts guard-block begin seen while in guard block; will ignore")
 			}
 			inGuardBlock = true
 		}
@@ -66,7 +66,7 @@ func UpdateHostsFileWithRecords(p string, addrToHosts map[string][]string) error
 
 		if k == GUARD_END {
 			if !inGuardBlock {
-				klog.Warningf("/etc/hosts guard-block end seen before guard-block start; will ignore end")
+				glog.Warningf("/etc/hosts guard-block end seen before guard-block start; will ignore end")
 				// Don't output the line
 				out = out[:len(out)-1]
 			}
@@ -105,7 +105,7 @@ func UpdateHostsFileWithRecords(p string, addrToHosts map[string][]string) error
 	updated := []byte(strings.Join(out, "\n"))
 
 	if bytes.Equal(updated, data) {
-		klog.V(2).Infof("skipping update of unchanged /etc/hosts")
+		glog.V(2).Infof("skipping update of unchanged /etc/hosts")
 		return nil
 	}
 
