@@ -673,6 +673,11 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 		*out = new(EgressProxySpec)
 		**out = **in
 	}
+	if in.SSHKeyName != nil {
+		in, out := &in.SSHKeyName, &out.SSHKeyName
+		*out = new(string)
+		**out = **in
+	}
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
 		*out = make([]*EtcdClusterSpec, len(*in))

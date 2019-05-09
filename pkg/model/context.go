@@ -351,6 +351,13 @@ func (m *KopsModelContext) UseEtcdTLS() bool {
 	return false
 }
 
+// UseSSHKey returns true if SSHKeyName from the cluster spec is not set to an empty string (""). Setting SSHKeyName
+// to an empty string indicates that an SSH key should not be set on instances.
+func (m *KopsModelContext) UseSSHKey() bool {
+	sshKeyName := m.Cluster.Spec.SSHKeyName
+	return sshKeyName == nil || *sshKeyName != ""
+}
+
 // KubernetesVersion parses the semver version of kubernetes, from the cluster spec
 func (m *KopsModelContext) KubernetesVersion() semver.Version {
 	// TODO: Remove copy-pasting c.f. https://github.com/kubernetes/kops/blob/master/pkg/model/components/context.go#L32
