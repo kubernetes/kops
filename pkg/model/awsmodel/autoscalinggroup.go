@@ -220,9 +220,10 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		})
 	}
 
-	// @step: attach the ssh key to the instancegroup
-	if t.SSHKey, err = b.LinkToSSHKey(); err != nil {
-		return nil, err
+	if b.AWSModelContext.UseSSHKey() {
+		if t.SSHKey, err = b.LinkToSSHKey(); err != nil {
+			return nil, err
+		}
 	}
 
 	// @step: add the instancegroup userdata
