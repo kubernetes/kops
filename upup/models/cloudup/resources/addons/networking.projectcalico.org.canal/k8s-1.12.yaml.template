@@ -1,8 +1,8 @@
-# Canal Version v3.5.0
-# https://docs.projectcalico.org/v3.5/releases#v3.5.0
+# Canal Version v3.6.1
+# https://docs.projectcalico.org/v3.6/release-notes/#v361
 # This manifest includes the following component versions:
-#   calico/node:v3.5.0
-#   calico/cni:v3.5.0
+#   calico/node:v3.6.1
+#   calico/cni:v3.6.1
 #   coreos/flannel:v0.11.0
 
 # This ConfigMap is used to configure a self-hosted Canal installation.
@@ -23,6 +23,9 @@ data:
   # the pod network.
   masquerade: "true"
 
+  # MTU default is 1500, can be overridden
+  veth_mtu: "{{- or .Networking.Canal.MTU "1500" }}"
+
   # The CNI network configuration to install on each node.  The special
   # values in this config will be automatically populated.
   cni_network_config: |-
@@ -34,6 +37,7 @@ data:
           "type": "calico",
           "log_level": "info",
           "datastore_type": "kubernetes",
+          "mtu": __CNI_MTU__,
           "nodename": "__KUBERNETES_NODE_NAME__",
           "ipam": {
             "type": "host-local",
@@ -115,12 +119,18 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.5.0
+          image: calico/cni:v3.6.1
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
             - name: CNI_CONF_NAME
               value: "10-canal.conflist"
+            # CNI MTU Config variable
+            - name: CNI_MTU
+              valueFrom:
+                configMapKeyRef:
+                  name: canal-config
+                  key: veth_mtu
             # The CNI network config to install on each node.
             - name: CNI_NETWORK_CONFIG
               valueFrom:
@@ -145,7 +155,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.5.0
+          image: calico/node:v3.6.1
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -173,6 +183,11 @@ spec:
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
+            - name: FELIX_IPINIPMTU
+              valueFrom:
+                configMapKeyRef:
+                  name: canal-config
+                  key: veth_mtu
             # Disable IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
               value: "false"
@@ -367,6 +382,7 @@ rules:
       - globalbgpconfigs
       - bgpconfigurations
       - ippools
+      - ipamblocks
       - globalnetworkpolicies
       - globalnetworksets
       - networkpolicies
