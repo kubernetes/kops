@@ -38,7 +38,8 @@ func TestLaunchTemplateTerraformRender(t *testing.T) {
 				RootVolumeIops:         fi.Int64(100),
 				RootVolumeSize:         fi.Int64(64),
 				SSHKey: &SSHKey{
-					Name: fi.String("mykey"),
+					Name:      fi.String("newkey"),
+					PublicKey: fi.WrapResource(fi.NewStringResource("newkey")),
 				},
 				SecurityGroups: []*SecurityGroup{
 					{Name: fi.String("nodes-1"), ID: fi.String("1111")},
@@ -64,7 +65,7 @@ resource "aws_launch_template" "test" {
   }
 
   instance_type = "t2.medium"
-  key_name      = "${aws_key_pair.mykey.id}"
+  key_name      = "${aws_key_pair.newkey.id}"
 
   network_interfaces = {
     associate_public_ip_address = true
@@ -141,7 +142,7 @@ resource "aws_launch_template" "test" {
   }
 
   instance_type = "t2.medium"
-  key_name      = "${aws_key_pair.mykey.id}"
+  key_name      = "mykey"
 
   network_interfaces = {
     associate_public_ip_address = true
