@@ -1806,6 +1806,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 			(*out)[key] = val
 		}
 	}
+	if in.HTTP2MaxStreamsPerConnection != nil {
+		in, out := &in.HTTP2MaxStreamsPerConnection, &out.HTTP2MaxStreamsPerConnection
+		*out = new(int32)
+		**out = **in
+	}
 	if in.EtcdQuorumRead != nil {
 		in, out := &in.EtcdQuorumRead, &out.EtcdQuorumRead
 		*out = new(bool)

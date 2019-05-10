@@ -397,6 +397,9 @@ type KubeAPIServerConfig struct {
 	// MaxMutatingRequestsInflight The maximum number of mutating requests in flight at a given time. Defaults to 200
 	MaxMutatingRequestsInflight int32 `json:"maxMutatingRequestsInflight,omitempty" flag:"max-mutating-requests-inflight" flag-empty:"0"`
 
+	// HTTP2MaxStreamsPerConnection sets the limit that the server gives to clients for the maximum number of streams in an HTTP/2 connection. Zero means to use golang's default.
+	HTTP2MaxStreamsPerConnection *int32 `json:"http2MaxStreamsPerConnection,omitempty" flag:"http2-max-streams-per-connection"`
+
 	// EtcdQuorumRead configures the etcd-quorum-read flag, which forces consistent reads from etcd
 	EtcdQuorumRead *bool `json:"etcdQuorumRead,omitempty" flag:"etcd-quorum-read"`
 
