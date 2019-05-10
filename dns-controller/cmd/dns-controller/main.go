@@ -60,6 +60,7 @@ func main() {
 	var updateInterval int
 
 	// Be sure to get the glog flags
+	klog.InitFlags(nil)
 	klog.Flush()
 
 	flag.StringVar(&dnsServer, "dns-server", "", "DNS Server")
