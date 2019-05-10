@@ -19,8 +19,8 @@ package openstacktasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -101,7 +101,7 @@ func (_ *Network) ShouldCreate(a, e, changes *Network) (bool, error) {
 
 func (_ *Network) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Network) error {
 	if a == nil {
-		glog.V(2).Infof("Creating Network with name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating Network with name:%q", fi.StringValue(e.Name))
 
 		opt := networks.CreateOpts{
 			Name:         fi.StringValue(e.Name),
@@ -114,10 +114,10 @@ func (_ *Network) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes
 		}
 
 		e.ID = fi.String(v.ID)
-		glog.V(2).Infof("Creating a new Openstack network, id=%s", v.ID)
+		klog.V(2).Infof("Creating a new Openstack network, id=%s", v.ID)
 		return nil
 	}
 
-	glog.V(2).Infof("Openstack task Network::RenderOpenstack did nothing")
+	klog.V(2).Infof("Openstack task Network::RenderOpenstack did nothing")
 	return nil
 }

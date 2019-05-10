@@ -28,7 +28,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // RenderAWS is responsible for performing creating / updating the launch template
@@ -130,12 +130,12 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 					if attempt > 10 {
 						return fmt.Errorf("IAM instance profile not yet created/propagated (original error: %v)", message)
 					}
-					glog.V(4).Infof("got an error indicating that the IAM instance profile %q is not ready: %q", fi.StringValue(ep.IAMInstanceProfile.Name), message)
+					klog.V(4).Infof("got an error indicating that the IAM instance profile %q is not ready: %q", fi.StringValue(ep.IAMInstanceProfile.Name), message)
 
 					time.Sleep(5 * time.Second)
 					continue
 				}
-				glog.V(4).Infof("ErrorCode=%q, Message=%q", awsup.AWSErrorCode(err), awsup.AWSErrorMessage(err))
+				klog.V(4).Infof("ErrorCode=%q, Message=%q", awsup.AWSErrorCode(err), awsup.AWSErrorMessage(err))
 			}
 		}
 
@@ -166,16 +166,16 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 		return nil, nil
 	}
 
-	glog.V(3).Infof("found existing LaunchTemplate: %s", fi.StringValue(lt.LaunchTemplateName))
+	klog.V(3).Infof("found existing LaunchTemplate: %s", fi.StringValue(lt.LaunchTemplateName))
 
 	actual := &LaunchTemplate{
-		AssociatePublicIP:  fi.Bool(false),
-		ID:                 lt.LaunchTemplateName,
-		ImageID:            lt.LaunchTemplateData.ImageId,
-		InstanceMonitoring: fi.Bool(false),
-		InstanceType:       lt.LaunchTemplateData.InstanceType,
-		Lifecycle:          t.Lifecycle,
-		Name:               t.Name,
+		AssociatePublicIP:      fi.Bool(false),
+		ID:                     lt.LaunchTemplateName,
+		ImageID:                lt.LaunchTemplateData.ImageId,
+		InstanceMonitoring:     fi.Bool(false),
+		InstanceType:           lt.LaunchTemplateData.InstanceType,
+		Lifecycle:              t.Lifecycle,
+		Name:                   t.Name,
 		RootVolumeOptimization: lt.LaunchTemplateData.EbsOptimized,
 	}
 
@@ -246,11 +246,11 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 	if t.ImageID != nil && actual.ImageID != nil && *actual.ImageID != *t.ImageID {
 		image, err := cloud.ResolveImage(*t.ImageID)
 		if err != nil {
-			glog.Warningf("unable to resolve image: %q: %v", *t.ImageID, err)
+			klog.Warningf("unable to resolve image: %q: %v", *t.ImageID, err)
 		} else if image == nil {
-			glog.Warningf("unable to resolve image: %q: not found", *t.ImageID)
+			klog.Warningf("unable to resolve image: %q: not found", *t.ImageID)
 		} else if aws.StringValue(image.ImageId) == *actual.ImageID {
-			glog.V(4).Infof("Returning matching ImageId as expected name: %q -> %q", *actual.ImageID, *t.ImageID)
+			klog.V(4).Infof("Returning matching ImageId as expected name: %q -> %q", *actual.ImageID, *t.ImageID)
 			actual.ImageID = t.ImageID
 		}
 	}

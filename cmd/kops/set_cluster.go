@@ -22,8 +22,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/templates"
 
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/commands"

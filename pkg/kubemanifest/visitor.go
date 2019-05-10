@@ -20,24 +20,24 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type visitorBase struct {
 }
 
 func (m *visitorBase) VisitString(path []string, v string, mutator func(string)) error {
-	glog.V(10).Infof("string value at %s: %s", strings.Join(path, "."), v)
+	klog.V(10).Infof("string value at %s: %s", strings.Join(path, "."), v)
 	return nil
 }
 
 func (m *visitorBase) VisitBool(path []string, v bool, mutator func(bool)) error {
-	glog.V(10).Infof("string value at %s: %v", strings.Join(path, "."), v)
+	klog.V(10).Infof("string value at %s: %v", strings.Join(path, "."), v)
 	return nil
 }
 
 func (m *visitorBase) VisitFloat64(path []string, v float64, mutator func(float64)) error {
-	glog.V(10).Infof("float64 value at %s: %f", strings.Join(path, "."), v)
+	klog.V(10).Infof("float64 value at %s: %f", strings.Join(path, "."), v)
 	return nil
 }
 

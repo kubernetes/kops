@@ -17,8 +17,8 @@ limitations under the License.
 package cloudup
 
 import (
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -46,6 +46,6 @@ func (l *SpecBuilder) BuildCompleteSpec(clusterSpec *api.ClusterSpec) (*api.Clus
 	reflectutils.JsonMergeStruct(masterKubelet, completed.MasterKubelet)
 	completed.MasterKubelet = masterKubelet
 
-	glog.V(1).Infof("options: %s", fi.DebugAsJsonStringIndent(completed))
+	klog.V(1).Infof("options: %s", fi.DebugAsJsonStringIndent(completed))
 	return completed, nil
 }

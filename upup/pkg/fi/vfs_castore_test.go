@@ -107,7 +107,7 @@ func TestVFSCAStoreRoundTrip(t *testing.T) {
 		}
 
 		expected := `
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Keyset
 metadata:
   creationTimestamp: null
@@ -166,7 +166,7 @@ spec:
 		}
 
 		expected := `
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Keyset
 metadata:
   creationTimestamp: null

@@ -17,7 +17,7 @@ limitations under the License.
 package fitasks
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -52,7 +52,7 @@ func (e *MirrorKeystore) Find(c *fi.Context) (*MirrorKeystore, error) {
 	}
 
 	// TODO: implement Find so that we aren't always mirroring
-	glog.V(2).Infof("MirrorKeystore::Find not implemented; always copying (inefficient)")
+	klog.V(2).Infof("MirrorKeystore::Find not implemented; always copying (inefficient)")
 	return nil, nil
 }
 

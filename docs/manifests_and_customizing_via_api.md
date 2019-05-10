@@ -57,7 +57,7 @@ NOTE: If you run `kops get cluster $NAME -o yaml > $NAME.yaml`, you will only ge
 The following is the contents of the exported YAML file.
 
 ```yaml
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: 2017-05-04T23:21:47Z
@@ -134,7 +134,7 @@ spec:
 
 ---
 
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-05-04T23:21:48Z
@@ -155,7 +155,7 @@ spec:
 
 ---
 
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-05-04T23:21:47Z
@@ -174,7 +174,7 @@ spec:
 
 ---
 
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-05-04T23:21:47Z
@@ -193,7 +193,7 @@ spec:
 
 ---
 
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-05-04T23:21:48Z
@@ -212,7 +212,7 @@ spec:
 
 ---
 
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-05-04T23:21:48Z
@@ -236,7 +236,7 @@ spec:
 With the above YAML file, a user can add configurations that are not available via the command line. For instance, you can add a `maxPrice` value to a new instance group and use spot instances. Also add node and cloud labels for the new instance group.
 
 ```yaml
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-05-04T23:21:48Z
@@ -289,7 +289,7 @@ Please refer to the rolling-update [documentation](cli/kops_rolling-update_clust
 ### Cluster Spec
 
 ```yaml
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: 2017-05-04T23:21:47Z
@@ -322,7 +322,7 @@ This command prints the entire YAML configuration. But _do not_ use the full doc
 ### Instance Groups
 
 ```yaml
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-05-04T23:21:48Z

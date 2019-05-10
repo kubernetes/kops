@@ -32,8 +32,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 )
 
 // defaultRetainLaunchConfigurationCount is the number of launch configurations (matching the name prefix) that we should
@@ -151,7 +151,7 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	// (TODO: this might not actually be attached to the AutoScalingGroup, if something went wrong previously)
 	lc := configurations[len(configurations)-1]
 
-	glog.V(2).Infof("found existing AutoscalingLaunchConfiguration: %q", *lc.LaunchConfigurationName)
+	klog.V(2).Infof("found existing AutoscalingLaunchConfiguration: %q", *lc.LaunchConfigurationName)
 
 	actual := &LaunchConfiguration{
 		Name:                   e.Name,
@@ -215,11 +215,11 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	if e.ImageID != nil && actual.ImageID != nil && *actual.ImageID != *e.ImageID {
 		image, err := cloud.ResolveImage(*e.ImageID)
 		if err != nil {
-			glog.Warningf("unable to resolve image: %q: %v", *e.ImageID, err)
+			klog.Warningf("unable to resolve image: %q: %v", *e.ImageID, err)
 		} else if image == nil {
-			glog.Warningf("unable to resolve image: %q: not found", *e.ImageID)
+			klog.Warningf("unable to resolve image: %q: not found", *e.ImageID)
 		} else if aws.StringValue(image.ImageId) == *actual.ImageID {
-			glog.V(4).Infof("Returning matching ImageId as expected name: %q -> %q", *actual.ImageID, *e.ImageID)
+			klog.V(4).Infof("Returning matching ImageId as expected name: %q -> %q", *actual.ImageID, *e.ImageID)
 			actual.ImageID = e.ImageID
 		}
 	}
@@ -266,7 +266,7 @@ func (s *LaunchConfiguration) CheckChanges(a, e, changes *LaunchConfiguration) e
 func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LaunchConfiguration) error {
 	launchConfigurationName := *e.Name + "-" + fi.BuildTimestampString()
 
-	glog.V(2).Infof("Creating AutoscalingLaunchConfiguration with Name:%q", launchConfigurationName)
+	klog.V(2).Infof("Creating AutoscalingLaunchConfiguration with Name:%q", launchConfigurationName)
 
 	if e.ImageID == nil {
 		return fi.RequiredField("ImageID")
@@ -348,7 +348,7 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	for {
 		attempt++
 
-		glog.V(8).Infof("AWS CreateLaunchConfiguration %s", aws.StringValue(request.LaunchConfigurationName))
+		klog.V(8).Infof("AWS CreateLaunchConfiguration %s", aws.StringValue(request.LaunchConfigurationName))
 		_, err = t.Cloud.Autoscaling().CreateLaunchConfiguration(request)
 		if err == nil {
 			break
@@ -360,12 +360,12 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 				if attempt > maxAttempts {
 					return fmt.Errorf("IAM instance profile not yet created/propagated (original error: %v)", message)
 				}
-				glog.V(4).Infof("got an error indicating that the IAM instance profile %q is not ready: %q", fi.StringValue(e.IAMInstanceProfile.Name), message)
-				glog.Infof("waiting for IAM instance profile %q to be ready", fi.StringValue(e.IAMInstanceProfile.Name))
+				klog.V(4).Infof("got an error indicating that the IAM instance profile %q is not ready: %q", fi.StringValue(e.IAMInstanceProfile.Name), message)
+				klog.Infof("waiting for IAM instance profile %q to be ready", fi.StringValue(e.IAMInstanceProfile.Name))
 				time.Sleep(10 * time.Second)
 				continue
 			}
-			glog.V(4).Infof("ErrorCode=%q, Message=%q", awsup.AWSErrorCode(err), awsup.AWSErrorMessage(err))
+			klog.V(4).Infof("ErrorCode=%q, Message=%q", awsup.AWSErrorCode(err), awsup.AWSErrorMessage(err))
 		}
 
 		return fmt.Errorf("error creating AutoscalingLaunchConfiguration: %v", err)
@@ -427,6 +427,7 @@ type terraformBlockDevice struct {
 	// For root
 	VolumeType *string `json:"volume_type,omitempty"`
 	VolumeSize *int64  `json:"volume_size,omitempty"`
+	Iops       *int64  `json:"iops,omitempty"`
 	// Encryption
 	Encrypted *bool `json:"encrypted,omitempty"`
 	// Termination
@@ -493,6 +494,7 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 				tf.RootBlockDevice = &terraformBlockDevice{
 					VolumeType:          bdm.EbsVolumeType,
 					VolumeSize:          bdm.EbsVolumeSize,
+					Iops:                bdm.EbsVolumeIops,
 					DeleteOnTermination: fi.Bool(true),
 				}
 			}
@@ -576,6 +578,7 @@ type cloudformationBlockDevice struct {
 type cloudformationBlockDeviceEBS struct {
 	VolumeType          *string `json:"VolumeType,omitempty"`
 	VolumeSize          *int64  `json:"VolumeSize,omitempty"`
+	Iops                *int64  `json:"Iops,omitempty"`
 	DeleteOnTermination *bool   `json:"DeleteOnTermination,omitempty"`
 	Encrypted           *bool   `json:"Encrypted,omitempty"`
 }
@@ -645,6 +648,7 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 					Ebs: &cloudformationBlockDeviceEBS{
 						VolumeType:          bdm.EbsVolumeType,
 						VolumeSize:          bdm.EbsVolumeSize,
+						Iops:                bdm.EbsVolumeIops,
 						DeleteOnTermination: fi.Bool(true),
 					},
 				}
@@ -721,7 +725,7 @@ func (d *deleteLaunchConfiguration) Item() string {
 }
 
 func (d *deleteLaunchConfiguration) Delete(t fi.Target) error {
-	glog.V(2).Infof("deleting launch configuration %v", d)
+	klog.V(2).Infof("deleting launch configuration %v", d)
 
 	awsTarget, ok := t.(*awsup.AWSAPITarget)
 	if !ok {
@@ -733,7 +737,7 @@ func (d *deleteLaunchConfiguration) Delete(t fi.Target) error {
 	}
 
 	name := aws.StringValue(request.LaunchConfigurationName)
-	glog.V(2).Infof("Calling autoscaling DeleteLaunchConfiguration for %s", name)
+	klog.V(2).Infof("Calling autoscaling DeleteLaunchConfiguration for %s", name)
 	_, err := awsTarget.Cloud.Autoscaling().DeleteLaunchConfiguration(request)
 	if err != nil {
 		return fmt.Errorf("error deleting autoscaling LaunchConfiguration %s: %v", name, err)
@@ -764,7 +768,7 @@ func (e *LaunchConfiguration) FindDeletions(c *fi.Context) ([]fi.Deletion, error
 		removals = append(removals, &deleteLaunchConfiguration{lc: configuration})
 	}
 
-	glog.V(2).Infof("will delete launch configurations: %v", removals)
+	klog.V(2).Infof("will delete launch configurations: %v", removals)
 
 	return removals, nil
 }

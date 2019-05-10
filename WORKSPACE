@@ -6,8 +6,8 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 http_archive(
     name = "io_bazel_rules_go",
-    url = "https://github.com/bazelbuild/rules_go/releases/download/0.18.1/rules_go-0.18.1.tar.gz",
-    sha256 = "77dfd303492f2634de7a660445ee2d3de2960cbd52f97d8c0dffa9362d3ddef9",
+    url = "https://github.com/bazelbuild/rules_go/releases/download/0.18.2/rules_go-0.18.2.tar.gz",
+    sha256 = "31f959ecf3687f6e0bb9d01e1e7a7153367ecd82816c9c0ae149cd0e5a92bf8c",
 )
 
 http_archive(
@@ -21,7 +21,7 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_to
 go_rules_dependencies()
 
 go_register_toolchains(
-    go_version = "1.10.8",
+    go_version = "1.12.1",
 )
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
@@ -67,11 +67,15 @@ git_repository(
 load(
     "@distroless//package_manager:package_manager.bzl",
     "package_manager_repositories",
-    "dpkg_src",
-    "dpkg_list",
 )
 
 package_manager_repositories()
+
+load(
+    "@distroless//package_manager:dpkg.bzl",
+    "dpkg_src",
+    "dpkg_list",
+)
 
 dpkg_src(
     name = "debian_stretch",
@@ -112,4 +116,11 @@ http_file(
     name = "utils_tar_gz",
     urls = ["https://kubeupv2.s3.amazonaws.com/kops/1.11.1/linux/amd64/utils.tar.gz"],
     sha256 = "0e685eb751a32f782705311049b2592c4724add6f19ffdad1e7ce4f55816d7d8",
+)
+
+git_repository(
+    name = "io_k8s_repo_infra",
+    commit = "4ce715fbe67d8fbed05ec2bb47a148e754100a4b",
+    remote = "https://github.com/kubernetes/repo-infra.git",
+    shallow_since = "1517262872 -0800",
 )

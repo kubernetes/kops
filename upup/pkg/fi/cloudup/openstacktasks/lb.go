@@ -18,14 +18,15 @@ package openstacktasks
 
 import (
 	"fmt"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"time"
 
-	"github.com/golang/glog"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -73,7 +74,7 @@ func waitLoadbalancerActiveProvisioningStatus(client *gophercloud.ServiceClient,
 		} else if loadbalancer.ProvisioningStatus == errorStatus {
 			return true, fmt.Errorf("loadbalancer has gone into ERROR state")
 		} else {
-			glog.Infof("Waiting for Loadbalancer to be ACTIVE...")
+			klog.Infof("Waiting for Loadbalancer to be ACTIVE...")
 			return false, nil
 		}
 
@@ -183,7 +184,7 @@ func (_ *LB) CheckChanges(a, e, changes *LB) error {
 
 func (_ *LB) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *LB) error {
 	if a == nil {
-		glog.V(2).Infof("Creating LB with Name: %q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating LB with Name: %q", fi.StringValue(e.Name))
 
 		subnets, err := t.Cloud.ListSubnets(subnets.ListOpts{
 			Name: fi.StringValue(e.Subnet),
@@ -235,6 +236,6 @@ func (_ *LB) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *LB)
 		return nil
 	}
 
-	glog.V(2).Infof("Openstack task LB::RenderOpenstack did nothing")
+	klog.V(2).Infof("Openstack task LB::RenderOpenstack did nothing")
 	return nil
 }

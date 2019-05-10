@@ -34,9 +34,9 @@ type FakeKeysets struct {
 	ns   string
 }
 
-var keysetsResource = schema.GroupVersionResource{Group: "kops", Version: "", Resource: "keysets"}
+var keysetsResource = schema.GroupVersionResource{Group: "kops.k8s.io", Version: "", Resource: "keysets"}
 
-var keysetsKind = schema.GroupVersionKind{Group: "kops", Version: "", Kind: "Keyset"}
+var keysetsKind = schema.GroupVersionKind{Group: "kops.k8s.io", Version: "", Kind: "Keyset"}
 
 // Get takes name of the keyset, and returns the corresponding keyset object, and an error if there is any.
 func (c *FakeKeysets) Get(name string, options v1.GetOptions) (result *kops.Keyset, err error) {
@@ -119,7 +119,7 @@ func (c *FakeKeysets) DeleteCollection(options *v1.DeleteOptions, listOptions v1
 // Patch applies the patch and returns the patched keyset.
 func (c *FakeKeysets) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *kops.Keyset, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(keysetsResource, c.ns, name, data, subresources...), &kops.Keyset{})
+		Invokes(testing.NewPatchSubresourceAction(keysetsResource, c.ns, name, pt, data, subresources...), &kops.Keyset{})
 
 	if obj == nil {
 		return nil, err

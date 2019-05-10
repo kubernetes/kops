@@ -86,13 +86,15 @@ Kubernetes version.
 
 #### Compatibility Matrix
 
-| kops version  | k8s 1.8.x | k8s 1.9.x | k8s 1.10.x | k8s 1.11.x | k8s 1.12.x |
-|---------------|-----------|-----------|------------|------------|------------|
-| 1.12.x - Alpha| ✔         | ✔         | ✔          | ✔          | ✔         |
-| 1.11.x        | ✔         | ✔         | ✔          | ✔          | ❌          |
-| 1.10.x        | ✔         | ✔         | ✔          | ❌          | ❌          |
-| ~~1.9.x~~         | ✔         | ✔         | ❌          | ❌          | ❌          |
-| ~~1.8.x~~         | ✔         | ❌         | ❌          | ❌          | ❌          |
+| kops version  | k8s 1.8.x | k8s 1.9.x | k8s 1.10.x | k8s 1.11.x | k8s 1.12.x | k8s 1.13.x | k8s 1.14.x |
+|---------------|-----------|-----------|------------|------------|------------|------------|------------|
+| 1.14.x - Alpha| ✔         | ✔         | ✔          | ✔          | ✔          | ✔          | ✔          |
+| 1.13.x - Alpha| ✔         | ✔         | ✔          | ✔          | ✔          | ✔          | ❌         |
+| 1.12.x - Beta | ✔         | ✔         | ✔          | ✔          | ✔          | ❌         | ❌         |
+| 1.11.x        | ✔         | ✔         | ✔          | ✔          | ❌         | ❌         | ❌         |
+| 1.10.x        | ✔         | ✔         | ✔          | ❌         | ❌         | ❌         | ❌         |
+| ~~1.9.x~~     | ✔         | ✔         | ❌         | ❌         | ❌         | ❌         | ❌         |
+| ~~1.8.x~~     | ✔         | ❌        | ❌         | ❌         | ❌         | ❌         | ❌         |
 
 Use the latest version of kops for all releases of Kubernetes, with the caveat
 that higher versions of Kubernetes are not _officially_ supported by kops. Releases who are ~~crossed out~~ _should_ work but we suggest should be upgraded soon.
@@ -113,7 +115,7 @@ encountered.
 
 ### Prerequisite
 
-`kubectl` is required, see [here](http://kubernetes.io/docs/user-guide/prereqs/).
+`kubectl` is required, see [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 
 
 ### OSX From Homebrew

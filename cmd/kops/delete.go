@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/cli-runtime/pkg/genericclioptions/resource"
+	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
@@ -32,9 +32,9 @@ import (
 	"k8s.io/kops/pkg/sshcredentials"
 	"k8s.io/kops/util/pkg/text"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/templates"
 )
 
 type DeleteOptions struct {
@@ -145,7 +145,7 @@ func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 
 				// If the cluster has been already deleted we cannot delete the ig
 				if deletedClusters.Has(options.ClusterName) {
-					glog.V(4).Infof("Skipping instance group %q because cluster %q has been deleted", v.ObjectMeta.Name, options.ClusterName)
+					klog.V(4).Infof("Skipping instance group %q because cluster %q has been deleted", v.ObjectMeta.Name, options.ClusterName)
 					continue
 				}
 
@@ -156,7 +156,7 @@ func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 			case *kopsapi.SSHCredential:
 				fingerprint, err := sshcredentials.Fingerprint(v.Spec.PublicKey)
 				if err != nil {
-					glog.Error("unable to compute fingerprint for public key")
+					klog.Error("unable to compute fingerprint for public key")
 				}
 
 				options := &DeleteSecretOptions{
@@ -171,7 +171,7 @@ func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 					exitWithError(err)
 				}
 			default:
-				glog.V(2).Infof("Type of object was %T", v)
+				klog.V(2).Infof("Type of object was %T", v)
 				return fmt.Errorf("Unhandled kind %q in %s", gvk, f)
 			}
 		}

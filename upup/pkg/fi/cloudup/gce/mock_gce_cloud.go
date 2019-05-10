@@ -19,11 +19,11 @@ package gce
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/storage/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/klog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	dnsproviderclouddns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 	"k8s.io/kops/pkg/apis/kops"
@@ -55,7 +55,7 @@ func buildMockGCECloud(region string, project string) *mockGCECloud {
 
 // GetCloudGroups is not implemented yet
 func (c *mockGCECloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	glog.V(8).Infof("mockGCECloud cloud provider GetCloudGroups not implemented yet")
+	klog.V(8).Infof("mockGCECloud cloud provider GetCloudGroups not implemented yet")
 	return nil, fmt.Errorf("mockGCECloud cloud provider does not support getting cloud groups at this time")
 }
 
@@ -89,19 +89,19 @@ func (c *mockGCECloud) DNS() (dnsprovider.Interface, error) {
 
 // Compute implements GCECloud::Compute
 func (c *mockGCECloud) Compute() *compute.Service {
-	glog.Fatalf("mockGCECloud::Compute not implemented")
+	klog.Fatalf("mockGCECloud::Compute not implemented")
 	return nil
 }
 
 // Storage implements GCECloud::Storage
 func (c *mockGCECloud) Storage() *storage.Service {
-	glog.Fatalf("mockGCECloud::Storage not implemented")
+	klog.Fatalf("mockGCECloud::Storage not implemented")
 	return nil
 }
 
 // IAM returns the IAM client
 func (c *mockGCECloud) IAM() *iam.Service {
-	glog.Fatalf("mockGCECloud::IAM not implemented")
+	klog.Fatalf("mockGCECloud::IAM not implemented")
 	return nil
 }
 

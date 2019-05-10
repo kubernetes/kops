@@ -21,7 +21,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -37,9 +37,11 @@ func NewVFSScan(base Path) *VFSScan {
 
 type ChangeType string
 
-const ChangeType_Added ChangeType = "ADDED"
-const ChangeType_Removed ChangeType = "REMOVED"
-const ChangeType_Modified ChangeType = "MODIFIED"
+const (
+	ChangeType_Added    ChangeType = "ADDED"
+	ChangeType_Removed  ChangeType = "REMOVED"
+	ChangeType_Modified ChangeType = "MODIFIED"
+)
 
 type Change struct {
 	ChangeType ChangeType
@@ -144,7 +146,7 @@ func SyncDir(src *VFSScan, destBase Path) error {
 			return err
 		}
 		if hashMatch {
-			glog.V(2).Infof("File hashes match: %s and %s", f, destFile)
+			klog.V(2).Infof("File hashes match: %s and %s", f, destFile)
 			continue
 		}
 
@@ -165,7 +167,7 @@ func CopyFile(src, dest Path, acl ACL) error {
 
 	defer func() {
 		if err := os.Remove(tempFile.Name()); err != nil {
-			glog.Warningf("error removing temp file %q: %v", tempFile.Name(), err)
+			klog.Warningf("error removing temp file %q: %v", tempFile.Name(), err)
 		}
 	}()
 	defer tempFile.Close()
@@ -178,7 +180,7 @@ func CopyFile(src, dest Path, acl ACL) error {
 		return fmt.Errorf("error seeking in temp file during copy: %v", err)
 	}
 
-	glog.V(2).Infof("Copying data from %s to %s", src, dest)
+	klog.V(2).Infof("Copying data from %s to %s", src, dest)
 	err = dest.WriteFile(tempFile, acl)
 	if err != nil {
 		return fmt.Errorf("error writing dest file %q: %v", dest, err)
@@ -201,11 +203,11 @@ func hashesMatch(src, dest Path) (bool, error) {
 	{
 		srcHash, err := sh.PreferredHash()
 		if err != nil {
-			glog.Warningf("error getting hash of source file %s: %v", src, err)
+			klog.Warningf("error getting hash of source file %s: %v", src, err)
 		} else if srcHash != nil {
 			destHash, err := dh.Hash(srcHash.Algorithm)
 			if err != nil {
-				glog.Warningf("error comparing hash of dest file %s: %v", dest, err)
+				klog.Warningf("error comparing hash of dest file %s: %v", dest, err)
 			} else if destHash != nil {
 				return destHash.Equal(srcHash), nil
 			}
@@ -215,18 +217,18 @@ func hashesMatch(src, dest Path) (bool, error) {
 	{
 		destHash, err := dh.PreferredHash()
 		if err != nil {
-			glog.Warningf("error getting hash of dest file %s: %v", src, err)
+			klog.Warningf("error getting hash of dest file %s: %v", src, err)
 		} else if destHash != nil {
 			srcHash, err := dh.Hash(destHash.Algorithm)
 			if err != nil {
-				glog.Warningf("error comparing hash of src file %s: %v", dest, err)
+				klog.Warningf("error comparing hash of src file %s: %v", dest, err)
 			} else if srcHash != nil {
 				return srcHash.Equal(destHash), nil
 			}
 		}
 	}
 
-	glog.Infof("No compatible hash: %s and %s", src, dest)
+	klog.Infof("No compatible hash: %s and %s", src, dest)
 	return false, nil
 }
 

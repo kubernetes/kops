@@ -31,7 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/pricing"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
@@ -41,7 +41,6 @@ func main() {
 	flag.StringVar(&outputPath, "out", outputPath, "file to write")
 
 	flag.Parse()
-	flag.Lookup("logtostderr").Value.Set("true")
 
 	if err := run(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
@@ -54,7 +53,7 @@ func run() error {
 		return fmt.Errorf("must specify output file with --out")
 	}
 
-	glog.Info("Beginning AWS Machine Refresh")
+	klog.Info("Beginning AWS Machine Refresh")
 
 	// Not currently in the API
 	t2CreditsPerHour := map[string]float32{
@@ -303,7 +302,7 @@ func run() error {
 		output = output + "\n"
 	}
 
-	glog.Infof("Writing changes to %v", outputPath)
+	klog.Infof("Writing changes to %v", outputPath)
 
 	fileInput, err := ioutil.ReadFile(outputPath)
 	if err != nil {
@@ -341,8 +340,8 @@ func run() error {
 		return fmt.Errorf("error writing %s: %v", outputPath, err)
 	}
 
-	glog.Info("Done.")
-	glog.Flush()
+	klog.Info("Done.")
+	klog.Flush()
 
 	return nil
 }
@@ -352,7 +351,7 @@ func stringToFloat32(s string) float32 {
 	clean := strings.Replace(s, ",", "", -1)
 	value, err := strconv.ParseFloat(clean, 32)
 	if err != nil {
-		glog.Errorf("error converting string to float32: %v", err)
+		klog.Errorf("error converting string to float32: %v", err)
 	}
 	return float32(value)
 }
@@ -362,7 +361,7 @@ func stringToInt(s string) int {
 	clean := strings.Replace(s, ",", "", -1)
 	value, err := strconv.Atoi(clean)
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 	}
 	return value
 }

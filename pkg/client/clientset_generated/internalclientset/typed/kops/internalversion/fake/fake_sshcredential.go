@@ -34,9 +34,9 @@ type FakeSSHCredentials struct {
 	ns   string
 }
 
-var sshcredentialsResource = schema.GroupVersionResource{Group: "kops", Version: "", Resource: "sshcredentials"}
+var sshcredentialsResource = schema.GroupVersionResource{Group: "kops.k8s.io", Version: "", Resource: "sshcredentials"}
 
-var sshcredentialsKind = schema.GroupVersionKind{Group: "kops", Version: "", Kind: "SSHCredential"}
+var sshcredentialsKind = schema.GroupVersionKind{Group: "kops.k8s.io", Version: "", Kind: "SSHCredential"}
 
 // Get takes name of the sSHCredential, and returns the corresponding sSHCredential object, and an error if there is any.
 func (c *FakeSSHCredentials) Get(name string, options v1.GetOptions) (result *kops.SSHCredential, err error) {
@@ -119,7 +119,7 @@ func (c *FakeSSHCredentials) DeleteCollection(options *v1.DeleteOptions, listOpt
 // Patch applies the patch and returns the patched sSHCredential.
 func (c *FakeSSHCredentials) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *kops.SSHCredential, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(sshcredentialsResource, c.ns, name, data, subresources...), &kops.SSHCredential{})
+		Invokes(testing.NewPatchSubresourceAction(sshcredentialsResource, c.ns, name, pt, data, subresources...), &kops.SSHCredential{})
 
 	if obj == nil {
 		return nil, err

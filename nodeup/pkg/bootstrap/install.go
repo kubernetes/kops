@@ -22,8 +22,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -58,14 +58,14 @@ func (i *Installation) Run() error {
 	// If there is a package task, we need an update packages task
 	for _, t := range tasks {
 		if _, ok := t.(*nodetasks.Package); ok {
-			glog.Infof("Package task found; adding UpdatePackages task")
+			klog.Infof("Package task found; adding UpdatePackages task")
 			tasks["UpdatePackages"] = nodetasks.NewUpdatePackages()
 			break
 		}
 	}
 
 	if tasks["UpdatePackages"] == nil {
-		glog.Infof("No package task found; won't update packages")
+		klog.Infof("No package task found; won't update packages")
 	}
 
 	var configBase vfs.Path
@@ -191,7 +191,7 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
 	manifestString := manifest.Render()
-	glog.V(8).Infof("Built service manifest %q\n%s", serviceName, manifestString)
+	klog.V(8).Infof("Built service manifest %q\n%s", serviceName, manifestString)
 
 	service := &nodetasks.Service{
 		Name:       serviceName,

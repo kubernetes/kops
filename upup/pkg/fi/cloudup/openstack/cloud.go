@@ -25,7 +25,6 @@ import (
 
 	"k8s.io/kops/pkg/dns"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	os "github.com/gophercloud/gophercloud/openstack"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
@@ -49,6 +48,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/openstack/designate"
 	"k8s.io/kops/pkg/apis/kops"
@@ -57,10 +57,12 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
-const TagNameRolePrefix = "k8s.io/role/"
-const TagClusterName = "KubernetesCluster"
-const TagRoleMaster = "master"
+const (
+	TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+	TagNameRolePrefix        = "k8s.io/role/"
+	TagClusterName           = "KubernetesCluster"
+	TagRoleMaster            = "master"
+)
 
 // ErrNotFound is used to inform that the object is not found
 var ErrNotFound = "Resource not found"
@@ -319,7 +321,7 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 		Transport: transport,
 	}
 
-	glog.V(2).Info("authenticating to keystone")
+	klog.V(2).Info("authenticating to keystone")
 
 	err = os.Authenticate(provider, authOption)
 	if err != nil {
@@ -408,7 +410,7 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 	c.useOctavia = octavia
 	var lbClient *gophercloud.ServiceClient
 	if octavia {
-		glog.V(2).Infof("Openstack using Octavia lbaasv2 api")
+		klog.V(2).Infof("Openstack using Octavia lbaasv2 api")
 		lbClient, err = os.NewLoadBalancerV2(provider, gophercloud.EndpointOpts{
 			Region: region,
 		})
@@ -416,7 +418,7 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 			return nil, fmt.Errorf("error building lb client: %v", err)
 		}
 	} else {
-		glog.V(2).Infof("Openstack using deprecated lbaasv2 api")
+		klog.V(2).Infof("Openstack using deprecated lbaasv2 api")
 		lbClient, err = os.NewNetworkV2(provider, gophercloud.EndpointOpts{
 			Region: region,
 		})
@@ -522,7 +524,7 @@ func (c *openstackCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []
 		}
 		if instancegroup == nil {
 			if warnUnmatched {
-				glog.Warningf("Found servergrp with no corresponding instance group %q", name)
+				klog.Warningf("Found servergrp with no corresponding instance group %q", name)
 			}
 			continue
 		}
@@ -542,7 +544,7 @@ func (c *openstackCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiI
 	var ingresses []kops.ApiIngressStatus
 	if cluster.Spec.MasterPublicName != "" {
 		// Note that this must match OpenstackModel lb name
-		glog.V(2).Infof("Querying Openstack to find Loadbalancers for API (%q)", cluster.Name)
+		klog.V(2).Infof("Querying Openstack to find Loadbalancers for API (%q)", cluster.Name)
 		lbList, err := c.ListLBs(loadbalancers.ListOpts{
 			Name: cluster.Spec.MasterPublicName,
 		})

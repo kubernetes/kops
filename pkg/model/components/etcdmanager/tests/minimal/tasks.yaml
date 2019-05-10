@@ -92,7 +92,7 @@ Contents:
         env:
         - name: AWS_REGION
           value: cn-north-1
-        image: kopeio/etcd-manager:3.0.20190328
+        image: kopeio/etcd-manager:3.0.20190509
         name: etcd-manager
         resources:
           requests:
@@ -165,7 +165,7 @@ Contents:
         env:
         - name: AWS_REGION
           value: cn-north-1
-        image: kopeio/etcd-manager:3.0.20190328
+        image: kopeio/etcd-manager:3.0.20190509
         name: etcd-manager
         resources:
           requests:

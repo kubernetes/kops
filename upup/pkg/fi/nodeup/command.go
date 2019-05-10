@@ -47,8 +47,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 )
 
 // MaxTaskDuration is the amount of time to keep trying for; we retry for a long time - there is not really any great fallback
@@ -159,7 +159,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("error parsing InstanceGroup %q: %v", instanceGroupLocation, err)
 		}
 	} else {
-		glog.Warningf("No instance group defined in nodeup config")
+		klog.Warningf("No instance group defined in nodeup config")
 	}
 
 	err := evaluateSpec(c.cluster)
@@ -178,8 +178,8 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	nodeTags.Insert(osTags...)
 	nodeTags.Insert(c.config.Tags...)
 
-	glog.Infof("Config tags: %v", c.config.Tags)
-	glog.Infof("OS tags: %v", osTags)
+	klog.Infof("Config tags: %v", c.config.Tags)
+	klog.Infof("OS tags: %v", osTags)
 
 	modelContext := &model.NodeupModelContext{
 		Architecture:  model.ArchitectureAmd64,
@@ -191,7 +191,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	if c.cluster.Spec.SecretStore != "" {
-		glog.Infof("Building SecretStore at %q", c.cluster.Spec.SecretStore)
+		klog.Infof("Building SecretStore at %q", c.cluster.Spec.SecretStore)
 		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.SecretStore)
 		if err != nil {
 			return fmt.Errorf("error building secret store path: %v", err)
@@ -203,7 +203,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	if c.cluster.Spec.KeyStore != "" {
-		glog.Infof("Building KeyStore at %q", c.cluster.Spec.KeyStore)
+		klog.Infof("Building KeyStore at %q", c.cluster.Spec.KeyStore)
 		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.KeyStore)
 		if err != nil {
 			return fmt.Errorf("error building key store path: %v", err)
@@ -328,7 +328,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	context, err := fi.NewContext(target, nil, cloud, keyStore, secretStore, configBase, checkExisting, taskMap)
 	if err != nil {
-		glog.Exitf("error building context: %v", err)
+		klog.Exitf("error building context: %v", err)
 	}
 	defer context.Close()
 
@@ -337,12 +337,12 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	err = context.RunTasks(options)
 	if err != nil {
-		glog.Exitf("error running tasks: %v", err)
+		klog.Exitf("error running tasks: %v", err)
 	}
 
 	err = target.Finish(taskMap)
 	if err != nil {
-		glog.Exitf("error closing target: %v", err)
+		klog.Exitf("error closing target: %v", err)
 	}
 
 	return nil
@@ -392,7 +392,7 @@ func evaluateSecurityGroups(vpcId string) ([]string, error) {
 	}
 	s.Handlers.Send.PushFront(func(r *request.Request) {
 		// Log requests
-		glog.V(4).Infof("AWS API Request: %s/%s", r.ClientInfo.ServiceName, r.Operation.Name)
+		klog.V(4).Infof("AWS API Request: %s/%s", r.ClientInfo.ServiceName, r.Operation.Name)
 	})
 
 	metadata := ec2metadata.New(s, config)
@@ -452,12 +452,12 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 		// the first one as the hostname.
 		domains := strings.Fields(string(vBytes))
 		if len(domains) == 0 {
-			glog.Warningf("Local hostname from AWS metadata service was empty")
+			klog.Warningf("Local hostname from AWS metadata service was empty")
 			return "", nil
 		}
 
 		domain := domains[0]
-		glog.Infof("Using hostname from AWS metadata service: %s", domain)
+		klog.Infof("Using hostname from AWS metadata service: %s", domain)
 
 		return domain, nil
 	}
@@ -494,12 +494,12 @@ func evaluateBindAddress(bindAddress string) (string, error) {
 		// For now just choose the first one.
 		ips := strings.Fields(string(vBytes))
 		if len(ips) == 0 {
-			glog.Warningf("Local IP from AWS metadata service was empty")
+			klog.Warningf("Local IP from AWS metadata service was empty")
 			return "", nil
 		}
 
 		ip := ips[0]
-		glog.Infof("Using IP from AWS metadata service: %s", ip)
+		klog.Infof("Using IP from AWS metadata service: %s", ip)
 
 		return ip, nil
 	}
@@ -522,7 +522,7 @@ func evaluateDockerSpecStorage(spec *api.DockerConfig) error {
 			}
 			supported, err := kernelHasFilesystem(fs)
 			if err != nil {
-				glog.Warningf("error checking if %q filesystem is supported: %v", fs, err)
+				klog.Warningf("error checking if %q filesystem is supported: %v", fs, err)
 				continue
 			}
 
@@ -531,28 +531,28 @@ func evaluateDockerSpecStorage(spec *api.DockerConfig) error {
 				// aufs -> aufs
 				module := fs
 				if err = modprobe(fs); err != nil {
-					glog.Warningf("error running `modprobe %q`: %v", module, err)
+					klog.Warningf("error running `modprobe %q`: %v", module, err)
 				}
 			}
 
 			supported, err = kernelHasFilesystem(fs)
 			if err != nil {
-				glog.Warningf("error checking if %q filesystem is supported: %v", fs, err)
+				klog.Warningf("error checking if %q filesystem is supported: %v", fs, err)
 				continue
 			}
 
 			if supported {
-				glog.Infof("Using supported docker storage %q", opt)
+				klog.Infof("Using supported docker storage %q", opt)
 				spec.Storage = fi.String(opt)
 				return nil
 			}
 
-			glog.Warningf("%q docker storage was specified, but filesystem is not supported", opt)
+			klog.Warningf("%q docker storage was specified, but filesystem is not supported", opt)
 		}
 
 		// Just in case we don't recognize the driver?
 		// TODO: Is this the best behaviour
-		glog.Warningf("No storage module was supported from %q, will default to %q", storage, precedence[0])
+		klog.Warningf("No storage module was supported from %q, will default to %q", storage, precedence[0])
 		spec.Storage = fi.String(precedence[0])
 		return nil
 	}
@@ -582,14 +582,14 @@ func kernelHasFilesystem(fs string) (bool, error) {
 
 // modprobe will exec `modprobe <module>`
 func modprobe(module string) error {
-	glog.Infof("Doing modprobe for module %v", module)
+	klog.Infof("Doing modprobe for module %v", module)
 	out, err := exec.Command("/sbin/modprobe", module).CombinedOutput()
 	outString := string(out)
 	if err != nil {
 		return fmt.Errorf("modprobe for module %q failed (%v): %s", module, err, outString)
 	}
 	if outString != "" {
-		glog.Infof("Output from modprobe %s:\n%s", module, outString)
+		klog.Infof("Output from modprobe %s:\n%s", module, outString)
 	}
 	return nil
 }
@@ -600,7 +600,7 @@ func loadKernelModules(context *model.NodeupModelContext) error {
 	err := modprobe("br_netfilter")
 	if err != nil {
 		// TODO: Return error in 1.11 (too risky for 1.10)
-		glog.Warningf("error loading br_netfilter module: %v", err)
+		klog.Warningf("error loading br_netfilter module: %v", err)
 	}
 	// TODO: Add to /etc/modules-load.d/ ?
 	return nil

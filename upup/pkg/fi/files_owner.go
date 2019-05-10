@@ -23,7 +23,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func EnsureFileOwner(destPath string, owner string, groupName string) (bool, error) {
@@ -53,7 +53,7 @@ func EnsureFileOwner(destPath string, owner string, groupName string) (bool, err
 		return changed, nil
 	}
 
-	glog.Infof("Changing file owner/group for %q to %s:%+v", destPath, owner, group)
+	klog.Infof("Changing file owner/group for %q to %s:%+v", destPath, owner, group)
 	err = os.Lchown(destPath, user.Uid, group.Gid)
 	if err != nil {
 		return changed, fmt.Errorf("error setting file owner/group for %q: %v", destPath, err)

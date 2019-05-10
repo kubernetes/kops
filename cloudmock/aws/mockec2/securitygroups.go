@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockEC2) CreateSecurityGroupRequest(*ec2.CreateSecurityGroupInput) (*request.Request, *ec2.CreateSecurityGroupOutput) {
@@ -37,7 +37,7 @@ func (m *MockEC2) CreateSecurityGroup(request *ec2.CreateSecurityGroupInput) (*e
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("CreateSecurityGroup: %v", request)
+	klog.Infof("CreateSecurityGroup: %v", request)
 
 	m.securityGroupNumber++
 	n := m.securityGroupNumber
@@ -71,7 +71,7 @@ func (m *MockEC2) DeleteSecurityGroup(request *ec2.DeleteSecurityGroupInput) (*e
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DeleteSecurityGroup: %v", request)
+	klog.Infof("DeleteSecurityGroup: %v", request)
 
 	id := aws.StringValue(request.GroupId)
 	o := m.SecurityGroups[id]
@@ -102,7 +102,7 @@ func (m *MockEC2) DescribeSecurityGroups(request *ec2.DescribeSecurityGroupsInpu
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DescribeSecurityGroups: %v", request)
+	klog.Infof("DescribeSecurityGroups: %v", request)
 
 	if len(request.GroupIds) != 0 {
 		request.Filters = append(request.Filters, &ec2.Filter{Name: s("group-id"), Values: request.GroupIds})
@@ -190,25 +190,25 @@ func (m *MockEC2) RevokeSecurityGroupIngress(request *ec2.RevokeSecurityGroupIng
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("RevokeSecurityGroupIngress: %v", request)
+	klog.Infof("RevokeSecurityGroupIngress: %v", request)
 
 	if aws.StringValue(request.GroupId) == "" {
 		return nil, fmt.Errorf("GroupId not specified")
 	}
 
 	if request.DryRun != nil {
-		glog.Fatalf("DryRun")
+		klog.Fatalf("DryRun")
 	}
 
 	if request.GroupName != nil {
-		glog.Fatalf("GroupName not implemented")
+		klog.Fatalf("GroupName not implemented")
 	}
 	sg := m.SecurityGroups[*request.GroupId]
 	if sg == nil {
 		return nil, fmt.Errorf("SecurityGroup not found")
 	}
 
-	glog.Warningf("RevokeSecurityGroupIngress not implemented - does not actually revoke permissions")
+	klog.Warningf("RevokeSecurityGroupIngress not implemented - does not actually revoke permissions")
 
 	response := &ec2.RevokeSecurityGroupIngressOutput{}
 	return response, nil
@@ -224,14 +224,14 @@ func (m *MockEC2) AuthorizeSecurityGroupEgress(request *ec2.AuthorizeSecurityGro
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("AuthorizeSecurityGroupEgress: %v", request)
+	klog.Infof("AuthorizeSecurityGroupEgress: %v", request)
 
 	if aws.StringValue(request.GroupId) == "" {
 		return nil, fmt.Errorf("GroupId not specified")
 	}
 
 	if request.DryRun != nil {
-		glog.Fatalf("DryRun")
+		klog.Fatalf("DryRun")
 	}
 
 	sg := m.SecurityGroups[*request.GroupId]
@@ -241,10 +241,10 @@ func (m *MockEC2) AuthorizeSecurityGroupEgress(request *ec2.AuthorizeSecurityGro
 
 	if request.CidrIp != nil {
 		if request.SourceSecurityGroupName != nil {
-			glog.Fatalf("SourceSecurityGroupName not implemented")
+			klog.Fatalf("SourceSecurityGroupName not implemented")
 		}
 		if request.SourceSecurityGroupOwnerId != nil {
-			glog.Fatalf("SourceSecurityGroupOwnerId not implemented")
+			klog.Fatalf("SourceSecurityGroupOwnerId not implemented")
 		}
 
 		p := &ec2.IpPermission{
@@ -279,18 +279,18 @@ func (m *MockEC2) AuthorizeSecurityGroupIngress(request *ec2.AuthorizeSecurityGr
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("AuthorizeSecurityGroupIngress: %v", request)
+	klog.Infof("AuthorizeSecurityGroupIngress: %v", request)
 
 	if aws.StringValue(request.GroupId) == "" {
 		return nil, fmt.Errorf("GroupId not specified")
 	}
 
 	if request.DryRun != nil {
-		glog.Fatalf("DryRun")
+		klog.Fatalf("DryRun")
 	}
 
 	if request.GroupName != nil {
-		glog.Fatalf("GroupName not implemented")
+		klog.Fatalf("GroupName not implemented")
 	}
 	sg := m.SecurityGroups[*request.GroupId]
 	if sg == nil {
@@ -299,10 +299,10 @@ func (m *MockEC2) AuthorizeSecurityGroupIngress(request *ec2.AuthorizeSecurityGr
 
 	if request.CidrIp != nil {
 		if request.SourceSecurityGroupName != nil {
-			glog.Fatalf("SourceSecurityGroupName not implemented")
+			klog.Fatalf("SourceSecurityGroupName not implemented")
 		}
 		if request.SourceSecurityGroupOwnerId != nil {
-			glog.Fatalf("SourceSecurityGroupOwnerId not implemented")
+			klog.Fatalf("SourceSecurityGroupOwnerId not implemented")
 		}
 
 		p := &ec2.IpPermission{

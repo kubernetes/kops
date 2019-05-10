@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -65,7 +65,7 @@ func (e *Network) Find(c *fi.Context) (*Network, error) {
 	}
 
 	if r.SelfLink != e.URL(cloud.Project()) {
-		glog.Warningf("SelfLink did not match URL: %q vs %q", r.SelfLink, e.URL(cloud.Project()))
+		klog.Warningf("SelfLink did not match URL: %q vs %q", r.SelfLink, e.URL(cloud.Project()))
 	}
 
 	// Ignore "system" fields
@@ -96,7 +96,7 @@ func (_ *Network) CheckChanges(a, e, changes *Network) error {
 		if cidr == "" {
 			return fmt.Errorf("CIDR must specified for networks where mode=legacy")
 		}
-		glog.Warningf("using legacy mode for GCE network %q", fi.StringValue(e.Name))
+		klog.Warningf("using legacy mode for GCE network %q", fi.StringValue(e.Name))
 	default:
 		if cidr != "" {
 			return fmt.Errorf("CIDR cannot specified for networks where mode=%s", e.Mode)
@@ -117,7 +117,7 @@ func (_ *Network) CheckChanges(a, e, changes *Network) error {
 
 func (_ *Network) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Network) error {
 	if a == nil {
-		glog.V(2).Infof("Creating Network with CIDR: %q", fi.StringValue(e.CIDR))
+		klog.V(2).Infof("Creating Network with CIDR: %q", fi.StringValue(e.CIDR))
 
 		network := &compute.Network{
 			Name: *e.Name,

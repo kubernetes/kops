@@ -24,8 +24,8 @@ import (
 	"strings"
 
 	etcdc "github.com/coreos/etcd/client"
-	"github.com/golang/glog"
 	gcfg "gopkg.in/gcfg.v1"
+	"k8s.io/klog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
 
@@ -59,13 +59,13 @@ func newCoreDNSProviderInterface(config io.Reader) (*Interface, error) {
 	if config != nil {
 		var cfg Config
 		if err := gcfg.ReadInto(&cfg, config); err != nil {
-			glog.Errorf("Couldn't read config: %v", err)
+			klog.Errorf("Couldn't read config: %v", err)
 			return nil, err
 		}
 		etcdEndpoints = cfg.Global.EtcdEndpoints
 		dnsZones = cfg.Global.DNSZones
 	}
-	glog.Infof("Using CoreDNS DNS provider")
+	klog.Infof("Using CoreDNS DNS provider")
 
 	if dnsZones == "" {
 		return nil, fmt.Errorf("Need to provide at least one DNS Zone")

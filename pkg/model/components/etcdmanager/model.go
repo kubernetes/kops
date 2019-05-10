@@ -24,12 +24,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golang/glog"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	scheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/dns"
@@ -163,7 +163,7 @@ func parseManifest(data []byte) ([]runtime.Object, error) {
 				break
 			}
 			fmt.Fprintf(os.Stderr, "%s", string(data))
-			glog.Infof("manifest: %s", string(data))
+			klog.Infof("manifest: %s", string(data))
 			return nil, fmt.Errorf("error parsing manifest: %v", err)
 		}
 
@@ -187,7 +187,7 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-  - image: kopeio/etcd-manager:3.0.20190328
+  - image: kopeio/etcd-manager:3.0.20190509
     name: etcd-manager
     resources:
       requests:
@@ -253,7 +253,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		container = &pod.Spec.Containers[0]
 
 		if etcdCluster.Manager != nil && etcdCluster.Manager.Image != "" {
-			glog.Warningf("overloading image in manifest %s with images %s", bundle, etcdCluster.Manager.Image)
+			klog.Warningf("overloading image in manifest %s with images %s", bundle, etcdCluster.Manager.Image)
 			container.Image = etcdCluster.Manager.Image
 		}
 	}

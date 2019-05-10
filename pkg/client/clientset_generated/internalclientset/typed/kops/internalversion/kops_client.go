@@ -31,7 +31,7 @@ type KopsInterface interface {
 	SSHCredentialsGetter
 }
 
-// KopsClient is used to interact with features provided by the kops group.
+// KopsClient is used to interact with features provided by the kops.k8s.io group.
 type KopsClient struct {
 	restClient rest.Interface
 }
@@ -85,8 +85,8 @@ func setConfigDefaults(config *rest.Config) error {
 	if config.UserAgent == "" {
 		config.UserAgent = rest.DefaultKubernetesUserAgent()
 	}
-	if config.GroupVersion == nil || config.GroupVersion.Group != scheme.Scheme.PrioritizedVersionsForGroup("kops")[0].Group {
-		gv := scheme.Scheme.PrioritizedVersionsForGroup("kops")[0]
+	if config.GroupVersion == nil || config.GroupVersion.Group != scheme.Scheme.PrioritizedVersionsForGroup("kops.k8s.io")[0].Group {
+		gv := scheme.Scheme.PrioritizedVersionsForGroup("kops.k8s.io")[0]
 		config.GroupVersion = &gv
 	}
 	config.NegotiatedSerializer = scheme.Codecs

@@ -20,8 +20,8 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -84,7 +84,7 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 		Tags:             intersectTags(subnet.Tags, e.Tags),
 	}
 
-	glog.V(2).Infof("found matching subnet %q", *actual.ID)
+	klog.V(2).Infof("found matching subnet %q", *actual.ID)
 	e.ID = actual.ID
 
 	// Prevent spurious changes
@@ -114,7 +114,7 @@ func (e *Subnet) findEc2Subnet(c *fi.Context) (*ec2.Subnet, error) {
 	}
 
 	if len(response.Subnets) != 1 {
-		glog.Fatalf("found multiple Subnets matching tags")
+		klog.Fatalf("found multiple Subnets matching tags")
 	}
 
 	subnet := response.Subnets[0]
@@ -178,7 +178,7 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 	}
 
 	if a == nil {
-		glog.V(2).Infof("Creating Subnet with CIDR: %q", *e.CIDR)
+		klog.V(2).Infof("Creating Subnet with CIDR: %q", *e.CIDR)
 
 		request := &ec2.CreateSubnetInput{
 			CidrBlock:        e.CIDR,
@@ -205,7 +205,7 @@ func subnetSlicesEqualIgnoreOrder(l, r []*Subnet) bool {
 	var rIDs []string
 	for _, s := range r {
 		if s.ID == nil {
-			glog.V(4).Infof("Subnet ID not set; returning not-equal: %v", s)
+			klog.V(4).Infof("Subnet ID not set; returning not-equal: %v", s)
 			return false
 		}
 		rIDs = append(rIDs, *s.ID)
@@ -253,10 +253,10 @@ func (e *Subnet) TerraformLink() *terraform.Literal {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		if e.ID == nil {
-			glog.Fatalf("ID must be set, if subnet is shared: %s", e)
+			klog.Fatalf("ID must be set, if subnet is shared: %s", e)
 		}
 
-		glog.V(4).Infof("reusing existing subnet with id %q", *e.ID)
+		klog.V(4).Infof("reusing existing subnet with id %q", *e.ID)
 		return terraform.LiteralFromStringValue(*e.ID)
 	}
 
@@ -292,10 +292,10 @@ func (e *Subnet) CloudformationLink() *cloudformation.Literal {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		if e.ID == nil {
-			glog.Fatalf("ID must be set, if subnet is shared: %s", e)
+			klog.Fatalf("ID must be set, if subnet is shared: %s", e)
 		}
 
-		glog.V(4).Infof("reusing existing subnet with id %q", *e.ID)
+		klog.V(4).Infof("reusing existing subnet with id %q", *e.ID)
 		return cloudformation.LiteralString(*e.ID)
 	}
 

@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockEC2) FindInternetGateway(id string) *ec2.InternetGateway {
@@ -63,7 +63,7 @@ func (m *MockEC2) CreateInternetGateway(request *ec2.CreateInternetGatewayInput)
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("CreateInternetGateway: %v", request)
+	klog.Infof("CreateInternetGateway: %v", request)
 
 	id := m.allocateId("igw")
 
@@ -94,7 +94,7 @@ func (m *MockEC2) DescribeInternetGateways(request *ec2.DescribeInternetGateways
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DescribeInternetGateways: %v", request)
+	klog.Infof("DescribeInternetGateways: %v", request)
 
 	var internetGateways []*ec2.InternetGateway
 
@@ -219,7 +219,7 @@ func (m *MockEC2) DeleteInternetGateway(request *ec2.DeleteInternetGatewayInput)
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DeleteInternetGateway: %v", request)
+	klog.Infof("DeleteInternetGateway: %v", request)
 
 	id := aws.StringValue(request.InternetGatewayId)
 	o := m.InternetGateways[id]

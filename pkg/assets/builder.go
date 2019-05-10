@@ -26,7 +26,7 @@ import (
 	"strings"
 
 	"github.com/blang/semver"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -64,10 +64,10 @@ type ContainerAsset struct {
 
 // FileAsset models a file's location.
 type FileAsset struct {
-	// FileURL is the URL of a file that is accessed by a Kubernetes cluster.
-	FileURL *url.URL
-	// CanonicalFileURL is the source URL of a file. This is used to copy a file to a FileRepository.
-	CanonicalFileURL *url.URL
+	// DownloadURL is the URL from which the cluster should download the asset.
+	DownloadURL *url.URL
+	// CanonicalURL is the canonical location of the asset, for example as distributed by the kops project
+	CanonicalURL *url.URL
 	// SHAValue is the SHA hash of the FileAsset.
 	SHAValue string
 }
@@ -82,7 +82,7 @@ func NewAssetBuilder(cluster *kops.Cluster, phase string) *AssetBuilder {
 	version, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
 	if err != nil {
 		// This should have already been validated
-		glog.Fatalf("unexpected error from ParseKubernetesVersion %s: %v", cluster.Spec.KubernetesVersion, err)
+		klog.Fatalf("unexpected error from ParseKubernetesVersion %s: %v", cluster.Spec.KubernetesVersion, err)
 	}
 	a.KubernetesVersion = *version
 
@@ -208,20 +208,20 @@ func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Has
 	}
 
 	fileAsset := &FileAsset{
-		FileURL: fileURL,
+		DownloadURL: fileURL,
 	}
 
 	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
-		fileAsset.CanonicalFileURL = fileURL
+		fileAsset.CanonicalURL = fileURL
 
-		normalizedFileURL, err := a.normalizeURL(fileURL)
+		normalizedFileURL, err := a.remapURL(fileURL)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		fileAsset.FileURL = normalizedFileURL
+		fileAsset.DownloadURL = normalizedFileURL
 
-		glog.V(4).Infof("adding remapped file: %+v", fileAsset)
+		klog.V(4).Infof("adding remapped file: %+v", fileAsset)
 	}
 
 	h, err := a.findHash(fileAsset)
@@ -231,9 +231,9 @@ func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Has
 	fileAsset.SHAValue = h.Hex()
 
 	a.FileAssets = append(a.FileAssets, fileAsset)
-	glog.V(8).Infof("adding file: %+v", fileAsset)
+	klog.V(8).Infof("adding file: %+v", fileAsset)
 
-	return fileAsset.FileURL, h, nil
+	return fileAsset.DownloadURL, h, nil
 }
 
 // TODO - remove this method as CNI does now have a SHA file
@@ -245,25 +245,25 @@ func (a *AssetBuilder) RemapFileAndSHAValue(fileURL *url.URL, shaValue string) (
 	}
 
 	fileAsset := &FileAsset{
-		FileURL:  fileURL,
-		SHAValue: shaValue,
+		DownloadURL: fileURL,
+		SHAValue:    shaValue,
 	}
 
 	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
-		fileAsset.CanonicalFileURL = fileURL
+		fileAsset.CanonicalURL = fileURL
 
-		normalizedFile, err := a.normalizeURL(fileURL)
+		normalizedFile, err := a.remapURL(fileURL)
 		if err != nil {
 			return nil, err
 		}
 
-		fileAsset.FileURL = normalizedFile
-		glog.V(4).Infof("adding remapped file: %q", fileAsset.FileURL.String())
+		fileAsset.DownloadURL = normalizedFile
+		klog.V(4).Infof("adding remapped file: %q", fileAsset.DownloadURL.String())
 	}
 
 	a.FileAssets = append(a.FileAssets, fileAsset)
 
-	return fileAsset.FileURL, nil
+	return fileAsset.DownloadURL, nil
 }
 
 // FindHash returns the hash value of a FileAsset.
@@ -281,9 +281,9 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 	// TLDR; we use the file.CanonicalFileURL during assets phase, and use file.FileUrl the
 	// rest of the time. If not we get a chicken and the egg problem where we are reading the sha file
 	// before it exists.
-	u := file.FileURL
-	if a.Phase == "assets" && file.CanonicalFileURL != nil {
-		u = file.CanonicalFileURL
+	u := file.DownloadURL
+	if a.Phase == "assets" && file.CanonicalURL != nil {
+		u = file.CanonicalURL
 	}
 
 	if u == nil {
@@ -294,11 +294,11 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 		hashURL := u.String() + ext
 		b, err := vfs.Context.ReadFile(hashURL)
 		if err != nil {
-			glog.Infof("error reading hash file %q: %v", hashURL, err)
+			klog.Infof("error reading hash file %q: %v", hashURL, err)
 			continue
 		}
 		hashString := strings.TrimSpace(string(b))
-		glog.V(2).Infof("Found hash %q for %q", hashString, u)
+		klog.V(2).Infof("Found hash %q for %q", hashString, u)
 
 		// Accept a hash string that is `<hash> <filename>`
 		fields := strings.Fields(hashString)
@@ -311,24 +311,21 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 	return nil, fmt.Errorf("cannot determine hash for %q (have you specified a valid file location?)", u)
 }
 
-func (a *AssetBuilder) normalizeURL(file *url.URL) (*url.URL, error) {
-
-	if a.AssetsLocation == nil || a.AssetsLocation.FileRepository == nil {
-		return nil, fmt.Errorf("assetLocation and fileRepository cannot be nil to normalize an file asset URL")
+func (a *AssetBuilder) remapURL(canonicalURL *url.URL) (*url.URL, error) {
+	f := ""
+	if a.AssetsLocation != nil {
+		f = values.StringValue(a.AssetsLocation.FileRepository)
 	}
-
-	f := values.StringValue(a.AssetsLocation.FileRepository)
-
 	if f == "" {
-		return nil, fmt.Errorf("assetsLocation fileRepository cannot be an empty string")
+		return nil, fmt.Errorf("assetsLocation.fileRepository must be set to remap asset %v", canonicalURL)
 	}
 
 	fileRepo, err := url.Parse(f)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse file repository URL %q: %v", values.StringValue(a.AssetsLocation.FileRepository), err)
+		return nil, fmt.Errorf("unable to parse assetsLocation.fileRepository %q: %v", f, err)
 	}
 
-	fileRepo.Path = path.Join(fileRepo.Path, file.Path)
+	fileRepo.Path = path.Join(fileRepo.Path, canonicalURL.Path)
 
 	return fileRepo, nil
 }

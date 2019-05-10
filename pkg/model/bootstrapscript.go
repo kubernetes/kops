@@ -27,7 +27,7 @@ import (
 	"text/template"
 
 	"github.com/ghodss/yaml"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
@@ -100,7 +100,7 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 			return nil, err
 		}
 		if region == "" {
-			glog.Warningf("unable to determine cluster region")
+			klog.Warningf("unable to determine cluster region")
 		} else {
 			env["AWS_REGION"] = region
 		}
@@ -173,7 +173,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 			if cs.NodeAuthorization != nil {
 				spec["nodeAuthorization"] = cs.NodeAuthorization
 			}
-			if cs.KubeAPIServer.EnableBootstrapAuthToken != nil {
+			if cs.KubeAPIServer != nil && cs.KubeAPIServer.EnableBootstrapAuthToken != nil {
 				spec["kubeAPIServer"] = map[string]interface{}{
 					"enableBootstrapAuthToken": cs.KubeAPIServer.EnableBootstrapAuthToken,
 				}

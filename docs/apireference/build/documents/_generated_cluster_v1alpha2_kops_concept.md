@@ -7,7 +7,7 @@
 
 ```bdocs-tab:example_yaml
 
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2019-12-10T22:42:27Z"

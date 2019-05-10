@@ -19,8 +19,8 @@ package openstacktasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -122,7 +122,7 @@ func (_ *Port) CheckChanges(a, e, changes *Port) error {
 
 func (_ *Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Port) error {
 	if a == nil {
-		glog.V(2).Infof("Creating Port with name: %q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating Port with name: %q", fi.StringValue(e.Name))
 
 		sgs := make([]string, len(e.SecurityGroups))
 		for i, sg := range e.SecurityGroups {
@@ -141,10 +141,10 @@ func (_ *Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *P
 		}
 
 		e.ID = fi.String(v.ID)
-		glog.V(2).Infof("Creating a new Openstack port, id=%s", v.ID)
+		klog.V(2).Infof("Creating a new Openstack port, id=%s", v.ID)
 		return nil
 	}
 	e.ID = a.ID
-	glog.V(2).Infof("Using an existing Openstack port, id=%s", fi.StringValue(e.ID))
+	klog.V(2).Infof("Using an existing Openstack port, id=%s", fi.StringValue(e.ID))
 	return nil
 }

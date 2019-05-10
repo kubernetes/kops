@@ -22,7 +22,7 @@ import (
 	common "github.com/denverdino/aliyungo/common"
 	ecs "github.com/denverdino/aliyungo/ecs"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -62,7 +62,7 @@ func (s *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 		return nil, fmt.Errorf("Found multiple SSHKeys with Name %q", *s.Name)
 	}
 
-	glog.V(2).Infof("found matching SSHKey with name: %q", *s.Name)
+	klog.V(2).Infof("found matching SSHKey with name: %q", *s.Name)
 	k := keypairs[0]
 	actual := &SSHKey{
 		Name:               fi.String(k.KeyPairName),
@@ -89,7 +89,7 @@ func (s *SSHKey) CheckChanges(a, e, changes *SSHKey) error {
 
 func (_ *SSHKey) RenderALI(t *aliup.ALIAPITarget, a, e, changes *SSHKey) error {
 	if a == nil {
-		glog.V(2).Infof("Creating SSHKey with Name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating SSHKey with Name:%q", fi.StringValue(e.Name))
 
 		importKeyPairArgs := &ecs.ImportKeyPairArgs{
 			RegionId:    common.Region(t.Cloud.Region()),

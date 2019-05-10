@@ -25,18 +25,18 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/homedir"
+	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/bundle"
 	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/templates"
 )
 
 var (
@@ -150,7 +150,7 @@ func RunToolboxBundle(context Factory, out io.Writer, options *ToolboxBundleOpti
 			Mode: file.Header.FileInfo().Mode(),
 		}
 		p := root.Join("etc", "kubernetes", "bootstrap", file.Header.Name)
-		glog.Infof("writing %s", p)
+		klog.Infof("writing %s", p)
 		if err := p.WriteFile(bytes.NewReader(file.Data), sshAcl); err != nil {
 			return fmt.Errorf("error writing file %q: %v", file.Header.Name, err)
 		}
@@ -175,13 +175,13 @@ func runSshCommand(sshClient *ssh.Client, cmd string) error {
 	s.Stdout = io.MultiWriter(&stdout, os.Stdout)
 	s.Stderr = io.MultiWriter(&stderr, os.Stderr)
 
-	glog.Infof("running %s", cmd)
+	klog.Infof("running %s", cmd)
 	if err := s.Run(cmd); err != nil {
 		return fmt.Errorf("error running %s: %v\nstdout: %s\nstderr: %s", cmd, err, stdout.String(), stderr.String())
 	}
 
-	glog.Infof("stdout: %s", stdout.String())
-	glog.Infof("stderr: %s", stderr.String())
+	klog.Infof("stdout: %s", stdout.String())
+	klog.Infof("stderr: %s", stderr.String())
 	return nil
 }
 

@@ -22,7 +22,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // Factory is a function that returns a dnsprovider.Interface.
@@ -41,9 +41,9 @@ func RegisterDnsProvider(name string, cloud Factory) {
 	providersMutex.Lock()
 	defer providersMutex.Unlock()
 	if _, found := providers[name]; found {
-		glog.Fatalf("DNS provider %q was registered twice", name)
+		klog.Fatalf("DNS provider %q was registered twice", name)
 	}
-	glog.V(1).Infof("Registered DNS provider %q", name)
+	klog.V(1).Infof("Registered DNS provider %q", name)
 	providers[name] = cloud
 }
 
@@ -79,7 +79,7 @@ func InitDnsProvider(name string, configFilePath string) (Interface, error) {
 	var err error
 
 	if name == "" {
-		glog.Info("No DNS provider specified.")
+		klog.Info("No DNS provider specified.")
 		return nil, nil
 	}
 

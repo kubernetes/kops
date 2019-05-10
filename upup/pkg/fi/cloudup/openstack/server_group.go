@@ -19,10 +19,10 @@ package openstack
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
@@ -84,7 +84,7 @@ func matchInstanceGroup(name string, clusterName string, instancegroups []*kops.
 		case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleNode, kops.InstanceGroupRoleBastion:
 			groupName = clusterName + "-" + g.ObjectMeta.Name
 		default:
-			glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
+			klog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
 			continue
 		}
 
@@ -111,7 +111,7 @@ func (c *openstackCloud) osBuildCloudInstanceGroup(ig *kops.InstanceGroup, g *se
 	for _, i := range g.Members {
 		instanceId := i
 		if instanceId == "" {
-			glog.Warningf("ignoring instance with no instance id: %s", i)
+			klog.Warningf("ignoring instance with no instance id: %s", i)
 			continue
 		}
 		// TODO: how we should implement this, OS does not have launchconfigs? Should we somehow use tags in servergroups and in instances

@@ -22,7 +22,7 @@ should be very familiar to you if you've used `kubectl edit`).  `kops edit ig no
 the InstanceGroup in your editor, looking a bit like this:
 
 ```
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-10-03T15:17:31Z

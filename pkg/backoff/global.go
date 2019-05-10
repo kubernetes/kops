@@ -20,7 +20,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // globalBackoffMutex guards globalBackoff
@@ -37,7 +37,7 @@ const maxGlobalBackoff = 5 * time.Minute
 func DoGlobalBackoff(err error) {
 	pause := computeBackoff()
 
-	glog.Warningf("inserting rate-limiting pause of %v after error: %v", pause, err)
+	klog.Warningf("inserting rate-limiting pause of %v after error: %v", pause, err)
 	time.Sleep(pause)
 }
 

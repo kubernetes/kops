@@ -24,8 +24,8 @@ import (
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
 	"github.com/denverdino/aliyungo/ess"
-	"github.com/golang/glog"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/protokube/pkg/etcd"
@@ -41,13 +41,13 @@ func (c *aliCloudImplementation) FindClusterStatus(cluster *kops.Cluster) (*kops
 	status := &kops.ClusterStatus{
 		EtcdClusters: etcdStatus,
 	}
-	glog.V(2).Infof("Cluster status (from cloud): %v", fi.DebugAsJsonString(status))
+	klog.V(2).Infof("Cluster status (from cloud): %v", fi.DebugAsJsonString(status))
 	return status, nil
 }
 
 // findEtcdStatus discovers the status of etcd, by looking for the tagged etcd volumes
 func findEtcdStatus(c ALICloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, error) {
-	glog.V(2).Infof("Querying ALI for etcd volumes")
+	klog.V(2).Infof("Querying ALI for etcd volumes")
 	statusMap := make(map[string]*kops.EtcdClusterStatus)
 
 	maxPageSize := 50
@@ -160,7 +160,7 @@ func getCloudGroups(c ALICloud, cluster *kops.Cluster, instancegroups []*kops.In
 		}
 		if instancegroup == nil {
 			if warnUnmatched {
-				glog.Warningf("Found ASG with no corresponding instance group %q", name)
+				klog.Warningf("Found ASG with no corresponding instance group %q", name)
 			}
 			continue
 		}
@@ -187,7 +187,7 @@ func FindAutoscalingGroups(c ALICloud) ([]ess.ScalingGroupItemType, error) {
 		return nil, errors.New("error describing ScalingGroups:can not get clusterName")
 	}
 
-	glog.V(2).Infof("Listing all Autoscaling groups matching clusterName")
+	klog.V(2).Infof("Listing all Autoscaling groups matching clusterName")
 
 	request := &ess.DescribeScalingGroupsArgs{
 		RegionId: common.Region(c.Region()),
@@ -225,7 +225,7 @@ func matchInstanceGroup(name string, clusterName string, instancegroups []*kops.
 		case kops.InstanceGroupRoleBastion:
 			groupName = g.ObjectMeta.Name + "." + clusterName
 		default:
-			glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
+			klog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
 			continue
 		}
 
@@ -271,7 +271,7 @@ func buildCloudInstanceGroup(c ALICloud, ig *kops.InstanceGroup, g ess.ScalingGr
 	for _, i := range instances {
 		instanceId := i.InstanceId
 		if instanceId == "" {
-			glog.Warningf("ignoring instance with no instance id: %s", i)
+			klog.Warningf("ignoring instance with no instance id: %s", i)
 			continue
 		}
 		err := cg.NewCloudInstanceGroupMember(instanceId, newLaunchConfigName, i.ScalingConfigurationId, nodeMap)

@@ -5,7 +5,7 @@
 ### Run gazelle
 
 ```bash
-make bazel-gazelle
+make gazelle
 ```
 
 ### Check go version used in k/k

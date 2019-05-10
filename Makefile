@@ -21,7 +21,7 @@ GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
 GOPATH_1ST:=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
-GOVERSION=1.10.8
+GOVERSION=1.12.1
 BUILD=$(GOPATH_1ST)/src/k8s.io/kops/.build
 LOCAL=$(BUILD)/local
 BINDATA_TARGETS=upup/models/bindata.go
@@ -58,7 +58,7 @@ unexport KOPS_BASE_URL KOPS_CLUSTER_NAME KOPS_RUN_OBSOLETE_VERSION KOPS_STATE_ST
 unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCESS_KEY VSPHERE_USERNAME VSPHERE_PASSWORD
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.12.0-alpha.1
+DNS_CONTROLLER_TAG=1.14.0-alpha.1
 
 # Keep in sync with logic in get_workspace_status
 # TODO: just invoke tools/get_workspace_status.sh?
@@ -215,6 +215,10 @@ check-builds-in-go19:
 .PHONY: check-builds-in-go110
 check-builds-in-go110:
 	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.10 make -C /go/src/k8s.io/kops ci
+
+.PHONY: check-builds-in-go111
+check-builds-in-go111:
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.11 make -C /go/src/k8s.io/kops ci
 
 .PHONY: codegen
 codegen: kops-gobindata
@@ -495,25 +499,12 @@ dep-ensure: dep-prereqs
 	rm -rf vendor/k8s.io/code-generator/cmd/go-to-protobuf/
 	rm -rf vendor/k8s.io/code-generator/cmd/import-boss/
 	rm -rf vendor/github.com/docker/docker/contrib/
-	make bazel-gazelle
+	make gazelle
 
 
 .PHONY: gofmt
 gofmt:
-	gofmt -w -s channels/
-	gofmt -w -s cloudmock/
-	gofmt -w -s cmd/
-	gofmt -w -s examples/
-	gofmt -w -s nodeup/
-	gofmt -w -s util/
-	gofmt -w -s upup/pkg/
-	gofmt -w -s pkg/
-	gofmt -w -s tests/
-	gofmt -w -s protokube/cmd
-	gofmt -w -s protokube/pkg
-	gofmt -w -s protokube/tests
-	gofmt -w -s dns-controller/cmd
-	gofmt -w -s dns-controller/pkg
+	find -name "*.go" | grep -v vendor | xargs bazel run //:gofmt -- -w -s
 
 .PHONY: goimports
 goimports:
@@ -562,12 +553,23 @@ verify-gendocs: ${KOPS}
 .PHONY: verify-bazel
 verify-bazel:
 	hack/verify-bazel.sh
-#
+
+# ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 # verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendoc generates the bindata file.
 .PHONY: ci
 ci: govet verify-gofmt verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+	echo "Done!"
+
+# travis-ci is the target that travis-ci calls
+# we skip tasks that rely on bazel and are covered by other jobs
+#  verify-gofmt: uses bazel, covered by pull-kops-verify-gofmt
+#  verify-bazel: uses bazel, covered by pull-kops-verify-bazel
+#  govet: covered by pull-kops-verify-govet
+#  verify-boilerplate: covered by pull-kops-verify-boilerplate
+.PHONY: travis-ci
+travis-ci: verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
@@ -661,7 +663,7 @@ kops-server-push: kops-server-build
 
 .PHONY: bazel-test
 bazel-test:
-	bazel ${BAZEL_OPTIONS} test //cmd/... //pkg/... //channels/... //nodeup/... //protokube/... //dns-controller/... //tests/... //upup/... //util/... //hack:verify-all --test_output=errors
+	bazel ${BAZEL_OPTIONS} test  --test_output=errors -- //... -//vendor/...
 
 .PHONY: bazel-build
 bazel-build:
@@ -723,9 +725,13 @@ bazel-push-aws-run: bazel-push
 	ssh ${TARGET} chmod +x /tmp/nodeup
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
 
-.PHONY: bazel-gazelle
-bazel-gazelle:
+.PHONY: gazelle
+gazelle:
 	hack/update-bazel.sh
+
+.PHONY: bazel-gazelle
+bazel-gazelle: gazelle
+	echo "bazel-gazelle is deprecated; please just use 'make gazelle'"
 
 .PHONY: check-markdown-links
 check-markdown-links:

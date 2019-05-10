@@ -33,7 +33,7 @@ type KopsV1alpha2Interface interface {
 	SSHCredentialsGetter
 }
 
-// KopsV1alpha2Client is used to interact with features provided by the kops group.
+// KopsV1alpha2Client is used to interact with features provided by the kops.k8s.io group.
 type KopsV1alpha2Client struct {
 	restClient rest.Interface
 }

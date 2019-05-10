@@ -25,19 +25,19 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
+	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/kutil"
-	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/templates"
 )
 
 const (
@@ -101,6 +101,8 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+
+	klog.InitFlags(nil)
 
 	factory := util.NewFactory(&rootCommand.FactoryOptions)
 	rootCommand.factory = factory
@@ -168,7 +170,7 @@ func initConfig() {
 				configFile = p
 				break
 			} else if !os.IsNotExist(err) {
-				glog.V(2).Infof("error checking for file %s: %v", p, err)
+				klog.V(2).Infof("error checking for file %s: %v", p, err)
 			}
 		}
 	}
@@ -178,7 +180,7 @@ func initConfig() {
 		viper.SetConfigType("yaml")
 
 		if err := viper.ReadInConfig(); err != nil {
-			glog.Warningf("error reading config: %v", err)
+			klog.Warningf("error reading config: %v", err)
 		}
 	}
 
@@ -244,15 +246,15 @@ func ClusterNameFromKubecfg() string {
 
 	config, err := pathOptions.GetStartingConfig()
 	if err != nil {
-		glog.Warningf("error reading kubecfg: %v", err)
+		klog.Warningf("error reading kubecfg: %v", err)
 	} else if config.CurrentContext == "" {
-		glog.Warningf("no context set in kubecfg")
+		klog.Warningf("no context set in kubecfg")
 	} else {
 		context := config.Contexts[config.CurrentContext]
 		if context == nil {
-			glog.Warningf("context %q in kubecfg not found", config.CurrentContext)
+			klog.Warningf("context %q in kubecfg not found", config.CurrentContext)
 		} else if context.Cluster == "" {
-			glog.Warningf("context %q in kubecfg did not have a cluster", config.CurrentContext)
+			klog.Warningf("context %q in kubecfg did not have a cluster", config.CurrentContext)
 		} else {
 			fmt.Fprintf(os.Stderr, "Using cluster from kubectl context: %s\n\n", context.Cluster)
 			clusterName = context.Cluster
@@ -261,7 +263,7 @@ func ClusterNameFromKubecfg() string {
 
 	//config, err := readKubectlClusterConfig()
 	//if err != nil {
-	//	glog.Warningf("error reading kubecfg: %v", err)
+	//	klog.Warningf("error reading kubecfg: %v", err)
 	//} else if config != nil && config.Name != "" {
 	//	fmt.Fprintf(os.Stderr, "Using cluster from kubectl context: %s\n\n", config.Name)
 	//	c.clusterName = config.Name
@@ -276,7 +278,7 @@ func readKubectlClusterConfig() (*kubeconfig.KubectlClusterWithName, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error getting current context from kubectl: %v", err)
 	}
-	glog.V(4).Infof("context = %q", context)
+	klog.V(4).Infof("context = %q", context)
 
 	config, err := kubectl.GetConfig(true)
 	if err != nil {

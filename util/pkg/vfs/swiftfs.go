@@ -31,7 +31,6 @@ import (
 	"time"
 
 	"github.com/go-ini/ini"
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	swiftcontainer "github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers"
@@ -39,6 +38,7 @@ import (
 	"github.com/gophercloud/gophercloud/pagination"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/util/homedir"
+	"k8s.io/klog"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -63,7 +63,7 @@ func NewSwiftClient() (*gophercloud.ServiceClient, error) {
 		Transport: transport,
 	}
 
-	glog.V(2).Info("authenticating to keystone")
+	klog.V(2).Info("authenticating to keystone")
 
 	err = openstack.Authenticate(pc, authOption)
 	if err != nil {
@@ -72,7 +72,7 @@ func NewSwiftClient() (*gophercloud.ServiceClient, error) {
 
 	var endpointOpt gophercloud.EndpointOpts
 	if region, err := config.GetRegion(); err != nil {
-		glog.Warningf("Retrieving swift configuration from openstack config file: %v", err)
+		klog.Warningf("Retrieving swift configuration from openstack config file: %v", err)
 		endpointOpt, err = config.GetServiceConfig("Swift")
 		if err != nil {
 			return nil, err
@@ -97,7 +97,7 @@ type OpenstackConfig struct {
 func (_ OpenstackConfig) filename() (string, error) {
 	name := os.Getenv("OPENSTACK_CREDENTIAL_FILE")
 	if name != "" {
-		glog.V(2).Infof("using openstack config found in $OPENSTACK_CREDENTIAL_FILE: %s", name)
+		klog.V(2).Infof("using openstack config found in $OPENSTACK_CREDENTIAL_FILE: %s", name)
 		return name, nil
 	}
 
@@ -106,7 +106,7 @@ func (_ OpenstackConfig) filename() (string, error) {
 		return "", fmt.Errorf("can not find home directory")
 	}
 	f := filepath.Join(homeDir, ".openstack", "config")
-	glog.V(2).Infof("using openstack config found in %s", f)
+	klog.V(2).Infof("using openstack config found in %s", f)
 	return f, nil
 }
 
@@ -135,7 +135,7 @@ func (oc OpenstackConfig) GetCredential() (gophercloud.AuthOptions, error) {
 	// prioritize environment config
 	env, enverr := openstack.AuthOptionsFromEnv()
 	if enverr != nil {
-		glog.Warningf("Could not initialize swift from environment: %v", enverr)
+		klog.Warningf("Could not initialize swift from environment: %v", enverr)
 		// fallback to config file
 		return oc.getCredentialFromFile()
 	}
@@ -304,7 +304,7 @@ func (p *SwiftPath) Join(relativePath ...string) Path {
 
 func (p *SwiftPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 	done, err := RetryWithBackoff(swiftWriteBackoff, func() (bool, error) {
-		glog.V(4).Infof("Writing file %q", p)
+		klog.V(4).Infof("Writing file %q", p)
 		if _, err := data.Seek(0, 0); err != nil {
 			return false, fmt.Errorf("error seeking to start of data stream for %s: %v", p, err)
 		}
@@ -339,7 +339,7 @@ func (p *SwiftPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 
 	// Check if exists.
 	_, err := RetryWithBackoff(swiftReadBackoff, func() (bool, error) {
-		glog.V(4).Infof("Getting file %q", p)
+		klog.V(4).Infof("Getting file %q", p)
 
 		_, err := swiftobject.Get(p.client, p.bucket, p.key, swiftobject.GetOpts{}).Extract()
 		if err == nil {
@@ -415,7 +415,7 @@ func (p *SwiftPath) ReadFile() ([]byte, error) {
 
 // WriteTo implements io.WriterTo
 func (p *SwiftPath) WriteTo(out io.Writer) (int64, error) {
-	glog.V(4).Infof("Reading file %q", p)
+	klog.V(4).Infof("Reading file %q", p)
 
 	opt := swiftobject.DownloadOpts{}
 	result := swiftobject.Download(p.client, p.bucket, p.key, opt)
@@ -458,7 +458,7 @@ func (p *SwiftPath) readPath(opt swiftobject.ListOpts) ([]Path, error) {
 			}
 			return false, fmt.Errorf("error listing %s: %v", p, err)
 		}
-		glog.V(8).Infof("Listed files in %v: %v", p, paths)
+		klog.V(8).Infof("Listed files in %v: %v", p, paths)
 		ret = paths
 		return true, nil
 	})

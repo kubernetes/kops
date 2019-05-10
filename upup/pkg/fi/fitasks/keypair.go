@@ -23,7 +23,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -137,10 +137,10 @@ func (e *Keypair) normalize(c *fi.Context) error {
 				return fmt.Errorf("error finding address for %v: %v", task, err)
 			}
 			if address == nil {
-				glog.Warningf("Task did not have an address: %v", task)
+				klog.Warningf("Task did not have an address: %v", task)
 				continue
 			}
-			glog.V(8).Infof("Resolved alternateName %q for %q", *address, task)
+			klog.V(8).Infof("Resolved alternateName %q for %q", *address, task)
 			alternateNames = append(alternateNames, *address)
 		} else {
 			return fmt.Errorf("Unsupported type for AlternateNameDependencies: %v", task)
@@ -178,27 +178,27 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	createCertificate := false
 	if a == nil {
 		createCertificate = true
-		glog.V(8).Infof("creating brand new certificate")
+		klog.V(8).Infof("creating brand new certificate")
 	} else if changes != nil {
-		glog.V(8).Infof("creating certificate as changes are not nil")
+		klog.V(8).Infof("creating certificate as changes are not nil")
 		if changes.AlternateNames != nil {
 			createCertificate = true
-			glog.V(8).Infof("creating certificate new AlternateNames")
+			klog.V(8).Infof("creating certificate new AlternateNames")
 		} else if changes.Subject != "" {
 			createCertificate = true
-			glog.V(8).Infof("creating certificate new Subject")
+			klog.V(8).Infof("creating certificate new Subject")
 		} else if changes.Type != "" {
 			createCertificate = true
-			glog.V(8).Infof("creating certificate new Type")
+			klog.V(8).Infof("creating certificate new Type")
 		} else if changes.Format != "" {
 			changeStoredFormat = true
 		} else {
-			glog.Warningf("Ignoring changes in key: %v", fi.DebugAsJsonString(changes))
+			klog.Warningf("Ignoring changes in key: %v", fi.DebugAsJsonString(changes))
 		}
 	}
 
 	if createCertificate {
-		glog.V(2).Infof("Creating PKI keypair %q", name)
+		klog.V(2).Infof("Creating PKI keypair %q", name)
 
 		cert, privateKey, _, err := c.Keystore.FindKeypair(name)
 		if err != nil {
@@ -209,7 +209,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		// if we change keys we often have to regenerate e.g. the service accounts
 		// TODO: Eventually rotate keys / don't always reuse?
 		if privateKey == nil {
-			glog.V(2).Infof("Creating privateKey %q", name)
+			klog.V(2).Infof("Creating privateKey %q", name)
 
 			privateKey, err = pki.GeneratePrivateKey()
 			if err != nil {
@@ -227,7 +227,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			return err
 		}
 
-		glog.V(8).Infof("created certificate with cn=%s", cert.Subject.CommonName)
+		klog.V(8).Infof("created certificate with cn=%s", cert.Subject.CommonName)
 	}
 
 	// TODO: Check correct subject / flags
@@ -244,7 +244,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			return err
 		}
 
-		glog.Infof("updated Keypair %q to API format %q", name, e.Format)
+		klog.Infof("updated Keypair %q to API format %q", name, e.Format)
 	}
 
 	return nil
@@ -293,7 +293,7 @@ func buildCertificateTemplateForType(certificateType string) (*x509.Certificate,
 
 	template := &x509.Certificate{
 		BasicConstraintsValid: true,
-		IsCA: false,
+		IsCA:                  false,
 	}
 
 	tokens := strings.Split(certificateType, ",")

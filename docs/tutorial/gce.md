@@ -17,7 +17,16 @@ kops needs a state store, to hold the configuration for your clusters.  The simp
 for Google Cloud is to store it in a Google Cloud Storage bucket in the same account, so that's how we'll
 start.
 
-So, just create an empty bucket - you can use any name: `gsutil mb gs://kubernetes-clusters/`
+So, just create an empty bucket - you can use any (available) name - e.g. `gsutil mb gs://kubernetes-clusters/`
+
+Further, rather than typing the `--state` argument every time, it's much easier to export the `KOPS_STATE_STORE`
+environment variable:
+
+```
+export KOPS_STATE_STORE=gs://kubernetes-clusters/
+```
+
+You can also put this in your `~/.bashrc` or similar.
 
 # Creating our first cluster
 
@@ -26,12 +35,14 @@ So, just create an empty bucket - you can use any name: `gsutil mb gs://kubernet
 ```
 PROJECT=`gcloud config get-value project`
 export KOPS_FEATURE_FLAGS=AlphaAllowGCE # to unlock the GCE features
-kops create cluster simple.k8s.local --zones us-central1-a --state gs://kubernetes-clusters/ --project=${PROJECT}
+kops create cluster simple.k8s.local --zones us-central1-a --state ${KOPS_STATE_STORE}/ --project=${PROJECT}
 ```
 
-You can now list the Cluster objects in your kops state store (the GCS bucket we created):
+You can now list the Cluster objects in your kops state store (the GCS bucket
+we created).
 
-`kops get cluster --state gs://kubernetes-clusters/`
+```
+kops get cluster --state ${KOPS_STATE_STORE}
 
 ```
 NAME                CLOUD        ZONES
@@ -49,9 +60,9 @@ objects on a kubernetes cluster.
 
 You can see the details of your Cluster object by doing:
 
-`> kops get cluster --state gs://kubernetes-clusters/ simple.k8s.local -oyaml`
+`> kops get cluster --state ${KOPS_STATE_STORE}/ simple.k8s.local -oyaml`
 ```
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: 2017-10-03T05:07:27Z
@@ -99,7 +110,7 @@ spec:
 
 Similarly, you can also see your InstanceGroups using:
 
-`kops get instancegroup --state gs://kubernetes-clusters/ --name simple.k8s.local`
+`kops get instancegroup --state ${KOPS_STATE_STORE}/ --name simple.k8s.local`
 ```
 NAME                    ROLE    MACHINETYPE     MIN    MAX    SUBNETS
 master-us-central1-a    Master  n1-standard-1   1      1      us-central1
@@ -115,17 +126,6 @@ and one for our nodes (and we have two nodes configured).
 
 We'll see a lot more of Cluster objects and InstanceGroups as we use kops to reconfigure clusters.  But let's get
 on with our first cluster.
-
-# Export KOPS_STATE_STORE
-
-Rather than typing the `--state` argument every time, it's much easier to export the `KOPS_STATE_STORE`
-environment variable:
-
-```
-export KOPS_STATE_STORE=gs://kubernetes-clusters/
-```
-
-You can also put this in your `~/.bashrc` or similar.
 
 # Creating a cluster
 

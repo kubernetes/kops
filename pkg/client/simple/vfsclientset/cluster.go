@@ -22,13 +22,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
@@ -82,12 +82,12 @@ func (c *ClusterVFS) List(options metav1.ListOptions) (*api.ClusterList, error) 
 	for _, clusterName := range names {
 		cluster, err := c.find(clusterName)
 		if err != nil {
-			glog.Warningf("cluster %q found in state store listing, but cannot be loaded: %v", clusterName, err)
+			klog.Warningf("cluster %q found in state store listing, but cannot be loaded: %v", clusterName, err)
 			continue
 		}
 
 		if cluster == nil {
-			glog.Warningf("cluster %q found in state store listing, but doesn't exist now", clusterName)
+			klog.Warningf("cluster %q found in state store listing, but doesn't exist now", clusterName)
 			continue
 		}
 
@@ -193,7 +193,7 @@ func (r *ClusterVFS) find(clusterName string) (*api.Cluster, error) {
 		c.ObjectMeta.Name = clusterName
 	}
 	if c.ObjectMeta.Name != clusterName {
-		glog.Warningf("Name of cluster does not match: %q vs %q", c.ObjectMeta.Name, clusterName)
+		klog.Warningf("Name of cluster does not match: %q vs %q", c.ObjectMeta.Name, clusterName)
 	}
 
 	// TODO: Split this out into real version updates / schema changes
