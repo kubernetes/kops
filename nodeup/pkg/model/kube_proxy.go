@@ -177,10 +177,6 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	container := &v1.Container{
 		Name:  "kube-proxy",
 		Image: image,
-		Command: exec.WithTee(
-			"/usr/local/bin/kube-proxy",
-			sortedStrings(flags),
-			"/var/log/kube-proxy.log"),
 		Resources: v1.ResourceRequirements{
 			Requests: resourceRequests,
 			Limits:   resourceLimits,
@@ -205,9 +201,26 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		},
 	}
 
+	// Log both to docker and to the logfile
+	addHostPathMapping(pod, container, "logfile", "/var/log/kube-proxy.log").ReadOnly = false
+	if b.IsKubernetesGTE("1.15") {
+		// From k8s 1.15, we use lighter containers that don't include shells
+		// But they have richer logging support via klog
+		container.Command = []string{"/usr/local/bin/kube-proxy"}
+		container.Args = append(
+			sortedStrings(flags),
+			"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
+			"--alsologtostderr",
+			"--log-file=/var/log/kube-proxy.log")
+	} else {
+		container.Command = exec.WithTee(
+			"/usr/local/bin/kube-proxy",
+			sortedStrings(flags),
+			"/var/log/kube-proxy.log")
+	}
+
 	{
 		addHostPathMapping(pod, container, "kubeconfig", "/var/lib/kube-proxy/kubeconfig")
-		addHostPathMapping(pod, container, "logfile", "/var/log/kube-proxy.log").ReadOnly = false
 		// @note: mapping the host modules directory to fix the missing ipvs kernel module
 		addHostPathMapping(pod, container, "modules", "/lib/modules")
 
