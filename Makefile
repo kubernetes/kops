@@ -504,7 +504,7 @@ dep-ensure: dep-prereqs
 
 .PHONY: gofmt
 gofmt:
-	find -name "*.go" | grep -v vendor | xargs bazel run //:gofmt -- -w -s
+	find $(MAKEDIR) -name "*.go" | grep -v vendor | xargs bazel run //:gofmt -- -w -s
 
 .PHONY: goimports
 goimports:
