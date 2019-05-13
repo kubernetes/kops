@@ -158,16 +158,16 @@ func (s *S3Context) getDetailsForBucket(bucket string) (*S3BucketDetails, error)
 	if awsRegion == "" && isRunningOnEC2() {
 		region, err := getRegionFromMetadata()
 		if err != nil {
-			klog.V(2).Infof("unable to get region from metadata:%v", err)
+			glog.V(2).Infof("unable to get region from metadata:%v", err)
 		} else {
 			awsRegion = region
-			klog.V(2).Infof("got region from metadata: %q", awsRegion)
+			glog.V(2).Infof("got region from metadata: %q", awsRegion)
 		}
 	}
 
 	if awsRegion == "" {
 		awsRegion = "us-east-1"
-		klog.V(2).Infof("defaulting region to %q", awsRegion)
+		glog.V(2).Infof("defaulting region to %q", awsRegion)
 	}
 
 	if err := validateRegion(awsRegion); err != nil {
@@ -322,20 +322,20 @@ func isRunningOnEC2() bool {
 		// Approach based on https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/identify_ec2_instances.html
 		productUUID, err := ioutil.ReadFile("/sys/devices/virtual/dmi/id/product_uuid")
 		if err != nil {
-			klog.V(2).Infof("unable to read /sys/devices/virtual/dmi/id/product_uuid, assuming not running on EC2: %v", err)
+			glog.V(2).Infof("unable to read /sys/devices/virtual/dmi/id/product_uuid, assuming not running on EC2: %v", err)
 			return false
 		}
 
 		s := strings.ToLower(strings.TrimSpace(string(productUUID)))
 		if strings.HasPrefix(s, "ec2") {
-			klog.V(2).Infof("product_uuid is %q, assuming running on EC2", s)
+			glog.V(2).Infof("product_uuid is %q, assuming running on EC2", s)
 			return true
 		} else {
-			klog.V(2).Infof("product_uuid is %q, assuming not running on EC2", s)
+			glog.V(2).Infof("product_uuid is %q, assuming not running on EC2", s)
 			return false
 		}
 	} else {
-		klog.V(2).Infof("GOOS=%q, assuming not running on EC2", runtime.GOOS)
+		glog.V(2).Infof("GOOS=%q, assuming not running on EC2", runtime.GOOS)
 		return false
 	}
 }
