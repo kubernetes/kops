@@ -57,10 +57,11 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, sp := range b.Cluster.Spec.Subnets {
 		subnetName := sp.Name + "." + b.ClusterName()
 		t := &openstacktasks.Subnet{
-			Name:      s(subnetName),
-			Network:   b.LinkToNetwork(),
-			CIDR:      s(sp.CIDR),
-			Lifecycle: b.Lifecycle,
+			Name:       s(subnetName),
+			Network:    b.LinkToNetwork(),
+			CIDR:       s(sp.CIDR),
+			DNSServers: make([]*string, 0),
+			Lifecycle:  b.Lifecycle,
 		}
 		if b.Cluster.Spec.CloudConfig.Openstack.Router.DNSServers != nil {
 			dnsSplitted := strings.Split(fi.StringValue(b.Cluster.Spec.CloudConfig.Openstack.Router.DNSServers), ",")
