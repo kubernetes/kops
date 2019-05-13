@@ -294,6 +294,26 @@ func (b *FirewallModelBuilder) addKubeletRules(c *fi.ModelBuilderContext, sgMap 
 	return nil
 }
 
+// addNodeExporterRules - Allow 9100 TCP port from nodesg
+func (b *FirewallModelBuilder) addNodeExporterRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
+	masterName := b.SecurityGroupName(kops.InstanceGroupRoleMaster)
+	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
+	masterSG := sgMap[masterName]
+	nodeSG := sgMap[nodeName]
+	nodeExporterIngress := &openstacktasks.SecurityGroupRule{
+		Lifecycle:    b.Lifecycle,
+		Direction:    s(string(rules.DirIngress)),
+		Protocol:     s(IPProtocolTCP),
+		EtherType:    s(IPV4),
+		PortRangeMin: i(9100),
+		PortRangeMax: i(9100),
+	}
+	// allow 9100 port from nodeSG
+	addDirectionalGroupRule(c, masterSG, nodeSG, nodeExporterIngress)
+	addDirectionalGroupRule(c, nodeSG, nodeSG, nodeExporterIngress)
+	return nil
+}
+
 // addDNSRules - Add DNS rules for internal DNS queries
 func (b *FirewallModelBuilder) addDNSRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
 
@@ -471,6 +491,8 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	b.addDNSRules(c, sgMap)
 	//Add Kubelet Rules
 	b.addKubeletRules(c, sgMap)
+	//Add Node exporter Rules
+	b.addNodeExporterRules(c, sgMap)
 	// Protokube Rules
 	b.addProtokubeRules(c, sgMap)
 	//Allow necessary local traffic
