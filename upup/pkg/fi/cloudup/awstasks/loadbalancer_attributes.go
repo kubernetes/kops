@@ -135,6 +135,8 @@ func (_ *LoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e,
 	request.LoadBalancerAttributes.CrossZoneLoadBalancing = &elb.CrossZoneLoadBalancing{}
 	if e.CrossZoneLoadBalancing == nil || e.CrossZoneLoadBalancing.Enabled == nil {
 		request.LoadBalancerAttributes.CrossZoneLoadBalancing.Enabled = fi.Bool(false)
+	} else {
+		request.LoadBalancerAttributes.CrossZoneLoadBalancing.Enabled = e.CrossZoneLoadBalancing.Enabled
 	}
 
 	// Setting non mandatory values only if not empty
@@ -165,9 +167,6 @@ func (_ *LoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e,
 	}
 	if e.ConnectionSettings != nil && e.ConnectionSettings.IdleTimeout != nil {
 		request.LoadBalancerAttributes.ConnectionSettings.IdleTimeout = e.ConnectionSettings.IdleTimeout
-	}
-	if e.CrossZoneLoadBalancing != nil && e.CrossZoneLoadBalancing.Enabled != nil {
-		request.LoadBalancerAttributes.CrossZoneLoadBalancing.Enabled = e.CrossZoneLoadBalancing.Enabled
 	}
 
 	klog.V(2).Infof("Configuring ELB attributes for ELB %q", loadBalancerName)
