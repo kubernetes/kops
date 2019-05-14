@@ -119,7 +119,7 @@ func (c *FakeSSHCredentials) DeleteCollection(options *v1.DeleteOptions, listOpt
 // Patch applies the patch and returns the patched sSHCredential.
 func (c *FakeSSHCredentials) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *kops.SSHCredential, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(sshcredentialsResource, c.ns, name, data, subresources...), &kops.SSHCredential{})
+		Invokes(testing.NewPatchSubresourceAction(sshcredentialsResource, c.ns, name, pt, data, subresources...), &kops.SSHCredential{})
 
 	if obj == nil {
 		return nil, err

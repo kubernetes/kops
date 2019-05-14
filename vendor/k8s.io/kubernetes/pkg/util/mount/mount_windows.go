@@ -28,7 +28,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	utilfile "k8s.io/kubernetes/pkg/util/file"
 )
@@ -49,12 +49,13 @@ func New(mounterPath string) Interface {
 	}
 }
 
-// Mount : mounts source to target as NTFS with given options.
+// Mount : mounts source to target with given options.
+// currently only supports cifs(smb), bind mount(for disk)
 func (mounter *Mounter) Mount(source string, target string, fstype string, options []string) error {
 	target = normalizeWindowsPath(target)
 
 	if source == "tmpfs" {
-		glog.V(3).Infof("azureMount: mounting source (%q), target (%q), with options (%q)", source, target, options)
+		klog.V(3).Infof("mounting source (%q), target (%q), with options (%q)", source, target, options)
 		return os.MkdirAll(target, 0755)
 	}
 
@@ -63,58 +64,93 @@ func (mounter *Mounter) Mount(source string, target string, fstype string, optio
 		return err
 	}
 
-	glog.V(4).Infof("azureMount: mount options(%q) source:%q, target:%q, fstype:%q, begin to mount",
+	klog.V(4).Infof("mount options(%q) source:%q, target:%q, fstype:%q, begin to mount",
 		options, source, target, fstype)
-	bindSource := ""
+	bindSource := source
 
 	// tell it's going to mount azure disk or azure file according to options
-	if bind, _ := isBind(options); bind {
+	if bind, _, _ := isBind(options); bind {
 		// mount azure disk
 		bindSource = normalizeWindowsPath(source)
 	} else {
 		if len(options) < 2 {
-			glog.Warningf("azureMount: mount options(%q) command number(%d) less than 2, source:%q, target:%q, skip mounting",
+			klog.Warningf("mount options(%q) command number(%d) less than 2, source:%q, target:%q, skip mounting",
 				options, len(options), source, target)
 			return nil
 		}
 
 		// currently only cifs mount is supported
 		if strings.ToLower(fstype) != "cifs" {
-			return fmt.Errorf("azureMount: only cifs mount is supported now, fstype: %q, mounting source (%q), target (%q), with options (%q)", fstype, source, target, options)
+			return fmt.Errorf("only cifs mount is supported now, fstype: %q, mounting source (%q), target (%q), with options (%q)", fstype, source, target, options)
 		}
 
-		bindSource = source
-
-		// use PowerShell Environment Variables to store user input string to prevent command line injection
-		// https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_environment_variables?view=powershell-5.1
-		cmdLine := fmt.Sprintf(`$PWord = ConvertTo-SecureString -String $Env:smbpassword -AsPlainText -Force` +
-			`;$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $Env:smbuser, $PWord` +
-			`;New-SmbGlobalMapping -RemotePath $Env:smbremotepath -Credential $Credential`)
-
-		cmd := exec.Command("powershell", "/c", cmdLine)
-		cmd.Env = append(os.Environ(),
-			fmt.Sprintf("smbuser=%s", options[0]),
-			fmt.Sprintf("smbpassword=%s", options[1]),
-			fmt.Sprintf("smbremotepath=%s", source))
-		if output, err := cmd.CombinedOutput(); err != nil {
-			return fmt.Errorf("azureMount: SmbGlobalMapping failed: %v, only SMB mount is supported now, output: %q", err, string(output))
+		if output, err := newSMBMapping(options[0], options[1], source); err != nil {
+			if isSMBMappingExist(source) {
+				klog.V(2).Infof("SMB Mapping(%s) already exists, now begin to remove and remount", source)
+				if output, err := removeSMBMapping(source); err != nil {
+					return fmt.Errorf("Remove-SmbGlobalMapping failed: %v, output: %q", err, output)
+				}
+				if output, err := newSMBMapping(options[0], options[1], source); err != nil {
+					return fmt.Errorf("New-SmbGlobalMapping remount failed: %v, output: %q", err, output)
+				}
+			} else {
+				return fmt.Errorf("New-SmbGlobalMapping failed: %v, output: %q", err, output)
+			}
 		}
 	}
 
 	if output, err := exec.Command("cmd", "/c", "mklink", "/D", target, bindSource).CombinedOutput(); err != nil {
-		glog.Errorf("mklink failed: %v, source(%q) target(%q) output: %q", err, bindSource, target, string(output))
+		klog.Errorf("mklink failed: %v, source(%q) target(%q) output: %q", err, bindSource, target, string(output))
 		return err
 	}
 
 	return nil
 }
 
+// do the SMB mount with username, password, remotepath
+// return (output, error)
+func newSMBMapping(username, password, remotepath string) (string, error) {
+	if username == "" || password == "" || remotepath == "" {
+		return "", fmt.Errorf("invalid parameter(username: %s, password: %s, remoteapth: %s)", username, password, remotepath)
+	}
+
+	// use PowerShell Environment Variables to store user input string to prevent command line injection
+	// https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_environment_variables?view=powershell-5.1
+	cmdLine := `$PWord = ConvertTo-SecureString -String $Env:smbpassword -AsPlainText -Force` +
+		`;$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $Env:smbuser, $PWord` +
+		`;New-SmbGlobalMapping -RemotePath $Env:smbremotepath -Credential $Credential`
+	cmd := exec.Command("powershell", "/c", cmdLine)
+	cmd.Env = append(os.Environ(),
+		fmt.Sprintf("smbuser=%s", username),
+		fmt.Sprintf("smbpassword=%s", password),
+		fmt.Sprintf("smbremotepath=%s", remotepath))
+
+	output, err := cmd.CombinedOutput()
+	return string(output), err
+}
+
+// check whether remotepath is already mounted
+func isSMBMappingExist(remotepath string) bool {
+	cmd := exec.Command("powershell", "/c", `Get-SmbGlobalMapping -RemotePath $Env:smbremotepath`)
+	cmd.Env = append(os.Environ(), fmt.Sprintf("smbremotepath=%s", remotepath))
+	_, err := cmd.CombinedOutput()
+	return err == nil
+}
+
+// remove SMB mapping
+func removeSMBMapping(remotepath string) (string, error) {
+	cmd := exec.Command("powershell", "/c", `Remove-SmbGlobalMapping -RemotePath $Env:smbremotepath -Force`)
+	cmd.Env = append(os.Environ(), fmt.Sprintf("smbremotepath=%s", remotepath))
+	output, err := cmd.CombinedOutput()
+	return string(output), err
+}
+
 // Unmount unmounts the target.
 func (mounter *Mounter) Unmount(target string) error {
-	glog.V(4).Infof("azureMount: Unmount target (%q)", target)
+	klog.V(4).Infof("azureMount: Unmount target (%q)", target)
 	target = normalizeWindowsPath(target)
 	if output, err := exec.Command("cmd", "/c", "rmdir", target).CombinedOutput(); err != nil {
-		glog.Errorf("rmdir failed: %v, output: %q", err, string(output))
+		klog.Errorf("rmdir failed: %v, output: %q", err, string(output))
 		return err
 	}
 	return nil
@@ -168,7 +204,7 @@ func (mounter *Mounter) GetDeviceNameFromMount(mountPath, pluginDir string) (str
 func getDeviceNameFromMount(mounter Interface, mountPath, pluginDir string) (string, error) {
 	refs, err := mounter.GetMountRefs(mountPath)
 	if err != nil {
-		glog.V(4).Infof("GetMountRefs failed for mount path %q: %v", mountPath, err)
+		klog.V(4).Infof("GetMountRefs failed for mount path %q: %v", mountPath, err)
 		return "", err
 	}
 	if len(refs) == 0 {
@@ -179,7 +215,7 @@ func getDeviceNameFromMount(mounter Interface, mountPath, pluginDir string) (str
 		if strings.Contains(ref, basemountPath) {
 			volumeID, err := filepath.Rel(normalizeWindowsPath(basemountPath), ref)
 			if err != nil {
-				glog.Errorf("Failed to get volume id from mount %s - %v", mountPath, err)
+				klog.Errorf("Failed to get volume id from mount %s - %v", mountPath, err)
 				return "", err
 			}
 			return volumeID, nil
@@ -362,10 +398,10 @@ func (mounter *Mounter) CleanSubPaths(podDir string, volumeName string) error {
 
 func (mounter *SafeFormatAndMount) formatAndMount(source string, target string, fstype string, options []string) error {
 	// Try to mount the disk
-	glog.V(4).Infof("Attempting to formatAndMount disk: %s %s %s", fstype, source, target)
+	klog.V(4).Infof("Attempting to formatAndMount disk: %s %s %s", fstype, source, target)
 
 	if err := ValidateDiskNumber(source); err != nil {
-		glog.Errorf("diskMount: formatAndMount failed, err: %v", err)
+		klog.Errorf("diskMount: formatAndMount failed, err: %v", err)
 		return err
 	}
 
@@ -380,7 +416,7 @@ func (mounter *SafeFormatAndMount) formatAndMount(source string, target string, 
 	if output, err := mounter.Exec.Run("powershell", "/c", cmd); err != nil {
 		return fmt.Errorf("diskMount: format disk failed, error: %v, output: %q", err, string(output))
 	}
-	glog.V(4).Infof("diskMount: Disk successfully formatted, disk: %q, fstype: %q", source, fstype)
+	klog.V(4).Infof("diskMount: Disk successfully formatted, disk: %q, fstype: %q", source, fstype)
 
 	driveLetter, err := getDriveLetterByDiskNumber(source, mounter.Exec)
 	if err != nil {
@@ -388,9 +424,9 @@ func (mounter *SafeFormatAndMount) formatAndMount(source string, target string, 
 	}
 	driverPath := driveLetter + ":"
 	target = normalizeWindowsPath(target)
-	glog.V(4).Infof("Attempting to formatAndMount disk: %s %s %s", fstype, driverPath, target)
+	klog.V(4).Infof("Attempting to formatAndMount disk: %s %s %s", fstype, driverPath, target)
 	if output, err := mounter.Exec.Run("cmd", "/c", "mklink", "/D", target, driverPath); err != nil {
-		glog.Errorf("mklink failed: %v, output: %q", err, string(output))
+		klog.Errorf("mklink failed: %v, output: %q", err, string(output))
 		return err
 	}
 	return nil
@@ -460,10 +496,14 @@ func getAllParentLinks(path string) ([]string, error) {
 
 // GetMountRefs : empty implementation here since there is no place to query all mount points on Windows
 func (mounter *Mounter) GetMountRefs(pathname string) ([]string, error) {
-	if _, err := os.Stat(normalizeWindowsPath(pathname)); os.IsNotExist(err) {
+	pathExists, pathErr := PathExists(normalizeWindowsPath(pathname))
+	// TODO(#75012): Need a Windows specific IsCorruptedMnt function that checks against whatever errno's
+	// Windows emits when we try to Stat a corrupted mount
+	// https://golang.org/pkg/syscall/?GOOS=windows&GOARCH=amd64#Errno
+	if !pathExists {
 		return []string{}, nil
-	} else if err != nil {
-		return nil, err
+	} else if pathErr != nil {
+		return nil, fmt.Errorf("error checking path %s: %v", normalizeWindowsPath(pathname), pathErr)
 	}
 	return []string{pathname}, nil
 }
@@ -499,7 +539,7 @@ func (mounter *Mounter) SafeMakeDir(subdir string, base string, perm os.FileMode
 }
 
 func doSafeMakeDir(pathname string, base string, perm os.FileMode) error {
-	glog.V(4).Infof("Creating directory %q within base %q", pathname, base)
+	klog.V(4).Infof("Creating directory %q within base %q", pathname, base)
 
 	if !PathWithinBase(pathname, base) {
 		return fmt.Errorf("path %s is outside of allowed base %s", pathname, base)
@@ -512,7 +552,7 @@ func doSafeMakeDir(pathname string, base string, perm os.FileMode) error {
 		if s.IsDir() {
 			// The directory already exists. It can be outside of the parent,
 			// but there is no race-proof check.
-			glog.V(4).Infof("Directory %s already exists", pathname)
+			klog.V(4).Infof("Directory %s already exists", pathname)
 			return nil
 		}
 		return &os.PathError{Op: "mkdir", Path: pathname, Err: syscall.ENOTDIR}
@@ -547,13 +587,13 @@ func doSafeMakeDir(pathname string, base string, perm os.FileMode) error {
 		return err
 	}
 
-	glog.V(4).Infof("%q already exists, %q to create", fullExistingPath, filepath.Join(toCreate...))
+	klog.V(4).Infof("%q already exists, %q to create", fullExistingPath, filepath.Join(toCreate...))
 	currentPath := fullExistingPath
 	// create the directories one by one, making sure nobody can change
 	// created directory into symlink by lock that directory immediately
 	for _, dir := range toCreate {
 		currentPath = filepath.Join(currentPath, dir)
-		glog.V(4).Infof("Creating %s", dir)
+		klog.V(4).Infof("Creating %s", dir)
 		if err := os.Mkdir(currentPath, perm); err != nil {
 			return fmt.Errorf("cannot create directory %s: %s", currentPath, err)
 		}

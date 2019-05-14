@@ -33,7 +33,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/kubectl/cmd"
+	cmddrain "k8s.io/kubernetes/pkg/kubectl/cmd/drain"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 )
 
@@ -329,9 +329,9 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 		ErrOut: os.Stderr,
 	}
 
-	drain := cmd.NewCmdDrain(f, streams)
+	drain := cmddrain.NewCmdDrain(f, streams)
 	args := []string{u.Node.Name}
-	options := cmd.NewDrainOptions(f, streams)
+	options := cmddrain.NewDrainOptions(f, streams)
 
 	// Override some options
 	options.IgnoreDaemonsets = true
