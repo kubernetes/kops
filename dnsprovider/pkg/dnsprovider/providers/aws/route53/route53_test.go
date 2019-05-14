@@ -17,12 +17,17 @@ limitations under the License.
 package route53
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 	"testing"
+	"time"
 
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53/stubs"
 	route53testing "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53/stubs"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 
@@ -30,6 +35,90 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/tests"
 )
+
+func TestRoute53China(t *testing.T) {
+	flag.Set("logtostderr", "true")
+	flag.Set("v", "5")
+	flag.Parse()
+
+	var lines []string
+	var file io.Reader
+	route53Region := "cn-northwest-1"
+	route53EndpointURL := "https://api.route53.cn"
+
+	lines = append(lines, "route53-region = "+route53Region)
+	lines = append(lines, "route53-endpoint-url = "+route53EndpointURL)
+	config := "[global]\n" + strings.Join(lines, "\n") + "\n"
+	file = bytes.NewReader([]byte(config))
+
+	// check newRoute53 with config.
+	svc, err := newRoute53(file)
+	if svc == nil || err != nil {
+		t.Fatal(err)
+	}
+
+	// Warning!!! runRoute53China will operate your real aws environment.
+	// runRoute53China(t, svc.service)
+}
+
+func runRoute53China(t *testing.T, service stubs.Route53API) {
+	zoneName := "justfortestroute53.cn"
+	id, err := createRoute53ChinaHostedZone(service, zoneName)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	response, err := listRoute53ChinaHostedZone(service)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, item := range response {
+		fmt.Println(item.GoString())
+	}
+
+	err = deleteRoute53ChinaHostedZone(service, id)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func createRoute53ChinaHostedZone(service stubs.Route53API, zoneName string) (string, error) {
+
+	params := &route53.CreateHostedZoneInput{
+		CallerReference: aws.String(time.Now().String() + "suffix"), // Required
+		Name:            aws.String(zoneName),                       // Required
+	}
+	response, err := service.CreateHostedZone(params)
+	if err != nil {
+		return "", err
+	}
+
+	return *response.HostedZone.Id, err
+}
+
+func listRoute53ChinaHostedZone(service stubs.Route53API) ([]*route53.HostedZone, error) {
+	input := route53.ListHostedZonesInput{}
+
+	var list []*route53.HostedZone
+	err := service.ListHostedZonesPages(&input, func(page *route53.ListHostedZonesOutput, lastPage bool) bool {
+		for _, item := range page.HostedZones {
+			list = append(list, item)
+		}
+		return true
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
+func deleteRoute53ChinaHostedZone(service stubs.Route53API, zoneID string) error {
+	input := route53.DeleteHostedZoneInput{Id: &zoneID}
+	_, err := service.DeleteHostedZone(&input)
+	return err
+}
 
 func newTestInterface() (dnsprovider.Interface, error) {
 	// Use this to test the real cloud service.

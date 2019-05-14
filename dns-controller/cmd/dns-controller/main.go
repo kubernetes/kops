@@ -59,6 +59,10 @@ func main() {
 	var watchIngress bool
 	var updateInterval int
 
+	// for route53-china
+	var enableRoute53China bool
+	var route53Region, route53EndpointURL string
+
 	// Be sure to get the glog flags
 	glog.Flush()
 
@@ -73,6 +77,11 @@ func main() {
 	flag.IntVar(&route53.MaxBatchSize, "route53-batch-size", route53.MaxBatchSize, "Maximum number of operations performed per changeset batch")
 	flag.StringVar(&metricsListen, "metrics-listen", "", "The address on which to listen for Prometheus metrics.")
 	flags.IntVar(&updateInterval, "update-interval", 5, "Configure interval at which to update DNS records.")
+
+	// for route53-china
+	flags.BoolVar(&enableRoute53China, "enable-route53-china", true, "whether using route53-China which need special args for region and endpoint-url, by default true")
+	flags.StringVar(&route53Region, "route53-region", "cn-northwest-1", "region of route53, by default cn-northwest-1")
+	flags.StringVar(&route53EndpointURL, "route53-endpoint-url", "https://api.route53.cn", "endpoint url of route53, by default https://api.route53.cn")
 
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
@@ -114,7 +123,15 @@ func main() {
 			lines = append(lines, "zones = "+zones[0])
 			config := "[global]\n" + strings.Join(lines, "\n") + "\n"
 			file = bytes.NewReader([]byte(config))
+		} else if dnsProviderID == route53.ProviderName && enableRoute53China {
+			glog.V(4).Infof("[main] got provider: route53 China, set route53Region: %s, route53EndpointURL: %s", route53Region, route53EndpointURL)
+			var lines []string
+			lines = append(lines, "route53-region = "+route53Region)
+			lines = append(lines, "route53-endpoint-url = "+route53EndpointURL)
+			config := "[global]\n" + strings.Join(lines, "\n") + "\n"
+			file = bytes.NewReader([]byte(config))
 		}
+
 		dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderID, file)
 		if err != nil {
 			glog.Errorf("Error initializing DNS provider %q: %v", dnsProviderID, err)

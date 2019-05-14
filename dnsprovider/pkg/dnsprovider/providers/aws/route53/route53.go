@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
+	"gopkg.in/gcfg.v1"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
 
@@ -34,6 +35,14 @@ const (
 
 // MaxBatchSize is used to limit the max size of resource record changesets
 var MaxBatchSize = 900
+
+// Config to override defaults
+type Config struct {
+	Global struct {
+		Route53Region      string `gcfg:"route53-region"`
+		Route53EndpointURL string `gcfg:"route53-endpoint-url"`
+	}
+}
 
 func init() {
 	dnsprovider.RegisterDnsProvider(ProviderName, func(config io.Reader) (dnsprovider.Interface, error) {
@@ -62,6 +71,18 @@ func newRoute53(config io.Reader) (*Interface, error) {
 	// This avoids a confusing error message when we fail to get credentials
 	// e.g. https://github.com/kubernetes/kops/issues/605
 	awsConfig = awsConfig.WithCredentialsChainVerboseErrors(true)
+
+	// read config in case of using route53-China
+	if config != nil {
+		var cfg Config
+		if err := gcfg.ReadInto(&cfg, config); err != nil {
+			glog.Errorf("Couldn't read config: %v", err)
+			return nil, err
+		}
+		glog.V(4).Infof("[newRoute53] got config for route53 China, route53Region: %s, route53EndpointURL: %s", cfg.Global.Route53Region, cfg.Global.Route53EndpointURL)
+		awsConfig.Region = &cfg.Global.Route53Region
+		awsConfig.Endpoint = &cfg.Global.Route53EndpointURL
+	}
 
 	svc := route53.New(session.New(), awsConfig)
 
