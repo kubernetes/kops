@@ -119,7 +119,7 @@ func (c *FakeKeysets) DeleteCollection(options *v1.DeleteOptions, listOptions v1
 // Patch applies the patch and returns the patched keyset.
 func (c *FakeKeysets) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *kops.Keyset, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(keysetsResource, c.ns, name, data, subresources...), &kops.Keyset{})
+		Invokes(testing.NewPatchSubresourceAction(keysetsResource, c.ns, name, pt, data, subresources...), &kops.Keyset{})
 
 	if obj == nil {
 		return nil, err
