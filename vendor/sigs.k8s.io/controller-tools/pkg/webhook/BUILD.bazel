@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "admission.go",
+        "generator.go",
+        "manifests.go",
+        "parser.go",
+        "types.go",
+        "writer.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-tools/pkg/webhook",
+    importpath = "sigs.k8s.io/controller-tools/pkg/webhook",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/github.com/spf13/afero:go_default_library",
+        "//vendor/k8s.io/api/admissionregistration/v1beta1:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/sigs.k8s.io/controller-tools/pkg/internal/general:go_default_library",
+    ],
+)
