@@ -531,6 +531,20 @@ var dockerVersions = []dockerVersion{
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
 
+	// 18.06.3 - Xenial
+	{
+		DockerVersion: "18.06.3",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionXenial},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.06.3~ce~3-0~ubuntu",
+		Source:        "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb",
+		Hash:          "c06eda4e934cce6a7941a6af6602d4315b500a22",
+		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		//Depends: iptables, init-system-helpers, lsb-base, libc6, libdevmapper1.02.1, libltdl7, libseccomp2, libsystemd0
+		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, pigz, xz-utils, apparmor
+	},
+
 	// 17.09.0 - Centos / Rhel7 (two packages)
 	{
 		DockerVersion: "17.09.0",
