@@ -350,6 +350,7 @@ func deleteGroup(c AWSCloud, g *cloudinstances.CloudInstanceGroup) error {
 
 	name := aws.StringValue(asg.AutoScalingGroupName)
 	template := aws.StringValue(asg.LaunchConfigurationName)
+	launchTemplate := aws.StringValue(asg.LaunchTemplate.LaunchTemplateName)
 
 	// Delete ASG
 	{
@@ -365,14 +366,29 @@ func deleteGroup(c AWSCloud, g *cloudinstances.CloudInstanceGroup) error {
 	}
 
 	// Delete LaunchConfig
-	{
-		glog.V(2).Infof("Deleting autoscaling launch configuration %q", template)
-		request := &autoscaling.DeleteLaunchConfigurationInput{
-			LaunchConfigurationName: aws.String(template),
+	if launchTemplate != "" {
+		// Delete launchTemplate
+		{
+			glog.V(2).Infof("Deleting autoscaling launch template %q", launchTemplate)
+			req := &ec2.DeleteLaunchTemplateInput{
+				LaunchTemplateName: aws.String(launchTemplate),
+			}
+			_, err := c.EC2().DeleteLaunchTemplate(req)
+			if err != nil {
+				return fmt.Errorf("error deleting autoscaling launch template %q: %v", launchTemplate, err)
+			}
 		}
-		_, err := c.Autoscaling().DeleteLaunchConfiguration(request)
-		if err != nil {
-			return fmt.Errorf("error deleting autoscaling launch configuration %q: %v", template, err)
+	} else if template != "" {
+		// Delete LaunchConfig
+		{
+			glog.V(2).Infof("Deleting autoscaling launch configuration %q", template)
+			request := &autoscaling.DeleteLaunchConfigurationInput{
+				LaunchConfigurationName: aws.String(template),
+			}
+			_, err := c.Autoscaling().DeleteLaunchConfiguration(request)
+			if err != nil {
+				return fmt.Errorf("error deleting autoscaling launch configuration %q: %v", template, err)
+			}
 		}
 	}
 
