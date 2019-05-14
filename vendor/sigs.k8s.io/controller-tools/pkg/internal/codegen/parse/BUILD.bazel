@@ -1,0 +1,31 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "apis.go",
+        "context.go",
+        "crd.go",
+        "index.go",
+        "parser.go",
+        "util.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-tools/pkg/internal/codegen/parse",
+    importpath = "sigs.k8s.io/controller-tools/pkg/internal/codegen/parse",
+    visibility = ["//vendor/sigs.k8s.io/controller-tools/pkg:__subpackages__"],
+    deps = [
+        "//vendor/github.com/markbates/inflect:go_default_library",
+        "//vendor/github.com/pkg/errors:go_default_library",
+        "//vendor/k8s.io/api/rbac/v1:go_default_library",
+        "//vendor/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/gengo/args:go_default_library",
+        "//vendor/k8s.io/gengo/generator:go_default_library",
+        "//vendor/k8s.io/gengo/namer:go_default_library",
+        "//vendor/k8s.io/gengo/parser:go_default_library",
+        "//vendor/k8s.io/gengo/types:go_default_library",
+        "//vendor/sigs.k8s.io/controller-tools/pkg/internal/codegen:go_default_library",
+        "//vendor/sigs.k8s.io/controller-tools/pkg/internal/general:go_default_library",
+    ],
+)
