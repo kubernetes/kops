@@ -369,7 +369,7 @@ func deleteGroup(c AWSCloud, g *cloudinstances.CloudInstanceGroup) error {
 	if launchTemplate != "" {
 		// Delete launchTemplate
 		{
-		glog.V(2).Infof("Deleting autoscaling launch template %q", launchTemplate)
+			glog.V(2).Infof("Deleting autoscaling launch template %q", launchTemplate)
 			req := &ec2.DeleteLaunchTemplateInput{
 				LaunchTemplateName: aws.String(launchTemplate),
 			}
