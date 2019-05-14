@@ -25,8 +25,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/protokube/pkg/etcd"
 )
@@ -162,7 +162,7 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *etcd.EtcdClusterSpec
 func (k *EtcdController) RunSyncLoop() {
 	for {
 		if err := k.syncOnce(); err != nil {
-			glog.Warningf("error during attempt to bootstrap (will sleep and retry): %v", err)
+			klog.Warningf("error during attempt to bootstrap (will sleep and retry): %v", err)
 		}
 
 		time.Sleep(1 * time.Minute)
@@ -272,7 +272,7 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 		} else if bytes.Equal(existingManifest, manifest) {
 			writeManifest = false
 		} else {
-			glog.Infof("Need to update manifest file: %q", manifestTarget)
+			klog.Infof("Need to update manifest file: %q", manifestTarget)
 		}
 	}
 
@@ -294,10 +294,10 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 			if target == manifestTarget {
 				createSymlink = false
 			} else {
-				glog.Infof("Need to update manifest symlink (wrong target %q): %q", target, manifestSource)
+				klog.Infof("Need to update manifest symlink (wrong target %q): %q", target, manifestSource)
 			}
 		} else {
-			glog.Infof("Need to update manifest symlink (not a symlink): %q", manifestSource)
+			klog.Infof("Need to update manifest symlink (not a symlink): %q", manifestSource)
 		}
 	}
 
@@ -323,7 +323,7 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 			return fmt.Errorf("error creating etcd manifest symlink %q -> %q: %v", manifestSource, manifestTarget, err)
 		}
 
-		glog.Infof("Updated etcd manifest: %s", manifestSource)
+		klog.Infof("Updated etcd manifest: %s", manifestSource)
 	}
 
 	return nil

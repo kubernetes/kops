@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -78,7 +78,7 @@ func (e *RouteTableAssociation) Find(c *fi.Context) (*RouteTableAssociation, err
 			RouteTable: &RouteTable{ID: rta.RouteTableId},
 			Subnet:     &Subnet{ID: rta.SubnetId},
 		}
-		glog.V(2).Infof("found matching RouteTableAssociation %q", *actual.ID)
+		klog.V(2).Infof("found matching RouteTableAssociation %q", *actual.ID)
 		e.ID = actual.ID
 
 		// Prevent spurious changes
@@ -146,7 +146,7 @@ func (_ *RouteTableAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *
 	if a == nil {
 		// TODO: We might do better just to make the subnet the primary key here
 
-		glog.V(2).Infof("Checking for existing RouteTableAssociation to subnet")
+		klog.V(2).Infof("Checking for existing RouteTableAssociation to subnet")
 		existing, err := findExistingRouteTableForSubnet(t.Cloud, e.Subnet)
 		if err != nil {
 			return fmt.Errorf("error checking for existing RouteTableAssociation: %v", err)
@@ -157,7 +157,7 @@ func (_ *RouteTableAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *
 				if aws.StringValue(a.SubnetId) != aws.StringValue(e.Subnet.ID) {
 					continue
 				}
-				glog.V(2).Infof("Creating RouteTableAssociation")
+				klog.V(2).Infof("Creating RouteTableAssociation")
 				request := &ec2.DisassociateRouteTableInput{
 					AssociationId: a.RouteTableAssociationId,
 				}
@@ -169,7 +169,7 @@ func (_ *RouteTableAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *
 			}
 		}
 
-		glog.V(2).Infof("Creating RouteTableAssociation")
+		klog.V(2).Infof("Creating RouteTableAssociation")
 		request := &ec2.AssociateRouteTableInput{
 			SubnetId:     e.Subnet.ID,
 			RouteTableId: e.RouteTable.ID,

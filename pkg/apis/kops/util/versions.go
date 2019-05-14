@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"github.com/blang/semver"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func ParseKubernetesVersion(version string) (*semver.Version, error) {
@@ -73,10 +73,10 @@ func ParseKubernetesVersion(version string) (*semver.Version, error) {
 		} else if strings.Contains(v, "/v1.19.") {
 			sv = semver.Version{Major: 1, Minor: 19}
 		} else {
-			glog.Errorf("unable to parse Kubernetes version %q", version)
+			klog.Errorf("unable to parse Kubernetes version %q", version)
 			return nil, fmt.Errorf("unable to parse kubernetes version %q", version)
 		}
-		glog.V(1).Infof("Kubernetes version %q string matched to %v", version, sv)
+		klog.V(1).Infof("Kubernetes version %q string matched to %v", version, sv)
 	}
 
 	return &sv, nil

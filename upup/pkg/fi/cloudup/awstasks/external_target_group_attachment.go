@@ -22,7 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -103,7 +103,7 @@ func (_ *ExternalTargetGroupAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, c
 	request.AutoScalingGroupName = e.AutoscalingGroup.Name
 	request.TargetGroupARNs = aws.StringSlice([]string{e.TargetGroupARN})
 
-	glog.V(2).Infof("Attaching autoscaling group %q to Target Group %q", fi.StringValue(e.AutoscalingGroup.Name), e.TargetGroupARN)
+	klog.V(2).Infof("Attaching autoscaling group %q to Target Group %q", fi.StringValue(e.AutoscalingGroup.Name), e.TargetGroupARN)
 	_, err := t.Cloud.Autoscaling().AttachLoadBalancerTargetGroups(request)
 	if err != nil {
 		return fmt.Errorf("error attaching autoscaling group to ELB: %v", err)

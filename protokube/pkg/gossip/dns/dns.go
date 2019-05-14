@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/protokube/pkg/gossip"
 )
 
@@ -44,17 +44,17 @@ func RunDNSUpdates(target DNSTarget, src *DNSView) {
 		// Snapshot is very cheap if we are in-sync
 		snapshot := src.Snapshot()
 		if lastSnapshot != nil && lastSnapshot.version == snapshot.version {
-			glog.V(4).Infof("DNSView unchanged: %v", lastSnapshot.version)
+			klog.V(4).Infof("DNSView unchanged: %v", lastSnapshot.version)
 			continue
 		}
 
 		// TODO: We might want to keep old records alive for a bit
 
-		glog.V(2).Infof("DNSView changed: %v", snapshot.version)
+		klog.V(2).Infof("DNSView changed: %v", snapshot.version)
 
 		err := target.Update(snapshot)
 		if err != nil {
-			glog.Warningf("error applying DNS changes to target: %v", err)
+			klog.Warningf("error applying DNS changes to target: %v", err)
 			continue
 		}
 
@@ -225,7 +225,7 @@ func (v *DNSView) Snapshot() *DNSViewSnapshot {
 		if strings.HasPrefix(k, "dns/") {
 			tokens := strings.Split(k, "/")
 			if len(tokens) != 4 {
-				glog.Warningf("key had invalid format: %q", k)
+				klog.Warningf("key had invalid format: %q", k)
 				continue
 			}
 
@@ -254,7 +254,7 @@ func (v *DNSView) Snapshot() *DNSViewSnapshot {
 			record.Rrdatas = append(record.Rrdatas, addresses...)
 			zone.Records[key] = record
 		} else {
-			glog.Warningf("unknown tag %q=%q", k, v)
+			klog.Warningf("unknown tag %q=%q", k, v)
 		}
 	}
 

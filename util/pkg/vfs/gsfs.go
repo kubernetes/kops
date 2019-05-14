@@ -28,11 +28,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
 	"golang.org/x/net/context"
 	"google.golang.org/api/googleapi"
 	storage "google.golang.org/api/storage/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -136,7 +136,7 @@ func (p *GSPath) Join(relativePath ...string) Path {
 
 func (p *GSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 	done, err := RetryWithBackoff(gcsWriteBackoff, func() (bool, error) {
-		glog.V(4).Infof("Writing file %q", p)
+		klog.V(4).Infof("Writing file %q", p)
 
 		md5Hash, err := hashing.HashAlgorithmMD5.Hash(data)
 		if err != nil {
@@ -228,7 +228,7 @@ func (p *GSPath) ReadFile() ([]byte, error) {
 
 // WriteTo implements io.WriterTo::WriteTo
 func (p *GSPath) WriteTo(out io.Writer) (int64, error) {
-	glog.V(4).Infof("Reading file %q", p)
+	klog.V(4).Infof("Reading file %q", p)
 
 	response, err := p.client.Objects.Get(p.bucket, p.key).Download()
 	if err != nil {
@@ -274,7 +274,7 @@ func (p *GSPath) ReadDir() ([]Path, error) {
 			}
 			return false, fmt.Errorf("error listing %s: %v", p, err)
 		}
-		glog.V(8).Infof("Listed files in %v: %v", p, paths)
+		klog.V(8).Infof("Listed files in %v: %v", p, paths)
 		ret = paths
 		return true, nil
 	})

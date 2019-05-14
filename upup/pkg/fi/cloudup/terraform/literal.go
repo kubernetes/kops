@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 	"sort"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type Literal struct {
@@ -87,7 +87,7 @@ func SortLiterals(v []*Literal) {
 	proxies, err := buildSortProxies(v)
 	if err != nil {
 		// Very unexpected
-		glog.Fatalf("error processing terraform Literal: %v", err)
+		klog.Fatalf("error processing terraform Literal: %v", err)
 	}
 
 	sort.Sort(byKey(proxies))

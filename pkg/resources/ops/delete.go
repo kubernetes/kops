@@ -21,7 +21,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/resources"
 	awsresources "k8s.io/kops/pkg/resources/aws"
 	"k8s.io/kops/upup/pkg/fi"
@@ -49,9 +49,9 @@ func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource)
 		}
 	}
 
-	glog.V(2).Info("Dependencies")
+	klog.V(2).Info("Dependencies")
 	for k, v := range depMap {
-		glog.V(2).Infof("\t%s\t%v", k, v)
+		klog.V(2).Infof("\t%s\t%v", k, v)
 	}
 
 	iterationsWithNoProgress := 0
@@ -76,7 +76,7 @@ func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource)
 				ready := true
 				for _, dep := range depMap[k] {
 					if _, d := done[dep]; !d {
-						glog.V(4).Infof("dependency %q of %q not deleted; skipping", dep, k)
+						klog.V(4).Infof("dependency %q of %q not deleted; skipping", dep, k)
 						ready = false
 					}
 				}
@@ -121,7 +121,7 @@ func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource)
 						err = trackers[0].GroupDeleter(cloud, trackers)
 					} else {
 						if len(trackers) != 1 {
-							glog.Fatal("found group without groupKey")
+							klog.Fatal("found group without groupKey")
 						}
 						err = trackers[0].Deleter(cloud, trackers[0])
 					}
@@ -129,7 +129,7 @@ func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource)
 						mutex.Lock()
 						if awsresources.IsDependencyViolation(err) {
 							fmt.Printf("%s\tstill has dependencies, will retry\n", human)
-							glog.V(4).Infof("API call made when had dependency: %s", human)
+							klog.V(4).Infof("API call made when had dependency: %s", human)
 						} else {
 							fmt.Printf("%s\terror deleting resources, will retry: %v\n", human, err)
 						}

@@ -26,8 +26,8 @@ package cloudup
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
@@ -92,7 +92,7 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 		tags.Insert(versionTag)
 	}
 
-	glog.V(4).Infof("tags: %s", tags.List())
+	klog.V(4).Infof("tags: %s", tags.List())
 
 	return tags, nil
 }
@@ -116,7 +116,7 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 	case api.UpdatePolicyExternal:
 	// Skip applying the tag
 	default:
-		glog.Warningf("Unrecognized value for UpdatePolicy: %v", fi.StringValue(cluster.Spec.UpdatePolicy))
+		klog.Warningf("Unrecognized value for UpdatePolicy: %v", fi.StringValue(cluster.Spec.UpdatePolicy))
 	}
 
 	if clusterTags.Has("_gce") {

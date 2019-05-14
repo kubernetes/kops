@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -50,10 +50,10 @@ func (c *VFSSecretStore) VFSPath() vfs.Path {
 
 func (c *VFSSecretStore) MirrorTo(basedir vfs.Path) error {
 	if basedir.Path() == c.basedir.Path() {
-		glog.V(2).Infof("Skipping mirror of secret store from %q to %q (same path)", c.basedir, basedir)
+		klog.V(2).Infof("Skipping mirror of secret store from %q to %q (same path)", c.basedir, basedir)
 		return nil
 	}
-	glog.V(2).Infof("Mirroring secret store from %q to %q", c.basedir, basedir)
+	klog.V(2).Infof("Mirroring secret store from %q to %q", c.basedir, basedir)
 
 	secrets, err := c.ListSecrets()
 	if err != nil {
@@ -77,7 +77,7 @@ func (c *VFSSecretStore) MirrorTo(basedir vfs.Path) error {
 			return fmt.Errorf("error building acl for secret %q for mirror: %v", name, err)
 		}
 
-		glog.Infof("mirroring secret %s -> %s", name, p)
+		klog.Infof("mirroring secret %s -> %s", name, p)
 
 		err = createSecret(secret, p, acl, true)
 		if err != nil {
@@ -156,7 +156,7 @@ func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *fi.Secret) (*fi.Se
 		err = createSecret(secret, p, acl, false)
 		if err != nil {
 			if os.IsExist(err) && i == 0 {
-				glog.Infof("Got already-exists error when writing secret; likely due to concurrent creation.  Will retry")
+				klog.Infof("Got already-exists error when writing secret; likely due to concurrent creation.  Will retry")
 				continue
 			} else {
 				return nil, false, err
@@ -171,7 +171,7 @@ func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *fi.Secret) (*fi.Se
 	// Make double-sure it round-trips
 	s, err := c.loadSecret(p)
 	if err != nil {
-		glog.Fatalf("unable to load secret immediately after creation %v: %v", p, err)
+		klog.Fatalf("unable to load secret immediately after creation %v: %v", p, err)
 		return nil, false, err
 	}
 	return s, true, nil

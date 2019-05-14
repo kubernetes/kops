@@ -26,7 +26,7 @@ import (
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
 	"github.com/denverdino/aliyungo/metadata"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipali "k8s.io/kops/protokube/pkg/gossip/ali"
@@ -100,7 +100,7 @@ func (a *ALIVolumes) discoverTags() error {
 		if a.region == "" {
 			return fmt.Errorf("region metadata was empty")
 		}
-		glog.Infof("Found region=%q", a.region)
+		klog.Infof("Found region=%q", a.region)
 	}
 
 	// Zone
@@ -113,7 +113,7 @@ func (a *ALIVolumes) discoverTags() error {
 		if a.zone == "" {
 			return fmt.Errorf("zone metadata was empty")
 		}
-		glog.Infof("Found zone=%q", a.zone)
+		klog.Infof("Found zone=%q", a.zone)
 	}
 
 	// Instance Name
@@ -126,7 +126,7 @@ func (a *ALIVolumes) discoverTags() error {
 		if a.instanceId == "" {
 			return fmt.Errorf("instance ID metadata was empty")
 		}
-		glog.Infof("Found instanceId=%q", a.instanceId)
+		klog.Infof("Found instanceId=%q", a.instanceId)
 	}
 
 	// Internal IP
@@ -142,7 +142,7 @@ func (a *ALIVolumes) discoverTags() error {
 		if a.internalIP == nil {
 			return fmt.Errorf("InternalIP from metadata was not parseable(%q)", internalIP)
 		}
-		glog.Infof("Found internalIP=%q", a.internalIP)
+		klog.Infof("Found internalIP=%q", a.internalIP)
 	}
 
 	// Cluster Tag
@@ -205,7 +205,7 @@ func (a *ALIVolumes) AttachVolume(volume *Volume) error {
 }
 
 func (a *ALIVolumes) FindVolumes() ([]*Volume, error) {
-	glog.V(2).Infof("Listing Aliyun disks in %s", a.zone)
+	klog.V(2).Infof("Listing Aliyun disks in %s", a.zone)
 
 	var volumes []*Volume
 
@@ -273,14 +273,14 @@ func (a *ALIVolumes) FindVolumes() ([]*Volume, error) {
 					spec, err := etcd.ParseEtcdClusterSpec(etcdClusterName, tag.TagValue)
 					if err != nil {
 						// Fail safe
-						glog.Warningf("error parsing etcd cluster tag %q on volume %q; skipping volume: %v", tag.TagValue, volume.ID, err)
+						klog.Warningf("error parsing etcd cluster tag %q on volume %q; skipping volume: %v", tag.TagValue, volume.ID, err)
 						skipVolume = true
 					}
 					volume.Info.EtcdClusters = append(volume.Info.EtcdClusters, spec)
 				} else if strings.HasPrefix(tag.TagKey, aliup.TagNameRolePrefix) {
 					// Ignore
 				} else {
-					glog.Warningf("unknown tag on volume %q: %s=%s", volume.ID, tag.TagKey, tag.TagValue)
+					klog.Warningf("unknown tag on volume %q: %s=%s", volume.ID, tag.TagKey, tag.TagValue)
 				}
 			}
 		}

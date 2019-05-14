@@ -26,7 +26,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
@@ -100,7 +100,7 @@ func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (in
 	reflectutils.JsonMergeStruct(next, current)
 
 	for _, t := range l.templates {
-		glog.V(2).Infof("executing template %s (tags=%s)", t.Name, t.Tags)
+		klog.V(2).Infof("executing template %s (tags=%s)", t.Name, t.Tags)
 
 		var buffer bytes.Buffer
 		err := t.Template.ExecuteTemplate(&buffer, t.Name, current)
@@ -113,7 +113,7 @@ func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (in
 		jsonBytes, err := utils.YAMLToJSON(yamlBytes)
 		if err != nil {
 			// TODO: It would be nice if yaml returned us the line number here
-			glog.Infof("error parsing yaml.  yaml follows:")
+			klog.Infof("error parsing yaml.  yaml follows:")
 			for i, line := range strings.Split(string(yamlBytes), "\n") {
 				fmt.Fprintf(os.Stderr, "%3d: %s\n", i, line)
 			}
@@ -127,7 +127,7 @@ func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (in
 	}
 
 	for _, t := range l.Builders {
-		glog.V(2).Infof("executing builder %T", t)
+		klog.V(2).Infof("executing builder %T", t)
 
 		err := t.BuildOptions(next)
 		if err != nil {

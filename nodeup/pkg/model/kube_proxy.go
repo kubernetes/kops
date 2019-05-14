@@ -27,10 +27,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/exec"
 
-	"github.com/golang/glog"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog"
 )
 
 // KubeProxyBuilder installs kube-proxy
@@ -45,7 +45,7 @@ var _ fi.ModelBuilder = &KubeAPIServerBuilder{}
 func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.Cluster.Spec.KubeProxy.Enabled != nil && *b.Cluster.Spec.KubeProxy.Enabled == false {
-		glog.V(2).Infof("Kube-proxy is disabled, will not create configuration for it.")
+		klog.V(2).Infof("Kube-proxy is disabled, will not create configuration for it.")
 		return nil
 	}
 
@@ -53,7 +53,7 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 		// If this is a master that is not isolated, run it as a normal node also (start kube-proxy etc)
 		// This lets e.g. daemonset pods communicate with other pods in the system
 		if fi.BoolValue(b.Cluster.Spec.IsolateMasters) {
-			glog.V(2).Infof("Running on Master with IsolateMaster=true; skipping kube-proxy installation")
+			klog.V(2).Infof("Running on Master with IsolateMaster=true; skipping kube-proxy installation")
 			return nil
 		}
 	}
@@ -228,7 +228,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		vol := pod.Spec.Volumes[len(pod.Spec.Volumes)-1]
 		if vol.Name != "iptableslock" {
 			// Sanity check
-			glog.Fatalf("expected volume to be last volume added")
+			klog.Fatalf("expected volume to be last volume added")
 		}
 		hostPathType := v1.HostPathFileOrCreate
 		vol.HostPath.Type = &hostPathType

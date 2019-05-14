@@ -23,17 +23,17 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockEC2) CreateVolume(request *ec2.CreateVolumeInput) (*ec2.Volume, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("CreateVolume: %v", request)
+	klog.Infof("CreateVolume: %v", request)
 
 	if request.DryRun != nil {
-		glog.Fatalf("DryRun")
+		klog.Fatalf("DryRun")
 	}
 
 	n := len(m.Volumes) + 1
@@ -116,10 +116,10 @@ func (m *MockEC2) DescribeVolumes(request *ec2.DescribeVolumesInput) (*ec2.Descr
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DescribeVolumes: %v", request)
+	klog.Infof("DescribeVolumes: %v", request)
 
 	if request.VolumeIds != nil {
-		glog.Fatalf("VolumeIds")
+		klog.Fatalf("VolumeIds")
 	}
 
 	var volumes []*ec2.Volume
@@ -190,7 +190,7 @@ func (m *MockEC2) DeleteVolume(request *ec2.DeleteVolumeInput) (*ec2.DeleteVolum
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DeleteVolume: %v", request)
+	klog.Infof("DeleteVolume: %v", request)
 
 	id := aws.StringValue(request.VolumeId)
 	o := m.Volumes[id]

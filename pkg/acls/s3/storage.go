@@ -22,7 +22,7 @@ import (
 
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/values"
@@ -59,7 +59,7 @@ func (s *s3PublicAclStrategy) GetACL(p vfs.Path, cluster *kops.Cluster) (vfs.ACL
 	// We are checking that the file repository url is in S3
 	_, err = vfs.VFSPath(fileRepository)
 	if err != nil {
-		glog.V(8).Infof("path %q is not inside of a s3 bucket", u.String())
+		klog.V(8).Infof("path %q is not inside of a s3 bucket", u.String())
 		return nil, nil
 	}
 
@@ -71,7 +71,7 @@ func (s *s3PublicAclStrategy) GetACL(p vfs.Path, cluster *kops.Cluster) (vfs.ACL
 	// We are checking that the path defined is not the state store, if it is
 	// we do NOT set the state store as public read.
 	if strings.Contains(u.Path, config.Path) {
-		glog.V(8).Infof("path %q is inside of config store %q, not setting public-read acl", u.Path, config.Path)
+		klog.V(8).Infof("path %q is inside of config store %q, not setting public-read acl", u.Path, config.Path)
 		return nil, nil
 	}
 
@@ -80,7 +80,7 @@ func (s *s3PublicAclStrategy) GetACL(p vfs.Path, cluster *kops.Cluster) (vfs.ACL
 			RequestACL: values.String("public-read"),
 		}, nil
 	} else {
-		glog.V(8).Infof("path %q is not inside the file registry %q, not setting public-read acl", u.Path, config.Path)
+		klog.V(8).Infof("path %q is not inside the file registry %q, not setting public-read acl", u.Path, config.Path)
 	}
 
 	return nil, nil

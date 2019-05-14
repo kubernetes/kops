@@ -26,7 +26,7 @@ import (
 	"strings"
 
 	"github.com/blang/semver"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -82,7 +82,7 @@ func NewAssetBuilder(cluster *kops.Cluster, phase string) *AssetBuilder {
 	version, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
 	if err != nil {
 		// This should have already been validated
-		glog.Fatalf("unexpected error from ParseKubernetesVersion %s: %v", cluster.Spec.KubernetesVersion, err)
+		klog.Fatalf("unexpected error from ParseKubernetesVersion %s: %v", cluster.Spec.KubernetesVersion, err)
 	}
 	a.KubernetesVersion = *version
 
@@ -221,7 +221,7 @@ func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Has
 
 		fileAsset.DownloadURL = normalizedFileURL
 
-		glog.V(4).Infof("adding remapped file: %+v", fileAsset)
+		klog.V(4).Infof("adding remapped file: %+v", fileAsset)
 	}
 
 	h, err := a.findHash(fileAsset)
@@ -231,7 +231,7 @@ func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Has
 	fileAsset.SHAValue = h.Hex()
 
 	a.FileAssets = append(a.FileAssets, fileAsset)
-	glog.V(8).Infof("adding file: %+v", fileAsset)
+	klog.V(8).Infof("adding file: %+v", fileAsset)
 
 	return fileAsset.DownloadURL, h, nil
 }
@@ -258,7 +258,7 @@ func (a *AssetBuilder) RemapFileAndSHAValue(fileURL *url.URL, shaValue string) (
 		}
 
 		fileAsset.DownloadURL = normalizedFile
-		glog.V(4).Infof("adding remapped file: %q", fileAsset.DownloadURL.String())
+		klog.V(4).Infof("adding remapped file: %q", fileAsset.DownloadURL.String())
 	}
 
 	a.FileAssets = append(a.FileAssets, fileAsset)
@@ -294,11 +294,11 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 		hashURL := u.String() + ext
 		b, err := vfs.Context.ReadFile(hashURL)
 		if err != nil {
-			glog.Infof("error reading hash file %q: %v", hashURL, err)
+			klog.Infof("error reading hash file %q: %v", hashURL, err)
 			continue
 		}
 		hashString := strings.TrimSpace(string(b))
-		glog.V(2).Infof("Found hash %q for %q", hashString, u)
+		klog.V(2).Infof("Found hash %q for %q", hashString, u)
 
 		// Accept a hash string that is `<hash> <filename>`
 		fields := strings.Fields(hashString)

@@ -29,7 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
 	elbv2 "github.com/aws/aws-sdk-go/service/elbv2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 )
 
@@ -61,7 +61,7 @@ func ValidateRegion(region string) error {
 	defer allRegionsMutex.Unlock()
 
 	if allRegions == nil {
-		glog.V(2).Infof("Querying EC2 for all valid regions")
+		klog.V(2).Infof("Querying EC2 for all valid regions")
 
 		request := &ec2.DescribeRegionsInput{}
 		awsRegion := os.Getenv("AWS_REGION")
@@ -93,7 +93,7 @@ func ValidateRegion(region string) error {
 	}
 
 	if os.Getenv("SKIP_REGION_CHECK") != "" {
-		glog.Infof("AWS region does not appear to be valid, but skipping because SKIP_REGION_CHECK is set")
+		klog.Infof("AWS region does not appear to be valid, but skipping because SKIP_REGION_CHECK is set")
 		return nil
 	}
 

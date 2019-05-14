@@ -19,8 +19,8 @@ package gcetasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"google.golang.org/api/storage/v1"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -50,7 +50,7 @@ func (e *StorageBucketAcl) Find(c *fi.Context) (*StorageBucketAcl, error) {
 	bucket := fi.StringValue(e.Bucket)
 	entity := fi.StringValue(e.Entity)
 
-	glog.V(2).Infof("Checking GCS bucket ACL for gs://%s for %s", bucket, entity)
+	klog.V(2).Infof("Checking GCS bucket ACL for gs://%s for %s", bucket, entity)
 	r, err := cloud.Storage().BucketAccessControls.Get(bucket, entity).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
@@ -97,14 +97,14 @@ func (_ *StorageBucketAcl) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Storage
 	}
 
 	if a == nil {
-		glog.V(2).Infof("Creating GCS bucket ACL for gs://%s for %s as %s", bucket, entity, role)
+		klog.V(2).Infof("Creating GCS bucket ACL for gs://%s for %s as %s", bucket, entity, role)
 
 		_, err := t.Cloud.Storage().BucketAccessControls.Insert(bucket, acl).Do()
 		if err != nil {
 			return fmt.Errorf("error creating GCS bucket ACL for gs://%s for %s as %s: %v", bucket, entity, role, err)
 		}
 	} else {
-		glog.V(2).Infof("Updating GCS bucket ACL for gs://%s for %s as %s", bucket, entity, role)
+		klog.V(2).Infof("Updating GCS bucket ACL for gs://%s for %s as %s", bucket, entity, role)
 
 		_, err := t.Cloud.Storage().BucketAccessControls.Update(bucket, entity, acl).Do()
 		if err != nil {

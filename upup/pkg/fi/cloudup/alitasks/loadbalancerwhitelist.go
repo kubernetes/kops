@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
@@ -44,11 +44,11 @@ func (l *LoadBalancerWhiteList) CompareWithID() *string {
 
 func (l *LoadBalancerWhiteList) Find(c *fi.Context) (*LoadBalancerWhiteList, error) {
 	if l.LoadBalancer == nil || l.LoadBalancer.LoadbalancerId == nil {
-		glog.V(4).Infof("LoadBalancer / LoadbalancerId not found for %s, skipping Find", fi.StringValue(l.Name))
+		klog.V(4).Infof("LoadBalancer / LoadbalancerId not found for %s, skipping Find", fi.StringValue(l.Name))
 		return nil, nil
 	}
 	if l.LoadBalancerListener == nil || l.LoadBalancerListener.ListenerPort == nil {
-		glog.V(4).Infof("LoadBalancerListener / LoadbalancerListenerPort not found for %s, skipping Find", fi.StringValue(l.Name))
+		klog.V(4).Infof("LoadBalancerListener / LoadbalancerListenerPort not found for %s, skipping Find", fi.StringValue(l.Name))
 		return nil, nil
 	}
 
@@ -63,7 +63,7 @@ func (l *LoadBalancerWhiteList) Find(c *fi.Context) (*LoadBalancerWhiteList, err
 	if response.SourceItems == "" {
 		return nil, nil
 	}
-	glog.V(2).Infof("found matching LoadBalancerWhiteList of ListenerPort: %q", *l.LoadBalancerListener.ListenerPort)
+	klog.V(2).Infof("found matching LoadBalancerWhiteList of ListenerPort: %q", *l.LoadBalancerListener.ListenerPort)
 
 	actual := &LoadBalancerWhiteList{}
 	actual.SourceItems = fi.String(response.SourceItems)
@@ -90,7 +90,7 @@ func (_ *LoadBalancerWhiteList) CheckChanges(a, e, changes *LoadBalancerWhiteLis
 
 func (_ *LoadBalancerWhiteList) RenderALI(t *aliup.ALIAPITarget, a, e, changes *LoadBalancerWhiteList) error {
 
-	glog.V(2).Infof("Updating LoadBalancerWhiteList of ListenerPort: %q", *e.LoadBalancerListener.ListenerPort)
+	klog.V(2).Infof("Updating LoadBalancerWhiteList of ListenerPort: %q", *e.LoadBalancerListener.ListenerPort)
 
 	loadBalancerId := fi.StringValue(e.LoadBalancer.LoadbalancerId)
 	listenertPort := fi.IntValue(e.LoadBalancerListener.ListenerPort)
@@ -136,6 +136,6 @@ func (l *LoadBalancerWhiteList) getWhiteItemsToDelete(currentWhiteItems string) 
 }
 
 func (_ *LoadBalancerWhiteList) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancerWhiteList) error {
-	glog.Warningf("terraform does not support LoadBalancerWhiteList on ALI cloud")
+	klog.Warningf("terraform does not support LoadBalancerWhiteList on ALI cloud")
 	return nil
 }

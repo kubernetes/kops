@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type Task interface {
@@ -56,7 +56,7 @@ func (c *ModelBuilderContext) AddTask(task Task) {
 
 	existing, found := c.Tasks[key]
 	if found {
-		glog.Fatalf("found duplicate tasks with name %q: %v and %v", key, task, existing)
+		klog.Fatalf("found duplicate tasks with name %q: %v and %v", key, task, existing)
 	}
 	c.Tasks[key] = task
 }
@@ -72,12 +72,12 @@ func (c *ModelBuilderContext) EnsureTask(task Task) error {
 	existing, found := c.Tasks[key]
 	if found {
 		if reflect.DeepEqual(task, existing) {
-			glog.V(8).Infof("EnsureTask ignoring identical ")
+			klog.V(8).Infof("EnsureTask ignoring identical ")
 			return nil
 		} else {
-			glog.Warningf("EnsureTask found task mismatch for %q", key)
-			glog.Warningf("\tExisting: %v", existing)
-			glog.Warningf("\tNew: %v", task)
+			klog.Warningf("EnsureTask found task mismatch for %q", key)
+			klog.Warningf("\tExisting: %v", existing)
+			klog.Warningf("\tNew: %v", task)
 
 			return fmt.Errorf("cannot add different task with same key %q", key)
 		}
@@ -95,17 +95,17 @@ func (c *ModelBuilderContext) setLifecycleOverride(task Task) Task {
 	// certain tasks have not implemented HasLifecycle interface
 	hl, ok := task.(HasLifecycle)
 	if !ok {
-		glog.V(8).Infof("task %T does not implement HasLifecycle", task)
+		klog.V(8).Infof("task %T does not implement HasLifecycle", task)
 		return task
 	}
 
 	typeName := TypeNameForTask(task)
-	glog.V(8).Infof("testing task %q", typeName)
+	klog.V(8).Infof("testing task %q", typeName)
 
 	// typeName can be values like "InternetGateway"
 	value, ok := c.LifecycleOverrides[typeName]
 	if ok {
-		glog.Warningf("overriding task %s, lifecycle %s", task, value)
+		klog.Warningf("overriding task %s, lifecycle %s", task, value)
 		hl.SetLifecycle(value)
 	}
 
@@ -115,12 +115,12 @@ func (c *ModelBuilderContext) setLifecycleOverride(task Task) Task {
 func buildTaskKey(task Task) string {
 	hasName, ok := task.(HasName)
 	if !ok {
-		glog.Fatalf("task %T does not implement HasName", task)
+		klog.Fatalf("task %T does not implement HasName", task)
 	}
 
 	name := StringValue(hasName.GetName())
 	if name == "" {
-		glog.Fatalf("task %T (%v) did not have a Name", task, task)
+		klog.Fatalf("task %T (%v) did not have a Name", task, task)
 	}
 
 	typeName := TypeNameForTask(task)

@@ -24,7 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockEC2) AllocateAddressRequest(*ec2.AllocateAddressInput) (*request.Request, *ec2.AllocateAddressOutput) {
@@ -68,7 +68,7 @@ func (m *MockEC2) AllocateAddressWithId(request *ec2.AllocateAddressInput, id st
 }
 
 func (m *MockEC2) AllocateAddress(request *ec2.AllocateAddressInput) (*ec2.AllocateAddressOutput, error) {
-	glog.Infof("AllocateAddress: %v", request)
+	klog.Infof("AllocateAddress: %v", request)
 	id := m.allocateId("eipalloc")
 	return m.AllocateAddressWithId(request, id)
 }
@@ -109,7 +109,7 @@ func (m *MockEC2) DescribeAddresses(request *ec2.DescribeAddressesInput) (*ec2.D
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("DescribeAddresses: %v", request)
+	klog.Infof("DescribeAddresses: %v", request)
 
 	var addresses []*ec2.Address
 
@@ -171,7 +171,7 @@ func (m *MockEC2) ReleaseAddress(request *ec2.ReleaseAddressInput) (*ec2.Release
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("ReleaseAddress: %v", request)
+	klog.Infof("ReleaseAddress: %v", request)
 
 	id := aws.StringValue(request.AllocationId)
 	o := m.Addresses[id]

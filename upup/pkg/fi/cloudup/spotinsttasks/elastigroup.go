@@ -25,11 +25,11 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
 	"github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/client"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -342,7 +342,7 @@ func (eg *Elastigroup) createOrUpdate(cloud awsup.AWSCloud, a, e, changes *Elast
 }
 
 func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) error {
-	glog.V(2).Infof("Creating elastigroup %q", *e.Name)
+	klog.V(2).Infof("Creating elastigroup %q", *e.Name)
 	e.applyDefaults()
 
 	group := &aws.Group{
@@ -541,7 +541,7 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 readyLoop:
 	for {
 		attempt++
-		glog.V(2).Infof("(%d/%d) Attempting to create elastigroup: %s, config: %s",
+		klog.V(2).Infof("(%d/%d) Attempting to create elastigroup: %s, config: %s",
 			attempt, maxAttempts, *e.Name, stringutil.Stringify(group))
 
 		// Wait for IAM instance profile to be ready.
@@ -567,8 +567,8 @@ readyLoop:
 						return fmt.Errorf("IAM instance profile not yet created/propagated (original error: %v)", err)
 					}
 
-					glog.V(4).Infof("Got an error indicating that the IAM instance profile %q is not ready %q", fi.StringValue(e.IAMInstanceProfile.Name), err)
-					glog.Infof("Waiting for IAM instance profile %q to be ready", fi.StringValue(e.IAMInstanceProfile.Name))
+					klog.V(4).Infof("Got an error indicating that the IAM instance profile %q is not ready %q", fi.StringValue(e.IAMInstanceProfile.Name), err)
+					klog.Infof("Waiting for IAM instance profile %q to be ready", fi.StringValue(e.IAMInstanceProfile.Name))
 					goto readyLoop
 				}
 			}
@@ -581,11 +581,11 @@ readyLoop:
 }
 
 func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) error {
-	glog.V(2).Infof("Updating elastigroup %q", *e.Name)
+	klog.V(2).Infof("Updating elastigroup %q", *e.Name)
 
 	actual, err := e.find(cloud.Spotinst(), *e.Name)
 	if err != nil {
-		glog.Errorf("Unable to resolve elastigroup %q, error: %s", *e.Name, err)
+		klog.Errorf("Unable to resolve elastigroup %q, error: %s", *e.Name, err)
 		return err
 	}
 
@@ -1032,18 +1032,18 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 
 	empty := &Elastigroup{}
 	if !reflect.DeepEqual(empty, changes) {
-		glog.Warningf("Not all changes applied to elastigroup %q: %v", *group.ID, changes)
+		klog.Warningf("Not all changes applied to elastigroup %q: %v", *group.ID, changes)
 	}
 
 	if group.Compute == nil &&
 		group.Capacity == nil &&
 		group.Strategy == nil &&
 		group.Integration == nil {
-		glog.V(2).Infof("No changes detected in elastigroup %q", *group.ID)
+		klog.V(2).Infof("No changes detected in elastigroup %q", *group.ID)
 		return nil
 	}
 
-	glog.V(2).Infof("Updating elastigroup %q (config: %s)", *group.ID, stringutil.Stringify(group))
+	klog.V(2).Infof("Updating elastigroup %q (config: %s)", *group.ID, stringutil.Stringify(group))
 
 	// Wrap the raw object as an Elastigroup.
 	eg, err := spotinst.NewElastigroup(cloud.ProviderID(), group)
@@ -1462,7 +1462,7 @@ func subnetSlicesEqualIgnoreOrder(l, r []*awstasks.Subnet) bool {
 	var rIDs []string
 	for _, s := range r {
 		if s.ID == nil {
-			glog.V(4).Infof("Subnet ID not set; returning not-equal: %v", s)
+			klog.V(4).Infof("Subnet ID not set; returning not-equal: %v", s)
 			return false
 		}
 		rIDs = append(rIDs, *s.ID)

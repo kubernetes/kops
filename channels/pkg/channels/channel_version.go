@@ -22,11 +22,11 @@ import (
 	"strings"
 
 	"github.com/blang/semver"
-	"github.com/golang/glog"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog"
 )
 
 const AnnotationPrefix = "addons.k8s.io/"
@@ -75,7 +75,7 @@ func FindAddons(ns *v1.Namespace) map[string]*ChannelVersion {
 
 		channelVersion, err := ParseChannelVersion(v)
 		if err != nil {
-			glog.Warningf("failed to parse annotation %q=%q", k, v)
+			klog.Warningf("failed to parse annotation %q=%q", k, v)
 			continue
 		}
 
@@ -104,12 +104,12 @@ func (c *ChannelVersion) replaces(existing *ChannelVersion) bool {
 		}
 		cVersion, err := semver.ParseTolerant(*c.Version)
 		if err != nil {
-			glog.Warningf("error parsing version %q; will ignore this version", *c.Version)
+			klog.Warningf("error parsing version %q; will ignore this version", *c.Version)
 			return false
 		}
 		existingVersion, err := semver.ParseTolerant(*existing.Version)
 		if err != nil {
-			glog.Warningf("error parsing existing version %q", *existing.Version)
+			klog.Warningf("error parsing existing version %q", *existing.Version)
 			return true
 		}
 		if cVersion.LT(existingVersion) {
@@ -121,11 +121,11 @@ func (c *ChannelVersion) replaces(existing *ChannelVersion) bool {
 			if c.Id == existing.Id {
 				return false
 			}
-			glog.V(4).Infof("Channels had same version %q but different ids (%q vs %q); will replace", *c.Version, c.Id, existing.Id)
+			klog.V(4).Infof("Channels had same version %q but different ids (%q vs %q); will replace", *c.Version, c.Id, existing.Id)
 		}
 	}
 
-	glog.Warningf("ChannelVersion did not have a version; can't perform real version check")
+	klog.Warningf("ChannelVersion did not have a version; can't perform real version check")
 	if c.Version == nil {
 		return false
 	}
@@ -172,7 +172,7 @@ func (c *Channel) SetInstalledVersion(k8sClient kubernetes.Interface, version *C
 		return fmt.Errorf("error building annotation patch: %v", err)
 	}
 
-	glog.V(2).Infof("sending patch: %q", string(annotationPatchJson))
+	klog.V(2).Infof("sending patch: %q", string(annotationPatchJson))
 
 	_, err = k8sClient.CoreV1().Namespaces().Patch(c.Namespace, types.StrategicMergePatchType, annotationPatchJson)
 	if err != nil {

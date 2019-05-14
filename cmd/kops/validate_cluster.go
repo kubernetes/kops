@@ -25,12 +25,12 @@ import (
 	"strings"
 
 	"github.com/ghodss/yaml"
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/validation"
@@ -107,7 +107,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	var instanceGroups []api.InstanceGroup
 	for _, ig := range list.Items {
 		instanceGroups = append(instanceGroups, ig)
-		glog.V(2).Infof("instance group: %#v\n\n", ig.Spec)
+		klog.V(2).Infof("instance group: %#v\n\n", ig.Spec)
 	}
 
 	if len(instanceGroups) == 0 {

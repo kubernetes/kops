@@ -21,14 +21,14 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func (m *MockELB) ConfigureHealthCheck(request *elb.ConfigureHealthCheckInput) (*elb.ConfigureHealthCheckOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	glog.Infof("ConfigureHealthCheck: %v", request)
+	klog.Infof("ConfigureHealthCheck: %v", request)
 
 	lb := m.LoadBalancers[aws.StringValue(request.LoadBalancerName)]
 	if lb == nil {

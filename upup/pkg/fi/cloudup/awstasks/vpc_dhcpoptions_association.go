@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -86,7 +86,7 @@ func (s *VPCDHCPOptionsAssociation) CheckChanges(a, e, changes *VPCDHCPOptionsAs
 
 func (_ *VPCDHCPOptionsAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPCDHCPOptionsAssociation) error {
 	if changes.DHCPOptions != nil {
-		glog.V(2).Infof("calling EC2 AssociateDhcpOptions")
+		klog.V(2).Infof("calling EC2 AssociateDhcpOptions")
 		request := &ec2.AssociateDhcpOptionsInput{
 			VpcId:         e.VPC.ID,
 			DhcpOptionsId: e.DHCPOptions.ID,

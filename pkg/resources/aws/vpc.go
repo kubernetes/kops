@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
@@ -33,7 +33,7 @@ func DeleteVPC(cloud fi.Cloud, r *resources.Resource) error {
 
 	id := r.ID
 
-	glog.V(2).Infof("Deleting EC2 VPC %q", id)
+	klog.V(2).Infof("Deleting EC2 VPC %q", id)
 	request := &ec2.DeleteVpcInput{
 		VpcId: &id,
 	}
@@ -67,7 +67,7 @@ func DescribeVPCs(cloud fi.Cloud, clusterName string) (map[string]*ec2.Vpc, erro
 	c := cloud.(awsup.AWSCloud)
 
 	vpcs := make(map[string]*ec2.Vpc)
-	glog.V(2).Info("Listing EC2 VPC")
+	klog.V(2).Info("Listing EC2 VPC")
 	for _, filters := range buildEC2FiltersForCluster(clusterName) {
 		request := &ec2.DescribeVpcsInput{
 			Filters: filters,
