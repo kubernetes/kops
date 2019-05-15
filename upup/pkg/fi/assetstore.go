@@ -28,7 +28,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/hashing"
 )
@@ -58,7 +58,7 @@ func (s *Source) Key() string {
 	} else if s.ExtractFromArchive != "" {
 		k += s.ExtractFromArchive
 	} else {
-		glog.Fatalf("expected either URL or ExtractFromArchive to be set")
+		klog.Fatalf("expected either URL or ExtractFromArchive to be set")
 	}
 	return k
 }
@@ -118,19 +118,19 @@ func (a *AssetStore) Find(key string, assetPath string) (Resource, error) {
 		return nil, nil
 	}
 	if len(matches) == 1 {
-		glog.Infof("Resolved asset %s:%s to %s", key, assetPath, matches[0].AssetPath)
+		klog.Infof("Resolved asset %s:%s to %s", key, assetPath, matches[0].AssetPath)
 		return &assetResource{asset: matches[0]}, nil
 	}
 
-	glog.Infof("Matching assets:")
+	klog.Infof("Matching assets:")
 	for _, match := range matches {
-		glog.Infof("    %s %s", match.Key, match.AssetPath)
+		klog.Infof("    %s %s", match.Key, match.AssetPath)
 	}
 	return nil, fmt.Errorf("found multiple matching assets for key: %q", key)
 }
 
 func hashFromHttpHeader(url string) (*hashing.Hash, error) {
-	glog.Infof("Doing HTTP HEAD on %q", url)
+	klog.Infof("Doing HTTP HEAD on %q", url)
 	response, err := http.Head(url)
 	if err != nil {
 		return nil, fmt.Errorf("error doing HEAD on %q: %v", url, err)
@@ -182,7 +182,7 @@ func (a *AssetStore) addURLs(urls []string, hash *hashing.Hash) error {
 		for _, url := range urls {
 			hash, err = hashFromHttpHeader(url)
 			if err != nil {
-				glog.Warningf("unable to get hash from %q: %v", url, err)
+				klog.Warningf("unable to get hash from %q: %v", url, err)
 				continue
 			} else {
 				break
@@ -200,7 +200,7 @@ func (a *AssetStore) addURLs(urls []string, hash *hashing.Hash) error {
 	for _, url := range urls {
 		_, err = DownloadURL(url, localFile, hash)
 		if err != nil {
-			glog.Warningf("error downloading url %q: %v", url, err)
+			klog.Warningf("error downloading url %q: %v", url, err)
 			continue
 		} else {
 			break
@@ -222,7 +222,7 @@ func (a *AssetStore) addURLs(urls []string, hash *hashing.Hash) error {
 		resource:  r,
 		source:    source,
 	}
-	glog.V(2).Infof("added asset %q for %q", asset.Key, asset.resource)
+	klog.V(2).Infof("added asset %q for %q", asset.Key, asset.resource)
 	a.assets = append(a.assets, asset)
 
 	// normalize filename suffix
@@ -267,7 +267,7 @@ func (a *AssetStore) addURLs(urls []string, hash *hashing.Hash) error {
 //		AssetPath: assetPath,
 //		resource:  r,
 //	}
-//	glog.V(2).Infof("added asset %q for %q", asset.Key, asset.resource)
+//	klog.V(2).Infof("added asset %q for %q", asset.Key, asset.resource)
 //	a.assets = append(a.assets, asset)
 //
 //	if strings.HasSuffix(assetPath, ".tar.gz") {
@@ -293,7 +293,7 @@ func (a *AssetStore) addArchive(archiveSource *Source, archiveFile string) error
 		}
 
 		args := []string{"tar", "zxf", archiveFile, "-C", extractedTemp}
-		glog.Infof("running extract command %s", args)
+		klog.Infof("running extract command %s", args)
 		cmd := exec.Command(args[0], args[1:]...)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
@@ -332,7 +332,7 @@ func (a *AssetStore) addArchive(archiveSource *Source, archiveFile string) error
 			resource:  r,
 			source:    &Source{Parent: archiveSource, ExtractFromArchive: assetPath},
 		}
-		glog.V(2).Infof("added asset %q for %q", asset.Key, asset.resource)
+		klog.V(2).Infof("added asset %q for %q", asset.Key, asset.resource)
 		a.assets = append(a.assets, asset)
 
 		return nil

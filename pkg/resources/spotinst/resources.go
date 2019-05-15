@@ -22,8 +22,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/resources"
@@ -32,7 +32,7 @@ import (
 
 // ListGroups returns a list of all Elastigroups as Resource objects.
 func ListGroups(svc Service, clusterName string) ([]*resources.Resource, error) {
-	glog.V(2).Info("Listing all Elastigroups")
+	klog.V(2).Info("Listing all Elastigroups")
 
 	groups, err := svc.List(context.Background())
 	if err != nil {
@@ -58,7 +58,7 @@ func ListGroups(svc Service, clusterName string) ([]*resources.Resource, error) 
 
 // DeleteGroup deletes an existing Elastigroup.
 func DeleteGroup(svc Service, group *cloudinstances.CloudInstanceGroup) error {
-	glog.V(2).Infof("Deleting Elastigroup %q", group.HumanName)
+	klog.V(2).Infof("Deleting Elastigroup %q", group.HumanName)
 
 	return svc.Delete(
 		context.Background(),
@@ -67,7 +67,7 @@ func DeleteGroup(svc Service, group *cloudinstances.CloudInstanceGroup) error {
 
 // DeleteInstance removes an instance from its Elastigroup.
 func DeleteInstance(svc Service, instance *cloudinstances.CloudInstanceGroupMember) error {
-	glog.V(2).Infof("Detaching instance %q from Elastigroup", instance.ID)
+	klog.V(2).Infof("Detaching instance %q from Elastigroup", instance.ID)
 
 	return svc.Detach(
 		context.Background(),
@@ -78,7 +78,7 @@ func DeleteInstance(svc Service, instance *cloudinstances.CloudInstanceGroupMemb
 // GetCloudGroups returns a list of Elastigroups as CloudInstanceGroup objects.
 func GetCloudGroups(svc Service, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup,
 	warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	glog.V(2).Info("Listing all Elastigroups")
+	klog.V(2).Info("Listing all Elastigroups")
 
 	groups, err := svc.List(context.Background())
 	if err != nil {
@@ -106,7 +106,7 @@ func GetCloudGroups(svc Service, cluster *kops.Cluster, instancegroups []*kops.I
 
 		if instancegroup == nil {
 			if warnUnmatched {
-				glog.V(2).Infof("Found group with no corresponding instance group %q", group.Name())
+				klog.V(2).Infof("Found group with no corresponding instance group %q", group.Name())
 			}
 			continue
 		}
@@ -134,7 +134,7 @@ func getGroupNameByRole(cluster *kops.Cluster, ig *kops.InstanceGroup) string {
 	case kops.InstanceGroupRoleBastion:
 		groupName = ig.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
 	default:
-		glog.Warningf("Ignoring InstanceGroup of unknown role %q", ig.Spec.Role)
+		klog.Warningf("Ignoring InstanceGroup of unknown role %q", ig.Spec.Role)
 	}
 
 	return groupName
@@ -161,7 +161,7 @@ func buildCloudInstanceGroup(svc Service, ig *kops.InstanceGroup, group Elastigr
 
 	for _, instance := range instances {
 		if instance.Id() == "" {
-			glog.Warningf("Ignoring instance with no ID: %v", instance)
+			klog.Warningf("Ignoring instance with no ID: %v", instance)
 			continue
 		}
 
@@ -176,7 +176,7 @@ func buildCloudInstanceGroup(svc Service, ig *kops.InstanceGroup, group Elastigr
 
 func deleter(svc Service, group Elastigroup) func(fi.Cloud, *resources.Resource) error {
 	return func(cloud fi.Cloud, resource *resources.Resource) error {
-		glog.V(2).Infof("Deleting Elastigroup %q", group.Id())
+		klog.V(2).Infof("Deleting Elastigroup %q", group.Id())
 		return svc.Delete(context.Background(), group.Id())
 	}
 }

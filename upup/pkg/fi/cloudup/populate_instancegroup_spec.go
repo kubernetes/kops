@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/blang/semver"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
@@ -125,7 +125,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 				return nil, fmt.Errorf("Invalid dedicated instance type: %s", ig.Spec.MachineType)
 			}
 		default:
-			glog.Warning("Trying to set tenancy on non-AWS environment")
+			klog.Warning("Trying to set tenancy on non-AWS environment")
 		}
 	}
 
@@ -232,7 +232,7 @@ func defaultMachineType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, 
 		}
 	}
 
-	glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q, Role=%q", cluster.Spec.CloudProvider, ig.Spec.Role)
+	klog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q, Role=%q", cluster.Spec.CloudProvider, ig.Spec.Role)
 	return "", nil
 }
 
@@ -244,7 +244,7 @@ func defaultImage(cluster *kops.Cluster, channel *kops.Channel) string {
 			var err error
 			kubernetesVersion, err = util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
 			if err != nil {
-				glog.Warningf("cannot parse KubernetesVersion %q in cluster", cluster.Spec.KubernetesVersion)
+				klog.Warningf("cannot parse KubernetesVersion %q in cluster", cluster.Spec.KubernetesVersion)
 			}
 		}
 		if kubernetesVersion != nil {
@@ -263,6 +263,6 @@ func defaultImage(cluster *kops.Cluster, channel *kops.Channel) string {
 	case kops.CloudProviderALI:
 		return defaultALINodeImage
 	}
-	glog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)
+	klog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)
 	return ""
 }

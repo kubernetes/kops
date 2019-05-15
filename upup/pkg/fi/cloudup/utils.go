@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	"k8s.io/kops/pkg/apis/kops"
@@ -164,7 +164,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 }
 
 func FindDNSHostedZone(dns dnsprovider.Interface, clusterDNSName string, dnsType kops.DNSType) (string, error) {
-	glog.V(2).Infof("Querying for all DNS zones to find match for %q", clusterDNSName)
+	klog.V(2).Infof("Querying for all DNS zones to find match for %q", clusterDNSName)
 
 	clusterDNSName = "." + strings.TrimSuffix(clusterDNSName, ".")
 
@@ -195,7 +195,7 @@ func FindDNSHostedZone(dns dnsprovider.Interface, clusterDNSName string, dnsType
 						zoneDNSType = kops.DNSTypePrivate
 					}
 					if zoneDNSType != dnsType {
-						glog.Infof("Found matching hosted zone %q, but it was %q and we require %q", zoneName, zoneDNSType, dnsType)
+						klog.Infof("Found matching hosted zone %q, but it was %q and we require %q", zoneName, zoneDNSType, dnsType)
 						continue
 					}
 				}
@@ -228,7 +228,7 @@ func FindDNSHostedZone(dns dnsprovider.Interface, clusterDNSName string, dnsType
 		// We make this an error because you have to set up DNS delegation anyway
 		tokens := strings.Split(clusterDNSName, ".")
 		suffix := strings.Join(tokens[len(tokens)-2:], ".")
-		//glog.Warningf("No matching hosted zones found; will created %q", suffix)
+		//klog.Warningf("No matching hosted zones found; will created %q", suffix)
 		//return suffix, nil
 		return "", fmt.Errorf("No matching hosted zones found for %q; please create one (e.g. %q) first", clusterDNSName, suffix)
 	}

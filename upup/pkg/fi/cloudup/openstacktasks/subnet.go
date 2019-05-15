@@ -19,9 +19,9 @@ package openstacktasks
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -135,7 +135,7 @@ func (_ *Subnet) CheckChanges(a, e, changes *Subnet) error {
 
 func (_ *Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Subnet) error {
 	if a == nil {
-		glog.V(2).Infof("Creating Subnet with name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating Subnet with name:%q", fi.StringValue(e.Name))
 
 		opt := subnets.CreateOpts{
 			Name:       fi.StringValue(e.Name),
@@ -158,10 +158,10 @@ func (_ *Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 		}
 
 		e.ID = fi.String(v.ID)
-		glog.V(2).Infof("Creating a new Openstack subnet, id=%s", v.ID)
+		klog.V(2).Infof("Creating a new Openstack subnet, id=%s", v.ID)
 		return nil
 	}
 	e.ID = a.ID
-	glog.V(2).Infof("Using an existing Openstack subnet, id=%s", fi.StringValue(e.ID))
+	klog.V(2).Infof("Using an existing Openstack subnet, id=%s", fi.StringValue(e.ID))
 	return nil
 }

@@ -22,8 +22,8 @@ import (
 
 	"github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
-	"github.com/golang/glog"
 	"golang.org/x/net/context"
+	"k8s.io/klog"
 )
 
 // dockerAPI encapsulates access to docker via the API
@@ -33,7 +33,7 @@ type dockerAPI struct {
 
 // newDockerAPI builds a dockerAPI object, for talking to docker via the API
 func newDockerAPI() (*dockerAPI, error) {
-	glog.V(4).Infof("docker creating api client")
+	klog.V(4).Infof("docker creating api client")
 	c, err := client.NewEnvClient()
 	if err != nil {
 		return nil, fmt.Errorf("error building docker client: %v", err)
@@ -48,8 +48,8 @@ func newDockerAPI() (*dockerAPI, error) {
 	_, err = c.Info(ctx)
 	if err != nil {
 		// TODO check if /var/run/docker.sock exists and create a connection using that
-		glog.Errorf("Unable to create docker client please set DOCKER_HOST to unix socket or tcp socket")
-		glog.Errorf("Standard DOCKER_HOST values can be %q and defaults to %q", "unix:///var/run/docker.sock", client.DefaultDockerHost)
+		klog.Errorf("Unable to create docker client please set DOCKER_HOST to unix socket or tcp socket")
+		klog.Errorf("Standard DOCKER_HOST values can be %q and defaults to %q", "unix:///var/run/docker.sock", client.DefaultDockerHost)
 		return nil, fmt.Errorf("error building docker client, unable to make info call: %v", err)
 	}
 
@@ -60,7 +60,7 @@ func newDockerAPI() (*dockerAPI, error) {
 
 // findImage does a `docker images` via the API, and finds the specified image
 func (d *dockerAPI) findImage(name string) (*types.Image, error) {
-	glog.V(4).Infof("docker query for image %q", name)
+	klog.V(4).Infof("docker query for image %q", name)
 	options := types.ImageListOptions{
 		MatchName: name,
 	}
@@ -82,7 +82,7 @@ func (d *dockerAPI) findImage(name string) (*types.Image, error) {
 // pullImage does `docker pull`, via the API.
 // Because it is non-trivial to get credentials, we tend to use the CLI
 func (d *dockerAPI) pullImage(name string) error {
-	glog.V(4).Infof("docker pull for image %q", name)
+	klog.V(4).Infof("docker pull for image %q", name)
 	ctx := context.Background()
 	pullOptions := types.ImagePullOptions{}
 	resp, err := d.client.ImagePull(ctx, name, pullOptions)
@@ -98,7 +98,7 @@ func (d *dockerAPI) pullImage(name string) error {
 		// {"status":"Already exists","progressDetail":{},"id":"a3ed95caeb02"}
 
 		// {"status":"Status: Image is up to date for k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.0.0"}
-		glog.Infof("docker pull %s", scanner.Text())
+		klog.Infof("docker pull %s", scanner.Text())
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -111,7 +111,7 @@ func (d *dockerAPI) pullImage(name string) error {
 // pushImage does `docker push`, via the API.
 // Because it is non-trivial to get credentials, we tend to use the CLI
 func (d *dockerAPI) pushImage(name string) error {
-	glog.V(4).Infof("docker push for image %q", name)
+	klog.V(4).Infof("docker push for image %q", name)
 
 	ctx := context.Background()
 	options := types.ImagePushOptions{}
@@ -125,7 +125,7 @@ func (d *dockerAPI) pushImage(name string) error {
 
 	scanner := bufio.NewScanner(resp)
 	for scanner.Scan() {
-		glog.Infof("docker pushing %s", scanner.Text())
+		klog.Infof("docker pushing %s", scanner.Text())
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -137,7 +137,7 @@ func (d *dockerAPI) pushImage(name string) error {
 
 // tagImage does a `docker tag`, via the API
 func (d *dockerAPI) tagImage(imageID string, ref string) error {
-	glog.V(4).Infof("docker tag for image %q, tag %q", imageID, ref)
+	klog.V(4).Infof("docker tag for image %q, tag %q", imageID, ref)
 
 	ctx := context.Background()
 	options := types.ImageTagOptions{}

@@ -24,7 +24,7 @@ import (
 	"path"
 	"sync"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/util/pkg/hashing"
 )
@@ -81,7 +81,7 @@ func (p *FSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 
 	// Something went wrong; try to remove the temp file
 	if removeErr := os.Remove(tempfile); removeErr != nil {
-		glog.Warningf("unable to remove temp file %q: %v", tempfile, removeErr)
+		klog.Warningf("unable to remove temp file %q: %v", tempfile, removeErr)
 	}
 
 	return err
@@ -192,7 +192,7 @@ func (p *FSPath) PreferredHash() (*hashing.Hash, error) {
 }
 
 func (p *FSPath) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
-	glog.V(2).Infof("hashing file %q", p.location)
+	klog.V(2).Infof("hashing file %q", p.location)
 
 	return a.HashFile(p.location)
 }

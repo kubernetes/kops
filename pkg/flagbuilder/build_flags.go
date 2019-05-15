@@ -25,7 +25,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"k8s.io/kops/util/pkg/reflectutils"
 )
@@ -47,17 +47,17 @@ func BuildFlagsList(options interface{}) ([]string, error) {
 
 	walker := func(path string, field *reflect.StructField, val reflect.Value) error {
 		if field == nil {
-			glog.V(8).Infof("ignoring non-field: %s", path)
+			klog.V(8).Infof("ignoring non-field: %s", path)
 			return nil
 		}
 		tag := field.Tag.Get("flag")
 		if tag == "" {
-			glog.V(4).Infof("not writing field with no flag tag: %s", path)
+			klog.V(4).Infof("not writing field with no flag tag: %s", path)
 			// We want to descend - it could be a structure containing flags
 			return nil
 		}
 		if tag == "-" {
-			glog.V(4).Infof("skipping field with %q flag tag: %s", tag, path)
+			klog.V(4).Infof("skipping field with %q flag tag: %s", tag, path)
 			return reflectutils.SkipReflection
 		}
 

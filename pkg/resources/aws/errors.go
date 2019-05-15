@@ -17,7 +17,7 @@ limitations under the License.
 package aws
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
@@ -29,7 +29,7 @@ func IsDependencyViolation(err error) bool {
 	case "DependencyViolation", "VolumeInUse", "InvalidIPAddress.InUse":
 		return true
 	default:
-		glog.Infof("unexpected aws error code: %q", code)
+		klog.Infof("unexpected aws error code: %q", code)
 		return false
 	}
 }

@@ -17,8 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/klog"
 )
 
 func addDefaultingFuncs(scheme *runtime.Scheme) error {
@@ -59,7 +59,7 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 			obj.API.LoadBalancer = &LoadBalancerAccessSpec{}
 
 		default:
-			glog.Infof("unknown master topology type: %q", obj.Topology.Masters)
+			klog.Infof("unknown master topology type: %q", obj.Topology.Masters)
 		}
 	}
 

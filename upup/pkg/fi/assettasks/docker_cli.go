@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // dockerCLI encapsulates access to docker via the CLI
@@ -34,7 +34,7 @@ func newDockerCLI() (*dockerCLI, error) {
 
 // pullImage does a `docker pull`, shelling out to the CLI
 func (d *dockerCLI) pullImage(name string) error {
-	glog.V(4).Infof("docker pull for image %q", name)
+	klog.V(4).Infof("docker pull for image %q", name)
 
 	cmd := exec.Command("docker", "pull", name)
 	err := cmd.Run()
@@ -47,7 +47,7 @@ func (d *dockerCLI) pullImage(name string) error {
 
 // pushImage does a docker push, shelling out to the CLI
 func (d *dockerCLI) pushImage(name string) error {
-	glog.V(4).Infof("docker push for image %q", name)
+	klog.V(4).Infof("docker push for image %q", name)
 
 	cmd := exec.Command("docker", "push", name)
 	err := cmd.Run()

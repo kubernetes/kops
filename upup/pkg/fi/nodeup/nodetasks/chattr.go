@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -47,7 +47,7 @@ func (e *Chattr) GetName() *string {
 }
 
 func (e *Chattr) SetName(name string) {
-	glog.Fatalf("SetName not supported for Chattr task")
+	klog.Fatalf("SetName not supported for Chattr task")
 }
 
 var _ fi.HasDependencies = &Chattr{}
@@ -77,7 +77,7 @@ func (_ *Chattr) RenderLocal(t *local.LocalTarget, a, e, changes *Chattr) error 
 func (e *Chattr) execute(t Executor) error {
 	chattrCommand := []string{"chattr", e.Mode, e.File}
 
-	glog.Infof("running chattr command chattr %s", chattrCommand)
+	klog.Infof("running chattr command chattr %s", chattrCommand)
 	if output, err := t.CombinedOutput(chattrCommand); err != nil {
 		return fmt.Errorf("error doing %q: %v: %s", strings.Join(chattrCommand, " "), err, string(output))
 	}

@@ -30,8 +30,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/pborman/uuid"
+	"k8s.io/klog"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
@@ -57,7 +57,7 @@ func (o *AttachISO) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
 	vmCreateTask := tasks["VirtualMachine/"+*o.VM.Name]
 	if vmCreateTask == nil {
-		glog.Fatalf("Unable to find create VM task %s dependency for AttachISO %s", *o.VM.Name, *o.Name)
+		klog.Fatalf("Unable to find create VM task %s dependency for AttachISO %s", *o.VM.Name, *o.Name)
 	}
 	deps = append(deps, vmCreateTask)
 	return deps
@@ -75,19 +75,19 @@ func (o *AttachISO) SetName(name string) {
 
 // Run invokes DefaultDeltaRunMethod for this task.
 func (e *AttachISO) Run(c *fi.Context) error {
-	glog.Info("AttachISO.Run invoked!")
+	klog.Info("AttachISO.Run invoked!")
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
 // Find is a no-op for this task.
 func (e *AttachISO) Find(c *fi.Context) (*AttachISO, error) {
-	glog.Info("AttachISO.Find invoked!")
+	klog.Info("AttachISO.Find invoked!")
 	return nil, nil
 }
 
 // CheckChanges is a no-op for this task.
 func (_ *AttachISO) CheckChanges(a, e, changes *AttachISO) error {
-	glog.Info("AttachISO.CheckChanges invoked!")
+	klog.Info("AttachISO.CheckChanges invoked!")
 	return nil
 }
 
@@ -116,7 +116,7 @@ func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *At
 
 	isoFile, err := createISO(e, startupStr, dir, t.Cloud.CoreDNSServer, vmUUID)
 	if err != nil {
-		glog.Errorf("Failed to createISO for vspheretasks, err: %v", err)
+		klog.Errorf("Failed to createISO for vspheretasks, err: %v", err)
 		return err
 	}
 
@@ -169,10 +169,10 @@ func createUserData(e *AttachISO, startupStr string, dir string, dnsServer strin
 	}
 
 	userDataFile := filepath.Join(dir, "user-data")
-	glog.V(4).Infof("User data file content: %s", data)
+	klog.V(4).Infof("User data file content: %s", data)
 
 	if err = ioutil.WriteFile(userDataFile, []byte(data), 0644); err != nil {
-		glog.Errorf("Unable to write user-data into file %s", userDataFile)
+		klog.Errorf("Unable to write user-data into file %s", userDataFile)
 		return err
 	}
 
@@ -224,9 +224,9 @@ func getVolMetadata(e *AttachISO) (string, error) {
 		volsMetadata = append(volsMetadata, volMetadata)
 	}
 
-	glog.V(4).Infof("Marshaling master vol metadata : %v", volsMetadata)
+	klog.V(4).Infof("Marshaling master vol metadata : %v", volsMetadata)
 	volsString, err := vsphere.MarshalVolumeMetadata(volsMetadata)
-	glog.V(4).Infof("Marshaled master vol metadata: %v", volsString)
+	klog.V(4).Infof("Marshaled master vol metadata: %v", volsString)
 	if err != nil {
 		return "", err
 	}
@@ -237,11 +237,11 @@ func createMetaData(dir string, vmName string) error {
 	data := strings.Replace(metaDataTemplate, "$INSTANCE_ID", uuid.NewUUID().String(), -1)
 	data = strings.Replace(data, "$LOCAL_HOST_NAME", vmName, -1)
 
-	glog.V(4).Infof("Meta data file content: %s", string(data))
+	klog.V(4).Infof("Meta data file content: %s", string(data))
 
 	metaDataFile := filepath.Join(dir, "meta-data")
 	if err := ioutil.WriteFile(metaDataFile, []byte(data), 0644); err != nil {
-		glog.Errorf("Unable to write meta-data into file %s", metaDataFile)
+		klog.Errorf("Unable to write meta-data into file %s", metaDataFile)
 		return err
 	}
 	return nil
@@ -278,10 +278,10 @@ func createISO(e *AttachISO, startupStr string, dir string, dnsServer, vmUUID st
 
 	err = cmd.Run()
 	if err != nil {
-		glog.Errorf("Error %s occurred while executing command %+v", err, cmd)
+		klog.Errorf("Error %s occurred while executing command %+v", err, cmd)
 		return "", err
 	}
-	glog.V(4).Infof("%s std output : %s\n", commandName, out.String())
-	glog.V(4).Infof("%s std error : %s\n", commandName, stderr.String())
+	klog.V(4).Infof("%s std output : %s\n", commandName, out.String())
+	klog.V(4).Infof("%s std error : %s\n", commandName, stderr.String())
 	return isoFile, nil
 }

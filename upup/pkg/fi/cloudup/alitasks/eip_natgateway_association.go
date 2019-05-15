@@ -21,7 +21,7 @@ import (
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -51,7 +51,7 @@ func (e *EIP) CompareWithID() *string {
 
 func (e *EIP) Find(c *fi.Context) (*EIP, error) {
 	if e.NatGateway == nil || e.NatGateway.ID == nil {
-		glog.V(4).Infof("NatGateway / NatGatewayId not found for %s, skipping Find", fi.StringValue(e.Name))
+		klog.V(4).Infof("NatGateway / NatGatewayId not found for %s, skipping Find", fi.StringValue(e.Name))
 		return nil, nil
 	}
 
@@ -71,10 +71,10 @@ func (e *EIP) Find(c *fi.Context) (*EIP, error) {
 		return nil, nil
 	}
 	if len(eipAddresses) > 1 {
-		glog.V(4).Infof("The number of specified EIPs with the same NatGatewayId exceeds 1, eipName:%q", *e.Name)
+		klog.V(4).Infof("The number of specified EIPs with the same NatGatewayId exceeds 1, eipName:%q", *e.Name)
 	}
 
-	glog.V(2).Infof("found matching EIPs: %q", *e.Name)
+	klog.V(2).Infof("found matching EIPs: %q", *e.Name)
 
 	actual := &EIP{}
 	actual.IpAddress = fi.String(eipAddresses[0].IpAddress)
@@ -91,7 +91,7 @@ func (e *EIP) Find(c *fi.Context) (*EIP, error) {
 	actual.Name = e.Name
 	e.ID = actual.ID
 	e.Available = actual.Available
-	glog.V(4).Infof("found matching EIP %v", actual)
+	klog.V(4).Infof("found matching EIP %v", actual)
 	return actual, nil
 }
 
@@ -106,7 +106,7 @@ func (_ *EIP) CheckChanges(a, e, changes *EIP) error {
 func (_ *EIP) RenderALI(t *aliup.ALIAPITarget, a, e, changes *EIP) error {
 
 	if a == nil {
-		glog.V(2).Infof("Creating new EIP for NatGateway:%q", fi.StringValue(e.NatGateway.Name))
+		klog.V(2).Infof("Creating new EIP for NatGateway:%q", fi.StringValue(e.NatGateway.Name))
 
 		allocateEipAddressArgs := &ecs.AllocateEipAddressArgs{
 			RegionId: common.Region(t.Cloud.Region()),

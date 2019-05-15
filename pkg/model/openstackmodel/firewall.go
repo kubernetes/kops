@@ -23,7 +23,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 
 	//TODO: Replace with klog
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/dns"
 )
 
@@ -367,7 +367,7 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 			case "vxlan":
 				udpPorts = append(udpPorts, 8472)
 			default:
-				glog.Warningf("unknown flannel networking backend %q", b.Cluster.Spec.Networking.Flannel.Backend)
+				klog.Warningf("unknown flannel networking backend %q", b.Cluster.Spec.Networking.Flannel.Backend)
 			}
 		}
 

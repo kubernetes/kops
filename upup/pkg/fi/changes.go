@@ -19,7 +19,7 @@ package fi
 import (
 	"reflect"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // An important part of our state synchronization is to compare two tasks, to see what has changed
@@ -78,7 +78,7 @@ func BuildChanges(a, e, changes interface{}) bool {
 				continue
 			}
 
-			glog.V(8).Infof("Field changed %q actual=%q expected=%q", t.Field(i).Name, DebugPrint(fva.Interface()), DebugPrint(fve.Interface()))
+			klog.V(8).Infof("Field changed %q actual=%q expected=%q", t.Field(i).Name, DebugPrint(fva.Interface()), DebugPrint(fve.Interface()))
 		}
 		changed = true
 		vc.Field(i).Set(fve)
@@ -118,7 +118,7 @@ func equalFieldValues(a, e reflect.Value) bool {
 			if ok {
 				same, err := ResourcesMatch(aResource, eResource)
 				if err != nil {
-					glog.Fatalf("error while comparing resources: %v", err)
+					klog.Fatalf("error while comparing resources: %v", err)
 				} else {
 					return same
 				}
@@ -146,10 +146,10 @@ func equalMapValues(a, e reflect.Value) bool {
 		valA := a.MapIndex(k)
 		valE := e.MapIndex(k)
 
-		glog.V(10).Infof("comparing maps: %v %v %v", k, valA, valE)
+		klog.V(10).Infof("comparing maps: %v %v %v", k, valA, valE)
 
 		if !equalFieldValues(valA, valE) {
-			glog.V(4).Infof("unequal map value: %v %v %v", k, valA, valE)
+			klog.V(4).Infof("unequal map value: %v %v %v", k, valA, valE)
 			return false
 		}
 	}
@@ -171,10 +171,10 @@ func equalSlice(a, e reflect.Value) bool {
 		valA := a.Index(i)
 		valE := e.Index(i)
 
-		glog.V(10).Infof("comparing slices: %d %v %v", i, valA, valE)
+		klog.V(10).Infof("comparing slices: %d %v %v", i, valA, valE)
 
 		if !equalFieldValues(valA, valE) {
-			glog.V(4).Infof("unequal slice value: %d %v %v", i, valA, valE)
+			klog.V(4).Infof("unequal slice value: %d %v %v", i, valA, valE)
 			return false
 		}
 	}

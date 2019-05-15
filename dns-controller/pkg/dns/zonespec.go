@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
 
@@ -72,7 +72,7 @@ func ParseZoneRules(zones []string) (*ZoneRules, error) {
 	}
 
 	if len(zones) == 0 {
-		glog.Infof("No rules specified, will permit management of all zones")
+		klog.Infof("No rules specified, will permit management of all zones")
 		r.Wildcard = true
 	}
 

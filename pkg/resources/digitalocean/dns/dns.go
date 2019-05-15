@@ -26,7 +26,7 @@ import (
 	"github.com/digitalocean/godo"
 	"github.com/digitalocean/godo/context"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"golang.org/x/oauth2"
 
@@ -316,9 +316,9 @@ func (r *resourceRecordChangeset) Upsert(rrset dnsprovider.ResourceRecordSet) dn
 // Apply adds new records stored in r.additions, updates records stored
 // in r.upserts and deletes records stored in r.removals
 func (r *resourceRecordChangeset) Apply() error {
-	glog.V(2).Info("applying changes in record change set")
+	klog.V(2).Info("applying changes in record change set")
 	if r.IsEmpty() {
-		glog.V(2).Info("record change set is empty")
+		klog.V(2).Info("record change set is empty")
 		return nil
 	}
 
@@ -330,7 +330,7 @@ func (r *resourceRecordChangeset) Apply() error {
 			}
 		}
 
-		glog.V(2).Info("record change set additions complete")
+		klog.V(2).Info("record change set additions complete")
 	}
 
 	if len(r.upserts) > 0 {
@@ -341,7 +341,7 @@ func (r *resourceRecordChangeset) Apply() error {
 			}
 		}
 
-		glog.V(2).Info("record change set upserts complete")
+		klog.V(2).Info("record change set upserts complete")
 	}
 
 	if len(r.removals) > 0 {
@@ -361,10 +361,10 @@ func (r *resourceRecordChangeset) Apply() error {
 			}
 		}
 
-		glog.V(2).Info("record change set removals complete")
+		klog.V(2).Info("record change set removals complete")
 	}
 
-	glog.V(2).Info("record change sets successfully applied")
+	klog.V(2).Info("record change sets successfully applied")
 	return nil
 }
 

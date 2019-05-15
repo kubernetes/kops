@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/ghodss/yaml"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/util/pkg/text"
 )
 
@@ -61,7 +61,7 @@ func (m *Manifest) ToYAML() ([]byte, error) {
 
 func (m *Manifest) accept(visitor Visitor) error {
 	err := visit(visitor, m.data, []string{}, func(v interface{}) {
-		glog.Fatal("cannot mutate top-level data")
+		klog.Fatal("cannot mutate top-level data")
 	})
 	return err
 }

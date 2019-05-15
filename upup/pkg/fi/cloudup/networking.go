@@ -21,7 +21,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
@@ -101,7 +101,7 @@ func usesCNI(c *api.Cluster) bool {
 	}
 
 	// Assume other modes also use CNI
-	glog.Warningf("Unknown networking mode configured")
+	klog.Warningf("Unknown networking mode configured")
 	return true
 }
 
@@ -140,11 +140,11 @@ func findCNIAssets(c *api.Cluster, assetBuilder *assets.AssetBuilder) (*url.URL,
 			return nil, nil, fmt.Errorf("unable to parse %q as a URL: %v", cniVersionURL, err)
 		}
 
-		glog.Infof("Using CNI asset version %q, as set in %s", cniVersionURL, ENV_VAR_CNI_VERSION_URL)
+		klog.Infof("Using CNI asset version %q, as set in %s", cniVersionURL, ENV_VAR_CNI_VERSION_URL)
 
 		if cniAssetHashString := os.Getenv(ENV_VAR_CNI_ASSET_HASH_STRING); cniAssetHashString != "" {
 
-			glog.Infof("Using CNI asset hash %q, as set in %s", cniAssetHashString, ENV_VAR_CNI_ASSET_HASH_STRING)
+			klog.Infof("Using CNI asset hash %q, as set in %s", cniAssetHashString, ENV_VAR_CNI_ASSET_HASH_STRING)
 
 			hash, err := hashing.FromString(cniAssetHashString)
 			if err != nil {
@@ -165,19 +165,19 @@ func findCNIAssets(c *api.Cluster, assetBuilder *assets.AssetBuilder) (*url.URL,
 	if util.IsKubernetesGTE("1.11", *sv) {
 		cniAsset = defaultCNIAssetK8s1_11
 		cniAssetHash = defaultCNIAssetHashStringK8s1_11
-		glog.V(2).Infof("Adding default CNI asset for k8s >= 1.11: %s", defaultCNIAssetK8s1_9)
+		klog.V(2).Infof("Adding default CNI asset for k8s >= 1.11: %s", defaultCNIAssetK8s1_9)
 	} else if util.IsKubernetesGTE("1.9", *sv) {
 		cniAsset = defaultCNIAssetK8s1_9
 		cniAssetHash = defaultCNIAssetHashStringK8s1_9
-		glog.V(2).Infof("Adding default CNI asset for 1.11 > k8s >= 1.9: %s", defaultCNIAssetK8s1_9)
+		klog.V(2).Infof("Adding default CNI asset for 1.11 > k8s >= 1.9: %s", defaultCNIAssetK8s1_9)
 	} else if util.IsKubernetesGTE("1.6", *sv) {
 		cniAsset = defaultCNIAssetK8s1_6
 		cniAssetHash = defaultCNIAssetHashStringK8s1_6
-		glog.V(2).Infof("Adding default CNI asset for 1.9 > k8s >= 1.6: %s", defaultCNIAssetK8s1_6)
+		klog.V(2).Infof("Adding default CNI asset for 1.9 > k8s >= 1.6: %s", defaultCNIAssetK8s1_6)
 	} else {
 		cniAsset = defaultCNIAssetK8s1_5
 		cniAssetHash = defaultCNIAssetHashStringK8s1_5
-		glog.V(2).Infof("Adding default CNI asset for 1.6 > k8s >= 1.5: %s", defaultCNIAssetK8s1_5)
+		klog.V(2).Infof("Adding default CNI asset for 1.6 > k8s >= 1.5: %s", defaultCNIAssetK8s1_5)
 	}
 
 	u, err := url.Parse(cniAsset)
