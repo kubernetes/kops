@@ -2,6 +2,8 @@
 
 **WARNING**: OpenStack support on kops is currently **alpha** meaning it is in the early stages of development and subject to change, please use with caution.
 
+The tutorial shown on this page works with `kops` v1.12 and above.
+
 ## Source your openstack RC
 The Cloud Config used by the kubernetes API server and kubelet will be constructed from environment variables in the openstack RC file. The openrc.sh file is usually located under `API access`.
 
@@ -9,7 +11,7 @@ The Cloud Config used by the kubernetes API server and kubelet will be construct
 source openstack.rc
 ```
 
-If you are authenticating by username `OS_DOMAIN_NAME` or `OS_DOMAIN_ID` must manually be set.
+If you are authenticating by username,  `OS_DOMAIN_NAME` or `OS_DOMAIN_ID` must manually be set.
 ```bash
 export OS_DOMAIN_NAME=<USER_DOMAIN_NAME>
 ```
