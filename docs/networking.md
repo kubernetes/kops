@@ -444,7 +444,7 @@ For support with Cilium Network Policies you can reach out on Slack or Github:
 
 #### Configuraing Flannel iptables resync period
 
-Flannel iptables resync option is configurable via editing a cluster and adding
+As of Kops 1.12.0, Flannel iptables resync option is configurable via editing a cluster and adding
 `iptablesResyncSeconds` option to spec:
 
 ```
