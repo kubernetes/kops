@@ -75,7 +75,7 @@ type terraformLaunchTemplateMarketOptions struct {
 	// MarketType is the option type
 	MarketType *string `json:"market_type,omitempty"`
 	// SpotOptions are the set of options
-	SpotOptions []*terraformLaunchTemplateMarketOptionsSpotOptions `json:"options,omitempty"`
+	SpotOptions []*terraformLaunchTemplateMarketOptionsSpotOptions `json:"spot_options,omitempty"`
 }
 
 type terraformLaunchTemplateBlockDeviceEBS struct {
