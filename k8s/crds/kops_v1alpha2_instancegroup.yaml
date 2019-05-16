@@ -6,10 +6,33 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: instancegroups.kops.k8s.io
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.role
+    description: Role
+    name: role
+    type: string
+  - JSONPath: .spec.machineType
+    description: Machine Type
+    name: machineType
+    type: string
+  - JSONPath: .spec.minSize
+    description: Min
+    name: min
+    type: integer
+  - JSONPath: .spec.maxSize
+    description: Max
+    name: max
+    type: integer
+  - JSONPath: .spec.zones
+    description: Zones
+    name: zones
+    type: string
   group: kops.k8s.io
   names:
     kind: InstanceGroup
     plural: instancegroups
+    shortNames:
+    - ig
   scope: Namespaced
   validation:
     openAPIV3Schema:
