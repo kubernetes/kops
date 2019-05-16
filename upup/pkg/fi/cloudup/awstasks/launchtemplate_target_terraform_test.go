@@ -66,15 +66,15 @@ resource "aws_launch_template" "test" {
   }
 
   instance_type = "t2.medium"
-	key_name      = "${aws_key_pair.newkey.id}"
+  key_name      = "${aws_key_pair.newkey.id}"
 
-	instance_market_options = {
-		market_type = "spot"
+  instance_market_options = {
+    market_type = "spot"
 
-		spot_options = {
-			max_price = "0.1"
-		}
-	}
+    spot_options = {
+      max_price = "0.1"
+    }
+  }
 
   network_interfaces = {
     associate_public_ip_address = true
