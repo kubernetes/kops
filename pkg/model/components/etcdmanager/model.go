@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"k8s.io/kops/util/pkg/proxy"
 	"os"
 	"strings"
 
@@ -436,6 +437,8 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 			},
 		})
 	}
+
+	container.Env = proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy)
 
 	{
 		foundPKI := false
