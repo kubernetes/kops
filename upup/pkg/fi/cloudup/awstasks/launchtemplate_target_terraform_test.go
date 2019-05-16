@@ -34,6 +34,7 @@ func TestLaunchTemplateTerraformRender(t *testing.T) {
 				ID:                     fi.String("test-11"),
 				InstanceMonitoring:     fi.Bool(true),
 				InstanceType:           fi.String("t2.medium"),
+				SpotPrice:              "0.1",
 				RootVolumeOptimization: fi.Bool(true),
 				RootVolumeIops:         fi.Int64(100),
 				RootVolumeSize:         fi.Int64(64),
@@ -66,6 +67,14 @@ resource "aws_launch_template" "test" {
 
   instance_type = "t2.medium"
   key_name      = "${aws_key_pair.newkey.id}"
+
+  instance_market_options = {
+    market_type = "spot"
+
+    spot_options = {
+      max_price = "0.1"
+    }
+  }
 
   network_interfaces = {
     associate_public_ip_address = true
