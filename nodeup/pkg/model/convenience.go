@@ -26,7 +26,6 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog"
 )
 
 // s is a helper that builds a *string from a string value
@@ -63,33 +62,6 @@ func buildDockerEnvironmentVars(env map[string]string) []string {
 	}
 
 	return list
-}
-
-func getProxyEnvVars(proxies *kops.EgressProxySpec) []v1.EnvVar {
-	if proxies == nil {
-		klog.V(8).Info("proxies is == nil, returning empty list")
-		return []v1.EnvVar{}
-	}
-
-	if proxies.HTTPProxy.Host == "" {
-		klog.Warning("EgressProxy set but no proxy host provided")
-	}
-
-	var httpProxyURL string
-	if proxies.HTTPProxy.Port == 0 {
-		httpProxyURL = "http://" + proxies.HTTPProxy.Host
-	} else {
-		httpProxyURL = "http://" + proxies.HTTPProxy.Host + ":" + strconv.Itoa(proxies.HTTPProxy.Port)
-	}
-
-	noProxy := proxies.ProxyExcludes
-
-	return []v1.EnvVar{
-		{Name: "http_proxy", Value: httpProxyURL},
-		{Name: "https_proxy", Value: httpProxyURL},
-		{Name: "NO_PROXY", Value: noProxy},
-		{Name: "no_proxy", Value: noProxy},
-	}
 }
 
 // sortedStrings is just a one liner helper methods
