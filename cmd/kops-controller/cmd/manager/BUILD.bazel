@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "k8s.io/kops/cmd/kops-controller/cmd/manager",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//cmd/kops-controller/pkg/apis:go_default_library",
+        "//cmd/kops-controller/pkg/controller:go_default_library",
+        "//cmd/kops-controller/pkg/webhook:go_default_library",
+        "//pkg/apis/kops/v1alpha2:go_default_library",
+        "//vendor/k8s.io/client-go/plugin/pkg/client/auth/gcp:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+        "//vendor/k8s.io/klog/klogr:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/client/config:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/manager:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/runtime/log:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/runtime/signals:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "manager",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)

@@ -1,0 +1,17 @@
+# This patch sets resources for the manager pod.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: controller-manager
+  namespace: system
+spec:
+  template:
+    spec:
+      containers:
+      - name: manager
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 10m
+            memory: 200Mi

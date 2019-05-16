@@ -1,5 +1,4 @@
 /*
-Copyright 2016 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,34 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+// Generate deepcopy for apis
+//go:generate go run ../../vendor/k8s.io/code-generator/cmd/deepcopy-gen/main.go -O zz_generated.deepcopy -i ./... -h ../../hack/boilerplate.go.txt
+
+// Package apis contains Kubernetes API groups.
+package apis
 
 import (
-	"flag"
-	"os"
-	"runtime"
-
-	"math/rand"
-	"time"
-
-	"k8s.io/apiserver/pkg/util/logs"
-	"k8s.io/klog"
-	"k8s.io/kops/pkg/apiserver/cmd/server"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func main() {
-	rand.Seed(time.Now().UTC().UnixNano())
+// AddToSchemes may be used to add all resources defined in the project to a Scheme
+var AddToSchemes runtime.SchemeBuilder
 
-	logs.InitLogs()
-	defer logs.FlushLogs()
-
-	if len(os.Getenv("GOMAXPROCS")) == 0 {
-		runtime.GOMAXPROCS(runtime.NumCPU())
-	}
-
-	cmd := server.NewCommandStartKopsServer(os.Stdout, os.Stderr)
-	cmd.Flags().AddGoFlagSet(flag.CommandLine)
-	if err := cmd.Execute(); err != nil {
-		klog.Fatal(err)
-	}
+// AddToScheme adds all Resources to the Scheme
+func AddToScheme(s *runtime.Scheme) error {
+	return AddToSchemes.AddToScheme(s)
 }

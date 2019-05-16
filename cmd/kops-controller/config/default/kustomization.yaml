@@ -1,0 +1,35 @@
+# Adds namespace to all resources.
+namespace: kops-controller-system
+
+# Value of this field is prepended to the
+# names of all resources, e.g. a deployment named
+# "wordpress" becomes "alices-wordpress".
+# Note that it should also match with the prefix (text before '-') of the namespace
+# field above.
+namePrefix: kops-controller-
+
+# Labels to add to all resources and selectors.
+#commonLabels:
+#  someName: someValue
+
+# Each entry in this list must resolve to an existing
+# resource definition in YAML.  These are the resource
+# files that kustomize reads, modifies and emits as a
+# YAML string, with resources separated by document
+# markers ("---").
+resources:
+- ../rbac/rbac_role.yaml
+- ../rbac/rbac_role_binding.yaml
+- ../manager/manager.yaml
+
+patches:
+- manager_image_patch.yaml
+- manager_prometheus_metrics_patch.yaml
+- manager_resources_patch.yaml
+
+vars:
+- name: WEBHOOK_SECRET_NAME
+  objref:
+    kind: Secret
+    name: webhook-server-secret
+    apiVersion: v1

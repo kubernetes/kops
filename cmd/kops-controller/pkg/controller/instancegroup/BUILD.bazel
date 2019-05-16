@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["instancegroup_controller.go"],
+    importpath = "k8s.io/kops/cmd/kops-controller/pkg/controller/instancegroup",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/kops/v1alpha2:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/client:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/controller:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/handler:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/manager:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/reconcile:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/source:go_default_library",
+    ],
+)
