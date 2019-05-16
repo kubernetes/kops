@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
 	gceacls "k8s.io/kops/pkg/acls/gce"
 	s3acls "k8s.io/kops/pkg/acls/s3"
@@ -73,19 +73,24 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 		// We recognize a `k8s` scheme; this might change in future so we won't document it yet
 		// In practice nobody is going to hit this accidentally, so I don't think we need a feature flag.
 		if strings.HasPrefix(registryPath, "k8s://") {
-			u, err := url.Parse(registryPath)
+			loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+
+			configOverrides := &clientcmd.ConfigOverrides{}
+
+			if registryPath == "k8s://" {
+			} else {
+				u, err := url.Parse(registryPath)
+				if err != nil {
+					return nil, fmt.Errorf("Invalid kops server url: %q", registryPath)
+				}
+				configOverrides.CurrentContext = u.Host
+			}
+
+			kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides)
+			config, err := kubeConfig.ClientConfig()
 			if err != nil {
-				return nil, fmt.Errorf("Invalid kops server url: %q", registryPath)
+				return nil, fmt.Errorf("error loading kubeconfig for %q", registryPath)
 			}
-
-			u.Scheme = "https"
-
-			config := &rest.Config{
-				Host: u.Scheme + "://" + u.Host,
-			}
-
-			klog.Warning("Using insecure TLS")
-			config.Insecure = true
 
 			kopsClient, err := kopsclient.NewForConfig(config)
 			if err != nil {
@@ -95,7 +100,6 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 			f.clientset = &api.RESTClientset{
 				BaseURL: &url.URL{
 					Scheme: "k8s",
-					Host:   u.Host,
 				},
 				KopsClient: kopsClient.Kops(),
 			}
