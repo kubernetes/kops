@@ -350,7 +350,10 @@ func deleteGroup(c AWSCloud, g *cloudinstances.CloudInstanceGroup) error {
 
 	name := aws.StringValue(asg.AutoScalingGroupName)
 	template := aws.StringValue(asg.LaunchConfigurationName)
-	launchTemplate := aws.StringValue(asg.LaunchTemplate.LaunchTemplateName)
+	launchTemplate := ""
+	if asg.LaunchTemplate != nil {
+		launchTemplate = aws.StringValue(asg.LaunchTemplate.LaunchTemplateName)
+	}
 
 	// Delete ASG
 	{
