@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"k8s.io/kops/util/pkg/proxy"
 	"path/filepath"
 	"strings"
 
@@ -154,7 +155,7 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 	container := &v1.Container{
 		Name:  "kube-controller-manager",
 		Image: b.Cluster.Spec.KubeControllerManager.Image,
-		Env:   getProxyEnvVars(b.Cluster.Spec.EgressProxy),
+		Env:   proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy),
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{
 				HTTPGet: &v1.HTTPGetAction{
