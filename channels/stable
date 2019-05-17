@@ -79,7 +79,7 @@ spec:
     #requiredVersion: 1.13.0
     kubernetesVersion: 1.13.5
   - range: ">=1.12.0-alpha.1"
-    #recommendedVersion: "1.12.0"
+    recommendedVersion: "1.12.1"
     #requiredVersion: 1.12.0
     kubernetesVersion: 1.12.7
   - range: ">=1.11.0-alpha.1"
