@@ -20,6 +20,8 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/pkg/model/defaults"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 )
@@ -69,4 +71,31 @@ func (c *GCEModelContext) NameForIPAddress(id string) string {
 
 func (c *GCEModelContext) NameForFirewallRule(id string) string {
 	return c.SafeObjectName(id)
+}
+
+func (c *GCEModelContext) VolumeType(ig *kops.InstanceGroup) string {
+	volumeType := fi.StringValue(ig.Spec.RootVolumeType)
+	if volumeType == "" {
+		volumeType = DefaultVolumeType
+	}
+	return volumeType
+}
+
+func (c *GCEModelContext) VolumeSize(ig *kops.InstanceGroup) (int32, error) {
+	volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
+	if volumeSize != 0 {
+		return volumeSize, nil
+	}
+
+	return defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+}
+
+func (c *GCEModelContext) NodeAliasIPRanges() map[string]string {
+	return map[string]string{
+		c.NameForIPAliasRange("pods"): "/24",
+	}
+}
+
+func (c *GCEModelContext) UsesIPAliases() bool {
+	return gce.UsesIPAliases(c.Cluster)
 }
