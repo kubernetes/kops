@@ -193,6 +193,7 @@ spec:
         - --server=/{{ KubeDNS.Domain }}/127.0.0.1#10053
         - --server=/in-addr.arpa/127.0.0.1#10053
         - --server=/in6.arpa/127.0.0.1#10053
+        - --min-port=1024
         ports:
         - containerPort: 53
           name: dns
