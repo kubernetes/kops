@@ -147,6 +147,7 @@ spec:
         - --no-resolv
         - --server=127.0.0.1#10053
         - --log-facility=-
+        - --min-port=1024
         ports:
         - containerPort: 53
           name: dns
