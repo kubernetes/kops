@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["webhook.go"],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-runtime/pkg/webhook/types",
+    importpath = "sigs.k8s.io/controller-runtime/pkg/webhook/types",
+    visibility = ["//visibility:public"],
+)

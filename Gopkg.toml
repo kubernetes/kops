@@ -93,6 +93,11 @@ required = [
   revision = "8fadf91876ccbcfec367b434706a3c449073b0b4"
 
 
+# Needed for controller-runtime
+[[constraint]]
+  name = "github.com/prometheus/client_golang"
+  version = "0.9.0"
+
 # These come from godeps.json in kubernetes
 [[override]]
   name = "github.com/hashicorp/hcl"
@@ -306,9 +311,6 @@ required = [
 [[override]]
   name = "github.com/go-openapi/jsonpointer"
   revision = "46af16f9f7b149af66e5d1bd010e3574dc06de98"
-[[override]]
-  name = "github.com/prometheus/client_golang"
-  revision = "e7e903064f5e9eb5da98208bae10b475d4db0f8c"
 [[override]]
   name = "github.com/spf13/pflag"
   revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
