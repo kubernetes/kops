@@ -39,6 +39,11 @@ func DeleteVPC(cloud fi.Cloud, r *resources.Resource) error {
 	}
 	_, err := c.EC2().DeleteVpc(request)
 	if err != nil {
+		if awsup.AWSErrorCode(err) == "InvalidVpcID.NotFound" {
+			// Concurrently deleted
+			return nil
+		}
+
 		if IsDependencyViolation(err) {
 			return err
 		}
