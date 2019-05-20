@@ -268,7 +268,8 @@ resource "aws_elb" "api-privateweave-example-com" {
     timeout             = 5
   }
 
-  idle_timeout = 300
+  cross_zone_load_balancing = false
+  idle_timeout              = 300
 
   tags = {
     KubernetesCluster                                = "privateweave.example.com"
