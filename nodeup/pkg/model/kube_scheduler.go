@@ -125,11 +125,7 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 	container := &v1.Container{
 		Name:  "kube-scheduler",
 		Image: c.Image,
-		Command: exec.WithTee(
-			"/usr/local/bin/kube-scheduler",
-			sortedStrings(flags),
-			"/var/log/kube-scheduler.log"),
-		Env: getProxyEnvVars(b.Cluster.Spec.EgressProxy),
+		Env:   getProxyEnvVars(b.Cluster.Spec.EgressProxy),
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{
 				HTTPGet: &v1.HTTPGetAction{
@@ -148,7 +144,24 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 		},
 	}
 	addHostPathMapping(pod, container, "varlibkubescheduler", "/var/lib/kube-scheduler")
+
+	// Log both to docker and to the logfile
 	addHostPathMapping(pod, container, "logfile", "/var/log/kube-scheduler.log").ReadOnly = false
+	if b.IsKubernetesGTE("1.15") {
+		// From k8s 1.15, we use lighter containers that don't include shells
+		// But they have richer logging support via klog
+		container.Command = []string{"/usr/local/bin/kube-scheduler"}
+		container.Args = append(
+			sortedStrings(flags),
+			"--logtostderr=false", //https://github.com/kubernetes/klog/issues/60
+			"--alsologtostderr",
+			"--log-file=/var/log/kube-scheduler.log")
+	} else {
+		container.Command = exec.WithTee(
+			"/usr/local/bin/kube-scheduler",
+			sortedStrings(flags),
+			"/var/log/kube-scheduler.log")
+	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 

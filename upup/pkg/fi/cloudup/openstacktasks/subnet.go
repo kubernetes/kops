@@ -120,13 +120,13 @@ func (_ *Subnet) CheckChanges(a, e, changes *Subnet) error {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
 		}
-		if e.DNSServers != nil {
+		if changes.DNSServers != nil {
 			return fi.CannotChangeField("DNSServers")
 		}
-		if e.Network != nil {
+		if changes.Network != nil {
 			return fi.CannotChangeField("Network")
 		}
-		if e.CIDR != nil {
+		if changes.CIDR != nil {
 			return fi.CannotChangeField("CIDR")
 		}
 	}

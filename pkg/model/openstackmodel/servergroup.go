@@ -59,6 +59,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		igMeta[openstack.TagClusterName] = b.ClusterName()
 	}
 	igMeta["k8s"] = b.ClusterName()
+	igMeta["KopsInstanceGroup"] = ig.Name
 
 	startupScript, err := b.BootstrapScript.ResourceNodeUp(ig, b.Cluster)
 	if err != nil {

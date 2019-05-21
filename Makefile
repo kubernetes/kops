@@ -21,7 +21,7 @@ GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
 GOPATH_1ST:=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
-GOVERSION=1.12.1
+GOVERSION=1.12.5
 BUILD=$(GOPATH_1ST)/src/k8s.io/kops/.build
 LOCAL=$(BUILD)/local
 BINDATA_TARGETS=upup/models/bindata.go
@@ -40,8 +40,6 @@ BAZELUPLOAD=$(BAZELBUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
 TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/vendor" hack/.packages)
-# We need to ignore clientsets because of kubernetes/kubernetes#60584
-GOVETABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/vendor|clientset/fake" hack/.packages)
 BAZEL_OPTIONS?=
 API_OPTIONS?=
 GCFLAGS?=
@@ -504,7 +502,7 @@ dep-ensure: dep-prereqs
 
 .PHONY: gofmt
 gofmt:
-	find -name "*.go" | grep -v vendor | xargs bazel run //:gofmt -- -w -s
+	find $(MAKEDIR) -name "*.go" | grep -v vendor | xargs bazel run //:gofmt -- -w -s
 
 .PHONY: goimports
 goimports:
@@ -516,7 +514,7 @@ verify-goimports:
 
 .PHONY: govet
 govet: ${BINDATA_TARGETS}
-	go vet ${GOVETABLE_PACKAGES}
+	go vet ./...
 
 # --------------------------------------------------
 # Continuous integration targets
@@ -663,7 +661,7 @@ kops-server-push: kops-server-build
 
 .PHONY: bazel-test
 bazel-test:
-	bazel ${BAZEL_OPTIONS} test //cmd/... //pkg/... //channels/... //nodeup/... //protokube/... //dns-controller/... //tests/... //upup/... //util/... //hack:verify-all --test_output=errors
+	bazel ${BAZEL_OPTIONS} test  --test_output=errors -- //... -//vendor/...
 
 .PHONY: bazel-build
 bazel-build:
@@ -847,3 +845,7 @@ dev-copy-utils:
 .PHONY: dev-upload
 dev-upload: dev-upload-nodeup dev-upload-protokube dev-copy-utils
 	echo "Done"
+
+.PHONY: crds
+crds:
+	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd --apis-path pkg/apis/kops/v1alpha2 --domain k8s.io --output-dir k8s/crds/

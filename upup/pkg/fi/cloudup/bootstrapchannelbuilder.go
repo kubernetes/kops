@@ -475,7 +475,22 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if kops.CloudProviderID(b.cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
 		key := "storage-aws.addons.k8s.io"
-		version := "1.7.0"
+		version := "1.15.0"
+
+		{
+			id := "v1.15.0"
+			location := key + "/" + id + ".yaml"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          map[string]string{"k8s-addon": key},
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.15.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
 
 		{
 			id := "v1.7.0"
@@ -486,7 +501,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				Version:           fi.String(version),
 				Selector:          map[string]string{"k8s-addon": key},
 				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.7.0",
+				KubernetesVersion: ">=1.7.0 <1.15.0",
 				Id:                id,
 			})
 			manifests[key+"-"+id] = "addons/" + location
@@ -898,7 +913,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 			"k8s-1.6":     "2.4.2-kops.2",
 			"k8s-1.8":     "2.6.7-kops.3",
 			"k8s-1.9":     "3.2.3-kops.1",
-			"k8s-1.12":    "3.6.1",
+			"k8s-1.12":    "3.7.2",
 		}
 		{
 			id := "pre-k8s-1.6"

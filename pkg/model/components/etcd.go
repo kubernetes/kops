@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
-const DefaultBackupImage = "kopeio/etcd-backup:1.0.20190328"
+const DefaultBackupImage = "kopeio/etcd-backup:3.0.20190516"
 
 // EtcdOptionsBuilder adds options for etcd to the model
 type EtcdOptionsBuilder struct {

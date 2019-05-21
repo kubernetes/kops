@@ -114,7 +114,7 @@ spec:
 
 ## Adding additional storage to the instance groups
 
-You can add additional storage _(note, presently confined to AWS)_ via the instancegroup specification.
+As of Kops 1.12.0 you can add additional storage _(note, presently confined to AWS)_ via the instancegroup specification.
 
 ```YAML
 ---
@@ -228,6 +228,8 @@ So the procedure is:
 ## Creating a instance group of mixed instances types (AWS Only)
 
 AWS permits the creation of EC2 Fleet Autoscaling Group using a [mixed instance policy](https://aws.amazon.com/blogs/aws/ec2-fleet-manage-thousands-of-on-demand-and-spot-instances-with-one-request/), allowing the users to build a target capacity and make up of on-demand and spot instances while offloading the allocation strategy to AWS. In order to create a mixed instance policy instancegroup.
+
+Support for mixed instance groups was added in Kops 1.12.0
 
 ```YAML
 ---
@@ -431,7 +433,7 @@ If you need to add tags on auto scaling groups or instances (propagate ASG tags)
 
 ```
 # Example for nodes
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -459,7 +461,7 @@ will rescale the ASG without warning.
 
 ```
 # Example for nodes
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -489,7 +491,7 @@ load balancers and Network load balancers.
 
 ```
 # Example ingress nodes
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -513,7 +515,7 @@ Detailed-Monitoring will cause the monitoring data to be available every 1 minut
 
 ```
 # Example for nodes
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:

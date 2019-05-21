@@ -34,7 +34,7 @@ func TestSerializeEmptyCluster(t *testing.T) {
 	}
 
 	yamlString := string(yaml)
-	expected := `apiVersion: kops/v1alpha2
+	expected := `apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: null
