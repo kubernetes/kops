@@ -22,10 +22,50 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
 	v2pools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/util/pkg/vfs"
 )
+
+func (c *openstackCloud) ListMonitors(opts monitors.ListOpts) (monitorList []monitors.Monitor, err error) {
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		allPages, err := monitors.List(c.LoadBalancerClient(), opts).AllPages()
+		if err != nil {
+			return false, fmt.Errorf("failed to list monitors: %s", err)
+		}
+		monitorList, err = monitors.ExtractMonitors(allPages)
+		if err != nil {
+			return false, fmt.Errorf("failed to extract monitor pages: %s", err)
+		}
+		return true, nil
+	})
+	if !done {
+		if err == nil {
+			err = wait.ErrWaitTimeout
+		}
+		return monitorList, err
+	}
+	return monitorList, nil
+}
+
+func (c *openstackCloud) DeleteMonitor(monitorID string) error {
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		err := monitors.Delete(c.LoadBalancerClient(), monitorID).ExtractErr()
+		if err != nil && !isNotFound(err) {
+			return false, fmt.Errorf("error deleting pool: %v", err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}
 
 func (c *openstackCloud) DeletePool(poolID string) error {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
