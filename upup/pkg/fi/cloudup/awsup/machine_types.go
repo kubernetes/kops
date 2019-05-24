@@ -772,7 +772,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
-		EphemeralDisks:    nil,
+		EphemeralDisks:    []int{1250},
 	},
 
 	{
@@ -782,7 +782,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
-		EphemeralDisks:    nil,
+		EphemeralDisks:    []int{2500},
 	},
 
 	{
@@ -792,7 +792,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
-		EphemeralDisks:    nil,
+		EphemeralDisks:    []int{2500, 2500},
 	},
 
 	{
@@ -802,7 +802,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:             12,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
-		EphemeralDisks:    nil,
+		EphemeralDisks:    []int{7500},
 	},
 
 	{
@@ -812,7 +812,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:             24,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
-		EphemeralDisks:    nil,
+		EphemeralDisks:    []int{7500, 7500},
 	},
 
 	{
@@ -822,7 +822,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
-		EphemeralDisks:    nil,
+		EphemeralDisks:    []int{7500, 7500, 7500, 7500},
 	},
 
 	{
@@ -832,7 +832,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
-		EphemeralDisks:    nil,
+		EphemeralDisks:    []int{7500, 7500, 7500, 7500, 7500, 7500, 7500, 7500},
 	},
 
 	// m1 family
