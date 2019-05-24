@@ -102,7 +102,7 @@ $ kops delete cluster --yes \
   --state=s3://mycompany.kubernetes
 ```
 
-Ps: You don't have to `kops delete cluster` if you just want to recreate from scratch. Deleting kops cluster state means that you've have to `kops create` again.
+Ps: You don't have to `kops delete cluster` if you just want to recreate from scratch. Deleting kops cluster state means that you have to `kops create` again.
 
 
 ### Caveats
