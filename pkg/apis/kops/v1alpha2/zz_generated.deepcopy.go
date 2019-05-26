@@ -1663,6 +1663,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.AppendAdmissionPlugins != nil {
+		in, out := &in.AppendAdmissionPlugins, &out.AppendAdmissionPlugins
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.EnableAdmissionPlugins != nil {
 		in, out := &in.EnableAdmissionPlugins, &out.EnableAdmissionPlugins
 		*out = make([]string, len(*in))
