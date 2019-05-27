@@ -345,6 +345,25 @@ NOTE: Where the corresponding configuration value can be empty, fields can be se
 
 Will result in the flag `--resolv-conf=` being built.
 
+#### Disable CPU CFS Quota
+To disable CPU CFS quota enforcement for containers that specify CPU limits (default true) we have to set the flag `--cpu-cfs-quota` to `false`
+on all the kubelets. We can specify that in the `kubelet` spec in our cluster.yml.
+
+```
+spec:
+  kubelet:
+    cpuCFSQuota: false
+```
+
+#### Configure CPU CFS Period
+Configure CPU CFS quota period value (cpu.cfs_period_us). Example:
+
+```
+spec:
+  kubelet:
+    cpuCFSQuotaPeriod: "100ms"
+```
+
 #### Enable Custom metrics support
 To use custom metrics in kubernetes as per [custom metrics doc](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-custom-metrics)
 we have to set the flag `--enable-custom-metrics` to `true` on all the kubelets. We can specify that in the `kubelet` spec in our cluster.yml.
