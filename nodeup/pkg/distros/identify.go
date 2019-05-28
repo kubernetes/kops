@@ -75,6 +75,12 @@ func FindDistribution(rootfs string) (Distribution, error) {
 			if strings.HasPrefix(line, "CentOS Linux release 7.") {
 				return DistributionCentos7, nil
 			}
+			if strings.HasPrefix(line, "Red Hat Enterprise Linux Server release 8.") {
+				return DistributionRhel8, nil
+			}
+			if strings.HasPrefix(line, "CentOS Linux release 8.") {
+				return DistributionCentos8, nil
+			}
 		}
 		klog.Warningf("unhandled redhat-release info %q", string(lsbRelease))
 	} else if !os.IsNotExist(err) {
