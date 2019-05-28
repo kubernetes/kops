@@ -739,7 +739,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "18.06.3",
 		Name:          "docker-ce",
-		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionRhel8, distros.DistributionCentos8},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "18.06.3.ce",
 		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.3.ce-3.el7.x86_64.rpm",
