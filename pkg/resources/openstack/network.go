@@ -115,6 +115,14 @@ func (os *clusterDiscoveryOS) ListNetwork() ([]*resources.Resource, error) {
 			resourceTrackers = append(resourceTrackers, resourceTracker)
 
 		}
+
+		// Ports
+		portTrackers, err := os.ListPorts(network)
+		if err != nil {
+			return resourceTrackers, err
+		}
+		resourceTrackers = append(resourceTrackers, portTrackers...)
+
 		resourceTracker := &resources.Resource{
 			Name: network.Name,
 			ID:   network.ID,

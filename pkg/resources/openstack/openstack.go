@@ -47,7 +47,6 @@ func ListResources(cloud openstack.OpenstackCloud, clusterName string) (map[stri
 		os.ListInstances,
 		os.ListServerGroups,
 		os.ListVolumes,
-		os.ListPorts,
 		os.ListSecurityGroups,
 		os.ListNetwork,
 		os.ListDNSRecordsets,
