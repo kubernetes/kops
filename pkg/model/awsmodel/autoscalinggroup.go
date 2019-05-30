@@ -116,8 +116,10 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		Tenancy:                lc.Tenancy,
 		UserData:               lc.UserData,
 	}
-	// You cannot use a launch template that is set to request Spot Instances (InstanceMarketOptions)
-	// when you configure an Auto Scaling group with a mixed instances policy.
+	// When using a MixedInstances ASG, AWS requires the SpotPrice be defined on the ASG
+	// rather than the LaunchTemplate or else it returns this error:
+	//   You cannot use a launch template that is set to request Spot Instances (InstanceMarketOptions)
+	//   when you configure an Auto Scaling group with a mixed instances policy.
 	if ig.Spec.MixedInstancesPolicy == nil {
 		lt.SpotPrice = lc.SpotPrice
 	}
