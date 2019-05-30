@@ -48,7 +48,7 @@
 * [Cluster desired configuration creation from template](cluster_template.md)
 * [Cluster upgrades and migrations](cluster_upgrades_and_migrations.md)
 * [`etcd` volume encryption setup](etcd_volume_encryption.md)
-* [`etcd` backup setup](etcd_backup.md)
+* [`etcd` backup/restore](etcd/backup-restore.md)
 * [GPU setup](gpu.md)
 * [High Availability](high_availability.md)
 * [InstanceGroup images](images.md)
