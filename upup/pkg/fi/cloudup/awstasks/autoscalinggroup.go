@@ -684,39 +684,44 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		}
 	}
 
+	role := ""
+	for k := range e.Tags {
+		if strings.HasPrefix(k, CloudTagInstanceGroupRolePrefix) {
+			suffix := strings.TrimPrefix(k, CloudTagInstanceGroupRolePrefix)
+			if role != "" && role != suffix {
+				return fmt.Errorf("Found multiple role tags: %q vs %q", role, suffix)
+			}
+			role = suffix
+		}
+	}
+
 	if e.LaunchConfiguration != nil {
 		tf.LaunchConfigurationName = e.LaunchConfiguration.TerraformLink()
-
 		// Create TF output variable with security group ids
 		// This is in the launch configuration, but the ASG has the information about the instance group type
-
-		role := ""
-		for k := range e.Tags {
-			if strings.HasPrefix(k, CloudTagInstanceGroupRolePrefix) {
-				suffix := strings.TrimPrefix(k, CloudTagInstanceGroupRolePrefix)
-				if role != "" && role != suffix {
-					return fmt.Errorf("Found multiple role tags: %q vs %q", role, suffix)
-				}
-				role = suffix
-			}
-		}
-
 		if role != "" {
 			for _, sg := range e.LaunchConfiguration.SecurityGroups {
 				if err := t.AddOutputVariableArray(role+"_security_group_ids", sg.TerraformLink()); err != nil {
 					return err
 				}
 			}
-			if err := t.AddOutputVariableArray(role+"_autoscaling_group_ids", e.TerraformLink()); err != nil {
+		}
+	} else if e.LaunchTemplate != nil && role != "" {
+		for _, sg := range e.LaunchTemplate.SecurityGroups {
+			if err := t.AddOutputVariableArray(role+"_security_group_ids", sg.TerraformLink()); err != nil {
 				return err
 			}
 		}
-
-		if role == "node" {
-			for _, s := range e.Subnets {
-				if err := t.AddOutputVariableArray(role+"_subnet_ids", s.TerraformLink()); err != nil {
-					return err
-				}
+	}
+	if role != "" {
+		if err := t.AddOutputVariableArray(role+"_autoscaling_group_ids", e.TerraformLink()); err != nil {
+			return err
+		}
+	}
+	if role == "node" {
+		for _, s := range e.Subnets {
+			if err := t.AddOutputVariableArray(role+"_subnet_ids", s.TerraformLink()); err != nil {
+				return err
 			}
 		}
 	}
