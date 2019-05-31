@@ -812,6 +812,13 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		return nil
 
+	case distros.DistributionFlatcar:
+		klog.Infof("Detected Flatcar; won't install Docker")
+		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
+			return err
+		}
+		return nil
+
 	case distros.DistributionContainerOS:
 		klog.Infof("Detected ContainerOS; won't install Docker")
 		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
