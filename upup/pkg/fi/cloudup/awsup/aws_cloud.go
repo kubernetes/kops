@@ -92,6 +92,9 @@ const (
 	WellKnownAccountUbuntu             = "099720109477"
 )
 
+var imageCache = map[string]*ec2.Image{}
+var imageLookupLock = sync.RWMutex{}
+
 type AWSCloud interface {
 	fi.Cloud
 
@@ -1147,7 +1150,17 @@ func describeVPC(c AWSCloud, vpcID string) (*ec2.Vpc, error) {
 // owner/name in which case we find the image with the specified name, owned by owner
 // name in which case we find the image with the specified name, with the current owner
 func (c *awsCloudImplementation) ResolveImage(name string) (*ec2.Image, error) {
-	return resolveImage(c.ec2, name)
+	imageLookupLock.RLock()
+	if val, ok := imageCache[name]; ok {
+		imageLookupLock.RUnlock()
+		return val, nil
+	}
+	imageLookupLock.RUnlock()
+
+	imageLookupLock.Lock()
+	defer imageLookupLock.Unlock()
+	img, err := resolveImage(c.ec2, name)
+	return img, err
 }
 
 func resolveImage(ec2Client ec2iface.EC2API, name string) (*ec2.Image, error) {
@@ -1203,6 +1216,8 @@ func resolveImage(ec2Client ec2iface.EC2API, name string) (*ec2.Image, error) {
 			image = v
 		}
 	}
+
+	imageCache[name] = image
 
 	klog.V(4).Infof("Resolved image %q", aws.StringValue(image.ImageId))
 	return image, nil
