@@ -22,6 +22,7 @@ import (
 	"math"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"k8s.io/kops/pkg/featureflag"
@@ -39,6 +40,10 @@ import (
 // defaultRetainLaunchConfigurationCount is the number of launch configurations (matching the name prefix) that we should
 // keep, we delete older ones
 var defaultRetainLaunchConfigurationCount = 3
+
+var lcCacheWarm = false
+var lcCacheLock = sync.RWMutex{}
+var lcCache []*autoscaling.LaunchConfiguration
 
 // RetainLaunchConfigurationCount returns the number of launch configurations to keep
 func RetainLaunchConfigurationCount() int {
@@ -97,27 +102,56 @@ func (e *LaunchConfiguration) CompareWithID() *string {
 	return e.ID
 }
 
-// findLaunchConfigurations returns matching LaunchConfigurations, sorted by CreatedTime (ascending)
-func (e *LaunchConfiguration) findLaunchConfigurations(c *fi.Context) ([]*autoscaling.LaunchConfiguration, error) {
+// populateLaunchConfigurations fetches all LCs from AWS and caches them.
+// This function is not thread-safe and callers must ensure synchronization.
+func populateLaunchConfigurations(c *fi.Context) error {
 	cloud := c.Cloud.(awsup.AWSCloud)
+	lcCache = []*autoscaling.LaunchConfiguration{}
 
-	request := &autoscaling.DescribeLaunchConfigurationsInput{}
-
-	prefix := *e.Name + "-"
-
-	var configurations []*autoscaling.LaunchConfiguration
+	request := &autoscaling.DescribeLaunchConfigurationsInput{
+		MaxRecords: aws.Int64(100),
+	}
 	err := cloud.Autoscaling().DescribeLaunchConfigurationsPages(request, func(page *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
 		for _, l := range page.LaunchConfigurations {
-			name := aws.StringValue(l.LaunchConfigurationName)
-			if strings.HasPrefix(name, prefix) {
-				configurations = append(configurations, l)
-			}
+			lcCache = append(lcCache, l)
 		}
 		return true
 	})
-	if err != nil {
-		return nil, fmt.Errorf("error listing AutoscalingLaunchConfigurations: %v", err)
+	if err == nil {
+		klog.V(2).Infof("Warmed launchconfiguration cache")
+		lcCacheWarm = true
 	}
+
+	return err
+}
+
+// findLaunchConfigurations returns matching LaunchConfigurations, sorted by CreatedTime (ascending)
+func (e *LaunchConfiguration) findLaunchConfigurations(c *fi.Context) ([]*autoscaling.LaunchConfiguration, error) {
+	var configurations []*autoscaling.LaunchConfiguration
+
+	if !lcCacheWarm {
+		lcCacheLock.Lock()
+		// Check again to see if things have changed while waiting for the lock
+		if !lcCacheWarm {
+			cacheErr := populateLaunchConfigurations(c)
+			if cacheErr != nil {
+				lcCacheLock.Unlock()
+				return nil, fmt.Errorf("error listing AutoscalingLaunchConfigurations: %v", cacheErr)
+			}
+		}
+		lcCacheLock.Unlock()
+	}
+
+	prefix := *e.Name + "-"
+
+	lcCacheLock.RLock()
+	for _, l := range lcCache {
+		name := aws.StringValue(l.LaunchConfigurationName)
+		if strings.HasPrefix(name, prefix) {
+			configurations = append(configurations, l)
+		}
+	}
+	lcCacheLock.RUnlock()
 
 	sort.Slice(configurations, func(i, j int) bool {
 		ti := configurations[i].CreatedTime
@@ -264,6 +298,10 @@ func (s *LaunchConfiguration) CheckChanges(a, e, changes *LaunchConfiguration) e
 
 // RenderAWS is responsible for creating the launchconfiguration via api
 func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LaunchConfiguration) error {
+	lcCacheLock.Lock()
+	defer lcCacheLock.Unlock()
+	lcCacheWarm = false
+
 	launchConfigurationName := *e.Name + "-" + fi.BuildTimestampString()
 
 	klog.V(2).Infof("Creating AutoscalingLaunchConfiguration with Name:%q", launchConfigurationName)
@@ -436,6 +474,10 @@ type terraformBlockDevice struct {
 
 // RenderTerraform is responsible for rendering the terraform json
 func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LaunchConfiguration) error {
+	lcCacheLock.Lock()
+	defer lcCacheLock.Unlock()
+	lcCacheWarm = false
+
 	cloud := t.Cloud.(awsup.AWSCloud)
 
 	if e.ImageID == nil {
@@ -585,6 +627,10 @@ type cloudformationBlockDeviceEBS struct {
 
 // RenderCloudformation is responsible for rendering the cloudformation template
 func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *LaunchConfiguration) error {
+	lcCacheLock.Lock()
+	defer lcCacheLock.Unlock()
+	lcCacheWarm = false
+
 	cloud := t.Cloud.(awsup.AWSCloud)
 
 	if e.ImageID == nil {
@@ -725,6 +771,10 @@ func (d *deleteLaunchConfiguration) Item() string {
 }
 
 func (d *deleteLaunchConfiguration) Delete(t fi.Target) error {
+	lcCacheLock.Lock()
+	defer lcCacheLock.Unlock()
+	lcCacheWarm = false
+
 	klog.V(2).Infof("deleting launch configuration %v", d)
 
 	awsTarget, ok := t.(*awsup.AWSAPITarget)
