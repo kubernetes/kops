@@ -159,6 +159,9 @@ func (b *KubeletBuilder) kubeletPath() string {
 	if b.Distribution == distros.DistributionCoreOS {
 		kubeletCommand = "/opt/kubernetes/bin/kubelet"
 	}
+	if b.Distribution == distros.DistributionFlatcar {
+		kubeletCommand = "/opt/kubernetes/bin/kubelet"
+	}
 	if b.Distribution == distros.DistributionContainerOS {
 		kubeletCommand = "/home/kubernetes/bin/kubelet"
 	}
@@ -261,6 +264,10 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 		// We add /opt/kubernetes/bin for our utilities (socat, conntrack)
 		manifest.Set("Service", "Environment", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kubernetes/bin")
 	}
+	if b.Distribution == distros.DistributionFlatcar {
+		// We add /opt/kubernetes/bin for our utilities (conntrack)
+		manifest.Set("Service", "Environment", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kubernetes/bin")
+	}
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/kubelet")
 
 	// @check if we are using bootstrap tokens and file checker
@@ -316,6 +323,30 @@ func (b *KubeletBuilder) addStaticUtils(c *fi.ModelBuilderContext) error {
 		// CoreOS does not ship with socat or conntrack.  Install our own (statically linked) version
 		// TODO: Extract to common function?
 		for _, binary := range []string{"socat", "conntrack"} {
+			assetName := binary
+			assetPath := ""
+			asset, err := b.Assets.Find(assetName, assetPath)
+			if err != nil {
+				return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
+			}
+			if asset == nil {
+				return fmt.Errorf("unable to locate asset %q", assetName)
+			}
+
+			t := &nodetasks.File{
+				Path:     "/opt/kubernetes/bin/" + binary,
+				Contents: asset,
+				Type:     nodetasks.FileType_File,
+				Mode:     s("0755"),
+			}
+			c.AddTask(t)
+		}
+	}
+
+	if b.Distribution == distros.DistributionFlatcar {
+		// Flatcar does not ship with conntrack.  Install our own (statically linked) version
+		// TODO: Extract to common function?
+		for _, binary := range []string{"conntrack"} {
 			assetName := binary
 			assetPath := ""
 			asset, err := b.Assets.Find(assetName, assetPath)
