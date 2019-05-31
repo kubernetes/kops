@@ -139,6 +139,8 @@ func (m *MockAutoscaling) DescribeAutoScalingGroups(input *autoscaling.DescribeA
 					match = true
 				}
 			}
+		} else {
+			match = true
 		}
 
 		if match {
@@ -179,9 +181,6 @@ func (m *MockAutoscaling) DescribeAutoScalingGroupsRequest(*autoscaling.Describe
 }
 
 func (m *MockAutoscaling) DescribeAutoScalingGroupsPages(request *autoscaling.DescribeAutoScalingGroupsInput, callback func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool) error {
-	if request.MaxRecords != nil {
-		klog.Fatalf("MaxRecords not implemented")
-	}
 	if request.NextToken != nil {
 		klog.Fatalf("NextToken not implemented")
 	}

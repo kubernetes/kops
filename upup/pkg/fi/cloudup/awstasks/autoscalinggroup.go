@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"sync"
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -81,6 +82,10 @@ type AutoscalingGroup struct {
 }
 
 var _ fi.CompareWithID = &AutoscalingGroup{}
+
+var asgCacheWarm = false
+var asgCacheLock = sync.RWMutex{}
+var asgCache []*autoscaling.Group
 
 // CompareWithID returns the ID of the ASG
 func (e *AutoscalingGroup) CompareWithID() *string {
@@ -171,34 +176,57 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	return actual, nil
 }
 
-// findAutoscalingGroup is responsilble for finding all the autoscaling groups for us
-func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group, error) {
+// populateAutoscalingGroups fetches all ASGs from AWS and caches them.
+// This function is not thread-safe and callers must ensure synchronization.
+func populateAutoscalingGroups(cloud awsup.AWSCloud) error {
+	asgCache = []*autoscaling.Group{}
+
 	request := &autoscaling.DescribeAutoScalingGroupsInput{
-		AutoScalingGroupNames: []*string{&name},
+		MaxRecords: aws.Int64(100),
 	}
 
-	var found []*autoscaling.Group
 	err := cloud.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) (shouldContinue bool) {
 		for _, g := range p.AutoScalingGroups {
-			// Check for "Delete in progress" (the only use .Status). We won't be able to update or create while
-			// this is true, but filtering it out here makes the messages slightly clearer.
 			if g.Status != nil {
 				klog.Warningf("Skipping AutoScalingGroup %v: %v", fi.StringValue(g.AutoScalingGroupName), fi.StringValue(g.Status))
 				continue
 			}
-
-			if aws.StringValue(g.AutoScalingGroupName) == name {
-				found = append(found, g)
-			} else {
-				klog.Warningf("Got ASG with unexpected name %q", fi.StringValue(g.AutoScalingGroupName))
-			}
+			asgCache = append(asgCache, g)
 		}
-
 		return true
 	})
-	if err != nil {
-		return nil, fmt.Errorf("error listing AutoscalingGroups: %v", err)
+	if err == nil {
+		klog.V(2).Infof("Warmed autoscaling cache")
+		asgCacheWarm = true
 	}
+
+	return err
+}
+
+// findAutoscalingGroup is responsilble for finding all the autoscaling groups for us
+func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group, error) {
+	if !asgCacheWarm {
+		asgCacheLock.Lock()
+		// Check again to see if things have changed while waiting for the lock
+		if !asgCacheWarm {
+			cacheErr := populateAutoscalingGroups(cloud)
+			if cacheErr != nil {
+				asgCacheLock.Unlock()
+				return nil, fmt.Errorf("error listing AutoscalingGroups: %v", cacheErr)
+			}
+		}
+		asgCacheLock.Unlock()
+	}
+
+	var found []*autoscaling.Group
+
+	asgCacheLock.RLock()
+	for _, g := range asgCache {
+		if aws.StringValue(g.AutoScalingGroupName) == name {
+			found = append(found, g)
+		}
+	}
+	asgCacheLock.RUnlock()
 
 	switch len(found) {
 	case 0:
@@ -240,6 +268,10 @@ func (e *AutoscalingGroup) CheckChanges(a, ex, changes *AutoscalingGroup) error 
 
 // RenderAWS is responsible for building the autoscaling group via AWS API
 func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingGroup) error {
+	asgCacheLock.Lock()
+	defer asgCacheLock.Unlock()
+	asgCacheWarm = false
+
 	// @step: did we find an autoscaling group?
 	if a == nil {
 		klog.V(2).Infof("Creating autoscaling group with name: %s", fi.StringValue(e.Name))
@@ -621,6 +653,10 @@ type terraformAutoscalingGroup struct {
 
 // RenderTerraform is responsible for rendering the terraform codebase
 func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *AutoscalingGroup) error {
+	asgCacheLock.Lock()
+	defer asgCacheLock.Unlock()
+	asgCacheWarm = false
+
 	tf := &terraformAutoscalingGroup{
 		Name:               e.Name,
 		MinSize:            e.MinSize,
@@ -790,6 +826,10 @@ type cloudformationAutoscalingGroup struct {
 
 // RenderCloudformation is responsible for generating the cloudformation template
 func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *AutoscalingGroup) error {
+	asgCacheLock.Lock()
+	defer asgCacheLock.Unlock()
+	asgCacheWarm = false
+
 	cf := &cloudformationAutoscalingGroup{
 		Name:    e.Name,
 		MinSize: e.MinSize,
