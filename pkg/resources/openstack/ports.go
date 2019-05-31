@@ -25,8 +25,7 @@ import (
 )
 
 const (
-	typePort        = "Port"
-	typeDynamicPort = "DynamicPort"
+	typePort = "Port"
 )
 
 func (os *clusterDiscoveryOS) ListPorts(network networks.Network) ([]*resources.Resource, error) {
