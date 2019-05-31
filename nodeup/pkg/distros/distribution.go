@@ -31,6 +31,7 @@ var (
 	DistributionRhel7       Distribution = "rhel7"
 	DistributionCentos7     Distribution = "centos7"
 	DistributionCoreOS      Distribution = "coreos"
+	DistributionFlatcar     Distribution = "flatcar"
 	DistributionContainerOS Distribution = "containeros"
 )
 
@@ -52,6 +53,8 @@ func (d Distribution) BuildTags() []string {
 		t = []string{"_rhel7"}
 	case DistributionCoreOS:
 		t = []string{"_coreos"}
+	case DistributionFlatcar:
+		t = []string{"_flatcar"}
 	case DistributionContainerOS:
 		t = []string{"_containeros"}
 	default:
@@ -78,7 +81,7 @@ func (d Distribution) IsDebianFamily() bool {
 		return true
 	case DistributionCentos7, DistributionRhel7:
 		return false
-	case DistributionCoreOS, DistributionContainerOS:
+	case DistributionCoreOS, DistributionFlatcar, DistributionContainerOS:
 		return false
 	default:
 		klog.Fatalf("unknown distribution: %s", d)
@@ -92,7 +95,7 @@ func (d Distribution) IsRHELFamily() bool {
 		return true
 	case DistributionJessie, DistributionXenial, DistributionBionic, DistributionDebian9:
 		return false
-	case DistributionCoreOS, DistributionContainerOS:
+	case DistributionCoreOS, DistributionFlatcar, DistributionContainerOS:
 		return false
 	default:
 		klog.Fatalf("unknown distribution: %s", d)
@@ -106,7 +109,7 @@ func (d Distribution) IsSystemd() bool {
 		return true
 	case DistributionCentos7, DistributionRhel7:
 		return true
-	case DistributionCoreOS:
+	case DistributionCoreOS, DistributionFlatcar:
 		return true
 	case DistributionContainerOS:
 		return true
