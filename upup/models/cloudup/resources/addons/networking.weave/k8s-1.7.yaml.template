@@ -156,12 +156,11 @@ spec:
                   key: network-password
             {{- end }}
           image: 'weaveworks/weave-kube:2.5.1'
-          livenessProbe:
+          readinessProbe:
             httpGet:
               host: 127.0.0.1
               path: /status
               port: 6784
-            initialDelaySeconds: 30
           resources:
             requests:
               cpu: 50m
