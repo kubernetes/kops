@@ -63,7 +63,8 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
           "KeyName": "mykey",
           "NetworkInterfaces": [
             {
-              "AssociatePublicIpAddress": true
+              "AssociatePublicIpAddress": true,
+              "DeleteOnTermination": true
             }
           ],
           "Placement": [
@@ -144,7 +145,8 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
           "KeyName": "mykey",
           "NetworkInterfaces": [
             {
-              "AssociatePublicIpAddress": true
+              "AssociatePublicIpAddress": true,
+              "DeleteOnTermination": true
             }
           ],
           "Placement": [
