@@ -162,7 +162,8 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		InstanceType: e.InstanceType,
 		Lifecycle:    &terraform.Lifecycle{CreateBeforeDestroy: fi.Bool(true)},
 		NetworkInterfaces: []*terraformLaunchTemplateNetworkInterfaces{
-			{AssociatePublicIPAddress: e.AssociatePublicIP},
+			{AssociatePublicIPAddress: e.AssociatePublicIP,
+				DeleteOnTermination: fi.Bool(true)},
 		},
 	}
 
