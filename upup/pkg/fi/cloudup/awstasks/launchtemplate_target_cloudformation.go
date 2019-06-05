@@ -156,7 +156,8 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 			ImageID:      image,
 			InstanceType: e.InstanceType,
 			NetworkInterfaces: []*cloudformationLaunchTemplateNetworkInterfaces{
-				{AssociatePublicIPAddress: e.AssociatePublicIP},
+				{AssociatePublicIPAddress: e.AssociatePublicIP,
+					DeleteOnTermination: fi.Bool(true)},
 			},
 		},
 	}
