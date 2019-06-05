@@ -161,7 +161,7 @@ This full node-to-node mesh per L2 network has its scaling challenges for larger
 BGP route reflectors can be used as a replacement to a full mesh, and is useful for scaling up a cluster. BGP route reflectors are recommended once the number of nodes goes above ~50-100.
 The setup of BGP route reflectors is currently out of the scope of kops.
 
-Read more here: [BGP route reflectors](https://docs.projectcalico.org/latest/usage/routereflector)
+Read more here: [BGP route reflectors](https://docs.projectcalico.org/latest/networking/routereflector)
 
 
 To enable this mode in a cluster, with Calico as the CNI and Network Policy provider, you must edit the cluster after the previous `kops create ...` command.
@@ -341,7 +341,7 @@ $ kops create cluster \
   --name myclustername.mydns.io
 ```
 
-**Important:** the pods uses the VPC CIDR, i.e. there is no isolation between the master, node/s and the internal k8s network.
+**Important:** pods use the VPC CIDR, i.e. there is no isolation between the master, node/s and the internal k8s network.
 
 **Note:** The following permissions are added to all nodes by kops to run the provider:
 
