@@ -38,6 +38,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
 	v2pools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
@@ -247,6 +248,12 @@ type OpenstackCloud interface {
 	GetPool(poolID string, memberID string) (*v2pools.Member, error)
 
 	ListPools(v2pools.ListOpts) ([]v2pools.Pool, error)
+
+	// ListMonitors will list HealthMonitors matching the provided options
+	ListMonitors(monitors.ListOpts) ([]monitors.Monitor, error)
+
+	// DeleteMonitor will delete a Pool resources Health Monitor
+	DeleteMonitor(monitorID string) error
 
 	// DeletePool will delete loadbalancer pool
 	DeletePool(poolID string) error
