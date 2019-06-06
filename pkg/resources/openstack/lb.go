@@ -17,11 +17,9 @@ limitations under the License.
 package openstack
 
 import (
-	"strings"
-
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
-	v2pools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
@@ -29,15 +27,17 @@ import (
 )
 
 const (
-	typeLB  = "LoadBalancer"
-	typeLBL = "LBListener"
-	typeLBP = "LBPool"
+	typeLB   = "LoadBalancer"
+	typeLBL  = "LBListener"
+	typeLBP  = "LBPool"
+	typeLBPM = "LBPoolMonitor"
 )
 
-func (os *clusterDiscoveryOS) ListLB() ([]*resources.Resource, error) {
+func (os *clusterDiscoveryOS) DeleteSubnetLBs(subnet subnets.Subnet) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
+
 	opts := loadbalancers.ListOpts{
-		Name: "api." + os.clusterName,
+		VipSubnetID: subnet.ID,
 	}
 	lbs, err := os.osCloud.ListLBs(opts)
 	if err != nil {
@@ -57,25 +57,33 @@ func (os *clusterDiscoveryOS) ListLB() ([]*resources.Resource, error) {
 			},
 		}
 		resourceTrackers = append(resourceTrackers, resourceTracker)
-	}
-	return resourceTrackers, nil
-}
 
-func (os *clusterDiscoveryOS) ListLBPools() ([]*resources.Resource, error) {
-	var resourceTrackers []*resources.Resource
+		if os.osCloud.UseOctavia() {
+			klog.V(2).Info("skipping LB Children because using Octavia")
+			continue
+		}
 
-	if os.osCloud.UseOctavia() {
-		klog.V(2).Info("skipping ListLBPools because using Octavia")
-		return nil, nil
-	}
+		//Identify pools associated to this LB
+		for _, pool := range lb.Pools {
 
-	pools, err := os.osCloud.ListPools(v2pools.ListOpts{})
-	if err != nil {
-		return nil, err
-	}
+			monitorList, err := os.cloud.(openstack.OpenstackCloud).ListMonitors(monitors.ListOpts{
+				PoolID: pool.ID,
+			})
+			if err != nil {
+				return nil, err
+			}
+			for _, monitor := range monitorList {
+				resourceTracker := &resources.Resource{
+					Name: monitor.Name,
+					ID:   monitor.ID,
+					Type: typeLBPM,
+					Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
+						return cloud.(openstack.OpenstackCloud).DeleteMonitor(r.ID)
+					},
+				}
+				resourceTrackers = append(resourceTrackers, resourceTracker)
+			}
 
-	for _, pool := range pools {
-		if strings.Contains(pool.Name, os.clusterName) {
 			resourceTracker := &resources.Resource{
 				Name: pool.Name,
 				ID:   pool.ID,
@@ -86,25 +94,9 @@ func (os *clusterDiscoveryOS) ListLBPools() ([]*resources.Resource, error) {
 			}
 			resourceTrackers = append(resourceTrackers, resourceTracker)
 		}
-	}
-	return resourceTrackers, nil
-}
 
-func (os *clusterDiscoveryOS) ListLBListener() ([]*resources.Resource, error) {
-	var resourceTrackers []*resources.Resource
-
-	if os.osCloud.UseOctavia() {
-		klog.V(2).Info("skipping ListLBListener because using Octavia")
-		return nil, nil
-	}
-
-	listeners, err := os.osCloud.ListListeners(listeners.ListOpts{})
-	if err != nil {
-		return nil, err
-	}
-
-	for _, listener := range listeners {
-		if strings.Contains(listener.Name, os.clusterName) {
+		//Identify listeners associated to this LB
+		for _, listener := range lb.Listeners {
 			resourceTracker := &resources.Resource{
 				Name: listener.Name,
 				ID:   listener.ID,
@@ -116,5 +108,6 @@ func (os *clusterDiscoveryOS) ListLBListener() ([]*resources.Resource, error) {
 			resourceTrackers = append(resourceTrackers, resourceTracker)
 		}
 	}
+
 	return resourceTrackers, nil
 }
