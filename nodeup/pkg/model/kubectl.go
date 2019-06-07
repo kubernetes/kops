@@ -104,7 +104,7 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 func (b *KubectlBuilder) findKubeconfigUser() (*fi.User, *fi.Group, error) {
 	var users []string
 	switch b.Distribution {
-	case distros.DistributionJessie, distros.DistributionDebian9:
+	case distros.DistributionJessie, distros.DistributionDebian9, distros.DistributionDebian10:
 		users = []string{"admin", "root"}
 	case distros.DistributionCentos7:
 		users = []string{"centos"}
