@@ -63,11 +63,11 @@ Values:
 
 ## out
 
-`out` determines the directory into which kubectl will write the target output.  It defaults to `out/terraform`
+`out` determines the directory into which Kops will write the target output for Terraform and CloudFormation.  It defaults to `out/terraform` and `out/cloudformation` respectively.
 
 # API only Arguments
 
-Certain arguments can only be passed via the API, eg, `kops edit cluster`. The following documents some of the more interesting or lesser-known options.
+Certain arguments can only be passed via the API, eg, `kops edit cluster`. The following documents some of the more interesting or lesser-known options. See the [Cluster Spec](./cluster_spec.md) page for more fields.
 
 ## kubeletPreferredAddressTypes
 
