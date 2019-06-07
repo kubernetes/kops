@@ -579,10 +579,8 @@ func findAutoscalingGroupLaunchConfiguration(g *autoscaling.Group) (string, erro
 	// @check the launch template then
 	if g.LaunchTemplate != nil {
 		name = aws.StringValue(g.LaunchTemplate.LaunchTemplateName)
-		version := aws.StringValue(g.LaunchTemplate.Version)
 		if name != "" {
-			launchTemplate := name + ":" + version
-			return launchTemplate, nil
+			return name, nil
 		}
 	}
 
@@ -592,10 +590,8 @@ func findAutoscalingGroupLaunchConfiguration(g *autoscaling.Group) (string, erro
 			if g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification != nil {
 				// honestly!!
 				name = aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.LaunchTemplateName)
-				version := aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.Version)
 				if name != "" {
-					launchTemplate := name + ":" + version
-					return launchTemplate, nil
+					return name, nil
 				}
 			}
 		}
@@ -614,10 +610,8 @@ func findInstanceLaunchConfiguration(i *autoscaling.Instance) string {
 	// else we need to check the launch template
 	if i.LaunchTemplate != nil {
 		name = aws.StringValue(i.LaunchTemplate.LaunchTemplateName)
-		version := aws.StringValue(i.LaunchTemplate.Version)
 		if name != "" {
-			launchTemplate := name + ":" + version
-			return launchTemplate
+			return name
 		}
 	}
 
