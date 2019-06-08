@@ -2923,6 +2923,7 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.EnableBootstrapAuthToken = in.EnableBootstrapAuthToken
 	out.EnableAggregatorRouting = in.EnableAggregatorRouting
 	out.AdmissionControl = in.AdmissionControl
+	out.AppendAdmissionPlugins = in.AppendAdmissionPlugins
 	out.EnableAdmissionPlugins = in.EnableAdmissionPlugins
 	out.DisableAdmissionPlugins = in.DisableAdmissionPlugins
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
@@ -3012,6 +3013,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.EnableBootstrapAuthToken = in.EnableBootstrapAuthToken
 	out.EnableAggregatorRouting = in.EnableAggregatorRouting
 	out.AdmissionControl = in.AdmissionControl
+	out.AppendAdmissionPlugins = in.AppendAdmissionPlugins
 	out.EnableAdmissionPlugins = in.EnableAdmissionPlugins
 	out.DisableAdmissionPlugins = in.DisableAdmissionPlugins
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange

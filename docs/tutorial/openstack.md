@@ -22,7 +22,7 @@ It is important to set the following environment variables:
 export KOPS_STATE_STORE=swift://<bucket-name> # where <bucket-name> is the name of the Swift container to use for kops state
 
 # this is required since OpenStack support is currently in alpha so it is feature gated
-export KOPS_FEATURE_FLAGS="AlphaAllowOpenStack"
+export KOPS_FEATURE_FLAGS="AlphaAllowOpenstack"
 ```
 
 If your OpenStack does not have Swift you can use any other VFS store, such as S3.
