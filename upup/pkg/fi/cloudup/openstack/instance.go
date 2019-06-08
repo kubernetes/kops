@@ -26,6 +26,11 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
+const (
+	INSTANCE_GROUP_GENERATION = "ig_generation"
+	CLUSTER_GENERATION        = "cluster_generation"
+)
+
 func (c *openstackCloud) CreateInstance(opt servers.CreateOptsBuilder) (*servers.Server, error) {
 	var server *servers.Server
 
