@@ -24,8 +24,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog"
 	"k8s.io/kops/channels/pkg/api"
-	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 // Addon is a wrapper around a single version of an addon
@@ -69,24 +67,11 @@ func (m *AddonMenu) MergeAddons(o *AddonMenu) {
 
 func (a *Addon) ChannelVersion() *ChannelVersion {
 
-	manifestURL, err := a.GetManifestFullUrl()
-	data, err := vfs.Context.ReadFile(manifestURL.String())
-	if err != nil {
-		return &ChannelVersion{}
-	}
-	manifest := string(data)
-	klog.V(4).Infof("Manifest %v", manifest)
-
-	manifestHash, err := utils.HashString(&manifest)
-	klog.V(4).Infof("hash %s", manifestHash)
-	if err != nil {
-		manifestHash = ""
-	}
 	return &ChannelVersion{
 		Channel:      &a.ChannelName,
 		Version:      a.Spec.Version,
 		Id:           a.Spec.Id,
-		ManifestHash: manifestHash,
+		ManifestHash: a.Spec.ManifestHash,
 	}
 }
 
@@ -102,6 +87,7 @@ func (a *Addon) buildChannel() *Channel {
 	}
 	return channel
 }
+
 func (a *Addon) GetRequiredUpdates(k8sClient kubernetes.Interface) (*AddonUpdate, error) {
 	newVersion := a.ChannelVersion()
 
