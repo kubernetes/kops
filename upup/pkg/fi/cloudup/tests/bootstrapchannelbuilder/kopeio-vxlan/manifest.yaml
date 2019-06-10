@@ -5,6 +5,7 @@ metadata:
 spec:
   addons:
   - manifest: core.addons.k8s.io/v1.4.0.yaml
+    manifestHash: 14378218a4ee47aaeb5f1036b3efd4baca8473e2
     name: core.addons.k8s.io
     selector:
       k8s-addon: core.addons.k8s.io
@@ -12,6 +13,7 @@ spec:
   - id: pre-k8s-1.6
     kubernetesVersion: <1.6.0
     manifest: kube-dns.addons.k8s.io/pre-k8s-1.6.yaml
+    manifestHash: bd6e1ce0cb714bb14a55edd24bdabe98a5c4cb2b
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -19,6 +21,7 @@ spec:
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0 <1.12.0'
     manifest: kube-dns.addons.k8s.io/k8s-1.6.yaml
+    manifestHash: 0233e367d6b4fa1632a80ac48109b5eaad82cfeb
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -26,6 +29,7 @@ spec:
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: kube-dns.addons.k8s.io/k8s-1.12.yaml
+    manifestHash: a5cc9e8c009977144b53c3e5c90acb94604a8363
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -33,6 +37,7 @@ spec:
   - id: k8s-1.8
     kubernetesVersion: '>=1.8.0'
     manifest: rbac.addons.k8s.io/k8s-1.8.yaml
+    manifestHash: 75331b09218de99fee2cafce1fed4f5a82d017ca
     name: rbac.addons.k8s.io
     selector:
       k8s-addon: rbac.addons.k8s.io
@@ -40,11 +45,13 @@ spec:
   - id: k8s-1.9
     kubernetesVersion: '>=1.9.0'
     manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
+    manifestHash: f70ecffd78f68b43803fd0c9e5fc139c20c35289
     name: kubelet-api.rbac.addons.k8s.io
     selector:
       k8s-addon: kubelet-api.rbac.addons.k8s.io
     version: v0.0.1
   - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
+    manifestHash: da15be09c7b9578b5ed58380456b87758e8dc6d6
     name: limit-range.addons.k8s.io
     selector:
       k8s-addon: limit-range.addons.k8s.io
@@ -52,6 +59,7 @@ spec:
   - id: pre-k8s-1.6
     kubernetesVersion: <1.6.0
     manifest: dns-controller.addons.k8s.io/pre-k8s-1.6.yaml
+    manifestHash: 2e3596aef4db3b58571d5fc098d0ddecc5a661fc
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
@@ -59,6 +67,7 @@ spec:
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0 <1.12.0'
     manifest: dns-controller.addons.k8s.io/k8s-1.6.yaml
+    manifestHash: 2ad3e922cf9968681fa0b26cc47b77e4b03991ba
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
@@ -66,6 +75,7 @@ spec:
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
+    manifestHash: bfa33267d503e2f0be4c3129c157a3dee1976073
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
@@ -73,6 +83,7 @@ spec:
   - id: v1.15.0
     kubernetesVersion: '>=1.15.0'
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
+    manifestHash: 1601131a62e2994c1cc4b7bc84db822498373ea4
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
@@ -80,6 +91,7 @@ spec:
   - id: v1.7.0
     kubernetesVersion: '>=1.7.0 <1.15.0'
     manifest: storage-aws.addons.k8s.io/v1.7.0.yaml
+    manifestHash: 048caa31bf3dfe598e788c49488ec5f57e5d7a02
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
@@ -87,6 +99,7 @@ spec:
   - id: v1.6.0
     kubernetesVersion: <1.7.0
     manifest: storage-aws.addons.k8s.io/v1.6.0.yaml
+    manifestHash: 25b942e46ae5b485ea13ca4ea5c5e10edaa42de3
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
@@ -94,6 +107,7 @@ spec:
   - id: pre-k8s-1.6
     kubernetesVersion: <1.6.0
     manifest: networking.kope.io/pre-k8s-1.6.yaml
+    manifestHash: 880deea86564aac77ce842c1ff77675ac36467fe
     name: networking.kope.io
     selector:
       role.kubernetes.io/networking: "1"
@@ -101,6 +115,7 @@ spec:
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0 <1.12.0'
     manifest: networking.kope.io/k8s-1.6.yaml
+    manifestHash: 03da4949a8f629c787f015b5ee6cf14f0c33a978
     name: networking.kope.io
     selector:
       role.kubernetes.io/networking: "1"
@@ -108,6 +123,7 @@ spec:
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: networking.kope.io/k8s-1.12.yaml
+    manifestHash: daf0366a714743177c490de3e14730a490949ceb
     name: networking.kope.io
     selector:
       role.kubernetes.io/networking: "1"
