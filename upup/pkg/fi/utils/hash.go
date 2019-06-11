@@ -19,12 +19,14 @@ package utils
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"strings"
 )
 
 // HashString Takes String and returns a sha1 hash represented as a string
 func HashString(s *string) (string, error) {
 	h := sha1.New()
-	_, err := h.Write([]byte(*s))
+	ts := strings.TrimSpace(*s)
+	_, err := h.Write([]byte(ts))
 	if err != nil {
 		return "", err
 	}
