@@ -98,7 +98,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	// @TODO check if there any a better way of doing this .. initially I had a type LaunchTemplate which included
 	// LaunchConfiguration as an anonymous field, bit given up the task dependency walker works this caused issues, due
 	// to the creation of a implicit dependency
-	return &awstasks.LaunchTemplate{
+	lt := &awstasks.LaunchTemplate{
 		Name:                   fi.String(name),
 		Lifecycle:              b.Lifecycle,
 		AssociatePublicIP:      lc.AssociatePublicIP,
@@ -113,10 +113,17 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		RootVolumeType:         lc.RootVolumeType,
 		SSHKey:                 lc.SSHKey,
 		SecurityGroups:         lc.SecurityGroups,
-		SpotPrice:              lc.SpotPrice,
 		Tenancy:                lc.Tenancy,
 		UserData:               lc.UserData,
-	}, nil
+	}
+	// When using a MixedInstances ASG, AWS requires the SpotPrice be defined on the ASG
+	// rather than the LaunchTemplate or else it returns this error:
+	//   You cannot use a launch template that is set to request Spot Instances (InstanceMarketOptions)
+	//   when you configure an Auto Scaling group with a mixed instances policy.
+	if ig.Spec.MixedInstancesPolicy == nil {
+		lt.SpotPrice = lc.SpotPrice
+	}
+	return lt, nil
 }
 
 // buildLaunchConfigurationTask is responsible for building a launch configuration task into the model
@@ -223,7 +230,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		return nil, err
 	}
 
-	// @step: set up instnce spot pricing
+	// @step: set up instance spot pricing
 	if fi.StringValue(ig.Spec.MaxPrice) != "" {
 		spotPrice := fi.StringValue(ig.Spec.MaxPrice)
 		t.SpotPrice = spotPrice
@@ -318,6 +325,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		t.MixedOnDemandBase = spec.OnDemandBase
 		t.MixedSpotAllocationStrategy = spec.SpotAllocationStrategy
 		t.MixedSpotInstancePools = spec.SpotInstancePools
+		t.MixedSpotMaxPrice = ig.Spec.MaxPrice
 	}
 
 	return t, nil

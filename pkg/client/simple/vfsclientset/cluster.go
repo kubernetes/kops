@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -138,6 +139,10 @@ func (r *ClusterVFS) Update(c *api.Cluster, status *api.ClusterStatus) (*api.Clu
 
 	if err := validation.ValidateClusterUpdate(c, status, old).ToAggregate(); err != nil {
 		return nil, err
+	}
+
+	if !apiequality.Semantic.DeepEqual(old.Spec, c.Spec) {
+		c.SetGeneration(old.GetGeneration() + 1)
 	}
 
 	if err := r.writeConfig(c, r.basePath.Join(clusterName, registry.PathCluster), c, vfs.WriteOptionOnlyIfExists); err != nil {
