@@ -77,7 +77,6 @@ func TestHighAvailabilityGCE(t *testing.T) {
 // TestComplex runs the test on a more complex configuration, intended to hit more of the edge cases
 func TestComplex(t *testing.T) {
 	runTestAWS(t, "complex.example.com", "complex", "v1alpha2", false, 1, true, false, nil)
-	runTestAWS(t, "complex.example.com", "complex", "legacy-v1alpha2", false, 1, true, false, nil)
 }
 
 // TestMinimalCloudformation runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
