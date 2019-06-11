@@ -358,6 +358,7 @@ $ kops create cluster \
       "ec2:DescribeInstances",
       "ec2:ModifyNetworkInterfaceAttribute",
       "ec2:AssignPrivateIpAddresses",
+      "ec2:UnassignPrivateIpAddresses",
       "tag:TagResources"
     ],
     "Resource": [
