@@ -19,6 +19,7 @@ package vfsclientset
 import (
 	"fmt"
 
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -138,7 +139,17 @@ func (c *InstanceGroupVFS) Create(g *api.InstanceGroup) (*api.InstanceGroup, err
 }
 
 func (c *InstanceGroupVFS) Update(g *api.InstanceGroup) (*api.InstanceGroup, error) {
-	err := c.update(c.cluster, g)
+
+	old, err := c.Get(g.Name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	if !apiequality.Semantic.DeepEqual(old.Spec, g.Spec) {
+		g.SetGeneration(old.GetGeneration() + 1)
+	}
+
+	err = c.update(c.cluster, g)
 	if err != nil {
 		return nil, err
 	}
