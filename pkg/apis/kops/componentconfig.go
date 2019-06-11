@@ -265,6 +265,8 @@ type KubeAPIServerConfig struct {
 	EnableAggregatorRouting *bool `json:"enableAggregatorRouting,omitempty" flag:"enable-aggregator-routing"`
 	// Deprecated: AdmissionControl is a list of admission controllers to use
 	AdmissionControl []string `json:"admissionControl,omitempty" flag:"admission-control"`
+	// AppendAdmissionPlugins appends list of enabled admission plugins
+	AppendAdmissionPlugins []string `json:"appendAdmissionPlugins,omitempty" flag:"append-admission-plugins"`
 	// EnableAdmissionPlugins is a list of enabled admission plugins
 	EnableAdmissionPlugins []string `json:"enableAdmissionPlugins,omitempty" flag:"enable-admission-plugins"`
 	// DisableAdmissionPlugins is a list of disabled admission plugins
