@@ -262,6 +262,9 @@ func buildPrecreateDNSHostnames(cluster *kops.Cluster) []string {
 	}
 
 	for _, etcdCluster := range cluster.Spec.EtcdClusters {
+		if etcdCluster.Provider == kops.EtcdProviderTypeManager {
+			continue
+		}
 		etcClusterName := "etcd-" + etcdCluster.Name
 		if etcdCluster.Name == "main" {
 			// Special case
