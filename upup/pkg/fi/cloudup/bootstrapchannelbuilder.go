@@ -42,21 +42,6 @@ var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
 
 // Build is responsible for adding the addons to the channel
 func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
-
-	// manifestURL, err := a.GetManifestFullUrl()
-	// data, err := vfs.Context.ReadFile(manifestURL.String())
-	// if err != nil {
-	// 	return &ChannelVersion{}
-	// }
-	// manifest := string(data)
-	// klog.V(4).Infof("Manifest %v", manifest)
-
-	// manifestHash, err := utils.HashString(&manifest)
-	// klog.V(4).Infof("hash %s", manifestHash)
-	// if err != nil {
-	// 	manifestHash = ""
-	// }
-
 	addons := b.buildAddons()
 	tasks := c.Tasks
 
