@@ -182,7 +182,7 @@ __Pull Requests__
   - Also verify that the new feature seems sane, follows best architectural patterns, and includes tests.
 
 This repository uses the Kubernetes bots.  See a full list of the commands [here](
-https://github.com/kubernetes/test-infra/blob/master/commands.md).
+https://go.k8s.io/bot-commands).
 
 
 ## Office Hours
