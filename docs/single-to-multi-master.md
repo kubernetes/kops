@@ -17,9 +17,174 @@ not on the end user services. During this downtime, existing pods will continue
 to work, but you will not be able to create new pods and any existing pod that
 dies will not be restarted.
 
-## 1 - Backups
+## Steps for clusters using etcd-manager
 
-### a - Backup main etcd cluster
+### 1 - Verify etcd-manager backups are current.
+
+See [etcd-manager backup & restore docs](docs/etcd/backup-restore.md) for more details on how to backup & restore etcd using etcd-manager. You should be familiar with this process and have etcdmanager-ctl installed before continuing.  
+
+Check output from both of the following commands and ensure you have a current backup of both etcd-main and etcd-events. *Commands assume your state store is in S3 bucket called "mystatestore" and your cluster name is "cluster.example.com"*
+
+```bash
+etcd-manager-ctl -backup-store s3://mystatestore/cluster.example.com/backups/etcd/main list-backups
+```
+```bash
+etcd-manager-ctl -backup-store s3://mystatestore/cluster.example.com/backups/etcd/events list-backups
+```
+
+Make a note of the backup name for the lastest backups of etcd-main and etcd-events, you will need them below.
+
+### 2 - Backup Cluster and Master IG
+
+Create a backup of your instance group and cluster configuration. Assuming your master in in us-east-1b
+
+```bash
+mkdir ./backups
+kops get ig master-us-east-1b -o yaml > ./backups/master-us-east-1b.yaml
+kops get cluster -o yaml > ./backups/cluster.yaml
+```
+
+### 3- Create new master IGs
+
+#### a - Create new master instance group
+
+Create 1 kops instance group for the first one of your new masters, in
+a different AZ from the existing one.
+
+```bash
+$ kops create instancegroup master-<availability-zone2> --subnet <availability-zone2> --role Master
+```
+Example:
+
+```bash
+$ kops create ig master-us-east-1c --subnet us-east-1c --role Master
+```
+
+ * ``maxSize`` and ``minSize`` should be 1,
+ * only one zone should be listed.
+
+#### b - Create third master instance group
+
+Instance group for the third master, in a different AZ from the existing one, is
+also required. 
+
+```bash
+$ kops create instancegroup master-<availability-zone3> --subnet <availability-zone3> --role Master
+```
+
+Example:
+
+```bash
+$ kops create ig master-us-east-1d --subnet us-east-1d --role Master
+```
+
+ * ``maxSize`` and ``minSize`` should be 1,
+ * only one zone should be listed.
+
+### 4 - Update Cluster YAML to reference your new masters.
+
+#### a - Reference the new masters in your ectd configuration
+
+
+```bash
+$ kops edit cluster example.com
+```
+
+ * In ``.spec.etcdClusters`` add 2 new members in each cluster, one for each new
+ availability zone.
+
+```yaml
+    - instanceGroup: master-<availability-zone2>
+      name: <availability-zone2-name>
+    - instanceGroup: master-<availability-zone3>
+      name: <availability-zone3-name>
+```
+
+Example:
+
+```yaml
+etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-eu-west-1a
+      name: a
+    - instanceGroup: master-eu-west-1b
+      name: b
+    - instanceGroup: master-eu-west-1c
+      name: c
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-eu-west-1a
+      name: a
+    - instanceGroup: master-eu-west-1b
+      name: b
+    - instanceGroup: master-eu-west-1c
+      name: c
+    name: events
+```
+
+#### b - Update your cluster to reference the subnets for the new masters if it is not already configured.
+
+eg. 
+```
+subnets:
+  - cidr: 10.255.204.0/22
+    id: subnet-XXXXXX
+    name: sa-east-1a
+    type: Private
+    zone: us-east-1c
+  - cidr: 10.255.195.0/24
+    id: subnet-XXXXXX
+    name: utility-sa-east-1b
+    type: Utility
+    zone: us-east-1c
+  - cidr: 10.255.200.0/22
+    id: subnet-XXXXXX
+    name: sa-east-1a
+    type: Private
+    zone: us-east-1d
+  - cidr: 10.255.193.0/24
+    id: subnet-XXXXXX
+    name: utility-sa-east-1b
+    type: Utility
+    zone: us-east-1d
+```
+### 5 - Update Cluster to launch new masters
+
+```bash
+$ kops update cluster example.com --yes
+```
+
+### 6 - Issue a restore command for etcd-main and etcd-events
+
+```bash
+etcd-manager-ctl -backup-store s3://mystatestore/cluster.example.com/backups/etcd/main restore-backup 2019-06-12T10:13:40Z-000051
+
+etcd-manager-ctl -backup-store s3://mystatestore/cluster.example.com/backups/etcd/events restore-backup 2019-06-12T10:13:40Z-000051
+```
+
+  *Note that this does not start the restore immediately; you need to restart etcd on all masters 
+(or roll your masters quickly).*
+
+### - Force reboot your masters so etcd-manager will run the restore command you just issued.
+
+```bash
+kops rolling-update cluster cluster.example.com --yes \
+  --cloudonly
+  --force
+  --instance-group masters
+```
+
+
+
+
+
+
+
+## Steps for clusters using legacy etcd mode
+
+### 1 - Backups
+
+#### a - Backup main etcd cluster
 
 ```bash
 $ kubectl --namespace=kube-system get pods | grep etcd
@@ -40,7 +205,7 @@ admin@ip-172-20-36-161:~$ exit
 $ scp -r admin@<master-node>:backup/ .
 ```
 
-### b - Backup event etcd cluster
+#### b - Backup event etcd cluster
 
 ```bash
 $ kubectl --namespace=kube-system exec etcd-server-events-ip-172-20-36-161.ec2.internal -it -- sh
@@ -58,9 +223,9 @@ admin@ip-172-20-36-161:~$ exit
 $ scp -r admin@<master-node>:backup-events/ .
 ```
 
-## 2 - Create instance groups
+### 2 - Create instance groups
 
-### a - Create new master instance group
+#### a - Create new master instance group
 
 Create 1 kops instance group for the first one of your new masters, in
 a different AZ from the existing one.
@@ -77,7 +242,7 @@ $ kops create ig master-eu-west-1b --subnet eu-west-1b --role Master
  * ``maxSize`` and ``minSize`` should be 1,
  * only one zone should be listed.
 
-### b - Create third master instance group
+#### b - Create third master instance group
 
 Instance group for the third master, in a different AZ from the existing one, is
 also required. However, real EC2 instance is not required until the second master launches.
@@ -95,7 +260,7 @@ $ kops create ig master-eu-west-1c --subnet eu-west-1c --role Master
  * ``maxSize`` and ``minSize`` should be **0**,
  * only one zone should be listed.
 
-### c - Reference the new masters in your cluster configuration
+#### c - Reference the new masters in your cluster configuration
 
 *kops will refuse to have only 2 members in the etcd clusters, so we have to
 reference a third one, even if we have not created it yet.*
@@ -136,10 +301,9 @@ etcdClusters:
     name: events
 ```
 
+### 3 - Add a new master
 
-## 3 - Add a new master
-
-### a - Add a new member to the etcd clusters
+#### a - Add a new member to the etcd clusters
 
 **The clusters will stop to work until the new member is started**.
 
@@ -155,7 +319,7 @@ $ kubectl --namespace=kube-system exec etcd-server-ip-172-20-36-161.ec2.internal
 	&& kubectl --namespace=kube-system exec etcd-server-events-ip-172-20-36-161.ec2.internal -- etcdctl --endpoint http://127.0.0.1:4002 member add etcd-events-b http://etcd-events-b.internal.example.com:2381
 ```
 
-### b - Launch the new master
+#### b - Launch the new master
 
 ```bash
 $ kops update cluster example.com --yes
@@ -203,9 +367,9 @@ Restart protokube on the new master:
 root@ip-172-20-116-230:~# systemctl start protokube
 ```
 
-## 4 - Add the third master
+### 4 - Add the third master
 
-### a - Edit instance group
+#### a - Edit instance group
 
 Prepare to launch the third master instance:
 
@@ -215,7 +379,7 @@ $ kops edit instancegroup master-<availability-zone3>
 
 * Replace ``maxSize`` and ``minSize`` values to **1**.
 
-### b - Add a new member to the etcd clusters
+#### b - Add a new member to the etcd clusters
 
  ```bash
  $ kubectl --namespace=kube-system exec etcd-server-ip-172-20-36-161.ec2.internal -- etcdctl member add etcd-<availability-zone3-name> http://etcd-<availability-zone3-name>.internal.example.com:2380 \
@@ -229,7 +393,7 @@ $ kubectl --namespace=kube-system exec etcd-server-ip-172-20-36-161.ec2.internal
 	&& kubectl --namespace=kube-system exec etcd-server-events-ip-172-20-36-161.ec2.internal -- etcdctl --endpoint http://127.0.0.1:4002 member add etcd-events-c http://etcd-events-c.internal.example.com:2381
 ```
 
-### c - Launch the third master
+#### c - Launch the third master
 
  ```bash
  $ kops update cluster example.com --yes
@@ -249,7 +413,8 @@ $ kubectl --namespace=kube-system exec etcd-server-ip-172-20-36-161.ec2.internal
  ```bash
  root@ip-172-20-139-130:~# docker stop $(docker ps | grep "k8s.gcr.io/etcd" | awk '{print $1}')
  root@ip-172-20-139-130:~# rm -r /mnt/master-vol-019796c3511a91b4f//var/etcd/data-events/member/
- root@ip-172-20-139-130:~# rm -r /mnt/master-vol-0c89fd6f6a256b686/var/etcd/data/member/
+ root@ip-172-20-1
+ 9-130:~# rm -r /mnt/master-vol-0c89fd6f6a256b686/var/etcd/data/member/
  ```
 
  Launch them again:
@@ -275,7 +440,7 @@ $ kubectl --namespace=kube-system exec etcd-server-ip-172-20-36-161.ec2.internal
  root@ip-172-20-139-130:~# systemctl start protokube
  ```
 
-## 5 - Cleanup
+### 5 - Cleanup
 
 To be sure that everything runs smoothly and is setup correctly, it is advised
 to terminate the masters one after the other (always keeping 2 of them up and
@@ -288,7 +453,7 @@ If there is any configuration problem, they will be detected during this step
 and not during a future upgrade or, worse, during a master failure.
 
 
-## 6 - Restore (if migration to multi-master failed)
+### 6 - Restore (if migration to multi-master failed)
 
 In case you failed to upgrade to multi-master you will need to restore from the backup you have taken previously.
 
