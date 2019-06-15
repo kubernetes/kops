@@ -21,6 +21,9 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
+const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+const TagNameRolePrefix = "k8s.io/role/"
+
 func NewDOCloud(region string) (fi.Cloud, error) {
 	return digitalocean.NewCloud(region)
 }

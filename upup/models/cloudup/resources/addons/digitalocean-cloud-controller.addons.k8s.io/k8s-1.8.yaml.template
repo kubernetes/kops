@@ -47,11 +47,10 @@ spec:
           operator: Exists
           tolerationSeconds: 300
       containers:
-      - image: digitalocean/digitalocean-cloud-controller-manager:v0.1.7
+      - image: digitalocean/digitalocean-cloud-controller-manager:v0.1.15
         name: digitalocean-cloud-controller-manager
         command:
           - "/bin/digitalocean-cloud-controller-manager"
-          - "--cloud-provider=digitalocean"
           - "--leader-elect=true"
         resources:
           requests:
