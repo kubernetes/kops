@@ -162,8 +162,7 @@ __Pull Requests__
 * Descargue, compile y ejecute el código y asegúrese de que las pruebas pasen (make test).
   - También verifique que la nueva característica parezca cuerda, siga los mejores patrones arquitectónicos e incluya pruebas.
 
-Este repositorio usa los bots de Kubernetes.  Visualize una lista completa de los comandos [here](
-https://github.com/kubernetes/test-infra/blob/master/commands.md).
+Este repositorio usa los bots de Kubernetes.  Hay una lista completa de los comandos [aqui](https://go.k8s.io/bot-commands).
 
 
 ## Horas de Oficina
