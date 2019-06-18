@@ -1450,7 +1450,7 @@
   version = "kubernetes-1.13.5"
 
 [[projects]]
-  digest = "1:237a483da0d7003dda7cf0bf94c3840cb9332ab2a6d602245d58e7acd38d6a08"
+  digest = "1:9c60d4c3669e0fd6206c59ce45d1e88359c84e92e72da18ea4965bdc18465353"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/equality",
@@ -1459,6 +1459,8 @@
     "pkg/api/resource",
     "pkg/api/validation",
     "pkg/api/validation/path",
+    "pkg/apis/config",
+    "pkg/apis/config/v1alpha1",
     "pkg/apis/meta/internalversion",
     "pkg/apis/meta/v1",
     "pkg/apis/meta/v1/unstructured",
@@ -1515,7 +1517,7 @@
   version = "kubernetes-1.13.5"
 
 [[projects]]
-  digest = "1:d351da0ef73ab81c9fd66835b1c453cbda6a7e712801aa24e1f112754d4e7898"
+  digest = "1:ea2847e9f184a7d1ec1764cece48c3bb80bf2f0819329dc39b38a26027a0b8c5"
   name = "k8s.io/apiserver"
   packages = [
     "pkg/admission",
@@ -1544,6 +1546,8 @@
     "pkg/apis/audit/v1alpha1",
     "pkg/apis/audit/v1beta1",
     "pkg/apis/audit/validation",
+    "pkg/apis/config",
+    "pkg/apis/config/v1alpha1",
     "pkg/audit",
     "pkg/audit/event",
     "pkg/audit/policy",
@@ -1929,7 +1933,15 @@
   revision = "c59034cc13d587f5ef4e85ca0ade0c1866ae8e1d"
 
 [[projects]]
-  digest = "1:833cbe929e2b28ef7bb59d0fa6de792413d2b02e511677397ffa0dfc22cad574"
+  digest = "1:e0bc89d3caa2492e080a7f4528200755c0605730649fb519dfa92e8ed8b6fd9d"
+  name = "k8s.io/kube-scheduler"
+  packages = ["config/v1alpha1"]
+  pruneopts = "UT"
+  revision = "76595703ac76a12c733689efb16b72fcf08781d0"
+  version = "kubernetes-1.13.5"
+
+[[projects]]
+  digest = "1:13c949f5d8e24d8a4ea6eae1300a4d6fe801ec78f65af7671f38161ff7a9d0b8"
   name = "k8s.io/kubernetes"
   packages = [
     "pkg/api/legacyscheme",
@@ -1990,6 +2002,9 @@
     "pkg/kubelet/types",
     "pkg/master/ports",
     "pkg/scheduler/api",
+    "pkg/scheduler/apis/config",
+    "pkg/scheduler/apis/config/scheme",
+    "pkg/scheduler/apis/config/v1alpha1",
     "pkg/security/apparmor",
     "pkg/serviceaccount",
     "pkg/util/file",
@@ -2120,6 +2135,7 @@
     "github.com/gophercloud/gophercloud/openstack/dns/v2/zones",
     "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners",
     "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers",
+    "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors",
     "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools",
     "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external",
     "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips",
@@ -2191,6 +2207,7 @@
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
     "k8s.io/api/rbac/v1beta1",
+    "k8s.io/apimachinery/pkg/api/equality",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/api/resource",
@@ -2202,6 +2219,7 @@
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/runtime/serializer",
+    "k8s.io/apimachinery/pkg/runtime/serializer/json",
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/errors",
     "k8s.io/apimachinery/pkg/util/intstr",
@@ -2250,6 +2268,7 @@
     "k8s.io/klog",
     "k8s.io/kube-openapi/cmd/openapi-gen",
     "k8s.io/kube-openapi/pkg/common",
+    "k8s.io/kube-scheduler/config/v1alpha1",
     "k8s.io/kubernetes/pkg/client/metrics/prometheus",
     "k8s.io/kubernetes/pkg/cloudprovider/providers/aws",
     "k8s.io/kubernetes/pkg/cloudprovider/providers/gce",
@@ -2258,6 +2277,7 @@
     "k8s.io/kubernetes/pkg/kubectl/cmd/util/editor",
     "k8s.io/kubernetes/pkg/kubectl/util/i18n",
     "k8s.io/kubernetes/pkg/kubectl/util/templates",
+    "k8s.io/kubernetes/pkg/scheduler/apis/config/scheme",
     "k8s.io/kubernetes/pkg/util/mount",
     "k8s.io/kubernetes/pkg/util/nsenter",
     "k8s.io/utils/exec",

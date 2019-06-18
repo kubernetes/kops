@@ -81,6 +81,9 @@ required = [
   name = "k8s.io/apiextensions-apiserver"
   version = "kubernetes-1.13.5"
 [[override]]
+   name = "k8s.io/kube-scheduler"
+   version = "kubernetes-1.13.5"
+[[override]]
   name = "k8s.io/kubernetes"
   version = "v1.13.5"
 

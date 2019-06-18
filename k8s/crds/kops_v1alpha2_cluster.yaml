@@ -1319,6 +1319,12 @@ spec:
                   description: UsePolicyConfigMap enable setting the scheduler policy
                     from a configmap
                   type: boolean
+                qps:
+                  description: QPS limit to use when talking to api server
+                  type: float32
+                burst:
+                  description: Bursting QPS limit to use when talking to api server
+                  type: int32
               type: object
             kubelet:
               properties:

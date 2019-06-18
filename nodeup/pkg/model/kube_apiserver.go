@@ -18,9 +18,10 @@ package model
 
 import (
 	"fmt"
-	"k8s.io/kops/util/pkg/proxy"
 	"path/filepath"
 	"strings"
+
+	"k8s.io/kops/util/pkg/proxy"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"

@@ -2116,6 +2116,16 @@ func (in *KubeSchedulerConfig) DeepCopyInto(out *KubeSchedulerConfig) {
 			(*out)[key] = val
 		}
 	}
+	if in.QPS != nil {
+		in, out := &in.QPS, &out.QPS
+		*out = new(float32)
+		**out = **in
+	}
+	if in.Burst != nil {
+		in, out := &in.Burst, &out.Burst
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 

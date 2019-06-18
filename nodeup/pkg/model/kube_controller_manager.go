@@ -18,7 +18,6 @@ package model
 
 import (
 	"fmt"
-	"k8s.io/kops/util/pkg/proxy"
 	"path/filepath"
 	"strings"
 
@@ -29,6 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/exec"
+	"k8s.io/kops/util/pkg/proxy"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

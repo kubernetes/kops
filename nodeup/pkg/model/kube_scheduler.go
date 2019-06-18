@@ -17,20 +17,26 @@ limitations under the License.
 package model
 
 import (
+	"bufio"
 	"fmt"
-	"k8s.io/kops/util/pkg/proxy"
+	"strings"
 
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/exec"
+	"k8s.io/kops/util/pkg/proxy"
 
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	kubeschedulerconfigv1alpha1 "k8s.io/kube-scheduler/config/v1alpha1"
+	kubeschedulerscheme "k8s.io/kubernetes/pkg/scheduler/apis/config/scheme"
 )
 
 // KubeSchedulerBuilder install kube-scheduler
@@ -40,14 +46,21 @@ type KubeSchedulerBuilder struct {
 
 var _ fi.ModelBuilder = &KubeSchedulerBuilder{}
 
+const (
+	KubeConfigPath          = "/var/lib/kube-scheduler/kubeconfig"
+	KubeSchedulerConfigPath = "/var/lib/kube-scheduler/config"
+)
+
 // Build is responsible for building the manifest for the kube-scheduler
 func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !b.IsMaster {
 		return nil
 	}
 
+	// We want to add the custom config file if supported and present in the Spec
+	buildConfigFile := b.IsKubernetesGTE("1.11") && b.Cluster.Spec.KubeScheduler != nil
 	{
-		pod, err := b.buildPod()
+		pod, err := b.buildPod(buildConfigFile)
 		if err != nil {
 			return fmt.Errorf("error building kube-scheduler pod: %v", err)
 		}
@@ -71,7 +84,7 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		c.AddTask(&nodetasks.File{
-			Path:     "/var/lib/kube-scheduler/kubeconfig",
+			Path:     KubeConfigPath,
 			Contents: fi.NewStringResource(kubeconfig),
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
@@ -88,19 +101,66 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 		})
 	}
 
+	if buildConfigFile {
+		conf, err := b.buildConfigFile()
+		if err != nil {
+			return err
+		}
+		c.AddTask(&nodetasks.File{
+			Path:     KubeSchedulerConfigPath,
+			Contents: fi.NewStringResource(conf),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0400"),
+		})
+
+	}
+
 	return nil
 }
 
+func (b *KubeSchedulerBuilder) buildConfigFile() (string, error) {
+	var encoder runtime.Encoder
+	conf := kubeschedulerconfigv1alpha1.KubeSchedulerConfiguration{}
+	// Apply defaults first
+	kubeschedulerscheme.Scheme.Default(&conf)
+	conf.ClientConnection.Kubeconfig = KubeConfigPath
+	if b.Cluster.Spec.KubeScheduler.LeaderElection != nil {
+		conf.LeaderElection.LeaderElect = b.Cluster.Spec.KubeScheduler.LeaderElection.LeaderElect
+	}
+
+	if b.Cluster.Spec.KubeScheduler.QPS != nil {
+		conf.ClientConnection.QPS = *b.Cluster.Spec.KubeScheduler.QPS
+	}
+
+	if b.Cluster.Spec.KubeScheduler.Burst != nil {
+		conf.ClientConnection.Burst = *b.Cluster.Spec.KubeScheduler.Burst
+	}
+	sb := new(strings.Builder)
+	encoder = json.NewYAMLSerializer(json.DefaultMetaFactory, kubeschedulerscheme.Scheme, kubeschedulerscheme.Scheme)
+	encoder = kubeschedulerscheme.Codecs.EncoderForVersion(encoder, kubeschedulerconfigv1alpha1.SchemeGroupVersion)
+	w := bufio.NewWriter(sb)
+	err := encoder.Encode(&conf, w)
+	if err != nil {
+		return "", err
+	}
+	w.Flush()
+
+	return sb.String(), nil
+}
+
 // buildPod is responsible for constructing the pod specification
-func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
+func (b *KubeSchedulerBuilder) buildPod(buildConfigFile bool) (*v1.Pod, error) {
 	c := b.Cluster.Spec.KubeScheduler
 
 	flags, err := flagbuilder.BuildFlagsList(c)
 	if err != nil {
 		return nil, fmt.Errorf("error building kube-scheduler flags: %v", err)
 	}
+	if buildConfigFile {
+		flags = append(flags, "--config="+KubeSchedulerConfigPath)
+	}
 	// Add kubeconfig flag
-	flags = append(flags, "--kubeconfig="+"/var/lib/kube-scheduler/kubeconfig")
+	flags = append(flags, "--kubeconfig="+KubeConfigPath)
 
 	if c.UsePolicyConfigMap != nil {
 		flags = append(flags, "--policy-configmap=scheduler-policy --policy-configmap-namespace=kube-system")

@@ -553,6 +553,10 @@ type KubeSchedulerConfig struct {
 	UsePolicyConfigMap *bool `json:"usePolicyConfigMap,omitempty"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
+	// The maximum qps to send to the api server
+	QPS *float32 `json:"qps,omitempty"`
+	// Burst qps to send to the api server
+	Burst *int32 `json:"burst,omitempty"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election
