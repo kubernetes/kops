@@ -3132,6 +3132,7 @@ func autoConvert_v1alpha1_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.TLSMinVersion = in.TLSMinVersion
 	out.MinResyncPeriod = in.MinResyncPeriod
 	out.KubeAPIQPS = in.KubeAPIQPS
+	out.KubeAPIBurst = in.KubeAPIBurst
 	return nil
 }
 
@@ -3180,6 +3181,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerMana
 	out.TLSMinVersion = in.TLSMinVersion
 	out.MinResyncPeriod = in.MinResyncPeriod
 	out.KubeAPIQPS = in.KubeAPIQPS
+	out.KubeAPIBurst = in.KubeAPIBurst
 	return nil
 }
 
