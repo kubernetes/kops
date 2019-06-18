@@ -2035,6 +2035,11 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 		*out = new(float32)
 		**out = **in
 	}
+	if in.KubeAPIBurst != nil {
+		in, out := &in.KubeAPIBurst, &out.KubeAPIBurst
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 
