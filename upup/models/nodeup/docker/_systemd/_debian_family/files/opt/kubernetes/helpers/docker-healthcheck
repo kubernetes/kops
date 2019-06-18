@@ -20,21 +20,21 @@
 healthcheck() {
    if output=`timeout 60 docker network ls`; then
        echo "$output" | fgrep -qw host || {
-          echo "docker 'host' network missing"
+          echo "Docker 'host' network missing"
           return 1
        }
    else
-       echo "docker returned $?"
+       echo "Docker returned $?"
        return 1
    fi
 }
 
 if healthcheck; then
-  echo "docker healthy"
+  echo "Docker healthy"
   exit 0
 fi
 
-echo "docker failed"
+echo "Docker failed"
 echo "Giving docker 30 seconds grace before restarting"
 sleep 30
 
@@ -43,21 +43,21 @@ if healthcheck; then
   exit 0
 fi
 
-echo "docker still unresponsive; triggering docker restart"
+echo "Docker still unresponsive; triggering docker restart"
 systemctl stop docker
 
-echo "wait all tcp sockets to close"
+echo "Wait for all tcp sockets to close, `cat /proc/sys/net/ipv4/tcp_fin_timeout` seconds"
 sleep `cat /proc/sys/net/ipv4/tcp_fin_timeout`
 
 sleep 10
 systemctl start docker
 
-echo "Waiting 120 seconds to give docker time to start"
-sleep 60
+echo "Waiting for 120 seconds to give docker time to start"
+sleep 120
 
 if healthcheck; then
-  echo "docker recovered"
+  echo "Docker recovered"
   exit 0
 fi
 
-echo "docker still failing"
+echo "Docker still failing"
