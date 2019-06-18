@@ -506,8 +506,10 @@ type KubeControllerManagerConfig struct {
 	// MinResyncPeriod indicates the resync period in reflectors.
 	// The resync period will be random between MinResyncPeriod and 2*MinResyncPeriod. (default 12h0m0s)
 	MinResyncPeriod string `json:"minResyncPeriod,omitempty" flag:"min-resync-period"`
-	//KubeAPIQPS QPS to use while talking with kubernetes apiserver. (default 20)
+	// KubeAPIQPS QPS to use while talking with kubernetes apiserver. (default 20)
 	KubeAPIQPS *float32 `json:"kubeAPIQPS,omitempty" flag:"kube-api-qps"`
+	// KubeAPIBurst Burst to use while talking with kubernetes apiserver. (default 30)
+	KubeAPIBurst *int32 `json:"kubeAPIBurst,omitempty" flag:"kube-api-burst"`
 }
 
 // CloudControllerManagerConfig is the configuration of the cloud controller

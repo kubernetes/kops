@@ -49,6 +49,12 @@ func TestBuildKCMFlags(t *testing.T) {
 			Expected: "--kube-api-qps=42",
 		},
 		{
+			Config: &kops.KubeControllerManagerConfig{
+				KubeAPIBurst: fi.Int32(80),
+			},
+			Expected: "--kube-api-burst=80",
+		},
+		{
 			Config:   &kops.KubeControllerManagerConfig{},
 			Expected: "",
 		},
