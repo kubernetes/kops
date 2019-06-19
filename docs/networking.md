@@ -145,6 +145,7 @@ $ kops create cluster \
 The above will deploy a daemonset installation which requires K8s 1.4.x or above.
 
 ##### Enable Cross-Subnet mode in Calico (AWS only)
+
 Calico [since 2.1] supports a new option for IP-in-IP mode where traffic is only encapsulated
 when it’s destined to subnets with intermediate infrastructure lacking Calico route awareness
 – for example, across heterogeneous public clouds or on AWS where traffic is crossing availability zones/ regions.
@@ -162,7 +163,6 @@ BGP route reflectors can be used as a replacement to a full mesh, and is useful 
 The setup of BGP route reflectors is currently out of the scope of kops.
 
 Read more here: [BGP route reflectors](https://docs.projectcalico.org/latest/networking/routereflector)
-
 
 To enable this mode in a cluster, with Calico as the CNI and Network Policy provider, you must edit the cluster after the previous `kops create ...` command.
 
@@ -191,7 +191,6 @@ When you enable cross-subnet mode in kops, an addon controller ([k8s-ec2-srcdst]
 will be deployed as a Pod (which will be scheduled on one of the masters) to facilitate the disabling of said source/destination address checks.
 Only the masters have the IAM policy (`ec2:*`) to allow k8s-ec2-srcdst to execute `ec2:ModifyInstanceAttribute`.
 
-
 #### More information about Calico
 
 For Calico specific documentation please visit the [Calico Docs](http://docs.projectcalico.org/latest/getting-started/kubernetes/).
@@ -207,12 +206,17 @@ For help with Calico or to report any issues:
 
 #### Calico Backend
 
-Calico currently uses etcd as a backend for storing information about workloads and policies.  Calico does not interfere with normal etcd operations and does not require special handling when upgrading etcd.  For more information please visit the [etcd Docs](https://coreos.com/etcd/docs/latest/)
+In kops 1.12.0 and later Calico uses the k8s APIServer as its datastore. The current setup does not make use of [Typha](https://github.com/projectcalico/typha) - a component intended to lower the impact of Calico on the k8s APIServer which is recommended in [clusters over 50 nodes](https://docs.projectcalico.org/latest/getting-started/kubernetes/installation/calico#installing-with-the-kubernetes-api-datastoremore-than-50-nodes) and is strongly recommended in clusters of 100+ nodes.
+
+In versions <1.12.0 of kops Calico uses etcd as a backend for storing information about workloads and policies. Calico does not interfere with normal etcd operations and does not require special handling when upgrading etcd.  For more information please visit the [etcd Docs](https://coreos.com/etcd/docs/latest/)
 
 #### Calico troubleshooting
+
 ##### New nodes are taking minutes for syncing ip routes and new pods on them can't reach kubedns
+
 This is caused by nodes in the Calico etcd nodestore no longer existing. Due to the ephemeral nature of AWS EC2 instances, new nodes are brought up with different hostnames, and nodes that are taken offline remain in the Calico nodestore. This is unlike most datacentre deployments where the hostnames are mostly static in a cluster. Read more about this issue at https://github.com/kubernetes/kops/issues/3224
 This has been solved in kops 1.9.0, when creating a new cluster no action is needed, but if the cluster was created with a prior kops version the following actions should be taken:
+
   * Use kops to update the cluster ```kops update cluster <name> --yes``` and wait for calico-kube-controllers deployment and calico-node daemonset pods to be updated
   * Decommission all invalid nodes, [see here](https://docs.projectcalico.org/v2.6/usage/decommissioning-a-node)
   * All nodes that are deleted from the cluster after this actions should be cleaned from calico's etcd storage and the delay programming routes should be solved.
