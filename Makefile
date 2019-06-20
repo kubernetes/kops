@@ -39,7 +39,6 @@ BAZELIMAGES=$(BAZELDIST)/images
 BAZELUPLOAD=$(BAZELBUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
-TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/vendor" hack/.packages)
 BAZEL_OPTIONS?=
 API_OPTIONS?=
 GCFLAGS?=
@@ -239,7 +238,7 @@ hooks: # Install Git hooks
 
 .PHONY: test
 test: ${BINDATA_TARGETS}  # Run tests locally
-	go test -v ${TESTABLE_PACKAGES}
+	go test -v ./...
 
 .PHONY: ${DIST}/linux/amd64/nodeup
 ${DIST}/linux/amd64/nodeup: ${BINDATA_TARGETS}
