@@ -78,6 +78,7 @@ go_test(
     srcs = [
         "docker_test.go",
         "kube_apiserver_test.go",
+        "kube_proxy_test.go",
         "kubelet_test.go",
     ],
     data = glob(["tests/**"]),  #keep
@@ -88,5 +89,10 @@ go_test(
         "//pkg/flagbuilder:go_default_library",
         "//pkg/testutils:go_default_library",
         "//upup/pkg/fi:go_default_library",
+        "//util/pkg/exec:go_default_library",
+        "//vendor/github.com/blang/semver:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
 )
