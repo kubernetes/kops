@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"k8s.io/kops/util/pkg/proxy"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/flagbuilder"
@@ -125,7 +126,7 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 	container := &v1.Container{
 		Name:  "kube-scheduler",
 		Image: c.Image,
-		Env:   getProxyEnvVars(b.Cluster.Spec.EgressProxy),
+		Env:   proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy),
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{
 				HTTPGet: &v1.HTTPGetAction{
