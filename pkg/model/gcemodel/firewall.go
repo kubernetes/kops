@@ -101,7 +101,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	// Allow limited traffic from nodes -> masters
+	// Allow full traffic from nodes -> masters
 	{
 		t := &gcetasks.FirewallRule{
 			Name:       s(b.SafeObjectName("node-to-master")),
@@ -109,7 +109,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
-			Allowed:    []string{"tcp:443", "tcp:4194"},
+			Allowed:    []string{"tcp", "udp", "icmp"},
 		}
 		c.AddTask(t)
 	}
@@ -123,7 +123,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Network:      b.LinkToNetwork(),
 			SourceRanges: []string{b.Cluster.Spec.NonMasqueradeCIDR},
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
-			Allowed:      []string{"tcp:443", "tcp:4194"},
+			Allowed:      []string{"tcp", "udp", "icmp"},
 		}
 		c.AddTask(t)
 	}
