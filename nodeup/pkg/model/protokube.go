@@ -19,6 +19,7 @@ package model
 import (
 	"bytes"
 	"fmt"
+	"k8s.io/kops/util/pkg/proxy"
 	"os"
 	"path/filepath"
 	"strings"
@@ -491,7 +492,7 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 }
 
 func (t *ProtokubeBuilder) writeProxyEnvVars(buffer *bytes.Buffer) {
-	for _, envVar := range getProxyEnvVars(t.Cluster.Spec.EgressProxy) {
+	for _, envVar := range proxy.GetProxyEnvVars(t.Cluster.Spec.EgressProxy) {
 		buffer.WriteString(" -e ")
 		buffer.WriteString(envVar.Name)
 		buffer.WriteString("=")
