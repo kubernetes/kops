@@ -43,6 +43,18 @@ func TestBuildKCMFlags(t *testing.T) {
 			Expected: "--terminated-pod-gc-threshold=1500",
 		},
 		{
+			Config: &kops.KubeControllerManagerConfig{
+				KubeAPIQPS: fi.Float32(42),
+			},
+			Expected: "--kube-api-qps=42",
+		},
+		{
+			Config: &kops.KubeControllerManagerConfig{
+				KubeAPIBurst: fi.Int32(80),
+			},
+			Expected: "--kube-api-burst=80",
+		},
+		{
 			Config:   &kops.KubeControllerManagerConfig{},
 			Expected: "",
 		},
