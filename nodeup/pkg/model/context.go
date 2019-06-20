@@ -80,6 +80,8 @@ func (c *NodeupModelContext) SSLHostPaths() []string {
 		// Because /usr is read-only on CoreOS, we can't have any new directories; docker will try (and fail) to create them
 		// TODO: Just check if the directories exist?
 		paths = append(paths, "/usr/share/ca-certificates")
+	case distros.DistributionFlatcar:
+		paths = append(paths, "/usr/share/ca-certificates")
 	case distros.DistributionContainerOS:
 		paths = append(paths, "/usr/share/ca-certificates")
 	default:
@@ -410,6 +412,9 @@ func (c *NodeupModelContext) UseSecureKubelet() bool {
 func (c *NodeupModelContext) KubectlPath() string {
 	kubeletCommand := "/usr/local/bin"
 	if c.Distribution == distros.DistributionCoreOS {
+		kubeletCommand = "/opt/bin"
+	}
+	if c.Distribution == distros.DistributionFlatcar {
 		kubeletCommand = "/opt/bin"
 	}
 	if c.Distribution == distros.DistributionContainerOS {
