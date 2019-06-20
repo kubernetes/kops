@@ -40,7 +40,7 @@ metadata:
   namespace: kube-system
 rules:
 - apiGroups: [""]
-  resources: ["pods", "nodes", "replicationcontrollers", "events", "limitranges", "services", "persistentvolumes", "persistentvolumeclaims"]
+  resources: ["pods", "nodes", "replicationcontrollers", "events", "limitranges", "services", "persistentvolumes", "persistentvolumeclaims", "namespaces"]
   verbs: ["get", "delete", "list", "patch", "update"]
 - apiGroups: ["apps"]
   resources: ["deployments"]
@@ -50,9 +50,12 @@ rules:
   verbs: ["get","list"]
 - apiGroups: ["rbac.authorization.k8s.io"]
   resources: ["clusterroles"]
-  verbs: ["patch"]
+  verbs: ["patch", "update", "escalate"]
 - apiGroups: ["policy"]
   resources: ["poddisruptionbudgets"]
+  verbs: ["list"]
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["pods"]
   verbs: ["list"]
 - nonResourceURLs: ["/version/", "/version"]
   verbs: ["get"]
@@ -97,8 +100,17 @@ spec:
     spec:
       containers:
       - name: spotinst-kubernetes-cluster-controller
-        image: spotinst/kubernetes-cluster-controller:1.0.18
         imagePullPolicy: Always
+        image: spotinst/kubernetes-cluster-controller:1.0.39
+        volumeMounts:
+        - name: spotinst-kubernetes-cluster-controller-certs
+          mountPath: /certs
+        livenessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 4401
+          initialDelaySeconds: 300
+          periodSeconds: 30
         env:
         - name: SPOTINST_TOKEN
           valueFrom:
@@ -115,15 +127,12 @@ spec:
             configMapKeyRef:
               name: spotinst-kubernetes-cluster-controller-config
               key: spotinst.cluster-identifier
-        volumeMounts:
-        - name: spotinst-kubernetes-cluster-controller-certs
-          mountPath: /certs
       volumes:
       - name: spotinst-kubernetes-cluster-controller-certs
         secret:
           secretName: spotinst-kubernetes-cluster-controller-certs
+      serviceAccountName: spotinst-kubernetes-cluster-controller
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
-      serviceAccountName: spotinst-kubernetes-cluster-controller
 ---

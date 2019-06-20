@@ -1045,14 +1045,16 @@
   revision = "7fb2782df3d83e0036cc89f461ed0422628776f4"
 
 [[projects]]
-  branch = "master"
-  digest = "1:1c5e9c80b7f295cb22373c59300c27c27c122a9c07410a6505b137afacf3583c"
+  digest = "1:5b1d6f72a493af6d6b50f621f3858f37ee98ae3806c1ee1854c9fc2d6165d22f"
   name = "github.com/spotinst/spotinst-sdk-go"
   packages = [
     "service/elastigroup",
     "service/elastigroup/providers/aws",
     "service/elastigroup/providers/azure",
-    "service/elastigroup/providers/gce",
+    "service/elastigroup/providers/gcp",
+    "service/ocean",
+    "service/ocean/providers/aws",
+    "service/ocean/providers/gcp",
     "spotinst",
     "spotinst/client",
     "spotinst/credentials",
@@ -1063,7 +1065,7 @@
     "spotinst/util/uritemplates",
   ]
   pruneopts = "UT"
-  revision = "fed4677dbf8fe026a81e09e66fc38d863d091f9b"
+  revision = "eb52d7ac273ca0ed2737561911e9eedd55f8fdaa"
 
 [[projects]]
   digest = "1:67ba0f5b63fa937e1e78273904a1fa0f7c2358c4dac967ac16e678f8e50e8aa5"
@@ -2153,6 +2155,8 @@
     "github.com/spf13/viper",
     "github.com/spotinst/spotinst-sdk-go/service/elastigroup",
     "github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws",
+    "github.com/spotinst/spotinst-sdk-go/service/ocean",
+    "github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws",
     "github.com/spotinst/spotinst-sdk-go/spotinst",
     "github.com/spotinst/spotinst-sdk-go/spotinst/client",
     "github.com/spotinst/spotinst-sdk-go/spotinst/credentials",
