@@ -105,12 +105,14 @@ resource "google_compute_firewall" "cidr-to-master-ha-gce-example-com" {
 
   allow = {
     protocol = "tcp"
-    ports    = ["443"]
   }
 
   allow = {
-    protocol = "tcp"
-    ports    = ["4194"]
+    protocol = "udp"
+  }
+
+  allow = {
+    protocol = "icmp"
   }
 
   source_ranges = ["100.64.0.0/10"]
@@ -232,12 +234,14 @@ resource "google_compute_firewall" "node-to-master-ha-gce-example-com" {
 
   allow = {
     protocol = "tcp"
-    ports    = ["443"]
   }
 
   allow = {
-    protocol = "tcp"
-    ports    = ["4194"]
+    protocol = "udp"
+  }
+
+  allow = {
+    protocol = "icmp"
   }
 
   source_tags = ["ha-gce-example-com-k8s-io-role-node"]
