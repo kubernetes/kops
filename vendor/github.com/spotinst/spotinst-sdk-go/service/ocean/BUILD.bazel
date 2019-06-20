@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["ocean.go"],
+    importmap = "k8s.io/kops/vendor/github.com/spotinst/spotinst-sdk-go/service/ocean",
+    importpath = "github.com/spotinst/spotinst-sdk-go/service/ocean",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/service/ocean/providers/gcp:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/client:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/session:go_default_library",
+    ],
+)

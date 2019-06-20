@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
@@ -14,15 +15,21 @@ import (
 )
 
 type Group struct {
-	ID          *string      `json:"id,omitempty"`
-	Name        *string      `json:"name,omitempty"`
-	Description *string      `json:"description,omitempty"`
-	Capacity    *Capacity    `json:"capacity,omitempty"`
-	Compute     *Compute     `json:"compute,omitempty"`
-	Strategy    *Strategy    `json:"strategy,omitempty"`
-	Scaling     *Scaling     `json:"scaling,omitempty"`
-	Scheduling  *Scheduling  `json:"scheduling,omitempty"`
-	Integration *Integration `json:"thirdPartiesIntegration,omitempty"`
+	ID                *string      `json:"id,omitempty"`
+	Name              *string      `json:"name,omitempty"`
+	ResourceGroupName *string      `json:"resourceGroupName,omitempty"`
+	Description       *string      `json:"description,omitempty"`
+	Region            *string      `json:"region,omitempty"`
+	Capacity          *Capacity    `json:"capacity,omitempty"`
+	Compute           *Compute     `json:"compute,omitempty"`
+	Strategy          *Strategy    `json:"strategy,omitempty"`
+	Scaling           *Scaling     `json:"scaling,omitempty"`
+	Scheduling        *Scheduling  `json:"scheduling,omitempty"`
+	Integration       *Integration `json:"thirdPartiesIntegration,omitempty"`
+
+	// Read-only fields.
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 
 	// forceSendFields is a list of field names (e.g. "Keys") to
 	// unconditionally include in API requests. By default, fields with
@@ -49,7 +56,23 @@ type Scheduling struct {
 }
 
 type Integration struct {
-	Rancher *RancherIntegration `json:"rancher,omitempty"`
+	Rancher    *RancherIntegration    `json:"rancher,omitempty"`
+	Kubernetes *KubernetesIntegration `json:"kubernetes,omitempty"`
+	Multai     *MultaiIntegration     `json:"mlbRuntime,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type KubernetesIntegration struct {
+	ClusterIdentifier *string `json:"clusterIdentifier,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type MultaiIntegration struct {
+	DeploymentID *string `json:"deploymentId,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -133,7 +156,7 @@ type Dimension struct {
 
 type Strategy struct {
 	LowPriorityPercentage *int      `json:"lowPriorityPercentage,omitempty"`
-	DedicatedCount        *int      `json:"dedicatedCount,omitempty"`
+	OnDemandCount         *int      `json:"onDemandCount,omitempty"`
 	DrainingTimeout       *int      `json:"drainingTimeout,omitempty"`
 	Signals               []*Signal `json:"signals,omitempty"`
 
@@ -162,7 +185,7 @@ type Compute struct {
 	Region              *string              `json:"region,omitempty"`
 	Product             *string              `json:"product,omitempty"`
 	ResourceGroupName   *string              `json:"resourceGroupName,omitempty"`
-	VMSize              *VMSize              `json:"vmSizes,omitempty"`
+	VMSizes             *VMSizes             `json:"vmSizes,omitempty"`
 	LaunchSpecification *LaunchSpecification `json:"launchSpecification,omitempty"`
 	Health              *Health              `json:"health,omitempty"`
 
@@ -170,8 +193,8 @@ type Compute struct {
 	nullFields      []string
 }
 
-type VMSize struct {
-	Dedicated   []string `json:"dedicatedSizes,omitempty"`
+type VMSizes struct {
+	OnDemand    []string `json:"odSizes,omitempty"`
 	LowPriority []string `json:"lowPrioritySizes,omitempty"`
 
 	forceSendFields []string
@@ -179,12 +202,15 @@ type VMSize struct {
 }
 
 type LaunchSpecification struct {
-	LoadBalancersConfig *LoadBalancersConfig `json:"loadBalancersConfig,omitempty"`
-	Image               *Image               `json:"image,omitempty"`
-	UserData            *UserData            `json:"userData,omitempty"`
-	Storage             *Storage             `json:"storage,omitempty"`
-	Network             *Network             `json:"network,omitempty"`
-	SSHPublicKey        *string              `json:"sshPublicKey,omitempty"`
+	LoadBalancersConfig      *LoadBalancersConfig      `json:"loadBalancersConfig,omitempty"`
+	Image                    *Image                    `json:"image,omitempty"`
+	UserData                 *string                   `json:"userData,omitempty"`
+	ShutdownScript           *string                   `json:"shutdownScript,omitempty"`
+	Storage                  *Storage                  `json:"storage,omitempty"`
+	Network                  *Network                  `json:"network,omitempty"`
+	Login                    *Login                    `json:"login,omitempty"`
+	CustomData               *string                   `json:"customData,omitempty"`
+	ManagedServiceIdentities []*ManagedServiceIdentity `json:"managedServiceIdentities,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -198,33 +224,43 @@ type LoadBalancersConfig struct {
 }
 
 type LoadBalancer struct {
+	Type        *string `json:"type,omitempty"`
 	BalancerID  *string `json:"balancerId,omitempty"`
 	TargetSetID *string `json:"targetSetId,omitempty"`
+	AutoWeight  *bool   `json:"autoWeight"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ManagedServiceIdentity struct {
+	ResourceGroupName *string `json:"resourceGroupName,omitempty"`
+	Name              *string `json:"name,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
 }
 
 type Image struct {
-	Custom    *CustomImage `json:"customImage,omitempty"`
-	Publisher *string      `json:"publisher,omitempty"`
-	Offer     *string      `json:"offer,omitempty"`
-	SKU       *string      `json:"sku,omitempty"`
+	MarketPlace *MarketPlaceImage `json:"marketplace,omitempty"`
+	Custom      *CustomImage      `json:"custom,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type MarketPlaceImage struct {
+	Publisher *string `json:"publisher,omitempty"`
+	Offer     *string `json:"offer,omitempty"`
+	SKU       *string `json:"sku,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
 }
 
 type CustomImage struct {
-	ImageURIs []string `json:"imageUris,omitempty"`
-
-	forceSendFields []string
-	nullFields      []string
-}
-
-type UserData struct {
-	CommandLine   *string         `json:"commandLine,omitempty"`
-	ResourceFiles []*ResourceFile `json:"resourceFiles,omitempty"`
+	ResourceGroupName *string `json:"resourceGroupName,omitempty"`
+	ImageName         *string `json:"imageName,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -246,8 +282,28 @@ type Storage struct {
 }
 
 type Network struct {
-	VirtualNetworkName *string `json:"virtualNetworkName,omitempty"`
-	SubnetID           *string `json:"subnetId,omitempty"`
+	VirtualNetworkName  *string                `json:"virtualNetworkName,omitempty"`
+	SubnetName          *string                `json:"subnetName,omitempty"`
+	ResourceGroupName   *string                `json:"resourceGroupName,omitempty"`
+	AssignPublicIP      *bool                  `json:"assignPublicIp,omitempty"`
+	AdditionalIPConfigs []*AdditionalIPConfigs `json:"additionalIpConfigurations,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type AdditionalIPConfigs struct {
+	Name                    *string `json:"name,omitempty"`
+	PrivateIPAddressVersion *string `json:"privateIpAddressVersion,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Login struct {
+	UserName     *string `json:"userName,omitempty"`
+	SSHPublicKey *string `json:"sshPublicKey,omitempty"`
+	Password     *string `json:"password,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -324,6 +380,14 @@ type StatusGroupOutput struct {
 	Nodes []*Node `json:"nodes,omitempty"`
 }
 
+type ScaleGroupInput struct {
+	GroupID    *string `json:"groupId,omitempty"`
+	ScaleType  *string `json:"type,omitempty"`
+	Adjustment *int    `json:"adjustment,omitempty"`
+}
+
+type ScaleGroupOutput struct{}
+
 type DetachGroupInput struct {
 	GroupID                       *string  `json:"groupId,omitempty"`
 	InstanceIDs                   []string `json:"instancesToDetach,omitempty"`
@@ -342,7 +406,153 @@ type RollGroupInput struct {
 	Strategy            *RollStrategy `json:"strategy,omitempty"`
 }
 
-type RollGroupOutput struct{}
+type RollGroupOutput struct {
+	Items []*RollItem `json:"items"`
+}
+
+type Roll struct {
+	Status *string `json:"status,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type RollItem struct {
+	GroupID      *string       `json:"groupId,omitempty"`
+	RollID       *string       `json:"id,omitempty"`
+	Status       *string       `json:"status,omitempty"`
+	CurrentBatch *int          `json:"currentBatch,omitempty"`
+	NumBatches   *int          `json:"numOfBatches,omitempty"`
+	Progress     *RollProgress `json:"progress,omitempty"`
+}
+
+type RollStatus struct {
+	GroupID   *string       `json:"groupId,omitempty"`
+	RollID    *string       `json:"id,omitempty"`
+	Status    *string       `json:"status,omitempty"`
+	Progress  *RollProgress `json:"progress,omitempty"`
+	CreatedAt *string       `json:"createdAt,omitempty"`
+	UpdatedAt *string       `json:"updatedAt,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type RollProgress struct {
+	Unit  *string `json:"unit,omitempty"`
+	Value *int    `json:"value,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type StopRollInput struct {
+	GroupID *string `json:"groupId,omitempty"`
+	RollID  *string `json:"rollId,omitempty"`
+	Roll    *Roll   `json:"roll,omitempty"`
+}
+
+type StopRollOutput struct{}
+
+type RollStatusInput struct {
+	GroupID *string `json:"groupId,omitempty"`
+	RollID  *string `json:"rollId,omitempty"`
+}
+
+type RollStatusOutput struct {
+	RollStatus *RollStatus `json:"rollStatus,omitempty"`
+}
+
+type ListRollStatusInput struct {
+	GroupID *string `json:"groupId,omitempty"`
+}
+
+type ListRollStatusOutput struct {
+	Items []*RollStatus `json:"items"`
+}
+
+type NodeSignal struct {
+	NodeID *string `json:"nodeId,omitempty"`
+	PoolID *string `json:"poolId,omitempty"`
+	Signal *string `json:"signal,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type NodeSignalInput struct {
+	NodeID *string `json:"nodeId,omitempty"`
+	PoolID *string `json:"poolId,omitempty"`
+	Signal *string `json:"signal,omitempty"`
+}
+
+type NodeSignalOutput struct{}
+
+type Task struct {
+	ID          *string         `json:"id,omitempty"`
+	Name        *string         `json:"name,omitempty"`
+	Description *string         `json:"description,omitempty"`
+	Policies    []*TaskPolicy   `json:"policies,omitempty"`
+	Instances   []*TaskInstance `json:"instances,omitempty"`
+	State       *string         `json:"state,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type TaskPolicy struct {
+	Cron   *string `json:"cron,omitempty"`
+	Action *string `json:"action,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type TaskInstance struct {
+	VMName            *string `json:"vmName,omitempty"`
+	ResourceGroupName *string `json:"resourceGroupName,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ListTasksInput struct{}
+
+type ListTasksOutput struct {
+	Tasks []*Task `json:"tasks,omitempty"`
+}
+
+type CreateTaskInput struct {
+	Task *Task `json:"task,omitempty"`
+}
+
+type CreateTaskOutput struct {
+	Task *Task `json:"task,omitempty"`
+}
+
+type ReadTaskInput struct {
+	TaskID *string `json:"taskId,omitempty"`
+}
+
+type ReadTaskOutput struct {
+	Task *Task `json:"task,omitempty"`
+}
+
+type UpdateTaskInput struct {
+	Task *Task `json:"task,omitempty"`
+}
+
+type UpdateTaskOutput struct {
+	Task *Task `json:"task,omitempty"`
+}
+
+type DeleteTaskInput struct {
+	TaskID *string `json:"id,omitempty"`
+}
+
+type DeleteTaskOutput struct{}
+
+// region Unmarshallers
 
 func groupFromJSON(in []byte) (*Group, error) {
 	b := new(Group)
@@ -413,6 +623,131 @@ func nodesFromHttpResponse(resp *http.Response) ([]*Node, error) {
 	}
 	return nodesFromJSON(body)
 }
+
+func tasksFromHttpResponse(resp *http.Response) ([]*Task, error) {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return tasksFromJSON(body)
+}
+
+func taskFromJSON(in []byte) (*Task, error) {
+	b := new(Task)
+	if err := json.Unmarshal(in, b); err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+func tasksFromJSON(in []byte) ([]*Task, error) {
+	var rw client.Response
+	if err := json.Unmarshal(in, &rw); err != nil {
+		return nil, err
+	}
+	out := make([]*Task, len(rw.Response.Items))
+	if len(out) == 0 {
+		return out, nil
+	}
+	for i, rb := range rw.Response.Items {
+		b, err := taskFromJSON(rb)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = b
+	}
+	return out, nil
+}
+
+func rollResponseFromJSON(in []byte) (*RollGroupOutput, error) {
+	var rw client.Response
+	if err := json.Unmarshal(in, &rw); err != nil {
+		return nil, err
+	}
+
+	var retVal RollGroupOutput
+	retVal.Items = make([]*RollItem, len(rw.Response.Items))
+	for i, rb := range rw.Response.Items {
+		b, err := rollItemFromJSON(rb)
+		if err != nil {
+			return nil, err
+		}
+		retVal.Items[i] = b
+	}
+
+	return &retVal, nil
+}
+
+func rollItemFromJSON(in []byte) (*RollItem, error) {
+	var rw *RollItem
+	if err := json.Unmarshal(in, &rw); err != nil {
+		return nil, err
+	}
+	return rw, nil
+}
+
+func rollStatusFromJSON(in []byte) (*RollStatus, error) {
+	b := new(RollStatus)
+	if err := json.Unmarshal(in, b); err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+func rollStatusesFromJSON(in []byte) ([]*RollStatus, error) {
+	var rw client.Response
+	if err := json.Unmarshal(in, &rw); err != nil {
+		return nil, err
+	}
+	out := make([]*RollStatus, len(rw.Response.Items))
+	if len(out) == 0 {
+		return out, nil
+	}
+	for i, rb := range rw.Response.Items {
+		b, err := rollStatusFromJSON(rb)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = b
+	}
+	return out, nil
+}
+
+func rollFromHttpResponse(resp *http.Response) (*RollGroupOutput, error) {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return rollResponseFromJSON(body)
+}
+
+func rollStatusesFromHttpResponse(resp *http.Response) ([]*RollStatus, error) {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return rollStatusesFromJSON(body)
+}
+
+func nodeSignalFromJSON(in []byte) (*NodeSignal, error) {
+	b := new(NodeSignal)
+	if err := json.Unmarshal(in, b); err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+func nodeSignalFromHttpResponse(resp *http.Response) (*NodeSignal, error) {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return nodeSignalFromJSON(body)
+}
+
+// endregion
+
+// region API requests
 
 func (s *ServiceOp) List(ctx context.Context, input *ListGroupsInput) (*ListGroupsOutput, error) {
 	r := client.NewRequest(http.MethodGet, "/compute/azure/group")
@@ -489,7 +824,7 @@ func (s *ServiceOp) Update(ctx context.Context, input *UpdateGroupInput) (*Updat
 		return nil, err
 	}
 
-	// We do not need the ID anymore so let's drop it.
+	// We do NOT need the ID anymore, so let's drop it.
 	input.Group.ID = nil
 
 	r := client.NewRequest(http.MethodPut, path)
@@ -578,6 +913,124 @@ func (s *ServiceOp) Detach(ctx context.Context, input *DetachGroupInput) (*Detac
 	return &DetachGroupOutput{}, nil
 }
 
+func (s *ServiceOp) ListTasks(ctx context.Context, input *ListTasksInput) (*ListTasksOutput, error) {
+	r := client.NewRequest(http.MethodGet, "/azure/compute/task")
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	tasks, err := tasksFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ListTasksOutput{Tasks: tasks}, nil
+}
+
+func (s *ServiceOp) CreateTask(ctx context.Context, input *CreateTaskInput) (*CreateTaskOutput, error) {
+	r := client.NewRequest(http.MethodPost, "/azure/compute/task")
+	r.Obj = input.Task
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	tasks, err := tasksFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(CreateTaskOutput)
+	if len(tasks) > 0 {
+		output.Task = tasks[0]
+	}
+
+	return output, nil
+}
+
+func (s *ServiceOp) ReadTask(ctx context.Context, input *ReadTaskInput) (*ReadTaskOutput, error) {
+	path, err := uritemplates.Expand("/azure/compute/task/{taskId}", uritemplates.Values{
+		"taskId": spotinst.StringValue(input.TaskID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	r := client.NewRequest(http.MethodGet, path)
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	tasks, err := tasksFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(ReadTaskOutput)
+	if len(tasks) > 0 {
+		output.Task = tasks[0]
+	}
+
+	return output, nil
+}
+
+func (s *ServiceOp) UpdateTask(ctx context.Context, input *UpdateTaskInput) (*UpdateTaskOutput, error) {
+	path, err := uritemplates.Expand("/azure/compute/task/{taskId}", uritemplates.Values{
+		"taskId": spotinst.StringValue(input.Task.ID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// We do not need the ID anymore so let's drop it.
+	input.Task.ID = nil
+
+	r := client.NewRequest(http.MethodPut, path)
+	r.Obj = input.Task
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	tasks, err := tasksFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(UpdateTaskOutput)
+	if len(tasks) > 0 {
+		output.Task = tasks[0]
+	}
+
+	return output, nil
+}
+
+func (s *ServiceOp) DeleteTask(ctx context.Context, input *DeleteTaskInput) (*DeleteTaskOutput, error) {
+	path, err := uritemplates.Expand("/azure/compute/task/{taskId}", uritemplates.Values{
+		"taskId": spotinst.StringValue(input.TaskID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	r := client.NewRequest(http.MethodDelete, path)
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return &DeleteTaskOutput{}, nil
+}
+
 func (s *ServiceOp) Roll(ctx context.Context, input *RollGroupInput) (*RollGroupOutput, error) {
 	path, err := uritemplates.Expand("/compute/azure/group/{groupId}/roll", uritemplates.Values{
 		"groupId": spotinst.StringValue(input.GroupID),
@@ -598,14 +1051,158 @@ func (s *ServiceOp) Roll(ctx context.Context, input *RollGroupInput) (*RollGroup
 	}
 	defer resp.Body.Close()
 
-	return &RollGroupOutput{}, nil
+	output, err := rollFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
 }
+
+func (s *ServiceOp) GetRollStatus(ctx context.Context, input *RollStatusInput) (*RollStatusOutput, error) {
+	path, err := uritemplates.Expand("/compute/azure/group/{groupId}/roll/{rollId}", uritemplates.Values{
+		"groupId": spotinst.StringValue(input.GroupID),
+		"rollId":  spotinst.StringValue(input.RollID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// We do not need the ID anymore so let's drop it.
+	input.GroupID = nil
+
+	r := client.NewRequest(http.MethodGet, path)
+	r.Obj = input
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	rolls, err := rollStatusesFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(RollStatusOutput)
+	if len(rolls) > 0 {
+		output.RollStatus = rolls[0]
+	}
+
+	return output, nil
+}
+
+func (s *ServiceOp) ListRollStatus(ctx context.Context, input *ListRollStatusInput) (*ListRollStatusOutput, error) {
+	path, err := uritemplates.Expand("/compute/azure/group/{groupId}/roll", uritemplates.Values{
+		"groupId": spotinst.StringValue(input.GroupID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// We do not need the ID anymore so let's drop it.
+	input.GroupID = nil
+
+	r := client.NewRequest(http.MethodGet, path)
+	r.Obj = input
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	rolls, err := rollStatusesFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ListRollStatusOutput{Items: rolls}, nil
+}
+
+func (s *ServiceOp) StopRoll(ctx context.Context, input *StopRollInput) (*StopRollOutput, error) {
+	path, err := uritemplates.Expand("/compute/azure/group/{groupId}/roll/{rollId}", uritemplates.Values{
+		"groupId": spotinst.StringValue(input.GroupID),
+		"rollId":  spotinst.StringValue(input.RollID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// We do not need the IDs anymore so let's drop them.
+	input.GroupID = nil
+	input.RollID = nil
+
+	r := client.NewRequest(http.MethodPut, path)
+	r.Obj = input
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return &StopRollOutput{}, nil
+}
+
+func (s *ServiceOp) CreateNodeSignal(ctx context.Context, input *NodeSignalInput) (*NodeSignalOutput, error) {
+	r := client.NewRequest(http.MethodPost, "compute/azure/node/signal")
+	r.Obj = input
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	ns, err := nodeSignalFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(NodeSignalOutput)
+	if ns != nil {
+	}
+
+	return output, nil
+}
+
+func (s *ServiceOp) Scale(ctx context.Context, input *ScaleGroupInput) (*ScaleGroupOutput, error) {
+	path, err := uritemplates.Expand("/compute/azure/group/{groupId}/scale/{type}", uritemplates.Values{
+		"groupId": spotinst.StringValue(input.GroupID),
+		"type":    spotinst.StringValue(input.ScaleType),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// We do not need the ID anymore so let's drop it.
+	input.GroupID = nil
+
+	r := client.NewRequest(http.MethodPut, path)
+
+	if input.Adjustment != nil {
+		r.Params.Set("adjustment", strconv.Itoa(*input.Adjustment))
+	}
+	r.Obj = input
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return &ScaleGroupOutput{}, err
+}
+
+// endregion
 
 // region Group
 
-func (o *Group) MarshalJSON() ([]byte, error) {
+func (o Group) MarshalJSON() ([]byte, error) {
 	type noMethod Group
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -619,6 +1216,13 @@ func (o *Group) SetId(v *string) *Group {
 func (o *Group) SetName(v *string) *Group {
 	if o.Name = v; o.Name == nil {
 		o.nullFields = append(o.nullFields, "Name")
+	}
+	return o
+}
+
+func (o *Group) SetResourceGroupName(v *string) *Group {
+	if o.ResourceGroupName = v; o.ResourceGroupName == nil {
+		o.nullFields = append(o.nullFields, "ResourceGroupName")
 	}
 	return o
 }
@@ -672,13 +1276,20 @@ func (o *Group) SetIntegration(v *Integration) *Group {
 	return o
 }
 
+func (o *Group) SetRegion(v *string) *Group {
+	if o.Region = v; o.Region == nil {
+		o.nullFields = append(o.nullFields, "Region")
+	}
+	return o
+}
+
 // endregion
 
 // region Scheduling
 
-func (o *Scheduling) MarshalJSON() ([]byte, error) {
+func (o Scheduling) MarshalJSON() ([]byte, error) {
 	type noMethod Scheduling
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -693,10 +1304,24 @@ func (o *Scheduling) SetTasks(v []*ScheduledTask) *Scheduling {
 
 // region Integration
 
-func (o *Integration) MarshalJSON() ([]byte, error) {
+func (o Integration) MarshalJSON() ([]byte, error) {
 	type noMethod Integration
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Integration) SetKubernetes(v *KubernetesIntegration) *Integration {
+	if o.Kubernetes = v; o.Kubernetes == nil {
+		o.nullFields = append(o.nullFields, "Kubernetes")
+	}
+	return o
+}
+
+func (o *Integration) SetMultai(v *MultaiIntegration) *Integration {
+	if o.Multai = v; o.Multai == nil {
+		o.nullFields = append(o.nullFields, "Multai")
+	}
+	return o
 }
 
 func (o *Integration) SetRancher(v *RancherIntegration) *Integration {
@@ -708,11 +1333,45 @@ func (o *Integration) SetRancher(v *RancherIntegration) *Integration {
 
 // endregion
 
+// region KubernetesIntegration
+
+func (o KubernetesIntegration) MarshalJSON() ([]byte, error) {
+	type noMethod KubernetesIntegration
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *KubernetesIntegration) SetClusterIdentifier(v *string) *KubernetesIntegration {
+	if o.ClusterIdentifier = v; o.ClusterIdentifier == nil {
+		o.nullFields = append(o.nullFields, "ClusterIdentifier")
+	}
+	return o
+}
+
+// endregion
+
+// region MultaiIntegration
+
+func (o MultaiIntegration) MarshalJSON() ([]byte, error) {
+	type noMethod MultaiIntegration
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *MultaiIntegration) SetDeploymentId(v *string) *MultaiIntegration {
+	if o.DeploymentID = v; o.DeploymentID == nil {
+		o.nullFields = append(o.nullFields, "DeploymentID")
+	}
+	return o
+}
+
+// endregion
+
 // region RancherIntegration
 
-func (o *RancherIntegration) MarshalJSON() ([]byte, error) {
+func (o RancherIntegration) MarshalJSON() ([]byte, error) {
 	type noMethod RancherIntegration
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -741,9 +1400,9 @@ func (o *RancherIntegration) SetSecretKey(v *string) *RancherIntegration {
 
 // region ScheduledTask
 
-func (o *ScheduledTask) MarshalJSON() ([]byte, error) {
+func (o ScheduledTask) MarshalJSON() ([]byte, error) {
 	type noMethod ScheduledTask
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -828,9 +1487,9 @@ func (o *ScheduledTask) SetAdjustmentPercentage(v *int) *ScheduledTask {
 
 // region Scaling
 
-func (o *Scaling) MarshalJSON() ([]byte, error) {
+func (o Scaling) MarshalJSON() ([]byte, error) {
 	type noMethod Scaling
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -852,9 +1511,9 @@ func (o *Scaling) SetDown(v []*ScalingPolicy) *Scaling {
 
 // region ScalingPolicy
 
-func (o *ScalingPolicy) MarshalJSON() ([]byte, error) {
+func (o ScalingPolicy) MarshalJSON() ([]byte, error) {
 	type noMethod ScalingPolicy
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -967,9 +1626,9 @@ func (o *ScalingPolicy) SetAction(v *Action) *ScalingPolicy {
 
 // region Action
 
-func (o *Action) MarshalJSON() ([]byte, error) {
+func (o Action) MarshalJSON() ([]byte, error) {
 	type noMethod Action
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -1026,9 +1685,9 @@ func (o *Action) SetTarget(v *string) *Action {
 
 // region Dimension
 
-func (o *Dimension) MarshalJSON() ([]byte, error) {
+func (o Dimension) MarshalJSON() ([]byte, error) {
 	type noMethod Dimension
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -1050,9 +1709,9 @@ func (o *Dimension) SetValue(v *string) *Dimension {
 
 // region Strategy
 
-func (o *Strategy) MarshalJSON() ([]byte, error) {
+func (o Strategy) MarshalJSON() ([]byte, error) {
 	type noMethod Strategy
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -1063,9 +1722,9 @@ func (o *Strategy) SetLowPriorityPercentage(v *int) *Strategy {
 	return o
 }
 
-func (o *Strategy) SetDedicatedCount(v *int) *Strategy {
-	if o.DedicatedCount = v; o.DedicatedCount == nil {
-		o.nullFields = append(o.nullFields, "DedicatedCount")
+func (o *Strategy) SetOnDemandCount(v *int) *Strategy {
+	if o.OnDemandCount = v; o.OnDemandCount == nil {
+		o.nullFields = append(o.nullFields, "OnDemandCount")
 	}
 	return o
 }
@@ -1088,9 +1747,9 @@ func (o *Strategy) SetSignals(v []*Signal) *Strategy {
 
 // region Signal
 
-func (o *Signal) MarshalJSON() ([]byte, error) {
+func (o Signal) MarshalJSON() ([]byte, error) {
 	type noMethod Signal
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -1112,9 +1771,9 @@ func (o *Signal) SetTimeout(v *int) *Signal {
 
 // region Capacity
 
-func (o *Capacity) MarshalJSON() ([]byte, error) {
+func (o Capacity) MarshalJSON() ([]byte, error) {
 	type noMethod Capacity
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -1143,9 +1802,9 @@ func (o *Capacity) SetTarget(v *int) *Capacity {
 
 // region Compute
 
-func (o *Compute) MarshalJSON() ([]byte, error) {
+func (o Compute) MarshalJSON() ([]byte, error) {
 	type noMethod Compute
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -1170,9 +1829,9 @@ func (o *Compute) SetResourceGroupName(v *string) *Compute {
 	return o
 }
 
-func (o *Compute) SetVMSize(v *VMSize) *Compute {
-	if o.VMSize = v; o.VMSize == nil {
-		o.nullFields = append(o.nullFields, "VMSize")
+func (o *Compute) SetVMSizes(v *VMSizes) *Compute {
+	if o.VMSizes = v; o.VMSizes == nil {
+		o.nullFields = append(o.nullFields, "VMSizes")
 	}
 	return o
 }
@@ -1195,20 +1854,20 @@ func (o *Compute) SetHealth(v *Health) *Compute {
 
 // region VMSize
 
-func (o *VMSize) MarshalJSON() ([]byte, error) {
-	type noMethod VMSize
-	raw := noMethod(*o)
+func (o VMSizes) MarshalJSON() ([]byte, error) {
+	type noMethod VMSizes
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
-func (o *VMSize) SetDedicated(v []string) *VMSize {
-	if o.Dedicated = v; o.Dedicated == nil {
-		o.nullFields = append(o.nullFields, "Dedicated")
+func (o *VMSizes) SetOnDemand(v []string) *VMSizes {
+	if o.OnDemand = v; o.OnDemand == nil {
+		o.nullFields = append(o.nullFields, "OnDemand")
 	}
 	return o
 }
 
-func (o *VMSize) SetLowPriority(v []string) *VMSize {
+func (o *VMSizes) SetLowPriority(v []string) *VMSizes {
 	if o.LowPriority = v; o.LowPriority == nil {
 		o.nullFields = append(o.nullFields, "LowPriority")
 	}
@@ -1219,9 +1878,9 @@ func (o *VMSize) SetLowPriority(v []string) *VMSize {
 
 // region LaunchSpecification
 
-func (o *LaunchSpecification) MarshalJSON() ([]byte, error) {
+func (o LaunchSpecification) MarshalJSON() ([]byte, error) {
 	type noMethod LaunchSpecification
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -1239,9 +1898,31 @@ func (o *LaunchSpecification) SetImage(v *Image) *LaunchSpecification {
 	return o
 }
 
-func (o *LaunchSpecification) SetUserData(v *UserData) *LaunchSpecification {
+func (o *LaunchSpecification) SetUserData(v *string) *LaunchSpecification {
 	if o.UserData = v; o.UserData == nil {
 		o.nullFields = append(o.nullFields, "UserData")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetCustomData(v *string) *LaunchSpecification {
+	if o.CustomData = v; o.CustomData == nil {
+		o.nullFields = append(o.nullFields, "CustomData")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetManagedServiceIdentities(v []*ManagedServiceIdentity) *LaunchSpecification {
+	if o.ManagedServiceIdentities = v; o.ManagedServiceIdentities == nil {
+		o.nullFields = append(o.nullFields, "ManagedServiceIdentities")
+	}
+	return o
+}
+
+// SetShutdownScript sets the shutdown script used when draining instances
+func (o *LaunchSpecification) SetShutdownScript(v *string) *LaunchSpecification {
+	if o.ShutdownScript = v; o.ShutdownScript == nil {
+		o.nullFields = append(o.nullFields, "ShutdownScript")
 	}
 	return o
 }
@@ -1260,9 +1941,9 @@ func (o *LaunchSpecification) SetNetwork(v *Network) *LaunchSpecification {
 	return o
 }
 
-func (o *LaunchSpecification) SetSSHPublicKey(v *string) *LaunchSpecification {
-	if o.SSHPublicKey = v; o.SSHPublicKey == nil {
-		o.nullFields = append(o.nullFields, "SSHPublicKey")
+func (o *LaunchSpecification) SetLogin(v *Login) *LaunchSpecification {
+	if o.Login = v; o.Login == nil {
+		o.nullFields = append(o.nullFields, "Login")
 	}
 	return o
 }
@@ -1271,9 +1952,9 @@ func (o *LaunchSpecification) SetSSHPublicKey(v *string) *LaunchSpecification {
 
 // region LoadBalancersConfig
 
-func (o *LoadBalancersConfig) MarshalJSON() ([]byte, error) {
+func (o LoadBalancersConfig) MarshalJSON() ([]byte, error) {
 	type noMethod LoadBalancersConfig
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -1288,10 +1969,17 @@ func (o *LoadBalancersConfig) SetLoadBalancers(v []*LoadBalancer) *LoadBalancers
 
 // region LoadBalancer
 
-func (o *LoadBalancer) MarshalJSON() ([]byte, error) {
+func (o LoadBalancer) MarshalJSON() ([]byte, error) {
 	type noMethod LoadBalancer
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LoadBalancer) SetType(v *string) *LoadBalancer {
+	if o.Type = v; o.Type == nil {
+		o.nullFields = append(o.nullFields, "Type")
+	}
+	return o
 }
 
 func (o *LoadBalancer) SetBalancerId(v *string) *LoadBalancer {
@@ -1308,14 +1996,52 @@ func (o *LoadBalancer) SetTargetSetId(v *string) *LoadBalancer {
 	return o
 }
 
+func (o *LoadBalancer) SetAutoWeight(v *bool) *LoadBalancer {
+	if o.AutoWeight = v; o.AutoWeight == nil {
+		o.nullFields = append(o.nullFields, "AutoWeight")
+	}
+	return o
+}
+
+// endregion
+
+// region ManagedServiceIdentity
+
+func (o ManagedServiceIdentity) MarshalJSON() ([]byte, error) {
+	type noMethod ManagedServiceIdentity
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ManagedServiceIdentity) SetResourceGroupName(v *string) *ManagedServiceIdentity {
+	if o.ResourceGroupName = v; o.ResourceGroupName == nil {
+		o.nullFields = append(o.nullFields, "ResourceGroupName")
+	}
+	return o
+}
+
+func (o *ManagedServiceIdentity) SetName(v *string) *ManagedServiceIdentity {
+	if o.Name = v; o.Name == nil {
+		o.nullFields = append(o.nullFields, "Name")
+	}
+	return o
+}
+
 // endregion
 
 // region Image
 
-func (o *Image) MarshalJSON() ([]byte, error) {
+func (o Image) MarshalJSON() ([]byte, error) {
 	type noMethod Image
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Image) SetMarketPlaceImage(v *MarketPlaceImage) *Image {
+	if o.MarketPlace = v; o.MarketPlace == nil {
+		o.nullFields = append(o.nullFields, "MarketPlace")
+	}
+	return o
 }
 
 func (o *Image) SetCustom(v *CustomImage) *Image {
@@ -1325,21 +2051,31 @@ func (o *Image) SetCustom(v *CustomImage) *Image {
 	return o
 }
 
-func (o *Image) SetPublisher(v *string) *Image {
+// endregion
+
+// region MarketPlaceImage
+
+func (o MarketPlaceImage) MarshalJSON() ([]byte, error) {
+	type noMethod MarketPlaceImage
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *MarketPlaceImage) SetPublisher(v *string) *MarketPlaceImage {
 	if o.Publisher = v; o.Publisher == nil {
 		o.nullFields = append(o.nullFields, "Publisher")
 	}
 	return o
 }
 
-func (o *Image) SetOffer(v *string) *Image {
+func (o *MarketPlaceImage) SetOffer(v *string) *MarketPlaceImage {
 	if o.Offer = v; o.Offer == nil {
 		o.nullFields = append(o.nullFields, "Offer")
 	}
 	return o
 }
 
-func (o *Image) SetSKU(v *string) *Image {
+func (o *MarketPlaceImage) SetSKU(v *string) *MarketPlaceImage {
 	if o.SKU = v; o.SKU == nil {
 		o.nullFields = append(o.nullFields, "SKU")
 	}
@@ -1350,39 +2086,22 @@ func (o *Image) SetSKU(v *string) *Image {
 
 // region CustomImage
 
-func (o *CustomImage) MarshalJSON() ([]byte, error) {
+func (o CustomImage) MarshalJSON() ([]byte, error) {
 	type noMethod CustomImage
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
-func (o *CustomImage) SetImageURIs(v []string) *CustomImage {
-	if o.ImageURIs = v; o.ImageURIs == nil {
-		o.nullFields = append(o.nullFields, "ImageURIs")
+func (o *CustomImage) SetResourceGroupName(v *string) *CustomImage {
+	if o.ResourceGroupName = v; o.ResourceGroupName == nil {
+		o.nullFields = append(o.nullFields, "ResourceGroupName")
 	}
 	return o
 }
 
-// endregion
-
-// region UserData
-
-func (o *UserData) MarshalJSON() ([]byte, error) {
-	type noMethod UserData
-	raw := noMethod(*o)
-	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
-}
-
-func (o *UserData) SetCommandLine(v *string) *UserData {
-	if o.CommandLine = v; o.CommandLine == nil {
-		o.nullFields = append(o.nullFields, "CommandLine")
-	}
-	return o
-}
-
-func (o *UserData) SetResourceFiles(v []*ResourceFile) *UserData {
-	if o.ResourceFiles = v; o.ResourceFiles == nil {
-		o.nullFields = append(o.nullFields, "ResourceFiles")
+func (o *CustomImage) SetImageName(v *string) *CustomImage {
+	if o.ImageName = v; o.ImageName == nil {
+		o.nullFields = append(o.nullFields, "ImageName")
 	}
 	return o
 }
@@ -1391,9 +2110,9 @@ func (o *UserData) SetResourceFiles(v []*ResourceFile) *UserData {
 
 // region ResourceFile
 
-func (o *ResourceFile) MarshalJSON() ([]byte, error) {
+func (o ResourceFile) MarshalJSON() ([]byte, error) {
 	type noMethod ResourceFile
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -1415,9 +2134,9 @@ func (o *ResourceFile) SetTargetPath(v *string) *ResourceFile {
 
 // region Storage
 
-func (o *Storage) MarshalJSON() ([]byte, error) {
+func (o Storage) MarshalJSON() ([]byte, error) {
 	type noMethod Storage
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -1432,9 +2151,9 @@ func (o *Storage) SetAccountName(v *string) *Storage {
 
 // region Network
 
-func (o *Network) MarshalJSON() ([]byte, error) {
+func (o Network) MarshalJSON() ([]byte, error) {
 	type noMethod Network
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -1445,9 +2164,88 @@ func (o *Network) SetVirtualNetworkName(v *string) *Network {
 	return o
 }
 
-func (o *Network) SetSubnetId(v *string) *Network {
-	if o.SubnetID = v; o.SubnetID == nil {
-		o.nullFields = append(o.nullFields, "SubnetID")
+func (o *Network) SetSubnetName(v *string) *Network {
+	if o.SubnetName = v; o.SubnetName == nil {
+		o.nullFields = append(o.nullFields, "SubnetName")
+	}
+	return o
+}
+
+func (o *Network) SetResourceGroupName(v *string) *Network {
+	if o.ResourceGroupName = v; o.ResourceGroupName == nil {
+		o.nullFields = append(o.nullFields, "ResourceGroupName")
+	}
+	return o
+}
+
+func (o *Network) SetAssignPublicIP(v *bool) *Network {
+	if o.AssignPublicIP = v; o.AssignPublicIP == nil {
+		o.nullFields = append(o.nullFields, "AssignPublicIP")
+	}
+	return o
+}
+
+// SetAdditionalIPConfigs sets the additional IP configurations
+func (o *Network) SetAdditionalIPConfigs(v []*AdditionalIPConfigs) *Network {
+	if o.AdditionalIPConfigs = v; o.AdditionalIPConfigs == nil {
+		o.nullFields = append(o.nullFields, "AdditionalIPConfigs")
+	}
+	return o
+}
+
+// endregion
+
+// region Login
+
+func (o Login) MarshalJSON() ([]byte, error) {
+	type noMethod Login
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Login) SetUserName(v *string) *Login {
+	if o.UserName = v; o.UserName == nil {
+		o.nullFields = append(o.nullFields, "UserName")
+	}
+	return o
+}
+
+func (o *Login) SetSSHPublicKey(v *string) *Login {
+	if o.SSHPublicKey = v; o.SSHPublicKey == nil {
+		o.nullFields = append(o.nullFields, "SSHPublicKey")
+	}
+	return o
+}
+
+func (o *Login) SetPassword(v *string) *Login {
+	if o.Password = v; o.Password == nil {
+		o.nullFields = append(o.nullFields, "Password")
+	}
+	return o
+}
+
+// endregion
+
+// region AdditionalIPConfigs
+
+func (o AdditionalIPConfigs) MarshalJSON() ([]byte, error) {
+	type noMethod AdditionalIPConfigs
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+// SetName sets the name
+func (o *AdditionalIPConfigs) SetName(v *string) *AdditionalIPConfigs {
+	if o.Name = v; o.Name == nil {
+		o.nullFields = append(o.nullFields, "Name")
+	}
+	return o
+}
+
+// SetPrivateIPAddressVersion sets the ip address version
+func (o *AdditionalIPConfigs) SetPrivateIPAddressVersion(v *string) *AdditionalIPConfigs {
+	if o.PrivateIPAddressVersion = v; o.PrivateIPAddressVersion == nil {
+		o.nullFields = append(o.nullFields, "PrivateIPAddressVersion")
 	}
 	return o
 }
@@ -1456,9 +2254,9 @@ func (o *Network) SetSubnetId(v *string) *Network {
 
 // region Health
 
-func (o *Health) MarshalJSON() ([]byte, error) {
+func (o Health) MarshalJSON() ([]byte, error) {
 	type noMethod Health
-	raw := noMethod(*o)
+	raw := noMethod(o)
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
@@ -1479,6 +2277,216 @@ func (o *Health) SetAutoHealing(v *bool) *Health {
 func (o *Health) SetGracePeriod(v *int) *Health {
 	if o.GracePeriod = v; o.GracePeriod == nil {
 		o.nullFields = append(o.nullFields, "GracePeriod")
+	}
+	return o
+}
+
+// endregion
+
+// region NodeSignal
+
+func (o NodeSignal) MarshalJSON() ([]byte, error) {
+	type noMethod NodeSignal
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *NodeSignal) SetNodeID(v *string) *NodeSignal {
+	if o.NodeID = v; o.NodeID == nil {
+		o.nullFields = append(o.nullFields, "NodeID")
+	}
+	return o
+}
+
+func (o *NodeSignal) SetPoolID(v *string) *NodeSignal {
+	if o.PoolID = v; o.PoolID == nil {
+		o.nullFields = append(o.nullFields, "PoolID")
+	}
+	return o
+}
+
+func (o *NodeSignal) SetSignal(v *string) *NodeSignal {
+	if o.Signal = v; o.Signal == nil {
+		o.nullFields = append(o.nullFields, "Signal")
+	}
+	return o
+}
+
+// endregion
+
+// region Roll Group
+
+func (o RollStatus) MarshalJSON() ([]byte, error) {
+	type noMethod RollStatus
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *RollStatus) SetGroupID(v *string) *RollStatus {
+	if o.GroupID = v; o.GroupID == nil {
+		o.nullFields = append(o.nullFields, "GroupID")
+	}
+	return o
+}
+
+func (o *RollStatus) SetRollID(v *string) *RollStatus {
+	if o.RollID = v; o.RollID == nil {
+		o.nullFields = append(o.nullFields, "RollID")
+	}
+	return o
+}
+
+func (o *RollStatus) SetStatus(v *string) *RollStatus {
+	if o.Status = v; o.Status == nil {
+		o.nullFields = append(o.nullFields, "Status")
+	}
+	return o
+}
+
+func (o *RollStatus) SetProgress(v *RollProgress) *RollStatus {
+	if o.Progress = v; o.Progress == nil {
+		o.nullFields = append(o.nullFields, "Progress")
+	}
+	return o
+}
+
+// endregion
+
+// region RollProgress
+
+func (o RollProgress) MarshalJSON() ([]byte, error) {
+	type noMethod RollProgress
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *RollProgress) SetUnit(v *string) *RollProgress {
+	if o.Unit = v; o.Unit == nil {
+		o.nullFields = append(o.nullFields, "Unit")
+	}
+	return o
+}
+
+func (o *RollProgress) SetValue(v *int) *RollProgress {
+	if o.Value = v; o.Value == nil {
+		o.nullFields = append(o.nullFields, "Value")
+	}
+	return o
+}
+
+// endregion
+
+// region Roll
+
+func (o Roll) MarshalJSON() ([]byte, error) {
+	type noMethod Roll
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Roll) SetStatus(v *string) *Roll {
+	if o.Status = v; o.Status == nil {
+		o.nullFields = append(o.nullFields, "Status")
+	}
+	return o
+}
+
+// endregion
+
+// region Tasks
+
+func (o Task) MarshalJSON() ([]byte, error) {
+	type noMethod Task
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Task) SetId(v *string) *Task {
+	if o.ID = v; o.ID == nil {
+		o.nullFields = append(o.nullFields, "ID")
+	}
+	return o
+}
+
+func (o *Task) SetName(v *string) *Task {
+	if o.Name = v; o.Name == nil {
+		o.nullFields = append(o.nullFields, "Name")
+	}
+	return o
+}
+
+func (o *Task) SetDescription(v *string) *Task {
+	if o.Description = v; o.Description == nil {
+		o.nullFields = append(o.nullFields, "Description")
+	}
+	return o
+}
+
+func (o *Task) SetState(v *string) *Task {
+	if o.State = v; o.State == nil {
+		o.nullFields = append(o.nullFields, "State")
+	}
+	return o
+}
+
+func (o *Task) SetPolicies(v []*TaskPolicy) *Task {
+	if o.Policies = v; o.Policies == nil {
+		o.nullFields = append(o.nullFields, "Policies")
+	}
+	return o
+}
+
+func (o *Task) SetInstances(v []*TaskInstance) *Task {
+	if o.Instances = v; o.Instances == nil {
+		o.nullFields = append(o.nullFields, "Instances")
+	}
+	return o
+}
+
+// endregion
+
+// region TaskPolicy
+
+func (o TaskPolicy) MarshalJSON() ([]byte, error) {
+	type noMethod TaskPolicy
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *TaskPolicy) SetCron(v *string) *TaskPolicy {
+	if o.Cron = v; o.Cron == nil {
+		o.nullFields = append(o.nullFields, "Cron")
+	}
+	return o
+}
+
+func (o *TaskPolicy) SetAction(v *string) *TaskPolicy {
+	if o.Action = v; o.Action == nil {
+		o.nullFields = append(o.nullFields, "Action")
+	}
+	return o
+}
+
+// endregion
+
+// region TaskInstance
+
+func (o TaskInstance) MarshalJSON() ([]byte, error) {
+	type noMethod TaskInstance
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *TaskInstance) SetVMName(v *string) *TaskInstance {
+	if o.VMName = v; o.VMName == nil {
+		o.nullFields = append(o.nullFields, "VMName")
+	}
+	return o
+}
+
+func (o *TaskInstance) SetResourceGroupName(v *string) *TaskInstance {
+	if o.ResourceGroupName = v; o.ResourceGroupName == nil {
+		o.nullFields = append(o.nullFields, "ResourceGroupName")
 	}
 	return o
 }

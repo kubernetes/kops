@@ -38,8 +38,9 @@ type FileProvider struct {
 	//
 	// If empty will look for FileCredentialsEnvVarFile env variable. If the
 	// env value is empty will default to current user's home directory.
-	// Linux/OSX: "$HOME/.spotinst/credentials.json"
-	// Windows:   "%USERPROFILE%\.spotinst\credentials.json"
+	// Linux   : "$HOME/.spotinst/credentials"
+	// Darwin  : "$HOME/.spotinst/credentials"
+	// Windows : "%USERPROFILE%\.spotinst\credentials"
 	Filename string
 
 	// retrieved states if the credentials have been successfully retrieved.

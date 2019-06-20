@@ -18,6 +18,8 @@ go_library(
         "//upup/pkg/fi:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/service/elastigroup:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/service/ocean:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/credentials:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/log:go_default_library",
