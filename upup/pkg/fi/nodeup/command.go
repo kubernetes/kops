@@ -441,25 +441,40 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 	k = strings.ToLower(k)
 
 	if k == "@aws" {
-		// We recognize @aws as meaning "the local-hostname from the aws metadata service"
-		vBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-hostname")
+		// We recognize @aws as meaning "the private DNS name from AWS", to generate this we need to get a few pieces of information
+		azBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/placement/availability-zone")
 		if err != nil {
-			return "", fmt.Errorf("error reading local hostname from AWS metadata: %v", err)
+			return "", fmt.Errorf("error reading availability zone from AWS metadata: %v", err)
 		}
 
-		// The local-hostname gets it's hostname from the AWS DHCP Option Set, which
-		// may provide multiple hostnames separated by spaces. For now just choose
-		// the first one as the hostname.
-		domains := strings.Fields(string(vBytes))
-		if len(domains) == 0 {
-			klog.Warningf("Local hostname from AWS metadata service was empty")
-			return "", nil
+		instanceIDBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/instance-id")
+		if err != nil {
+			return "", fmt.Errorf("error reading instance-id from AWS metadata: %v", err)
+		}
+		instanceID := string(instanceIDBytes)
+
+		config := aws.NewConfig()
+		config = config.WithCredentialsChainVerboseErrors(true)
+
+		s, err := session.NewSession(config)
+		if err != nil {
+			return "", fmt.Errorf("error starting new AWS session: %v", err)
 		}
 
-		domain := domains[0]
-		klog.Infof("Using hostname from AWS metadata service: %s", domain)
+		svc := ec2.New(s, config.WithRegion(string(azBytes[:len(azBytes)-1])))
 
-		return domain, nil
+		result, err := svc.DescribeInstances(&ec2.DescribeInstancesInput{
+			InstanceIds: []*string{&instanceID},
+		})
+
+		if len(result.Reservations) != 1 {
+			return "", fmt.Errorf("Too many reservations returned for the single instance-id")
+		}
+
+		if len(result.Reservations[0].Instances) != 1 {
+			return "", fmt.Errorf("Too many instances returned for the single instance-id")
+		}
+		return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
 	}
 
 	if k == "@digitalocean" {
