@@ -1198,7 +1198,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		}
 		if b.cluster.Spec.Authentication.Aws != nil {
 			key := "authentication.aws"
-			version := "0.3.0-kops.1"
+			version := "0.4.0-kops.1"
 
 			{
 				location := key + "/k8s-1.10.yaml"
