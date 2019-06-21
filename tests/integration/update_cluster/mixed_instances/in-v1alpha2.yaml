@@ -68,6 +68,7 @@ spec:
   maxSize: 2
   minSize: 2
   role: Node
+  instanceProtection: true
   subnets:
   - us-test-1b
   mixedInstancesPolicy:
