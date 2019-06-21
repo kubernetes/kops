@@ -1529,6 +1529,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.InstanceProtection != nil {
+		in, out := &in.InstanceProtection, &out.InstanceProtection
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

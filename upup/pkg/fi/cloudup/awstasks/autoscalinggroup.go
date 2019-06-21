@@ -45,6 +45,8 @@ type AutoscalingGroup struct {
 
 	// Granularity specifys the granularity of the metrics
 	Granularity *string
+	// InstanceProtection makes new instances in an autoscaling group protected from scale in
+	InstanceProtection *bool
 	// LaunchConfiguration is the launch configuration for the autoscaling group
 	LaunchConfiguration *LaunchConfiguration
 	// LaunchTemplate is the launch template for the asg
@@ -170,6 +172,10 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 
 	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle
+
+	if g.NewInstancesProtectedFromScaleIn != nil {
+		actual.InstanceProtection = g.NewInstancesProtectedFromScaleIn
+	}
 
 	return actual, nil
 }
@@ -315,6 +321,11 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				return fmt.Errorf("error suspending processes: %v", err)
 			}
 		}
+
+		if e.InstanceProtection != nil {
+			request.NewInstancesProtectedFromScaleIn = e.InstanceProtection
+		}
+
 	} else {
 		// @logic: else we have found a autoscaling group and we need to evaluate the difference
 		request := &autoscaling.UpdateAutoScalingGroupInput{
@@ -449,6 +460,11 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				}
 			}
 			changes.SuspendProcesses = nil
+		}
+
+		if changes.InstanceProtection != nil {
+			request.NewInstancesProtectedFromScaleIn = e.InstanceProtection
+			changes.InstanceProtection = nil
 		}
 
 		empty := &AutoscalingGroup{}
@@ -628,6 +644,7 @@ type terraformAutoscalingGroup struct {
 	MetricsGranularity      *string                          `json:"metrics_granularity,omitempty"`
 	EnabledMetrics          []*string                        `json:"enabled_metrics,omitempty"`
 	SuspendedProcesses      []*string                        `json:"suspended_processes,omitempty"`
+	InstanceProtection      *bool                            `json:"protect_from_scale_in,omitempty"`
 }
 
 // RenderTerraform is responsible for rendering the terraform codebase
@@ -638,6 +655,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		MaxSize:            e.MaxSize,
 		MetricsGranularity: e.Granularity,
 		EnabledMetrics:     aws.StringSlice(e.Metrics),
+		InstanceProtection: e.InstanceProtection,
 	}
 
 	for _, s := range e.Subnets {

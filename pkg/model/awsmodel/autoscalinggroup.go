@@ -315,6 +315,8 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	}
 	t.SuspendProcesses = &processes
 
+	t.InstanceProtection = ig.Spec.InstanceProtection
+
 	// @step: are we using a mixed instance policy
 	if ig.Spec.MixedInstancesPolicy != nil {
 		spec := ig.Spec.MixedInstancesPolicy
