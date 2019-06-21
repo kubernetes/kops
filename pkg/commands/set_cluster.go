@@ -93,7 +93,8 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 			cluster.Spec.NodePortAccess = append(cluster.Spec.NodePortAccess, kv[1])
 		case "spec.kubernetesVersion":
 			cluster.Spec.KubernetesVersion = kv[1]
-
+		case "spec.masterPublicName":
+			cluster.Spec.MasterPublicName = kv[1]
 		case "cluster.spec.etcdClusters[*].enableEtcdTLS":
 			v, err := strconv.ParseBool(kv[1])
 			if err != nil {
@@ -102,7 +103,6 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 			for _, c := range cluster.Spec.EtcdClusters {
 				c.EnableEtcdTLS = v
 			}
-
 		case "cluster.spec.etcdClusters[*].enableTLSAuth":
 			v, err := strconv.ParseBool(kv[1])
 			if err != nil {
@@ -111,7 +111,6 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 			for _, c := range cluster.Spec.EtcdClusters {
 				c.EnableTLSAuth = v
 			}
-
 		case "cluster.spec.etcdClusters[*].version":
 			for _, c := range cluster.Spec.EtcdClusters {
 				c.Version = kv[1]
