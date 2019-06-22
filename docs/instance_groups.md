@@ -474,6 +474,27 @@ spec:
   - AZRebalance
 ```
 
+## Protect new instances from scale in
+
+Autoscaling groups may scale up or down automatically to balance types of instances, regions, etc.
+[Instance protection](https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-instance-termination.html#instance-protection) prevents the ASG from being scaled in.
+
+```
+# Example for nodes
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: k8s.dev.local
+  name: nodes
+spec:
+  machineType: m4.xlarge
+  maxSize: 20
+  minSize: 2
+  role: Node
+  instanceProtection: true
+```
+
 ## Attaching existing Load Balancers to Instance Groups
 
 Instance groups can be linked to up to 10 load balancers. When attached, any instance launched will

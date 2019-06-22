@@ -138,6 +138,8 @@ type InstanceGroupSpec struct {
 	IAM *IAMProfileSpec `json:"iam,omitempty"`
 	// SecurityGroupOverride overrides the default security group created by Kops for this IG (AWS only).
 	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
+	// InstanceProtection makes new instances in an autoscaling group protected from scale in
+	InstanceProtection *bool `json:"instanceProtection,omitempty"`
 }
 
 const (

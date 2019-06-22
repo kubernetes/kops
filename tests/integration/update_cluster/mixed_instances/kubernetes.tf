@@ -228,8 +228,9 @@ resource "aws_autoscaling_group" "nodes-mixedinstances-example-com" {
     propagate_at_launch = true
   }
 
-  metrics_granularity = "1Minute"
-  enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  metrics_granularity   = "1Minute"
+  enabled_metrics       = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  protect_from_scale_in = true
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-mixedinstances-example-com" {
