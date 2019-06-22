@@ -123,7 +123,7 @@ func (_ *Subnet) CheckChanges(a, e, changes *Subnet) error {
 		if changes.DNSServers != nil {
 			return fi.CannotChangeField("DNSServers")
 		}
-		if changes.Network != nil {
+		if fi.StringValue(a.Network.ID) != fi.StringValue(e.Network.ID) {
 			return fi.CannotChangeField("Network")
 		}
 		if changes.CIDR != nil {

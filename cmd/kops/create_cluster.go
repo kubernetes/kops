@@ -912,19 +912,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			if cluster.Spec.CloudConfig == nil {
 				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
 			}
-			provider := "haproxy"
-			if c.OpenstackLBOctavia {
-				provider = "octavia"
-			}
 			cluster.Spec.CloudConfig.Openstack = &api.OpenstackConfiguration{
 				Router: &api.OpenstackRouter{
 					ExternalNetwork: fi.String(c.OpenstackExternalNet),
-				},
-				Loadbalancer: &api.OpenstackLoadbalancerConfig{
-					FloatingNetwork: fi.String(c.OpenstackExternalNet),
-					Method:          fi.String("ROUND_ROBIN"),
-					Provider:        fi.String(provider),
-					UseOctavia:      fi.Bool(c.OpenstackLBOctavia),
 				},
 				BlockStorage: &api.OpenstackBlockStorageConfig{
 					Version:  fi.String("v2"),
@@ -941,9 +931,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 			if c.OpenstackExternalSubnet != "" {
 				cluster.Spec.CloudConfig.Openstack.Router.ExternalSubnet = fi.String(c.OpenstackExternalSubnet)
-			}
-			if c.OpenstackLbSubnet != "" {
-				cluster.Spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet = fi.String(c.OpenstackLbSubnet)
 			}
 		}
 	}
@@ -1163,7 +1150,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.API = &api.AccessSpec{}
 	}
 	if cluster.Spec.API.IsEmpty() {
-		if c.APILoadBalancerType != "" {
+		if c.Cloud == "openstack" {
+			initializeOpenstackAPI(c, cluster)
+		} else if c.APILoadBalancerType != "" {
 			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 		} else {
 			switch cluster.Spec.Topology.Masters {
@@ -1441,6 +1430,27 @@ func parseCloudLabels(s string) (map[string]string, error) {
 		m[pair[0]] = pair[1]
 	}
 	return m, nil
+}
+
+func initializeOpenstackAPI(c *CreateClusterOptions, cluster *api.Cluster) {
+	if c.APILoadBalancerType != "" {
+		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+		provider := "haproxy"
+		if c.OpenstackLBOctavia {
+			provider = "octavia"
+		}
+
+		cluster.Spec.CloudConfig.Openstack.Loadbalancer = &api.OpenstackLoadbalancerConfig{
+			FloatingNetwork: fi.String(c.OpenstackExternalNet),
+			Method:          fi.String("ROUND_ROBIN"),
+			Provider:        fi.String(provider),
+			UseOctavia:      fi.Bool(c.OpenstackLBOctavia),
+		}
+
+		if c.OpenstackLbSubnet != "" {
+			cluster.Spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet = fi.String(c.OpenstackLbSubnet)
+		}
+	}
 }
 
 func getZoneToSubnetProviderID(VPCID string, region string, subnetIDs []string) (map[string]string, error) {

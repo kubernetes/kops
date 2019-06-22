@@ -30,7 +30,7 @@ func (c *openstackCloud) GetFloatingIP(id string) (fip *floatingips.FloatingIP, 
 
 		fip, err = floatingips.Get(c.ComputeClient(), id).Extract()
 		if err != nil {
-			return false, fmt.Errorf("GetFloatingIP: fetching floating IP failed: %v", err)
+			return false, fmt.Errorf("GetFloatingIP: fetching floating IP (%s) failed: %v", id, err)
 		}
 		return true, nil
 	})

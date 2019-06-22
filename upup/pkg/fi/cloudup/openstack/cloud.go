@@ -47,6 +47,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
+	"github.com/mitchellh/mapstructure"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog"
@@ -407,30 +408,36 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 			}
 			spec.CloudConfig.Openstack.Loadbalancer.FloatingNetworkID = fi.String(lbNet[0].ID)
 		}
-		if spec.CloudConfig.Openstack.Loadbalancer.UseOctavia != nil {
-			octavia = fi.BoolValue(spec.CloudConfig.Openstack.Loadbalancer.UseOctavia)
-		}
-		if spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet != nil {
-			c.floatingSubnet = spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet
+		if spec.CloudConfig.Openstack.Loadbalancer != nil {
+			if spec.CloudConfig.Openstack.Loadbalancer.UseOctavia != nil {
+				octavia = fi.BoolValue(spec.CloudConfig.Openstack.Loadbalancer.UseOctavia)
+			}
+			if spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet != nil {
+				c.floatingSubnet = spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet
+			}
 		}
 	}
 	c.useOctavia = octavia
 	var lbClient *gophercloud.ServiceClient
-	if octavia {
-		klog.V(2).Infof("Openstack using Octavia lbaasv2 api")
-		lbClient, err = os.NewLoadBalancerV2(provider, gophercloud.EndpointOpts{
-			Region: region,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("error building lb client: %v", err)
-		}
-	} else {
-		klog.V(2).Infof("Openstack using deprecated lbaasv2 api")
-		lbClient, err = os.NewNetworkV2(provider, gophercloud.EndpointOpts{
-			Region: region,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("error building lb client: %v", err)
+	if spec != nil && spec.CloudConfig != nil && spec.CloudConfig.Openstack != nil {
+		if spec.CloudConfig.Openstack.Loadbalancer != nil && octavia {
+			klog.V(2).Infof("Openstack using Octavia lbaasv2 api")
+			lbClient, err = os.NewLoadBalancerV2(provider, gophercloud.EndpointOpts{
+				Region: region,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("error building lb client: %v", err)
+			}
+		} else if spec.CloudConfig.Openstack.Loadbalancer != nil {
+			klog.V(2).Infof("Openstack using deprecated lbaasv2 api")
+			lbClient, err = os.NewNetworkV2(provider, gophercloud.EndpointOpts{
+				Region: region,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("error building lb client: %v", err)
+			}
+		} else {
+			klog.V(2).Infof("Openstack disabled loadbalancer support")
 		}
 	}
 	c.lbClient = lbClient
@@ -547,30 +554,64 @@ func (c *openstackCloud) GetCloudTags() map[string]string {
 	return c.tags
 }
 
+type Address struct {
+	IPType string `mapstructure:"OS-EXT-IPS:type"`
+	Addr   string
+}
+
 func (c *openstackCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
 	var ingresses []kops.ApiIngressStatus
-	if cluster.Spec.MasterPublicName != "" {
-		// Note that this must match OpenstackModel lb name
-		klog.V(2).Infof("Querying Openstack to find Loadbalancers for API (%q)", cluster.Name)
-		lbList, err := c.ListLBs(loadbalancers.ListOpts{
-			Name: cluster.Spec.MasterPublicName,
-		})
-		if err != nil {
-			return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list openstack loadbalancers: %v", err)
+	if cluster.Spec.CloudConfig.Openstack.Loadbalancer != nil {
+		if cluster.Spec.MasterPublicName != "" {
+			// Note that this must match OpenstackModel lb name
+			klog.V(2).Infof("Querying Openstack to find Loadbalancers for API (%q)", cluster.Name)
+			lbList, err := c.ListLBs(loadbalancers.ListOpts{
+				Name: cluster.Spec.MasterPublicName,
+			})
+			if err != nil {
+				return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list openstack loadbalancers: %v", err)
+			}
+			// Must Find Floating IP related to this lb
+			fips, err := c.ListFloatingIPs()
+			if err != nil {
+				return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list floating IP's: %v", err)
+			}
+
+			for _, lb := range lbList {
+				for _, fip := range fips {
+					if fip.FixedIP == lb.VipAddress {
+
+						ingresses = append(ingresses, kops.ApiIngressStatus{
+							IP: fip.IP,
+						})
+					}
+				}
+			}
 		}
-		// Must Find Floating IP related to this lb
-		fips, err := c.ListFloatingIPs()
+	} else {
+		instances, err := c.ListInstances(servers.ListOpts{})
 		if err != nil {
-			return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list floating IP's: %v", err)
+			return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list master nodes: %v", err)
 		}
 
-		for _, lb := range lbList {
-			for _, fip := range fips {
-				if fip.FixedIP == lb.VipAddress {
+		for _, instance := range instances {
+			val, ok := instance.Metadata["k8s"]
+			val2, ok2 := instance.Metadata["KopsInstanceGroup"]
+			if ok && val == cluster.Name && ok2 && strings.HasPrefix(val2, "master") {
+				var addresses map[string][]Address
+				err := mapstructure.Decode(instance.Addresses, &addresses)
+				if err != nil {
+					return nil, err
+				}
 
-					ingresses = append(ingresses, kops.ApiIngressStatus{
-						IP: fip.IP,
-					})
+				for _, addrList := range addresses {
+					for _, props := range addrList {
+						if props.IPType == "floating" {
+							ingresses = append(ingresses, kops.ApiIngressStatus{
+								IP: props.Addr,
+							})
+						}
+					}
 				}
 			}
 		}
