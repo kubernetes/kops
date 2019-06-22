@@ -139,3 +139,15 @@ Finally
 ```
 kops update cluster --name <cluster> --yes
 ```
+
+# Using OpenStack without lbaas
+Some OpenStack installations does not include installation of lbaas component. That is why we have added very-experimental support of installing OpenStack kops without lbaas. You can install it using:
+
+```
+kops create cluster \
+  --cloud openstack \
+  ... (like usually)
+  --api-loadbalancer-type=""
+```
+
+The biggest problem currently when installing without loadbalancer is that kubectl requests outside cluster is always going to first master. External loadbalancer is one option which can solve this issue.
