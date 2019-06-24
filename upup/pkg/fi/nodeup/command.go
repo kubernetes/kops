@@ -462,6 +462,25 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 		return domain, nil
 	}
 
+	if k == "@aws-private" {
+		// We recognize @aws as meaning "the private DNS name from AWS", to generate this we need to get a few pieces of information
+		ipBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-ipv4")
+		if err != nil {
+			return "", fmt.Errorf("error reading local ipv4 from AWS metadata: %v", err)
+		}
+
+		azBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/placement/availability-zone")
+		if err != nil {
+			return "", fmt.Errorf("error reading availability zone from AWS metadata: %v", err)
+		}
+
+		return strings.Join([]string{
+			"ip-" + strings.Replace(string(ipBytes), ".", "-", -1),
+			string(azBytes[:len(azBytes)-1]),
+			"compute.internal",
+		}, "."), nil
+	}
+
 	if k == "@digitalocean" {
 		// @digitalocean means to use the private ipv4 address of a droplet as the hostname override
 		vBytes, err := vfs.Context.ReadFile("metadata://digitalocean/interfaces/private/0/ipv4/address")

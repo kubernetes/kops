@@ -530,29 +530,50 @@ func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
 	k := strings.TrimSpace(hostnameOverride)
 	k = strings.ToLower(k)
 
-	if k != "@aws" {
+	switch k {
+	
+	case "@aws":
+		// We recognize @aws as meaning "the local-hostname from the aws metadata service"
+		vBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-hostname")
+		if err != nil {
+			return "", fmt.Errorf("error reading local hostname from AWS metadata: %v", err)
+		}
+
+		// The local-hostname gets it's hostname from the AWS DHCP Option Set, which
+		// may provide multiple hostnames separated by spaces. For now just choose
+		// the first one as the hostname.
+		domains := strings.Fields(string(vBytes))
+		if len(domains) == 0 {
+			klog.Warningf("Local hostname from AWS metadata service was empty")
+			return "", nil
+		}
+		domain := domains[0]
+
+		klog.Infof("Using hostname from AWS metadata service: %s", domain)
+
+		return domain, nil
+
+	case "@aws-private":
+		// We recognize @aws as meaning "the private DNS name from AWS", to generate this we need to get a few pieces of information
+		ipBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-ipv4")
+		if err != nil {
+			return "", fmt.Errorf("error reading local ipv4 from AWS metadata: %v", err)
+		}
+
+		azBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/placement/availability-zone")
+		if err != nil {
+			return "", fmt.Errorf("error reading availability zone from AWS metadata: %v", err)
+		}
+		
+		return strings.Join([]string{
+			"ip-"+strings.Replace(string(ipBytes), ".", "-", -1),
+			string(azBytes[:len(azBytes)-1]),
+			"compute.internal",
+		}, "."), nil
+	
+	default:
 		return hostnameOverride, nil
 	}
-
-	// We recognize @aws as meaning "the local-hostname from the aws metadata service"
-	vBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-hostname")
-	if err != nil {
-		return "", fmt.Errorf("error reading local hostname from AWS metadata: %v", err)
-	}
-
-	// The local-hostname gets it's hostname from the AWS DHCP Option Set, which
-	// may provide multiple hostnames separated by spaces. For now just choose
-	// the first one as the hostname.
-	domains := strings.Fields(string(vBytes))
-	if len(domains) == 0 {
-		klog.Warningf("Local hostname from AWS metadata service was empty")
-		return "", nil
-	}
-	domain := domains[0]
-
-	klog.Infof("Using hostname from AWS metadata service: %s", domain)
-
-	return domain, nil
 }
 
 // FindCert is a helper method to retrieving a certificate from the store
