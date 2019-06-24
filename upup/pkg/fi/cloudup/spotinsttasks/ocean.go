@@ -139,9 +139,11 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 
 	// Strategy.
 	{
-		actual.SpotPercentage = ocean.Strategy.SpotPercentage
-		actual.FallbackToOnDemand = ocean.Strategy.FallbackToOnDemand
-		actual.UtilizeReservedInstances = ocean.Strategy.UtilizeReservedInstances
+		if strategy := ocean.Strategy; strategy != nil {
+			actual.SpotPercentage = strategy.SpotPercentage
+			actual.FallbackToOnDemand = strategy.FallbackToOnDemand
+			actual.UtilizeReservedInstances = strategy.UtilizeReservedInstances
+		}
 	}
 
 	// Compute.
