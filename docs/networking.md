@@ -113,7 +113,7 @@ spec:
 ### Configuring Weave Net EXTRA_ARGS
 
 Weave allows you to pass command line arguments to weave by adding those arguments to the EXTRA_ARGS environmental variable.
-This can be used for debugging or for customizing the logging level of weave net. 
+This can be used for debugging or for customizing the logging level of weave net.
 
 ```
 spec:
