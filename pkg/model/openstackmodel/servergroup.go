@@ -80,7 +80,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 	securityGroupName := b.SecurityGroupName(ig.Spec.Role)
 	securityGroups = append(securityGroups, b.LinkToSecurityGroup(securityGroupName))
 
-	if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer == nil {
+	if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer == nil && ig.Spec.Role == kops.InstanceGroupRoleMaster {
 		securityGroups = append(securityGroups, b.LinkToSecurityGroup(b.Cluster.Spec.MasterPublicName))
 	}
 
