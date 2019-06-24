@@ -343,6 +343,23 @@ func Test_Validate_Calico(t *testing.T) {
 		{
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
+					TyphaReplicas: 3,
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					TyphaReplicas: -1,
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{"Invalid value::Calico.TyphaReplicas"},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
 					MajorVersion: "v3",
 				},
 				Etcd: &kops.EtcdClusterSpec{
