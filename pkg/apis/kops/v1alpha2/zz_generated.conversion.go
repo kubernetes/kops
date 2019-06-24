@@ -1160,6 +1160,9 @@ func autoConvert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
 	out.MajorVersion = in.MajorVersion
 	out.IPIPMode = in.IPIPMode
+	out.TyphaPrometheusMetricsEnabled = in.TyphaPrometheusMetricsEnabled
+	out.TyphaPrometheusMetricsPort = in.TyphaPrometheusMetricsPort
+	out.TyphaReplicas = in.TyphaReplicas
 	return nil
 }
 
@@ -1178,6 +1181,9 @@ func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha2_CalicoNetworkingSpec(in *
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
 	out.MajorVersion = in.MajorVersion
 	out.IPIPMode = in.IPIPMode
+	out.TyphaPrometheusMetricsEnabled = in.TyphaPrometheusMetricsEnabled
+	out.TyphaPrometheusMetricsPort = in.TyphaPrometheusMetricsPort
+	out.TyphaReplicas = in.TyphaReplicas
 	return nil
 }
 
