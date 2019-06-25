@@ -47,7 +47,6 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
-	"github.com/mitchellh/mapstructure"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog"
@@ -273,6 +272,8 @@ type OpenstackCloud interface {
 	GetFloatingIP(id string) (fip *floatingips.FloatingIP, err error)
 
 	AssociateFloatingIPToInstance(serverID string, opts floatingips.AssociateOpts) (err error)
+
+	ListServerFloatingIPs(id string) ([]*string, error)
 
 	ListFloatingIPs() (fips []floatingips.FloatingIP, err error)
 	ListL3FloatingIPs(opts l3floatingip.ListOpts) (fips []l3floatingip.FloatingIP, err error)
@@ -580,7 +581,6 @@ func (c *openstackCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiI
 			for _, lb := range lbList {
 				for _, fip := range fips {
 					if fip.FixedIP == lb.VipAddress {
-
 						ingresses = append(ingresses, kops.ApiIngressStatus{
 							IP: fip.IP,
 						})
@@ -596,21 +596,18 @@ func (c *openstackCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiI
 
 		for _, instance := range instances {
 			val, ok := instance.Metadata["k8s"]
-			val2, ok2 := instance.Metadata["KopsInstanceGroup"]
-			if ok && val == cluster.Name && ok2 && strings.HasPrefix(val2, "master") {
-				var addresses map[string][]Address
-				err := mapstructure.Decode(instance.Addresses, &addresses)
-				if err != nil {
-					return nil, err
-				}
-
-				for _, addrList := range addresses {
-					for _, props := range addrList {
-						if props.IPType == "floating" {
-							ingresses = append(ingresses, kops.ApiIngressStatus{
-								IP: props.Addr,
-							})
-						}
+			val2, ok2 := instance.Metadata["KopsRole"]
+			if ok && val == cluster.Name && ok2 {
+				role, success := kops.ParseInstanceGroupRole(val2, false)
+				if success && role == kops.InstanceGroupRoleMaster {
+					ips, err := c.ListServerFloatingIPs(instance.ID)
+					if err != nil {
+						return ingresses, err
+					}
+					for _, ip := range ips {
+						ingresses = append(ingresses, kops.ApiIngressStatus{
+							IP: fi.StringValue(ip),
+						})
 					}
 				}
 			}
