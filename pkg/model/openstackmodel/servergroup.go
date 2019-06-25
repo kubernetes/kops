@@ -60,6 +60,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 	}
 	igMeta["k8s"] = b.ClusterName()
 	igMeta["KopsInstanceGroup"] = ig.Name
+	igMeta["KopsRole"] = fmt.Sprintf("%s", ig.Spec.Role)
 	igMeta[openstack.INSTANCE_GROUP_GENERATION] = fmt.Sprintf("%d", ig.GetGeneration())
 	igMeta[openstack.CLUSTER_GENERATION] = fmt.Sprintf("%d", b.Cluster.GetGeneration())
 

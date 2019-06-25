@@ -22,7 +22,6 @@ import (
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
-	"github.com/mitchellh/mapstructure"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
@@ -72,33 +71,15 @@ func findL3Floating(cloud openstack.OpenstackCloud, opts l3floatingip.ListOpts) 
 }
 
 func (e *FloatingIP) findServerFloatingIP(context *fi.Context, cloud openstack.OpenstackCloud) (*string, error) {
-	var result *string
-	_, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		server, err := cloud.GetInstance(fi.StringValue(e.Server.ID))
-		if err != nil {
-			return true, fmt.Errorf("Failed to find server with id (\"%s\"): %v", fi.StringValue(e.Server.ID), err)
-		}
-
-		var addresses map[string][]openstack.Address
-		err = mapstructure.Decode(server.Addresses, &addresses)
-		if err != nil {
-			return true, err
-		}
-
-		for _, addrList := range addresses {
-			for _, props := range addrList {
-				if props.IPType == "floating" {
-					result = fi.String(props.Addr)
-					return true, nil
-				}
-			}
-		}
-		return false, nil
-	})
-	if result == nil || err != nil {
-		return nil, fmt.Errorf("Could not find floating ip associated to server (\"%s\") %v", fi.StringValue(e.Server.Name), err)
+	ips, err := cloud.ListServerFloatingIPs(fi.StringValue(e.Server.ID))
+	if err != nil {
+		return nil, err
 	}
-	return result, nil
+	// assumes that we do have only one interface and 0-1 floatingip in server, the setup that kops does
+	if len(ips) > 0 {
+		return ips[0], nil
+	}
+	return nil, nil
 }
 
 func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
