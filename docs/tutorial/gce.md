@@ -32,22 +32,21 @@ You can also put this in your `~/.bashrc` or similar.
 
 `kops create cluster` creates the Cluster object and InstanceGroup object you'll be working with in kops:
 
-```
-PROJECT=`gcloud config get-value project`
-export KOPS_FEATURE_FLAGS=AlphaAllowGCE # to unlock the GCE features
-kops create cluster simple.k8s.local --zones us-central1-a --state ${KOPS_STATE_STORE}/ --project=${PROJECT}
-```
+
+    PROJECT=`gcloud config get-value project`
+    export KOPS_FEATURE_FLAGS=AlphaAllowGCE # to unlock the GCE features
+    kops create cluster simple.k8s.local --zones us-central1-a --state ${KOPS_STATE_STORE}/ --project=${PROJECT}
+
 
 You can now list the Cluster objects in your kops state store (the GCS bucket
 we created).
 
-```
-kops get cluster --state ${KOPS_STATE_STORE}
 
-```
-NAME                CLOUD        ZONES
-simple.k8s.local    gce          us-central1-a
-```
+    > kops get cluster --state ${KOPS_STATE_STORE}
+
+    NAME                CLOUD        ZONES
+    simple.k8s.local    gce          us-central1-a
+
 
 <!-- TODO: Fix bug where zones not showing up -->
 
@@ -60,62 +59,61 @@ objects on a kubernetes cluster.
 
 You can see the details of your Cluster object by doing:
 
-`> kops get cluster --state ${KOPS_STATE_STORE}/ simple.k8s.local -oyaml`
-```
-apiVersion: kops.k8s.io/v1alpha2
-kind: Cluster
-metadata:
-  creationTimestamp: 2017-10-03T05:07:27Z
-  name: simple.k8s.local
-spec:
-  api:
-    loadBalancer:
-      type: Public
-  authorization:
-    alwaysAllow: {}
-  channel: stable
-  cloudProvider: gce
-  configBase: gs://kubernetes-clusters/simple.k8s.local
-  etcdClusters:
-  - etcdMembers:
-    - instanceGroup: master-us-central1-a
-      name: a
-    name: main
-  - etcdMembers:
-    - instanceGroup: master-us-central1-a
-      name: a
-    name: events
-  iam:
-    legacy: false
-  kubernetesApiAccess:
-  - 0.0.0.0/0
-  kubernetesVersion: 1.7.2
-  masterPublicName: api.simple.k8s.local
-  networking:
-    kubenet: {}
-  nonMasqueradeCIDR: 100.64.0.0/10
-  project: my-gce-project
-  sshAccess:
-  - 0.0.0.0/0
-  subnets:
-  - name: us-central1
-    region: us-central1
-    type: Public
-  topology:
-    dns:
-      type: Public
-    masters: public
-    nodes: public
-```
+    > kops get cluster --state ${KOPS_STATE_STORE}/ simple.k8s.local -oyaml
+
+    apiVersion: kops.k8s.io/v1alpha2
+    kind: Cluster
+    metadata:
+      creationTimestamp: 2017-10-03T05:07:27Z
+      name: simple.k8s.local
+    spec:
+      api:
+        loadBalancer:
+          type: Public
+      authorization:
+        alwaysAllow: {}
+      channel: stable
+      cloudProvider: gce
+      configBase: gs://kubernetes-clusters/simple.k8s.local
+      etcdClusters:
+      - etcdMembers:
+        - instanceGroup: master-us-central1-a
+          name: a
+        name: main
+      - etcdMembers:
+        - instanceGroup: master-us-central1-a
+          name: a
+        name: events
+      iam:
+        legacy: false
+      kubernetesApiAccess:
+      - 0.0.0.0/0
+      kubernetesVersion: 1.7.2
+      masterPublicName: api.simple.k8s.local
+      networking:
+        kubenet: {}
+      nonMasqueradeCIDR: 100.64.0.0/10
+      project: my-gce-project
+      sshAccess:
+      - 0.0.0.0/0
+      subnets:
+      - name: us-central1
+        region: us-central1
+        type: Public
+      topology:
+        dns:
+          type: Public
+        masters: public
+        nodes: public
 
 Similarly, you can also see your InstanceGroups using:
 
-`kops get instancegroup --state ${KOPS_STATE_STORE}/ --name simple.k8s.local`
-```
-NAME                    ROLE    MACHINETYPE     MIN    MAX    SUBNETS
-master-us-central1-a    Master  n1-standard-1   1      1      us-central1
-nodes                   Node    n1-standard-2   2      2      us-central1
-```
+    > kops get instancegroup --state ${KOPS_STATE_STORE}/ --name simple.k8s.local
+
+    NAME                    ROLE    MACHINETYPE     MIN    MAX    SUBNETS
+    master-us-central1-a    Master  n1-standard-1   1      1      us-central1
+    nodes                   Node    n1-standard-2   2      2      us-central1
+
 
 <!-- TODO: Fix subnets vs regions -->
 
@@ -163,26 +161,26 @@ put a few jumping off places here.  But when you're done, don't forget to [delet
 When you're done using the cluster, you should delete it to release the cloud resources.  `kops delete cluster` is
 the command.  When run without `--yes` it shows a preview of the objects it will delete:
 
-```
-> kops delete cluster simple.k8s.local
-TYPE                    NAME                                                    ID
-Address                 api-simple-k8s-local                                    api-simple-k8s-local
-Disk                    a-etcd-events-simple-k8s-local                          a-etcd-events-simple-k8s-local
-Disk                    a-etcd-main-simple-k8s-local                            a-etcd-main-simple-k8s-local
-ForwardingRule          api-simple-k8s-local                                    api-simple-k8s-local
-Instance                master-us-central1-a-9847                               us-central1-a/master-us-central1-a-9847
-Instance                nodes-0s0w                                              us-central1-a/nodes-0s0w
-Instance                nodes-dvlq                                              us-central1-a/nodes-dvlq
-InstanceGroupManager    a-master-us-central1-a-simple-k8s-local                 us-central1-a/a-master-us-central1-a-simple-k8s-local
-InstanceGroupManager    a-nodes-simple-k8s-local                                us-central1-a/a-nodes-simple-k8s-local
-InstanceTemplate        master-us-central1-a-simple-k8s-local-1507008700        master-us-central1-a-simple-k8s-local-1507008700
-InstanceTemplate        nodes-simple-k8s-local-1507008700                       nodes-simple-k8s-local-1507008700
-Route                   simple-k8s-local-715bb0c7-a7fc-11e7-93d7-42010a800002   simple-k8s-local-715bb0c7-a7fc-11e7-93d7-42010a800002
-Route                   simple-k8s-local-9a2a08e8-a7fc-11e7-93d7-42010a800002   simple-k8s-local-9a2a08e8-a7fc-11e7-93d7-42010a800002
-Route                   simple-k8s-local-9c17a4e6-a7fc-11e7-93d7-42010a800002   simple-k8s-local-9c17a4e6-a7fc-11e7-93d7-42010a800002
-TargetPool              api-simple-k8s-local                                    api-simple-k8s-local
 
-Must specify --yes to delete cluster
-```
+    > kops delete cluster simple.k8s.local
+    TYPE                    NAME                                                    ID
+    Address                 api-simple-k8s-local                                    api-simple-k8s-local
+    Disk                    a-etcd-events-simple-k8s-local                          a-etcd-events-simple-k8s-local
+    Disk                    a-etcd-main-simple-k8s-local                            a-etcd-main-simple-k8s-local
+    ForwardingRule          api-simple-k8s-local                                    api-simple-k8s-local
+    Instance                master-us-central1-a-9847                               us-central1-a/master-us-central1-a-9847
+    Instance                nodes-0s0w                                              us-central1-a/nodes-0s0w
+    Instance                nodes-dvlq                                              us-central1-a/nodes-dvlq
+    InstanceGroupManager    a-master-us-central1-a-simple-k8s-local                 us-central1-a/a-master-us-central1-a-simple-k8s-local
+    InstanceGroupManager    a-nodes-simple-k8s-local                                us-central1-a/a-nodes-simple-k8s-local
+    InstanceTemplate        master-us-central1-a-simple-k8s-local-1507008700        master-us-central1-a-simple-k8s-local-1507008700
+    InstanceTemplate        nodes-simple-k8s-local-1507008700                       nodes-simple-k8s-local-1507008700
+    Route                   simple-k8s-local-715bb0c7-a7fc-11e7-93d7-42010a800002   simple-k8s-local-715bb0c7-a7fc-11e7-93d7-42010a800002
+    Route                   simple-k8s-local-9a2a08e8-a7fc-11e7-93d7-42010a800002   simple-k8s-local-9a2a08e8-a7fc-11e7-93d7-42010a800002
+    Route                   simple-k8s-local-9c17a4e6-a7fc-11e7-93d7-42010a800002   simple-k8s-local-9c17a4e6-a7fc-11e7-93d7-42010a800002
+    TargetPool              api-simple-k8s-local                                    api-simple-k8s-local
+
+    Must specify --yes to delete cluster
+
 
 After you've double-checked you're deleting exactly what you want to delete, run `kops delete cluster simple.k8s.local --yes`.
