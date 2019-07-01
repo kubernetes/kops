@@ -33,6 +33,10 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/util/mount"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ec2"
+
 	"github.com/blang/semver"
 	"k8s.io/klog"
 )
@@ -555,21 +559,39 @@ func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
 
 	case "@aws-private":
 		// We recognize @aws as meaning "the private DNS name from AWS", to generate this we need to get a few pieces of information
-		ipBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-ipv4")
-		if err != nil {
-			return "", fmt.Errorf("error reading local ipv4 from AWS metadata: %v", err)
-		}
+	    azBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/placement/availability-zone")
+	    if err != nil {
+		    return "", fmt.Errorf("error reading availability zone from AWS metadata: %v", err)
+	    }
 
-		azBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/placement/availability-zone")
-		if err != nil {
-			return "", fmt.Errorf("error reading availability zone from AWS metadata: %v", err)
-		}
-		
-		return strings.Join([]string{
-			"ip-"+strings.Replace(string(ipBytes), ".", "-", -1),
-			string(azBytes[:len(azBytes)-1]),
-			"compute.internal",
-		}, "."), nil
+        instanceIDBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/instance-id")
+	    if err != nil {
+		    return "", fmt.Errorf("error reading instance-id from AWS metadata: %v", err)
+	    }
+	    instanceID := string(instanceIDBytes)
+
+	    config := aws.NewConfig()
+	    config = config.WithCredentialsChainVerboseErrors(true)
+
+	    s, err := session.NewSession(config)
+	    if err != nil {
+		    return "", fmt.Errorf("error starting new AWS session: %v", err)
+	    }
+
+	    svc := ec2.New(s, config.WithRegion(string(azBytes[:len(azBytes)-1])))
+
+	    result, err := svc.DescribeInstances(&ec2.DescribeInstancesInput{
+		    InstanceIds: []*string{&instanceID},
+	    })
+
+	    if len(result.Reservations) != 1 {
+	        return "", fmt.Errorf("Too many reservations returned for the single instance-id")
+	    }
+
+	    if len(result.Reservations[0].Instances) != 1 {
+	        return "", fmt.Errorf("Too many instances returned for the single instance-id")
+	    }
+	    return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
 	
 	default:
 		return hostnameOverride, nil
