@@ -198,7 +198,7 @@ func (r *ClusterVFS) find(clusterName string) (*api.Cluster, error) {
 		c.ObjectMeta.Name = clusterName
 	}
 	if c.ObjectMeta.Name != clusterName {
-		klog.Warningf("Name of cluster does not match: %q vs %q", c.ObjectMeta.Name, clusterName)
+		klog.Warningf("Name of cluster does not match: actual name was %q, but cluster name was %q (using registry path %v).", c.ObjectMeta.Name, clusterName, registry.PathCluster)
 	}
 
 	// TODO: Split this out into real version updates / schema changes
