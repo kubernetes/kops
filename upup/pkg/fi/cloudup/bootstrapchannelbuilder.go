@@ -913,7 +913,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 			"k8s-1.6":     "2.4.2-kops.2",
 			"k8s-1.8":     "2.6.7-kops.3",
 			"k8s-1.9":     "3.2.3-kops.1",
-			"k8s-1.12":    "3.7.3",
+			"k8s-1.12":    "3.7.4",
 		}
 		{
 			id := "pre-k8s-1.6"
