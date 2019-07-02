@@ -1,8 +1,8 @@
-# Canal Version v3.7.4
-# https://docs.projectcalico.org/v3.7/release-notes/#v374
+# Canal Version v3.8.0
+# https://docs.projectcalico.org/v3.8/release-notes/#v380
 # This manifest includes the following component versions:
-#   calico/node:v3.7.4
-#   calico/cni:v3.7.4
+#   calico/node:v3.8.0
+#   calico/cni:v3.8.0
 #   coreos/flannel:v0.11.0
 
 # Source: calico/templates/calico-config.yaml
@@ -32,7 +32,7 @@ data:
   cni_network_config: |-
     {
       "name": "k8s-pod-network",
-      "cniVersion": "0.3.0",
+      "cniVersion": "0.3.1",
       "plugins": [
         {
           "type": "calico",
@@ -204,6 +204,7 @@ spec:
     singular: networkset
 
 ---
+# Source: calico/templates/rbac.yaml
 
 # Include a clusterrole for the calico-node DaemonSet,
 # and bind it to the canal serviceaccount.
@@ -361,8 +362,9 @@ subjects:
 
 ---
 
-# This manifest installs the calico/node container, as well
-# as the Calico CNI plugins and network config on
+# Source: calico/templates/calico-node.yaml
+# This manifest installs the canal container, as well
+# as the CNI plugins and network config on
 # each master and worker node in a Kubernetes cluster.
 kind: DaemonSet
 apiVersion: apps/v1
@@ -390,7 +392,6 @@ spec:
         # if it ever gets evicted.
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
-      priorityClassName: system-node-critical
       nodeSelector:
         beta.kubernetes.io/os: linux
       hostNetwork: true
@@ -407,11 +408,12 @@ spec:
       # Minimize downtime during a rolling upgrade or deletion; tell Kubernetes to do a "force
       # deletion": https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods.
       terminationGracePeriodSeconds: 0
+      priorityClassName: system-node-critical
       initContainers:
-        # This container installs the Calico CNI binaries
+        # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.7.4
+          image: calico/cni:v3.8.0
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -442,12 +444,19 @@ spec:
               name: cni-bin-dir
             - mountPath: /host/etc/cni/net.d
               name: cni-net-dir
+        # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
+        # to communicate with Felix over the Policy Sync API.
+        - name: flexvol-driver
+          image: calico/pod2daemon-flexvol:v3.8.0
+          volumeMounts:
+          - name: flexvol-driver-host
+            mountPath: /host/driver
       containers:
-        # Runs calico/node container on each Kubernetes node.  This
+        # Runs canal container on each Kubernetes node. This
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.7.4
+          image: calico/node:v3.8.0
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -541,6 +550,8 @@ spec:
             - mountPath: /var/lib/calico
               name: var-lib-calico
               readOnly: false
+            - name: policysync
+              mountPath: /var/run/nodeagent
         # This container runs flannel using the kube-subnet-mgr backend
         # for allocating subnets.
         - name: kube-flannel
@@ -578,7 +589,7 @@ spec:
           - name: flannel-cfg
             mountPath: /etc/kube-flannel/
       volumes:
-        # Used by calico/node.
+        # Used by canal.
         - name: lib-modules
           hostPath:
             path: /lib/modules
@@ -603,6 +614,16 @@ spec:
         - name: cni-net-dir
           hostPath:
             path: /etc/cni/net.d
+        # Used to create per-pod Unix Domain Sockets
+        - name: policysync
+          hostPath:
+            type: DirectoryOrCreate
+            path: /var/run/nodeagent
+        # Used to install Flex Volume Driver
+        - name: flexvol-driver-host
+          hostPath:
+            type: DirectoryOrCreate
+            path: /usr/libexec/kubernetes/kubelet-plugins/volume/exec/nodeagent~uds
 ---
 
 apiVersion: v1
