@@ -3966,6 +3966,7 @@ func autoConvert_v1alpha1_NodeAuthorizerSpec_To_kops_NodeAuthorizerSpec(in *Node
 	out.Image = in.Image
 	out.NodeURL = in.NodeURL
 	out.Port = in.Port
+	out.Interval = in.Interval
 	out.Timeout = in.Timeout
 	out.TokenTTL = in.TokenTTL
 	return nil
@@ -3982,6 +3983,7 @@ func autoConvert_kops_NodeAuthorizerSpec_To_v1alpha1_NodeAuthorizerSpec(in *kops
 	out.Image = in.Image
 	out.NodeURL = in.NodeURL
 	out.Port = in.Port
+	out.Interval = in.Interval
 	out.Timeout = in.Timeout
 	out.TokenTTL = in.TokenTTL
 	return nil
