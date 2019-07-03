@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"k8s.io/kops/util/pkg/proxy"
 	"os"
 	"strings"
 
@@ -43,6 +42,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/exec"
+	"k8s.io/kops/util/pkg/proxy"
 )
 
 const metaFilename = "_etcd_backup.meta"
