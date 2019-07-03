@@ -17,10 +17,12 @@ limitations under the License.
 package proxy
 
 import (
+	"strconv"
+
+	"k8s.io/kops/pkg/apis/kops"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
-	"k8s.io/kops/pkg/apis/kops"
-	"strconv"
 )
 
 func GetProxyEnvVars(proxies *kops.EgressProxySpec) []v1.EnvVar {

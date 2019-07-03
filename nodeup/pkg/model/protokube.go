@@ -19,7 +19,6 @@ package model
 import (
 	"bytes"
 	"fmt"
-	"k8s.io/kops/util/pkg/proxy"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,6 +32,7 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/proxy"
 
 	"github.com/blang/semver"
 	"k8s.io/klog"
