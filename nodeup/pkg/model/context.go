@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"k8s.io/klog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -36,9 +37,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-
 	"github.com/blang/semver"
-	"k8s.io/klog"
 )
 
 // NodeupModelContext is the context supplied the nodeup tasks
@@ -162,7 +161,7 @@ func (c *NodeupModelContext) FileAssetsDefaultPath() string {
 	return filepath.Join(c.PathSrvKubernetes(), "assets")
 }
 
-// PathSrvSshproxy returns the path for the SSL proxy
+// PathSrvSshproxy returns the path for the SSH proxy
 func (c *NodeupModelContext) PathSrvSshproxy() string {
 	switch c.Distribution {
 	case distros.DistributionContainerOS:

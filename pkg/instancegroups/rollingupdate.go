@@ -97,7 +97,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 				defer wg.Done()
 
-				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
+				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group, c.K8sClient)
 				if err == nil {
 					err = g.RollingUpdate(c, cluster, instanceGroups, true, c.BastionInterval, c.ValidationTimeout)
 				}
@@ -125,7 +125,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 		// and we don't want to roll all the masters at the same time.  See issue #284
 
 		for _, group := range masterGroups {
-			g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
+			g, err := NewRollingUpdateInstanceGroup(c.Cloud, group, c.K8sClient)
 			if err == nil {
 				err = g.RollingUpdate(c, cluster, instanceGroups, false, c.MasterInterval, c.ValidationTimeout)
 			}
@@ -159,7 +159,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 			defer wg.Done()
 
 			for k, group := range nodeGroups {
-				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
+				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group, c.K8sClient)
 				if err == nil {
 					err = g.RollingUpdate(c, cluster, instanceGroups, false, c.NodeInterval, c.ValidationTimeout)
 				}
