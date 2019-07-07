@@ -90,6 +90,17 @@ KOPS_VERSION=`bazel run //cmd/kops version -- --short`
 export KOPS_BASE_URL=https://${GCS_BUCKET_NAME}.storage.googleapis.com/kops/${KOPS_VERSION}/
 ```
 
+Whether using GCS or S3, you probably want to upload dns-controller & kops-contoller images:
+
+```bash
+KOPS_VERSION=`bazel run //cmd/kops version -- --short`
+export DOCKER_IMAGE_PREFIX=${USER}/
+export DOCKER_REGISTRY=
+make dns-controller-push kops-controller-push
+export DNSCONTROLLER_IMAGE=${DOCKER_IMAGE_PREFIX}dns-controller:${KOPS_VERSION}
+export KOPSCONTROLLER_IMAGE=${DOCKER_IMAGE_PREFIX}kops-controller:${KOPS_VERSION}
+```
+
 You can create a cluster using `kops create cluster <clustername> --zones us-east-1b`
 
 Then follow the test directions above.
