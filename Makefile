@@ -56,6 +56,7 @@ unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCE
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.15.0-alpha.1
+KOPS_CONTROLLER_TAG=1.15.0-alpha.1
 
 # Keep in sync with logic in get_workspace_status
 # TODO: just invoke tools/get_workspace_status.sh?
@@ -902,3 +903,10 @@ dev-upload: dev-upload-nodeup dev-upload-protokube dev-copy-utils
 .PHONY: crds
 crds:
 	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd --apis-path pkg/apis/kops/v1alpha2 --domain k8s.io --output-dir k8s/crds/
+
+#------------------------------------------------------
+# kops-controller
+
+.PHONY: kops-controller-push
+kops-controller-push:
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel run //cmd/kops-controller:push-image

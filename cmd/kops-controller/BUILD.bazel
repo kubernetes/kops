@@ -25,3 +25,28 @@ go_binary(
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
+
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_image",
+    "container_push",
+)
+
+container_image(
+    name = "image",
+    base = "@distroless_base//image",
+    cmd = ["/usr/bin/kops-controller"],
+    directory = "/usr/bin/",
+    files = [
+        "//cmd/kops-controller",
+    ],
+)
+
+container_push(
+    name = "push-image",
+    format = "Docker",
+    image = ":image",
+    registry = "{STABLE_DOCKER_REGISTRY}",
+    repository = "{STABLE_DOCKER_IMAGE_PREFIX}kops-controller",
+    tag = "{STABLE_KOPS_CONTROLLER_TAG}",
+)

@@ -75,3 +75,13 @@ container_image(
         "//kube-discovery/cmd/kube-discovery",
     ],
 )
+
+container_image(
+    name = "kops-controller",
+    base = "@distroless_base//image",
+    cmd = ["/usr/bin/kops-controller"],
+    directory = "/usr/bin/",
+    files = [
+        "//cmd/kops-controller",
+    ],
+)
