@@ -27,15 +27,14 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"k8s.io/klog"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apiserver/pkg/authentication/user"
-
+	"k8s.io/klog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -644,7 +643,7 @@ func (b *KubeletBuilder) buildMasterKubeletKubeconfig() (*nodetasks.File, error)
 
 	template.Subject = pkix.Name{
 		CommonName:   fmt.Sprintf("system:node:%s", nodeName),
-		Organization: []string{user.NodesGroup},
+		Organization: []string{rbac.NodesGroup},
 	}
 
 	// https://tools.ietf.org/html/rfc5280#section-4.2.1.3

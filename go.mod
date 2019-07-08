@@ -6,8 +6,6 @@ go 1.12
 //replace k8s.io/kubernetes => k8s.io/kubernetes v1.15.3
 //replace k8s.io/api => k8s.io/api kubernetes-1.15.3
 //replace k8s.io/apimachinery => k8s.io/apimachinery kubernetes-1.15.3
-//replace k8s.io/apiserver => k8s.io/apiserver kubernetes-1.15.3
-//replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver kubernetes-1.15.3
 //replace k8s.io/client-go => k8s.io/client-go kubernetes-1.15.3
 //replace k8s.io/cloud-provider => k8s.io/cloud-provider kubernetes-1.15.3
 //replace k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers kubernetes-1.15.3
@@ -18,15 +16,13 @@ replace k8s.io/api => k8s.io/api v0.0.0-20190819141258-3544db3b9e44
 
 replace k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
 
-replace k8s.io/apiserver => k8s.io/apiserver v0.0.0-20190819142446-92cc630367d0
-
-replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190819143637-0dbe462fe92d
-
 replace k8s.io/client-go => k8s.io/client-go v0.0.0-20190819141724-e14f31a72a77
 
 replace k8s.io/cloud-provider => k8s.io/cloud-provider v0.0.0-20190819145148-d91c85d212d5
 
 // Dependencies we don't really need, except that kubernetes specifies them as v0.0.0 which confuses go.mod
+//replace k8s.io/apiserver => k8s.io/apiserver kubernetes-1.15.3
+//replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver kubernetes-1.15.3
 //replace k8s.io/kube-scheduler => k8s.io/kube-scheduler kubernetes-1.15.3
 //replace k8s.io/kube-proxy => k8s.io/kube-proxy kubernetes-1.15.3
 //replace k8s.io/cri-api => k8s.io/cri-api kubernetes-1.15.3
@@ -41,6 +37,10 @@ replace k8s.io/cloud-provider => k8s.io/cloud-provider v0.0.0-20190819145148-d91
 //replace k8s.io/cli-runtime => k8s.io/cli-runtime kubernetes-1.15.3
 //replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager kubernetes-1.15.3
 //replace k8s.io/code-generator => k8s.io/code-generator kubernetes-1.15.3
+
+replace k8s.io/apiserver => k8s.io/apiserver v0.0.0-20190819142446-92cc630367d0
+
+replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190819143637-0dbe462fe92d
 
 replace k8s.io/kubelet => k8s.io/kubelet v0.0.0-20190819144524-827174bad5e8
 
@@ -128,7 +128,6 @@ require (
 	gopkg.in/yaml.v2 v2.2.2
 	k8s.io/api v0.0.0
 	k8s.io/apimachinery v0.0.0
-	k8s.io/apiserver v0.0.0
 	k8s.io/cli-runtime v0.0.0
 	k8s.io/client-go v0.0.0
 	k8s.io/helm v2.9.0+incompatible
