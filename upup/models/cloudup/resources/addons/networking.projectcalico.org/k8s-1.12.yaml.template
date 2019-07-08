@@ -364,7 +364,7 @@ spec:
     spec:
       containers:
         - name: calico-kube-controllers
-          image: quay.io/calico/kube-controllers:v3.4.0
+          image: quay.io/calico/kube-controllers:v3.4.4
       initContainers:
         - name: migrate
           image: calico/upgrade:v1.0.5
@@ -416,7 +416,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/calico/cni:v3.4.0
+          image: quay.io/calico/cni:v3.4.4
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -452,7 +452,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v3.4.0
+          image: quay.io/calico/node:v3.4.4
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
