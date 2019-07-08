@@ -148,6 +148,17 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		}
 	}
 
+	if strings.HasPrefix(image, "kope/kops-controller:") {
+		// To use user-defined DNS Controller:
+		// 1. DOCKER_REGISTRY=[your docker hub repo] make kops-controller-push
+		// 2. export KOPSCONTROLLER_IMAGE=[your docker hub repo]
+		// 3. make kops and create/apply cluster
+		override := os.Getenv("KOPSCONTROLLER_IMAGE")
+		if override != "" {
+			image = override
+		}
+	}
+
 	if a.AssetsLocation != nil && a.AssetsLocation.ContainerProxy != nil {
 		containerProxy := strings.TrimRight(*a.AssetsLocation.ContainerProxy, "/")
 		normalized := image
