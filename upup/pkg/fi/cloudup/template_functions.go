@@ -89,6 +89,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return tf.cluster.Spec.KubeDNS
 	}
 
+	dest["KopsControllerArgv"] = tf.KopsControllerArgv
 	dest["DnsControllerArgv"] = tf.DnsControllerArgv
 	dest["ExternalDnsArgv"] = tf.ExternalDnsArgv
 
@@ -243,6 +244,24 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	argv = append(argv, "--zone=*/*")
 	// Verbose, but not crazy logging
 	argv = append(argv, "-v=2")
+
+	return argv, nil
+}
+
+// KopsControllerArgv returns the args to kops-controller
+func (tf *TemplateFunctions) KopsControllerArgv() ([]string, error) {
+	var argv []string
+
+	argv = append(argv, "/usr/bin/kops-controller")
+
+	argv = append(argv, "--cloud="+tf.cluster.Spec.CloudProvider)
+	argv = append(argv, "--config="+tf.cluster.Spec.ConfigBase)
+
+	// Disable metrics (avoid port conflicts, also risky because we are host network)
+	argv = append(argv, "--metrics-addr=0")
+
+	// Verbose, but not crazy logging
+	argv = append(argv, "--v=2")
 
 	return argv, nil
 }
