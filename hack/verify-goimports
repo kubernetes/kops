@@ -39,8 +39,8 @@ print("packages %s" % paths)
 process = subprocess.Popen(['goimports', '-l'] + paths, stdout=subprocess.PIPE, cwd=path.join(gopath, 'src'))
 stdout, stderr = process.communicate()
 
-if stdout != "":
+if stdout.strip().decode('ascii') != "":
   print("FAIL: 'goimports -w' needs to be run on the following files: ")
-  print(stdout)
+  print(stdout.decode('ascii'))
   print('FAIL: Please run the following command: make goimports')
   sys.exit(1)
