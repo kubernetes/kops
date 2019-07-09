@@ -171,8 +171,12 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 
 	flags = append(flags, []string{
 		"--kubeconfig=/var/lib/kube-proxy/kubeconfig",
-		"--oom-score-adj=-998",
-		`--resource-container=""`}...)
+		"--oom-score-adj=-998"}...)
+
+	if !b.IsKubernetesGTE("1.16") {
+		// Removed in 1.16: https://github.com/kubernetes/kubernetes/pull/78294
+		flags = append(flags, `--resource-container=""`)
+	}
 
 	container := &v1.Container{
 		Name:  "kube-proxy",
