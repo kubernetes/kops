@@ -17,6 +17,7 @@ limitations under the License.
 package openstack
 
 import (
+	"fmt"
 	"strings"
 
 	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
@@ -39,7 +40,7 @@ func (os *clusterDiscoveryOS) ListSecurityGroups() ([]*resources.Resource, error
 	}
 
 	for _, sg := range sgs {
-		if strings.HasSuffix(sg.Name, os.clusterName) {
+		if strings.HasSuffix(sg.Name, fmt.Sprintf(".%s", os.clusterName)) {
 			resourceTracker := &resources.Resource{
 				Name: sg.Name,
 				ID:   sg.ID,

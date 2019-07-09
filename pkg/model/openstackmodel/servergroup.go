@@ -60,6 +60,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 	}
 	igMeta["k8s"] = b.ClusterName()
 	igMeta["KopsInstanceGroup"] = ig.Name
+	igMeta["KopsRole"] = fmt.Sprintf("%s", ig.Spec.Role)
 	igMeta[openstack.INSTANCE_GROUP_GENERATION] = fmt.Sprintf("%d", ig.GetGeneration())
 	igMeta[openstack.CLUSTER_GENERATION] = fmt.Sprintf("%d", b.Cluster.GetGeneration())
 
@@ -76,6 +77,14 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		igUserData = fi.String(startupStr)
 	}
 
+	var securityGroups []*openstacktasks.SecurityGroup
+	securityGroupName := b.SecurityGroupName(ig.Spec.Role)
+	securityGroups = append(securityGroups, b.LinkToSecurityGroup(securityGroupName))
+
+	if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer == nil && ig.Spec.Role == kops.InstanceGroupRoleMaster {
+		securityGroups = append(securityGroups, b.LinkToSecurityGroup(b.Cluster.Spec.MasterPublicName))
+	}
+
 	// In the future, OpenStack will use Machine API to manage groups,
 	// for now create d.InstanceGroups.Spec.MinSize amount of servers
 	for i := int32(0); i < *ig.Spec.MinSize; i++ {
@@ -87,8 +96,6 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		iName := strings.ToLower(fmt.Sprintf("%s-%d.%s", ig.Name, i+1, b.ClusterName()))
 		instanceName := fi.String(strings.Replace(iName, ".", "-", -1))
 
-		securityGroupName := b.SecurityGroupName(ig.Spec.Role)
-		securityGroup := b.LinkToSecurityGroup(securityGroupName)
 		var az *string
 		if len(ig.Spec.Subnets) > 0 {
 			// bastion subnet name is not actual zone name, it contains "utility-" prefix
@@ -102,7 +109,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		portTask := &openstacktasks.Port{
 			Name:           fi.String(fmt.Sprintf("%s-%s", "port", *instanceName)),
 			Network:        b.LinkToNetwork(),
-			SecurityGroups: append([]*openstacktasks.SecurityGroup{}, securityGroup),
+			SecurityGroups: securityGroups,
 			Lifecycle:      b.Lifecycle,
 		}
 		c.AddTask(portTask)
@@ -135,13 +142,14 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			}
 			c.AddTask(t)
 		case kops.InstanceGroupRoleMaster:
-			if !b.UseLoadBalancerForAPI() {
+			if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer == nil {
 				t := &openstacktasks.FloatingIP{
 					Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
 					Server:    instanceTask,
 					Lifecycle: b.Lifecycle,
 				}
 				c.AddTask(t)
+				b.associateFIPToKeypair(c, t)
 			}
 		default:
 			if !b.UsesSSHBastion() {
@@ -155,6 +163,19 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		}
 	}
 
+	return nil
+}
+
+func (b *ServerGroupModelBuilder) associateFIPToKeypair(c *fi.ModelBuilderContext, fipTask *openstacktasks.FloatingIP) error {
+	// Ensure the floating IP is included in the TLS certificate,
+	// if we're not going to use an alias for it
+	// TODO: I don't love this technique for finding the task by name & modifying it
+	masterKeypairTask, found := c.Tasks["Keypair/master"]
+	if !found {
+		return fmt.Errorf("keypair/master task not found")
+	}
+	masterKeypair := masterKeypairTask.(*fitasks.Keypair)
+	masterKeypair.AlternateNameTasks = append(masterKeypair.AlternateNameTasks, fipTask)
 	return nil
 }
 
@@ -184,7 +205,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if b.UseLoadBalancerForAPI() {
+	if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer != nil {
 		lbSubnetName := b.MasterInstanceGroups()[0].Spec.Subnets[0]
 		lbTask := &openstacktasks.LB{
 			Name:          fi.String(b.Cluster.Spec.MasterPublicName),
@@ -202,15 +223,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(lbfipTask)
 
 		if dns.IsGossipHostname(b.Cluster.Name) || b.UsePrivateDNS() {
-			// Ensure the floating IP is included in the TLS certificate,
-			// if we're not going to use an alias for it
-			// TODO: I don't love this technique for finding the task by name & modifying it
-			masterKeypairTask, found := c.Tasks["Keypair/master"]
-			if !found {
-				return fmt.Errorf("keypair/master task not found")
-			}
-			masterKeypair := masterKeypairTask.(*fitasks.Keypair)
-			masterKeypair.AlternateNameTasks = append(masterKeypair.AlternateNameTasks, lbfipTask)
+			b.associateFIPToKeypair(c, lbfipTask)
 		}
 
 		poolTask := &openstacktasks.LBPool{
