@@ -18,11 +18,14 @@ package openstack
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/mitchellh/mapstructure"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -30,6 +33,14 @@ const (
 	INSTANCE_GROUP_GENERATION = "ig_generation"
 	CLUSTER_GENERATION        = "cluster_generation"
 )
+
+// floatingBackoff is the backoff strategy for listing openstack floatingips
+var floatingBackoff = wait.Backoff{
+	Duration: time.Second,
+	Factor:   1.5,
+	Jitter:   0.1,
+	Steps:    10,
+}
 
 func (c *openstackCloud) CreateInstance(opt servers.CreateOptsBuilder) (*servers.Server, error) {
 	var server *servers.Server
@@ -49,6 +60,38 @@ func (c *openstackCloud) CreateInstance(opt servers.CreateOptsBuilder) (*servers
 	} else {
 		return server, wait.ErrWaitTimeout
 	}
+}
+
+func (c *openstackCloud) ListServerFloatingIPs(instanceID string) ([]*string, error) {
+	var result []*string
+	_, err := vfs.RetryWithBackoff(floatingBackoff, func() (bool, error) {
+		server, err := c.GetInstance(instanceID)
+		if err != nil {
+			return true, fmt.Errorf("Failed to find server with id (\"%s\"): %v", instanceID, err)
+		}
+
+		var addresses map[string][]Address
+		err = mapstructure.Decode(server.Addresses, &addresses)
+		if err != nil {
+			return true, err
+		}
+
+		for _, addrList := range addresses {
+			for _, props := range addrList {
+				if props.IPType == "floating" {
+					result = append(result, fi.String(props.Addr))
+				}
+			}
+		}
+		if len(result) > 0 {
+			return true, nil
+		}
+		return false, nil
+	})
+	if len(result) == 0 || err != nil {
+		return result, fmt.Errorf("Could not find floating ip associated to server (\"%s\") %v", instanceID, err)
+	}
+	return result, nil
 }
 
 func (c *openstackCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
