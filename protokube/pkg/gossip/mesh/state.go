@@ -150,8 +150,10 @@ func (s *state) updateValues(removeKeys []string, putEntries map[string]string) 
 func (s *state) getData() *KVState {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
-	d := &KVState{}
-	*d = s.data
+
+	// make a deep-copy. To avoid a bunch of reflection etc. this simply marshals and unmarshals
+	b, _ := proto.Marshal(&s.data)
+	d, _ := DecodeKVState(b)
 	return d
 }
 
