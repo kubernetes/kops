@@ -27,8 +27,8 @@ const (
 	// LabelClusterName is a cluster label cloud tag
 	LabelClusterName = "kops.k8s.io/cluster"
 	// NodeLabelInstanceGroup is a node label set to the name of the instance group
-	NodeLabelInstanceGroup = "kops.k8s.io/instancegroup"
-	// Deprecated - use the new labels & taints node-role.kubernetes.io/master and node-role.kubernetes.io/node
+	NodeLabelInstanceGroup = "node.kubernetes.io/instancegroup"
+	// Deprecated - use the new labels & taints node.kubernetes.io/master and node.kubernetes.io/node
 	TaintNoScheduleMaster15 = "dedicated=master:NoSchedule"
 )
 

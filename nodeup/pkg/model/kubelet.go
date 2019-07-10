@@ -474,7 +474,7 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.ModelBuilderContext) erro
 
 const (
 	RoleLabelName15        = "kubernetes.io/role"
-	RoleLabelName16        = "kubernetes.io/role"
+	RoleLabelName16        = "node.kubernetes.io/role"
 	RoleMasterLabelValue15 = "master"
 	RoleNodeLabelValue15   = "node"
 
@@ -556,14 +556,24 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		if c.NodeLabels == nil {
 			c.NodeLabels = make(map[string]string)
 		}
-		c.NodeLabels[RoleLabelMaster16] = ""
-		c.NodeLabels[RoleLabelName15] = RoleMasterLabelValue15
+		// Use whitelisted kubelet node-labels from v1.13 onwards
+		if b.IsKubernetesGTE("1.13") {
+			c.NodeLabels[RoleLabelName16] = RoleMasterLabelValue15
+		} else {
+			c.NodeLabels[RoleLabelMaster16] = ""
+			c.NodeLabels[RoleLabelName15] = RoleMasterLabelValue15
+		}
 	} else {
 		if c.NodeLabels == nil {
 			c.NodeLabels = make(map[string]string)
 		}
-		c.NodeLabels[RoleLabelNode16] = ""
-		c.NodeLabels[RoleLabelName15] = RoleNodeLabelValue15
+		// Use whitelisted kubelet node-labels from v1.13 onwards
+		if b.IsKubernetesGTE("1.13") {
+			c.NodeLabels[RoleLabelName16] = RoleNodeLabelValue15
+		} else {
+			c.NodeLabels[RoleLabelNode16] = ""
+			c.NodeLabels[RoleLabelName15] = RoleNodeLabelValue15
+		}
 	}
 
 	for k, v := range b.InstanceGroup.Spec.NodeLabels {
@@ -580,8 +590,13 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		}
 
 		if len(c.Taints) == 0 && b.IsMaster {
-			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
-			c.Taints = append(c.Taints, RoleLabelMaster16+"=:"+string(v1.TaintEffectNoSchedule))
+			// Use whitelisted kubelet node-labels from v1.13 onwards
+			if b.IsKubernetesGTE("1.13") {
+				c.Taints = append(c.Taints, RoleLabelName16+"="+RoleMasterLabelValue15+":"+string(v1.TaintEffectNoSchedule))
+			} else {
+				// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
+				c.Taints = append(c.Taints, RoleLabelMaster16+"=:"+string(v1.TaintEffectNoSchedule))
+			}
 		}
 
 		// Enable scheduling since it can be controlled via taints.

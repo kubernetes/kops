@@ -22,15 +22,22 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
+// GetNodeRole returns a string value of the Role for a given Node
 func GetNodeRole(node *v1.Node) string {
 	role := ""
-	// Newer labels
+
+	// New label
+	if v, ok := node.Labels["node.kubernetes.io/role"]; ok {
+		return v
+	}
+
+	// Older labels
 	for k := range node.Labels {
 		if strings.HasPrefix(k, "node-role.kubernetes.io/") {
 			role = strings.TrimPrefix(k, "node-role.kubernetes.io/")
 		}
 	}
-	// Older label
+
 	if role == "" {
 		role = node.Labels["kubernetes.io/role"]
 	}
