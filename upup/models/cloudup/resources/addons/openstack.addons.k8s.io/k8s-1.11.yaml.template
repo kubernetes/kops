@@ -189,16 +189,26 @@ spec:
       # run on the host network (don't depend on CNI)
       hostNetwork: true
       # run on each master node
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
-      securityContext:
-        runAsUser: 1001
-      serviceAccountName: cloud-controller-manager
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+            - matchExpressions:
+              - key: node.kubernetes.io/role
+                operator: In
+                values:
+                - master
       tolerations:
       - effect: NoSchedule
         operator: Exists
       - key: CriticalAddonsOnly
         operator: Exists
+      securityContext:
+        runAsUser: 1001
+      serviceAccountName: cloud-controller-manager
       containers:
       - name: openstack-cloud-controller-manager
         image: "{{- .ExternalCloudControllerManager.Image }}"

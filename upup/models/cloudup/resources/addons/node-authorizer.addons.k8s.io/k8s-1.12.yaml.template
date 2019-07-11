@@ -136,15 +136,29 @@ spec:
         prometheus.io/scrape: "true"
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+            - matchExpressions:
+              - key: node.kubernetes.io/role
+                operator: In
+                values:
+                - master
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        key: node.kubernetes.io/role
+        operator: Equal
+        value: master
       hostNetwork: true
-      nodeSelector:
-        kubernetes.io/role: master
       serviceAccount: {{ $name }}
       securityContext:
         fsGroup: 1000
-      tolerations:
-        - key: "node-role.kubernetes.io/master"
-          effect: NoSchedule
       volumes:
         - name: config
           hostPath:

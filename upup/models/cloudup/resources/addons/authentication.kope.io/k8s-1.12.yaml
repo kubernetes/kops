@@ -46,13 +46,27 @@ spec:
     spec:
       serviceAccountName: auth-api
       hostNetwork: true
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+            - matchExpressions:
+              - key: node.kubernetes.io/role
+                operator: In
+                values:
+                - master
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
-      - key: "CriticalAddonsOnly"
-        operator: "Exists"
+      - effect: NoSchedule
+        key: node.kubernetes.io/role
+        operator: Equal
+        value: master
+      - key: CriticalAddonsOnly
+        operator: Exists
       containers:
       - name: auth-api
         image: kopeio/auth-api:1.0.20171125

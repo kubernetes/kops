@@ -111,8 +111,18 @@ spec:
       labels:
         k8s-app: cloud-controller-manager
     spec:
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+            - matchExpressions:
+              - key: node.kubernetes.io/role
+                operator: In
+                values:
+                - master
       serviceAccountName: cloud-controller-manager
       containers:
       - name: cloud-controller-manager
@@ -146,8 +156,11 @@ spec:
       # the taint may vary depending on your cluster setup
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
+      - key: node.kubernetes.io/role
+        effect: NoSchedule
+        operator: Equal
+        value: master
       # this is to restrict CCM to only run on master nodes
       # the node selector may vary depending on your cluster setup
       - key: "CriticalAddonsOnly"
         operator: "Exists"
-

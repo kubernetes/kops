@@ -21,11 +21,25 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+            - matchExpressions:
+              - key: node.kubernetes.io/role
+                operator: In
+                values:
+                - master
       tolerations:
-      - key: "node-role.kubernetes.io/master"
-        effect: NoSchedule
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        key: node.kubernetes.io/role
+        operator: Equal
+        value: master
       dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
       hostNetwork: true
       serviceAccount: dns-controller
