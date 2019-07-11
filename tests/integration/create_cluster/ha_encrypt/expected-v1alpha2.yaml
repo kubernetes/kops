@@ -85,7 +85,7 @@ spec:
   maxSize: 1
   minSize: 1
   nodeLabels:
-    kops.k8s.io/instancegroup: master-us-test-1a
+    node.kubernetes.io/instancegroup: master-us-test-1a
   role: Master
   subnets:
   - us-test-1a
@@ -105,7 +105,7 @@ spec:
   maxSize: 1
   minSize: 1
   nodeLabels:
-    kops.k8s.io/instancegroup: master-us-test-1b
+    node.kubernetes.io/instancegroup: master-us-test-1b
   role: Master
   subnets:
   - us-test-1b
@@ -125,7 +125,7 @@ spec:
   maxSize: 1
   minSize: 1
   nodeLabels:
-    kops.k8s.io/instancegroup: master-us-test-1c
+    node.kubernetes.io/instancegroup: master-us-test-1c
   role: Master
   subnets:
   - us-test-1c
@@ -145,7 +145,7 @@ spec:
   maxSize: 2
   minSize: 2
   nodeLabels:
-    kops.k8s.io/instancegroup: nodes
+    node.kubernetes.io/instancegroup: nodes
   role: Node
   subnets:
   - us-test-1a

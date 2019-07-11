@@ -24,7 +24,7 @@ spec:
     team: me
     project: ion
   nodeLabels:
-    kops.k8s.io/instancegroup: nodes
+    node.kubernetes.io/instancegroup: nodes
   role: Node
   rootVolumeSize: 200
   rootVolumeOptimization: true

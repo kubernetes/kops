@@ -80,7 +80,7 @@ resource "aws_autoscaling_group" "master-us-west-2a-masters-k8s-iam-us-west-2-td
   }
 
   tag = {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup"
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/instancegroup"
     value               = "master-us-west-2a"
     propagate_at_launch = true
   }
@@ -118,7 +118,7 @@ resource "aws_autoscaling_group" "nodes-k8s-iam-us-west-2-td-priv" {
   }
 
   tag = {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup"
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/instancegroup"
     value               = "nodes"
     propagate_at_launch = true
   }
