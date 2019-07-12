@@ -185,7 +185,7 @@ ${KOPS}: ${BINDATA_TARGETS}
 
 ${GOBINDATA}:
 	mkdir -p ${LOCAL}
-	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
+	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/vendor/github.com/go-bindata/go-bindata/go-bindata
 
 .PHONY: gobindata-tool
 gobindata-tool: ${GOBINDATA}
@@ -491,7 +491,7 @@ dep-ensure: dep-prereqs
 	find vendor/ -name "BUILD.bazel" -delete
 	# Remove recursive symlinks that really confuse bazel
 	rm -rf vendor/github.com/coreos/etcd/cmd/
-	rm -rf vendor/github.com/jteeuwen/go-bindata/testdata/
+	rm -rf vendor/github.com/go-bindata/go-bindata/testdata/
 	# Remove depenencies that dep just can't figure out
 	rm -rf vendor/k8s.io/code-generator/cmd/set-gen/
 	rm -rf vendor/k8s.io/code-generator/cmd/go-to-protobuf/

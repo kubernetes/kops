@@ -454,6 +454,16 @@
   revision = "73d445a93680fa1a78ae23a5839bad48f32ba1ee"
 
 [[projects]]
+  digest = "1:ffd2be7ed29d49003bf02a551efedaeb7848d594238d5183175b4cf6da9f8856"
+  name = "github.com/go-bindata/go-bindata"
+  packages = [
+    ".",
+    "go-bindata",
+  ]
+  pruneopts = "UT"
+  revision = "ff7109080027ec152dabb369e157c4f359b76f31"
+
+[[projects]]
   digest = "1:8e4f6662aa166f5690677c0c3540b241b01b327871bf53cd8f995efb655d4b14"
   name = "github.com/go-ini/ini"
   packages = ["."]
@@ -746,16 +756,6 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "f2b4162afba35581b6d4a50d3b8f34e33c144682"
-
-[[projects]]
-  digest = "1:68a21d98a9a22099581b3c76d5478d65c73dd58c7a32262636cb11deb99c02ec"
-  name = "github.com/jteeuwen/go-bindata"
-  packages = [
-    ".",
-    "go-bindata",
-  ]
-  pruneopts = "UT"
-  revision = "a0ff2567cfb70903282db057e799fd826784d41d"
 
 [[projects]]
   branch = "master"
@@ -2099,6 +2099,7 @@
     "github.com/docker/engine-api/types",
     "github.com/fullsailor/pkcs7",
     "github.com/ghodss/yaml",
+    "github.com/go-bindata/go-bindata/go-bindata",
     "github.com/go-ini/ini",
     "github.com/go-openapi/spec",
     "github.com/gogo/protobuf/gogoproto",
@@ -2120,6 +2121,7 @@
     "github.com/gophercloud/gophercloud/openstack/dns/v2/zones",
     "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners",
     "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers",
+    "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors",
     "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools",
     "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external",
     "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips",
@@ -2137,12 +2139,12 @@
     "github.com/hashicorp/hcl/hcl/printer",
     "github.com/hashicorp/hcl/json/parser",
     "github.com/jpillora/backoff",
-    "github.com/jteeuwen/go-bindata/go-bindata",
     "github.com/kubernetes-incubator/apiserver-builder/cmd/apiregister-gen",
     "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot",
     "github.com/kubernetes-incubator/reference-docs/gen-apidocs",
     "github.com/miekg/coredns/middleware/etcd/msg",
     "github.com/miekg/dns",
+    "github.com/mitchellh/mapstructure",
     "github.com/pborman/uuid",
     "github.com/pkg/errors",
     "github.com/pkg/sftp",
@@ -2191,6 +2193,7 @@
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
     "k8s.io/api/rbac/v1beta1",
+    "k8s.io/apimachinery/pkg/api/equality",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/api/resource",

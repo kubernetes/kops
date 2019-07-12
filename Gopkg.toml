@@ -1,7 +1,7 @@
 
 required = [
   # Needed for build
-  "github.com/jteeuwen/go-bindata/go-bindata",
+  "github.com/go-bindata/go-bindata/go-bindata",
 
   # Needed for apimachinery generation
   "k8s.io/code-generator/cmd/client-gen",
@@ -46,8 +46,8 @@ required = [
 
 # We need this for our build
 [[override]]
-  name = "github.com/jteeuwen/go-bindata"
-  revision = "a0ff2567cfb70903282db057e799fd826784d41d"
+  name = "github.com/go-bindata/go-bindata"
+  revision = "ff7109080027ec152dabb369e157c4f359b76f31"
 
 # Core kubernetes components
 [[override]]
