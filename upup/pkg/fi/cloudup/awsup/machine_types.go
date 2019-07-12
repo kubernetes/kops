@@ -2064,7 +2064,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "t3a.nano",
 		MemoryGB:          0.5,
-		ECU:               6  * BurstableCreditsToECUS,
+		ECU:               6 * BurstableCreditsToECUS,
 		Cores:             2,
 		InstanceENIs:      2,
 		InstanceIPsPerENI: 2,
