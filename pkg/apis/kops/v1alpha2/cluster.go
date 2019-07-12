@@ -189,6 +189,8 @@ type NodeAuthorizerSpec struct {
 	NodeURL string `json:"nodeURL,omitempty"`
 	// Port is the port the service is running on the master
 	Port int `json:"port,omitempty"`
+	// Interval the time between retires for authorization request
+	Interval *metav1.Duration `json:"interval,omitempty"`
 	// Timeout the max time for authorization request
 	Timeout *metav1.Duration `json:"timeout,omitempty"`
 	// TokenTTL is the max ttl for an issued token
