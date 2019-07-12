@@ -281,6 +281,10 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	// involved in scheduling kube-proxy).
 	kubemanifest.MarkPodAsCritical(pod)
 
+	// Also set priority so that kube-proxy does not get evicted in clusters where
+	// PodPriority is enabled.
+	kubemanifest.MarkPodAsNodeCritical(pod)
+
 	return pod, nil
 }
 
