@@ -15,6 +15,7 @@ go_library(
         "//pkg/featureflag:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/model/defaults:go_default_library",
+        "//pkg/model/spotinstmodel:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awstasks:go_default_library",
         "//upup/pkg/fi/fitasks:go_default_library",
