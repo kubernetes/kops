@@ -61,6 +61,7 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 		//ListCloudFormationStacks,
 
 		// EC2
+		ListAutoScalingGroups,
 		ListInstances,
 		ListKeypairs,
 		ListSecurityGroups,
@@ -86,9 +87,6 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 	if featureflag.Spotinst.Enabled() {
 		// Spotinst resources
 		listFunctions = append(listFunctions, ListSpotinstResources)
-	} else {
-		// AutoScaling Groups
-		listFunctions = append(listFunctions, ListAutoScalingGroups)
 	}
 
 	for _, fn := range listFunctions {
