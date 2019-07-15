@@ -159,6 +159,25 @@ func buildCloudInstanceGroup(svc Service, ig *kops.InstanceGroup, group Elastigr
 	currentName := group.Name()
 	newName := fmt.Sprintf("%s:%d", group.Name(), time.Now().Nanosecond())
 
+	// The instance registration below registers all active instances with
+	// their instance group. In addition, it looks for outdated instances by
+	// comparing each instance creation timestamp against the modification
+	// timestamp of its instance group.
+	//
+	// In a rolling-update operation, one or more detach operations are
+	// performed to replace existing instances. This is done by updating the
+	// instance group and results in updating the modification timestamp to the
+	// current time.
+	//
+	// The update of the modification timestamp occurs only after the detach
+	// operation is completed, meaning that new instances have already been
+	// created, so our comparison may be incorrect.
+	//
+	// In order to work around this issue, we assume that the detach operation
+	// will take up to two minutes, and therefore we subtract this duration from
+	// the modification timestamp of the instance group before the comparison.
+	instanceGroupUpdatedAt = instanceGroupUpdatedAt.Add(-2 * time.Minute)
+
 	for _, instance := range instances {
 		if instance.Id() == "" {
 			klog.Warningf("Ignoring instance with no ID: %v", instance)
