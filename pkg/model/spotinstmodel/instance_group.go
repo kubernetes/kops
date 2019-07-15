@@ -26,7 +26,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -34,6 +33,10 @@ import (
 )
 
 const (
+	// InstanceGroupLabelManaged is the metadata label used on the instance
+	// group to specify that the Spotinst provider should be used to upon creation.
+	InstanceGroupLabelManaged = "spotinst.io/managed"
+
 	// InstanceGroupLabelSpotPercentage is the metadata label used on the
 	// instance group to specify the percentage of Spot instances that
 	// should spin up from the target capacity.
@@ -101,7 +104,7 @@ const (
 
 // InstanceGroupModelBuilder configures InstanceGroup objects
 type InstanceGroupModelBuilder struct {
-	*awsmodel.AWSModelContext
+	*model.KopsModelContext
 
 	BootstrapScript   *model.BootstrapScript
 	Lifecycle         *fi.Lifecycle
@@ -115,8 +118,16 @@ func (b *InstanceGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	var err error
 
 	for _, ig := range b.InstanceGroups {
-		klog.V(2).Infof("Building instance group: %q", b.AutoscalingGroupName(ig))
+		name := b.AutoscalingGroupName(ig)
 
+		if featureflag.SpotinstHybrid.Enabled() {
+			if !ManageInstanceGroup(ig) {
+				klog.V(2).Infof("Skipping instance group: %q", name)
+				continue
+			}
+		}
+
+		klog.V(2).Infof("Building instance group: %q", name)
 		switch ig.Spec.Role {
 
 		// Create both Master and Bastion instance groups as Elastigroups.
@@ -642,7 +653,7 @@ func (b *InstanceGroupModelBuilder) buildRootVolumeOpts(ig *kops.InstanceGroup) 
 	{
 		typ := fi.StringValue(ig.Spec.RootVolumeType)
 		if typ == "" {
-			typ = awsmodel.DefaultVolumeType
+			typ = "gp2"
 		}
 		opts.Type = fi.String(typ)
 	}
@@ -912,4 +923,12 @@ func defaultSpotPercentage(ig *kops.InstanceGroup) *float64 {
 	}
 
 	return &percentage
+}
+
+// ManageInstanceGroup indicates whether the instance group labeled with
+// a metadata label `spotinst.io/managed` which means the Spotinst provider
+// should be used to upon creation if the `SpotinstHybrid` feature flag is on.
+func ManageInstanceGroup(ig *kops.InstanceGroup) bool {
+	managed, _ := strconv.ParseBool(ig.ObjectMeta.Labels[InstanceGroupLabelManaged])
+	return managed
 }
