@@ -53,12 +53,59 @@ data:
 ---
 
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: calico-kube-controllers
+  labels:
+    role.kubernetes.io/networking: "1"
+rules:
+  # Pods are monitored for changing labels.
+  # The node controller monitors Kubernetes nodes.
+  # Namespace and serviceaccount labels are used for policy.
+  - apiGroups: [""]
+    resources:
+      - pods
+      - nodes
+      - namespaces
+      - serviceaccounts
+    verbs:
+      - watch
+      - list
+  # Watch for changes to Kubernetes NetworkPolicies.
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - networkpolicies
+    verbs:
+      - watch
+      - list
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: calico-kube-controllers
+  labels:
+    role.kubernetes.io/networking: "1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: calico-kube-controllers
+subjects:
+- kind: ServiceAccount
+  name: calico-kube-controllers
+  namespace: kube-system
+
+---
+# Include a clusterrole for the calico-node DaemonSet,
+# and bind it to the calico-node serviceaccount.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-node
   labels:
     role.kubernetes.io/networking: "1"
 rules:
+  # The CNI plugin needs to get pods, nodes, and namespaces.
   - apiGroups: [""]
     resources:
       - pods
@@ -66,19 +113,24 @@ rules:
       - namespaces
     verbs:
       - get
----
-
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: calico-node
-  namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
+  - apiGroups: [""]
+    resources:
+      - endpoints
+      - services
+    verbs:
+      # Used to discover service IPs for advertisement.
+      - watch
+      - list
+  - apiGroups: [""]
+    resources:
+      - nodes/status
+    verbs:
+      # Needed for clearing NodeNetworkUnavailable flag.
+      - patch
 ---
 
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-node
   labels:
@@ -91,66 +143,13 @@ subjects:
 - kind: ServiceAccount
   name: calico-node
   namespace: kube-system
----
-
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: calico-kube-controllers
-  namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
----
-
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: calico-kube-controllers
-  labels:
-    role.kubernetes.io/networking: "1"
-rules:
-  - apiGroups:
-    - ""
-    - extensions
-    resources:
-      - pods
-      - namespaces
-      - networkpolicies
-      - nodes
-    verbs:
-      - watch
-      - list
-  - apiGroups:
-    - networking.k8s.io
-    resources:
-      - networkpolicies
-    verbs:
-      - watch
-      - list
----
-
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: calico-kube-controllers
-  labels:
-    role.kubernetes.io/networking: "1"
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: calico-kube-controllers
-subjects:
-- kind: ServiceAccount
-  name: calico-kube-controllers
-  namespace: kube-system
-
 ---
 
 # This manifest installs the calico/node container, as well
 # as the Calico CNI plugins and network config on
 # each master and worker node in a Kubernetes cluster.
 kind: DaemonSet
-apiVersion: extensions/v1beta1
+apiVersion: extensions/v1
 metadata:
   name: calico-node
   namespace: kube-system
@@ -171,6 +170,10 @@ spec:
         k8s-app: calico-node
         role.kubernetes.io/networking: "1"
       annotations:
+        # This, along with the CriticalAddonsOnly toleration below,
+        # marks the pod as a critical add-on, ensuring it gets
+        # priority scheduling and that its resources are reserved
+        # if it ever gets evicted.
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       hostNetwork: true
@@ -187,150 +190,7 @@ spec:
       # Minimize downtime during a rolling upgrade or deletion; tell Kubernetes to do a "force
       # deletion": https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods.
       terminationGracePeriodSeconds: 0
-      containers:
-        # Runs calico/node container on each Kubernetes node.  This
-        # container programs network policy and routes on each
-        # host.
-        - name: calico-node
-          image: calico/node:v3.8.0
-          env:
-            # The location of the Calico etcd cluster.
-            - name: ETCD_ENDPOINTS
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: etcd_endpoints
-            {{- if eq $etcd_scheme "https" }}
-            - name: ETCD_CERT_FILE
-              value: /certs/calico-client.pem
-            - name: ETCD_KEY_FILE
-              value: /certs/calico-client-key.pem
-            - name: ETCD_CA_CERT_FILE
-              value: /certs/ca.pem
-            {{- end }}
-            # Choose the backend to use.
-            - name: CALICO_NETWORKING_BACKEND
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: calico_backend
-            # Cluster type to identify the deployment type
-            - name: CLUSTER_TYPE
-              value: "kops,bgp"
-            # Disable file logging so `kubectl logs` works.
-            - name: CALICO_DISABLE_FILE_LOGGING
-              value: "true"
-            # Set noderef for node controller.
-            - name: CALICO_K8S_NODE_REF
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
-            # Set Felix endpoint to host default action to ACCEPT.
-            - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
-              value: "ACCEPT"
-            # The default IPv4 pool to create on startup if none exists. Pod IPs will be
-            # chosen from this range. Changing this value after installation will have
-            # no effect. This should fall within `--cluster-cidr`.
-            # Configure the IP Pool from which Pod IPs will be chosen.
-            - name: CALICO_IPV4POOL_CIDR
-              value: "{{ .KubeControllerManager.ClusterCIDR }}"
-            - name: CALICO_IPV4POOL_IPIP
-              value: "{{- if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}cross-subnet{{- else -}}always{{- end -}}"
-            # Disable IPv6 on Kubernetes.
-            - name: FELIX_IPV6SUPPORT
-              value: "false"
-            # Set Felix logging to the desired level
-            - name: FELIX_LOGSEVERITYSCREEN
-              value: "{{- or .Networking.Calico.LogSeverityScreen "info" }}"
-            # Set to enable the experimental Prometheus metrics server
-            - name: FELIX_PROMETHEUSMETRICSENABLED
-              value: "{{- or .Networking.Calico.PrometheusMetricsEnabled "false" }}"
-            # TCP port that the Prometheus metrics server should bind to
-            - name: FELIX_PROMETHEUSMETRICSPORT
-              value: "{{- or .Networking.Calico.PrometheusMetricsPort "9091" }}"
-            # Enable Prometheus Go runtime metrics collection
-            - name: FELIX_PROMETHEUSGOMETRICSENABLED
-              value: "{{- or .Networking.Calico.PrometheusGoMetricsEnabled "true" }}"
-            # Enable Prometheus process metrics collection
-            - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
-              value: "{{- or .Networking.Calico.PrometheusProcessMetricsEnabled "true" }}"
-            # Auto-detect the BGP IP address.
-            - name: IP
-              value: "autodetect"
-            - name: FELIX_HEALTHENABLED
-              value: "true"
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 10m
-          livenessProbe:
-            httpGet:
-              path: /liveness
-              port: 9099
-              host: localhost
-            periodSeconds: 10
-            initialDelaySeconds: 10
-            failureThreshold: 6
-          readinessProbe:
-            exec:
-              command:
-              - /bin/calico-node
-              - -bird-ready
-              - -felix-ready
-            periodSeconds: 10
-          volumeMounts:
-            - mountPath: /lib/modules
-              name: lib-modules
-              readOnly: true
-            - mountPath: /var/run/calico
-              name: var-run-calico
-              readOnly: false
-            - mountPath: /var/lib/calico
-              name: var-lib-calico
-              readOnly: false
-            # Necessary for gossip based DNS
-            - mountPath: /etc/hosts
-              name: etc-hosts
-              readOnly: true
-            {{- if eq $etcd_scheme "https" }}
-            - mountPath: /certs
-              name: calico
-              readOnly: true
-            {{- end }}
-        # This container installs the Calico CNI binaries
-        # and CNI network config file on each node.
-        - name: install-cni
-          image: calico/cni:v3.8.0
-          command: ["/install-cni.sh"]
-          env:
-            # Name of the CNI config file to create.
-            - name: CNI_CONF_NAME
-              value: "10-calico.conflist"
-            # The location of the Calico etcd cluster.
-            - name: ETCD_ENDPOINTS
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: etcd_endpoints
-            # The CNI network config to install on each node.
-            - name: CNI_NETWORK_CONFIG
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: cni_network_config
-          volumeMounts:
-            - mountPath: /host/opt/cni/bin
-              name: cni-bin-dir
-            - mountPath: /host/etc/cni/net.d
-              name: cni-net-dir
-            # Necessary for gossip based DNS
-            - mountPath: /etc/hosts
-              name: etc-hosts
-              readOnly: true
-          resources:
-            requests:
-              cpu: 10m
+      priorityClassName: system-node-critical
       initContainers:
         - name: migrate
           image: calico/upgrade:v1.0.5
@@ -372,6 +232,165 @@ spec:
               name: calico
               readOnly: true
           {{- end }}
+        # This container installs the CNI binaries
+        # and CNI network config file on each node.
+        - name: install-cni
+          image: calico/cni:v3.8.0
+          command: ["/install-cni.sh"]
+          env:
+            # Name of the CNI config file to create.
+            - name: CNI_CONF_NAME
+              value: "10-calico.conflist"
+            # The CNI network config to install on each node.
+            - name: CNI_NETWORK_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: calico-config
+                  key: cni_network_config
+            # The location of the etcd cluster.
+            - name: ETCD_ENDPOINTS
+              valueFrom:
+                configMapKeyRef:
+                  name: calico-config
+                  key: etcd_endpoints
+            # Prevents the container from sleeping forever.
+            - name: SLEEP
+              value: "false"
+          volumeMounts:
+            - mountPath: /host/opt/cni/bin
+              name: cni-bin-dir
+            - mountPath: /host/etc/cni/net.d
+              name: cni-net-dir
+            # Necessary for gossip based DNS
+            - mountPath: /etc/hosts
+              name: etc-hosts
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+        # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
+        # to communicate with Felix over the Policy Sync API.
+        - name: flexvol-driver
+          image: calico/pod2daemon-flexvol:v3.8.0
+          volumeMounts:
+          - name: flexvol-driver-host
+            mountPath: /host/driver
+      containers:
+        # Runs calico-node container on each Kubernetes node.  This
+        # container programs network policy and routes on each
+        # host.
+        - name: calico-node
+          image: calico/node:v3.8.0
+          env:
+            # The location of the Calico etcd cluster.
+            - name: ETCD_ENDPOINTS
+              valueFrom:
+                configMapKeyRef:
+                  name: calico-config
+                  key: etcd_endpoints
+            {{- if eq $etcd_scheme "https" }}
+            - name: ETCD_CERT_FILE
+              value: /certs/calico-client.pem
+            - name: ETCD_KEY_FILE
+              value: /certs/calico-client-key.pem
+            - name: ETCD_CA_CERT_FILE
+              value: /certs/ca.pem
+            {{- end }}
+            # Set noderef for node controller.
+            - name: CALICO_K8S_NODE_REF
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            # Choose the backend to use.
+            - name: CALICO_NETWORKING_BACKEND
+              valueFrom:
+                configMapKeyRef:
+                  name: calico-config
+                  key: calico_backend
+            # Cluster type to identify the deployment type
+            - name: CLUSTER_TYPE
+              value: "kops,bgp"
+            # Auto-detect the BGP IP address.
+            - name: IP
+              value: "autodetect"
+            - name: CALICO_IPV4POOL_IPIP
+              value: "{{- if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}cross-subnet{{- else -}}always{{- end -}}"
+            # The default IPv4 pool to create on startup if none exists. Pod IPs will be
+            # chosen from this range. Changing this value after installation will have
+            # no effect. This should fall within `--cluster-cidr`.
+            # Configure the IP Pool from which Pod IPs will be chosen.
+            - name: CALICO_IPV4POOL_CIDR
+              value: "{{ .KubeControllerManager.ClusterCIDR }}"
+            # Disable file logging so `kubectl logs` works.
+            - name: CALICO_DISABLE_FILE_LOGGING
+              value: "true"
+            # Set Felix endpoint to host default action to ACCEPT.
+            - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
+              value: "ACCEPT"
+            # Disable IPv6 on Kubernetes.
+            - name: FELIX_IPV6SUPPORT
+              value: "false"
+            # Set Felix logging to the desired level
+            - name: FELIX_LOGSEVERITYSCREEN
+              value: "{{- or .Networking.Calico.LogSeverityScreen "info" }}"
+            # Set to enable the experimental Prometheus metrics server
+            - name: FELIX_PROMETHEUSMETRICSENABLED
+              value: "{{- or .Networking.Calico.PrometheusMetricsEnabled "false" }}"
+            # TCP port that the Prometheus metrics server should bind to
+            - name: FELIX_PROMETHEUSMETRICSPORT
+              value: "{{- or .Networking.Calico.PrometheusMetricsPort "9091" }}"
+            # Enable Prometheus Go runtime metrics collection
+            - name: FELIX_PROMETHEUSGOMETRICSENABLED
+              value: "{{- or .Networking.Calico.PrometheusGoMetricsEnabled "true" }}"
+            # Enable Prometheus process metrics collection
+            - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
+              value: "{{- or .Networking.Calico.PrometheusProcessMetricsEnabled "true" }}"
+            - name: FELIX_HEALTHENABLED
+              value: "true"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 10m
+          livenessProbe:
+            httpGet:
+              path: /liveness
+              port: 9099
+              host: localhost
+            periodSeconds: 10
+            initialDelaySeconds: 10
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command:
+              - /bin/calico-node
+              - -bird-ready
+              - -felix-ready
+            periodSeconds: 10
+          volumeMounts:
+            - mountPath: /lib/modules
+              name: lib-modules
+              readOnly: true
+            - mountPath: /run/xtables.lock
+              name: xtables-lock
+              readOnly: false
+            - mountPath: /var/run/calico
+              name: var-run-calico
+              readOnly: false
+            - mountPath: /var/lib/calico
+              name: var-lib-calico
+              readOnly: false
+            - name: policysync
+              mountPath: /var/run/nodeagent
+            # Necessary for gossip based DNS
+            - mountPath: /etc/hosts
+              name: etc-hosts
+              readOnly: true
+            {{- if eq $etcd_scheme "https" }}
+            - mountPath: /certs
+              name: calico
+              readOnly: true
+            {{- end }}
       volumes:
         # Used by calico/node.
         - name: lib-modules
@@ -383,6 +402,10 @@ spec:
         - name: var-lib-calico
           hostPath:
             path: /var/lib/calico
+        - name: xtables-lock
+          hostPath:
+            path: /run/xtables.lock
+            type: FileOrCreate
         # Used to install CNI.
         - name: cni-bin-dir
           hostPath:
@@ -399,12 +422,31 @@ spec:
           hostPath:
             path: /srv/kubernetes/calico
         {{- end }}
+        # Used to create per-pod Unix Domain Sockets
+        - name: policysync
+          hostPath:
+            type: DirectoryOrCreate
+            path: /var/run/nodeagent
+        # Used to install Flex Volume Driver
+        - name: flexvol-driver-host
+          hostPath:
+            type: DirectoryOrCreate
+            path: /usr/libexec/kubernetes/kubelet-plugins/volume/exec/nodeagent~uds
 
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: calico-node
+  namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
 ---
 
 # This manifest deploys the Calico Kubernetes controllers.
 # See https://github.com/projectcalico/kube-controllers
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: calico-kube-controllers
@@ -417,6 +459,9 @@ metadata:
 spec:
   # The controllers can only have a single active instance.
   replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: calico-kube-controllers
   strategy:
     type: Recreate
   template:
@@ -426,10 +471,9 @@ spec:
       labels:
         k8s-app: calico-kube-controllers
         role.kubernetes.io/networking: "1"
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
-      # The controllers must run in the host network namespace so that
-      # it isn't governed by policy that would prevent it from working.
-      hostNetwork: true
       tolerations:
         # Mark the pod as a critical add-on for rescheduling.
         - key: CriticalAddonsOnly
@@ -437,6 +481,10 @@ spec:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
       serviceAccountName: calico-kube-controllers
+      priorityClassName: system-cluster-critical
+      # The controllers must run in the host network namespace so that
+      # it isn't governed by policy that would prevent it from working.
+      hostNetwork: true
       containers:
         - name: calico-kube-controllers
           image: calico/kube-controllers:v3.8.0
@@ -531,6 +579,15 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  name: calico-kube-controllers
+  namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
   name: calico-upgrade-job
   namespace: kube-system
   labels:
@@ -538,7 +595,7 @@ metadata:
 ---
 
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-upgrade-job
   labels:
@@ -555,7 +612,7 @@ rules:
       - watch
 ---
 
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: calico-upgrade-job
@@ -652,7 +709,7 @@ spec:
 ---
 
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: k8s-ec2-srcdst
   labels:
@@ -681,7 +738,7 @@ metadata:
 ---
 
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: k8s-ec2-srcdst
   labels:

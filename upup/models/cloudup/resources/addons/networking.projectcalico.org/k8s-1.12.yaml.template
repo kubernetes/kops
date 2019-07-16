@@ -1,3 +1,49 @@
+# This ConfigMap is used to configure a self-hosted Calico installation.
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: calico-config
+  namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
+data:
+  # Configure the Calico backend to use.
+  calico_backend: "bird"
+
+  # TODO: Do we want to configure this?
+  # Configure the MTU to use
+  veth_mtu: "1440"
+
+  # The CNI network configuration to install on each node.
+  cni_network_config: |-
+    {
+      "name": "k8s-pod-network",
+      "cniVersion": "0.3.1",
+      "plugins": [
+        {
+          "type": "calico",
+          "log_level": "info",
+          "datastore_type": "kubernetes",
+          "nodename": "__KUBERNETES_NODE_NAME__",
+          "mtu": __CNI_MTU__,
+          "ipam": {
+            "type": "calico-ipam"
+          },
+          "policy": {
+            "type": "k8s"
+          },
+          "kubernetes": {
+            "kubeconfig": "/etc/cni/net.d/__KUBECONFIG_FILENAME__"
+          }
+        },
+        {
+          "type": "portmap",
+          "snat": true,
+          "capabilities": {"portMappings": true}
+        }
+      ]
+    }
+
 ---
 # Create all the CustomResourceDefinitions needed for
 # Calico policy and networking mode.
@@ -225,68 +271,69 @@ spec:
     plural: networksets
     singular: networkset
 ---
-
-# This ConfigMap is used to configure a self-hosted Calico installation.
-kind: ConfigMap
-apiVersion: v1
+# Include a clusterrole for the kube-controllers component,
+# and bind it to the calico-kube-controllers serviceaccount.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: calico-config
-  namespace: kube-system
+  name: calico-kube-controllers
   labels:
     role.kubernetes.io/networking: "1"
-data:
-  # To enable Typha, set this to "calico-typha" *and* set a non-zero value for Typha replicas
-  # below.  We recommend using Typha if you have more than 50 nodes. Above 100 nodes it is
-  # essential.
-  typha_service_name: "none"
-
-  # TODO: Do we want to configure this?
-  # Configure the MTU to use
-  veth_mtu: "1440"
-
-  # Configure the Calico backend to use.
-  calico_backend: "bird"
-
-  # The CNI network configuration to install on each node.
-  cni_network_config: |-
-    {
-      "name": "k8s-pod-network",
-      "cniVersion": "0.3.0",
-      "plugins": [
-        {
-          "type": "calico",
-          "log_level": "info",
-          "datastore_type": "kubernetes",
-          "nodename": "__KUBERNETES_NODE_NAME__",
-          "mtu": __CNI_MTU__,
-          "ipam": {
-            "type": "host-local",
-            "subnet": "usePodCidr"
-          },
-          "policy": {
-            "type": "k8s"
-          },
-          "kubernetes": {
-            "kubeconfig": "/etc/cni/net.d/__KUBECONFIG_FILENAME__"
-          }
-        },
-        {
-          "type": "portmap",
-          "snat": true,
-          "capabilities": {"portMappings": true}
-        }
-      ]
-    }
-
+rules:
+  # Nodes are watched to monitor for deletions.
+  - apiGroups: [""]
+    resources:
+      - nodes
+    verbs:
+      - watch
+      - list
+      - get
+  # Pods are queried to check for existence.
+  - apiGroups: [""]
+    resources:
+      - pods
+    verbs:
+      - get
+  # IPAM resources are manipulated when nodes are deleted.
+  - apiGroups: ["crd.projectcalico.org"]
+    resources:
+      - ippools
+    verbs:
+      - list
+  - apiGroups: ["crd.projectcalico.org"]
+    resources:
+      - blockaffinities
+      - ipamblocks
+      - ipamhandles
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - delete
+  # Needs access to update clusterinformations.
+  - apiGroups: ["crd.projectcalico.org"]
+    resources:
+      - clusterinformations
+    verbs:
+      - get
+      - create
+      - update
 ---
-
-apiVersion: v1
-kind: ServiceAccount
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: calico-node
-  namespace: kube-system
+  name: calico-kube-controllers
   labels:
     role.kubernetes.io/networking: "1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: calico-kube-controllers
+subjects:
+- kind: ServiceAccount
+  name: calico-kube-controllers
+  namespace: kube-system
 ---
 
 # Include a clusterrole for the calico-node DaemonSet,
@@ -439,42 +486,6 @@ subjects:
   namespace: kube-system
 ---
 
-# This manifest scales the Calico Kubernetes controllers down to size 0.
-# They are not needed in CRD mode.
-# See https://github.com/projectcalico/kube-controllers
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: calico-kube-controllers
-  namespace: kube-system
-  labels:
-    k8s-app: calico-kube-controllers
-    role.kubernetes.io/networking: "1"
-spec:
-  selector:
-    matchLabels:
-      k8s-app: calico-kube-controllers
-  # The controllers can only have a single active instance.
-  replicas: 0
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      name: calico-kube-controllers
-      namespace: kube-system
-      labels:
-        k8s-app: calico-kube-controllers
-        role.kubernetes.io/networking: "1"
-    spec:
-      containers:
-        - name: calico-kube-controllers
-          image: calico/kube-controllers:v3.8.0
-      initContainers:
-        - name: migrate
-          image: calico/upgrade:v1.0.5
-
----
-
 # This manifest installs the calico/node container, as well
 # as the Calico CNI plugins and network config on
 # each master and worker node in a Kubernetes cluster.
@@ -500,11 +511,17 @@ spec:
         k8s-app: calico-node
         role.kubernetes.io/networking: "1"
       annotations:
+        # This, along with the CriticalAddonsOnly toleration below,
+        # marks the pod as a critical add-on, ensuring it gets
+        # priority scheduling and that its resources are reserved
+        # if it ever gets evicted.
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      nodeSelector:
+        beta.kubernetes.io/os: linux
       hostNetwork: true
       tolerations:
-        # Make sure calico/node gets scheduled on all nodes.
+        # Make sure calico-node gets scheduled on all nodes.
         - effect: NoSchedule
           operator: Exists
         # Mark the pod as a critical add-on for rescheduling.
@@ -516,7 +533,29 @@ spec:
       # Minimize downtime during a rolling upgrade or deletion; tell Kubernetes to do a "force
       # deletion": https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods.
       terminationGracePeriodSeconds: 0
+      priorityClassName: system-node-critical
       initContainers:
+        # This container performs upgrade from host-local IPAM to calico-ipam.
+        # It can be deleted if this is a fresh installation, or if you have already
+        # upgraded to use calico-ipam.
+        - name: upgrade-ipam
+          image: calico/cni:v3.8.0
+          command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
+          env:
+            - name: KUBERNETES_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CALICO_NETWORKING_BACKEND
+              valueFrom:
+                configMapKeyRef:
+                  name: calico-config
+                  key: calico_backend
+          volumeMounts:
+            - mountPath: /var/lib/cni/networks
+              name: host-local-net-dir
+            - mountPath: /host/opt/cni/bin
+              name: cni-bin-dir
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
@@ -551,6 +590,13 @@ spec:
               name: cni-bin-dir
             - mountPath: /host/etc/cni/net.d
               name: cni-net-dir
+        # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
+        # to communicate with Felix over the Policy Sync API.
+        - name: flexvol-driver
+          image: calico/pod2daemon-flexvol:v3.8.0
+          volumeMounts:
+          - name: flexvol-driver-host
+            mountPath: /host/driver
       containers:
         # Runs calico/node container on each Kubernetes node.  This
         # container programs network policy and routes on each
@@ -561,12 +607,6 @@ spec:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
               value: "kubernetes"
-            # Typha support: controlled by the ConfigMap.
-            - name: FELIX_TYPHAK8SSERVICENAME
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: typha_service_name
             # Wait for the datastore.
             - name: WAIT_FOR_DATASTORE
               value: "true"
@@ -632,12 +672,6 @@ spec:
             - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
               value: "{{- or .Networking.Calico.PrometheusProcessMetricsEnabled "true" }}"
 
-            # TODO: In previous versions, no longer needed?
-            # Set noderef for node controller.
-            #- name: CALICO_K8S_NODE_REF
-            #  valueFrom:
-            #    fieldRef:
-            #      fieldPath: spec.nodeName
           securityContext:
             privileged: true
           resources:
@@ -671,6 +705,8 @@ spec:
             - mountPath: /var/lib/calico
               name: var-lib-calico
               readOnly: false
+            - name: policysync
+              mountPath: /var/run/nodeagent
             # TODO: Still needed?
             # Necessary for gossip based DNS
             - mountPath: /etc/hosts
@@ -698,11 +734,92 @@ spec:
         - name: cni-net-dir
           hostPath:
             path: /etc/cni/net.d
+        # Mount in the directory for host-local IPAM allocations. This is
+        # used when upgrading from host-local to calico-ipam, and can be removed
+        # if not using the upgrade-ipam init container.
+        - name: host-local-net-dir
+          hostPath:
+            path: /var/lib/cni/networks
         # TODO: Still needed?
         # Necessary for gossip based DNS
         - name: etc-hosts
           hostPath:
             path: /etc/hosts
+        # Used to create per-pod Unix Domain Sockets
+        - name: policysync
+          hostPath:
+            type: DirectoryOrCreate
+            path: /var/run/nodeagent
+        # Used to install Flex Volume Driver
+        - name: flexvol-driver-host
+          hostPath:
+            type: DirectoryOrCreate
+            path: "{{- or .Kubelet.VolumePluginDirectory "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/" }}nodeagent~uds"
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: calico-node
+  namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
+
+---
+
+# See https://github.com/projectcalico/kube-controllers
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calico-kube-controllers
+  namespace: kube-system
+  labels:
+    k8s-app: calico-kube-controllers
+    role.kubernetes.io/networking: "1"
+spec:
+  # The controllers can only have a single active instance.
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: calico-kube-controllers
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      name: calico-kube-controllers
+      namespace: kube-system
+      labels:
+        k8s-app: calico-kube-controllers
+        role.kubernetes.io/networking: "1"
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+      tolerations:
+        # Mark the pod as a critical add-on for rescheduling.
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      serviceAccountName: calico-kube-controllers
+      priorityClassName: system-cluster-critical
+      containers:
+        - name: calico-kube-controllers
+          image: calico/kube-controllers:v3.8.0
+          env:
+            # Choose which controllers to run.
+            - name: ENABLED_CONTROLLERS
+              value: node
+            - name: DATASTORE_TYPE
+              value: kubernetes
+          readinessProbe:
+            exec:
+              command:
+              - /usr/bin/check-status
+              - -r
+
 
 ---
 
@@ -808,4 +925,3 @@ spec:
       nodeSelector:
         node-role.kubernetes.io/master: ""
 {{- end -}}
-
