@@ -50,7 +50,7 @@ spec:
             cpu: {{ or .Authentication.Aws.CPURequest "10m" }}
           limits:
             memory: {{ or .Authentication.Aws.MemoryLimit "20Mi" }}
-            cpu: {{ or .Authentication.Aws.CPULimit "10m" }}
+            cpu: {{ or .Authentication.Aws.CPULimit "100m" }}
 
         volumeMounts:
         - name: config
