@@ -39,6 +39,8 @@ To install a Kubernetes cluster on GCE please follow this [guide](/docs/tutorial
 
 To install a Kubernetes cluster on DigitalOcean, follow this [guide](/docs/tutorial/digitalocean.md).
 
+**For anything beyond experimental clusters it is highly encouraged to [version control the cluster manifest files](/docs/manifests_and_customizing_via_api.md) and [run kops in a CI environment](/docs/continuous_integration.md).**
+
 ## Features
 
 * Automates the provisioning of Kubernetes clusters in [AWS](/docs/aws.md) and [GCE](/docs/tutorial/gce.md)
@@ -98,6 +100,7 @@ Kubernetes version.
 
 Use the latest version of kops for all releases of Kubernetes, with the caveat
 that higher versions of Kubernetes are not _officially_ supported by kops. Releases who are ~~crossed out~~ _should_ work but we suggest should be upgraded soon.
+
 ### kops Release Schedule
 
 This project does not follow the Kubernetes release schedule.  `kops` aims to
