@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
@@ -95,27 +96,58 @@ func ValidateTasks(t *testing.T, basedir string, context *fi.ModelBuilderContext
 	}
 
 	actualTasksYaml := strings.Join(yamls, "\n---\n")
+	actualTasksYaml = strings.TrimSpace(actualTasksYaml)
 
 	tasksYamlPath := path.Join(basedir, "tasks.yaml")
-	expectedTasksYamlBytes, err := ioutil.ReadFile(tasksYamlPath)
+
+	AssertMatchesFile(t, actualTasksYaml, tasksYamlPath)
+}
+
+// AssertMatchesFile matches the actual value to a with expected file.
+// If HACK_UPDATE_EXPECTED_IN_PLACE is set, it will write the actual value to the expected file,
+// which is very handy when updating our tests.
+func AssertMatchesFile(t *testing.T, actual string, p string) {
+	actual = strings.TrimSpace(actual)
+
+	expectedBytes, err := ioutil.ReadFile(p)
 	if err != nil {
-		t.Fatalf("error reading file %q: %v", tasksYamlPath, err)
+		t.Fatalf("error reading file %q: %v", p, err)
+	}
+	expected := strings.TrimSpace(string(expectedBytes))
+
+	//on windows, with git set to autocrlf, the reference files on disk have windows line endings
+	expected = strings.Replace(expected, "\r\n", "\n", -1)
+
+	if actual == expected {
+		return
 	}
 
-	actualTasksYaml = strings.TrimSpace(actualTasksYaml)
-	expectedTasksYaml := strings.TrimSpace(string(expectedTasksYamlBytes))
+	if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
+		t.Logf("HACK_UPDATE_EXPECTED_IN_PLACE: writing expected output %s", p)
 
-	if expectedTasksYaml != actualTasksYaml {
-		if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
-			t.Logf("HACK_UPDATE_EXPECTED_IN_PLACE: writing expected output %s", tasksYamlPath)
-			if err := ioutil.WriteFile(tasksYamlPath, []byte(actualTasksYaml), 0644); err != nil {
-				t.Errorf("error writing expected output %s: %v", tasksYamlPath, err)
-			}
+		// Keep git happy with a trailing newline
+		actual += "\n"
+
+		if err := ioutil.WriteFile(p, []byte(actual), 0644); err != nil {
+			t.Errorf("error writing expected output %s: %v", p, err)
 		}
 
-		diffString := diff.FormatDiff(expectedTasksYaml, actualTasksYaml)
-		t.Logf("diff:\n%s\n", diffString)
-
-		t.Fatalf("tasks differed from expected for test %q", basedir)
+		// Keep going so we write all files in a test
+		t.Errorf("output did not match expected for %q", p)
+		return
 	}
+
+	diffString := diff.FormatDiff(expected, actual)
+	t.Logf("diff:\n%s\n", diffString)
+
+	abs, err := filepath.Abs(p)
+	if err != nil {
+		t.Errorf("unable to get absolute path for %q: %v", p, err)
+	} else {
+		p = abs
+	}
+
+	t.Logf("to update golden output automatically, run hack/update-expected.sh")
+
+	t.Fatalf("output did not match expected for %q", p)
 }
