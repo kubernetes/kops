@@ -82,12 +82,15 @@ func FindDistribution(rootfs string) (Distribution, error) {
 	}
 
 	// CoreOS uses /usr/lib/os-release
+	// Flatcar uses /usr/lib/os-release
 	usrLibOsRelease, err := ioutil.ReadFile(path.Join(rootfs, "usr/lib/os-release"))
 	if err == nil {
 		for _, line := range strings.Split(string(usrLibOsRelease), "\n") {
 			line = strings.TrimSpace(line)
 			if line == "ID=coreos" {
 				return DistributionCoreOS, nil
+			} else if line == "ID=flatcar" {
+				return DistributionFlatcar, nil
 			}
 		}
 		klog.Warningf("unhandled os-release info %q", string(usrLibOsRelease))

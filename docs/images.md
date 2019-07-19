@@ -143,3 +143,25 @@ Be aware of the following limitations:
 * [Amazon Linux 2 LTS](https://aws.amazon.com/amazon-linux-2/release-notes/) is the recommended minimum version, a previous version called just "Amazon Linux AMI" is not supported.
 
 > Note: SSH username for Amazon Linux 2 based instances will be `ec2-user`
+
+## Flatcar
+
+Flatcar is a friendly fork of CoreOS and as such, compatible with it. If some issues occurs with it, it is likely that also CoreOS miight be affected. If you encounter any problem please report it to us.
+
+The following steps are known:
+
+* The latest stable Flatcar AMI can be found using:
+```bash
+aws ec2 describe-images --region=us-east-1 --owner=075585003325 \
+    --filters "Name=virtualization-type,Values=hvm" "Name=name,Values=Flatcar-stable*" \
+    --query 'sort_by(Images,&CreationDate)[-1].{id:ImageLocation}'
+```
+
+Also, you can obtain the "AMI ID" from Flatcar web page too. They publish their AMI's using a json file at [https://stable.release.flatcar-linux.net/amd64-usr/current/flatcar_production_ami_all.json](https://stable.release.flatcar-linux.net/amd64-usr/current/flatcar_production_ami_all.json). Using some scripting and a "json" parser (like jq) you can obtain the AMI ID from a specific region:
+
+```bash
+curl -s https://stable.release.flatcar-linux.net/amd64-usr/current/flatcar_production_ami_all.json | jq -r '.amis[] | select(.name == "us-east-1") | .hvm'
+"ami-096be41989ec7e569"
+```
+
+> Note: SSH username for Flatcar based instances will be `core`
