@@ -307,27 +307,8 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 		if err != nil {
 			t.Fatalf("unexpected error reading actual terraform output: %v", err)
 		}
-		expectedTF, err := ioutil.ReadFile(path.Join(srcDir, testDataTFPath))
-		if err != nil {
-			t.Fatalf("unexpected error reading expected terraform output: %v", err)
-		}
-		expectedTF = bytes.Replace(expectedTF, []byte("\r\n"), []byte("\n"), -1)
 
-		if !bytes.Equal(actualTF, expectedTF) {
-			diffString := diff.FormatDiff(string(expectedTF), string(actualTF))
-			t.Logf("diff:\n%s\n", diffString)
-
-			if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
-				fp := path.Join(srcDir, testDataTFPath)
-				t.Logf("HACK_UPDATE_EXPECTED_IN_PLACE: writing expected output %s", fp)
-				if err := ioutil.WriteFile(fp, actualTF, 0644); err != nil {
-					t.Errorf("error writing terraform output: %v", err)
-				}
-				t.Errorf("terraform output differed from expected")
-				return // Avoid Fatalf as we want to keep going and update all files
-			}
-			t.Fatalf("terraform output differed from expected")
-		}
+		testutils.AssertMatchesFile(t, string(actualTF), path.Join(srcDir, testDataTFPath))
 	}
 
 	// Compare data files if they are provided
@@ -587,10 +568,6 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 		if err != nil {
 			t.Fatalf("unexpected error reading actual cloudformation output: %v", err)
 		}
-		expectedCF, err := ioutil.ReadFile(path.Join(srcDir, expectedCfPath))
-		if err != nil {
-			t.Fatalf("unexpected error reading expected cloudformation output: %v", err)
-		}
 
 		// Expand out the UserData base64 blob, as otherwise testing is painful
 		extracted := make(map[string]string)
@@ -625,28 +602,7 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 		}
 		actualCF = buf.Bytes()
 
-		expectedCFTrimmed := strings.Replace(strings.TrimSpace(string(expectedCF)), "\r\n", "\n", -1)
-		actualCFTrimmed := strings.TrimSpace(string(actualCF))
-		if actualCFTrimmed != expectedCFTrimmed {
-			diffString := diff.FormatDiff(expectedCFTrimmed, actualCFTrimmed)
-			t.Logf("diff:\n%s\n", diffString)
-
-			if os.Getenv("KEEP_TEMP_DIR") == "" {
-				t.Logf("(hint: setting KEEP_TEMP_DIR will preserve test output")
-			} else {
-				t.Logf("actual terraform output in %s", actualPath)
-			}
-
-			if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
-				fp := path.Join(srcDir, expectedCfPath)
-				t.Logf("HACK_UPDATE_EXPECTED_IN_PLACE: writing expected output %s", fp)
-				if err := ioutil.WriteFile(fp, actualCF, 0644); err != nil {
-					t.Errorf("error writing expected output file %q: %v", fp, err)
-				}
-			}
-
-			t.Fatalf("cloudformation output differed from expected. Test file: %s", path.Join(srcDir, expectedCfPath))
-		}
+		testutils.AssertMatchesFile(t, string(actualCF), path.Join(srcDir, expectedCfPath))
 
 		fp := path.Join(srcDir, expectedCfPath+".extracted.yaml")
 		expectedExtracted, err := ioutil.ReadFile(fp)
@@ -685,24 +641,7 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 			}
 		}
 
-		if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
-			t.Logf("HACK_UPDATE_EXPECTED_IN_PLACE: writing expected output %s", fp)
-
-			// We replace the \r characters so that the yaml output (should) be block-quoted
-			// Literal quoting is sadly unreadable...
-			for k, v := range actual {
-				actual[k] = strings.Replace(v, "\r", "", -1)
-			}
-
-			b, err := yaml.Marshal(actual)
-			if err != nil {
-				t.Errorf("error serializing cloudformation output: %v", err)
-			}
-			if err := ioutil.WriteFile(fp, b, 0644); err != nil {
-				t.Errorf("error writing cloudformation output: %v", err)
-			}
-		}
-
+		testutils.AssertMatchesFile(t, string(actualCF), path.Join(srcDir, expectedCfPath))
 	}
 }
 
