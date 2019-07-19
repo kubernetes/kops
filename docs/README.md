@@ -64,6 +64,7 @@
 * [Working with Instance Groups](tutorial/working-with-instancegroups.md)
 * [Developers guide for vSphere support](vsphere-dev.md)
 * [vSphere support status](vsphere-development-status.md)
+* [Running `kops` in a CI environment](continuous_integration.md)
 
 ## Networking
 
