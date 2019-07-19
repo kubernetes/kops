@@ -1,8 +1,8 @@
-# Canal Version v3.6.1
+# Canal Version v3.6.4
 # https://docs.projectcalico.org/v3.6/release-notes/#v361
 # This manifest includes the following component versions:
-#   calico/node:v3.6.1
-#   calico/cni:v3.6.1
+#   calico/node:v3.6.4
+#   calico/cni:v3.6.4
 #   coreos/flannel:v0.11.0
 
 # This ConfigMap is used to configure a self-hosted Canal installation.
@@ -119,7 +119,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.6.1
+          image: calico/cni:v3.6.4
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -155,7 +155,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.6.1
+          image: calico/node:v3.6.4
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
