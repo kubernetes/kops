@@ -107,6 +107,18 @@ spec:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '10055'
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: k8s-app
+                      operator: In
+                      values:
+                        - kube-dns
+                topologyKey: kubernetes.io/hostname
       dnsPolicy: Default  # Don't use cluster DNS.
       serviceAccountName: kube-dns
       volumes:
@@ -308,3 +320,15 @@ subjects:
 - kind: ServiceAccount
   name: kube-dns-autoscaler
   namespace: kube-system
+
+---
+
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: kube-dns
+spec:
+  selector:
+    matchLabels:
+      k8s-app: kube-dns
+  minAvailable: 1
