@@ -72,7 +72,7 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    replaceLong,
 		Example: replaceExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			if cmdutil.IsFilenameSliceEmpty(options.Filenames) {
+			if len(options.Filenames) == 0 {
 				cmd.Help()
 				return
 			}
