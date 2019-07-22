@@ -77,6 +77,8 @@ type FlannelNetworkingSpec struct {
 // CalicoNetworkingSpec declares that we want Calico networking
 type CalicoNetworkingSpec struct {
 	CrossSubnet bool `json:"crossSubnet,omitempty"` // Enables Calico's cross-subnet mode when set to true
+	// Configure Etcdv2 as Datastore for calico v3
+	DataStoreType string `json:"dataStoreType,omitempty"`
 	// LogSeverityScreen lets us set the desired log level. (Default: info)
 	LogSeverityScreen string `json:"logSeverityScreen,omitempty"`
 	// MTU to be set in the cni-network-config for calico.
