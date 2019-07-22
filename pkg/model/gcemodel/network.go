@@ -17,7 +17,10 @@ limitations under the License.
 package gcemodel
 
 import (
+	"fmt"
+
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 )
 
@@ -37,5 +40,31 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 	c.AddTask(network)
 
+	if gce.UsesIPAliases(b.Cluster) {
+		if len(b.Cluster.Spec.Subnets) != 1 {
+			return fmt.Errorf("expected exactly one subnet for IPAlias mode")
+		}
+		subnet := b.Cluster.Spec.Subnets[0]
+
+		// The primary CIDR is used by the nodes,
+		// services and pods draw from the secondary IP ranges.
+		// All the CIDRs must be valid RFC1918 IP addresses, which makes conversion from the "pure kubenet" 100.64.0.0 GCE range difficult
+
+		t := &gcetasks.Subnet{
+			Name:      s(b.NameForIPAliasSubnet()),
+			Network:   b.LinkToNetwork(),
+			Lifecycle: b.Lifecycle,
+			Region:    s(b.Region),
+			CIDR:      s(subnet.CIDR),
+			SecondaryIpRanges: map[string]string{
+				b.NameForIPAliasRange("pods"):     b.Cluster.Spec.PodCIDR,
+				b.NameForIPAliasRange("services"): b.Cluster.Spec.ServiceClusterIPRange,
+			},
+		}
+
+		t.GCEName = t.Name
+		c.AddTask(t)
+
+	}
 	return nil
 }

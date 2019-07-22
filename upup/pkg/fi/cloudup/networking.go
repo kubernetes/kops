@@ -36,7 +36,12 @@ func usesCNI(c *api.Cluster) bool {
 	}
 
 	if networkConfig.Kubenet != nil {
-		// kubenet
+		// kubenet is now configured via CNI
+		return true
+	}
+
+	if networkConfig.GCE != nil {
+		// GCE is kubenet at the node level
 		return true
 	}
 

@@ -55,8 +55,9 @@ type InstanceTemplate struct {
 	BootDiskSizeGB *int64
 	BootDiskType   *string
 
-	CanIPForward *bool
-	Subnet       *Subnet
+	CanIPForward  *bool
+	Subnet        *Subnet
+	AliasIPRanges map[string]string
 
 	Scopes []string
 
@@ -84,7 +85,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		return nil, fmt.Errorf("error listing InstanceTemplates: %v", err)
 	}
 
-	expected, err := e.mapToGCE(cloud.Project())
+	expected, err := e.mapToGCE(cloud.Project(), cloud.Region())
 	if err != nil {
 		return nil, err
 	}
@@ -122,6 +123,17 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		if len(p.NetworkInterfaces) != 0 {
 			ni := p.NetworkInterfaces[0]
 			actual.Network = &Network{Name: fi.String(lastComponent(ni.Network))}
+
+			if len(ni.AliasIpRanges) != 0 {
+				actual.AliasIPRanges = make(map[string]string)
+				for _, aliasIPRange := range ni.AliasIpRanges {
+					actual.AliasIPRanges[aliasIPRange.SubnetworkRangeName] = aliasIPRange.IpCidrRange
+				}
+			}
+
+			if ni.Subnetwork != "" {
+				actual.Subnet = &Subnet{Name: fi.String(lastComponent(ni.Subnetwork))}
+			}
 		}
 
 		for _, serviceAccount := range p.ServiceAccounts {
@@ -192,7 +204,7 @@ func (_ *InstanceTemplate) CheckChanges(a, e, changes *InstanceTemplate) error {
 	return nil
 }
 
-func (e *InstanceTemplate) mapToGCE(project string) (*compute.InstanceTemplate, error) {
+func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.InstanceTemplate, error) {
 	// TODO: This is similar to Instance...
 	var scheduling *compute.Scheduling
 
@@ -248,7 +260,15 @@ func (e *InstanceTemplate) mapToGCE(project string) (*compute.InstanceTemplate, 
 		Network: e.Network.URL(project),
 	}
 	if e.Subnet != nil {
-		ni.Subnetwork = *e.Subnet.Name
+		ni.Subnetwork = e.Subnet.URL(project, region)
+	}
+	if e.AliasIPRanges != nil {
+		for k, v := range e.AliasIPRanges {
+			ni.AliasIpRanges = append(ni.AliasIpRanges, &compute.AliasIpRange{
+				SubnetworkRangeName: k,
+				IpCidrRange:         v,
+			})
+		}
 	}
 	networkInterfaces = append(networkInterfaces, ni)
 
@@ -356,8 +376,9 @@ func (e *InstanceTemplate) URL(project string) (string, error) {
 
 func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *InstanceTemplate) error {
 	project := t.Cloud.Project()
+	region := t.Cloud.Region()
 
-	i, err := e.mapToGCE(project)
+	i, err := e.mapToGCE(project, region)
 	if err != nil {
 		return err
 	}
@@ -509,7 +530,7 @@ func (t *terraformInstanceCommon) AddServiceAccounts(serviceAccounts []*compute.
 func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InstanceTemplate) error {
 	project := t.Project
 
-	i, err := e.mapToGCE(project)
+	i, err := e.mapToGCE(project, t.Region)
 	if err != nil {
 		return err
 	}

@@ -153,6 +153,13 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		kcm.ConfigureCloudRoutes = fi.Bool(true)
 	} else if networking.Kubenet != nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(true)
+	} else if networking.GCE != nil {
+		kcm.ConfigureCloudRoutes = fi.Bool(false)
+		kcm.CIDRAllocatorType = fi.String("CloudAllocator")
+
+		if kcm.ClusterCIDR == "" {
+			kcm.ClusterCIDR = clusterSpec.PodCIDR
+		}
 	} else if networking.External != nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(false)
 	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil || networking.Cilium != nil || networking.LyftVPC != nil {

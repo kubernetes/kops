@@ -42,6 +42,25 @@ func (c *GCEModelContext) NameForNetwork() string {
 	return networkName
 }
 
+// NameForIPAliasRange returns the name for the secondary IP range attached to a subnet
+func (c *GCEModelContext) NameForIPAliasRange(key string) string {
+	// We include the cluster name so we could share a subnet...
+	// but there's a 5 IP alias range limit per subnet anwyay, so
+	// this is rather pointless and in practice we just use a
+	// separate subnet per cluster
+	return c.SafeObjectName(key)
+}
+
+// NameForIPAliasSubnet returns the name for the GCE subnet used for ip aliases
+func (c *GCEModelContext) NameForIPAliasSubnet() string {
+	return c.SafeObjectName("default")
+}
+
+// LinkToIPAliasSubnet returns the GCE subnet object used for ip aliases
+func (c *GCEModelContext) LinkToIPAliasSubnet() *gcetasks.Subnet {
+	return &gcetasks.Subnet{Name: s(c.NameForIPAliasSubnet())}
+}
+
 // SafeObjectName returns the object name and cluster name escaped for GCE
 func (c *GCEModelContext) SafeObjectName(name string) string {
 	return gce.SafeObjectName(name, c.Cluster.ObjectMeta.Name)

@@ -75,6 +75,9 @@ func UsesKubenet(clusterSpec *kops.ClusterSpec) (bool, error) {
 		return false, nil
 	} else if networking.Kubenet != nil {
 		return true, nil
+	} else if networking.GCE != nil {
+		// GCE IP Alias networking is based on kubenet
+		return true, nil
 	} else if networking.External != nil {
 		// external is based on kubenet
 		return true, nil

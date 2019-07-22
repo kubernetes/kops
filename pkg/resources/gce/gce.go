@@ -42,6 +42,7 @@ const (
 	typeForwardingRule       = "ForwardingRule"
 	typeAddress              = "Address"
 	typeRoute                = "Route"
+	typeSubnet               = "Subnet"
 )
 
 // Maximum number of `-` separated tokens in a name
@@ -92,6 +93,7 @@ func ListResourcesGCE(gceCloud gce.GCECloud, clusterName string, region string) 
 		d.listGCEDNSZone,
 		// TODO: Find routes via instances (via instance groups)
 		d.listAddresses,
+		d.listSubnets,
 	}
 	for _, fn := range listFunctions {
 		resourceTrackers, err := fn()
@@ -691,6 +693,80 @@ func deleteAddress(cloud fi.Cloud, r *resources.Resource) error {
 			return nil
 		}
 		return fmt.Errorf("error deleting Address %s: %v", t.SelfLink, err)
+	}
+
+	return c.WaitForOp(op)
+}
+
+func (d *clusterDiscoveryGCE) listSubnets() ([]*resources.Resource, error) {
+	// Templates are very accurate because of the metadata, so use those as the sanity check
+	templates, err := d.findInstanceTemplates()
+	if err != nil {
+		return nil, err
+	}
+	subnetworkUrls := make(map[string]bool)
+	for _, t := range templates {
+		for _, ni := range t.Properties.NetworkInterfaces {
+			if ni.Subnetwork != "" {
+				subnetworkUrls[ni.Subnetwork] = true
+			}
+		}
+	}
+
+	c := d.gceCloud
+
+	var resourceTrackers []*resources.Resource
+	ctx := context.Background()
+
+	err = c.Compute().Subnetworks.List(c.Project(), c.Region()).Pages(ctx, func(page *compute.SubnetworkList) error {
+		for _, o := range page.Items {
+			if !d.matchesClusterName(o.Name) {
+				klog.V(8).Infof("skipping Subnet with name %q", o.Name)
+				continue
+			}
+
+			if !subnetworkUrls[o.SelfLink] {
+				klog.Warningf("skipping subnetwork %q because it didn't match any instance template", o.SelfLink)
+				continue
+			}
+
+			resourceTracker := &resources.Resource{
+				Name:    o.Name,
+				ID:      o.Name,
+				Type:    typeSubnet,
+				Deleter: deleteSubnet,
+				Obj:     o,
+			}
+
+			klog.V(4).Infof("found resource: %s", o.SelfLink)
+			resourceTrackers = append(resourceTrackers, resourceTracker)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error listing subnetworks: %v", err)
+	}
+
+	return resourceTrackers, nil
+}
+
+func deleteSubnet(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(gce.GCECloud)
+	o := r.Obj.(*compute.Subnetwork)
+
+	klog.V(2).Infof("deleting GCE subnetwork %s", o.SelfLink)
+	u, err := gce.ParseGoogleCloudURL(o.SelfLink)
+	if err != nil {
+		return err
+	}
+
+	op, err := c.Compute().Subnetworks.Delete(u.Project, u.Region, u.Name).Do()
+	if err != nil {
+		if gce.IsNotFound(err) {
+			klog.Infof("subnetwork not found, assuming deleted: %q", o.SelfLink)
+			return nil
+		}
+		return fmt.Errorf("error deleting subnetwork %s: %v", o.SelfLink, err)
 	}
 
 	return c.WaitForOp(op)
