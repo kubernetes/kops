@@ -766,6 +766,17 @@ var dockerVersions = []dockerVersion{
 		},
 		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
 	},
+	// 18.06.3 - CentOS / Rhel8 (two packages)
+	{
+		DockerVersion: "18.06.3",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionRhel8, distros.DistributionCentos8},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.06.3.ce",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.3.ce-3.el7.x86_64.rpm",
+		Hash:          "5369602f88406d4fb9159dc1d3fd44e76fb4cab8",
+		Dependencies:  []string{"container-selinux", "libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python-utils", "python3-policycoreutils"},
+	},
 
 	// TIP: When adding the next version, copy the previous
 	// version, string replace the version, run `VERIFY_HASHES=1
