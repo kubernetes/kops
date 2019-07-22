@@ -85,60 +85,76 @@ func Test_Replacement(t *testing.T) {
 	}{
 		// With no id, update if and only if newer semver
 		{
-			Old:      &ChannelVersion{Version: s("1.0.0"), Id: ""},
-			New:      &ChannelVersion{Version: s("1.0.0"), Id: ""},
+			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "", ManifestHash: ""},
+			New:      &ChannelVersion{Version: s("1.0.0"), Id: "", ManifestHash: ""},
 			Replaces: false,
 		},
 		{
-			Old:      &ChannelVersion{Version: s("1.0.0"), Id: ""},
-			New:      &ChannelVersion{Version: s("1.0.1"), Id: ""},
+			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "", ManifestHash: ""},
+			New:      &ChannelVersion{Version: s("1.0.1"), Id: "", ManifestHash: ""},
 			Replaces: true,
 		},
 		{
-			Old:      &ChannelVersion{Version: s("1.0.1"), Id: ""},
-			New:      &ChannelVersion{Version: s("1.0.0"), Id: ""},
+			Old:      &ChannelVersion{Version: s("1.0.1"), Id: "", ManifestHash: ""},
+			New:      &ChannelVersion{Version: s("1.0.0"), Id: "", ManifestHash: ""},
 			Replaces: false,
 		},
 		{
-			Old:      &ChannelVersion{Version: s("1.1.0"), Id: ""},
-			New:      &ChannelVersion{Version: s("1.1.1"), Id: ""},
+			Old:      &ChannelVersion{Version: s("1.1.0"), Id: "", ManifestHash: ""},
+			New:      &ChannelVersion{Version: s("1.1.1"), Id: "", ManifestHash: ""},
 			Replaces: true,
 		},
 		{
-			Old:      &ChannelVersion{Version: s("1.1.1"), Id: ""},
-			New:      &ChannelVersion{Version: s("1.1.0"), Id: ""},
+			Old:      &ChannelVersion{Version: s("1.1.1"), Id: "", ManifestHash: ""},
+			New:      &ChannelVersion{Version: s("1.1.0"), Id: "", ManifestHash: ""},
 			Replaces: false,
 		},
 
 		// With id, update if different id and same version, otherwise follow semver
 		{
-			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "a"},
-			New:      &ChannelVersion{Version: s("1.0.0"), Id: "a"},
+			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "a", ManifestHash: ""},
+			New:      &ChannelVersion{Version: s("1.0.0"), Id: "a", ManifestHash: ""},
 			Replaces: false,
 		},
 		{
-			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "a"},
-			New:      &ChannelVersion{Version: s("1.0.0"), Id: "b"},
+			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "a", ManifestHash: ""},
+			New:      &ChannelVersion{Version: s("1.0.0"), Id: "b", ManifestHash: ""},
 			Replaces: true,
 		},
 		{
-			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "b"},
-			New:      &ChannelVersion{Version: s("1.0.0"), Id: "a"},
+			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "b", ManifestHash: ""},
+			New:      &ChannelVersion{Version: s("1.0.0"), Id: "a", ManifestHash: ""},
 			Replaces: true,
 		},
 		{
-			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "a"},
-			New:      &ChannelVersion{Version: s("1.0.1"), Id: "a"},
+			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "a", ManifestHash: ""},
+			New:      &ChannelVersion{Version: s("1.0.1"), Id: "a", ManifestHash: ""},
 			Replaces: true,
 		},
 		{
-			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "a"},
-			New:      &ChannelVersion{Version: s("1.0.1"), Id: "a"},
+			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "a", ManifestHash: ""},
+			New:      &ChannelVersion{Version: s("1.0.1"), Id: "a", ManifestHash: ""},
 			Replaces: true,
 		},
 		{
-			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "a"},
-			New:      &ChannelVersion{Version: s("1.0.1"), Id: "a"},
+			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "a", ManifestHash: ""},
+			New:      &ChannelVersion{Version: s("1.0.1"), Id: "a", ManifestHash: ""},
+			Replaces: true,
+		},
+		//Test ManifestHash Changes
+		{
+			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "a", ManifestHash: "3544de6578b2b582c0323b15b7b05a28c60b9430"},
+			New:      &ChannelVersion{Version: s("1.0.0"), Id: "a", ManifestHash: "3544de6578b2b582c0323b15b7b05a28c60b9430"},
+			Replaces: false,
+		},
+		{
+			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "a", ManifestHash: ""},
+			New:      &ChannelVersion{Version: s("1.0.0"), Id: "a", ManifestHash: "3544de6578b2b582c0323b15b7b05a28c60b9430"},
+			Replaces: true,
+		},
+		{
+			Old:      &ChannelVersion{Version: s("1.0.0"), Id: "a", ManifestHash: "3544de6578b2b582c0323b15b7b05a28c60b9430"},
+			New:      &ChannelVersion{Version: s("1.0.0"), Id: "a", ManifestHash: "ea9e79bf29adda450446487d65a8fc6b3fdf8c2b"},
 			Replaces: true,
 		},
 	}
