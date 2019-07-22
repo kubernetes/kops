@@ -101,7 +101,7 @@ func NewService(name string, contents string, meta string) (fi.Task, error) {
 	return s, nil
 }
 
-func (s *Service) InitDefaults() {
+func (s *Service) InitDefaults() *Service {
 	// Default some values to true: Running, SmartRestart, ManageState
 	if s.Running == nil {
 		s.Running = fi.Bool(true)
@@ -117,6 +117,8 @@ func (s *Service) InitDefaults() {
 	if s.Enabled == nil {
 		s.Enabled = s.Running
 	}
+
+	return s
 }
 
 func getSystemdStatus(name string) (map[string]string, error) {
