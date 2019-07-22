@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/vfs"
 
 	kopsversion "k8s.io/kops"
@@ -47,6 +48,12 @@ func PerformAssignments(c *kops.Cluster) error {
 	// TODO Kris: Unsure if this needs to be here, or if the API conversion code will handle it
 	if c.Spec.Topology == nil {
 		c.Spec.Topology = &kops.TopologySpec{Masters: kops.TopologyPublic, Nodes: kops.TopologyPublic}
+	}
+
+	if cloud.ProviderID() == kops.CloudProviderGCE {
+		if err := gce.PerformNetworkAssignments(c, cloud); err != nil {
+			return err
+		}
 	}
 
 	// Currently only AWS uses NetworkCIDRs
@@ -80,7 +87,11 @@ func PerformAssignments(c *kops.Cluster) error {
 	}
 
 	if c.Spec.NonMasqueradeCIDR == "" {
-		c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
+		if c.Spec.Networking != nil && c.Spec.Networking.GCE != nil {
+			// Don't set NonMasqueradeCIDR
+		} else {
+			c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
+		}
 	}
 
 	// TODO: Unclear this should be here - it isn't too hard to change

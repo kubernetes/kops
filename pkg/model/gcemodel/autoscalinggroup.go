@@ -80,8 +80,6 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				BootDiskSizeGB: i64(int64(volumeSize)),
 				BootDiskImage:  s(ig.Spec.Image),
 
-				CanIPForward: fi.Bool(true),
-
 				// TODO: Support preemptible nodes?
 				Preemptible: fi.Bool(false),
 
@@ -126,6 +124,17 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			case kops.InstanceGroupRoleNode:
 				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
+			}
+
+			if gce.UsesIPAliases(b.Cluster) {
+				t.CanIPForward = fi.Bool(false)
+
+				t.AliasIPRanges = map[string]string{
+					b.NameForIPAliasRange("pods"): "/24",
+				}
+				t.Subnet = b.LinkToIPAliasSubnet()
+			} else {
+				t.CanIPForward = fi.Bool(true)
 			}
 
 			//labels, err := b.CloudTagsForInstanceGroup(ig)

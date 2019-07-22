@@ -38,7 +38,7 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 	// @TODO need to clean up this code, it isn't the easiest to read
 	networking := b.Cluster.Spec.Networking
 	if networking == nil || networking.Classic != nil {
-	} else if networking.Kubenet != nil {
+	} else if networking.Kubenet != nil || networking.GCE != nil {
 		assetNames = append(assetNames, "bridge", "host-local", "loopback")
 	} else if networking.External != nil {
 		// external is based on kubenet
