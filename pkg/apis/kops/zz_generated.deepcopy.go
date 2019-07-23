@@ -3463,6 +3463,11 @@ func (in *WeaveNetworkingSpec) DeepCopyInto(out *WeaveNetworkingSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.MemoryResources != nil {
+		in, out := &in.MemoryResources, &out.MemoryResources
+		*out = new(string)
+		**out = **in
+	}
 	if in.NoMasqLocal != nil {
 		in, out := &in.NoMasqLocal, &out.NoMasqLocal
 		*out = new(int32)
