@@ -18,15 +18,12 @@ package cloudup
 
 import (
 	"io/ioutil"
-	"os"
 	"path"
-	"strings"
 	"testing"
 
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
-	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/templates"
@@ -121,19 +118,6 @@ func runChannelBuilderTest(t *testing.T, key string) {
 	}
 
 	expectedManifestPath := path.Join(basedir, "manifest.yaml")
-	expectedManifest, err := ioutil.ReadFile(expectedManifestPath)
-	if err != nil {
-		t.Fatalf("error reading file %q: %v", expectedManifestPath, err)
-	}
 
-	if strings.TrimSpace(string(expectedManifest)) != strings.TrimSpace(actualManifest) {
-		diffString := diff.FormatDiff(string(expectedManifest), actualManifest)
-		t.Logf("diff:\n%s\n", diffString)
-		t.Errorf("manifest differed from expected for test %q", key)
-		if os.Getenv("UPDATE_CHANNEL_BUILDER_TEST_FIXTURES") == "true" {
-			ioutil.WriteFile(expectedManifestPath, []byte(actualManifest), 0755)
-		} else {
-			t.Logf("to update fixtures automatically, run with UPDATE_CHANNEL_BUILDER_TEST_FIXTURES=true")
-		}
-	}
+	testutils.AssertMatchesFile(t, actualManifest, expectedManifestPath)
 }
