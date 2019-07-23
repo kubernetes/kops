@@ -154,9 +154,9 @@ spec:
           resources:
             requests:
               cpu: 50m
-              memory: 200Mi
+              memory: {{- if .Networking.Weave.MemoryResources -}}{{ .Networking.Weave.MemoryResources }}{{- else -}}200Mi{{- end -}}
             limits:
-              memory: 200Mi
+              memory: {{- if .Networking.Weave.MemoryResources -}}{{ .Networking.Weave.MemoryResources }}{{- else -}}200Mi{{- end -}}
           securityContext:
             privileged: true
           volumeMounts:
