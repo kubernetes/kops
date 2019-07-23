@@ -32,6 +32,9 @@ data:
           "etcd_scheme": "https",
           {{- end }}
           "log_level": "info",
+          {{- if .Networking.Calico.MTU }}
+          "mtu": {{- or .Networking.Calico.MTU }},
+          {{- end }}
           "ipam": {
             "type": "calico-ipam"
           },
@@ -259,6 +262,10 @@ spec:
               value: "autodetect"
             - name: FELIX_HEALTHENABLED
               value: "true"
+            {{- if .Networking.Calico.MTU }}
+            - name: FELIX_IPINIPMTU
+              value: "{{- or .Networking.Calico.MTU }}"
+            {{- end}}
           securityContext:
             privileged: true
           resources:
