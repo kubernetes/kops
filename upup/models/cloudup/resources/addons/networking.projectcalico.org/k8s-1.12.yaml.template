@@ -242,7 +242,7 @@ data:
 
   # TODO: Do we want to configure this?
   # Configure the MTU to use
-  veth_mtu: "1440"
+  veth_mtu: "{{- or .Networking.Calico.MTU "1440" }}"
 
   # Configure the Calico backend to use.
   calico_backend: "bird"
