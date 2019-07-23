@@ -20,4 +20,8 @@ set -o pipefail
 KOPS_ROOT=$(git rev-parse --show-toplevel)
 cd ${KOPS_ROOT}
 
-HACK_UPDATE_EXPECTED_IN_PLACE=1 go test ./...
+# Update gobindata to reflect any yaml changes
+make kops-gobindata
+
+# Run the tests in "autofix mode"
+HACK_UPDATE_EXPECTED_IN_PLACE=1 go test ./... -count=1
