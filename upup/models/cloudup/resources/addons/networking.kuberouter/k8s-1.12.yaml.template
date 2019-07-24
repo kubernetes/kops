@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
       - name: kube-router
-        image: cloudnativelabs/kube-router:v0.1.0
+        image: cloudnativelabs/kube-router:v0.3.1
         args:
         - --run-router=true
         - --run-firewall=true
