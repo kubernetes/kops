@@ -152,6 +152,16 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 		},
 	}
 
+	volumePluginDir := b.Cluster.Spec.Kubelet.VolumePluginDirectory
+
+	// Ensure the Volume Plugin dir is mounted on the same path as the host machine so DaemonSet deployment is possible
+	if volumePluginDir == "" {
+		volumePluginDir = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec"
+	} else {
+		// If volume-plugin-dir flag is set in kubelet, match dir in kube-controller
+		flags = append(flags, "--flex-volume-plugin-dir="+volumePluginDir)
+	}
+
 	container := &v1.Container{
 		Name:  "kube-controller-manager",
 		Image: b.Cluster.Spec.KubeControllerManager.Image,
@@ -208,6 +218,8 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	addHostPathMapping(pod, container, "varlibkcm", "/var/lib/kube-controller-manager")
+
+	addHostPathMapping(pod, container, "volplugins", volumePluginDir).ReadOnly = false
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 
