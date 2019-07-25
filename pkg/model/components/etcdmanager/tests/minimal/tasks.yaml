@@ -73,6 +73,7 @@ Contents:
         scheduler.alpha.kubernetes.io/critical-pod: ""
       creationTimestamp: null
       labels:
+        app.kubernetes.io/name: etcd-manager-events
         k8s-app: etcd-manager-events
       name: etcd-manager-events
       namespace: kube-system
@@ -144,6 +145,7 @@ Contents:
         scheduler.alpha.kubernetes.io/critical-pod: ""
       creationTimestamp: null
       labels:
+        app.kubernetes.io/name: etcd-manager-main
         k8s-app: etcd-manager-main
       name: etcd-manager-main
       namespace: kube-system

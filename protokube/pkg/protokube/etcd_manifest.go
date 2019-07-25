@@ -36,7 +36,10 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 	pod.Kind = "Pod"
 	pod.Name = c.PodName
 	pod.Namespace = "kube-system"
-	pod.Labels = map[string]string{"k8s-app": c.PodName}
+	pod.Labels = map[string]string{
+		"k8s-app":                c.PodName,
+		"app.kubernetes.io/name": c.PodName,
+	}
 	pod.Spec.HostNetwork = true
 
 	// dereference our resource requests if they exist

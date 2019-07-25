@@ -195,8 +195,9 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 			Name:      "kube-proxy",
 			Namespace: "kube-system",
 			Labels: map[string]string{
-				"k8s-app": "kube-proxy",
-				"tier":    "node",
+				"k8s-app":                "kube-proxy",
+				"app.kubernetes.io/name": "kube-proxy",
+				"tier":                   "node",
 			},
 		},
 		Spec: v1.PodSpec{

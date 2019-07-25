@@ -368,7 +368,8 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 			Namespace:   "kube-system",
 			Annotations: b.buildAnnotations(),
 			Labels: map[string]string{
-				"k8s-app": "kube-apiserver",
+				"k8s-app":                "kube-apiserver",
+				"app.kubernetes.io/name": "kube-apiserver",
 			},
 		},
 		Spec: v1.PodSpec{

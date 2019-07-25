@@ -144,7 +144,8 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 			Name:      "kube-controller-manager",
 			Namespace: "kube-system",
 			Labels: map[string]string{
-				"k8s-app": "kube-controller-manager",
+				"k8s-app":                "kube-controller-manager",
+				"app.kubernetes.io/name": "kube-controller-manager",
 			},
 		},
 		Spec: v1.PodSpec{

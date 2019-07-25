@@ -30,6 +30,7 @@ metadata:
     scheduler.alpha.kubernetes.io/critical-pod: ""
   creationTimestamp: null
   labels:
+    app.kubernetes.io/name: etcd-server-main
     k8s-app: etcd-server-main
   name: etcd-server-main
   namespace: kube-system

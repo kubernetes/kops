@@ -115,7 +115,8 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 			Name:      "kube-scheduler",
 			Namespace: "kube-system",
 			Labels: map[string]string{
-				"k8s-app": "kube-scheduler",
+				"k8s-app":                "kube-scheduler",
+				"app.kubernetes.io/name": "kube-scheduler",
 			},
 		},
 		Spec: v1.PodSpec{

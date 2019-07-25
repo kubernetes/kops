@@ -285,6 +285,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		pod.Labels = make(map[string]string)
 	}
 	pod.Labels["k8s-app"] = pod.Name
+	pod.Labels["app.kubernetes.io/name"] = pod.Name
 
 	// TODO: Use a socket file for the quarantine port
 	quarantinedClientPort := 3994
