@@ -17,17 +17,8 @@ make kops-server-push
 
 # Deploying the kops API server to a cluster 
 
-Choose one of the following methods (**only for develop**)
-
-* the method one: apply the file
+apply the file (modify the image)
 
 ```bash
 kubectl apply -f docs/kops-server/kops-server.yaml
-```
-
-
-* From the keops directory run the following `helm` command. More information on `helm` can be found [here](https://github.com/kubernetes/helm)
-
-```bash
-helm install charts/kops --namespace kops
 ```
