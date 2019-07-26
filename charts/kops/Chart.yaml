@@ -1,7 +1,0 @@
-name: kops
-home: https://github.com/kubernetes/kops
-version: 1.0.0
-description: Kubernetes kops API server
-maintainers:
-  - name: Kris Nova
-    email: kris@nivenly.com
