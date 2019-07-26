@@ -107,40 +107,40 @@ spec:
   - id: pre-k8s-1.6
     kubernetesVersion: <1.6.0
     manifest: networking.weave/pre-k8s-1.6.yaml
-    manifestHash: 68a216203c07e9c94f933e59b0bb128cda67ea84
+    manifestHash: 564f5bea5d9eee61af636dba48c4092a0bedef7f
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"
-    version: 2.3.0-kops.2
+    version: 2.3.0-kops.3
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0 <1.7.0'
     manifest: networking.weave/k8s-1.6.yaml
-    manifestHash: c507056ef3fafc4a761e13e3ea929ee5913fc147
+    manifestHash: 6897c214a84d8ba960f7c92e237e1f9d8edea394
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"
-    version: 2.3.0-kops.2
+    version: 2.3.0-kops.3
   - id: k8s-1.7
     kubernetesVersion: '>=1.7.0 <1.8.0'
     manifest: networking.weave/k8s-1.7.yaml
-    manifestHash: 65de8dd63d2fc63c71bb8c72be8511cdf5565b5e
+    manifestHash: e017ce8498a9c4b0569bf2e4d7f49f9f4201ef52
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"
-    version: 2.5.1-kops.1
+    version: 2.5.1-kops.2
   - id: k8s-1.8
     kubernetesVersion: '>=1.8.0 <1.12.0'
     manifest: networking.weave/k8s-1.8.yaml
-    manifestHash: bbe1619bb252db86f0c79a1c633cb2bd4423e8e7
+    manifestHash: 390e23353f5370d294663065a3ca7e0fb1d63737
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"
-    version: 2.5.1-kops.1
+    version: 2.5.1-kops.2
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: networking.weave/k8s-1.12.yaml
-    manifestHash: a41cbe09f1d3331a1566167dd75470645b7d2fb7
+    manifestHash: c784dfaae5188e0b1e4dbfea0373abe8d1a01b48
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"
-    version: 2.5.1-kops.1
+    version: 2.5.1-kops.2
