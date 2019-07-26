@@ -19,6 +19,7 @@ spec:
   template:
     metadata:
       annotations:
+        prometheus.io/scrape: "true"
         scheduler.alpha.kubernetes.io/critical-pod: ''
         scheduler.alpha.kubernetes.io/tolerations: >-
           [{"key":"dedicated","operator":"Equal","value":"master","effect":"NoSchedule"},{"key":"CriticalAddonsOnly", "operator":"Exists"}]
@@ -47,6 +48,9 @@ spec:
               value: "{{ .Networking.Weave.ConnLimit }}"
             {{- end }}
           image: 'weaveworks/weave-kube:2.3.0'
+          ports:
+            - name: metrics
+              containerPort: 6782
           livenessProbe:
             httpGet:
               host: 127.0.0.1
@@ -84,6 +88,9 @@ spec:
                   apiVersion: v1
                   fieldPath: spec.nodeName
           image: 'weaveworks/weave-npc:2.3.0'
+          ports:
+            - name: metrics
+              containerPort: 6781
           resources:
             requests:
               cpu: 50m
