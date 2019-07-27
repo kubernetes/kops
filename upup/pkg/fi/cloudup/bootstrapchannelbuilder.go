@@ -18,6 +18,7 @@ package cloudup
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/klog"
 	channelsapi "k8s.io/kops/channels/pkg/api"
@@ -83,13 +84,16 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("error remapping manifest %s: %v", manifestPath, err)
 		}
 
+		// Trim whitespace
+		manifestBytes = []byte(strings.TrimSpace(string(manifestBytes)))
+
 		rawManifest := string(manifestBytes)
 		klog.V(4).Infof("Manifest %v", rawManifest)
 
-		manifestHash, err := utils.HashString(&rawManifest)
+		manifestHash, err := utils.HashString(rawManifest)
 		klog.V(4).Infof("hash %s", manifestHash)
 		if err != nil {
-			manifestHash = ""
+			return fmt.Errorf("error hashing manifest: %v", err)
 		}
 		a.ManifestHash = manifestHash
 
