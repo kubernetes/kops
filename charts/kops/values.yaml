@@ -1,5 +1,0 @@
-# kops global configuration
-global:
-
-  # This is just a dummy directive for now..
-  storage_backend: "etcd"
