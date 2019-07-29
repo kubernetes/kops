@@ -12,6 +12,7 @@ go_library(
         "//pkg/apis/kops:go_default_library",
         "//pkg/assets:go_default_library",
         "//pkg/dns:go_default_library",
+        "//pkg/featureflag:go_default_library",
         "//pkg/flagbuilder:go_default_library",
         "//pkg/k8scodecs:go_default_library",
         "//pkg/kubemanifest:go_default_library",
