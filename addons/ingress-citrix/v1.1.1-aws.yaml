@@ -4,17 +4,20 @@ metadata:
   name: cpx-ingress-k8s-role
 rules:
   - apiGroups: [""]
-    resources: ["services", "endpoints", "ingresses", "pods", "secrets"]
+    resources: ["services", "endpoints", "ingresses", "pods", "secrets", "routes", "routes/status", "nodes", "namespaces"]
     verbs: ["*"]
   - apiGroups: ["extensions"]
     resources: ["ingresses", "ingresses/status"]
     verbs: ["*"]
   - apiGroups: ["citrix.com"]
-    resources: ["rewritepolicies"]
+    resources: ["rewritepolicies", "vips"]
     verbs: ["*"]
   - apiGroups: ["apps"]
     resources: ["deployments"]
     verbs: ["*"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["get", "list", "watch"]
 
 ---
 
@@ -61,7 +64,7 @@ spec:
       serviceAccountName: cpx-ingress-k8s-role
       containers:
         - name: cpx-ingress
-          image: "quay.io/citrix/citrix-k8s-cpx-ingress:12.1-51.16"
+          image: "quay.io/citrix/citrix-k8s-cpx-ingress:13.0-36.29"
           securityContext:
              privileged: true
           env:
@@ -71,19 +74,16 @@ spec:
             value: ""
           #This is required for Health check to succeed
           readinessProbe:
-            failureThreshold: 3
-            httpGet:
-              path: /
+            tcpSocket:
               port: 9080
-              scheme: HTTP
             initialDelaySeconds: 60
             periodSeconds: 5
+            failureThreshold: 5
             successThreshold: 1
-            timeoutSeconds: 1
           imagePullPolicy: Always
         # Add cic as a sidecar
         - name: cic
-          image: "quay.io/citrix/citrix-k8s-ingress-controller:1.1.1"
+          image: "quay.io/citrix/citrix-k8s-ingress-controller:1.2.0"
           env:
           - name: "EULA"
             value: "yes"
