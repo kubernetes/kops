@@ -218,6 +218,18 @@ When you enable cross-subnet mode in kops, an addon controller ([k8s-ec2-srcdst]
 will be deployed as a Pod (which will be scheduled on one of the masters) to facilitate the disabling of said source/destination address checks.
 Only the masters have the IAM policy (`ec2:*`) to allow k8s-ec2-srcdst to execute `ec2:ModifyInstanceAttribute`.
 
+### Configuring Calico MTU
+
+The Calico MTU is configurable by editing the cluster and setting `mtu` option in the calico configuration.
+AWS VPCs support jumbo frames, so on cluster creation kops sets the calico MTU to 8912 bytes (9001 minus overhead).
+
+```
+spec:
+  networking:
+    calico:
+      mtu: 8912
+```
+
 #### More information about Calico
 
 For Calico specific documentation please visit the [Calico Docs](http://docs.projectcalico.org/latest/getting-started/kubernetes/).
