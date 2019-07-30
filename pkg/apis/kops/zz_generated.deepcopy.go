@@ -2405,6 +2405,11 @@ func (in *KubeSchedulerConfig) DeepCopyInto(out *KubeSchedulerConfig) {
 			(*out)[key] = val
 		}
 	}
+	if in.MaxPersistentVolumes != nil {
+		in, out := &in.MaxPersistentVolumes, &out.MaxPersistentVolumes
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 
