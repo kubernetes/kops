@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"strconv"
 
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
@@ -162,6 +163,14 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 			"/usr/local/bin/kube-scheduler",
 			sortedStrings(flags),
 			"/var/log/kube-scheduler.log")
+	}
+
+	if c.MaxPersistentVolumes != nil {
+		maxPDV := v1.EnvVar{
+			Name:  "KUBE_MAX_PD_VOLS", // https://kubernetes.io/docs/concepts/storage/storage-limits/
+			Value: strconv.Itoa(int(*c.MaxPersistentVolumes)),
+		}
+		container.Env = append(container.Env, maxPDV)
 	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
