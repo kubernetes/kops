@@ -2987,6 +2987,9 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AuthenticationTokenWebhookConfigFile = in.AuthenticationTokenWebhookConfigFile
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
 	out.AuthorizationMode = in.AuthorizationMode
+	out.AuthorizationWebhookConfigFile = in.AuthorizationWebhookConfigFile
+	out.AuthorizationWebhookCacheAuthorizedTTL = in.AuthorizationWebhookCacheAuthorizedTTL
+	out.AuthorizationWebhookCacheUnauthorizedTTL = in.AuthorizationWebhookCacheUnauthorizedTTL
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
 	out.ExperimentalEncryptionProviderConfig = in.ExperimentalEncryptionProviderConfig
 	out.RequestheaderUsernameHeaders = in.RequestheaderUsernameHeaders
@@ -3078,6 +3081,9 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.AuthenticationTokenWebhookConfigFile = in.AuthenticationTokenWebhookConfigFile
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
 	out.AuthorizationMode = in.AuthorizationMode
+	out.AuthorizationWebhookConfigFile = in.AuthorizationWebhookConfigFile
+	out.AuthorizationWebhookCacheAuthorizedTTL = in.AuthorizationWebhookCacheAuthorizedTTL
+	out.AuthorizationWebhookCacheUnauthorizedTTL = in.AuthorizationWebhookCacheUnauthorizedTTL
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
 	out.ExperimentalEncryptionProviderConfig = in.ExperimentalEncryptionProviderConfig
 	out.RequestheaderUsernameHeaders = in.RequestheaderUsernameHeaders

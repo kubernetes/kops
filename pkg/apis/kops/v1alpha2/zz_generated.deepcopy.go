@@ -1875,6 +1875,33 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.AuthorizationWebhookConfigFile != nil {
+		in, out := &in.AuthorizationWebhookConfigFile, &out.AuthorizationWebhookConfigFile
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
+	if in.AuthorizationWebhookCacheAuthorizedTTL != nil {
+		in, out := &in.AuthorizationWebhookCacheAuthorizedTTL, &out.AuthorizationWebhookCacheAuthorizedTTL
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
+	if in.AuthorizationWebhookCacheUnauthorizedTTL != nil {
+		in, out := &in.AuthorizationWebhookCacheUnauthorizedTTL, &out.AuthorizationWebhookCacheUnauthorizedTTL
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
 	if in.AuthorizationRBACSuperUser != nil {
 		in, out := &in.AuthorizationRBACSuperUser, &out.AuthorizationRBACSuperUser
 		*out = new(string)
