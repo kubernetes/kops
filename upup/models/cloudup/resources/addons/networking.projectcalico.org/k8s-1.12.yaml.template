@@ -240,7 +240,6 @@ data:
   # essential.
   typha_service_name: "none"
 
-  # TODO: Do we want to configure this?
   # Configure the MTU to use
   veth_mtu: "{{- or .Networking.Calico.MTU "1440" }}"
 
