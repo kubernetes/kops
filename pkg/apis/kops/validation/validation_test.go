@@ -146,10 +146,12 @@ func TestValidateSubnets(t *testing.T) {
 
 func TestValidateKubeAPIServer(t *testing.T) {
 	str := "foobar"
+	authzMode := "RBAC,Webhook"
 
 	grid := []struct {
 		Input          kops.KubeAPIServerConfig
 		ExpectedErrors []string
+		ExpectedDetail string
 	}{
 		{
 			Input: kops.KubeAPIServerConfig{
@@ -158,6 +160,7 @@ func TestValidateKubeAPIServer(t *testing.T) {
 			ExpectedErrors: []string{
 				"Invalid value::KubeAPIServer",
 			},
+			ExpectedDetail: "ProxyClientCertFile and ProxyClientKeyFile must both be specified (or not all)",
 		},
 		{
 			Input: kops.KubeAPIServerConfig{
@@ -166,6 +169,7 @@ func TestValidateKubeAPIServer(t *testing.T) {
 			ExpectedErrors: []string{
 				"Invalid value::KubeAPIServer",
 			},
+			ExpectedDetail: "ProxyClientCertFile and ProxyClientKeyFile must both be specified (or not all)",
 		},
 		{
 			Input: kops.KubeAPIServerConfig{
@@ -175,11 +179,36 @@ func TestValidateKubeAPIServer(t *testing.T) {
 				"Invalid value::KubeAPIServer",
 			},
 		},
+		{
+			Input: kops.KubeAPIServerConfig{
+				AuthorizationMode: &authzMode,
+			},
+			ExpectedErrors: []string{
+				"Invalid value::KubeAPIServer",
+			},
+			ExpectedDetail: "Authorization mode Webhook requires AuthorizationWebhookConfigFile to be specified",
+		},
 	}
 	for _, g := range grid {
 		errs := validateKubeAPIServer(&g.Input, field.NewPath("KubeAPIServer"))
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
+
+		if g.ExpectedDetail != "" {
+			found := false
+			for _, err := range errs {
+				if err.Detail == g.ExpectedDetail {
+					found = true
+				}
+			}
+			if !found {
+				for _, err := range errs {
+					t.Logf("found detail: %q", err.Detail)
+				}
+
+				t.Errorf("did not find expected error %q", g.ExpectedDetail)
+			}
+		}
 	}
 }
 
