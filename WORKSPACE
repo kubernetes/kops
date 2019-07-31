@@ -120,7 +120,7 @@ http_file(
 
 git_repository(
     name = "io_k8s_repo_infra",
-    commit = "4ce715fbe67d8fbed05ec2bb47a148e754100a4b",
+    commit = "f85734f673056977d8ba04b0386394b684ca2acb",
     remote = "https://github.com/kubernetes/repo-infra.git",
-    shallow_since = "1517262872 -0800",
+    shallow_since = "1563324513 -0800",
 )
