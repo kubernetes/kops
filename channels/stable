@@ -43,7 +43,7 @@ spec:
     recommendedVersion: 1.13.5
     requiredVersion: 1.13.0
   - range: ">=1.12.0"
-    recommendedVersion: 1.12.8
+    recommendedVersion: 1.12.9
     requiredVersion: 1.12.0
   - range: ">=1.11.0"
     recommendedVersion: 1.11.10
