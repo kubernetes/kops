@@ -135,6 +135,8 @@ func (_ *LoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e,
 	request.LoadBalancerAttributes.CrossZoneLoadBalancing = &elb.CrossZoneLoadBalancing{}
 	if e.CrossZoneLoadBalancing == nil || e.CrossZoneLoadBalancing.Enabled == nil {
 		request.LoadBalancerAttributes.CrossZoneLoadBalancing.Enabled = fi.Bool(false)
+	} else {
+		request.LoadBalancerAttributes.CrossZoneLoadBalancing.Enabled = e.CrossZoneLoadBalancing.Enabled
 	}
 
 	// Setting non mandatory values only if not empty
