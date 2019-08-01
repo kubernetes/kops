@@ -2567,6 +2567,11 @@ func (in *LoadBalancerAccessSpec) DeepCopyInto(out *LoadBalancerAccessSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.CrossZoneLoadBalancing != nil {
+		in, out := &in.CrossZoneLoadBalancing, &out.CrossZoneLoadBalancing
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

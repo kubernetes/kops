@@ -343,6 +343,8 @@ type LoadBalancerAccessSpec struct {
 	UseForInternalApi bool `json:"useForInternalApi,omitempty"`
 	// SSLCertificate allows you to specify the ACM cert to be used the LB
 	SSLCertificate string `json:"sslCertificate,omitempty"`
+	// CrossZoneLoadBalancing allows you to enable the cross zone load balancing
+	CrossZoneLoadBalancing *bool `json:"crossZoneLoadBalancing,omitempty"`
 }
 
 // KubeDNSConfig defines the kube dns configuration
