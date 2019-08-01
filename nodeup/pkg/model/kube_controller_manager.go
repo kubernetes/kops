@@ -160,15 +160,19 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 		switch b.Distribution {
 		case distros.DistributionContainerOS:
 			// Default is different on ContainerOS, see https://github.com/kubernetes/kubernetes/pull/58171
-			volumePluginDir = "/home/kubernetes/flexvolume"
+			volumePluginDir = "/home/kubernetes/flexvolume/"
+
+		case distros.DistributionCoreOS:
+			// The /usr directory is read-only for CoreOS
+			volumePluginDir = "/var/lib/kubelet/volumeplugins/"
 
 		default:
-			volumePluginDir = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec"
+			volumePluginDir = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/"
 		}
-	} else {
-		// If volume-plugin-dir flag is set in kubelet, match dir in kube-controller
-		flags = append(flags, "--flex-volume-plugin-dir="+volumePluginDir)
 	}
+
+	// Add the volumePluginDir flag if provided in the kubelet spec, or set above based on the OS
+	flags = append(flags, "--flex-volume-plugin-dir="+volumePluginDir)
 
 	container := &v1.Container{
 		Name:  "kube-controller-manager",
