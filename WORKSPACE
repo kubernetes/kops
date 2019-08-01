@@ -61,7 +61,7 @@ container_pull(
 git_repository(
     name = "distroless",
     remote = "https://github.com/googlecloudplatform/distroless.git",
-    commit = "3585653b2b0d33c3fb369b907ef68df8344fd2ad",
+    commit = "fa0765cc86064801e42a3b35f50ff2242aca9998",
 )
 
 load(
@@ -120,7 +120,7 @@ http_file(
 
 git_repository(
     name = "io_k8s_repo_infra",
-    commit = "4ce715fbe67d8fbed05ec2bb47a148e754100a4b",
+    commit = "f85734f673056977d8ba04b0386394b684ca2acb",
     remote = "https://github.com/kubernetes/repo-infra.git",
-    shallow_since = "1517262872 -0800",
+    shallow_since = "1563324513 -0800",
 )
