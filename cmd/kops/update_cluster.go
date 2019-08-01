@@ -19,13 +19,13 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/spf13/viper"
 	"io"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
