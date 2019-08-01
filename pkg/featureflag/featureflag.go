@@ -80,6 +80,8 @@ var (
 	VPCSkipEnableDNSSupport = New("VPCSkipEnableDNSSupport", Bool(false))
 	// VSphereCloudProvider enables the vsphere cloud provider
 	VSphereCloudProvider = New("VSphereCloudProvider", Bool(false))
+	// SkipEtcdVersionCheck will bypass the check that etcd-manager is using a supported etcd version
+	SkipEtcdVersionCheck = New("SkipEtcdVersionCheck", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
