@@ -591,6 +591,21 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		// For 1.5 and earlier, protokube will taint the master
 	}
 
+	if c.VolumePluginDirectory == "" {
+		switch b.Distribution {
+		case distros.DistributionContainerOS:
+			// Default is different on ContainerOS, see https://github.com/kubernetes/kubernetes/pull/58171
+			c.VolumePluginDirectory = "/home/kubernetes/flexvolume/"
+
+		case distros.DistributionCoreOS:
+			// The /usr directory is read-only for CoreOS
+			c.VolumePluginDirectory = "/var/lib/kubelet/volumeplugins/"
+
+		default:
+			c.VolumePluginDirectory = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/"
+		}
+	}
+
 	return c, nil
 }
 
