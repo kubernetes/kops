@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -156,7 +157,14 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 
 	// Ensure the Volume Plugin dir is mounted on the same path as the host machine so DaemonSet deployment is possible
 	if volumePluginDir == "" {
-		volumePluginDir = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec"
+		switch b.Distribution {
+		case distros.DistributionContainerOS:
+			// Default is different on ContainerOS, see https://github.com/kubernetes/kubernetes/pull/58171
+			volumePluginDir = "/home/kubernetes/flexvolume"
+
+		default:
+			volumePluginDir = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec"
+		}
 	} else {
 		// If volume-plugin-dir flag is set in kubelet, match dir in kube-controller
 		flags = append(flags, "--flex-volume-plugin-dir="+volumePluginDir)
