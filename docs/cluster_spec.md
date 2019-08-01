@@ -67,6 +67,14 @@ spec:
       useForInternalApi: true
 ```
 
+You can also set the API load balancer to be cross-zone:
+```yaml
+spec:
+  api:
+    loadBalancer:
+      crossZoneLoadBalancing: true
+```
+
 ### etcdClusters v3 & tls
 
 Although kops doesn't presently default to etcd3, it is possible to turn on both v3 and TLS authentication for communication amongst cluster members. These options may be enabled via the cluster spec (manifests only i.e. no command line options as yet). An upfront warning; at present no upgrade path exists for migrating from v2 to v3 so **DO NOT** try to enable this on a v2 running cluster as it must be done on cluster creation. The below example snippet assumes a HA cluster of three masters.

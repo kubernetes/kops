@@ -3869,6 +3869,7 @@ func autoConvert_v1alpha2_LoadBalancerAccessSpec_To_kops_LoadBalancerAccessSpec(
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.UseForInternalApi = in.UseForInternalApi
 	out.SSLCertificate = in.SSLCertificate
+	out.CrossZoneLoadBalancing = in.CrossZoneLoadBalancing
 	return nil
 }
 
@@ -3884,6 +3885,7 @@ func autoConvert_kops_LoadBalancerAccessSpec_To_v1alpha2_LoadBalancerAccessSpec(
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.UseForInternalApi = in.UseForInternalApi
 	out.SSLCertificate = in.SSLCertificate
+	out.CrossZoneLoadBalancing = in.CrossZoneLoadBalancing
 	return nil
 }
 
