@@ -196,6 +196,24 @@ func TestBuildAPIServerFlags(t *testing.T) {
 			},
 			Expected: "--audit-webhook-batch-max-size=1000 --insecure-port=0 --secure-port=0",
 		},
+		{
+			Config: &kops.KubeAPIServerConfig{
+				AuthorizationWebhookConfigFile: fi.String("/authorization.yaml"),
+			},
+			Expected: "--authorization-webhook-config-file=/authorization.yaml --insecure-port=0 --secure-port=0",
+		},
+		{
+			Config: &kops.KubeAPIServerConfig{
+				AuthorizationWebhookCacheAuthorizedTTL: &metav1.Duration{Duration: 100 * time.Second},
+			},
+			Expected: "--authorization-webhook-cache-authorized-ttl=1m40s --insecure-port=0 --secure-port=0",
+		},
+		{
+			Config: &kops.KubeAPIServerConfig{
+				AuthorizationWebhookCacheUnauthorizedTTL: &metav1.Duration{Duration: 10 * time.Second},
+			},
+			Expected: "--authorization-webhook-cache-unauthorized-ttl=10s --insecure-port=0 --secure-port=0",
+		},
 	}
 
 	for _, test := range grid {
