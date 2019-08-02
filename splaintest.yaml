@@ -1,0 +1,23 @@
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: test-splain2.dev.k.do.ws.sonos.com
+  name: compute
+spec:
+  cloudLabels:
+    role: compute
+  image: kope.io/k8s-1.12-debian-stretch-amd64-hvm-ebs-2019-05-13
+  machineType: m4.large
+  maxSize: 5
+  minSize: 1
+  role: Node
+  instanceProtection: true
+  # add the mixed instance here
+  mixedInstancesPolicy:
+    instances:
+    - m5.large
+    - m5.xlarge
+    - t2.medium
+    onDemandAboveBase: 10
+    spotInstancePools: 3
