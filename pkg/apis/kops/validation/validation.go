@@ -266,6 +266,13 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) fie
 		}
 	}
 
+	if v.AuthorizationMode != nil && strings.Contains(*v.AuthorizationMode, "Webhook") {
+		if v.AuthorizationWebhookConfigFile == nil {
+			flds := [2]*string{v.AuthorizationMode, v.AuthorizationWebhookConfigFile}
+			allErrs = append(allErrs, field.Invalid(fldPath, flds, "Authorization mode Webhook requires AuthorizationWebhookConfigFile to be specified"))
+		}
+	}
+
 	return allErrs
 }
 

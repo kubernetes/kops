@@ -385,6 +385,12 @@ type KubeAPIServerConfig struct {
 	AuthenticationTokenWebhookCacheTTL *metav1.Duration `json:"authenticationTokenWebhookCacheTtl,omitempty" flag:"authentication-token-webhook-cache-ttl"`
 	// AuthorizationMode is the authorization mode the kubeapi is running in
 	AuthorizationMode *string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
+	// File with webhook configuration for authorization in kubeconfig format. The API server will query the remote service to determine whether to authorize the request.
+	AuthorizationWebhookConfigFile *string `json:"authorizationWebhookConfigFile,omitempty" flag:"authorization-webhook-config-file"`
+	// The duration to cache authorized responses from the webhook token authorizer. Default is 5m. (default 5m0s)
+	AuthorizationWebhookCacheAuthorizedTTL *metav1.Duration `json:"authorizationWebhookCacheAuthorizedTtl,omitempty" flag:"authorization-webhook-cache-authorized-ttl"`
+	// The duration to cache authorized responses from the webhook token authorizer. Default is 30s. (default 30s)
+	AuthorizationWebhookCacheUnauthorizedTTL *metav1.Duration `json:"authorizationWebhookCacheUnauthorizedTtl,omitempty" flag:"authorization-webhook-cache-unauthorized-ttl"`
 	// AuthorizationRBACSuperUser is the name of the superuser for default rbac
 	AuthorizationRBACSuperUser *string `json:"authorizationRbacSuperUser,omitempty" flag:"authorization-rbac-super-user"`
 	// ExperimentalEncryptionProviderConfig enables encryption at rest for secrets.
