@@ -466,7 +466,7 @@ If you are using CoreDNS and want to use an entirely custom CoreFile you can do 
 spec:
   kubeDNS:
     provider: CoreDNS
-    ExternalCoreFile: |
+    externalCoreFile: |
       amazonaws.com:53 {
             errors
             log . {
