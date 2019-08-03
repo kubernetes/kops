@@ -3510,6 +3510,7 @@ func autoConvert_v1alpha2_KubeDNSConfig_To_kops_KubeDNSConfig(in *KubeDNSConfig,
 	out.CacheMaxSize = in.CacheMaxSize
 	out.CacheMaxConcurrent = in.CacheMaxConcurrent
 	out.Domain = in.Domain
+	out.ExternalCoreFile = in.ExternalCoreFile
 	out.Image = in.Image
 	out.Replicas = in.Replicas
 	out.Provider = in.Provider
@@ -3531,6 +3532,7 @@ func autoConvert_kops_KubeDNSConfig_To_v1alpha2_KubeDNSConfig(in *kops.KubeDNSCo
 	out.CacheMaxSize = in.CacheMaxSize
 	out.CacheMaxConcurrent = in.CacheMaxConcurrent
 	out.Domain = in.Domain
+	out.ExternalCoreFile = in.ExternalCoreFile
 	out.Image = in.Image
 	out.Replicas = in.Replicas
 	out.Provider = in.Provider
