@@ -18,7 +18,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersmixedinstancesex
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
+  NODEUP_URL=https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
   export AWS_REGION=us-test-1
@@ -318,7 +318,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersmixedinstancesex
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
+  NODEUP_URL=https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
   export AWS_REGION=us-test-1
@@ -618,7 +618,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmastersmixedinstancesex
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
+  NODEUP_URL=https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
   export AWS_REGION=us-test-1
@@ -918,7 +918,7 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
+  NODEUP_URL=https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
   export AWS_REGION=us-test-1
