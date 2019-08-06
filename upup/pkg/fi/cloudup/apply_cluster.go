@@ -303,7 +303,7 @@ func (c *ApplyClusterCmd) Run() error {
 			fmt.Println("")
 			fmt.Printf(starline)
 			fmt.Println("")
-			fmt.Println("Kubelet anonymousAuth is currently turned on. This allows RBAC escalation and remote code execution possibilites.")
+			fmt.Println("Kubelet anonymousAuth is currently turned on. This allows RBAC escalation and remote code execution possibilities.")
 			fmt.Println("It is highly recommended you turn it off by setting 'spec.kubelet.anonymousAuth' to 'false' via 'kops edit cluster'")
 			fmt.Println("")
 			fmt.Println("See https://github.com/kubernetes/kops/blob/master/docs/security.md#kubelet-api")
