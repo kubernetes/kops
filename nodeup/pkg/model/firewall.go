@@ -18,6 +18,7 @@ package model
 
 import (
 	"k8s.io/klog"
+	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -86,6 +87,15 @@ iptables -A FORWARD -w -p UDP -j ACCEPT
 iptables -A FORWARD -w -p ICMP -j ACCEPT
 fi
 `
+	// see issue #7379 this can be removed after nftables support is added
+	if b.Distribution == distros.DistributionDebian10 {
+		script += `update-alternatives --set iptables /usr/sbin/iptables-legacy
+update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+update-alternatives --set arptables /usr/sbin/arptables-legacy
+update-alternatives --set ebtables /usr/sbin/ebtables-legacy
+`
+	}
+
 	return &nodetasks.File{
 		Path:     "/home/kubernetes/bin/iptables-setup",
 		Contents: fi.NewStringResource(script),
