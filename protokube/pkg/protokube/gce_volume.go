@@ -181,7 +181,7 @@ func (v *GCEVolumes) buildGCEVolume(d *compute.Disk) (*Volume, error) {
 	for _, attachedTo := range d.Users {
 		u, err := gce.ParseGoogleCloudURL(attachedTo)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing disk attachmnet url %q: %v", attachedTo, err)
+			return nil, fmt.Errorf("error parsing disk attachment url %q: %v", attachedTo, err)
 		}
 
 		vol.AttachedTo = u.Name
