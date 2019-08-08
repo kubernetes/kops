@@ -123,28 +123,29 @@ checksums=(${class_to_driver_checksum[$AWS_INSTANCE_CLASS]} ${cuda_files_checksu
 length=${#downloads[@]}
 for (( i=0; i<${length}; i++ )); do
   download=${downloads[$i]}
-  checksum=${checksums[$i]}
   filename=$(basename $download)
-  filepath="${CACHE_DIR}/${filename}"
   filepath_installed="${CACHE_DIR}/${filename}.installed"
-
-  echo "Checking for file at $filepath"
-  if [[ ! -f $filepath ]] || ! (echo "$checksum  $filepath" | sha1sum -c - 2>&1 >/dev/null); then
-    echo "Downloading $download"
-    curl -L $download > $filepath
-    chmod a+x $filepath
-  fi
-
-  echo "Verifying sha1sum of file at $filepath"
-  if ! (echo "$checksum  $filepath" | sha1sum -c -); then
-    echo "Failed to verify sha1sum for file at $filepath"
-    exit 1
-  fi
 
   # Install the Nvidia driver and cuda libs
   if [[ -f $filepath_installed ]]; then
     echo "Detected prior install of file $filename on host"
   else
+    checksum=${checksums[$i]}
+    filepath="${CACHE_DIR}/${filename}"
+
+    echo "Checking for file at $filepath"
+    if [[ ! -f $filepath ]] || ! (echo "$checksum  $filepath" | sha1sum -c - 2>&1 >/dev/null); then
+      echo "Downloading $download"
+      curl -L $download > $filepath
+      chmod a+x $filepath
+    fi
+
+    echo "Verifying sha1sum of file at $filepath"
+    if ! (echo "$checksum  $filepath" | sha1sum -c -); then
+      echo "Failed to verify sha1sum for file at $filepath"
+      exit 1
+    fi
+
     echo "Installing file $filename on host"
     if [[ $download =~ .*NVIDIA.* ]]; then
       # Install the nvidia package
