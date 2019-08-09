@@ -181,7 +181,7 @@ func parseManifest(data []byte) ([]runtime.Object, error) {
 	return objects, nil
 }
 
-// Until we introduce the bundle, we hard-code the manifest
+// Until we introduce the bundle, we hard-code the manifest (3.0.20190516)
 var defaultManifest = `
 apiVersion: v1
 kind: Pod
@@ -190,7 +190,7 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-  - image: kopeio/etcd-manager:3.0.20190816
+  - image: kopeio/etcd-manager:3.0.20190516
     name: etcd-manager
     resources:
       requests:
@@ -478,6 +478,15 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	container.Env = appendEnvVariableIfExist("OS_AUTH_URL", container.Env)
 	container.Env = appendEnvVariableIfExist("OS_REGION_NAME", container.Env)
 
+	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderDO && os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
+		container.Env = append(container.Env, []v1.EnvVar{
+					{Name: "DIGITALOCEAN_ACCESS_TOKEN", Value: os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")},
+					{Name: "S3_ENDPOINT", Value: os.Getenv("S3_ENDPOINT")},
+					{Name:"S3_ACCESS_KEY_ID", Value: os.Getenv("S3_ACCESS_KEY_ID")},
+					{Name: "S3_SECRET_ACCESS_KEY", Value: os.Getenv("S3_SECRET_ACCESS_KEY")},
+				}...)
+		}
+	
 	{
 		foundPKI := false
 		for i := range pod.Spec.Volumes {
@@ -532,3 +541,4 @@ type config struct {
 	VolumeNameTag        string   `flag:"volume-name-tag"`
 	DNSSuffix            string   `flag:"dns-suffix"`
 }
+
