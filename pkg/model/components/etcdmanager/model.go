@@ -41,6 +41,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/exec"
 )
@@ -389,6 +390,16 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 				do.TagNameRolePrefix + "master=1",
 			}
 			config.VolumeNameTag = do.TagNameEtcdClusterPrefix + etcdCluster.Name
+
+		case kops.CloudProviderOpenstack:
+			config.VolumeProvider = "openstack"
+
+			config.VolumeTag = []string{
+				openstack.TagNameEtcdClusterPrefix + etcdCluster.Name,
+				openstack.TagNameRolePrefix + "master=1",
+				fmt.Sprintf("%s=%s", openstack.TagClusterName, b.Cluster.Name),
+			}
+			config.VolumeNameTag = openstack.TagNameEtcdClusterPrefix + etcdCluster.Name
 
 		default:
 			return nil, fmt.Errorf("CloudProvider %q not supported with etcd-manager", b.Cluster.Spec.CloudProvider)
