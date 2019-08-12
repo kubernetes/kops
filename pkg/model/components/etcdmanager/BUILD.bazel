@@ -23,6 +23,7 @@ go_library(
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/do:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",
+        "//upup/pkg/fi/cloudup/openstack:go_default_library",
         "//upup/pkg/fi/fitasks:go_default_library",
         "//upup/pkg/fi/loader:go_default_library",
         "//util/pkg/exec:go_default_library",
