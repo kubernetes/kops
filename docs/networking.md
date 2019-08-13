@@ -527,7 +527,7 @@ $ kops create cluster \
   --name myclustername.mydns.io
 ```
 
-You can specify which subnets to use for allocating Pod IPs by specifing
+You can specify which subnets to use for allocating Pod IPs by specifying
 
 ```
   networking:
