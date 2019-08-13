@@ -459,9 +459,24 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 
 	container.Env = proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy)
 
+	// Custom S3 endpoint
 	container.Env = appendEnvVariableIfExist("S3_ENDPOINT", container.Env)
 	container.Env = appendEnvVariableIfExist("S3_ACCESS_KEY_ID", container.Env)
 	container.Env = appendEnvVariableIfExist("S3_SECRET_ACCESS_KEY", container.Env)
+
+	// Openstack related values
+	container.Env = appendEnvVariableIfExist("OS_TENANT_ID", container.Env)
+	container.Env = appendEnvVariableIfExist("OS_TENANT_NAME", container.Env)
+	container.Env = appendEnvVariableIfExist("OS_PROJECT_ID", container.Env)
+	container.Env = appendEnvVariableIfExist("OS_PROJECT_NAME", container.Env)
+	container.Env = appendEnvVariableIfExist("OS_PROJECT_DOMAIN_NAME", container.Env)
+	container.Env = appendEnvVariableIfExist("OS_PROJECT_DOMAIN_ID", container.Env)
+	container.Env = appendEnvVariableIfExist("OS_DOMAIN_NAME", container.Env)
+	container.Env = appendEnvVariableIfExist("OS_DOMAIN_ID", container.Env)
+	container.Env = appendEnvVariableIfExist("OS_USERNAME", container.Env)
+	container.Env = appendEnvVariableIfExist("OS_PASSWORD", container.Env)
+	container.Env = appendEnvVariableIfExist("OS_AUTH_URL", container.Env)
+	container.Env = appendEnvVariableIfExist("OS_REGION_NAME", container.Env)
 
 	{
 		foundPKI := false
