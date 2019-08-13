@@ -73,7 +73,7 @@ func New(config *Config) error {
 
 		// @check if we have been refused
 		if !token.IsAllowed() {
-			utils.Logger.Error("node has beeen refused registration",
+			utils.Logger.Error("node has been refused registration",
 				zap.String("reason", token.Status.Reason))
 
 			os.Exit(1)
@@ -111,7 +111,7 @@ func New(config *Config) error {
 // IsValid validates the client configuration
 func (c *Config) IsValid() error {
 	if c.Authorizer == "" {
-		return errors.New("no authorzier")
+		return errors.New("no authorizer")
 	}
 	if c.KubeAPI == "" {
 		return errors.New("no kubeapi url")
