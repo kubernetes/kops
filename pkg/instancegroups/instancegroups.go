@@ -102,6 +102,64 @@ func promptInteractive(upgradedHostId, upgradedHostName string) (stopPrompting b
 // TODO: Remove from ASG first so status is immediately updated?
 // TODO: Batch termination, like a rolling-update
 
+func (r *RollingUpdateInstanceGroup) CordonUpdate(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, isCordon bool) (err error) {
+
+	// we should not get here, but hey I am going to check.
+	if rollingUpdateData == nil {
+		return fmt.Errorf("rollingUpdate cannot be nil")
+	}
+
+	// Skip cordoning if cloudonly
+	if rollingUpdateData.CloudOnly {
+		return nil
+	}
+
+	// Do not need a k8s client if you are doing cloudonly.
+	if rollingUpdateData.K8sClient == nil && !rollingUpdateData.CloudOnly {
+		return fmt.Errorf("cordonUpdater is missing a k8s client")
+	}
+
+	if instanceGroupList == nil {
+		return fmt.Errorf("cordonUpdater is missing the InstanceGroupList")
+	}
+
+	// add the instances that require updates to this list
+	update := r.CloudGroup.NeedUpdate
+	// if --force is used, add nodes to update list anyway
+	if rollingUpdateData.Force {
+		update = append(update, r.CloudGroup.Ready...)
+	}
+
+	if len(update) == 0 {
+		return nil
+	}
+
+	if featureflag.CordonAllWhenRollingUpdate.Enabled() {
+		if rollingUpdateData.Cordon {
+			for _, u := range update {
+				nodeName := ""
+				if u.Node != nil {
+					nodeName = u.Node.Name
+				}
+				klog.Infof("Cordoning the node: %q.", nodeName)
+
+				err = r.CordonNode(u, rollingUpdateData, isCordon)
+				if err != nil {
+					if rollingUpdateData.FailOnDrainError {
+						// r.uncordonOnExit(rollingUpdateData, isBastion)
+						return fmt.Errorf("failed to cordon node %q: %v", nodeName, err)
+					} else {
+						klog.Infof("Ignoring error cordon node %q: %v", nodeName, err)
+					}
+				}
+			}
+
+		}
+	}
+
+	return nil
+}
+
 // RollingUpdate performs a rolling update on a list of ec2 instances.
 func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster, instanceGroupList *api.InstanceGroupList, isBastion bool, sleepAfterTerminate time.Duration, validationTimeout time.Duration) (err error) {
 
@@ -119,6 +177,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		return fmt.Errorf("rollingUpdate is missing the InstanceGroupList")
 	}
 
+	// instances to update
 	update := r.CloudGroup.NeedUpdate
 	if rollingUpdateData.Force {
 		update = append(update, r.CloudGroup.Ready...)
@@ -128,6 +187,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		return nil
 	}
 
+	// Validate cluste before kicking off a rolling-update
 	if isBastion {
 		klog.V(3).Info("Not validating the cluster as instance is a bastion.")
 	} else if rollingUpdateData.CloudOnly {
@@ -143,7 +203,73 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		}
 	}
 
-	for _, u := range update {
+	count := 0
+	batchSize := 1
+	if featureflag.BatchRollingUpdate.Enabled() {
+		batchSize = rollingUpdateData.BatchSize
+	}
+
+	for count < len(update)/batchSize {
+		batchStart := count * batchSize
+		batchEnd := batchStart + batchSize
+		err = r.batchUpdate(rollingUpdateData, cluster, instanceGroupList, isBastion, sleepAfterTerminate, validationTimeout, update, batchStart, batchEnd)
+		if err != nil {
+			return err
+		}
+		count++
+	}
+
+	batchStart := count * batchSize
+	batchEnd := batchStart + len(update)%batchSize
+	err = r.batchUpdate(rollingUpdateData, cluster, instanceGroupList, isBastion, sleepAfterTerminate, validationTimeout, update, batchStart, batchEnd)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *RollingUpdateInstanceGroup) batchUpdate(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster, instanceGroupList *api.InstanceGroupList, isBastion bool, sleepAfterTerminate time.Duration, validationTimeout time.Duration, update []*cloudinstances.CloudInstanceGroupMember, batchStart int, batchEnd int) (err error) {
+
+	if rollingUpdateData.Detach {
+
+		for i, u := range update[batchStart:batchEnd] {
+			instanceId := u.ID
+
+			nodeName := ""
+			if u.Node != nil {
+				nodeName = u.Node.Name
+			}
+			if err = r.DetachInstance(u); err != nil {
+				klog.Errorf("error deleting instance %q, node %q: %v", instanceId, nodeName, err)
+				return err
+			}
+
+			if i++; i == batchEnd-batchStart {
+				// Wait for the minimum interval
+				klog.Infof("waiting for %v after detaching instance", sleepAfterTerminate)
+				time.Sleep(sleepAfterTerminate)
+			}
+		}
+
+		// Validate cluster after detaching instances.
+		if isBastion {
+			// Skip bastion
+		} else if rollingUpdateData.CloudOnly {
+			// Skip Cloudonly rolling-updates
+		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
+			klog.Info("Validating the cluster.")
+			if err = r.ValidateClusterWithDuration(rollingUpdateData, cluster, instanceGroupList, validationTimeout); err != nil {
+				if rollingUpdateData.FailOnValidate {
+					klog.Errorf("Cluster did not validate within %s", validationTimeout)
+					return fmt.Errorf("error validating cluster after removing a node: %v", err)
+				}
+				klog.Warningf("Cluster validation failed after removing instance, proceeding since fail-on-validate is set to false: %v", err)
+			}
+		}
+	}
+
+	for i, u := range update[batchStart:batchEnd] {
 		instanceId := u.ID
 
 		nodeName := ""
@@ -187,34 +313,29 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 			}
 		}
 
-		if err = r.DeleteInstance(u); err != nil {
-			klog.Errorf("error deleting instance %q, node %q: %v", instanceId, nodeName, err)
-			return err
-		}
+		if rollingUpdateData.Detach {
+			if err = r.DeleteDetachedInstance(u); err != nil {
+				klog.Errorf("error deleting instance %q, node %q: %v", instanceId, nodeName, err)
+				return err
+			}
 
-		// Wait for the minimum interval
-		klog.Infof("waiting for %v after terminating instance", sleepAfterTerminate)
-		time.Sleep(sleepAfterTerminate)
+		} else {
+			if err = r.DeleteInstance(u); err != nil {
+				klog.Errorf("error deleting instance %q, node %q: %v", instanceId, nodeName, err)
+				return err
+			}
+
+			if i++; i == batchEnd-batchStart {
+				// Wait for the minimum interval
+				klog.Infof("waiting for %v after terminating instance", sleepAfterTerminate)
+				time.Sleep(sleepAfterTerminate)
+			}
+
+		}
 
 		if isBastion {
 			klog.Infof("Deleted a bastion instance, %s, and continuing with rolling-update.", instanceId)
-
 			continue
-		} else if rollingUpdateData.CloudOnly {
-			klog.Warningf("Not validating cluster as cloudonly flag is set.")
-
-		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
-			klog.Info("Validating the cluster.")
-
-			if err = r.ValidateClusterWithDuration(rollingUpdateData, cluster, instanceGroupList, validationTimeout); err != nil {
-
-				if rollingUpdateData.FailOnValidate {
-					klog.Errorf("Cluster did not validate within %s", validationTimeout)
-					return fmt.Errorf("error validating cluster after removing a node: %v", err)
-				}
-
-				klog.Warningf("Cluster validation failed after removing instance, proceeding since fail-on-validate is set to false: %v", err)
-			}
 		}
 
 		if rollingUpdateData.Interactive {
@@ -229,6 +350,24 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		}
 	}
 
+	if isBastion {
+		// Don't validate bastion, it's not port of the cluster
+	} else if rollingUpdateData.CloudOnly {
+		klog.Warningf("Not validating cluster as cloudonly flag is set.")
+
+	} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
+		klog.Info("Validating the cluster.")
+
+		if err = r.ValidateClusterWithDuration(rollingUpdateData, cluster, instanceGroupList, validationTimeout); err != nil {
+
+			if rollingUpdateData.FailOnValidate {
+				klog.Errorf("Cluster did not validate within %s", validationTimeout)
+				return fmt.Errorf("error validating cluster after removing a node: %v", err)
+			}
+
+			klog.Warningf("Cluster validation failed after removing instance, proceeding since fail-on-validate is set to false: %v", err)
+		}
+	}
 	return nil
 }
 
@@ -290,6 +429,31 @@ func (r *RollingUpdateInstanceGroup) ValidateCluster(rollingUpdateData *RollingU
 
 }
 
+// DetachInstance will remove an instance from the cloud autoscaling group
+func (r *RollingUpdateInstanceGroup) DetachInstance(u *cloudinstances.CloudInstanceGroupMember) error {
+	id := u.ID
+	nodeName := ""
+	if u.Node != nil {
+		nodeName = u.Node.Name
+	}
+	if nodeName != "" {
+		klog.Infof("Detaching instance %q, node %q, in group %q from ASG.", id, nodeName, r.CloudGroup.HumanName)
+	} else {
+		klog.Infof("Detaching instance %q, in group %q from ASG.", id, r.CloudGroup.HumanName)
+	}
+
+	err := r.Cloud.DetachInstance(u)
+	if err != nil {
+		if nodeName != "" {
+			return fmt.Errorf("error detaching instance %q, node %q: %v", id, nodeName, err)
+		} else {
+			return fmt.Errorf("error detaching instance %q: %v", id, err)
+		}
+	}
+
+	return nil
+}
+
 // DeleteInstance deletes an Cloud Instance.
 func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInstanceGroupMember) error {
 	id := u.ID
@@ -313,6 +477,61 @@ func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInsta
 
 	return nil
 
+}
+
+// DeleteDetachedInstance deletes an Cloud Instance.
+func (r *RollingUpdateInstanceGroup) DeleteDetachedInstance(u *cloudinstances.CloudInstanceGroupMember) error {
+	id := u.ID
+	nodeName := ""
+	if u.Node != nil {
+		nodeName = u.Node.Name
+	}
+	if nodeName != "" {
+		klog.Infof("Stopping instance %q, node %q, in group %q (this may take a while).", id, nodeName, r.CloudGroup.HumanName)
+	} else {
+		klog.Infof("Stopping instance %q, in group %q (this may take a while).", id, r.CloudGroup.HumanName)
+	}
+
+	if err := r.Cloud.DeleteDetachedInstance(u); err != nil {
+		if nodeName != "" {
+			return fmt.Errorf("error deleting instance %q, node %q: %v", id, nodeName, err)
+		} else {
+			return fmt.Errorf("error deleting instance %q: %v", id, err)
+		}
+	}
+
+	return nil
+
+}
+
+// CordonNode cordon or uncordeon a k8s node. If isCordon=false uncordon node
+func (r *RollingUpdateInstanceGroup) CordonNode(u *cloudinstances.CloudInstanceGroupMember, rollingUpdateData *RollingUpdateCluster, isCordon bool) error {
+	if rollingUpdateData.K8sClient == nil {
+		return fmt.Errorf("K8sClient not set")
+	}
+
+	if u.Node == nil {
+		return fmt.Errorf("node not set")
+	}
+
+	if u.Node.Name == "" {
+		return fmt.Errorf("node name not set")
+	}
+
+	helper := &drain.Helper{
+		Client:              rollingUpdateData.K8sClient,
+		Force:               true,
+		GracePeriodSeconds:  -1,
+		IgnoreAllDaemonSets: true,
+		Out:                 os.Stdout,
+		ErrOut:              os.Stderr,
+	}
+
+	if err := drain.RunCordonOrUncordon(helper, u.Node, true); err != nil {
+		return fmt.Errorf("error cordoning node: %v", err)
+	}
+
+	return nil
 }
 
 // DrainNode drains a K8s node.

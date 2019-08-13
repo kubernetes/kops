@@ -124,6 +124,14 @@ func (c *VSphereCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember
 	return fmt.Errorf("vSphere cloud provider does not support deleting cloud instances at this time.")
 }
 
+func (c VSphereCloud) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return errors.New("DetachInstance not implemented on VSphere")
+}
+
+func (c VSphereCloud) DeleteDetachedInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return errors.New("DeleteDetachedInstance not implemented on VSphere")
+}
+
 // DNS returns dnsprovider interface for this vSphere cloud.
 func (c *VSphereCloud) DNS() (dnsprovider.Interface, error) {
 	var provider dnsprovider.Interface

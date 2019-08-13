@@ -95,6 +95,8 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		BastionInterval: 1 * time.Millisecond,
 		Force:           false,
 		K8sClient:       k8sClient,
+		BatchSize:       1,
+		Detach:          false,
 	}
 
 	cloud := c.Cloud.(awsup.AWSCloud)
@@ -239,6 +241,8 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		BastionInterval: 1 * time.Millisecond,
 		Force:           false,
 		K8sClient:       k8sClient,
+		BatchSize:       1,
+		Detach:          true,
 	}
 
 	cloud := c.Cloud.(awsup.AWSCloud)
@@ -381,6 +385,8 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		BastionInterval: 1 * time.Millisecond,
 		Force:           true,
 		K8sClient:       k8sClient,
+		BatchSize:       1,
+		Detach:          false,
 	}
 	cloud := c.Cloud.(awsup.AWSCloud)
 	setUpCloud(c)
@@ -490,6 +496,8 @@ func TestRollingUpdateEmptyGroup(t *testing.T) {
 		BastionInterval: 1 * time.Millisecond,
 		K8sClient:       k8sClient,
 		Force:           false,
+		BatchSize:       1,
+		Detach:          false,
 	}
 	cloud := c.Cloud.(awsup.AWSCloud)
 	setUpCloud(c)
@@ -555,6 +563,8 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		BastionInterval: 1 * time.Millisecond,
 		Force:           false,
 		K8sClient:       k8sClient,
+		BatchSize:       1,
+		Detach:          false,
 	}
 	cloud := c.Cloud.(awsup.AWSCloud)
 	setUpCloud(c)

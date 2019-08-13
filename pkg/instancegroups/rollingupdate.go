@@ -50,12 +50,17 @@ type RollingUpdateCluster struct {
 	FailOnValidate   bool
 	CloudOnly        bool
 	ClusterName      string
+	Cordon           bool
 
 	// PostDrainDelay is the duration we wait after draining each node
 	PostDrainDelay time.Duration
 
 	// ValidationTimeout is the maximum time to wait for the cluster to validate, once we start validation
 	ValidationTimeout time.Duration
+
+	// BatchSize number of nodes to roll at a time
+	BatchSize int
+	Detach    bool
 }
 
 // RollingUpdate performs a rolling update on a K8s Cluster.
@@ -119,6 +124,8 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 	}
 
 	// Upgrade masters next
+	detach := c.Detach
+	c.Detach = false
 	{
 		// We run master nodes in series, even if they are in separate instance groups
 		// typically they will be in separate instance groups, so we can force the zones,
@@ -138,6 +145,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 	}
 
 	// Upgrade nodes, with greater parallelism
+	c.Detach = detach
 	{
 		var wg sync.WaitGroup
 
@@ -158,10 +166,21 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 			defer wg.Done()
 
+			for _, group := range nodeGroups {
+				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
+				if err == nil {
+					err = g.CordonUpdate(c, instanceGroups, true)
+				}
+			}
+
 			for k, group := range nodeGroups {
 				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
 				if err == nil {
 					err = g.RollingUpdate(c, cluster, instanceGroups, false, c.NodeInterval, c.ValidationTimeout)
+
+					if err != nil {
+						g.CordonUpdate(c, instanceGroups, false)
+					}
 				}
 
 				resultsMutex.Lock()

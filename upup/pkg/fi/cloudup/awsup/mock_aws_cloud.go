@@ -90,6 +90,14 @@ func (c *MockAWSCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember
 	return deleteInstance(c, i)
 }
 
+func (c *MockAWSCloud) DeleteDetachedInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return deleteDetachedInstance(c, i)
+}
+
+func (c *MockAWSCloud) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return detachInstance(c, i)
+}
+
 func (c *MockAWSCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
 }

@@ -430,6 +430,34 @@ func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstanceGroupMember) erro
 	return nil
 }
 
+// DeleteDetachedInstance deletes an aws instance
+func (c *awsCloudImplementation) DeleteDetachedInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	// if c.spotinst != nil {
+	// 	return spotinst.DeleteDetachedInstance(c.spotinst, i)
+	// }
+
+	return deleteDetachedInstance(c, i)
+}
+
+func deleteDetachedInstance(c AWSCloud, i *cloudinstances.CloudInstanceGroupMember) error {
+	id := i.ID
+	if id == "" {
+		return fmt.Errorf("id was not set on CloudInstanceGroupMember: %v", i)
+	}
+
+	input := &ec2.TerminateInstancesInput{
+		InstanceIds: []*string{aws.String(id)},
+	}
+	_, err := c.EC2().TerminateInstances(input)
+	if err != nil {
+		return fmt.Errorf("error deleting instance %q: %v", id, err)
+	}
+
+	klog.V(8).Infof("deleted aws ec2 instance %q", id)
+
+	return nil
+}
+
 // TODO not used yet, as this requires a major refactor of rolling-update code, slowly but surely
 
 // GetCloudGroups returns a groups of instances that back a kops instance groups
@@ -473,6 +501,34 @@ func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.In
 
 	return groups, nil
 
+}
+
+func (c *awsCloudImplementation) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	detachInstance(c, i)
+	return nil
+}
+
+func detachInstance(c AWSCloud, i *cloudinstances.CloudInstanceGroupMember) error {
+	id := i.ID
+	if id == "" {
+		return fmt.Errorf("id was not set on CloudInstanceGroupMember: %v", i)
+	}
+
+	// assume the "ASG name" == i.CloudInstanceGroup.HumanName
+	input := &autoscaling.DetachInstancesInput{
+		AutoScalingGroupName:           aws.String(i.CloudInstanceGroup.HumanName),
+		InstanceIds:                    []*string{aws.String(id)},
+		ShouldDecrementDesiredCapacity: aws.Bool(false),
+	}
+
+	_, err := c.Autoscaling().DetachInstances(input)
+	if err != nil {
+		return fmt.Errorf("error detaching instance %q: %v", id, err)
+	}
+
+	klog.V(8).Infof("detached aws ec2 instance %q", id)
+
+	return nil
 }
 
 // FindAutoscalingGroups finds autoscaling groups matching the specified tags

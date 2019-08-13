@@ -142,12 +142,21 @@ type RollingUpdateOptions struct {
 	// InstanceGroupRoles is the list of roles we should rolling-update
 	// if not specified, all instance groups will be updated
 	InstanceGroupRoles []string
+
+	// Cordon will cordon all nodes scheduled for replacement so pods don't get scheduled on nodes that will soon terminate.
+	Cordon bool
+
+	// BatchSize size of instance to roll at a time
+	BatchSize int
+	// Detach will detach instance first instead of terminate
+	Detach bool
 }
 
 func (o *RollingUpdateOptions) InitDefaults() {
 	o.Yes = false
 	o.Force = false
 	o.CloudOnly = false
+	o.Cordon = false
 	o.FailOnDrainError = false
 	o.FailOnValidate = true
 
@@ -158,6 +167,9 @@ func (o *RollingUpdateOptions) InitDefaults() {
 
 	o.PostDrainDelay = 5 * time.Second
 	o.ValidationTimeout = 15 * time.Minute
+
+	o.BatchSize = 1
+	o.Detach = false
 }
 
 func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -184,10 +196,19 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVarP(&options.Interactive, "interactive", "i", options.Interactive, "Prompt to continue after each instance is updated")
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
 	cmd.Flags().StringSliceVar(&options.InstanceGroupRoles, "instance-group-roles", options.InstanceGroupRoles, "If specified, only instance groups of the specified role will be updated (e.g. Master,Node,Bastion)")
+	cmd.Flags().BoolVar(&options.Detach, "detach", false, "Detaches the instance from the autoscale group. Useful to let the ASG trigger a new instance.")
 
 	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 		cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The rolling-update will fail if draining a node fails.")
 		cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate.")
+	}
+
+	if featureflag.CordonAllWhenRollingUpdate.Enabled() {
+		cmd.Flags().BoolVar(&options.Cordon, "cordon", false, "Cordon all nodes scheduled for replacement.")
+	}
+
+	if featureflag.BatchRollingUpdate.Enabled() {
+		cmd.Flags().IntVar(&options.BatchSize, "batch-size", 1, "Number of nodes to roll at a time.")
 	}
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
@@ -404,6 +425,9 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		ClusterName:       options.ClusterName,
 		PostDrainDelay:    options.PostDrainDelay,
 		ValidationTimeout: options.ValidationTimeout,
+		Cordon:            options.Cordon,
+		BatchSize:         options.BatchSize,
+		Detach:            options.Detach,
 	}
 	return d.RollingUpdate(groups, cluster, list)
 }

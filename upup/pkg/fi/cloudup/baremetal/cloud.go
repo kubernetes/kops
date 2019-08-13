@@ -17,6 +17,7 @@ limitations under the License.
 package baremetal
 
 import (
+	"errors"
 	"fmt"
 
 	"k8s.io/klog"
@@ -69,4 +70,12 @@ func (c *Cloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 func (c *Cloud) DeleteInstance(instance *cloudinstances.CloudInstanceGroupMember) error {
 	klog.V(8).Infof("baremetal cloud provider DeleteInstance not implemented yet")
 	return fmt.Errorf("baremetal cloud provider does not support deleting cloud instances at this time")
+}
+
+func (c Cloud) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return errors.New("DetachInstance not implemented on bareMetal")
+}
+
+func (c Cloud) DeleteDetachedInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return errors.New("DeleteDetachedInstance not implemented on bareMetal")
 }

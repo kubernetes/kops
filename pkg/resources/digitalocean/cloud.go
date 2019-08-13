@@ -126,3 +126,11 @@ func (c *Cloud) Droplets() godo.DropletsService {
 func (c *Cloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	return nil, errors.New("not implemented")
 }
+
+func (c Cloud) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return errors.New("DetachInstance not implemented on DigitalOcean")
+}
+
+func (c Cloud) DeleteDetachedInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return errors.New("DeleteDetachedInstance not implemented on DigitalOcean")
+}

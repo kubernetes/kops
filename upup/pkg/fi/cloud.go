@@ -39,6 +39,12 @@ type Cloud interface {
 
 	// GetCloudGroups returns a map of cloud instances that back a kops cluster
 	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
+
+	// DetachInstance detaches instance from ASG (aws implememtation only)
+	DetachInstance(instance *cloudinstances.CloudInstanceGroupMember) error
+
+	// DeleteDetachedInstance deletes a cloud instance
+	DeleteDetachedInstance(instance *cloudinstances.CloudInstanceGroupMember) error
 }
 
 type VPCInfo struct {

@@ -68,7 +68,10 @@ kops rolling-update cluster [flags]
 
 ```
       --bastion-interval duration      Time to wait between restarting bastions (default 15s)
+      --batch-size int                 Number of nodes to roll at a time. (default 1)
       --cloudonly                      Perform rolling update without confirming progress with k8s
+      --cordon                         Cordon all nodes scheduled for replacement.
+      --detach                         Detaches the instance from the autoscale group. Useful to let the ASG trigger a new instance.
       --fail-on-drain-error            The rolling-update will fail if draining a node fails. (default true)
       --fail-on-validate-error         The rolling-update will fail if the cluster fails to validate. (default true)
       --force                          Force rolling update, even if no changes

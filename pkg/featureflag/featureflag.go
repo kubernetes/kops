@@ -51,6 +51,10 @@ var (
 	DNSPreCreate = New("DNSPreCreate", Bool(true))
 	// DrainAndValidateRollingUpdate if set will use new rolling update code that will drain and validate.
 	DrainAndValidateRollingUpdate = New("DrainAndValidateRollingUpdate", Bool(true))
+	// CordonAllWhenRollingUpdate if set will cordon all nodes scheduled for replacement.
+	CordonAllWhenRollingUpdate = New("CordonAllWhenRollingUpdate", Bool(true))
+	// BatchRollingUpdate set number of nodes to roll at a time
+	BatchRollingUpdate = New("BatchRollingUpdate", Bool(true))
 	// EnableLaunchTemplates indicates we wish to switch to using launch templates rather than launchconfigurations
 	EnableLaunchTemplates = New("EnableLaunchTemplates", Bool(false))
 	//EnableExternalCloudController toggles the use of cloud-controller-manager introduced in v1.7

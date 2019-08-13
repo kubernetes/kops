@@ -18,6 +18,7 @@ package gce
 
 import (
 	"encoding/base32"
+	"errors"
 	"fmt"
 	"hash/fnv"
 	"strings"
@@ -59,6 +60,22 @@ func (c *gceCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstanceG
 // DeleteInstance deletes a GCE instance
 func (c *mockGCECloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
 	return recreateCloudInstanceGroupMember(c, i)
+}
+
+func (c gceCloudImplementation) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return errors.New("DetachInstance not implemented on GCE")
+}
+
+func (c mockGCECloud) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return errors.New("DetachInstance not implemented on GCE")
+}
+
+func (c gceCloudImplementation) DeleteDetachedInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return errors.New("DeleteDetachedInstance not implemented on GCE")
+}
+
+func (c mockGCECloud) DeleteDetachedInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return errors.New("DeleteDetachedInstance not implemented on GCE")
 }
 
 // recreateCloudInstanceGroupMember recreates the specified instances, managed by an InstanceGroupManager
