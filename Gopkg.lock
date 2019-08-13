@@ -101,7 +101,7 @@
   version = "v1.0.1"
 
 [[projects]]
-  digest = "1:25f53408bba35f8f36c606cd2dcb96960e283c1e34842dd214f4a4eaa5c30766"
+  digest = "1:cddcdb308c6e033bf687d1b0863bea9690af8e9c96339e966918e5bbb4c9464d"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -158,10 +158,11 @@
     "service/route53/route53iface",
     "service/s3",
     "service/sts",
+    "service/sts/stsiface",
   ]
   pruneopts = "UT"
-  revision = "2024b98be3d7bca1d26036f16ef34b0275ebb562"
-  version = "v1.19.18"
+  revision = "b19b0776ce26bb4b6825fd6f06a25ec9d4beba30"
+  version = "v1.23.0"
 
 [[projects]]
   digest = "1:578040aa4b1d7e1f57f0654996de74a4c522887f567f824ed58eccf513104ceb"
@@ -2120,6 +2121,7 @@
     "github.com/gophercloud/gophercloud/openstack/dns/v2/zones",
     "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners",
     "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers",
+    "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors",
     "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools",
     "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external",
     "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips",
@@ -2143,6 +2145,7 @@
     "github.com/kubernetes-incubator/reference-docs/gen-apidocs",
     "github.com/miekg/coredns/middleware/etcd/msg",
     "github.com/miekg/dns",
+    "github.com/mitchellh/mapstructure",
     "github.com/pborman/uuid",
     "github.com/pkg/errors",
     "github.com/pkg/sftp",
@@ -2191,6 +2194,7 @@
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
     "k8s.io/api/rbac/v1beta1",
+    "k8s.io/apimachinery/pkg/api/equality",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/api/resource",
