@@ -224,6 +224,14 @@ spec:
     name: pki
 `
 
+func appendEnvVariableIfExist(variable string, envs []v1.EnvVar) []v1.EnvVar {
+	envVarValue := os.Getenv(variable)
+	if envVarValue != "" {
+		envs = append(envs, v1.EnvVar{Name: variable, Value: envVarValue})
+	}
+	return envs
+}
+
 // buildPod creates the pod spec, based on the EtcdClusterSpec
 func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Pod, error) {
 	var pod *v1.Pod
@@ -447,6 +455,12 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 			},
 		})
 	}
+
+	container.Env = proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy)
+
+	container.Env = appendEnvVariableIfExist("S3_ENDPOINT", container.Env)
+	container.Env = appendEnvVariableIfExist("S3_ACCESS_KEY_ID", container.Env)
+	container.Env = appendEnvVariableIfExist("S3_SECRET_ACCESS_KEY", container.Env)
 
 	{
 		foundPKI := false
