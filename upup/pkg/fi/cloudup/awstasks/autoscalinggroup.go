@@ -180,7 +180,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	return actual, nil
 }
 
-// findAutoscalingGroup is responsilble for finding all the autoscaling groups for us
+// findAutoscalingGroup is responsible for finding all the autoscaling groups for us
 func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group, error) {
 	request := &autoscaling.DescribeAutoScalingGroupsInput{
 		AutoScalingGroupNames: []*string{&name},
@@ -671,6 +671,11 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	}
 
 	if e.UseMixedInstancesPolicy() {
+		// Temporary warning until https://github.com/terraform-providers/terraform-provider-aws/issues/9750 is resolved
+		if e.MixedSpotAllocationStrategy == fi.String("capacity-optimized") {
+			fmt.Print("Terraform does not currently support a capacity optimized strategy - please see https://github.com/terraform-providers/terraform-provider-aws/issues/9750")
+		}
+
 		tf.MixedInstancesPolicy = []*terraformMixedInstancesPolicy{
 			{
 				LaunchTemplate: []*terraformAutoscalingLaunchTemplate{
