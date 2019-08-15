@@ -65,7 +65,7 @@ func (e *InstanceVolumeAttachment) Find(c *fi.Context) (*InstanceVolumeAttachmen
 			Volume:   &EBSVolume{ID: bdm.Ebs.VolumeId},
 		}
 
-		klog.V(2).Infof("found matching InstanceVolumeAttachmen")
+		klog.V(2).Infof("found matching InstanceVolumeAttachment")
 		return actual, nil
 	}
 
