@@ -3576,6 +3576,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.APIAudiences = in.APIAudiences
 	out.CPURequest = in.CPURequest
 	out.EventTTL = in.EventTTL
+	out.AuditDynamicConfiguration = in.AuditDynamicConfiguration
 	return nil
 }
 
@@ -3674,6 +3675,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.APIAudiences = in.APIAudiences
 	out.CPURequest = in.CPURequest
 	out.EventTTL = in.EventTTL
+	out.AuditDynamicConfiguration = in.AuditDynamicConfiguration
 	return nil
 }
 

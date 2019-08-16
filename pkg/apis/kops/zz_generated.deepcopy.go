@@ -2303,6 +2303,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.AuditDynamicConfiguration != nil {
+		in, out := &in.AuditDynamicConfiguration, &out.AuditDynamicConfiguration
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
