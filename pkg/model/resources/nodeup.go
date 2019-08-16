@@ -189,7 +189,7 @@ func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 
 	userDataTemplate := NodeUpTemplate
 
-	if len(ig.Spec.AdditionalUserData) > 0 || ig.Spec.MixedInstancesPolicy != nil {
+	if len(ig.Spec.AdditionalUserData) > 0 {
 		/* Create a buffer to hold the user-data*/
 		buffer := bytes.NewBufferString("")
 		writer := bufio.NewWriter(buffer)
