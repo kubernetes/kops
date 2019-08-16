@@ -624,11 +624,10 @@ func (c *Route53) CreateHostedZoneRequest(input *CreateHostedZoneInput) (req *re
 //    SOA record and four NS records for the zone. For more information about
 //    SOA and NS records, see NS and SOA Records that Route 53 Creates for a
 //    Hosted Zone (http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/SOA-NSrecords.html)
-//    in the Amazon Route 53 Developer Guide.
-//
-// If you want to use the same name servers for multiple public hosted zones,
-//    you can optionally associate a reusable delegation set with the hosted
-//    zone. See the DelegationSetId element.
+//    in the Amazon Route 53 Developer Guide. If you want to use the same name
+//    servers for multiple public hosted zones, you can optionally associate
+//    a reusable delegation set with the hosted zone. See the DelegationSetId
+//    element.
 //
 //    * If your domain is registered with a registrar other than Route 53, you
 //    must update the name servers with your registrar to make Route 53 the
@@ -794,8 +793,9 @@ func (c *Route53) CreateQueryLoggingConfigRequest(input *CreateQueryLoggingConfi
 //
 //    * DNS response code, such as NoError or ServFail
 //
-// Log Group and Resource PolicyBefore you create a query logging configuration,
-// perform the following operations.
+// Log Group and Resource Policy
+//
+// Before you create a query logging configuration, perform the following operations.
 //
 // If you create a query logging configuration using the Route 53 console, Route
 // 53 performs these operations automatically.
@@ -803,22 +803,19 @@ func (c *Route53) CreateQueryLoggingConfigRequest(input *CreateQueryLoggingConfi
 // Create a CloudWatch Logs log group, and make note of the ARN, which you specify
 // when you create a query logging configuration. Note the following:
 //
-// You must create the log group in the us-east-1 region.
+//    * You must create the log group in the us-east-1 region.
 //
-// You must use the same AWS account to create the log group and the hosted
-// zone that you want to configure query logging for.
+//    * You must use the same AWS account to create the log group and the hosted
+//    zone that you want to configure query logging for.
 //
-// When you create log groups for query logging, we recommend that you use a
-// consistent prefix, for example:
-//
-// /aws/route53/hosted zone name
-//
-// In the next step, you'll create a resource policy, which controls access
-// to one or more log groups and the associated AWS resources, such as Route
-// 53 hosted zones. There's a limit on the number of resource policies that
-// you can create, so we recommend that you use a consistent prefix so you can
-// use the same resource policy for all the log groups that you create for query
-// logging.
+//    * When you create log groups for query logging, we recommend that you
+//    use a consistent prefix, for example: /aws/route53/hosted zone name In
+//    the next step, you'll create a resource policy, which controls access
+//    to one or more log groups and the associated AWS resources, such as Route
+//    53 hosted zones. There's a limit on the number of resource policies that
+//    you can create, so we recommend that you use a consistent prefix so you
+//    can use the same resource policy for all the log groups that you create
+//    for query logging.
 //
 // Create a CloudWatch Logs resource policy, and give it the permissions that
 // Route 53 needs to create log streams and to send query logs to log streams.
@@ -832,14 +829,17 @@ func (c *Route53) CreateQueryLoggingConfigRequest(input *CreateQueryLoggingConfi
 // You can't use the CloudWatch console to create or edit a resource policy.
 // You must use the CloudWatch API, one of the AWS SDKs, or the AWS CLI.
 //
-// Log Streams and Edge LocationsWhen Route 53 finishes creating the configuration
-// for DNS query logging, it does the following:
+// Log Streams and Edge Locations
 //
-// Creates a log stream for an edge location the first time that the edge location
-// responds to DNS queries for the specified hosted zone. That log stream is
-// used to log all queries that Route 53 responds to for that edge location.
+// When Route 53 finishes creating the configuration for DNS query logging,
+// it does the following:
 //
-// Begins to send query logs to the applicable log stream.
+//    * Creates a log stream for an edge location the first time that the edge
+//    location responds to DNS queries for the specified hosted zone. That log
+//    stream is used to log all queries that Route 53 responds to for that edge
+//    location.
+//
+//    * Begins to send query logs to the applicable log stream.
 //
 // The name of each log stream is in the following format:
 //
@@ -852,28 +852,35 @@ func (c *Route53) CreateQueryLoggingConfigRequest(input *CreateQueryLoggingConfi
 // a list of edge locations, see "The Route 53 Global Network" on the Route
 // 53 Product Details (http://aws.amazon.com/route53/details/) page.
 //
-// Queries That Are LoggedQuery logs contain only the queries that DNS resolvers
-// forward to Route 53. If a DNS resolver has already cached the response to
-// a query (such as the IP address for a load balancer for example.com), the
-// resolver will continue to return the cached response. It doesn't forward
-// another query to Route 53 until the TTL for the corresponding resource record
-// set expires. Depending on how many DNS queries are submitted for a resource
-// record set, and depending on the TTL for that resource record set, query
-// logs might contain information about only one query out of every several
-// thousand queries that are submitted to DNS. For more information about how
-// DNS works, see Routing Internet Traffic to Your Website or Web Application
-// (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/welcome-dns-service.html)
+// Queries That Are Logged
+//
+// Query logs contain only the queries that DNS resolvers forward to Route 53.
+// If a DNS resolver has already cached the response to a query (such as the
+// IP address for a load balancer for example.com), the resolver will continue
+// to return the cached response. It doesn't forward another query to Route
+// 53 until the TTL for the corresponding resource record set expires. Depending
+// on how many DNS queries are submitted for a resource record set, and depending
+// on the TTL for that resource record set, query logs might contain information
+// about only one query out of every several thousand queries that are submitted
+// to DNS. For more information about how DNS works, see Routing Internet Traffic
+// to Your Website or Web Application (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/welcome-dns-service.html)
 // in the Amazon Route 53 Developer Guide.
 //
-// Log File FormatFor a list of the values in each query log and the format
-// of each value, see Logging DNS Queries (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/query-logs.html)
+// Log File Format
+//
+// For a list of the values in each query log and the format of each value,
+// see Logging DNS Queries (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/query-logs.html)
 // in the Amazon Route 53 Developer Guide.
 //
-// PricingFor information about charges for query logs, see Amazon CloudWatch
-// Pricing (http://aws.amazon.com/cloudwatch/pricing/).
+// Pricing
 //
-// How to Stop LoggingIf you want Route 53 to stop sending query logs to CloudWatch
-// Logs, delete the query logging configuration. For more information, see DeleteQueryLoggingConfig
+// For information about charges for query logs, see Amazon CloudWatch Pricing
+// (http://aws.amazon.com/cloudwatch/pricing/).
+//
+// How to Stop Logging
+//
+// If you want Route 53 to stop sending query logs to CloudWatch Logs, delete
+// the query logging configuration. For more information, see DeleteQueryLoggingConfig
 // (https://docs.aws.amazon.com/Route53/latest/APIReference/API_DeleteQueryLoggingConfig.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -2544,6 +2551,7 @@ func (c *Route53) GetCheckerIpRangesRequest(input *GetCheckerIpRangesInput) (req
 
 // GetCheckerIpRanges API operation for Amazon Route 53.
 //
+//
 // GetCheckerIpRanges still works, but we recommend that you download ip-ranges.json,
 // which includes IP address ranges for all AWS services. For more information,
 // see IP Address Ranges of Amazon Route 53 Servers (http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/route-53-ip-addresses.html)
@@ -3943,7 +3951,7 @@ func (c *Route53) ListHealthChecksWithContext(ctx aws.Context, input *ListHealth
 //    // Example iterating over at most 3 pages of a ListHealthChecks operation.
 //    pageNum := 0
 //    err := client.ListHealthChecksPages(params,
-//        func(page *ListHealthChecksOutput, lastPage bool) bool {
+//        func(page *route53.ListHealthChecksOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -4090,7 +4098,7 @@ func (c *Route53) ListHostedZonesWithContext(ctx aws.Context, input *ListHostedZ
 //    // Example iterating over at most 3 pages of a ListHostedZones operation.
 //    pageNum := 0
 //    err := client.ListHostedZonesPages(params,
-//        func(page *ListHostedZonesOutput, lastPage bool) bool {
+//        func(page *route53.ListHostedZonesOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -4211,10 +4219,9 @@ func (c *Route53) ListHostedZonesByNameRequest(input *ListHostedZonesByNameInput
 //    the current response.
 //
 //    * If the value of IsTruncated in the response is true, there are more
-//    hosted zones associated with the current AWS account.
-//
-// If IsTruncated is false, this response includes the last hosted zone that
-//    is associated with the current account. The NextDNSName element and NextHostedZoneId
+//    hosted zones associated with the current AWS account. If IsTruncated is
+//    false, this response includes the last hosted zone that is associated
+//    with the current account. The NextDNSName element and NextHostedZoneId
 //    elements are omitted from the response.
 //
 //    * The NextDNSName and NextHostedZoneId elements in the response contain
@@ -4427,18 +4434,25 @@ func (c *Route53) ListResourceRecordSetsRequest(input *ListResourceRecordSetsInp
 // You can use the name and type elements to specify the resource record set
 // that the list begins with:
 //
-// If you do not specify Name or TypeThe results begin with the first resource
-// record set that the hosted zone contains.
+// If you do not specify Name or Type
 //
-// If you specify Name but not TypeThe results begin with the first resource
-// record set in the list whose name is greater than or equal to Name.
+// The results begin with the first resource record set that the hosted zone
+// contains.
 //
-// If you specify Type but not NameAmazon Route 53 returns the InvalidInput
-// error.
+// If you specify Name but not Type
 //
-// If you specify both Name and TypeThe results begin with the first resource
-// record set in the list whose name is greater than or equal to Name, and whose
-// type is greater than or equal to Type.
+// The results begin with the first resource record set in the list whose name
+// is greater than or equal to Name.
+//
+// If you specify Type but not Name
+//
+// Amazon Route 53 returns the InvalidInput error.
+//
+// If you specify both Name and Type
+//
+// The results begin with the first resource record set in the list whose name
+// is greater than or equal to Name, and whose type is greater than or equal
+// to Type.
 //
 // Resource record sets that are PENDING
 //
@@ -4509,7 +4523,7 @@ func (c *Route53) ListResourceRecordSetsWithContext(ctx aws.Context, input *List
 //    // Example iterating over at most 3 pages of a ListResourceRecordSets operation.
 //    pageNum := 0
 //    err := client.ListResourceRecordSetsPages(params,
-//        func(page *ListResourceRecordSetsOutput, lastPage bool) bool {
+//        func(page *route53.ListResourceRecordSetsOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -5887,12 +5901,12 @@ type AlarmIdentifier struct {
 	//
 	// Route 53 supports CloudWatch alarms with the following features:
 	//
-	// Standard-resolution metrics. High-resolution metrics aren't supported. For
-	// more information, see High-Resolution Metrics (http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/publishingMetrics.html#high-resolution-metrics)
-	// in the Amazon CloudWatch User Guide.
+	//    * Standard-resolution metrics. High-resolution metrics aren't supported.
+	//    For more information, see High-Resolution Metrics (http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/publishingMetrics.html#high-resolution-metrics)
+	//    in the Amazon CloudWatch User Guide.
 	//
-	// Statistics: Average, Minimum, Maximum, Sum, and SampleCount. Extended statistics
-	// aren't supported.
+	//    * Statistics: Average, Minimum, Maximum, Sum, and SampleCount. Extended
+	//    statistics aren't supported.
 	//
 	// Name is a required field
 	Name *string `min:"1" type:"string" required:"true"`
@@ -5970,26 +5984,29 @@ type AliasTarget struct {
 	// Alias resource record sets only: The value that you specify depends on where
 	// you want to route queries:
 	//
-	// Amazon API Gateway custom regional APIs and edge-optimized APIsSpecify the
-	// applicable domain name for your API. You can get the applicable value using
-	// the AWS CLI command get-domain-names (https://docs.aws.amazon.com/cli/latest/reference/apigateway/get-domain-names.html):
+	// Amazon API Gateway custom regional APIs and edge-optimized APIs
 	//
-	// For regional APIs, specify the value of regionalDomainName.
+	// Specify the applicable domain name for your API. You can get the applicable
+	// value using the AWS CLI command get-domain-names (https://docs.aws.amazon.com/cli/latest/reference/apigateway/get-domain-names.html):
 	//
-	// For edge-optimized APIs, specify the value of distributionDomainName. This
-	// is the name of the associated CloudFront distribution, such as da1b2c3d4e5.cloudfront.net.
+	//    * For regional APIs, specify the value of regionalDomainName.
+	//
+	//    * For edge-optimized APIs, specify the value of distributionDomainName.
+	//    This is the name of the associated CloudFront distribution, such as da1b2c3d4e5.cloudfront.net.
 	//
 	// The name of the record that you're creating must match a custom domain name
 	// for your API, such as api.example.com.
 	//
-	// Amazon Virtual Private Cloud interface VPC endpointEnter the API endpoint
-	// for the interface endpoint, such as vpce-123456789abcdef01-example-us-east-1a.elasticloadbalancing.us-east-1.vpce.amazonaws.com.
+	// Amazon Virtual Private Cloud interface VPC endpoint
+	//
+	// Enter the API endpoint for the interface endpoint, such as vpce-123456789abcdef01-example-us-east-1a.elasticloadbalancing.us-east-1.vpce.amazonaws.com.
 	// For edge-optimized APIs, this is the domain name for the corresponding CloudFront
 	// distribution. You can get the value of DnsName using the AWS CLI command
 	// describe-vpc-endpoints (https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-vpc-endpoints.html).
 	//
-	// CloudFront distributionSpecify the domain name that CloudFront assigned when
-	// you created your distribution.
+	// CloudFront distribution
+	//
+	// Specify the domain name that CloudFront assigned when you created your distribution.
 	//
 	// Your CloudFront distribution must include an alternate domain name that matches
 	// the name of the resource record set. For example, if the name of the resource
@@ -6007,11 +6024,12 @@ type AliasTarget struct {
 	// secondary records have the same name, and you can't include the same alternate
 	// domain name in more than one distribution.
 	//
-	// Elastic Beanstalk environmentIf the domain name for your Elastic Beanstalk
-	// environment includes the region that you deployed the environment in, you
-	// can create an alias record that routes traffic to the environment. For example,
-	// the domain name my-environment.us-west-2.elasticbeanstalk.com is a regionalized
-	// domain name.
+	// Elastic Beanstalk environment
+	//
+	// If the domain name for your Elastic Beanstalk environment includes the region
+	// that you deployed the environment in, you can create an alias record that
+	// routes traffic to the environment. For example, the domain name my-environment.us-west-2.elasticbeanstalk.com
+	// is a regionalized domain name.
 	//
 	// For environments that were created before early 2016, the domain name doesn't
 	// include the region. To route traffic to these environments, you must create
@@ -6025,55 +6043,56 @@ type AliasTarget struct {
 	// the CNAME attribute for the environment. You can use the following methods
 	// to get the value of the CNAME attribute:
 	//
-	// AWS Management Console: For information about how to get the value by using
-	// the console, see Using Custom Domains with AWS Elastic Beanstalk (http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/customdomains.html)
-	// in the AWS Elastic Beanstalk Developer Guide.
+	//    * AWS Management Console: For information about how to get the value by
+	//    using the console, see Using Custom Domains with AWS Elastic Beanstalk
+	//    (http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/customdomains.html)
+	//    in the AWS Elastic Beanstalk Developer Guide.
 	//
-	// Elastic Beanstalk API: Use the DescribeEnvironments action to get the value
-	// of the CNAME attribute. For more information, see DescribeEnvironments (http://docs.aws.amazon.com/elasticbeanstalk/latest/api/API_DescribeEnvironments.html)
-	// in the AWS Elastic Beanstalk API Reference.
+	//    * Elastic Beanstalk API: Use the DescribeEnvironments action to get the
+	//    value of the CNAME attribute. For more information, see DescribeEnvironments
+	//    (http://docs.aws.amazon.com/elasticbeanstalk/latest/api/API_DescribeEnvironments.html)
+	//    in the AWS Elastic Beanstalk API Reference.
 	//
-	// AWS CLI: Use the describe-environments command to get the value of the CNAME
-	// attribute. For more information, see describe-environments (http://docs.aws.amazon.com/cli/latest/reference/elasticbeanstalk/describe-environments.html)
-	// in the AWS Command Line Interface Reference.
+	//    * AWS CLI: Use the describe-environments command to get the value of the
+	//    CNAME attribute. For more information, see describe-environments (http://docs.aws.amazon.com/cli/latest/reference/elasticbeanstalk/describe-environments.html)
+	//    in the AWS Command Line Interface Reference.
 	//
-	// ELB load balancerSpecify the DNS name that is associated with the load balancer.
-	// Get the DNS name by using the AWS Management Console, the ELB API, or the
-	// AWS CLI.
+	// ELB load balancer
 	//
-	// AWS Management Console: Go to the EC2 page, choose Load Balancers in the
-	// navigation pane, choose the load balancer, choose the Description tab, and
-	// get the value of the DNS name field.
+	// Specify the DNS name that is associated with the load balancer. Get the DNS
+	// name by using the AWS Management Console, the ELB API, or the AWS CLI.
 	//
-	// If you're routing traffic to a Classic Load Balancer, get the value that
-	// begins with dualstack. If you're routing traffic to another type of load
-	// balancer, get the value that applies to the record type, A or AAAA.
+	//    * AWS Management Console: Go to the EC2 page, choose Load Balancers in
+	//    the navigation pane, choose the load balancer, choose the Description
+	//    tab, and get the value of the DNS name field. If you're routing traffic
+	//    to a Classic Load Balancer, get the value that begins with dualstack.
+	//    If you're routing traffic to another type of load balancer, get the value
+	//    that applies to the record type, A or AAAA.
 	//
-	// Elastic Load Balancing API: Use DescribeLoadBalancers to get the value of
-	// DNSName. For more information, see the applicable guide:
+	//    * Elastic Load Balancing API: Use DescribeLoadBalancers to get the value
+	//    of DNSName. For more information, see the applicable guide: Classic Load
+	//    Balancers: DescribeLoadBalancers (http://docs.aws.amazon.com/elasticloadbalancing/2012-06-01/APIReference/API_DescribeLoadBalancers.html)
+	//    Application and Network Load Balancers: DescribeLoadBalancers (http://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html)
 	//
-	// Classic Load Balancers: DescribeLoadBalancers (http://docs.aws.amazon.com/elasticloadbalancing/2012-06-01/APIReference/API_DescribeLoadBalancers.html)
+	//    * AWS CLI: Use describe-load-balancers to get the value of DNSName. For
+	//    more information, see the applicable guide: Classic Load Balancers: describe-load-balancers
+	//    (http://docs.aws.amazon.com/cli/latest/reference/elb/describe-load-balancers.html)
+	//    Application and Network Load Balancers: describe-load-balancers (http://docs.aws.amazon.com/cli/latest/reference/elbv2/describe-load-balancers.html)
 	//
-	// Application and Network Load Balancers: DescribeLoadBalancers (http://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html)
+	// Amazon S3 bucket that is configured as a static website
 	//
-	// AWS CLI: Use describe-load-balancers to get the value of DNSName. For more
-	// information, see the applicable guide:
-	//
-	// Classic Load Balancers: describe-load-balancers (http://docs.aws.amazon.com/cli/latest/reference/elb/describe-load-balancers.html)
-	//
-	// Application and Network Load Balancers: describe-load-balancers (http://docs.aws.amazon.com/cli/latest/reference/elbv2/describe-load-balancers.html)
-	//
-	// Amazon S3 bucket that is configured as a static websiteSpecify the domain
-	// name of the Amazon S3 website endpoint that you created the bucket in, for
-	// example, s3-website.us-east-2.amazonaws.com. For more information about valid
-	// values, see the table Amazon Simple Storage Service (S3) Website Endpoints
-	// (http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region) in the
-	// Amazon Web Services General Reference. For more information about using S3
-	// buckets for websites, see Getting Started with Amazon Route 53 (http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/getting-started.html)
+	// Specify the domain name of the Amazon S3 website endpoint that you created
+	// the bucket in, for example, s3-website.us-east-2.amazonaws.com. For more
+	// information about valid values, see the table Amazon Simple Storage Service
+	// (S3) Website Endpoints (http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region)
+	// in the Amazon Web Services General Reference. For more information about
+	// using S3 buckets for websites, see Getting Started with Amazon Route 53 (http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/getting-started.html)
 	// in the Amazon Route 53 Developer Guide.
 	//
-	// Another Route 53 resource record setSpecify the value of the Name element
-	// for a resource record set in the current hosted zone.
+	// Another Route 53 resource record set
+	//
+	// Specify the value of the Name element for a resource record set in the current
+	// hosted zone.
 	//
 	// If you're creating an alias record that has the same name as the hosted zone
 	// (known as the zone apex), you can't specify the domain name for a record
@@ -6092,55 +6111,63 @@ type AliasTarget struct {
 	//
 	// Note the following:
 	//
-	// CloudFront distributionsYou can't set EvaluateTargetHealth to true when the
-	// alias target is a CloudFront distribution.
+	// CloudFront distributions
 	//
-	// Elastic Beanstalk environments that have regionalized subdomainsIf you specify
-	// an Elastic Beanstalk environment in DNSName and the environment contains
-	// an ELB load balancer, Elastic Load Balancing routes queries only to the healthy
-	// Amazon EC2 instances that are registered with the load balancer. (An environment
-	// automatically contains an ELB load balancer if it includes more than one
-	// Amazon EC2 instance.) If you set EvaluateTargetHealth to true and either
-	// no Amazon EC2 instances are healthy or the load balancer itself is unhealthy,
-	// Route 53 routes queries to other available resources that are healthy, if
-	// any.
+	// You can't set EvaluateTargetHealth to true when the alias target is a CloudFront
+	// distribution.
+	//
+	// Elastic Beanstalk environments that have regionalized subdomains
+	//
+	// If you specify an Elastic Beanstalk environment in DNSName and the environment
+	// contains an ELB load balancer, Elastic Load Balancing routes queries only
+	// to the healthy Amazon EC2 instances that are registered with the load balancer.
+	// (An environment automatically contains an ELB load balancer if it includes
+	// more than one Amazon EC2 instance.) If you set EvaluateTargetHealth to true
+	// and either no Amazon EC2 instances are healthy or the load balancer itself
+	// is unhealthy, Route 53 routes queries to other available resources that are
+	// healthy, if any.
 	//
 	// If the environment contains a single Amazon EC2 instance, there are no special
 	// requirements.
 	//
-	// ELB load balancersHealth checking behavior depends on the type of load balancer:
+	// ELB load balancers
 	//
-	// Classic Load Balancers: If you specify an ELB Classic Load Balancer in DNSName,
-	// Elastic Load Balancing routes queries only to the healthy Amazon EC2 instances
-	// that are registered with the load balancer. If you set EvaluateTargetHealth
-	// to true and either no EC2 instances are healthy or the load balancer itself
-	// is unhealthy, Route 53 routes queries to other resources.
+	// Health checking behavior depends on the type of load balancer:
 	//
-	// Application and Network Load Balancers: If you specify an ELB Application
-	// or Network Load Balancer and you set EvaluateTargetHealth to true, Route
-	// 53 routes queries to the load balancer based on the health of the target
-	// groups that are associated with the load balancer:
+	//    * Classic Load Balancers: If you specify an ELB Classic Load Balancer
+	//    in DNSName, Elastic Load Balancing routes queries only to the healthy
+	//    Amazon EC2 instances that are registered with the load balancer. If you
+	//    set EvaluateTargetHealth to true and either no EC2 instances are healthy
+	//    or the load balancer itself is unhealthy, Route 53 routes queries to other
+	//    resources.
 	//
-	// For an Application or Network Load Balancer to be considered healthy, every
-	// target group that contains targets must contain at least one healthy target.
-	// If any target group contains only unhealthy targets, the load balancer is
-	// considered unhealthy, and Route 53 routes queries to other resources.
-	//
-	// A target group that has no registered targets is considered unhealthy.
+	//    * Application and Network Load Balancers: If you specify an ELB Application
+	//    or Network Load Balancer and you set EvaluateTargetHealth to true, Route
+	//    53 routes queries to the load balancer based on the health of the target
+	//    groups that are associated with the load balancer: For an Application
+	//    or Network Load Balancer to be considered healthy, every target group
+	//    that contains targets must contain at least one healthy target. If any
+	//    target group contains only unhealthy targets, the load balancer is considered
+	//    unhealthy, and Route 53 routes queries to other resources. A target group
+	//    that has no registered targets is considered unhealthy.
 	//
 	// When you create a load balancer, you configure settings for Elastic Load
 	// Balancing health checks; they're not Route 53 health checks, but they perform
 	// a similar function. Do not create Route 53 health checks for the EC2 instances
 	// that you register with an ELB load balancer.
 	//
-	// S3 bucketsThere are no special requirements for setting EvaluateTargetHealth
-	// to true when the alias target is an S3 bucket.
+	// S3 buckets
 	//
-	// Other records in the same hosted zoneIf the AWS resource that you specify
-	// in DNSName is a record or a group of records (for example, a group of weighted
-	// records) but is not another alias record, we recommend that you associate
-	// a health check with all of the records in the alias target. For more information,
-	// see What Happens When You Omit Health Checks? (http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-complex-configs.html#dns-failover-complex-configs-hc-omitting)
+	// There are no special requirements for setting EvaluateTargetHealth to true
+	// when the alias target is an S3 bucket.
+	//
+	// Other records in the same hosted zone
+	//
+	// If the AWS resource that you specify in DNSName is a record or a group of
+	// records (for example, a group of weighted records) but is not another alias
+	// record, we recommend that you associate a health check with all of the records
+	// in the alias target. For more information, see What Happens When You Omit
+	// Health Checks? (http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-complex-configs.html#dns-failover-complex-configs-hc-omitting)
 	// in the Amazon Route 53 Developer Guide.
 	//
 	// For more information and examples, see Amazon Route 53 Health Checks and
@@ -6153,69 +6180,75 @@ type AliasTarget struct {
 	// Alias resource records sets only: The value used depends on where you want
 	// to route traffic:
 	//
-	// Amazon API Gateway custom regional APIs and edge-optimized APIsSpecify the
-	// hosted zone ID for your API. You can get the applicable value using the AWS
-	// CLI command get-domain-names (https://docs.aws.amazon.com/cli/latest/reference/apigateway/get-domain-names.html):
+	// Amazon API Gateway custom regional APIs and edge-optimized APIs
 	//
-	// For regional APIs, specify the value of regionalHostedZoneId.
+	// Specify the hosted zone ID for your API. You can get the applicable value
+	// using the AWS CLI command get-domain-names (https://docs.aws.amazon.com/cli/latest/reference/apigateway/get-domain-names.html):
 	//
-	// For edge-optimized APIs, specify the value of distributionHostedZoneId.
+	//    * For regional APIs, specify the value of regionalHostedZoneId.
 	//
-	// Amazon Virtual Private Cloud interface VPC endpointSpecify the hosted zone
-	// ID for your interface endpoint. You can get the value of HostedZoneId using
-	// the AWS CLI command describe-vpc-endpoints (https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-vpc-endpoints.html).
+	//    * For edge-optimized APIs, specify the value of distributionHostedZoneId.
 	//
-	// CloudFront distributionSpecify Z2FDTNDATAQYW2.
+	// Amazon Virtual Private Cloud interface VPC endpoint
+	//
+	// Specify the hosted zone ID for your interface endpoint. You can get the value
+	// of HostedZoneId using the AWS CLI command describe-vpc-endpoints (https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-vpc-endpoints.html).
+	//
+	// CloudFront distribution
+	//
+	// Specify Z2FDTNDATAQYW2.
 	//
 	// Alias resource record sets for CloudFront can't be created in a private zone.
 	//
-	// Elastic Beanstalk environmentSpecify the hosted zone ID for the region that
-	// you created the environment in. The environment must have a regionalized
-	// subdomain. For a list of regions and the corresponding hosted zone IDs, see
-	// AWS Elastic Beanstalk (http://docs.aws.amazon.com/general/latest/gr/rande.html#elasticbeanstalk_region)
+	// Elastic Beanstalk environment
+	//
+	// Specify the hosted zone ID for the region that you created the environment
+	// in. The environment must have a regionalized subdomain. For a list of regions
+	// and the corresponding hosted zone IDs, see AWS Elastic Beanstalk (http://docs.aws.amazon.com/general/latest/gr/rande.html#elasticbeanstalk_region)
 	// in the "AWS Regions and Endpoints" chapter of the Amazon Web Services General
 	// Reference.
 	//
-	// ELB load balancerSpecify the value of the hosted zone ID for the load balancer.
-	// Use the following methods to get the hosted zone ID:
+	// ELB load balancer
 	//
-	// Elastic Load Balancing (https://docs.aws.amazon.com/general/latest/gr/rande.html#elb_region)
-	// table in the "AWS Regions and Endpoints" chapter of the Amazon Web Services
-	// General Reference: Use the value that corresponds with the region that you
-	// created your load balancer in. Note that there are separate columns for Application
-	// and Classic Load Balancers and for Network Load Balancers.
+	// Specify the value of the hosted zone ID for the load balancer. Use the following
+	// methods to get the hosted zone ID:
 	//
-	// AWS Management Console: Go to the Amazon EC2 page, choose Load Balancers
-	// in the navigation pane, select the load balancer, and get the value of the
-	// Hosted zone field on the Description tab.
+	//    * Elastic Load Balancing (https://docs.aws.amazon.com/general/latest/gr/rande.html#elb_region)
+	//    table in the "AWS Regions and Endpoints" chapter of the Amazon Web Services
+	//    General Reference: Use the value that corresponds with the region that
+	//    you created your load balancer in. Note that there are separate columns
+	//    for Application and Classic Load Balancers and for Network Load Balancers.
 	//
-	// Elastic Load Balancing API: Use DescribeLoadBalancers to get the applicable
-	// value. For more information, see the applicable guide:
+	//    * AWS Management Console: Go to the Amazon EC2 page, choose Load Balancers
+	//    in the navigation pane, select the load balancer, and get the value of
+	//    the Hosted zone field on the Description tab.
 	//
-	// Classic Load Balancers: Use DescribeLoadBalancers (http://docs.aws.amazon.com/elasticloadbalancing/2012-06-01/APIReference/API_DescribeLoadBalancers.html)
-	// to get the value of CanonicalHostedZoneNameId.
+	//    * Elastic Load Balancing API: Use DescribeLoadBalancers to get the applicable
+	//    value. For more information, see the applicable guide: Classic Load Balancers:
+	//    Use DescribeLoadBalancers (http://docs.aws.amazon.com/elasticloadbalancing/2012-06-01/APIReference/API_DescribeLoadBalancers.html)
+	//    to get the value of CanonicalHostedZoneNameId. Application and Network
+	//    Load Balancers: Use DescribeLoadBalancers (http://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html)
+	//    to get the value of CanonicalHostedZoneId.
 	//
-	// Application and Network Load Balancers: Use DescribeLoadBalancers (http://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html)
-	// to get the value of CanonicalHostedZoneId.
+	//    * AWS CLI: Use describe-load-balancers to get the applicable value. For
+	//    more information, see the applicable guide: Classic Load Balancers: Use
+	//    describe-load-balancers (http://docs.aws.amazon.com/cli/latest/reference/elb/describe-load-balancers.html)
+	//    to get the value of CanonicalHostedZoneNameId. Application and Network
+	//    Load Balancers: Use describe-load-balancers (http://docs.aws.amazon.com/cli/latest/reference/elbv2/describe-load-balancers.html)
+	//    to get the value of CanonicalHostedZoneId.
 	//
-	// AWS CLI: Use describe-load-balancers to get the applicable value. For more
-	// information, see the applicable guide:
+	// An Amazon S3 bucket configured as a static website
 	//
-	// Classic Load Balancers: Use describe-load-balancers (http://docs.aws.amazon.com/cli/latest/reference/elb/describe-load-balancers.html)
-	// to get the value of CanonicalHostedZoneNameId.
-	//
-	// Application and Network Load Balancers: Use describe-load-balancers (http://docs.aws.amazon.com/cli/latest/reference/elbv2/describe-load-balancers.html)
-	// to get the value of CanonicalHostedZoneId.
-	//
-	// An Amazon S3 bucket configured as a static websiteSpecify the hosted zone
-	// ID for the region that you created the bucket in. For more information about
-	// valid values, see the Amazon Simple Storage Service Website Endpoints (http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region)
+	// Specify the hosted zone ID for the region that you created the bucket in.
+	// For more information about valid values, see the Amazon Simple Storage Service
+	// Website Endpoints (http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region)
 	// table in the "AWS Regions and Endpoints" chapter of the Amazon Web Services
 	// General Reference.
 	//
-	// Another Route 53 resource record set in your hosted zoneSpecify the hosted
-	// zone ID of your hosted zone. (An alias resource record set can't reference
-	// a resource record set in a different hosted zone.)
+	// Another Route 53 resource record set in your hosted zone
+	//
+	// Specify the hosted zone ID of your hosted zone. (An alias resource record
+	// set can't reference a resource record set in a different hosted zone.)
 	//
 	// HostedZoneId is a required field
 	HostedZoneId *string `type:"string" required:"true"`
@@ -6379,15 +6412,13 @@ type Change struct {
 	//
 	//    * CREATE: Creates a resource record set that has the specified values.
 	//
-	//    * DELETE: Deletes a existing resource record set.
-	//
-	// To delete the resource record set that is associated with a traffic policy
-	//    instance, use DeleteTrafficPolicyInstance (https://docs.aws.amazon.com/Route53/latest/APIReference/API_DeleteTrafficPolicyInstance.html).
+	//    * DELETE: Deletes a existing resource record set. To delete the resource
+	//    record set that is associated with a traffic policy instance, use DeleteTrafficPolicyInstance
+	//    (https://docs.aws.amazon.com/Route53/latest/APIReference/API_DeleteTrafficPolicyInstance.html).
 	//    Amazon Route 53 will delete the resource record set automatically. If
 	//    you delete the resource record set by using ChangeResourceRecordSets,
 	//    Route 53 doesn't automatically delete the traffic policy instance, and
 	//    you'll continue to be charged for it even though it's no longer in use.
-	//
 	//
 	//    * UPSERT: If a resource record set doesn't already exist, Route 53 creates
 	//    it. If a resource record set does exist, Route 53 updates it with the
@@ -10040,7 +10071,7 @@ type HealthCheckConfig struct {
 
 	// Amazon Route 53 behavior depends on whether you specify a value for IPAddress.
 	//
-	// If you specify a value forIPAddress:
+	// If you specify a value for IPAddress:
 	//
 	// Amazon Route 53 sends health check requests to the specified IPv4 or IPv6
 	// address and passes the value of FullyQualifiedDomainName in the Host header
@@ -10066,7 +10097,7 @@ type HealthCheckConfig struct {
 	// If you don't specify a value for FullyQualifiedDomainName, Route 53 substitutes
 	// the value of IPAddress in the Host header in each of the preceding cases.
 	//
-	// If you don't specify a value for IPAddress:
+	// If you don't specify a value for IPAddress :
 	//
 	// Route 53 sends a DNS request to the domain that you specify for FullyQualifiedDomainName
 	// at the interval that you specify for RequestInterval. Using an IPv4 address
@@ -10229,10 +10260,8 @@ type HealthCheckConfig struct {
 	//
 	//    * HTTPS: Route 53 tries to establish a TCP connection. If successful,
 	//    Route 53 submits an HTTPS request and waits for an HTTP status code of
-	//    200 or greater and less than 400.
-	//
-	// If you specify HTTPS for the value of Type, the endpoint must support TLS
-	//    v1.0 or later.
+	//    200 or greater and less than 400. If you specify HTTPS for the value of
+	//    Type, the endpoint must support TLS v1.0 or later.
 	//
 	//    * HTTP_STR_MATCH: Route 53 tries to establish a TCP connection. If successful,
 	//    Route 53 submits an HTTP request and searches the first 5,120 bytes of
@@ -11375,10 +11404,10 @@ type ListResourceRecordSetsInput struct {
 	// of maxitems resource record sets.
 	MaxItems *string `location:"querystring" locationName:"maxitems" type:"string"`
 
-	// Weighted resource record sets only: If results were truncated for a given
-	// DNS name and type, specify the value of NextRecordIdentifier from the previous
-	// response to get the next resource record set that has the current DNS name
-	// and type.
+	// Resource record sets that have a routing policy other than simple: If results
+	// were truncated for a given DNS name and type, specify the value of NextRecordIdentifier
+	// from the previous response to get the next resource record set that has the
+	// current DNS name and type.
 	StartRecordIdentifier *string `location:"querystring" locationName:"identifier" min:"1" type:"string"`
 
 	// The first name in the lexicographic ordering of resource record sets that
@@ -13038,43 +13067,29 @@ type ResourceRecordSet struct {
 	//    of non-alias resource record sets that have the same routing policy, name,
 	//    and type (such as multiple weighted records named www.example.com with
 	//    a type of A) and you specify health check IDs for all the resource record
-	//    sets.
+	//    sets. If the health check status for a resource record set is healthy,
+	//    Route 53 includes the record among the records that it responds to DNS
+	//    queries with. If the health check status for a resource record set is
+	//    unhealthy, Route 53 stops responding to DNS queries using the value for
+	//    that resource record set. If the health check status for all resource
+	//    record sets in the group is unhealthy, Route 53 considers all resource
+	//    record sets in the group healthy and responds to DNS queries accordingly.
 	//
-	// If the health check status for a resource record set is healthy, Route 53
-	//    includes the record among the records that it responds to DNS queries
-	//    with.
-	//
-	// If the health check status for a resource record set is unhealthy, Route
-	//    53 stops responding to DNS queries using the value for that resource record
-	//    set.
-	//
-	// If the health check status for all resource record sets in the group is unhealthy,
-	//    Route 53 considers all resource record sets in the group healthy and responds
-	//    to DNS queries accordingly.
-	//
-	//    * Alias resource record sets: You specify the following settings:
-	//
-	// You set EvaluateTargetHealth to true for an alias resource record set in
-	//    a group of resource record sets that have the same routing policy, name,
+	//    * Alias resource record sets: You specify the following settings: You
+	//    set EvaluateTargetHealth to true for an alias resource record set in a
+	//    group of resource record sets that have the same routing policy, name,
 	//    and type (such as multiple weighted records named www.example.com with
-	//    a type of A).
-	//
-	// You configure the alias resource record set to route traffic to a non-alias
-	//    resource record set in the same hosted zone.
-	//
-	// You specify a health check ID for the non-alias resource record set.
-	//
-	// If the health check status is healthy, Route 53 considers the alias resource
-	//    record set to be healthy and includes the alias record among the records
-	//    that it responds to DNS queries with.
-	//
-	// If the health check status is unhealthy, Route 53 stops responding to DNS
-	//    queries using the alias resource record set.
-	//
-	// The alias resource record set can also route traffic to a group of non-alias
-	//    resource record sets that have the same routing policy, name, and type.
-	//    In that configuration, associate health checks with all of the resource
-	//    record sets in the group of non-alias resource record sets.
+	//    a type of A). You configure the alias resource record set to route traffic
+	//    to a non-alias resource record set in the same hosted zone. You specify
+	//    a health check ID for the non-alias resource record set. If the health
+	//    check status is healthy, Route 53 considers the alias resource record
+	//    set to be healthy and includes the alias record among the records that
+	//    it responds to DNS queries with. If the health check status is unhealthy,
+	//    Route 53 stops responding to DNS queries using the alias resource record
+	//    set. The alias resource record set can also route traffic to a group of
+	//    non-alias resource record sets that have the same routing policy, name,
+	//    and type. In that configuration, associate health checks with all of the
+	//    resource record sets in the group of non-alias resource record sets.
 	//
 	// Geolocation Routing
 	//
@@ -13104,10 +13119,10 @@ type ResourceRecordSet struct {
 	//
 	// Health check results will be unpredictable if you do the following:
 	//
-	// Create a health check that has the same value for FullyQualifiedDomainName
-	// as the name of a resource record set.
+	//    * Create a health check that has the same value for FullyQualifiedDomainName
+	//    as the name of a resource record set.
 	//
-	// Associate that health check with the resource record set.
+	//    * Associate that health check with the resource record set.
 	HealthCheckId *string `type:"string"`
 
 	// Multivalue answer resource record sets only: To route traffic approximately
@@ -13165,9 +13180,8 @@ type ResourceRecordSet struct {
 	//
 	//    * If you include * in any position other than the leftmost label in a
 	//    domain name, DNS treats it as an * character (ASCII 42), not as a wildcard.
-	//
-	// You can't use the * wildcard for resource records sets that have a type of
-	//    NS.
+	//    You can't use the * wildcard for resource records sets that have a type
+	//    of NS.
 	//
 	// You can use the * wildcard as the leftmost label in a domain name, for example,
 	// *.example.com. You can't use an * for one of the middle labels, for example,
@@ -13283,32 +13297,29 @@ type ResourceRecordSet struct {
 	//
 	// Values for alias resource record sets:
 	//
-	//    * Amazon API Gateway custom regional APIs and edge-optimized APIs:A
+	//    * Amazon API Gateway custom regional APIs and edge-optimized APIs: A
 	//
-	//    * CloudFront distributions:A
-	//
-	// If IPv6 is enabled for the distribution, create two resource record sets
-	//    to route traffic to your distribution, one with a value of A and one with
-	//    a value of AAAA.
+	//    * CloudFront distributions: A If IPv6 is enabled for the distribution,
+	//    create two resource record sets to route traffic to your distribution,
+	//    one with a value of A and one with a value of AAAA.
 	//
 	//    * AWS Elastic Beanstalk environment that has a regionalized subdomain:
 	//    A
 	//
-	//    * ELB load balancers:A | AAAA
+	//    * ELB load balancers: A | AAAA
 	//
-	//    * Amazon S3 buckets:A
+	//    * Amazon S3 buckets: A
 	//
-	//    * Amazon Virtual Private Cloud interface VPC endpointsA
+	//    * Amazon Virtual Private Cloud interface VPC endpoints A
 	//
 	//    * Another resource record set in this hosted zone: Specify the type of
 	//    the resource record set that you're creating the alias for. All values
-	//    are supported except NS and SOA.
-	//
-	// If you're creating an alias record that has the same name as the hosted zone
-	//    (known as the zone apex), you can't route traffic to a record for which
-	//    the value of Type is CNAME. This is because the alias record must have
-	//    the same type as the record you're routing traffic to, and creating a
-	//    CNAME record for the zone apex isn't supported even for an alias record.
+	//    are supported except NS and SOA. If you're creating an alias record that
+	//    has the same name as the hosted zone (known as the zone apex), you can't
+	//    route traffic to a record for which the value of Type is CNAME. This is
+	//    because the alias record must have the same type as the record you're
+	//    routing traffic to, and creating a CNAME record for the zone apex isn't
+	//    supported even for an alias record.
 	//
 	// Type is a required field
 	Type *string `type:"string" required:"true" enum:"RRType"`
@@ -13339,8 +13350,7 @@ type ResourceRecordSet struct {
 	//    with the applicable value for that resource record set. However, if you
 	//    set Weight to 0 for all resource record sets that have the same combination
 	//    of DNS name and type, traffic is routed to all resources with equal probability.
-	//
-	// The effect of setting Weight to 0 is different when you associate health
+	//    The effect of setting Weight to 0 is different when you associate health
 	//    checks with weighted resource record sets. For more information, see Options
 	//    for Configuring Route 53 Active-Active and Active-Passive Failover (http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-configuring-options.html)
 	//    in the Amazon Route 53 Developer Guide.
@@ -13620,7 +13630,7 @@ type Tag struct {
 	//    * Edit a tag: Key is the name of the tag that you want to change the Value
 	//    for.
 	//
-	//    *  Delete a key: Key is the name of the tag you want to remove.
+	//    * Delete a key: Key is the name of the tag you want to remove.
 	//
 	//    * Give a name to a health check: Edit the default Name tag. In the Amazon
 	//    Route 53 console, the list of your health checks includes a Name column
@@ -13974,15 +13984,21 @@ type TrafficPolicyInstance struct {
 
 	// The value of State is one of the following values:
 	//
-	// AppliedAmazon Route 53 has finished creating resource record sets, and changes
-	// have propagated to all Route 53 edge locations.
+	// Applied
 	//
-	// CreatingRoute 53 is creating the resource record sets. Use GetTrafficPolicyInstance
+	// Amazon Route 53 has finished creating resource record sets, and changes have
+	// propagated to all Route 53 edge locations.
+	//
+	// Creating
+	//
+	// Route 53 is creating the resource record sets. Use GetTrafficPolicyInstance
 	// to confirm that the CreateTrafficPolicyInstance request completed successfully.
 	//
-	// FailedRoute 53 wasn't able to create or update the resource record sets.
-	// When the value of State is Failed, see Message for an explanation of what
-	// caused the request to fail.
+	// Failed
+	//
+	// Route 53 wasn't able to create or update the resource record sets. When the
+	// value of State is Failed, see Message for an explanation of what caused the
+	// request to fail.
 	//
 	// State is a required field
 	State *string `type:"string" required:"true"`
@@ -14222,7 +14238,7 @@ type UpdateHealthCheckInput struct {
 	// However, you can't update an existing health check to add or remove the value
 	// of IPAddress.
 	//
-	// If you specify a value forIPAddress:
+	// If you specify a value for IPAddress:
 	//
 	// Route 53 sends health check requests to the specified IPv4 or IPv6 address
 	// and passes the value of FullyQualifiedDomainName in the Host header for all
@@ -14247,7 +14263,7 @@ type UpdateHealthCheckInput struct {
 	// If you don't specify a value for FullyQualifiedDomainName, Route 53 substitutes
 	// the value of IPAddress in the Host header in each of the above cases.
 	//
-	// If you don't specify a value forIPAddress:
+	// If you don't specify a value for IPAddress:
 	//
 	// If you don't specify a value for IPAddress, Route 53 sends a DNS request
 	// to the domain that you specify in FullyQualifiedDomainName at the interval
@@ -15010,6 +15026,9 @@ const (
 	// CloudWatchRegionApEast1 is a CloudWatchRegion enum value
 	CloudWatchRegionApEast1 = "ap-east-1"
 
+	// CloudWatchRegionMeSouth1 is a CloudWatchRegion enum value
+	CloudWatchRegionMeSouth1 = "me-south-1"
+
 	// CloudWatchRegionApSouth1 is a CloudWatchRegion enum value
 	CloudWatchRegionApSouth1 = "ap-south-1"
 
@@ -15241,6 +15260,9 @@ const (
 	// ResourceRecordSetRegionApEast1 is a ResourceRecordSetRegion enum value
 	ResourceRecordSetRegionApEast1 = "ap-east-1"
 
+	// ResourceRecordSetRegionMeSouth1 is a ResourceRecordSetRegion enum value
+	ResourceRecordSetRegionMeSouth1 = "me-south-1"
+
 	// ResourceRecordSetRegionApSouth1 is a ResourceRecordSetRegion enum value
 	ResourceRecordSetRegionApSouth1 = "ap-south-1"
 )
@@ -15302,6 +15324,9 @@ const (
 
 	// VPCRegionApEast1 is a VPCRegion enum value
 	VPCRegionApEast1 = "ap-east-1"
+
+	// VPCRegionMeSouth1 is a VPCRegion enum value
+	VPCRegionMeSouth1 = "me-south-1"
 
 	// VPCRegionApSoutheast1 is a VPCRegion enum value
 	VPCRegionApSoutheast1 = "ap-southeast-1"
