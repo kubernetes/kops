@@ -347,6 +347,11 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		}
 	}
 
+	//remove elements from the spec that are not enabled yet
+	if b.Cluster.Spec.KubeAPIServer.AuditDynamicConfiguration != nil && !b.IsKubernetesGTE("1.13") {
+		b.Cluster.Spec.KubeAPIServer.AuditDynamicConfiguration = nil
+	}
+
 	// build the kube-apiserver flags for the service
 	flags, err := flagbuilder.BuildFlagsList(b.Cluster.Spec.KubeAPIServer)
 	if err != nil {
