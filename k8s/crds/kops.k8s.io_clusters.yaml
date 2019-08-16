@@ -776,6 +776,10 @@ spec:
                   items:
                     type: string
                   type: array
+                auditDynamicConfiguration:
+                  description: AuditDynamicConfiguration enables dynamic audit configuration
+                    via AuditSinks
+                  type: boolean
                 auditLogFormat:
                   description: AuditLogFormat flag specifies the format type for audit
                     log files.

@@ -453,6 +453,9 @@ type KubeAPIServerConfig struct {
 
 	// Amount of time to retain Kubernetes events
 	EventTTL *metav1.Duration `json:"eventTTL,omitempty" flag:"event-ttl"`
+
+	// AuditDynamicConfiguration enables dynamic audit configuration via AuditSinks
+	AuditDynamicConfiguration *bool `json:"auditDynamicConfiguration,omitempty" flag:"audit-dynamic-configuration"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
