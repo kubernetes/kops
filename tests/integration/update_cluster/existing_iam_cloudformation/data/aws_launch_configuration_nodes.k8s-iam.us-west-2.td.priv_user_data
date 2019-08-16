@@ -17,7 +17,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
+NODEUP_URL=https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
 NODEUP_HASH=02185512f78dc9d15a8c10774c4cb11f67e4bc20
 
 
