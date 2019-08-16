@@ -442,7 +442,7 @@ func (b *FirewallModelBuilder) addProtokubeRules(c *fi.ModelBuilderContext, sgMa
 			Direction:    s(string(rules.DirIngress)),
 			Protocol:     s(string(rules.ProtocolTCP)),
 			EtherType:    s(string(rules.EtherType4)),
-			PortRangeMin: i(3998),
+			PortRangeMin: i(3994),
 			PortRangeMax: i(3999),
 		}
 		addDirectionalGroupRule(c, masterSG, nodeSG, protokubeRule)
