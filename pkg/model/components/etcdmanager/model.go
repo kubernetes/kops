@@ -190,7 +190,7 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-  - image: kopeio/etcd-manager:3.0.20190516
+  - image: kopeio/etcd-manager:3.0.20190816
     name: etcd-manager
     resources:
       requests:
@@ -394,7 +394,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 			config.VolumeProvider = "do"
 
 			config.VolumeTag = []string{
-				fmt.Sprintf("kubernetes.io/cluster/%s=owned", b.Cluster.Name),
+				fmt.Sprintf("kubernetes.io/cluster=%s", b.Cluster.Name),
 				do.TagNameEtcdClusterPrefix + etcdCluster.Name,
 				do.TagNameRolePrefix + "master=1",
 			}
