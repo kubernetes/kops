@@ -139,6 +139,10 @@ spec:
             - name: CONN_LIMIT
               value: "{{ .Networking.Weave.ConnLimit }}"
             {{- end }}
+            {{- if .Networking.Weave.NetExtraArgs }}
+            - name: EXTRA_ARGS
+              value: "{{ .Networking.Weave.NetExtraArgs }}"
+            {{- end }}
             {{- if WeaveSecret }}
             - name: WEAVE_PASSWORD
               valueFrom:
