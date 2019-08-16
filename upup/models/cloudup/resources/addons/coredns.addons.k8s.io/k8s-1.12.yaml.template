@@ -78,6 +78,48 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: coredns-autoscaler
+  namespace: kube-system
+  labels:
+    k8s-addon: coredns.addons.k8s.io
+    k8s-app: coredns-autoscaler
+    kubernetes.io/cluster-service: "true"
+spec:
+  selector:
+    matchLabels:
+      k8s-app: coredns-autoscaler
+  template:
+    metadata:
+      labels:
+        k8s-app: coredns-autoscaler
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      containers:
+      - name: autoscaler
+        image: k8s.gcr.io/cluster-proportional-autoscaler-{{Arch}}:1.4.0
+        resources:
+            requests:
+                cpu: "20m"
+                memory: "10Mi"
+        command:
+          - /cluster-proportional-autoscaler
+          - --namespace=kube-system
+          - --configmap=coredns-autoscaler
+          - --target=Deployment/coredns
+          # When cluster is using large nodes(with more cores), "coresPerReplica" should dominate.
+          # If using small nodes, "nodesPerReplica" should dominate.
+          - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}}
+          - --logtostderr=true
+          - --v=2
+      tolerations:
+      - key: "CriticalAddonsOnly"
+        operator: "Exists"
+      serviceAccountName: coredns-autoscaler
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
   name: coredns
   namespace: kube-system
   labels:
@@ -85,11 +127,11 @@ metadata:
     k8s-addon: coredns.addons.k8s.io
     kubernetes.io/cluster-service: "true"
 spec:
-  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 1
+      maxSurge: 10%
   selector:
     matchLabels:
       k8s-app: kube-dns
@@ -200,6 +242,58 @@ spec:
   - name: metrics
     port: 9153
     protocol: TCP
+
+---
+
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: coredns-autoscaler
+  namespace: kube-system
+  labels:
+    k8s-addon: coredns.addons.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    k8s-addon: coredns.addons.k8s.io
+  name: coredns-autoscaler
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["list","watch"]
+  - apiGroups: [""]
+    resources: ["replicationcontrollers/scale"]
+    verbs: ["get", "update"]
+  - apiGroups: ["extensions", "apps"]
+    resources: ["deployments/scale", "replicasets/scale"]
+    verbs: ["get", "update"]
+# Remove the configmaps rule once below issue is fixed:
+# kubernetes-incubator/cluster-proportional-autoscaler#16
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "create"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    k8s-addon: coredns.addons.k8s.io
+  name: coredns-autoscaler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: coredns-autoscaler
+subjects:
+- kind: ServiceAccount
+  name: coredns-autoscaler
+  namespace: kube-system
 
 ---
 
