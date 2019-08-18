@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"k8s.io/kops/util/pkg/proxy"
 	"os"
 	"strings"
 
