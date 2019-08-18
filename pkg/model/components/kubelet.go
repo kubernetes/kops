@@ -243,7 +243,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.FeatureGates = make(map[string]string)
 	}
 	if _, found := clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"]; !found {
-		if b.Context.IsKubernetesGTE("1.5.2") {
+		if b.Context.IsKubernetesGTE("1.5.2") && b.Context.IsKubernetesLT("1.16") {
 			clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"] = "true"
 		}
 	}
