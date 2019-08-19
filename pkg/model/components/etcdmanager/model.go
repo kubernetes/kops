@@ -478,15 +478,9 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	container.Env = appendEnvVariableIfExist("OS_AUTH_URL", container.Env)
 	container.Env = appendEnvVariableIfExist("OS_REGION_NAME", container.Env)
 
-	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderDO && os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
-		container.Env = append(container.Env, []v1.EnvVar{
-					{Name: "DIGITALOCEAN_ACCESS_TOKEN", Value: os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")},
-					{Name: "S3_ENDPOINT", Value: os.Getenv("S3_ENDPOINT")},
-					{Name:"S3_ACCESS_KEY_ID", Value: os.Getenv("S3_ACCESS_KEY_ID")},
-					{Name: "S3_SECRET_ACCESS_KEY", Value: os.Getenv("S3_SECRET_ACCESS_KEY")},
-				}...)
-		}
-	
+	// Digital Ocean related values.
+	container.Env = appendEnvVariableIfExist("DIGITALOCEAN_ACCESS_TOKEN", container.Env)
+
 	{
 		foundPKI := false
 		for i := range pod.Spec.Volumes {
