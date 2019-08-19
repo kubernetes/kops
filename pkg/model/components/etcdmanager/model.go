@@ -181,7 +181,7 @@ func parseManifest(data []byte) ([]runtime.Object, error) {
 	return objects, nil
 }
 
-// Until we introduce the bundle, we hard-code the manifest (3.0.20190516)
+// Until we introduce the bundle, we hard-code the manifest
 var defaultManifest = `
 apiVersion: v1
 kind: Pod
