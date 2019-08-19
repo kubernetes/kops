@@ -24,9 +24,8 @@ export S3_ENDPOINT=nyc3.digitaloceanspaces.com # this can also be ams3.digitaloc
 export S3_ACCESS_KEY_ID=<access-key-id>  # where <access-key-id> is the Spaces API Access Key for your bucket
 export S3_SECRET_ACCESS_KEY=<secret-key>  # where <secret-key> is the Spaces API Secret Key for your bucket
 
-# this is required since DigitalOcean support is currently in alpha so it is feature gated, also need Override flag to use legacy etcd.
-# we will eventually support etcdmanager, but until then, we need to specify this flag.
-export KOPS_FEATURE_FLAGS="AlphaAllowDO,+SpecOverrideFlag"
+# this is required since DigitalOcean support is currently in alpha so it is feature gated
+export KOPS_FEATURE_FLAGS="AlphaAllowDO"
 ```
 
 ## Creating a Cluster
@@ -36,15 +35,15 @@ Note that you kops will only be able to successfully provision clusters in regio
 
 ```bash
 # coreos (the default) + flannel overlay cluster in tor1
-kops create cluster --cloud=digitalocean --name=my-cluster.example.com --networking=flannel --zones=tor1 --ssh-public-key=~/.ssh/id_rsa.pub --override cluster.spec.etcdClusters[*].provider=Legacy
+kops create cluster --cloud=digitalocean --name=my-cluster.example.com --networking=flannel --zones=tor1 --ssh-public-key=~/.ssh/id_rsa.pub
 kops update cluster my-cluster.example.com --yes
 
 # ubuntu + weave overlay cluster in nyc1 using larger droplets
-kops create cluster --cloud=digitalocean --name=my-cluster.example.com --image=ubuntu-16-04-x64 --networking=weave --zones=nyc1 --ssh-public-key=~/.ssh/id_rsa.pub --node-size=s-8vcpu-32gb --override cluster.spec.etcdClusters[*].provider=Legacy
+kops create cluster --cloud=digitalocean --name=my-cluster.example.com --image=ubuntu-16-04-x64 --networking=weave --zones=nyc1 --ssh-public-key=~/.ssh/id_rsa.pub --node-size=s-8vcpu-32gb
 kops update cluster my-cluster.example.com --yes
 
 # debian + flannel overlay cluster in ams3 using optimized droplets
-kops create cluster --cloud=digitalocean --name=my-cluster.example.com --image=debian-9-x64 --networking=flannel --zones=ams3 --ssh-public-key=~/.ssh/id_rsa.pub --node-size=c-4 --override cluster.spec.etcdClusters[*].provider=Legacy
+kops create cluster --cloud=digitalocean --name=my-cluster.example.com --image=debian-9-x64 --networking=flannel --zones=ams3 --ssh-public-key=~/.ssh/id_rsa.pub --node-size=c-4
 kops update cluster my-cluster.example.com --yes
 
 # to delete a cluster
