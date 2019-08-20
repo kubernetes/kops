@@ -535,4 +535,3 @@ type config struct {
 	VolumeNameTag        string   `flag:"volume-name-tag"`
 	DNSSuffix            string   `flag:"dns-suffix"`
 }
-
