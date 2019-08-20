@@ -80,7 +80,7 @@ func TestComplex(t *testing.T) {
 	runTestAWS(t, "complex.example.com", "complex", "legacy-v1alpha2", false, 1, true, false, nil)
 }
 
-// TestCrossZone tests that the the cross zone setting on the API ELB is set properly
+// TestCrossZone tests that the cross zone setting on the API ELB is set properly
 func TestCrossZone(t *testing.T) {
 	runTestAWS(t, "crosszone.example.com", "api_elb_cross_zone", "v1alpha2", false, 1, true, false, nil)
 }
