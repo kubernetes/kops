@@ -65,7 +65,7 @@ func loadTestIntegration(t *testing.T, path string) (*protokube.EtcdCluster, str
 	if len(documents) != 2 {
 		t.Fatalf("unable to find both documents in the integration file: %s, error %v:", path, err)
 	}
-	// read the specifiction into a etcd spec
+	// read the specification into a etcd spec
 	cluster := &protokube.EtcdCluster{}
 	err = kops.ParseRawYaml([]byte(documents[0]), cluster)
 	if err != nil {
