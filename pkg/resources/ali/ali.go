@@ -454,7 +454,7 @@ func DeleteRoleRam(cloud fi.Cloud, r *resources.Resource) error {
 	}
 	response, err := c.RamClient().ListPoliciesForRole(roleQueryRequest)
 	if err != nil {
-		return fmt.Errorf("err listing Policices for role:%v", err)
+		return fmt.Errorf("err listing Policies for role:%v", err)
 	} else {
 		if len(response.Policies.Policy) != 0 {
 			for _, policy := range response.Policies.Policy {
@@ -512,7 +512,7 @@ func (d *clusterDiscoveryALI) ListSSHKey() ([]*resources.Resource, error) {
 func DeleteSSHKey(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(aliup.ALICloud)
 	region := common.Region(c.Region())
-	klog.V(2).Infof("Removing SSHKsy %s", r.Name)
+	klog.V(2).Infof("Removing SSHKey %s", r.Name)
 
 	deleteKeyPairsArgs := &ecs.DeleteKeyPairsArgs{
 		RegionId: region,
