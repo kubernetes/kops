@@ -21,3 +21,7 @@ assets:
     githubName: linux-amd64-utils.tar.gz
   - source: .build/dist/linux/amd64/utils.tar.gz.sha1
     githubName: linux-amd64-utils.tar.gz.sha1
+  - source: .build/dist/nodeup
+    githubName: linux-amd64-nodeup
+  - source: .build/dist/nodeup.sha1
+    githubName: linux-amd64-nodeup.sha1
