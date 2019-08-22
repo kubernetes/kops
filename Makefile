@@ -783,6 +783,7 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokub
 	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha1
 	cp bazel-bin/images/utils-builder/utils.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz
 	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
+	cp -fr ${BAZELUPLOAD}/kops/${VERSION}/* ${BAZELDIST}/
 
 .PHONY: bazel-upload
 bazel-upload: bazel-version-dist # Upload kops to S3
