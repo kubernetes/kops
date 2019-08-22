@@ -28,6 +28,8 @@ type DockerConfig struct {
 	DataRoot *string `json:"dataRoot,omitempty" flag:"data-root"`
 	// DefaultUlimit is the ulimits for containers
 	DefaultUlimit []string `json:"defaultUlimit,omitempty" flag:"default-ulimit,repeat"`
+	// ExecOpt is a series of options passed to the runtime
+	ExecOpt []string `json:"execOpt,omitempty" flag:"exec-opt,repeat"`
 	// ExecRoot is the root directory for execution state files (default "/var/run/docker")
 	ExecRoot *string `json:"execRoot,omitempty" flag:"exec-root"`
 	// Experimental features permits enabling new features such as dockerd metrics
