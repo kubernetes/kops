@@ -42,6 +42,7 @@ See [1.5.0-alpha4 commit](https://github.com/kubernetes/kops/commit/a60d7982e04c
 ## Check builds OK
 
 ```
+rm -rf .build/ .bazelbuild/
 make ci
 ```
 
