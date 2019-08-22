@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"github.com/digitalocean/godo"
-	"github.com/digitalocean/godo/context"
+	//"github.com/digitalocean/godo/context"
 
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/upup/pkg/fi"

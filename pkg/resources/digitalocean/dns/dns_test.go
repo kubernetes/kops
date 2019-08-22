@@ -20,11 +20,12 @@ import (
 	"bytes"
 	"errors"
 	"io/ioutil"
+	"context"
 	"net/http"
 	"testing"
 
 	"github.com/digitalocean/godo"
-	"github.com/digitalocean/godo/context"
+	//"github.com/digitalocean/godo/context"
 
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 )

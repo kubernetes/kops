@@ -308,14 +308,11 @@
   revision = "01aeca54ebda6e0fbfafd0a524d234159c05ec20"
 
 [[projects]]
-  digest = "1:f1b23499a437050e7ceb7e3f5111ec8ead263161395c585c19721d59b1244da9"
+  digest = "1:adfc05f2fa24c72ad3c30f436946e98a6f1b59af7fdf3698f2c25a54ea31e2ad"
   name = "github.com/digitalocean/godo"
-  packages = [
-    ".",
-    "context",
-  ]
+  packages = ["."]
   pruneopts = "UT"
-  revision = "34840385860db94c88d044571153b6a200ca40b2"
+  revision = "2f819072fe121a1233aa8f312abd57e366855f7c"
 
 [[projects]]
   digest = "1:4189ee6a3844f555124d9d2656fe7af02fca961c2a9bad9074789df13a0c62e0"
@@ -377,14 +374,14 @@
   revision = "9e638d38cf6977a37a8ea0078f3ee75a7cdb2dd1"
 
 [[projects]]
-  digest = "1:58be7025fd84632dfbb8a398f931b5bdbbecc0390e4385df4ae56775487a0f87"
+  digest = "1:ecdc8e0fe3bc7d549af1c9c36acf3820523b707d6c071b6d0c3860882c6f7b42"
   name = "github.com/docker/spdystream"
   packages = [
     ".",
     "spdy",
   ]
   pruneopts = "UT"
-  revision = "449fdfce4d962303d702fec724ef0ad181c92528"
+  revision = "6480d4af844c189cf5dd913db24ddd339d3a4f85"
 
 [[projects]]
   digest = "1:1f1d454098ba2f8e7b87f0166e30533a72dddb80bace79643a78933fa4889613"
@@ -2095,7 +2092,6 @@
     "github.com/denverdino/aliyungo/ram",
     "github.com/denverdino/aliyungo/slb",
     "github.com/digitalocean/godo",
-    "github.com/digitalocean/godo/context",
     "github.com/docker/engine-api/client",
     "github.com/docker/engine-api/types",
     "github.com/fullsailor/pkcs7",

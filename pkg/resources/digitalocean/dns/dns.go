@@ -22,9 +22,9 @@ import (
 	"io"
 	"os"
 	"strings"
-
+	"context"
 	"github.com/digitalocean/godo"
-	"github.com/digitalocean/godo/context"
+	//"github.com/digitalocean/godo/context"
 
 	"k8s.io/klog"
 
