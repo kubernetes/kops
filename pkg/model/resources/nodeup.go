@@ -84,12 +84,12 @@ download-or-bust() {
       elif [[ $(curl --version) ]]; then
         if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
           echo "== Failed to curl ${url}. Retrying. =="
-          break
+          continue
         fi
       else
         if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
           echo "== Failed to wget ${url}. Retrying. =="
-          break
+          continue
         fi
       fi
 
