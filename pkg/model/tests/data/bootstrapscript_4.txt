@@ -51,19 +51,15 @@ function ensure-install-dir() {
   cd ${INSTALL_DIR}
 }
 
-# Retry a download until we get it. Takes a hash and a set of URLs.
-#
-# $1 is the sha1 of the URL. Can be "" if the sha1 is unknown.
-# $2+ are the URLs to download.
+# Retry a download until we get it. args: name, sha, url1, url2...
 download-or-bust() {
-  local -r hash="$1"
-  shift 1
+  local -r file="$1"
+  local -r hash="$2"
+  shift 2
 
   urls=( $* )
   while true; do
     for url in "${urls[@]}"; do
-      local file="${url##*/}"
-
       if [[ -e "${file}" ]]; then
         echo "== File exists for ${url} =="
 
@@ -121,18 +117,17 @@ function try-download-release() {
   # optimization.
 
   local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
-  local -r nodeup_filename="${nodeup_urls[0]##*/}"
   if [[ -n "${NODEUP_HASH:-}" ]]; then
     local -r nodeup_hash="${NODEUP_HASH}"
   else
   # TODO: Remove?
     echo "Downloading sha1 (not found in env)"
-    download-or-bust "" "${nodeup_urls[@]/%/.sha1}"
-    local -r nodeup_hash=$(cat "${nodeup_filename}.sha1")
+    download-or-bust nodeup.sha1 "" "${nodeup_urls[@]/%/.sha1}"
+    local -r nodeup_hash=$(cat nodeup.sha1)
   fi
 
   echo "Downloading nodeup (${nodeup_urls[@]})"
-  download-or-bust "${nodeup_hash}" "${nodeup_urls[@]}"
+  download-or-bust nodeup "${nodeup_hash}" "${nodeup_urls[@]}"
 
   chmod +x nodeup
 }
