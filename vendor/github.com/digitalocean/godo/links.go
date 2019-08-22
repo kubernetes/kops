@@ -1,10 +1,9 @@
 package godo
 
 import (
+	"context"
 	"net/url"
 	"strconv"
-
-	"github.com/digitalocean/godo/context"
 )
 
 // Links manages links that are returned along with a List

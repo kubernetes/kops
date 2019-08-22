@@ -1,11 +1,10 @@
 package godo
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
-
-	"github.com/digitalocean/godo/context"
 )
 
 // ActionRequest reprents DigitalOcean Action Request
@@ -41,7 +40,6 @@ type DropletActionsService interface {
 	EnableIPv6ByTag(context.Context, string) ([]Action, *Response, error)
 	EnablePrivateNetworking(context.Context, int) (*Action, *Response, error)
 	EnablePrivateNetworkingByTag(context.Context, string) ([]Action, *Response, error)
-	Upgrade(context.Context, int) (*Action, *Response, error)
 	Get(context.Context, int, int) (*Action, *Response, error)
 	GetByURI(context.Context, string) (*Action, *Response, error)
 }
@@ -229,12 +227,6 @@ func (s *DropletActionsServiceOp) EnablePrivateNetworking(ctx context.Context, i
 func (s *DropletActionsServiceOp) EnablePrivateNetworkingByTag(ctx context.Context, tag string) ([]Action, *Response, error) {
 	request := &ActionRequest{"type": "enable_private_networking"}
 	return s.doActionByTag(ctx, tag, request)
-}
-
-// Upgrade a Droplet.
-func (s *DropletActionsServiceOp) Upgrade(ctx context.Context, id int) (*Action, *Response, error) {
-	request := &ActionRequest{"type": "upgrade"}
-	return s.doAction(ctx, id, request)
 }
 
 func (s *DropletActionsServiceOp) doAction(ctx context.Context, id int, request *ActionRequest) (*Action, *Response, error) {

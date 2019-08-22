@@ -1,10 +1,9 @@
 package godo
 
 import (
+	"context"
 	"fmt"
 	"net/http"
-
-	"github.com/digitalocean/godo/context"
 )
 
 const loadBalancersBasePath = "/v2/load_balancers"
@@ -27,6 +26,7 @@ type LoadBalancersService interface {
 }
 
 // LoadBalancer represents a DigitalOcean load balancer configuration.
+// Tags can only be provided upon the creation of a Load Balancer.
 type LoadBalancer struct {
 	ID                  string           `json:"id,omitempty"`
 	Name                string           `json:"name,omitempty"`
@@ -40,12 +40,48 @@ type LoadBalancer struct {
 	Region              *Region          `json:"region,omitempty"`
 	DropletIDs          []int            `json:"droplet_ids,omitempty"`
 	Tag                 string           `json:"tag,omitempty"`
+	Tags                []string         `json:"tags,omitempty"`
 	RedirectHttpToHttps bool             `json:"redirect_http_to_https,omitempty"`
+	EnableProxyProtocol bool             `json:"enable_proxy_protocol,omitempty"`
+	VPCUUID             string           `json:"vpc_uuid,omitempty"`
 }
 
 // String creates a human-readable description of a LoadBalancer.
 func (l LoadBalancer) String() string {
 	return Stringify(l)
+}
+
+func (l LoadBalancer) URN() string {
+	return ToURN("LoadBalancer", l.ID)
+}
+
+// AsRequest creates a LoadBalancerRequest that can be submitted to Update with the current values of the LoadBalancer.
+// Modifying the returned LoadBalancerRequest will not modify the original LoadBalancer.
+func (l LoadBalancer) AsRequest() *LoadBalancerRequest {
+	r := LoadBalancerRequest{
+		Name:                l.Name,
+		Algorithm:           l.Algorithm,
+		ForwardingRules:     append([]ForwardingRule(nil), l.ForwardingRules...),
+		DropletIDs:          append([]int(nil), l.DropletIDs...),
+		Tag:                 l.Tag,
+		RedirectHttpToHttps: l.RedirectHttpToHttps,
+		EnableProxyProtocol: l.EnableProxyProtocol,
+		HealthCheck:         l.HealthCheck,
+		VPCUUID:             l.VPCUUID,
+	}
+
+	if l.HealthCheck != nil {
+		r.HealthCheck = &HealthCheck{}
+		*r.HealthCheck = *l.HealthCheck
+	}
+	if l.StickySessions != nil {
+		r.StickySessions = &StickySessions{}
+		*r.StickySessions = *l.StickySessions
+	}
+	if l.Region != nil {
+		r.Region = l.Region.Slug
+	}
+	return &r
 }
 
 // ForwardingRule represents load balancer forwarding rules.
@@ -101,7 +137,10 @@ type LoadBalancerRequest struct {
 	StickySessions      *StickySessions  `json:"sticky_sessions,omitempty"`
 	DropletIDs          []int            `json:"droplet_ids,omitempty"`
 	Tag                 string           `json:"tag,omitempty"`
+	Tags                []string         `json:"tags,omitempty"`
 	RedirectHttpToHttps bool             `json:"redirect_http_to_https,omitempty"`
+	EnableProxyProtocol bool             `json:"enable_proxy_protocol,omitempty"`
+	VPCUUID             string           `json:"vpc_uuid,omitempty"`
 }
 
 // String creates a human-readable description of a LoadBalancerRequest.
