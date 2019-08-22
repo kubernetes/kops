@@ -188,7 +188,7 @@ required = [
   revision = "7d79101e329e5a3adf994758c578dab82b90c017"
 [[override]]
   name = "github.com/docker/spdystream"
-  revision = "449fdfce4d962303d702fec724ef0ad181c92528"
+  revision = "6480d4af844c189cf5dd913db24ddd339d3a4f85"
 [[override]]
   name = "github.com/dgrijalva/jwt-go"
   revision = "01aeca54ebda6e0fbfafd0a524d234159c05ec20"
@@ -399,7 +399,7 @@ required = [
   revision = "fa29b1d70f0beaddd4c7021607cc3c3be8ce94b8"
 [[override]]
   name = "github.com/digitalocean/godo"
-  revision = "34840385860db94c88d044571153b6a200ca40b2"
+  revision = "2f819072fe121a1233aa8f312abd57e366855f7c"
 [[override]]
   name = "github.com/docker/engine-api"
   revision = "dea108d3aa0c67d7162a3fd8aa65f38a430019fd"
