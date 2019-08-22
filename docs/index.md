@@ -54,7 +54,7 @@ kops is intended to be backward compatible.  It is always recommended to use the
 latest version of kops with whatever version of Kubernetes you are using.  Always
 use the latest version of kops.
 
-One exception, in regards to compatibility, kops supports the equivalent
+One exception, in regard to compatibility, kops supports the equivalent
 Kubernetes minor release number.  A minor version is the second digit in the
 release number.  kops version 1.8.0 has a minor version of 8. The numbering
 follows the semantic versioning specification, MAJOR.MINOR.PATCH.
