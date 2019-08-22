@@ -72,7 +72,7 @@ latest version of kops with whatever version of Kubernetes you are using.  We su
 kops users run one of the [3 minor versions](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/release/versioning.md#supported-releases-and-component-skew) Kubernetes is supporting however we
 do our best to support previous releases for a period of time.
 
-One exception, in regards to compatibility, kops supports the equivalent
+One exception, in regard to compatibility, kops supports the equivalent
 Kubernetes minor release number.  A minor version is the second digit in the
 release number.  kops version 1.8.0 has a minor version of 8. The numbering
 follows the semantic versioning specification, MAJOR.MINOR.PATCH.
