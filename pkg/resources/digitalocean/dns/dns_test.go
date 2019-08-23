@@ -25,7 +25,6 @@ import (
 	"testing"
 
 	"github.com/digitalocean/godo"
-	//"github.com/digitalocean/godo/context"
 
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 )
