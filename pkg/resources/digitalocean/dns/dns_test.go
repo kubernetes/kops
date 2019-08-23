@@ -18,9 +18,9 @@ package dns
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io/ioutil"
-	"context"
 	"net/http"
 	"testing"
 

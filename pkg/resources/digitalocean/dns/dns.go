@@ -17,13 +17,13 @@ limitations under the License.
 package dns
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/digitalocean/godo"
 	"io"
 	"os"
 	"strings"
-	"context"
-	"github.com/digitalocean/godo"
 	//"github.com/digitalocean/godo/context"
 
 	"k8s.io/klog"
