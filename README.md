@@ -158,7 +158,7 @@ guide on [adding a feature](/docs/development/adding_a_feature.md). Also, the
 maintainers can be contacted at any time to learn more about how to get
 involved.
 
-In the interest of getting more new folks involved with kops, we are starting to
+In the interest of getting more newer folks involved with kops, we are starting to
 tag issues with `good-starter-issue`. These are typically issues that have
 smaller scope but are good ways to start to get acquainted with the codebase.
 
