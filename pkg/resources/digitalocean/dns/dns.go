@@ -24,7 +24,6 @@ import (
 	"io"
 	"os"
 	"strings"
-	//"github.com/digitalocean/godo/context"
 
 	"k8s.io/klog"
 
