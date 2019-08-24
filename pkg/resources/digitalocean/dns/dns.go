@@ -20,14 +20,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/digitalocean/godo"
 	"io"
 	"os"
 	"strings"
 
-	"k8s.io/klog"
-
+	"github.com/digitalocean/godo"
 	"golang.org/x/oauth2"
+	"k8s.io/klog"
 
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
