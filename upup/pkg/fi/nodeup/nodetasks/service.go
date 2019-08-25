@@ -43,6 +43,8 @@ const (
 
 	coreosSystemdSystemPath = "/etc/systemd/system"
 
+	flatcarSystemdSystemPath = "/etc/systemd/system"
+
 	containerosSystemdSystemPath = "/etc/systemd/system"
 )
 
@@ -150,6 +152,8 @@ func (e *Service) systemdSystemPath(target tags.HasTags) (string, error) {
 		return centosSystemdSystemPath, nil
 	} else if target.HasTag("_coreos") {
 		return coreosSystemdSystemPath, nil
+	} else if target.HasTag("_flatcar") {
+		return flatcarSystemdSystemPath, nil
 	} else if target.HasTag("_containeros") {
 		return containerosSystemdSystemPath, nil
 	} else {
