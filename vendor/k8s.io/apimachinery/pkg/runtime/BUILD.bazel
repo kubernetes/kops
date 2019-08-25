@@ -14,6 +14,7 @@ go_library(
         "generated.pb.go",
         "helper.go",
         "interfaces.go",
+        "mapper.go",
         "register.go",
         "scheme.go",
         "scheme_builder.go",

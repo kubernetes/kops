@@ -14,7 +14,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/k8s.io/api/authentication/v1beta1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/scheme:go_default_library",
         "//vendor/k8s.io/client-go/rest:go_default_library",
     ],
