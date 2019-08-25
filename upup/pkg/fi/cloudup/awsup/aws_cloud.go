@@ -51,7 +51,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
-	k8s_aws "k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
+	k8s_aws "k8s.io/legacy-cloud-providers/aws"
 )
 
 // By default, aws-sdk-go only retries 3 times, which doesn't give
