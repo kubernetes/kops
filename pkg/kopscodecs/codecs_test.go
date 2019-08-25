@@ -50,7 +50,7 @@ func TestToVersionedYaml(t *testing.T) {
 			apiVersion: kops.k8s.io/v1alpha2
 			kind: Cluster
 			metadata:
-			  creationTimestamp: 2017-01-01T00:00:00Z
+			  creationTimestamp: "2017-01-01T00:00:00Z"
 			  name: hello
 			spec:
 			  kubernetesVersion: 1.2.3
