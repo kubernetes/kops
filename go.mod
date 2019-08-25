@@ -93,7 +93,6 @@ require (
 	github.com/fullsailor/pkcs7 v0.0.0-20180422025557-ae226422660e
 	github.com/ghodss/yaml v0.0.0-20180820084758-c7ce16629ff4
 	github.com/go-ini/ini v1.25.4
-	github.com/go-openapi/spec v0.17.2
 	github.com/gobuffalo/envy v1.6.2 // indirect
 	github.com/gogo/protobuf v0.0.0-20171007142547-342cbe0a0415
 	github.com/golang/protobuf v1.2.0
@@ -145,8 +144,8 @@ require (
 	k8s.io/csi-api v0.0.0-20181011073329-55e69c84e236 // indirect
 	k8s.io/helm v2.9.0+incompatible
 	k8s.io/klog v0.3.1
-	k8s.io/kube-openapi v0.0.0-20190228160746-b3a7cee44a30
 	k8s.io/kubernetes v1.15.3
+	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20190221042446-c2654d5206da
 	sigs.k8s.io/controller-tools v0.1.10 // indirect
 )

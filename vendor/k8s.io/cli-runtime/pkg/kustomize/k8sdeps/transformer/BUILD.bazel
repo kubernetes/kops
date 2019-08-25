@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["factory.go"],
+    importmap = "k8s.io/kops/vendor/k8s.io/cli-runtime/pkg/kustomize/k8sdeps/transformer",
+    importpath = "k8s.io/cli-runtime/pkg/kustomize/k8sdeps/transformer",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/k8s.io/cli-runtime/pkg/kustomize/k8sdeps/transformer/hash:go_default_library",
+        "//vendor/k8s.io/cli-runtime/pkg/kustomize/k8sdeps/transformer/patch:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/pkg/resource:go_default_library",
+        "//vendor/sigs.k8s.io/kustomize/pkg/transformers:go_default_library",
+    ],
+)
