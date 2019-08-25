@@ -27,6 +27,5 @@ go_test(
         "//pkg/resources/digitalocean:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//vendor/github.com/digitalocean/godo:go_default_library",
-        "//vendor/github.com/digitalocean/godo/context:go_default_library",
     ],
 )
