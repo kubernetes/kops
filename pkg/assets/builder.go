@@ -314,6 +314,10 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 
 			// Accept a hash string that is `<hash> <filename>`
 			fields := strings.Fields(hashString)
+			if len(fields) == 0 {
+				klog.Infof("hash file was empty %q", hashURL)
+				continue
+			}
 			return hashing.FromString(fields[0])
 		}
 	}
