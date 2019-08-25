@@ -1,9 +1,8 @@
 package godo
 
 import (
+	"context"
 	"net/http"
-
-	"github.com/digitalocean/godo/context"
 )
 
 // AccountService is an interface for interfacing with the Account
@@ -25,6 +24,7 @@ var _ AccountService = &AccountServiceOp{}
 type Account struct {
 	DropletLimit    int    `json:"droplet_limit,omitempty"`
 	FloatingIPLimit int    `json:"floating_ip_limit,omitempty"`
+	VolumeLimit     int    `json:"volume_limit,omitempty"`
 	Email           string `json:"email,omitempty"`
 	UUID            string `json:"uuid,omitempty"`
 	EmailVerified   bool   `json:"email_verified,omitempty"`

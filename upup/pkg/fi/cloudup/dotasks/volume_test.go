@@ -17,13 +17,12 @@ limitations under the License.
 package dotasks
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
 
 	"github.com/digitalocean/godo"
-	"github.com/digitalocean/godo/context"
-
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/upup/pkg/fi"
 )
