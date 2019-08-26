@@ -422,7 +422,7 @@ $ kops create cluster \
   --name cilium.example.com
 ```
 
-The above will deploy a daemonset installation which requires K8s 1.7.x or above.
+The above will deploy a Cilium daemonset installation which requires K8s 1.10.x or above.
 
 #### Configuring Cilium
 
