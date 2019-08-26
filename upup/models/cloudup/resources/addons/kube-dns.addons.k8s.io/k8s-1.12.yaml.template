@@ -264,6 +264,9 @@ metadata:
     k8s-app: kube-dns
     kubernetes.io/cluster-service: "true"
     kubernetes.io/name: "KubeDNS"
+  # Without this resourceVersion value, an update of the Service between versions will yield:
+  #   Service "kube-dns" is invalid: metadata.resourceVersion: Invalid value: "": must be specified for an update
+  resourceVersion: "0"
 spec:
   selector:
     k8s-app: kube-dns
