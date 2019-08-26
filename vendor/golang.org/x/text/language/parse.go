@@ -236,7 +236,7 @@ func Parse(s string) (t Tag, err error) {
 // value. All other values are preserved. It accepts tags in the BCP 47 format
 // and extensions to this standard defined in
 // http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
-// The resulting tag is canonicalized using the the canonicalization type c.
+// The resulting tag is canonicalized using the canonicalization type c.
 func (c CanonType) Parse(s string) (t Tag, err error) {
 	// TODO: consider supporting old-style locale key-value pairs.
 	if s == "" {

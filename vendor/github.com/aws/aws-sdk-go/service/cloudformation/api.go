@@ -10014,7 +10014,7 @@ type Stack struct {
 	RollbackConfiguration *RollbackConfiguration `type:"structure"`
 
 	// For nested stacks--stacks created as resources for another stack--the stack
-	// ID of the the top-level stack to which the nested stack ultimately belongs.
+	// ID of the top-level stack to which the nested stack ultimately belongs.
 	//
 	// For more information, see Working with Nested Stacks (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-nested-stacks.html)
 	// in the AWS CloudFormation User Guide.
@@ -11850,7 +11850,7 @@ type StackSummary struct {
 	ParentId *string `type:"string"`
 
 	// For nested stacks--stacks created as resources for another stack--the stack
-	// ID of the the top-level stack to which the nested stack ultimately belongs.
+	// ID of the top-level stack to which the nested stack ultimately belongs.
 	//
 	// For more information, see Working with Nested Stacks (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-nested-stacks.html)
 	// in the AWS CloudFormation User Guide.
