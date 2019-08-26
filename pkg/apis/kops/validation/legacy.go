@@ -770,12 +770,6 @@ func validateCilium(c *kops.Cluster) *field.Error {
 		if kubeVersion.LT(minimalKubeVersion) {
 			return field.Invalid(specPath.Child("KubernetesVersion"), c.Spec.KubernetesVersion, "Cilium needs at least Kubernetes 1.7")
 		}
-
-		minimalVersion := semver.MustParse("3.1.0")
-		path := specPath.Child("EtcdClusters").Index(0)
-		if err := validateEtcdVersion(c.Spec.EtcdClusters[0], path, &minimalVersion); err != nil {
-			return err
-		}
 	}
 	return nil
 }
