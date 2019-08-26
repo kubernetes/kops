@@ -112,9 +112,9 @@ validate-hash() {
   local -r expected="$2"
   local actual
 
-  actual=$(sha1sum ${file} | awk '{ print $1 }') || true
+  actual=$(sha256sum ${file} | awk '{ print $1 }') || true
   if [[ "${actual}" != "${expected}" ]]; then
-    echo "== ${file} corrupted, sha1 ${actual} doesn't match expected ${expected} =="
+    echo "== ${file} corrupted, hash ${actual} doesn't match expected ${expected} =="
     return 1
   fi
 }
@@ -132,9 +132,9 @@ function try-download-release() {
     local -r nodeup_hash="${NODEUP_HASH}"
   else
   # TODO: Remove?
-    echo "Downloading sha1 (not found in env)"
-    download-or-bust nodeup.sha1 "" "${nodeup_urls[@]/%/.sha1}"
-    local -r nodeup_hash=$(cat nodeup.sha1)
+    echo "Downloading sha256 (not found in env)"
+    download-or-bust nodeup.sha256 "" "${nodeup_urls[@]/%/.sha256}"
+    local -r nodeup_hash=$(cat nodeup.sha256)
   fi
 
   echo "Downloading nodeup (${nodeup_urls[@]})"
