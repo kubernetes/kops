@@ -7,11 +7,11 @@ Create an instancegroup.
 
 ### Synopsis
 
-Create an InstanceGroup configuration. 
+Create an InstanceGroup configuration.
 
-An InstanceGroup is a group of similar virtual machines. On AWS, an InstanceGroup maps to an AutoScalingGroup. 
+ An InstanceGroup is a group of similar virtual machines. On AWS, an InstanceGroup maps to an AutoScalingGroup.
 
-The Role of an InstanceGroup defines whether machines will act as a Kubernetes master or node.
+ The Role of an InstanceGroup defines whether machines will act as a Kubernetes master or node.
 
 ```
 kops create instancegroup [flags]
@@ -52,7 +52,7 @@ kops create instancegroup [flags]
       --logtostderr                      log to standard error instead of files (default true)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
       --skip_headers                     If true, avoid header prefixes in the log messages
-      --skip_log_headers                 If true, avoid headers when openning log files
+      --skip_log_headers                 If true, avoid headers when opening log files
       --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          number for the log level verbosity
