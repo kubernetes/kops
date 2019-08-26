@@ -60,6 +60,7 @@ github.com/cespare/prettybench v0.0.0-20150116022406-03b8cfe5406c/go.mod h1:Xe6Z
 github.com/chai2010/gettext-go v0.0.0-20160711120539-c6fed771bfd5/go.mod h1:/iP1qXHoty45bqomnu2LM+VVyAEdWN+vtSHGlQgyxbw=
 github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 h1:HD4PLRzjuCVW79mQ0/pdsalOLHJ+FaEoqJLxfltpb2U=
 github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1/go.mod h1:/iP1qXHoty45bqomnu2LM+VVyAEdWN+vtSHGlQgyxbw=
+github.com/client9/misspell v0.0.0-20170928000206-9ce5d979ffda h1:QBkCW6crBwWeRDhv99atmW1EZ7gyxAlHA2tGu+P9020=
 github.com/client9/misspell v0.0.0-20170928000206-9ce5d979ffda/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cloudflare/cfssl v0.0.0-20180726162950-56268a613adf/go.mod h1:yMWuSON2oQp+43nFtAV/uvKQIFpSPerB57DCt9t8sSA=
 github.com/clusterhq/flocker-go v0.0.0-20160920122132-2b8b7259d313/go.mod h1:P1wt9Z3DP8O6W3rvwCt0REIlshg1InHImaLW0t3ObY0=
