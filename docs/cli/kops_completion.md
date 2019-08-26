@@ -7,11 +7,11 @@ Output shell completion code for the given shell (bash or zsh).
 
 ### Synopsis
 
-Output shell completion code for the specified shell (bash or zsh). The shell code must be evaluated to provide interactive completion of kops commands.  This can be done by sourcing it from the .bash _profile. 
+Output shell completion code for the specified shell (bash or zsh). The shell code must be evaluated to provide interactive completion of kops commands.  This can be done by sourcing it from the .bash_profile.
 
-Note: this requires the bash-completion framework, which is not installed by default on Mac. Once installed, bash completion must be evaluated.  This can be done by adding the following line to the .bash profile 
+ Note: this requires the bash-completion framework, which is not installed by default on Mac. Once installed, bash_completion must be evaluated.  This can be done by adding the following line to the .bash_profile
 
-Note for zsh users: zsh completions are only supported in versions of zsh >= 5.2
+ Note for zsh users: zsh completions are only supported in versions of zsh >= 5.2
 
 ```
 kops completion [flags]
@@ -58,7 +58,7 @@ kops completion [flags]
       --logtostderr                      log to standard error instead of files (default true)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
       --skip_headers                     If true, avoid header prefixes in the log messages
-      --skip_log_headers                 If true, avoid headers when openning log files
+      --skip_log_headers                 If true, avoid headers when opening log files
       --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          number for the log level verbosity

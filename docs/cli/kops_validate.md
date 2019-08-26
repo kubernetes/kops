@@ -7,12 +7,12 @@ Validate a kops cluster.
 
 ### Synopsis
 
-This commands validates the following components: 
+This commands validates the following components:
 
-  1. All k8s masters are running and have "Ready" status.  
-  2. All k8s nodes are running and have "Ready" status.  
-  3. Component status returns healthy for all components.  
-  4. All pods in the kube-system namespace are running and healthy.
+  1.  All k8s masters are running and have "Ready" status.
+  2.  All k8s nodes are running and have "Ready" status.
+  3.  Component status returns healthy for all components.
+  4.  All pods in the kube-system namespace are running and healthy.
 
 ### Examples
 
@@ -41,7 +41,7 @@ This commands validates the following components:
       --logtostderr                      log to standard error instead of files (default true)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
       --skip_headers                     If true, avoid header prefixes in the log messages
-      --skip_log_headers                 If true, avoid headers when openning log files
+      --skip_log_headers                 If true, avoid headers when opening log files
       --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          number for the log level verbosity
