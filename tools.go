@@ -23,4 +23,6 @@ import (
 	_ "github.com/bazelbuild/bazel-gazelle/cmd/gazelle"
 
 	_ "github.com/jteeuwen/go-bindata/go-bindata"
+
+	_ "github.com/client9/misspell/cmd/misspell"
 )

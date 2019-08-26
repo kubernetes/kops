@@ -82,6 +82,7 @@ require (
 	github.com/bazelbuild/buildtools v0.0.0-20190213131114-55b64c3d2ddf // indirect
 	github.com/blang/semver v3.5.0+incompatible
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
+	github.com/client9/misspell v0.0.0-20170928000206-9ce5d979ffda
 	github.com/coreos/etcd v3.3.13+incompatible
 	github.com/denverdino/aliyungo v0.0.0-20180316152028-2581e433b270
 	github.com/digitalocean/godo v1.19.0
