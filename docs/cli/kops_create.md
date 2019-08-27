@@ -9,11 +9,11 @@ Create a resource by command line, filename or stdin.
 
 Create a resource:
   
-  * cluster  
-  * instancegroup  
-  * secret  
+  *  cluster
+  *  instancegroup
+  *  secret
 
-Create a cluster, instancegroup or secret using command line parameters, YAML configuration specification files, or stdin. (Note: secrets cannot be created from YAML config files yet).
+ Create a cluster, instancegroup or secret using command line parameters, YAML configuration specification files, or stdin. (Note: secrets cannot be created from YAML config files yet).
 
 ```
 kops create -f FILENAME [flags]
@@ -65,7 +65,7 @@ kops create -f FILENAME [flags]
       --logtostderr                      log to standard error instead of files (default true)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
       --skip_headers                     If true, avoid header prefixes in the log messages
-      --skip_log_headers                 If true, avoid headers when openning log files
+      --skip_log_headers                 If true, avoid headers when opening log files
       --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          number for the log level verbosity

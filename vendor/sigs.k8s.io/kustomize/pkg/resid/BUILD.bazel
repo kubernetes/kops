@@ -1,0 +1,10 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["resid.go"],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/kustomize/pkg/resid",
+    importpath = "sigs.k8s.io/kustomize/pkg/resid",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/sigs.k8s.io/kustomize/pkg/gvk:go_default_library"],
+)

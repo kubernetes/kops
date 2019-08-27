@@ -1,7 +1,0 @@
-approvers:
-- sig-auth-audit-approvers
-reviewers:
-- sig-auth-audit-reviewers
-labels:
-- sig/auth
-

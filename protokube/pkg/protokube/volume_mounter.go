@@ -25,8 +25,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 	"k8s.io/kubernetes/pkg/util/mount"
-	"k8s.io/kubernetes/pkg/util/nsenter" // moves to k8s.io/utils/nsenter in 1.14
+	nsenterutil "k8s.io/kubernetes/pkg/volume/util/nsenter"
 	utilsexec "k8s.io/utils/exec"
+	"k8s.io/utils/nsenter"
 )
 
 type VolumeMountController struct {
@@ -123,7 +124,7 @@ func (k *VolumeMountController) safeFormatAndMount(volume *Volume, mountpoint st
 		sharedDir := "/no-shared-directories"
 
 		// Build mount & exec implementations that execute in the host namespaces
-		safeFormatAndMount.Interface = mount.NewNsenterMounter(sharedDir, ne)
+		safeFormatAndMount.Interface = nsenterutil.NewMounter(sharedDir, ne)
 		safeFormatAndMount.Exec = NewNsEnterExec()
 
 		// Note that we don't use pathFor for operations going through safeFormatAndMount,

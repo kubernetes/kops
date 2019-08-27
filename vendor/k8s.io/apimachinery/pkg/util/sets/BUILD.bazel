@@ -7,6 +7,7 @@ go_library(
         "doc.go",
         "empty.go",
         "int.go",
+        "int32.go",
         "int64.go",
         "string.go",
     ],

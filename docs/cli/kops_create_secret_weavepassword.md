@@ -7,11 +7,11 @@ Create a weave encryption config.
 
 ### Synopsis
 
-Create a new weave encryption secret, and store it in the state store. Used to weave networking to use encrypted communication between nodes. 
+Create a new weave encryption secret, and store it in the state store. Used to weave networking to use encrypted communication between nodes.
 
-If no password is provided, kops will generate one at random. 
+ If no password is provided, kops will generate one at random.
 
-WARNING: cannot be enabled on a running cluster without downtime.
+ WARNING: cannot be enabled on a running cluster without downtime.
 
 ```
 kops create secret weavepassword [flags]
@@ -54,7 +54,7 @@ kops create secret weavepassword [flags]
       --logtostderr                      log to standard error instead of files (default true)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
       --skip_headers                     If true, avoid header prefixes in the log messages
-      --skip_log_headers                 If true, avoid headers when openning log files
+      --skip_log_headers                 If true, avoid headers when opening log files
       --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          number for the log level verbosity

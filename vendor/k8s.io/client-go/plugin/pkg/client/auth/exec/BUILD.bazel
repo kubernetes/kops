@@ -7,6 +7,7 @@ go_library(
     importpath = "k8s.io/client-go/plugin/pkg/client/auth/exec",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/github.com/davecgh/go-spew/spew:go_default_library",
         "//vendor/golang.org/x/crypto/ssh/terminal:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
