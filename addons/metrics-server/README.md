@@ -3,7 +3,7 @@
 ## User guide
 
 You can find the user guide in
-[the official Kubernetes documentation](https://kubernetes.io/docs/tasks/debug-application-cluster/core-metrics-pipeline/).
+[the official Kubernetes documentation](https://kubernetes.io/docs/tasks/debug-application-cluster/resource-metrics-pipeline/).
 
 ## Design
 
@@ -76,4 +76,3 @@ behavior:
 - `--kubelet-preferred-address-types`: the order in which to consider
   different Kubelet node address types when connecting to Kubelet.
   Functions similarly to the flag of the same name on the API server.
-s
