@@ -229,7 +229,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	}
 
 	contextName := cluster.ObjectMeta.Name
-	clientGetter := genericclioptions.NewConfigFlags()
+	clientGetter := genericclioptions.NewConfigFlags(true)
 	clientGetter.Context = &contextName
 
 	config, err := clientGetter.ToRESTConfig()

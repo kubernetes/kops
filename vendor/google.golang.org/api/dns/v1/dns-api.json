@@ -23,7 +23,7 @@
   "description": "Configures and serves authoritative DNS records.",
   "discoveryVersion": "v1",
   "documentationLink": "https://developers.google.com/cloud-dns",
-  "etag": "\"Zkyw9ACJZUvcYmlFaKGChzhmtnE/BfrUpgFoyLxC4X6-tPnBrmFsMOM\"",
+  "etag": "\"J3WqvAcMk4eQjJXvfSI4Yr8VouA/EQMOijfSxjBH7q8fB_7QzVLzbgs\"",
   "icons": {
     "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
     "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
@@ -760,7 +760,7 @@
       }
     }
   },
-  "revision": "20180427",
+  "revision": "20180808",
   "rootUrl": "https://www.googleapis.com/",
   "schemas": {
     "Change": {
@@ -1269,10 +1269,6 @@
       "description": "Limits associated with a Project.",
       "id": "Quota",
       "properties": {
-        "blackHoleHidesSystemZones": {
-          "description": "Whether a black hole zone should suppress system zones for this project.",
-          "type": "boolean"
-        },
         "dnsKeysPerManagedZone": {
           "description": "Maximum allowed number of DnsKeys per ManagedZone.",
           "format": "int32",

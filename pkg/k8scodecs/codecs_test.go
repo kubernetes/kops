@@ -54,7 +54,7 @@ func TestToVersionedYaml(t *testing.T) {
 			apiVersion: v1
 			kind: Pod
 			metadata:
-			  creationTimestamp: 2017-01-01T00:00:00Z
+			  creationTimestamp: "2017-01-01T00:00:00Z"
 			  name: hello
 			spec:
 			  containers:
