@@ -21,7 +21,8 @@
 WORK_DIR=`mktemp -d`
 
 cleanup() {
-  rm -rf "$WORK_DIR"
+  chmod -R +w "${WORK_DIR}"
+  rm -rf "${WORK_DIR}"
 }
 trap cleanup EXIT
 
