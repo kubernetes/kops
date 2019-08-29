@@ -17,7 +17,7 @@ We like to think of it as `kubectl` for clusters.
 
 `kops` helps you create, destroy, upgrade and maintain production-grade, highly
 available, Kubernetes clusters from the command line. AWS (Amazon Web Services)
-is currently officially supported, with GCE in beta support , and VMware vSphere
+is currently officially supported, with GCE and OpenStack in beta support, and VMware vSphere
 in alpha, and other platforms planned.
 
 
@@ -30,7 +30,7 @@ in alpha, and other platforms planned.
 </p>
 
 
-## Launching a Kubernetes cluster hosted on AWS, GCE or DigitalOcean
+## Launching a Kubernetes cluster hosted on AWS, GCE, DigitalOcean or OpenStack
 
 To replicate the above demo, check out our [tutorial](/docs/aws.md) for
 launching a Kubernetes cluster hosted on AWS.
@@ -38,6 +38,8 @@ launching a Kubernetes cluster hosted on AWS.
 To install a Kubernetes cluster on GCE please follow this [guide](/docs/tutorial/gce.md).
 
 To install a Kubernetes cluster on DigitalOcean, follow this [guide](/docs/tutorial/digitalocean.md).
+
+To install a Kubernetes cluster on OpenStack, follow this [guide](/docs/tutorial/openstack.md).
 
 **For anything beyond experimental clusters it is highly encouraged to [version control the cluster manifest files](/docs/manifests_and_customizing_via_api.md) and [run kops in a CI environment](/docs/continuous_integration.md).**
 

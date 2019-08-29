@@ -1,6 +1,6 @@
 # Getting Started with kops on OpenStack
 
-**WARNING**: OpenStack support on kops is currently **alpha** meaning it is in the early stages of development and subject to change, please use with caution.
+**WARNING**: OpenStack support on kops is currently **beta**, which means that OpenStack support is in good shape. However, always some small things might change before we can really say that it is production ready.
 
 The tutorial shown on this page works with `kops` v1.12 and above.
 
@@ -23,8 +23,6 @@ It is important to set the following environment variables:
 ```bash
 export KOPS_STATE_STORE=swift://<bucket-name> # where <bucket-name> is the name of the Swift container to use for kops state
 
-# this is required since OpenStack support is currently in alpha so it is feature gated
-export KOPS_FEATURE_FLAGS="AlphaAllowOpenstack"
 ```
 
 If your OpenStack does not have Swift you can use any other VFS store, such as S3.
@@ -117,7 +115,7 @@ If you want use [External CCM](https://github.com/kubernetes/cloud-provider-open
 Enable featureflag:
 
 ```
-export KOPS_FEATURE_FLAGS=AlphaAllowOpenstack,+EnableExternalCloudController
+export KOPS_FEATURE_FLAGS=+EnableExternalCloudController
 ```
 
 Create cluster without `--yes` flag (or modify existing cluster):
