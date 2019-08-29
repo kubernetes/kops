@@ -93,8 +93,8 @@ type CalicoNetworkingSpec struct {
 	PrometheusProcessMetricsEnabled bool `json:"prometheusProcessMetricsEnabled,omitempty"`
 	// MajorVersion is the version of Calico to use
 	MajorVersion string `json:"majorVersion,omitempty"`
-	// IpPoolMode is mode for CALICO_IPV4POOL_IPIP
-	IpPoolMode string `json:"ipPoolMode,omitempty"`
+	// IPIPMode is mode for CALICO_IPV4POOL_IPIP
+	IPIPMode string `json:"ipipMode,omitempty"`
 }
 
 // CanalNetworkingSpec declares that we want Canal networking
