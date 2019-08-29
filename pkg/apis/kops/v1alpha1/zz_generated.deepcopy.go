@@ -877,6 +877,11 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.ExecOpt != nil {
+		in, out := &in.ExecOpt, &out.ExecOpt
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.ExecRoot != nil {
 		in, out := &in.ExecRoot, &out.ExecRoot
 		*out = new(string)
