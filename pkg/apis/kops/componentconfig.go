@@ -447,6 +447,9 @@ type KubeAPIServerConfig struct {
 
 	// CPURequest, cpu request compute resource for api server. Defaults to "150m"
 	CPURequest string `json:"cpuRequest,omitempty"`
+
+	// Amount of time to retain Kubernetes events
+	EventTTL *metav1.Duration `json:"eventTTL,omitempty" flag:"event-ttl"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
