@@ -85,8 +85,6 @@ var (
 	AlphaAllowDO = featureflag.New("AlphaAllowDO", featureflag.Bool(false))
 	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
 	AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
-	// AlphaAllowOpenstack is a feature flag that gates OpenStack support while it is alpha
-	AlphaAllowOpenstack = featureflag.New("AlphaAllowOpenstack", featureflag.Bool(false))
 	// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
 	AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
 	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha
@@ -517,9 +515,6 @@ func (c *ApplyClusterCmd) Run() error {
 
 	case kops.CloudProviderOpenstack:
 		{
-			if !AlphaAllowOpenstack.Enabled() {
-				return fmt.Errorf("Openstack support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowOpenstack")
-			}
 
 			osCloud := cloud.(openstack.OpenstackCloud)
 			region = osCloud.Region()
