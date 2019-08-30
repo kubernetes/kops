@@ -110,6 +110,20 @@ spec:
       mtu: 8912
 ```
 
+### Configuring Weave Net EXTRA_ARGS
+
+Weave allows you to pass command line arguments to weave by adding those arguments to the EXTRA_ARGS environmental variable.
+This can be used for debugging or for customizing the logging level of weave net. 
+
+```
+spec:
+  networking:
+    weave:
+      netExtraArgs: "--log-level=info"
+```
+
+Note that it is possible to break the cluster networking if flags are improperly used and as such this option should be used with caution.
+
 ### Configuring Weave network encryption
 
 The Weave network encryption is configurable by creating a weave network secret password.

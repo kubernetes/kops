@@ -4538,6 +4538,7 @@ func autoConvert_v1alpha1_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *We
 	out.MTU = in.MTU
 	out.ConnLimit = in.ConnLimit
 	out.NoMasqLocal = in.NoMasqLocal
+	out.NetExtraArgs = in.NetExtraArgs
 	return nil
 }
 
@@ -4550,6 +4551,7 @@ func autoConvert_kops_WeaveNetworkingSpec_To_v1alpha1_WeaveNetworkingSpec(in *ko
 	out.MTU = in.MTU
 	out.ConnLimit = in.ConnLimit
 	out.NoMasqLocal = in.NoMasqLocal
+	out.NetExtraArgs = in.NetExtraArgs
 	return nil
 }
 
