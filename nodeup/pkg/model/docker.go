@@ -849,6 +849,13 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 		return nil
+
+	case distros.DistributionAmazonLinux2:
+		klog.Infof("Detected DistributionAmazonLinux2; won't install Docker")
+		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
+			return err
+		}
+		return nil
 	}
 
 	// Add Apache2 license
