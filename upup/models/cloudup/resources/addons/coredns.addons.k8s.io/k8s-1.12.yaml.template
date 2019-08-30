@@ -129,6 +129,8 @@ spec:
             memory: {{ KubeDNS.MemoryRequest }}
         args: [ "-conf", "/etc/coredns/Corefile" ]
         volumeMounts:
+        - name: tmp
+          mountPath: /tmp
         - name: config-volume
           mountPath: /etc/coredns
           readOnly: true
@@ -166,6 +168,8 @@ spec:
             scheme: HTTP
       dnsPolicy: Default
       volumes:
+        - name: tmp
+          emptyDir: {}
         - name: config-volume
           configMap:
             name: coredns
