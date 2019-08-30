@@ -97,6 +97,12 @@ kops create cluster [flags]
       --node-size string                 Set instance size for nodes
       --node-tenancy string              The tenancy of the node group on AWS. Can be either default or dedicated.
       --node-volume-size int32           Set instance volume size (in GB) for nodes
+      --os-dns-servers string            comma separated list of DNS Servers which is used in network
+      --os-ext-net string                The name of the external network to use with the openstack router
+      --os-ext-subnet string             The name of the external floating subnet to use with the openstack router
+      --os-kubelet-ignore-az             If true kubernetes may attach volumes across availability zones
+      --os-lb-floating-subnet string     The name of the external subnet to use with the kubernetes api
+      --os-octavia                       If true octavia loadbalancer api will be used
       --out string                       Path to write any local output
   -o, --output string                    Output format. One of json|yaml. Used with the --dry-run flag.
       --project string                   Project to use (must be set on GCE)
