@@ -2,5 +2,5 @@
 # (This is the "legacy" location for bazel.rc)
 # (See https://github.com/bazelbuild/bazel/issues/6319)
 
-
-build --workspace_status_command=./tools/get_workspace_status.sh
+# --stamp is needed to use x_defs, as of rules_go 0.19.0
+build --workspace_status_command=./tools/get_workspace_status.sh --stamp
