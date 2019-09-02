@@ -598,8 +598,6 @@ k8s.io/apimachinery/pkg/util/remotecommand
 k8s.io/apimachinery/pkg/apis/meta/internalversion
 k8s.io/apimachinery/pkg/util/httpstream/spdy
 k8s.io/apimachinery/third_party/forked/golang/netutil
-# k8s.io/apiserver v0.0.0 => k8s.io/apiserver v0.0.0-20190819142446-92cc630367d0
-k8s.io/apiserver/pkg/authentication/user
 # k8s.io/cli-runtime v0.0.0 => k8s.io/cli-runtime v0.0.0-20190819144027-541433d7ce35
 k8s.io/cli-runtime/pkg/genericclioptions
 k8s.io/cli-runtime/pkg/resource

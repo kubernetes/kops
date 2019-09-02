@@ -110,6 +110,7 @@ k8s.io/kops/pkg/model/vspheremodel
 k8s.io/kops/pkg/pki
 k8s.io/kops/pkg/pkiutil
 k8s.io/kops/pkg/pretty
+k8s.io/kops/pkg/rbac
 k8s.io/kops/pkg/resources
 k8s.io/kops/pkg/resources/ali
 k8s.io/kops/pkg/resources/aws
