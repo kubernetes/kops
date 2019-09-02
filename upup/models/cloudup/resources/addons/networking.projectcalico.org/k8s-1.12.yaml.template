@@ -240,9 +240,12 @@ data:
   # essential.
   typha_service_name: "none"
 
-  # TODO: Do we want to configure this?
   # Configure the MTU to use
-  veth_mtu: "1440"
+  {{- if .Networking.Calico.MTU }}
+  veth_mtu: "{{ .Networking.Calico.MTU }}"
+  {{- else }}
+  veth_mtu: "{{- if eq .CloudProvider "openstack" -}}1430{{- else -}}1440{{- end -}}"
+  {{- end }}
 
   # Configure the Calico backend to use.
   calico_backend: "bird"
