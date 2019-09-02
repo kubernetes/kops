@@ -29,6 +29,11 @@
             "Key": "k8s.io/role/master",
             "Value": "1",
             "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kops.k8s.io/instancegroup",
+            "Value": "master-us-test-1b",
+            "PropagateAtLaunch": true
           }
         ],
         "MetricsCollection": [
@@ -76,6 +81,11 @@
           {
             "Key": "k8s.io/role/node",
             "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kops.k8s.io/instancegroup",
+            "Value": "nodes",
             "PropagateAtLaunch": true
           }
         ],
