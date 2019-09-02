@@ -23,7 +23,6 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
@@ -56,8 +55,8 @@ var (
 
 // replaceOptions is the options for the command
 type replaceOptions struct {
-	// FilenameOptions is a list of files containing resources
-	resource.FilenameOptions
+	// Filenames is a list of files containing resources
+	Filenames []string
 	// create any resources not found - we limit to instance groups only for now
 	force bool
 }
