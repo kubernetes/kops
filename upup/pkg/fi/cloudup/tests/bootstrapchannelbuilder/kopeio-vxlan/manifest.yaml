@@ -67,7 +67,7 @@ spec:
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0 <1.12.0'
     manifest: dns-controller.addons.k8s.io/k8s-1.6.yaml
-    manifestHash: 1e6ad361396158a93c3f59e939265f74bb003586
+    manifestHash: 4ba33ea15d601523c39b18c2481376e7036a6dac
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
@@ -75,7 +75,7 @@ spec:
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: aaf42d7dcff21f7e32177e933fde10cff8b03bc3
+    manifestHash: 91914c7727ec59000c4d759d83e6cdfe30cc6751
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io

@@ -20,6 +20,10 @@ spec:
     - instanceGroup: master-us-test-1a
       name: master-us-test-1a
     name: events
+  egressProxy:
+    httpProxy:
+      host: proxy.example.com
+    excludes: noproxy.example.com
   kubernetesVersion: v1.4.6
   masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
