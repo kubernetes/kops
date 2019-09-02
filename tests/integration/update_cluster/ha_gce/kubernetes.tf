@@ -399,9 +399,10 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
   }
 
   metadata = {
-    cluster-name   = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-a-ha-gce-example-com_metadata_cluster-name")}"
-    ssh-keys       = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-a-ha-gce-example-com_metadata_ssh-keys")}"
-    startup-script = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-a-ha-gce-example-com_metadata_startup-script")}"
+    cluster-name                    = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-a-ha-gce-example-com_metadata_cluster-name")}"
+    kops-k8s-io-instance-group-name = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-a-ha-gce-example-com_metadata_kops-k8s-io-instance-group-name")}"
+    ssh-keys                        = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-a-ha-gce-example-com_metadata_ssh-keys")}"
+    startup-script                  = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-a-ha-gce-example-com_metadata_startup-script")}"
   }
 
   tags        = ["ha-gce-example-com-k8s-io-role-master"]
@@ -439,9 +440,10 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
   }
 
   metadata = {
-    cluster-name   = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-b-ha-gce-example-com_metadata_cluster-name")}"
-    ssh-keys       = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-b-ha-gce-example-com_metadata_ssh-keys")}"
-    startup-script = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-b-ha-gce-example-com_metadata_startup-script")}"
+    cluster-name                    = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-b-ha-gce-example-com_metadata_cluster-name")}"
+    kops-k8s-io-instance-group-name = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-b-ha-gce-example-com_metadata_kops-k8s-io-instance-group-name")}"
+    ssh-keys                        = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-b-ha-gce-example-com_metadata_ssh-keys")}"
+    startup-script                  = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-b-ha-gce-example-com_metadata_startup-script")}"
   }
 
   tags        = ["ha-gce-example-com-k8s-io-role-master"]
@@ -479,9 +481,10 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
   }
 
   metadata = {
-    cluster-name   = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-c-ha-gce-example-com_metadata_cluster-name")}"
-    ssh-keys       = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-c-ha-gce-example-com_metadata_ssh-keys")}"
-    startup-script = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-c-ha-gce-example-com_metadata_startup-script")}"
+    cluster-name                    = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-c-ha-gce-example-com_metadata_cluster-name")}"
+    kops-k8s-io-instance-group-name = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-c-ha-gce-example-com_metadata_kops-k8s-io-instance-group-name")}"
+    ssh-keys                        = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-c-ha-gce-example-com_metadata_ssh-keys")}"
+    startup-script                  = "${file("${path.module}/data/google_compute_instance_template_master-us-test1-c-ha-gce-example-com_metadata_startup-script")}"
   }
 
   tags        = ["ha-gce-example-com-k8s-io-role-master"]
@@ -519,9 +522,10 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
   }
 
   metadata = {
-    cluster-name   = "${file("${path.module}/data/google_compute_instance_template_nodes-ha-gce-example-com_metadata_cluster-name")}"
-    ssh-keys       = "${file("${path.module}/data/google_compute_instance_template_nodes-ha-gce-example-com_metadata_ssh-keys")}"
-    startup-script = "${file("${path.module}/data/google_compute_instance_template_nodes-ha-gce-example-com_metadata_startup-script")}"
+    cluster-name                    = "${file("${path.module}/data/google_compute_instance_template_nodes-ha-gce-example-com_metadata_cluster-name")}"
+    kops-k8s-io-instance-group-name = "${file("${path.module}/data/google_compute_instance_template_nodes-ha-gce-example-com_metadata_kops-k8s-io-instance-group-name")}"
+    ssh-keys                        = "${file("${path.module}/data/google_compute_instance_template_nodes-ha-gce-example-com_metadata_ssh-keys")}"
+    startup-script                  = "${file("${path.module}/data/google_compute_instance_template_nodes-ha-gce-example-com_metadata_startup-script")}"
   }
 
   tags        = ["ha-gce-example-com-k8s-io-role-node"]
