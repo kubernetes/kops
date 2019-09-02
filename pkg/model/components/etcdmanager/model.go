@@ -43,8 +43,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
+	"k8s.io/kops/util/pkg/env"
 	"k8s.io/kops/util/pkg/exec"
-	"k8s.io/kops/util/pkg/proxy"
 )
 
 const metaFilename = "_etcd_backup.meta"
@@ -224,14 +224,6 @@ spec:
       type: DirectoryOrCreate
     name: pki
 `
-
-func appendEnvVariableIfExist(variable string, envs []v1.EnvVar) []v1.EnvVar {
-	envVarValue := os.Getenv(variable)
-	if envVarValue != "" {
-		envs = append(envs, v1.EnvVar{Name: variable, Value: envVarValue})
-	}
-	return envs
-}
 
 // buildPod creates the pod spec, based on the EtcdClusterSpec
 func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Pod, error) {
@@ -457,29 +449,9 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		})
 	}
 
-	container.Env = proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy)
+	envMap := env.BuildSystemComponentEnvVars(&b.Cluster.Spec)
 
-	// Custom S3 endpoint
-	container.Env = appendEnvVariableIfExist("S3_ENDPOINT", container.Env)
-	container.Env = appendEnvVariableIfExist("S3_ACCESS_KEY_ID", container.Env)
-	container.Env = appendEnvVariableIfExist("S3_SECRET_ACCESS_KEY", container.Env)
-
-	// Openstack related values
-	container.Env = appendEnvVariableIfExist("OS_TENANT_ID", container.Env)
-	container.Env = appendEnvVariableIfExist("OS_TENANT_NAME", container.Env)
-	container.Env = appendEnvVariableIfExist("OS_PROJECT_ID", container.Env)
-	container.Env = appendEnvVariableIfExist("OS_PROJECT_NAME", container.Env)
-	container.Env = appendEnvVariableIfExist("OS_PROJECT_DOMAIN_NAME", container.Env)
-	container.Env = appendEnvVariableIfExist("OS_PROJECT_DOMAIN_ID", container.Env)
-	container.Env = appendEnvVariableIfExist("OS_DOMAIN_NAME", container.Env)
-	container.Env = appendEnvVariableIfExist("OS_DOMAIN_ID", container.Env)
-	container.Env = appendEnvVariableIfExist("OS_USERNAME", container.Env)
-	container.Env = appendEnvVariableIfExist("OS_PASSWORD", container.Env)
-	container.Env = appendEnvVariableIfExist("OS_AUTH_URL", container.Env)
-	container.Env = appendEnvVariableIfExist("OS_REGION_NAME", container.Env)
-
-	// Digital Ocean related values.
-	container.Env = appendEnvVariableIfExist("DIGITALOCEAN_ACCESS_TOKEN", container.Env)
+	container.Env = envMap.ToEnvVars()
 
 	{
 		foundPKI := false
