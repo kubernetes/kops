@@ -23,7 +23,6 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
@@ -38,8 +37,8 @@ import (
 )
 
 type DeleteOptions struct {
-	resource.FilenameOptions
-	Yes bool
+	Filenames []string
+	Yes       bool
 }
 
 var (

@@ -24,7 +24,6 @@ import (
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
@@ -39,7 +38,7 @@ import (
 )
 
 type CreateOptions struct {
-	resource.FilenameOptions
+	Filenames []string
 }
 
 var (
@@ -97,8 +96,6 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "Filename to use to create the resource")
-	//usage := "to use to create the resource"
-	//cmdutil.AddFilenameOptionFlags(cmd, options, usage)
 	cmd.MarkFlagRequired("filename")
 	//cmdutil.AddValidateFlags(cmd)
 	//cmdutil.AddOutputFlagsForMutation(cmd)
