@@ -35,6 +35,7 @@ import (
 	"strings"
 	"text/template"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
@@ -42,6 +43,7 @@ import (
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/util/pkg/env"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
@@ -100,6 +102,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["ProxyEnv"] = tf.ProxyEnv
+
+	dest["KopsSystemEnv"] = tf.KopsSystemEnv
 
 	dest["DO_TOKEN"] = func() string {
 		return os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
@@ -310,4 +314,11 @@ func (tf *TemplateFunctions) ProxyEnv() map[string]string {
 		envs["NO_PROXY"] = proxies.ProxyExcludes
 	}
 	return envs
+}
+
+// KopsSystemEnv builds the env vars for a system component
+func (tf *TemplateFunctions) KopsSystemEnv() []corev1.EnvVar {
+	envMap := env.BuildSystemComponentEnvVars(&tf.cluster.Spec)
+
+	return envMap.ToEnvVars()
 }

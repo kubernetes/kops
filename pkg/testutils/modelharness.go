@@ -149,5 +149,5 @@ func AssertMatchesFile(t *testing.T, actual string, p string) {
 
 	t.Logf("to update golden output automatically, run hack/update-expected.sh")
 
-	t.Fatalf("output did not match expected for %q", p)
+	t.Errorf("output did not match expected for %q", p)
 }
