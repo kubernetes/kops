@@ -221,6 +221,8 @@ func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleBastion))] = "1"
 	}
 
+	labels["kops.k8s.io/instancegroup" /*nodeidentityaws.CloudTagInstanceGroupName*/] = ig.Name
+
 	return labels, nil
 }
 
