@@ -21,7 +21,6 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -44,8 +43,9 @@ type RollingUpdateCluster struct {
 
 	Force bool
 
-	K8sClient        kubernetes.Interface
-	ClientGetter     genericclioptions.RESTClientGetter
+	// K8sClient is the kubernetes client, used for draining etc
+	K8sClient kubernetes.Interface
+
 	FailOnDrainError bool
 	FailOnValidate   bool
 	CloudOnly        bool
