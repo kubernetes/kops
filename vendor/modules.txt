@@ -84,7 +84,7 @@ github.com/aws/aws-sdk-go/private/protocol/query/queryutil
 github.com/aws/aws-sdk-go/service/sts/stsiface
 github.com/aws/aws-sdk-go/aws/credentials/endpointcreds
 github.com/aws/aws-sdk-go/private/protocol/json/jsonutil
-# github.com/bazelbuild/bazel-gazelle v0.0.0-20190227183720-e443c54b396a
+# github.com/bazelbuild/bazel-gazelle v0.18.2-0.20190823151146-67c9ddf12d8a
 github.com/bazelbuild/bazel-gazelle/cmd/gazelle
 github.com/bazelbuild/bazel-gazelle/config
 github.com/bazelbuild/bazel-gazelle/flag
@@ -100,7 +100,7 @@ github.com/bazelbuild/bazel-gazelle/rule
 github.com/bazelbuild/bazel-gazelle/walk
 github.com/bazelbuild/bazel-gazelle/internal/wspace
 github.com/bazelbuild/bazel-gazelle/pathtools
-# github.com/bazelbuild/buildtools v0.0.0-20190213131114-55b64c3d2ddf
+# github.com/bazelbuild/buildtools v0.0.0-20190731111112-f720930ceb60
 github.com/bazelbuild/buildtools/build
 github.com/bazelbuild/buildtools/tables
 # github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973
@@ -455,9 +455,9 @@ golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/cpu
 # golang.org/x/text v0.3.1-0.20181227161524-e6919f6577db
-golang.org/x/text/encoding/unicode
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
+golang.org/x/text/encoding/unicode
 golang.org/x/text/encoding
 golang.org/x/text/encoding/internal
 golang.org/x/text/encoding/internal/identifier
@@ -575,7 +575,6 @@ k8s.io/apimachinery/pkg/selection
 k8s.io/apimachinery/pkg/conversion/queryparams
 k8s.io/apimachinery/pkg/util/naming
 k8s.io/apimachinery/pkg/apis/meta/v1/unstructured
-k8s.io/apimachinery/pkg/apis/meta/v1/unstructured/unstructuredscheme
 k8s.io/apimachinery/pkg/util/mergepatch
 k8s.io/apimachinery/pkg/runtime/serializer/streaming
 k8s.io/apimachinery/pkg/util/version
@@ -588,6 +587,7 @@ k8s.io/apimachinery/pkg/runtime/serializer/protobuf
 k8s.io/apimachinery/pkg/runtime/serializer/recognizer
 k8s.io/apimachinery/pkg/runtime/serializer/versioning
 k8s.io/apimachinery/third_party/forked/golang/json
+k8s.io/apimachinery/pkg/apis/meta/v1/unstructured/unstructuredscheme
 k8s.io/apimachinery/pkg/apis/meta/v1beta1
 k8s.io/apimachinery/pkg/util/cache
 k8s.io/apimachinery/pkg/util/diff
@@ -600,8 +600,8 @@ k8s.io/apimachinery/pkg/util/httpstream/spdy
 k8s.io/apimachinery/third_party/forked/golang/netutil
 # k8s.io/cli-runtime v0.0.0 => k8s.io/cli-runtime v0.0.0-20190819144027-541433d7ce35
 k8s.io/cli-runtime/pkg/genericclioptions
-k8s.io/cli-runtime/pkg/resource
 k8s.io/cli-runtime/pkg/printers
+k8s.io/cli-runtime/pkg/resource
 k8s.io/cli-runtime/pkg/kustomize
 k8s.io/cli-runtime/pkg/kustomize/k8sdeps
 k8s.io/cli-runtime/pkg/kustomize/k8sdeps/kunstruct

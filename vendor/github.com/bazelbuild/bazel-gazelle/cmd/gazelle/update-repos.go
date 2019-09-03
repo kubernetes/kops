@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/bazelbuild/bazel-gazelle/config"
@@ -30,18 +31,21 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/rule"
 )
 
-type updateReposFn func(c *updateReposConfig, oldFile *rule.File, kinds map[string]rule.KindInfo) error
+type updateReposFn func(c *updateReposConfig, workspace *rule.File, oldFile *rule.File, kinds map[string]rule.KindInfo) ([]*rule.File, error)
 
 type updateReposConfig struct {
 	fn                      updateReposFn
 	lockFilename            string
 	importPaths             []string
+	macroFileName           string
+	macroDefName            string
 	buildExternalAttr       string
 	buildFileNamesAttr      string
 	buildFileGenerationAttr string
 	buildTagsAttr           string
 	buildFileProtoModeAttr  string
 	buildExtraArgsAttr      string
+	pruneRules              bool
 }
 
 var validBuildExternalAttr = []string{"external", "vendored"}
@@ -56,16 +60,40 @@ func getUpdateReposConfig(c *config.Config) *updateReposConfig {
 
 type updateReposConfigurer struct{}
 
+type macroFlag struct {
+	macroFileName *string
+	macroDefName  *string
+}
+
+func (f macroFlag) Set(value string) error {
+	args := strings.Split(value, "%")
+	if len(args) != 2 {
+		return fmt.Errorf("Failure parsing to_macro: %s, expected format is macroFile%%defName", value)
+	}
+	if strings.HasPrefix(args[0], "..") {
+		return fmt.Errorf("Failure parsing to_macro: %s, macro file path %s should not start with \"..\"", value, args[0])
+	}
+	*f.macroFileName = args[0]
+	*f.macroDefName = args[1]
+	return nil
+}
+
+func (f macroFlag) String() string {
+	return ""
+}
+
 func (_ *updateReposConfigurer) RegisterFlags(fs *flag.FlagSet, cmd string, c *config.Config) {
 	uc := &updateReposConfig{}
 	c.Exts[updateReposName] = uc
-	fs.StringVar(&uc.lockFilename, "from_file", "", "Gazelle will translate repositories listed in this file into repository rules in WORKSPACE. Currently only dep's Gopkg.lock is supported.")
+	fs.StringVar(&uc.lockFilename, "from_file", "", "Gazelle will translate repositories listed in this file into repository rules in WORKSPACE or a .bzl macro function. Gopkg.lock and go.mod files are supported")
 	fs.StringVar(&uc.buildFileNamesAttr, "build_file_names", "", "Sets the build_file_name attribute for the generated go_repository rule(s).")
 	fs.Var(&gzflag.AllowedStringFlag{Value: &uc.buildExternalAttr, Allowed: validBuildExternalAttr}, "build_external", "Sets the build_external attribute for the generated go_repository rule(s).")
 	fs.Var(&gzflag.AllowedStringFlag{Value: &uc.buildFileGenerationAttr, Allowed: validBuildFileGenerationAttr}, "build_file_generation", "Sets the build_file_generation attribute for the generated go_repository rule(s).")
 	fs.StringVar(&uc.buildTagsAttr, "build_tags", "", "Sets the build_tags attribute for the generated go_repository rule(s).")
 	fs.Var(&gzflag.AllowedStringFlag{Value: &uc.buildFileProtoModeAttr, Allowed: validBuildFileProtoModeAttr}, "build_file_proto_mode", "Sets the build_file_proto_mode attribute for the generated go_repository rule(s).")
 	fs.StringVar(&uc.buildExtraArgsAttr, "build_extra_args", "", "Sets the build_extra_args attribute for the generated go_repository rule(s).")
+	fs.Var(macroFlag{macroFileName: &uc.macroFileName, macroDefName: &uc.macroDefName}, "to_macro", "Tells Gazelle to write repository rules into a .bzl macro function rather than the WORKSPACE file. . The expected format is: macroFile%defName")
+	fs.BoolVar(&uc.pruneRules, "prune", false, "When enabled, Gazelle will remove rules that no longer have equivalent repos in the Gopkg.lock/go.mod file. Can only used with -from_file.")
 }
 
 func (_ *updateReposConfigurer) CheckFlags(fs *flag.FlagSet, c *config.Config) error {
@@ -80,6 +108,9 @@ func (_ *updateReposConfigurer) CheckFlags(fs *flag.FlagSet, c *config.Config) e
 	default:
 		if len(fs.Args()) == 0 {
 			return fmt.Errorf("No repositories specified\nTry -help for more information.")
+		}
+		if uc.pruneRules {
+			return fmt.Errorf("The -prune option can only be used with -from_file.")
 		}
 		uc.fn = updateImportPaths
 		uc.importPaths = fs.Args()
@@ -108,22 +139,42 @@ func updateRepos(args []string) error {
 	}
 	uc := getUpdateReposConfig(c)
 
-	workspacePath := filepath.Join(c.RepoRoot, "WORKSPACE")
-	f, err := rule.LoadWorkspaceFile(workspacePath, "")
+	path := filepath.Join(c.RepoRoot, "WORKSPACE")
+	workspace, err := rule.LoadWorkspaceFile(path, "")
 	if err != nil {
-		return fmt.Errorf("error loading %q: %v", workspacePath, err)
+		return fmt.Errorf("error loading %q: %v", path, err)
 	}
-	merger.FixWorkspace(f)
+	var destFile *rule.File
+	if uc.macroFileName == "" {
+		destFile = workspace
+	} else {
+		macroPath := filepath.Join(c.RepoRoot, filepath.Clean(uc.macroFileName))
+		if _, err = os.Stat(macroPath); os.IsNotExist(err) {
+			destFile, err = rule.EmptyMacroFile(macroPath, "", uc.macroDefName)
+		} else {
+			destFile, err = rule.LoadMacroFile(macroPath, "", uc.macroDefName)
+		}
+		if err != nil {
+			return fmt.Errorf("error loading %q: %v", macroPath, err)
+		}
+	}
 
-	if err := uc.fn(uc, f, kinds); err != nil {
+	merger.FixWorkspace(workspace)
+
+	files, err := uc.fn(uc, workspace, destFile, kinds)
+	if err != nil {
 		return err
 	}
-	merger.FixLoads(f, loads)
-	if err := merger.CheckGazelleLoaded(f); err != nil {
-		return err
-	}
-	if err := f.Save(f.Path); err != nil {
-		return fmt.Errorf("error writing %q: %v", f.Path, err)
+	for _, f := range files {
+		merger.FixLoads(f, loads)
+		if f.Path == workspace.Path {
+			if err := merger.CheckGazelleLoaded(workspace); err != nil {
+				return err
+			}
+		}
+		if err := f.Save(f.Path); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -173,9 +224,13 @@ FLAGS:
 	fs.PrintDefaults()
 }
 
-func updateImportPaths(c *updateReposConfig, f *rule.File, kinds map[string]rule.KindInfo) error {
-	rs := repo.ListRepositories(f)
-	rc := repo.NewRemoteCache(rs)
+func updateImportPaths(c *updateReposConfig, workspace *rule.File, destFile *rule.File, kinds map[string]rule.KindInfo) ([]*rule.File, error) {
+	repos, reposByFile, err := repo.ListRepositories(workspace)
+	if err != nil {
+		return nil, err
+	}
+	rc, cleanupRc := repo.NewRemoteCache(repos)
+	defer cleanupRc()
 
 	genRules := make([]*rule.Rule, len(c.importPaths))
 	errs := make([]error, len(c.importPaths))
@@ -200,26 +255,29 @@ func updateImportPaths(c *updateReposConfig, f *rule.File, kinds map[string]rule
 
 	for _, err := range errs {
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
-	merger.MergeFile(f, nil, genRules, merger.PreResolve, kinds)
-	return nil
+	files := repo.MergeRules(genRules, reposByFile, destFile, kinds, false)
+	return files, nil
 }
 
-func importFromLockFile(c *updateReposConfig, f *rule.File, kinds map[string]rule.KindInfo) error {
-	rs := repo.ListRepositories(f)
-	rc := repo.NewRemoteCache(rs)
+func importFromLockFile(c *updateReposConfig, workspace *rule.File, destFile *rule.File, kinds map[string]rule.KindInfo) ([]*rule.File, error) {
+	repos, reposByFile, err := repo.ListRepositories(workspace)
+	if err != nil {
+		return nil, err
+	}
+	rc, cleanupRc := repo.NewRemoteCache(repos)
+	defer cleanupRc()
 	genRules, err := repo.ImportRepoRules(c.lockFilename, rc)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	for i := range genRules {
 		applyBuildAttributes(c, genRules[i])
 	}
-
-	merger.MergeFile(f, nil, genRules, merger.PreResolve, kinds)
-	return nil
+	files := repo.MergeRules(genRules, reposByFile, destFile, kinds, c.pruneRules)
+	return files, nil
 }
 
 func applyBuildAttributes(c *updateReposConfig, r *rule.Rule) {
@@ -239,6 +297,7 @@ func applyBuildAttributes(c *updateReposConfig, r *rule.Rule) {
 		r.SetAttr("build_file_proto_mode", c.buildFileProtoModeAttr)
 	}
 	if c.buildExtraArgsAttr != "" {
-		r.SetAttr("build_extra_args", c.buildExtraArgsAttr)
+		extraArgs := strings.Split(c.buildExtraArgsAttr, ",")
+		r.SetAttr("build_extra_args", extraArgs)
 	}
 }
