@@ -37,10 +37,11 @@ gazelle_dependencies()
 #=============================================================================
 # Docker rules
 
-git_repository(
+http_archive(
     name = "io_bazel_rules_docker",
-    remote = "https://github.com/bazelbuild/rules_docker.git",
-    commit = "07a636fb8090df80c85f76ad1ca5d5bad403f0cf",
+    sha256 = "5f3e6a154009384d497db0e3d8530fdaf456a74d9890c17a2bf721f2cac034df",
+    strip_prefix = "rules_docker-d96976904b7aac22ed2606c4eeae3d113f6d1706",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/d96976904b7aac22ed2606c4eeae3d113f6d1706.tar.gz"],
 )
 
 load(
