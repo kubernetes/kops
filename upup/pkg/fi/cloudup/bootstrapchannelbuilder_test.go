@@ -122,7 +122,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		testutils.AssertMatchesFile(t, actualManifest, expectedManifestPath)
 	}
 
-	for _, k := range []string{"dns-controller.addons.k8s.io-k8s-1.12", "kops-controller.addons.k8s.io-k8s-1.16"} {
+	for _, k := range addonManifests {
 		name := cluster.ObjectMeta.Name + "-addons-" + k
 		manifestTask := context.Tasks[name]
 		if manifestTask == nil {
