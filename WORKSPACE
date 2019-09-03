@@ -30,7 +30,7 @@ go_register_toolchains(
     go_version = "1.12.9",
 )
 
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 
 gazelle_dependencies()
 
@@ -129,4 +129,11 @@ git_repository(
     commit = "f85734f673056977d8ba04b0386394b684ca2acb",
     remote = "https://github.com/kubernetes/repo-infra.git",
     shallow_since = "1563324513 -0800",
+)
+
+go_repository(
+    name = "com_github_google_go_containerregistry",
+    importpath = "github.com/google/go-containerregistry",
+    sum = "h1:PTrxTL8TNRbZts4KqdJMsqRlrdjoiKFDq6MVitj8mPk=",
+    version = "v0.0.0-20190829181151-21b2e01cec04",
 )
