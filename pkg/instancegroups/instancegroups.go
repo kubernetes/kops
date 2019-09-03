@@ -333,9 +333,11 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 		Out:                 os.Stdout,
 		ErrOut:              os.Stderr,
 
+		// We want to proceed even when pods are using local data (emptyDir)
+		DeleteLocalData: true,
+
 		// Other options we might want to set:
 		// Timeout?
-		// DeleteLocalData?
 	}
 
 	if err := drain.RunCordonOrUncordon(helper, u.Node, true); err != nil {
