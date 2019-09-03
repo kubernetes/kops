@@ -77,8 +77,7 @@ require (
 	github.com/Masterminds/sprig v2.17.1+incompatible
 	github.com/aokoli/goutils v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.23.0
-	github.com/bazelbuild/bazel-gazelle v0.0.0-20190227183720-e443c54b396a
-	github.com/bazelbuild/buildtools v0.0.0-20190213131114-55b64c3d2ddf // indirect
+	github.com/bazelbuild/bazel-gazelle v0.18.2-0.20190823151146-67c9ddf12d8a
 	github.com/blang/semver v3.5.0+incompatible
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
 	github.com/client9/misspell v0.0.0-20170928000206-9ce5d979ffda
