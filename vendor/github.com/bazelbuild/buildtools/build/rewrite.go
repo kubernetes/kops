@@ -18,13 +18,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 package build
 
 import (
+	"github.com/bazelbuild/buildtools/tables"
 	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
-
-	"github.com/bazelbuild/buildtools/tables"
 )
 
 // For debugging: flag to disable certain rewrites.
@@ -80,45 +79,29 @@ type RewriteInfo struct {
 	SortLoad         int      // number of load argument lists sorted
 	FormatDocstrings int      // number of reindented docstrings
 	ReorderArguments int      // number of reordered function call arguments
+	EditOctal        int      // number of edited octals
 	Log              []string // log entries - may change
 }
 
-func (info *RewriteInfo) String() string {
-	s := ""
-	if info.EditLabel > 0 {
-		s += " label"
+// Stats returns a map with statistics about applied rewrites
+func (info *RewriteInfo) Stats() map[string]int {
+	return map[string]int{
+		"label":            info.EditLabel,
+		"callname":         info.NameCall,
+		"callsort":         info.SortCall,
+		"listsort":         info.SortStringList,
+		"unsafesort":       info.UnsafeSort,
+		"sortload":         info.SortLoad,
+		"formatdocstrings": info.FormatDocstrings,
+		"reorderarguments": info.ReorderArguments,
+		"editoctal":        info.EditOctal,
 	}
-	if info.NameCall > 0 {
-		s += " callname"
-	}
-	if info.SortCall > 0 {
-		s += " callsort"
-	}
-	if info.SortStringList > 0 {
-		s += " listsort"
-	}
-	if info.UnsafeSort > 0 {
-		s += " unsafesort"
-	}
-	if info.SortLoad > 0 {
-		s += " sortload"
-	}
-	if info.FormatDocstrings > 0 {
-		s += " formatdocstrings"
-	}
-	if info.ReorderArguments > 0 {
-		s += " reorderarguments"
-	}
-	if s != "" {
-		s = s[1:]
-	}
-	return s
 }
 
 // Each rewrite function can be either applied for BUILD files, other files (such as .bzl),
 // or all files.
 const (
-	scopeDefault = TypeDefault
+	scopeDefault = TypeDefault | TypeBzl     // .bzl and generic Starlark files
 	scopeBuild   = TypeBuild | TypeWorkspace // BUILD and WORKSPACE files
 	scopeBoth    = scopeDefault | scopeBuild
 )
@@ -135,9 +118,10 @@ var rewrites = []struct {
 	{"label", fixLabels, scopeBuild},
 	{"listsort", sortStringLists, scopeBoth},
 	{"multiplus", fixMultilinePlus, scopeBuild},
-	{"loadsort", sortLoadArgs, scopeBoth},
+	{"loadsort", sortAllLoadArgs, scopeBoth},
 	{"formatdocstrings", formatDocstrings, scopeBoth},
 	{"reorderarguments", reorderArguments, scopeBoth},
+	{"editoctal", editOctals, scopeBoth},
 }
 
 // DisableLoadSortForBuildFiles disables the loadsort transformation for BUILD files.
@@ -299,18 +283,18 @@ func fixLabels(f *File, info *RewriteInfo) {
 				if leaveAlone1(v.List[i]) {
 					continue
 				}
-				as, ok := v.List[i].(*BinaryExpr)
-				if !ok || as.Op != "=" {
+				as, ok := v.List[i].(*AssignExpr)
+				if !ok {
 					continue
 				}
-				key, ok := as.X.(*Ident)
+				key, ok := as.LHS.(*Ident)
 				if !ok || !tables.IsLabelArg[key.Name] || tables.LabelBlacklist[callName(v)+"."+key.Name] {
 					continue
 				}
-				if leaveAlone1(as.Y) {
+				if leaveAlone1(as.RHS) {
 					continue
 				}
-				if list, ok := as.Y.(*ListExpr); ok {
+				if list, ok := as.RHS.(*ListExpr); ok {
 					for i := range list.List {
 						if leaveAlone1(list.List[i]) {
 							continue
@@ -319,7 +303,7 @@ func fixLabels(f *File, info *RewriteInfo) {
 						shortenLabel(list.List[i])
 					}
 				}
-				if set, ok := as.Y.(*SetExpr); ok {
+				if set, ok := as.RHS.(*SetExpr); ok {
 					for i := range set.List {
 						if leaveAlone1(set.List[i]) {
 							continue
@@ -328,8 +312,8 @@ func fixLabels(f *File, info *RewriteInfo) {
 						shortenLabel(set.List[i])
 					}
 				} else {
-					joinLabel(&as.Y)
-					shortenLabel(as.Y)
+					joinLabel(&as.RHS)
+					shortenLabel(as.RHS)
 				}
 			}
 		}
@@ -412,8 +396,8 @@ func ruleNamePriority(rule, arg string) int {
 // If x is of the form key=value, argName returns the string key.
 // Otherwise argName returns "".
 func argName(x Expr) string {
-	if as, ok := x.(*BinaryExpr); ok && as.Op == "=" {
-		if id, ok := as.X.(*Ident); ok {
+	if as, ok := x.(*AssignExpr); ok {
+		if id, ok := as.LHS.(*Ident); ok {
 			return id.Name
 		}
 	}
@@ -460,31 +444,31 @@ func sortStringLists(f *File, info *RewriteInfo) {
 				if leaveAlone1(arg) {
 					continue
 				}
-				as, ok := arg.(*BinaryExpr)
-				if !ok || as.Op != "=" || leaveAlone1(as) || doNotSort(as) {
+				as, ok := arg.(*AssignExpr)
+				if !ok || leaveAlone1(as) || doNotSort(as) {
 					continue
 				}
-				key, ok := as.X.(*Ident)
+				key, ok := as.LHS.(*Ident)
 				if !ok {
 					continue
 				}
 				context := rule + "." + key.Name
-				if !tables.IsSortableListArg[key.Name] || tables.SortableBlacklist[context] || f.Type == TypeDefault {
+				if !tables.IsSortableListArg[key.Name] || tables.SortableBlacklist[context] || f.Type == TypeDefault || f.Type == TypeBzl {
 					continue
 				}
 				if disabled("unsafesort") && !tables.SortableWhitelist[context] && !allowedSort(context) {
 					continue
 				}
-				sortStringList(as.Y, info, context)
+				sortStringList(as.RHS, info, context)
 			}
-		case *BinaryExpr:
+		case *AssignExpr:
 			if disabled("unsafesort") {
 				return
 			}
 			// "keep sorted" comment on x = list forces sorting of list.
 			as := v
-			if as.Op == "=" && keepSorted(as) {
-				sortStringList(as.Y, info, "?")
+			if keepSorted(as) {
+				sortStringList(as.RHS, info, "?")
 			}
 		case *KeyValueExpr:
 			if disabled("unsafesort") {
@@ -838,16 +822,13 @@ func fixMultilinePlus(f *File, info *RewriteInfo) {
 	})
 }
 
-func sortLoadArgs(f *File, info *RewriteInfo) {
+// sortAllLoadArgs sorts all load arguments in the file
+func sortAllLoadArgs(f *File, info *RewriteInfo) {
 	Walk(f, func(v Expr, stk []Expr) {
-		load, ok := v.(*LoadStmt)
-		if !ok {
-			return
-		}
-		args := loadArgs{From: load.From, To: load.To}
-		sort.Sort(args)
-		if args.modified {
-			info.SortLoad++
+		if load, ok := v.(*LoadStmt); ok {
+			if SortLoadArgs(load) {
+				info.SortLoad++
+			}
 		}
 	})
 }
@@ -906,6 +887,13 @@ func (args loadArgs) Less(i, j int) bool {
 	return args.To[i].Name < args.To[j].Name
 }
 
+// SortLoadArgs sorts a load statement arguments (lexicographically, but positional first)
+func SortLoadArgs(load *LoadStmt) bool {
+	args := loadArgs{From: load.From, To: load.To}
+	sort.Sort(args)
+	return args.modified
+}
+
 // formatDocstrings fixes the indentation and trailing whitespace of docstrings
 func formatDocstrings(f *File, info *RewriteInfo) {
 	Walk(f, func(v Expr, stk []Expr) {
@@ -927,7 +915,7 @@ func formatDocstrings(f *File, info *RewriteInfo) {
 		if updatedToken != docstring.Token {
 			docstring.Token = updatedToken
 			// Update the value to keep it consistent with Token
-			docstring.Value, _, _ = unquote(updatedToken)
+			docstring.Value, _, _ = Unquote(updatedToken)
 			info.FormatDocstrings++
 		}
 	})
@@ -974,10 +962,8 @@ func argumentType(expr Expr) int {
 		case "*":
 			return 3
 		}
-	case *BinaryExpr:
-		if expr.Op == "=" {
-			return 2
-		}
+	case *AssignExpr:
+		return 2
 	}
 	return 1
 }
@@ -996,6 +982,21 @@ func reorderArguments(f *File, info *RewriteInfo) {
 		if !sort.SliceIsSorted(call.List, compare) {
 			sort.SliceStable(call.List, compare)
 			info.ReorderArguments++
+		}
+	})
+}
+
+// editOctals inserts 'o' into octal numbers to make it more obvious they are octal
+// 0123 -> 0o123
+func editOctals(f *File, info *RewriteInfo) {
+	Walk(f, func(expr Expr, stack []Expr) {
+		l, ok := expr.(*LiteralExpr)
+		if !ok {
+			return
+		}
+		if len(l.Token) > 1 && l.Token[0] == '0' && l.Token[1] >= '0' && l.Token[1] <= '9' {
+			l.Token = "0o" + l.Token[1:]
+			info.EditOctal++
 		}
 	})
 }

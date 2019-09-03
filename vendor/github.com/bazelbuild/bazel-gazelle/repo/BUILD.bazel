@@ -14,6 +14,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/bazelbuild/bazel-gazelle/label:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/merger:go_default_library",
         "//vendor/github.com/bazelbuild/bazel-gazelle/pathtools:go_default_library",
         "//vendor/github.com/bazelbuild/bazel-gazelle/rule:go_default_library",
         "//vendor/github.com/pelletier/go-toml:go_default_library",
