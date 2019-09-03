@@ -467,6 +467,16 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks:    nil,
 	},
 
+	{
+		Name:              "c5n.metal",
+		MemoryGB:          192,
+		ECU:               0,
+		Cores:             72,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
 	// cc2 family
 	{
 		Name:              "cc2.8xlarge",
@@ -538,7 +548,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
-		EphemeralDisks:    nil,
+		EphemeralDisks:    []int{470},
 	},
 
 	{
@@ -558,7 +568,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:             64,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 50,
-		EphemeralDisks:    nil,
+		EphemeralDisks:    []int{940, 940, 940, 940},
 	},
 
 	// g2 family
@@ -857,6 +867,16 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 
 	{
 		Name:              "i3en.24xlarge",
+		MemoryGB:          768,
+		ECU:               0,
+		Cores:             96,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    []int{7500, 7500, 7500, 7500, 7500, 7500, 7500, 7500},
+	},
+
+	{
+		Name:              "i3en.metal",
 		MemoryGB:          768,
 		ECU:               0,
 		Cores:             96,
