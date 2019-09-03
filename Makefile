@@ -735,6 +735,7 @@ bazel-crossbuild-dns-controller-image:
 
 .PHONY: bazel-crossbuild-protokube-image
 bazel-crossbuild-protokube-image:
+	bazel version
 	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar
 
 .PHONY: bazel-crossbuild-kube-discovery-image
