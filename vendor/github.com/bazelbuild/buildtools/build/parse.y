@@ -64,6 +64,9 @@ package build
 %token	<pos>	'{'
 %token	<pos>	'}'
 %token	<pos>	'|'
+%token	<pos>	'&'
+%token	<pos>	'^'
+%token	<pos>	'~'
 
 // By convention, yacc token names are all caps.
 // However, we do not want to export them from the Go package
@@ -88,6 +91,9 @@ package build
 %token	<pos>	_LE      // operator <=
 %token	<pos>	_NE      // operator !=
 %token	<pos>	_STAR_STAR // operator **
+%token	<pos>	_INT_DIV // operator //
+%token	<pos>	_BIT_LSH // bitwise operator <<
+%token	<pos>	_BIT_RSH // bitwise operator >>
 %token	<pos>	_NOT     // keyword not
 %token	<pos>	_OR      // keyword or
 %token	<pos>	_STRING  // quoted string
@@ -166,9 +172,12 @@ package build
 %left  _OR
 %left  _AND
 %left  '<' '>' _EQ _NE _LE _GE _NOT _IN
-%left  '+' '-'
-%left  '*' '/' '%'
 %left  '|'
+%left  '^'
+%left  '&'
+%left  _BIT_LSH _BIT_RSH
+%left  '+' '-'
+%left  '*' '/' '%' _INT_DIV
 %left  '.' '[' '('
 %right _UNARY
 %left  _STRING
@@ -324,6 +333,7 @@ block_stmt:
 				Body: $7,
 			},
 			Name: $<tok>2,
+			ColonPos: $6,
 			ForceCompact: forceCompact($3, $4, $5),
 			ForceMultiLine: forceMultiLine($3, $4, $5),
 		}
@@ -708,6 +718,10 @@ parameter:
 	{
 		$$ = unary($1, $<tok>1, $2)
 	}
+|	'*'
+	{
+		$$ = unary($1, $<tok>1, nil)
+	}
 |	_STAR_STAR ident
 	{
 		$$ = unary($1, $<tok>1, $2)
@@ -769,9 +783,12 @@ test:
 	}
 |	_NOT test %prec _UNARY { $$ = unary($1, $<tok>1, $2) }
 |	'-' test  %prec _UNARY { $$ = unary($1, $<tok>1, $2) }
+|	'+' test  %prec _UNARY { $$ = unary($1, $<tok>1, $2) }
+|	'~' test  %prec _UNARY { $$ = unary($1, $<tok>1, $2) }
 |	test '*' test      { $$ = binary($1, $2, $<tok>2, $3) }
 |	test '%' test      { $$ = binary($1, $2, $<tok>2, $3) }
 |	test '/' test      { $$ = binary($1, $2, $<tok>2, $3) }
+|	test _INT_DIV test { $$ = binary($1, $2, $<tok>2, $3) }
 |	test '+' test      { $$ = binary($1, $2, $<tok>2, $3) }
 |	test '-' test      { $$ = binary($1, $2, $<tok>2, $3) }
 |	test '<' test      { $$ = binary($1, $2, $<tok>2, $3) }
@@ -785,6 +802,10 @@ test:
 |	test _OR test      { $$ = binary($1, $2, $<tok>2, $3) }
 |	test _AND test     { $$ = binary($1, $2, $<tok>2, $3) }
 |	test '|' test      { $$ = binary($1, $2, $<tok>2, $3) }
+|	test '&' test      { $$ = binary($1, $2, $<tok>2, $3) }
+|	test '^' test      { $$ = binary($1, $2, $<tok>2, $3) }
+|	test _BIT_LSH test { $$ = binary($1, $2, $<tok>2, $3) }
+|	test _BIT_RSH test { $$ = binary($1, $2, $<tok>2, $3) }
 |	test _IS test
 	{
 		if b, ok := $3.(*UnaryExpr); ok && b.Op == "not" {
@@ -972,12 +993,24 @@ func unary(pos Position, op string, x Expr) Expr {
 func binary(x Expr, pos Position, op string, y Expr) Expr {
 	_, xend := x.Span()
 	ystart, _ := y.Span()
+
+	switch op {
+	case "=", "+=", "-=", "*=", "/=", "//=", "%=", "|=":
+		return &AssignExpr{
+			LHS:       x,
+			OpPos:     pos,
+			Op:        op,
+			LineBreak: xend.Line < ystart.Line,
+			RHS:       y,
+		}
+	}
+
 	return &BinaryExpr{
-		X:       x,
-		OpStart: pos,
-		Op:      op,
+		X:         x,
+		OpStart:   pos,
+		Op:        op,
 		LineBreak: xend.Line < ystart.Line,
-		Y:       y,
+		Y:         y,
 	}
 }
 
