@@ -1,3 +1,5 @@
+startup --expand_configs_in_place
+
 # TODO: Remove once we expect everyone is running bazel >= 0.18
 # (This is the "legacy" location for bazel.rc)
 # (See https://github.com/bazelbuild/bazel/issues/6319)
@@ -6,3 +8,6 @@
 # --host_force_python is needed until rules_docker is migrated
 # from python-containerregistry to go-containerregistry (See https://github.com/bazelbuild/rules_docker/issues/842 )
 build --workspace_status_command=./tools/get_workspace_status.sh --stamp --host_force_python=PY2
+
+build --verbose_failures
+test --test_output=errors
