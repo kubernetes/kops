@@ -751,7 +751,11 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 	if b.cluster.Spec.Networking.Flannel != nil {
 		key := "networking.flannel"
-		version := "0.11.0-kops.1"
+		versions := map[string]string{
+			"pre-k8s-1.6": "0.11.0-kops.1",
+			"k8s-1.6":     "0.11.0-kops.2",
+			"k8s-1.12":    "0.11.0-kops.2",
+		}
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -759,7 +763,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
-				Version:           fi.String(version),
+				Version:           fi.String(versions[id]),
 				Selector:          networkingSelector,
 				Manifest:          fi.String(location),
 				KubernetesVersion: "<1.6.0",
@@ -773,7 +777,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
-				Version:           fi.String(version),
+				Version:           fi.String(versions[id]),
 				Selector:          networkingSelector,
 				Manifest:          fi.String(location),
 				KubernetesVersion: ">=1.6.0 <1.12.0",
@@ -787,7 +791,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
-				Version:           fi.String(version),
+				Version:           fi.String(versions[id]),
 				Selector:          networkingSelector,
 				Manifest:          fi.String(location),
 				KubernetesVersion: ">=1.12.0",
