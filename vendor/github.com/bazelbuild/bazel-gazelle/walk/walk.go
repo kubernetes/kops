@@ -136,6 +136,10 @@ func Walk(c *config.Config, cexts []config.Configurer, dirs []string, mode Mode,
 		c = configure(cexts, knownDirectives, c, rel, f)
 		wc := getWalkConfig(c)
 
+		if wc.isExcluded(rel, ".") {
+			return
+		}
+
 		var subdirs, regularFiles []string
 		for _, fi := range files {
 			base := fi.Name()

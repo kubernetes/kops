@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"log"
 	"path"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -485,4 +486,22 @@ func (si *platformStringInfo) convertToPlatforms() {
 		}
 		si.archs = nil
 	}
+}
+
+var semverRex = regexp.MustCompile(`^.*?(/v\d+)(?:/.*)?$`)
+
+// pathWithoutSemver removes a semantic version suffix from path.
+// For example, if path is "example.com/foo/v2/bar", pathWithoutSemver
+// will return "example.com/foo/bar". If there is no semantic version suffix,
+// "" will be returned.
+func pathWithoutSemver(path string) string {
+	m := semverRex.FindStringSubmatchIndex(path)
+	if m == nil {
+		return ""
+	}
+	v := path[m[2]+2 : m[3]]
+	if v[0] == '0' || v == "1" {
+		return ""
+	}
+	return path[:m[2]] + path[m[3]:]
 }

@@ -23,6 +23,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/config"
@@ -40,12 +41,13 @@ import (
 // update commands. This includes everything in config.Config, but it also
 // includes some additional fields that aren't relevant to other packages.
 type updateConfig struct {
-	dirs        []string
-	emit        emitFunc
-	repos       []repo.Repo
-	walkMode    walk.Mode
-	patchPath   string
-	patchBuffer bytes.Buffer
+	dirs           []string
+	emit           emitFunc
+	repos          []repo.Repo
+	workspaceFiles []*rule.File
+	walkMode       walk.Mode
+	patchPath      string
+	patchBuffer    bytes.Buffer
 }
 
 type emitFunc func(c *config.Config, f *rule.File) error
@@ -63,8 +65,10 @@ func getUpdateConfig(c *config.Config) *updateConfig {
 }
 
 type updateConfigurer struct {
-	mode      string
-	recursive bool
+	mode           string
+	recursive      bool
+	knownImports   []string
+	repoConfigPath string
 }
 
 func (ucr *updateConfigurer) RegisterFlags(fs *flag.FlagSet, cmd string, c *config.Config) {
@@ -76,6 +80,8 @@ func (ucr *updateConfigurer) RegisterFlags(fs *flag.FlagSet, cmd string, c *conf
 	fs.StringVar(&ucr.mode, "mode", "fix", "print: prints all of the updated BUILD files\n\tfix: rewrites all of the BUILD files in place\n\tdiff: computes the rewrite but then just does a diff")
 	fs.BoolVar(&ucr.recursive, "r", true, "when true, gazelle will update subdirectories recursively")
 	fs.StringVar(&uc.patchPath, "patch", "", "when set with -mode=diff, gazelle will write to a file instead of stdout")
+	fs.Var(&gzflag.MultiFlag{Values: &ucr.knownImports}, "known_import", "import path for which external resolution is skipped (can specify multiple times)")
+	fs.StringVar(&ucr.repoConfigPath, "repo_config", "", "file where Gazelle should load repository configuration. Defaults to WORKSPACE.")
 }
 
 func (ucr *updateConfigurer) CheckFlags(fs *flag.FlagSet, c *config.Config) error {
@@ -116,6 +122,73 @@ func (ucr *updateConfigurer) CheckFlags(fs *flag.FlagSet, c *config.Config) erro
 		uc.walkMode = walk.VisitAllUpdateDirsMode
 	} else {
 		uc.walkMode = walk.UpdateDirsMode
+	}
+
+	// Load the repo configuration file (WORKSPACE by default) to find out
+	// names and prefixes of other go_repositories. This affects external
+	// dependency resolution for Go.
+	// TODO(jayconrod): this should be moved to language/go.
+	var repoFileMap map[*rule.File][]string
+	if ucr.repoConfigPath == "" {
+		ucr.repoConfigPath = filepath.Join(c.RepoRoot, "WORKSPACE")
+	}
+	repoConfigFile, err := rule.LoadWorkspaceFile(ucr.repoConfigPath, "")
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+	} else {
+		uc.repos, repoFileMap, err = repo.ListRepositories(repoConfigFile)
+		if err != nil {
+			return err
+		}
+	}
+	repoPrefixes := make(map[string]bool)
+	for _, r := range uc.repos {
+		repoPrefixes[r.GoPrefix] = true
+	}
+	for _, imp := range ucr.knownImports {
+		if repoPrefixes[imp] {
+			continue
+		}
+		repo := repo.Repo{
+			Name:     label.ImportPathToBazelRepoName(imp),
+			GoPrefix: imp,
+		}
+		uc.repos = append(uc.repos, repo)
+	}
+
+	// If the repo configuration file is not WORKSPACE, also load WORKSPACE
+	// so we can apply any necessary fixes.
+	workspacePath := filepath.Join(c.RepoRoot, "WORKSPACE")
+	var workspace *rule.File
+	if ucr.repoConfigPath == workspacePath {
+		workspace = repoConfigFile
+	} else {
+		workspace, err = rule.LoadWorkspaceFile(workspacePath, "")
+		if err != nil && !os.IsNotExist(err) {
+			return err
+		}
+		if workspace != nil {
+			_, repoFileMap, err = repo.ListRepositories(workspace)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	if workspace != nil {
+		c.RepoName = findWorkspaceName(workspace)
+		uc.workspaceFiles = make([]*rule.File, 0, len(repoFileMap))
+		seen := make(map[string]bool)
+		for f := range repoFileMap {
+			if !seen[f.Path] {
+				uc.workspaceFiles = append(uc.workspaceFiles, f)
+				seen[f.Path] = true
+			}
+		}
+		sort.Slice(uc.workspaceFiles, func(i, j int) bool {
+			return uc.workspaceFiles[i].Path < uc.workspaceFiles[j].Path
+		})
 	}
 
 	return nil
@@ -253,7 +326,7 @@ func runFixUpdate(cmd command, args []string) error {
 			if repl, ok := c.KindMap[r.Kind()]; ok {
 				mappedKindInfo[repl.KindName] = kinds[r.Kind()]
 				mappedKinds = append(mappedKinds, repl)
-				mrslv.MappedKind(f, repl)
+				mrslv.MappedKind(rel, repl)
 				r.SetKind(repl.KindName)
 			}
 		}
@@ -291,11 +364,12 @@ func runFixUpdate(cmd command, args []string) error {
 	ruleIndex.Finish()
 
 	// Resolve dependencies.
-	rc := repo.NewRemoteCache(uc.repos)
+	rc, cleanupRc := repo.NewRemoteCache(uc.repos)
+	defer cleanupRc()
 	for _, v := range visits {
 		for i, r := range v.rules {
 			from := label.New(c.RepoName, v.pkgRel, r.Name())
-			mrslv.Resolver(r, v.file).Resolve(v.c, ruleIndex, rc, r, v.imports[i], from)
+			mrslv.Resolver(r, v.pkgRel).Resolve(v.c, ruleIndex, rc, r, v.imports[i], from)
 		}
 		merger.MergeFile(v.file, v.empty, v.rules, merger.PostResolve,
 			unionKindInfoMaps(kinds, v.mappedKindInfo))
@@ -330,9 +404,6 @@ func newFixUpdateConfiguration(cmd command, args []string, cexts []config.Config
 	// -h or -help were passed explicitly.
 	fs.Usage = func() {}
 
-	var knownImports []string
-	fs.Var(&gzflag.MultiFlag{Values: &knownImports}, "known_import", "import path for which external resolution is skipped (can specify multiple times)")
-
 	for _, cext := range cexts {
 		cext.RegisterFlags(fs, cmd.String(), c)
 	}
@@ -353,31 +424,8 @@ func newFixUpdateConfiguration(cmd command, args []string, cexts []config.Config
 	}
 
 	uc := getUpdateConfig(c)
-	workspacePath := filepath.Join(c.RepoRoot, "WORKSPACE")
-	if workspace, err := rule.LoadWorkspaceFile(workspacePath, ""); err != nil {
-		if !os.IsNotExist(err) {
-			return nil, err
-		}
-	} else {
-		if err := fixWorkspace(c, workspace, loads); err != nil {
-			return nil, err
-		}
-		c.RepoName = findWorkspaceName(workspace)
-		uc.repos = repo.ListRepositories(workspace)
-	}
-	repoPrefixes := make(map[string]bool)
-	for _, r := range uc.repos {
-		repoPrefixes[r.GoPrefix] = true
-	}
-	for _, imp := range knownImports {
-		if repoPrefixes[imp] {
-			continue
-		}
-		repo := repo.Repo{
-			Name:     label.ImportPathToBazelRepoName(imp),
-			GoPrefix: imp,
-		}
-		uc.repos = append(uc.repos, repo)
+	if err := fixRepoFiles(c, uc.workspaceFiles, loads); err != nil {
+		return nil, err
 	}
 
 	return c, nil
@@ -412,7 +460,7 @@ FLAGS:
 	fs.PrintDefaults()
 }
 
-func fixWorkspace(c *config.Config, workspace *rule.File, loads []rule.LoadInfo) error {
+func fixRepoFiles(c *config.Config, files []*rule.File, loads []rule.LoadInfo) error {
 	uc := getUpdateConfig(c)
 	if !c.ShouldFix {
 		return nil
@@ -427,12 +475,19 @@ func fixWorkspace(c *config.Config, workspace *rule.File, loads []rule.LoadInfo)
 		return nil
 	}
 
-	merger.FixWorkspace(workspace)
-	merger.FixLoads(workspace, loads)
-	if err := merger.CheckGazelleLoaded(workspace); err != nil {
-		return err
+	for _, f := range files {
+		merger.FixLoads(f, loads)
+		if f.Path == filepath.Join(c.RepoRoot, "WORKSPACE") {
+			merger.FixWorkspace(f)
+			if err := merger.CheckGazelleLoaded(f); err != nil {
+				return err
+			}
+		}
+		if err := uc.emit(c, f); err != nil {
+			return err
+		}
 	}
-	return uc.emit(c, workspace)
+	return nil
 }
 
 func findWorkspaceName(f *rule.File) string {
@@ -511,9 +566,9 @@ func applyKindMappings(mappedKinds []config.MappedKind, loads []rule.LoadInfo) [
 // appendOrMergeKindMapping adds LoadInfo for the given replacement.
 func appendOrMergeKindMapping(mappedLoads []rule.LoadInfo, mappedKind config.MappedKind) []rule.LoadInfo {
 	// If mappedKind.KindLoad already exists in the list, create a merged copy.
-	for _, load := range mappedLoads {
+	for i, load := range mappedLoads {
 		if load.Name == mappedKind.KindLoad {
-			load.Symbols = append(load.Symbols, mappedKind.KindName)
+			mappedLoads[i].Symbols = append(load.Symbols, mappedKind.KindName)
 			return mappedLoads
 		}
 	}
