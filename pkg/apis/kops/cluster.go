@@ -58,6 +58,8 @@ type ClusterSpec struct {
 	ConfigBase string `json:"configBase,omitempty"`
 	// The CloudProvider to use (aws or gce)
 	CloudProvider string `json:"cloudProvider,omitempty"`
+	// GossipConfig for the cluster assuming the use of gossip DNS
+	GossipConfig *GossipConfig
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 	// Configuration of subnets we are targeting
@@ -625,4 +627,11 @@ func (c *Cluster) IsKubernetesGTE(version string) bool {
 	clusterVersion.Build = nil
 
 	return clusterVersion.GTE(*parsedVersion)
+}
+
+type GossipConfig struct {
+    Protocol *string `json:"protocol"`
+    Listen *string `json:"listen"`
+    Secret *string `json:"secret"`
+    Secondary *GossipConfig
 }
