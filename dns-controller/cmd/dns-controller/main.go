@@ -44,6 +44,7 @@ import (
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
 	gossipdnsprovider "k8s.io/kops/protokube/pkg/gossip/dns/provider"
+	"k8s.io/kops/protokube/pkg/gossip/memberlist"
 	"k8s.io/kops/protokube/pkg/gossip/mesh"
 )
 
@@ -54,7 +55,7 @@ var (
 
 func main() {
 	fmt.Printf("dns-controller version %s\n", BuildVersion)
-	var dnsServer, dnsProviderID, gossipListen, gossipSecret, watchNamespace, metricsListen string
+	var dnsServer, dnsProviderID, gossipListen, gossipSecret, watchNamespace, metricsListen, gossipProtocol, gossipSecretSecondary, gossipListenSecondary, gossipProtocolSecondary string
 	var gossipSeeds, zones []string
 	var watchIngress bool
 	var updateInterval int
@@ -68,8 +69,12 @@ func main() {
 	flags.StringSliceVar(&gossipSeeds, "gossip-seed", gossipSeeds, "If set, will enable gossip zones and seed using the provided addresses")
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
 	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, digitalocean, coredns, gossip)")
-	flags.StringVar(&gossipListen, "gossip-listen", "0.0.0.0:3998", "The address on which to listen if gossip is enabled")
+	flag.StringVar(&gossipProtocol, "gossip-protocol", "mesh", "mesh/memberlist")
+	flags.StringVar(&gossipListen, "gossip-listen", "0.0.0.0:3997", "The address on which to listen if gossip is enabled")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
+	flag.StringVar(&gossipProtocolSecondary, "gossip-protocol-secondary", "", "mesh/memberlist")
+	flag.StringVar(&gossipListenSecondary, "gossip-listen-secondary", "0.0.0.0:4000", "address:port on which to bind for gossip")
+	flags.StringVar(&gossipSecretSecondary, "gossip-secret-secondary", gossipSecret, "Secret to use to secure gossip")
 	flags.StringVar(&watchNamespace, "watch-namespace", "", "Limits the functionality for pods, services and ingress to specific namespace, by default all")
 	flag.IntVar(&route53.MaxBatchSize, "route53-batch-size", route53.MaxBatchSize, "Maximum number of operations performed per changeset batch")
 	flag.StringVar(&metricsListen, "metrics-listen", "", "The address on which to listen for Prometheus metrics.")
@@ -138,12 +143,27 @@ func main() {
 		gossipName := "dns-controller." + id
 
 		channelName := "dns"
-		gossipState, err := mesh.NewMeshGossiper(gossipListen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
+		var gossipState gossip.GossipState
+
+		gossipState, err = getGossipState(gossipProtocol, gossipListen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
 		if err != nil {
 			klog.Errorf("Error initializing gossip: %v", err)
 			os.Exit(1)
 		}
 
+		if gossipProtocolSecondary != "" {
+
+			secondaryGossipState, err := getGossipState(gossipProtocolSecondary, gossipListenSecondary, channelName, gossipName, []byte(gossipSecretSecondary), gossipSeeds)
+			if err != nil {
+				klog.Errorf("Error initializing secondary gossip: %v", err)
+				os.Exit(1)
+			}
+
+			gossipState = &gossip.MultiGossipState{
+				Primary:   gossipState,
+				Secondary: secondaryGossipState,
+			}
+		}
 		go func() {
 			err := gossipState.Start()
 			if err != nil {
@@ -220,4 +240,17 @@ func initializeWatchers(client kubernetes.Interface, dnsctl *dns.DNSController, 
 	}
 
 	return nil
+}
+
+func getGossipState(protocol, listen, channelName, gossipName string, gossipSecret []byte, gossipSeeds gossip.SeedProvider) (gossip.GossipState, error) {
+	// TODO: enum type?
+	switch strings.ToLower(protocol) {
+	case "mesh":
+		return mesh.NewMeshGossiper(listen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
+
+	case "memberlist":
+		return memberlist.NewMemberlistGossiper(listen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
+	default:
+		return nil, fmt.Errorf("Unknown protocol=" + protocol)
+	}
 }

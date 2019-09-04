@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
+	"k8s.io/kops/protokube/pkg/gossip/memberlist"
 	"k8s.io/kops/protokube/pkg/gossip/mesh"
 	"k8s.io/kops/protokube/pkg/protokube"
 
@@ -63,7 +64,7 @@ func main() {
 func run() error {
 	var zones []string
 	var applyTaints, initializeRBAC, containerized, master, tlsAuth bool
-	var cloud, clusterID, dnsServer, dnsProviderID, dnsInternalSuffix, gossipSecret, gossipListen string
+	var cloud, clusterID, dnsServer, dnsProviderID, dnsInternalSuffix, gossipSecret, gossipListen, gossipProtocol, gossipSecretSecondary, gossipListenSecondary, gossipProtocolSecondary string
 	var flagChannels, tlsCert, tlsKey, tlsCA, peerCert, peerKey, peerCA string
 	var etcdBackupImage, etcdBackupStore, etcdImageSource, etcdElectionTimeout, etcdHeartbeatInterval string
 	var dnsUpdateInterval int
@@ -78,7 +79,12 @@ func run() error {
 	flag.StringVar(&dnsServer, "dns-server", dnsServer, "DNS Server")
 	flags.IntVar(&dnsUpdateInterval, "dns-update-interval", 5, "Configure interval at which to update DNS records.")
 	flag.StringVar(&flagChannels, "channels", flagChannels, "channels to install")
+	flag.StringVar(&gossipProtocol, "gossip-protocol", "mesh", "mesh/memberlist")
 	flag.StringVar(&gossipListen, "gossip-listen", "0.0.0.0:3999", "address:port on which to bind for gossip")
+	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
+	flag.StringVar(&gossipProtocolSecondary, "gossip-protocol-secondary", "", "mesh/memberlist")
+	flag.StringVar(&gossipListenSecondary, "gossip-listen-secondary", "0.0.0.0:4000", "address:port on which to bind for gossip")
+	flags.StringVar(&gossipSecretSecondary, "gossip-secret-secondary", gossipSecret, "Secret to use to secure gossip")
 	flag.StringVar(&peerCA, "peer-ca", peerCA, "Path to a file containing the peer ca in PEM format")
 	flag.StringVar(&peerCert, "peer-cert", peerCert, "Path to a file containing the peer certificate")
 	flag.StringVar(&peerKey, "peer-key", peerKey, "Path to a file containing the private key for the peers")
@@ -93,7 +99,6 @@ func run() error {
 	flags.StringVar(&etcdImageSource, "etcd-image", "k8s.gcr.io/etcd:2.2.1", "Etcd Source Container Registry")
 	flags.StringVar(&etcdElectionTimeout, "etcd-election-timeout", etcdElectionTimeout, "time in ms for an election to timeout")
 	flags.StringVar(&etcdHeartbeatInterval, "etcd-heartbeat-interval", etcdHeartbeatInterval, "time in ms of a heartbeat interval")
-	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 
 	manageEtcd := false
 	flag.BoolVar(&manageEtcd, "manage-etcd", manageEtcd, "Set to manage etcd (deprecated in favor of etcd-manager)")
@@ -298,12 +303,27 @@ func run() error {
 		}
 
 		channelName := "dns"
-		gossipState, err := mesh.NewMeshGossiper(gossipListen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
+		var gossipState gossip.GossipState
+
+		gossipState, err = getGossipState(gossipProtocol, gossipListen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
 		if err != nil {
 			klog.Errorf("Error initializing gossip: %v", err)
 			os.Exit(1)
 		}
 
+		if gossipProtocolSecondary != "" {
+
+			secondaryGossipState, err := getGossipState(gossipProtocolSecondary, gossipListenSecondary, channelName, gossipName, []byte(gossipSecretSecondary), gossipSeeds)
+			if err != nil {
+				klog.Errorf("Error initializing secondary gossip: %v", err)
+				os.Exit(1)
+			}
+
+			gossipState = &gossip.MultiGossipState{
+				Primary:   gossipState,
+				Secondary: secondaryGossipState,
+			}
+		}
 		go func() {
 			err := gossipState.Start()
 			if err != nil {
@@ -504,4 +524,17 @@ func findInternalIP() (net.IP, error) {
 
 	klog.Warningf("arbitrarily choosing address: %s", ips[0].String())
 	return ips[0], nil
+}
+
+func getGossipState(protocol, listen, channelName, gossipName string, gossipSecret []byte, gossipSeeds gossip.SeedProvider) (gossip.GossipState, error) {
+	// TODO: enum type?
+	switch strings.ToLower(protocol) {
+	case "mesh":
+		return mesh.NewMeshGossiper(listen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
+
+	case "memberlist":
+		return memberlist.NewMemberlistGossiper(listen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
+	default:
+		return nil, fmt.Errorf("Unknown protocol=" + protocol)
+	}
 }

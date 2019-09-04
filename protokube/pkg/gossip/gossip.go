@@ -24,4 +24,37 @@ type GossipStateSnapshot struct {
 type GossipState interface {
 	Snapshot() *GossipStateSnapshot
 	UpdateValues(removeKeys []string, putKeys map[string]string) error
+	Start() error
+}
+
+// MultiGossipState enables ramping between gossip mechanisms. This will replicaet
+// all UpdateValue operations to the Secondary while still calling the primary for
+// all Snapshot information
+type MultiGossipState struct {
+	Primary   GossipState
+	Secondary GossipState
+}
+
+func (m *MultiGossipState) Snapshot() *GossipStateSnapshot {
+	return m.Primary.Snapshot()
+}
+
+func (m *MultiGossipState) UpdateValues(removeKeys []string, putKeys map[string]string) error {
+	err := m.Primary.UpdateValues(removeKeys, putKeys)
+	m.Secondary.UpdateValues(removeKeys, putKeys)
+	return err
+}
+
+func (m *MultiGossipState) Start() error {
+	errCh := make(chan error, 2)
+
+	go func() {
+		errCh <- m.Primary.Start()
+	}()
+
+	go func() {
+		errCh <- m.Secondary.Start()
+	}()
+
+	return <-errCh
 }
