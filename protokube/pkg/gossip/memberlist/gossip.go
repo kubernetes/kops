@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
-	"github.com/prometheus/alertmanager/cluster"
+	cluster "github.com/jacksontj/memberlistmesh"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/klog/glog"
 	"k8s.io/kops/protokube/pkg/gossip"
