@@ -55,7 +55,7 @@ type ClusterSpec struct {
 	// The CloudProvider to use (aws or gce)
 	CloudProvider string `json:"cloudProvider,omitempty"`
 	// GossipConfig for the cluster assuming the use of gossip DNS
-	GossipConfig *GossipConfig
+	GossipConfig *GossipConfig `json:"gossipConfig,omitempty"`
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 	// Configuration of subnets we are targeting
