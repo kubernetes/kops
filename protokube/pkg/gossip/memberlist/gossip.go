@@ -8,10 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-kit/kit/log"
 	cluster "github.com/jacksontj/memberlistmesh"
 	"github.com/prometheus/client_golang/prometheus"
-	"k8s.io/klog/glog"
+	"k8s.io/klog"
 	"k8s.io/kops/protokube/pkg/gossip"
 )
 
@@ -46,7 +45,6 @@ func NewMemberlistGossiper(listen string, channelName string, nodeName string, p
 	}
 
 	peer, err := cluster.Create(
-		log.NewNopLogger(),
 		prometheus.DefaultRegisterer,
 		listen,
 		"", //*clusterAdvertiseAddr,
@@ -81,7 +79,7 @@ func (g *MemberlistGossiper) Start() error {
 	defer func() {
 		cancel()
 		if err := g.peer.Leave(10 * time.Second); err != nil {
-			glog.V(2).Infof("unable to leave gossip mesh: %v", err)
+			klog.V(2).Infof("unable to leave gossip mesh: %v", err)
 		}
 	}()
 
@@ -94,28 +92,28 @@ func (g *MemberlistGossiper) Start() error {
 func (g *MemberlistGossiper) runSeeding() {
 SEED_LOOP:
 	for {
-		glog.V(2).Infof("Querying for seeds")
+		klog.V(2).Infof("Querying for seeds")
 
 		seeds, err := g.seeds.GetSeeds()
 		if err != nil {
-			glog.Warningf("error getting seeds: %v", err)
+			klog.Warningf("error getting seeds: %v", err)
 			time.Sleep(1 * time.Minute)
 			continue
 		}
-		glog.Infof("Got seeds: %s", seeds)
+		klog.Infof("Got seeds: %s", seeds)
 
 		for _, seed := range seeds {
 			if !strings.Contains(seed, ":") {
 				seed = seed + ":" + strconv.Itoa(g.listenPort)
 			}
 			if err := g.peer.AddPeer(seed); err != nil {
-				glog.Infof("error connecting to seeds: %v", err)
+				klog.Infof("error connecting to seeds: %v", err)
 				time.Sleep(1 * time.Minute)
 				continue SEED_LOOP
 			}
 		}
 
-		glog.V(2).Infof("Seeding successful")
+		klog.V(2).Infof("Seeding successful")
 
 		// Reseed periodically, just in case of partitions
 		// TODO: Make it so that only one node polls, or at least statistically get close
@@ -128,7 +126,7 @@ func (g *MemberlistGossiper) Snapshot() *gossip.GossipStateSnapshot {
 }
 
 func (g *MemberlistGossiper) UpdateValues(removeKeys []string, putKeys map[string]string) error {
-	glog.V(2).Infof("UpdateValues: remove=%s, put=%s", removeKeys, putKeys)
+	klog.V(2).Infof("UpdateValues: remove=%s, put=%s", removeKeys, putKeys)
 	g.state.updateValues(removeKeys, putKeys)
 	b, err := g.state.MarshalBinary()
 	if err != nil {
