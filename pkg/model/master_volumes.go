@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
@@ -184,11 +185,19 @@ func (b *MasterVolumeBuilder) addDOVolume(c *fi.ModelBuilderContext, name string
 		name = name[:64]
 	}
 
+	tags := make(map[string]string)
+	tags[do.TagNameEtcdClusterPrefix+etcd.Name] = gce.SafeClusterName(m.Name)
+
+	// We always add an owned tags (these can't be shared)
+	tags[do.TagKubernetesClusterNamePrefix] = gce.SafeClusterName(b.Cluster.ObjectMeta.Name)
+	
+	
 	t := &dotasks.Volume{
 		Name:      s(name),
 		Lifecycle: b.Lifecycle,
 		SizeGB:    fi.Int64(int64(volumeSize)),
 		Region:    s(zone),
+		Tags: tags,
 	}
 
 	c.AddTask(t)

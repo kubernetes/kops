@@ -18,7 +18,7 @@ package domodel
 
 import (
 	"strings"
-
+	"strconv"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
@@ -45,7 +45,8 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// replace "." with "-" since DO API does not accept "."
 	clusterTag := "KubernetesCluster:" + strings.Replace(d.ClusterName(), ".", "-", -1)
-
+	
+	indexCount := 0
 	// In the future, DigitalOcean will use Machine API to manage groups,
 	// for now create d.InstanceGroups.Spec.MinSize amount of droplets
 	for _, ig := range d.InstanceGroups {
@@ -61,8 +62,15 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 		droplet.Size = fi.String(ig.Spec.MachineType)
 		droplet.Image = fi.String(ig.Spec.Image)
 		droplet.SSHKey = fi.String(sshKeyFingerPrint)
-		droplet.Tags = []string{clusterTag}
 
+		if ig.IsMaster() {
+			indexCount++
+			clusterTagIndex := "K8S-INDEX:" + strconv.Itoa(indexCount)
+			droplet.Tags = []string{clusterTag, clusterTagIndex} 
+		} else {
+			droplet.Tags = []string{clusterTag}
+		}
+		
 		userData, err := d.BootstrapScript.ResourceNodeUp(ig, d.Cluster)
 		if err != nil {
 			return err
