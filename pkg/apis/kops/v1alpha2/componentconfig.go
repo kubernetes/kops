@@ -609,10 +609,11 @@ type OpenstackRouter struct {
 
 // OpenstackConfiguration defines cloud config elements for the openstack cloud provider
 type OpenstackConfiguration struct {
-	Loadbalancer *OpenstackLoadbalancerConfig `json:"loadbalancer,omitempty"`
-	Monitor      *OpenstackMonitor            `json:"monitor,omitempty"`
-	Router       *OpenstackRouter             `json:"router,omitempty"`
-	BlockStorage *OpenstackBlockStorageConfig `json:"blockStorage,omitempty"`
+	Loadbalancer       *OpenstackLoadbalancerConfig `json:"loadbalancer,omitempty"`
+	Monitor            *OpenstackMonitor            `json:"monitor,omitempty"`
+	Router             *OpenstackRouter             `json:"router,omitempty"`
+	BlockStorage       *OpenstackBlockStorageConfig `json:"blockStorage,omitempty"`
+	InsecureSkipVerify *bool                        `json:"insecureSkipVerify,omitempty"`
 }
 
 // CloudConfiguration defines the cloud provider configuration
