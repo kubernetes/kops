@@ -442,9 +442,6 @@ subjects:
   namespace: kube-system
 ---
 
-# This manifest scales the Calico Kubernetes controllers down to size 0.
-# They are not needed in CRD mode.
-# See https://github.com/projectcalico/kube-controllers
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -458,7 +455,7 @@ spec:
     matchLabels:
       k8s-app: calico-kube-controllers
   # The controllers can only have a single active instance.
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   template:
@@ -469,12 +466,17 @@ spec:
         k8s-app: calico-kube-controllers
         role.kubernetes.io/networking: "1"
     spec:
+      hostNetwork: true
+      serviceAccount: calico-node
+      serviceAccountName: calico-node
       containers:
         - name: calico-kube-controllers
           image: calico/kube-controllers:v3.8.0
-      initContainers:
-        - name: migrate
-          image: calico/upgrade:v1.0.5
+          env:
+            - name: DATASTORE_TYPE
+              value: kubernetes
+            - name: ENABLED_CONTROLLERS
+              value: policy,namespace,serviceaccount,workloadendpoint,node
 
 ---
 
