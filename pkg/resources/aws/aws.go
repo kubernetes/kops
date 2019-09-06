@@ -1339,7 +1339,13 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 			natGatewayId := aws.StringValue(ngw.NatGatewayId)
 
 			forceShared := !ownedNatGatewayIds.Has(natGatewayId)
-			resourceTrackers = append(resourceTrackers, buildNatGatewayResource(ngw, forceShared, clusterName))
+			ngwResource := buildNatGatewayResource(ngw, forceShared, clusterName)
+			resourceTrackers = append(resourceTrackers, ngwResource)
+
+			// Dont try to remove ElasticIPs if NatGateway is shared
+			if ngwResource.Shared {
+				continue
+			}
 
 			// If we're deleting the NatGateway, we should delete the ElasticIP also
 			for _, address := range ngw.NatGatewayAddresses {
