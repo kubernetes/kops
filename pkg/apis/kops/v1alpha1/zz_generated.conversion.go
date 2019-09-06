@@ -4135,6 +4135,7 @@ func autoConvert_v1alpha1_OpenstackConfiguration_To_kops_OpenstackConfiguration(
 	} else {
 		out.BlockStorage = nil
 	}
+	out.InsecureSkipVerify = in.InsecureSkipVerify
 	return nil
 }
 
@@ -4180,6 +4181,7 @@ func autoConvert_kops_OpenstackConfiguration_To_v1alpha1_OpenstackConfiguration(
 	} else {
 		out.BlockStorage = nil
 	}
+	out.InsecureSkipVerify = in.InsecureSkipVerify
 	return nil
 }
 

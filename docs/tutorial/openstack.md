@@ -149,3 +149,17 @@ kops create cluster \
 ```
 
 The biggest problem currently when installing without loadbalancer is that kubectl requests outside cluster is always going to first master. External loadbalancer is one option which can solve this issue.
+
+# Using with self-signed certificates in OpenStack
+
+Kops can be configured to use insecure mode towards OpenStack. However, this is **NOT** recommended as OpenStack cloudprovider in kubernetes does not support it.
+If you use insecure flag in kops - it might be that the cluster does not work correctly.
+
+```
+spec:
+  ...
+  cloudConfig:
+    openstack:
+      insecureSkipVerify: true
+  ...
+```
