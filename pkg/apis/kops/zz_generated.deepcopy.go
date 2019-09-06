@@ -3099,6 +3099,11 @@ func (in *OpenstackConfiguration) DeepCopyInto(out *OpenstackConfiguration) {
 		*out = new(OpenstackBlockStorageConfig)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.InsecureSkipVerify != nil {
+		in, out := &in.InsecureSkipVerify, &out.InsecureSkipVerify
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
