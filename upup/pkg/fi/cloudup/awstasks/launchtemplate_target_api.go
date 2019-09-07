@@ -53,7 +53,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 	}
 	lc := input.LaunchTemplateData
 
-	// @step: add the the actual block device mappings
+	// @step: add the actual block device mappings
 	rootDevices, err := t.buildRootDevice(c.Cloud)
 	if err != nil {
 		return err
