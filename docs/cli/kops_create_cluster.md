@@ -100,6 +100,7 @@ kops create cluster [flags]
       --os-dns-servers string            comma separated list of DNS Servers which is used in network
       --os-ext-net string                The name of the external network to use with the openstack router
       --os-ext-subnet string             The name of the external floating subnet to use with the openstack router
+      --os-insecure                      Use insecure OpenStack API
       --os-kubelet-ignore-az             If true kubernetes may attach volumes across availability zones
       --os-lb-floating-subnet string     The name of the external subnet to use with the kubernetes api
       --os-octavia                       If true octavia loadbalancer api will be used
