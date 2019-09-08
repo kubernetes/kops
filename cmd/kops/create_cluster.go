@@ -159,6 +159,9 @@ type CreateClusterOptions struct {
 	// OpenstackLBOctavia is boolean value should we use octavia or old loadbalancer api
 	OpenstackLBOctavia bool
 
+	// OpenstackInsecure is boolean value for use insecure connections for OpenStack API
+	OpenstackInsecure bool
+
 	// ConfigBase is the location where we will store the configuration, it defaults to the state store
 	ConfigBase string
 
@@ -389,7 +392,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.OpenstackStorageIgnoreAZ, "os-kubelet-ignore-az", options.OpenstackStorageIgnoreAZ, "If true kubernetes may attach volumes across availability zones")
 	cmd.Flags().BoolVar(&options.OpenstackLBOctavia, "os-octavia", options.OpenstackLBOctavia, "If true octavia loadbalancer api will be used")
 	cmd.Flags().StringVar(&options.OpenstackDNSServers, "os-dns-servers", options.OpenstackDNSServers, "comma separated list of DNS Servers which is used in network")
-
+	cmd.Flags().BoolVar(&options.OpenstackInsecure, "os-insecure", options.OpenstackInsecure, "Use insecure OpenStack API")
 	return cmd
 }
 
@@ -910,6 +913,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			if cluster.Spec.CloudConfig == nil {
 				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
 			}
+
 			cluster.Spec.CloudConfig.Openstack = &api.OpenstackConfiguration{
 				Router: &api.OpenstackRouter{
 					ExternalNetwork: fi.String(c.OpenstackExternalNet),
@@ -929,6 +933,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 			if c.OpenstackExternalSubnet != "" {
 				cluster.Spec.CloudConfig.Openstack.Router.ExternalSubnet = fi.String(c.OpenstackExternalSubnet)
+			}
+			if c.OpenstackInsecure {
+				cluster.Spec.CloudConfig.Openstack.InsecureSkipVerify = fi.Bool(c.OpenstackInsecure)
 			}
 		}
 	}

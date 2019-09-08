@@ -163,3 +163,5 @@ spec:
       insecureSkipVerify: true
   ...
 ```
+
+When creating cluster you can pass `--os-insecure true` to createopts
