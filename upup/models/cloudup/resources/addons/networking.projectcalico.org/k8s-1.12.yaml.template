@@ -783,7 +783,8 @@ spec:
                   key: calico_backend
             # Cluster type to identify the deployment type
             - name: CLUSTER_TYPE
-              value: "k8s,bgp"
+              # was value: "k8s,bgp"
+              value: "kops,bgp"
             # Auto-detect the BGP IP address.
             - name: IP
               value: "autodetect"
@@ -800,7 +801,7 @@ spec:
             # chosen from this range. Changing this value after installation will have
             # no effect. This should fall within `--cluster-cidr`.
             - name: CALICO_IPV4POOL_CIDR
-              value: "192.168.0.0/16"
+              value: "{{ .KubeControllerManager.ClusterCIDR }}"
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
@@ -810,9 +811,9 @@ spec:
             # Disable IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
               value: "false"
-            # Set Felix logging to "info"
+            # Set Felix logging to the desired level
             - name: FELIX_LOGSEVERITYSCREEN
-              value: "info"
+              value: "{{- or .Networking.Calico.LogSeverityScreen "info" }}"
             - name: FELIX_HEALTHENABLED
               value: "true"
           securityContext:
