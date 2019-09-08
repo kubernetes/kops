@@ -394,7 +394,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 			config.VolumeProvider = "do"
 
 			config.VolumeTag = []string{
-				fmt.Sprintf("kubernetes.io/cluster/%s=owned", b.Cluster.Name),
+				fmt.Sprintf("kubernetes.io/cluster=%s", b.Cluster.Name),
 				do.TagNameEtcdClusterPrefix + etcdCluster.Name,
 				do.TagNameRolePrefix + "master=1",
 			}
@@ -477,6 +477,9 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	container.Env = appendEnvVariableIfExist("OS_PASSWORD", container.Env)
 	container.Env = appendEnvVariableIfExist("OS_AUTH_URL", container.Env)
 	container.Env = appendEnvVariableIfExist("OS_REGION_NAME", container.Env)
+
+	// Digital Ocean related values.
+	container.Env = appendEnvVariableIfExist("DIGITALOCEAN_ACCESS_TOKEN", container.Env)
 
 	{
 		foundPKI := false
