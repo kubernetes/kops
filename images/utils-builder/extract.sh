@@ -26,4 +26,5 @@ tar cvfz /utils.tar.gz /utils
 
 cp /utils.tar.gz /dist/utils.tar.gz
 (sha1sum /dist/utils.tar.gz | cut -d' ' -f1) > /dist/utils.tar.gz.sha1
+(sha256sum /dist/utils.tar.gz | cut -d' ' -f1) > /dist/utils.tar.gz.sha256
 
