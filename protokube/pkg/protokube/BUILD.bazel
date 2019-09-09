@@ -17,6 +17,7 @@ go_library(
         "kube_boot_task.go",
         "kube_context.go",
         "kube_dns.go",
+        "labeler.go",
         "models.go",
         "nsenter_exec.go",
         "openstack_volume.go",

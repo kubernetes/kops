@@ -495,7 +495,7 @@ const (
 func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, error) {
 	// Merge KubeletConfig for NodeLabels
 	c := &kops.KubeletConfigSpec{}
-	if b.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {
+	if b.IsMaster {
 		reflectutils.JsonMergeStruct(c, b.Cluster.Spec.MasterKubelet)
 	} else {
 		reflectutils.JsonMergeStruct(c, b.Cluster.Spec.Kubelet)
@@ -514,7 +514,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
 		instanceType, err := awsup.GetMachineTypeInfo(strings.Split(b.InstanceGroup.Spec.MachineType, ",")[0])
 		if err != nil {
-			return c, err
+			return nil, err
 		}
 
 		// Default maximum pods per node defined by KubeletConfiguration, but
@@ -570,6 +570,13 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 			c.NodeLabels = make(map[string]string)
 		}
 		c.NodeLabels[k] = v
+	}
+
+	// As of 1.16 we can no longer set critical labels.
+	// kops-controller will set these labels.
+	// For bootstrapping reasons, protokube sets the critical labels for kops-controller to run.
+	if b.IsKubernetesGTE("1.16") {
+		c.NodeLabels = nil
 	}
 
 	// Use --register-with-taints for k8s 1.6 and on
