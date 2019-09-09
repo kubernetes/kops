@@ -11,7 +11,8 @@ The following software must be installed prior to running the
 update commands:
 
 * [bazel](https://github.com/bazelbuild/bazel)
-* [dep](https://github.com/golang/dep) or go >= v1.12 for go mod support
+* [dep](https://github.com/golang/dep) for kops 1.14 or older
+* [go mod](https://github.com/golang/go/wiki/Modules) for kops 1.15 and newer branches (including master)
 * [hg](https://www.mercurial-scm.org/wiki/Download)
 
 <!-- TODO: update dependency management for go mod -->
