@@ -1,5 +1,5 @@
 /*
-Copyright 2014 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ var (
 	createLong = templates.LongDesc(i18n.T(`
 		Create a resource:` + validResources +
 		`
-	Create a cluster, instancegroup or secret using command line parameters, 
+	Create a cluster, instancegroup or secret using command line parameters,
 	YAML configuration specification files, or stdin.
 	(Note: secrets cannot be created from YAML config files yet).
 	`))
