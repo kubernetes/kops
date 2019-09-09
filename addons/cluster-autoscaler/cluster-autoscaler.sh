@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2018 The Kubernetes Authors.
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ MIN_NODES=2
 MAX_NODES=20
 AWS_REGION=us-east-1
 INSTANCE_GROUP_NAME="nodes"
-ASG_NAME="${INSTANCE_GROUP_NAME}.${CLUSTER_NAME}"   #ASG_NAME should be the name of ASG as seen on AWS console. 
-IAM_ROLE="masters.${CLUSTER_NAME}"                  #Where will the cluster-autoscaler process run? Currently on the master node. 
+ASG_NAME="${INSTANCE_GROUP_NAME}.${CLUSTER_NAME}"   #ASG_NAME should be the name of ASG as seen on AWS console.
+IAM_ROLE="masters.${CLUSTER_NAME}"                  #Where will the cluster-autoscaler process run? Currently on the master node.
 SSL_CERT_PATH="/etc/ssl/certs/ca-certificates.crt"  #(/etc/ssl/certs for gce, /etc/ssl/certs/ca-bundle.crt for RHEL7.X)
 #KOPS_STATE_STORE="s3://___"        #KOPS_STATE_STORE might already be set as an environment variable, in which case it doesn't have to be changed.
 
@@ -39,7 +39,7 @@ fi
 if [[ -f /bin/yum && ! -f /bin/jq ]]
 then
   echo "This may fail if epel cannot be installed. In that case, correct/install epel and retry."
-  sudo yum install -y epel-release 
+  sudo yum install -y epel-release
   sudo yum install -y jq || exit
 fi
 if [[ -f /usr/local/bin/brew && ! -f /usr/local/bin/jq ]]
