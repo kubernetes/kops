@@ -20,6 +20,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	sos "os"
 	"strings"
 	"time"
 
@@ -48,7 +49,9 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	v1 "k8s.io/api/core/v1"
+	netutil "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/apimachinery/pkg/util/wait"
+	certutil "k8s.io/client-go/util/cert"
 	"k8s.io/klog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/openstack/designate"
@@ -330,8 +333,19 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 		provider.HTTPClient = http.Client{
 			Transport: transport,
 		}
-	}
+		klog.V(2).Info("Using insecure connection to OpenStack API")
 
+	}
+	if sos.Getenv("OS_CACERT") != "" {
+		roots, err := certutil.NewPool(sos.Getenv("OS_CACERT"))
+		if err != nil {
+			return nil, err
+		}
+		config := &tls.Config{}
+		config.RootCAs = roots
+		provider.HTTPClient.Transport = netutil.SetOldTransportDefaults(&http.Transport{TLSClientConfig: config})
+		klog.V(2).Info("Using custom CA certificate to OpenStack API")
+	}
 	klog.V(2).Info("authenticating to keystone")
 
 	err = os.Authenticate(provider, authOption)
