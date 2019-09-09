@@ -886,9 +886,9 @@ dev-upload-protokube: bazel-protokube-export # Upload kops to GCS
 .PHONE: dev-copy-utils
 dev-copy-utils:
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
-	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.11.0-alpha.1/linux/amd64/utils.tar.gz
-	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.11.0-alpha.1/linux/amd64/utils.tar.gz.sha1
-	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.11.0-alpha.1/linux/amd64/utils.tar.gz.sha256
+	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.15.0-alpha.1/linux/amd64/utils.tar.gz
+	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.15.0-alpha.1/linux/amd64/utils.tar.gz.sha1
+	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.15.0-alpha.1/linux/amd64/utils.tar.gz.sha256
 	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload does a faster build and uploads to GCS / S3
