@@ -30,8 +30,8 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
-	"k8s.io/kops/protokube/pkg/gossip/memberlist"
-	"k8s.io/kops/protokube/pkg/gossip/mesh"
+	_ "k8s.io/kops/protokube/pkg/gossip/memberlist"
+	_ "k8s.io/kops/protokube/pkg/gossip/mesh"
 	"k8s.io/kops/protokube/pkg/protokube"
 
 	// Load DNS plugins
@@ -305,7 +305,7 @@ func run() error {
 		channelName := "dns"
 		var gossipState gossip.GossipState
 
-		gossipState, err = getGossipState(gossipProtocol, gossipListen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
+		gossipState, err = gossip.GetGossipState(gossipProtocol, gossipListen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
 		if err != nil {
 			klog.Errorf("Error initializing gossip: %v", err)
 			os.Exit(1)
@@ -313,7 +313,7 @@ func run() error {
 
 		if gossipProtocolSecondary != "" {
 
-			secondaryGossipState, err := getGossipState(gossipProtocolSecondary, gossipListenSecondary, channelName, gossipName, []byte(gossipSecretSecondary), gossipSeeds)
+			secondaryGossipState, err := gossip.GetGossipState(gossipProtocolSecondary, gossipListenSecondary, channelName, gossipName, []byte(gossipSecretSecondary), gossipSeeds)
 			if err != nil {
 				klog.Errorf("Error initializing secondary gossip: %v", err)
 				os.Exit(1)
@@ -524,17 +524,4 @@ func findInternalIP() (net.IP, error) {
 
 	klog.Warningf("arbitrarily choosing address: %s", ips[0].String())
 	return ips[0], nil
-}
-
-func getGossipState(protocol, listen, channelName, gossipName string, gossipSecret []byte, gossipSeeds gossip.SeedProvider) (gossip.GossipState, error) {
-	// TODO: enum type?
-	switch strings.ToLower(protocol) {
-	case "mesh":
-		return mesh.NewMeshGossiper(listen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
-
-	case "memberlist":
-		return memberlist.NewMemberlistGossiper(listen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
-	default:
-		return nil, fmt.Errorf("Unknown protocol=" + protocol)
-	}
 }
