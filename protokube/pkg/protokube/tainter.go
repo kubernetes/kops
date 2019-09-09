@@ -35,6 +35,7 @@ type nodePatch struct {
 
 type nodePatchMetadata struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
+	Labels      map[string]string `json:"labels,omitempty"`
 }
 
 type nodePatchSpec struct {

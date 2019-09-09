@@ -82,6 +82,14 @@ type KubeBoot struct {
 	// PeerKey is the path to a peer private key for etcd
 	PeerKey string
 
+	// BootstrapMasterNodeLabels controls the initial application of node labels to our node
+	// The node is found by matching NodeName
+	BootstrapMasterNodeLabels bool
+
+	// NodeName is the name of our node as it will be registered in k8s.
+	// Used by BootstrapMasterNodeLabels
+	NodeName string
+
 	volumeMounter   *VolumeMountController
 	etcdControllers map[string]*EtcdController
 }
@@ -142,6 +150,11 @@ func (k *KubeBoot) syncOnce() error {
 	}
 
 	if k.Master {
+		if k.BootstrapMasterNodeLabels {
+			if err := bootstrapMasterNodeLabels(k.Kubernetes, k.NodeName); err != nil {
+				klog.Warningf("error bootstrapping master node labels: %v", err)
+			}
+		}
 		if k.ApplyTaints {
 			if err := applyMasterTaints(k.Kubernetes); err != nil {
 				klog.Warningf("error updating master taints: %v", err)
