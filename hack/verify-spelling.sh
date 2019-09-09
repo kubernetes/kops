@@ -1,4 +1,4 @@
-# Copyright 2018 The Kubernetes Authors.
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,4 +29,4 @@ find . -type f \( -name "*.go*" -o -name "*.md*" \) -a \( -not -path "./vendor/*
   sed -e /README-ES.md/d -e /node_modules/d |
 		xargs ${OUTPUT_GOBIN}/misspell -error
 
-        
+

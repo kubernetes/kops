@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2018 The Kubernetes Authors.
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ cp prometheus-operator/bundle.yaml ${P_OPERATOR_VERSION}.yaml
 mkdir tmp
 cp prometheus-operator/contrib/kube-prometheus/manifests/* tmp
 for i in `ls tmp`
-do 
+do
   echo "---" >> ${P_OPERATOR_VERSION}.yaml
   cat tmp/$i >> ${P_OPERATOR_VERSION}.yaml
 done
