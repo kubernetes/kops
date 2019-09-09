@@ -16,6 +16,11 @@ limitations under the License.
 
 package gossip
 
+import (
+	"fmt"
+	"sync"
+)
+
 type GossipStateSnapshot struct {
 	Values  map[string]string
 	Version uint64
@@ -57,4 +62,30 @@ func (m *MultiGossipState) Start() error {
 	}()
 
 	return <-errCh
+}
+
+type newGossipFunc func(listen, channelName, gossipName string, gossipSecret []byte, gossipSeeds SeedProvider) (GossipState, error)
+
+var gossipMap = make(map[string]newGossipFunc)
+var gossipMapMutex sync.Mutex
+
+func Register(name string, f newGossipFunc) {
+	gossipMapMutex.Lock()
+	defer gossipMapMutex.Unlock()
+	_, ok := gossipMap[name]
+	if ok {
+		panic("Duplicate gossip name: " + name)
+	}
+	gossipMap[name] = f
+}
+
+func GetGossipState(protocol, listen, channelName, gossipName string, gossipSecret []byte, gossipSeeds SeedProvider) (GossipState, error) {
+	gossipMapMutex.Lock()
+	f, ok := gossipMap[protocol]
+	gossipMapMutex.Unlock()
+	if !ok {
+		return nil, fmt.Errorf("Unknown gossip protocol: %s", protocol)
+	}
+
+	return f(listen, channelName, gossipName, gossipSecret, gossipSeeds)
 }

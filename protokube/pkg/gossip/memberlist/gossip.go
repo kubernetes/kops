@@ -30,6 +30,12 @@ import (
 	"k8s.io/kops/protokube/pkg/gossip"
 )
 
+func init() {
+	gossip.Register("memberlist", func(listen, channelName, gossipName string, gossipSecret []byte, gossipSeeds gossip.SeedProvider) (gossip.GossipState, error) {
+		return NewMemberlistGossiper(listen, channelName, gossipName, gossipSecret, gossipSeeds)
+	})
+}
+
 type MemberlistGossiper struct {
 	peer       *cluster.Peer
 	seeds      gossip.SeedProvider
