@@ -98,6 +98,12 @@ func run() error {
 	manageEtcd := false
 	flag.BoolVar(&manageEtcd, "manage-etcd", manageEtcd, "Set to manage etcd (deprecated in favor of etcd-manager)")
 
+	bootstrapMasterNodeLabels := false
+	flag.BoolVar(&bootstrapMasterNodeLabels, "bootstrap-master-node-labels", bootstrapMasterNodeLabels, "Bootstrap the labels for master nodes (required in k8s 1.16)")
+
+	nodeName := ""
+	flag.StringVar(&nodeName, "node-name", nodeName, "name of the node as will be created in kubernetes; used with bootstrap-master-node-labels")
+
 	var removeDNSNames string
 	flag.StringVar(&removeDNSNames, "remove-dns-names", removeDNSNames, "If set, will remove the DNS records specified")
 
@@ -387,28 +393,30 @@ func run() error {
 	}
 
 	k := &protokube.KubeBoot{
-		ApplyTaints:           applyTaints,
-		Channels:              channels,
-		DNS:                   dnsProvider,
-		ManageEtcd:            manageEtcd,
-		EtcdBackupImage:       etcdBackupImage,
-		EtcdBackupStore:       etcdBackupStore,
-		EtcdImageSource:       etcdImageSource,
-		EtcdElectionTimeout:   etcdElectionTimeout,
-		EtcdHeartbeatInterval: etcdHeartbeatInterval,
-		InitializeRBAC:        initializeRBAC,
-		InternalDNSSuffix:     dnsInternalSuffix,
-		InternalIP:            internalIP,
-		Kubernetes:            protokube.NewKubernetesContext(),
-		Master:                master,
-		ModelDir:              modelDir,
-		PeerCA:                peerCA,
-		PeerCert:              peerCert,
-		PeerKey:               peerKey,
-		TLSAuth:               tlsAuth,
-		TLSCA:                 tlsCA,
-		TLSCert:               tlsCert,
-		TLSKey:                tlsKey,
+		ApplyTaints:               applyTaints,
+		BootstrapMasterNodeLabels: bootstrapMasterNodeLabels,
+		NodeName:                  nodeName,
+		Channels:                  channels,
+		DNS:                       dnsProvider,
+		ManageEtcd:                manageEtcd,
+		EtcdBackupImage:           etcdBackupImage,
+		EtcdBackupStore:           etcdBackupStore,
+		EtcdImageSource:           etcdImageSource,
+		EtcdElectionTimeout:       etcdElectionTimeout,
+		EtcdHeartbeatInterval:     etcdHeartbeatInterval,
+		InitializeRBAC:            initializeRBAC,
+		InternalDNSSuffix:         dnsInternalSuffix,
+		InternalIP:                internalIP,
+		Kubernetes:                protokube.NewKubernetesContext(),
+		Master:                    master,
+		ModelDir:                  modelDir,
+		PeerCA:                    peerCA,
+		PeerCert:                  peerCert,
+		PeerKey:                   peerKey,
+		TLSAuth:                   tlsAuth,
+		TLSCA:                     tlsCA,
+		TLSCert:                   tlsCert,
+		TLSKey:                    tlsKey,
 	}
 
 	k.Init(volumes)
