@@ -596,7 +596,12 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (
 				request := &ec2.DescribeLaunchTemplateVersionsInput{
 					LaunchTemplateName: &name,
 				}
-				versions, _ := c.EC2().DescribeLaunchTemplateVersions(request)
+
+				versions, err := c.EC2().DescribeLaunchTemplateVersions(request)
+				if err != nil {
+					return "", fmt.Errorf("error finding versions for launch template: %v", err)
+				}
+
 				var version string
 				for _, v := range versions.LaunchTemplateVersions {
 					if *v.DefaultVersion {
