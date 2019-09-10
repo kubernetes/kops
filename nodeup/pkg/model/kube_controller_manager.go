@@ -166,6 +166,10 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 			// The /usr directory is read-only for CoreOS
 			volumePluginDir = "/var/lib/kubelet/volumeplugins/"
 
+		case distros.DistributionFlatcar:
+			// The /usr directory is read-only for CoreOS
+			volumePluginDir = "/var/lib/kubelet/volumeplugins/"
+
 		default:
 			volumePluginDir = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/"
 		}
