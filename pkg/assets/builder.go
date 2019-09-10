@@ -306,7 +306,12 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 			hashURL := u.String() + ext
 			b, err := vfs.Context.ReadFile(hashURL, vfs.WithBackoff(backoff))
 			if err != nil {
-				klog.Infof("error reading hash file %q: %v", hashURL, err)
+				// Try to log without being too alarming - issue #7550
+				if ext == ".sha256" {
+					klog.V(2).Infof("unable to read new sha256 hash file (is this an older/unsupported kubernetes release?) %q: %v", hashURL, err)
+				} else {
+					klog.V(2).Infof("unable to read hash file %q: %v", hashURL, err)
+				}
 				continue
 			}
 			hashString := strings.TrimSpace(string(b))
