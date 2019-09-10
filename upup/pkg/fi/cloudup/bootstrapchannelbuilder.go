@@ -608,7 +608,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 	// This means whenever we create or update a networking plugin, we should be sure that:
 	// 1. the selector is role.kubernetes.io/networking=1
-	// 2. every object in the manifest is labeleled with role.kubernetes.io/networking=1
+	// 2. every object in the manifest is labeled with role.kubernetes.io/networking=1
 
 	// TODO: Some way to test/enforce this?
 
@@ -807,7 +807,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 			"k8s-1.6":     "2.6.9-kops.1",
 			"k8s-1.7":     "2.6.12-kops.1",
 			"k8s-1.7-v3":  "3.8.0-kops.1",
-			"k8s-1.12":    "3.8.0-kops.1",
+			"k8s-1.12":    "3.8.2-kops.1",
 		}
 
 		{

@@ -2052,6 +2052,23 @@ spec:
                       description: PrometheusProcessMetricsEnabled enables Prometheus
                         process metrics collection
                       type: boolean
+                    typhaPrometheusMetricsEnabled:
+                      description: 'TyphaPrometheusMetricsEnabled enables Prometheus metrics
+                        collection from Typha'
+                      type: boolean
+                    typhaPrometheusMetricsPort:
+                      description: 'PrometheusMetricsPort is the TCP port that the
+                        Typha Prometheus metrics server should bind to (default:
+                        9093)'
+                      format: int32
+                      type: integer
+                    typhaReplicas:
+                      description: 'TyphaReplicas is the number of replicas of Typha to
+                        deploy. If set >0 Calico is configured to connect to the Typha service
+                        rather than directly to the kube-apiserver. Intended to reduce the
+                        load on the APIServer (default: 0)'
+                      format: int32
+                      type: integer
                   type: object
                 canal:
                   properties:
