@@ -97,19 +97,23 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		instanceName := fi.String(strings.Replace(iName, ".", "-", -1))
 
 		var az *string
+		var subnets []*openstacktasks.Subnet
 		if len(ig.Spec.Subnets) > 0 {
+			subnet := ig.Spec.Subnets[int(i)%len(ig.Spec.Subnets)]
 			// bastion subnet name is not actual zone name, it contains "utility-" prefix
 			if ig.Spec.Role == kops.InstanceGroupRoleBastion {
-				az = fi.String(strings.Replace(ig.Spec.Subnets[int(i)%len(ig.Spec.Subnets)], "utility-", "", 1))
+				az = fi.String(strings.Replace(subnet, "utility-", "", 1))
 			} else {
-				az = fi.String(ig.Spec.Subnets[int(i)%len(ig.Spec.Subnets)])
+				az = fi.String(subnet)
 			}
+			subnets = append(subnets, b.LinkToSubnet(s(fmt.Sprintf("%s.%s", subnet, b.ClusterName()))))
 		}
 		// Create instance port task
 		portTask := &openstacktasks.Port{
 			Name:           fi.String(fmt.Sprintf("%s-%s", "port", *instanceName)),
 			Network:        b.LinkToNetwork(),
 			SecurityGroups: securityGroups,
+			Subnets:        subnets,
 			Lifecycle:      b.Lifecycle,
 		}
 		c.AddTask(portTask)
