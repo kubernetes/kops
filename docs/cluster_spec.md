@@ -458,6 +458,41 @@ Specifying KubeDNS will install kube-dns as the default service discovery.
 
 This will install [CoreDNS](https://coredns.io/) instead of kube-dns.
 
+If you are using CoreDNS and want to use an entirely custom CoreFile you can do this by specifying the file. This will not work with any other options which interact with the default CoreFile.
+
+**Note:** If you are using this functionality you will need to be extra vigiliant on version changes of CoreDNS for changes in functionality of the plugins being used etc.
+
+```yaml
+spec:
+  kubeDNS:
+    provider: CoreDNS
+    externalCoreFile: |
+      amazonaws.com:53 {
+            errors
+            log . {
+                class denial error
+            }
+            health :8084
+            prometheus :9153
+            proxy . 169.254.169.253 {
+            }
+            cache 30
+        }
+        .:53 {
+            errors
+            health :8080
+            autopath @kubernetes
+            kubernetes cluster.local {
+                pods verified
+                upstream 169.254.169.253
+                fallthrough in-addr.arpa ip6.arpa
+            }
+            prometheus :9153
+            proxy . 169.254.169.253
+            cache 300
+        }
+```
+
 **Note:** If you are upgrading to CoreDNS, kube-dns will be left in place and must be removed manually (you can scale the kube-dns and kube-dns-autoscaler deployments in the `kube-system` namespace to 0 as a starting point). The `kube-dns` Service itself should be left in place, as this retains the ClusterIP and eliminates the possibility of DNS outages in your cluster. If you would like to continue autoscaling, update the `kube-dns-autoscaler` Deployment container command for `--target=Deployment/kube-dns` to be `--target=Deployment/coredns`.
 
 ### kubeControllerManager
