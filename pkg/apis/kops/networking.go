@@ -96,6 +96,14 @@ type CalicoNetworkingSpec struct {
 	MajorVersion string `json:"majorVersion,omitempty"`
 	// IPIPMode is mode for CALICO_IPV4POOL_IPIP
 	IPIPMode string `json:"ipipMode,omitempty"`
+	// TyphaPrometheusMetricsEnabled enables Prometheus metrics collection from Typha
+	// (default: false)
+	TyphaPrometheusMetricsEnabled bool `json:"typhaPrometheusMetricsEnabled,omitempty"`
+	// TyphaPrometheusMetricsPort is the TCP port the typha Prometheus metrics server
+	// should bind to (default: 9093)
+	TyphaPrometheusMetricsPort int32 `json:"typhaPrometheusMetricsPort,omitempty"`
+	// TyphaReplicas is the number of replicas of Typha to deploy
+	TyphaReplicas int32 `json:"typhaReplicas,omitempty"`
 }
 
 // CanalNetworkingSpec declares that we want Canal networking
