@@ -102,6 +102,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
 					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet.cluster")},
+					},
 					Lifecycle: &clusterLifecycle,
 				}
 				masterInstance := &openstacktasks.Instance{
@@ -143,6 +146,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("nodes.cluster")},
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet.cluster")},
 					},
 					Lifecycle: &clusterLifecycle,
 				}
@@ -267,6 +273,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
 					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet.cluster")},
+					},
 					Lifecycle: &clusterLifecycle,
 				}
 				masterInstance := &openstacktasks.Instance{
@@ -309,6 +318,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("nodes.cluster")},
 					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet.cluster")},
+					},
 					Lifecycle: &clusterLifecycle,
 				}
 				nodeInstance := &openstacktasks.Instance{
@@ -345,6 +357,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("bastion.cluster")},
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("utility-subnet.cluster")},
 					},
 					Lifecycle: &clusterLifecycle,
 				}
@@ -503,6 +518,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
 					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-a.cluster")},
+					},
 					Lifecycle: &clusterLifecycle,
 				}
 				masterAInstance := &openstacktasks.Instance{
@@ -545,6 +563,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-b.cluster")},
 					},
 					Lifecycle: &clusterLifecycle,
 				}
@@ -589,6 +610,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
 					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-c.cluster")},
+					},
 					Lifecycle: &clusterLifecycle,
 				}
 				masterCInstance := &openstacktasks.Instance{
@@ -630,6 +654,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("nodes.cluster")},
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-a.cluster")},
 					},
 					Lifecycle: &clusterLifecycle,
 				}
@@ -673,6 +700,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("nodes.cluster")},
 					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-b.cluster")},
+					},
 					Lifecycle: &clusterLifecycle,
 				}
 				nodeBInstance := &openstacktasks.Instance{
@@ -714,6 +744,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("nodes.cluster")},
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-c.cluster")},
 					},
 					Lifecycle: &clusterLifecycle,
 				}
@@ -887,6 +920,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("masters.cluster")},
 					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-a.cluster")},
+					},
 					Lifecycle: &clusterLifecycle,
 				}
 				masterAInstance := &openstacktasks.Instance{
@@ -923,6 +959,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("masters.cluster")},
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-b.cluster")},
 					},
 					Lifecycle: &clusterLifecycle,
 				}
@@ -961,6 +1000,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("masters.cluster")},
 					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-c.cluster")},
+					},
 					Lifecycle: &clusterLifecycle,
 				}
 				masterCInstance := &openstacktasks.Instance{
@@ -997,6 +1039,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("nodes.cluster")},
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-a.cluster")},
 					},
 					Lifecycle: &clusterLifecycle,
 				}
@@ -1040,6 +1085,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("nodes.cluster")},
 					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-b.cluster")},
+					},
 					Lifecycle: &clusterLifecycle,
 				}
 				nodeBInstance := &openstacktasks.Instance{
@@ -1081,6 +1129,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("nodes.cluster")},
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-c.cluster")},
 					},
 					Lifecycle: &clusterLifecycle,
 				}
@@ -1260,6 +1311,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
 					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-a.cluster")},
+					},
 					Lifecycle: &clusterLifecycle,
 				}
 				masterAInstance := &openstacktasks.Instance{
@@ -1295,6 +1349,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
 					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-b.cluster")},
+					},
 					Lifecycle: &clusterLifecycle,
 				}
 				masterBInstance := &openstacktasks.Instance{
@@ -1329,6 +1386,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-c.cluster")},
 					},
 					Lifecycle: &clusterLifecycle,
 				}
@@ -1372,6 +1432,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("nodes.cluster")},
 					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-a.cluster")},
+					},
 					Lifecycle: &clusterLifecycle,
 				}
 				nodeAInstance := &openstacktasks.Instance{
@@ -1406,6 +1469,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("nodes.cluster")},
 					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-b.cluster")},
+					},
 					Lifecycle: &clusterLifecycle,
 				}
 				nodeBInstance := &openstacktasks.Instance{
@@ -1439,6 +1505,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("nodes.cluster")},
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet-c.cluster")},
 					},
 					Lifecycle: &clusterLifecycle,
 				}
@@ -1611,6 +1680,63 @@ func comparePorts(t *testing.T, actualTask fi.Task, expected *openstacktasks.Por
 		t.Fatal("Network is nil")
 	}
 	compareStrings(t, "Network name", actual.Network.Name, expected.Network.Name)
+	if len(actual.Subnets) == len(expected.Subnets) {
+		for i, subnet := range expected.Subnets {
+			compareSubnets(t, actual.Subnets[i], subnet)
+		}
+	} else {
+		compareNamedTasks(t, "Subnets", asHasName(actual.Subnets), asHasName(expected.Subnets))
+	}
+}
+
+func asHasName(tasks interface{}) []fi.HasName {
+	var namedTasks []fi.HasName
+	rType := reflect.TypeOf(tasks)
+	if rType.Kind() != reflect.Array && rType.Kind() != reflect.Slice {
+		fmt.Printf("type is not an array or slice: %v\n", rType.Kind())
+		return namedTasks
+	}
+	rVal := reflect.ValueOf(tasks)
+	for i := 0; i < rVal.Len(); i++ {
+		elem := rVal.Index(i)
+		if named, ok := elem.Interface().(fi.HasName); ok {
+			namedTasks = append(namedTasks, named)
+		}
+	}
+	return namedTasks
+}
+
+func compareNamedTasks(t *testing.T, name string, actual, expected []fi.HasName) {
+	actualTaskNames := make([]string, len(actual))
+	for i, task := range actual {
+		actualTaskNames[i] = *task.GetName()
+	}
+	sort.Strings(actualTaskNames)
+	expectedTaskNames := make([]string, len(expected))
+	for i, task := range expected {
+		if task.GetName() == nil {
+			expectedTaskNames[i] = ""
+		} else {
+			expectedTaskNames[i] = *task.GetName()
+		}
+	}
+	sort.Strings(expectedTaskNames)
+	if !reflect.DeepEqual(expectedTaskNames, actualTaskNames) {
+		t.Errorf("%s differ: %v instead of %v", name, actualTaskNames, expectedTaskNames)
+	}
+}
+
+func compareSubnets(t *testing.T, actualTask fi.Task, expected *openstacktasks.Subnet) {
+	t.Helper()
+	if pointersAreBothNil(t, "Subnet", actualTask, expected) {
+		return
+	}
+	actual, ok := actualTask.(*openstacktasks.Subnet)
+	if !ok {
+		t.Fatalf("task is not an Subnet task, got %T", actualTask)
+	}
+
+	compareStrings(t, "Name", actual.Name, expected.Name)
 }
 
 func compareInstances(t *testing.T, actualTask fi.Task, expected *openstacktasks.Instance) {
