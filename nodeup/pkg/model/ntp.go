@@ -41,6 +41,9 @@ func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 	case distros.DistributionCoreOS:
 		klog.Infof("Detected CoreOS; won't install ntp")
 		return nil
+	case distros.DistributionFlatcar:
+		klog.Infof("Detected CoreOS; won't install ntp")
+		return nil
 	}
 
 	if b.Distribution.IsDebianFamily() {
