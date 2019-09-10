@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import (
 	"archive/tar"
 	"fmt"
 	"path"
+	"strings"
 
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
@@ -170,12 +171,16 @@ func (b *Builder) Build(cluster *kops.Cluster, ig *kops.InstanceGroup) (*Data, e
 
 		bootstrapScript := model.BootstrapScript{}
 
-		nodeupLocation, nodeupHash, err := cloudup.NodeUpLocation(assetBuilder)
-		if err != nil {
-			return nil, err
+		{
+			asset, err := cloudup.NodeUpAsset(assetBuilder)
+			if err != nil {
+				return nil, err
+			}
+
+			bootstrapScript.NodeUpSource = strings.Join(asset.Locations, ",")
+			bootstrapScript.NodeUpSourceHash = asset.Hash.Hex()
 		}
-		bootstrapScript.NodeUpSource = nodeupLocation.String()
-		bootstrapScript.NodeUpSourceHash = nodeupHash.Hex()
+
 		bootstrapScript.NodeUpConfigBuilder = func(ig *kops.InstanceGroup) (*nodeup.Config, error) {
 			return nodeupConfig, err
 		}

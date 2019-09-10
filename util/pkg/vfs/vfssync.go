@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ type Change struct {
 func (v *VFSScan) Scan() ([]Change, error) {
 	allFiles, err := v.Base.ReadTree()
 	if err != nil {
-		return nil, fmt.Errorf("Error reading dir %q: %v", v.Base, err)
+		return nil, fmt.Errorf("error reading dir %q: %v", v.Base, err)
 	}
 
 	files := make(map[string]Path)
@@ -64,11 +64,11 @@ func (v *VFSScan) Scan() ([]Change, error) {
 		files[key] = f
 		hasHash, ok := f.(HasHash)
 		if !ok {
-			return nil, fmt.Errorf("Source must support hashing: %T", f)
+			return nil, fmt.Errorf("source must support hashing: %T", f)
 		}
 		hash, err := hasHash.PreferredHash()
 		if err != nil {
-			return nil, fmt.Errorf("Error hashing %q: %v", key, err)
+			return nil, fmt.Errorf("error hashing %q: %v", key, err)
 		}
 
 		hashes[key] = hash
@@ -111,7 +111,7 @@ func (v *VFSScan) Scan() ([]Change, error) {
 func SyncDir(src *VFSScan, destBase Path) error {
 	changes, err := src.Scan()
 	if err != nil {
-		return fmt.Errorf("Error scanning source dir %q: %v", src, err)
+		return fmt.Errorf("error scanning source dir %q: %v", src, err)
 	}
 
 	for _, change := range changes {
@@ -135,24 +135,23 @@ func SyncDir(src *VFSScan, destBase Path) error {
 			continue
 
 		case ChangeType_Modified, ChangeType_Added:
-			break
+			hashMatch, err := hashesMatch(f, destFile)
+			if err != nil {
+				return err
+			}
+			if hashMatch {
+				klog.V(2).Infof("File hashes match: %s and %s", f, destFile)
+				continue
+			}
+
+			if err := CopyFile(f, destFile, nil); err != nil {
+				return err
+			}
 
 		default:
 			return fmt.Errorf("unknown change type: %q", change.ChangeType)
 		}
 
-		hashMatch, err := hashesMatch(f, destFile)
-		if err != nil {
-			return err
-		}
-		if hashMatch {
-			klog.V(2).Infof("File hashes match: %s and %s", f, destFile)
-			continue
-		}
-
-		if err := CopyFile(f, destFile, nil); err != nil {
-			return err
-		}
 	}
 
 	return nil

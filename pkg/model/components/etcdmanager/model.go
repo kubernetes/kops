@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -41,9 +41,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
+	"k8s.io/kops/util/pkg/env"
 	"k8s.io/kops/util/pkg/exec"
-	"k8s.io/kops/util/pkg/proxy"
 )
 
 const metaFilename = "_etcd_backup.meta"
@@ -189,7 +190,7 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-  - image: kopeio/etcd-manager:3.0.20190801
+  - image: kopeio/etcd-manager:3.0.20190816
     name: etcd-manager
     resources:
       requests:
@@ -385,11 +386,21 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 			config.VolumeProvider = "do"
 
 			config.VolumeTag = []string{
-				fmt.Sprintf("kubernetes.io/cluster/%s=owned", b.Cluster.Name),
+				fmt.Sprintf("kubernetes.io/cluster=%s", b.Cluster.Name),
 				do.TagNameEtcdClusterPrefix + etcdCluster.Name,
 				do.TagNameRolePrefix + "master=1",
 			}
 			config.VolumeNameTag = do.TagNameEtcdClusterPrefix + etcdCluster.Name
+
+		case kops.CloudProviderOpenstack:
+			config.VolumeProvider = "openstack"
+
+			config.VolumeTag = []string{
+				openstack.TagNameEtcdClusterPrefix + etcdCluster.Name,
+				openstack.TagNameRolePrefix + "master=1",
+				fmt.Sprintf("%s=%s", openstack.TagClusterName, b.Cluster.Name),
+			}
+			config.VolumeNameTag = openstack.TagNameEtcdClusterPrefix + etcdCluster.Name
 
 		default:
 			return nil, fmt.Errorf("CloudProvider %q not supported with etcd-manager", b.Cluster.Spec.CloudProvider)
@@ -438,7 +449,9 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		})
 	}
 
-	container.Env = proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy)
+	envMap := env.BuildSystemComponentEnvVars(&b.Cluster.Spec)
+
+	container.Env = envMap.ToEnvVars()
 
 	{
 		foundPKI := false

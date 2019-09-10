@@ -7,7 +7,7 @@ Edit clusters and other resources.
 
 ### Synopsis
 
-Edit a resource configuration. This command changes the desired configuration in the registry. 
+Edit a resource configuration. This command changes the desired configuration in the registry.
 
   To set your preferred editor, you can define the EDITOR environment variable.
   When you have done this, kops will use the editor that you have set.
@@ -43,7 +43,7 @@ Edit a resource configuration. This command changes the desired configuration in
       --logtostderr                      log to standard error instead of files (default true)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
       --skip_headers                     If true, avoid header prefixes in the log messages
-      --skip_log_headers                 If true, avoid headers when openning log files
+      --skip_log_headers                 If true, avoid headers when opening log files
       --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          number for the log level verbosity

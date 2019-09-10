@@ -79,6 +79,17 @@ func (c *Comments) Comment() *Comments {
 	return c
 }
 
+// stmtsEnd returns the end position of the last non-nil statement
+func stmtsEnd(stmts []Expr) Position {
+	for i := len(stmts) - 1; i >= 0; i-- {
+		if stmts[i] != nil {
+			_, end := stmts[i].Span()
+			return end
+		}
+	}
+	return Position{}
+}
+
 // A File represents an entire BUILD file.
 type File struct {
 	Path string // file path, relative to workspace directory
@@ -97,10 +108,11 @@ func (f *File) DisplayPath() string {
 
 func (f *File) Span() (start, end Position) {
 	if len(f.Stmt) == 0 {
-		return
+		p := Position{Line: 1, LineRune: 1}
+		return p, p
 	}
-	start, _ = f.Stmt[0].Span()
-	_, end = f.Stmt[len(f.Stmt)-1].Span()
+	start = Position{}
+	end = stmtsEnd(f.Stmt)
 	return start, end
 }
 
@@ -126,7 +138,7 @@ func (x *Ident) Span() (start, end Position) {
 	return x.NamePos, x.NamePos.add(x.Name)
 }
 
-// BranchStmt represents a `pass` statement.
+// BranchStmt represents a `pass`, `break`, or `continue` statement.
 type BranchStmt struct {
 	Comments
 	Token    string // pass, break, continue
@@ -341,6 +353,9 @@ type UnaryExpr struct {
 }
 
 func (x *UnaryExpr) Span() (start, end Position) {
+	if x.X == nil {
+		return x.OpStart, x.OpStart
+	}
 	_, end = x.X.Span()
 	return x.OpStart, end
 }
@@ -358,6 +373,22 @@ type BinaryExpr struct {
 func (x *BinaryExpr) Span() (start, end Position) {
 	start, _ = x.X.Span()
 	_, end = x.Y.Span()
+	return start, end
+}
+
+// An AssignExpr represents a binary expression with `=`: LHS = RHS.
+type AssignExpr struct {
+	Comments
+	LHS       Expr
+	OpPos     Position
+	Op        string
+	LineBreak bool // insert line break between Op and RHS
+	RHS       Expr
+}
+
+func (x *AssignExpr) Span() (start, end Position) {
+	start, _ = x.LHS.Span()
+	_, end = x.RHS.Span()
 	return start, end
 }
 
@@ -474,12 +505,18 @@ type DefStmt struct {
 	Comments
 	Function
 	Name           string
-	ForceCompact   bool // force compact (non-multiline) form when printing the arguments
-	ForceMultiLine bool // force multiline form when printing the arguments
+	ColonPos       Position // position of the ":"
+	ForceCompact   bool     // force compact (non-multiline) form when printing the arguments
+	ForceMultiLine bool     // force multiline form when printing the arguments
 }
 
 func (x *DefStmt) Span() (start, end Position) {
 	return x.Function.Span()
+}
+
+// HeaderSpan returns the span of the function header `def f(...):`
+func (x *DefStmt) HeaderSpan() (start, end Position) {
+	return x.Function.StartPos, x.ColonPos
 }
 
 // A ReturnStmt represents a return statement: return f(x).
@@ -508,7 +545,7 @@ type ForStmt struct {
 }
 
 func (x *ForStmt) Span() (start, end Position) {
-	_, end = x.Body[len(x.Body)-1].Span()
+	end = stmtsEnd(x.Body)
 	return x.For, end
 }
 
@@ -528,6 +565,6 @@ func (x *IfStmt) Span() (start, end Position) {
 	if body == nil {
 		body = x.True
 	}
-	_, end = body[len(body)-1].Span()
+	end = stmtsEnd(body)
 	return x.If, end
 }

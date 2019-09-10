@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -62,19 +62,15 @@ function ensure-install-dir() {
   cd ${INSTALL_DIR}
 }
 
-# Retry a download until we get it. Takes a hash and a set of URLs.
-#
-# $1 is the sha1 of the URL. Can be "" if the sha1 is unknown.
-# $2+ are the URLs to download.
+# Retry a download until we get it. args: name, sha, url1, url2...
 download-or-bust() {
-  local -r hash="$1"
-  shift 1
+  local -r file="$1"
+  local -r hash="$2"
+  shift 2
 
   urls=( $* )
   while true; do
     for url in "${urls[@]}"; do
-      local file="${url##*/}"
-
       if [[ -e "${file}" ]]; then
         echo "== File exists for ${url} =="
 
@@ -84,12 +80,12 @@ download-or-bust() {
       elif [[ $(curl --version) ]]; then
         if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
           echo "== Failed to curl ${url}. Retrying. =="
-          break
+          continue
         fi
       else
         if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
           echo "== Failed to wget ${url}. Retrying. =="
-          break
+          continue
         fi
       fi
 
@@ -116,9 +112,9 @@ validate-hash() {
   local -r expected="$2"
   local actual
 
-  actual=$(sha1sum ${file} | awk '{ print $1 }') || true
+  actual=$(sha256sum ${file} | awk '{ print $1 }') || true
   if [[ "${actual}" != "${expected}" ]]; then
-    echo "== ${file} corrupted, sha1 ${actual} doesn't match expected ${expected} =="
+    echo "== ${file} corrupted, hash ${actual} doesn't match expected ${expected} =="
     return 1
   fi
 }
@@ -132,18 +128,17 @@ function try-download-release() {
   # optimization.
 
   local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
-  local -r nodeup_filename="${nodeup_urls[0]##*/}"
   if [[ -n "${NODEUP_HASH:-}" ]]; then
     local -r nodeup_hash="${NODEUP_HASH}"
   else
   # TODO: Remove?
-    echo "Downloading sha1 (not found in env)"
-    download-or-bust "" "${nodeup_urls[@]/%/.sha1}"
-    local -r nodeup_hash=$(cat "${nodeup_filename}.sha1")
+    echo "Downloading sha256 (not found in env)"
+    download-or-bust nodeup.sha256 "" "${nodeup_urls[@]/%/.sha256}"
+    local -r nodeup_hash=$(cat nodeup.sha256)
   fi
 
   echo "Downloading nodeup (${nodeup_urls[@]})"
-  download-or-bust "${nodeup_hash}" "${nodeup_urls[@]}"
+  download-or-bust nodeup "${nodeup_hash}" "${nodeup_urls[@]}"
 
   chmod +x nodeup
 }

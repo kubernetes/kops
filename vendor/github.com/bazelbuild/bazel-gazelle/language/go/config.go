@@ -20,7 +20,9 @@ import (
 	"fmt"
 	"go/build"
 	"log"
+	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/config"
@@ -71,6 +73,16 @@ type goConfig struct {
 
 	// goGrpcCompilersSet indicates whether goGrpcCompiler was set explicitly.
 	goGrpcCompilersSet bool
+
+	// goRepositoryMode is true if Gazelle was invoked by a go_repository rule.
+	// In this mode, we won't go out to the network to resolve external deps.
+	goRepositoryMode bool
+
+	// moduleMode is true if the current directory is intended to be built
+	// as part of a module. Minimal module compatibility won't be supported
+	// if this is true in the root directory. External dependencies may be
+	// resolved differently (also depending on goRepositoryMode).
+	moduleMode bool
 }
 
 var (
@@ -222,6 +234,16 @@ func (_ *goLang) RegisterFlags(fs *flag.FlagSet, cmd string, c *config.Config) {
 			&gzflag.MultiFlag{Values: &gc.goGrpcCompilers, IsSet: &gc.goGrpcCompilersSet},
 			"go_grpc_compiler",
 			"go_proto_library compiler to use for gRPC (may be repeated)")
+		fs.BoolVar(
+			&gc.goRepositoryMode,
+			"go_repository_mode",
+			false,
+			"set when gazelle is invoked by go_repository")
+		fs.BoolVar(
+			&gc.moduleMode,
+			"go_repository_module_mode",
+			false,
+			"set when gazelle is invoked by go_repository in module mode")
 	}
 	c.Exts[goName] = gc
 }
@@ -246,6 +268,13 @@ func (_ *goLang) Configure(c *config.Config, rel string, f *rule.File) {
 		gc = raw.(*goConfig).clone()
 	}
 	c.Exts[goName] = gc
+
+	if !gc.moduleMode {
+		st, err := os.Stat(filepath.Join(c.RepoRoot, filepath.FromSlash(rel), "go.mod"))
+		if err == nil && !st.IsDir() {
+			gc.moduleMode = true
+		}
+	}
 
 	if path.Base(rel) == "vendor" {
 		gc.importMapPrefix = inferImportPath(gc, rel)

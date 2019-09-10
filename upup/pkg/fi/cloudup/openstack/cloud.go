@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -323,11 +323,13 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 		return nil, fmt.Errorf("error finding openstack region: %v", err)
 	}
 
-	tlsconfig := &tls.Config{}
-	tlsconfig.InsecureSkipVerify = true
-	transport := &http.Transport{TLSClientConfig: tlsconfig}
-	provider.HTTPClient = http.Client{
-		Transport: transport,
+	if spec != nil && spec.CloudConfig != nil && spec.CloudConfig.Openstack != nil && spec.CloudConfig.Openstack.InsecureSkipVerify != nil {
+		tlsconfig := &tls.Config{}
+		tlsconfig.InsecureSkipVerify = fi.BoolValue(spec.CloudConfig.Openstack.InsecureSkipVerify)
+		transport := &http.Transport{TLSClientConfig: tlsconfig}
+		provider.HTTPClient = http.Client{
+			Transport: transport,
+		}
 	}
 
 	klog.V(2).Info("authenticating to keystone")

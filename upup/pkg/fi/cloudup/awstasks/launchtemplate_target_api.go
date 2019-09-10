@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 	}
 	lc := input.LaunchTemplateData
 
-	// @step: add the the actual block device mappings
+	// @step: add the actual block device mappings
 	rootDevices, err := t.buildRootDevice(c.Cloud)
 	if err != nil {
 		return err

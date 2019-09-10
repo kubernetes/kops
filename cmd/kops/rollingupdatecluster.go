@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -229,7 +229,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	}
 
 	contextName := cluster.ObjectMeta.Name
-	clientGetter := genericclioptions.NewConfigFlags()
+	clientGetter := genericclioptions.NewConfigFlags(true)
 	clientGetter.Context = &contextName
 
 	config, err := clientGetter.ToRESTConfig()
@@ -398,7 +398,6 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		Force:             options.Force,
 		Cloud:             cloud,
 		K8sClient:         k8sClient,
-		ClientGetter:      clientGetter,
 		FailOnDrainError:  options.FailOnDrainError,
 		FailOnValidate:    options.FailOnValidate,
 		CloudOnly:         options.CloudOnly,

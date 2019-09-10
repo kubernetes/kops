@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -227,6 +227,14 @@ type ProtokubeFlags struct {
 	// RemoveDNSNames allows us to remove dns records, so that they can be managed elsewhere
 	// We use it e.g. for the switch to etcd-manager
 	RemoveDNSNames string `json:"removeDNSNames,omitempty" flag:"remove-dns-names"`
+
+	// BootstrapMasterNodeLabels applies the critical node-role labels to our node,
+	// which lets us bring up the controllers that can only run on masters, which are then
+	// responsible for node labels.  The node is specified by NodeName
+	BootstrapMasterNodeLabels bool `json:"bootstrapMasterNodeLabels,omitempty" flag:"bootstrap-master-node-labels"`
+
+	// NodeName is the name of the node as will be created in kubernetes.  Primarily used by BootstrapMasterNodeLabels.
+	NodeName string `json:"nodeName,omitempty" flag:"node-name"`
 }
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
@@ -367,6 +375,16 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 
 	if k8sVersion.Major == 1 && k8sVersion.Minor <= 5 {
 		f.ApplyTaints = fi.Bool(true)
+	}
+
+	if k8sVersion.Major == 1 && k8sVersion.Minor >= 16 {
+		f.BootstrapMasterNodeLabels = true
+
+		nodeName, err := t.NodeName()
+		if err != nil {
+			return nil, fmt.Errorf("error getting NodeName: %v", err)
+		}
+		f.NodeName = nodeName
 	}
 
 	// Remove DNS names if we're using etcd-manager

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/cli-runtime/pkg/genericclioptions/resource"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
@@ -38,8 +37,8 @@ import (
 )
 
 type DeleteOptions struct {
-	resource.FilenameOptions
-	Yes bool
+	Filenames []string
+	Yes       bool
 }
 
 var (
@@ -50,10 +49,10 @@ var (
 	deleteExample = templates.Examples(i18n.T(`
 		# Delete a cluster using a manifest file
 		kops delete -f my-cluster.yaml
-		
+
 		# Delete a cluster using a pasted manifest file from stdin.
 		pbpaste | kops delete -f -
-		
+
 		# Delete a cluster in AWS.
 		kops delete cluster --name=k8s.example.com --state=s3://kops-state-1234
 

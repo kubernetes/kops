@@ -156,7 +156,7 @@ func discoverKubernetesClusters(timeout time.Duration) (map[string][]net.IP, err
 	addr := &net.UDPAddr{IP: net.IPv4(224, 0, 0, 251), Port: 5353}
 	connection, err := net.ListenMulticastUDP("udp4", nil, addr)
 	if err != nil {
-		return nil, fmt.Errorf("error lisening for multicast: %v", err)
+		return nil, fmt.Errorf("error listening for multicast: %v", err)
 	}
 
 	defer func() {

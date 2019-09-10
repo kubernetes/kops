@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -190,7 +190,8 @@ func (p *SSHPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 	}
 
 	if err == nil {
-		session, err := p.client.NewSession()
+		var session *ssh.Session
+		session, err = p.client.NewSession()
 		if err != nil {
 			err = fmt.Errorf("error creating session for rename: %v", err)
 		} else {

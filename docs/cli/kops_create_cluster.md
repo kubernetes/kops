@@ -7,9 +7,9 @@ Create a Kubernetes cluster.
 
 ### Synopsis
 
-Create a kubernetes cluster using command line flags. This command creates cloud based resources such as networks and virtual machines. Once the infrastructure is in place Kubernetes is installed on the virtual machines. 
+Create a kubernetes cluster using command line flags. This command creates cloud based resources such as networks and virtual machines. Once the infrastructure is in place Kubernetes is installed on the virtual machines.
 
-These operations are done in parallel and rely on eventual consistency.
+ These operations are done in parallel and rely on eventual consistency.
 
 ```
 kops create cluster [flags]
@@ -97,6 +97,12 @@ kops create cluster [flags]
       --node-size string                 Set instance size for nodes
       --node-tenancy string              The tenancy of the node group on AWS. Can be either default or dedicated.
       --node-volume-size int32           Set instance volume size (in GB) for nodes
+      --os-dns-servers string            comma separated list of DNS Servers which is used in network
+      --os-ext-net string                The name of the external network to use with the openstack router
+      --os-ext-subnet string             The name of the external floating subnet to use with the openstack router
+      --os-kubelet-ignore-az             If true kubernetes may attach volumes across availability zones
+      --os-lb-floating-subnet string     The name of the external subnet to use with the kubernetes api
+      --os-octavia                       If true octavia loadbalancer api will be used
       --out string                       Path to write any local output
   -o, --output string                    Output format. One of json|yaml. Used with the --dry-run flag.
       --project string                   Project to use (must be set on GCE)
@@ -123,7 +129,7 @@ kops create cluster [flags]
       --logtostderr                      log to standard error instead of files (default true)
       --name string                      Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable
       --skip_headers                     If true, avoid header prefixes in the log messages
-      --skip_log_headers                 If true, avoid headers when openning log files
+      --skip_log_headers                 If true, avoid headers when opening log files
       --state string                     Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          number for the log level verbosity

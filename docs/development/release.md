@@ -42,6 +42,7 @@ See [1.5.0-alpha4 commit](https://github.com/kubernetes/kops/commit/a60d7982e04c
 ## Check builds OK
 
 ```
+rm -rf .build/ .bazelbuild/
 make ci
 ```
 
@@ -92,8 +93,8 @@ make release-github
 e.g.
 
 ```
-git log 1.11.0-beta.1..1.11.0 --oneline | grep Merge.pull | cut -f 5 -d ' ' | tac  > ~/shipbot/prs
-relnotes  -config .shipbot.yaml  < ~/shipbot/prs  >> docs/releases/1.11-NOTES.md
+git log 1.14.0-beta.1..1.14.0 --oneline | grep Merge.pull | cut -f 5 -d ' ' | tac  > /tmp/prs
+relnotes  -config .shipbot.yaml  < /tmp/prs  >> docs/releases/1.14-NOTES.md
 ```
 
 ## On github

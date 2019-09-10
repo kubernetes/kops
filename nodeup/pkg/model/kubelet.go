@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,15 +27,14 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"k8s.io/klog"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apiserver/pkg/authentication/user"
-
+	"k8s.io/klog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -496,7 +495,7 @@ const (
 func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, error) {
 	// Merge KubeletConfig for NodeLabels
 	c := &kops.KubeletConfigSpec{}
-	if b.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {
+	if b.IsMaster {
 		reflectutils.JsonMergeStruct(c, b.Cluster.Spec.MasterKubelet)
 	} else {
 		reflectutils.JsonMergeStruct(c, b.Cluster.Spec.Kubelet)
@@ -515,7 +514,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
 		instanceType, err := awsup.GetMachineTypeInfo(strings.Split(b.InstanceGroup.Spec.MachineType, ",")[0])
 		if err != nil {
-			return c, err
+			return nil, err
 		}
 
 		// Default maximum pods per node defined by KubeletConfiguration, but
@@ -571,6 +570,13 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 			c.NodeLabels = make(map[string]string)
 		}
 		c.NodeLabels[k] = v
+	}
+
+	// As of 1.16 we can no longer set critical labels.
+	// kops-controller will set these labels.
+	// For bootstrapping reasons, protokube sets the critical labels for kops-controller to run.
+	if b.IsKubernetesGTE("1.16") {
+		c.NodeLabels = nil
 	}
 
 	// Use --register-with-taints for k8s 1.6 and on
@@ -644,7 +650,7 @@ func (b *KubeletBuilder) buildMasterKubeletKubeconfig() (*nodetasks.File, error)
 
 	template.Subject = pkix.Name{
 		CommonName:   fmt.Sprintf("system:node:%s", nodeName),
-		Organization: []string{user.NodesGroup},
+		Organization: []string{rbac.NodesGroup},
 	}
 
 	// https://tools.ietf.org/html/rfc5280#section-4.2.1.3

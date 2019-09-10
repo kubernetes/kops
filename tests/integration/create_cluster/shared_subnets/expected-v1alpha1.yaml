@@ -1,7 +1,7 @@
 apiVersion: kops.k8s.io/v1alpha1
 kind: Cluster
 metadata:
-  creationTimestamp: 2017-01-01T00:00:00Z
+  creationTimestamp: "2017-01-01T00:00:00Z"
   name: subnet.example.com
 spec:
   adminAccess:
@@ -51,7 +51,7 @@ spec:
 apiVersion: kops.k8s.io/v1alpha1
 kind: InstanceGroup
 metadata:
-  creationTimestamp: 2017-01-01T00:00:00Z
+  creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: subnet.example.com
   name: master-us-test-1a
@@ -71,7 +71,7 @@ spec:
 apiVersion: kops.k8s.io/v1alpha1
 kind: InstanceGroup
 metadata:
-  creationTimestamp: 2017-01-01T00:00:00Z
+  creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: subnet.example.com
   name: nodes

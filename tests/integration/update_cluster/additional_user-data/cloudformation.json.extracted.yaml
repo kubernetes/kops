@@ -27,7 +27,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
+  NODEUP_URL=https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
   export AWS_REGION=us-test-1
@@ -45,19 +45,15 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
     cd ${INSTALL_DIR}
   }
 
-  # Retry a download until we get it. Takes a hash and a set of URLs.
-  #
-  # $1 is the sha1 of the URL. Can be "" if the sha1 is unknown.
-  # $2+ are the URLs to download.
+  # Retry a download until we get it. args: name, sha, url1, url2...
   download-or-bust() {
-    local -r hash="$1"
-    shift 1
+    local -r file="$1"
+    local -r hash="$2"
+    shift 2
 
     urls=( $* )
     while true; do
       for url in "${urls[@]}"; do
-        local file="${url##*/}"
-
         if [[ -e "${file}" ]]; then
           echo "== File exists for ${url} =="
 
@@ -67,12 +63,12 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
         elif [[ $(curl --version) ]]; then
           if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
             echo "== Failed to curl ${url}. Retrying. =="
-            break
+            continue
           fi
         else
           if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
             echo "== Failed to wget ${url}. Retrying. =="
-            break
+            continue
           fi
         fi
 
@@ -99,9 +95,9 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
     local -r expected="$2"
     local actual
 
-    actual=$(sha1sum ${file} | awk '{ print $1 }') || true
+    actual=$(sha256sum ${file} | awk '{ print $1 }') || true
     if [[ "${actual}" != "${expected}" ]]; then
-      echo "== ${file} corrupted, sha1 ${actual} doesn't match expected ${expected} =="
+      echo "== ${file} corrupted, hash ${actual} doesn't match expected ${expected} =="
       return 1
     fi
   }
@@ -115,18 +111,17 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
     # optimization.
 
     local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
-    local -r nodeup_filename="${nodeup_urls[0]##*/}"
     if [[ -n "${NODEUP_HASH:-}" ]]; then
       local -r nodeup_hash="${NODEUP_HASH}"
     else
     # TODO: Remove?
-      echo "Downloading sha1 (not found in env)"
-      download-or-bust "" "${nodeup_urls[@]/%/.sha1}"
-      local -r nodeup_hash=$(cat "${nodeup_filename}.sha1")
+      echo "Downloading sha256 (not found in env)"
+      download-or-bust nodeup.sha256 "" "${nodeup_urls[@]/%/.sha256}"
+      local -r nodeup_hash=$(cat nodeup.sha256)
     fi
 
     echo "Downloading nodeup (${nodeup_urls[@]})"
-    download-or-bust "${nodeup_hash}" "${nodeup_urls[@]}"
+    download-or-bust nodeup "${nodeup_hash}" "${nodeup_urls[@]}"
 
     chmod +x nodeup
   }
@@ -326,7 +321,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
+  NODEUP_URL=https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
   export AWS_REGION=us-test-1
@@ -344,19 +339,15 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
     cd ${INSTALL_DIR}
   }
 
-  # Retry a download until we get it. Takes a hash and a set of URLs.
-  #
-  # $1 is the sha1 of the URL. Can be "" if the sha1 is unknown.
-  # $2+ are the URLs to download.
+  # Retry a download until we get it. args: name, sha, url1, url2...
   download-or-bust() {
-    local -r hash="$1"
-    shift 1
+    local -r file="$1"
+    local -r hash="$2"
+    shift 2
 
     urls=( $* )
     while true; do
       for url in "${urls[@]}"; do
-        local file="${url##*/}"
-
         if [[ -e "${file}" ]]; then
           echo "== File exists for ${url} =="
 
@@ -366,12 +357,12 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
         elif [[ $(curl --version) ]]; then
           if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
             echo "== Failed to curl ${url}. Retrying. =="
-            break
+            continue
           fi
         else
           if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
             echo "== Failed to wget ${url}. Retrying. =="
-            break
+            continue
           fi
         fi
 
@@ -398,9 +389,9 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
     local -r expected="$2"
     local actual
 
-    actual=$(sha1sum ${file} | awk '{ print $1 }') || true
+    actual=$(sha256sum ${file} | awk '{ print $1 }') || true
     if [[ "${actual}" != "${expected}" ]]; then
-      echo "== ${file} corrupted, sha1 ${actual} doesn't match expected ${expected} =="
+      echo "== ${file} corrupted, hash ${actual} doesn't match expected ${expected} =="
       return 1
     fi
   }
@@ -414,18 +405,17 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
     # optimization.
 
     local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
-    local -r nodeup_filename="${nodeup_urls[0]##*/}"
     if [[ -n "${NODEUP_HASH:-}" ]]; then
       local -r nodeup_hash="${NODEUP_HASH}"
     else
     # TODO: Remove?
-      echo "Downloading sha1 (not found in env)"
-      download-or-bust "" "${nodeup_urls[@]/%/.sha1}"
-      local -r nodeup_hash=$(cat "${nodeup_filename}.sha1")
+      echo "Downloading sha256 (not found in env)"
+      download-or-bust nodeup.sha256 "" "${nodeup_urls[@]/%/.sha256}"
+      local -r nodeup_hash=$(cat nodeup.sha256)
     fi
 
     echo "Downloading nodeup (${nodeup_urls[@]})"
-    download-or-bust "${nodeup_hash}" "${nodeup_urls[@]}"
+    download-or-bust nodeup "${nodeup_hash}" "${nodeup_urls[@]}"
 
     chmod +x nodeup
   }

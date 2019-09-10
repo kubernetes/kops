@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -85,8 +85,6 @@ var (
 	AlphaAllowDO = featureflag.New("AlphaAllowDO", featureflag.Bool(false))
 	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
 	AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
-	// AlphaAllowOpenstack is a feature flag that gates OpenStack support while it is alpha
-	AlphaAllowOpenstack = featureflag.New("AlphaAllowOpenstack", featureflag.Bool(false))
 	// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
 	AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
 	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha
@@ -303,7 +301,7 @@ func (c *ApplyClusterCmd) Run() error {
 			fmt.Println("")
 			fmt.Printf(starline)
 			fmt.Println("")
-			fmt.Println("Kubelet anonymousAuth is currently turned on. This allows RBAC escalation and remote code execution possibilites.")
+			fmt.Println("Kubelet anonymousAuth is currently turned on. This allows RBAC escalation and remote code execution possibilities.")
 			fmt.Println("It is highly recommended you turn it off by setting 'spec.kubelet.anonymousAuth' to 'false' via 'kops edit cluster'")
 			fmt.Println("")
 			fmt.Println("See https://github.com/kubernetes/kops/blob/master/docs/security.md#kubelet-api")
@@ -517,9 +515,6 @@ func (c *ApplyClusterCmd) Run() error {
 
 	case kops.CloudProviderOpenstack:
 		{
-			if !AlphaAllowOpenstack.Enabled() {
-				return fmt.Errorf("Openstack support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowOpenstack")
-			}
 
 			osCloud := cloud.(openstack.OpenstackCloud)
 			region = osCloud.Region()
@@ -1191,12 +1186,12 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		c.Assets = append(c.Assets, BuildMirroredAsset(utilsLocation, hash))
 	}
 
-	n, hash, err := NodeUpLocation(assetBuilder)
+	asset, err := NodeUpAsset(assetBuilder)
 	if err != nil {
 		return err
 	}
-	c.NodeUpSource = n.String()
-	c.NodeUpHash = hash.Hex()
+	c.NodeUpSource = strings.Join(asset.Locations, ",")
+	c.NodeUpHash = asset.Hash.Hex()
 
 	// Explicitly add the protokube image,
 	// otherwise when the Target is DryRun this asset is not added

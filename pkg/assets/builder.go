@@ -24,10 +24,11 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/blang/semver"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog"
-
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
@@ -290,19 +291,40 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 		return nil, fmt.Errorf("file url is not defined")
 	}
 
-	for _, ext := range []string{".sha1"} {
-		hashURL := u.String() + ext
-		b, err := vfs.Context.ReadFile(hashURL)
-		if err != nil {
-			klog.Infof("error reading hash file %q: %v", hashURL, err)
-			continue
+	// We now prefer sha256 hashes
+	for backoffSteps := 1; backoffSteps <= 3; backoffSteps++ {
+		// We try first with a short backoff, so we don't
+		// waste too much time looking for files that don't
+		// exist before trying the next one
+		backoff := wait.Backoff{
+			Duration: 500 * time.Millisecond,
+			Factor:   2,
+			Steps:    backoffSteps,
 		}
-		hashString := strings.TrimSpace(string(b))
-		klog.V(2).Infof("Found hash %q for %q", hashString, u)
 
-		// Accept a hash string that is `<hash> <filename>`
-		fields := strings.Fields(hashString)
-		return hashing.FromString(fields[0])
+		for _, ext := range []string{".sha256", ".sha1"} {
+			hashURL := u.String() + ext
+			b, err := vfs.Context.ReadFile(hashURL, vfs.WithBackoff(backoff))
+			if err != nil {
+				// Try to log without being too alarming - issue #7550
+				if ext == ".sha256" {
+					klog.V(2).Infof("unable to read new sha256 hash file (is this an older/unsupported kubernetes release?) %q: %v", hashURL, err)
+				} else {
+					klog.V(2).Infof("unable to read hash file %q: %v", hashURL, err)
+				}
+				continue
+			}
+			hashString := strings.TrimSpace(string(b))
+			klog.V(2).Infof("Found hash %q for %q", hashString, u)
+
+			// Accept a hash string that is `<hash> <filename>`
+			fields := strings.Fields(hashString)
+			if len(fields) == 0 {
+				klog.Infof("hash file was empty %q", hashURL)
+				continue
+			}
+			return hashing.FromString(fields[0])
+		}
 	}
 
 	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {

@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,28 +27,32 @@ import (
 )
 
 func Test_RunEtcdManagerBuilder(t *testing.T) {
-	basedir := "tests/minimal"
+	for _, basedir := range []string{"tests/minimal", "tests/proxy"} {
+		basedir := basedir
 
-	context := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
-	}
-	kopsModelContext, err := LoadKopsModelContext(basedir)
-	if err != nil {
-		t.Fatalf("error loading model %q: %v", basedir, err)
-		return
-	}
+		t.Run(fmt.Sprintf("basedir=%s", basedir), func(t *testing.T) {
+			context := &fi.ModelBuilderContext{
+				Tasks: make(map[string]fi.Task),
+			}
+			kopsModelContext, err := LoadKopsModelContext(basedir)
+			if err != nil {
+				t.Fatalf("error loading model %q: %v", basedir, err)
+				return
+			}
 
-	builder := EtcdManagerBuilder{
-		KopsModelContext: kopsModelContext,
-		AssetBuilder:     assets.NewAssetBuilder(kopsModelContext.Cluster, ""),
-	}
+			builder := EtcdManagerBuilder{
+				KopsModelContext: kopsModelContext,
+				AssetBuilder:     assets.NewAssetBuilder(kopsModelContext.Cluster, ""),
+			}
 
-	if err := builder.Build(context); err != nil {
-		t.Fatalf("error from Build: %v", err)
-		return
-	}
+			if err := builder.Build(context); err != nil {
+				t.Fatalf("error from Build: %v", err)
+				return
+			}
 
-	testutils.ValidateTasks(t, basedir, context)
+			testutils.ValidateTasks(t, basedir, context)
+		})
+	}
 }
 
 func LoadKopsModelContext(basedir string) (*model.KopsModelContext, error) {

@@ -124,7 +124,7 @@ func (c *Pricing) DescribeServicesWithContext(ctx aws.Context, input *DescribeSe
 //    // Example iterating over at most 3 pages of a DescribeServices operation.
 //    pageNum := 0
 //    err := client.DescribeServicesPages(params,
-//        func(page *DescribeServicesOutput, lastPage bool) bool {
+//        func(page *pricing.DescribeServicesOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -275,7 +275,7 @@ func (c *Pricing) GetAttributeValuesWithContext(ctx aws.Context, input *GetAttri
 //    // Example iterating over at most 3 pages of a GetAttributeValues operation.
 //    pageNum := 0
 //    err := client.GetAttributeValuesPages(params,
-//        func(page *GetAttributeValuesOutput, lastPage bool) bool {
+//        func(page *pricing.GetAttributeValuesOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -423,7 +423,7 @@ func (c *Pricing) GetProductsWithContext(ctx aws.Context, input *GetProductsInpu
 //    // Example iterating over at most 3 pages of a GetProducts operation.
 //    pageNum := 0
 //    err := client.GetProductsPages(params,
-//        func(page *GetProductsOutput, lastPage bool) bool {
+//        func(page *pricing.GetProductsOutput, lastPage bool) bool {
 //            pageNum++
 //            fmt.Println(page)
 //            return pageNum <= 3
@@ -463,7 +463,7 @@ func (c *Pricing) GetProductsPagesWithContext(ctx aws.Context, input *GetProduct
 }
 
 // The values of a given attribute, such as Throughput Optimized HDD or Provisioned
-// IOPS for the Amazon EC2volumeType attribute.
+// IOPS for the Amazon EC2 volumeType attribute.
 type AttributeValue struct {
 	_ struct{} `type:"structure"`
 
@@ -758,7 +758,7 @@ type GetAttributeValuesOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The list of values for an attribute. For example, Throughput Optimized HDD
-	// and Provisioned IOPS are two available values for the AmazonEC2volumeType.
+	// and Provisioned IOPS are two available values for the AmazonEC2 volumeType.
 	AttributeValues []*AttributeValue `type:"list"`
 
 	// The pagination token that indicates the next set of results to retrieve.

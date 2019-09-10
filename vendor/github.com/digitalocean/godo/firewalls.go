@@ -1,17 +1,16 @@
 package godo
 
 import (
+	"context"
 	"net/http"
 	"path"
 	"strconv"
-
-	"github.com/digitalocean/godo/context"
 )
 
 const firewallsBasePath = "/v2/firewalls"
 
 // FirewallsService is an interface for managing Firewalls with the DigitalOcean API.
-// See: https://developers.digitalocean.com/documentation/documentation/v2/#firewalls
+// See: https://developers.digitalocean.com/documentation/v2/#firewalls
 type FirewallsService interface {
 	Get(context.Context, string) (*Firewall, *Response, error)
 	Create(context.Context, *FirewallRequest) (*Firewall, *Response, error)
@@ -48,6 +47,10 @@ type Firewall struct {
 // String creates a human-readable description of a Firewall.
 func (fw Firewall) String() string {
 	return Stringify(fw)
+}
+
+func (fw Firewall) URN() string {
+	return ToURN("Firewall", fw.ID)
 }
 
 // FirewallRequest represents the configuration to be applied to an existing or a new Firewall.
