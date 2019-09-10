@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,8 @@
 WORK_DIR=`mktemp -d`
 
 cleanup() {
-  rm -rf "$WORK_DIR"
+  chmod -R +w "${WORK_DIR}"
+  rm -rf "${WORK_DIR}"
 }
 trap cleanup EXIT
 

@@ -1,7 +1,7 @@
 apiVersion: kops.k8s.io/v1alpha1
 kind: Cluster
 metadata:
-  creationTimestamp: 2016-12-10T22:42:27Z
+  creationTimestamp: "2016-12-10T22:42:27Z"
   name: minimal.example.com
 spec:
   additionalSans:
@@ -53,7 +53,7 @@ spec:
 apiVersion: kops.k8s.io/v1alpha1
 kind: InstanceGroup
 metadata:
-  creationTimestamp: 2016-12-10T22:42:28Z
+  creationTimestamp: "2016-12-10T22:42:28Z"
   labels:
     kops.k8s.io/cluster: minimal.example.com
   name: nodes
@@ -72,7 +72,7 @@ spec:
 apiVersion: kops.k8s.io/v1alpha1
 kind: InstanceGroup
 metadata:
-  creationTimestamp: 2016-12-10T22:42:28Z
+  creationTimestamp: "2016-12-10T22:42:28Z"
   labels:
     kops.k8s.io/cluster: minimal.example.com
   name: master-us-test-1a

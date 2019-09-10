@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/cli-runtime/pkg/genericclioptions/resource"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
@@ -46,7 +45,7 @@ var (
 
 		# Replace an instancegroup using YAML passed into stdin.
 		cat instancegroup.yaml | kops replace -f -
-		
+
 		# Note, if the resource does not exist the command will error, use --force to provision resource
 		kops replace -f my-cluster.yaml --force
 		`))
@@ -56,8 +55,8 @@ var (
 
 // replaceOptions is the options for the command
 type replaceOptions struct {
-	// FilenameOptions is a list of files containing resources
-	resource.FilenameOptions
+	// Filenames is a list of files containing resources
+	Filenames []string
 	// create any resources not found - we limit to instance groups only for now
 	force bool
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import (
 	"time"
 
 	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/jsonutils"
 	"k8s.io/kops/pkg/testutils"
@@ -80,7 +79,7 @@ func TestComplex(t *testing.T) {
 	runTestAWS(t, "complex.example.com", "complex", "legacy-v1alpha2", false, 1, true, false, nil)
 }
 
-// TestCrossZone tests that the the cross zone setting on the API ELB is set properly
+// TestCrossZone tests that the cross zone setting on the API ELB is set properly
 func TestCrossZone(t *testing.T) {
 	runTestAWS(t, "crosszone.example.com", "api_elb_cross_zone", "v1alpha2", false, 1, true, false, nil)
 }
@@ -609,41 +608,24 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 
 		testutils.AssertMatchesFile(t, string(actualCF), path.Join(srcDir, expectedCfPath))
 
-		fp := path.Join(srcDir, expectedCfPath+".extracted.yaml")
-		expectedExtracted, err := ioutil.ReadFile(fp)
-		if err != nil {
-			t.Fatalf("unexpected error reading expected extracted cloudformation output: %v", err)
-		}
+		// test extracted values
+		{
+			actual := make(map[string]string)
 
-		expected := make(map[string]string)
-		err = yaml.Unmarshal(expectedExtracted, &expected)
-		if err != nil {
-			t.Fatalf("unexpected error unmarshal expected extracted cloudformation output: %v", err)
-		}
+			for k, v := range extracted {
+				// Strip carriage return as expectedValue is stored in a yaml string literal
+				// and yaml block quoting doesn't seem to support \r in a string
+				v = strings.Replace(v, "\r", "", -1)
 
-		if len(extracted) != len(expected) {
-			t.Fatalf("error differed number of cloudformation in expected and extracted: %v", err)
-		}
-
-		actual := make(map[string]string)
-
-		for key, expectedValue := range expected {
-			extractedValue, ok := extracted[key]
-			if !ok {
-				t.Fatalf("unexpected error expected cloudformation not found for k: %v", key)
+				actual[k] = v
 			}
 
-			actual[key] = extractedValue
-
-			// Strip carriage return as expectedValue is stored in a yaml string literal
-			// and yaml block quoting doesn't seem to support \r in a string
-			extractedValueTrimmed := strings.Replace(extractedValue, "\r", "", -1)
-
-			if expectedValue != extractedValueTrimmed {
-				diffString := diff.FormatDiff(expectedValue, extractedValueTrimmed)
-				t.Logf("diff for key %s:\n%s\n\n\n\n\n\n", key, diffString)
-				t.Errorf("cloudformation output differed from expected. Test file: %s", path.Join(srcDir, expectedCfPath+".extracted.yaml"))
+			actualExtracted, err := yaml.Marshal(actual)
+			if err != nil {
+				t.Fatalf("error serializing yaml: %v", err)
 			}
+
+			testutils.AssertMatchesFile(t, string(actualExtracted), path.Join(srcDir, expectedCfPath+".extracted.yaml"))
 		}
 
 		testutils.AssertMatchesFile(t, string(actualCF), path.Join(srcDir, expectedCfPath))

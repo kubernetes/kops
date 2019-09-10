@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -105,19 +105,40 @@ func runChannelBuilderTest(t *testing.T, key string) {
 		t.Fatalf("error from BootstrapChannelBuilder Build: %v", err)
 	}
 
-	name := cluster.ObjectMeta.Name + "-addons-bootstrap"
-	manifestTask := context.Tasks[name]
-	if manifestTask == nil {
-		t.Fatalf("manifest task not found (%q)", name)
+	{
+		name := cluster.ObjectMeta.Name + "-addons-bootstrap"
+		manifestTask := context.Tasks[name]
+		if manifestTask == nil {
+			t.Fatalf("manifest task not found (%q)", name)
+		}
+
+		manifestFileTask := manifestTask.(*fitasks.ManagedFile)
+		actualManifest, err := manifestFileTask.Contents.AsString()
+		if err != nil {
+			t.Fatalf("error getting manifest as string: %v", err)
+		}
+
+		expectedManifestPath := path.Join(basedir, "manifest.yaml")
+		testutils.AssertMatchesFile(t, actualManifest, expectedManifestPath)
 	}
 
-	manifestFileTask := manifestTask.(*fitasks.ManagedFile)
-	actualManifest, err := manifestFileTask.Contents.AsString()
-	if err != nil {
-		t.Fatalf("error getting manifest as string: %v", err)
+	for _, k := range []string{"dns-controller.addons.k8s.io-k8s-1.12" /*, "kops-controller.addons.k8s.io-k8s-1.16"*/} {
+		name := cluster.ObjectMeta.Name + "-addons-" + k
+		manifestTask := context.Tasks[name]
+		if manifestTask == nil {
+			for k := range context.Tasks {
+				t.Logf("found task %s", k)
+			}
+			t.Fatalf("manifest task not found (%q)", name)
+		}
+
+		manifestFileTask := manifestTask.(*fitasks.ManagedFile)
+		actualManifest, err := manifestFileTask.Contents.AsString()
+		if err != nil {
+			t.Fatalf("error getting manifest as string: %v", err)
+		}
+
+		expectedManifestPath := path.Join(basedir, k+".yaml")
+		testutils.AssertMatchesFile(t, actualManifest, expectedManifestPath)
 	}
-
-	expectedManifestPath := path.Join(basedir, "manifest.yaml")
-
-	testutils.AssertMatchesFile(t, actualManifest, expectedManifestPath)
 }

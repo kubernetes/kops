@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
-const DefaultBackupImage = "kopeio/etcd-backup:3.0.20190801"
+const DefaultBackupImage = "kopeio/etcd-backup:3.0.20190816"
 
 // EtcdOptionsBuilder adds options for etcd to the model
 type EtcdOptionsBuilder struct {

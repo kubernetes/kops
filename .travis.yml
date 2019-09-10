@@ -11,4 +11,4 @@ go:
 go_import_path: k8s.io/kops
 
 script:
-  - make travis-ci
+  - GOPROXY=https://proxy.golang.org make travis-ci

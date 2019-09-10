@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,15 +26,13 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/pkg/drain"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
-	cmddrain "k8s.io/kubernetes/pkg/kubectl/cmd/drain"
-	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 )
 
 // RollingUpdateInstanceGroup is the AWS ASG backing an InstanceGroup.
@@ -270,7 +268,11 @@ func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *Rolli
 		klog.Infof("Cluster did not validate, will try again in %q until duration %q expires: %v.", tickDuration, duration, err)
 		return false
 	} else if len(result.Failures) > 0 {
-		klog.Infof("Cluster did not pass validation, will try again in %q until duration %q expires: %v.", tickDuration, duration, result.Failures[0].Message)
+		messages := []string{}
+		for _, failure := range result.Failures {
+			messages = append(messages, failure.Message)
+		}
+		klog.Infof("Cluster did not pass validation, will try again in %q until duration %q expires: %s.", tickDuration, duration, strings.Join(messages, ", "))
 		return false
 	} else {
 		klog.Info("Cluster validated.")
@@ -315,42 +317,34 @@ func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInsta
 
 // DrainNode drains a K8s node.
 func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGroupMember, rollingUpdateData *RollingUpdateCluster) error {
-	if rollingUpdateData.ClientGetter == nil {
-		return fmt.Errorf("ClientGetter not set")
+	if rollingUpdateData.K8sClient == nil {
+		return fmt.Errorf("K8sClient not set")
 	}
 
 	if u.Node.Name == "" {
 		return fmt.Errorf("node name not set")
 	}
-	f := cmdutil.NewFactory(rollingUpdateData.ClientGetter)
 
-	streams := genericclioptions.IOStreams{
-		Out:    os.Stdout,
-		ErrOut: os.Stderr,
+	helper := &drain.Helper{
+		Client:              rollingUpdateData.K8sClient,
+		Force:               true,
+		GracePeriodSeconds:  -1,
+		IgnoreAllDaemonSets: true,
+		Out:                 os.Stdout,
+		ErrOut:              os.Stderr,
+
+		// We want to proceed even when pods are using local data (emptyDir)
+		DeleteLocalData: true,
+
+		// Other options we might want to set:
+		// Timeout?
 	}
 
-	drain := cmddrain.NewCmdDrain(f, streams)
-	args := []string{u.Node.Name}
-	options := cmddrain.NewDrainOptions(f, streams)
-
-	// Override some options
-	options.IgnoreDaemonsets = true
-	options.Force = true
-	options.DeleteLocalData = true
-	options.GracePeriodSeconds = -1
-
-	err := options.Complete(f, drain, args)
-	if err != nil {
-		return fmt.Errorf("error setting up drain: %v", err)
+	if err := drain.RunCordonOrUncordon(helper, u.Node, true); err != nil {
+		return fmt.Errorf("error cordoning node: %v", err)
 	}
 
-	err = options.RunCordonOrUncordon(true)
-	if err != nil {
-		return fmt.Errorf("error cordoning node node: %v", err)
-	}
-
-	err = options.RunDrain()
-	if err != nil {
+	if err := drain.RunNodeDrain(helper, u.Node.Name); err != nil {
 		return fmt.Errorf("error draining node: %v", err)
 	}
 

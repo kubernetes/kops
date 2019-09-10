@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ var (
 		--name k8s-cluster.example.com --state s3://example.com
 	# Install a specific weave password via stdin.
 	kops create secret weavepassword -f - \
-		--name k8s-cluster.example.com --state s3://example.com	
+		--name k8s-cluster.example.com --state s3://example.com
 	# Replace an existing weavepassword secret.
 	kops create secret weavepassword -f /path/to/weavepassword --force \
 		--name k8s-cluster.example.com --state s3://example.com

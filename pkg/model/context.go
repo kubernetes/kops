@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -220,6 +220,8 @@ func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 	if ig.Spec.Role == kops.InstanceGroupRoleBastion {
 		labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleBastion))] = "1"
 	}
+
+	labels["kops.k8s.io/instancegroup" /*nodeidentityaws.CloudTagInstanceGroupName*/] = ig.Name
 
 	return labels, nil
 }

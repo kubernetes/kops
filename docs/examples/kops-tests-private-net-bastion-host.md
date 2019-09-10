@@ -137,7 +137,7 @@ kops create instancegroup bastions --role Bastion --subnet utility-us-east-1a --
 
 **Explanation of this command:**
 - This command will add to our cluster definition a new instance group called "bastions" with the "Bastion" role on the aws subnet "utility-us-east-1a". Note that the "Bastion" role need the first letter to be a capital (Bastion=ok, bastion=not ok).
-- The subnet "utility-us-east-1a" was created when we created our cluster the first time. KOPS add the "utility-" prefix to all subnets created on all specified AZ's. In other words, if we instructed kops to deploy our instances on us-east-1a, use-east-1b and use-east-1c, kops will create the subnets "utility-us-east-1a", "utility-us-east-1b" and "utility-us-east-1c". Because we need to tell kops where to deploy our bastion (or bastions), wee need to specify the subnet.
+- The subnet "utility-us-east-1a" was created when we created our cluster the first time. KOPS add the "utility-" prefix to all subnets created on all specified AZ's. In other words, if we instructed kops to deploy our instances on us-east-1a, use-east-1b and use-east-1c, kops will create the subnets "utility-us-east-1a", "utility-us-east-1b" and "utility-us-east-1c". Because we need to tell kops where to deploy our bastion (or bastions), we need to specify the subnet.
 
 You'll see the following output in your editor when you can change your bastion group size and add more networks.
 

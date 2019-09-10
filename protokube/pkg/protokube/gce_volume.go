@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -181,7 +181,7 @@ func (v *GCEVolumes) buildGCEVolume(d *compute.Disk) (*Volume, error) {
 	for _, attachedTo := range d.Users {
 		u, err := gce.ParseGoogleCloudURL(attachedTo)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing disk attachmnet url %q: %v", attachedTo, err)
+			return nil, fmt.Errorf("error parsing disk attachment url %q: %v", attachedTo, err)
 		}
 
 		vol.AttachedTo = u.Name

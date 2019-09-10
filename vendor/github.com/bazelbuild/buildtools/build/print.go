@@ -176,7 +176,17 @@ func (p *printer) nestedStatements(stmts []Expr) {
 	p.level--
 }
 
-func (p *printer) statements(stmts []Expr) {
+func (p *printer) statements(rawStmts []Expr) {
+	// rawStmts may contain nils if a refactoring tool replaces an actual statement with nil.
+	// It means the statements don't exist anymore, just ignore them.
+
+	stmts := []Expr{}
+	for _, stmt := range rawStmts {
+		if stmt != nil {
+			stmts = append(stmts, stmt)
+		}
+	}
+
 	for i, stmt := range stmts {
 		switch stmt := stmt.(type) {
 		case *CommentBlock:
@@ -226,7 +236,7 @@ func (p *printer) compactStmt(s1, s2 Expr) bool {
 	} else if isCommentBlock(s1) || isCommentBlock(s2) {
 		// Standalone comment blocks shouldn't be attached to other statements
 		return false
-	} else if p.fileType != TypeDefault && p.level == 0 {
+	} else if (p.fileType == TypeBuild || p.fileType == TypeWorkspace) && p.level == 0 {
 		// Top-level statements in a BUILD or WORKSPACE file
 		return false
 	} else if isFunctionDefinition(s1) || isFunctionDefinition(s2) {
@@ -299,6 +309,10 @@ const (
 	precOr
 	precAnd
 	precCmp
+	precBitwiseOr
+	precBitwiseXor
+	precBitwiseAnd
+	precBitwiseShift
 	precAdd
 	precMultiply
 	precUnary
@@ -307,13 +321,6 @@ const (
 
 // opPrec gives the precedence for operators found in a BinaryExpr.
 var opPrec = map[string]int{
-	"=":      precAssign,
-	"+=":     precAssign,
-	"-=":     precAssign,
-	"*=":     precAssign,
-	"/=":     precAssign,
-	"//=":    precAssign,
-	"%=":     precAssign,
 	"or":     precOr,
 	"and":    precAnd,
 	"in":     precCmp,
@@ -330,7 +337,11 @@ var opPrec = map[string]int{
 	"/":      precMultiply,
 	"//":     precMultiply,
 	"%":      precMultiply,
-	"|":      precMultiply,
+	"|":      precBitwiseOr,
+	"&":      precBitwiseAnd,
+	"^":      precBitwiseXor,
+	"<<":     precBitwiseShift,
+	">>":     precBitwiseShift,
 }
 
 // expr prints the expression v to the print buffer.
@@ -401,7 +412,7 @@ func (p *printer) expr(v Expr, outerPrec int) {
 		// If the Token is a correct quoting of Value and has double quotes, use it,
 		// also use it if it has single quotes and the value itself contains a double quote symbol.
 		// This preserves the specific escaping choices that BUILD authors have made.
-		s, triple, err := unquote(v.Token)
+		s, triple, err := Unquote(v.Token)
 		if s == v.Value && triple == v.TripleQuote && err == nil {
 			if strings.HasPrefix(v.Token, `"`) || strings.ContainsRune(v.Value, '"') {
 				p.printf("%s", v.Token)
@@ -463,7 +474,11 @@ func (p *printer) expr(v Expr, outerPrec int) {
 		} else {
 			p.printf("%s", v.Op)
 		}
-		p.expr(v.X, precUnary)
+		// Use the next precedence level (precSuffix), so that nested unary expressions are parenthesized,
+		// for example: `not (-(+(~foo)))` instead of `not -+~foo`
+		if v.X != nil {
+			p.expr(v.X, precSuffix)
+		}
 
 	case *LambdaExpr:
 		addParen(precColon)
@@ -498,9 +513,6 @@ func (p *printer) expr(v Expr, outerPrec int) {
 		m := p.margin
 		if v.LineBreak {
 			p.margin = p.indent()
-			if v.Op == "=" {
-				p.margin += listIndentation
-			}
 		}
 
 		p.expr(v.X, prec)
@@ -511,6 +523,23 @@ func (p *printer) expr(v Expr, outerPrec int) {
 			p.printf(" ")
 		}
 		p.expr(v.Y, prec+1)
+		p.margin = m
+
+	case *AssignExpr:
+		addParen(precAssign)
+		m := p.margin
+		if v.LineBreak {
+			p.margin = p.indent() + listIndentation
+		}
+
+		p.expr(v.LHS, precAssign)
+		p.printf(" %s", v.Op)
+		if v.LineBreak {
+			p.breakline()
+		} else {
+			p.printf(" ")
+		}
+		p.expr(v.RHS, precAssign+1)
 		p.margin = m
 
 	case *ParenExpr:
@@ -536,10 +565,10 @@ func (p *printer) expr(v Expr, outerPrec int) {
 				arg = from.asString()
 				arg.Comment().Before = to.Comment().Before
 			} else {
-				arg = &BinaryExpr{
-					X:  to,
-					Op: "=",
-					Y:  from.asString(),
+				arg = &AssignExpr{
+					LHS: to,
+					Op:  "=",
+					RHS: from.asString(),
 				}
 			}
 			args = append(args, arg)
@@ -622,13 +651,18 @@ func (p *printer) expr(v Expr, outerPrec int) {
 
 			// If the else-block contains just one statement which is an IfStmt, flatten it as a part
 			// of if-elif chain.
-			// Don't do it if the "else" statement has a suffix comment.
-			if len(block.ElsePos.Comment().Suffix) == 0 && len(block.False) == 1 {
-				next, ok := block.False[0].(*IfStmt)
-				if ok {
-					block = next
-					continue
-				}
+			// Don't do it if the "else" statement has a suffix comment or if the next "if" statement
+			// has a before-comment.
+			if len(block.False) != 1 {
+				break
+			}
+			next, ok := block.False[0].(*IfStmt)
+			if !ok {
+				break
+			}
+			if len(block.ElsePos.Comment().Suffix) == 0 && len(next.Comment().Before) == 0 {
+				block = next
+				continue
 			}
 			break
 		}
@@ -685,7 +719,7 @@ func (p *printer) useCompactMode(start *Position, list *[]Expr, end *End, mode s
 	// If there are line comments, use multiline
 	// so we can print the comments before the closing bracket.
 	for _, x := range *list {
-		if len(x.Comment().Before) > 0 {
+		if len(x.Comment().Before) > 0 || (len(x.Comment().Suffix) > 0 && mode != modeDef) {
 			return false
 		}
 	}
@@ -698,17 +732,20 @@ func (p *printer) useCompactMode(start *Position, list *[]Expr, end *End, mode s
 		return true
 	}
 
-	// In the Default printing mode try to keep the original printing style.
+	// In the Default and .bzl printing modes try to keep the original printing style.
 	// Non-top-level statements and lists of arguments of a function definition
 	// should also keep the original style regardless of the mode.
-	if (p.level != 0 || p.fileType == TypeDefault || mode == modeDef) && mode != modeLoad {
+	if (p.level != 0 || p.fileType == TypeDefault || p.fileType == TypeBzl || mode == modeDef) && mode != modeLoad {
 		// If every element (including the brackets) ends on the same line where the next element starts,
 		// use the compact mode, otherwise use multiline mode.
 		// If an node's line number is 0, it means it doesn't appear in the original file,
-		// its position shouldn't be taken into account.
+		// its position shouldn't be taken into account. Unless a sequence is new,
+		// then use multiline mode if ForceMultiLine mode was set.
 		previousEnd := start
+		isNewSeq := start.Line == 0
 		for _, x := range *list {
 			start, end := x.Span()
+			isNewSeq = isNewSeq && start.Line == 0
 			if isDifferentLines(&start, previousEnd) {
 				return false
 			}
@@ -716,10 +753,17 @@ func (p *printer) useCompactMode(start *Position, list *[]Expr, end *End, mode s
 				previousEnd = &end
 			}
 		}
-		if end != nil && isDifferentLines(previousEnd, &end.Pos) {
-			return false
+		if end != nil {
+			isNewSeq = isNewSeq && end.Pos.Line == 0
+			if isDifferentLines(previousEnd, &end.Pos) {
+				return false
+			}
 		}
-		return true
+		if !isNewSeq {
+			return true
+		}
+		// Use the forceMultiline value for new sequences.
+		return !forceMultiLine
 	}
 	// In Build mode, use the forceMultiline and forceCompact values
 	if forceMultiLine {

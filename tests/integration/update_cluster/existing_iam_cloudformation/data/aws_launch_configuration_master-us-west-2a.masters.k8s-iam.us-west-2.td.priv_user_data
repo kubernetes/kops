@@ -17,7 +17,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.8.0/linux/amd64/nodeup
+NODEUP_URL=https://github.com/kubernetes/kops/releases/download/1.8.0/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.0/linux/amd64/nodeup
 NODEUP_HASH=02185512f78dc9d15a8c10774c4cb11f67e4bc20
 
 
@@ -53,12 +53,12 @@ download-or-bust() {
       if [[ $(which curl) ]]; then
         if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
           echo "== Failed to curl ${url}. Retrying. =="
-          break
+          continue
         fi
       elif [[ $(which wget ) ]]; then
         if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
           echo "== Failed to wget ${url}. Retrying. =="
-          break
+          continue
         fi
       else
         echo "== Could not find curl or wget. Retrying. =="

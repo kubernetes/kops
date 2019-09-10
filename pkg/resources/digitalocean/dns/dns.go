@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ limitations under the License.
 package dns
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -24,11 +25,8 @@ import (
 	"strings"
 
 	"github.com/digitalocean/godo"
-	"github.com/digitalocean/godo/context"
-
-	"k8s.io/klog"
-
 	"golang.org/x/oauth2"
+	"k8s.io/klog"
 
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"

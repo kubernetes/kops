@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -559,6 +559,11 @@ type KubeSchedulerConfig struct {
 	UsePolicyConfigMap *bool `json:"usePolicyConfigMap,omitempty"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
+	// MaxPersistentVolumes changes the maximum number of persistent volumes the scheduler will scheduler onto the same
+	// node. Only takes into affect if value is positive. This corresponds to the KUBE_MAX_PD_VOLS environment variable,
+	// which has been supported as far back as Kubernetes 1.7. The default depends on the version and the cloud provider
+	// as outlined: https://kubernetes.io/docs/concepts/storage/storage-limits/
+	MaxPersistentVolumes *int32 `json:"maxPersistentVolumes,omitempty"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election
@@ -604,10 +609,11 @@ type OpenstackRouter struct {
 
 // OpenstackConfiguration defines cloud config elements for the openstack cloud provider
 type OpenstackConfiguration struct {
-	Loadbalancer *OpenstackLoadbalancerConfig `json:"loadbalancer,omitempty"`
-	Monitor      *OpenstackMonitor            `json:"monitor,omitempty"`
-	Router       *OpenstackRouter             `json:"router,omitempty"`
-	BlockStorage *OpenstackBlockStorageConfig `json:"blockStorage,omitempty"`
+	Loadbalancer       *OpenstackLoadbalancerConfig `json:"loadbalancer,omitempty"`
+	Monitor            *OpenstackMonitor            `json:"monitor,omitempty"`
+	Router             *OpenstackRouter             `json:"router,omitempty"`
+	BlockStorage       *OpenstackBlockStorageConfig `json:"blockStorage,omitempty"`
+	InsecureSkipVerify *bool                        `json:"insecureSkipVerify,omitempty"`
 }
 
 // CloudConfiguration defines the cloud provider configuration

@@ -1,6 +1,18 @@
+startup --expand_configs_in_place
+
 # TODO: Remove once we expect everyone is running bazel >= 0.18
 # (This is the "legacy" location for bazel.rc)
 # (See https://github.com/bazelbuild/bazel/issues/6319)
 
+# --stamp is needed to use x_defs, as of rules_go 0.19.0
+build --stamp
 
 build --workspace_status_command=./tools/get_workspace_status.sh
+build --verbose_failures
+
+# Workaround for rules_docker python compatibility
+# See https://github.com/bazelbuild/rules_docker/issues/842
+# and https://github.com/bazelbuild/rules_docker/issues/580
+build --host_force_python=PY2
+
+test --test_output=errors

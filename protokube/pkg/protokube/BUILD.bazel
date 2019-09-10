@@ -17,6 +17,7 @@ go_library(
         "kube_boot_task.go",
         "kube_context.go",
         "kube_dns.go",
+        "labeler.go",
         "models.go",
         "nsenter_exec.go",
         "openstack_volume.go",
@@ -75,8 +76,9 @@ go_library(
         "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/nsenter:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/volume/util/nsenter:go_default_library",
         "//vendor/k8s.io/utils/exec:go_default_library",
+        "//vendor/k8s.io/utils/nsenter:go_default_library",
     ],
 )
 

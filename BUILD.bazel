@@ -7,6 +7,7 @@ package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
+# gazelle:proto disable_global
 gazelle(
     name = "gazelle",
     command = "fix",

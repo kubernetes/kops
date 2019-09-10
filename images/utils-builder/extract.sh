@@ -1,6 +1,6 @@
 #!/bin/sh -ex
 
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,4 +26,5 @@ tar cvfz /utils.tar.gz /utils
 
 cp /utils.tar.gz /dist/utils.tar.gz
 (sha1sum /dist/utils.tar.gz | cut -d' ' -f1) > /dist/utils.tar.gz.sha1
+(sha256sum /dist/utils.tar.gz | cut -d' ' -f1) > /dist/utils.tar.gz.sha256
 

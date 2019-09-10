@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -442,7 +442,7 @@ func (b *FirewallModelBuilder) addProtokubeRules(c *fi.ModelBuilderContext, sgMa
 			Direction:    s(string(rules.DirIngress)),
 			Protocol:     s(string(rules.ProtocolTCP)),
 			EtherType:    s(string(rules.EtherType4)),
-			PortRangeMin: i(3998),
+			PortRangeMin: i(3994),
 			PortRangeMax: i(3999),
 		}
 		addDirectionalGroupRule(c, masterSG, nodeSG, protokubeRule)
