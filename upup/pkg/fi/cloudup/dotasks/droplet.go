@@ -143,13 +143,7 @@ func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
 		newDropletCount = expectedCount - actualCount
 	}
 
-	// var dropletTags []string
-	// indexCount := 0
 	for i := 0; i < newDropletCount; i++ {
-		// indexCount++
-		// clusterTagIndex := "k8s-index:" + strconv.Itoa(indexCount)
-		// dropletTags = append(e.Tags, clusterTagIndex)
-
 		_, _, err = t.Cloud.Droplets().Create(context.TODO(), &godo.DropletCreateRequest{
 			Name:              fi.StringValue(e.Name),
 			Region:            fi.StringValue(e.Region),
@@ -162,7 +156,7 @@ func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
 		})
 
 		if err != nil {
-			klog.Errorf("Error creating droplet with Name=%s",  fi.StringValue(e.Name))
+			klog.Errorf("Error creating droplet with Name=%s", fi.StringValue(e.Name))
 			return err
 		}
 	}
