@@ -155,7 +155,7 @@ type AmazonVPCNetworkingSpec struct {
 	ImageName string `json:"imageName,omitempty"`
 }
 
-const CiliumDefaultVersion = "v1.6.0"
+const CiliumDefaultVersion = "v1.6.1"
 
 // CiliumNetworkingSpec declares that we want Cilium networking
 type CiliumNetworkingSpec struct {
@@ -209,6 +209,27 @@ type CiliumNetworkingSpec struct {
 	StateDir                 string            `json:"stateDir,omitempty"`
 	TracePayloadLen          int               `json:"tracePayloadlen,omitempty"`
 	Tunnel                   string            `json:"tunnel,omitempty"`
+
+	EnableIpv6             bool   `json:"enableipv6"`
+	EnableIpv4             bool   `json:"enableipv4"`
+	MonitorAggregation     string `json:"monitorAggregation"`
+	BPFCTGlobalTCPMax      int    `json:"bpfCTGlobalTCPMax"`
+	BPFCTGlobalAnyMax      int    `json:"bpfCTGlobalAnyMax"`
+	PreallocateBPFMaps     bool   `json:"preallocateBPFMaps"`
+	SidecarIstioProxyImage string `json:"sidecarIstioProxyImage"`
+	ClusterName            string `json:"clusterName"`
+	ToFqdnsEnablePoller    bool   `json:"toFqdnsEnablePoller"`
+	ContainerRuntimeLabels string `json:"containerRuntimeLabels,omitempty"`
+	IPTablesRulesNoinstall bool   `json:"IPTablesRulesNoinstall"`
+	AutoDirectNodeRoutes   bool   `json:"autoDirectNodeRoutes"`
+	EnableNodePort         bool   `json:"enableNodePort"`
+
+	//node init options
+	RemoveCbrBridge       bool   `json:"removeCbrBridge"`
+	RestartPods           bool   `json:"restartPods"`
+	ReconfigureKubelet    bool   `json:"reconfigureKubelet"`
+	NodeInitBootstrapFile string `json:"nodeInitBootstrapFile"`
+	CniBinPath            string `json:"cniBinPath"`
 }
 
 // LyftIpVlanNetworkingSpec declares that we want to use the cni-ipvlan-vpc-k8s CNI networking
