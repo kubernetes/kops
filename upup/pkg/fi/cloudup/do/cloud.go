@@ -21,6 +21,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
+const TagKubernetesClusterIndex = "k8s-index"
 const TagNameEtcdClusterPrefix = "etcdCluster-"
 const TagNameRolePrefix = "k8s.io/role/"
 const TagKubernetesClusterNamePrefix = "KubernetesCluster"
