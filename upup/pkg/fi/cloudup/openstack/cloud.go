@@ -135,6 +135,9 @@ type OpenstackCloud interface {
 	//DeleteSecurityGroup will delete securitygroup
 	DeleteSecurityGroup(sgID string) error
 
+	//DeleteSecurityGroupRule will delete securitygrouprule
+	DeleteSecurityGroupRule(ruleID string) error
+
 	//ListSecurityGroupRules will return the Neutron security group rules which match the options
 	ListSecurityGroupRules(opt sgr.ListOpts) ([]sgr.SecGroupRule, error)
 

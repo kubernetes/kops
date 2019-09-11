@@ -465,8 +465,9 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.UseLoadBalancerForAPI() {
 		sg := &openstacktasks.SecurityGroup{
-			Name:      s(b.Cluster.Spec.MasterPublicName),
-			Lifecycle: b.Lifecycle,
+			Name:             s(b.Cluster.Spec.MasterPublicName),
+			Lifecycle:        b.Lifecycle,
+			RemoveExtraRules: []string{"port=443"},
 		}
 		c.AddTask(sg)
 		sgMap[b.Cluster.Spec.MasterPublicName] = sg
@@ -478,6 +479,13 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		sg := &openstacktasks.SecurityGroup{
 			Name:      s(groupName),
 			Lifecycle: b.Lifecycle,
+		}
+		if role == kops.InstanceGroupRoleBastion {
+			sg.RemoveExtraRules = []string{"port=22"}
+		} else if role == kops.InstanceGroupRoleNode {
+			sg.RemoveExtraRules = []string{"port=22", "port=10250"}
+		} else if role == kops.InstanceGroupRoleMaster {
+			sg.RemoveExtraRules = []string{"port=22", "port=443", "port=10250"}
 		}
 		c.AddTask(sg)
 		sgMap[groupName] = sg
