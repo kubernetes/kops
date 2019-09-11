@@ -18,8 +18,8 @@ package dotasks
 
 import (
 	"context"
-	"strings"
 	"github.com/digitalocean/godo"
+	"strings"
 
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/resources/digitalocean"
@@ -111,16 +111,16 @@ func (_ *Volume) RenderDO(t *do.DOAPITarget, a, e, changes *Volume) error {
 	}
 
 	tagArray := []string{}
-	   
+
 	klog.V(2).Info("Looping DO tag arrays")
 	for k, v := range e.Tags {
-		 s := []string{k, v};
+		s := []string{k, v}
 
-		 // DO tags don't accept =. Separate the key and value with an ":"
-		 strJoin := strings.Join(s, ":")
-		 klog.V(2).Infof("DO - Join the volume tag - %s", strJoin)
-		 tagArray = append(tagArray, strJoin)            
-    }
+		// DO tags don't accept =. Separate the key and value with an ":"
+		strJoin := strings.Join(s, ":")
+		klog.V(2).Infof("DO - Join the volume tag - %s", strJoin)
+		tagArray = append(tagArray, strJoin)
+	}
 
 	volService := t.Cloud.Volumes()
 	_, _, err := volService.CreateVolume(context.TODO(), &godo.VolumeCreateRequest{
