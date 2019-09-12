@@ -4190,6 +4190,7 @@ func autoConvert_v1alpha1_OpenstackConfiguration_To_kops_OpenstackConfiguration(
 		out.BlockStorage = nil
 	}
 	out.InsecureSkipVerify = in.InsecureSkipVerify
+	out.NetworkName = in.NetworkName
 	return nil
 }
 
@@ -4236,6 +4237,7 @@ func autoConvert_kops_OpenstackConfiguration_To_v1alpha1_OpenstackConfiguration(
 		out.BlockStorage = nil
 	}
 	out.InsecureSkipVerify = in.InsecureSkipVerify
+	out.NetworkName = in.NetworkName
 	return nil
 }
 

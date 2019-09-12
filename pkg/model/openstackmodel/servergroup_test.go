@@ -57,6 +57,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					},
 					Subnets: []kops.ClusterSubnetSpec{
 						{
+							Name:   "subnet",
 							Region: "region",
 						},
 					},
@@ -126,6 +127,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "master",
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
@@ -171,6 +173,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "node",
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
@@ -212,6 +215,11 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					},
 					Subnets: []kops.ClusterSubnetSpec{
 						{
+							Name:   "subnet",
+							Region: "region",
+						},
+						{
+							Name:   "utility-subnet",
 							Region: "region",
 						},
 					},
@@ -301,6 +309,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "master",
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
@@ -346,6 +355,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "node",
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
@@ -386,6 +396,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "bastion",
+						"KopsNetwork":        "cluster",
 						"KopsRole":           "Bastion",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
@@ -429,6 +440,15 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					},
 					Subnets: []kops.ClusterSubnetSpec{
 						{
+							Name:   "subnet-a",
+							Region: "region",
+						},
+						{
+							Name:   "subnet-b",
+							Region: "region",
+						},
+						{
+							Name:   "subnet-c",
 							Region: "region",
 						},
 					},
@@ -550,6 +570,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "master-a",
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
@@ -596,6 +617,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "master-b",
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
@@ -642,6 +664,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "master-c",
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
@@ -687,6 +710,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "node-a",
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
@@ -732,6 +756,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "node-b",
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
@@ -777,6 +802,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "node-c",
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
@@ -835,7 +861,19 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					},
 					Subnets: []kops.ClusterSubnetSpec{
 						{
+							Name:   "subnet-a",
 							Region: "region",
+							Type:   kops.SubnetTypePrivate,
+						},
+						{
+							Name:   "subnet-b",
+							Region: "region",
+							Type:   kops.SubnetTypePrivate,
+						},
+						{
+							Name:   "subnet-c",
+							Region: "region",
+							Type:   kops.SubnetTypePrivate,
 						},
 					},
 				},
@@ -955,6 +993,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "master-a",
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
@@ -995,6 +1034,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "master-b",
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
@@ -1035,6 +1075,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "master-c",
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
@@ -1075,6 +1116,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "node-a",
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
@@ -1120,6 +1162,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "node-b",
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
@@ -1165,6 +1208,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "node-c",
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
@@ -1269,6 +1313,15 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					},
 					Subnets: []kops.ClusterSubnetSpec{
 						{
+							Name:   "subnet-a",
+							Region: "region",
+						},
+						{
+							Name:   "subnet-b",
+							Region: "region",
+						},
+						{
+							Name:   "subnet-c",
 							Region: "region",
 						},
 					},
@@ -1390,6 +1443,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "master-a",
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
@@ -1431,6 +1485,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "master-b",
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
@@ -1472,6 +1527,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "master-c",
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
@@ -1512,6 +1568,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "node-a",
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
@@ -1552,6 +1609,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "node-b",
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
@@ -1596,6 +1654,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
+						"KopsNetwork":        "cluster",
 					},
 					AvailabilityZone: s("subnet-c"),
 				}
@@ -1715,6 +1774,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "master",
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
@@ -1753,6 +1813,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "master",
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
@@ -1791,6 +1852,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "master",
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
@@ -1836,6 +1898,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "node",
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
@@ -1873,6 +1936,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "node",
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
@@ -1910,6 +1974,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
+						"KopsNetwork":        "cluster",
 						"KopsInstanceGroup":  "node",
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
@@ -2038,6 +2103,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
+						"KopsNetwork":        "cluster",
 					},
 					AvailabilityZone: s("subnet"),
 				}
@@ -2078,6 +2144,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
+						"KopsNetwork":        "cluster",
 					},
 					AvailabilityZone: s("subnet"),
 				}
@@ -2204,6 +2271,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KopsRole":           "Master",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
+						"KopsNetwork":        "cluster",
 					},
 					AvailabilityZone: s("subnet"),
 				}
@@ -2244,6 +2312,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
+						"KopsNetwork":        "cluster",
 					},
 					AvailabilityZone: s("subnet"),
 				}
@@ -2280,6 +2349,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "bastion",
+						"KopsNetwork":        "cluster",
 						"KopsRole":           "Bastion",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
@@ -2377,6 +2447,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KopsRole":           "Node",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
+						"KopsNetwork":        "cluster",
 					},
 					AvailabilityZone: s("subnet"),
 					SecurityGroups: []string{

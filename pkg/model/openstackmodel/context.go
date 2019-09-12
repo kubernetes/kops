@@ -26,8 +26,16 @@ type OpenstackModelContext struct {
 	*model.KopsModelContext
 }
 
+func GetNetworkName(cluster string, network *string) string {
+	netName := cluster
+	if network != nil {
+		netName = fi.StringValue(network)
+	}
+	return netName
+}
+
 func (c *OpenstackModelContext) LinkToNetwork() *openstacktasks.Network {
-	return &openstacktasks.Network{Name: s(c.ClusterName())}
+	return &openstacktasks.Network{Name: s(GetNetworkName(c.ClusterName(), c.Cluster.Spec.CloudConfig.Openstack.NetworkName))}
 }
 
 func (c *OpenstackModelContext) LinkToRouter(name *string) *openstacktasks.Router {

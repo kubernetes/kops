@@ -19,6 +19,7 @@ package openstack
 import (
 	"fmt"
 
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/attributestags"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/pagination"
@@ -26,6 +27,40 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
+
+func (c *openstackCloud) AppendTag(resource string, id string, tag string) error {
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		err := attributestags.Add(c.neutronClient, resource, id, tag).ExtractErr()
+		if err != nil {
+			return false, fmt.Errorf("error appending tag %s: %v", tag, err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) DeleteTag(resource string, id string, tag string) error {
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		err := attributestags.Delete(c.neutronClient, resource, id, tag).ExtractErr()
+		if err != nil {
+			return false, fmt.Errorf("error deleting tag %s: %v", tag, err)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	} else if done {
+		return nil
+	} else {
+		return wait.ErrWaitTimeout
+	}
+}
 
 func (c *openstackCloud) GetNetwork(id string) (*networks.Network, error) {
 	var network *networks.Network
