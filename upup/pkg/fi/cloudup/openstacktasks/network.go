@@ -41,7 +41,7 @@ func (n *Network) CompareWithID() *string {
 
 func NewNetworkTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, network *networks.Network, clusterName *string) (*Network, error) {
 	tag := ""
-	if fi.ArrayContains(network.Tags, fi.StringValue(clusterName)) {
+	if clusterName != nil && fi.ArrayContains(network.Tags, fi.StringValue(clusterName)) {
 		tag = fi.StringValue(clusterName)
 	}
 

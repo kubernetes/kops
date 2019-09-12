@@ -76,7 +76,7 @@ func NewPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycl
 	}
 
 	tag := ""
-	if fi.ArrayContains(port.Tags, fi.StringValue(find.AppendTag)) {
+	if find != nil && fi.ArrayContains(port.Tags, fi.StringValue(find.AppendTag)) {
 		tag = fi.StringValue(find.AppendTag)
 	}
 

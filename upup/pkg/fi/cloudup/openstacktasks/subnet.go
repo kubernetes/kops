@@ -67,7 +67,7 @@ func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecy
 	}
 
 	tag := ""
-	if fi.ArrayContains(subnet.Tags, fi.StringValue(find.AppendTag)) {
+	if find != nil && fi.ArrayContains(subnet.Tags, fi.StringValue(find.AppendTag)) {
 		tag = fi.StringValue(find.AppendTag)
 	}
 
