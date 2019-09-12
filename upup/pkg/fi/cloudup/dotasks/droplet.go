@@ -19,7 +19,6 @@ package dotasks
 import (
 	"context"
 	"errors"
-	//"strconv"
 	"github.com/digitalocean/godo"
 
 	"k8s.io/klog"

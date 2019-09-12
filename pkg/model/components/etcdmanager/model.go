@@ -386,7 +386,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 			config.VolumeProvider = "do"
 
 			// DO does not support . in tags / names
-			safeClusterName := strings.Replace(b.Cluster.Name, ".", "-", -1)
+			safeClusterName := do.SafeDOClusterName(b.Cluster.Name)
 
 			config.VolumeTag = []string{
 				fmt.Sprintf("%s=%s", do.TagKubernetesClusterNamePrefix, safeClusterName),
