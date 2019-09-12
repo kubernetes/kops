@@ -27,9 +27,9 @@ const TagNameEtcdClusterPrefix = "etcdCluster-"
 const TagNameRolePrefix = "k8s.io/role/"
 const TagKubernetesClusterNamePrefix = "KubernetesCluster"
 
-func SafeDOClusterName(clusterName string) string {
-	// GCE does not support . in tags / names
-	safeClusterName := strings.ReplaceAll(clusterName, ".", "-")
+func SafeClusterName(clusterName string) string {
+	// DO does not support . in tags / names
+	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
 	return safeClusterName
 }
 
