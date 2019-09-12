@@ -40,7 +40,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		t := &openstacktasks.Network{
 			Name:      s(netName),
 			ID:        s(b.Cluster.Spec.NetworkID),
-			AppendTag: s(clusterName),
+			Tag:       s(clusterName),
 			Lifecycle: b.Lifecycle,
 		}
 
@@ -64,7 +64,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			CIDR:       s(sp.CIDR),
 			DNSServers: make([]*string, 0),
 			Lifecycle:  b.Lifecycle,
-			AppendTag:  s(clusterName),
+			Tag:        s(clusterName),
 		}
 		if b.Cluster.Spec.CloudConfig.Openstack.Router.DNSServers != nil {
 			dnsSplitted := strings.Split(fi.StringValue(b.Cluster.Spec.CloudConfig.Openstack.Router.DNSServers), ",")

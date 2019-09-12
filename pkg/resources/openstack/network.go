@@ -54,9 +54,9 @@ func (os *clusterDiscoveryOS) ListNetwork() ([]*resources.Resource, error) {
 
 	for _, network := range filteredNetwork {
 
-		sharedNetwork := true
+		preExistingNet := true
 		if os.clusterName == network.Name {
-			sharedNetwork = false
+			preExistingNet = false
 		}
 
 		optRouter := osrouter.ListOpts{
@@ -93,8 +93,8 @@ func (os *clusterDiscoveryOS) ListNetwork() ([]*resources.Resource, error) {
 			return resourceTrackers, err
 		}
 		filteredSubnets := []subnets.Subnet{}
-		if sharedNetwork {
-			// if we have sharednetwork, the subnet must have cluster tag
+		if preExistingNet {
+			// if we have preExistingNet network, the subnet must have cluster tag
 			for _, sub := range networkSubnets {
 				if fi.ArrayContains(sub.Tags, os.clusterName) {
 					filteredSubnets = append(filteredSubnets, sub)
@@ -140,13 +140,13 @@ func (os *clusterDiscoveryOS) ListNetwork() ([]*resources.Resource, error) {
 		}
 
 		// Ports
-		portTrackers, err := os.ListPorts(network, sharedNetwork)
+		portTrackers, err := os.ListPorts(network)
 		if err != nil {
 			return resourceTrackers, err
 		}
 		resourceTrackers = append(resourceTrackers, portTrackers...)
 
-		if !sharedNetwork {
+		if !preExistingNet {
 			resourceTracker := &resources.Resource{
 				Name: network.Name,
 				ID:   network.ID,
@@ -162,7 +162,7 @@ func (os *clusterDiscoveryOS) ListNetwork() ([]*resources.Resource, error) {
 				ID:   network.ID,
 				Type: typeNetworkTag,
 				Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
-					return cloud.(openstack.OpenstackCloud).DeleteTag("networks", r.ID, r.Name)
+					return cloud.(openstack.OpenstackCloud).DeleteTag(openstack.ResourceTypeNetwork, r.ID, r.Name)
 				},
 			}
 			resourceTrackers = append(resourceTrackers, resourceTracker)

@@ -64,6 +64,9 @@ const (
 	TagClusterName           = "KubernetesCluster"
 	TagRoleMaster            = "master"
 	TagKopsNetwork           = "KopsNetwork"
+	ResourceTypePort         = "ports"
+	ResourceTypeNetwork      = "networks"
+	ResourceTypeSubnet       = "subnets"
 )
 
 // ErrNotFound is used to inform that the object is not found

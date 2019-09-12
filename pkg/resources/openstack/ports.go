@@ -28,7 +28,7 @@ const (
 	typePort = "Port"
 )
 
-func (os *clusterDiscoveryOS) ListPorts(network networks.Network, shared bool) ([]*resources.Resource, error) {
+func (os *clusterDiscoveryOS) ListPorts(network networks.Network) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
 
 	projectPorts, err := os.osCloud.ListPorts(ports.ListOpts{
@@ -39,9 +39,14 @@ func (os *clusterDiscoveryOS) ListPorts(network networks.Network, shared bool) (
 		return nil, err
 	}
 
+	preExistingNet := true
+	if os.clusterName == network.Name {
+		preExistingNet = false
+	}
+
 	filteredPorts := []ports.Port{}
-	if shared {
-		// if we have sharednetwork, the port must have cluster tag
+	if preExistingNet {
+		// if we have preExistingNet, the port must have cluster tag
 		for _, singlePort := range projectPorts {
 			if fi.ArrayContains(singlePort.Tags, os.clusterName) {
 				filteredPorts = append(filteredPorts, singlePort)

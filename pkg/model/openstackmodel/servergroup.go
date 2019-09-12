@@ -113,7 +113,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		portTask := &openstacktasks.Port{
 			Name:           fi.String(fmt.Sprintf("%s-%s", "port", *instanceName)),
 			Network:        b.LinkToNetwork(),
-			AppendTag:      s(b.ClusterName()),
+			Tag:            s(b.ClusterName()),
 			SecurityGroups: securityGroups,
 			Subnets:        subnets,
 			Lifecycle:      b.Lifecycle,

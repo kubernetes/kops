@@ -33,7 +33,7 @@ type Port struct {
 	Subnets        []*Subnet
 	SecurityGroups []*SecurityGroup
 	Lifecycle      *fi.Lifecycle
-	AppendTag      *string
+	Tag            *string
 }
 
 // GetDependencies returns the dependencies of the Port task
@@ -76,8 +76,8 @@ func NewPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycl
 	}
 
 	tag := ""
-	if find != nil && fi.ArrayContains(port.Tags, fi.StringValue(find.AppendTag)) {
-		tag = fi.StringValue(find.AppendTag)
+	if find != nil && fi.ArrayContains(port.Tags, fi.StringValue(find.Tag)) {
+		tag = fi.StringValue(find.Tag)
 	}
 
 	actual := &Port{
@@ -87,7 +87,7 @@ func NewPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycl
 		SecurityGroups: sgs,
 		Subnets:        subnets,
 		Lifecycle:      lifecycle,
-		AppendTag:      fi.String(tag),
+		Tag:            fi.String(tag),
 	}
 	if find != nil {
 		find.ID = actual.ID
@@ -162,7 +162,7 @@ func (_ *Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *P
 			return fmt.Errorf("Error creating port: %v", err)
 		}
 
-		err = t.Cloud.AppendTag("ports", v.ID, fi.StringValue(e.AppendTag))
+		err = t.Cloud.AppendTag(openstack.ResourceTypePort, v.ID, fi.StringValue(e.Tag))
 		if err != nil {
 			return fmt.Errorf("Error appending tag to port: %v", err)
 		}
@@ -171,7 +171,7 @@ func (_ *Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *P
 		klog.V(2).Infof("Creating a new Openstack port, id=%s", v.ID)
 		return nil
 	} else {
-		err := t.Cloud.AppendTag("ports", fi.StringValue(a.ID), fi.StringValue(changes.AppendTag))
+		err := t.Cloud.AppendTag(openstack.ResourceTypePort, fi.StringValue(a.ID), fi.StringValue(changes.Tag))
 		if err != nil {
 			return fmt.Errorf("Error appending tag to port: %v", err)
 		}

@@ -175,7 +175,7 @@ func (a *OpenstackVolumes) discoverTags() error {
 		server, err := a.cloud.GetInstance(strings.TrimSpace(a.meta.ServerID))
 		// find kopsNetwork from metadata, fallback to clustername
 		ifName := a.clusterName
-		if val, ok := server.Metadata["kopsNetwork"]; ok {
+		if val, ok := server.Metadata[openstack.TagKopsNetwork]; ok {
 			ifName = val
 		}
 		ip, err := openstack.GetServerFixedIP(server, ifName)

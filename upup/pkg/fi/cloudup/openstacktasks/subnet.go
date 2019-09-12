@@ -33,7 +33,7 @@ type Subnet struct {
 	Network    *Network
 	CIDR       *string
 	DNSServers []*string
-	AppendTag  *string
+	Tag        *string
 	Lifecycle  *fi.Lifecycle
 }
 
@@ -59,7 +59,7 @@ func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecy
 	if err != nil {
 		return nil, fmt.Errorf("NewSubnetTaskFromCloud: Failed to get network with ID %s: %v", subnet.NetworkID, err)
 	}
-	networkTask, err := NewNetworkTaskFromCloud(cloud, lifecycle, network, find.AppendTag)
+	networkTask, err := NewNetworkTaskFromCloud(cloud, lifecycle, network, find.Tag)
 
 	nameservers := make([]*string, len(subnet.DNSNameservers))
 	for i, ns := range subnet.DNSNameservers {
@@ -67,8 +67,8 @@ func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecy
 	}
 
 	tag := ""
-	if find != nil && fi.ArrayContains(subnet.Tags, fi.StringValue(find.AppendTag)) {
-		tag = fi.StringValue(find.AppendTag)
+	if find != nil && fi.ArrayContains(subnet.Tags, fi.StringValue(find.Tag)) {
+		tag = fi.StringValue(find.Tag)
 	}
 
 	actual := &Subnet{
@@ -78,7 +78,7 @@ func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecy
 		CIDR:       fi.String(subnet.CIDR),
 		Lifecycle:  lifecycle,
 		DNSServers: nameservers,
-		AppendTag:  fi.String(tag),
+		Tag:        fi.String(tag),
 	}
 	if find != nil {
 		find.ID = actual.ID
@@ -164,7 +164,7 @@ func (_ *Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 			return fmt.Errorf("Error creating subnet: %v", err)
 		}
 
-		err = t.Cloud.AppendTag("subnets", v.ID, fi.StringValue(e.AppendTag))
+		err = t.Cloud.AppendTag(openstack.ResourceTypeSubnet, v.ID, fi.StringValue(e.Tag))
 		if err != nil {
 			return fmt.Errorf("Error appending tag to subnet: %v", err)
 		}
@@ -173,7 +173,7 @@ func (_ *Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 		klog.V(2).Infof("Creating a new Openstack subnet, id=%s", v.ID)
 		return nil
 	} else {
-		err := t.Cloud.AppendTag("subnets", fi.StringValue(a.ID), fi.StringValue(changes.AppendTag))
+		err := t.Cloud.AppendTag(openstack.ResourceTypeSubnet, fi.StringValue(a.ID), fi.StringValue(changes.Tag))
 		if err != nil {
 			return fmt.Errorf("Error appending tag to subnet: %v", err)
 		}
