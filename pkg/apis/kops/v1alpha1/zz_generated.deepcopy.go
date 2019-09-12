@@ -1962,6 +1962,11 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.HorizontalPodAutoscalerDownscaleStabilization != nil {
+		in, out := &in.HorizontalPodAutoscalerDownscaleStabilization, &out.HorizontalPodAutoscalerDownscaleStabilization
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	if in.HorizontalPodAutoscalerUpscaleDelay != nil {
 		in, out := &in.HorizontalPodAutoscalerUpscaleDelay, &out.HorizontalPodAutoscalerUpscaleDelay
 		*out = new(v1.Duration)
