@@ -489,6 +489,10 @@ type KubeControllerManagerConfig struct {
 	// how long the autoscaler has to wait before another downscale
 	// operation can be performed after the current one has completed.
 	HorizontalPodAutoscalerDownscaleDelay *metav1.Duration `json:"horizontalPodAutoscalerDownscaleDelay,omitempty" flag:"horizontal-pod-autoscaler-downscale-delay"`
+	// HorizontalPodAutoscalerDownscaleStabilization is the period for which
+	// autoscaler will look backwards and not scale down below any
+	// recommendation it made during that period.
+	HorizontalPodAutoscalerDownscaleStabilization *metav1.Duration `json:"horizontalPodAutoscalerDownscaleStabilization,omitempty" flag:"horizontal-pod-autoscaler-downscale-stabilization"`
 	// HorizontalPodAutoscalerUpscaleDelay is a duration that specifies how
 	// long the autoscaler has to wait before another upscale operation can
 	// be performed after the current one has completed.
