@@ -19,12 +19,19 @@ package do
 import (
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/upup/pkg/fi"
+	"strings"
 )
 
 const TagKubernetesClusterIndex = "k8s-index"
 const TagNameEtcdClusterPrefix = "etcdCluster-"
 const TagNameRolePrefix = "k8s.io/role/"
 const TagKubernetesClusterNamePrefix = "KubernetesCluster"
+
+func SafeDOClusterName(clusterName string) string {
+	// GCE does not support . in tags / names
+	safeClusterName := strings.ReplaceAll(clusterName, ".", "-")
+	return safeClusterName
+}
 
 func NewDOCloud(region string) (fi.Cloud, error) {
 	return digitalocean.NewCloud(region)

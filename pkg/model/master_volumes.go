@@ -178,7 +178,7 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 
 func (b *MasterVolumeBuilder) addDOVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
 	// required that names start with a lower case and only contains letters, numbers and hyphens
-	name = "kops-" + strings.Replace(name, ".", "-", -1)
+	name = "kops-" + do.SafeDOClusterName(name)
 
 	// DO has a 64 character limit for volume names
 	if len(name) >= 64 {
@@ -186,11 +186,11 @@ func (b *MasterVolumeBuilder) addDOVolume(c *fi.ModelBuilderContext, name string
 	}
 
 	tags := make(map[string]string)
-	tags[do.TagNameEtcdClusterPrefix+etcd.Name] = gce.SafeClusterName(m.Name)
-	tags[do.TagKubernetesClusterIndex] = gce.SafeClusterName(m.Name)
+	tags[do.TagNameEtcdClusterPrefix+etcd.Name] = do.SafeDOClusterName(m.Name)
+	tags[do.TagKubernetesClusterIndex] = do.SafeDOClusterName(m.Name)
 
 	// We always add an owned tags (these can't be shared)
-	tags[do.TagKubernetesClusterNamePrefix] = gce.SafeClusterName(b.Cluster.ObjectMeta.Name)
+	tags[do.TagKubernetesClusterNamePrefix] = do.SafeDOClusterName(b.Cluster.ObjectMeta.Name)
 
 	t := &dotasks.Volume{
 		Name:      s(name),
