@@ -59,6 +59,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		igMeta[openstack.TagClusterName] = b.ClusterName()
 	}
 	igMeta["k8s"] = b.ClusterName()
+	igMeta["kopsNetwork"] = GetNetworkName(b.ClusterName(), b.Cluster.Spec.CloudConfig.Openstack.NetworkName)
 	igMeta["KopsInstanceGroup"] = ig.Name
 	igMeta["KopsRole"] = fmt.Sprintf("%s", ig.Spec.Role)
 	igMeta[openstack.INSTANCE_GROUP_GENERATION] = fmt.Sprintf("%d", ig.GetGeneration())
@@ -112,6 +113,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		portTask := &openstacktasks.Port{
 			Name:           fi.String(fmt.Sprintf("%s-%s", "port", *instanceName)),
 			Network:        b.LinkToNetwork(),
+			AppendTag:      s(b.ClusterName()),
 			SecurityGroups: securityGroups,
 			Subnets:        subnets,
 			Lifecycle:      b.Lifecycle,
@@ -244,12 +246,13 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(listenerTask)
 
+		ifName := GetNetworkName(clusterName, b.Cluster.Spec.CloudConfig.Openstack.NetworkName)
 		for _, mastersg := range masters {
 			associateTask := &openstacktasks.PoolAssociation{
 				Name:          mastersg.Name,
 				Pool:          poolTask,
 				ServerGroup:   mastersg,
-				InterfaceName: fi.String(clusterName),
+				InterfaceName: fi.String(ifName),
 				ProtocolPort:  fi.Int(443),
 				Lifecycle:     b.Lifecycle,
 			}

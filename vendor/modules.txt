@@ -250,6 +250,7 @@ github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups
 github.com/gophercloud/gophercloud/openstack/compute/v2/flavors
 github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners
 github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools
+github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/attributestags
 github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external
 github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints
 github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers

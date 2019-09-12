@@ -2824,6 +2824,11 @@ func (in *OpenstackConfiguration) DeepCopyInto(out *OpenstackConfiguration) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.NetworkName != nil {
+		in, out := &in.NetworkName, &out.NetworkName
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

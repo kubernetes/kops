@@ -618,6 +618,7 @@ type OpenstackConfiguration struct {
 	Router             *OpenstackRouter             `json:"router,omitempty"`
 	BlockStorage       *OpenstackBlockStorageConfig `json:"blockStorage,omitempty"`
 	InsecureSkipVerify *bool                        `json:"insecureSkipVerify,omitempty"`
+	NetworkName        *string                      `json:"networkName,omitempty"`
 }
 
 // CloudConfiguration defines the cloud provider configuration

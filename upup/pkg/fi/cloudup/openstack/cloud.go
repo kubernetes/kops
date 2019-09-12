@@ -162,6 +162,12 @@ type OpenstackCloud interface {
 	//DeleteNetwork will delete neutron network
 	DeleteNetwork(networkID string) error
 
+	//AppendTag appends tag to resource
+	AppendTag(resource string, id string, tag string) error
+
+	//DeleteTag removes tag from resource
+	DeleteTag(resource string, id string, tag string) error
+
 	//ListRouters will return the Neutron routers which match the options
 	ListRouters(opt routers.ListOpts) ([]routers.Router, error)
 

@@ -33,6 +33,7 @@ type Subnet struct {
 	Network    *Network
 	CIDR       *string
 	DNSServers []*string
+	AppendTag  *string
 	Lifecycle  *fi.Lifecycle
 }
 
@@ -58,11 +59,16 @@ func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecy
 	if err != nil {
 		return nil, fmt.Errorf("NewSubnetTaskFromCloud: Failed to get network with ID %s: %v", subnet.NetworkID, err)
 	}
-	networkTask, err := NewNetworkTaskFromCloud(cloud, lifecycle, network)
+	networkTask, err := NewNetworkTaskFromCloud(cloud, lifecycle, network, find.AppendTag)
 
 	nameservers := make([]*string, len(subnet.DNSNameservers))
 	for i, ns := range subnet.DNSNameservers {
 		nameservers[i] = fi.String(ns)
+	}
+
+	tag := ""
+	if fi.ArrayContains(subnet.Tags, fi.StringValue(find.AppendTag)) {
+		tag = fi.StringValue(find.AppendTag)
 	}
 
 	actual := &Subnet{
@@ -72,6 +78,7 @@ func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecy
 		CIDR:       fi.String(subnet.CIDR),
 		Lifecycle:  lifecycle,
 		DNSServers: nameservers,
+		AppendTag:  fi.String(tag),
 	}
 	if find != nil {
 		find.ID = actual.ID
@@ -157,8 +164,19 @@ func (_ *Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 			return fmt.Errorf("Error creating subnet: %v", err)
 		}
 
+		err = t.Cloud.AppendTag("subnets", v.ID, fi.StringValue(e.AppendTag))
+		if err != nil {
+			return fmt.Errorf("Error appending tag to subnet: %v", err)
+		}
+
 		e.ID = fi.String(v.ID)
 		klog.V(2).Infof("Creating a new Openstack subnet, id=%s", v.ID)
+		return nil
+	} else {
+		err := t.Cloud.AppendTag("subnets", fi.StringValue(a.ID), fi.StringValue(changes.AppendTag))
+		if err != nil {
+			return fmt.Errorf("Error appending tag to subnet: %v", err)
+		}
 		return nil
 	}
 	e.ID = a.ID
