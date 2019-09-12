@@ -136,9 +136,8 @@ func (_ *Network) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes
 		if err != nil {
 			return fmt.Errorf("Error appending tag to network: %v", err)
 		}
-		return nil
 	}
-
-	klog.V(2).Infof("Openstack task Network::RenderOpenstack did nothing")
+	e.ID = a.ID
+	klog.V(2).Infof("Using an existing Openstack network, id=%s", fi.StringValue(e.ID))
 	return nil
 }

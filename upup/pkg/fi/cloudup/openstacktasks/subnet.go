@@ -177,7 +177,6 @@ func (_ *Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 		if err != nil {
 			return fmt.Errorf("Error appending tag to subnet: %v", err)
 		}
-		return nil
 	}
 	e.ID = a.ID
 	klog.V(2).Infof("Using an existing Openstack subnet, id=%s", fi.StringValue(e.ID))

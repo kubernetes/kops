@@ -175,7 +175,6 @@ func (_ *Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *P
 		if err != nil {
 			return fmt.Errorf("Error appending tag to port: %v", err)
 		}
-		return nil
 	}
 	e.ID = a.ID
 	klog.V(2).Infof("Using an existing Openstack port, id=%s", fi.StringValue(e.ID))
