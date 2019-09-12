@@ -63,6 +63,7 @@ const (
 	TagNameRolePrefix        = "k8s.io/role/"
 	TagClusterName           = "KubernetesCluster"
 	TagRoleMaster            = "master"
+	TagKopsNetwork           = "KopsNetwork"
 )
 
 // ErrNotFound is used to inform that the object is not found

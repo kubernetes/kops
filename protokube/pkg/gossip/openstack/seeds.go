@@ -52,7 +52,7 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 				var err error
 				// find kopsNetwork from metadata, fallback to clustername
 				ifName := clusterName
-				if val, ok := server.Metadata["kopsNetwork"]; ok {
+				if val, ok := server.Metadata[openstack.TagKopsNetwork]; ok {
 					ifName = val
 				}
 				addr, err := openstack.GetServerFixedIP(&server, ifName)

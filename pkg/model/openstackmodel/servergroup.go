@@ -59,7 +59,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		igMeta[openstack.TagClusterName] = b.ClusterName()
 	}
 	igMeta["k8s"] = b.ClusterName()
-	igMeta["kopsNetwork"] = GetNetworkName(b.ClusterName(), b.Cluster.Spec.CloudConfig.Openstack.NetworkName)
+	igMeta[openstack.TagKopsNetwork] = GetNetworkName(b.ClusterName(), b.Cluster.Spec.CloudConfig.Openstack.NetworkName)
 	igMeta["KopsInstanceGroup"] = ig.Name
 	igMeta["KopsRole"] = fmt.Sprintf("%s", ig.Spec.Role)
 	igMeta[openstack.INSTANCE_GROUP_GENERATION] = fmt.Sprintf("%d", ig.GetGeneration())
