@@ -3449,6 +3449,7 @@ func autoConvert_v1alpha2_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
 	out.HorizontalPodAutoscalerSyncPeriod = in.HorizontalPodAutoscalerSyncPeriod
 	out.HorizontalPodAutoscalerDownscaleDelay = in.HorizontalPodAutoscalerDownscaleDelay
+	out.HorizontalPodAutoscalerDownscaleStabilization = in.HorizontalPodAutoscalerDownscaleStabilization
 	out.HorizontalPodAutoscalerUpscaleDelay = in.HorizontalPodAutoscalerUpscaleDelay
 	out.HorizontalPodAutoscalerTolerance = in.HorizontalPodAutoscalerTolerance
 	out.HorizontalPodAutoscalerUseRestClients = in.HorizontalPodAutoscalerUseRestClients
@@ -3498,6 +3499,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerMana
 	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
 	out.HorizontalPodAutoscalerSyncPeriod = in.HorizontalPodAutoscalerSyncPeriod
 	out.HorizontalPodAutoscalerDownscaleDelay = in.HorizontalPodAutoscalerDownscaleDelay
+	out.HorizontalPodAutoscalerDownscaleStabilization = in.HorizontalPodAutoscalerDownscaleStabilization
 	out.HorizontalPodAutoscalerUpscaleDelay = in.HorizontalPodAutoscalerUpscaleDelay
 	out.HorizontalPodAutoscalerTolerance = in.HorizontalPodAutoscalerTolerance
 	out.HorizontalPodAutoscalerUseRestClients = in.HorizontalPodAutoscalerUseRestClients
