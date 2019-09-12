@@ -89,3 +89,6 @@ ab-results-*.json
 site
 
 addons/prometheus-operator/tmp # cloned git repo
+
+# Ignore google oauth2 configs
+.config
