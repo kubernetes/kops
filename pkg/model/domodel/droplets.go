@@ -47,7 +47,7 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 	// replace "." with "-" since DO API does not accept "."
 	clusterTag := do.TagKubernetesClusterNamePrefix + ":" + strings.Replace(d.ClusterName(), ".", "-", -1)
 
-	indexCount := 0
+	masterIndexCount := 0
 	// In the future, DigitalOcean will use Machine API to manage groups,
 	// for now create d.InstanceGroups.Spec.MinSize amount of droplets
 	for _, ig := range d.InstanceGroups {
@@ -64,12 +64,12 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 		droplet.Image = fi.String(ig.Spec.Image)
 		droplet.SSHKey = fi.String(sshKeyFingerPrint)
 
+		droplet.Tags = []string{clusterTag}
+
 		if ig.IsMaster() {
-			indexCount++
-			clusterTagIndex := do.TagKubernetesClusterIndex + ":" + strconv.Itoa(indexCount)
-			droplet.Tags = []string{clusterTag, clusterTagIndex}
-		} else {
-			droplet.Tags = []string{clusterTag}
+			masterIndexCount++
+			clusterTagIndex := do.TagKubernetesClusterIndex + ":" + strconv.Itoa(masterIndexCount)
+			droplet.Tags = append(droplet.Tags, clusterTagIndex)
 		}
 
 		userData, err := d.BootstrapScript.ResourceNodeUp(ig, d.Cluster)
