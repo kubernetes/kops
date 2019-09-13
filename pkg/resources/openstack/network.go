@@ -34,6 +34,7 @@ const (
 	typeSubnet     = "Subnet"
 	typeNetwork    = "Network"
 	typeNetworkTag = "NetworkTag"
+	typeSubnetTag  = "SubnetTag"
 )
 
 func (os *clusterDiscoveryOS) ListNetwork() ([]*resources.Resource, error) {
@@ -94,7 +95,7 @@ func (os *clusterDiscoveryOS) ListNetwork() ([]*resources.Resource, error) {
 		}
 		filteredSubnets := []subnets.Subnet{}
 		if preExistingNet {
-			// if we have preExistingNet network, the subnet must have cluster tag
+			// if we have preExistingNet, the subnet must have cluster tag
 			for _, sub := range networkSubnets {
 				if fi.ArrayContains(sub.Tags, os.clusterName) {
 					filteredSubnets = append(filteredSubnets, sub)
@@ -106,19 +107,26 @@ func (os *clusterDiscoveryOS) ListNetwork() ([]*resources.Resource, error) {
 
 		for _, subnet := range filteredSubnets {
 			// router interfaces
-			for _, router := range routers {
-				resourceTracker := &resources.Resource{
-					Name: router.ID,
-					ID:   subnet.ID,
-					Type: typeRouterIF,
-					Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
-						opts := osrouter.RemoveInterfaceOpts{
-							SubnetID: r.ID,
-						}
-						return cloud.(openstack.OpenstackCloud).DeleteRouterInterface(r.Name, opts)
-					},
+			preExistingSubnet := false
+			if !strings.HasSuffix(subnet.Name, os.clusterName) {
+				preExistingSubnet = true
+			}
+
+			if !preExistingSubnet {
+				for _, router := range routers {
+					resourceTracker := &resources.Resource{
+						Name: router.ID,
+						ID:   subnet.ID,
+						Type: typeRouterIF,
+						Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
+							opts := osrouter.RemoveInterfaceOpts{
+								SubnetID: r.ID,
+							}
+							return cloud.(openstack.OpenstackCloud).DeleteRouterInterface(r.Name, opts)
+						},
+					}
+					resourceTrackers = append(resourceTrackers, resourceTracker)
 				}
-				resourceTrackers = append(resourceTrackers, resourceTracker)
 			}
 			//associated load balancers
 			lbTrackers, err := os.DeleteSubnetLBs(subnet)
@@ -127,16 +135,27 @@ func (os *clusterDiscoveryOS) ListNetwork() ([]*resources.Resource, error) {
 			}
 			resourceTrackers = append(resourceTrackers, lbTrackers...)
 
-			resourceTracker := &resources.Resource{
-				Name: subnet.Name,
-				ID:   subnet.ID,
-				Type: typeSubnet,
-				Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
-					return cloud.(openstack.OpenstackCloud).DeleteSubnet(r.ID)
-				},
+			if !preExistingSubnet {
+				resourceTracker := &resources.Resource{
+					Name: subnet.Name,
+					ID:   subnet.ID,
+					Type: typeSubnet,
+					Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
+						return cloud.(openstack.OpenstackCloud).DeleteSubnet(r.ID)
+					},
+				}
+				resourceTrackers = append(resourceTrackers, resourceTracker)
+			} else {
+				resourceTracker := &resources.Resource{
+					Name: os.clusterName,
+					ID:   subnet.ID,
+					Type: typeSubnetTag,
+					Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
+						return cloud.(openstack.OpenstackCloud).DeleteTag(openstack.ResourceTypeSubnet, r.ID, r.Name)
+					},
+				}
+				resourceTrackers = append(resourceTrackers, resourceTracker)
 			}
-			resourceTrackers = append(resourceTrackers, resourceTracker)
-
 		}
 
 		// Ports

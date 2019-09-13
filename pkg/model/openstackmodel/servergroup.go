@@ -107,7 +107,12 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			} else {
 				az = fi.String(subnet)
 			}
-			subnets = append(subnets, b.LinkToSubnet(s(fmt.Sprintf("%s.%s", subnet, b.ClusterName()))))
+
+			subnetName, err := b.findSubnetClusterSpec(subnet)
+			if err != nil {
+				return err
+			}
+			subnets = append(subnets, b.LinkToSubnet(s(subnetName)))
 		}
 		// Create instance port task
 		portTask := &openstacktasks.Port{
@@ -212,10 +217,23 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer != nil {
-		lbSubnetName := b.MasterInstanceGroups()[0].Spec.Subnets[0]
+		var lbSubnetName string
+		var err error
+		for _, sp := range b.Cluster.Spec.Subnets {
+			if sp.Type == kops.SubnetTypePrivate {
+				lbSubnetName, err = b.findSubnetNameByID(sp.ProviderID, sp.Name)
+				if err != nil {
+					return err
+				}
+				break
+			}
+		}
+		if lbSubnetName == "" {
+			return fmt.Errorf("could not find subnet for master loadbalancer")
+		}
 		lbTask := &openstacktasks.LB{
 			Name:          fi.String(b.Cluster.Spec.MasterPublicName),
-			Subnet:        fi.String(lbSubnetName + "." + b.ClusterName()),
+			Subnet:        fi.String(lbSubnetName),
 			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(b.Cluster.Spec.MasterPublicName),
 		}

@@ -17,8 +17,11 @@ limitations under the License.
 package openstackmodel
 
 import (
+	"fmt"
+
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 )
 
@@ -32,6 +35,38 @@ func GetNetworkName(cluster string, network *string) string {
 		netName = fi.StringValue(network)
 	}
 	return netName
+}
+
+func (c *OpenstackModelContext) findSubnetClusterSpec(subnet string) (string, error) {
+	for _, sp := range b.Cluster.Spec.Subnets {
+		if sp.Name == subnet {
+			name, err = b.findSubnetNameByID(sp.ProviderID, sp.Name)
+			if err != nil {
+				return "", err
+			}
+			return name, nil
+		}
+	}
+	return "", fmt.Errorf("Could not find subnet %s from clusterSpec", subnet)
+}
+
+func (c *OpenstackModelContext) findSubnetNameByID(subnetID string, subnetName string) (string, error) {
+	if subnetID == "" {
+		return subnetName + "." + c.ClusterName(), nil
+	}
+
+	tags := make(map[string]string)
+	tags[openstack.TagClusterName] = c.ClusterName()
+	osCloud, err := openstack.NewOpenstackCloud(tags, nil)
+	if err != nil {
+		return "", fmt.Errorf("error loading cloud: %v", err)
+	}
+
+	subnet, err := osCloud.GetSubnet(subnetID)
+	if err != nil {
+		return "", err
+	}
+	return subnet.Name, nil
 }
 
 func (c *OpenstackModelContext) LinkToNetwork() *openstacktasks.Network {

@@ -52,6 +52,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 	"k8s.io/kubernetes/pkg/kubectl/util/templates"
@@ -511,6 +512,53 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.NetworkID = *res.Subnets[0].VpcId
 	}
 
+	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderOpenstack {
+		if cluster.Spec.CloudConfig == nil {
+			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
+		}
+		cluster.Spec.CloudConfig.Openstack = &api.OpenstackConfiguration{
+			Router: &api.OpenstackRouter{
+				ExternalNetwork: fi.String(c.OpenstackExternalNet),
+			},
+			BlockStorage: &api.OpenstackBlockStorageConfig{
+				Version:  fi.String("v2"),
+				IgnoreAZ: fi.Bool(c.OpenstackStorageIgnoreAZ),
+			},
+			Monitor: &api.OpenstackMonitor{
+				Delay:      fi.String("1m"),
+				Timeout:    fi.String("30s"),
+				MaxRetries: fi.Int(3),
+			},
+		}
+
+		if c.OpenstackNetworkName != "" {
+			cluster.Spec.CloudConfig.Openstack.NetworkName = fi.String(c.OpenstackNetworkName)
+		} else if len(c.SubnetIDs) > 0 {
+			tags := make(map[string]string)
+			tags[openstack.TagClusterName] = c.ClusterName
+			osCloud, err := openstack.NewOpenstackCloud(tags, nil)
+			if err != nil {
+				return fmt.Errorf("error loading cloud: %v", err)
+			}
+
+			res, err := osCloud.FindNetworkBySubnetID(c.SubnetIDs[0])
+			if err != nil {
+				return fmt.Errorf("error finding network: %v", err)
+			}
+			cluster.Spec.CloudConfig.Openstack.NetworkName = fi.String(res.Name)
+			cluster.Spec.NetworkID = res.ID
+		} else {
+			cluster.Spec.CloudConfig.Openstack.NetworkName = fi.String(c.ClusterName)
+		}
+
+		if c.OpenstackDNSServers != "" {
+			cluster.Spec.CloudConfig.Openstack.Router.DNSServers = fi.String(c.OpenstackDNSServers)
+		}
+		if c.OpenstackExternalSubnet != "" {
+			cluster.Spec.CloudConfig.Openstack.Router.ExternalSubnet = fi.String(c.OpenstackExternalSubnet)
+		}
+	}
+
 	if cluster.Spec.CloudProvider == "" {
 		for _, zone := range allZones.List() {
 			cloud, known := fi.GuessCloudForZone(zone)
@@ -602,10 +650,19 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	} else {
 		var zoneToSubnetProviderID map[string]string
-		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
-			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, c.Zones[0][:len(c.Zones[0])-1], c.SubnetIDs)
-			if err != nil {
-				return err
+		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 {
+			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+				zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, c.Zones[0][:len(c.Zones[0])-1], c.SubnetIDs)
+				if err != nil {
+					return err
+				}
+			} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderOpenstack {
+				tags := make(map[string]string)
+				tags[openstack.TagClusterName] = c.ClusterName
+				zoneToSubnetProviderID, err = getSubnetProviderID(cluster.Spec.NetworkID, allZones.List(), c.SubnetIDs, tags)
+				if err != nil {
+					return err
+				}
 			}
 		}
 		for _, zoneName := range allZones.List() {
@@ -906,37 +963,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				cluster.Spec.CloudConfig.SpotinstOrientation = fi.String(c.SpotinstOrientation)
 			}
 		}
-
-		if c.Cloud == "openstack" {
-			if cluster.Spec.CloudConfig == nil {
-				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
-			}
-			cluster.Spec.CloudConfig.Openstack = &api.OpenstackConfiguration{
-				Router: &api.OpenstackRouter{
-					ExternalNetwork: fi.String(c.OpenstackExternalNet),
-				},
-				BlockStorage: &api.OpenstackBlockStorageConfig{
-					Version:  fi.String("v2"),
-					IgnoreAZ: fi.Bool(c.OpenstackStorageIgnoreAZ),
-				},
-				Monitor: &api.OpenstackMonitor{
-					Delay:      fi.String("1m"),
-					Timeout:    fi.String("30s"),
-					MaxRetries: fi.Int(3),
-				},
-			}
-			if c.OpenstackNetworkName != "" {
-				cluster.Spec.CloudConfig.Openstack.NetworkName = fi.String(c.OpenstackNetworkName)
-			} else {
-				cluster.Spec.CloudConfig.Openstack.NetworkName = fi.String(c.ClusterName)
-			}
-			if c.OpenstackDNSServers != "" {
-				cluster.Spec.CloudConfig.Openstack.Router.DNSServers = fi.String(c.OpenstackDNSServers)
-			}
-			if c.OpenstackExternalSubnet != "" {
-				cluster.Spec.CloudConfig.Openstack.Router.ExternalSubnet = fi.String(c.OpenstackExternalSubnet)
-			}
-		}
 	}
 
 	// Populate project
@@ -1068,10 +1094,19 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		var utilitySubnets []api.ClusterSubnetSpec
 
 		var zoneToSubnetProviderID map[string]string
-		if len(c.Zones) > 0 && len(c.UtilitySubnetIDs) > 0 && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
-			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, c.Zones[0][:len(c.Zones[0])-1], c.UtilitySubnetIDs)
-			if err != nil {
-				return err
+		if len(c.Zones) > 0 && len(c.UtilitySubnetIDs) > 0 {
+			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+				zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, c.Zones[0][:len(c.Zones[0])-1], c.UtilitySubnetIDs)
+				if err != nil {
+					return err
+				}
+			} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderOpenstack {
+				tags := make(map[string]string)
+				tags[openstack.TagClusterName] = c.ClusterName
+				zoneToSubnetProviderID, err = getSubnetProviderID(cluster.Spec.NetworkID, allZones.List(), c.UtilitySubnetIDs, tags)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -1482,6 +1517,41 @@ func getZoneToSubnetProviderID(VPCID string, region string, subnetIDs []string) 
 		if !ok {
 			return res, fmt.Errorf("subnet %s not found in VPC %s", subnetID, VPCID)
 		}
+		if res[subnet.Zone] != "" {
+			return res, fmt.Errorf("subnet %s and %s have the same zone", subnetID, res[subnet.Zone])
+		}
+		res[subnet.Zone] = subnetID
+	}
+	return res, nil
+}
+
+func getSubnetProviderID(networkID string, zones []string, subnetIDs []string, tags map[string]string) (map[string]string, error) {
+	res := make(map[string]string)
+	osCloud, err := openstack.NewOpenstackCloud(tags, nil)
+	if err != nil {
+		return res, fmt.Errorf("error loading cloud: %v", err)
+	}
+	osCloud.AddZones(zones)
+
+	networkInfo, err := osCloud.FindVPCInfo(networkID)
+	if err != nil {
+		return res, fmt.Errorf("error describing Network: %v", err)
+	}
+	if networkInfo == nil {
+		return res, fmt.Errorf("network %q not found", networkID)
+	}
+
+	subnetByID := make(map[string]*fi.SubnetInfo)
+	for _, subnetInfo := range networkInfo.Subnets {
+		subnetByID[subnetInfo.ID] = subnetInfo
+	}
+
+	for _, subnetID := range subnetIDs {
+		subnet, ok := subnetByID[subnetID]
+		if !ok {
+			return res, fmt.Errorf("subnet %s not found in network %s", subnetID, networkID)
+		}
+
 		if res[subnet.Zone] != "" {
 			return res, fmt.Errorf("subnet %s and %s have the same zone", subnetID, res[subnet.Zone])
 		}
