@@ -1,6 +1,5 @@
-# Documentation
-
-Please refer to the [cli](cli) directory for full documentation.
+# Commands & Arguments
+Please refer to the kops [cli reference](../cli/kops.md) for full documentation.
 
 ## `kops create cluster`
 
@@ -15,6 +14,13 @@ creating it).
 
 It is recommended that you run it first in 'preview' mode with `kops update cluster --name <name>`, and then
 when you are happy that it is making the right changes you run`kops update cluster --name <name> --yes`.
+
+## `kops rolling-update cluster`
+
+`kops update cluster <clustername>` updates a kubernetes cluster to match the cloud and kops specifications.
+
+It is recommended that you run it first in 'preview' mode with `kops rolling-update cluster --name <name>`, and then
+when you are happy that it is making the right changes you run`kops rolling-update cluster --name <name> --yes`.
 
 ## `kops get clusters`
 
@@ -32,24 +38,3 @@ when you are happy that it is deleting the right things you run `kops delete clu
 ## `kops version`
 
 `kops version` will print the version of the code you are running.
-
-## Other interesting modes:
-
-* Build a terraform model: `--target=terraform`  The terraform model will be built in `out/terraform`
-
-* Build a Cloudformation model: `--target=cloudformation`  The Cloudformation json file will be built in 'out/cloudformation'
-
-* Specify the k8s build to run: `--kubernetes-version=1.2.2`
-
-* Run nodes in multiple zones: `--zones=us-east-1b,us-east-1c,us-east-1d`
-
-* Run with a HA master: `--master-zones=us-east-1b,us-east-1c,us-east-1d`
-
-* Specify the number of nodes: `--node-count=4`
-
-* Specify the node size: `--node-size=m4.large`
-
-* Specify the master size: `--master-size=m4.large`
-
-* Override the default DNS zone: `--dns-zone=<my.hosted.zone>`
-

@@ -847,7 +847,7 @@ prow-postsubmit: bazel-version-dist
 
 .PHONY: live-docs
 live-docs:
-	@docker build --pull -t kops/mkdocs images/mkdocs
+	@docker build -t kops/mkdocs images/mkdocs
 	@docker run --rm -it -p 3000:3000 -v ${PWD}:/docs kops/mkdocs
 
 .PHONY: build-docs
