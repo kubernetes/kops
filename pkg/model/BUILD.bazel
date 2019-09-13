@@ -38,6 +38,7 @@ go_library(
         "//upup/pkg/fi/cloudup/aliup:go_default_library",
         "//upup/pkg/fi/cloudup/awstasks:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
+        "//upup/pkg/fi/cloudup/do:go_default_library",
         "//upup/pkg/fi/cloudup/dotasks:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",
         "//upup/pkg/fi/cloudup/gcetasks:go_default_library",
