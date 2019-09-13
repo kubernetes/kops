@@ -30,6 +30,7 @@ type Port struct {
 	ID             *string
 	Name           *string
 	Network        *Network
+	Subnets        []*Subnet
 	SecurityGroups []*SecurityGroup
 	Lifecycle      *fi.Lifecycle
 }
@@ -65,12 +66,20 @@ func NewPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycl
 			Lifecycle: lifecycle,
 		}
 	}
+	subnets := make([]*Subnet, len(port.FixedIPs))
+	for i, subn := range port.FixedIPs {
+		subnets[i] = &Subnet{
+			ID:        fi.String(subn.SubnetID),
+			Lifecycle: lifecycle,
+		}
+	}
 
 	actual := &Port{
 		ID:             fi.String(port.ID),
 		Name:           fi.String(port.Name),
 		Network:        &Network{ID: fi.String(port.NetworkID)},
 		SecurityGroups: sgs,
+		Subnets:        subnets,
 		Lifecycle:      lifecycle,
 	}
 	if find != nil {
@@ -128,11 +137,18 @@ func (_ *Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *P
 		for i, sg := range e.SecurityGroups {
 			sgs[i] = fi.StringValue(sg.ID)
 		}
+		fixedIPs := make([]ports.IP, len(e.Subnets))
+		for i, subn := range e.Subnets {
+			fixedIPs[i] = ports.IP{
+				SubnetID: fi.StringValue(subn.ID),
+			}
+		}
 
 		opt := ports.CreateOpts{
 			Name:           fi.StringValue(e.Name),
 			NetworkID:      fi.StringValue(e.Network.ID),
 			SecurityGroups: &sgs,
+			FixedIPs:       fixedIPs,
 		}
 
 		v, err := t.Cloud.CreatePort(opt)
