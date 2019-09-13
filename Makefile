@@ -855,6 +855,12 @@ build-docs:
 	@docker build --pull -t kops/mkdocs images/mkdocs
 	@docker run --rm -v ${PWD}:/docs kops/mkdocs build
 
+# TODO: Remove before merging
+.PHONY: build-docs-netlify
+build-docs-netlify:
+	@pip install -r ${MAKEDIR}/images/mkdocs/requirements.txt
+	@mkdocs build
+
 # Update machine_types.go
 .PHONY: update-machine-types
 update-machine-types:
