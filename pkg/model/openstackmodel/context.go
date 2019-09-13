@@ -37,7 +37,7 @@ func (c *OpenstackModelContext) GetNetworkName() (string, error) {
 
 	tags := make(map[string]string)
 	tags[openstack.TagClusterName] = c.ClusterName()
-	osCloud, err := openstack.NewOpenstackCloud(tags, nil)
+	osCloud, err := openstack.NewOpenstackCloud(tags, &c.Cluster.Spec)
 	if err != nil {
 		return "", fmt.Errorf("error loading cloud: %v", err)
 	}
@@ -47,6 +47,38 @@ func (c *OpenstackModelContext) GetNetworkName() (string, error) {
 		return "", err
 	}
 	return network.Name, nil
+}
+
+func (c *OpenstackModelContext) findSubnetClusterSpec(subnet string) (string, error) {
+	for _, sp := range c.Cluster.Spec.Subnets {
+		if sp.Name == subnet {
+			name, err := c.findSubnetNameByID(sp.ProviderID, sp.Name)
+			if err != nil {
+				return "", err
+			}
+			return name, nil
+		}
+	}
+	return "", fmt.Errorf("Could not find subnet %s from clusterSpec", subnet)
+}
+
+func (c *OpenstackModelContext) findSubnetNameByID(subnetID string, subnetName string) (string, error) {
+	if subnetID == "" {
+		return subnetName + "." + c.ClusterName(), nil
+	}
+
+	tags := make(map[string]string)
+	tags[openstack.TagClusterName] = c.ClusterName()
+	osCloud, err := openstack.NewOpenstackCloud(tags, &c.Cluster.Spec)
+	if err != nil {
+		return "", fmt.Errorf("error loading cloud: %v", err)
+	}
+
+	subnet, err := osCloud.GetSubnet(subnetID)
+	if err != nil {
+		return "", err
+	}
+	return subnet.Name, nil
 }
 
 func (c *OpenstackModelContext) LinkToNetwork() *openstacktasks.Network {

@@ -152,6 +152,12 @@ type OpenstackCloud interface {
 	//GetNetwork will return the Neutron network which match the id
 	GetNetwork(networkID string) (*networks.Network, error)
 
+	//FindNetworkBySubnetID will return network
+	FindNetworkBySubnetID(subnetID string) (*networks.Network, error)
+
+	//GetSubnet returns subnet using subnet id
+	GetSubnet(subnetID string) (*subnets.Subnet, error)
+
 	//ListNetworks will return the Neutron networks which match the options
 	ListNetworks(opt networks.ListOptsBuilder) ([]networks.Network, error)
 
@@ -322,12 +328,6 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 		return nil, err
 	}
 
-	/*
-		provider, err := os.AuthenticatedClient(authOption)
-		if err != nil {
-			return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
-		}*/
-
 	provider, err := os.NewClient(authOption.IdentityEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error building openstack provider client: %v", err)
@@ -462,13 +462,13 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 	return c, nil
 }
 
-func (c *openstackCloud) UseOctavia() bool {
-	return c.useOctavia
-}
-
 // AddZones add unique zone names to openstackcloud
 func (c *openstackCloud) AddZones(zones []string) {
 	c.zones = zones
+}
+
+func (c *openstackCloud) UseOctavia() bool {
+	return c.useOctavia
 }
 
 func (c *openstackCloud) ComputeClient() *gophercloud.ServiceClient {

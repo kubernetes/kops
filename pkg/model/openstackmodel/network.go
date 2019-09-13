@@ -33,7 +33,6 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	clusterName := b.ClusterName()
-	routerName := strings.Replace(clusterName, ".", "-", -1)
 
 	netName, err := b.GetNetworkName()
 	if err != nil {
@@ -50,17 +49,17 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	{
-		t := &openstacktasks.Router{
-			Name:      s(routerName),
-			Lifecycle: b.Lifecycle,
-		}
-
-		c.AddTask(t)
-	}
-
+	needRouter := true
+	routerName := strings.Replace(clusterName, ".", "-", -1)
 	for _, sp := range b.Cluster.Spec.Subnets {
-		subnetName := sp.Name + "." + b.ClusterName()
+		// assumes that we do not need to create routers if we use existing subnets
+		if sp.ProviderID != "" {
+			needRouter = false
+		}
+		subnetName, err := b.findSubnetNameByID(sp.ProviderID, sp.Name)
+		if err != nil {
+			return err
+		}
 		t := &openstacktasks.Subnet{
 			Name:       s(subnetName),
 			Network:    b.LinkToNetwork(),
@@ -79,14 +78,24 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(t)
 
-		t1 := &openstacktasks.RouterInterface{
-			Name:      s("ri-" + sp.Name),
-			Subnet:    b.LinkToSubnet(s(subnetName)),
-			Router:    b.LinkToRouter(s(routerName)),
-			Lifecycle: b.Lifecycle,
+		if needRouter {
+			t1 := &openstacktasks.RouterInterface{
+				Name:      s("ri-" + sp.Name),
+				Subnet:    b.LinkToSubnet(s(subnetName)),
+				Router:    b.LinkToRouter(s(routerName)),
+				Lifecycle: b.Lifecycle,
+			}
+			c.AddTask(t1)
 		}
-		c.AddTask(t1)
 	}
 
+	if needRouter {
+		t := &openstacktasks.Router{
+			Name:      s(routerName),
+			Lifecycle: b.Lifecycle,
+		}
+
+		c.AddTask(t)
+	}
 	return nil
 }

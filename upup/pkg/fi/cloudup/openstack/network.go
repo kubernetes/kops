@@ -62,6 +62,31 @@ func (c *openstackCloud) DeleteTag(resource string, id string, tag string) error
 	}
 }
 
+func (c *openstackCloud) FindNetworkBySubnetID(subnetID string) (*networks.Network, error) {
+	var rslt *networks.Network
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		subnet, err := c.GetSubnet(subnetID)
+		if err != nil {
+			return false, fmt.Errorf("error retrieving subnet with id %s: %v", subnetID, err)
+		}
+
+		netID := subnet.NetworkID
+		net, err := c.GetNetwork(netID)
+		if err != nil {
+			return false, fmt.Errorf("error retrieving network with id %s: %v", netID, err)
+		}
+		rslt = net
+		return true, nil
+	})
+	if err != nil {
+		return nil, err
+	} else if done {
+		return rslt, nil
+	} else {
+		return nil, wait.ErrWaitTimeout
+	}
+}
+
 func (c *openstackCloud) GetNetwork(id string) (*networks.Network, error) {
 	var network *networks.Network
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
