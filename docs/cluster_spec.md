@@ -433,6 +433,7 @@ spec:
   kubeControllerManager:
     horizontalPodAutoscalerSyncPeriod: 15s
     horizontalPodAutoscalerDownscaleDelay: 5m0s
+    horizontalPodAutoscalerDownscaleStabilization: 5m
     horizontalPodAutoscalerUpscaleDelay: 3m0s
     horizontalPodAutoscalerTolerance: 0.1
     experimentalClusterSigningDuration: 8760h0m0s
