@@ -129,6 +129,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			Role:             fi.String(string(ig.Spec.Role)),
 			Port:             portTask,
 			Metadata:         igMeta,
+			SecurityGroups:   ig.Spec.AdditionalSecurityGroups,
 			AvailabilityZone: az,
 		}
 		if igUserData != nil {
