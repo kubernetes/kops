@@ -59,7 +59,9 @@ func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecy
 		return nil, fmt.Errorf("NewSubnetTaskFromCloud: Failed to get network with ID %s: %v", subnet.NetworkID, err)
 	}
 	networkTask, err := NewNetworkTaskFromCloud(cloud, lifecycle, network)
-
+	if err != nil {
+		return nil, fmt.Errorf("error creating network task from cloud: %v", err)
+	}
 	nameservers := make([]*string, len(subnet.DNSNameservers))
 	for i, ns := range subnet.DNSNameservers {
 		nameservers[i] = fi.String(ns)
