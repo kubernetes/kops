@@ -847,11 +847,13 @@ prow-postsubmit: bazel-version-dist
 
 .PHONY: live-docs
 live-docs:
-	@docker run --rm -it -p 3000:3000 -v ${PWD}:/docs aledbf/mkdocs:0.1
+	@docker build --pull -t kops/mkdocs images/mkdocs
+	@docker run --rm -it -p 3000:3000 -v ${PWD}:/docs kops/mkdocs
 
 .PHONY: build-docs
 build-docs:
-	@docker run --rm -it -v ${PWD}:/docs aledbf/mkdocs:0.1 build
+	@docker build --pull -t kops/mkdocs images/mkdocs
+	@docker run --rm -v ${PWD}:/docs kops/mkdocs build
 
 # Update machine_types.go
 .PHONY: update-machine-types
