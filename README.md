@@ -45,7 +45,7 @@ To install a Kubernetes cluster on OpenStack, follow this [guide](/docs/tutorial
 
 ## Features
 
-* Automates the provisioning of Kubernetes clusters in [AWS](/docs/aws.md) and [GCE](/docs/tutorial/gce.md)
+* Automates the provisioning of Kubernetes clusters in [AWS](/docs/aws.md), [OpenStack](/docs/tutorial/openstack.md) and [GCE](/docs/tutorial/gce.md)
 * Deploys Highly Available (HA) Kubernetes Masters
 * Built on a state-sync model for **dry-runs** and automatic **idempotency**
 * Ability to generate [Terraform](/docs/terraform.md)
