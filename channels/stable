@@ -28,7 +28,10 @@ spec:
       kubernetesVersion: ">=1.11.0 <1.12.0"
     - name: kope.io/k8s-1.12-debian-stretch-amd64-hvm-ebs-2019-06-21
       providerID: aws
-      kubernetesVersion: ">=1.12.0"
+      kubernetesVersion: ">=1.12.0 <1.13.0"
+    - name: kope.io/k8s-1.13-debian-stretch-amd64-hvm-ebs-2019-08-16
+      providerID: aws
+      kubernetesVersion: ">=1.13.0"
     - providerID: gce
       name: "cos-cloud/cos-stable-65-10323-99-0"
   cluster:
