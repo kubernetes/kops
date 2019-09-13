@@ -154,7 +154,7 @@ At this point you have a kubernetes cluster - the core commands to do so are as 
 and `kops update cluster`.  There's a lot more power in kops, and even more power in kubernetes itself, so we've
 put a few jumping off places here.  But when you're done, don't forget to [delete your cluster](#deleting-the-cluster).
 
-* [Manipulate InstanceGroups](working-with-instancegroups.md) to add more nodes, change image
+* [Manipulate InstanceGroups](../tutorial/working-with-instancegroups.md) to add more nodes, change image
 
 # Deleting the cluster
 

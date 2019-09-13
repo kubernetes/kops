@@ -37,9 +37,9 @@ kops create cluster $NAME              \
 
 You can simply use the kops command `kops get --name $NAME -o yaml > a_fun_name_you_will_remember.yml`
 
-Note: for the above command to work the cluster NAME and the KOPS_STATE_STORE will have to be exported in your environment.  
+Note: for the above command to work the cluster NAME and the KOPS_STATE_STORE will have to be exported in your environment.
 
-For more information on how to use and modify the configurations see [here](manifests_and_customizing_via_api.md).
+For more information on how to use and modify the configurations see [here](../manifests_and_customizing_via_api.md).
 
 ## Managing instance groups
 

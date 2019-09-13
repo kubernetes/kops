@@ -4,7 +4,7 @@ The kops InstanceGroup is a declarative model of a group of nodes.  By modifying
 can change the instance type you're using, the number of nodes you have, the OS image you're running - essentially
 all the per-node configuration is in the InstanceGroup.
 
-We'll assume you have a working cluster - if not, you probably want to read [how to get started on GCE](gce.md).
+We'll assume you have a working cluster - if not, you probably want to read [how to get started on GCE](../getting_started/gce.md).
 
 ## Changing the number of nodes
 
@@ -45,7 +45,7 @@ spec:
 
 Edit `minSize` and `maxSize`, changing both from 2 to 3, save and exit your editor.  If you wanted to change
 the image or the machineType, you could do that here as well.  There are actually a lot more fields,
-but most of them have their default values, so won't show up unless they are set.  The general approach is the same though.  
+but most of them have their default values, so won't show up unless they are set.  The general approach is the same though.
 
 <!-- TODO link to API reference docs -->
 
