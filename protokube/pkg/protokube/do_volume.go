@@ -31,12 +31,15 @@ import (
 
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/protokube/pkg/etcd"
+	"k8s.io/kops/protokube/pkg/gossip"
+	gossipdo "k8s.io/kops/protokube/pkg/gossip/do"
 )
 
 const (
 	dropletRegionMetadataURL     = "http://169.254.169.254/metadata/v1/region"
 	dropletNameMetadataURL       = "http://169.254.169.254/metadata/v1/hostname"
 	dropletIDMetadataURL         = "http://169.254.169.254/metadata/v1/id"
+	dropletIDMetadataTags        = "http://169.254.169.254/metadata/v1/tags"
 	dropletInternalIPMetadataURL = "http://169.254.169.254/metadata/v1/interfaces/private/0/ipv4/address"
 	localDevicePrefix            = "/dev/disk/by-id/scsi-0DO_Volume_"
 )
@@ -48,6 +51,7 @@ type DOVolumes struct {
 	region      string
 	dropletName string
 	dropletID   int
+	dropletTags []string
 }
 
 var _ Volumes = &DOVolumes{}
@@ -78,12 +82,18 @@ func NewDOVolumes(clusterID string) (*DOVolumes, error) {
 		return nil, fmt.Errorf("failed to initialize digitalocean cloud: %s", err)
 	}
 
+	dropletTags, err := getMetadataDropletTags()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get droplet tags: %s", err)
+	}
+
 	return &DOVolumes{
 		Cloud:       cloud,
 		ClusterID:   clusterID,
 		dropletID:   dropletIDInt,
 		dropletName: dropletName,
 		region:      region,
+		dropletTags: dropletTags,
 	}, nil
 }
 
@@ -236,6 +246,17 @@ func getLocalDeviceName(vol *godo.Volume) string {
 	return localDevicePrefix + vol.Name
 }
 
+func (d *DOVolumes) GossipSeeds() (gossip.SeedProvider, error) {
+	for _, dropletTag := range d.dropletTags {
+        if strings.Contains(dropletTag, d.ClusterID) {
+			return gossipdo.NewSeedProvider(d.Cloud, dropletTag)
+        }
+	}
+	
+	
+	return nil, fmt.Errorf("could not determine a matching droplet tag for gossip seeding")
+}
+
 // GetDropletInternalIP gets the private IP of the droplet running this program
 // This function is exported so it can be called from protokube
 func GetDropletInternalIP() (net.IP, error) {
@@ -257,6 +278,13 @@ func getMetadataDropletName() (string, error) {
 
 func getMetadataDropletID() (string, error) {
 	return getMetadata(dropletIDMetadataURL)
+}
+
+func getMetadataDropletTags() ([]string, error) {
+
+	tagString, error := getMetadata(dropletIDMetadataTags)
+	dropletTags := strings.Split(tagString,"\n")
+	return dropletTags, error
 }
 
 func getMetadata(url string) (string, error) {
