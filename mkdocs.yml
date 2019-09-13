@@ -6,7 +6,9 @@ markdown_extensions:
   - admonition
   - codehilite
   - pymdownx.inlinehilite
-  - pymdownx.tasklist(custom_checkbox=true)
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.superfences
   - toc:
       permalink: true
 theme:
@@ -20,7 +22,6 @@ theme:
     accent: 'green'
 plugins:
   - search
-  - awesome-pages:
-      collapse_single_pages: true
+
 extra_css: [extra.css]
 #google_analytics: ['UA-XXXXXXX-X', 'kubernetes.github.io']
