@@ -6,7 +6,7 @@ The `kops upgrade` command also automates checking for and applying updates.
 
 It is recommended to run the latest version of Kops to ensure compatibility with the target kubernetesVersion. When applying a Kubernetes minor version upgrade (e.g. `v1.5.3` to `v1.6.0`), you should confirm that the target kubernetesVersion is compatible with the [current Kops release](https://github.com/kubernetes/kops/releases).
 
-Note: if you want to upgrade from a `kube-up` installation, please see the instructions for [how to upgrade kubernetes installed with kube-up](cluster_upgrades_and_migrations.md).
+Note: if you want to upgrade from a `kube-up` installation, please see the instructions for [how to upgrade kubernetes installed with kube-up](operations/cluster_upgrades_and_migrations.md).
 
 ### Manual update
 
@@ -39,5 +39,5 @@ Upgrade uses the latest Kubernetes version considered stable by kops, defined in
 * `kops rolling-update cluster $NAME` to preview, then `kops rolling-update cluster $NAME --yes`
 
 ### Other Notes:
-* In general, we recommend that you upgrade your cluster one minor release at a time (1.7 --> 1.8 --> 1.9).  Although jumping minor versions may work if you have not enabled alpha features, you run a greater risk of running into problems due to version deprecation. 
+* In general, we recommend that you upgrade your cluster one minor release at a time (1.7 --> 1.8 --> 1.9).  Although jumping minor versions may work if you have not enabled alpha features, you run a greater risk of running into problems due to version deprecation.
 
