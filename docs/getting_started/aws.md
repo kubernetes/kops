@@ -318,7 +318,7 @@ aws ec2 describe-availability-zones --region us-west-2
 ```
 
 Below is a create cluster command.  We'll use the most basic example possible,
-with more verbose examples in [high availability](../high_availability.md#advanced-example).
+with more verbose examples in [high availability](../operations/high_availability.md#advanced-example).
 The below command will generate a cluster configuration, but not start building
 it. Make sure that you have generated SSH key pair before creating the cluster.
 
