@@ -361,7 +361,7 @@ resource "aws_key_pair" "kubernetes-private-shared-subnet-example-com-c4a6ed9aa8
 
 resource "aws_launch_configuration" "bastion-private-shared-subnet-example-com" {
   name_prefix                 = "bastion.private-shared-subnet.example.com-"
-  image_id                    = "ami-15000000"
+  image_id                    = "ami-11400000"
   instance_type               = "t2.micro"
   key_name                    = "${aws_key_pair.kubernetes-private-shared-subnet-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile        = "${aws_iam_instance_profile.bastions-private-shared-subnet-example-com.id}"
@@ -383,7 +383,7 @@ resource "aws_launch_configuration" "bastion-private-shared-subnet-example-com" 
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-private-shared-subnet-example-com" {
   name_prefix                 = "master-us-test-1a.masters.private-shared-subnet.example.com-"
-  image_id                    = "ami-15000000"
+  image_id                    = "ami-11400000"
   instance_type               = "m3.medium"
   key_name                    = "${aws_key_pair.kubernetes-private-shared-subnet-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile        = "${aws_iam_instance_profile.masters-private-shared-subnet-example-com.id}"
@@ -411,7 +411,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-private-shared-su
 
 resource "aws_launch_configuration" "nodes-private-shared-subnet-example-com" {
   name_prefix                 = "nodes.private-shared-subnet.example.com-"
-  image_id                    = "ami-15000000"
+  image_id                    = "ami-11400000"
   instance_type               = "t2.medium"
   key_name                    = "${aws_key_pair.kubernetes-private-shared-subnet-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile        = "${aws_iam_instance_profile.nodes-private-shared-subnet-example-com.id}"
