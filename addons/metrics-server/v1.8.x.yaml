@@ -142,6 +142,15 @@ spec:
             - /metrics-server
             - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
             - --kubelet-insecure-tls
+            - --cert-dir=/tmp
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["all"]
+          readOnlyRootFilesystem: true
+          runAsGroup: 10001
+          runAsNonRoot: true
+          runAsUser: 10001
         volumeMounts:
         - name: tmp-dir
           mountPath: /tmp
