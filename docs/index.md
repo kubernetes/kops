@@ -29,7 +29,7 @@ in alpha, and other platforms planned.
 * Deploys Highly Available (HA) Kubernetes Masters
 * Built on a state-sync model for **dry-runs** and automatic **idempotency**
 * Ability to generate [Terraform](terraform.md)
-* Supports custom Kubernetes [add-ons](addons.md)
+* Supports custom Kubernetes [add-ons](operations/addons.md)
 * Command line [autocompletion](cli/kops_completion.md)
 * YAML Manifest Based API [Configuration](manifests_and_customizing_via_api.md)
 * [Templating](cluster_template.md) and dry-run modes for creating
