@@ -5,13 +5,13 @@ At some point you will almost definitely want to upgrade the Kubernetes version 
 - Upgrade an existing `kube-up` managed cluster to one managed by `kops`
     + [The simple method with downtime](#kube-up---kops-downtime)
     + [The more complex method with zero-downtime](#kube-up---kops-sans-downtime)
-- [Upgrade a `kops` cluster from one Kubernetes version to another](upgrade.md)
+- [Upgrade a `kops` cluster from one Kubernetes version to another](../upgrade.md)
 
 ## `kube-up` -> `kops`, with downtime
 
 `kops` lets you upgrade an existing 1.x cluster, installed using `kube-up`, to a cluster managed by `kops` running the latest kubernetes version (or the version of your choice).
 
-**This is an experimental and slightly risky procedure, so we recommend backing up important data before proceeding. 
+**This is an experimental and slightly risky procedure, so we recommend backing up important data before proceeding.
 Take a snapshot of your EBS volumes; export all your data from kubectl etc.**
 
 Limitations:
@@ -188,14 +188,14 @@ This method provides zero-downtime when migrating a cluster from `kube-up` to `k
 
 Limitations:
 - If you're using the default networking (`kubenet`), there is a account limit of 50 entries in a VPC's route table. If your cluster contains more than ~25 nodes, this strategy, as-is, will not work.
-    + Shifting to a CNI-compatible overlay network like `weave`, `kopeio-vxlan` (`kopeio`), `calico`, `canal`, `romana`, and similar. See the [kops networking docs](networking.md) for more information.
+    + Shifting to a CNI-compatible overlay network like `weave`, `kopeio-vxlan` (`kopeio`), `calico`, `canal`, `romana`, and similar. See the [kops networking docs](../networking.md) for more information.
     + One solution is to gradually shift traffic from one cluster to the other, scaling down the number of nodes on the old cluster, and scaling up the number of nodes on the new cluster.
 
 ### Steps
 
 1. If using another service to manage a domain's DNS records, delegate cluster-level DNS resolution to Route53 by adding appropriate NS records pointing `cluster.example.com` to Route53's Hosted Zone's nameservers.
 2. Create the new cluster's configuration files with kops. For example:
-    - `kops create cluster --cloud=aws --zones=us-east-1a,us-east-1b --admin-access=12.34.56.78/32 --dns-zone=cluster.example.com --kubernetes-version=1.4.0 --node-count=14 --node-size=c3.xlarge --master-zones=us-east-1a --master-size=m4.large --vpc=vpc-123abcdef --network-cidr=172.20.0.0/16 cluster.example.com` 
+    - `kops create cluster --cloud=aws --zones=us-east-1a,us-east-1b --admin-access=12.34.56.78/32 --dns-zone=cluster.example.com --kubernetes-version=1.4.0 --node-count=14 --node-size=c3.xlarge --master-zones=us-east-1a --master-size=m4.large --vpc=vpc-123abcdef --network-cidr=172.20.0.0/16 cluster.example.com`
     - `--vpc` is the resource id of the existing VPC.
     - `--network-cidr` is the CIDR of the existing VPC.
     - note that `kops` will propose re-naming the existing VPC but the change never occurs.
@@ -212,7 +212,7 @@ Limitations:
     - If you have a `LoadBalancer` service, you should be able to access the ELB's DNS name directly (although perhaps with an SSL error) and use your application as expected.
 11. Transition traffic from the old cluster to the new cluster. This depends a bit on your infrastructure, but
     - if using a DNS server, update the `CNAME` record for `example.com` to point to the new ELB's DNS name.
-    - if using a reverse proxy, update the upstream to point to the new ELB's DNS name. 
+    - if using a reverse proxy, update the upstream to point to the new ELB's DNS name.
     - note that if you're proxying through Cloudflare or similar, changes are instantaneous because it's technically a reverse proxy and not a DNS record.
     - if not using Cloudflare or similar, you'll want to update your DNS record's TTL to a very low duration about 48 hours in advance of this change (and then change it back to the previous value once the shift has been finalized).
 12. Rejoice.
