@@ -26,7 +26,7 @@ spec:
     - instanceGroup: master-us-test-1c
       name: us-test-1c
     name: events
-  kubernetesVersion: v1.4.12
+  kubernetesVersion: v1.14.0
   masterInternalName: api.internal.additionalcidr.example.com
   masterPublicName: api.additionalcidr.example.com
   networkCIDR: 10.0.0.0/16

@@ -366,7 +366,7 @@ resource "aws_key_pair" "kubernetes-unmanaged-example-com-c4a6ed9aa889b9e2c39cd6
 
 resource "aws_launch_configuration" "bastion-unmanaged-example-com" {
   name_prefix                 = "bastion.unmanaged.example.com-"
-  image_id                    = "ami-15000000"
+  image_id                    = "ami-11400000"
   instance_type               = "t2.micro"
   key_name                    = "${aws_key_pair.kubernetes-unmanaged-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile        = "${aws_iam_instance_profile.bastions-unmanaged-example-com.id}"
@@ -388,7 +388,7 @@ resource "aws_launch_configuration" "bastion-unmanaged-example-com" {
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-unmanaged-example-com" {
   name_prefix                 = "master-us-test-1a.masters.unmanaged.example.com-"
-  image_id                    = "ami-15000000"
+  image_id                    = "ami-11400000"
   instance_type               = "m3.medium"
   key_name                    = "${aws_key_pair.kubernetes-unmanaged-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile        = "${aws_iam_instance_profile.masters-unmanaged-example-com.id}"
@@ -416,7 +416,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-unmanaged-example
 
 resource "aws_launch_configuration" "nodes-unmanaged-example-com" {
   name_prefix                 = "nodes.unmanaged.example.com-"
-  image_id                    = "ami-15000000"
+  image_id                    = "ami-11400000"
   instance_type               = "t2.medium"
   key_name                    = "${aws_key_pair.kubernetes-unmanaged-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile        = "${aws_iam_instance_profile.nodes-unmanaged-example-com.id}"

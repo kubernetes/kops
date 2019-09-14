@@ -18,7 +18,7 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-  kubernetesVersion: v1.8.6
+  kubernetesVersion: v1.14.0
   masterInternalName: api.internal.sharedsubnet.example.com
   masterPublicName: api.sharedsubnet.example.com
   networkCIDR: 172.20.0.0/16
