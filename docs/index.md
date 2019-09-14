@@ -32,7 +32,7 @@ in alpha, and other platforms planned.
 * Supports custom Kubernetes [add-ons](operations/addons.md)
 * Command line [autocompletion](cli/kops_completion.md)
 * YAML Manifest Based API [Configuration](manifests_and_customizing_via_api.md)
-* [Templating](cluster_template.md) and dry-run modes for creating
+* [Templating](operations/cluster_template.md) and dry-run modes for creating
  Manifests
 * Choose from eight different CNI [Networking](networking.md) providers out-of-the-box
 * Supports upgrading from [kube-up](upgrade_from_kubeup.md)
