@@ -411,7 +411,7 @@ kops delete cluster --name ${NAME} --yes
 
 We've barely scratched the surface of the capabilities of `kops` in this guide,
 and we recommend researching [other interesting
-modes](../usage/commands.md#other-interesting-modes) to learn more about generating
+modes](commands.md#other-interesting-modes) to learn more about generating
 Terraform configurations, or running your cluster in an HA (Highly Available)
 mode.
 
