@@ -32,7 +32,7 @@ spec:
     legacy: true
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: v1.4.12
+  kubernetesVersion: v1.14.0
   masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16

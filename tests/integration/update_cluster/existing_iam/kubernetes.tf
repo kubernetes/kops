@@ -257,7 +257,7 @@ resource "aws_key_pair" "kubernetes-existing-iam-example-com-c4a6ed9aa889b9e2c39
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-existing-iam-example-com" {
   name_prefix                 = "master-us-test-1a.masters.existing-iam.example.com-"
-  image_id                    = "ami-15000000"
+  image_id                    = "ami-11400000"
   instance_type               = "m3.medium"
   key_name                    = "${aws_key_pair.kubernetes-existing-iam-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile        = "kops-custom-master-role"
@@ -285,7 +285,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-existing-iam-exam
 
 resource "aws_launch_configuration" "master-us-test-1b-masters-existing-iam-example-com" {
   name_prefix                 = "master-us-test-1b.masters.existing-iam.example.com-"
-  image_id                    = "ami-15000000"
+  image_id                    = "ami-11400000"
   instance_type               = "m3.medium"
   key_name                    = "${aws_key_pair.kubernetes-existing-iam-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile        = "kops-custom-master-role"
@@ -313,7 +313,7 @@ resource "aws_launch_configuration" "master-us-test-1b-masters-existing-iam-exam
 
 resource "aws_launch_configuration" "master-us-test-1c-masters-existing-iam-example-com" {
   name_prefix                 = "master-us-test-1c.masters.existing-iam.example.com-"
-  image_id                    = "ami-15000000"
+  image_id                    = "ami-11400000"
   instance_type               = "m3.medium"
   key_name                    = "${aws_key_pair.kubernetes-existing-iam-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile        = "kops-custom-master-role"
@@ -341,7 +341,7 @@ resource "aws_launch_configuration" "master-us-test-1c-masters-existing-iam-exam
 
 resource "aws_launch_configuration" "nodes-existing-iam-example-com" {
   name_prefix                 = "nodes.existing-iam.example.com-"
-  image_id                    = "ami-15000000"
+  image_id                    = "ami-11400000"
   instance_type               = "t2.medium"
   key_name                    = "${aws_key_pair.kubernetes-existing-iam-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile        = "kops-custom-node-role"
