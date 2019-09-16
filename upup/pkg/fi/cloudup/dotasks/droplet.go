@@ -19,9 +19,9 @@ package dotasks
 import (
 	"context"
 	"errors"
-
 	"github.com/digitalocean/godo"
 
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
@@ -142,21 +142,24 @@ func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
 		newDropletCount = expectedCount - actualCount
 	}
 
-	var dropletNames []string
 	for i := 0; i < newDropletCount; i++ {
-		dropletNames = append(dropletNames, fi.StringValue(e.Name))
+		_, _, err = t.Cloud.Droplets().Create(context.TODO(), &godo.DropletCreateRequest{
+			Name:              fi.StringValue(e.Name),
+			Region:            fi.StringValue(e.Region),
+			Size:              fi.StringValue(e.Size),
+			Image:             godo.DropletCreateImage{Slug: fi.StringValue(e.Image)},
+			PrivateNetworking: true,
+			Tags:              e.Tags,
+			UserData:          userData,
+			SSHKeys:           []godo.DropletCreateSSHKey{{Fingerprint: fi.StringValue(e.SSHKey)}},
+		})
+
+		if err != nil {
+			klog.Errorf("Error creating droplet with Name=%s", fi.StringValue(e.Name))
+			return err
+		}
 	}
 
-	_, _, err = t.Cloud.Droplets().CreateMultiple(context.TODO(), &godo.DropletMultiCreateRequest{
-		Names:             dropletNames,
-		Region:            fi.StringValue(e.Region),
-		Size:              fi.StringValue(e.Size),
-		Image:             godo.DropletCreateImage{Slug: fi.StringValue(e.Image)},
-		PrivateNetworking: true,
-		Tags:              e.Tags,
-		UserData:          userData,
-		SSHKeys:           []godo.DropletCreateSSHKey{{Fingerprint: fi.StringValue(e.SSHKey)}},
-	})
 	return err
 }
 
