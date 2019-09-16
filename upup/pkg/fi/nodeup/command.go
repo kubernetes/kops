@@ -466,6 +466,9 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 		result, err := svc.DescribeInstances(&ec2.DescribeInstancesInput{
 			InstanceIds: []*string{&instanceID},
 		})
+		if err != nil {
+			return "", fmt.Errorf("error describing instances: %v", err)
+		}
 
 		if len(result.Reservations) != 1 {
 			return "", fmt.Errorf("Too many reservations returned for the single instance-id")
