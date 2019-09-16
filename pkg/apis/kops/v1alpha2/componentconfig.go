@@ -555,6 +555,7 @@ type KubeControllerManagerConfig struct {
 	// The number of serviceaccount objects that are allowed to sync concurrently to create tokens.
 	ConcurrentServiceaccountTokenSyncs *int32 `json:"concurrentServiceaccountTokenSyncs,omitempty" flag:"concurrent-serviceaccount-token-syncs"`
 	// The number of replicationcontroller objects that are allowed to sync concurrently.
+	// This only works on kubernetes >= 1.14
 	ConcurrentRcSyncs *int32 `json:"concurrentRcSyncs,omitempty" flag:"concurrent-rc-syncs"`
 }
 
