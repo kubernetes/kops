@@ -2150,6 +2150,21 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.ServiceAccountSigningKeyFile != nil {
+		in, out := &in.ServiceAccountSigningKeyFile, &out.ServiceAccountSigningKeyFile
+		*out = new(string)
+		**out = **in
+	}
+	if in.ServiceAccountIssuer != nil {
+		in, out := &in.ServiceAccountIssuer, &out.ServiceAccountIssuer
+		*out = new(string)
+		**out = **in
+	}
+	if in.APIAudiences != nil {
+		in, out := &in.APIAudiences, &out.APIAudiences
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
