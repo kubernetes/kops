@@ -9,7 +9,7 @@ spec:
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/dockeroverride.example.com
-  dockerInstall:
+  docker:
     sourceOverrides:
     - source: http://docker-mirror.example.com/linux/static/stable/x86_64/docker-17.03.2-ce.tgz
       hash: 141716ae046016a1792ce232a0f4c8eed7fe37d1

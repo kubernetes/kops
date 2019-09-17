@@ -954,12 +954,13 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
+// findDockerVersions determines where to find the docker installation source
 func (b *DockerBuilder) findDockerVersions(v string) ([]dockerVersion, error) {
 	var dv []dockerVersion
 
 	// Check for overrides
-	if b.Cluster.Spec.DockerInstall != nil {
-		for _, s := range b.Cluster.Spec.DockerInstall.SourceOverrides {
+	if b.Cluster.Spec.Docker != nil {
+		for _, s := range b.Cluster.Spec.Docker.SourceOverrides {
 			extraPackages := make(map[string]packageInfo)
 
 			for _, p := range s.ExtraPackages {

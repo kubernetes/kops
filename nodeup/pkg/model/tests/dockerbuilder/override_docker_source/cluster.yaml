@@ -9,7 +9,7 @@ spec:
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/dockeroverride.example.com
-  dockerInstall:
+  docker:
     sourceOverrides:
     - name: docker-ce
       version: 17.03.2.ce

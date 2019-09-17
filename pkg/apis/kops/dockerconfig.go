@@ -60,6 +60,8 @@ type DockerConfig struct {
 	RegistryMirrors []string `json:"registryMirrors,omitempty" flag:"registry-mirror,repeat"`
 	// SkipInstall when set to true will prevent kops from installing and modifying Docker in any way
 	SkipInstall bool `json:"skipInstall,omitempty"`
+	// SourceOverrides is a list of user specified docker installation sources
+	SourceOverrides []DockerSource `json:"sourceOverrides,omitempty"`
 	// Storage is the docker storage driver to use
 	Storage *string `json:"storage,omitempty" flag:"storage-driver"`
 	// StorageOpts is a series of options passed to the storage driver
@@ -68,10 +70,6 @@ type DockerConfig struct {
 	UserNamespaceRemap string `json:"userNamespaceRemap,omitempty" flag:"userns-remap"`
 	// Version is consumed by the nodeup and used to pick the docker version
 	Version *string `json:"version,omitempty"`
-}
-
-type DockerInstallSpec struct {
-	SourceOverrides []DockerSource `json:"sourceOverrides,omitempty"`
 }
 
 type DockerSource struct {
