@@ -80,6 +80,9 @@ func downloadURLAlways(url string, destPath string, dirMode os.FileMode) error {
 	if err != nil {
 		return fmt.Errorf("error doing HTTP fetch of %q: %v", url, err)
 	}
+	if response.StatusCode >= 400 {
+		return fmt.Errorf("error response from %q: HTTP %v", url, response.StatusCode)
+	}
 	defer response.Body.Close()
 
 	_, err = io.Copy(output, response.Body)
