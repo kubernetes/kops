@@ -17,8 +17,12 @@ limitations under the License.
 package openstackmodel
 
 import (
+	"fmt"
+
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 )
 
@@ -26,8 +30,32 @@ type OpenstackModelContext struct {
 	*model.KopsModelContext
 }
 
+func (c *OpenstackModelContext) GetNetworkName() (string, error) {
+	if c.Cluster.Spec.NetworkID == "" {
+		return c.ClusterName(), nil
+	}
+
+	tags := make(map[string]string)
+	tags[openstack.TagClusterName] = c.ClusterName()
+	osCloud, err := openstack.NewOpenstackCloud(tags, nil)
+	if err != nil {
+		return "", fmt.Errorf("error loading cloud: %v", err)
+	}
+
+	network, err := osCloud.GetNetwork(c.Cluster.Spec.NetworkID)
+	if err != nil {
+		return "", err
+	}
+	return network.Name, nil
+}
+
 func (c *OpenstackModelContext) LinkToNetwork() *openstacktasks.Network {
-	return &openstacktasks.Network{Name: s(c.ClusterName())}
+	netName, err := c.GetNetworkName()
+	if err != nil {
+		klog.Infof("Could not find networkname")
+		return nil
+	}
+	return &openstacktasks.Network{Name: s(netName)}
 }
 
 func (c *OpenstackModelContext) LinkToRouter(name *string) *openstacktasks.Router {

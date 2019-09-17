@@ -33,6 +33,7 @@ type Port struct {
 	Subnets        []*Subnet
 	SecurityGroups []*SecurityGroup
 	Lifecycle      *fi.Lifecycle
+	Tag            *string
 }
 
 // GetDependencies returns the dependencies of the Port task
@@ -74,6 +75,11 @@ func NewPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycl
 		}
 	}
 
+	tag := ""
+	if find != nil && fi.ArrayContains(port.Tags, fi.StringValue(find.Tag)) {
+		tag = fi.StringValue(find.Tag)
+	}
+
 	actual := &Port{
 		ID:             fi.String(port.ID),
 		Name:           fi.String(port.Name),
@@ -81,6 +87,7 @@ func NewPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycl
 		SecurityGroups: sgs,
 		Subnets:        subnets,
 		Lifecycle:      lifecycle,
+		Tag:            fi.String(tag),
 	}
 	if find != nil {
 		find.ID = actual.ID
@@ -102,7 +109,6 @@ func (s *Port) Find(context *fi.Context) (*Port, error) {
 	} else if len(rs) != 1 {
 		return nil, fmt.Errorf("found multiple ports with name: %s", fi.StringValue(s.Name))
 	}
-
 	return NewPortTaskFromCloud(cloud, s.Lifecycle, &rs[0], s)
 }
 
@@ -122,7 +128,7 @@ func (_ *Port) CheckChanges(a, e, changes *Port) error {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
 		}
-		if e.Network != nil {
+		if changes.Network != nil {
 			return fi.CannotChangeField("Network")
 		}
 	}
@@ -156,9 +162,19 @@ func (_ *Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *P
 			return fmt.Errorf("Error creating port: %v", err)
 		}
 
+		err = t.Cloud.AppendTag(openstack.ResourceTypePort, v.ID, fi.StringValue(e.Tag))
+		if err != nil {
+			return fmt.Errorf("Error appending tag to port: %v", err)
+		}
+
 		e.ID = fi.String(v.ID)
 		klog.V(2).Infof("Creating a new Openstack port, id=%s", v.ID)
 		return nil
+	} else {
+		err := t.Cloud.AppendTag(openstack.ResourceTypePort, fi.StringValue(a.ID), fi.StringValue(changes.Tag))
+		if err != nil {
+			return fmt.Errorf("Error appending tag to port: %v", err)
+		}
 	}
 	e.ID = a.ID
 	klog.V(2).Infof("Using an existing Openstack port, id=%s", fi.StringValue(e.ID))

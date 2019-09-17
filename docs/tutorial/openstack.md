@@ -150,6 +150,25 @@ kops create cluster \
 
 The biggest problem currently when installing without loadbalancer is that kubectl requests outside cluster is always going to first master. External loadbalancer is one option which can solve this issue.
 
+# Using existing OpenStack network
+**Warning!** This feature is **experimental** use only if you know what you are doing.
+
+By default KOPS will always create new network to your OpenStack project which name matches to your clustername. However, there is experimental feature to use existing network in OpenStack project. When you create new cluster you can specify flag `--os-network <netname>` and it will then use existing network.
+
+Using yaml this can be specified to yaml:
+
+```
+spec:
+  ...
+  cloudConfig:
+    openstack:
+      networkName: <netname>
+  ...
+```
+
+**Warning!** when deleting cluster, you need to be really careful that you do not break another dependencies under same network. Run `kops delete cluster` without `--yes` flag and go through the list. Otherwise you might see situation that you broke something else.
+
+
 # Using with self-signed certificates in OpenStack
 
 Kops can be configured to use insecure mode towards OpenStack. However, this is **NOT** recommended as OpenStack cloudprovider in kubernetes does not support it.

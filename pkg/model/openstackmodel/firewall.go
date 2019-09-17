@@ -22,7 +22,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 
-	//TODO: Replace with klog
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/dns"
 )
