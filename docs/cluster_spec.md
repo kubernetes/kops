@@ -663,17 +663,13 @@ spec:
     - https://registry.example.com
 ```
 
-### Docker Install
-
-You can also change how kops installs Docker.
-
 #### Skip Install
 
-If you need to have nodeup skip the Docker installation tasks, you can do so with:
+If you want nodeup to skip the Docker installation tasks, you can do so with:
 
 ```yaml
 spec:
-  dockerInstall:
+  docker:
     skipInstall: true
 ``` 
 
