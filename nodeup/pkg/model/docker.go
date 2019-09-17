@@ -788,10 +788,8 @@ func (b *DockerBuilder) dockerVersion() string {
 
 // Build is responsible for configuring the docker daemon
 func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
-	di := b.Cluster.Spec.DockerInstall
-
-	if di != nil && di.SkipInstall == true {
-		klog.Infof("SkipDockerInstall is set to true; won't install Docker")
+	if b.skipInstall() {
+		klog.Infof("SkipInstall is set to true; won't install Docker")
 		return nil
 	}
 
@@ -1148,4 +1146,16 @@ func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 	})
 
 	return nil
+}
+
+// skipInstall determines if kops should skip the installation and configuration of Docker
+func (b *DockerBuilder) skipInstall() bool {
+	d := b.Cluster.Spec.Docker
+
+	// don't skip install if the user hasn't specified anything
+	if d == nil {
+		return false
+	}
+
+	return d.SkipInstall
 }
