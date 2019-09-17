@@ -745,11 +745,6 @@ spec:
 
 **NOTE:** When this field is set to `true`, it is entirely up to the user to install and configure Docker.
 
-### Docker Install
-
-You can also change how kops installs Docker.
-
-
 #### Source Overrides
 
 You can override the Docker install location with the `sourceOverrides` field:
