@@ -9,7 +9,7 @@ spec:
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
-  dockerInstall:
+  docker:
     skipInstall: true
   etcdClusters:
   - etcdMembers:
