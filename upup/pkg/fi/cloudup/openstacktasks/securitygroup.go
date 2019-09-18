@@ -18,8 +18,11 @@ package openstacktasks
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
+	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -27,10 +30,11 @@ import (
 
 //go:generate fitask -type=SecurityGroup
 type SecurityGroup struct {
-	ID          *string
-	Name        *string
-	Description *string
-	Lifecycle   *fi.Lifecycle
+	ID               *string
+	Name             *string
+	Description      *string
+	RemoveExtraRules []string
+	Lifecycle        *fi.Lifecycle
 }
 
 var _ fi.CompareWithID = &SecurityGroup{}
@@ -41,10 +45,10 @@ func (s *SecurityGroup) CompareWithID() *string {
 
 func (s *SecurityGroup) Find(context *fi.Context) (*SecurityGroup, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
-	return s.getSecurityGroupByName(cloud)
+	return getSecurityGroupByName(s, cloud)
 }
 
-func (s *SecurityGroup) getSecurityGroupByName(cloud openstack.OpenstackCloud) (*SecurityGroup, error) {
+func getSecurityGroupByName(s *SecurityGroup, cloud openstack.OpenstackCloud) (*SecurityGroup, error) {
 	opt := sg.ListOpts{
 		Name: fi.StringValue(s.Name),
 	}
@@ -65,6 +69,7 @@ func (s *SecurityGroup) getSecurityGroupByName(cloud openstack.OpenstackCloud) (
 		Description: fi.String(g.Description),
 		Lifecycle:   s.Lifecycle,
 	}
+	actual.RemoveExtraRules = s.RemoveExtraRules
 	s.ID = actual.ID
 	return actual, nil
 }
@@ -109,4 +114,181 @@ func (_ *SecurityGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, c
 
 	klog.V(2).Infof("Openstack task SecurityGroup::RenderOpenstack did nothing")
 	return nil
+}
+
+func (s *SecurityGroup) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
+	var removals []fi.Deletion
+
+	if len(s.RemoveExtraRules) == 0 {
+		return nil, nil
+	}
+
+	var rules []RemovalRule
+	for _, r := range s.RemoveExtraRules {
+		rule, err := ParseRemovalRule(r)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse rule %q: %v", r, err)
+		}
+		rules = append(rules, rule)
+	}
+
+	cloud := c.Cloud.(openstack.OpenstackCloud)
+	sg, err := getSecurityGroupByName(s, cloud)
+	if err != nil {
+		return nil, err
+	}
+	if sg == nil {
+		return nil, nil
+	}
+
+	sgRules, err := cloud.ListSecurityGroupRules(sgr.ListOpts{
+		SecGroupID: fi.StringValue(sg.ID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, permission := range sgRules {
+		match := false
+		for _, rule := range rules {
+			if rule.Matches(permission) {
+				klog.V(2).Infof("permission matches rule %s: %v", rule, permission)
+				match = true
+				break
+			}
+		}
+		if !match {
+			klog.V(4).Infof("Ignoring security group permission %q (did not match removal rules)", permission)
+			continue
+		}
+
+		found := false
+		for _, t := range c.AllTasks() {
+			er, ok := t.(*SecurityGroupRule)
+			if !ok {
+				continue
+			}
+
+			if matches(er, permission) {
+				found = true
+			}
+		}
+		if !found {
+			removals = append(removals, &deleteSecurityGroupRule{
+				rule:          permission,
+				securityGroup: s,
+			})
+		}
+	}
+	return removals, nil
+}
+
+func matches(t *SecurityGroupRule, perm sgr.SecGroupRule) bool {
+	if fi.IntValue(t.PortRangeMin) != perm.PortRangeMin {
+		return false
+	}
+
+	if fi.IntValue(t.PortRangeMax) != perm.PortRangeMax {
+		return false
+	}
+
+	if perm.Protocol != "tcp" {
+		return false
+	}
+
+	if perm.RemoteIPPrefix != fi.StringValue(t.RemoteIPPrefix) {
+		return false
+	}
+
+	return true
+}
+
+type deleteSecurityGroupRule struct {
+	rule          sgr.SecGroupRule
+	securityGroup *SecurityGroup
+}
+
+var _ fi.Deletion = &deleteSecurityGroupRule{}
+
+func (d *deleteSecurityGroupRule) Delete(t fi.Target) error {
+	klog.V(2).Infof("deleting security group permission: %v", fi.DebugAsJsonString(d.rule))
+
+	os, ok := t.(*openstack.OpenstackAPITarget)
+	if !ok {
+		return fmt.Errorf("unexpected target type for deletion: %T", t)
+	}
+	err := os.Cloud.DeleteSecurityGroupRule(d.rule.ID)
+	if err != nil {
+		return fmt.Errorf("error revoking SecurityGroupRule: %v", err)
+	}
+	return nil
+}
+
+func (d *deleteSecurityGroupRule) TaskName() string {
+	return "SecurityGroupRule"
+}
+
+func (d *deleteSecurityGroupRule) Item() string {
+	s := ""
+	if d.rule.PortRangeMin != 0 {
+		s += fmt.Sprintf(" port=%d", d.rule.PortRangeMin)
+		if d.rule.PortRangeMin != d.rule.PortRangeMax {
+			s += fmt.Sprintf("-%d", d.rule.PortRangeMax)
+		}
+	}
+	s += " protocol=tcp"
+	s += fmt.Sprintf(" ip=%s", d.rule.RemoteIPPrefix)
+	s += fmt.Sprintf(" securitygroup=%s", fi.StringValue(d.securityGroup.Name))
+	return s
+}
+
+// RemovalRule is a rule that filters the permissions we should remove
+type RemovalRule interface {
+	Matches(sgr.SecGroupRule) bool
+}
+
+// ParseRemovalRule parses our removal rule DSL into a RemovalRule
+func ParseRemovalRule(rule string) (RemovalRule, error) {
+	rule = strings.TrimSpace(rule)
+	tokens := strings.Split(rule, "=")
+
+	// Simple little language:
+	//   port=N matches rules that filter (only) by port=N
+	//
+	// Note this language is internal, so isn't required to be stable
+
+	if len(tokens) == 2 {
+		if tokens[0] == "port" {
+			port, err := strconv.Atoi(tokens[1])
+			if err != nil {
+				return nil, fmt.Errorf("cannot parse rule %q", rule)
+			}
+
+			return &PortRemovalRule{Port: port}, nil
+		} else {
+			return nil, fmt.Errorf("cannot parse rule %q", rule)
+		}
+	}
+	return nil, fmt.Errorf("cannot parse rule %q", rule)
+}
+
+type PortRemovalRule struct {
+	Port int
+}
+
+var _ RemovalRule = &PortRemovalRule{}
+
+func (r *PortRemovalRule) String() string {
+	return fi.DebugAsJsonString(r)
+}
+
+func (r *PortRemovalRule) Matches(rule sgr.SecGroupRule) bool {
+	// Check if port matches
+	if rule.PortRangeMin != r.Port {
+		return false
+	}
+	if rule.PortRangeMax != r.Port {
+		return false
+	}
+	return true
 }
