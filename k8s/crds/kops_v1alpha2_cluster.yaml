@@ -2121,6 +2121,8 @@ spec:
                   type: object
                 cilium:
                   properties:
+                    IPTablesRulesNoinstall:
+                      type: boolean
                     accessLog:
                       type: string
                     agentLabels:
@@ -2129,9 +2131,19 @@ spec:
                       type: array
                     allowLocalhost:
                       type: string
+                    autoDirectNodeRoutes:
+                      type: boolean
                     autoIpv6NodeRoutes:
                       type: boolean
+                    bpfCTGlobalAnyMax:
+                      format: int64
+                      type: integer
+                    bpfCTGlobalTCPMax:
+                      format: int64
+                      type: integer
                     bpfRoot:
+                      type: string
+                    clusterName:
                       type: string
                     containerRuntime:
                       items:
@@ -2139,6 +2151,8 @@ spec:
                       type: array
                     containerRuntimeEndpoint:
                       type: object
+                    containerRuntimeLabels:
+                      type: string
                     debug:
                       type: boolean
                     debugVerbose:
@@ -2155,9 +2169,15 @@ spec:
                       type: boolean
                     disableMasquerade:
                       type: boolean
+                    enableNodePort:
+                      type: boolean
                     enablePolicy:
                       type: string
                     enableTracing:
+                      type: boolean
+                    enableipv4:
+                      type: boolean
+                    enableipv6:
                       type: boolean
                     envoyLog:
                       type: string
@@ -2209,9 +2229,13 @@ spec:
                     logstashProbeTimer:
                       format: int32
                       type: integer
+                    monitorAggregation:
+                      type: string
                     nat46Range:
                       type: string
                     pprof:
+                      type: boolean
+                    preallocateBPFMaps:
                       type: boolean
                     prefilterDevice:
                       type: string
@@ -2219,12 +2243,16 @@ spec:
                       type: string
                     restore:
                       type: boolean
+                    sidecarIstioProxyImage:
+                      type: string
                     singleClusterRoute:
                       type: boolean
                     socketPath:
                       type: string
                     stateDir:
                       type: string
+                    toFqdnsEnablePoller:
+                      type: boolean
                     tracePayloadlen:
                       format: int64
                       type: integer
@@ -2232,6 +2260,22 @@ spec:
                       type: string
                     version:
                       type: string
+                    waitBPFMount:
+                      type: boolean
+                  required:
+                  - enableipv6
+                  - enableipv4
+                  - monitorAggregation
+                  - bpfCTGlobalTCPMax
+                  - bpfCTGlobalAnyMax
+                  - preallocateBPFMaps
+                  - sidecarIstioProxyImage
+                  - clusterName
+                  - toFqdnsEnablePoller
+                  - waitBPFMount
+                  - IPTablesRulesNoinstall
+                  - autoDirectNodeRoutes
+                  - enableNodePort
                   type: object
                 classic:
                   type: object
@@ -2335,6 +2379,9 @@ spec:
               description: MasterIPRange                 string `json:",omitempty"`
                 NonMasqueradeCIDR is the CIDR for the internal k8s network (on which
                 pods & services live) It cannot overlap ServiceClusterIPRange
+              type: string
+            podCIDR:
+              description: PodCIDR is the CIDR from which we allocate IPs for pods
               type: string
             project:
               description: Project is the cloud project we should use, required on

@@ -152,7 +152,6 @@ func (b *FirewallModelBuilder) addETCDRules(c *fi.ModelBuilderContext, sgMap map
 	addDirectionalGroupRule(c, masterSG, masterSG, etcdPeerRule)
 
 	if b.Cluster.Spec.Networking.Romana != nil ||
-		b.Cluster.Spec.Networking.Cilium != nil ||
 		b.Cluster.Spec.Networking.Calico != nil {
 
 		etcdCNIRule := &openstacktasks.SecurityGroupRule{
