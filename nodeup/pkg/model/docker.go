@@ -826,6 +826,10 @@ func (b *DockerBuilder) dockerVersion() string {
 
 // Build is responsible for configuring the docker daemon
 func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
+	if b.skipInstall() {
+		klog.Infof("SkipInstall is set to true; won't install Docker")
+		return nil
+	}
 
 	// @check: neither coreos or containeros need provision docker.service, just the docker daemon options
 	switch b.Distribution {
@@ -1187,4 +1191,16 @@ func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 	})
 
 	return nil
+}
+
+// skipInstall determines if kops should skip the installation and configuration of Docker
+func (b *DockerBuilder) skipInstall() bool {
+	d := b.Cluster.Spec.Docker
+
+	// don't skip install if the user hasn't specified anything
+	if d == nil {
+		return false
+	}
+
+	return d.SkipInstall
 }
