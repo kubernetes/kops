@@ -259,13 +259,6 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 		protocols = append(protocols, ProtocolIPIP)
 	}
 
-	if b.Cluster.Spec.Networking.Cilium != nil {
-		// Cilium needs to access etcd
-		klog.Warningf("Opening etcd port on masters for access from the nodes, for Cilium.  This is unsafe in untrusted environments.")
-		tcpBlocked[4001] = false
-		protocols = append(protocols, ProtocolIPIP)
-	}
-
 	if b.Cluster.Spec.Networking.Kuberouter != nil {
 		protocols = append(protocols, ProtocolIPIP)
 	}
