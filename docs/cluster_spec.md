@@ -663,6 +663,18 @@ spec:
     - https://registry.example.com
 ```
 
+#### Skip Install
+
+If you want nodeup to skip the Docker installation tasks, you can do so with:
+
+```yaml
+spec:
+  docker:
+    skipInstall: true
+``` 
+
+**NOTE:** When this field is set to `true`, it is entirely up to the user to install and configure Docker.
+
 #### storage
 
 The Docker [Storage Driver](https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-storage-driver) can be specified in order to override the default. Be sure the driver you choose is supported by your operating system and docker version.
