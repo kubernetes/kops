@@ -2139,7 +2139,7 @@ func compareInstances(t *testing.T, actualTask fi.Task, expected *openstacktasks
 	compareStrings(t, "Image", actual.Image, expected.Image)
 	compareStrings(t, "SSHKey", actual.SSHKey, expected.SSHKey)
 	compareStrings(t, "Role", actual.Role, expected.Role)
-	compareStrings(t, "UserData", actual.UserData, expected.UserData)
+	compareUserData(t, actual.UserData, expected.UserData)
 	compareStrings(t, "AvailabilityZone", actual.AvailabilityZone, expected.AvailabilityZone)
 	comparePorts(t, actual.Port, expected.Port)
 	compareServerGroups(t, actual.ServerGroup, expected.ServerGroup)
@@ -2297,6 +2297,29 @@ func compareStrings(t *testing.T, name string, actual, expected *string) {
 			e = *expected
 		}
 		t.Errorf("%s differs: %+v instead of %+v", name, a, e)
+	}
+}
+
+func compareUserData(t *testing.T, actual, expected *string) {
+	t.Helper()
+	if pointersAreBothNil(t, "UserData", actual, expected) {
+		return
+	}
+	if !reflect.DeepEqual(actual, expected) {
+		var a, e string
+		if actual != nil {
+			a = *actual
+		}
+		if expected != nil {
+			e = *expected
+		}
+		aLines := strings.Split(a, "\n")
+		eLines := strings.Split(e, "\n")
+		sort.Strings(aLines)
+		sort.Strings(eLines)
+		if !reflect.DeepEqual(aLines, eLines) {
+			t.Errorf("UserData differ: %+v instead of %+v", a, e)
+		}
 	}
 }
 
