@@ -1998,6 +1998,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					SecurityGroups: []*openstacktasks.SecurityGroup{
 						{Name: s("nodes.cluster")},
 					},
+					AdditionalSecurityGroups: []string{
+						"additional-sg",
+					},
 					Subnets: []*openstacktasks.Subnet{
 						{Name: s("subnet.cluster")},
 					},
@@ -2103,6 +2106,10 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					t.Run("creates a task for "+taskName, func(t *testing.T) {
 						compareLBListeners(t, actual, expected)
 					})
+				case *openstacktasks.SecurityGroup:
+					t.Run("creates a task for "+taskName, func(t *testing.T) {
+						compareSecurityGroups(t, actual, expected)
+					})
 				default:
 					t.Errorf("found a task with name %q and type %T", taskName, expected)
 				}
@@ -2147,7 +2154,14 @@ func comparePorts(t *testing.T, actualTask fi.Task, expected *openstacktasks.Por
 	}
 
 	compareStrings(t, "Name", actual.Name, expected.Name)
-	compareSecurityGroups(t, actual.SecurityGroups, expected.SecurityGroups)
+	compareSecurityGroupLists(t, actual.SecurityGroups, expected.SecurityGroups)
+	sort.Strings(actual.AdditionalSecurityGroups)
+	sort.Strings(expected.AdditionalSecurityGroups)
+	actualSgs := strings.Join(actual.AdditionalSecurityGroups, " ")
+	expectedSgs := strings.Join(expected.AdditionalSecurityGroups, " ")
+	if actualSgs != expectedSgs {
+		t.Errorf("AdditionalSecurityGroups differ: %q instead of %q", actualSgs, expectedSgs)
+	}
 	compareLifecycles(t, actual.Lifecycle, expected.Lifecycle)
 	if actual.Network == nil {
 		t.Fatal("Network is nil")
@@ -2259,7 +2273,7 @@ func compareLoadbalancers(t *testing.T, actualTask fi.Task, expected *openstackt
 	compareStrings(t, "Name", actual.Name, expected.Name)
 	compareLifecycles(t, actual.Lifecycle, expected.Lifecycle)
 	compareStrings(t, "Subnet", actual.Subnet, expected.Subnet)
-	compareSecurityGroups(t, []*openstacktasks.SecurityGroup{actual.SecurityGroup}, []*openstacktasks.SecurityGroup{expected.SecurityGroup})
+	compareSecurityGroupLists(t, []*openstacktasks.SecurityGroup{actual.SecurityGroup}, []*openstacktasks.SecurityGroup{expected.SecurityGroup})
 }
 
 func compareLBPools(t *testing.T, actualTask fi.Task, expected *openstacktasks.LBPool) {
@@ -2362,7 +2376,22 @@ func compareLifecycles(t *testing.T, actual, expected *fi.Lifecycle) {
 	}
 }
 
-func compareSecurityGroups(t *testing.T, actual, expected []*openstacktasks.SecurityGroup) {
+func compareSecurityGroups(t *testing.T, actualTask fi.Task, expected *openstacktasks.SecurityGroup) {
+	t.Helper()
+	if pointersAreBothNil(t, "SecurityGroup", actualTask, expected) {
+		return
+	}
+	actual, ok := actualTask.(*openstacktasks.SecurityGroup)
+	if !ok {
+		t.Fatalf("task is not a security group task, got %T", actualTask)
+	}
+
+	compareStrings(t, "Name", actual.Name, expected.Name)
+	compareLifecycles(t, actual.Lifecycle, expected.Lifecycle)
+	compareStrings(t, "Description", actual.Description, expected.Description)
+}
+
+func compareSecurityGroupLists(t *testing.T, actual, expected []*openstacktasks.SecurityGroup) {
 	sgs := make([]string, len(actual))
 	for i, sg := range actual {
 		sgs[i] = *sg.Name
