@@ -18,13 +18,13 @@ package dns
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io/ioutil"
 	"net/http"
 	"testing"
 
 	"github.com/digitalocean/godo"
-	"github.com/digitalocean/godo/context"
 
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 )

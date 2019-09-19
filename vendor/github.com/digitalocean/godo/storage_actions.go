@@ -1,10 +1,9 @@
 package godo
 
 import (
+	"context"
 	"fmt"
 	"net/http"
-
-	"github.com/digitalocean/godo/context"
 )
 
 // StorageActionsService is an interface for interfacing with the
