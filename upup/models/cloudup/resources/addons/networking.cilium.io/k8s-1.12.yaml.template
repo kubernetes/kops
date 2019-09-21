@@ -87,7 +87,7 @@ data:
   # [1] http://docs.cilium.io/en/stable/install/upgrade/#changes-that-may-require-action
   tofqdns-enable-poller: "{{- if .ToFqdnsEnablePoller -}}true{{- else -}}false{{- end -}}"
   # wait-bpf-mount makes init container wait until bpf filesystem is mounted
-  wait-bpf-mount: "true"
+  wait-bpf-mount: "false"
   # Enable fetching of container-runtime specific metadata
   #
   # By default, the Kubernetes pod and namespace labels are retrieved and
