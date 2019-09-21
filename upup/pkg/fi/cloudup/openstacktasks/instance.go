@@ -46,6 +46,8 @@ type Instance struct {
 	Lifecycle *fi.Lifecycle
 }
 
+var _ fi.HasAddress = &Instance{}
+
 // GetDependencies returns the dependencies of the Instance task
 func (e *Instance) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
@@ -68,6 +70,24 @@ func (e *Instance) WaitForStatusActive(t *openstack.OpenstackAPITarget) error {
 
 func (e *Instance) CompareWithID() *string {
 	return e.ID
+}
+
+func (e *Instance) FindIPAddress(context *fi.Context) (*string, error) {
+	cloud := context.Cloud.(openstack.OpenstackCloud)
+	if e.Port == nil {
+		return nil, nil
+	}
+
+	ports, err := cloud.GetPort(fi.StringValue(e.Port.ID))
+	if err != nil {
+		return nil, err
+	}
+
+	for _, port := range ports.FixedIPs {
+		return fi.String(port.IPAddress), nil
+	}
+
+	return nil, nil
 }
 
 func (e *Instance) Find(c *fi.Context) (*Instance, error) {

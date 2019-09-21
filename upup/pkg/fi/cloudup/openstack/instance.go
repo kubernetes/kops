@@ -78,7 +78,11 @@ func (c *openstackCloud) ListServerFloatingIPs(instanceID string) ([]*string, er
 
 		for _, addrList := range addresses {
 			for _, props := range addrList {
-				if props.IPType == "floating" {
+				if c.floatingEnabled {
+					if props.IPType == "floating" {
+						result = append(result, fi.String(props.Addr))
+					}
+				} else {
 					result = append(result, fi.String(props.Addr))
 				}
 			}
