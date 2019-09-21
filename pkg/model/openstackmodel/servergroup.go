@@ -136,37 +136,58 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		}
 		c.AddTask(instanceTask)
 
-		// Associate a floating IP to the master and bastion always, associate it to a node if bastion is not used
-		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleBastion:
-			t := &openstacktasks.FloatingIP{
-				Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
-				Server:    instanceTask,
-				Lifecycle: b.Lifecycle,
-			}
-			c.AddTask(t)
-		case kops.InstanceGroupRoleMaster:
-			if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer == nil {
+		// Associate a floating IP to the master and bastion always if we have external network in router
+		// associate it to a node if bastion is not used
+		if b.Cluster.Spec.CloudConfig.Openstack != nil && b.Cluster.Spec.CloudConfig.Openstack.Router != nil {
+			switch ig.Spec.Role {
+			case kops.InstanceGroupRoleBastion:
 				t := &openstacktasks.FloatingIP{
 					Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
 					Server:    instanceTask,
 					Lifecycle: b.Lifecycle,
 				}
 				c.AddTask(t)
-				b.associateFIPToKeypair(c, t)
-			}
-		default:
-			if !b.UsesSSHBastion() {
-				t := &openstacktasks.FloatingIP{
-					Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
-					Server:    instanceTask,
-					Lifecycle: b.Lifecycle,
+			case kops.InstanceGroupRoleMaster:
+				if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer == nil {
+					t := &openstacktasks.FloatingIP{
+						Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
+						Server:    instanceTask,
+						Lifecycle: b.Lifecycle,
+					}
+					c.AddTask(t)
+					b.associateFIPToKeypair(c, t)
 				}
-				c.AddTask(t)
+			default:
+				if !b.UsesSSHBastion() {
+					t := &openstacktasks.FloatingIP{
+						Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
+						Server:    instanceTask,
+						Lifecycle: b.Lifecycle,
+					}
+					c.AddTask(t)
+				}
+			}
+		} else if b.Cluster.Spec.CloudConfig.Openstack != nil && b.Cluster.Spec.CloudConfig.Openstack.Router == nil {
+			// No external router, but we need to add master fixed ips to certificates
+			if ig.Spec.Role == kops.InstanceGroupRoleMaster {
+				b.associateFixedIPToKeypair(c, instanceTask)
 			}
 		}
 	}
 
+	return nil
+}
+
+func (b *ServerGroupModelBuilder) associateFixedIPToKeypair(c *fi.ModelBuilderContext, fipTask *openstacktasks.Instance) error {
+	// Ensure the floating IP is included in the TLS certificate,
+	// if we're not going to use an alias for it
+	// TODO: I don't love this technique for finding the task by name & modifying it
+	masterKeypairTask, found := c.Tasks["Keypair/master"]
+	if !found {
+		return fmt.Errorf("keypair/master task not found")
+	}
+	masterKeypair := masterKeypairTask.(*fitasks.Keypair)
+	masterKeypair.AlternateNameTasks = append(masterKeypair.AlternateNameTasks, fipTask)
 	return nil
 }
 

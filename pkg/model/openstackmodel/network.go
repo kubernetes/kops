@@ -63,7 +63,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			DNSServers: make([]*string, 0),
 			Lifecycle:  b.Lifecycle,
 		}
-		if b.Cluster.Spec.CloudConfig.Openstack.Router.DNSServers != nil {
+		if b.Cluster.Spec.CloudConfig.Openstack.Router != nil && b.Cluster.Spec.CloudConfig.Openstack.Router.DNSServers != nil {
 			dnsSplitted := strings.Split(fi.StringValue(b.Cluster.Spec.CloudConfig.Openstack.Router.DNSServers), ",")
 			dnsNameSrv := make([]*string, len(dnsSplitted))
 			for i, ns := range dnsSplitted {
