@@ -115,6 +115,11 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		"-v", "/run/systemd:/run/systemd",
 	}
 
+	if fi.BoolValue(t.Cluster.Spec.MountCertificates) {
+		dockerArgs = append(dockerArgs, "-v")
+		dockerArgs = append(dockerArgs, "/etc/ssl/certs:/etc/ssl/certs")
+	}
+
 	// add kubectl only if a master
 	// path changes depending on distro, and always mount it on /opt/kops/bin
 	// kubectl is downloaded and installed by other tasks

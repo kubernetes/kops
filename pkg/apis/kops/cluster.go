@@ -172,6 +172,9 @@ type ClusterSpec struct {
 	DisableSubnetTags bool `json:"disableSubnetTags,omitempty"`
 	// Target allows for us to nest extra config for targets such as terraform
 	Target *TargetSpec `json:"target,omitempty"`
+	// MountCertificates will mount /etc/ssl/certs to inside needed containers.
+	// This is needed if some APIs do have self-signed certs
+	MountCertificates *bool `json:"mountCertificates,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization
