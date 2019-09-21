@@ -1808,6 +1808,7 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.Target = nil
 	}
+	out.MountCertificates = in.MountCertificates
 	return nil
 }
 
@@ -2076,6 +2077,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.Target = nil
 	}
+	out.MountCertificates = in.MountCertificates
 	return nil
 }
 

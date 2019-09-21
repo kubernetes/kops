@@ -788,6 +788,11 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 		*out = new(TargetSpec)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.MountCertificates != nil {
+		in, out := &in.MountCertificates, &out.MountCertificates
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
