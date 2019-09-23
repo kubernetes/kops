@@ -181,7 +181,13 @@ func run() error {
 				if attributes["storage"] != "EBS only" {
 					storage := strings.Split(attributes["storage"], " ")
 					count := stringToInt(storage[0])
-					size := stringToInt(storage[2])
+					var size int
+					if storage[2] == "NVMe" {
+						count = 1
+						size = stringToInt(storage[0])
+					} else {
+						size = stringToInt(storage[2])
+					}
 
 					ephemeralDisks := []int{}
 					for i := 0; i < count; i++ {
