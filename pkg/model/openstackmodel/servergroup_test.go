@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -1945,6 +1946,359 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 			},
 		},
+		{
+			desc: "one master one node without bastion no public ip association",
+			cluster: &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "cluster",
+				},
+				Spec: kops.ClusterSpec{
+					MasterPublicName: "master-public-name",
+					CloudConfig: &kops.CloudConfiguration{
+						Openstack: &kops.OpenstackConfiguration{
+							Router: &kops.OpenstackRouter{
+								ExternalNetwork: fi.String("test"),
+							},
+						},
+					},
+					Subnets: []kops.ClusterSubnetSpec{
+						{
+							Region: "region",
+						},
+					},
+				},
+			},
+			instanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "master",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:              kops.InstanceGroupRoleMaster,
+						Image:             "image-master",
+						MinSize:           i32(1),
+						MaxSize:           i32(1),
+						MachineType:       "blc.1-2",
+						Subnets:           []string{"subnet"},
+						AssociatePublicIP: fi.Bool(false),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:              kops.InstanceGroupRoleNode,
+						Image:             "image-node",
+						MinSize:           i32(1),
+						MaxSize:           i32(1),
+						MachineType:       "blc.2-4",
+						Subnets:           []string{"subnet"},
+						AssociatePublicIP: fi.Bool(false),
+					},
+				},
+			},
+			expectedTasksBuilder: func(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup) map[string]fi.Task {
+				clusterLifecycle := fi.LifecycleSync
+				masterServerGroup := &openstacktasks.ServerGroup{
+					Name:        s("cluster-master"),
+					ClusterName: s("cluster"),
+					IGName:      s("master"),
+					Policies:    []string{"anti-affinity"},
+					Lifecycle:   &clusterLifecycle,
+					MaxSize:     i32(1),
+				}
+				masterPort := &openstacktasks.Port{
+					Name:    s("port-master-1-cluster"),
+					Network: &openstacktasks.Network{Name: s("cluster")},
+					SecurityGroups: []*openstacktasks.SecurityGroup{
+						{Name: s("master-public-name")},
+						{Name: s("masters.cluster")},
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet.cluster")},
+					},
+					Lifecycle: &clusterLifecycle,
+				}
+				masterInstance := &openstacktasks.Instance{
+					Name:        s("master-1-cluster"),
+					Region:      s("region"),
+					Flavor:      s("blc.1-2"),
+					Image:       s("image-master"),
+					SSHKey:      s("kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1"),
+					ServerGroup: masterServerGroup,
+					Tags:        []string{"KubernetesCluster:cluster"},
+					Role:        s("Master"),
+					Port:        masterPort,
+					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					Metadata: map[string]string{
+						"KubernetesCluster":  "cluster",
+						"k8s":                "cluster",
+						"KopsInstanceGroup":  "master",
+						"KopsRole":           "Master",
+						"ig_generation":      "0",
+						"cluster_generation": "0",
+					},
+					AvailabilityZone: s("subnet"),
+				}
+				nodeServerGroup := &openstacktasks.ServerGroup{
+					Name:        s("cluster-node"),
+					ClusterName: s("cluster"),
+					IGName:      s("node"),
+					Policies:    []string{"anti-affinity"},
+					Lifecycle:   &clusterLifecycle,
+					MaxSize:     i32(1),
+				}
+				nodePort := &openstacktasks.Port{
+					Name:    s("port-node-1-cluster"),
+					Network: &openstacktasks.Network{Name: s("cluster")},
+					SecurityGroups: []*openstacktasks.SecurityGroup{
+						{Name: s("nodes.cluster")},
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet.cluster")},
+					},
+					Lifecycle: &clusterLifecycle,
+				}
+				nodeInstance := &openstacktasks.Instance{
+					Name:        s("node-1-cluster"),
+					Region:      s("region"),
+					Flavor:      s("blc.2-4"),
+					Image:       s("image-node"),
+					SSHKey:      s("kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1"),
+					ServerGroup: nodeServerGroup,
+					Tags:        []string{"KubernetesCluster:cluster"},
+					Role:        s("Node"),
+					Port:        nodePort,
+					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					Metadata: map[string]string{
+						"KubernetesCluster":  "cluster",
+						"k8s":                "cluster",
+						"KopsInstanceGroup":  "node",
+						"KopsRole":           "Node",
+						"ig_generation":      "0",
+						"cluster_generation": "0",
+					},
+					AvailabilityZone: s("subnet"),
+				}
+				return map[string]fi.Task{
+					"ServerGroup/cluster-master": masterServerGroup,
+					"Instance/master-1-cluster":  masterInstance,
+					"Port/port-master-1-cluster": masterPort,
+					"ServerGroup/cluster-node":   nodeServerGroup,
+					"Instance/node-1-cluster":    nodeInstance,
+					"Port/port-node-1-cluster":   nodePort,
+				}
+			},
+		},
+		{
+			desc: "one master one node one bastion",
+			cluster: &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "cluster",
+				},
+				Spec: kops.ClusterSpec{
+					MasterPublicName: "master-public-name",
+					CloudConfig: &kops.CloudConfiguration{
+						Openstack: &kops.OpenstackConfiguration{
+							Router: &kops.OpenstackRouter{
+								ExternalNetwork: fi.String("test"),
+							},
+						},
+					},
+					Subnets: []kops.ClusterSubnetSpec{
+						{
+							Region: "region",
+						},
+					},
+				},
+			},
+			instanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "master",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:              kops.InstanceGroupRoleMaster,
+						Image:             "image",
+						MinSize:           i32(1),
+						MaxSize:           i32(1),
+						MachineType:       "blc.1-2",
+						Subnets:           []string{"subnet"},
+						AssociatePublicIP: fi.Bool(false),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:              kops.InstanceGroupRoleNode,
+						Image:             "image",
+						MinSize:           i32(1),
+						MaxSize:           i32(1),
+						MachineType:       "blc.1-2",
+						Subnets:           []string{"subnet"},
+						AssociatePublicIP: fi.Bool(false),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "bastion",
+					},
+					Spec: kops.InstanceGroupSpec{
+						AdditionalUserData: []kops.UserData{
+							{
+								Name:    "x",
+								Type:    "shell",
+								Content: "echo 'hello'",
+							},
+						},
+						Role:              kops.InstanceGroupRoleBastion,
+						Image:             "image",
+						MinSize:           i32(1),
+						MaxSize:           i32(1),
+						MachineType:       "blc.1-2",
+						Subnets:           []string{"utility-subnet"},
+						AssociatePublicIP: fi.Bool(false),
+					},
+				},
+			},
+			expectedTasksBuilder: func(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup) map[string]fi.Task {
+				clusterLifecycle := fi.LifecycleSync
+				masterServerGroup := &openstacktasks.ServerGroup{
+					Name:        s("cluster-master"),
+					ClusterName: s("cluster"),
+					IGName:      s("master"),
+					Policies:    []string{"anti-affinity"},
+					Lifecycle:   &clusterLifecycle,
+					MaxSize:     i32(1),
+				}
+				masterPort := &openstacktasks.Port{
+					Name:    s("port-master-1-cluster"),
+					Network: &openstacktasks.Network{Name: s("cluster")},
+					SecurityGroups: []*openstacktasks.SecurityGroup{
+						{Name: s("master-public-name")},
+						{Name: s("masters.cluster")},
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet.cluster")},
+					},
+					Lifecycle: &clusterLifecycle,
+				}
+				masterInstance := &openstacktasks.Instance{
+					Name:        s("master-1-cluster"),
+					Region:      s("region"),
+					Flavor:      s("blc.1-2"),
+					Image:       s("image"),
+					SSHKey:      s("kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1"),
+					ServerGroup: masterServerGroup,
+					Tags:        []string{"KubernetesCluster:cluster"},
+					Role:        s("Master"),
+					Port:        masterPort,
+					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					Metadata: map[string]string{
+						"KubernetesCluster":  "cluster",
+						"k8s":                "cluster",
+						"KopsInstanceGroup":  "master",
+						"KopsRole":           "Master",
+						"ig_generation":      "0",
+						"cluster_generation": "0",
+					},
+					AvailabilityZone: s("subnet"),
+				}
+				nodeServerGroup := &openstacktasks.ServerGroup{
+					Name:        s("cluster-node"),
+					ClusterName: s("cluster"),
+					IGName:      s("node"),
+					Policies:    []string{"anti-affinity"},
+					Lifecycle:   &clusterLifecycle,
+					MaxSize:     i32(1),
+				}
+				nodePort := &openstacktasks.Port{
+					Name:    s("port-node-1-cluster"),
+					Network: &openstacktasks.Network{Name: s("cluster")},
+					SecurityGroups: []*openstacktasks.SecurityGroup{
+						{Name: s("nodes.cluster")},
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet.cluster")},
+					},
+					Lifecycle: &clusterLifecycle,
+				}
+				nodeInstance := &openstacktasks.Instance{
+					Name:        s("node-1-cluster"),
+					Region:      s("region"),
+					Flavor:      s("blc.1-2"),
+					Image:       s("image"),
+					SSHKey:      s("kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1"),
+					ServerGroup: nodeServerGroup,
+					Tags:        []string{"KubernetesCluster:cluster"},
+					Role:        s("Node"),
+					Port:        nodePort,
+					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					Metadata: map[string]string{
+						"KubernetesCluster":  "cluster",
+						"k8s":                "cluster",
+						"KopsInstanceGroup":  "node",
+						"KopsRole":           "Node",
+						"ig_generation":      "0",
+						"cluster_generation": "0",
+					},
+					AvailabilityZone: s("subnet"),
+				}
+				bastionServerGroup := &openstacktasks.ServerGroup{
+					Name:        s("cluster-bastion"),
+					ClusterName: s("cluster"),
+					IGName:      s("bastion"),
+					Policies:    []string{"anti-affinity"},
+					Lifecycle:   &clusterLifecycle,
+					MaxSize:     i32(1),
+				}
+				bastionPort := &openstacktasks.Port{
+					Name:    s("port-bastion-1-cluster"),
+					Network: &openstacktasks.Network{Name: s("cluster")},
+					SecurityGroups: []*openstacktasks.SecurityGroup{
+						{Name: s("bastion.cluster")},
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("utility-subnet.cluster")},
+					},
+					Lifecycle: &clusterLifecycle,
+				}
+				bastionInstance := &openstacktasks.Instance{
+					Name:        s("bastion-1-cluster"),
+					Region:      s("region"),
+					Flavor:      s("blc.1-2"),
+					Image:       s("image"),
+					SSHKey:      s("kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1"),
+					ServerGroup: bastionServerGroup,
+					Tags:        []string{"KubernetesCluster:cluster"},
+					Role:        s("Bastion"),
+					Port:        bastionPort,
+					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[2])),
+					Metadata: map[string]string{
+						"k8s":                "cluster",
+						"KopsInstanceGroup":  "bastion",
+						"KopsRole":           "Bastion",
+						"ig_generation":      "0",
+						"cluster_generation": "0",
+					},
+					AvailabilityZone: s("subnet"),
+				}
+				return map[string]fi.Task{
+					"ServerGroup/cluster-master":  masterServerGroup,
+					"Instance/master-1-cluster":   masterInstance,
+					"Port/port-master-1-cluster":  masterPort,
+					"ServerGroup/cluster-node":    nodeServerGroup,
+					"Instance/node-1-cluster":     nodeInstance,
+					"Port/port-node-1-cluster":    nodePort,
+					"ServerGroup/cluster-bastion": bastionServerGroup,
+					"Instance/bastion-1-cluster":  bastionInstance,
+					"Port/port-bastion-1-cluster": bastionPort,
+				}
+			},
+		},
 	}
 
 	for _, testCase := range tests {
@@ -2139,7 +2493,7 @@ func compareInstances(t *testing.T, actualTask fi.Task, expected *openstacktasks
 	compareStrings(t, "Image", actual.Image, expected.Image)
 	compareStrings(t, "SSHKey", actual.SSHKey, expected.SSHKey)
 	compareStrings(t, "Role", actual.Role, expected.Role)
-	compareStrings(t, "UserData", actual.UserData, expected.UserData)
+	compareUserData(t, actual.UserData, expected.UserData)
 	compareStrings(t, "AvailabilityZone", actual.AvailabilityZone, expected.AvailabilityZone)
 	comparePorts(t, actual.Port, expected.Port)
 	compareServerGroups(t, actual.ServerGroup, expected.ServerGroup)
@@ -2297,6 +2651,29 @@ func compareStrings(t *testing.T, name string, actual, expected *string) {
 			e = *expected
 		}
 		t.Errorf("%s differs: %+v instead of %+v", name, a, e)
+	}
+}
+
+func compareUserData(t *testing.T, actual, expected *string) {
+	t.Helper()
+	if pointersAreBothNil(t, "UserData", actual, expected) {
+		return
+	}
+	if !reflect.DeepEqual(actual, expected) {
+		var a, e string
+		if actual != nil {
+			a = *actual
+		}
+		if expected != nil {
+			e = *expected
+		}
+		aLines := strings.Split(a, "\n")
+		eLines := strings.Split(e, "\n")
+		sort.Strings(aLines)
+		sort.Strings(eLines)
+		if !reflect.DeepEqual(aLines, eLines) {
+			t.Errorf("UserData differ: %+v instead of %+v", a, e)
+		}
 	}
 }
 
