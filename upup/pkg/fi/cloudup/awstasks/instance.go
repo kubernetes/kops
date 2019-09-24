@@ -88,9 +88,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	instances := []*ec2.Instance{}
 	if response != nil {
 		for _, reservation := range response.Reservations {
-			for _, instance := range reservation.Instances {
-				instances = append(instances, instance)
-			}
+			instances = append(instances, reservation.Instances...)
 		}
 	}
 
