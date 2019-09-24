@@ -213,14 +213,6 @@ func run() error {
 			os.Exit(1)
 		}
 		volumes = aliVolumes
-	} else if cloud == "alicloud" {
-		klog.Info("Initializing AliCloud volumes")
-		aliVolumes, err := protokube.NewALIVolumes()
-		if err != nil {
-			klog.Errorf("Error initializing Aliyun: %q", err)
-			os.Exit(1)
-		}
-		volumes = aliVolumes
 
 		if clusterID == "" {
 			clusterID = aliVolumes.ClusterID()
