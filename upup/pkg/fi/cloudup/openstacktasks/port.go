@@ -19,6 +19,7 @@ package openstacktasks
 import (
 	"fmt"
 
+	secgroup "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
@@ -27,12 +28,13 @@ import (
 
 //go:generate fitask -type=Port
 type Port struct {
-	ID             *string
-	Name           *string
-	Network        *Network
-	Subnets        []*Subnet
-	SecurityGroups []*SecurityGroup
-	Lifecycle      *fi.Lifecycle
+	ID                       *string
+	Name                     *string
+	Network                  *Network
+	Subnets                  []*Subnet
+	SecurityGroups           []*SecurityGroup
+	AdditionalSecurityGroups []string
+	Lifecycle                *fi.Lifecycle
 }
 
 // GetDependencies returns the dependencies of the Port task
@@ -59,12 +61,31 @@ func (s *Port) CompareWithID() *string {
 }
 
 func NewPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, port *ports.Port, find *Port) (*Port, error) {
-	sgs := make([]*SecurityGroup, len(port.SecurityGroups))
-	for i, sgid := range port.SecurityGroups {
-		sgs[i] = &SecurityGroup{
+	additionalSecurityGroupIDs := map[string]struct{}{}
+	if find != nil {
+		for _, sg := range find.AdditionalSecurityGroups {
+			opt := secgroup.ListOpts{
+				Name: sg,
+			}
+			gs, err := cloud.ListSecurityGroups(opt)
+			if err != nil {
+				continue
+			}
+			if len(gs) == 0 {
+				continue
+			}
+			additionalSecurityGroupIDs[gs[0].ID] = struct{}{}
+		}
+	}
+	sgs := []*SecurityGroup{}
+	for _, sgid := range port.SecurityGroups {
+		if _, ok := additionalSecurityGroupIDs[sgid]; ok {
+			continue
+		}
+		sgs = append(sgs, &SecurityGroup{
 			ID:        fi.String(sgid),
 			Lifecycle: lifecycle,
-		}
+		})
 	}
 	subnets := make([]*Subnet, len(port.FixedIPs))
 	for i, subn := range port.FixedIPs {
@@ -84,6 +105,7 @@ func NewPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycl
 	}
 	if find != nil {
 		find.ID = actual.ID
+		actual.AdditionalSecurityGroups = find.AdditionalSecurityGroups
 	}
 	return actual, nil
 }
@@ -129,26 +151,13 @@ func (_ *Port) CheckChanges(a, e, changes *Port) error {
 	return nil
 }
 
-func (_ *Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Port) error {
+func (*Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Port) error {
 	if a == nil {
 		klog.V(2).Infof("Creating Port with name: %q", fi.StringValue(e.Name))
 
-		sgs := make([]string, len(e.SecurityGroups))
-		for i, sg := range e.SecurityGroups {
-			sgs[i] = fi.StringValue(sg.ID)
-		}
-		fixedIPs := make([]ports.IP, len(e.Subnets))
-		for i, subn := range e.Subnets {
-			fixedIPs[i] = ports.IP{
-				SubnetID: fi.StringValue(subn.ID),
-			}
-		}
-
-		opt := ports.CreateOpts{
-			Name:           fi.StringValue(e.Name),
-			NetworkID:      fi.StringValue(e.Network.ID),
-			SecurityGroups: &sgs,
-			FixedIPs:       fixedIPs,
+		opt, err := portCreateOptsFromPortTask(a, e, changes)
+		if err != nil {
+			return fmt.Errorf("Error creating port cloud opts: %v", err)
 		}
 
 		v, err := t.Cloud.CreatePort(opt)
@@ -163,4 +172,27 @@ func (_ *Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *P
 	e.ID = a.ID
 	klog.V(2).Infof("Using an existing Openstack port, id=%s", fi.StringValue(e.ID))
 	return nil
+}
+
+func portCreateOptsFromPortTask(a, e, changes *Port) (ports.CreateOptsBuilder, error) {
+	sgs := make([]string, len(e.SecurityGroups)+len(e.AdditionalSecurityGroups))
+	for i, sg := range e.SecurityGroups {
+		sgs[i] = fi.StringValue(sg.ID)
+	}
+	for i, sg := range e.AdditionalSecurityGroups {
+		sgs[i+len(e.SecurityGroups)] = sg
+	}
+	fixedIPs := make([]ports.IP, len(e.Subnets))
+	for i, subn := range e.Subnets {
+		fixedIPs[i] = ports.IP{
+			SubnetID: fi.StringValue(subn.ID),
+		}
+	}
+
+	return ports.CreateOpts{
+		Name:           fi.StringValue(e.Name),
+		NetworkID:      fi.StringValue(e.Network.ID),
+		SecurityGroups: &sgs,
+		FixedIPs:       fixedIPs,
+	}, nil
 }
