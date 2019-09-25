@@ -1342,7 +1342,7 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 			ngwResource := buildNatGatewayResource(ngw, forceShared, clusterName)
 			resourceTrackers = append(resourceTrackers, ngwResource)
 
-			// Dont try to remove ElasticIPs if NatGateway is shared
+			// Don't try to remove ElasticIPs if NatGateway is shared
 			if ngwResource.Shared {
 				continue
 			}
