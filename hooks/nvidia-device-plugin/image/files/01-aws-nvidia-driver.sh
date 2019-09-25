@@ -29,22 +29,25 @@ CACHE_DIR=/nvidia-device-plugin
 #   G2         GRID          GRID Series     GRID K520 (deprecated)
 #   G3         Tesla         M-Series        M-60
 #   G3S        Tesla         M-Series        M-60
+#   G4         Tesla         T-Series        T-4
 #   P2         Tesla         K-Series        K-80
 #   P3         Tesla         V-Series        V100
 # http://www.nvidia.com/Download/index.aspx
 declare -A class_to_driver_file
 class_to_driver_file=( \
-    ["g2"]="http://us.download.nvidia.com/XFree86/Linux-x86_64/367.124/NVIDIA-Linux-x86_64-367.124.run" \
+    ["g2"]="http://us.download.nvidia.com/XFree86/Linux-x86_64/418.56/NVIDIA-Linux-x86_64-418.56.run" \
     ["g3"]="http://us.download.nvidia.com/tesla/418.87/NVIDIA-Linux-x86_64-418.87.00.run" \
     ["g3s"]="http://us.download.nvidia.com/tesla/418.87/NVIDIA-Linux-x86_64-418.87.00.run" \
+    ["g4"]="http://us.download.nvidia.com/tesla/418.87/NVIDIA-Linux-x86_64-418.87.00.run" \
     ["p2"]="http://us.download.nvidia.com/tesla/418.87/NVIDIA-Linux-x86_64-418.87.00.run" \
     ["p3"]="http://us.download.nvidia.com/tesla/418.87/NVIDIA-Linux-x86_64-418.87.00.run" \
 )
 declare -A class_to_driver_checksum
 class_to_driver_checksum=( \
-    ["g2"]="77f37939efeea4b6505842bed50445971992e303" \
+    ["g2"]="09c28f182ef18055c5b0ee847082c0a10bc87b8e" \
     ["g3"]="cad87a17529667e996352c1357141040bf68b8cf" \
     ["g3s"]="cad87a17529667e996352c1357141040bf68b8cf" \
+    ["g4"]="cad87a17529667e996352c1357141040bf68b8cf" \
     ["p2"]="cad87a17529667e996352c1357141040bf68b8cf" \
     ["p3"]="cad87a17529667e996352c1357141040bf68b8cf" \
 )
