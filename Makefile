@@ -517,7 +517,7 @@ dep-ensure: dep-prereqs
 	# Remove recursive symlinks that really confuse bazel
 	rm -rf vendor/github.com/coreos/etcd/cmd/
 	rm -rf vendor/github.com/jteeuwen/go-bindata/testdata/
-	# Remove depenencies that dep just can't figure out
+	# Remove dependencies that dep just can't figure out
 	rm -rf vendor/k8s.io/code-generator/cmd/set-gen/
 	rm -rf vendor/k8s.io/code-generator/cmd/go-to-protobuf/
 	rm -rf vendor/k8s.io/code-generator/cmd/import-boss/

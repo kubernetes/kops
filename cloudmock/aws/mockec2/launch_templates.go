@@ -43,7 +43,7 @@ func (m *MockEC2) DescribeLaunchTemplates(request *ec2.DescribeLaunchTemplatesIn
 	return o, nil
 }
 
-// DescribeLaunchTemplateVersions mocks the retrieval of launch template versions - we dont use this at the moment so we can just return the template
+// DescribeLaunchTemplateVersions mocks the retrieval of launch template versions - we don't use this at the moment so we can just return the template
 func (m *MockEC2) DescribeLaunchTemplateVersions(request *ec2.DescribeLaunchTemplateVersionsInput) (*ec2.DescribeLaunchTemplateVersionsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
