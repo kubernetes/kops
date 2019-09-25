@@ -100,7 +100,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Name:    s("port-master-1-cluster"),
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
-						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
 					},
 					Subnets: []*openstacktasks.Subnet{
@@ -123,7 +122,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "master",
-						"KopsRole":           "Master",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -168,7 +166,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "node",
-						"KopsRole":           "Node",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -271,7 +268,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Name:    s("port-master-1-cluster"),
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
-						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
 					},
 					Subnets: []*openstacktasks.Subnet{
@@ -294,7 +290,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "master",
-						"KopsRole":           "Master",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -339,7 +334,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "node",
-						"KopsRole":           "Node",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -378,7 +372,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Metadata: map[string]string{
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "bastion",
-						"KopsRole":           "Bastion",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -516,7 +509,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Name:    s("port-master-a-1-cluster"),
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
-						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
 					},
 					Subnets: []*openstacktasks.Subnet{
@@ -539,7 +531,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "master-a",
-						"KopsRole":           "Master",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -562,7 +553,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Name:    s("port-master-b-1-cluster"),
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
-						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
 					},
 					Subnets: []*openstacktasks.Subnet{
@@ -585,7 +575,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "master-b",
-						"KopsRole":           "Master",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -608,7 +597,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Name:    s("port-master-c-1-cluster"),
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
-						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
 					},
 					Subnets: []*openstacktasks.Subnet{
@@ -631,7 +619,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "master-c",
-						"KopsRole":           "Master",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -676,7 +663,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "node-a",
-						"KopsRole":           "Node",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -721,7 +707,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "node-b",
-						"KopsRole":           "Node",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -766,7 +751,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "node-c",
-						"KopsRole":           "Node",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -812,6 +796,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Name: "cluster",
 				},
 				Spec: kops.ClusterSpec{
+					API: &kops.AccessSpec{
+						LoadBalancer: &kops.LoadBalancerAccessSpec{},
+					},
 					MasterPublicName: "master-public-name",
 					CloudConfig: &kops.CloudConfiguration{
 						Openstack: &kops.OpenstackConfiguration{
@@ -941,7 +928,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "master-a",
-						"KopsRole":           "Master",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -981,7 +967,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "master-b",
-						"KopsRole":           "Master",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -1021,7 +1006,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "master-c",
-						"KopsRole":           "Master",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -1061,7 +1045,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "node-a",
-						"KopsRole":           "Node",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -1106,7 +1089,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "node-b",
-						"KopsRole":           "Node",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -1151,7 +1133,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "node-c",
-						"KopsRole":           "Node",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -1309,7 +1290,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Name:    s("port-master-1-cluster"),
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
-						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
 					},
 					Subnets: []*openstacktasks.Subnet{
@@ -1332,7 +1312,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "master",
-						"KopsRole":           "Master",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -1347,7 +1326,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Name:    s("port-master-2-cluster"),
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
-						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
 					},
 					Subnets: []*openstacktasks.Subnet{
@@ -1370,7 +1348,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "master",
-						"KopsRole":           "Master",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -1385,7 +1362,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Name:    s("port-master-3-cluster"),
 					Network: &openstacktasks.Network{Name: s("cluster")},
 					SecurityGroups: []*openstacktasks.SecurityGroup{
-						{Name: s("master-public-name")},
 						{Name: s("masters.cluster")},
 					},
 					Subnets: []*openstacktasks.Subnet{
@@ -1408,7 +1384,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "master",
-						"KopsRole":           "Master",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -1453,7 +1428,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "node",
-						"KopsRole":           "Node",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -1490,7 +1464,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "node",
-						"KopsRole":           "Node",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
@@ -1527,7 +1500,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "node",
-						"KopsRole":           "Node",
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
