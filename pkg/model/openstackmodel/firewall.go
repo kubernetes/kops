@@ -456,7 +456,6 @@ func (b *FirewallModelBuilder) addProtokubeRules(c *fi.ModelBuilderContext, sgMa
 
 // Build - schedule security groups and security group rule tasks for Openstack
 func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
-
 	roles := []kops.InstanceGroupRole{kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleNode}
 	if b.UsesSSHBastion() {
 		roles = append(roles, kops.InstanceGroupRoleBastion)

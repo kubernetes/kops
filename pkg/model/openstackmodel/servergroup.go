@@ -118,11 +118,12 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		}
 		// Create instance port task
 		portTask := &openstacktasks.Port{
-			Name:           fi.String(fmt.Sprintf("%s-%s", "port", *instanceName)),
-			Network:        b.LinkToNetwork(),
-			SecurityGroups: securityGroups,
-			Subnets:        subnets,
-			Lifecycle:      b.Lifecycle,
+			Name:                     fi.String(fmt.Sprintf("%s-%s", "port", *instanceName)),
+			Network:                  b.LinkToNetwork(),
+			SecurityGroups:           securityGroups,
+			AdditionalSecurityGroups: ig.Spec.AdditionalSecurityGroups,
+			Subnets:                  subnets,
+			Lifecycle:                b.Lifecycle,
 		}
 		c.AddTask(portTask)
 
@@ -137,6 +138,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			Role:             fi.String(string(ig.Spec.Role)),
 			Port:             portTask,
 			Metadata:         igMeta,
+			SecurityGroups:   ig.Spec.AdditionalSecurityGroups,
 			AvailabilityZone: az,
 		}
 		if igUserData != nil {
