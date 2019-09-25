@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -1945,6 +1946,97 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 			},
 		},
+		{
+			desc: "adds additional security groups",
+			cluster: &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "cluster",
+				},
+				Spec: kops.ClusterSpec{
+					MasterPublicName: "master-public-name",
+					CloudConfig: &kops.CloudConfiguration{
+						Openstack: &kops.OpenstackConfiguration{},
+					},
+					Subnets: []kops.ClusterSubnetSpec{
+						{
+							Region: "region",
+						},
+					},
+				},
+			},
+			instanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleNode,
+						Image:       "image-node",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.2-4",
+						Subnets:     []string{"subnet"},
+						AdditionalSecurityGroups: []string{
+							"additional-sg",
+						},
+					},
+				},
+			},
+			expectedTasksBuilder: func(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup) map[string]fi.Task {
+				clusterLifecycle := fi.LifecycleSync
+				nodeServerGroup := &openstacktasks.ServerGroup{
+					Name:        s("cluster-node"),
+					ClusterName: s("cluster"),
+					IGName:      s("node"),
+					Policies:    []string{"anti-affinity"},
+					Lifecycle:   &clusterLifecycle,
+					MaxSize:     i32(1),
+				}
+				nodePort := &openstacktasks.Port{
+					Name:    s("port-node-1-cluster"),
+					Network: &openstacktasks.Network{Name: s("cluster")},
+					SecurityGroups: []*openstacktasks.SecurityGroup{
+						{Name: s("nodes.cluster")},
+					},
+					AdditionalSecurityGroups: []string{
+						"additional-sg",
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet.cluster")},
+					},
+					Lifecycle: &clusterLifecycle,
+				}
+				nodeInstance := &openstacktasks.Instance{
+					Name:        s("node-1-cluster"),
+					Region:      s("region"),
+					Flavor:      s("blc.2-4"),
+					Image:       s("image-node"),
+					SSHKey:      s("kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1"),
+					ServerGroup: nodeServerGroup,
+					Tags:        []string{"KubernetesCluster:cluster"},
+					Role:        s("Node"),
+					Port:        nodePort,
+					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					Metadata: map[string]string{
+						"KubernetesCluster":  "cluster",
+						"k8s":                "cluster",
+						"KopsInstanceGroup":  "node",
+						"KopsRole":           "Node",
+						"ig_generation":      "0",
+						"cluster_generation": "0",
+					},
+					AvailabilityZone: s("subnet"),
+					SecurityGroups: []string{
+						"additional-sg",
+					},
+				}
+				return map[string]fi.Task{
+					"ServerGroup/cluster-node": nodeServerGroup,
+					"Instance/node-1-cluster":  nodeInstance,
+					"Port/port-node-1-cluster": nodePort,
+				}
+			},
+		},
 	}
 
 	for _, testCase := range tests {
@@ -2014,6 +2106,10 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					t.Run("creates a task for "+taskName, func(t *testing.T) {
 						compareLBListeners(t, actual, expected)
 					})
+				case *openstacktasks.SecurityGroup:
+					t.Run("creates a task for "+taskName, func(t *testing.T) {
+						compareSecurityGroups(t, actual, expected)
+					})
 				default:
 					t.Errorf("found a task with name %q and type %T", taskName, expected)
 				}
@@ -2058,7 +2154,14 @@ func comparePorts(t *testing.T, actualTask fi.Task, expected *openstacktasks.Por
 	}
 
 	compareStrings(t, "Name", actual.Name, expected.Name)
-	compareSecurityGroups(t, actual.SecurityGroups, expected.SecurityGroups)
+	compareSecurityGroupLists(t, actual.SecurityGroups, expected.SecurityGroups)
+	sort.Strings(actual.AdditionalSecurityGroups)
+	sort.Strings(expected.AdditionalSecurityGroups)
+	actualSgs := strings.Join(actual.AdditionalSecurityGroups, " ")
+	expectedSgs := strings.Join(expected.AdditionalSecurityGroups, " ")
+	if actualSgs != expectedSgs {
+		t.Errorf("AdditionalSecurityGroups differ: %q instead of %q", actualSgs, expectedSgs)
+	}
 	compareLifecycles(t, actual.Lifecycle, expected.Lifecycle)
 	if actual.Network == nil {
 		t.Fatal("Network is nil")
@@ -2139,7 +2242,7 @@ func compareInstances(t *testing.T, actualTask fi.Task, expected *openstacktasks
 	compareStrings(t, "Image", actual.Image, expected.Image)
 	compareStrings(t, "SSHKey", actual.SSHKey, expected.SSHKey)
 	compareStrings(t, "Role", actual.Role, expected.Role)
-	compareStrings(t, "UserData", actual.UserData, expected.UserData)
+	compareUserData(t, actual.UserData, expected.UserData)
 	compareStrings(t, "AvailabilityZone", actual.AvailabilityZone, expected.AvailabilityZone)
 	comparePorts(t, actual.Port, expected.Port)
 	compareServerGroups(t, actual.ServerGroup, expected.ServerGroup)
@@ -2148,6 +2251,13 @@ func compareInstances(t *testing.T, actualTask fi.Task, expected *openstacktasks
 	}
 	if !reflect.DeepEqual(actual.Metadata, expected.Metadata) {
 		t.Errorf("Metadata differ:\n%v\n\tinstead of\n%v", actual.Metadata, expected.Metadata)
+	}
+	sort.Strings(actual.SecurityGroups)
+	sort.Strings(expected.SecurityGroups)
+	actualSgs := strings.Join(actual.SecurityGroups, " ")
+	expectedSgs := strings.Join(expected.SecurityGroups, " ")
+	if actualSgs != expectedSgs {
+		t.Errorf("SecurityGroups differ: %q instead of %q", actualSgs, expectedSgs)
 	}
 }
 
@@ -2163,7 +2273,7 @@ func compareLoadbalancers(t *testing.T, actualTask fi.Task, expected *openstackt
 	compareStrings(t, "Name", actual.Name, expected.Name)
 	compareLifecycles(t, actual.Lifecycle, expected.Lifecycle)
 	compareStrings(t, "Subnet", actual.Subnet, expected.Subnet)
-	compareSecurityGroups(t, []*openstacktasks.SecurityGroup{actual.SecurityGroup}, []*openstacktasks.SecurityGroup{expected.SecurityGroup})
+	compareSecurityGroupLists(t, []*openstacktasks.SecurityGroup{actual.SecurityGroup}, []*openstacktasks.SecurityGroup{expected.SecurityGroup})
 }
 
 func compareLBPools(t *testing.T, actualTask fi.Task, expected *openstacktasks.LBPool) {
@@ -2266,7 +2376,22 @@ func compareLifecycles(t *testing.T, actual, expected *fi.Lifecycle) {
 	}
 }
 
-func compareSecurityGroups(t *testing.T, actual, expected []*openstacktasks.SecurityGroup) {
+func compareSecurityGroups(t *testing.T, actualTask fi.Task, expected *openstacktasks.SecurityGroup) {
+	t.Helper()
+	if pointersAreBothNil(t, "SecurityGroup", actualTask, expected) {
+		return
+	}
+	actual, ok := actualTask.(*openstacktasks.SecurityGroup)
+	if !ok {
+		t.Fatalf("task is not a security group task, got %T", actualTask)
+	}
+
+	compareStrings(t, "Name", actual.Name, expected.Name)
+	compareLifecycles(t, actual.Lifecycle, expected.Lifecycle)
+	compareStrings(t, "Description", actual.Description, expected.Description)
+}
+
+func compareSecurityGroupLists(t *testing.T, actual, expected []*openstacktasks.SecurityGroup) {
 	sgs := make([]string, len(actual))
 	for i, sg := range actual {
 		sgs[i] = *sg.Name
@@ -2297,6 +2422,29 @@ func compareStrings(t *testing.T, name string, actual, expected *string) {
 			e = *expected
 		}
 		t.Errorf("%s differs: %+v instead of %+v", name, a, e)
+	}
+}
+
+func compareUserData(t *testing.T, actual, expected *string) {
+	t.Helper()
+	if pointersAreBothNil(t, "UserData", actual, expected) {
+		return
+	}
+	if !reflect.DeepEqual(actual, expected) {
+		var a, e string
+		if actual != nil {
+			a = *actual
+		}
+		if expected != nil {
+			e = *expected
+		}
+		aLines := strings.Split(a, "\n")
+		eLines := strings.Split(e, "\n")
+		sort.Strings(aLines)
+		sort.Strings(eLines)
+		if !reflect.DeepEqual(aLines, eLines) {
+			t.Errorf("UserData differ: %+v instead of %+v", a, e)
+		}
 	}
 }
 

@@ -42,6 +42,7 @@ type Instance struct {
 	UserData         *string
 	Metadata         map[string]string
 	AvailabilityZone *string
+	SecurityGroups   []string
 
 	Lifecycle *fi.Lifecycle
 }
@@ -161,8 +162,9 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 					Port: fi.StringValue(e.Port.ID),
 				},
 			},
-			Metadata:      e.Metadata,
-			ServiceClient: t.Cloud.ComputeClient(),
+			Metadata:       e.Metadata,
+			ServiceClient:  t.Cloud.ComputeClient(),
+			SecurityGroups: e.SecurityGroups,
 		}
 		if e.UserData != nil {
 			opt.UserData = []byte(*e.UserData)
