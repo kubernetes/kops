@@ -1282,8 +1282,8 @@ spec:
                     kube proxy e.g. "30Mi"
                   type: string
                 metricsBindAddress:
-                  description: MetricsBindAddress is the IP address and port for the
-                    metrics server to serve on
+                  description: MetricsBindAddress is the IP address for the metrics
+                    server to serve on
                   type: string
                 proxyMode:
                   description: 'Which proxy mode to use: (userspace, iptables, ipvs)'
