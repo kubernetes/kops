@@ -243,9 +243,9 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 				}
 
 				if tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Seed != nil {
-					argv = append(argv, "--gossip-seed="+*tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Seed)
+					argv = append(argv, "--gossip-seed-secondary="+*tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Seed)
 				} else {
-					argv = append(argv, "--gossip-seed=127.0.0.1:4000")
+					argv = append(argv, "--gossip-seed-secondary=127.0.0.1:4000")
 				}
 			}
 		} else {
