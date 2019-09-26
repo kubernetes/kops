@@ -200,7 +200,7 @@ func listDNS(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) 
 
 	records, err := getAllRecordsByDomain(c, domainName)
 	if err != nil {
-		return nil, fmt.Errorf("faile to list records for domain %s: %s", domainName, err)
+		return nil, fmt.Errorf("failed to list records for domain %s: %s", domainName, err)
 	}
 
 	var resourceTrackers []*resources.Resource
