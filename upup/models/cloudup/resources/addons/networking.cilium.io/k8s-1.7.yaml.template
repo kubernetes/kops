@@ -3,6 +3,8 @@ kind: ConfigMap
 metadata:
   name: cilium-config
   namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
 data:
 {{ with .Networking.Cilium }}
   # Identity allocation mode selects how identities are shared between cilium
@@ -85,7 +87,7 @@ data:
   # [1] http://docs.cilium.io/en/stable/install/upgrade/#changes-that-may-require-action
   tofqdns-enable-poller: "{{- if .ToFqdnsEnablePoller -}}true{{- else -}}false{{- end -}}"
   # wait-bpf-mount makes init container wait until bpf filesystem is mounted
-  wait-bpf-mount: "true"
+  wait-bpf-mount: "false"
   # Enable fetching of container-runtime specific metadata
   #
   # By default, the Kubernetes pod and namespace labels are retrieved and
@@ -117,17 +119,23 @@ kind: ServiceAccount
 metadata:
   name: cilium
   namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: cilium-operator
   namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cilium
+  labels:
+    role.kubernetes.io/networking: "1"
 rules:
 - apiGroups:
   - networking.k8s.io
@@ -203,6 +211,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cilium-operator
+  labels:
+    role.kubernetes.io/networking: "1"
 rules:
 - apiGroups:
   - ""
@@ -249,6 +259,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cilium
+  labels:
+    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -262,6 +274,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cilium-operator
+  labels:
+    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -277,6 +291,7 @@ metadata:
   labels:
     k8s-app: cilium
     kubernetes.io/cluster-service: "true"
+    role.kubernetes.io/networking: "1"
   name: cilium
   namespace: kube-system
 spec:
@@ -499,6 +514,7 @@ metadata:
   labels:
     io.cilium/app: operator
     name: cilium-operator
+    role.kubernetes.io/networking: "1"
   name: cilium-operator
   namespace: kube-system
 spec:
