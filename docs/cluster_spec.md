@@ -424,6 +424,16 @@ spec:
     volumePluginDirectory: /provide/a/writable/path/here
 ```
 
+#### Enable dynamic kubelet configuration
+To enable [dynamic kubelet configuration](https://kubernetes.io/blog/2018/07/11/dynamic-kubelet-configuration/), the `--dynamic-config-dir` flag of kubelet must be set to a writable directory on the node.
+This can be specified in the `kubelet` spec in our cluster.yml. Please see https://kubernetes.io/docs/tasks/administer-cluster/reconfigure-kubelet/ for more information.
+
+```
+spec:
+  kubelet:
+    dynamicConfigDir: /etc/kubernetes/conf.d
+```
+
 ### kubeScheduler
 
 This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/
