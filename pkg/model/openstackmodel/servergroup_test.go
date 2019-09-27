@@ -74,6 +74,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet"},
+						Zones:       []string{"zone-1"},
 					},
 				},
 				{
@@ -87,6 +88,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.2-4",
 						Subnets:     []string{"subnet"},
+						Zones:       []string{"zone-1"},
 					},
 				},
 			},
@@ -131,7 +133,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet"),
+					AvailabilityZone: s("zone-1"),
 				}
 				masterFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-1-cluster"),
@@ -176,7 +178,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet"),
+					AvailabilityZone: s("zone-1"),
 				}
 				nodeFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-1-cluster"),
@@ -229,6 +231,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet"},
+						Zones:       []string{"zone-1"},
 					},
 				},
 				{
@@ -242,6 +245,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet"},
+						Zones:       []string{"zone-1"},
 					},
 				},
 				{
@@ -262,6 +266,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"utility-subnet"},
+						Zones:       []string{"zone-1"},
 					},
 				},
 			},
@@ -306,7 +311,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet"),
+					AvailabilityZone: s("zone-1"),
 				}
 				masterFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-1-cluster"),
@@ -351,7 +356,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet"),
+					AvailabilityZone: s("zone-1"),
 				}
 				bastionServerGroup := &openstacktasks.ServerGroup{
 					Name:        s("cluster-bastion"),
@@ -390,7 +395,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet"),
+					AvailabilityZone: s("zone-1"),
 				}
 				bastionFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-bastion-1-cluster"),
@@ -446,6 +451,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-a"},
+						Zones:       []string{"zone-1"},
 					},
 				},
 				{
@@ -459,6 +465,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-a"},
+						Zones:       []string{"zone-1"},
 					},
 				},
 				{
@@ -472,6 +479,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-b"},
+						Zones:       []string{"zone-2"},
 					},
 				},
 				{
@@ -485,6 +493,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-b"},
+						Zones:       []string{"zone-2"},
 					},
 				},
 				{
@@ -498,6 +507,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-c"},
+						Zones:       []string{"zone-3"},
 					},
 				},
 				{
@@ -511,6 +521,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-c"},
+						Zones:       []string{"zone-3"},
 					},
 				},
 			},
@@ -555,7 +566,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-a"),
+					AvailabilityZone: s("zone-1"),
 				}
 				masterAFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-a-1-cluster"),
@@ -601,7 +612,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-b"),
+					AvailabilityZone: s("zone-2"),
 				}
 				masterBFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-b-1-cluster"),
@@ -647,7 +658,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-c"),
+					AvailabilityZone: s("zone-3"),
 				}
 				masterCFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-c-1-cluster"),
@@ -692,7 +703,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-a"),
+					AvailabilityZone: s("zone-1"),
 				}
 				nodeAFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-a-1-cluster"),
@@ -737,7 +748,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-b"),
+					AvailabilityZone: s("zone-2"),
 				}
 				nodeBFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-b-1-cluster"),
@@ -782,7 +793,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-c"),
+					AvailabilityZone: s("zone-3"),
 				}
 				nodeCFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-c-1-cluster"),
@@ -852,6 +863,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-a"},
+						Zones:       []string{"zone-1"},
 					},
 				},
 				{
@@ -865,6 +877,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-a"},
+						Zones:       []string{"zone-1"},
 					},
 				},
 				{
@@ -878,6 +891,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-b"},
+						Zones:       []string{"zone-2"},
 					},
 				},
 				{
@@ -891,6 +905,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-b"},
+						Zones:       []string{"zone-2"},
 					},
 				},
 				{
@@ -904,6 +919,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-c"},
+						Zones:       []string{"zone-3"},
 					},
 				},
 				{
@@ -917,6 +933,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-c"},
+						Zones:       []string{"zone-3"},
 					},
 				},
 			},
@@ -960,7 +977,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-a"),
+					AvailabilityZone: s("zone-1"),
 				}
 				masterBServerGroup := &openstacktasks.ServerGroup{
 					Name:        s("cluster-master-b"),
@@ -1000,7 +1017,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-b"),
+					AvailabilityZone: s("zone-2"),
 				}
 				masterCServerGroup := &openstacktasks.ServerGroup{
 					Name:        s("cluster-master-c"),
@@ -1040,7 +1057,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-c"),
+					AvailabilityZone: s("zone-3"),
 				}
 				nodeAServerGroup := &openstacktasks.ServerGroup{
 					Name:        s("cluster-node-a"),
@@ -1080,7 +1097,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-a"),
+					AvailabilityZone: s("zone-1"),
 				}
 				nodeAFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-a-1-cluster"),
@@ -1125,7 +1142,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-b"),
+					AvailabilityZone: s("zone-2"),
 				}
 				nodeBFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-b-1-cluster"),
@@ -1170,7 +1187,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-c"),
+					AvailabilityZone: s("zone-3"),
 				}
 				nodeCFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-c-1-cluster"),
@@ -1286,6 +1303,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-a"},
+						Zones:       []string{"zone-1"},
 					},
 				},
 				{
@@ -1299,6 +1317,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-a"},
+						Zones:       []string{"zone-1"},
 					},
 				},
 				{
@@ -1312,6 +1331,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-b"},
+						Zones:       []string{"zone-2"},
 					},
 				},
 				{
@@ -1325,6 +1345,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-b"},
+						Zones:       []string{"zone-2"},
 					},
 				},
 				{
@@ -1338,6 +1359,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-c"},
+						Zones:       []string{"zone-3"},
 					},
 				},
 				{
@@ -1351,6 +1373,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.1-2",
 						Subnets:     []string{"subnet-c"},
+						Zones:       []string{"zone-3"},
 					},
 				},
 			},
@@ -1395,7 +1418,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-a"),
+					AvailabilityZone: s("zone-1"),
 				}
 				masterBServerGroup := &openstacktasks.ServerGroup{
 					Name:        s("cluster-master-b"),
@@ -1436,7 +1459,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-b"),
+					AvailabilityZone: s("zone-2"),
 				}
 				masterCServerGroup := &openstacktasks.ServerGroup{
 					Name:        s("cluster-master-c"),
@@ -1477,7 +1500,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-c"),
+					AvailabilityZone: s("zone-3"),
 				}
 				nodeAServerGroup := &openstacktasks.ServerGroup{
 					Name:        s("cluster-node-a"),
@@ -1517,7 +1540,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-a"),
+					AvailabilityZone: s("zone-1"),
 				}
 				nodeBServerGroup := &openstacktasks.ServerGroup{
 					Name:        s("cluster-node-b"),
@@ -1557,7 +1580,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-b"),
+					AvailabilityZone: s("zone-2"),
 				}
 				nodeCServerGroup := &openstacktasks.ServerGroup{
 					Name:        s("cluster-node-c"),
@@ -1597,7 +1620,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-c"),
+					AvailabilityZone: s("zone-3"),
 				}
 				return map[string]fi.Task{
 					"ServerGroup/cluster-master-a": masterAServerGroup,
@@ -1659,6 +1682,11 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 							"subnet-b",
 							"subnet-c",
 						},
+						Zones: []string{
+							"zone-1",
+							"zone-2",
+							"zone-3",
+						},
 					},
 				},
 				{
@@ -1675,6 +1703,11 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 							"subnet-a",
 							"subnet-b",
 							"subnet-c",
+						},
+						Zones: []string{
+							"zone-1",
+							"zone-2",
+							"zone-3",
 						},
 					},
 				},
@@ -1720,7 +1753,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-a"),
+					AvailabilityZone: s("zone-1"),
 				}
 				masterAFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-1-cluster"),
@@ -1758,7 +1791,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-b"),
+					AvailabilityZone: s("zone-2"),
 				}
 				masterBFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-2-cluster"),
@@ -1796,7 +1829,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-c"),
+					AvailabilityZone: s("zone-3"),
 				}
 				masterCFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-3-cluster"),
@@ -1841,7 +1874,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-a"),
+					AvailabilityZone: s("zone-1"),
 				}
 				nodeAFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-1-cluster"),
@@ -1878,7 +1911,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-b"),
+					AvailabilityZone: s("zone-2"),
 				}
 				nodeBFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-2-cluster"),
@@ -1915,7 +1948,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet-c"),
+					AvailabilityZone: s("zone-3"),
 				}
 				nodeCFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-3-cluster"),
@@ -1980,6 +2013,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:           i32(1),
 						MachineType:       "blc.1-2",
 						Subnets:           []string{"subnet"},
+						Zones:             []string{"zone-1"},
 						AssociatePublicIP: fi.Bool(false),
 					},
 				},
@@ -1994,6 +2028,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:           i32(1),
 						MachineType:       "blc.2-4",
 						Subnets:           []string{"subnet"},
+						Zones:             []string{"zone-1"},
 						AssociatePublicIP: fi.Bool(false),
 					},
 				},
@@ -2039,7 +2074,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet"),
+					AvailabilityZone: s("zone-1"),
 				}
 				nodeServerGroup := &openstacktasks.ServerGroup{
 					Name:        s("cluster-node"),
@@ -2079,7 +2114,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet"),
+					AvailabilityZone: s("zone-1"),
 				}
 				return map[string]fi.Task{
 					"ServerGroup/cluster-master": masterServerGroup,
@@ -2125,6 +2160,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:           i32(1),
 						MachineType:       "blc.1-2",
 						Subnets:           []string{"subnet"},
+						Zones:             []string{"zone-1"},
 						AssociatePublicIP: fi.Bool(false),
 					},
 				},
@@ -2139,6 +2175,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:           i32(1),
 						MachineType:       "blc.1-2",
 						Subnets:           []string{"subnet"},
+						Zones:             []string{"zone-1"},
 						AssociatePublicIP: fi.Bool(false),
 					},
 				},
@@ -2160,6 +2197,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:           i32(1),
 						MachineType:       "blc.1-2",
 						Subnets:           []string{"utility-subnet"},
+						Zones:             []string{"zone-1"},
 						AssociatePublicIP: fi.Bool(false),
 					},
 				},
@@ -2205,7 +2243,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet"),
+					AvailabilityZone: s("zone-1"),
 				}
 				nodeServerGroup := &openstacktasks.ServerGroup{
 					Name:        s("cluster-node"),
@@ -2245,7 +2283,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet"),
+					AvailabilityZone: s("zone-1"),
 				}
 				bastionServerGroup := &openstacktasks.ServerGroup{
 					Name:        s("cluster-bastion"),
@@ -2284,7 +2322,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"ig_generation":      "0",
 						"cluster_generation": "0",
 					},
-					AvailabilityZone: s("subnet"),
+					AvailabilityZone: s("zone-1"),
 				}
 				return map[string]fi.Task{
 					"ServerGroup/cluster-master":  masterServerGroup,
@@ -2329,6 +2367,193 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						MaxSize:     i32(1),
 						MachineType: "blc.2-4",
 						Subnets:     []string{"subnet"},
+						Zones:       []string{"zone-1"},
+						AdditionalSecurityGroups: []string{
+							"additional-sg",
+						},
+					},
+				},
+			},
+			expectedTasksBuilder: func(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup) map[string]fi.Task {
+				clusterLifecycle := fi.LifecycleSync
+				nodeServerGroup := &openstacktasks.ServerGroup{
+					Name:        s("cluster-node"),
+					ClusterName: s("cluster"),
+					IGName:      s("node"),
+					Policies:    []string{"anti-affinity"},
+					Lifecycle:   &clusterLifecycle,
+					MaxSize:     i32(1),
+				}
+				nodePort := &openstacktasks.Port{
+					Name:    s("port-node-1-cluster"),
+					Network: &openstacktasks.Network{Name: s("cluster")},
+					SecurityGroups: []*openstacktasks.SecurityGroup{
+						{Name: s("nodes.cluster")},
+					},
+					AdditionalSecurityGroups: []string{
+						"additional-sg",
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet.cluster")},
+					},
+					Lifecycle: &clusterLifecycle,
+				}
+				nodeInstance := &openstacktasks.Instance{
+					Name:        s("node-1-cluster"),
+					Region:      s("region"),
+					Flavor:      s("blc.2-4"),
+					Image:       s("image-node"),
+					SSHKey:      s("kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1"),
+					ServerGroup: nodeServerGroup,
+					Tags:        []string{"KubernetesCluster:cluster"},
+					Role:        s("Node"),
+					Port:        nodePort,
+					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					Metadata: map[string]string{
+						"KubernetesCluster":  "cluster",
+						"k8s":                "cluster",
+						"KopsInstanceGroup":  "node",
+						"KopsRole":           "Node",
+						"ig_generation":      "0",
+						"cluster_generation": "0",
+					},
+					AvailabilityZone: s("zone-1"),
+					SecurityGroups: []string{
+						"additional-sg",
+					},
+				}
+				return map[string]fi.Task{
+					"ServerGroup/cluster-node": nodeServerGroup,
+					"Instance/node-1-cluster":  nodeInstance,
+					"Port/port-node-1-cluster": nodePort,
+				}
+			},
+		},
+		{
+			desc: "uses instance group zones as availability zones",
+			cluster: &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "cluster",
+				},
+				Spec: kops.ClusterSpec{
+					MasterPublicName: "master-public-name",
+					CloudConfig: &kops.CloudConfiguration{
+						Openstack: &kops.OpenstackConfiguration{},
+					},
+					Subnets: []kops.ClusterSubnetSpec{
+						{
+							Region: "region",
+						},
+					},
+				},
+			},
+			instanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleNode,
+						Image:       "image-node",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.2-4",
+						Subnets:     []string{"subnet"},
+						Zones: []string{
+							"zone-a",
+						},
+						AdditionalSecurityGroups: []string{
+							"additional-sg",
+						},
+					},
+				},
+			},
+			expectedTasksBuilder: func(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup) map[string]fi.Task {
+				clusterLifecycle := fi.LifecycleSync
+				nodeServerGroup := &openstacktasks.ServerGroup{
+					Name:        s("cluster-node"),
+					ClusterName: s("cluster"),
+					IGName:      s("node"),
+					Policies:    []string{"anti-affinity"},
+					Lifecycle:   &clusterLifecycle,
+					MaxSize:     i32(1),
+				}
+				nodePort := &openstacktasks.Port{
+					Name:    s("port-node-1-cluster"),
+					Network: &openstacktasks.Network{Name: s("cluster")},
+					SecurityGroups: []*openstacktasks.SecurityGroup{
+						{Name: s("nodes.cluster")},
+					},
+					AdditionalSecurityGroups: []string{
+						"additional-sg",
+					},
+					Subnets: []*openstacktasks.Subnet{
+						{Name: s("subnet.cluster")},
+					},
+					Lifecycle: &clusterLifecycle,
+				}
+				nodeInstance := &openstacktasks.Instance{
+					Name:        s("node-1-cluster"),
+					Region:      s("region"),
+					Flavor:      s("blc.2-4"),
+					Image:       s("image-node"),
+					SSHKey:      s("kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1"),
+					ServerGroup: nodeServerGroup,
+					Tags:        []string{"KubernetesCluster:cluster"},
+					Role:        s("Node"),
+					Port:        nodePort,
+					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					Metadata: map[string]string{
+						"KubernetesCluster":  "cluster",
+						"k8s":                "cluster",
+						"KopsInstanceGroup":  "node",
+						"KopsRole":           "Node",
+						"ig_generation":      "0",
+						"cluster_generation": "0",
+					},
+					AvailabilityZone: s("zone-a"),
+					SecurityGroups: []string{
+						"additional-sg",
+					},
+				}
+				return map[string]fi.Task{
+					"ServerGroup/cluster-node": nodeServerGroup,
+					"Instance/node-1-cluster":  nodeInstance,
+					"Port/port-node-1-cluster": nodePort,
+				}
+			},
+		},
+		{
+			desc: "uses instance group subnet as availability zones fallback",
+			cluster: &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "cluster",
+				},
+				Spec: kops.ClusterSpec{
+					MasterPublicName: "master-public-name",
+					CloudConfig: &kops.CloudConfiguration{
+						Openstack: &kops.OpenstackConfiguration{},
+					},
+					Subnets: []kops.ClusterSubnetSpec{
+						{
+							Region: "region",
+						},
+					},
+				},
+			},
+			instanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleNode,
+						Image:       "image-node",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.2-4",
+						Subnets:     []string{"subnet"},
+						Zones:       []string{},
 						AdditionalSecurityGroups: []string{
 							"additional-sg",
 						},
