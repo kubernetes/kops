@@ -173,6 +173,9 @@ func (a *OpenstackVolumes) discoverTags() error {
 	// Internal IP
 	{
 		server, err := a.cloud.GetInstance(strings.TrimSpace(a.meta.ServerID))
+		if err != nil {
+			return fmt.Errorf("error getting instance from ID: %v", err)
+		}
 		ip, err := openstack.GetServerFixedIP(server, a.clusterName)
 		if err != nil {
 			return fmt.Errorf("error querying InternalIP from name: %v", err)
