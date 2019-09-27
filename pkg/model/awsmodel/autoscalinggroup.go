@@ -52,7 +52,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
 		name := b.AutoscalingGroupName(ig)
 
-		// @check if his instancegroup is backed by a fleet and overide with a launch template
+		// @check if his instancegroup is backed by a fleet and override with a launch template
 		task, err := func() (fi.Task, error) {
 			switch UseLaunchTemplate(ig) {
 			case true:
