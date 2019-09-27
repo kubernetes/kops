@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["identify.go"],
+    importpath = "k8s.io/kops/pkg/nodeidentity/openstack",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/nodeidentity:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/servers:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+    ],
+)
