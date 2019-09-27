@@ -85,7 +85,11 @@ func run() error {
 	// Default to us-east-1
 	config = config.WithRegion("us-east-1")
 
-	svc := pricing.New(session.New(), config)
+	sess, err := session.NewSession()
+	if err != nil {
+		return err
+	}
+	svc := pricing.New(sess, config)
 	typeTerm := pricing.FilterTypeTermMatch
 	input := &pricing.GetProductsInput{
 		Filters: []*pricing.Filter{
