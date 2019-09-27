@@ -11,7 +11,7 @@ require (
 	github.com/gogo/protobuf v1.1.1 // indirect
 	github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7 // indirect
 	github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf // indirect
-	github.com/googleapis/gnostic v0.2.0 // indirect
+	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/hashicorp/golang-lru v0.0.0-20180201235237-0fb14efe8c47 // indirect
 	github.com/imdario/mergo v0.3.6 // indirect
 	github.com/json-iterator/go v1.1.5 // indirect

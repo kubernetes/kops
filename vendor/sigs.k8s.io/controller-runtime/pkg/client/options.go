@@ -142,6 +142,21 @@ func (o *CreateOptions) ApplyOptions(opts []CreateOption) *CreateOptions {
 	return o
 }
 
+// ApplyToCreate implements CreateOption
+func (o *CreateOptions) ApplyToCreate(co *CreateOptions) {
+	if o.DryRun != nil {
+		co.DryRun = o.DryRun
+	}
+	if o.FieldManager != "" {
+		co.FieldManager = o.FieldManager
+	}
+	if o.Raw != nil {
+		co.Raw = o.Raw
+	}
+}
+
+var _ CreateOption = &CreateOptions{}
+
 // CreateDryRunAll sets the "dry run" option to "all".
 //
 // Deprecated: Use DryRunAll
@@ -211,6 +226,27 @@ func (o *DeleteOptions) ApplyOptions(opts []DeleteOption) *DeleteOptions {
 	return o
 }
 
+var _ DeleteOption = &DeleteOptions{}
+
+// ApplyToDelete implements DeleteOption
+func (o *DeleteOptions) ApplyToDelete(do *DeleteOptions) {
+	if o.GracePeriodSeconds != nil {
+		do.GracePeriodSeconds = o.GracePeriodSeconds
+	}
+	if o.Preconditions != nil {
+		do.Preconditions = o.Preconditions
+	}
+	if o.PropagationPolicy != nil {
+		do.PropagationPolicy = o.PropagationPolicy
+	}
+	if o.Raw != nil {
+		do.Raw = o.Raw
+	}
+	if o.DryRun != nil {
+		do.DryRun = o.DryRun
+	}
+}
+
 // GracePeriodSeconds sets the grace period for the deletion
 // to the given number of seconds.
 type GracePeriodSeconds int64
@@ -273,6 +309,24 @@ type ListOptions struct {
 	Raw *metav1.ListOptions
 }
 
+var _ ListOption = &ListOptions{}
+
+// ApplyToList implements ListOption for ListOptions
+func (o *ListOptions) ApplyToList(lo *ListOptions) {
+	if o.LabelSelector != nil {
+		lo.LabelSelector = o.LabelSelector
+	}
+	if o.FieldSelector != nil {
+		lo.FieldSelector = o.FieldSelector
+	}
+	if o.Namespace != "" {
+		lo.Namespace = o.Namespace
+	}
+	if o.Raw != nil {
+		lo.Raw = o.Raw
+	}
+}
+
 // AsListOptions returns these options as a flattened metav1.ListOptions.
 // This may mutate the Raw field.
 func (o *ListOptions) AsListOptions() *metav1.ListOptions {
@@ -313,6 +367,21 @@ func (m MatchingLabels) ApplyToDeleteAllOf(opts *DeleteAllOfOptions) {
 	m.ApplyToList(&opts.ListOptions)
 }
 
+// MatchingLabelsSelector filters the list/delete operation on the given label
+// selector (or index in the case of cached lists). A struct is used because
+// labels.Selector is an interface, which cannot be aliased.
+type MatchingLabelsSelector struct {
+	labels.Selector
+}
+
+func (m MatchingLabelsSelector) ApplyToList(opts *ListOptions) {
+	opts.LabelSelector = m
+}
+
+func (m MatchingLabelsSelector) ApplyToDeleteAllOf(opts *DeleteAllOfOptions) {
+	m.ApplyToList(&opts.ListOptions)
+}
+
 // MatchingField filters the list operation on the given field selector
 // (or index in the case of cached lists).
 //
@@ -321,7 +390,7 @@ func MatchingField(name, val string) MatchingFields {
 	return MatchingFields{name: val}
 }
 
-// MatchingField filters the list/delete operation on the given field selector
+// MatchingField filters the list/delete operation on the given field Set
 // (or index in the case of cached lists).
 type MatchingFields fields.Set
 
@@ -332,6 +401,21 @@ func (m MatchingFields) ApplyToList(opts *ListOptions) {
 }
 
 func (m MatchingFields) ApplyToDeleteAllOf(opts *DeleteAllOfOptions) {
+	m.ApplyToList(&opts.ListOptions)
+}
+
+// MatchingFieldsSelector filters the list/delete operation on the given field
+// selector (or index in the case of cached lists). A struct is used because
+// fields.Selector is an interface, which cannot be aliased.
+type MatchingFieldsSelector struct {
+	fields.Selector
+}
+
+func (m MatchingFieldsSelector) ApplyToList(opts *ListOptions) {
+	opts.FieldSelector = m
+}
+
+func (m MatchingFieldsSelector) ApplyToDeleteAllOf(opts *DeleteAllOfOptions) {
 	m.ApplyToList(&opts.ListOptions)
 }
 
@@ -392,6 +476,21 @@ func (o *UpdateOptions) ApplyOptions(opts []UpdateOption) *UpdateOptions {
 	return o
 }
 
+var _ UpdateOption = &UpdateOptions{}
+
+// ApplyToUpdate implements UpdateOption
+func (o *UpdateOptions) ApplyToUpdate(uo *UpdateOptions) {
+	if o.DryRun != nil {
+		uo.DryRun = o.DryRun
+	}
+	if o.FieldManager != "" {
+		uo.FieldManager = o.FieldManager
+	}
+	if o.Raw != nil {
+		uo.Raw = o.Raw
+	}
+}
+
 // UpdateDryRunAll sets the "dry run" option to "all".
 //
 // Deprecated: Use DryRunAll
@@ -449,6 +548,24 @@ func (o *PatchOptions) AsPatchOptions() *metav1.PatchOptions {
 	return o.Raw
 }
 
+var _ PatchOption = &PatchOptions{}
+
+// ApplyToPatch implements PatchOptions
+func (o *PatchOptions) ApplyToPatch(po *PatchOptions) {
+	if o.DryRun != nil {
+		po.DryRun = o.DryRun
+	}
+	if o.Force != nil {
+		po.Force = o.Force
+	}
+	if o.FieldManager != "" {
+		po.FieldManager = o.FieldManager
+	}
+	if o.Raw != nil {
+		po.Raw = o.Raw
+	}
+}
+
 // ForceOwnership indicates that in case of conflicts with server-side apply,
 // the client should acquire ownership of the conflicting field.  Most
 // controllers should use this.
@@ -486,6 +603,14 @@ func (o *DeleteAllOfOptions) ApplyOptions(opts []DeleteAllOfOption) *DeleteAllOf
 		opt.ApplyToDeleteAllOf(o)
 	}
 	return o
+}
+
+var _ DeleteAllOfOption = &DeleteAllOfOptions{}
+
+// ApplyToDeleteAllOf implements DeleteAllOfOption
+func (o *DeleteAllOfOptions) ApplyToDeleteAllOf(do *DeleteAllOfOptions) {
+	o.ApplyToList(&do.ListOptions)
+	o.ApplyToDelete(&do.DeleteOptions)
 }
 
 // }}}

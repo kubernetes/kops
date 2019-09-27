@@ -111,6 +111,10 @@ type controllerManager struct {
 	port int
 	// host is the hostname that the webhook server binds to.
 	host string
+	// CertDir is the directory that contains the server key and certificate.
+	// if not set, webhook server would look up the server key and certificate in
+	// {TempDir}/k8s-webhook-server/serving-certs
+	certDir string
 
 	webhookServer *webhook.Server
 
@@ -219,8 +223,9 @@ func (cm *controllerManager) GetAPIReader() client.Reader {
 func (cm *controllerManager) GetWebhookServer() *webhook.Server {
 	if cm.webhookServer == nil {
 		cm.webhookServer = &webhook.Server{
-			Port: cm.port,
-			Host: cm.host,
+			Port:    cm.port,
+			Host:    cm.host,
+			CertDir: cm.certDir,
 		}
 		if err := cm.Add(cm.webhookServer); err != nil {
 			panic("unable to add webhookServer to the controller manager")

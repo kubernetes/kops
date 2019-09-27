@@ -10,6 +10,8 @@ github.com/Azure/go-autorest/autorest/azure
 github.com/Azure/go-autorest/logger
 github.com/Azure/go-autorest/version
 github.com/Azure/go-autorest/autorest/date
+# github.com/BurntSushi/toml v0.3.1
+github.com/BurntSushi/toml
 # github.com/GoogleCloudPlatform/k8s-cloud-provider v0.0.0-20181220005116-f8e995905100
 github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud
 github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud/filter
@@ -203,7 +205,7 @@ github.com/gogo/protobuf/sortkeys
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 # github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7
 github.com/golang/groupcache/lru
-# github.com/golang/protobuf v1.2.0
+# github.com/golang/protobuf v1.3.2
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes
@@ -223,7 +225,7 @@ github.com/google/go-querystring/query
 github.com/google/gofuzz
 # github.com/google/uuid v1.1.0
 github.com/google/uuid
-# github.com/googleapis/gnostic v0.2.0
+# github.com/googleapis/gnostic v0.3.1
 github.com/googleapis/gnostic/OpenAPIv2
 github.com/googleapis/gnostic/compiler
 github.com/googleapis/gnostic/extensions
@@ -422,7 +424,7 @@ go.uber.org/zap/zapcore
 go.uber.org/zap/buffer
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
-# golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
+# golang.org/x/crypto v0.0.0-20190510104115-cbcb75029529
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/curve25519
@@ -451,7 +453,7 @@ golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sys v0.0.0-20190312061237-fead79001313
+# golang.org/x/sys v0.0.0-20190412213103-97732733099d
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/cpu
@@ -469,8 +471,22 @@ golang.org/x/text/unicode/bidi
 golang.org/x/text/width
 # golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2
 golang.org/x/time/rate
-# golang.org/x/tools v0.0.0-20190328211700-ab21143f2384
+# golang.org/x/tools v0.0.0-20190621195816-6e04913cbbac
+golang.org/x/tools/go/analysis
 golang.org/x/tools/go/vcs
+golang.org/x/tools/go/packages
+golang.org/x/tools/go/types/objectpath
+golang.org/x/tools/go/buildutil
+golang.org/x/tools/go/analysis/passes/inspect
+golang.org/x/tools/go/ast/inspector
+golang.org/x/tools/go/types/typeutil
+golang.org/x/tools/go/ast/astutil
+golang.org/x/tools/go/gcexportdata
+golang.org/x/tools/go/internal/packagesdriver
+golang.org/x/tools/internal/gopathwalk
+golang.org/x/tools/internal/semver
+golang.org/x/tools/go/internal/gcimporter
+golang.org/x/tools/internal/fastwalk
 # gomodules.xyz/jsonpatch/v2 v2.0.1
 gomodules.xyz/jsonpatch/v2
 # google.golang.org/api v0.0.0-20181220000619-583d854617af
@@ -510,6 +526,32 @@ gopkg.in/inf.v0
 gopkg.in/warnings.v0
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2
+# honnef.co/go/tools v0.0.1-2019.2.3
+honnef.co/go/tools/cmd/staticcheck
+honnef.co/go/tools/lint
+honnef.co/go/tools/lint/lintutil
+honnef.co/go/tools/simple
+honnef.co/go/tools/staticcheck
+honnef.co/go/tools/stylecheck
+honnef.co/go/tools/unused
+honnef.co/go/tools/config
+honnef.co/go/tools/facts
+honnef.co/go/tools/internal/cache
+honnef.co/go/tools/loader
+honnef.co/go/tools/lint/lintutil/format
+honnef.co/go/tools/version
+honnef.co/go/tools/arg
+honnef.co/go/tools/internal/passes/buildssa
+honnef.co/go/tools/internal/sharedcheck
+honnef.co/go/tools/lint/lintdsl
+honnef.co/go/tools/deprecated
+honnef.co/go/tools/functions
+honnef.co/go/tools/printf
+honnef.co/go/tools/ssa
+honnef.co/go/tools/ssautil
+honnef.co/go/tools/staticcheck/vrp
+honnef.co/go/tools/go/types/typeutil
+honnef.co/go/tools/internal/renameio
 # k8s.io/api v0.0.0 => k8s.io/api v0.0.0-20190819141258-3544db3b9e44
 k8s.io/api/core/v1
 k8s.io/api/extensions/v1beta1
@@ -894,7 +936,7 @@ k8s.io/utils/integer
 k8s.io/utils/pointer
 k8s.io/utils/buffer
 k8s.io/utils/trace
-# sigs.k8s.io/controller-runtime v0.2.0
+# sigs.k8s.io/controller-runtime v0.2.2
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/controller-runtime/pkg/manager
 sigs.k8s.io/controller-runtime/pkg/client
