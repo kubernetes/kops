@@ -31,7 +31,7 @@ func newTestAuthorizer(t *testing.T, config *server.Config) *awsNodeAuthorizer {
 		config = &server.Config{}
 	}
 	c := &awsNodeAuthorizer{
-		config: &server.Config{},
+		config: config,
 		vpcID:  "test",
 	}
 	if err := GetPublicCertificates(); err != nil {
