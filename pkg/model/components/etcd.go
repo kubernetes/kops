@@ -136,7 +136,7 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 			if c.Backups != nil {
 				image := c.Backups.Image
 				if image == "" {
-					image = fmt.Sprintf(DefaultBackupImage)
+					image = DefaultBackupImage
 				}
 
 				if image != "" {
