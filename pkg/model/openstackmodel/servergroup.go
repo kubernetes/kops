@@ -88,9 +88,6 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 	// In the future, OpenStack will use Machine API to manage groups,
 	// for now create d.InstanceGroups.Spec.MinSize amount of servers
 	for i := int32(0); i < *ig.Spec.MinSize; i++ {
-		if err != nil {
-			return fmt.Errorf("Failed to create UUID for instance: %v", err)
-		}
 		// FIXME: Must ensure 63 or less characters
 		// replace all dots and _ with -, this is needed to get external cloudprovider working
 		iName := strings.Replace(strings.ToLower(fmt.Sprintf("%s-%d.%s", ig.Name, i+1, b.ClusterName())), "_", "-", -1)
@@ -107,6 +104,10 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 				az = fi.String(subnet)
 			}
 			subnets = append(subnets, b.LinkToSubnet(s(fmt.Sprintf("%s.%s", subnet, b.ClusterName()))))
+		}
+		if len(ig.Spec.Zones) > 0 {
+			zone := ig.Spec.Zones[int(i)%len(ig.Spec.Zones)]
+			az = fi.String(zone)
 		}
 		// Create instance port task
 		portTask := &openstacktasks.Port{
