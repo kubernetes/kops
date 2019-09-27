@@ -30,25 +30,18 @@ limitations under the License.
 */
 package mesh
 
-import (
-	fmt "fmt"
+import proto "github.com/golang/protobuf/proto"
+import fmt "fmt"
+import math "math"
+import _ "github.com/gogo/protobuf/gogoproto"
 
-	proto "github.com/golang/protobuf/proto"
+import errors "errors"
 
-	math "math"
+import strings "strings"
+import reflect "reflect"
+import github_com_gogo_protobuf_sortkeys "github.com/gogo/protobuf/sortkeys"
 
-	_ "github.com/gogo/protobuf/gogoproto"
-
-	errors "errors"
-
-	strings "strings"
-
-	reflect "reflect"
-
-	github_com_gogo_protobuf_sortkeys "github.com/gogo/protobuf/sortkeys"
-
-	io "io"
-)
+import io "io"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
