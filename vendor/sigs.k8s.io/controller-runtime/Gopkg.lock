@@ -878,11 +878,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:14e8a3b53e6d8cb5f44783056b71bb2ca1ac7e333939cc97f3e50b579c920845"
+  digest = "1:ee6063c66a2b3be97487a8df6f359cd5f38b3a0d1fc2442b49f214f24622d321"
   name = "k8s.io/utils"
   packages = [
     "buffer",
     "integer",
+    "pointer",
     "trace",
   ]
   pruneopts = "UT"
@@ -978,6 +979,7 @@
     "k8s.io/client-go/tools/reference",
     "k8s.io/client-go/util/workqueue",
     "k8s.io/kube-openapi/pkg/common",
+    "k8s.io/utils/pointer",
     "sigs.k8s.io/testing_frameworks/integration",
     "sigs.k8s.io/testing_frameworks/integration/addr",
     "sigs.k8s.io/yaml",

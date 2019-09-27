@@ -149,6 +149,10 @@ type Options struct {
 	// It is used to set webhook.Server.Host.
 	Host string
 
+	// CertDir is the directory that contains the server key and certificate.
+	// if not set, webhook server would look up the server key and certificate in
+	// {TempDir}/k8s-webhook-server/serving-certs
+	CertDir string
 	// Functions to all for a user to customize the values that will be injected.
 
 	// NewCache is the function that will create the cache to be used
@@ -160,8 +164,12 @@ type Options struct {
 	// use the cache for reads and the client for writes.
 	NewClient NewClientFunc
 
+	// EventBroadcaster records Events emitted by the manager and sends them to the Kubernetes API
+	// Use this to customize the event correlator and spam filter
+	EventBroadcaster record.EventBroadcaster
+
 	// Dependency injection for testing
-	newRecorderProvider func(config *rest.Config, scheme *runtime.Scheme, logger logr.Logger) (recorder.Provider, error)
+	newRecorderProvider func(config *rest.Config, scheme *runtime.Scheme, logger logr.Logger, broadcaster record.EventBroadcaster) (recorder.Provider, error)
 	newResourceLock     func(config *rest.Config, recorderProvider recorder.Provider, options leaderelection.Options) (resourcelock.Interface, error)
 	newMetricsListener  func(addr string) (net.Listener, error)
 }
@@ -231,7 +239,7 @@ func New(config *rest.Config, options Options) (Manager, error) {
 	// Create the recorder provider to inject event recorders for the components.
 	// TODO(directxman12): the log for the event provider should have a context (name, tags, etc) specific
 	// to the particular controller that it's being injected into, rather than a generic one like is here.
-	recorderProvider, err := options.newRecorderProvider(config, options.Scheme, log.WithName("events"))
+	recorderProvider, err := options.newRecorderProvider(config, options.Scheme, log.WithName("events"), options.EventBroadcaster)
 	if err != nil {
 		return nil, err
 	}
@@ -271,6 +279,7 @@ func New(config *rest.Config, options Options) (Manager, error) {
 		internalStopper:  stop,
 		port:             options.Port,
 		host:             options.Host,
+		certDir:          options.CertDir,
 		leaseDuration:    *options.LeaseDuration,
 		renewDeadline:    *options.RenewDeadline,
 		retryPeriod:      *options.RetryPeriod,
@@ -340,6 +349,10 @@ func setOptionsDefaults(options Options) Options {
 
 	if options.RetryPeriod == nil {
 		options.RetryPeriod = &retryPeriod
+	}
+
+	if options.EventBroadcaster == nil {
+		options.EventBroadcaster = record.NewBroadcaster()
 	}
 
 	return options
