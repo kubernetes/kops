@@ -513,7 +513,7 @@ spec:
             privileged: true
           resources:
             requests:
-              cpu: 250m
+              cpu: 100m
           livenessProbe:
             httpGet:
               path: /liveness
