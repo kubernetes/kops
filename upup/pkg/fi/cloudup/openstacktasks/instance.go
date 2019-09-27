@@ -44,18 +44,12 @@ type Instance struct {
 	UserData         *string
 	Metadata         map[string]string
 	AvailabilityZone *string
-	OsVolumeBoot     *OsVolumeBoot
 	SecurityGroups   []string
 
 	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.HasAddress = &Instance{}
-
-type OsVolumeBoot struct {
-	Enabled    bool
-	VolumeSize *int
-}
 
 // GetDependencies returns the dependencies of the Instance task
 func (e *Instance) GetDependencies(tasks map[string]fi.Task) []fi.Task {
