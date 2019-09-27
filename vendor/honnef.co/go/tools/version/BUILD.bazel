@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "buildinfo.go",
+        "buildinfo111.go",
+        "version.go",
+    ],
+    importmap = "k8s.io/kops/vendor/honnef.co/go/tools/version",
+    importpath = "honnef.co/go/tools/version",
+    visibility = ["//visibility:public"],
+)
