@@ -49,7 +49,7 @@ type KubeBoot struct {
 	DNS DNSProvider
 	// ModelDir is the model directory
 	ModelDir string
-	// Kubernetes is the context methods for kubernetes
+	// Kubernetes holds a kubernetes client
 	Kubernetes *KubernetesContext
 	// Master indicates we are a master node
 	Master bool

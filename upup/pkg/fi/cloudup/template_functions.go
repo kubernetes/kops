@@ -35,6 +35,7 @@ import (
 	"strings"
 	"text/template"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
@@ -42,6 +43,7 @@ import (
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/util/pkg/env"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
@@ -89,6 +91,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return tf.cluster.Spec.KubeDNS
 	}
 
+	dest["KopsControllerArgv"] = tf.KopsControllerArgv
 	dest["DnsControllerArgv"] = tf.DnsControllerArgv
 	dest["ExternalDnsArgv"] = tf.ExternalDnsArgv
 
@@ -99,6 +102,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["ProxyEnv"] = tf.ProxyEnv
+
+	dest["KopsSystemEnv"] = tf.KopsSystemEnv
 
 	dest["DO_TOKEN"] = func() string {
 		return os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
@@ -247,6 +252,24 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	return argv, nil
 }
 
+// KopsControllerArgv returns the args to kops-controller
+func (tf *TemplateFunctions) KopsControllerArgv() ([]string, error) {
+	var argv []string
+
+	argv = append(argv, "/usr/bin/kops-controller")
+
+	argv = append(argv, "--cloud="+tf.cluster.Spec.CloudProvider)
+	argv = append(argv, "--config="+tf.cluster.Spec.ConfigBase)
+
+	// Disable metrics (avoid port conflicts, also risky because we are host network)
+	argv = append(argv, "--metrics-addr=0")
+
+	// Verbose, but not crazy logging
+	argv = append(argv, "--v=2")
+
+	return argv, nil
+}
+
 func (tf *TemplateFunctions) ExternalDnsArgv() ([]string, error) {
 	var argv []string
 
@@ -291,4 +314,11 @@ func (tf *TemplateFunctions) ProxyEnv() map[string]string {
 		envs["NO_PROXY"] = proxies.ProxyExcludes
 	}
 	return envs
+}
+
+// KopsSystemEnv builds the env vars for a system component
+func (tf *TemplateFunctions) KopsSystemEnv() []corev1.EnvVar {
+	envMap := env.BuildSystemComponentEnvVars(&tf.cluster.Spec)
+
+	return envMap.ToEnvVars()
 }

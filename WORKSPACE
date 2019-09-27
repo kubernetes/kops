@@ -137,3 +137,11 @@ go_repository(
     sum = "h1:PTrxTL8TNRbZts4KqdJMsqRlrdjoiKFDq6MVitj8mPk=",
     version = "v0.0.0-20190829181151-21b2e01cec04",
 )
+
+# Start using distroless base
+container_pull(
+    name = "distroless_base",
+    digest = "sha256:a4624843fb1d7d43d9e3d62f6d76b51b6e02b3d03221e29fef4e223d81ef3378",
+    registry = "gcr.io",
+    repository = "distroless/base",
+)

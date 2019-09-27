@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["builder.go"],
+    importpath = "k8s.io/kops/pkg/nodelabels",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//util/pkg/reflectutils:go_default_library",
+    ],
+)

@@ -1,0 +1,31 @@
+language: go
+
+os:
+  - linux
+  - osx
+
+cache:
+  directories:
+  - $HOME/.cache/go-build
+  - $GOPATH/pkg/mod
+
+go:
+- "1.12"
+
+git:
+  depth: 3
+
+go_import_path: sigs.k8s.io/controller-runtime
+
+install:
+- go get -u github.com/golang/dep/cmd/dep
+#- go get -u golang.org/x/lint/golint
+- curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.15.0
+
+script:
+- GO111MODULE=on TRACE=1 ./hack/check-everything.sh
+
+
+# TBD. Suppressing for now.
+notifications:
+  email: false

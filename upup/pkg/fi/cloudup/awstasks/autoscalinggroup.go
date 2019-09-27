@@ -33,7 +33,7 @@ import (
 	"k8s.io/klog"
 )
 
-// CloudTagInstanceGroupRolePrefix is a cloud tag that defined the instance role
+// CloudTagInstanceGroupRolePrefix is a cloud tag that defines the instance role
 const CloudTagInstanceGroupRolePrefix = "k8s.io/role/"
 
 // AutoscalingGroup provdes the definition for a autoscaling group in aws

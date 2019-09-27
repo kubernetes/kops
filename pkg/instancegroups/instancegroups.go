@@ -321,6 +321,10 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 		return fmt.Errorf("K8sClient not set")
 	}
 
+	if u.Node == nil {
+		return fmt.Errorf("node not set")
+	}
+
 	if u.Node.Name == "" {
 		return fmt.Errorf("node name not set")
 	}

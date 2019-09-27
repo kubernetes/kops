@@ -1,0 +1,95 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kops-controller
+  namespace: kube-system
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+    k8s-app: kops-controller
+    version: v1.16.0-alpha.1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: kops-controller
+  template:
+    metadata:
+      labels:
+        k8s-addon: kops-controller.addons.k8s.io
+        k8s-app: kops-controller
+        version: v1.16.0-alpha.1
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      tolerations:
+      - key: "node-role.kubernetes.io/master"
+        effect: NoSchedule
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
+      hostNetwork: true
+      serviceAccount: kops-controller
+      containers:
+      - name: kops-controller
+        image: kope/kops-controller:1.14.0-alpha.1
+        command:
+{{ range $arg := KopsControllerArgv }}
+        - "{{ $arg }}"
+{{ end }}
+{{- if KopsSystemEnv }}
+        env:
+{{ range $var := KopsSystemEnv }}
+        - name: {{ $var.Name }}
+          value: {{ $var.Value }}
+{{ end }}
+{{- end }}
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kops-controller
+  namespace: kube-system
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+  name: kops-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+  name: kops-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kops-controller
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:serviceaccount:kube-system:kops-controller

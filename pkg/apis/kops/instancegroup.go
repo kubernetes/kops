@@ -291,12 +291,9 @@ func (g *InstanceGroup) IsBastion() bool {
 
 func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
 	if g.Spec.NodeLabels == nil {
-		nodeLabels := make(map[string]string)
-		nodeLabels[NodeLabelInstanceGroup] = g.Name
-		g.Spec.NodeLabels = nodeLabels
-	} else {
-		g.Spec.NodeLabels[NodeLabelInstanceGroup] = g.Name
+		g.Spec.NodeLabels = make(map[string]string)
 	}
+	g.Spec.NodeLabels[NodeLabelInstanceGroup] = g.Name
 }
 
 // LoadBalancers defines a load balancer

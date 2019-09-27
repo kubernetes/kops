@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "signal.go",
+        "signal_posix.go",
+        "signal_windows.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-runtime/pkg/manager/signals",
+    importpath = "sigs.k8s.io/controller-runtime/pkg/manager/signals",
+    visibility = ["//visibility:public"],
+)

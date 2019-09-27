@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/pkg/model/iam"
+	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
@@ -93,6 +94,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					"startup-script": startupScript,
 					//"config": resources/config.yaml $nodeset.Name
 					"cluster-name": fi.WrapResource(fi.NewStringResource(b.ClusterName())),
+					nodeidentitygce.MetadataKeyInstanceGroupName: fi.WrapResource(fi.NewStringResource(ig.Name)),
 				},
 			}
 
