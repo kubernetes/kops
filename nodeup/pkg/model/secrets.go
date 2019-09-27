@@ -49,6 +49,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
+	// Write out docker auth secret, if exists
 	if b.SecretStore != nil {
 		key := "dockerconfig"
 		dockercfg, _ := b.SecretStore.Secret(key)

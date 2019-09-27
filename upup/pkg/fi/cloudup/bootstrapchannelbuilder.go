@@ -114,6 +114,25 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 	addons.ObjectMeta.Name = "bootstrap"
 
 	{
+		key := "kops-controller.addons.k8s.io"
+		version := "1.16.0-alpha.1"
+
+		{
+			location := key + "/k8s-1.16.yaml"
+			id := "k8s-1.16"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          map[string]string{"k8s-addon": key},
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.16.0-alpha.0",
+				Id:                id,
+			})
+		}
+	}
+
+	{
 		key := "core.addons.k8s.io"
 		version := "1.4.0"
 		location := key + "/v" + version + ".yaml"

@@ -1,0 +1,3 @@
+version: "2"
+domain: kops.k8s.io
+repo: k8s.io/kops/cmd/kops-controller

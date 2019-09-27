@@ -1,0 +1,10 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["recorder.go"],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-runtime/pkg/recorder",
+    importpath = "sigs.k8s.io/controller-runtime/pkg/recorder",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/k8s.io/client-go/tools/record:go_default_library"],
+)
