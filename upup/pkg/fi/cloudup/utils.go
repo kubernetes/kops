@@ -139,6 +139,13 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			if err != nil {
 				return nil, err
 			}
+			var zoneNames []string
+			for _, subnet := range cluster.Spec.Subnets {
+				if !fi.ArrayContains(zoneNames, subnet.Zone) {
+					zoneNames = append(zoneNames, subnet.Zone)
+				}
+			}
+			osc.UseZones(zoneNames)
 			cloud = osc
 		}
 

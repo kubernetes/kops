@@ -142,7 +142,7 @@ func (c *openstackCloud) DeleteFloatingIP(id string) (err error) {
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		err = l3floatingip.Delete(c.ComputeClient(), id).ExtractErr()
-		if err != nil {
+		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("Failed to delete floating ip %s: %v", id, err)
 		}
 		return true, nil
@@ -157,7 +157,7 @@ func (c *openstackCloud) DeleteL3FloatingIP(id string) (err error) {
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		err = l3floatingip.Delete(c.NetworkingClient(), id).ExtractErr()
-		if err != nil {
+		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("Failed to delete L3 floating ip %s: %v", id, err)
 		}
 		return true, nil
