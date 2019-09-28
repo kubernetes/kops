@@ -1312,6 +1312,30 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 		}
 	}
 
+	// `docker load` our images when using a KOPS_BASE_URL, so we
+	// don't need to push/pull from a registry
+	if os.Getenv("KOPS_BASE_URL") != "" {
+		for _, name := range []string{"kops-controller" /* TODO:  "dns-controller" */} {
+			baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
+			if err != nil {
+				return nil, err
+			}
+
+			baseURL.Path = path.Join(baseURL.Path, "/images/"+name+".tar.gz")
+
+			u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+			if err != nil {
+				return nil, err
+			}
+
+			image := &nodeup.Image{
+				Sources: []string{u.String()},
+				Hash:    hash.Hex(),
+			}
+			images = append(images, image)
+		}
+	}
+
 	{
 		u, hash, err := ProtokubeImageSource(assetBuilder)
 		if err != nil {
