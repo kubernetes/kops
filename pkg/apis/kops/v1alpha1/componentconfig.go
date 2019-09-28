@@ -191,9 +191,9 @@ type KubeletConfigSpec struct {
 	CpuManagerPolicy string `json:"cpuManagerPolicy,omitempty" flag:"cpu-manager-policy"`
 	// RegistryPullQPS if > 0, limit registry pull QPS to this value.  If 0, unlimited. (default 5)
 	RegistryPullQPS *int32 `json:"registryPullQPS,omitempty" flag:"registry-qps"`
-	//RegistryBurst Maximum size of a bursty pulls, temporarily allows pulls to burst to this number, while still not exceeding registry-qps. Only used if --registry-qps > 0 (default 10)
+	// RegistryBurst Maximum size of a bursty pulls, temporarily allows pulls to burst to this number, while still not exceeding registry-qps. Only used if --registry-qps > 0 (default 10)
 	RegistryBurst *int32 `json:"registryBurst,omitempty" flag:"registry-burst"`
-	//DynamicConfigDir Directory for checkpointing downloaded configurations and tracking configuration health from dynamic configuration change on live kubernetes cluster
+	// DynamicConfigDir Directory for checkpointing downloaded configurations and tracking configuration health from dynamic configuration change on live kubernetes cluster
 	DynamicConfigDir string `json:"dynamicConfigDir,omitempty" flag:"dynamic-config-dir"`
 }
 
