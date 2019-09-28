@@ -118,18 +118,6 @@ ifdef STATIC_BUILD
   EXTRA_LDFLAGS=-s -w
 endif
 
-SHASUMCMD := $(shell command -v sha1sum || command -v shasum; 2> /dev/null)
-ifndef SHASUMCMD
-  $(error "Neither sha1sum nor shasum command is available")
-endif
-
-SHA256SUMCMD := $(shell command -v sha256sum || command -v shasum; 2> /dev/null)
-ifndef SHA256SUMCMD
-  $(error "Neither sha256sum nor shasum command is available")
-endif
-ifeq ($(SHA256SUMCMD), "shasum")
-SHA256SUMCMD = "shasum -a 256"
-endif
 
 # Set compiler flags to allow binary debugging
 ifdef DEBUGGABLE
@@ -295,12 +283,12 @@ crossbuild-in-docker:
 .PHONY: kops-dist
 kops-dist: crossbuild-in-docker
 	mkdir -p ${DIST}
-	(${SHASUMCMD} ${DIST}/darwin/amd64/kops | cut -d' ' -f1) > ${DIST}/darwin/amd64/kops.sha1
-	(${SHA256SUMCMD} ${DIST}/darwin/amd64/kops | cut -d' ' -f1) > ${DIST}/darwin/amd64/kops.sha256
-	(${SHASUMCMD} ${DIST}/linux/amd64/kops | cut -d' ' -f1) > ${DIST}/linux/amd64/kops.sha1
-	(${SHA256SUMCMD} ${DIST}/linux/amd64/kops | cut -d' ' -f1) > ${DIST}/linux/amd64/kops.sha256
-	(${SHASUMCMD} ${DIST}/windows/amd64/kops.exe | cut -d' ' -f1) > ${DIST}/windows/amd64/kops.exe.sha1
-	(${SHA256SUMCMD} ${DIST}/windows/amd64/kops.exe | cut -d' ' -f1) > ${DIST}/windows/amd64/kops.exe.sha256
+	tools/sha1 ${DIST}/darwin/amd64/kops ${DIST}/darwin/amd64/kops.sha1
+	tools/sha256 ${DIST}/darwin/amd64/kops ${DIST}/darwin/amd64/kops.sha256
+	tools/sha1 ${DIST}/linux/amd64/kops ${DIST}/linux/amd64/kops.sha1
+	tools/sha256 ${DIST}/linux/amd64/kops ${DIST}/linux/amd64/kops.sha256
+	tools/sha1 ${DIST}/windows/amd64/kops.exe ${DIST}/windows/amd64/kops.exe.sha1
+	tools/sha256 ${DIST}/windows/amd64/kops.exe ${DIST}/windows/amd64/kops.exe.sha256
 
 .PHONY: version-dist
 version-dist: nodeup-dist kops-dist protokube-export utils-dist
@@ -434,8 +422,8 @@ protokube-image: protokube-build-in-docker
 protokube-export: protokube-image
 	docker save protokube:${PROTOKUBE_TAG} > ${IMAGES}/protokube.tar
 	gzip --force --best ${IMAGES}/protokube.tar
-	(${SHASUMCMD} ${IMAGES}/protokube.tar.gz | cut -d' ' -f1) > ${IMAGES}/protokube.tar.gz.sha1
-	(${SHA256SUMCMD} ${IMAGES}/protokube.tar.gz | cut -d' ' -f1) > ${IMAGES}/protokube.tar.gz.sha256
+	tools/sha1 ${IMAGES}/protokube.tar.gz ${IMAGES}/protokube.tar.gz.sha1
+	tools/sha256 ${IMAGES}/protokube.tar.gz ${IMAGES}/protokube.tar.gz.sha256
 
 # protokube-push is no longer used (we upload a docker image tar file to S3 instead),
 # but we're keeping it around in case it is useful for development etc
@@ -459,8 +447,8 @@ nodeup-dist:
 	docker start nodeup-build-${UNIQUE}
 	docker exec nodeup-build-${UNIQUE} chown -R ${UID}:${GID} /go/src/k8s.io/kops/.build
 	docker cp nodeup-build-${UNIQUE}:/go/src/k8s.io/kops/.build/local/nodeup .build/dist/
-	(${SHASUMCMD} .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha1
-	(${SHA256SUMCMD} .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha256
+	tools/sha1 .build/dist/nodeup .build/dist/nodeup.sha1
+	tools/sha256 .build/dist/nodeup .build/dist/nodeup.sha256
 
 .PHONY: dns-controller-gocode
 dns-controller-gocode:
@@ -806,8 +794,8 @@ bazel-protokube-export:
 	bazel build --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar
 	cp -fp bazel-bin/images/protokube.tar ${BAZELIMAGES}/protokube.tar
 	gzip --force --fast ${BAZELIMAGES}/protokube.tar
-	(${SHASUMCMD} ${BAZELIMAGES}/protokube.tar.gz | cut -d' ' -f1) > ${BAZELIMAGES}/protokube.tar.gz.sha1
-	(${SHA256SUMCMD} ${BAZELIMAGES}/protokube.tar.gz | cut -d' ' -f1) > ${BAZELIMAGES}/protokube.tar.gz.sha256
+	tools/sha1 ${BAZELIMAGES}/protokube.tar.gz ${BAZELIMAGES}/protokube.tar.gz.sha1
+	tools/sha256 ${BAZELIMAGES}/protokube.tar.gz ${BAZELIMAGES}/protokube.tar.gz.sha256
 
 .PHONY: bazel-version-dist
 bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokube-export bazel-utils-dist
@@ -818,23 +806,23 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-protokub
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
 	mkdir -p ${BAZELUPLOAD}/utils/${VERSION}/linux/amd64/
 	cp bazel-bin/cmd/nodeup/linux_amd64_pure_stripped/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
-	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha1
-	(${SHA256SUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
+	tools/sha1 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha1
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
 	cp ${BAZELIMAGES}/protokube.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz
 	cp ${BAZELIMAGES}/protokube.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha1
 	cp ${BAZELIMAGES}/protokube.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha256
 	cp bazel-bin/cmd/kops/linux_amd64_pure_stripped/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops
-	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops.sha1
-	(${SHA256SUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops.sha256
+	tools/sha1 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops.sha1
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops.sha256
 	cp bazel-bin/cmd/kops/darwin_amd64_pure_stripped/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops
-	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
-	(${SHA256SUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha256
+	tools/sha1 ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha256
 	cp bazel-bin/cmd/kops/windows_amd64_pure_stripped/kops.exe ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
-	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha1
-	(${SHA256SUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha256
+	tools/sha1 ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha1
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha256
 	cp bazel-bin/images/utils-builder/utils.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz
-	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
-	(${SHA256SUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha256
+	tools/sha1 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha256
 	cp -fr ${BAZELUPLOAD}/kops/${VERSION}/* ${BAZELDIST}/
 
 .PHONY: bazel-upload
@@ -875,8 +863,8 @@ update-machine-types:
 dev-upload-nodeup: bazel-crossbuild-nodeup
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
 	cp -fp bazel-bin/cmd/nodeup/linux_amd64_pure_stripped/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
-	(${SHASUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha1
-	(${SHA256SUMCMD} ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup | cut -d' ' -f1) > ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
+	tools/sha1 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha1
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
 	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload-protokube uploads protokube to GCS
