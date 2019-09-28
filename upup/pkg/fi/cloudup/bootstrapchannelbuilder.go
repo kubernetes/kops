@@ -115,7 +115,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 	{
 		key := "kops-controller.addons.k8s.io"
-		version := "1.16.0-alpha.1"
+		version := "1.15.0-alpha.1"
 
 		{
 			location := key + "/k8s-1.16.yaml"
