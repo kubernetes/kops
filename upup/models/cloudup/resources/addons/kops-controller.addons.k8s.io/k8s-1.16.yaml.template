@@ -6,7 +6,7 @@ metadata:
   labels:
     k8s-addon: kops-controller.addons.k8s.io
     k8s-app: kops-controller
-    version: v1.16.0-alpha.1
+    version: v1.15.0-alpha.1
 spec:
   replicas: 1
   selector:
@@ -17,7 +17,7 @@ spec:
       labels:
         k8s-addon: kops-controller.addons.k8s.io
         k8s-app: kops-controller
-        version: v1.16.0-alpha.1
+        version: v1.15.0-alpha.1
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
@@ -31,7 +31,7 @@ spec:
       serviceAccount: kops-controller
       containers:
       - name: kops-controller
-        image: kope/kops-controller:1.14.0-alpha.1
+        image: kope/kops-controller:1.15.0-alpha.1
         command:
 {{ range $arg := KopsControllerArgv }}
         - "{{ $arg }}"
