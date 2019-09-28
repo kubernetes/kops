@@ -56,6 +56,7 @@ unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCE
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.15.0-alpha.1
+# Keep in sync with upup/models/cloudup/resources/addons/kops-controller.addons.k8s.io/
 KOPS_CONTROLLER_TAG=1.15.0-alpha.1
 
 # Keep in sync with logic in get_workspace_status
