@@ -77,6 +77,8 @@ func TestHighAvailabilityGCE(t *testing.T) {
 func TestComplex(t *testing.T) {
 	runTestAWS(t, "complex.example.com", "complex", "v1alpha2", false, 1, true, false, nil)
 	runTestAWS(t, "complex.example.com", "complex", "legacy-v1alpha2", false, 1, true, false, nil)
+
+	runTestCloudformation(t, "complex.example.com", "complex", "v1alpha2", false, nil)
 }
 
 // TestCrossZone tests that the cross zone setting on the API ELB is set properly

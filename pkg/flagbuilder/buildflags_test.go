@@ -20,10 +20,16 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
+
+func resourceValue(s string) *resource.Quantity {
+	q := resource.MustParse(s)
+	return &q
+}
 
 func TestBuildKCMFlags(t *testing.T) {
 	grid := []struct {
@@ -44,7 +50,7 @@ func TestBuildKCMFlags(t *testing.T) {
 		},
 		{
 			Config: &kops.KubeControllerManagerConfig{
-				KubeAPIQPS: fi.Float32(42),
+				KubeAPIQPS: resourceValue("42"),
 			},
 			Expected: "--kube-api-qps=42",
 		},
@@ -168,7 +174,7 @@ func TestBuildAPIServerFlags(t *testing.T) {
 		},
 		{
 			Config: &kops.KubeAPIServerConfig{
-				AuditWebhookBatchThrottleQps: fi.Float32(3.14),
+				AuditWebhookBatchThrottleQps: resourceValue("3.14"),
 			},
 			Expected: "--audit-webhook-batch-throttle-qps=3.14 --insecure-port=0 --secure-port=0",
 		},
