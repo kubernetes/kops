@@ -1,0 +1,4 @@
+exports_files([
+    "sha1",
+    "sha256",
+])
