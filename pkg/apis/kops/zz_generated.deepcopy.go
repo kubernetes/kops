@@ -2055,8 +2055,8 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 	}
 	if in.AuditWebhookBatchThrottleQps != nil {
 		in, out := &in.AuditWebhookBatchThrottleQps, &out.AuditWebhookBatchThrottleQps
-		*out = new(float32)
-		**out = **in
+		x := (*in).DeepCopy()
+		*out = &x
 	}
 	if in.AuditWebhookInitialBackoff != nil {
 		in, out := &in.AuditWebhookInitialBackoff, &out.AuditWebhookInitialBackoff
@@ -2263,8 +2263,8 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 	}
 	if in.HorizontalPodAutoscalerTolerance != nil {
 		in, out := &in.HorizontalPodAutoscalerTolerance, &out.HorizontalPodAutoscalerTolerance
-		*out = new(float64)
-		**out = **in
+		x := (*in).DeepCopy()
+		*out = &x
 	}
 	if in.HorizontalPodAutoscalerUseRestClients != nil {
 		in, out := &in.HorizontalPodAutoscalerUseRestClients, &out.HorizontalPodAutoscalerUseRestClients
@@ -2290,8 +2290,8 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 	}
 	if in.KubeAPIQPS != nil {
 		in, out := &in.KubeAPIQPS, &out.KubeAPIQPS
-		*out = new(float32)
-		**out = **in
+		x := (*in).DeepCopy()
+		*out = &x
 	}
 	if in.KubeAPIBurst != nil {
 		in, out := &in.KubeAPIBurst, &out.KubeAPIBurst
