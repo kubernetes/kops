@@ -96,7 +96,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 			Name: t.IAMInstanceProfile.Name,
 		}
 	}
-	// @step: are the node publically facing
+	// @step: are the node publicly facing
 	if fi.BoolValue(t.AssociatePublicIP) {
 		lc.NetworkInterfaces = append(lc.NetworkInterfaces,
 			&ec2.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{

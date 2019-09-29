@@ -109,7 +109,7 @@ func (c *Config) UseFeature(name string) bool {
 	return false
 }
 
-// NodeRegistration is an incomming request
+// NodeRegistration is an incoming request
 type NodeRegistration struct {
 	// Spec is the request specification
 	Spec NodeRegistrationSpec
