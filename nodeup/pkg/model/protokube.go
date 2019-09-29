@@ -420,7 +420,7 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 
 	// TODO write out an environments file for this.  This is getting a tad long.
 
-	// Passin gossip dns connection limit
+	// Pass in gossip dns connection limit
 	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
 		buffer.WriteString(" ")
 		buffer.WriteString("-e 'GOSSIP_DNS_CONN_LIMIT=")
