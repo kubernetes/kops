@@ -16,7 +16,10 @@ limitations under the License.
 
 package kops
 
-import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+import (
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 // KubeletConfigSpec defines the kubelet configuration
 type KubeletConfigSpec struct {
@@ -372,7 +375,7 @@ type KubeAPIServerConfig struct {
 	// AuditWebhookBatchThrottleEnable is Whether batching throttling is enabled. Only used in batch mode. (default true)
 	AuditWebhookBatchThrottleEnable *bool `json:"auditWebhookBatchThrottleEnable,omitempty" flag:"audit-webhook-batch-throttle-enable"`
 	// AuditWebhookBatchThrottleQps is Maximum average number of batches per second. Only used in batch mode. (default 10)
-	AuditWebhookBatchThrottleQps *float32 `json:"auditWebhookBatchThrottleQps,omitempty" flag:"audit-webhook-batch-throttle-qps"`
+	AuditWebhookBatchThrottleQps *resource.Quantity `json:"auditWebhookBatchThrottleQps,omitempty" flag:"audit-webhook-batch-throttle-qps"`
 	// AuditWebhookConfigFile is Path to a kubeconfig formatted file that defines the audit webhook configuration. Requires the 'AdvancedAuditing' feature gate.
 	AuditWebhookConfigFile string `json:"auditWebhookConfigFile,omitempty" flag:"audit-webhook-config-file"`
 	// AuditWebhookInitialBackoff is The amount of time to wait before retrying the first failed request. (default 10s)
@@ -514,7 +517,7 @@ type KubeControllerManagerConfig struct {
 	// HorizontalPodAutoscalerTolerance is the minimum change (from 1.0) in the
 	// desired-to-actual metrics ratio for the horizontal pod autoscaler to
 	// consider scaling.
-	HorizontalPodAutoscalerTolerance *float64 `json:"horizontalPodAutoscalerTolerance,omitempty" flag:"horizontal-pod-autoscaler-tolerance"`
+	HorizontalPodAutoscalerTolerance *resource.Quantity `json:"horizontalPodAutoscalerTolerance,omitempty" flag:"horizontal-pod-autoscaler-tolerance"`
 	// HorizontalPodAutoscalerUseRestClients determines if the new-style clients
 	// should be used if support for custom metrics is enabled.
 	HorizontalPodAutoscalerUseRestClients *bool `json:"horizontalPodAutoscalerUseRestClients,omitempty" flag:"horizontal-pod-autoscaler-use-rest-clients"`
@@ -531,7 +534,7 @@ type KubeControllerManagerConfig struct {
 	// The resync period will be random between MinResyncPeriod and 2*MinResyncPeriod. (default 12h0m0s)
 	MinResyncPeriod string `json:"minResyncPeriod,omitempty" flag:"min-resync-period"`
 	// KubeAPIQPS QPS to use while talking with kubernetes apiserver. (default 20)
-	KubeAPIQPS *float32 `json:"kubeAPIQPS,omitempty" flag:"kube-api-qps"`
+	KubeAPIQPS *resource.Quantity `json:"kubeAPIQPS,omitempty" flag:"kube-api-qps"`
 	// KubeAPIBurst Burst to use while talking with kubernetes apiserver. (default 30)
 	KubeAPIBurst *int32 `json:"kubeAPIBurst,omitempty" flag:"kube-api-burst"`
 }
