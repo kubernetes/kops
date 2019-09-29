@@ -17,7 +17,10 @@ limitations under the License.
 package kops
 
 import (
+	"fmt"
 	"testing"
+
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 func Test_ParseInstanceGroupRole(t *testing.T) {
@@ -61,5 +64,55 @@ func Test_ParseInstanceGroupRole(t *testing.T) {
 		if ok != g.ExpectedOK || role != g.ExpectedRole {
 			t.Errorf("unexpected result from %q, %v.  got %q, %v", g.Input, g.Lenient, role, ok)
 		}
+	}
+}
+
+func TestParseConfigYAML(t *testing.T) {
+	pi := float32(3.14) // Or there abouts
+
+	grid := []struct {
+		Config        string
+		ExpectedValue *float32
+	}{
+		{
+			Config:        "kubeAPIServer: {  auditWebhookBatchThrottleQps: 3.14 }",
+			ExpectedValue: &pi,
+		},
+		{
+			Config:        "kubeAPIServer: {  auditWebhookBatchThrottleQps: 3.140 }",
+			ExpectedValue: &pi,
+		},
+		{
+			Config:        "kubeAPIServer: {}",
+			ExpectedValue: nil,
+		},
+	}
+
+	for i := range grid {
+		g := grid[i]
+		t.Run(fmt.Sprintf("%q", g.Config), func(t *testing.T) {
+			config := ClusterSpec{}
+			err := utils.YamlUnmarshal([]byte(g.Config), &config)
+			if err != nil {
+				t.Errorf("error parsing configuration %q: %v", g.Config, err)
+				return
+			}
+
+			actual := config.KubeAPIServer.AuditWebhookBatchThrottleQps
+			if g.ExpectedValue == nil {
+				if actual != nil {
+					t.Errorf("expected null value for KubeAPIServer.AuditWebookBatchThrottleQPS, got %v", *actual)
+					return
+				}
+			} else {
+				if actual == nil {
+					t.Errorf("expected %v value for KubeAPIServer.AuditWebookBatchThrottleQPS, got nil", *g.ExpectedValue)
+					return
+				} else if *actual != *g.ExpectedValue {
+					t.Errorf("expected %v value for KubeAPIServer.AuditWebookBatchThrottleQPS, got %v", *g.ExpectedValue, *actual)
+					return
+				}
+			}
+		})
 	}
 }
