@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"testing"
 
+	inf "gopkg.in/inf.v0"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
@@ -68,19 +69,23 @@ func Test_ParseInstanceGroupRole(t *testing.T) {
 }
 
 func TestParseConfigYAML(t *testing.T) {
-	pi := float32(3.14) // Or there abouts
+	pi := inf.NewDec(314, 2) // Or there abouts
 
 	grid := []struct {
 		Config        string
-		ExpectedValue *float32
+		ExpectedValue *inf.Dec
 	}{
 		{
+			Config:        "kubeAPIServer: {  auditWebhookBatchThrottleQps: 3140m }",
+			ExpectedValue: pi,
+		},
+		{
 			Config:        "kubeAPIServer: {  auditWebhookBatchThrottleQps: 3.14 }",
-			ExpectedValue: &pi,
+			ExpectedValue: pi,
 		},
 		{
 			Config:        "kubeAPIServer: {  auditWebhookBatchThrottleQps: 3.140 }",
-			ExpectedValue: &pi,
+			ExpectedValue: pi,
 		},
 		{
 			Config:        "kubeAPIServer: {}",
@@ -101,15 +106,15 @@ func TestParseConfigYAML(t *testing.T) {
 			actual := config.KubeAPIServer.AuditWebhookBatchThrottleQps
 			if g.ExpectedValue == nil {
 				if actual != nil {
-					t.Errorf("expected null value for KubeAPIServer.AuditWebookBatchThrottleQPS, got %v", *actual)
+					t.Errorf("expected null value for KubeAPIServer.AuditWebhookBatchThrottleQps, got %v", *actual)
 					return
 				}
 			} else {
 				if actual == nil {
-					t.Errorf("expected %v value for KubeAPIServer.AuditWebookBatchThrottleQPS, got nil", *g.ExpectedValue)
+					t.Errorf("expected %v value for KubeAPIServer.AuditWebhookBatchThrottleQps, got nil", *g.ExpectedValue)
 					return
-				} else if *actual != *g.ExpectedValue {
-					t.Errorf("expected %v value for KubeAPIServer.AuditWebookBatchThrottleQPS, got %v", *g.ExpectedValue, *actual)
+				} else if actual.AsDec().Cmp(g.ExpectedValue) != 0 {
+					t.Errorf("expected %v value for KubeAPIServer.AuditWebhookBatchThrottleQps, got %v", g.ExpectedValue.String(), actual.AsDec().String())
 					return
 				}
 			}

@@ -158,7 +158,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscomplexexampleco
     allowPrivileged: true
     anonymousAuth: false
     apiServerCount: 1
-    auditWebhookBatchThrottleQps: 3.14
+    auditWebhookBatchThrottleQps: 3140m
     authorizationMode: AlwaysAllow
     bindAddress: 0.0.0.0
     cloudProvider: aws

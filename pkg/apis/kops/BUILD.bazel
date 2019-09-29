@@ -42,5 +42,9 @@ go_test(
         "semver_test.go",
     ],
     embed = [":go_default_library"],
-    deps = ["//vendor/github.com/blang/semver:go_default_library"],
+    deps = [
+        "//upup/pkg/fi/utils:go_default_library",
+        "//vendor/github.com/blang/semver:go_default_library",
+        "//vendor/gopkg.in/inf.v0:go_default_library",
+    ],
 )
