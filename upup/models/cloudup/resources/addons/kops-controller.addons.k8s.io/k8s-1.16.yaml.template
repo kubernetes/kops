@@ -32,10 +32,10 @@ spec:
       containers:
       - name: kops-controller
         image: kope/kops-controller:1.15.0-alpha.1
-{{ if .MountCertificates }}
+{{ if .UseHostCertificates }}
         volumeMounts:
         - mountPath: /etc/ssl/certs
-          name: ca-certs
+          name: etc-ssl-certs
           readOnly: true
 {{ end }}
         command:
@@ -53,12 +53,12 @@ spec:
           requests:
             cpu: 50m
             memory: 50Mi
-{{ if .MountCertificates }}
+{{ if .UseHostCertificates }}
       volumes:
       - hostPath:
           path: /etc/ssl/certs
           type: DirectoryOrCreate
-        name: ca-certs
+        name: etc-ssl-certs
 {{ end }}
 
 ---

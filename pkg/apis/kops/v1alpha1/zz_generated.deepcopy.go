@@ -788,8 +788,8 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 		*out = new(TargetSpec)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.MountCertificates != nil {
-		in, out := &in.MountCertificates, &out.MountCertificates
+	if in.UseHostCertificates != nil {
+		in, out := &in.UseHostCertificates, &out.UseHostCertificates
 		*out = new(bool)
 		**out = **in
 	}

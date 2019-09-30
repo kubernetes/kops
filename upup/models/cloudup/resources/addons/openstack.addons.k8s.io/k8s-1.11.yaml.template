@@ -213,18 +213,18 @@ spec:
         - mountPath: /etc/kubernetes/cloud.config
           name: cloudconfig
           readOnly: true
-{{ if .MountCertificates }}
+{{ if .UseHostCertificates }}
         - mountPath: /etc/ssl/certs
-          name: ca-certs
+          name: etc-ssl-certs
           readOnly: true
 {{ end }}
       volumes:
       - hostPath:
           path: /etc/kubernetes/cloud.config
         name: cloudconfig
-{{ if .MountCertificates }}
+{{ if .UseHostCertificates }}
       - hostPath:
           path: /etc/ssl/certs
           type: DirectoryOrCreate
-        name: ca-certs
+        name: etc-ssl-certs
 {{ end }}
