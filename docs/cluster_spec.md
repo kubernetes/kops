@@ -768,13 +768,13 @@ spec:
   sshKeyName: myexistingkey
 ```
 
-### mountCertificates
+### useHostCertificates
 
 Self-signed certificates towards Cloud APIs. In some cases Cloud APIs do have self-signed certificates.
 
 ```yaml
 spec:
-  mountCertificates: true
+  useHostCertificates: true
 ```
 
 #### Optional step: add root certificates to instancegroups root ca bundle

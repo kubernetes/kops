@@ -115,7 +115,7 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		"-v", "/run/systemd:/run/systemd",
 	}
 
-	if fi.BoolValue(t.Cluster.Spec.MountCertificates) {
+	if fi.BoolValue(t.Cluster.Spec.UseHostCertificates) {
 		dockerArgs = append(dockerArgs, "-v")
 		dockerArgs = append(dockerArgs, "/etc/ssl/certs:/etc/ssl/certs")
 	}
