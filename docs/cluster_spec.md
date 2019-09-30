@@ -768,6 +768,34 @@ spec:
   sshKeyName: myexistingkey
 ```
 
+### useHostCertificates
+
+Self-signed certificates towards Cloud APIs. In some cases Cloud APIs do have self-signed certificates.
+
+```yaml
+spec:
+  useHostCertificates: true
+```
+
+#### Optional step: add root certificates to instancegroups root ca bundle
+
+```yaml
+  additionalUserData:
+  - name: cacert.sh
+    type: text/x-shellscript
+    content: |
+      #!/bin/sh
+      cat > /usr/local/share/ca-certificates/mycert.crt <<EOF
+      -----BEGIN CERTIFICATE-----
+snip
+      -----END CERTIFICATE-----
+      EOF
+      update-ca-certificates
+```
+
+**NOTE**: `update-ca-certificates` is command for debian/ubuntu. That command is different depending your OS.
+
+
 ### target
 
 In some use-cases you may wish to augment the target output with extra options.  `target` supports a minimal amount of options you can do this with.  Currently only the terraform target supports this, but if other use cases present themselves, kops may eventually support more.
