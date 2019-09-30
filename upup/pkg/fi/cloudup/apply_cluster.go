@@ -273,9 +273,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	// Normalize k8s version
 	versionWithoutV := strings.TrimSpace(cluster.Spec.KubernetesVersion)
-	if strings.HasPrefix(versionWithoutV, "v") {
-		versionWithoutV = versionWithoutV[1:]
-	}
+	versionWithoutV = strings.TrimPrefix(versionWithoutV, "v")
 	if cluster.Spec.KubernetesVersion != versionWithoutV {
 		klog.Warningf("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
@@ -1271,9 +1269,7 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 	}
 
 	config := &nodeup.Config{}
-	for _, tag := range nodeUpTags.List() {
-		config.Tags = append(config.Tags, tag)
-	}
+	config.Tags = append(config.Tags, nodeUpTags.List()...)
 
 	for _, a := range c.Assets {
 		config.Assets = append(config.Assets, a.CompactString())
