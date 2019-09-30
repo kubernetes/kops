@@ -449,6 +449,24 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 				},
 			},
 		})
+
+		if fi.BoolValue(b.Cluster.Spec.UseHostCertificates) {
+			container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
+				Name:      "etc-ssl-certs",
+				MountPath: "/etc/ssl/certs",
+				ReadOnly:  true,
+			})
+			hostPathDirectoryOrCreate := v1.HostPathDirectoryOrCreate
+			pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
+				Name: "etc-ssl-certs",
+				VolumeSource: v1.VolumeSource{
+					HostPath: &v1.HostPathVolumeSource{
+						Path: "/etc/ssl/certs",
+						Type: &hostPathDirectoryOrCreate,
+					},
+				},
+			})
+		}
 	}
 
 	envMap := env.BuildSystemComponentEnvVars(&b.Cluster.Spec)
