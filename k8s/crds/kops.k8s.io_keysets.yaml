@@ -1,18 +1,22 @@
+
+---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
-  labels:
-    controller-tools.k8s.io: "1.0"
   name: keysets.kops.k8s.io
 spec:
   group: kops.k8s.io
   names:
     kind: Keyset
+    listKind: KeysetList
     plural: keysets
-  scope: Namespaced
+    singular: keyset
+  scope: ""
   validation:
     openAPIV3Schema:
+      description: Keyset is a set of system keypairs, or other secret material. It
+        is a set to support credential rotation etc.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -27,10 +31,13 @@ spec:
         metadata:
           type: object
         spec:
+          description: KeysetSpec is the spec for a Keyset
           properties:
             keys:
               description: Keys is the set of keys that make up the keyset
               items:
+                description: KeysetItem is an item (keypair or other secret material)
+                  in a Keyset
                 properties:
                   id:
                     description: Id is the unique identifier for this key in the keyset
@@ -52,7 +59,12 @@ spec:
                 token)
               type: string
           type: object
+      type: object
   version: v1alpha2
+  versions:
+  - name: v1alpha2
+    served: true
+    storage: true
 status:
   acceptedNames:
     kind: ""
