@@ -1278,6 +1278,24 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.StateDir = in.StateDir
 	out.TracePayloadLen = in.TracePayloadLen
 	out.Tunnel = in.Tunnel
+	out.EnableIpv6 = in.EnableIpv6
+	out.EnableIpv4 = in.EnableIpv4
+	out.MonitorAggregation = in.MonitorAggregation
+	out.BPFCTGlobalTCPMax = in.BPFCTGlobalTCPMax
+	out.BPFCTGlobalAnyMax = in.BPFCTGlobalAnyMax
+	out.PreallocateBPFMaps = in.PreallocateBPFMaps
+	out.SidecarIstioProxyImage = in.SidecarIstioProxyImage
+	out.ClusterName = in.ClusterName
+	out.ToFqdnsEnablePoller = in.ToFqdnsEnablePoller
+	out.ContainerRuntimeLabels = in.ContainerRuntimeLabels
+	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
+	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
+	out.EnableNodePort = in.EnableNodePort
+	out.RemoveCbrBridge = in.RemoveCbrBridge
+	out.RestartPods = in.RestartPods
+	out.ReconfigureKubelet = in.ReconfigureKubelet
+	out.NodeInitBootstrapFile = in.NodeInitBootstrapFile
+	out.CniBinPath = in.CniBinPath
 	return nil
 }
 
@@ -1336,6 +1354,24 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.StateDir = in.StateDir
 	out.TracePayloadLen = in.TracePayloadLen
 	out.Tunnel = in.Tunnel
+	out.EnableIpv6 = in.EnableIpv6
+	out.EnableIpv4 = in.EnableIpv4
+	out.MonitorAggregation = in.MonitorAggregation
+	out.BPFCTGlobalTCPMax = in.BPFCTGlobalTCPMax
+	out.BPFCTGlobalAnyMax = in.BPFCTGlobalAnyMax
+	out.PreallocateBPFMaps = in.PreallocateBPFMaps
+	out.SidecarIstioProxyImage = in.SidecarIstioProxyImage
+	out.ClusterName = in.ClusterName
+	out.ToFqdnsEnablePoller = in.ToFqdnsEnablePoller
+	out.ContainerRuntimeLabels = in.ContainerRuntimeLabels
+	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
+	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
+	out.EnableNodePort = in.EnableNodePort
+	out.RemoveCbrBridge = in.RemoveCbrBridge
+	out.RestartPods = in.RestartPods
+	out.ReconfigureKubelet = in.ReconfigureKubelet
+	out.NodeInitBootstrapFile = in.NodeInitBootstrapFile
+	out.CniBinPath = in.CniBinPath
 	return nil
 }
 

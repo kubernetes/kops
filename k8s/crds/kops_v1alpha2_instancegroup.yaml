@@ -196,6 +196,10 @@ spec:
             image:
               description: Image is the instance (ami etc) we should use
               type: string
+            instanceProtection:
+              description: InstanceProtection makes new instances in an autoscaling
+                group protected from scale in
+              type: boolean
             kubelet:
               description: Kubelet overrides kubelet config from the ClusterSpec
               properties:
@@ -520,7 +524,8 @@ spec:
                   type: string
                 volumePluginDirectory:
                   description: The full path of the directory in which to search for
-                    additional third party volume plugins
+                    additional third party volume plugins (this path must be writeable,
+                    dependant on your choice of OS)
                   type: string
                 volumeStatsAggPeriod:
                   description: VolumeStatsAggPeriod is the interval for kubelet to
