@@ -1,16 +1,18 @@
+
+---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
-  labels:
-    controller-tools.k8s.io: "1.0"
   name: clusters.kops.k8s.io
 spec:
   group: kops.k8s.io
   names:
     kind: Cluster
+    listKind: ClusterList
     plural: clusters
-  scope: Namespaced
+    singular: cluster
+  scope: ""
   validation:
     openAPIV3Schema:
       properties:
@@ -27,6 +29,7 @@ spec:
         metadata:
           type: object
         spec:
+          description: ClusterSpec defines the configuration for a cluster
           properties:
             DisableSubnetTags:
               description: DisableSubnetTags controls if subnets are tagged in AWS
@@ -40,6 +43,8 @@ spec:
                 type: string
               type: array
             additionalPolicies:
+              additionalProperties:
+                type: string
               description: Additional policies to add for roles
               type: object
             additionalSans:
@@ -51,6 +56,8 @@ spec:
             addons:
               description: Additional addons that should be installed on the cluster
               items:
+                description: AddonSpec defines an addon that we want to install in
+                  the cluster
                 properties:
                   manifest:
                     description: Manifest is a path to the manifest that defines the
@@ -75,6 +82,10 @@ spec:
                       items:
                         type: string
                       type: array
+                    crossZoneLoadBalancing:
+                      description: CrossZoneLoadBalancing allows you to enable the
+                        cross zone load balancing
+                      type: boolean
                     idleTimeoutSeconds:
                       description: IdleTimeoutSeconds sets the timeout of the api
                         loadbalancer.
@@ -118,9 +129,25 @@ spec:
               properties:
                 aws:
                   properties:
+                    cpuLimit:
+                      description: CPULimit CPU limit of AWS IAM Authenticator container.
+                        Default 10m
+                      type: string
+                    cpuRequest:
+                      description: CPURequest CPU request of AWS IAM Authenticator
+                        container. Default 10m
+                      type: string
                     image:
                       description: Image is the AWS IAM Authenticator docker image
                         to uses
+                      type: string
+                    memoryLimit:
+                      description: MemoryLimit memory limit of AWS IAM Authenticator
+                        container. Default 20Mi
+                      type: string
+                    memoryRequest:
+                      description: MemoryRequest memory request of AWS IAM Authenticator
+                        container. Default 20Mi
                       type: string
                   type: object
                 kopeio:
@@ -139,6 +166,7 @@ spec:
               description: The Channel we are following
               type: string
             cloudConfig:
+              description: CloudConfiguration defines the cloud provider configuration
               properties:
                 disableSecurityGroupIngress:
                   description: AWS cloud-config options
@@ -156,8 +184,19 @@ spec:
                   description: Openstack cloud-config options
                   properties:
                     blockStorage:
+                      properties:
+                        bs-version:
+                          type: string
+                        ignore-volume-az:
+                          type: boolean
+                        override-volume-az:
+                          type: string
                       type: object
+                    insecureSkipVerify:
+                      type: boolean
                     loadbalancer:
+                      description: OpenstackLoadbalancerConfig defines the config
+                        for a neutron loadbalancer
                       properties:
                         floatingNetwork:
                           type: string
@@ -177,16 +216,18 @@ spec:
                           type: boolean
                       type: object
                     monitor:
+                      description: OpenstackMonitor defines the config for a health
+                        monitor
                       properties:
                         delay:
                           type: string
                         maxRetries:
-                          format: int64
                           type: integer
                         timeout:
                           type: string
                       type: object
                     router:
+                      description: OpenstackRouter defines the config for a router
                       properties:
                         dnsServers:
                           type: string
@@ -218,6 +259,8 @@ spec:
                   type: string
               type: object
             cloudControllerManager:
+              description: CloudControllerManagerConfig is the configuration of the
+                cloud controller
               properties:
                 allocateNodeCIDRs:
                   description: AllocateNodeCIDRs enables CIDRs for Pods to be allocated
@@ -266,6 +309,8 @@ spec:
                   type: boolean
               type: object
             cloudLabels:
+              additionalProperties:
+                type: string
               description: Tags for AWS resources
               type: object
             cloudProvider:
@@ -316,6 +361,11 @@ spec:
                   type: string
                 defaultUlimit:
                   description: DefaultUlimit is the ulimits for containers
+                  items:
+                    type: string
+                  type: array
+                execOpt:
+                  description: ExecOpt is a series of options passed to the runtime
                   items:
                     type: string
                   type: array
@@ -382,6 +432,10 @@ spec:
                   items:
                     type: string
                   type: array
+                skipInstall:
+                  description: SkipInstall when set to true will prevent kops from
+                    installing and modifying Docker in any way
+                  type: boolean
                 storage:
                   description: Storage is the docker storage driver to use
                   type: string
@@ -411,7 +465,6 @@ spec:
                     host:
                       type: string
                     port:
-                      format: int64
                       type: integer
                   type: object
               type: object
@@ -421,6 +474,7 @@ spec:
             etcdClusters:
               description: EtcdClusters stores the configuration for each cluster
               items:
+                description: EtcdClusterSpec is the etcd cluster specification
                 properties:
                   backups:
                     description: Backups describes how we do backups of etcd
@@ -451,6 +505,7 @@ spec:
                     description: Members stores the configurations for each member
                       of the cluster (including the data volume)
                     items:
+                      description: EtcdMemberSpec is a specification for a etcd member
                       properties:
                         encryptedVolume:
                           description: EncryptedVolume indicates you want to encrypt
@@ -522,6 +577,7 @@ spec:
                 type: object
               type: array
             externalDns:
+              description: ExternalDNSConfig are options of the dns-controller
               properties:
                 disable:
                   description: Disable indicates we do not wish to run the dns-controller
@@ -539,6 +595,7 @@ spec:
             fileAssets:
               description: A collection of files assets for deployed cluster wide
               items:
+                description: FileAssetSpec defines the structure for a file asset
                 properties:
                   content:
                     description: Content is the contents of the file
@@ -556,6 +613,8 @@ spec:
                     description: Roles is a list of roles the file asset should be
                       applied, defaults to all
                     items:
+                      description: InstanceGroupRole string describes the roles of
+                        the nodes in this InstanceGroup (master or nodes)
                       type: string
                     type: array
                 type: object
@@ -563,6 +622,7 @@ spec:
             hooks:
               description: Hooks for custom actions e.g. on first installation
               items:
+                description: HookSpec is a definition hook
                 properties:
                   before:
                     description: Before is a series of systemd units which this hook
@@ -584,6 +644,8 @@ spec:
                           type: string
                         type: array
                       environment:
+                        additionalProperties:
+                          type: string
                         description: Environment is a map of environment variables
                           added to the hook
                         type: object
@@ -608,6 +670,8 @@ spec:
                     description: Roles is an optional list of roles the hook should
                       be rolled out to, defaults to all
                     items:
+                      description: InstanceGroupRole string describes the roles of
+                        the nodes in this InstanceGroup (master or nodes)
                       type: string
                     type: array
                   useRawManifest:
@@ -643,6 +707,8 @@ spec:
                 are stored
               type: string
             kubeAPIServer:
+              description: KubeAPIServerConfig defines the configuration for the kube
+                api
               properties:
                 address:
                   description: 'Address is the binding address for the kube api: Deprecated
@@ -654,6 +720,9 @@ spec:
                   items:
                     type: string
                   type: array
+                admissionControlConfigFile:
+                  description: AdmissionControlConfigFile is the location of the admission-control-config-file
+                  type: string
                 allowPrivileged:
                   description: AllowPrivileged indicates if we can run privileged
                     containers
@@ -662,10 +731,25 @@ spec:
                   description: AnonymousAuth indicates if anonymous authentication
                     is permitted
                   type: boolean
+                apiAudiences:
+                  description: Identifiers of the API. The service account token authenticator
+                    will validate that tokens used against the API are bound to at
+                    least one of these audiences. If the --service-account-issuer
+                    flag is configured and this flag is not, this field defaults to
+                    a single element list containing the issuer URL.
+                  items:
+                    type: string
+                  type: array
                 apiServerCount:
                   description: APIServerCount is the number of api servers
                   format: int32
                   type: integer
+                appendAdmissionPlugins:
+                  description: AppendAdmissionPlugins appends list of enabled admission
+                    plugins
+                  items:
+                    type: string
+                  type: array
                 auditLogFormat:
                   description: AuditLogFormat flag specifies the format type for audit
                     log files.
@@ -721,8 +805,7 @@ spec:
                 auditWebhookBatchThrottleQps:
                   description: AuditWebhookBatchThrottleQps is Maximum average number
                     of batches per second. Only used in batch mode. (default 10)
-                  format: float
-                  type: number
+                  type: string
                 auditWebhookConfigFile:
                   description: AuditWebhookConfigFile is Path to a kubeconfig formatted
                     file that defines the audit webhook configuration. Requires the
@@ -754,6 +837,19 @@ spec:
                 authorizationRbacSuperUser:
                   description: AuthorizationRBACSuperUser is the name of the superuser
                     for default rbac
+                  type: string
+                authorizationWebhookCacheAuthorizedTtl:
+                  description: The duration to cache authorized responses from the
+                    webhook token authorizer. Default is 5m. (default 5m0s)
+                  type: string
+                authorizationWebhookCacheUnauthorizedTtl:
+                  description: The duration to cache authorized responses from the
+                    webhook token authorizer. Default is 30s. (default 30s)
+                  type: string
+                authorizationWebhookConfigFile:
+                  description: File with webhook configuration for authorization in
+                    kubeconfig format. The API server will query the remote service
+                    to determine whether to authorize the request.
                   type: string
                 basicAuthFile:
                   description: 'TODO: Remove unused BasicAuthFile'
@@ -827,6 +923,8 @@ spec:
                     at rest for secrets.
                   type: string
                 featureGates:
+                  additionalProperties:
+                    type: string
                   description: FeatureGates is set of key=value pairs that describe
                     feature gates for alpha/experimental features.
                   type: object
@@ -960,6 +1058,8 @@ spec:
                     type: string
                   type: array
                 runtimeConfig:
+                  additionalProperties:
+                    type: string
                   description: RuntimeConfig is a series of keys/values are parsed
                     into the `--runtime-config` parameters
                   type: object
@@ -967,6 +1067,11 @@ spec:
                   description: SecurePort is the port the kube runs on
                   format: int32
                   type: integer
+                serviceAccountIssuer:
+                  description: Identifier of the service account token issuer. The
+                    issuer will assert this identifier in "iss" claim of issued tokens.
+                    This value is a string or URI.
+                  type: string
                 serviceAccountKeyFile:
                   description: File containing PEM-encoded x509 RSA or ECDSA private
                     or public keys, used to verify ServiceAccount tokens. The specified
@@ -976,6 +1081,12 @@ spec:
                   items:
                     type: string
                   type: array
+                serviceAccountSigningKeyFile:
+                  description: Path to the file that contains the current private
+                    key of the service account token issuer. The issuer will sign
+                    issued ID tokens with this private key. (Requires the 'TokenRequest'
+                    feature gate.)
+                  type: string
                 serviceClusterIPRange:
                   description: ServiceClusterIPRange is the service address range
                   type: string
@@ -1010,6 +1121,8 @@ spec:
                   type: string
               type: object
             kubeControllerManager:
+              description: KubeControllerManagerConfig is the configuration for the
+                controller
               properties:
                 allocateNodeCIDRs:
                   description: AllocateNodeCIDRs enables CIDRs for Pods to be allocated
@@ -1049,6 +1162,8 @@ spec:
                     will be given. (default 8760h0m0s)
                   type: string
                 featureGates:
+                  additionalProperties:
+                    type: string
                   description: FeatureGates is set of key=value pairs that describe
                     feature gates for alpha/experimental features.
                   type: object
@@ -1057,6 +1172,11 @@ spec:
                     that specifies how long the autoscaler has to wait before another
                     downscale operation can be performed after the current one has
                     completed.
+                  type: string
+                horizontalPodAutoscalerDownscaleStabilization:
+                  description: HorizontalPodAutoscalerDownscaleStabilization is the
+                    period for which autoscaler will look backwards and not scale
+                    down below any recommendation it made during that period.
                   type: string
                 horizontalPodAutoscalerSyncPeriod:
                   description: HorizontalPodAutoscalerSyncPeriod is the amount of
@@ -1068,8 +1188,7 @@ spec:
                   description: HorizontalPodAutoscalerTolerance is the minimum change
                     (from 1.0) in the desired-to-actual metrics ratio for the horizontal
                     pod autoscaler to consider scaling.
-                  format: double
-                  type: number
+                  type: string
                 horizontalPodAutoscalerUpscaleDelay:
                   description: HorizontalPodAutoscalerUpscaleDelay is a duration that
                     specifies how long the autoscaler has to wait before another upscale
@@ -1082,6 +1201,15 @@ spec:
                   type: boolean
                 image:
                   description: Image is the docker image to use
+                  type: string
+                kubeAPIBurst:
+                  description: KubeAPIBurst Burst to use while talking with kubernetes
+                    apiserver. (default 30)
+                  format: int32
+                  type: integer
+                kubeAPIQPS:
+                  description: KubeAPIQPS QPS to use while talking with kubernetes
+                    apiserver. (default 20)
                   type: string
                 leaderElection:
                   description: LeaderElection defines the configuration of leader
@@ -1154,15 +1282,14 @@ spec:
                   type: boolean
               type: object
             kubeDNS:
+              description: KubeDNSConfig defines the kube dns configuration
               properties:
                 cacheMaxConcurrent:
                   description: CacheMaxConcurrent is the maximum number of concurrent
                     queries for dnsmasq
-                  format: int64
                   type: integer
                 cacheMaxSize:
                   description: CacheMaxSize is the maximum entries to keep in dnsmasq
-                  format: int64
                   type: integer
                 cpuRequest:
                   description: CPURequest specifies the cpu requests of each dns container
@@ -1170,6 +1297,11 @@ spec:
                   type: string
                 domain:
                   description: Domain is the dns domain
+                  type: string
+                externalCoreFile:
+                  description: ExternalCoreFile is used to provide a complete CoreDNS
+                    CoreFile by the user - ignores other provided flags which modify
+                    the CoreFile.
                   type: string
                 image:
                   description: Image is the name of the docker image to run - @deprecated
@@ -1190,12 +1322,15 @@ spec:
                 replicas:
                   description: Replicas is the number of pod replicas - @deprecated
                     as this is now in the addon, and controlled by autoscaler
-                  format: int64
                   type: integer
                 serverIP:
                   description: ServerIP is the server ip
                   type: string
                 stubDomains:
+                  additionalProperties:
+                    items:
+                      type: string
+                    type: array
                   description: StubDomains redirects a domains to another DNS service
                   type: object
                 upstreamNameservers:
@@ -1206,6 +1341,7 @@ spec:
                   type: array
               type: object
             kubeProxy:
+              description: KubeProxyConfig defines the configuration for a proxy
               properties:
                 bindAddress:
                   description: BindAddress is IP address for the proxy server to serve
@@ -1236,6 +1372,8 @@ spec:
                   description: Enabled allows enabling or disabling kube-proxy
                   type: boolean
                 featureGates:
+                  additionalProperties:
+                    type: string
                   description: FeatureGates is a series of key pairs used to switch
                     on features for the proxy
                   type: object
@@ -1290,8 +1428,11 @@ spec:
                   type: string
               type: object
             kubeScheduler:
+              description: KubeSchedulerConfig is the configuration for the kube-scheduler
               properties:
                 featureGates:
+                  additionalProperties:
+                    type: string
                   description: FeatureGates is set of key=value pairs that describe
                     feature gates for alpha/experimental features.
                   type: object
@@ -1315,12 +1456,22 @@ spec:
                 master:
                   description: Master is a url to the kube master
                   type: string
+                maxPersistentVolumes:
+                  description: 'MaxPersistentVolumes changes the maximum number of
+                    persistent volumes the scheduler will scheduler onto the same
+                    node. Only takes into affect if value is positive. This corresponds
+                    to the KUBE_MAX_PD_VOLS environment variable, which has been supported
+                    as far back as Kubernetes 1.7. The default depends on the version
+                    and the cloud provider as outlined: https://kubernetes.io/docs/concepts/storage/storage-limits/'
+                  format: int32
+                  type: integer
                 usePolicyConfigMap:
                   description: UsePolicyConfigMap enable setting the scheduler policy
                     from a configmap
                   type: boolean
               type: object
             kubelet:
+              description: KubeletConfigSpec defines the kubelet configuration
               properties:
                 allowPrivileged:
                   description: AllowPrivileged enables containers to request privileged
@@ -1448,6 +1599,8 @@ spec:
                     on the node.
                   type: boolean
                 featureGates:
+                  additionalProperties:
+                    type: string
                   description: FeatureGates is set of key=value pairs that describe
                     feature gates for alpha/experimental features.
                   type: object
@@ -1483,6 +1636,8 @@ spec:
                     image pulling will be cancelled. (default 1m0s)
                   type: string
                 kubeReserved:
+                  additionalProperties:
+                    type: string
                   description: Resource reservation for kubernetes system daemons
                     like the kubelet, container runtime, node problem detector, etc.
                   type: object
@@ -1516,6 +1671,8 @@ spec:
                     to be invoked for various events in kubelet/pod lifecycle
                   type: string
                 nodeLabels:
+                  additionalProperties:
+                    type: string
                   description: NodeLabels to add when registering the node in the
                     cluster.
                   type: object
@@ -1616,6 +1773,8 @@ spec:
                     Empty for no container. Rolling back the flag requires a reboot.
                   type: string
                 systemReserved:
+                  additionalProperties:
+                    type: string
                   description: Capture resource reservation for OS system daemons
                     like sshd, udev, etc.
                   type: object
@@ -1643,7 +1802,8 @@ spec:
                   type: string
                 volumePluginDirectory:
                   description: The full path of the directory in which to search for
-                    additional third party volume plugins
+                    additional third party volume plugins (this path must be writeable,
+                    dependent on your choice of OS)
                   type: string
                 volumeStatsAggPeriod:
                   description: VolumeStatsAggPeriod is the interval for kubelet to
@@ -1666,6 +1826,7 @@ spec:
                 nodes
               type: string
             masterKubelet:
+              description: KubeletConfigSpec defines the kubelet configuration
               properties:
                 allowPrivileged:
                   description: AllowPrivileged enables containers to request privileged
@@ -1793,6 +1954,8 @@ spec:
                     on the node.
                   type: boolean
                 featureGates:
+                  additionalProperties:
+                    type: string
                   description: FeatureGates is set of key=value pairs that describe
                     feature gates for alpha/experimental features.
                   type: object
@@ -1828,6 +1991,8 @@ spec:
                     image pulling will be cancelled. (default 1m0s)
                   type: string
                 kubeReserved:
+                  additionalProperties:
+                    type: string
                   description: Resource reservation for kubernetes system daemons
                     like the kubelet, container runtime, node problem detector, etc.
                   type: object
@@ -1861,6 +2026,8 @@ spec:
                     to be invoked for various events in kubelet/pod lifecycle
                   type: string
                 nodeLabels:
+                  additionalProperties:
+                    type: string
                   description: NodeLabels to add when registering the node in the
                     cluster.
                   type: object
@@ -1961,6 +2128,8 @@ spec:
                     Empty for no container. Rolling back the flag requires a reboot.
                   type: string
                 systemReserved:
+                  additionalProperties:
+                    type: string
                   description: Capture resource reservation for OS system daemons
                     like sshd, udev, etc.
                   type: object
@@ -1988,7 +2157,8 @@ spec:
                   type: string
                 volumePluginDirectory:
                   description: The full path of the directory in which to search for
-                    additional third party volume plugins
+                    additional third party volume plugins (this path must be writeable,
+                    dependent on your choice of OS)
                   type: string
                 volumeStatsAggPeriod:
                   description: VolumeStatsAggPeriod is the interval for kubelet to
@@ -2013,6 +2183,8 @@ spec:
               description: Networking configuration
               properties:
                 amazonvpc:
+                  description: AmazonVPCNetworkingSpec declares that we want Amazon
+                    VPC CNI networking
                   properties:
                     imageName:
                       description: 'The container image name to use, which by default
@@ -2020,9 +2192,13 @@ spec:
                       type: string
                   type: object
                 calico:
+                  description: CalicoNetworkingSpec declares that we want Calico networking
                   properties:
                     crossSubnet:
                       type: boolean
+                    ipipMode:
+                      description: IPIPMode is mode for CALICO_IPV4POOL_IPIP
+                      type: string
                     logSeverityScreen:
                       description: 'LogSeverityScreen lets us set the desired log
                         level. (Default: info)'
@@ -2053,24 +2229,22 @@ spec:
                         process metrics collection
                       type: boolean
                     typhaPrometheusMetricsEnabled:
-                      description: 'TyphaPrometheusMetricsEnabled enables Prometheus metrics
-                        collection from Typha'
+                      description: 'TyphaPrometheusMetricsEnabled enables Prometheus
+                        metrics collection from Typha (default: false)'
                       type: boolean
                     typhaPrometheusMetricsPort:
-                      description: 'PrometheusMetricsPort is the TCP port that the
-                        Typha Prometheus metrics server should bind to (default:
-                        9093)'
+                      description: 'TyphaPrometheusMetricsPort is the TCP port the
+                        typha Prometheus metrics server should bind to (default: 9093)'
                       format: int32
                       type: integer
                     typhaReplicas:
-                      description: 'TyphaReplicas is the number of replicas of Typha to
-                        deploy. If set >0 Calico is configured to connect to the Typha service
-                        rather than directly to the kube-apiserver. Intended to reduce the
-                        load on the APIServer (default: 0)'
+                      description: TyphaReplicas is the number of replicas of Typha
+                        to deploy
                       format: int32
                       type: integer
                   type: object
                 canal:
+                  description: CanalNetworkingSpec declares that we want Canal networking
                   properties:
                     chainInsertMode:
                       description: 'ChainInsertMode controls whether Felix inserts
@@ -2120,6 +2294,7 @@ spec:
                       type: boolean
                   type: object
                 cilium:
+                  description: CiliumNetworkingSpec declares that we want Cilium networking
                   properties:
                     IPTablesRulesNoinstall:
                       type: boolean
@@ -2136,20 +2311,22 @@ spec:
                     autoIpv6NodeRoutes:
                       type: boolean
                     bpfCTGlobalAnyMax:
-                      format: int64
                       type: integer
                     bpfCTGlobalTCPMax:
-                      format: int64
                       type: integer
                     bpfRoot:
                       type: string
                     clusterName:
+                      type: string
+                    cniBinPath:
                       type: string
                     containerRuntime:
                       items:
                         type: string
                       type: array
                     containerRuntimeEndpoint:
+                      additionalProperties:
+                        type: string
                       type: object
                     containerRuntimeLabels:
                       type: string
@@ -2182,7 +2359,6 @@ spec:
                     envoyLog:
                       type: string
                     ipv4ClusterCidrMaskSize:
-                      format: int64
                       type: integer
                     ipv4Node:
                       type: string
@@ -2221,6 +2397,8 @@ spec:
                         type: string
                       type: array
                     logOpt:
+                      additionalProperties:
+                        type: string
                       type: object
                     logstash:
                       type: boolean
@@ -2233,6 +2411,8 @@ spec:
                       type: string
                     nat46Range:
                       type: string
+                    nodeInitBootstrapFile:
+                      type: string
                     pprof:
                       type: boolean
                     preallocateBPFMaps:
@@ -2241,6 +2421,13 @@ spec:
                       type: string
                     prometheusServeAddr:
                       type: string
+                    reconfigureKubelet:
+                      type: boolean
+                    removeCbrBridge:
+                      description: node init options
+                      type: boolean
+                    restartPods:
+                      type: boolean
                     restore:
                       type: boolean
                     sidecarIstioProxyImage:
@@ -2254,39 +2441,51 @@ spec:
                     toFqdnsEnablePoller:
                       type: boolean
                     tracePayloadlen:
-                      format: int64
                       type: integer
                     tunnel:
                       type: string
                     version:
                       type: string
-                    waitBPFMount:
-                      type: boolean
                   required:
-                  - enableipv6
-                  - enableipv4
-                  - monitorAggregation
-                  - bpfCTGlobalTCPMax
-                  - bpfCTGlobalAnyMax
-                  - preallocateBPFMaps
-                  - sidecarIstioProxyImage
-                  - clusterName
-                  - toFqdnsEnablePoller
-                  - waitBPFMount
                   - IPTablesRulesNoinstall
                   - autoDirectNodeRoutes
+                  - bpfCTGlobalAnyMax
+                  - bpfCTGlobalTCPMax
+                  - clusterName
+                  - cniBinPath
                   - enableNodePort
+                  - enableipv4
+                  - enableipv6
+                  - monitorAggregation
+                  - nodeInitBootstrapFile
+                  - preallocateBPFMaps
+                  - reconfigureKubelet
+                  - removeCbrBridge
+                  - restartPods
+                  - sidecarIstioProxyImage
+                  - toFqdnsEnablePoller
                   type: object
                 classic:
+                  description: ClassicNetworkingSpec is the specification of classic
+                    networking mode, integrated into kubernetes
                   type: object
                 cni:
+                  description: CNINetworkingSpec is the specification for networking
+                    that is implemented by a Daemonset Networking is not managed by
+                    kops - we can create options here that directly configure e.g.
+                    weave but this is useful for arbitrary network modes or for modes
+                    that don't need additional configuration.
                   properties:
                     usesSecondaryIP:
                       type: boolean
                   type: object
                 external:
+                  description: ExternalNetworkingSpec is the specification for networking
+                    that is implemented by a Daemonset It also uses kubenet
                   type: object
                 flannel:
+                  description: FlannelNetworkingSpec declares that we want Flannel
+                    networking
                   properties:
                     backend:
                       description: Backend is the backend overlay type we want to
@@ -2298,18 +2497,32 @@ spec:
                       format: int32
                       type: integer
                   type: object
+                gce:
+                  description: GCENetworkingSpec is the specification of GCE's native
+                    networking mode, using IP aliases
+                  type: object
                 kopeio:
+                  description: KopeioNetworkingSpec declares that we want Kopeio networking
                   type: object
                 kubenet:
+                  description: KubenetNetworkingSpec is the specification for kubenet
+                    networking, largely integrated but intended to replace classic
                   type: object
                 kuberouter:
+                  description: KuberouterNetworkingSpec declares that we want Kube-router
+                    networking
                   type: object
                 lyftvpc:
+                  description: LyftIpVlanNetworkingSpec declares that we want to use
+                    the cni-ipvlan-vpc-k8s CNI networking
                   properties:
                     subnetTags:
+                      additionalProperties:
+                        type: string
                       type: object
                   type: object
                 romana:
+                  description: RomanaNetworkingSpec declares that we want Romana networking
                   properties:
                     daemonServiceIP:
                       description: DaemonServiceIP is the Kubernetes Service IP for
@@ -2321,6 +2534,7 @@ spec:
                       type: string
                   type: object
                 weave:
+                  description: WeaveNetworkingSpec declares that we want Weave networking
                   properties:
                     connLimit:
                       format: int32
@@ -2328,6 +2542,8 @@ spec:
                     mtu:
                       format: int32
                       type: integer
+                    netExtraArgs:
+                      type: string
                     noMasqLocal:
                       format: int32
                       type: integer
@@ -2353,13 +2569,16 @@ spec:
                     image:
                       description: Image is the location of container
                       type: string
+                    interval:
+                      description: Interval the time between retires for authorization
+                        request
+                      type: string
                     nodeURL:
                       description: NodeURL is the node authorization service url
                       type: string
                     port:
                       description: Port is the port the service is running on the
                         master
-                      format: int64
                       type: integer
                     timeout:
                       description: Timeout the max time for authorization request
@@ -2428,6 +2647,8 @@ spec:
                       that are regionally scoped
                     type: string
                   type:
+                    description: SubnetType string describes subnet types (public,
+                      private, utility)
                     type: string
                   zone:
                     description: Zone is the zone the subnet is in, set for subnets
@@ -2440,8 +2661,12 @@ spec:
                 as terraform
               properties:
                 terraform:
+                  description: TerraformSpec allows us to specify terraform config
+                    in an extensible way
                   properties:
                     providerExtraConfig:
+                      additionalProperties:
+                        type: string
                       description: ProviderExtraConfig contains key/value pairs to
                         add to the rendered terraform "provider" block
                       type: object
@@ -2489,8 +2714,18 @@ spec:
                 - they are applied manually or by an external system   missing: default
                 policy (currently OS security upgrades that do not require a reboot)'
               type: string
+            useHostCertificates:
+              description: UseHostCertificates will mount /etc/ssl/certs to inside
+                needed containers. This is needed if some APIs do have self-signed
+                certs
+              type: boolean
           type: object
+      type: object
   version: v1alpha2
+  versions:
+  - name: v1alpha2
+    served: true
+    storage: true
 status:
   acceptedNames:
     kind: ""
