@@ -59,7 +59,6 @@ func GetConfirm(c *ConfirmArgs) (bool, error) {
 			message = c.Message + fmt.Sprintf(answerTemplate, "y", "n")
 		}
 		fmt.Fprintln(c.Out, message)
-
 		// these are the acceptable answers
 		okayResponses := sets.NewString("y", "yes")
 		nokayResponses := sets.NewString("n", "no")
