@@ -51,6 +51,13 @@ load(
 container_repositories()
 
 load(
+    "@io_bazel_rules_docker//repositories:go_repositories.bzl",
+    docker_go_deps = "go_deps",
+)
+
+docker_go_deps()
+
+load(
     "@io_bazel_rules_docker//container:container.bzl",
     "container_pull",
 )
