@@ -1,7 +1,7 @@
 def _impl(ctx):
     in_file = ctx.file.src
 
-    basename = ctx.attr.name
+    basename = ctx.attr.src.label.name
     out_sha1 = ctx.actions.declare_file("%s.sha1" % basename)
     ctx.actions.run(
         executable = ctx.executable._cmd_sha1,
@@ -22,6 +22,12 @@ def _impl(ctx):
         files = depset([out_sha1, out_sha256]),
     )
 
+def _get_outputs(src):
+    return {
+        "sha1": src.name + ".sha1",
+        "sha256": src.name + ".sha256",
+    }
+
 hashes = rule(
     implementation = _impl,
     attrs = {
@@ -39,10 +45,7 @@ hashes = rule(
             cfg = "host",
         ),
     },
-    # It looks like we have to do this so that we can reference these outputs in other files
-    # Not entirely sure why, as we can just generate everything ... maybe a bazel bug?
-    outputs = {
-        "sha1": "%{name}.sha1",
-        "sha256": "%{name}.sha256",
-    },
+    # We have to do this so that we can reference these outputs in other files
+    # https://stackoverflow.com/a/50667861
+    outputs = _get_outputs,
 )
