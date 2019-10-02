@@ -204,9 +204,9 @@ kops create cluster --dns private --dns-zone ZABCDEFG $NAME
 
 ## Testing your DNS setup
 
-This section is not be required if a gossip-based cluster is created.
+This section is not required if a gossip-based cluster is created.
 
-You should now able to dig your domain (or subdomain) and see the AWS Name
+You should now be able to dig your domain (or subdomain) and see the AWS Name
 Servers on the other end.
 
 ```bash
@@ -223,7 +223,7 @@ subdomain.example.com.        172800  IN  NS  ns-3.awsdns-3.com.
 subdomain.example.com.        172800  IN  NS  ns-4.awsdns-4.co.uk.
 ```
 
-This is a critical component of setting up clusters. If you are experiencing
+This is a critical component when setting up clusters. If you are experiencing
 problems with the Kubernetes API not coming up, chances are something is wrong
 with the cluster's DNS.
 
@@ -255,11 +255,11 @@ to revert or recover a previous state store.
 aws s3api put-bucket-versioning --bucket prefix-example-com-state-store  --versioning-configuration Status=Enabled
 ```
 
-Information regarding cluster state store location must be set when using `kops` cli see [state store](../state.md) for further information.
+Information regarding cluster state store location must be set when using `kops` cli. See [state store](../state.md) for further information.
 
 ### Using S3 default bucket encryption
 
-kops supports [default bucket encryption](https://aws.amazon.com/de/blogs/aws/new-amazon-s3-encryption-security-features/) to encrypt the kops state in an S3 bucket. In this way, whatever default server side encryption is set for your bucket, it will be used for the kops state, too. You may want to use this AWS feature e.g. for easily encrypting every written object by default or when for compliance reasons you need to use specific encryption keys (KMS, CMK).
+`kops` supports [default bucket encryption](https://aws.amazon.com/de/blogs/aws/new-amazon-s3-encryption-security-features/) to encrypt its state in an S3 bucket. This way, the default server side encryption set for your bucket will be used for the kops state too. You may want to use this AWS feature , e.g., for easily encrypting every written object by default or when you need to use specific encryption keys (KMS, CMK), for compliance reasons.
 
 If your S3 bucket has a default encryption set up, kops will use it:
 
@@ -272,16 +272,16 @@ If the default encryption is not set or it cannot be checked, kops will resort t
 ### Sharing an S3 bucket across multiple accounts
 
 It is possible to use a single S3 bucket for storing kops state for clusters
-located in different accounts, by using [cross-account bucket policies](http://docs.aws.amazon.com/AmazonS3/latest/dev/example-walkthroughs-managing-access-example2.html#access-policies-walkthrough-cross-account-permissions-acctA-tasks).
+located in different accounts by using [cross-account bucket policies](http://docs.aws.amazon.com/AmazonS3/latest/dev/example-walkthroughs-managing-access-example2.html#access-policies-walkthrough-cross-account-permissions-acctA-tasks).
 
 Kops will be able to use buckets configured with cross-account policies by default.
 
 In this case you may want to override the object ACLs which kops places on the
 state files, as default AWS ACLs will make it possible for an account that has
-delegated access to write files that the bucket owner can not read.
+delegated access to write files that the bucket owner cannot read.
 
 To do this you should set the environment variable `KOPS_STATE_S3_ACL` to the
-preferred object ACL, for example `bucket-owner-full-control`.
+preferred object ACL, for example: `bucket-owner-full-control`.
 
 For available canned ACLs please consult [Amazon's S3
 documentation](http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl).
@@ -291,7 +291,7 @@ documentation](http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#
 ## Prepare local environment
 
 We're ready to start creating our first cluster!  Let's first set up a few
-environment variables to make this process easier.
+environment variables to make the process easier.
 
 ```bash
 export NAME=myfirstcluster.example.com
@@ -319,12 +319,12 @@ aws ec2 describe-availability-zones --region us-west-2
 
 Below is a create cluster command.  We'll use the most basic example possible,
 with more verbose examples in [high availability](../operations/high_availability.md#advanced-example).
-The below command will generate a cluster configuration, but not start building
-it. Make sure that you have generated SSH key pair before creating the cluster.
+The below command will generate a cluster configuration, but will not start building
+it. Make sure you have generated an SSH key pair before creating your cluster.
 
 ```bash
 kops create cluster \
-    --zones us-west-2a \
+    --zones=us-west-2a \
     ${NAME}
 ```
 
@@ -345,7 +345,7 @@ This opens your editor (as defined by $EDITOR) and allows you to edit the
 configuration.  The configuration is loaded from the S3 bucket we created
 earlier, and automatically updated when we save and exit the editor.
 
-We'll leave everything set to the defaults for now, but the rest of the `kops`
+We'll leave everything set to the defaults for now, but the rest of `kops`
 documentation covers additional settings and configuration you can enable.
 
 ## Build the Cluster
@@ -374,14 +374,14 @@ You will see a list of nodes that should match the `--zones` flag defined
 earlier. This is a great sign that your Kubernetes cluster is online and
 working.
 
-Also `kops` ships with a handy validation tool that can be ran to ensure your
+`kops` also ships with a handy validation tool that can be ran to ensure your
 cluster is working as expected.
 
 ```bash
 kops validate cluster
 ```
 
-You can look at all the system components with the following command.
+You can look at all system components with the following command.
 
 ```
 kubectl -n kube-system get po
