@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.8
+FROM alpine:3.10
 
-ARG GO_VERSION=1.12.5
+ARG GO_VERSION=1.13.1
 
 # KOPS_GITISH: Modify to build at an explicit tag/gitish
 ARG KOPS_GITISH=release

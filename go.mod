@@ -1,6 +1,6 @@
 module k8s.io/kops
 
-go 1.12
+go 1.13
 
 // Version kubernetes-1.15.3
 //replace k8s.io/kubernetes => k8s.io/kubernetes v1.15.3
