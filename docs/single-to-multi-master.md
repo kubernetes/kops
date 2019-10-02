@@ -172,7 +172,7 @@ Reinitialize the etcd instances:
 ``ETCD_INITIAL_CLUSTER_STATE`` variable to ``existing``.
 * In the same files, remove the third non-existing member from
 ``ETCD_INITIAL_CLUSTER``.
-* Delete the containers and the data directories:
+* Delete the containers and the data directories. Mount paths can be determined with the help of ``docker inspect <container-id> | grep /mnt/master-vol``:
 
 ```bash
 root@ip-172-20-116-230:~# docker stop $(docker ps | grep "k8s.gcr.io/etcd" | awk '{print $1}')
@@ -244,11 +244,11 @@ $ kubectl --namespace=kube-system exec etcd-server-ip-172-20-36-161.ec2.internal
  * In both ``/etc/kubernetes/manifests/etcd-events.manifest`` and
  ``/etc/kubernetes/manifests/etcd.manifest``, edit the
  ``ETCD_INITIAL_CLUSTER_STATE`` variable to ``existing``.
- * Delete the containers and the data directories:
+ * Delete the containers and the data directories. Mount paths can be determined with the help of ``docker inspect <container-id> | grep /mnt/master-vol``:
 
  ```bash
  root@ip-172-20-139-130:~# docker stop $(docker ps | grep "k8s.gcr.io/etcd" | awk '{print $1}')
- root@ip-172-20-139-130:~# rm -r /mnt/master-vol-019796c3511a91b4f//var/etcd/data-events/member/
+ root@ip-172-20-139-130:~# rm -r /mnt/master-vol-019796c3511a91b4f/var/etcd/data-events/member/
  root@ip-172-20-139-130:~# rm -r /mnt/master-vol-0c89fd6f6a256b686/var/etcd/data/member/
  ```
 
