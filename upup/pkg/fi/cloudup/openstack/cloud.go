@@ -23,8 +23,6 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/kops/pkg/dns"
-
 	"github.com/gophercloud/gophercloud"
 	os "github.com/gophercloud/gophercloud/openstack"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
@@ -36,6 +34,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets"
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
+	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
@@ -54,6 +53,7 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/openstack/designate"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -274,6 +274,8 @@ type OpenstackCloud interface {
 
 	GetFloatingIP(id string) (fip *floatingips.FloatingIP, err error)
 
+	GetImage(name string) (i *images.Image, err error)
+
 	AssociateFloatingIPToInstance(serverID string, opts floatingips.AssociateOpts) (err error)
 
 	ListServerFloatingIPs(id string) ([]*string, error)
@@ -292,6 +294,7 @@ type openstackCloud struct {
 	novaClient      *gophercloud.ServiceClient
 	dnsClient       *gophercloud.ServiceClient
 	lbClient        *gophercloud.ServiceClient
+	glanceClient    *gophercloud.ServiceClient
 	floatingEnabled bool
 	extNetworkName  *string
 	extSubnetName   *string
@@ -368,6 +371,14 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 		return nil, fmt.Errorf("error building nova client: %v", err)
 	}
 
+	glanceClient, err := os.NewImageServiceV2(provider, gophercloud.EndpointOpts{
+		Type:   "image",
+		Region: region,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error building glance client: %v", err)
+	}
+
 	var dnsClient *gophercloud.ServiceClient
 	if !dns.IsGossipHostname(tags[TagClusterName]) {
 		//TODO: This should be replaced with the environment variable methods as done above
@@ -387,6 +398,7 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 		neutronClient: neutronClient,
 		novaClient:    novaClient,
 		dnsClient:     dnsClient,
+		glanceClient:  glanceClient,
 		tags:          tags,
 		region:        region,
 		useOctavia:    false,

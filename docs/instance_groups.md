@@ -549,3 +549,28 @@ spec:
   minSize: 2
   role: Node
 ```
+
+## Booting from a volume in OpenStack
+
+If you want to boot from a volume when you are running in openstack you can set annotations on the instance groups.
+
+```yaml
+# Example for nodes
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: k8s.dev.local
+  name: nodes
+  annotations:
+    openstack.kops.io/osVolumeBoot: enabled
+    openstack.kops.io/osVolumeSize: "15" # In gigabytes
+spec:
+  detailedInstanceMonitoring: true
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+```
+
+If `openstack.kops.io/osVolumeSize` is not set it will default to the minimum disk specified by the image.
