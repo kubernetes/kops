@@ -6,8 +6,8 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 http_archive(
     name = "io_bazel_rules_go",
-    url = "https://github.com/bazelbuild/rules_go/releases/download/0.18.2/rules_go-0.18.2.tar.gz",
-    sha256 = "31f959ecf3687f6e0bb9d01e1e7a7153367ecd82816c9c0ae149cd0e5a92bf8c",
+    url = "https://github.com/bazelbuild/rules_go/releases/download/0.18.8/rules_go-0.18.8.tar.gz",
+    sha256 = "2f09c340da7b4c14d2475f9c8c9d20c633740100345df67b97864d4f86dbe518",
 )
 
 http_archive(
@@ -21,7 +21,7 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_to
 go_rules_dependencies()
 
 go_register_toolchains(
-    go_version = "1.11.5",
+    go_version = "1.11.13",
 )
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")

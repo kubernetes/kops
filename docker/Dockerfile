@@ -14,7 +14,7 @@
 
 FROM alpine:3.8
 
-ARG GO_VERSION=1.11.5
+ARG GO_VERSION=1.11.13
 
 # KOPS_GITISH: Modify to build at an explicit tag/gitish
 ARG KOPS_GITISH=release

@@ -557,7 +557,7 @@ var dockerVersions = []dockerVersion{
 		ExtraPackages: map[string]packageInfo{
 			"container-selinux": {
 				Version: "2.68",
-				Source:  "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
+				Source:  "http://vault.centos.org/7.6.1810/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
 				Hash:    "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
 			},
 		},
@@ -654,7 +654,7 @@ var dockerVersions = []dockerVersion{
 		ExtraPackages: map[string]packageInfo{
 			"container-selinux": {
 				Version: "2.68",
-				Source:  "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
+				Source:  "http://vault.centos.org/7.6.1810/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
 				Hash:    "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
 			},
 		},
@@ -692,7 +692,7 @@ var dockerVersions = []dockerVersion{
 		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "2.68",
-		Source:        "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
+		Source:        "http://vault.centos.org/7.6.1810/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
 		Hash:          "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
 		Dependencies:  []string{"policycoreutils-python"},
 	},
@@ -760,7 +760,7 @@ var dockerVersions = []dockerVersion{
 		ExtraPackages: map[string]packageInfo{
 			"container-selinux": {
 				Version: "2.68",
-				Source:  "http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
+				Source:  "http://vault.centos.org/7.6.1810/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
 				Hash:    "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
 			},
 		},
