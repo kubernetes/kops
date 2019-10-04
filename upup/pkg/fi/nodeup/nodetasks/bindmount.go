@@ -66,9 +66,7 @@ func (e *BindMount) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
 
 	// Requires parent directories to be created
-	for _, v := range findCreatesDirParents(e.Mountpoint, tasks) {
-		deps = append(deps, v)
-	}
+	deps = append(deps, findCreatesDirParents(e.Mountpoint, tasks)...)
 	for _, v := range findCreatesDirMatching(e.Mountpoint, tasks) {
 		if v != e && findTaskInSlice(deps, v) == -1 {
 			deps = append(deps, v)
