@@ -665,9 +665,7 @@ func DescribeVolumes(cloud fi.Cloud) ([]*ec2.Volume, error) {
 	}
 
 	err := c.EC2().DescribeVolumesPages(request, func(p *ec2.DescribeVolumesOutput, lastPage bool) bool {
-		for _, volume := range p.Volumes {
-			volumes = append(volumes, volume)
-		}
+		volumes = append(volumes, p.Volumes...)
 		return true
 	})
 	if err != nil {
