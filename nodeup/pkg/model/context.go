@@ -392,7 +392,7 @@ func (c *NodeupModelContext) UseSecureKubelet() bool {
 	group := &c.InstanceGroup.Spec
 
 	// @check on the InstanceGroup itself
-	if group.Kubelet != nil && group.Kubelet.AnonymousAuth != nil && *group.Kubelet.AnonymousAuth == false {
+	if group.Kubelet != nil && group.Kubelet.AnonymousAuth != nil && !*group.Kubelet.AnonymousAuth {
 		return true
 	}
 
