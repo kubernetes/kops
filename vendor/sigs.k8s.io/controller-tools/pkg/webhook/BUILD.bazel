@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "parser.go",
+        "zz_generated.markerhelp.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-tools/pkg/webhook",
+    importpath = "sigs.k8s.io/controller-tools/pkg/webhook",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/k8s.io/api/admissionregistration/v1beta1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/sigs.k8s.io/controller-tools/pkg/genall:go_default_library",
+        "//vendor/sigs.k8s.io/controller-tools/pkg/markers:go_default_library",
+    ],
+)

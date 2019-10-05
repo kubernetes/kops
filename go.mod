@@ -95,7 +95,7 @@ require (
 	github.com/google/uuid v1.1.0 // indirect
 	github.com/gophercloud/gophercloud v0.0.0-20190216224116-dcc6e84aef1b
 	github.com/gorilla/mux v1.7.0
-	github.com/hashicorp/hcl v0.0.0-20160711231752-d8c773c4cba1
+	github.com/hashicorp/hcl v1.0.0
 	github.com/huandu/xstrings v1.2.0 // indirect
 	github.com/jpillora/backoff v0.0.0-20170918002102-8eab2debe79d
 	github.com/jteeuwen/go-bindata v0.0.0-20151023091102-a0ff2567cfb7
@@ -107,9 +107,9 @@ require (
 	github.com/pkg/sftp v0.0.0-20160930220758-4d0e916071f6
 	github.com/prometheus/client_golang v0.9.2
 	github.com/sergi/go-diff v0.0.0-20161102184045-552b4e9bbdca
-	github.com/spf13/cobra v0.0.0-20180319062004-c439c4fa0937
-	github.com/spf13/pflag v1.0.2
-	github.com/spf13/viper v0.0.0-20160820190039-7fb2782df3d8
+	github.com/spf13/cobra v0.0.5
+	github.com/spf13/pflag v1.0.3
+	github.com/spf13/viper v1.3.2
 	github.com/spotinst/spotinst-sdk-go v0.0.0-20190505130751-eb52d7ac273c
 	github.com/stretchr/testify v1.3.0
 	github.com/urfave/cli v1.20.0
@@ -134,4 +134,5 @@ require (
 	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5
 	sigs.k8s.io/controller-runtime v0.2.2
+	sigs.k8s.io/controller-tools v0.2.2-0.20190919191502-76a25b63325a
 )
