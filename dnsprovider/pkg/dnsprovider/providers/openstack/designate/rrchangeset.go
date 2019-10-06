@@ -119,11 +119,11 @@ func (c *ResourceRecordChangeset) nameToID(name string) (string, error) {
 	}
 	allPages, err := recordsets.ListByZone(c.zone.zones.iface.sc, c.zone.impl.ID, opts).AllPages()
 	if err != nil {
-
+		return "", err
 	}
 	rrs, err := recordsets.ExtractRecordSets(allPages)
 	if err != nil {
-
+		return "", err
 	}
 	switch len(rrs) {
 	case 0:
