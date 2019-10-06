@@ -234,7 +234,7 @@ func FormatValue(value interface{}) string {
 		return fmt.Sprintf("%q", t)
 	case fmt.Stringer:
 		// anything that defines String() is better than raw struct
-		return fmt.Sprintf("%s", t.String())
+		return t.String()
 	default:
 		// fallback to raw struct
 		// TODO: internal types have panic guards against json.Marshaling to prevent

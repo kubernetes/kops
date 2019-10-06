@@ -17,7 +17,6 @@ limitations under the License.
 package maps
 
 import (
-	"fmt"
 	"reflect"
 	"sort"
 )
@@ -29,7 +28,7 @@ func Keys(m interface{}) []string {
 	v := reflect.ValueOf(m)
 	if v.Kind() == reflect.Map {
 		for _, x := range v.MapKeys() {
-			list = append(list, fmt.Sprintf("%s", x))
+			list = append(list, x.String())
 		}
 	}
 
