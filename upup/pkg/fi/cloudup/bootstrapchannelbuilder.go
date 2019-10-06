@@ -64,10 +64,12 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("error reading manifest %s: %v", manifestPath, err)
 		}
 
-		manifestBytes, err = b.assetBuilder.RemapManifest(manifestBytes)
+		remapped, err := b.assetBuilder.RemapManifest(manifestBytes)
 		if err != nil {
+			klog.Infof("invalid manifest: %s", string(manifestBytes))
 			return fmt.Errorf("error remapping manifest %s: %v", manifestPath, err)
 		}
+		manifestBytes = remapped
 
 		// Trim whitespace
 		manifestBytes = []byte(strings.TrimSpace(string(manifestBytes)))

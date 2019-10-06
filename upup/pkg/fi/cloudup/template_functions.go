@@ -36,6 +36,9 @@ import (
 	"text/template"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
+	kopscontrollerconfig "k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
@@ -44,9 +47,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/env"
-
-	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/klog"
 )
 
 // TemplateFunctions provides a collection of methods used throughout the templates
@@ -92,6 +92,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["KopsControllerArgv"] = tf.KopsControllerArgv
+	dest["KopsControllerConfig"] = tf.KopsControllerConfig
 	dest["DnsControllerArgv"] = tf.DnsControllerArgv
 	dest["ExternalDnsArgv"] = tf.ExternalDnsArgv
 
@@ -295,20 +296,33 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	return argv, nil
 }
 
+// KopsControllerConfig returns the yaml configuration for kops-controller
+func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
+	config := &kopscontrollerconfig.Options{
+		Cloud:      tf.cluster.Spec.CloudProvider,
+		ConfigBase: tf.cluster.Spec.ConfigBase,
+	}
+
+	// To avoid indentation problems, we marshal as json.  json is a subset of yaml
+	b, err := json.Marshal(config)
+	if err != nil {
+		return "", fmt.Errorf("failed to serialize kops-controller config: %v", err)
+	}
+
+	return string(b), nil
+}
+
 // KopsControllerArgv returns the args to kops-controller
 func (tf *TemplateFunctions) KopsControllerArgv() ([]string, error) {
+
 	var argv []string
 
 	argv = append(argv, "/usr/bin/kops-controller")
 
-	argv = append(argv, "--cloud="+tf.cluster.Spec.CloudProvider)
-	argv = append(argv, "--config="+tf.cluster.Spec.ConfigBase)
-
-	// Disable metrics (avoid port conflicts, also risky because we are host network)
-	argv = append(argv, "--metrics-addr=0")
-
-	// Verbose, but not crazy logging
+	// Verbose, but not excessive logging
 	argv = append(argv, "--v=2")
+
+	argv = append(argv, "--conf=/etc/kubernetes/kops-controller/config.yaml")
 
 	return argv, nil
 }
