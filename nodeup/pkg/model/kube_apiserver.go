@@ -225,8 +225,8 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 		// The owner/group for the keypair to aws-iam-authenticator
 		{
 			c.AddTask(&nodetasks.UserTask{
-				Name:  "aws-iam-authenticator",
-				UID:   wellknownusers.AWSAuthenticator,
+				Name:  wellknownusers.AWSAuthenticatorName,
+				UID:   wellknownusers.AWSAuthenticatorID,
 				Shell: "/sbin/nologin",
 				Home:  "/srv/kubernetes/aws-iam-authenticator",
 			})

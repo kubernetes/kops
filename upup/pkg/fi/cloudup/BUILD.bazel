@@ -31,6 +31,7 @@ go_library(
         "//dnsprovider/pkg/dnsprovider/providers/aws/route53:go_default_library",
         "//dnsprovider/pkg/dnsprovider/rrstype:go_default_library",
         "//pkg/apis/kops:go_default_library",
+        "//pkg/apis/kops/model:go_default_library",
         "//pkg/apis/kops/registry:go_default_library",
         "//pkg/apis/kops/util:go_default_library",
         "//pkg/apis/kops/validation:go_default_library",

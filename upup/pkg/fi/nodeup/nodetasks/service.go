@@ -75,9 +75,19 @@ func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 			deps = append(deps, v)
 		case *Service, *LoadImageTask:
 			// ignore
+
 		default:
-			klog.Warningf("Unhandled type %T in Service::GetDependencies: %v", v, v)
-			deps = append(deps, v)
+			switch fmt.Sprintf("%T", v) {
+			case "*model.KubeletBootstrapKubeconfigTask":
+				// ignore .... except for kubelet
+				if p.Name == "kubelet.service" {
+					deps = append(deps, v)
+				}
+
+			default:
+				klog.Warningf("Unhandled type %T in Service::GetDependencies: %v", v, v)
+				deps = append(deps, v)
+			}
 		}
 	}
 	return deps

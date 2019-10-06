@@ -404,3 +404,8 @@ func (m *KopsModelContext) NodePortRange() (utilnet.PortRange, error) {
 
 	return defaultServiceNodePortRange, nil
 }
+
+// UseKopsControllerForKubeletBootstrap is true if we should use kops-controller for for kubelet bootstrapping
+func (m *KopsModelContext) UseKopsControllerForKubeletBootstrap() bool {
+	return model.UseKopsControllerForKubeletBootstrap(m.Cluster)
+}

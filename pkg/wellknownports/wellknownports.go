@@ -40,6 +40,9 @@ const (
 
 	// DNSControllerGossipMemberlist is the port where dns-controller listens for the memberlist-backed gossip
 	DNSControllerGossipMemberlist = 3993
+
+	// KopsControllerGRPCPort is the port we serve from the master for gossip
+	KopsControllerGRPCPort = 3992
 )
 
 type PortRange struct {

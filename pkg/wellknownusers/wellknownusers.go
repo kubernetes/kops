@@ -20,10 +20,20 @@ package wellknownusers
 // We base at 10000 because some distros (COS) have pre-defined users around 1000
 
 const (
-	// Generic is the user id we use for non-privileged containers, where we don't need extra permissions
+	// GenericID is the user id we use for non-privileged containers, where we don't need extra permissions
 	// Used by e.g. dns-controller, kops-controller
-	Generic = 10001
+	GenericID = 10001
 
-	// AWSAuthenticator is the user-id for the aws-iam-authenticator (built externally)
-	AWSAuthenticator = 10000
+	// AWSAuthenticatorID is the user-id for the aws-iam-authenticator (built externally)
+	AWSAuthenticatorID = 10000
+
+	// AWSAuthenticatorName is the name for the aws-iam-authenticator user
+	AWSAuthenticatorName = "aws-iam-authenticator"
+
+	// KopsControllerID is the user id for kops-controller, which needs some extra permissions e.g. to write local logs
+	// This should match the user in cmd/kops-controller/BUILD.bazel
+	KopsControllerID = 10011
+
+	// KopsControllerName is the username for the kops-controller user
+	KopsControllerName = "kops-controller"
 )

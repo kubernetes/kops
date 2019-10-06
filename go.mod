@@ -126,6 +126,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/tools v0.0.0-20191203134012-c197fd4bf371
 	google.golang.org/api v0.17.0
+	google.golang.org/grpc v1.27.0
 	gopkg.in/gcfg.v1 v1.2.0
 	gopkg.in/inf.v0 v0.9.1
 	gopkg.in/yaml.v2 v2.2.7

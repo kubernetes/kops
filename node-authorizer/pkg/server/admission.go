@@ -171,7 +171,7 @@ func (n *NodeAuthorizer) createToken(expiration time.Duration, usages []string) 
 				},
 			},
 			Type: v1.SecretType(secretTypeBootstrapToken),
-			Data: encodeTokenSecretData(token, usages, expiration),
+			Data: token.EncodeTokenSecretData(usages, expiration),
 		}
 
 		if _, err := n.client.CoreV1().Secrets(tokenNamespace).Create(v1secret); err != nil {
@@ -197,8 +197,8 @@ func (n *NodeAuthorizer) hasToken(token *Token) (bool, error) {
 	return len(resp.Items) > 0, nil
 }
 
-// encodeTokenSecretData takes the token discovery object and an optional duration and returns the .Data for the Secret
-func encodeTokenSecretData(token *Token, usages []string, ttl time.Duration) map[string][]byte {
+// EncodeTokenSecretData takes the token discovery object and an optional duration and returns the .Data for the Secret
+func (token *Token) EncodeTokenSecretData(usages []string, ttl time.Duration) map[string][]byte {
 	data := map[string][]byte{
 		bootstrapTokenIDKey:     []byte(token.ID),
 		bootstrapTokenSecretKey: []byte(token.Secret),

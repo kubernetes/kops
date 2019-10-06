@@ -22,6 +22,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -78,6 +79,13 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
+	// Auto-enable bootstrap-token auth, if we're using kops-controller for node bootstrapping
+	if model.UseKopsControllerForKubeletBootstrap(&kops.Cluster{Spec: *clusterSpec}) {
+		if c.EnableBootstrapAuthToken == nil {
+			c.EnableBootstrapAuthToken = fi.Bool(true)
+		}
+	}
+
 	if clusterSpec.Authorization == nil || clusterSpec.Authorization.IsEmpty() {
 		// Do nothing - use the default as defined by the apiserver
 		// (this won't happen anyway because of our default logic)
@@ -86,9 +94,12 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	} else if clusterSpec.Authorization.RBAC != nil {
 		var modes []string
 
-		if b.IsKubernetesGTE("1.10") {
+		// Enable the Node authorizer, used for special per-node RBAC policies
+		if b.IsKubernetesGTE("1.18") {
+			// Enable by default from 1.18 - it's an important part of limiting blast radius
+			modes = append(modes, "Node")
+		} else if b.IsKubernetesGTE("1.10") {
 			if fi.BoolValue(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) {
-				// Enable the Node authorizer, used for special per-node RBAC policies
 				modes = append(modes, "Node")
 			}
 		}

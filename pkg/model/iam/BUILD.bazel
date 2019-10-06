@@ -10,6 +10,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/apis/kops:go_default_library",
+        "//pkg/apis/kops/model:go_default_library",
         "//pkg/util/stringorslice:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awstasks:go_default_library",

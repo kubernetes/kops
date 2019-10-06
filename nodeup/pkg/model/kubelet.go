@@ -109,7 +109,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// @check if bootstrap tokens are enabled and create the appropreiate certificates
 		if b.UseBootstrapTokens() {
-			// @check if a master and if so, we bypass the token strapping and instead generate our own kubeconfig
+			// @check if a master and if so, we bypass the token bootstrapping and instead generate our own kubeconfig
 			if b.IsMaster {
 				klog.V(3).Info("kubelet bootstrap tokens are enabled and running on a master")
 

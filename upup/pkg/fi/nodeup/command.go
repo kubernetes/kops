@@ -235,6 +235,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.FileAssetsBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.HookBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.NodeAuthorizationBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.KubeletBootstrapKubeconfigBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeletBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubectlBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.EtcdBuilder{NodeupModelContext: modelContext})
@@ -247,6 +248,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.SysctlBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeAPIServerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeControllerManagerBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.KopsControllerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeSchedulerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.EtcdManagerTLSBuilder{NodeupModelContext: modelContext})
 	if c.cluster.Spec.Networking.Kuberouter == nil {

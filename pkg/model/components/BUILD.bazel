@@ -20,6 +20,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/apis/kops:go_default_library",
+        "//pkg/apis/kops/model:go_default_library",
         "//pkg/apis/kops/util:go_default_library",
         "//pkg/assets:go_default_library",
         "//pkg/featureflag:go_default_library",

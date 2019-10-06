@@ -1,14 +1,20 @@
 # Architecture: kops-controller
 
-kops-controller runs as a DaemonSet on the master node(s).  It is a kubebuilder
-controller, that performs runtime reconciliation for kops.
+kops-controller runs as a DaemonSet on the master node(s).  It is a
+kubebuilder controller, that performs runtime reconciliation for kops.
+It also runs a GRPC service that can be used for in-cluster
+operations.
 
 Controllers in kops-controller:
 
 * NodeController
 
+Services in kops-controller:
 
-## NodeController
+* NodeBootstrap
+
+
+## Node Controller
 
 The NodeController watches Node objects, and applies labels to them from a
 controller.  Previously this was done by the kubelet, but the fear was that this
@@ -35,3 +41,19 @@ find the owning MIG, query the instances that are part of that MIG to verify
 that the instance is indeed part of the MIG, and then we get the metadata from
 the instance template (which is not easily mutated from the instance).  We then
 get the instance group definition from the underlying store, as elsewhere.
+
+## NodeBootstrap Service
+
+The NodeBootstrap GRPC service allow more flexible and secure node
+bootstrap.
+
+It is not currently enabled by default (as it does not currently
+implement deep node verification).
+
+The CreateKubeletBootstrapToken rpc call is used to get a (dynamically
+generated) kubelet boostrap token, without requiring access to the
+state store.  nodeup will fetch a bootstrap token using this GRPC
+method, instead of fetching it from S3/GCS.  The server
+(kops-controller) verifies the caller and generates a kubelet secret
+into the kube-system namespace, which it returns to nodeup.  nodeup
+configures kubelet to use this token for its bootstrap flow.

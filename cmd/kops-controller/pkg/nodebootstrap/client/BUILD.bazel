@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["client.go"],
+    importpath = "k8s.io/kops/cmd/kops-controller/pkg/nodebootstrap/client",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/proto/nodebootstrap:go_default_library",
+        "//vendor/google.golang.org/grpc:go_default_library",
+        "//vendor/google.golang.org/grpc/credentials:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)

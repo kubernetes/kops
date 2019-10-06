@@ -5,4 +5,5 @@ go_library(
     srcs = ["options.go"],
     importpath = "k8s.io/kops/cmd/kops-controller/pkg/config",
     visibility = ["//visibility:public"],
+    deps = ["//cmd/kops-controller/pkg/nodebootstrap:go_default_library"],
 )

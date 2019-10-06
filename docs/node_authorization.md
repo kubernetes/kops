@@ -43,3 +43,19 @@ nodeAuthorization:
 ```
 
 Note, by default this will also switch on the [Node authorization](https://kubernetes.io/docs/reference/access-authn-authz/node/) and RBAC mode. We would also suggest turning on the NodeRestriction admission controller.
+
+## kops-controller node-authorization
+
+We are introducing a new mode of node-authorization that in embedded into kops-controller, and can integrate with the node identification and verification that is done there.
+
+This functionality is currently not enabled, but can be enabled by adding this to your cluster.spec:
+
+```
+  nodeAuthorization:
+    nodeAuthorizer:
+      authorizer: kops-controller
+```
+
+Note that at present no checks are performed on the nodes, and thus
+this mode is insecure.  The mode will not be enabled by default with
+the current lack of security.

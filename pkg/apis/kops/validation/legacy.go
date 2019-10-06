@@ -401,26 +401,33 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		if !featureflag.EnableNodeAuthorization.Enabled() {
 			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "nodeAuthorization"), nil, "node authorization is experimental feature; set `export KOPS_FEATURE_FLAGS=EnableNodeAuthorization`"))
 		} else {
-			if c.Spec.NodeAuthorization.NodeAuthorizer == nil {
+			if nodeAuthorizer := c.Spec.NodeAuthorization.NodeAuthorizer; nodeAuthorizer == nil {
 				allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "nodeAuthorization"), nil, "no node authorization policy has been set"))
 			} else {
 				path := field.NewPath("spec", "nodeAuthorization").Child("nodeAuthorizer")
-				if c.Spec.NodeAuthorization.NodeAuthorizer.Port < 0 || c.Spec.NodeAuthorization.NodeAuthorizer.Port >= 65535 {
-					allErrs = append(allErrs, field.Invalid(path.Child("port"), c.Spec.NodeAuthorization.NodeAuthorizer.Port, "invalid port"))
+				if nodeAuthorizer.Port < 0 || nodeAuthorizer.Port >= 65535 {
+					allErrs = append(allErrs, field.Invalid(path.Child("port"), nodeAuthorizer.Port, "invalid port"))
 				}
-				if c.Spec.NodeAuthorization.NodeAuthorizer.Timeout != nil && c.Spec.NodeAuthorization.NodeAuthorizer.Timeout.Duration <= 0 {
-					allErrs = append(allErrs, field.Invalid(path.Child("timeout"), c.Spec.NodeAuthorization.NodeAuthorizer.Timeout, "must be greater than zero"))
+				if nodeAuthorizer.Timeout != nil && nodeAuthorizer.Timeout.Duration <= 0 {
+					allErrs = append(allErrs, field.Invalid(path.Child("timeout"), nodeAuthorizer.Timeout, "must be greater than zero"))
 				}
-				if c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL != nil && c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL.Duration < 0 {
+				if nodeAuthorizer.TokenTTL != nil && nodeAuthorizer.TokenTTL.Duration < 0 {
 					allErrs = append(allErrs, field.Invalid(path.Child("tokenTTL"), c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL, "must be greater than or equal to zero"))
 				}
 
-				// @question: we could probably just default these settings in the model when the node-authorizer is enabled??
-				if c.Spec.KubeAPIServer == nil {
-					allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "kubeAPIServer"), c.Spec.KubeAPIServer, "bootstrap token authentication is not enabled in the kube-apiserver"))
-				} else if c.Spec.KubeAPIServer.EnableBootstrapAuthToken == nil {
-					allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "kubeAPIServer").Child("enableBootstrapAuthToken"), nil, "kube-apiserver has not been configured to use bootstrap tokens"))
-				} else if !fi.BoolValue(c.Spec.KubeAPIServer.EnableBootstrapAuthToken) {
+				if nodeAuthorizer.Authorizer != "kops-controller" {
+					// @question: we could probably just default these settings in the model when the node-authorizer is enabled??
+					if c.Spec.KubeAPIServer == nil {
+						allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "kubeAPIServer"), c.Spec.KubeAPIServer, "bootstrap token authentication is not enabled in the kube-apiserver"))
+					} else if c.Spec.KubeAPIServer.EnableBootstrapAuthToken == nil {
+						allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "kubeAPIServer").Child("enableBootstrapAuthToken"), nil, "kube-apiserver has not been configured to use bootstrap tokens"))
+					}
+				} else {
+					// kops-controller mode auto-enables bootstrap tokens
+				}
+
+				// Even with auto-enable, it's an error if bootstrap tokens are explicitly disabled; that won't work.
+				if c.Spec.KubeAPIServer != nil && !fi.BoolValue(c.Spec.KubeAPIServer.EnableBootstrapAuthToken) {
 					allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "kubeAPIServer").Child("enableBootstrapAuthToken"),
 						c.Spec.KubeAPIServer.EnableBootstrapAuthToken, "bootstrap tokens in the kube-apiserver has been disabled"))
 				}

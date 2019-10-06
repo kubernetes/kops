@@ -31,6 +31,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 	"text/template"
@@ -41,6 +42,7 @@ import (
 	"k8s.io/klog"
 	kopscontrollerconfig "k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/kops"
+	apimodel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
@@ -115,6 +117,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["ProxyEnv"] = tf.ProxyEnv
 
 	dest["KopsSystemEnv"] = tf.KopsSystemEnv
+
+	dest["UseKopsControllerForKubeletBootstrap"] = tf.UseKopsControllerForKubeletBootstrap
 
 	dest["DO_TOKEN"] = func() string {
 		return os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
@@ -352,11 +356,27 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	return argv, nil
 }
 
+func (tf *TemplateFunctions) UseKopsControllerForKubeletBootstrap() bool {
+	return apimodel.UseKopsControllerForKubeletBootstrap(tf.cluster)
+}
+
 // KopsControllerConfig returns the yaml configuration for kops-controller
 func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 	config := &kopscontrollerconfig.Options{
 		Cloud:      tf.cluster.Spec.CloudProvider,
 		ConfigBase: tf.cluster.Spec.ConfigBase,
+	}
+
+	if tf.UseKopsControllerForKubeletBootstrap() {
+		pkiDir := "/etc/kubernetes/pki/kops-controller"
+
+		grpcOptions := &kopscontrollerconfig.GRPCOptions{
+			Listen:                fmt.Sprintf(":%d", wellknownports.KopsControllerGRPCPort),
+			ServerCertificatePath: path.Join(pkiDir, "server.crt"),
+			ServerKeyPath:         path.Join(pkiDir, "server.key"),
+		}
+
+		config.GRPC = grpcOptions
 	}
 
 	// To avoid indentation problems, we marshal as json.  json is a subset of yaml

@@ -17,23 +17,31 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"os"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	rest "k8s.io/client-go/rest"
 	"k8s.io/klog"
 	"k8s.io/klog/klogr"
 	"k8s.io/kops/cmd/kops-controller/controllers"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
+	"k8s.io/kops/cmd/kops-controller/pkg/nodebootstrap"
+	"k8s.io/kops/node-authorizer/pkg/authorizers/alwaysallow"
 	"k8s.io/kops/pkg/nodeidentity"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	nodeidentitydo "k8s.io/kops/pkg/nodeidentity/do"
 	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	nodeidentityos "k8s.io/kops/pkg/nodeidentity/openstack"
+	pb "k8s.io/kops/pkg/proto/nodebootstrap"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
@@ -46,7 +54,6 @@ var (
 )
 
 func init() {
-
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -80,6 +87,8 @@ func main() {
 		}
 	}
 
+	ctx := context.Background()
+
 	ctrl.SetLogger(klogr.New())
 
 	if err := buildScheme(); err != nil {
@@ -103,6 +112,15 @@ func main() {
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder
+
+	restConfig := mgr.GetConfig()
+	go func() {
+		if err := runGRPCServices(ctx, restConfig, &opt); err != nil {
+			setupLog.Error(err, "problem running grpc services")
+			os.Exit(1)
+		}
+		klog.Infof("grpc services exited")
+	}()
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
@@ -165,4 +183,51 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 	}
 
 	return nil
+}
+
+func runGRPCServices(ctx context.Context, restConfig *rest.Config, opt *config.Options) error {
+	if opt.GRPC != nil && opt.GRPC.Listen != "" {
+		klog.Infof("GRPC listening on %s", opt.GRPC.Listen)
+		lis, err := net.Listen("tcp", opt.GRPC.Listen)
+		if err != nil {
+			return fmt.Errorf("failed to listen on %q: %v", opt.GRPC.Listen, err)
+		}
+
+		var opts []grpc.ServerOption
+		{
+			tlsOptions, err := buildTLSForGRPC(*opt.GRPC)
+			if err != nil {
+				return err
+			}
+
+			opts = append(opts, tlsOptions)
+		}
+
+		authorizer, err := alwaysallow.NewAuthorizer()
+		if err != nil {
+			return fmt.Errorf("error building authorizer: %v", err)
+		}
+		nodeBootstrapService, err := nodebootstrap.NewNodeBootstrapService(restConfig, authorizer, opt.NodeBootstrapService)
+		if err != nil {
+			return fmt.Errorf("error building node bootstrap service: %v", err)
+		}
+
+		// TODO: Bind lifetime to ctx
+		grpcServer := grpc.NewServer(opts...)
+		pb.RegisterNodeBootstrapServiceServer(grpcServer, nodeBootstrapService)
+		if err := grpcServer.Serve(lis); err != nil {
+			return fmt.Errorf("error from grpc service: %v", err)
+		}
+	} else {
+		<-ctx.Done()
+	}
+	return nil
+}
+
+func buildTLSForGRPC(options config.GRPCOptions) (grpc.ServerOption, error) {
+	creds, err := credentials.NewServerTLSFromFile(options.ServerCertificatePath, options.ServerKeyPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load grpc credentials: %v", err)
+	}
+	return grpc.Creds(creds), nil
 }

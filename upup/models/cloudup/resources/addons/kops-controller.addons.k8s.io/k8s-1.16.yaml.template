@@ -55,6 +55,8 @@ spec:
 {{ end }}
         - mountPath: /etc/kubernetes/kops-controller/
           name: kops-controller-config
+        - mountPath: /etc/kubernetes/pki/kops-controller/
+          name: kops-controller-pki
         command:
 {{ range $arg := KopsControllerArgv }}
         - "{{ $arg }}"
@@ -82,6 +84,10 @@ spec:
       - name: kops-controller-config
         configMap:
           name: kops-controller
+      - name: kops-controller-pki
+        hostPath:
+          path: /etc/kubernetes/pki/kops-controller/
+          type: Directory
 
 ---
 
@@ -111,6 +117,18 @@ rules:
   - list
   - watch
   - patch
+# Creates secrets used for kubelet bootstrap
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+  - create
+  - update
 
 ---
 
@@ -170,6 +188,8 @@ rules:
   verbs:
   - create
 
+{{ if UseKopsControllerForKubeletBootstrap }}
+
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1
@@ -187,3 +207,59 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
   name: system:serviceaccount:kube-system:kops-controller
+
+---
+
+# permits the node access to create a CSR
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kops-controller-node-bootstrappers
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: system:node-bootstrapper
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: Group
+  name: system:bootstrappers
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+# Approve all CSRs for the group "system:bootstrappers"
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kops:auto-approve-csrs-for-kubelet
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: system:certificates.k8s.io:certificatesigningrequests:nodeclient
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: Group
+  name: system:bootstrappers
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+# Approve renewal CSRs for the group "system:nodes"
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kops:auto-approve-renewal-csrs-for-kubelet
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+subjects:
+- kind: Group
+  name: system:nodes
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: system:certificates.k8s.io:certificatesigningrequests:selfnodeclient
+  apiGroup: rbac.authorization.k8s.io
+
+{{ end }}

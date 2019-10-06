@@ -1,0 +1,24 @@
+syntax = "proto3";
+package nodebootstrap;
+
+option go_package = "k8s.io/kops/pkg/proto/nodebootstrap";
+
+service NodeBootstrapService {
+  rpc CreateKubeletBootstrapToken(CreateKubeletBootstrapTokenRequest) returns (CreateKubeletBootstrapTokenResponse);
+}
+
+message CreateKubeletBootstrapTokenRequest {
+  NodeInfo node_info = 1;
+}
+
+// NodeInfo allows a node to provide any secrets etc that can help verify its identity
+message NodeInfo {
+}
+
+message CreateKubeletBootstrapTokenResponse {
+  Token token = 1;
+}
+
+message Token {
+  string bearer_token = 1;
+}

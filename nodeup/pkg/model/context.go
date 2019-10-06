@@ -25,6 +25,7 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/kubeconfig"
@@ -177,7 +178,7 @@ func (c *NodeupModelContext) CNIBinDir() string {
 	return "/opt/cni/bin/"
 }
 
-// KubeletBootstrapKubeconfig is the path the bootstrap config file
+// KubeletBootstrapKubeconfig is the path to the bootstrap config file
 func (c *NodeupModelContext) KubeletBootstrapKubeconfig() string {
 	path := c.Cluster.Spec.Kubelet.BootstrapKubeconfig
 
@@ -564,6 +565,16 @@ func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
 	return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
 }
 
+// CACertificate is a helper method to get the CA certificate
+// We might cache or special-case this in future
+func (c *NodeupModelContext) CACertificate() ([]byte, error) {
+	ca, err := c.FindCert(fi.CertificateId_CA)
+	if err != nil {
+		return nil, err
+	}
+	return ca, nil
+}
+
 // FindCert is a helper method to retrieving a certificate from the store
 func (c *NodeupModelContext) FindCert(name string) ([]byte, error) {
 	cert, err := c.KeyStore.FindCert(name)
@@ -584,8 +595,12 @@ func (c *NodeupModelContext) FindPrivateKey(name string) ([]byte, error) {
 		return []byte{}, fmt.Errorf("error fetching private key: %v from keystore: %v", name, err)
 	}
 	if key == nil {
-		return []byte{}, fmt.Errorf("unable to found private key: %s", name)
+		return []byte{}, fmt.Errorf("unable to find private key: %s", name)
 	}
 
 	return key.AsBytes()
+}
+
+func (c *NodeupModelContext) UseKopsControllerForKubeletBootstrap() bool {
+	return model.UseKopsControllerForKubeletBootstrap(c.Cluster)
 }

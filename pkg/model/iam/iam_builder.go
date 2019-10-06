@@ -37,6 +37,7 @@ import (
 	"k8s.io/klog"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/util/stringorslice"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -364,7 +365,9 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 					}
 
 					// @check if bootstrap tokens are enabled and if so enable access to client certificate
-					if b.UseBootstrapTokens() {
+					if model.UseKopsControllerForKubeletBootstrap(b.Cluster) {
+						// no additional permissions
+					} else if b.UseBootstrapTokens() {
 						resources = append(resources, strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/node-authorizer-client/*"}, ""))
 					} else {
 						resources = append(resources, strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/kubelet/*"}, ""))

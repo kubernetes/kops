@@ -23,11 +23,10 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-
-	"k8s.io/klog"
 )
 
 // NodeAuthorizationBuilder is responsible for node authorization
@@ -39,6 +38,11 @@ var _ fi.ModelBuilder = &NodeAuthorizationBuilder{}
 
 // Build is responsible for handling the node authorization client
 func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
+	if b.UseKopsControllerForKubeletBootstrap() {
+		// We're using kops-controller to bootstrap
+		return nil
+	}
+
 	// @check if we are a master and download the certificates for the node-authozier
 	if b.UseBootstrapTokens() && b.IsMaster {
 		name := "node-authorizer"
