@@ -108,9 +108,7 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 		progress := false
 
 		var tasks []*taskState
-		for _, ts := range canRun {
-			tasks = append(tasks, ts)
-		}
+		tasks = append(tasks, canRun...)
 
 		taskErrors := e.forkJoin(tasks)
 		var errors []error
