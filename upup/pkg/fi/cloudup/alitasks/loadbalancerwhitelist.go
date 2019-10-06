@@ -128,7 +128,7 @@ func (l *LoadBalancerWhiteList) getWhiteItemsToDelete(currentWhiteItems string) 
 				expected = true
 			}
 		}
-		if expected == false {
+		if !expected {
 			itemsToDelete = itemsToDelete + "," + currentItem
 		}
 	}
