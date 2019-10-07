@@ -230,7 +230,7 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 
 		isMain := false
 		for _, a := range rt.Associations {
-			if aws.BoolValue(a.Main) == true {
+			if aws.BoolValue(a.Main) {
 				isMain = true
 			}
 		}
