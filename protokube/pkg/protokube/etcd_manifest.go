@@ -244,7 +244,7 @@ func buildCertificateDirectories(c *EtcdCluster) []string {
 	tracked := make(map[string]bool, 0)
 
 	for _, x := range []string{c.TLSCA, c.TLSCert, c.TLSKey, c.PeerCA, c.PeerKey, c.PeerKey} {
-		if x == "" || tracked[filepath.Dir(x)] == true {
+		if x == "" || tracked[filepath.Dir(x)] {
 			continue
 		}
 		tracked[filepath.Dir(x)] = true
