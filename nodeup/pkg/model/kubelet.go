@@ -545,9 +545,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 
 	// Use --register-with-taints for k8s 1.6 and on
 	if b.Cluster.IsKubernetesGTE("1.6") {
-		for _, t := range b.InstanceGroup.Spec.Taints {
-			c.Taints = append(c.Taints, t)
-		}
+		c.Taints = append(c.Taints, b.InstanceGroup.Spec.Taints...)
 
 		if len(c.Taints) == 0 && isMaster {
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
