@@ -144,9 +144,7 @@ func run() error {
 			}
 		}
 
-		for _, p := range result.PriceList {
-			prices = append(prices, p)
-		}
+		prices = append(prices, result.PriceList...)
 
 		if result.NextToken != nil {
 			input.NextToken = result.NextToken

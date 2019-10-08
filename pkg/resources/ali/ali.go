@@ -327,9 +327,7 @@ func (d *clusterDiscoveryALI) ListSecurityGroup() ([]*resources.Resource, error)
 				}
 			}
 
-			for _, block := range blocked {
-				groupTracker.Blocked = append(groupTracker.Blocked, block)
-			}
+			groupTracker.Blocked = append(groupTracker.Blocked, blocked...)
 			resourceTrackers = append(resourceTrackers, groupTracker)
 		}
 	}
@@ -558,9 +556,7 @@ func (d *clusterDiscoveryALI) ListVPC() ([]*resources.Resource, error) {
 			for _, vpc := range vpcs {
 				if name == vpc.VpcName {
 					vpcsToDelete = append(vpcsToDelete, vpc.VpcId)
-					for _, vswitch := range vpc.VSwitchIds.VSwitchId {
-						vswitchsToDelete = append(vswitchsToDelete, vswitch)
-					}
+					vswitchsToDelete = append(vswitchsToDelete, vpc.VSwitchIds.VSwitchId...)
 				}
 			}
 		}
