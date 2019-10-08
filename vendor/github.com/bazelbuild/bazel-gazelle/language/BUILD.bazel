@@ -12,3 +12,21 @@ go_library(
         "//vendor/github.com/bazelbuild/bazel-gazelle/rule:go_default_library",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/language/go:all-srcs",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/language/proto:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

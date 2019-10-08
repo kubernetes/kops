@@ -16,3 +16,17 @@ go_library(
     importpath = "golang.org/x/tools/go/internal/gcimporter",
     visibility = ["//vendor/golang.org/x/tools/go:__subpackages__"],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

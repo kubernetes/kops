@@ -35,3 +35,20 @@ go_library(
         "//vendor/honnef.co/go/tools/staticcheck/vrp:go_default_library",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//vendor/honnef.co/go/tools/staticcheck/vrp:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

@@ -7,3 +7,17 @@ go_library(
     importpath = "github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg",
     visibility = ["//vendor/github.com/prometheus/common:__subpackages__"],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

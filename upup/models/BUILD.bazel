@@ -30,3 +30,17 @@ $(location //vendor/github.com/jteeuwen/go-bindata/go-bindata:go-bindata) \
         "//vendor/github.com/jteeuwen/go-bindata/go-bindata",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

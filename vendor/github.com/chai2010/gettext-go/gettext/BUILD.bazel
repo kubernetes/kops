@@ -21,3 +21,22 @@ go_library(
         "//vendor/github.com/chai2010/gettext-go/gettext/po:go_default_library",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//vendor/github.com/chai2010/gettext-go/gettext/mo:all-srcs",
+        "//vendor/github.com/chai2010/gettext-go/gettext/plural:all-srcs",
+        "//vendor/github.com/chai2010/gettext-go/gettext/po:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

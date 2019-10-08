@@ -31,3 +31,17 @@ go_library(
     visibility = ["//vendor/github.com/aws/aws-sdk-go:__subpackages__"],
     deps = ["//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library"],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

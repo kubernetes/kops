@@ -16,3 +16,20 @@ go_library(
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/aws/aws-sdk-go/aws:go_default_library"],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//vendor/github.com/aws/aws-sdk-go/private/protocol/eventstream/eventstreamapi:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

@@ -14,3 +14,17 @@ go_library(
     importpath = "sigs.k8s.io/kustomize/pkg/internal/error",
     visibility = ["//vendor/sigs.k8s.io/kustomize/pkg:__subpackages__"],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

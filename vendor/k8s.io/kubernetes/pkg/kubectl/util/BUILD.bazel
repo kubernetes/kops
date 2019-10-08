@@ -51,3 +51,33 @@ go_library(
         "//conditions:default": [],
     }),
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/certificate:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/deployment:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/event:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/fieldpath:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/i18n:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/interrupt:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/podutils:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/qos:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/rbac:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/resource:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/slice:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/storage:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/templates:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/term:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

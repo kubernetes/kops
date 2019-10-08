@@ -9,3 +9,25 @@ go_library(
     importpath = "k8s.io/kops/protokube/pkg/gossip",
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//protokube/pkg/gossip/ali:all-srcs",
+        "//protokube/pkg/gossip/aws:all-srcs",
+        "//protokube/pkg/gossip/dns:all-srcs",
+        "//protokube/pkg/gossip/gce:all-srcs",
+        "//protokube/pkg/gossip/mesh:all-srcs",
+        "//protokube/pkg/gossip/openstack:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

@@ -72,3 +72,30 @@ go_test(
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//pkg/model/alimodel:all-srcs",
+        "//pkg/model/awsmodel:all-srcs",
+        "//pkg/model/components:all-srcs",
+        "//pkg/model/defaults:all-srcs",
+        "//pkg/model/domodel:all-srcs",
+        "//pkg/model/gcemodel:all-srcs",
+        "//pkg/model/iam:all-srcs",
+        "//pkg/model/openstackmodel:all-srcs",
+        "//pkg/model/resources:all-srcs",
+        "//pkg/model/spotinstmodel:all-srcs",
+        "//pkg/model/vspheremodel:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

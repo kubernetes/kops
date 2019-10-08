@@ -22,3 +22,28 @@ go_library(
         "//vendor/github.com/docker/go-units:go_default_library",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//vendor/github.com/docker/engine-api/types/blkiodev:all-srcs",
+        "//vendor/github.com/docker/engine-api/types/container:all-srcs",
+        "//vendor/github.com/docker/engine-api/types/filters:all-srcs",
+        "//vendor/github.com/docker/engine-api/types/network:all-srcs",
+        "//vendor/github.com/docker/engine-api/types/reference:all-srcs",
+        "//vendor/github.com/docker/engine-api/types/registry:all-srcs",
+        "//vendor/github.com/docker/engine-api/types/strslice:all-srcs",
+        "//vendor/github.com/docker/engine-api/types/time:all-srcs",
+        "//vendor/github.com/docker/engine-api/types/versions:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

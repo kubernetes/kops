@@ -6,3 +6,23 @@ filegroup(
     ],
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//channels/cmd/channels:all-srcs",
+        "//channels/pkg/api:all-srcs",
+        "//channels/pkg/channels:all-srcs",
+        "//channels/pkg/cmd:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

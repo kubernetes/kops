@@ -126,3 +126,37 @@ go_test(
         "//vendor/k8s.io/klog:go_default_library",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//upup/pkg/fi/cloudup/alitasks:all-srcs",
+        "//upup/pkg/fi/cloudup/aliup:all-srcs",
+        "//upup/pkg/fi/cloudup/awstasks:all-srcs",
+        "//upup/pkg/fi/cloudup/awsup:all-srcs",
+        "//upup/pkg/fi/cloudup/baremetal:all-srcs",
+        "//upup/pkg/fi/cloudup/cloudformation:all-srcs",
+        "//upup/pkg/fi/cloudup/dnstasks:all-srcs",
+        "//upup/pkg/fi/cloudup/do:all-srcs",
+        "//upup/pkg/fi/cloudup/dotasks:all-srcs",
+        "//upup/pkg/fi/cloudup/gce:all-srcs",
+        "//upup/pkg/fi/cloudup/gcetasks:all-srcs",
+        "//upup/pkg/fi/cloudup/openstack:all-srcs",
+        "//upup/pkg/fi/cloudup/openstacktasks:all-srcs",
+        "//upup/pkg/fi/cloudup/spotinsttasks:all-srcs",
+        "//upup/pkg/fi/cloudup/terraform:all-srcs",
+        "//upup/pkg/fi/cloudup/tests:all-srcs",
+        "//upup/pkg/fi/cloudup/vsphere:all-srcs",
+        "//upup/pkg/fi/cloudup/vspheretasks:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

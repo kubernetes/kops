@@ -13,3 +13,24 @@ go_library(
         "//vendor/k8s.io/client-go/plugin/pkg/client/auth/openstack:go_default_library",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//vendor/k8s.io/client-go/plugin/pkg/client/auth/azure:all-srcs",
+        "//vendor/k8s.io/client-go/plugin/pkg/client/auth/exec:all-srcs",
+        "//vendor/k8s.io/client-go/plugin/pkg/client/auth/gcp:all-srcs",
+        "//vendor/k8s.io/client-go/plugin/pkg/client/auth/oidc:all-srcs",
+        "//vendor/k8s.io/client-go/plugin/pkg/client/auth/openstack:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

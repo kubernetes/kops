@@ -15,3 +15,26 @@ go_library(
         "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/log:go_default_library",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/client:all-srcs",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/credentials:all-srcs",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/log:all-srcs",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/session:all-srcs",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil:all-srcs",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil:all-srcs",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

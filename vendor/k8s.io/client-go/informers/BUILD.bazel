@@ -67,3 +67,37 @@ go_library(
         "//vendor/k8s.io/client-go/tools/cache:go_default_library",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//vendor/k8s.io/client-go/informers/admissionregistration:all-srcs",
+        "//vendor/k8s.io/client-go/informers/apps:all-srcs",
+        "//vendor/k8s.io/client-go/informers/auditregistration:all-srcs",
+        "//vendor/k8s.io/client-go/informers/autoscaling:all-srcs",
+        "//vendor/k8s.io/client-go/informers/batch:all-srcs",
+        "//vendor/k8s.io/client-go/informers/certificates:all-srcs",
+        "//vendor/k8s.io/client-go/informers/coordination:all-srcs",
+        "//vendor/k8s.io/client-go/informers/core:all-srcs",
+        "//vendor/k8s.io/client-go/informers/events:all-srcs",
+        "//vendor/k8s.io/client-go/informers/extensions:all-srcs",
+        "//vendor/k8s.io/client-go/informers/internalinterfaces:all-srcs",
+        "//vendor/k8s.io/client-go/informers/networking:all-srcs",
+        "//vendor/k8s.io/client-go/informers/node:all-srcs",
+        "//vendor/k8s.io/client-go/informers/policy:all-srcs",
+        "//vendor/k8s.io/client-go/informers/rbac:all-srcs",
+        "//vendor/k8s.io/client-go/informers/scheduling:all-srcs",
+        "//vendor/k8s.io/client-go/informers/settings:all-srcs",
+        "//vendor/k8s.io/client-go/informers/storage:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

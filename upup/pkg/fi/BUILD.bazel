@@ -76,3 +76,27 @@ go_test(
         "//util/pkg/vfs:go_default_library",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//upup/pkg/fi/assettasks:all-srcs",
+        "//upup/pkg/fi/cloudup:all-srcs",
+        "//upup/pkg/fi/fitasks:all-srcs",
+        "//upup/pkg/fi/k8sapi:all-srcs",
+        "//upup/pkg/fi/loader:all-srcs",
+        "//upup/pkg/fi/nodeup:all-srcs",
+        "//upup/pkg/fi/secrets:all-srcs",
+        "//upup/pkg/fi/utils:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

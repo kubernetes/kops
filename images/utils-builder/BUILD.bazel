@@ -28,11 +28,25 @@ load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 
 pkg_tar(
     name = "utils",
-    extension = "tar.gz",
-    package_dir = "utils",
     srcs = [
-        "socat",
         "conntrack",
+        "socat",
     ],
+    extension = "tar.gz",
     mode = "0755",
+    package_dir = "utils",
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )

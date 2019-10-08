@@ -51,3 +51,27 @@ go_library(
         "//vendor/k8s.io/utils/pointer:go_default_library",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/apps:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/describe:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/generated:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/scheme:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/validation:all-srcs",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/version:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

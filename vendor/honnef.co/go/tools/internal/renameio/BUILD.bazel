@@ -7,3 +7,17 @@ go_library(
     importpath = "honnef.co/go/tools/internal/renameio",
     visibility = ["//vendor/honnef.co/go/tools:__subpackages__"],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

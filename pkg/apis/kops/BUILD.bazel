@@ -48,3 +48,26 @@ go_test(
         "//vendor/gopkg.in/inf.v0:go_default_library",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//pkg/apis/kops/install:all-srcs",
+        "//pkg/apis/kops/model:all-srcs",
+        "//pkg/apis/kops/registry:all-srcs",
+        "//pkg/apis/kops/util:all-srcs",
+        "//pkg/apis/kops/v1alpha1:all-srcs",
+        "//pkg/apis/kops/v1alpha2:all-srcs",
+        "//pkg/apis/kops/validation:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

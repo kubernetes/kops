@@ -30,3 +30,21 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/util/uuid:go_default_library",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/interfaces:all-srcs",
+        "//dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/stubs:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

@@ -20,3 +20,21 @@ go_library(
         "//vendor/honnef.co/go/tools/loader:go_default_library",
     ],
 )
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//vendor/honnef.co/go/tools/lint/lintdsl:all-srcs",
+        "//vendor/honnef.co/go/tools/lint/lintutil:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
