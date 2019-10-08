@@ -40,6 +40,7 @@ BAZELUPLOAD=$(BAZELBUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
 BAZEL_OPTIONS?=
+BAZEL_CONFIG?=
 API_OPTIONS?=
 GCFLAGS?=
 
@@ -482,7 +483,7 @@ utils-dist:
 
 .PHONY: bazel-utils-dist
 bazel-utils-dist:
-	bazel build //images/utils-builder:utils
+	bazel build ${BAZEL_CONFIG} //images/utils-builder:utils
 
 # --------------------------------------------------
 # development targets
@@ -695,49 +696,49 @@ kops-server-push: kops-server-build
 
 .PHONY: bazel-test
 bazel-test:
-	bazel ${BAZEL_OPTIONS} test  --test_output=errors -- //... -//vendor/...
+	bazel ${BAZEL_OPTIONS} test ${BAZEL_CONFIG} --test_output=errors -- //... -//vendor/...
 
 .PHONY: bazel-build
 bazel-build:
-	bazel build --features=pure //cmd/... //pkg/... //channels/... //nodeup/... //protokube/... //dns-controller/... //util/...
+	bazel build ${BAZEL_CONFIG} --features=pure //cmd/... //pkg/... //channels/... //nodeup/... //protokube/... //dns-controller/... //util/...
 
 .PHONY: bazel-build-cli
 bazel-build-cli:
-	bazel build --features=pure //cmd/kops/...
+	bazel build ${BAZEL_CONFIG} --features=pure //cmd/kops/...
 
 .PHONY: bazel-crossbuild-kops
 bazel-crossbuild-kops:
-	bazel build --features=pure --platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64 //cmd/kops/...
-	bazel build --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops/...
-	bazel build --features=pure --platforms=@io_bazel_rules_go//go/toolchain:windows_amd64 //cmd/kops/...
+	bazel build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64 //cmd/kops/...
+	bazel build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops/...
+	bazel build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:windows_amd64 //cmd/kops/...
 
 .PHONY: bazel-crossbuild-nodeup
 bazel-crossbuild-nodeup:
-	bazel build --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/nodeup/...
+	bazel build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/nodeup/...
 
 .PHONY: bazel-crossbuild-protokube
 bazel-crossbuild-protokube:
-	bazel build --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/...
+	bazel build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/...
 
 .PHONY: bazel-crossbuild-dns-controller
 bazel-crossbuild-dns-controller:
-	bazel build --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/...
+	bazel build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/...
 
 .PHONY: bazel-crossbuild-dns-controller-image
 bazel-crossbuild-dns-controller-image:
-	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:dns-controller.tar
+	bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:dns-controller.tar
 
 .PHONY: bazel-crossbuild-protokube-image
 bazel-crossbuild-protokube-image:
-	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar
+	bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar
 
 .PHONY: bazel-crossbuild-kube-discovery-image
 bazel-crossbuild-kube-discovery-image:
-	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:kube-discovery.tar
+	bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:kube-discovery.tar
 
 .PHONY: bazel-crossbuild-node-authorizer-image
 bazel-crossbuild-node-authorizer-image:
-	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:node-authorizer.tar
+	bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:node-authorizer.tar
 
 .PHONY: bazel-push
 # Will always push a linux-based build up to the server
@@ -779,20 +780,20 @@ check-markdown-links:
 
 .PHONY: push-kube-discovery
 push-kube-discovery:
-	bazel run //kube-discovery/images:kube-discovery
+	bazel run ${BAZEL_CONFIG} //kube-discovery/images:kube-discovery
 	docker tag bazel/kube-discovery/images:kube-discovery ${DOCKER_REGISTRY}/kube-discovery:${DOCKER_TAG}
 	docker push ${DOCKER_REGISTRY}/kube-discovery:${DOCKER_TAG}
 
 .PHONY: push-node-authorizer
 push-node-authorizer:
-	bazel run //node-authorizer/images:node-authorizer
+	bazel run ${BAZEL_CONFIG} //node-authorizer/images:node-authorizer
 	docker tag bazel/node-authorizer/images:node-authorizer ${DOCKER_REGISTRY}/node-authorizer:${DOCKER_TAG}
 	docker push ${DOCKER_REGISTRY}/node-authorizer:${DOCKER_TAG}
 
 .PHONY: bazel-protokube-export
 bazel-protokube-export:
 	mkdir -p ${BAZELIMAGES}
-	bazel build --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar.gz //images:protokube.tar.gz.sha1  //images:protokube.tar.gz.sha256
+	bazel build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar.gz //images:protokube.tar.gz.sha1  //images:protokube.tar.gz.sha256
 	cp -fp bazel-bin/images/bazel-out/k8-fastbuild/bin/images/protokube.tar.gz ${BAZELIMAGES}/protokube.tar.gz
 	cp -fp bazel-bin/images/protokube.tar.gz.sha1 ${BAZELIMAGES}/protokube.tar.gz.sha1
 	cp -fp bazel-bin/images/protokube.tar.gz.sha256 ${BAZELIMAGES}/protokube.tar.gz.sha256
@@ -800,7 +801,7 @@ bazel-protokube-export:
 .PHONY: bazel-kops-controller-export
 bazel-kops-controller-export:
 	mkdir -p ${BAZELIMAGES}
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:image-bundle.tar
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:image-bundle.tar
 	cp -fp bazel-bin/cmd/kops-controller/image-bundle.tar ${BAZELIMAGES}/kops-controller.tar
 	gzip --force --fast ${BAZELIMAGES}/kops-controller.tar
 	tools/sha1 ${BAZELIMAGES}/kops-controller.tar.gz ${BAZELIMAGES}/kops-controller.tar.gz.sha1
