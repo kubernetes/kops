@@ -47,8 +47,6 @@ import (
 	"k8s.io/kops/util/pkg/exec"
 )
 
-const metaFilename = "_etcd_backup.meta"
-
 // EtcdManagerBuilder builds the manifest for the etcd-manager
 type EtcdManagerBuilder struct {
 	*model.KopsModelContext

@@ -114,7 +114,6 @@ func (d *DOVolumes) AttachVolume(volume *Volume) error {
 
 		time.Sleep(10 * time.Second)
 	}
-
 }
 
 func (d *DOVolumes) FindVolumes() ([]*Volume, error) {
