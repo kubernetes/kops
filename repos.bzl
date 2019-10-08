@@ -1,6 +1,4 @@
-#!/usr/bin/env bash
-
-# Copyright 2019 The Kubernetes Authors.
+# Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if ! command -v bazel &> /dev/null; then
-  echo "Install bazel at https://bazel.build" >&2
-  exit 1
-fi
-
-set -o xtrace
-bazel test --test_output=streamed @io_k8s_repo_infra//hack:verify-gofmt
+def go_repositories():
+    # TODO(fejta): move go repos here
+    pass

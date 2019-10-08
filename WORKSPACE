@@ -1,38 +1,27 @@
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+# gazelle:repository_macro repos.bzl%go_repositories
+# gazelle:repo bazel_gazelle
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-#=============================================================================
-# Go rules
-
-http_archive(
-    name = "io_bazel_rules_go",
-    sha256 = "513c12397db1bc9aa46dd62f02dd94b49a9b5d17444d49b5a04c5a89f3053c1c",
-    urls = [
-        "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/v0.19.5/rules_go-v0.19.5.tar.gz",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.19.5/rules_go-v0.19.5.tar.gz",
-    ],
+git_repository(
+    name = "io_k8s_repo_infra",
+    commit = "db6ceb5f992254db76af7c25db2edc5469b5ea82",
+    remote = "https://github.com/kubernetes/repo-infra.git",
+    shallow_since = "1570128715 -0700",
 )
 
-http_archive(
-    name = "bazel_gazelle",
-    sha256 = "7fc87f4170011201b1690326e8c16c5d802836e3a0d617d8f75c3af2b23180c4",
-    urls = [
-        "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/bazel-gazelle/releases/download/0.18.2/bazel-gazelle-0.18.2.tar.gz",
-        "https://github.com/bazelbuild/bazel-gazelle/releases/download/0.18.2/bazel-gazelle-0.18.2.tar.gz",
-    ],
-)
+load("@io_k8s_repo_infra//:load.bzl", _repo_infra_repos = "repositories")
 
-load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+_repo_infra_repos()
 
-go_rules_dependencies()
+load("@io_k8s_repo_infra//:repos.bzl", "configure")
 
-go_register_toolchains(
+configure(
     go_version = "1.12.9",
+    # TODO(fejta): nogo
 )
 
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
-
-gazelle_dependencies()
+load("@bazel_gazelle//:deps.bzl", "go_repository")
 
 #=============================================================================
 # Docker rules
@@ -130,20 +119,10 @@ dpkg_list(
 )
 
 # We use the prebuilt utils.tar.gz containing socat & conntrack, building it in bazel is really painful
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
-
 http_file(
     name = "utils_tar_gz",
     sha256 = "5c956247241dd94300ba13c6dd9cb5843382d4255125a7a6639d2aad68b9050c",
     urls = ["https://kubeupv2.s3.amazonaws.com/kops/1.12.1/linux/amd64/utils.tar.gz"],
-)
-
-# TODO(fejta): use load.bzl, repos.bzl from repo-infra
-git_repository(
-    name = "io_k8s_repo_infra",
-    commit = "db6ceb5f992254db76af7c25db2edc5469b5ea82",
-    remote = "https://github.com/kubernetes/repo-infra.git",
-    shallow_since = "1570128715 -0700",
 )
 
 http_archive(

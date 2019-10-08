@@ -13,39 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-KOPS_ROOT=$(git rev-parse --show-toplevel)
-cd ${KOPS_ROOT}
-
-export GOPATH=${KOPS_ROOT}/../../../
-
-TMP_OUT=$(mktemp -d)
-trap "{ rm -rf ${TMP_OUT}; }" EXIT
-
-GOBIN="${TMP_OUT}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
-
-gazelle_diff=$("${TMP_OUT}/gazelle" fix \
-  -external=vendored \
-  -mode=diff \
-  -proto=disable \
-  -repo_root="${KOPS_ROOT}")
-
-if [[ -n "${gazelle_diff}" ]]; then
-  echo "${gazelle_diff}" >&2
-  echo >&2
-  echo "FAIL: ./hack/verify-bazel.sh failed, as the bazel files are not up to date" >&2
-  echo "FAIL: Please execute the following command: ./hack/update-bazel.sh" >&2
+if ! command -v bazel &> /dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
   exit 1
 fi
 
-# Make sure there are no BUILD files outside vendor - we should only have
-# BUILD.bazel files.
-old_build_files=$(find . -name BUILD \( -type f -o -type l \) \
-  -not -path './vendor/*' | sort)
-if [[ -n "${old_build_files}" ]]; then
-  echo "One or more BUILD files found in the tree:" >&2
-  echo "${old_build_files}" >&2
-  echo >&2
-  echo "FAIL: Only bazel files named BUILD.bazel are allowed." >&2
-  echo "FAIL: Please move incorrectly named files to BUILD.bazel" >&2
-  exit 1
-fi
+set -o xtrace
+bazel test --test_output=streamed @io_k8s_repo_infra//hack:verify-bazel

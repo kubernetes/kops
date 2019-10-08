@@ -17,23 +17,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-KOPS_ROOT=$(git rev-parse --show-toplevel)
-cd ${KOPS_ROOT}
+if ! command -v bazel &>/dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+fi
 
-export GOPATH=${KOPS_ROOT}/../../../
-
-TMP_OUT=$(mktemp -d)
-trap "{ rm -rf ${TMP_OUT}; }" EXIT
-
-GOBIN="${TMP_OUT}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
-
-# manually remove BUILD file for k8s.io/apimachinery/pkg/util/sets/BUILD if it
-# exists; there is a specific set-gen rule that breaks importing
-# ref: https://github.com/kubernetes/kubernetes/blob/4e2f5e2212b05a305435ef96f4b49dc0932e1264/staging/src/k8s.io/apimachinery/pkg/util/sets/BUILD#L23-L49
-# rm -f ${KOPS_ROOT}/vendor/k8s.io/apimachinery/pkg/util/sets/{BUILD,BUILD.bazel}
-
-"${TMP_OUT}/gazelle" fix \
-  -external=vendored \
-  -mode=fix \
-  -proto=disable \
-  -repo_root="${KOPS_ROOT}"
+set -o xtrace
+bazel run @io_k8s_repo_infra//hack:update-bazel
