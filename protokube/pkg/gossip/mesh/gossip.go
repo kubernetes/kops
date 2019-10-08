@@ -35,8 +35,6 @@ type MeshGossiper struct {
 	peer   *peer
 
 	version uint64
-
-	lastSnapshot *gossip.GossipStateSnapshot
 }
 
 func NewMeshGossiper(listen string, channelName string, nodeName string, password []byte, seeds gossip.SeedProvider) (*MeshGossiper, error) {
