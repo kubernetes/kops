@@ -436,6 +436,65 @@ spec:
                   description: SkipInstall when set to true will prevent kops from
                     installing and modifying Docker in any way
                   type: boolean
+                sourceOverrides:
+                  description: SourceOverrides is a list of user specified docker
+                    installation sources
+                  items:
+                    properties:
+                      dependencies:
+                        description: Dependencies is a list of dependencies that can
+                          be installed by the system's package manager (e.e apt-get
+                          install or yum install)
+                        items:
+                          type: string
+                        type: array
+                      extraPackages:
+                        description: ExtraPackages is a list of packages to be installed
+                          during the same dpkg/yum transaction
+                        items:
+                          properties:
+                            hash:
+                              description: Hash is the SHA1 hash of the package file
+                              type: string
+                            name:
+                              type: string
+                            source:
+                              description: Source is the URL to download the package
+                                from
+                              type: string
+                            version:
+                              description: Version is the package's version
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                      hash:
+                        description: Hash is the SHA1 hash of the file
+                        type: string
+                      markImmutable:
+                        description: MarkImmutable is a list of files on which we
+                          should perform a `chattr +i <file>`
+                        items:
+                          type: string
+                        type: array
+                      name:
+                        type: string
+                      plainBinary:
+                        description: PlainBinary indicates that the Source is not
+                          an OS, but a "bare" tar.gz
+                        type: boolean
+                      source:
+                        description: Source is the URL to download the package from
+                        type: string
+                      version:
+                        description: Version is the version of docker
+                        type: string
+                    required:
+                    - hash
+                    - source
+                    type: object
+                  type: array
                 storage:
                   description: Storage is the docker storage driver to use
                   type: string
