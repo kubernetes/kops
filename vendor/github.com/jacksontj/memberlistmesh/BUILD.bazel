@@ -1,0 +1,24 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "advertise.go",
+        "channel.go",
+        "cluster.go",
+        "delegate.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/jacksontj/memberlistmesh",
+    importpath = "github.com/jacksontj/memberlistmesh",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/gogo/protobuf/proto:go_default_library",
+        "//vendor/github.com/hashicorp/go-sockaddr:go_default_library",
+        "//vendor/github.com/hashicorp/memberlist:go_default_library",
+        "//vendor/github.com/jacksontj/memberlistmesh/clusterpb:go_default_library",
+        "//vendor/github.com/oklog/ulid:go_default_library",
+        "//vendor/github.com/pkg/errors:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
