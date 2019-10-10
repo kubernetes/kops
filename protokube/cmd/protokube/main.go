@@ -82,7 +82,7 @@ func run() error {
 	flag.StringVar(&gossipProtocol, "gossip-protocol", "mesh", "mesh/memberlist")
 	flag.StringVar(&gossipListen, "gossip-listen", "0.0.0.0:3999", "address:port on which to bind for gossip")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
-	flag.StringVar(&gossipProtocolSecondary, "gossip-protocol-secondary", "", "mesh/memberlist")
+	flag.StringVar(&gossipProtocolSecondary, "gossip-protocol-secondary", "memberlist", "mesh/memberlist")
 	flag.StringVar(&gossipListenSecondary, "gossip-listen-secondary", "0.0.0.0:4000", "address:port on which to bind for gossip")
 	flags.StringVar(&gossipSecretSecondary, "gossip-secret-secondary", gossipSecret, "Secret to use to secure gossip")
 	flag.StringVar(&peerCA, "peer-ca", peerCA, "Path to a file containing the peer ca in PEM format")

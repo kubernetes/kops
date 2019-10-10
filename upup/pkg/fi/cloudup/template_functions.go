@@ -249,7 +249,12 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 				}
 			}
 		} else {
+			// Default to primary mesh and secondary memberlist
 			argv = append(argv, "--gossip-seed=127.0.0.1:3999")
+
+			argv = append(argv, "--gossip-protocol-secondary=memberlist")
+			argv = append(argv, "--gossip-listen-secondary=0.0.0.0:3997")
+			argv = append(argv, "--gossip-seed-secondary=127.0.0.1:4000")
 		}
 	} else {
 		switch kops.CloudProviderID(tf.cluster.Spec.CloudProvider) {
