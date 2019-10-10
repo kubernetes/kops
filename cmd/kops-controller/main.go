@@ -27,6 +27,7 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops-controller/controllers"
 	ctrl "sigs.k8s.io/controller-runtime"
+
 	// +kubebuilder:scaffold:imports
 
 	"k8s.io/klog/klogr"
