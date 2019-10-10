@@ -3359,6 +3359,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.ServiceAccountIssuer = in.ServiceAccountIssuer
 	out.APIAudiences = in.APIAudiences
 	out.CPURequest = in.CPURequest
+	out.EventTTL = in.EventTTL
 	return nil
 }
 
@@ -3456,6 +3457,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.ServiceAccountIssuer = in.ServiceAccountIssuer
 	out.APIAudiences = in.APIAudiences
 	out.CPURequest = in.CPURequest
+	out.EventTTL = in.EventTTL
 	return nil
 }
 
