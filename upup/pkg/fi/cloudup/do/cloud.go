@@ -17,9 +17,10 @@ limitations under the License.
 package do
 
 import (
+	"strings"
+
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/upup/pkg/fi"
-	"strings"
 )
 
 const TagKubernetesClusterIndex = "k8s-index"
