@@ -918,6 +918,9 @@ spec:
                   items:
                     type: string
                   type: array
+                eventTTL:
+                  description: Amount of time to retain Kubernetes events
+                  type: string
                 experimentalEncryptionProviderConfig:
                   description: ExperimentalEncryptionProviderConfig enables encryption
                     at rest for secrets.
