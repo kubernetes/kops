@@ -2165,6 +2165,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.EventTTL != nil {
+		in, out := &in.EventTTL, &out.EventTTL
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	return
 }
 
