@@ -97,10 +97,11 @@ require (
 	github.com/gorilla/mux v1.7.0
 	github.com/hashicorp/hcl v1.0.0
 	github.com/huandu/xstrings v1.2.0 // indirect
+	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 	github.com/jpillora/backoff v0.0.0-20170918002102-8eab2debe79d
 	github.com/jteeuwen/go-bindata v0.0.0-20151023091102-a0ff2567cfb7
 	github.com/miekg/coredns v0.0.0-20161111164017-20e25559d5ea
-	github.com/miekg/dns v0.0.0-20160614162101-5d001d020961
+	github.com/miekg/dns v1.0.14
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pborman/uuid v1.2.0
 	github.com/pkg/errors v0.8.1
