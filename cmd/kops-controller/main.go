@@ -34,6 +34,8 @@ import (
 	"k8s.io/kops/pkg/nodeidentity"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
+	nodeidentityos "k8s.io/kops/pkg/nodeidentity/openstack"
+
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -115,6 +117,12 @@ func addNodeController(mgr manager.Manager, opt *Options) error {
 		}
 	case "gce":
 		identifier, err = nodeidentitygce.New()
+		if err != nil {
+			return fmt.Errorf("error building identifier: %v", err)
+		}
+
+	case "openstack":
+		identifier, err = nodeidentityos.New()
 		if err != nil {
 			return fmt.Errorf("error building identifier: %v", err)
 		}
