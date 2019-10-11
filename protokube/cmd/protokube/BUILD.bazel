@@ -16,6 +16,7 @@ go_library(
         "//dnsprovider/pkg/dnsprovider/providers/google/clouddns:go_default_library",
         "//protokube/pkg/gossip:go_default_library",
         "//protokube/pkg/gossip/dns:go_default_library",
+        "//protokube/pkg/gossip/memberlist:go_default_library",
         "//protokube/pkg/gossip/mesh:go_default_library",
         "//protokube/pkg/protokube:go_default_library",
         "//vendor/github.com/spf13/pflag:go_default_library",

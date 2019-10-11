@@ -331,6 +331,20 @@ spec:
               description: ConfigStore is the VFS path to where the configuration
                 (Cluster, InstanceGroups etc) is stored
               type: string
+            dnsControllerGossipConfig:
+              description: DNSControllerGossipConfig for the cluster assuming the
+                use of gossip DNS
+              properties:
+                listen:
+                  type: string
+                protocol:
+                  type: string
+                secondary: {}
+                secret:
+                  type: string
+                seed:
+                  type: string
+              type: object
             dnsZone:
               description: DNSZone is the DNS zone we should use when configuring
                 DNS This is because some clouds let us define a managed zone foo.bar,
@@ -619,6 +633,18 @@ spec:
                     type: array
                 type: object
               type: array
+            gossipConfig:
+              description: GossipConfig for the cluster assuming the use of gossip
+                DNS
+              properties:
+                listen:
+                  type: string
+                protocol:
+                  type: string
+                secondary: {}
+                secret:
+                  type: string
+              type: object
             hooks:
               description: Hooks for custom actions e.g. on first installation
               items:

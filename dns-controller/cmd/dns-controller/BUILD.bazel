@@ -16,6 +16,7 @@ go_library(
         "//protokube/pkg/gossip:go_default_library",
         "//protokube/pkg/gossip/dns:go_default_library",
         "//protokube/pkg/gossip/dns/provider:go_default_library",
+        "//protokube/pkg/gossip/memberlist:go_default_library",
         "//protokube/pkg/gossip/mesh:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
         "//vendor/github.com/spf13/pflag:go_default_library",
