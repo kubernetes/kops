@@ -81,7 +81,7 @@ git_repository(
     name = "distroless",
     commit = "f905a6636c5106c36cc979bdcc19f0fe4fc01ede",
     remote = "https://github.com/googlecloudplatform/distroless.git",
-    shallow_since = "1570036739 -0700",
+    #shallow_since = "1570036739 -0700",
 )
 
 load(
