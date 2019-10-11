@@ -1,0 +1,29 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "ifaddr.go",
+        "ifaddrs.go",
+        "ifattr.go",
+        "ipaddr.go",
+        "ipaddrs.go",
+        "ipv4addr.go",
+        "ipv6addr.go",
+        "rfc.go",
+        "route_info.go",
+        "route_info_android.go",
+        "route_info_bsd.go",
+        "route_info_default.go",
+        "route_info_linux.go",
+        "route_info_solaris.go",
+        "route_info_windows.go",
+        "sockaddr.go",
+        "sockaddrs.go",
+        "unixsock.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/hashicorp/go-sockaddr",
+    importpath = "github.com/hashicorp/go-sockaddr",
+    visibility = ["//visibility:public"],
+)

@@ -212,7 +212,50 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 
 	if dns.IsGossipHostname(tf.cluster.Spec.MasterInternalName) {
 		argv = append(argv, "--dns=gossip")
-		argv = append(argv, "--gossip-seed=127.0.0.1:3999")
+
+		// Configuration specifically for the DNS controller gossip
+		if tf.cluster.Spec.DNSControllerGossipConfig != nil {
+			if tf.cluster.Spec.DNSControllerGossipConfig.Protocol != nil {
+				argv = append(argv, "--gossip-protocol="+*tf.cluster.Spec.DNSControllerGossipConfig.Protocol)
+			}
+			if tf.cluster.Spec.DNSControllerGossipConfig.Listen != nil {
+				argv = append(argv, "--gossip-listen="+*tf.cluster.Spec.DNSControllerGossipConfig.Listen)
+			}
+			if tf.cluster.Spec.DNSControllerGossipConfig.Secret != nil {
+				argv = append(argv, "--gossip-secret="+*tf.cluster.Spec.DNSControllerGossipConfig.Secret)
+			}
+
+			if tf.cluster.Spec.DNSControllerGossipConfig.Seed != nil {
+				argv = append(argv, "--gossip-seed="+*tf.cluster.Spec.DNSControllerGossipConfig.Seed)
+			} else {
+				argv = append(argv, "--gossip-seed=127.0.0.1:3999")
+			}
+
+			if tf.cluster.Spec.DNSControllerGossipConfig.Secondary != nil {
+				if tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Protocol != nil {
+					argv = append(argv, "--gossip-protocol-secondary="+*tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Protocol)
+				}
+				if tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Listen != nil {
+					argv = append(argv, "--gossip-listen-secondary="+*tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Listen)
+				}
+				if tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Secret != nil {
+					argv = append(argv, "--gossip-secret-secondary="+*tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Secret)
+				}
+
+				if tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Seed != nil {
+					argv = append(argv, "--gossip-seed-secondary="+*tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Seed)
+				} else {
+					argv = append(argv, "--gossip-seed-secondary=127.0.0.1:4000")
+				}
+			}
+		} else {
+			// Default to primary mesh and secondary memberlist
+			argv = append(argv, "--gossip-seed=127.0.0.1:3999")
+
+			argv = append(argv, "--gossip-protocol-secondary=memberlist")
+			argv = append(argv, "--gossip-listen-secondary=0.0.0.0:3997")
+			argv = append(argv, "--gossip-seed-secondary=127.0.0.1:4000")
+		}
 	} else {
 		switch kops.CloudProviderID(tf.cluster.Spec.CloudProvider) {
 		case kops.CloudProviderAWS:
