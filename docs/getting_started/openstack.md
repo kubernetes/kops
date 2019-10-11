@@ -115,7 +115,7 @@ If you want use [External CCM](https://github.com/kubernetes/cloud-provider-open
 Enable featureflag:
 
 ```
-export KOPS_FEATURE_FLAGS=+EnableExternalCloudController
+export KOPS_FEATURE_FLAGS=EnableExternalCloudController
 ```
 
 Create cluster without `--yes` flag (or modify existing cluster):
@@ -127,9 +127,7 @@ kops edit cluster <cluster>
 Add following to clusterspec:
 
 ```
-  cloudControllerManager:
-    image: jesseh/occm:latest <- you can use this or compile your own
-    logLevel: 2
+  cloudControllerManager: {}
 ```
 
 Finally

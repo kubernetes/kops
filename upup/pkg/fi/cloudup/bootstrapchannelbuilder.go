@@ -1230,7 +1230,23 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 					Version:           fi.String(version),
 					Manifest:          fi.String(location),
 					Selector:          map[string]string{"k8s-addon": key},
-					KubernetesVersion: ">=1.11.0",
+					KubernetesVersion: ">=1.11.0 <1.13.0",
+					Id:                id,
+				})
+			}
+			{
+				key := "openstack.addons.k8s.io"
+				version := "1.13.0"
+
+				location := key + "/k8s-1.13.yaml"
+				id := "k8s-1.13-ccm"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Manifest:          fi.String(location),
+					Selector:          map[string]string{"k8s-addon": key},
+					KubernetesVersion: ">=1.13.0",
 					Id:                id,
 				})
 			}
