@@ -14,6 +14,8 @@ k8s.io/kops/cmd/kops/util
 k8s.io/kops/cmd/kops-controller
 k8s.io/kops/cmd/kops-controller/controllers
 k8s.io/kops/cmd/kops-controller/pkg/config
+k8s.io/kops/cmd/kops-controller/pkg/nodebootstrap
+k8s.io/kops/cmd/kops-controller/pkg/nodebootstrap/client
 k8s.io/kops/cmd/nodeup
 k8s.io/kops/dns-controller/cmd/dns-controller
 k8s.io/kops/dns-controller/pkg/dns
@@ -120,6 +122,7 @@ k8s.io/kops/pkg/nodelabels
 k8s.io/kops/pkg/pki
 k8s.io/kops/pkg/pkiutil
 k8s.io/kops/pkg/pretty
+k8s.io/kops/pkg/proto/nodebootstrap
 k8s.io/kops/pkg/rbac
 k8s.io/kops/pkg/resources
 k8s.io/kops/pkg/resources/ali

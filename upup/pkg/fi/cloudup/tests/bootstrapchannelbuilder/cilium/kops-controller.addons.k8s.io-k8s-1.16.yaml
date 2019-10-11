@@ -47,6 +47,8 @@ spec:
         volumeMounts:
         - mountPath: /etc/kubernetes/kops-controller/
           name: kops-controller-config
+        - mountPath: /etc/kubernetes/pki/kops-controller/
+          name: kops-controller-pki
       dnsPolicy: Default
       hostNetwork: true
       nodeSelector:
@@ -60,6 +62,10 @@ spec:
       - configMap:
           name: kops-controller
         name: kops-controller-config
+      - hostPath:
+          path: /etc/kubernetes/pki/kops-controller/
+          type: Directory
+        name: kops-controller-pki
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 1
@@ -93,6 +99,17 @@ rules:
   - list
   - watch
   - patch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+  - create
+  - update
 
 ---
 
@@ -149,21 +166,3 @@ rules:
   - configmaps
   verbs:
   - create
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  labels:
-    k8s-addon: kops-controller.addons.k8s.io
-  name: kops-controller
-  namespace: kube-system
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: kops-controller
-subjects:
-- apiGroup: rbac.authorization.k8s.io
-  kind: User
-  name: system:serviceaccount:kube-system:kops-controller
