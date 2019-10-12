@@ -103,9 +103,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 
 		p := r.Properties
 
-		for _, tag := range p.Tags.Items {
-			actual.Tags = append(actual.Tags, tag)
-		}
+		actual.Tags = append(actual.Tags, p.Tags.Items...)
 		actual.MachineType = fi.String(lastComponent(p.MachineType))
 		actual.CanIPForward = &p.CanIpForward
 

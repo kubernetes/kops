@@ -73,9 +73,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 
 	actual := &Instance{}
 	actual.Name = &r.Name
-	for _, tag := range r.Tags.Items {
-		actual.Tags = append(actual.Tags, tag)
-	}
+	actual.Tags = append(actual.Tags, r.Tags.Items...)
 	actual.Zone = fi.String(lastComponent(r.Zone))
 	actual.MachineType = fi.String(lastComponent(r.MachineType))
 	actual.CanIPForward = &r.CanIpForward
