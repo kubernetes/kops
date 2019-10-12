@@ -220,6 +220,12 @@ func TestBuildAPIServerFlags(t *testing.T) {
 			},
 			Expected: "--authorization-webhook-cache-unauthorized-ttl=10s --insecure-port=0 --secure-port=0",
 		},
+		{
+			Config: &kops.KubeAPIServerConfig{
+				EventTTL: &metav1.Duration{Duration: 3 * time.Hour},
+			},
+			Expected: "--event-ttl=3h0m0s --insecure-port=0 --secure-port=0",
+		},
 	}
 
 	for _, test := range grid {
