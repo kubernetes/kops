@@ -1311,7 +1311,7 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 	// `docker load` our images when using a KOPS_BASE_URL, so we
 	// don't need to push/pull from a registry
 	if os.Getenv("KOPS_BASE_URL") != "" {
-		for _, name := range []string{"kops-controller" /* TODO:  "dns-controller" */} {
+		for _, name := range []string{"kops-controller", "dns-controller"} {
 			baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
 			if err != nil {
 				return nil, err
