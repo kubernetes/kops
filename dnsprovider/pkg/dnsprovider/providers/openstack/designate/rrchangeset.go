@@ -56,11 +56,11 @@ func (c *ResourceRecordChangeset) Apply() error {
 	for _, removal := range c.removals {
 		rrID, err := c.nameToID(removal.Name())
 		if err != nil {
-
+			return err
 		}
 		err = recordsets.Delete(c.zone.zones.iface.sc, zoneID, rrID).ExtractErr()
 		if err != nil {
-
+			return err
 		}
 	}
 
@@ -73,14 +73,14 @@ func (c *ResourceRecordChangeset) Apply() error {
 		}
 		_, err := recordsets.Create(c.zone.zones.iface.sc, zoneID, opts).Extract()
 		if err != nil {
-
+			return err
 		}
 	}
 
 	for _, upsert := range c.upserts {
 		rrID, err := c.nameToID(upsert.Name())
 		if err != nil {
-
+			return err
 		}
 		uopts := recordsets.UpdateOpts{
 			TTL:     int(upsert.Ttl()),
@@ -96,7 +96,7 @@ func (c *ResourceRecordChangeset) Apply() error {
 			}
 			_, err := recordsets.Create(c.zone.zones.iface.sc, zoneID, copts).Extract()
 			if err != nil {
-
+				return err
 			}
 		}
 	}

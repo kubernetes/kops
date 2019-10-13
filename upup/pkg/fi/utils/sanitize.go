@@ -28,14 +28,14 @@ func SanitizeString(s string) string {
 	var out bytes.Buffer
 	allowed := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
 	for _, c := range s {
-		if strings.IndexRune(allowed, c) != -1 {
+		if strings.ContainsRune(allowed, c) {
 			out.WriteRune(c)
 		} else {
 			out.WriteRune('_')
 		}
 	}
 
-	return string(out.Bytes())
+	return out.String()
 }
 
 // ExpandPath replaces common path aliases: ~ -> $HOME
