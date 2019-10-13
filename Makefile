@@ -807,8 +807,17 @@ bazel-kops-controller-export:
 	tools/sha1 ${BAZELIMAGES}/kops-controller.tar.gz ${BAZELIMAGES}/kops-controller.tar.gz.sha1
 	tools/sha256 ${BAZELIMAGES}/kops-controller.tar.gz ${BAZELIMAGES}/kops-controller.tar.gz.sha256
 
+.PHONY: bazel-dns-controller-export
+bazel-dns-controller-export:
+	mkdir -p ${BAZELIMAGES}
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:image-bundle.tar
+	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle.tar ${BAZELIMAGES}/dns-controller.tar
+	gzip --force --fast ${BAZELIMAGES}/dns-controller.tar
+	tools/sha1 ${BAZELIMAGES}/dns-controller.tar.gz ${BAZELIMAGES}/dns-controller.tar.gz.sha1
+	tools/sha256 ${BAZELIMAGES}/dns-controller.tar.gz ${BAZELIMAGES}/dns-controller.tar.gz.sha256
+
 .PHONY: bazel-version-dist
-bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-kops-controller-export bazel-protokube-export bazel-utils-dist
+bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-kops-controller-export bazel-dns-controller-export bazel-protokube-export bazel-utils-dist
 	rm -rf ${BAZELUPLOAD}
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/
@@ -824,6 +833,9 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-kops-con
 	cp ${BAZELIMAGES}/kops-controller.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz
 	cp ${BAZELIMAGES}/kops-controller.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz.sha1
 	cp ${BAZELIMAGES}/kops-controller.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz.sha256
+	cp ${BAZELIMAGES}/dns-controller.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz
+	cp ${BAZELIMAGES}/dns-controller.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz.sha1
+	cp ${BAZELIMAGES}/dns-controller.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz.sha256
 	cp bazel-bin/cmd/kops/linux_amd64_pure_stripped/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops
 	tools/sha1 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops.sha1
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops.sha256
@@ -898,6 +910,15 @@ dev-upload-kops-controller: bazel-kops-controller-export # Upload kops to GCS
 	cp -fp ${BAZELIMAGES}/kops-controller.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz.sha256
 	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
+# dev-upload-dns-controller uploads dns-controller to GCS
+.PHONY: dev-upload-dns-controller
+dev-upload-dns-controller: bazel-dns-controller-export # Upload kops to GCS
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
+	cp -fp ${BAZELIMAGES}/dns-controller.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz
+	cp -fp ${BAZELIMAGES}/dns-controller.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz.sha1
+	cp -fp ${BAZELIMAGES}/dns-controller.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz.sha256
+	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+
 # dev-copy-utils copies utils from a recent release
 # We don't currently have a bazel build for them, and the build is pretty slow, but they change rarely.
 .PHONE: dev-copy-utils
@@ -911,7 +932,7 @@ dev-copy-utils:
 # dev-upload does a faster build and uploads to GCS / S3
 # It copies utils instead of building it
 .PHONY: dev-upload
-dev-upload: dev-upload-nodeup dev-upload-kops-controller dev-upload-protokube dev-copy-utils
+dev-upload: dev-upload-nodeup dev-upload-protokube dev-upload-dns-controller dev-upload-kops-controller dev-copy-utils
 	echo "Done"
 
 .PHONY: crds
