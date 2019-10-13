@@ -325,7 +325,6 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		if e.InstanceProtection != nil {
 			request.NewInstancesProtectedFromScaleIn = e.InstanceProtection
 		}
-
 	} else {
 		// @logic: else we have found a autoscaling group and we need to evaluate the difference
 		request := &autoscaling.UpdateAutoScalingGroupInput{
