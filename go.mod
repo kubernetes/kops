@@ -136,4 +136,5 @@ require (
 	k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5
 	sigs.k8s.io/controller-runtime v0.2.2
 	sigs.k8s.io/controller-tools v0.2.2-0.20190919191502-76a25b63325a
+	sigs.k8s.io/yaml v1.1.0
 )
