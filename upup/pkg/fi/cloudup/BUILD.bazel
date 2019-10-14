@@ -25,6 +25,7 @@ go_library(
     deps = [
         "//:go_default_library",
         "//channels/pkg/api:go_default_library",
+        "//cmd/kops-controller/pkg/config:go_default_library",
         "//dns-controller/pkg/dns:go_default_library",
         "//dnsprovider/pkg/dnsprovider:go_default_library",
         "//dnsprovider/pkg/dnsprovider/providers/aws/route53:go_default_library",

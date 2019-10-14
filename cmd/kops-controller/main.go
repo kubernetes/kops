@@ -19,24 +19,24 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/klog"
-	"k8s.io/kops/cmd/kops-controller/controllers"
-	ctrl "sigs.k8s.io/controller-runtime"
-
-	// +kubebuilder:scaffold:imports
-
 	"k8s.io/klog/klogr"
+	"k8s.io/kops/cmd/kops-controller/controllers"
+	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/nodeidentity"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	nodeidentityos "k8s.io/kops/pkg/nodeidentity/openstack"
-
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/yaml"
+	// +kubebuilder:scaffold:imports
 )
 
 var (
@@ -49,25 +49,39 @@ func init() {
 	// +kubebuilder:scaffold:scheme
 }
 
-type Options struct {
-	Cloud      string
-	ConfigPath string
-}
-
 func main() {
 	klog.InitFlags(nil)
 
-	var metricsAddr string
-	var enableLeaderElection bool
-	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
-	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
-		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
+	// Disable metrics by default (avoid port conflicts, also risky because we are host network)
+	metricsAddress := ":0"
+	//flag.StringVar(&metricsAddr, "metrics-addr", metricsAddress, "The address the metric endpoint binds to.")
+	// Enable leader election
+	enableLeaderElection := false
+	//flag.BoolVar(&enableLeaderElection, "enable-leader-election", enableLeaderElection,
+	//	"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 
-	var opt Options
-	flag.StringVar(&opt.Cloud, "cloud", opt.Cloud, "CloudProvider we are using (aws,gce,...)")
-	flag.StringVar(&opt.ConfigPath, "config", opt.ConfigPath, "Base location for cluster and instancegroup configurations")
+	configPath := "/etc/kubernetes/kops-controller/config.yaml"
+	flag.StringVar(&configPath, "conf", configPath, "Location of yaml configuration file")
 
 	flag.Parse()
+
+	if configPath == "" {
+		klog.Fatalf("must specify --conf")
+	}
+
+	var opt config.Options
+	opt.PopulateDefaults()
+
+	{
+		b, err := ioutil.ReadFile(configPath)
+		if err != nil {
+			klog.Fatalf("failed to read configuration file %q: %v", configPath, err)
+		}
+
+		if err := yaml.Unmarshal(b, &opt); err != nil {
+			klog.Fatalf("failed to parse configuration file %q: %v", configPath, err)
+		}
+	}
 
 	ctrl.SetLogger(klogr.New())
 
@@ -78,7 +92,7 @@ func main() {
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
-		MetricsBindAddress: metricsAddr,
+		MetricsBindAddress: metricsAddress,
 		LeaderElection:     enableLeaderElection,
 	})
 	if err != nil {
@@ -106,7 +120,7 @@ func buildScheme() error {
 	return nil
 }
 
-func addNodeController(mgr manager.Manager, opt *Options) error {
+func addNodeController(mgr manager.Manager, opt *config.Options) error {
 	var identifier nodeidentity.Identifier
 	var err error
 	switch opt.Cloud {
@@ -134,11 +148,11 @@ func addNodeController(mgr manager.Manager, opt *Options) error {
 		return fmt.Errorf("identifier for cloud %q not implemented", opt.Cloud)
 	}
 
-	if opt.ConfigPath == "" {
-		return fmt.Errorf("must specify config-path")
+	if opt.ConfigBase == "" {
+		return fmt.Errorf("must specify configBase")
 	}
 
-	nodeController, err := controllers.NewNodeReconciler(mgr, opt.ConfigPath, identifier)
+	nodeController, err := controllers.NewNodeReconciler(mgr, opt.ConfigBase, identifier)
 	if err != nil {
 		return err
 	}
