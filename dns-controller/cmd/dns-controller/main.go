@@ -41,6 +41,7 @@ import (
 	k8scoredns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/coredns"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 	_ "k8s.io/kops/pkg/resources/digitalocean/dns"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
 	gossipdnsprovider "k8s.io/kops/protokube/pkg/gossip/dns/provider"
@@ -70,10 +71,10 @@ func main() {
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
 	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, digitalocean, coredns, gossip)")
 	flag.StringVar(&gossipProtocol, "gossip-protocol", "mesh", "mesh/memberlist")
-	flags.StringVar(&gossipListen, "gossip-listen", "0.0.0.0:3998", "The address on which to listen if gossip is enabled")
+	flags.StringVar(&gossipListen, "gossip-listen", fmt.Sprintf("0.0.0.0:%d", wellknownports.DNSControllerGossipWeaveMesh), "The address on which to listen if gossip is enabled")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 	flag.StringVar(&gossipProtocolSecondary, "gossip-protocol-secondary", "", "mesh/memberlist")
-	flag.StringVar(&gossipListenSecondary, "gossip-listen-secondary", "0.0.0.0:4000", "address:port on which to bind for gossip")
+	flag.StringVar(&gossipListenSecondary, "gossip-listen-secondary", fmt.Sprintf("0.0.0.0:%d", wellknownports.DNSControllerGossipMemberlist), "address:port on which to bind for gossip")
 	flags.StringVar(&gossipSecretSecondary, "gossip-secret-secondary", gossipSecret, "Secret to use to secure gossip")
 	flags.StringSliceVar(&gossipSeedsSecondary, "gossip-seed-secondary", gossipSeedsSecondary, "If set, will enable gossip zones and seed using the provided addresses")
 	flags.StringVar(&watchNamespace, "watch-namespace", "", "Limits the functionality for pods, services and ingress to specific namespace, by default all")
