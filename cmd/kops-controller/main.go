@@ -55,10 +55,6 @@ func main() {
 	// Disable metrics by default (avoid port conflicts, also risky because we are host network)
 	metricsAddress := ":0"
 	//flag.StringVar(&metricsAddr, "metrics-addr", metricsAddress, "The address the metric endpoint binds to.")
-	// Enable leader election
-	enableLeaderElection := false
-	//flag.BoolVar(&enableLeaderElection, "enable-leader-election", enableLeaderElection,
-	//	"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 
 	configPath := "/etc/kubernetes/kops-controller/config.yaml"
 	flag.StringVar(&configPath, "conf", configPath, "Location of yaml configuration file")
@@ -93,7 +89,8 @@ func main() {
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
 		MetricsBindAddress: metricsAddress,
-		LeaderElection:     enableLeaderElection,
+		LeaderElection:     true,
+		LeaderElectionID:   "kops-controller-leader",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
