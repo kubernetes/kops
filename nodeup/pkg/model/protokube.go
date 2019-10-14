@@ -364,7 +364,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 				f.GossipSecretSecondary = t.Cluster.Spec.GossipConfig.Secondary.Secret
 			}
 		}
-
+		
 		// @TODO: This is hacky, but we want it so that we can have a different internal & external name
 		internalSuffix := t.Cluster.Spec.MasterInternalName
 		internalSuffix = strings.TrimPrefix(internalSuffix, "api.")
@@ -380,7 +380,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 				f.DNSProvider = fi.String("aws-route53")
 			case kops.CloudProviderDO:
 				f.DNSProvider = fi.String("digitalocean")
-				f.ClusterID = fi.String(t.Cluster.Name)
+				f.ClusterID = fi.String(t.Cluster.ObjectMeta.Name)
 			case kops.CloudProviderGCE:
 				f.DNSProvider = fi.String("google-clouddns")
 			case kops.CloudProviderVSphere:

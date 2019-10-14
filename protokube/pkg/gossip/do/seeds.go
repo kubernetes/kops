@@ -19,6 +19,7 @@ package do
 import (
 	"fmt"
 	"context"
+	"strings"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/protokube/pkg/gossip"
@@ -35,24 +36,33 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 	var seeds []string
 
 	
-	droplets, _, err := p.cloud.Droplets().ListByTag(context.TODO(), p.tag, nil)
+	droplets, _, err := p.cloud.Droplets().List(context.TODO(), nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("Droplets.ListByTag returned error: %v", err)
 	}
 
 	for _, droplet := range droplets {
-		ip, err := droplet.PrivateIPv4()
-		if err != nil {
-			klog.V(2).Infof("Appending a seed for cluster tag:%s, with ip=%s", p.tag, ip)
-			seeds = append(seeds, ip)
+		for _, dropTag := range droplet.Tags {
+			klog.V(2).Infof("Get Seeds - droplet found=%s,SeedProvider Tag=%s", dropTag, p.tag)
+			if strings.Contains(dropTag, strings.Replace(p.tag, ".", "-", -1)) {
+				ip, err := droplet.PrivateIPv4()
+				if err != nil {
+					klog.V(2).Infof("Appending a seed for cluster tag:%s, with ip=%s", p.tag, ip)
+					seeds = append(seeds, ip)
+				}
+			} 
 		}
+	
 	}
 
+	klog.V(2).Infof("Get seeds function done")
 	return seeds, nil
 }
 
 func NewSeedProvider(cloud *digitalocean.Cloud, tag string) (*SeedProvider, error) {
+	klog.V(2).Infof("Trying new seed provider with cluster tag:%s", tag)
+
 	return &SeedProvider{
 		cloud:    cloud,
 		tag:    tag,

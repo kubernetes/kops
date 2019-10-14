@@ -26,6 +26,7 @@ import (
 
 	"github.com/digitalocean/godo"
 
+	"k8s.io/klog"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
@@ -195,7 +196,9 @@ func listDNS(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) 
 	}
 
 	if domainName == "" {
-		return nil, fmt.Errorf("failed to find domain for cluster: %s", clusterName)
+		klog.Info("Domain Name is empty. Could be configured as gossip. Just ignore.")
+		return nil, nil
+		//return nil, fmt.Errorf("failed to find domain for cluster: %s", clusterName)
 	}
 
 	records, err := getAllRecordsByDomain(c, domainName)

@@ -248,13 +248,16 @@ func getLocalDeviceName(vol *godo.Volume) string {
 
 func (d *DOVolumes) GossipSeeds() (gossip.SeedProvider, error) {
 	for _, dropletTag := range d.dropletTags {
-        if strings.Contains(dropletTag, d.ClusterID) {
+        if strings.Contains(dropletTag, strings.Replace(d.ClusterID, ".", "-", -1)) {
 			return gossipdo.NewSeedProvider(d.Cloud, dropletTag)
         }
 	}
 	
-	
 	return nil, fmt.Errorf("could not determine a matching droplet tag for gossip seeding")
+}
+
+func (d *DOVolumes) InstanceName() string {
+	return d.dropletName
 }
 
 // GetDropletInternalIP gets the private IP of the droplet running this program
