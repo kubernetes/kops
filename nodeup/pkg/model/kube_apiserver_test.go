@@ -98,6 +98,12 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 			},
 			"--insecure-port=0 --secure-port=0 --target-ram-mb=320",
 		},
+		{
+			kops.KubeAPIServerConfig{
+				ServiceAccountKeyFile: []string{"/srv/kubernetes/server.key", "/srv/kubernetes/service-account.key"},
+			},
+			"--insecure-port=0 --secure-port=0 --service-account-key-file=/srv/kubernetes/server.key --service-account-key-file=/srv/kubernetes/service-account.key",
+		},
 	}
 
 	for _, g := range grid {
