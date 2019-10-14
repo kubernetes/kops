@@ -52,7 +52,7 @@ var (
 func main() {
 	klog.InitFlags(nil)
 
-	fmt.Printf("protokube version %s\n", BuildVersion)
+	fmt.Printf("sriki now protokube version %s\n", BuildVersion)
 
 	if err := run(); err != nil {
 		klog.Errorf("Error: %v", err)
@@ -138,11 +138,6 @@ func run() error {
 			internalIP = awsVolumes.InternalIP()
 		}
 	} else if cloud == "digitalocean" {
-		if clusterID == "" {
-			klog.Error("digitalocean requires --cluster-id")
-			os.Exit(1)
-		}
-
 		doVolumes, err := protokube.NewDOVolumes(clusterID)
 		if err != nil {
 			klog.Errorf("Error initializing DigitalOcean: %q", err)
@@ -294,6 +289,12 @@ func run() error {
 				return err
 			}
 			gossipName = volumes.(*protokube.ALIVolumes).InstanceID()
+		} else if cloud == "digitalocean" {
+			gossipSeeds, err = volumes.(*protokube.DOVolumes).GossipSeeds()
+			if err != nil {
+				return err
+			}
+			gossipName = volumes.(*protokube.DOVolumes).InstanceName()
 		} else {
 			klog.Fatalf("seed provider for %q not yet implemented", cloud)
 		}
