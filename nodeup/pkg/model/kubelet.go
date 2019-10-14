@@ -512,7 +512,18 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		instanceType, err := awsup.GetMachineTypeInfo(strings.Split(b.InstanceGroup.Spec.MachineType, ",")[0])
+		sess := session.Must(session.NewSession())
+		metadata := ec2metadata.New(sess)
+
+		// Get the actual instance type by querying the EC2 instance metadata service.
+		instanceTypeName, err := metadata.GetMetadata("instance-type")
+		if err != nil {
+			// Otherwise, fall back to the Instance Group spec.
+			instanceTypeName = strings.Split(b.InstanceGroup.Spec.MachineType, ",")[0]
+		}
+
+		// Get the instance type's detailed information.
+		instanceType, err := awsup.GetMachineTypeInfo(instanceTypeName)
 		if err != nil {
 			return c, err
 		}
