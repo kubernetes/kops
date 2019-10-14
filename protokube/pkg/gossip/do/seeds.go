@@ -66,23 +66,6 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 	return seeds, nil
 }
 
-// func GetPrivateIP(d *godo.Droplet) (string, error) {
-// 	klog.V(2).Infof("Get PrivateIP: droplet name =%s", d.Name)
-// 	if d.Networks == nil {
-// 		return "", errors.New("no networks have been defined")
-// 	}
-
-// 	for _, v4 := range d.Networks.V4 {
-// 		klog.V(2).Infof("Get PrivateIP: droplet name =%s, v4 type=%s, Ip address=%s", d.Name, v4.Type, v4.IPAddress)
-// 		if v4.Type == "private" {
-// 			return v4.IPAddress, nil
-// 		}
-// 	}
-
-// 	return "", errors.New("Could not find v4 network")
-// }
-
-
 func NewSeedProvider(cloud *digitalocean.Cloud, tag string) (*SeedProvider, error) {
 	klog.V(2).Infof("Trying new seed provider with cluster tag:%s", tag)
 
