@@ -64,7 +64,6 @@ container_bundle(
     images = {
         "protokube:{STABLE_PROTOKUBE_TAG}": "protokube-image",
     },
-    stamp = True,
 )
 
 load("//tools:gzip.bzl", "gzip")
