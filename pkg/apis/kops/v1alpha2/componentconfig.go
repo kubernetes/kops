@@ -429,7 +429,7 @@ type KubeAPIServerConfig struct {
 	// File containing PEM-encoded x509 RSA or ECDSA private or public keys, used to verify ServiceAccount tokens.
 	// The specified file can contain multiple keys, and the flag can be specified multiple times with different files.
 	// If unspecified, --tls-private-key-file is used.
-	ServiceAccountKeyFile []string `json:"serviceAccountKeyFile,omitempty" flag:"service-account-key-file"`
+	ServiceAccountKeyFile []string `json:"serviceAccountKeyFile,omitempty" flag:"service-account-key-file,repeat"`
 
 	// Path to the file that contains the current private key of the service account token issuer.
 	// The issuer will sign issued ID tokens with this private key. (Requires the 'TokenRequest' feature gate.)
