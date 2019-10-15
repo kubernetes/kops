@@ -1332,10 +1332,6 @@ spec:
                     CoreFile by the user - ignores other provided flags which modify
                     the CoreFile.
                   type: string
-                image:
-                  description: Image is the name of the docker image to run - @deprecated
-                    as this is now in the addon
-                  type: string
                 memoryLimit:
                   description: MemoryLimit specifies the memory limit of each dns
                     container in the cluster. Default 170m.
