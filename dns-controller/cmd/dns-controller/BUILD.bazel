@@ -15,6 +15,7 @@ go_library(
         "//dnsprovider/pkg/dnsprovider/providers/coredns:go_default_library",
         "//dnsprovider/pkg/dnsprovider/providers/google/clouddns:go_default_library",
         "//pkg/resources/digitalocean/dns:go_default_library",
+        "//pkg/wellknownports:go_default_library",
         "//protokube/pkg/gossip:go_default_library",
         "//protokube/pkg/gossip/dns:go_default_library",
         "//protokube/pkg/gossip/dns/provider:go_default_library",

@@ -26,8 +26,11 @@ import (
 	"path"
 	"strings"
 
+	"github.com/spf13/pflag"
+	"k8s.io/klog"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
 	_ "k8s.io/kops/protokube/pkg/gossip/memberlist"
@@ -35,8 +38,6 @@ import (
 	"k8s.io/kops/protokube/pkg/protokube"
 
 	// Load DNS plugins
-	"github.com/spf13/pflag"
-	"k8s.io/klog"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	k8scoredns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/coredns"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
@@ -80,10 +81,10 @@ func run() error {
 	flags.IntVar(&dnsUpdateInterval, "dns-update-interval", 5, "Configure interval at which to update DNS records.")
 	flag.StringVar(&flagChannels, "channels", flagChannels, "channels to install")
 	flag.StringVar(&gossipProtocol, "gossip-protocol", "mesh", "mesh/memberlist")
-	flag.StringVar(&gossipListen, "gossip-listen", "0.0.0.0:3999", "address:port on which to bind for gossip")
+	flag.StringVar(&gossipListen, "gossip-listen", fmt.Sprintf("0.0.0.0:%d", wellknownports.ProtokubeGossipWeaveMesh), "address:port on which to bind for gossip")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 	flag.StringVar(&gossipProtocolSecondary, "gossip-protocol-secondary", "memberlist", "mesh/memberlist")
-	flag.StringVar(&gossipListenSecondary, "gossip-listen-secondary", "0.0.0.0:4000", "address:port on which to bind for gossip")
+	flag.StringVar(&gossipListenSecondary, "gossip-listen-secondary", fmt.Sprintf("0.0.0.0:%d", wellknownports.ProtokubeGossipMemberlist), "address:port on which to bind for gossip")
 	flags.StringVar(&gossipSecretSecondary, "gossip-secret-secondary", gossipSecret, "Secret to use to secure gossip")
 	flag.StringVar(&peerCA, "peer-ca", peerCA, "Path to a file containing the peer ca in PEM format")
 	flag.StringVar(&peerCert, "peer-cert", peerCert, "Path to a file containing the peer certificate")

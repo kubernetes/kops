@@ -37,6 +37,7 @@ import (
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
@@ -286,9 +287,9 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	pod.Labels["k8s-app"] = pod.Name
 
 	// TODO: Use a socket file for the quarantine port
-	quarantinedClientPort := 3994
+	quarantinedClientPort := wellknownports.EtcdMainQuarantinedClientPort
 
-	grpcPort := 3996
+	grpcPort := wellknownports.EtcdMainGRPC
 
 	// The dns suffix logic mirrors the existing logic, so we should be compatible with existing clusters
 	// (etcd makes it difficult to change peer urls, treating it as a cluster event, for reasons unknown)
@@ -310,8 +311,8 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	case "events":
 		clientPort = 4002
 		peerPort = 2381
-		grpcPort = 3997
-		quarantinedClientPort = 3995
+		grpcPort = wellknownports.EtcdEventsGRPC
+		quarantinedClientPort = wellknownports.EtcdEventsQuarantinedClientPort
 
 	default:
 		return nil, fmt.Errorf("unknown etcd cluster key %q", etcdCluster.Name)

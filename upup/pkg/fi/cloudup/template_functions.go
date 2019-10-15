@@ -44,6 +44,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/resources/spotinst"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/env"
@@ -229,7 +230,7 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 			if tf.cluster.Spec.DNSControllerGossipConfig.Seed != nil {
 				argv = append(argv, "--gossip-seed="+*tf.cluster.Spec.DNSControllerGossipConfig.Seed)
 			} else {
-				argv = append(argv, "--gossip-seed=127.0.0.1:3999")
+				argv = append(argv, fmt.Sprintf("--gossip-seed=127.0.0.1:%d", wellknownports.ProtokubeGossipWeaveMesh))
 			}
 
 			if tf.cluster.Spec.DNSControllerGossipConfig.Secondary != nil {
@@ -246,16 +247,16 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 				if tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Seed != nil {
 					argv = append(argv, "--gossip-seed-secondary="+*tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Seed)
 				} else {
-					argv = append(argv, "--gossip-seed-secondary=127.0.0.1:4000")
+					argv = append(argv, fmt.Sprintf("--gossip-seed-secondary=127.0.0.1:%d", wellknownports.ProtokubeGossipMemberlist))
 				}
 			}
 		} else {
 			// Default to primary mesh and secondary memberlist
-			argv = append(argv, "--gossip-seed=127.0.0.1:3999")
+			argv = append(argv, fmt.Sprintf("--gossip-seed=127.0.0.1:%d", wellknownports.ProtokubeGossipWeaveMesh))
 
 			argv = append(argv, "--gossip-protocol-secondary=memberlist")
-			argv = append(argv, "--gossip-listen-secondary=0.0.0.0:3997")
-			argv = append(argv, "--gossip-seed-secondary=127.0.0.1:4000")
+			argv = append(argv, fmt.Sprintf("--gossip-listen-secondary=0.0.0.0:%d", wellknownports.DNSControllerGossipMemberlist))
+			argv = append(argv, fmt.Sprintf("--gossip-seed-secondary=127.0.0.1:%d", wellknownports.ProtokubeGossipMemberlist))
 		}
 	} else {
 		switch kops.CloudProviderID(tf.cluster.Spec.CloudProvider) {
