@@ -17,12 +17,13 @@ limitations under the License.
 package domodel
 
 import (
+	"strconv"
+	"strings"
+
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
-	"strconv"
-	"strings"
 )
 
 // DropletBuilder configures droplets for the cluster
