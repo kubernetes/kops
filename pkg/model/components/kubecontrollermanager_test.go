@@ -25,12 +25,6 @@ import (
 	"k8s.io/kops/pkg/assets"
 )
 
-type ClusterParams struct {
-	CloudProvider     string
-	KubernetesVersion string
-	UpdatePolicy      string
-}
-
 func buildCluster() *api.Cluster {
 
 	return &api.Cluster{
