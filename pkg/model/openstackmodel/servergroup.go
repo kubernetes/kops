@@ -142,6 +142,12 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		// Associate a floating IP to the master and bastion always if we have external network in router
 		// associate it to a node if bastion is not used
 		if b.Cluster.Spec.CloudConfig.Openstack != nil && b.Cluster.Spec.CloudConfig.Openstack.Router != nil {
+			if ig.Spec.AssociatePublicIP != nil && !fi.BoolValue(ig.Spec.AssociatePublicIP) {
+				if ig.Spec.Role == kops.InstanceGroupRoleMaster {
+					b.associateFixedIPToKeypair(c, instanceTask)
+				}
+				continue
+			}
 			switch ig.Spec.Role {
 			case kops.InstanceGroupRoleBastion:
 				t := &openstacktasks.FloatingIP{
