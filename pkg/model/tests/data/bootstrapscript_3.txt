@@ -34,7 +34,7 @@ case `cat /proc/version` in
 *[Uu]buntu*)
   echo "Acquire::http::Proxy \"${http_proxy}\";" > /etc/apt/apt.conf.d/30proxy ;;
 *[Rr]ed[Hh]at*)
-  echo "http_proxy=${http_proxy}" >> /etc/yum.conf ;;
+  echo "proxy=${http_proxy}" >> /etc/yum.conf ;;
 esac
 echo "DefaultEnvironment=\"http_proxy=${http_proxy}\" \"https_proxy=${http_proxy}\" \"NO_PROXY=${no_proxy}\" \"no_proxy=${no_proxy}\"" >> /etc/systemd/system.conf
 systemctl daemon-reload
