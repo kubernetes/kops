@@ -87,10 +87,6 @@ func (p *peer) updateValues(removeKeys []string, putEntries map[string]string) e
 	return nil
 }
 
-func (p *peer) stop() {
-	close(p.quit)
-}
-
 // Return a copy of our complete state.
 func (p *peer) Gossip() (complete mesh.GossipData) {
 	data := p.st.getData()
