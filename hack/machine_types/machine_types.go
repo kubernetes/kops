@@ -177,7 +177,7 @@ func run() error {
 					Cores: stringToInt(attributes["vcpu"]),
 				}
 
-				memory := strings.TrimRight(attributes["memory"], " GiB")
+				memory := strings.TrimSuffix(attributes["memory"], " GiB")
 				machine.MemoryGB = stringToFloat32(memory)
 
 				if attributes["storage"] != "EBS only" {
