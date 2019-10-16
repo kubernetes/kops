@@ -47,7 +47,7 @@ GCFLAGS?=
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
-UPLOAD=$(MAKEDIR)/hack/upload
+UPLOAD_CMD=$(MAKEDIR)/hack/upload
 
 
 # Unexport environment variables that can affect tests and are not used in builds
@@ -858,7 +858,7 @@ bazel-upload: bazel-version-dist # Upload kops to S3
 # It uploads a build to a staging directory, which in theory we can publish as a release
 .PHONY: prow-postsubmit
 prow-postsubmit: bazel-version-dist
-	${UPLOAD} ${BAZELUPLOAD}/kops/${VERSION}/ ${UPLOAD_DEST}/${KOPS_RELEASE_VERSION}-${GITSHA}/
+	${UPLOAD_CMD} ${BAZELUPLOAD}/kops/${VERSION}/ ${UPLOAD_DEST}/${KOPS_RELEASE_VERSION}-${GITSHA}/
 
 #-----------------------------------------------------------
 # static html documentation
@@ -890,7 +890,7 @@ dev-upload-nodeup: bazel-crossbuild-nodeup
 	cp -fp bazel-bin/cmd/nodeup/linux_amd64_pure_stripped/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
 	tools/sha1 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha1
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
-	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload-protokube uploads protokube to GCS
 .PHONY: dev-upload-protokube
@@ -899,7 +899,7 @@ dev-upload-protokube: bazel-protokube-export # Upload kops to GCS
 	cp -fp ${BAZELIMAGES}/protokube.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz
 	cp -fp ${BAZELIMAGES}/protokube.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha1
 	cp -fp ${BAZELIMAGES}/protokube.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha256
-	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload-kops-controller uploads kops-controller to GCS
 .PHONY: dev-upload-kops-controller
@@ -908,7 +908,7 @@ dev-upload-kops-controller: bazel-kops-controller-export # Upload kops to GCS
 	cp -fp ${BAZELIMAGES}/kops-controller.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz
 	cp -fp ${BAZELIMAGES}/kops-controller.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz.sha1
 	cp -fp ${BAZELIMAGES}/kops-controller.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz.sha256
-	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload-dns-controller uploads dns-controller to GCS
 .PHONY: dev-upload-dns-controller
@@ -917,7 +917,7 @@ dev-upload-dns-controller: bazel-dns-controller-export # Upload kops to GCS
 	cp -fp ${BAZELIMAGES}/dns-controller.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz
 	cp -fp ${BAZELIMAGES}/dns-controller.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz.sha1
 	cp -fp ${BAZELIMAGES}/dns-controller.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz.sha256
-	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-copy-utils copies utils from a recent release
 # We don't currently have a bazel build for them, and the build is pretty slow, but they change rarely.
@@ -927,7 +927,7 @@ dev-copy-utils:
 	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.15.0-alpha.1/linux/amd64/utils.tar.gz
 	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.15.0-alpha.1/linux/amd64/utils.tar.gz.sha1
 	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.15.0-alpha.1/linux/amd64/utils.tar.gz.sha256
-	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload does a faster build and uploads to GCS / S3
 # It copies utils instead of building it
