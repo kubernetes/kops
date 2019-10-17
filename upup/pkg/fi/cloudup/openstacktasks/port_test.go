@@ -389,9 +389,25 @@ func Test_Port_CheckChanges(t *testing.T) {
 			},
 			changes: &Port{
 				Name:    nil,
-				Network: &Network{ID: fi.String("networkID")},
+				Network: nil,
 			},
 			expectedError: nil,
+		},
+		{
+			desc: "actual not nil all changeable fields set",
+			actual: &Port{
+				Name:    fi.String("name"),
+				Network: nil,
+			},
+			expected: &Port{
+				Name:    fi.String("name"),
+				Network: nil,
+			},
+			changes: &Port{
+				Name:    nil,
+				Network: &Network{ID: fi.String("networkID")},
+			},
+			expectedError: fi.CannotChangeField("Network"),
 		},
 		{
 			desc: "actual not nil unchangeable field Name set",
