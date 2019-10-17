@@ -144,7 +144,7 @@ func (_ *Port) CheckChanges(a, e, changes *Port) error {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
 		}
-		if e.Network != nil {
+		if changes.Network != nil {
 			return fi.CannotChangeField("Network")
 		}
 	}
