@@ -513,7 +513,7 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 
 		hostname := fmt.Sprintf("%s.%s", az, instanceID)
 		if hostname == "" {
-			return "", errors.New("private IP for digitalocean droplet was empty")
+			return "", errors.New("hostname for Alicloud ECS was empty")
 		}
 
 		return hostname, nil
