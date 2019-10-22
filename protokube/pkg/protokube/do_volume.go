@@ -56,7 +56,33 @@ type DOVolumes struct {
 
 var _ Volumes = &DOVolumes{}
 
-func NewDOVolumes(clusterID string) (*DOVolumes, error) {
+func GetClusterID() (string, error) {
+	var clusterID = ""
+
+	dropletTags, err := getMetadataDropletTags()
+	if err != nil {
+		return clusterID, fmt.Errorf("GetClusterID failed - unable to retrieve droplet tags: %s", err)
+	}
+
+	for _, dropletTag := range dropletTags {
+		if strings.Contains(dropletTag, "KubernetesCluster:") {
+			clusterID = strings.Replace(dropletTag, ".", "-", -1)
+
+			tokens := strings.Split(clusterID, ":")
+			if len(tokens) != 2 {
+				return clusterID, fmt.Errorf("invalid clusterID (expected two tokens): %q", clusterID)
+			}
+
+			clusterID := tokens[1]
+
+			return clusterID, nil
+		}
+	}
+
+	return clusterID, fmt.Errorf("failed to get droplet clusterID")
+}
+
+func NewDOVolumes() (*DOVolumes, error) {
 	region, err := getMetadataRegion()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get droplet region: %s", err)
@@ -85,6 +111,11 @@ func NewDOVolumes(clusterID string) (*DOVolumes, error) {
 	dropletTags, err := getMetadataDropletTags()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get droplet tags: %s", err)
+	}
+
+	clusterID, err := GetClusterID()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get clusterID: %s", err)
 	}
 
 	return &DOVolumes{
@@ -248,11 +279,11 @@ func getLocalDeviceName(vol *godo.Volume) string {
 
 func (d *DOVolumes) GossipSeeds() (gossip.SeedProvider, error) {
 	for _, dropletTag := range d.dropletTags {
-        if strings.Contains(dropletTag, strings.Replace(d.ClusterID, ".", "-", -1)) {
+		if strings.Contains(dropletTag, strings.Replace(d.ClusterID, ".", "-", -1)) {
 			return gossipdo.NewSeedProvider(d.Cloud, dropletTag)
-        }
+		}
 	}
-	
+
 	return nil, fmt.Errorf("could not determine a matching droplet tag for gossip seeding")
 }
 
@@ -286,7 +317,7 @@ func getMetadataDropletID() (string, error) {
 func getMetadataDropletTags() ([]string, error) {
 
 	tagString, error := getMetadata(dropletIDMetadataTags)
-	dropletTags := strings.Split(tagString,"\n")
+	dropletTags := strings.Split(tagString, "\n")
 	return dropletTags, error
 }
 

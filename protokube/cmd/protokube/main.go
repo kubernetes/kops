@@ -52,7 +52,7 @@ var (
 func main() {
 	klog.InitFlags(nil)
 
-	fmt.Printf("sriki now protokube version %s\n", BuildVersion)
+	fmt.Printf("srikiz now protokube version %s\n", BuildVersion)
 
 	if err := run(); err != nil {
 		klog.Errorf("Error: %v", err)
@@ -138,13 +138,20 @@ func run() error {
 			internalIP = awsVolumes.InternalIP()
 		}
 	} else if cloud == "digitalocean" {
-		doVolumes, err := protokube.NewDOVolumes(clusterID)
+		doVolumes, err := protokube.NewDOVolumes()
 		if err != nil {
 			klog.Errorf("Error initializing DigitalOcean: %q", err)
 			os.Exit(1)
 		}
-
 		volumes = doVolumes
+
+		if clusterID == "" {
+			clusterID, err = protokube.GetClusterID()
+			if err != nil {
+				klog.Errorf("Error getting clusterid: %s", err)
+				os.Exit(1)
+			}
+		}
 
 		if internalIP == nil {
 			internalIP, err = protokube.GetDropletInternalIP()
@@ -153,7 +160,6 @@ func run() error {
 				os.Exit(1)
 			}
 		}
-
 	} else if cloud == "gce" {
 		gceVolumes, err := protokube.NewGCEVolumes()
 		if err != nil {
