@@ -21,8 +21,5 @@ import "strings"
 // TODO: Are .local names necessarily invalid for "real DNS"? Do we need more qualification here?
 func IsGossipHostname(name string) bool {
 	normalized := "." + strings.TrimSuffix(name, ".")
-	if strings.HasSuffix(normalized, ".k8s.local") {
-		return true
-	}
-	return false
+	return strings.HasSuffix(normalized, ".k8s.local")
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package digitalocean
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -70,7 +71,7 @@ func NewCloud(region string) (*Cloud, error) {
 		AccessToken: accessToken,
 	}
 
-	oauthClient := oauth2.NewClient(oauth2.NoContext, tokenSource)
+	oauthClient := oauth2.NewClient(context.TODO(), tokenSource)
 	client := godo.NewClient(oauthClient)
 
 	return &Cloud{
