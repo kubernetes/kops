@@ -18,6 +18,7 @@ limitations under the License.
 package clouddns
 
 import (
+	"context"
 	"io"
 
 	"cloud.google.com/go/compute/metadata"
@@ -80,7 +81,7 @@ func CreateInterface(projectID string, tokenSource oauth2.TokenSource) (*Interfa
 	if tokenSource == nil {
 		var err error
 		tokenSource, err = google.DefaultTokenSource(
-			oauth2.NoContext,
+			context.TODO(),
 			compute.CloudPlatformScope,
 			compute.ComputeScope)
 		klog.V(4).Infof("Using DefaultTokenSource %#v", tokenSource)
@@ -91,7 +92,7 @@ func CreateInterface(projectID string, tokenSource oauth2.TokenSource) (*Interfa
 		klog.Infof("Using existing Token Source %#v", tokenSource)
 	}
 
-	oauthClient := oauth2.NewClient(oauth2.NoContext, tokenSource)
+	oauthClient := oauth2.NewClient(context.TODO(), tokenSource)
 
 	service, err := dns.New(oauthClient)
 	if err != nil {
