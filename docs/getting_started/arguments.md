@@ -19,7 +19,7 @@ Examples:
 
 **YAML:**
 
-See the docs in [cluster_spec.md#adminaccess](cluster_spec.md#adminaccess)
+See the docs in [../cluster_spec.md#adminaccess](../cluster_spec.md#adminaccess)
 
 ## dns-zone
 
@@ -67,7 +67,7 @@ Values:
 
 # API only Arguments
 
-Certain arguments can only be passed via the API, eg, `kops edit cluster`. The following documents some of the more interesting or lesser-known options. See the [Cluster Spec](./cluster_spec.md) page for more fields.
+Certain arguments can only be passed via the API, eg, `kops edit cluster`. The following documents some of the more interesting or lesser-known options. See the [Cluster Spec](./../cluster_spec.md) page for more fields.
 
 ## kubeletPreferredAddressTypes
 
@@ -82,4 +82,4 @@ kubeAPIServer:
 	- ExternalIP
 ```
 
-More information about using YAML is available [here](manifests_and_customizing_via_api.md).
+More information about using YAML is available [here](../manifests_and_customizing_via_api.md).

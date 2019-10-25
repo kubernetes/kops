@@ -1,22 +1,6 @@
-<p align="center">
-  <img src="img/k8s-aws.png"> </image>
-</p>
+# Getting Started with kops on AWS
 
-# Getting Started
-
-## Install kops
-
-Before we can bring up the cluster we need to [install the CLI tool](install.md) `kops`.
-
-## Install kubectl
-
-In order to control Kubernetes clusters we need to [install the CLI tool](install.md) `kubectl`.
-
-#### Other Platforms
-
-* [Kubernetes Latest Release](https://github.com/kubernetes/kubernetes/releases/latest)
-
-* [Installation Guide](http://kubernetes.io/docs/user-guide/prereqs/)
+Make sure you have [installed kops](../install.md) and [installed kubectl](../install.md).
 
 ## Setup your environment
 
@@ -112,7 +96,7 @@ This is copying the NS servers of your **SUBDOMAIN** up to the **PARENT**
 domain in Route53.  To do this you should:
 
 * Create the subdomain, and note your **SUBDOMAIN** name servers (If you have
-  already done this you can also [get the values](ns.md))
+  already done this you can also [get the values](../advanced/ns.md))
 
 ```bash
 # Note: This example assumes you have jq installed locally.
@@ -186,7 +170,7 @@ You might need to grab [jq](https://github.com/stedolan/jq/wiki/Installation)
 for some of these instructions.
 
 * Create the subdomain, and note your name servers (If you have already done
-  this you can also [get the values](ns.md))
+  this you can also [get the values](../advanced/ns.md))
 
 ```bash
 ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.example.com --caller-reference $ID | jq .DelegationSet.NameServers
@@ -271,7 +255,7 @@ to revert or recover a previous state store.
 aws s3api put-bucket-versioning --bucket prefix-example-com-state-store  --versioning-configuration Status=Enabled
 ```
 
-Information regarding cluster state store location must be set when using `kops` cli see [state store](state.md) for further information.
+Information regarding cluster state store location must be set when using `kops` cli see [state store](../state.md) for further information.
 
 ### Using S3 default bucket encryption
 
@@ -284,7 +268,7 @@ aws s3api put-bucket-encryption --bucket prefix-example-com-state-store --server
 ```
 
 If the default encryption is not set or it cannot be checked, kops will resort to using client side AES256 encryption.
- 
+
 ### Sharing an S3 bucket across multiple accounts
 
 It is possible to use a single S3 bucket for storing kops state for clusters
@@ -334,7 +318,7 @@ aws ec2 describe-availability-zones --region us-west-2
 ```
 
 Below is a create cluster command.  We'll use the most basic example possible,
-with more verbose examples in [high availability](high_availability.md#advanced-example).
+with more verbose examples in [high availability](../operations/high_availability.md#advanced-example).
 The below command will generate a cluster configuration, but not start building
 it. Make sure that you have generated SSH key pair before creating the cluster.
 
@@ -431,9 +415,9 @@ modes](commands.md#other-interesting-modes) to learn more about generating
 Terraform configurations, or running your cluster in an HA (Highly Available)
 mode.
 
-The [cluster spec docs](cluster_spec.md) can help to configure these "other
+The [cluster spec docs](../cluster_spec.md) can help to configure these "other
 interesting modes". Also be sure to check out how to run a [private network
-topology](topology.md) in AWS.
+topology](../topology.md) in AWS.
 
 ## Feedback
 
