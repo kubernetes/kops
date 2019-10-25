@@ -43,7 +43,7 @@ var templateFuncs = template.FuncMap{
 // Build is responsible for writing out the file assets from cluster and instanceGroup
 func (f *FileAssetsBuilder) Build(c *fi.ModelBuilderContext) error {
 	// used to keep track of previous file, so a instanceGroup can override a cluster wide one
-	tracker := make(map[string]bool, 0)
+	tracker := make(map[string]bool)
 
 	// ensure the default path exists
 	c.EnsureTask(&nodetasks.File{
