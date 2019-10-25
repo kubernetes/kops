@@ -1320,6 +1320,10 @@ spec:
                 cacheMaxSize:
                   description: CacheMaxSize is the maximum entries to keep in dnsmasq
                   type: integer
+                coreDNSImage:
+                  description: CoreDNSImage is used to override the default image
+                    used for CoreDNS
+                  type: string
                 cpuRequest:
                   description: CPURequest specifies the cpu requests of each dns container
                     in the cluster. Default 100m.
