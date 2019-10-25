@@ -1,27 +1,33 @@
 # Documentation Index
 
 ## Quick start
-* [Getting started on AWS](aws.md)
-* [Getting started on GCE](tutorial/gce.md)
+* [Getting started on AWS](getting_started/aws.md)
+* [Getting started on GCE](getting_started/gce.md)
 * [CLI reference](cli/kops.md)
 
 
 ## Overview
 
-* [Command-line interface](#command-line-interface)
-* [Inspection](#inspection)
-* [`kops` design documents](#kops-design-documents)
-* [Networking](#networking)
-* [Operations](#operations)
-* [Security](#security)
-* [Development](#development)
+- [Documentation Index](#documentation-index)
+  - [Quick start](#quick-start)
+  - [Overview](#overview)
+  - [Command-line interface](#command-line-interface)
+  - [Advanced / Detailed List of Configurations](#advanced--detailed-list-of-configurations)
+    - [API / Configuration References](#api--configuration-references)
+    - [API Usage Guides](#api-usage-guides)
+  - [Operations](#operations)
+  - [Networking](#networking)
+  - [`kops` design documents](#kops-design-documents)
+  - [Security](#security)
+  - [Inspection](#inspection)
+  - [Development](#development)
 
 
 ## Command-line interface
 
 * [CLI argument explanations](arguments.md)
 * [CLI reference](cli/kops.md)
-* [Commands](commands.md)
+* [Commands](usage/commands.md)
     * miscellaneous CLI-related remarks
 * [Experimental features](experimental.md)
     * list of and how to enable experimental flags in the CLI
@@ -46,7 +52,7 @@
 * [Cluster addons](addons.md)
 * [Cluster configuration management](changing_configuration.md)
 * [Cluster desired configuration creation from template](cluster_template.md)
-* [Cluster upgrades and migrations](cluster_upgrades_and_migrations.md)
+* [Cluster upgrades and migrations](operations/cluster_upgrades_and_migrations.md)
 * [`etcd` volume encryption setup](etcd_volume_encryption.md)
 * [`etcd` backup/restore](etcd/backup-restore.md)
 * [GPU setup](gpu.md)

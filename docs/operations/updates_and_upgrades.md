@@ -1,3 +1,39 @@
+# Updates and Upgrades
+
+## Updating kops
+
+### MacOS
+
+From Homebrew:
+
+```bash
+brew update && brew upgrade kops
+```
+
+From Github:
+
+```bash
+rm -rf /usr/local/bin/kops
+wget -O kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-darwin-amd64
+chmod +x ./kops
+sudo mv ./kops /usr/local/bin/
+```
+
+You can also rerun [these steps](../development/building.md) if previously built from source.
+
+### Linux
+
+From Github:
+
+```bash
+rm -rf /usr/local/bin/kops
+wget -O kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+chmod +x ./kops
+sudo mv ./kops /usr/local/bin/
+```
+
+You can also rerun [these steps](../development/building.md) if previously built from source.
+
 ## Upgrading Kubernetes
 
 Upgrading Kubernetes is easy with kops. The cluster spec contains a `kubernetesVersion`, so you can simply edit it with `kops edit`, and apply the updated configuration to your cluster.
@@ -39,5 +75,4 @@ Upgrade uses the latest Kubernetes version considered stable by kops, defined in
 * `kops rolling-update cluster $NAME` to preview, then `kops rolling-update cluster $NAME --yes`
 
 ### Other Notes:
-* In general, we recommend that you upgrade your cluster one minor release at a time (1.7 --> 1.8 --> 1.9).  Although jumping minor versions may work if you have not enabled alpha features, you run a greater risk of running into problems due to version deprecation. 
-
+* In general, we recommend that you upgrade your cluster one minor release at a time (1.7 --> 1.8 --> 1.9).  Although jumping minor versions may work if you have not enabled alpha features, you run a greater risk of running into problems due to version deprecation.
