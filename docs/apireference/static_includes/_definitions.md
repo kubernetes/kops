@@ -1,5 +1,0 @@
-
-# <strong>Definitions</strong>
-
-------------
-
