@@ -58,7 +58,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		name := b.AutoscalingGroupName(ig)
 
 		if featureflag.SpotinstHybrid.Enabled() {
-			if spotinstmodel.ManageInstanceGroup(ig) {
+			if spotinstmodel.HybridInstanceGroup(ig) {
 				klog.V(2).Infof("Skipping instance group: %q", name)
 				continue
 			}
