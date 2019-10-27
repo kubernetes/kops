@@ -33,9 +33,10 @@ import (
 )
 
 const (
-	// InstanceGroupLabelManaged is the metadata label used on the instance
-	// group to specify that the Spotinst provider should be used to upon creation.
-	InstanceGroupLabelManaged = "spotinst.io/managed"
+	// InstanceGroupLabelHybrid is the metadata label used on the instance group
+	// to specify that the Spotinst provider should be used to upon creation.
+	InstanceGroupLabelHybrid  = "spotinst.io/hybrid"
+	InstanceGroupLabelManaged = "spotinst.io/managed" // for backward compatibility
 
 	// InstanceGroupLabelSpotPercentage is the metadata label used on the
 	// instance group to specify the percentage of Spot instances that
@@ -121,7 +122,7 @@ func (b *InstanceGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		name := b.AutoscalingGroupName(ig)
 
 		if featureflag.SpotinstHybrid.Enabled() {
-			if !ManageInstanceGroup(ig) {
+			if !HybridInstanceGroup(ig) {
 				klog.V(2).Infof("Skipping instance group: %q", name)
 				continue
 			}
@@ -925,10 +926,15 @@ func defaultSpotPercentage(ig *kops.InstanceGroup) *float64 {
 	return &percentage
 }
 
-// ManageInstanceGroup indicates whether the instance group labeled with
-// a metadata label `spotinst.io/managed` which means the Spotinst provider
+// HybridInstanceGroup indicates whether the instance group labeled with
+// a metadata label `spotinst.io/hybrid` which means the Spotinst provider
 // should be used to upon creation if the `SpotinstHybrid` feature flag is on.
-func ManageInstanceGroup(ig *kops.InstanceGroup) bool {
-	managed, _ := strconv.ParseBool(ig.ObjectMeta.Labels[InstanceGroupLabelManaged])
-	return managed
+func HybridInstanceGroup(ig *kops.InstanceGroup) bool {
+	v, ok := ig.ObjectMeta.Labels[InstanceGroupLabelHybrid]
+	if !ok {
+		v = ig.ObjectMeta.Labels[InstanceGroupLabelManaged]
+	}
+
+	hybrid, _ := strconv.ParseBool(v)
+	return hybrid
 }
