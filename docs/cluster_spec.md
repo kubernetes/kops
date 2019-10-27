@@ -326,6 +326,16 @@ spec:
     targetRamMb: 4096
 ```
 
+#### eventTTL
+
+How long API server retains events. Note that you must fill empty units of time with zeros.
+
+```yaml
+spec:
+  kubeAPIServer:
+    eventTTL: 03h0m0s
+```
+
 ### externalDns
 
 This block contains configuration options for your `external-DNS` provider.
