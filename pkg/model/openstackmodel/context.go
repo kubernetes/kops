@@ -84,7 +84,7 @@ func (c *OpenstackModelContext) findSubnetNameByID(subnetID string, subnetName s
 func (c *OpenstackModelContext) LinkToNetwork() *openstacktasks.Network {
 	netName, err := c.GetNetworkName()
 	if err != nil {
-		klog.Infof("Could not find networkname")
+		klog.Fatalf("Could not find networkname")
 		return nil
 	}
 	return &openstacktasks.Network{Name: s(netName)}
