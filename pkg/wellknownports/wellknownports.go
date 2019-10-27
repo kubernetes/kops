@@ -54,3 +54,9 @@ func DNSGossipPortRanges() []PortRange {
 		{Min: 3998, Max: 4000},
 	}
 }
+
+func ETCDPortRanges() []PortRange {
+	return []PortRange{
+		{Min: 3994, Max: 3997},
+	}
+}
