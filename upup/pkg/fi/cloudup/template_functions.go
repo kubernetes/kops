@@ -40,6 +40,7 @@ import (
 	"k8s.io/klog"
 	kopscontrollerconfig "k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
@@ -103,6 +104,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return tf.region
 	}
 
+	if featureflag.EnableExternalCloudController.Enabled() {
+		// will return openstack external ccm image location for current kubernetes version
+		dest["OpenStackCCM"] = tf.OpenStackCCM
+	}
 	dest["ProxyEnv"] = tf.ProxyEnv
 
 	dest["KopsSystemEnv"] = tf.KopsSystemEnv
@@ -379,4 +384,23 @@ func (tf *TemplateFunctions) KopsSystemEnv() []corev1.EnvVar {
 	envMap := env.BuildSystemComponentEnvVars(&tf.cluster.Spec)
 
 	return envMap.ToEnvVars()
+}
+
+// OpenStackCCM returns OpenStack external cloud controller manager current image
+// with tag specified to k8s version
+func (tf *TemplateFunctions) OpenStackCCM() string {
+	var tag string
+	parsed, err := util.ParseKubernetesVersion(tf.cluster.Spec.KubernetesVersion)
+	if err != nil {
+		tag = "latest"
+	} else {
+		if parsed.Minor == 13 {
+			// The bugfix release
+			tag = "1.13.1"
+		} else {
+			// otherwise we use always .0 ccm image, if needed that can be overrided using clusterspec
+			tag = fmt.Sprintf("v%d.%d.0", parsed.Major, parsed.Minor)
+		}
+	}
+	return fmt.Sprintf("docker.io/k8scloudprovider/openstack-cloud-controller-manager:%s", tag)
 }
