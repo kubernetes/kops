@@ -436,7 +436,8 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 			Protocol:  s(protocol),
 			EtherType: s(string(rules.EtherType4)),
 		}
-		addDirectionalGroupRule(c, nodeSG, masterSG, protocolRule)
+		addDirectionalGroupRule(c, masterSG, nil, protocolRule)
+		addDirectionalGroupRule(c, nodeSG, nil, protocolRule)
 	}
 
 	return nil
