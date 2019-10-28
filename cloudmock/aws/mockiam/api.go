@@ -33,6 +33,7 @@ type MockIAM struct {
 	InstanceProfiles map[string]*iam.InstanceProfile
 	Roles            map[string]*iam.Role
 	RolePolicies     []*rolePolicy
+	AttachedPolicies map[string][]*iam.AttachedPolicy
 }
 
 var _ iamiface.IAMAPI = &MockIAM{}
