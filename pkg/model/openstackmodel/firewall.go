@@ -151,6 +151,18 @@ func (b *FirewallModelBuilder) addETCDRules(c *fi.ModelBuilderContext, sgMap map
 	addDirectionalGroupRule(c, masterSG, masterSG, etcdRule)
 	addDirectionalGroupRule(c, masterSG, masterSG, etcdPeerRule)
 
+	for _, portRange := range wellknownports.ETCDPortRanges() {
+		etcdMgmrRule := &openstacktasks.SecurityGroupRule{
+			Lifecycle:    b.Lifecycle,
+			Direction:    s(string(rules.DirIngress)),
+			Protocol:     s(string(rules.ProtocolTCP)),
+			EtherType:    s(string(rules.EtherType4)),
+			PortRangeMin: i(portRange.Min),
+			PortRangeMax: i(portRange.Max),
+		}
+		addDirectionalGroupRule(c, masterSG, masterSG, etcdMgmrRule)
+	}
+
 	if b.Cluster.Spec.Networking.Romana != nil ||
 		b.Cluster.Spec.Networking.Calico != nil {
 
