@@ -775,7 +775,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		versions := map[string]string{
 			"pre-k8s-1.6": "0.11.0-kops.1",
 			"k8s-1.6":     "0.11.0-kops.2",
-			"k8s-1.12":    "0.11.0-kops.2",
+			"k8s-1.12":    "0.11.0-kops.3",
 		}
 
 		{
