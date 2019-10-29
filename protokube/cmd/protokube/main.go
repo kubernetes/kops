@@ -52,7 +52,7 @@ var (
 func main() {
 	klog.InitFlags(nil)
 
-	fmt.Printf("srikiz now protokube version %s\n", BuildVersion)
+	fmt.Printf("protokube version %s\n", BuildVersion)
 
 	if err := run(); err != nil {
 		klog.Errorf("Error: %v", err)
