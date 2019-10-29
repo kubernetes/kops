@@ -196,9 +196,8 @@ func listDNS(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) 
 	}
 
 	if domainName == "" {
-		klog.Info("Domain Name is empty. Could be configured as gossip. Just ignore.")
+		klog.Info("Domain Name is empty. Possible that the cluster is configured as gossip..")
 		return nil, nil
-		//return nil, fmt.Errorf("failed to find domain for cluster: %s", clusterName)
 	}
 
 	records, err := getAllRecordsByDomain(c, domainName)
