@@ -17,14 +17,13 @@ limitations under the License.
 package do
 
 import (
-	"fmt"
-	//"errors"
 	"context"
+	"fmt"
+	"strings"
+
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/protokube/pkg/gossip"
-	"strings"
-	//"github.com/digitalocean/godo"
 )
 
 type SeedProvider struct {
