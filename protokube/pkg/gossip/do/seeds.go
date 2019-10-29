@@ -20,16 +20,16 @@ import (
 	"fmt"
 	//"errors"
 	"context"
-	"strings"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/protokube/pkg/gossip"
+	"strings"
 	//"github.com/digitalocean/godo"
 )
 
 type SeedProvider struct {
 	cloud *digitalocean.Cloud
-	tag    string
+	tag   string
 }
 
 var _ gossip.SeedProvider = &SeedProvider{}
@@ -37,7 +37,6 @@ var _ gossip.SeedProvider = &SeedProvider{}
 func (p *SeedProvider) GetSeeds() ([]string, error) {
 	var seeds []string
 
-	
 	droplets, _, err := p.cloud.Droplets().List(context.TODO(), nil)
 
 	if err != nil {
@@ -70,7 +69,7 @@ func NewSeedProvider(cloud *digitalocean.Cloud, tag string) (*SeedProvider, erro
 	klog.V(2).Infof("Trying new seed provider with cluster tag:%s", tag)
 
 	return &SeedProvider{
-		cloud:    cloud,
-		tag:    tag,
+		cloud: cloud,
+		tag:   tag,
 	}, nil
 }
