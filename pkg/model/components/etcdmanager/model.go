@@ -181,7 +181,6 @@ func parseManifest(data []byte) ([]runtime.Object, error) {
 }
 
 // Until we introduce the bundle, we hard-code the manifest
-
 var defaultManifest = `
 apiVersion: v1
 kind: Pod
