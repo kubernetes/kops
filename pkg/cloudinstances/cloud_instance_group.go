@@ -87,10 +87,16 @@ func (c *CloudInstanceGroup) Status() string {
 // GetNodeMap returns a list of nodes keyed by their external id
 func GetNodeMap(nodes []v1.Node, cluster *kops.Cluster) map[string]*v1.Node {
 	nodeMap := make(map[string]*v1.Node)
+	delimiter := "/"
+	// Alicloud CCM uses the "{region}.{instance-id}" of a instance as ProviderID.
+	// We need to set delimiter to "." for Alicloud.
+	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderALI {
+		delimiter = "."
+	}
+
 	for i := range nodes {
 		node := &nodes[i]
-
-		providerIDs := strings.Split(node.Spec.ProviderID, "/")
+		providerIDs := strings.Split(node.Spec.ProviderID, delimiter)
 		instanceID := providerIDs[len(providerIDs)-1]
 		nodeMap[instanceID] = node
 	}
