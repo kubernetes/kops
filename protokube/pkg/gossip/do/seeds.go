@@ -44,28 +44,28 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 
 	for _, droplet := range droplets {
 		for _, dropTag := range droplet.Tags {
-			klog.V(2).Infof("Get Seeds - droplet found=%s,SeedProvider Tag=%s", dropTag, p.tag)
+			klog.V(4).Infof("Get Seeds - droplet found=%s,SeedProvider Tag=%s", dropTag, p.tag)
 			if strings.Contains(dropTag, strings.Replace(p.tag, ".", "-", -1)) {
-				klog.V(2).Infof("Tag matched for droplet tag =%s. Getting private IP", p.tag)
+				klog.V(4).Infof("Tag matched for droplet tag =%s. Getting private IP", p.tag)
 				ip, err := droplet.PrivateIPv4()
 				if err == nil {
-					klog.V(2).Infof("Appending a seed for cluster tag:%s, with ip=%s", p.tag, ip)
+					klog.V(4).Infof("Appending a seed for cluster tag:%s, with ip=%s", p.tag, ip)
 					seeds = append(seeds, ip)
 				} else {
-					klog.V(2).Infof("Ah ...Private IP failed for tag=%s, error=%v", p.tag, err)
+					klog.V(4).Infof("Ah ...Private IP failed for tag=%s, error=%v", p.tag, err)
 				}
 			} else {
-				klog.V(2).Infof("Tag NOT matched for droplet tag =%s. and pTag=%s", dropTag, p.tag)
+				klog.V(4).Infof("Tag NOT matched for droplet tag =%s. and pTag=%s", dropTag, p.tag)
 			}
 		}
 	}
 
-	klog.V(2).Infof("Get seeds function done now")
+	klog.V(4).Infof("Get seeds function done now")
 	return seeds, nil
 }
 
 func NewSeedProvider(cloud *digitalocean.Cloud, tag string) (*SeedProvider, error) {
-	klog.V(2).Infof("Trying new seed provider with cluster tag:%s", tag)
+	klog.V(4).Infof("Trying new seed provider with cluster tag:%s", tag)
 
 	return &SeedProvider{
 		cloud: cloud,

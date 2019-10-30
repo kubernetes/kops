@@ -316,9 +316,8 @@ func getMetadataDropletID() (string, error) {
 
 func getMetadataDropletTags() ([]string, error) {
 
-	tagString, error := getMetadata(dropletIDMetadataTags)
-	dropletTags := strings.Split(tagString, "\n")
-	return dropletTags, error
+	tagString, err := getMetadata(dropletIDMetadataTags)
+	return strings.Split(tagString, "\n"), err
 }
 
 func getMetadata(url string) (string, error) {
