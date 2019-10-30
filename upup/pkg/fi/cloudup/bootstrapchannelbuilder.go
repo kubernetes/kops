@@ -557,6 +557,25 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		}
 	}
 
+	if kops.CloudProviderID(b.cluster.Spec.CloudProvider) == kops.CloudProviderALI {
+		key := "alicloud-cloud-controller.addons.k8s.io"
+		version := "1.12"
+
+		{
+			id := "k8s-1.12"
+			location := key + "/" + id + ".yaml"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          map[string]string{"k8s-addon": key},
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.12.0",
+				Id:                id,
+			})
+		}
+	}
+
 	if kops.CloudProviderID(b.cluster.Spec.CloudProvider) == kops.CloudProviderGCE {
 		key := "storage-gce.addons.k8s.io"
 		version := "1.7.0"

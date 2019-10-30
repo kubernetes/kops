@@ -363,6 +363,16 @@ func evaluateSpec(c *api.Cluster) error {
 		return err
 	}
 
+	c.Spec.Kubelet.ProviderID, err = evaluateProviderID(c.Spec.Kubelet.ProviderID)
+	if err != nil {
+		return err
+	}
+
+	c.Spec.MasterKubelet.ProviderID, err = evaluateProviderID(c.Spec.MasterKubelet.ProviderID)
+	if err != nil {
+		return err
+	}
+
 	if c.Spec.KubeProxy != nil {
 		c.Spec.KubeProxy.HostnameOverride, err = evaluateHostnameOverride(c.Spec.KubeProxy.HostnameOverride)
 		if err != nil {
@@ -433,6 +443,32 @@ func evaluateSecurityGroups(vpcId string) ([]string, error) {
 
 	return sgIds, nil
 
+}
+
+func evaluateProviderID(providerID string) (string, error) {
+	if providerID == "" {
+		return "", nil
+	}
+	p := strings.TrimSpace(providerID)
+	p = strings.ToLower(p)
+	if p == "@alicloud" {
+		// @alicloud means to use the "{region}.{instance-id}" of a instance as ProviderID.
+		// This format is required by alicloud cloud provider manager.
+		regionBytes, err := vfs.Context.ReadFile("metadata://alicloud/region-id")
+		if err != nil {
+			return "", fmt.Errorf("error reading region-id from Alicloud metadata: %v", err)
+		}
+		region := string(regionBytes)
+
+		instanceIDBytes, err := vfs.Context.ReadFile("metadata://alicloud/instance-id")
+		if err != nil {
+			return "", fmt.Errorf("error reading instance-id from Alicloud metadata: %v", err)
+		}
+		instanceID := string(instanceIDBytes)
+
+		return fmt.Sprintf("%s.%s", region, instanceID), nil
+	}
+	return providerID, nil
 }
 
 func evaluateHostnameOverride(hostnameOverride string) (string, error) {

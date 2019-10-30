@@ -116,6 +116,16 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	}
 
+	// TODO: Will use instance role instead of the environment secrets for Alicloud.
+	if kops.CloudProviderID(tf.cluster.Spec.CloudProvider) == kops.CloudProviderALI {
+		dest["ALIYUN_ACCESS_KEY_ID"] = func() string {
+			return os.Getenv("ALIYUN_ACCESS_KEY_ID")
+		}
+		dest["ALIYUN_ACCESS_KEY_SECRET"] = func() string {
+			return os.Getenv("ALIYUN_ACCESS_KEY_SECRET")
+		}
+	}
+
 	if featureflag.Spotinst.Enabled() {
 		if creds, err := spotinst.LoadCredentials(); err == nil {
 			dest["SpotinstToken"] = func() string { return creds.Token }

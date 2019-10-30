@@ -51,6 +51,8 @@ type KubeletConfigSpec struct {
 	PodManifestPath string `json:"podManifestPath,omitempty" flag:"pod-manifest-path"`
 	// HostnameOverride is the hostname used to identify the kubelet instead of the actual hostname.
 	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
+	// ProviderID is a unique identifier for identifying the node in a machine database, i.e cloudprovider.
+	ProviderID string `json:"providerID,omitempty" flag:"provider-id"`
 	// PodInfraContainerImage is the image whose network/ipc containers in each pod will use.
 	PodInfraContainerImage string `json:"podInfraContainerImage,omitempty" flag:"pod-infra-container-image"`
 	// SeccompProfileRoot is the directory path for seccomp profiles.
