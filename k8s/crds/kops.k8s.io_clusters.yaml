@@ -1736,6 +1736,10 @@ spec:
                   description: config is the path to the config file or directory
                     of files
                   type: string
+                providerID:
+                  description: ProviderID is a unique identifier for identifying the
+                    node in a machine database, i.e cloudprovider.
+                  type: string
                 readOnlyPort:
                   description: ReadOnlyPort is the port used by the kubelet api for
                     read-only access (default 10255)
@@ -2090,6 +2094,10 @@ spec:
                 podManifestPath:
                   description: config is the path to the config file or directory
                     of files
+                  type: string
+                providerID:
+                  description: ProviderID is a unique identifier for identifying the
+                    node in a machine database, i.e cloudprovider.
                   type: string
                 readOnlyPort:
                   description: ReadOnlyPort is the port used by the kubelet api for
