@@ -184,23 +184,17 @@ upup/models/bindata.go: ${GOBINDATA} ${UPUP_MODELS_BINDATA_SOURCES}
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
-# 1.10 is the default for k8s 1.11.  Others are best-effort
-.PHONY: check-builds-in-go18
-check-builds-in-go18:
-	# Note we only check that kops builds; we know the tests don't compile because of type aliasing in uber zap
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.8 make -C /go/src/k8s.io/kops kops
-
-.PHONY: check-builds-in-go19
-check-builds-in-go19:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.9 make -C /go/src/k8s.io/kops ci
-
-.PHONY: check-builds-in-go110
-check-builds-in-go110:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.10 make -C /go/src/k8s.io/kops ci
-
 .PHONY: check-builds-in-go111
 check-builds-in-go111:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.11 make -C /go/src/k8s.io/kops ci
+	docker run -e GO111MODULE=on -e EXTRA_BUILDFLAGS=-mod=vendor -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.11 make -C /go/src/k8s.io/kops all
+
+.PHONY: check-builds-in-go112
+check-builds-in-go112:
+	docker run -e GO111MODULE=on -e EXTRA_BUILDFLAGS=-mod=vendor -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.12 make -C /go/src/k8s.io/kops all
+
+.PHONY: check-builds-in-go113
+check-builds-in-go113:
+	docker run -e EXTRA_BUILDFLAGS=-mod=vendor -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.13 make -C /go/src/k8s.io/kops all
 
 .PHONY: codegen
 codegen: kops-gobindata
