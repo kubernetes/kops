@@ -778,6 +778,133 @@ var dockerVersions = []dockerVersion{
 		Dependencies:  []string{"container-selinux", "libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python-utils", "python3-policycoreutils"},
 	},
 
+	// 19.03.4 - k8s 1.17 - https://github.com/kubernetes/kubernetes/pull/84476
+
+	// 19.03.4 - Debian Stretch
+	{
+		DockerVersion: "19.03.4",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionDebian9},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.4~3-0~debian-stretch",
+		Source:        "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_19.03.4~3-0~debian-stretch_amd64.deb",
+		Hash:          "2b8dcb2d75334fab29242ac069d1fbcfb65e88e3",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.4~3-0~debian-stretch",
+				Source:  "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce-cli_19.03.4~3-0~debian-stretch_amd64.deb",
+				Hash:    "57f71ee764abb19a0b4c580ff14b1eb3de3a9e08",
+			},
+			"containerd.io": {
+				Version: "1.2.10-3",
+				Source:  "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
+				Hash:    "186f2f2c570f37b363102e6b879073db6dec671d",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 19.03.4 - Debian Buster
+	{
+		DockerVersion: "19.03.4",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionDebian10},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.4~3-0~debian-buster",
+		Source:        "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/docker-ce_19.03.4~3-0~debian-buster_amd64.deb",
+		Hash:          "492a70f29ceffd315ee9712b33004491c6f59e49",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.4~3-0~debian-buster",
+				Source:  "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/docker-ce-cli_19.03.4~3-0~debian-buster_amd64.deb",
+				Hash:    "2549a364f0e5ce489c79b292b78e349751385dd5",
+			},
+			"containerd.io": {
+				Version: "1.2.10-3",
+				Source:  "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
+				Hash:    "365e4a7541ce2cf3c3036ea2a9bf6b40a50893a8",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 19.03.4 - Bionic
+	{
+		DockerVersion: "19.03.4",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionBionic},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.4~3-0~ubuntu-bionic",
+		Source:        "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_19.03.4~3-0~ubuntu-bionic_amd64.deb",
+		Hash:          "ee640d9258fd4d3f4c7017ab2a71da63cbbead55",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.4~3-0~ubuntu-bionic",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce-cli_19.03.4~3-0~ubuntu-bionic_amd64.deb",
+				Hash:    "09402bf5dac40f0c50f1071b17f38f6584a42ad1",
+			},
+			"containerd.io": {
+				Version: "1.2.10-3",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
+				Hash:    "f4c941807310e3fa470dddfb068d599174a3daec",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 19.03.4 - CentOS / Rhel7
+	{
+		DockerVersion: "19.03.4",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.4",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-19.03.4-3.el7.x86_64.rpm",
+		Hash:          "02a9db54fa40b8d94e2a4c1b5572ad911873a4c8",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.4",
+				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-cli-19.03.4-3.el7.x86_64.rpm",
+				Hash:    "1fffcc716e74a59f753f8898ba96693a00e79e26",
+			},
+			"containerd.io": {
+				Version: "1.2.10",
+				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.10-3.2.el7.x86_64.rpm",
+				Hash:    "f6447e84479df3a58ce04a3da87ccc384663493b",
+			},
+			"container-selinux": {
+				Version: "2.107",
+				Source:  "http://vault.centos.org/7.6.1810/extras/x86_64/Packages/container-selinux-2.107-1.el7_6.noarch.rpm",
+				Hash:    "7de4211fa0dfd240d8827b93763e1eb5f0d56411",
+			},
+		},
+		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+	},
+
+	// 19.03.4 - CentOS / Rhel8
+	{
+		DockerVersion: "19.03.4",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionRhel8, distros.DistributionCentos8},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.4",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-19.03.4-3.el7.x86_64.rpm",
+		Hash:          "02a9db54fa40b8d94e2a4c1b5572ad911873a4c8",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.4",
+				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-cli-19.03.4-3.el7.x86_64.rpm",
+				Hash:    "1fffcc716e74a59f753f8898ba96693a00e79e26",
+			},
+			"containerd.io": {
+				Version: "1.2.10",
+				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.10-3.2.el7.x86_64.rpm",
+				Hash:    "f6447e84479df3a58ce04a3da87ccc384663493b",
+			},
+		},
+		Dependencies: []string{"container-selinux", "libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python-utils", "python3-policycoreutils"},
+	},
+
 	// TIP: When adding the next version, copy the previous
 	// version, string replace the version, run `VERIFY_HASHES=1
 	// go test ./nodeup/pkg/model` (you might want to temporarily
