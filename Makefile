@@ -475,35 +475,17 @@ bazel-utils-dist:
 # --------------------------------------------------
 # development targets
 
-.PHONY: dep-prereqs
-dep-prereqs:
-	(which hg > /dev/null) || (echo "dep requires that mercurial is installed"; exit 1)
-	(which dep > /dev/null) || (echo "dep-ensure requires that dep is installed"; exit 1)
-	(which bazel > /dev/null) || (echo "dep-ensure requires that bazel is installed"; exit 1)
+.PHONY: gomod-prereqs
+gomod-prereqs:
+	(which bazel > /dev/null) || (echo "gomod requires that bazel is installed"; exit 1)
 
 .PHONY: dep-ensure
-dep-ensure: dep-prereqs
+dep-ensure:
 	echo "`make dep-ensure` has been replaced by `make gomod`"
 	exit 1
-	dep ensure -v
-	# Switch weavemesh to use peer_name_hash - bazel rule-go doesn't support build tags yet
-	rm vendor/github.com/weaveworks/mesh/peer_name_mac.go
-	sed -i -e 's/peer_name_hash/!peer_name_mac/g' vendor/github.com/weaveworks/mesh/peer_name_hash.go
-	# Remove all bazel build files that were vendored and regenerate (we assume they are go-gettable)
-	find vendor/ -name "BUILD" -delete
-	find vendor/ -name "BUILD.bazel" -delete
-	# Remove recursive symlinks that really confuse bazel
-	rm -rf vendor/github.com/coreos/etcd/cmd/
-	rm -rf vendor/github.com/jteeuwen/go-bindata/testdata/
-	# Remove dependencies that dep just can't figure out
-	rm -rf vendor/k8s.io/code-generator/cmd/set-gen/
-	rm -rf vendor/k8s.io/code-generator/cmd/go-to-protobuf/
-	rm -rf vendor/k8s.io/code-generator/cmd/import-boss/
-	rm -rf vendor/github.com/docker/docker/contrib/
-	make gazelle
 
 .PHONY: gomod
-gomod:
+gomod: gomod-prereqs
 	GO111MODULE=on go mod vendor
 	# Switch weavemesh to use peer_name_hash - bazel rule-go doesn't support build tags yet
 	rm vendor/github.com/weaveworks/mesh/peer_name_mac.go
