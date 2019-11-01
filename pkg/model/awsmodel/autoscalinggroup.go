@@ -34,6 +34,8 @@ const (
 	DefaultVolumeType = ec2.VolumeTypeGp2
 	// DefaultVolumeIops is the default volume iops
 	DefaultVolumeIops = 100
+	// DefaultVolumeDeleteOnTermination is the default volume behavior after instance termination
+	DefaultVolumeDeleteOnTermination = true
 )
 
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
@@ -142,6 +144,12 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		volumeType = DefaultVolumeType
 	}
 
+	retainRootVolume := fi.BoolValue(ig.Spec.RootVolumeRetainOnTermination)
+	deleteRootVolume := DefaultVolumeDeleteOnTermination
+	if retainRootVolume {
+		deleteRootVolume = false
+	}
+
 	// @step: if required we add the override for the security group for this instancegroup
 	sgLink := b.LinkToSecurityGroup(ig.Spec.Role)
 	if ig.Spec.SecurityGroupOverride != nil {
@@ -168,6 +176,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		InstanceType:           fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
 		RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
 		RootVolumeSize:         fi.Int64(int64(volumeSize)),
+		RootVolumeTermination:  fi.Bool(deleteRootVolume),
 		RootVolumeType:         fi.String(volumeType),
 		SecurityGroups:         []*awstasks.SecurityGroup{sgLink},
 	}
@@ -210,9 +219,14 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		} else {
 			x.Iops = nil
 		}
+		deleteVolume := DefaultVolumeDeleteOnTermination
+		if fi.BoolValue(x.RetainOnTermination) {
+			deleteVolume = false
+		}
+
 		t.BlockDeviceMappings = append(t.BlockDeviceMappings, &awstasks.BlockDeviceMapping{
 			DeviceName:             fi.String(x.Device),
-			EbsDeleteOnTermination: fi.Bool(true),
+			EbsDeleteOnTermination: fi.Bool(deleteVolume),
 			EbsEncrypted:           x.Encrypted,
 			EbsVolumeIops:          x.Iops,
 			EbsVolumeSize:          fi.Int64(x.Size),
