@@ -106,6 +106,8 @@ type InstanceGroupSpec struct {
 	RootVolumeIops *int32 `json:"rootVolumeIops,omitempty"`
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
+	// RootVolumeRetainOnTermination prevents root volume from being deleted after instance termination
+	RootVolumeRetainOnTermination *bool `json:"rootVolumeRetainOnTermination,omitempty"`
 	// Volumes is a collection of additional volumes to create for instances within this InstanceGroup
 	Volumes []*VolumeSpec `json:"volumes,omitempty"`
 	// VolumeMounts a collection of volume mounts
@@ -208,6 +210,8 @@ type VolumeSpec struct {
 	Size int64 `json:"size,omitempty"`
 	// Type is the type of volume to create and is cloud specific
 	Type string `json:"type,omitempty"`
+	// RetainOnTermination prevents volume from being deleted after instance termination
+	RetainOnTermination *bool `json:"retainOnTermination,omitempty"`
 }
 
 // VolumeMountSpec defines the specification for mounting a device
