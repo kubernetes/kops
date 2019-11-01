@@ -22,9 +22,9 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 
-	//TODO: Replace with klog
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/wellknownports"
 )
 
 const (
@@ -150,6 +150,18 @@ func (b *FirewallModelBuilder) addETCDRules(c *fi.ModelBuilderContext, sgMap map
 	}
 	addDirectionalGroupRule(c, masterSG, masterSG, etcdRule)
 	addDirectionalGroupRule(c, masterSG, masterSG, etcdPeerRule)
+
+	for _, portRange := range wellknownports.ETCDPortRanges() {
+		etcdMgmrRule := &openstacktasks.SecurityGroupRule{
+			Lifecycle:    b.Lifecycle,
+			Direction:    s(string(rules.DirIngress)),
+			Protocol:     s(string(rules.ProtocolTCP)),
+			EtherType:    s(string(rules.EtherType4)),
+			PortRangeMin: i(portRange.Min),
+			PortRangeMax: i(portRange.Max),
+		}
+		addDirectionalGroupRule(c, masterSG, masterSG, etcdMgmrRule)
+	}
 
 	if b.Cluster.Spec.Networking.Romana != nil ||
 		b.Cluster.Spec.Networking.Calico != nil {
@@ -424,7 +436,8 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 			Protocol:  s(protocol),
 			EtherType: s(string(rules.EtherType4)),
 		}
-		addDirectionalGroupRule(c, nodeSG, masterSG, protocolRule)
+		addDirectionalGroupRule(c, masterSG, nil, protocolRule)
+		addDirectionalGroupRule(c, nodeSG, nil, protocolRule)
 	}
 
 	return nil
@@ -438,18 +451,20 @@ func (b *FirewallModelBuilder) addProtokubeRules(c *fi.ModelBuilderContext, sgMa
 		nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 		masterSG := sgMap[masterName]
 		nodeSG := sgMap[nodeName]
-		protokubeRule := &openstacktasks.SecurityGroupRule{
-			Lifecycle:    b.Lifecycle,
-			Direction:    s(string(rules.DirIngress)),
-			Protocol:     s(string(rules.ProtocolTCP)),
-			EtherType:    s(string(rules.EtherType4)),
-			PortRangeMin: i(3994),
-			PortRangeMax: i(3999),
+		for _, portRange := range wellknownports.DNSGossipPortRanges() {
+			protokubeRule := &openstacktasks.SecurityGroupRule{
+				Lifecycle:    b.Lifecycle,
+				Direction:    s(string(rules.DirIngress)),
+				Protocol:     s(string(rules.ProtocolTCP)),
+				EtherType:    s(string(rules.EtherType4)),
+				PortRangeMin: i(portRange.Min),
+				PortRangeMax: i(portRange.Max),
+			}
+			addDirectionalGroupRule(c, masterSG, nodeSG, protokubeRule)
+			addDirectionalGroupRule(c, nodeSG, masterSG, protokubeRule)
+			addDirectionalGroupRule(c, masterSG, masterSG, protokubeRule)
+			addDirectionalGroupRule(c, nodeSG, nodeSG, protokubeRule)
 		}
-		addDirectionalGroupRule(c, masterSG, nodeSG, protokubeRule)
-		addDirectionalGroupRule(c, nodeSG, masterSG, protokubeRule)
-		addDirectionalGroupRule(c, masterSG, masterSG, protokubeRule)
-		addDirectionalGroupRule(c, nodeSG, nodeSG, protokubeRule)
 	}
 	return nil
 }

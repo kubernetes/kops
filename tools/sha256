@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+in=$1
+out=$2
+
+if ( which sha256sum > /dev/null ); then
+  (sha256sum $in | cut -d' ' -f1) > $out
+elif ( which shasum > /dev/null ); then
+  (shasum -a 256 $in | cut -d' ' -f1) > $out
+else
+  echo "Neither sha256sum nor shasum command is available"
+  exit 1
+fi

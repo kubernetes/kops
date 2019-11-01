@@ -273,9 +273,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	// Normalize k8s version
 	versionWithoutV := strings.TrimSpace(cluster.Spec.KubernetesVersion)
-	if strings.HasPrefix(versionWithoutV, "v") {
-		versionWithoutV = versionWithoutV[1:]
-	}
+	versionWithoutV = strings.TrimPrefix(versionWithoutV, "v")
 	if cluster.Spec.KubernetesVersion != versionWithoutV {
 		klog.Warningf("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
@@ -1271,9 +1269,7 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 	}
 
 	config := &nodeup.Config{}
-	for _, tag := range nodeUpTags.List() {
-		config.Tags = append(config.Tags, tag)
-	}
+	config.Tags = append(config.Tags, nodeUpTags.List()...)
 
 	for _, a := range c.Assets {
 		config.Assets = append(config.Assets, a.CompactString())
@@ -1298,6 +1294,30 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 			}
 
 			baseURL.Path = path.Join(baseURL.Path, "/bin/linux/amd64/", component+".tar")
+
+			u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+			if err != nil {
+				return nil, err
+			}
+
+			image := &nodeup.Image{
+				Sources: []string{u.String()},
+				Hash:    hash.Hex(),
+			}
+			images = append(images, image)
+		}
+	}
+
+	// `docker load` our images when using a KOPS_BASE_URL, so we
+	// don't need to push/pull from a registry
+	if os.Getenv("KOPS_BASE_URL") != "" {
+		for _, name := range []string{"kops-controller", "dns-controller"} {
+			baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
+			if err != nil {
+				return nil, err
+			}
+
+			baseURL.Path = path.Join(baseURL.Path, "/images/"+name+".tar.gz")
 
 			u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
 			if err != nil {

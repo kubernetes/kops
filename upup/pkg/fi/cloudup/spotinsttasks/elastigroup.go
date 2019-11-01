@@ -803,9 +803,7 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 				}
 
 				types := make([]string, len(e.SpotInstanceTypes))
-				for i, typ := range e.SpotInstanceTypes {
-					types[i] = typ
-				}
+				copy(types, e.SpotInstanceTypes)
 
 				group.Compute.InstanceTypes.SetSpot(types)
 				changes.SpotInstanceTypes = nil

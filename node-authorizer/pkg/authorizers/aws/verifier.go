@@ -55,7 +55,11 @@ func (a *awsNodeVerifier) VerifyIdentity(ctx context.Context) ([]byte, error) {
 	go func() {
 		encoded, err := func() ([]byte, error) {
 			// @step: create a metadata client
-			client := ec2metadata.New(session.New())
+			sess, err := session.NewSession()
+			if err != nil {
+				return []byte{}, err
+			}
+			client := ec2metadata.New(sess)
 
 			// @step: get the pkcs7 signature from the metadata service
 			signature, err := client.GetDynamicData("/instance-identity/pkcs7")

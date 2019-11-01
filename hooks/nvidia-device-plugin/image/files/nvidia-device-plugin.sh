@@ -18,7 +18,7 @@ set -x
 
 CACHE_DIR=/nvidia-device-plugin
 
-# Load Passthrough enviroment variables from the original kops hook
+# Load Passthrough environment variables from the original kops hook
 source $CACHE_DIR/environment
 
 # Support both deviceplugin and legacy (accelerator) GPU modes.

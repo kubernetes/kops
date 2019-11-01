@@ -497,6 +497,28 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 		return hostname, nil
 	}
 
+	if k == "@alicloud" {
+		// @alicloud means to use the "{az}.{instance-id}" of a instance as the hostname override
+		azBytes, err := vfs.Context.ReadFile("metadata://alicloud/zone-id")
+		if err != nil {
+			return "", fmt.Errorf("error reading zone-id from Alicloud metadata: %v", err)
+		}
+		az := string(azBytes)
+
+		instanceIDBytes, err := vfs.Context.ReadFile("metadata://alicloud/instance-id")
+		if err != nil {
+			return "", fmt.Errorf("error reading instance-id from Alicloud metadata: %v", err)
+		}
+		instanceID := string(instanceIDBytes)
+
+		hostname := fmt.Sprintf("%s.%s", az, instanceID)
+		if hostname == "" {
+			return "", errors.New("hostname for Alicloud ECS was empty")
+		}
+
+		return hostname, nil
+	}
+
 	return hostnameOverride, nil
 }
 

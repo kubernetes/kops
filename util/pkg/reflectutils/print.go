@@ -94,7 +94,7 @@ func ValueAsString(value reflect.Value) string {
 			for _, p := range printers {
 				s, ok := p(intf)
 				if ok {
-					fmt.Fprintf(b, s)
+					fmt.Fprintf(b, "%s", s)
 					done = true
 					break
 				}

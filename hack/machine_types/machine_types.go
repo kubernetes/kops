@@ -85,7 +85,11 @@ func run() error {
 	// Default to us-east-1
 	config = config.WithRegion("us-east-1")
 
-	svc := pricing.New(session.New(), config)
+	sess, err := session.NewSession()
+	if err != nil {
+		return err
+	}
+	svc := pricing.New(sess, config)
 	typeTerm := pricing.FilterTypeTermMatch
 	input := &pricing.GetProductsInput{
 		Filters: []*pricing.Filter{
@@ -140,9 +144,7 @@ func run() error {
 			}
 		}
 
-		for _, p := range result.PriceList {
-			prices = append(prices, p)
-		}
+		prices = append(prices, result.PriceList...)
 
 		if result.NextToken != nil {
 			input.NextToken = result.NextToken
@@ -175,7 +177,7 @@ func run() error {
 					Cores: stringToInt(attributes["vcpu"]),
 				}
 
-				memory := strings.TrimRight(attributes["memory"], " GiB")
+				memory := strings.TrimSuffix(attributes["memory"], " GiB")
 				machine.MemoryGB = stringToFloat32(memory)
 
 				if attributes["storage"] != "EBS only" {

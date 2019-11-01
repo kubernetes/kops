@@ -69,7 +69,7 @@ type DeletionByTaskName []Deletion
 func (a DeletionByTaskName) Len() int      { return len(a) }
 func (a DeletionByTaskName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a DeletionByTaskName) Less(i, j int) bool {
-	return a[i].TaskName() < a[i].TaskName()
+	return a[i].TaskName() < a[j].TaskName()
 }
 
 var _ Target = &DryRunTarget{}

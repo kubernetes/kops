@@ -504,7 +504,18 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		instanceType, err := awsup.GetMachineTypeInfo(strings.Split(b.InstanceGroup.Spec.MachineType, ",")[0])
+		sess := session.Must(session.NewSession())
+		metadata := ec2metadata.New(sess)
+
+		// Get the actual instance type by querying the EC2 instance metadata service.
+		instanceTypeName, err := metadata.GetMetadata("instance-type")
+		if err != nil {
+			// Otherwise, fall back to the Instance Group spec.
+			instanceTypeName = strings.Split(b.InstanceGroup.Spec.MachineType, ",")[0]
+		}
+
+		// Get the instance type's detailed information.
+		instanceType, err := awsup.GetMachineTypeInfo(instanceTypeName)
 		if err != nil {
 			return nil, err
 		}
@@ -545,9 +556,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 
 	// Use --register-with-taints for k8s 1.6 and on
 	if b.Cluster.IsKubernetesGTE("1.6") {
-		for _, t := range b.InstanceGroup.Spec.Taints {
-			c.Taints = append(c.Taints, t)
-		}
+		c.Taints = append(c.Taints, b.InstanceGroup.Spec.Taints...)
 
 		if len(c.Taints) == 0 && isMaster {
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)

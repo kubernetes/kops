@@ -1,6 +1,6 @@
 # COMMON BASIC REQUIREMENTS FOR KOPS-RELATED LABS. PRE-FLIGHT CHECK:
 
-Before rushing in to replicate any of the exercises, please ensure your basic environment is correctly setup. See the [KOPS AWS tutorial for more information](../aws.md). 
+Before rushing in to replicate any of the exercises, please ensure your basic environment is correctly setup. See the [KOPS AWS tutorial for more information](../getting_started/aws.md).
 
 Ensure that the following points are covered and working in your environment:
 

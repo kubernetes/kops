@@ -173,7 +173,15 @@ func (a *OpenstackVolumes) discoverTags() error {
 	// Internal IP
 	{
 		server, err := a.cloud.GetInstance(strings.TrimSpace(a.meta.ServerID))
-		ip, err := openstack.GetServerFixedIP(server, a.clusterName)
+		if err != nil {
+			return fmt.Errorf("error getting instance from ID: %v", err)
+		}
+		// find kopsNetwork from metadata, fallback to clustername
+		ifName := a.clusterName
+		if val, ok := server.Metadata[openstack.TagKopsNetwork]; ok {
+			ifName = val
+		}
+		ip, err := openstack.GetServerFixedIP(server, ifName)
 		if err != nil {
 			return fmt.Errorf("error querying InternalIP from name: %v", err)
 		}

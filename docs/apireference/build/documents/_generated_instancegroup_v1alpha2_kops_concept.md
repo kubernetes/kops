@@ -77,7 +77,7 @@ Appears In:
 Field        | Description
 ------------ | -----------
 additionalSecurityGroups <br /> *string array*    | AdditionalSecurityGroups attaches additional security groups (e.g. i-123456)
-additionalUserData <br /> *[UserData](#userdata-v1alpha2-kops) array*    | AdditionalUserData is any aditional user-data to be passed to the host
+additionalUserData <br /> *[UserData](#userdata-v1alpha2-kops) array*    | AdditionalUserData is any additional user-data to be passed to the host
 associatePublicIp <br /> *boolean*    | AssociatePublicIP is true if we want instances to have a public IP
 cloudLabels <br /> *object*    | CloudLabels indicates the labels for instances in this group, at the AWS level
 detailedInstanceMonitoring <br /> *boolean*    | DetailedInstanceMonitoring defines if detailed-monitoring is enabled (AWS only)

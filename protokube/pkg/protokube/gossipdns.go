@@ -33,9 +33,7 @@ func (p *GossipDnsProvider) Replace(fqdn string, values []string) error {
 		Name:    fqdn,
 		RrsType: "A",
 	}
-	for _, value := range values {
-		record.Rrdatas = append(record.Rrdatas, value)
-	}
+	record.Rrdatas = append(record.Rrdatas, values...)
 	return p.DNSView.ApplyChangeset(p.Zone, nil, []*dns.DNSRecord{record})
 }
 

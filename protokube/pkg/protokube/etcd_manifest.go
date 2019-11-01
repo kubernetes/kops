@@ -241,10 +241,10 @@ func buildEtcdEnvironmentOptions(c *EtcdCluster) []v1.EnvVar {
 // so we can map in as volumes. They will probably all be placed into /src/kubernetes, but just to make it
 // generic.
 func buildCertificateDirectories(c *EtcdCluster) []string {
-	tracked := make(map[string]bool, 0)
+	tracked := make(map[string]bool)
 
 	for _, x := range []string{c.TLSCA, c.TLSCert, c.TLSKey, c.PeerCA, c.PeerKey, c.PeerKey} {
-		if x == "" || tracked[filepath.Dir(x)] == true {
+		if x == "" || tracked[filepath.Dir(x)] {
 			continue
 		}
 		tracked[filepath.Dir(x)] = true

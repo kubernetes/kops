@@ -7,14 +7,12 @@ dnsprovider/pkg/dnsprovider/providers/google/clouddns
 dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal
 dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/stubs
 dnsprovider/pkg/dnsprovider/providers/openstack/designate
-hack/machine_types
 node-authorizer/pkg/authorizers/aws
 node-authorizer/pkg/server
 nodeup/pkg/model
 pkg/apis/kops/v1alpha1
 pkg/apis/kops/v1alpha2
 pkg/apis/kops/validation
-pkg/assets
 pkg/client/simple/api
 pkg/diff
 pkg/instancegroups
@@ -43,10 +41,8 @@ upup/pkg/fi/cloudup/awsup
 upup/pkg/fi/cloudup/gcetasks
 upup/pkg/fi/cloudup/openstack
 upup/pkg/fi/cloudup/openstacktasks
-upup/pkg/fi/fitasks
 upup/pkg/fi/nodeup
 upup/pkg/kutil
 upup/tools/generators/pkg/codegen
 util/pkg/reflectutils
 util/pkg/tables
-util/pkg/ui

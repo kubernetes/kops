@@ -96,7 +96,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 			Name: t.IAMInstanceProfile.Name,
 		}
 	}
-	// @step: are the node publically facing
+	// @step: are the node publicly facing
 	if fi.BoolValue(t.AssociatePublicIP) {
 		lc.NetworkInterfaces = append(lc.NetworkInterfaces,
 			&ec2.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{
@@ -276,9 +276,7 @@ func (t *LaunchTemplate) findAllLaunchTemplates(c *fi.Context) ([]*ec2.LaunchTem
 		if err != nil {
 			return nil, err
 		}
-		for _, x := range resp.LaunchTemplates {
-			list = append(list, x)
-		}
+		list = append(list, resp.LaunchTemplates...)
 
 		if resp.NextToken == nil {
 			return list, nil
@@ -312,9 +310,7 @@ func (t *LaunchTemplate) findAllLaunchTemplatesVersions(c *fi.Context) ([]*ec2.L
 				if err != nil {
 					return err
 				}
-				for _, x := range resp.LaunchTemplateVersions {
-					list = append(list, x)
-				}
+				list = append(list, resp.LaunchTemplateVersions...)
 				if resp.NextToken == nil {
 					return nil
 				}

@@ -16,6 +16,7 @@ go_library(
         "//pkg/apis/kops:go_default_library",
         "//pkg/dns:go_default_library",
         "//pkg/model:go_default_library",
+        "//pkg/wellknownports:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/openstack:go_default_library",
         "//upup/pkg/fi/cloudup/openstacktasks:go_default_library",

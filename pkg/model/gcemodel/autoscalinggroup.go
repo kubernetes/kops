@@ -170,7 +170,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// 1) no support in terraform
 		// 2) we can't steer to specific zones AFAICT, only to all zones in the region
 
-		targetSizes := make([]int, len(zones), len(zones))
+		targetSizes := make([]int, len(zones))
 		totalSize := 0
 		for i := range zones {
 			targetSizes[i] = minSize / len(zones)

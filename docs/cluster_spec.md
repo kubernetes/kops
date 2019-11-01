@@ -326,6 +326,16 @@ spec:
     targetRamMb: 4096
 ```
 
+#### eventTTL
+
+How long API server retains events. Note that you must fill empty units of time with zeros.
+
+```yaml
+spec:
+  kubeAPIServer:
+    eventTTL: 03h0m0s
+```
+
 ### externalDns
 
 This block contains configuration options for your `external-DNS` provider.
@@ -468,7 +478,7 @@ Specifying KubeDNS will install kube-dns as the default service discovery.
 
 This will install [CoreDNS](https://coredns.io/) instead of kube-dns.
 
-If you are using CoreDNS and want to use an entirely custom CoreFile you can do this by specifying the file. This will not work with any other options which interact with the default CoreFile.
+If you are using CoreDNS and want to use an entirely custom CoreFile you can do this by specifying the file. This will not work with any other options which interact with the default CoreFile. You can also override the version of the CoreDNS image used to use a different registry or version by specifying `CoreDNSImage`.
 
 **Note:** If you are using this functionality you will need to be extra vigiliant on version changes of CoreDNS for changes in functionality of the plugins being used etc.
 
@@ -476,6 +486,7 @@ If you are using CoreDNS and want to use an entirely custom CoreFile you can do 
 spec:
   kubeDNS:
     provider: CoreDNS
+    coreDNSImage: mirror.registry.local/mirrors/coredns:1.3.1
     externalCoreFile: |
       amazonaws.com:53 {
             errors
@@ -777,6 +788,34 @@ Providing the name of a key already in AWS is an alternative to `--ssh-public-ke
 spec:
   sshKeyName: myexistingkey
 ```
+
+### useHostCertificates
+
+Self-signed certificates towards Cloud APIs. In some cases Cloud APIs do have self-signed certificates.
+
+```yaml
+spec:
+  useHostCertificates: true
+```
+
+#### Optional step: add root certificates to instancegroups root ca bundle
+
+```yaml
+  additionalUserData:
+  - name: cacert.sh
+    type: text/x-shellscript
+    content: |
+      #!/bin/sh
+      cat > /usr/local/share/ca-certificates/mycert.crt <<EOF
+      -----BEGIN CERTIFICATE-----
+snip
+      -----END CERTIFICATE-----
+      EOF
+      update-ca-certificates
+```
+
+**NOTE**: `update-ca-certificates` is command for debian/ubuntu. That command is different depending your OS.
+
 
 ### target
 

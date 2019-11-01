@@ -32,10 +32,10 @@ in alpha, and other platforms planned.
 
 ## Launching a Kubernetes cluster hosted on AWS, GCE, DigitalOcean or OpenStack
 
-To replicate the above demo, check out our [tutorial](/docs/aws.md) for
+To replicate the above demo, check out our [tutorial](/docs/getting_started/aws.md) for
 launching a Kubernetes cluster hosted on AWS.
 
-To install a Kubernetes cluster on GCE please follow this [guide](/docs/tutorial/gce.md).
+To install a Kubernetes cluster on GCE please follow this [guide](/docs/getting_started/gce.md).
 
 To install a Kubernetes cluster on DigitalOcean, follow this [guide](/docs/tutorial/digitalocean.md).
 
@@ -45,7 +45,7 @@ To install a Kubernetes cluster on OpenStack, follow this [guide](/docs/tutorial
 
 ## Features
 
-* Automates the provisioning of Kubernetes clusters in [AWS](/docs/aws.md), [OpenStack](/docs/tutorial/openstack.md) and [GCE](/docs/tutorial/gce.md)
+* Automates the provisioning of Kubernetes clusters in [AWS](/docs/getting_started/aws.md), [OpenStack](/docs/getting_started/openstack.md) and [GCE](/docs/getting_started/gce.md)
 * Deploys Highly Available (HA) Kubernetes Masters
 * Built on a state-sync model for **dry-runs** and automatic **idempotency**
 * Ability to generate [Terraform](/docs/terraform.md)
@@ -90,14 +90,14 @@ Kubernetes version.
 
 #### Compatibility Matrix
 
-| kops version  | k8s 1.9.x | k8s 1.10.x | k8s 1.11.x | k8s 1.12.x | k8s 1.13.x | k8s 1.14.x |
-|---------------|-----------|------------|------------|------------|------------|------------|
-| 1.14.x - Beta | ✔         | ✔          | ✔          | ✔          | ✔          | ✔          |
-| 1.13.x        | ✔         | ✔          | ✔          | ✔          | ✔          | ❌         |
-| 1.12.x        | ✔         | ✔          | ✔          | ✔          | ❌         | ❌         |
-| 1.11.x        | ✔         | ✔          | ✔          | ❌         | ❌         | ❌         |
-| ~~1.10.x~~    | ✔         | ✔          | ❌         | ❌         | ❌         | ❌         |
-| ~~1.9.x~~     | ✔         | ❌         | ❌         | ❌         | ❌         | ❌         |
+| kops version  | k8s 1.10.x | k8s 1.11.x | k8s 1.12.x | k8s 1.13.x | k8s 1.14.x | k8s 1.15.x |
+|---------------|------------|------------|------------|------------|------------|------------|
+| 1.15.0-alpha.1| ✔          | ✔          | ✔          | ✔          | ✔          | ✔          |
+| 1.14.x        | ✔          | ✔          | ✔          | ✔          | ✔          | ❌          |
+| 1.13.x        | ✔          | ✔          | ✔          | ✔          | ❌         | ❌         |
+| 1.12.x        | ✔          | ✔          | ✔          | ❌         | ❌         | ❌         |
+| ~~1.11.x~~    | ✔          | ✔          | ❌         | ❌         | ❌         | ❌         |
+| ~~1.10.x~~    | ✔          | ❌         | ❌         | ❌         | ❌         | ❌         |
 
 Use the latest version of kops for all releases of Kubernetes, with the caveat
 that higher versions of Kubernetes are not _officially_ supported by kops. Releases who are ~~crossed out~~ _should_ work but we suggest should be upgraded soon.

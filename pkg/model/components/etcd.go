@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
-const DefaultBackupImage = "kopeio/etcd-backup:3.0.20190816"
+const DefaultBackupImage = "kopeio/etcd-backup:3.0.20191025"
 
 // EtcdOptionsBuilder adds options for etcd to the model
 type EtcdOptionsBuilder struct {
@@ -136,7 +136,7 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 			if c.Backups != nil {
 				image := c.Backups.Image
 				if image == "" {
-					image = fmt.Sprintf(DefaultBackupImage)
+					image = DefaultBackupImage
 				}
 
 				if image != "" {
