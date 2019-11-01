@@ -296,6 +296,11 @@ spec:
                   description: DockerDisableSharedPID uses a shared PID namespace
                     for containers in a pod.
                   type: boolean
+                dynamicConfigDir:
+                  description: DynamicConfigDir Directory for checkpointing downloaded
+                    configurations and tracking configuration health from dynamic
+                    configuration change on live kubernetes cluster
+                  type: string
                 enableCustomMetrics:
                   description: Enable gathering custom metrics.
                   type: boolean
