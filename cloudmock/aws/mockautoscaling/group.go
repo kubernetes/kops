@@ -139,6 +139,8 @@ func (m *MockAutoscaling) DescribeAutoScalingGroups(input *autoscaling.DescribeA
 					match = true
 				}
 			}
+		} else {
+			match = true
 		}
 
 		if match {
