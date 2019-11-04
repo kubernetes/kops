@@ -130,7 +130,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 	} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 		if err = r.validateCluster(rollingUpdateData, cluster); err != nil {
 			if rollingUpdateData.FailOnValidate {
-				return fmt.Errorf("error validating cluster: %v", err)
+				return err
 			} else {
 				klog.V(2).Infof("Ignoring cluster validation error: %v", err)
 				klog.Info("Cluster validation failed, but proceeding since fail-on-validate-error is set to false")
@@ -277,8 +277,16 @@ func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *Rolli
 
 // validateCluster runs our validation methods on the K8s Cluster.
 func (r *RollingUpdateInstanceGroup) validateCluster(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster) error {
-	if _, err := rollingUpdateData.ClusterValidator.Validate(); err != nil {
-		return fmt.Errorf("cluster %q did not pass validation: %v", cluster.Name, err)
+	result, err := rollingUpdateData.ClusterValidator.Validate()
+	if err != nil {
+		return fmt.Errorf("cluster %q did not validate: %v", cluster.Name, err)
+	}
+	if len(result.Failures) > 0 {
+		messages := []string{}
+		for _, failure := range result.Failures {
+			messages = append(messages, failure.Message)
+		}
+		return fmt.Errorf("cluster %q did not pass validation: %s", cluster.Name, strings.Join(messages, ", "))
 	}
 
 	return nil

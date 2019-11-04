@@ -87,6 +87,20 @@ func (*successfulClusterValidator) Validate() (*validation.ValidationCluster, er
 	return &validation.ValidationCluster{}, nil
 }
 
+type failingClusterValidator struct{}
+
+func (*failingClusterValidator) Validate() (*validation.ValidationCluster, error) {
+	return &validation.ValidationCluster{
+		Failures: []*validation.ValidationError{
+			{
+				Kind:    "testing",
+				Name:    "testingfailure",
+				Message: "testing failure",
+			},
+		},
+	}, nil
+}
+
 type erroringClusterValidator struct{}
 
 func (*erroringClusterValidator) Validate() (*validation.ValidationCluster, error) {
@@ -745,6 +759,44 @@ func getGroupsNodes1NeedsUpdating() map[string]*cloudinstances.CloudInstanceGrou
 		},
 	}
 	return groups
+}
+
+func TestRollingUpdateClusterFailsValidation(t *testing.T) {
+	k8sClient := fake.NewSimpleClientset()
+
+	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
+	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
+
+	cluster := &kopsapi.Cluster{}
+	cluster.Name = "test.k8s.local"
+
+	c := &RollingUpdateCluster{
+		Cloud:            mockcloud,
+		MasterInterval:   1 * time.Millisecond,
+		NodeInterval:     1 * time.Millisecond,
+		BastionInterval:  1 * time.Millisecond,
+		Force:            false,
+		K8sClient:        k8sClient,
+		ClusterValidator: &failingClusterValidator{},
+		FailOnValidate:   true,
+	}
+
+	cloud := c.Cloud.(awsup.AWSCloud)
+	setUpCloud(c)
+
+	err := c.RollingUpdate(getGroupsNodes1NeedsUpdating(), cluster, &kopsapi.InstanceGroupList{})
+	if err == nil {
+		t.Error("Expected error from rolling update, got nil")
+	}
+
+	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: []*string{aws.String("node-1")},
+	})
+	for _, group := range asgGroups.AutoScalingGroups {
+		if len(group.Instances) != 2 {
+			t.Errorf("Expected two instances in group got %v", len(group.Instances))
+		}
+	}
 }
 
 func TestRollingUpdateClusterErrorsValidation(t *testing.T) {
