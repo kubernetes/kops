@@ -561,7 +561,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python", "selinux-policy-targeted"},
 	},
 
 	// 18.03.1 - Bionic
@@ -658,7 +658,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python", "selinux-policy-targeted"},
 	},
 
 	// 18.09.3 - Debian Stretch
@@ -694,7 +694,7 @@ var dockerVersions = []dockerVersion{
 		Version:       "2.68",
 		Source:        "http://vault.centos.org/7.6.1810/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
 		Hash:          "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
-		Dependencies:  []string{"policycoreutils-python"},
+		Dependencies:  []string{"policycoreutils-python", "selinux-policy-targeted"},
 	},
 	{
 		DockerVersion: "18.06.2",
@@ -764,7 +764,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python", "selinux-policy-targeted"},
 	},
 	// 18.06.3 - CentOS / Rhel8 (two packages)
 	{
