@@ -53,7 +53,11 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 
 		dockerVersion := ""
-		if sv.Major == 1 && sv.Minor >= 12 {
+		if sv.Major == 1 && sv.Minor >= 17 {
+			dockerVersion = "19.03.4"
+		} else if sv.Major == 1 && sv.Minor >= 16 {
+			dockerVersion = "18.09.9"
+		} else if sv.Major == 1 && sv.Minor >= 12 {
 			dockerVersion = "18.06.3"
 		} else if sv.Major == 1 && sv.Minor >= 9 {
 			dockerVersion = "17.03.2"
