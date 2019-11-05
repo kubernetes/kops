@@ -2572,13 +2572,13 @@ spec:
                     connLimit:
                       format: int32
                       type: integer
+                    enableWeaveTc:
+                      type: boolean
                     mtu:
                       format: int32
                       type: integer
                     netExtraArgs:
                       type: string
-                    enableWeaveTc:
-                      type: boolean
                     noMasqLocal:
                       format: int32
                       type: integer
