@@ -4743,6 +4743,7 @@ func autoConvert_v1alpha1_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *We
 	out.ConnLimit = in.ConnLimit
 	out.NoMasqLocal = in.NoMasqLocal
 	out.NetExtraArgs = in.NetExtraArgs
+	out.EnableWeaveTc = in.EnableWeaveTc
 	return nil
 }
 
@@ -4756,6 +4757,7 @@ func autoConvert_kops_WeaveNetworkingSpec_To_v1alpha1_WeaveNetworkingSpec(in *ko
 	out.ConnLimit = in.ConnLimit
 	out.NoMasqLocal = in.NoMasqLocal
 	out.NetExtraArgs = in.NetExtraArgs
+	out.EnableWeaveTc = in.EnableWeaveTc
 	return nil
 }
 

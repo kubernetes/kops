@@ -201,6 +201,17 @@ spec:
               memory: 200Mi
           securityContext:
             privileged: true
+        {{- if .Networking.Weave.EnableWeaveTc }}
+        - name: weave-tc
+          image: 'qmachu/weave-tc:bd94b89'
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: xtables-lock
+              mountPath: /run/xtables.lock
+            - name: lib-tc
+              mountPath: /lib/tc      
+        {{- end }}
       hostNetwork: true
       hostPID: true
       restartPolicy: Always

@@ -61,10 +61,11 @@ type KopeioNetworkingSpec struct {
 
 // WeaveNetworkingSpec declares that we want Weave networking
 type WeaveNetworkingSpec struct {
-	MTU          *int32 `json:"mtu,omitempty"`
-	ConnLimit    *int32 `json:"connLimit,omitempty"`
-	NoMasqLocal  *int32 `json:"noMasqLocal,omitempty"`
-	NetExtraArgs string `json:"netExtraArgs,omitempty"`
+	MTU           *int32 `json:"mtu,omitempty"`
+	ConnLimit     *int32 `json:"connLimit,omitempty"`
+	NoMasqLocal   *int32 `json:"noMasqLocal,omitempty"`
+	NetExtraArgs  string `json:"netExtraArgs,omitempty"`
+	EnableWeaveTc bool   `json:"enableWeaveTc,omitempty"`
 }
 
 // FlannelNetworkingSpec declares that we want Flannel networking

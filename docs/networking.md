@@ -138,6 +138,25 @@ $ kops update cluster
 
 Since unencrypted nodes will not be able to connect to nodes configured with encryption enabled, this configuration cannot be changed easily without downtime.
 
+### Enable weave-tc
+
+The Current netfilter implementation of the Linux Kernel has issues which can cause in several DNS-Problems.
+A good article about the problem can be found in the [weaveworks-blog](https://www.weave.works/blog/racy-conntrack-and-dns-lookup-timeouts).
+With this option we provide the (by weavework) [suggested workaround](https://www.weave.works/blog/racy-conntrack-and-dns-lookup-timeouts)
+with [tc](https://linux.die.net/man/8/tc).
+
+The option is disabled by default.
+
+you can enable it by the following cluster setting:
+
+```yaml
+spec:
+  networking:
+    weave:
+      enableWeaveTc: true
+```
+
+
 ### Calico Example for CNI and Network Policy
 
 #### Installing Calico on a new Cluster

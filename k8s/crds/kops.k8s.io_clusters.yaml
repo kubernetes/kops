@@ -2577,6 +2577,8 @@ spec:
                       type: integer
                     netExtraArgs:
                       type: string
+                    enableWeaveTc:
+                      type: boolean
                     noMasqLocal:
                       format: int32
                       type: integer
