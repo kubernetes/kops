@@ -151,4 +151,4 @@ spec:
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"
-    version: 2.5.2-kops.2
+    version: 2.5.2-kops.3
