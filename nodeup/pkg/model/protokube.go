@@ -380,7 +380,6 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 				f.DNSProvider = fi.String("aws-route53")
 			case kops.CloudProviderDO:
 				f.DNSProvider = fi.String("digitalocean")
-				f.ClusterID = fi.String(t.Cluster.Name)
 			case kops.CloudProviderGCE:
 				f.DNSProvider = fi.String("google-clouddns")
 			case kops.CloudProviderVSphere:
