@@ -5,7 +5,7 @@ At some point you will almost definitely want to upgrade the Kubernetes version 
 - Upgrade an existing `kube-up` managed cluster to one managed by `kops`
     + [The simple method with downtime](#kube-up---kops-downtime)
     + [The more complex method with zero-downtime](#kube-up---kops-sans-downtime)
-- [Upgrade a `kops` cluster from one Kubernetes version to another](cluster_upgrades_and_migrations.md)
+- [Upgrade a `kops` cluster from one Kubernetes version to another](updates_and_upgrades.md)
 
 ## `kube-up` -> `kops`, with downtime
 

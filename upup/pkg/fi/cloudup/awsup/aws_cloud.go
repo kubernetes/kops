@@ -663,7 +663,7 @@ func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscali
 		}
 		// @step: check if the instance is terminating
 		if aws.StringValue(i.LifecycleState) == autoscaling.LifecycleStateTerminating {
-			klog.Warningf("ignoring instance  as it is terminating: %s in autoscaling group: %s", id, cg.HumanName)
+			klog.Warningf("ignoring instance as it is terminating: %s in autoscaling group: %s", id, cg.HumanName)
 			continue
 		}
 		currentConfigName := findInstanceLaunchConfiguration(i)
