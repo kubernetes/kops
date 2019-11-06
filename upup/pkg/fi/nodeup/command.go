@@ -511,12 +511,7 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 		}
 		instanceID := string(instanceIDBytes)
 
-		hostname := fmt.Sprintf("%s.%s", az, instanceID)
-		if hostname == "" {
-			return "", errors.New("hostname for Alicloud ECS was empty")
-		}
-
-		return hostname, nil
+		return fmt.Sprintf("%s.%s", az, instanceID), nil
 	}
 
 	return hostnameOverride, nil
