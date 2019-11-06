@@ -42,7 +42,7 @@ Para instalar un Kubernetes cluster en GCE por fabor siga esta [guide](/docs/get
 * Un Despliegue Altamente Disponible (HA) Kubernetes Masters
 * Construye en un modelo de estado sincronizado para **dry-runs** y **idempotency** automático
 * Capacidad de generar [Terraform](/docs/terraform.md)
-* Soporta un Kubernetes personalizado [add-ons](/docs/addons.md)
+* Soporta un Kubernetes personalizado [add-ons](/docs/operations/addons.md)
 * Línea de comando [autocompletion](/docs/cli/kops_completion.md)
 * YAML Archivo de Manifiesto Basado en API [Configuration](/docs/manifests_and_customizing_via_api.md)
 * [Templating](/docs/cluster_template.md) y ejecutar modos de simulacro para crear
