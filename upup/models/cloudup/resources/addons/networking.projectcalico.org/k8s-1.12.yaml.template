@@ -651,15 +651,15 @@ spec:
 kind: DaemonSet
 apiVersion: apps/v1
 metadata:
-  name: calico-node
+  name: calico-node-master
   namespace: kube-system
   labels:
-    k8s-app: calico-node
+    k8s-app: calico-node-master
     role.kubernetes.io/networking: "1"
 spec:
   selector:
     matchLabels:
-      k8s-app: calico-node
+      k8s-app: calico-node-master
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
@@ -667,7 +667,7 @@ spec:
   template:
     metadata:
       labels:
-        k8s-app: calico-node
+        k8s-app: calico-node-master
         role.kubernetes.io/networking: "1"
       annotations:
         # This, along with the CriticalAddonsOnly toleration below,
