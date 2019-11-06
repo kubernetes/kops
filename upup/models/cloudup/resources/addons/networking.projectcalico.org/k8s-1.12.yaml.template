@@ -639,6 +639,13 @@ spec:
     matchLabels:
       k8s-app: calico-typha
 {{- end -}}
+
+---
+
+{{ if .Networking.Calico.BGPRouteReflectors -}}
+
+{{- end -}}
+
 ---
 # Source: calico/templates/calico-node.yaml
 # This manifest installs the calico-node container, as well
