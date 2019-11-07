@@ -423,11 +423,10 @@ func (a *AWSVolumes) AttachVolume(volume *Volume) error {
 
 				volume.LocalDevice = device
 				return nil
-			} else {
-				a.releaseDevice(device, volumeID)
-
-				return fmt.Errorf("Unable to attach volume %q, was attached to %q", volumeID, v.AttachedTo)
 			}
+			a.releaseDevice(device, volumeID)
+
+			return fmt.Errorf("Unable to attach volume %q, was attached to %q", volumeID, v.AttachedTo)
 		}
 
 		switch v.Status {
