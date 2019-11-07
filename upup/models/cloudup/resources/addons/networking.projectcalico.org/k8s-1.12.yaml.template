@@ -678,9 +678,10 @@ spec:
     spec:
       nodeSelector:
         beta.kubernetes.io/os: linux
+        # Run calico-node-master on masters only.
+        node-role.kubernetes.io/master: ""
       hostNetwork: true
       tolerations:
-        # Make sure calico-node gets scheduled on all nodes.
         - effect: NoSchedule
           operator: Exists
         # Mark the pod as a critical add-on for rescheduling.
