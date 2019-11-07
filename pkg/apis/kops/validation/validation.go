@@ -406,6 +406,14 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterS
 			field.Invalid(fldPath.Child("TyphaReplicas"), v.TyphaReplicas,
 				fmt.Sprintf("Unable to set number of Typha replicas to less than 0, you've specified %d", v.TyphaReplicas)))
 	}
+
+	if v.BgpRouteReflectorClusterID != "" {
+		ip := net.ParseIP(v.BgpRouteReflectorClusterID)
+		if ip == nil || ip.To4() == nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("BgpRouteReflectorClusterID"), v.BgpRouteReflectorClusterID, "Not a valid IPv4 address"))
+		}
+	}
+
 	switch v.MajorVersion {
 	case "":
 		// OK:

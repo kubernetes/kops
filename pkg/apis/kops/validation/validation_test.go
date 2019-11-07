@@ -351,6 +351,23 @@ func Test_Validate_Calico(t *testing.T) {
 		{
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
+					BgpRouteReflectorClusterID: "1.0.0.1",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					BgpRouteReflectorClusterID: "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{"Invalid value::Calico.BgpRouteReflectorClusterID"},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
 					TyphaReplicas: -1,
 				},
 				Etcd: &kops.EtcdClusterSpec{},
