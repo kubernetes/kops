@@ -642,7 +642,7 @@ spec:
 
 ---
 
-{{ if .Networking.Calico.BGPRouteReflectors -}}
+{{ if .Networking.Calico.BgpRouteReflectorsEnabled -}}
 ---
 # Source: calico/templates/calico-node.yaml
 # This manifest installs the calico-node container, as well
@@ -707,7 +707,7 @@ spec:
             - name: CALICO_ROUTE_REFLECTOR_LABEL_VALUE
               value: "{{- or .Networking.Calico.RouteReflectorLabelValue "true" }}"
             - name: CALICO_ROUTE_REFLECTOR_CLUSTER_ID
-              value: "{{- or .Networking.Calico.RouteReflectorClusterID "1.1.1.1" }}"
+              value: "{{- or .Networking.Calico.BgpRouteReflectorClusterID "1.1.1.1" }}"
         # This container performs upgrade from host-local IPAM to calico-ipam.
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
@@ -948,7 +948,7 @@ spec:
       hostNetwork: true
       tolerations:
         # Only run on all nodes if we're not using route reflectors.
-        {{ if not .Networking.Calico.BGPRouteReflectors -}}
+        {{ if not .Networking.Calico.BgpRouteReflectorsEnabled -}}
         # Make sure calico-node gets scheduled on all nodes.
         - effect: NoSchedule
           operator: Exists
