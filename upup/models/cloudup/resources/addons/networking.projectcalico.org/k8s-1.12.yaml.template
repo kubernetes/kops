@@ -703,9 +703,9 @@ spec:
                 fieldRef:
                   fieldPath: spec.nodeName
             - name: CALICO_ROUTE_REFLECTOR_LABEL_NAME
-              value: "{{- or .Networking.Calico.RouteReflectorLabelName "kops.k8s.io/calico-route-reflector" }}"
+              value: "kops.k8s.io/calico-route-reflector"
             - name: CALICO_ROUTE_REFLECTOR_LABEL_VALUE
-              value: "{{- or .Networking.Calico.RouteReflectorLabelValue "true" }}"
+              value: "true"
             - name: CALICO_ROUTE_REFLECTOR_CLUSTER_ID
               value: "{{- or .Networking.Calico.BgpRouteReflectorClusterID "1.1.1.1" }}"
         # This container performs upgrade from host-local IPAM to calico-ipam.
