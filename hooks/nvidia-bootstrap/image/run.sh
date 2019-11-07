@@ -32,37 +32,67 @@ CACHE_DIR_CONTAINER="${ROOTFS_DIR}${CACHE_DIR_HOST}"
 # Both P2 and P3 are set for Cuda Toolkit 9.1
 # http://www.nvidia.com/Download/index.aspx
 declare -A class_to_driver_file
-class_to_driver_file=( \
-    ["g3"]="http://us.download.nvidia.com/XFree86/Linux-x86_64/367.124/NVIDIA-Linux-x86_64-367.124.run" \
-    ["g3s"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
-    ["p2"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
-    ["p3"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
-)
 declare -A class_to_driver_checksum
-class_to_driver_checksum=( \
-    ["g3"]="77f37939efeea4b6505842bed50445971992e303" \
-    ["g3s"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
-    ["p2"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
-    ["p3"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
-)
+case $CUDA_VERSION in
+    9.1)
+        class_to_driver_file=( \
+            ["g3"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
+            ["g3s"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
+            ["p2"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
+            ["p3"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
+        )
 
-# CUDA Files that need to be installed ~1.4GB
-#   First one is main installation
-#   Subsequent files are patches which need to be applied in order
-#   Order in the arrays below matters
-# https://developer.nvidia.com/cuda-downloads
-cuda_files=( \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/local_installers/cuda_9.1.85_387.26_linux" \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/1/cuda_9.1.85.1_linux" \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/2/cuda_9.1.85.2_linux" \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/3/cuda_9.1.85.3_linux" \
-)
-cuda_files_checksums=( \
-  "1540658f4fe657dddd8b0899555b7468727d4aa8" \
-  "7ec6970ecd81163b0d02ef30d35599e7fd6e97d8" \
-  "cfa3b029b58fc117d8ce510a70efc848924dd565" \
-  "6269a2c5784b08997edb97ea0020fb4e6c8769ed" \
-)
+        class_to_driver_checksum=( \
+            ["g3"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
+            ["g3s"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
+            ["p2"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
+            ["p3"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
+        )
+
+        # CUDA Files that need to be installed ~1.4GB
+        #   First one is main installation
+        #   Subsequent files are patches which need to be applied in order
+        #   Order in the arrays below matters
+        # https://developer.nvidia.com/cuda-downloads
+        cuda_files=( \
+        "https://developer.nvidia.com/compute/cuda/9.1/Prod/local_installers/cuda_9.1.85_387.26_linux" \
+        "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/1/cuda_9.1.85.1_linux" \
+        "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/2/cuda_9.1.85.2_linux" \
+        "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/3/cuda_9.1.85.3_linux" \
+        )
+
+        cuda_files_checksums=( \
+        "1540658f4fe657dddd8b0899555b7468727d4aa8" \
+        "7ec6970ecd81163b0d02ef30d35599e7fd6e97d8" \
+        "cfa3b029b58fc117d8ce510a70efc848924dd565" \
+        "6269a2c5784b08997edb97ea0020fb4e6c8769ed" \
+        )
+        ;;
+    10.0)
+        class_to_driver_file=( \
+            ["g3"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
+            ["g3s"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
+            ["p2"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
+            ["p3"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
+        )
+
+        class_to_driver_checksum=( \
+            ["g3"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
+            ["g3s"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
+            ["p2"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
+            ["p3"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
+        )
+
+        cuda_files=( \
+        "http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_418.87.00_linux.run" \
+        )
+
+        cuda_files_checksums=( \
+        "36706e2c0fb7efa14aea6a3c889271d97fd3575d" \
+        )
+        ;;
+    *) echo "CUDA ${CUDA_VERSION} not supported by kops hook" && exit 1
+esac
 
 containsElement () { for e in "${@:2}"; do [[ "$e" = "$1" ]] && return 0; done; return 1; }
 
@@ -170,7 +200,7 @@ for (( i=0; i<${length}; i++ )); do
       touch $filepath_installed # Mark successful installation
     elif [[ $download =~ .*local_installers.*cuda.* ]]; then
       # Install the primary cuda library (using gcc)
-      chroot ${ROOTFS_DIR} $filepath_host --toolkit --silent --verbose
+      chroot ${ROOTFS_DIR} $filepath_host --toolkit --silent
       touch $filepath_installed # Mark successful installation
     elif [[ $download =~ .*patches.*cuda.* ]]; then
       # Install an update to the primary cuda library (using gcc)

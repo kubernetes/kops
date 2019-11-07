@@ -20,4 +20,8 @@ RUN apt-get update && apt-get -yq install curl jq
 
 ADD run.sh /run.sh
 
+ARG CUDA_VERSION=9.1
+
+ENV CUDA_VERSION ${CUDA_VERSION}
+
 CMD [ "/bin/bash", "/run.sh" ]

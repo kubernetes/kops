@@ -24,4 +24,10 @@ RUN apt-get update && \
 COPY run.sh /run.sh
 COPY files/* /nvidia-device-plugin/
 
+ARG CUDA_VERSION=9.1
+
+ENV CUDA_VERSION ${CUDA_VERSION}
+
+RUN echo "CUDA_VERSION=${CUDA_VERSION}" > /nvidia-device-plugin/nvidia.env
+
 CMD [ "/bin/bash", "/run.sh" ]

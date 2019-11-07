@@ -16,8 +16,10 @@ all: image
 
 .PHONY: image push
 
-image:
-	docker build -t kopeio/nvidia-bootstrap:1.6.0 -f image/Dockerfile image/
+image:  ## Build the images
+    docker build --build-arg CUDA_VERSION=9.1 -t qntfy/nvidia-device-plugin:0.2.0-CUDA-9.1 -f image/Dockerfile image/
+    docker build --build-arg CUDA_VERSION=10.0 -t qntfy/nvidia-device-plugin:0.2.0-CUDA-10.0 -f image/Dockerfile image/
 
-push: image
-	docker push kopeio/nvidia-bootstrap:1.6.0
+push:   ## Push the images
+    docker push qntfy/nvidia-device-plugin:0.2.0-CUDA-9.1
+    docker push qntfy/nvidia-device-plugin:0.2.0-CUDA-10.0
