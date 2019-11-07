@@ -183,9 +183,8 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 						return fmt.Errorf("instanceGroup %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating instanceGroup: %v", err)
-				} else {
-					fmt.Fprintf(&sb, "Created instancegroup/%s\n", v.ObjectMeta.Name)
 				}
+				fmt.Fprintf(&sb, "Created instancegroup/%s\n", v.ObjectMeta.Name)
 
 			case *kopsapi.SSHCredential:
 				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]

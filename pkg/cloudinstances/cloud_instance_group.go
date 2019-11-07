@@ -79,9 +79,8 @@ func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(instanceId string, newG
 func (c *CloudInstanceGroup) Status() string {
 	if len(c.NeedUpdate) == 0 {
 		return "Ready"
-	} else {
-		return "NeedsUpdate"
 	}
+	return "NeedsUpdate"
 }
 
 // GetNodeMap returns a list of nodes keyed by their external id
