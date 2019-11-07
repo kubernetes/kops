@@ -695,6 +695,19 @@ spec:
       terminationGracePeriodSeconds: 0
       priorityClassName: system-node-critical
       initContainers:
+        - name: configure-route-reflector
+          image: zappi/calico-route-reflector-init:0.1.0
+          env:
+            - name: KUBERNETES_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CALICO_ROUTE_REFLECTOR_LABEL_NAME
+              value: "{{- or .Networking.Calico.RouteReflectorLabelName "kops.k8s.io/calico-route-reflector" }}"
+            - name: CALICO_ROUTE_REFLECTOR_LABEL_VALUE
+              value: "{{- or .Networking.Calico.RouteReflectorLabelValue "true" }}"
+            - name: CALICO_ROUTE_REFLECTOR_CLUSTER_ID
+              value: "{{- or .Networking.Calico.RouteReflectorClusterID "1.1.1.1" }}"
         # This container performs upgrade from host-local IPAM to calico-ipam.
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
