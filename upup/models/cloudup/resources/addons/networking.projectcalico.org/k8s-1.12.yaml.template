@@ -934,9 +934,12 @@ spec:
         beta.kubernetes.io/os: linux
       hostNetwork: true
       tolerations:
+        # Only run on all nodes if we're not using route reflectors.
+        {{ if not .Networking.Calico.BGPRouteReflectors -}}
         # Make sure calico-node gets scheduled on all nodes.
         - effect: NoSchedule
           operator: Exists
+        {{- end -}}
         # Mark the pod as a critical add-on for rescheduling.
         - key: CriticalAddonsOnly
           operator: Exists
