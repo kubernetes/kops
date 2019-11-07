@@ -2227,7 +2227,17 @@ spec:
                 calico:
                   description: CalicoNetworkingSpec declares that we want Calico networking
                   properties:
+                    bgpRouteReflectorClusterId:
+                      description: 'BgpRouteReflectorClusterId is the cluster identifier
+                        for the BGP route reflectors (Default: 1.1.1.1)'
+                      type: string
+                    bgpRouteReflectorsEnabled:
+                      description: 'BgpRouteReflectorsEnabled enables the use of masters
+                        as BGP route reflectors (Default: false)'
+                      type: boolean
                     crossSubnet:
+                      description: CrossSubnet enables Calico's cross-subnet mode
+                        when set to true
                       type: boolean
                     ipipMode:
                       description: IPIPMode is mode for CALICO_IPV4POOL_IPIP
