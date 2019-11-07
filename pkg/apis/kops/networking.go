@@ -77,7 +77,12 @@ type FlannelNetworkingSpec struct {
 
 // CalicoNetworkingSpec declares that we want Calico networking
 type CalicoNetworkingSpec struct {
-	CrossSubnet bool `json:"crossSubnet,omitempty"` // Enables Calico's cross-subnet mode when set to true
+	// BgpRouteReflectorsEnabled enables the use of masters as BGP route reflectors (Default: false)
+	BgpRouteReflectorsEnabled bool `json:"bgpRouteReflectorsEnabled,omitempty"`
+	// BgpRouteReflectorClusterId is the cluster identifier for the BGP route reflectors (Default: 1.1.1.1)
+	BgpRouteReflectorClusterID string `json:"bgpRouteReflectorClusterId,omitempty"`
+	// CrossSubnet enables Calico's cross-subnet mode when set to true
+	CrossSubnet bool `json:"crossSubnet,omitempty"`
 	// LogSeverityScreen lets us set the desired log level. (Default: info)
 	LogSeverityScreen string `json:"logSeverityScreen,omitempty"`
 	// MTU to be set in the cni-network-config for calico.
