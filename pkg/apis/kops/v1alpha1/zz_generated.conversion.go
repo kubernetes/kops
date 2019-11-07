@@ -1129,6 +1129,8 @@ func Convert_kops_CNINetworkingSpec_To_v1alpha1_CNINetworkingSpec(in *kops.CNINe
 }
 
 func autoConvert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *CalicoNetworkingSpec, out *kops.CalicoNetworkingSpec, s conversion.Scope) error {
+	out.BgpRouteReflectorsEnabled = in.BgpRouteReflectorsEnabled
+	out.BgpRouteReflectorClusterID = in.BgpRouteReflectorClusterID
 	out.CrossSubnet = in.CrossSubnet
 	out.LogSeverityScreen = in.LogSeverityScreen
 	out.MTU = in.MTU
@@ -1150,6 +1152,8 @@ func Convert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *Cali
 }
 
 func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
+	out.BgpRouteReflectorsEnabled = in.BgpRouteReflectorsEnabled
+	out.BgpRouteReflectorClusterID = in.BgpRouteReflectorClusterID
 	out.CrossSubnet = in.CrossSubnet
 	out.LogSeverityScreen = in.LogSeverityScreen
 	out.MTU = in.MTU
