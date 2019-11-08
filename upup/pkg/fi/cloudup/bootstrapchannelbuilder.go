@@ -695,8 +695,8 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 			"pre-k8s-1.6": "2.3.0-kops.4",
 			"k8s-1.6":     "2.3.0-kops.4",
 			"k8s-1.7":     "2.5.2-kops.4",
-			"k8s-1.8":     "2.5.2-kops.4",
-			"k8s-1.12":    "2.5.2-kops.4",
+			"k8s-1.8":     "2.6.0-kops.2",
+			"k8s-1.12":    "2.6.0-kops.3",
 		}
 
 		{
