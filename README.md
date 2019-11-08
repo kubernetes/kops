@@ -37,9 +37,9 @@ launching a Kubernetes cluster hosted on AWS.
 
 To install a Kubernetes cluster on GCE please follow this [guide](/docs/getting_started/gce.md).
 
-To install a Kubernetes cluster on DigitalOcean, follow this [guide](/docs/tutorial/digitalocean.md).
+To install a Kubernetes cluster on DigitalOcean, follow this [guide](/docs/getting_started/digitalocean.md).
 
-To install a Kubernetes cluster on OpenStack, follow this [guide](/docs/tutorial/openstack.md).
+To install a Kubernetes cluster on OpenStack, follow this [guide](/docs/getting_started/openstack.md).
 
 **For anything beyond experimental clusters it is highly encouraged to [version control the cluster manifest files](/docs/manifests_and_customizing_via_api.md) and [run kops in a CI environment](/docs/continuous_integration.md).**
 
@@ -49,7 +49,7 @@ To install a Kubernetes cluster on OpenStack, follow this [guide](/docs/tutorial
 * Deploys Highly Available (HA) Kubernetes Masters
 * Built on a state-sync model for **dry-runs** and automatic **idempotency**
 * Ability to generate [Terraform](/docs/terraform.md)
-* Supports custom Kubernetes [add-ons](/docs/addons.md)
+* Supports custom Kubernetes [add-ons](/docs/operations/addons.md)
 * Command line [autocompletion](/docs/cli/kops_completion.md)
 * YAML Manifest Based API [Configuration](/docs/manifests_and_customizing_via_api.md)
 * [Templating](/docs/cluster_template.md) and dry-run modes for creating

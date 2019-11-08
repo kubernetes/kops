@@ -149,6 +149,7 @@ k8s.io/kops/protokube/pkg/gossip/aws
 k8s.io/kops/protokube/pkg/gossip/dns
 k8s.io/kops/protokube/pkg/gossip/dns/hosts
 k8s.io/kops/protokube/pkg/gossip/dns/provider
+k8s.io/kops/protokube/pkg/gossip/do
 k8s.io/kops/protokube/pkg/gossip/gce
 k8s.io/kops/protokube/pkg/gossip/memberlist
 k8s.io/kops/protokube/pkg/gossip/mesh

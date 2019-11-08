@@ -131,10 +131,9 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		if err = r.validateCluster(rollingUpdateData, cluster); err != nil {
 			if rollingUpdateData.FailOnValidate {
 				return err
-			} else {
-				klog.V(2).Infof("Ignoring cluster validation error: %v", err)
-				klog.Info("Cluster validation failed, but proceeding since fail-on-validate-error is set to false")
 			}
+			klog.V(2).Infof("Ignoring cluster validation error: %v", err)
+			klog.Info("Cluster validation failed, but proceeding since fail-on-validate-error is set to false")
 		}
 	}
 
@@ -160,9 +159,8 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 				if err = r.DrainNode(u, rollingUpdateData); err != nil {
 					if rollingUpdateData.FailOnDrainError {
 						return fmt.Errorf("failed to drain node %q: %v", nodeName, err)
-					} else {
-						klog.Infof("Ignoring error draining node %q: %v", nodeName, err)
 					}
+					klog.Infof("Ignoring error draining node %q: %v", nodeName, err)
 				}
 			} else {
 				klog.Warningf("Skipping drain of instance %q, because it is not registered in kubernetes", instanceId)
