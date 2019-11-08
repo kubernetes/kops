@@ -923,6 +923,10 @@ spec:
                     in the 'kube-system' namespace to be used for TLS bootstrapping
                     authentication
                   type: boolean
+                encryptionProviderConfig:
+                  description: EncryptionProviderConfig enables encryption at rest
+                    for secrets.
+                  type: string
                 etcdCaFile:
                   description: EtcdCAFile is the path to a ca certificate
                   type: string
