@@ -676,6 +676,19 @@ spec:
         # if it ever gets evicted.
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      # Prevent scheduling on masters that still have calico-node on them.
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: k8s-app
+                      operator: In
+                      values:
+                        - calico-node
+                topologyKey: kubernetes.io/hostname
       nodeSelector:
         beta.kubernetes.io/os: linux
         # Run calico-node-master on masters only.
