@@ -3,7 +3,7 @@
 ## Addons
 With kops you manage addons by using kubectl.
 
-(For a description of the addon-manager, please see [addon_manager.md](#addon-management).)
+(For a description of the addon-manager, please see [addon_management](#addon-management).)
 
 Addons in Kubernetes are traditionally done by copying files to `/etc/kubernetes/addons` on the master.  But this
 doesn't really make sense in HA master configurations.  We also have kubectl available, and addons are just a thin
@@ -21,7 +21,7 @@ This document describes how to install some common addons and how to create your
 
 ### Custom addons
 
-The docs about the [addon manager](#addon-management) describe in more detail how to define a addon resource with regards to versioning.
+The docs about the [addon management](#addon-management) describe in more detail how to define a addon resource with regards to versioning.
 Here is a minimal example of an addon manifest that would install two different addons.
 
 ```yaml
@@ -155,7 +155,7 @@ The project is created by wearemolecule, and maintained at
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/route53-mapper/v1.3.0.yml
 ```
 
-## Addons Management
+## Addon Management
 
 kops incorporates management of some addons; we _have_ to manage some addons which are needed before
 the kubernetes API is functional.

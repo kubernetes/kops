@@ -48,8 +48,8 @@
 * [Using Manifests and Customizing via the API](manifests_and_customizing_via_api.md)
 
 ## Operations
-* [Cluster addon manager](addon_manager.md)
-* [Cluster addons](addons.md)
+* [Cluster addon manager](operations/addons.md#addon_management)
+* [Cluster addons](operations/addons.md)
 * [Cluster configuration management](changing_configuration.md)
 * [Cluster desired configuration creation from template](cluster_template.md)
 * [Cluster upgrades and migrations](operations/cluster_upgrades_and_migrations.md)

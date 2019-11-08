@@ -453,11 +453,10 @@ func DeleteRoleRam(cloud fi.Cloud, r *resources.Resource) error {
 	response, err := c.RamClient().ListPoliciesForRole(roleQueryRequest)
 	if err != nil {
 		return fmt.Errorf("err listing Policies for role:%v", err)
-	} else {
-		if len(response.Policies.Policy) != 0 {
-			for _, policy := range response.Policies.Policy {
-				policies = append(policies, policy.PolicyName)
-			}
+	}
+	if len(response.Policies.Policy) != 0 {
+		for _, policy := range response.Policies.Policy {
+			policies = append(policies, policy.PolicyName)
 		}
 	}
 

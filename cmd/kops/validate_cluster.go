@@ -144,11 +144,10 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		if err != nil {
 			if time.Now().After(timeout) {
 				return nil, fmt.Errorf("unexpected error during validation: %v", err)
-			} else {
-				klog.Warningf("(will retry): unexpected error during validation: %v", err)
-				time.Sleep(pollInterval)
-				continue
 			}
+			klog.Warningf("(will retry): unexpected error during validation: %v", err)
+			time.Sleep(pollInterval)
+			continue
 		}
 
 		switch options.output {
