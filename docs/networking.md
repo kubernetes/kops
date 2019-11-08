@@ -205,6 +205,75 @@ When you enable cross-subnet mode in kops, an addon controller ([k8s-ec2-srcdst]
 will be deployed as a Pod (which will be scheduled on one of the masters) to facilitate the disabling of said source/destination address checks.
 Only the masters have the IAM policy (`ec2:*`) to allow k8s-ec2-srcdst to execute `ec2:ModifyInstanceAttribute`.
 
+##### Enable BGP Route Reflectors
+
+As of Kops 1.15, it is possible to configure your master nodes to act as [route reflectors](https://docs.projectcalico.org/v3.9/networking/routereflector#content-main).
+
+To enable route reflection, configure your calico networking as follows:
+
+```yaml
+networking:
+  calico:
+    bgpRouteReflectorsEnabled: true
+```
+
+You can optionally set a route reflector cluster identifer (the default is `1.1.1.1`).
+
+```yaml
+networking:
+  calico:
+    bgpRouteReflectorsEnabled: true
+    bgpRouteReflectorClusterID: "2.2.2.2"
+```
+
+This will split the `calico-node` daemonset into two, one that runs on masters (`calico-node-master`) and another than runs on workers (`calico-node`). The `calico-node-master` will configure the master nodes by applying a label (used for peering configuration) and annotation (indicating they are route reflectors) to the nodes.
+
+After configuring and updating the cluster, you should now have the two seprate `calico-node` daemonsets. At this point, the master nodes have been prepared, however to enable route reflection, calico needs to be configured.
+
+Configure all non-reflector (worker) nodes to peer with all route reflectors (masters):
+
+```console
+calicoctl apply -f - <<EOF
+kind: BGPPeer
+apiVersion: projectcalico.org/v3
+metadata:
+  name: peer-to-rrs
+spec:
+  nodeSelector: "!has(kops.k8s.io/calico-route-reflector)"
+  peerSelector: has(kops.k8s.io/calico-route-reflector)
+EOF
+```
+
+Configure all route reflectors (masters) to peer with each other:
+
+
+```console
+calicoctl apply -f - <<EOF
+kind: BGPPeer
+apiVersion: projectcalico.org/v3
+metadata:
+  name: rrs-to-rrs
+spec:
+  nodeSelector: has(kops.k8s.io/calico-route-reflector)
+  peerSelector: has(kops.k8s.io/calico-route-reflector)
+EOF
+```
+
+Disable the node-to-node mesh:
+
+
+```console
+calicoctl create -f - << EOF
+ apiVersion: projectcalico.org/v3
+ kind: BGPConfiguration
+ metadata:
+   name: default
+ spec:
+   nodeToNodeMeshEnabled: false
+   asNumber: 64512
+EOF
+```
+
 #### More information about Calico
 
 For Calico specific documentation please visit the [Calico Docs](http://docs.projectcalico.org/latest/getting-started/kubernetes/).
