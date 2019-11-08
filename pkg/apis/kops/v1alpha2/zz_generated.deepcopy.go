@@ -2049,6 +2049,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.EncryptionProviderConfig != nil {
+		in, out := &in.EncryptionProviderConfig, &out.EncryptionProviderConfig
+		*out = new(string)
+		**out = **in
+	}
 	if in.ExperimentalEncryptionProviderConfig != nil {
 		in, out := &in.ExperimentalEncryptionProviderConfig, &out.ExperimentalEncryptionProviderConfig
 		*out = new(string)
