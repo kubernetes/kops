@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"k8s.io/kops/pkg/validation"
 	"os"
 	"strconv"
 	"strings"
@@ -387,8 +388,15 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		return nil
 	}
 
+	var clusterValidator validation.ClusterValidator
 	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 		klog.V(2).Infof("Rolling update with drain and validate enabled.")
+		if !options.CloudOnly {
+			clusterValidator, err = validation.NewClusterValidator(cluster, list, k8sClient)
+			if err != nil {
+				return fmt.Errorf("cannot create cluster validator: %v", err)
+			}
+		}
 	}
 	d := &instancegroups.RollingUpdateCluster{
 		MasterInterval:    options.MasterInterval,
@@ -398,6 +406,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		Force:             options.Force,
 		Cloud:             cloud,
 		K8sClient:         k8sClient,
+		ClusterValidator:  clusterValidator,
 		FailOnDrainError:  options.FailOnDrainError,
 		FailOnValidate:    options.FailOnValidate,
 		CloudOnly:         options.CloudOnly,
