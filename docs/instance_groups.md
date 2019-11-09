@@ -118,7 +118,7 @@ As of Kops 1.12.0 you can add additional storage _(note, presently confined to A
 
 ```YAML
 ---
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -145,7 +145,7 @@ You can add additional storage via the above `volumes` collection though this on
 
 ```
 ---
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -172,7 +172,7 @@ The above will provision the additional storage, format and mount the device int
 
 ```YAML
 ---
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -233,7 +233,7 @@ Support for mixed instance groups was added in Kops 1.12.0
 
 ```YAML
 ---
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
