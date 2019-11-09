@@ -34,9 +34,9 @@ Using this hook indicates that you agree to the Nvidia
 Although this hook *may* work among many combinatorial versions of software and
 images, it has only been tested with the following:
 
-* kops: **1.9**
-* kubernetes: 1.10, **1.11**
-* OS Image: **`kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-05-27`**
+* kops: 1.9, **1.13**
+* kubernetes: 1.10, 1.11, **1.13**
+* OS Image: **`kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2019-06-21`**
   * This is most certainly not the default image for kops.  The OS image must
     be explicitly overridden in the cluster or instancegroup spec.
   * Debian stretch is needed because `nvidia-docker` requires a newer version
@@ -56,9 +56,17 @@ This kops hook was developed against the following version combinations.
 
 | Kops Version  | Kubernetes Version | GPU Mode     | OS Image |
 | ------------- | ------------------ | ------------ | -------- |
+| 1.13.0        | 1.13               | deviceplugin | kope.io/k8s-1.12-debian-stretch-amd64-hvm-ebs-2019-06-21
 | 1.10-beta.1   | 1.10               | deviceplugin | kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-05-27
 | 1.9.1         | 1.11               | deviceplugin | kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-05-27
 | 1.9.1         | 1.10               | legacy       | kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-05-27
+
+#### Driver Support
+
+| Image                                      | NVIDIA Driver Version | CUDA Version |
+| ------------------------------------------ | --------------------- | ------------ | 
+| qntfy/nvidia-device-plugin:0.2.0-CUDA-9.1  | 390.46                | 9.1
+| qntfy/nvidia-device-plugin:0.2.0-CUDA-10.0 | 410.129               | 10.0 
 
 ## Using this DevicePlugin
 
@@ -95,7 +103,7 @@ spec:
   image: kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-05-27
   hooks:
   - execContainer:
-      image: dcwangmit01/nvidia-device-plugin:0.1.0
+      image: qntfy/nvidia-device-plugin:0.2.0-CUDA-9.1
 
 ### The settings below are only necessary for kubernetes <= 1.11.0, where
 ###   deviceplugins are not enabled by default.
@@ -120,7 +128,7 @@ spec:
   image: kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-05-27
   hooks:
   - execContainer:
-      image: dcwangmit01/nvidia-device-plugin:0.1.0
+      image: qntfy/nvidia-device-plugin:0.2.0-CUDA-9.1
       environment:
         NVIDIA_DEVICE_PLUGIN_MODE: legacy
   kubelet:
