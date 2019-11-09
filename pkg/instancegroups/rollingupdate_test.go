@@ -36,8 +36,20 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
-func setUpCloud(c *RollingUpdateCluster) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+func getTestSetup() (*fake.Clientset, awsup.AWSCloud, *kopsapi.Cluster) {
+	k8sClient := fake.NewSimpleClientset()
+
+	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
+	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
+	setUpCloud(mockcloud)
+
+	cluster := &kopsapi.Cluster{}
+	cluster.Name = "test.k8s.local"
+
+	return k8sClient, mockcloud, cluster
+}
+
+func setUpCloud(cloud awsup.AWSCloud) {
 	cloud.Autoscaling().CreateAutoScalingGroup(&autoscaling.CreateAutoScalingGroupInput{
 		AutoScalingGroupName: aws.String("node-1"),
 		MinSize:              aws.Int64(1),
@@ -206,6 +218,12 @@ func markNeedUpdate(group *cloudinstances.CloudInstanceGroup, nodeIds ...string)
 	}
 }
 
+func getGroupsNodes1NeedsUpdate() map[string]*cloudinstances.CloudInstanceGroup {
+	groups := getGroups()
+	markNeedUpdate(groups["node-1"], "node-1a", "node-1b")
+	return groups
+}
+
 func getGroupsAllNeedUpdate() map[string]*cloudinstances.CloudInstanceGroup {
 	groups := getGroups()
 	markNeedUpdate(groups["node-1"], "node-1a", "node-1b")
@@ -216,16 +234,10 @@ func getGroupsAllNeedUpdate() map[string]*cloudinstances.CloudInstanceGroup {
 }
 
 func TestRollingUpdateAllNeedUpdate(t *testing.T) {
-	k8sClient := fake.NewSimpleClientset()
-
-	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
-	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
-
-	cluster := &kopsapi.Cluster{}
-	cluster.Name = "test.k8s.local"
+	k8sClient, cloud, cluster := getTestSetup()
 
 	c := &RollingUpdateCluster{
-		Cloud:            mockcloud,
+		Cloud:            cloud,
 		MasterInterval:   1 * time.Millisecond,
 		NodeInterval:     1 * time.Millisecond,
 		BastionInterval:  1 * time.Millisecond,
@@ -234,9 +246,6 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		ClusterValidator: &successfulClusterValidator{},
 		FailOnValidate:   true,
 	}
-
-	cloud := c.Cloud.(awsup.AWSCloud)
-	setUpCloud(c)
 
 	err := c.RollingUpdate(getGroupsAllNeedUpdate(), cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
@@ -248,16 +257,10 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 }
 
 func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
-	k8sClient := fake.NewSimpleClientset()
-
-	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
-	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
-
-	cluster := &kopsapi.Cluster{}
-	cluster.Name = "test.k8s.local"
+	k8sClient, cloud, cluster := getTestSetup()
 
 	c := &RollingUpdateCluster{
-		Cloud:            mockcloud,
+		Cloud:            cloud,
 		MasterInterval:   1 * time.Millisecond,
 		NodeInterval:     1 * time.Millisecond,
 		BastionInterval:  1 * time.Millisecond,
@@ -266,9 +269,6 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		ClusterValidator: &successfulClusterValidator{},
 		FailOnValidate:   true,
 	}
-
-	cloud := c.Cloud.(awsup.AWSCloud)
-	setUpCloud(c)
 
 	err := c.RollingUpdate(getGroups(), cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
@@ -280,16 +280,10 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 }
 
 func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
-	k8sClient := fake.NewSimpleClientset()
-
-	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
-	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
-
-	cluster := &kopsapi.Cluster{}
-	cluster.Name = "test.k8s.local"
+	k8sClient, cloud, cluster := getTestSetup()
 
 	c := &RollingUpdateCluster{
-		Cloud:            mockcloud,
+		Cloud:            cloud,
 		MasterInterval:   1 * time.Millisecond,
 		NodeInterval:     1 * time.Millisecond,
 		BastionInterval:  1 * time.Millisecond,
@@ -298,8 +292,6 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		ClusterValidator: &successfulClusterValidator{},
 		FailOnValidate:   true,
 	}
-	cloud := c.Cloud.(awsup.AWSCloud)
-	setUpCloud(c)
 
 	err := c.RollingUpdate(getGroups(), cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
@@ -311,13 +303,10 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 }
 
 func TestRollingUpdateEmptyGroup(t *testing.T) {
-	k8sClient := fake.NewSimpleClientset()
-
-	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
-	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
+	k8sClient, cloud, _ := getTestSetup()
 
 	c := &RollingUpdateCluster{
-		Cloud:            mockcloud,
+		Cloud:            cloud,
 		MasterInterval:   1 * time.Millisecond,
 		NodeInterval:     1 * time.Millisecond,
 		BastionInterval:  1 * time.Millisecond,
@@ -326,8 +315,6 @@ func TestRollingUpdateEmptyGroup(t *testing.T) {
 		Force:            false,
 		FailOnValidate:   true,
 	}
-	cloud := c.Cloud.(awsup.AWSCloud)
-	setUpCloud(c)
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 
@@ -341,16 +328,10 @@ func TestRollingUpdateEmptyGroup(t *testing.T) {
 }
 
 func TestRollingUpdateUnknownRole(t *testing.T) {
-	k8sClient := fake.NewSimpleClientset()
-
-	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
-	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
-
-	cluster := &kopsapi.Cluster{}
-	cluster.Name = "test.k8s.local"
+	k8sClient, cloud, cluster := getTestSetup()
 
 	c := &RollingUpdateCluster{
-		Cloud:            mockcloud,
+		Cloud:            cloud,
 		MasterInterval:   1 * time.Millisecond,
 		NodeInterval:     1 * time.Millisecond,
 		BastionInterval:  1 * time.Millisecond,
@@ -359,8 +340,6 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		ClusterValidator: &successfulClusterValidator{},
 		FailOnValidate:   true,
 	}
-	cloud := c.Cloud.(awsup.AWSCloud)
-	setUpCloud(c)
 
 	groups := getGroups()
 	groups["node-1"].InstanceGroup.Spec.Role = "Unknown"
@@ -374,23 +353,11 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 	assertGroupInstanceCount(t, cloud, "bastion-1", 1)
 }
 
-func getGroupsNodes1NeedsUpdating() map[string]*cloudinstances.CloudInstanceGroup {
-	groups := getGroups()
-	markNeedUpdate(groups["node-1"], "node-1a", "node-1b")
-	return groups
-}
-
 func TestRollingUpdateClusterFailsValidation(t *testing.T) {
-	k8sClient := fake.NewSimpleClientset()
-
-	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
-	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
-
-	cluster := &kopsapi.Cluster{}
-	cluster.Name = "test.k8s.local"
+	k8sClient, cloud, cluster := getTestSetup()
 
 	c := &RollingUpdateCluster{
-		Cloud:            mockcloud,
+		Cloud:            cloud,
 		MasterInterval:   1 * time.Millisecond,
 		NodeInterval:     1 * time.Millisecond,
 		BastionInterval:  1 * time.Millisecond,
@@ -400,26 +367,17 @@ func TestRollingUpdateClusterFailsValidation(t *testing.T) {
 		FailOnValidate:   true,
 	}
 
-	cloud := c.Cloud.(awsup.AWSCloud)
-	setUpCloud(c)
-
-	err := c.RollingUpdate(getGroupsNodes1NeedsUpdating(), cluster, &kopsapi.InstanceGroupList{})
+	err := c.RollingUpdate(getGroupsNodes1NeedsUpdate(), cluster, &kopsapi.InstanceGroupList{})
 	assert.Error(t, err, "rolling update")
 
 	assertGroupInstanceCount(t, cloud, "node-1", 2)
 }
 
 func TestRollingUpdateClusterErrorsValidation(t *testing.T) {
-	k8sClient := fake.NewSimpleClientset()
-
-	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
-	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
-
-	cluster := &kopsapi.Cluster{}
-	cluster.Name = "test.k8s.local"
+	k8sClient, cloud, cluster := getTestSetup()
 
 	c := &RollingUpdateCluster{
-		Cloud:            mockcloud,
+		Cloud:            cloud,
 		MasterInterval:   1 * time.Millisecond,
 		NodeInterval:     1 * time.Millisecond,
 		BastionInterval:  1 * time.Millisecond,
@@ -429,10 +387,7 @@ func TestRollingUpdateClusterErrorsValidation(t *testing.T) {
 		FailOnValidate:   true,
 	}
 
-	cloud := c.Cloud.(awsup.AWSCloud)
-	setUpCloud(c)
-
-	err := c.RollingUpdate(getGroupsNodes1NeedsUpdating(), cluster, &kopsapi.InstanceGroupList{})
+	err := c.RollingUpdate(getGroupsNodes1NeedsUpdate(), cluster, &kopsapi.InstanceGroupList{})
 	assert.Error(t, err, "rolling update")
 
 	assertGroupInstanceCount(t, cloud, "node-1", 2)
@@ -467,64 +422,46 @@ func (v *failAfterOneNodeClusterValidator) Validate() (*validation.ValidationClu
 }
 
 func TestRollingUpdateClusterFailsValidationAfterOneNode(t *testing.T) {
-	k8sClient := fake.NewSimpleClientset()
-
-	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
-	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
-
-	cluster := &kopsapi.Cluster{}
-	cluster.Name = "test.k8s.local"
+	k8sClient, cloud, cluster := getTestSetup()
 
 	c := &RollingUpdateCluster{
-		Cloud:           mockcloud,
+		Cloud:           cloud,
 		MasterInterval:  1 * time.Millisecond,
 		NodeInterval:    1 * time.Millisecond,
 		BastionInterval: 1 * time.Millisecond,
 		Force:           false,
 		K8sClient:       k8sClient,
 		ClusterValidator: &failAfterOneNodeClusterValidator{
-			Cloud:       mockcloud,
+			Cloud:       cloud,
 			ReturnError: false,
 		},
 		FailOnValidate: true,
 	}
 
-	cloud := c.Cloud.(awsup.AWSCloud)
-	setUpCloud(c)
-
-	err := c.RollingUpdate(getGroupsNodes1NeedsUpdating(), cluster, &kopsapi.InstanceGroupList{})
+	err := c.RollingUpdate(getGroupsNodes1NeedsUpdate(), cluster, &kopsapi.InstanceGroupList{})
 	assert.Error(t, err, "rolling update")
 
 	assertGroupInstanceCount(t, cloud, "node-1", 1)
 }
 
 func TestRollingUpdateClusterErrorsValidationAfterOneNode(t *testing.T) {
-	k8sClient := fake.NewSimpleClientset()
-
-	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
-	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
-
-	cluster := &kopsapi.Cluster{}
-	cluster.Name = "test.k8s.local"
+	k8sClient, cloud, cluster := getTestSetup()
 
 	c := &RollingUpdateCluster{
-		Cloud:           mockcloud,
+		Cloud:           cloud,
 		MasterInterval:  1 * time.Millisecond,
 		NodeInterval:    1 * time.Millisecond,
 		BastionInterval: 1 * time.Millisecond,
 		Force:           false,
 		K8sClient:       k8sClient,
 		ClusterValidator: &failAfterOneNodeClusterValidator{
-			Cloud:       mockcloud,
+			Cloud:       cloud,
 			ReturnError: true,
 		},
 		FailOnValidate: true,
 	}
 
-	cloud := c.Cloud.(awsup.AWSCloud)
-	setUpCloud(c)
-
-	err := c.RollingUpdate(getGroupsNodes1NeedsUpdating(), cluster, &kopsapi.InstanceGroupList{})
+	err := c.RollingUpdate(getGroupsNodes1NeedsUpdate(), cluster, &kopsapi.InstanceGroupList{})
 	assert.Error(t, err, "rolling update")
 
 	assertGroupInstanceCount(t, cloud, "node-1", 1)
