@@ -36,7 +36,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
-func getTestSetup() (*fake.Clientset, awsup.AWSCloud, *kopsapi.Cluster) {
+func getTestSetup() (*RollingUpdateCluster, awsup.AWSCloud, *kopsapi.Cluster) {
 	k8sClient := fake.NewSimpleClientset()
 
 	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
@@ -46,7 +46,18 @@ func getTestSetup() (*fake.Clientset, awsup.AWSCloud, *kopsapi.Cluster) {
 	cluster := &kopsapi.Cluster{}
 	cluster.Name = "test.k8s.local"
 
-	return k8sClient, mockcloud, cluster
+	c := &RollingUpdateCluster{
+		Cloud:            mockcloud,
+		MasterInterval:   1 * time.Millisecond,
+		NodeInterval:     1 * time.Millisecond,
+		BastionInterval:  1 * time.Millisecond,
+		Force:            false,
+		K8sClient:        k8sClient,
+		ClusterValidator: &successfulClusterValidator{},
+		FailOnValidate:   true,
+	}
+
+	return c, mockcloud, cluster
 }
 
 func setUpCloud(cloud awsup.AWSCloud) {
@@ -234,18 +245,7 @@ func getGroupsAllNeedUpdate() map[string]*cloudinstances.CloudInstanceGroup {
 }
 
 func TestRollingUpdateAllNeedUpdate(t *testing.T) {
-	k8sClient, cloud, cluster := getTestSetup()
-
-	c := &RollingUpdateCluster{
-		Cloud:            cloud,
-		MasterInterval:   1 * time.Millisecond,
-		NodeInterval:     1 * time.Millisecond,
-		BastionInterval:  1 * time.Millisecond,
-		Force:            false,
-		K8sClient:        k8sClient,
-		ClusterValidator: &successfulClusterValidator{},
-		FailOnValidate:   true,
-	}
+	c, cloud, cluster := getTestSetup()
 
 	err := c.RollingUpdate(getGroupsAllNeedUpdate(), cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
@@ -257,18 +257,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 }
 
 func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
-	k8sClient, cloud, cluster := getTestSetup()
-
-	c := &RollingUpdateCluster{
-		Cloud:            cloud,
-		MasterInterval:   1 * time.Millisecond,
-		NodeInterval:     1 * time.Millisecond,
-		BastionInterval:  1 * time.Millisecond,
-		Force:            false,
-		K8sClient:        k8sClient,
-		ClusterValidator: &successfulClusterValidator{},
-		FailOnValidate:   true,
-	}
+	c, cloud, cluster := getTestSetup()
 
 	err := c.RollingUpdate(getGroups(), cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
@@ -280,18 +269,9 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 }
 
 func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
-	k8sClient, cloud, cluster := getTestSetup()
+	c, cloud, cluster := getTestSetup()
 
-	c := &RollingUpdateCluster{
-		Cloud:            cloud,
-		MasterInterval:   1 * time.Millisecond,
-		NodeInterval:     1 * time.Millisecond,
-		BastionInterval:  1 * time.Millisecond,
-		Force:            true,
-		K8sClient:        k8sClient,
-		ClusterValidator: &successfulClusterValidator{},
-		FailOnValidate:   true,
-	}
+	c.Force = true
 
 	err := c.RollingUpdate(getGroups(), cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
@@ -303,18 +283,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 }
 
 func TestRollingUpdateEmptyGroup(t *testing.T) {
-	k8sClient, cloud, _ := getTestSetup()
-
-	c := &RollingUpdateCluster{
-		Cloud:            cloud,
-		MasterInterval:   1 * time.Millisecond,
-		NodeInterval:     1 * time.Millisecond,
-		BastionInterval:  1 * time.Millisecond,
-		K8sClient:        k8sClient,
-		ClusterValidator: &successfulClusterValidator{},
-		Force:            false,
-		FailOnValidate:   true,
-	}
+	c, cloud, _ := getTestSetup()
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 
@@ -328,18 +297,7 @@ func TestRollingUpdateEmptyGroup(t *testing.T) {
 }
 
 func TestRollingUpdateUnknownRole(t *testing.T) {
-	k8sClient, cloud, cluster := getTestSetup()
-
-	c := &RollingUpdateCluster{
-		Cloud:            cloud,
-		MasterInterval:   1 * time.Millisecond,
-		NodeInterval:     1 * time.Millisecond,
-		BastionInterval:  1 * time.Millisecond,
-		Force:            false,
-		K8sClient:        k8sClient,
-		ClusterValidator: &successfulClusterValidator{},
-		FailOnValidate:   true,
-	}
+	c, cloud, cluster := getTestSetup()
 
 	groups := getGroups()
 	groups["node-1"].InstanceGroup.Spec.Role = "Unknown"
@@ -354,18 +312,9 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 }
 
 func TestRollingUpdateClusterFailsValidation(t *testing.T) {
-	k8sClient, cloud, cluster := getTestSetup()
+	c, cloud, cluster := getTestSetup()
 
-	c := &RollingUpdateCluster{
-		Cloud:            cloud,
-		MasterInterval:   1 * time.Millisecond,
-		NodeInterval:     1 * time.Millisecond,
-		BastionInterval:  1 * time.Millisecond,
-		Force:            false,
-		K8sClient:        k8sClient,
-		ClusterValidator: &failingClusterValidator{},
-		FailOnValidate:   true,
-	}
+	c.ClusterValidator = &failingClusterValidator{}
 
 	err := c.RollingUpdate(getGroupsNodes1NeedsUpdate(), cluster, &kopsapi.InstanceGroupList{})
 	assert.Error(t, err, "rolling update")
@@ -374,18 +323,9 @@ func TestRollingUpdateClusterFailsValidation(t *testing.T) {
 }
 
 func TestRollingUpdateClusterErrorsValidation(t *testing.T) {
-	k8sClient, cloud, cluster := getTestSetup()
+	c, cloud, cluster := getTestSetup()
 
-	c := &RollingUpdateCluster{
-		Cloud:            cloud,
-		MasterInterval:   1 * time.Millisecond,
-		NodeInterval:     1 * time.Millisecond,
-		BastionInterval:  1 * time.Millisecond,
-		Force:            false,
-		K8sClient:        k8sClient,
-		ClusterValidator: &erroringClusterValidator{},
-		FailOnValidate:   true,
-	}
+	c.ClusterValidator = &erroringClusterValidator{}
 
 	err := c.RollingUpdate(getGroupsNodes1NeedsUpdate(), cluster, &kopsapi.InstanceGroupList{})
 	assert.Error(t, err, "rolling update")
@@ -422,20 +362,11 @@ func (v *failAfterOneNodeClusterValidator) Validate() (*validation.ValidationClu
 }
 
 func TestRollingUpdateClusterFailsValidationAfterOneNode(t *testing.T) {
-	k8sClient, cloud, cluster := getTestSetup()
+	c, cloud, cluster := getTestSetup()
 
-	c := &RollingUpdateCluster{
-		Cloud:           cloud,
-		MasterInterval:  1 * time.Millisecond,
-		NodeInterval:    1 * time.Millisecond,
-		BastionInterval: 1 * time.Millisecond,
-		Force:           false,
-		K8sClient:       k8sClient,
-		ClusterValidator: &failAfterOneNodeClusterValidator{
-			Cloud:       cloud,
-			ReturnError: false,
-		},
-		FailOnValidate: true,
+	c.ClusterValidator = &failAfterOneNodeClusterValidator{
+		Cloud:       cloud,
+		ReturnError: false,
 	}
 
 	err := c.RollingUpdate(getGroupsNodes1NeedsUpdate(), cluster, &kopsapi.InstanceGroupList{})
@@ -445,20 +376,11 @@ func TestRollingUpdateClusterFailsValidationAfterOneNode(t *testing.T) {
 }
 
 func TestRollingUpdateClusterErrorsValidationAfterOneNode(t *testing.T) {
-	k8sClient, cloud, cluster := getTestSetup()
+	c, cloud, cluster := getTestSetup()
 
-	c := &RollingUpdateCluster{
-		Cloud:           cloud,
-		MasterInterval:  1 * time.Millisecond,
-		NodeInterval:    1 * time.Millisecond,
-		BastionInterval: 1 * time.Millisecond,
-		Force:           false,
-		K8sClient:       k8sClient,
-		ClusterValidator: &failAfterOneNodeClusterValidator{
-			Cloud:       cloud,
-			ReturnError: true,
-		},
-		FailOnValidate: true,
+	c.ClusterValidator = &failAfterOneNodeClusterValidator{
+		Cloud:       cloud,
+		ReturnError: true,
 	}
 
 	err := c.RollingUpdate(getGroupsNodes1NeedsUpdate(), cluster, &kopsapi.InstanceGroupList{})
