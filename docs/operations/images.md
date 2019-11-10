@@ -120,7 +120,7 @@ curl -s https://coreos.com/dist/aws/aws-stable.json | jq -r '.["us-east-1"].hvm'
 
 * You can specify the name using the `coreos.com` owner alias, for example `coreos.com/CoreOS-stable-1409.8.0-hvm` or leave it at `595879546273/CoreOS-stable-1409.8.0-hvm` if you prefer to do so.
 
-As part of our documentation, you will find a practical exercise using CoreOS with KOPS. See the file ["coreos-kops-tests-multimaster.md"](https://github.com/kubernetes/kops/blob/master/docs/examples/coreos-kops-tests-multimaster.md) in the "examples" directory. This exercise covers not only using kops with CoreOS, but also a practical view of KOPS with a multi-master kubernetes setup.
+As part of our documentation, you will find a practical exercise using CoreOS with KOPS. See the file ["coreos-kops-tests-multimaster.md"](../examples/coreos-kops-tests-multimaster.md) in the "examples" directory. This exercise covers not only using kops with CoreOS, but also a practical view of KOPS with a multi-master kubernetes setup.
 
 > Note: SSH username for CoreOS based instances will be `core`
 
