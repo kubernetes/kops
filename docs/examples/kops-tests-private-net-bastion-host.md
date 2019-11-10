@@ -48,7 +48,7 @@ export KOPS_STATE_STORE=s3://my-kops-s3-bucket-for-cluster-state
 Some things to note from here:
 
 - "NAME" will be an environment variable that we'll use from now in order to refer to our cluster name. For this practical exercise, our cluster name is "privatekopscluster.k8s.local".
-- Because we'll use gossip DNS instead of a valid DNS domain on AWS ROUTE53 service, our cluster name need to include the string **".k8s.local"** at the end (this is covered on our AWS tutorials). You can see more about this on our [Getting Started Doc.](https://github.com/kubernetes/kops/blob/master/docs/getting_started/aws.md)
+- Because we'll use gossip DNS instead of a valid DNS domain on AWS ROUTE53 service, our cluster name need to include the string **".k8s.local"** at the end (this is covered on our AWS tutorials). You can see more about this on our [Getting Started Doc.](../getting_started/aws.md)
 
 
 ## KOPS PRIVATE CLUSTER CREATION:
@@ -77,7 +77,7 @@ A few things to note here:
 - The "--topology private" argument will ensure that all our instances will have private IP's and no public IP's from amazon.
 - We are including the arguments "--node-size" and "master-size" to specify the "instance types" for both our masters and worker nodes.
 - Because we are just doing a simple LAB, we are using "t2.micro" machines. Please DON'T USE t2.micro on real production systems. Start with "t2.medium" as a minimum realistic/workable machine type.
-- And finally, the "--networking kopeio-vxlan" argument. With the private networking model, we need to tell kops which networking subsystem to use. More information about kops supported networking models can be obtained from the [KOPS Kubernetes Networking Documentation](https://github.com/kubernetes/kops/blob/master/docs/networking.md). For this exercise we'll use "kopeio-vxlan" (or "kopeio" for short).
+- And finally, the "--networking kopeio-vxlan" argument. With the private networking model, we need to tell kops which networking subsystem to use. More information about kops supported networking models can be obtained from the [KOPS Kubernetes Networking Documentation](../networking.md). For this exercise we'll use "kopeio-vxlan" (or "kopeio" for short).
 
 **NOTE**: You can add the "--bastion" argument here if you are not using "gossip dns" and create the bastion from start, but if you are using "gossip-dns" this will make this cluster to fail (this is a bug we are correcting now). For the moment don't use "--bastion" when using gossip DNS. We'll show you how to get around this by first creating the private cluster, then creation the bastion instance group once the cluster is running.
 
