@@ -124,7 +124,7 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 					continue
 				}
 
-				remaining := time.Second * time.Duration(int(ts.deadline.Sub(time.Now()).Seconds()))
+				remaining := time.Second * time.Duration(int(time.Until(ts.deadline).Seconds()))
 				klog.Warningf("error running task %q (%v remaining to succeed): %v", ts.key, remaining, err)
 				errors = append(errors, err)
 				ts.lastError = err
