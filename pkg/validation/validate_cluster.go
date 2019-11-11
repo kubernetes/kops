@@ -54,9 +54,9 @@ type ClusterValidator interface {
 }
 
 type clusterValidatorImpl struct {
-	cluster           *kops.Cluster
-	instanceGroupList *kops.InstanceGroupList
-	k8sClient         kubernetes.Interface
+	cluster        *kops.Cluster
+	instanceGroups []*kops.InstanceGroup
+	k8sClient      kubernetes.Interface
 }
 
 func (v *ValidationCluster) addError(failure *ValidationError) {
@@ -101,19 +101,30 @@ func hasPlaceHolderIP(clusterName string) (bool, error) {
 }
 
 func NewClusterValidator(cluster *kops.Cluster, instanceGroupList *kops.InstanceGroupList, k8sClient kubernetes.Interface) (ClusterValidator, error) {
+	var instanceGroups []*kops.InstanceGroup
+
+	for i := range instanceGroupList.Items {
+		ig := &instanceGroupList.Items[i]
+		instanceGroups = append(instanceGroups, ig)
+	}
+
+	if len(instanceGroups) == 0 {
+		return nil, fmt.Errorf("no InstanceGroup objects found")
+	}
+
 	return &clusterValidatorImpl{
-		cluster:           cluster,
-		instanceGroupList: instanceGroupList,
-		k8sClient:         k8sClient,
+		cluster:        cluster,
+		instanceGroups: instanceGroups,
+		k8sClient:      k8sClient,
 	}, nil
 }
 
 func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
-	return validateCluster(v.cluster, v.instanceGroupList, v.k8sClient)
+	return validateCluster(v.cluster, v.instanceGroups, v.k8sClient)
 }
 
 // validateCluster validates a k8s cluster with a provided instance group list
-func validateCluster(cluster *kops.Cluster, instanceGroupList *kops.InstanceGroupList, k8sClient kubernetes.Interface) (*ValidationCluster, error) {
+func validateCluster(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup, k8sClient kubernetes.Interface) (*ValidationCluster, error) {
 	clusterName := cluster.Name
 
 	v := &ValidationCluster{}
@@ -141,17 +152,6 @@ func validateCluster(cluster *kops.Cluster, instanceGroupList *kops.InstanceGrou
 			})
 			return v, nil
 		}
-	}
-
-	var instanceGroups []*kops.InstanceGroup
-
-	for i := range instanceGroupList.Items {
-		ig := &instanceGroupList.Items[i]
-		instanceGroups = append(instanceGroups, ig)
-	}
-
-	if len(instanceGroups) == 0 {
-		return nil, fmt.Errorf("no InstanceGroup objects found")
 	}
 
 	cloud, err := cloudup.BuildCloud(cluster)
