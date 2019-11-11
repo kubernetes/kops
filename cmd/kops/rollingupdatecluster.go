@@ -392,7 +392,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 		klog.V(2).Infof("Rolling update with drain and validate enabled.")
 		if !options.CloudOnly {
-			clusterValidator, err = validation.NewClusterValidator(cluster, list, k8sClient)
+			clusterValidator, err = validation.NewClusterValidator(cluster, cloud, list, k8sClient)
 			if err != nil {
 				return fmt.Errorf("cannot create cluster validator: %v", err)
 			}

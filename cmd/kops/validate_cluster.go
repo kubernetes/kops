@@ -25,6 +25,8 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/kops/upup/pkg/fi/cloudup"
+
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
 	v1 "k8s.io/api/core/v1"
@@ -93,6 +95,11 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return nil, err
 	}
 
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return nil, err
+	}
+
 	clientSet, err := f.Clientset()
 	if err != nil {
 		return nil, err
@@ -134,7 +141,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	timeout := time.Now().Add(options.wait)
 	pollInterval := 10 * time.Second
 
-	validator, err := validation.NewClusterValidator(cluster, list, k8sClient)
+	validator, err := validation.NewClusterValidator(cluster, cloud, list, k8sClient)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected error creating validatior: %v", err)
 	}
