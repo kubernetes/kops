@@ -291,7 +291,18 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 	}
 
 	kubeDNS := b.Cluster.Spec.KubeDNS
-	if kubeDNS.Provider == "KubeDNS" || kubeDNS.Provider == "" {
+
+	// This checks if the Kubernetes version is greater than or equal to 1.19
+	// and makes the default DNS server as CoreDNS if the DNS provider is not specified
+	// and the Kubernetes version is >=1.19
+	if kubeDNS.Provider == "" {
+		kubeDNS.Provider = "KubeDNS"
+		if b.Cluster.IsKubernetesGTE("1.19") {
+			kubeDNS.Provider = "CoreDNS"
+		}
+	}
+
+	if kubeDNS.Provider == "KubeDNS" {
 
 		{
 			key := "kube-dns.addons.k8s.io"

@@ -7,7 +7,7 @@ spec:
   - id: k8s-1.16
     kubernetesVersion: '>=1.16.0-alpha.0'
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 5b7765907ec5720081c13c0cab2d32b99053e7c8
+    manifestHash: 68aa7f9ecd2d264b5b1dbc5c72d161420f455427
     name: kops-controller.addons.k8s.io
     selector:
       k8s-addon: kops-controller.addons.k8s.io
@@ -20,27 +20,20 @@ spec:
     version: 1.4.0
   - id: k8s-1.6
     kubernetesVersion: <1.12.0
-    manifest: kube-dns.addons.k8s.io/k8s-1.6.yaml
-    manifestHash: a50e6a4c2f800b4af4ac0d80edf7762cfc1de9e3
-    name: kube-dns.addons.k8s.io
+    manifest: coredns.addons.k8s.io/k8s-1.6.yaml
+    manifestHash: bca89d04b283648c29f89556261e248dfd7262a7
+    name: coredns.addons.k8s.io
     selector:
-      k8s-addon: kube-dns.addons.k8s.io
-    version: 1.15.13-kops.3
+      k8s-addon: coredns.addons.k8s.io
+    version: 1.7.0-kops.1
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
-    manifest: kube-dns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: db49c98447b9d59dec4fa413461a6614bc6e43e9
-    name: kube-dns.addons.k8s.io
+    manifest: coredns.addons.k8s.io/k8s-1.12.yaml
+    manifestHash: 0af83c370d13df45c6a2db67fa8f28e41502b6e1
+    name: coredns.addons.k8s.io
     selector:
-      k8s-addon: kube-dns.addons.k8s.io
-    version: 1.15.13-kops.3
-  - id: k8s-1.8
-    manifest: rbac.addons.k8s.io/k8s-1.8.yaml
-    manifestHash: 5d53ce7b920cd1e8d65d2306d80a041420711914
-    name: rbac.addons.k8s.io
-    selector:
-      k8s-addon: rbac.addons.k8s.io
-    version: 1.8.0
+      k8s-addon: coredns.addons.k8s.io
+    version: 1.7.0-kops.2
   - id: k8s-1.9
     manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
     manifestHash: e1508d77cb4e527d7a2939babe36dc350dd83745

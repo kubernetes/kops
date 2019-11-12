@@ -581,23 +581,28 @@ Note that as of Kubernetes 1.8.0 kube-scheduler does not reload its configuratio
 
 ## kubeDNS
 
-This block contains configurations for `kube-dns`.
+This block contains configurations for [CoreDNS](https://coredns.io/).
 
- ```yaml
- spec:
-   kubeDNS:
-     provider: KubeDNS
-```
-
-Specifying KubeDNS will install kube-dns as the default service discovery.
+For Kubernetes version >= 1.18, `CoreDNS` will be installed as the default DNS server.
 
  ```yaml
  spec:
    kubeDNS:
      provider: CoreDNS
 ```
+OR
+```yaml
+spec:
+   kubeDNS:
+```
 
-This will install [CoreDNS](https://coredns.io/) instead of kube-dns.
+Specifying KubeDNS will install kube-dns as the default service discovery instead of [CoreDNS](https://coredns.io/).
+
+ ```yaml
+ spec:
+   kubeDNS:
+     provider: KubeDNS
+```
 
 If you are using CoreDNS and want to use an entirely custom CoreFile you can do this by specifying the file. This will not work with any other options which interact with the default CoreFile. You can also override the version of the CoreDNS image used to use a different registry or version by specifying `CoreDNSImage`.
 
