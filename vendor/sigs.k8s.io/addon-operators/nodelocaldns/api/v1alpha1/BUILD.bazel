@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "groupversion_info.go",
+        "nodelocaldns_types.go",
+        "zz_generated.deepcopy.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/addon-operators/nodelocaldns/api/v1alpha1",
+    importpath = "sigs.k8s.io/addon-operators/nodelocaldns/api/v1alpha1",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/scheme:go_default_library",
+        "//vendor/sigs.k8s.io/kubebuilder-declarative-pattern/pkg/patterns/addon/pkg/apis/v1alpha1:go_default_library",
+    ],
+)

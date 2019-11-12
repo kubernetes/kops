@@ -18,6 +18,8 @@ go_library(
         "//vendor/k8s.io/client-go/plugin/pkg/client/auth/gcp:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
         "//vendor/k8s.io/klog/klogr:go_default_library",
+        "//vendor/sigs.k8s.io/addon-operators/nodelocaldns/api/v1alpha1:go_default_library",
+        "//vendor/sigs.k8s.io/addon-operators/nodelocaldns/controllers:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/manager:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",

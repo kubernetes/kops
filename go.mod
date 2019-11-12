@@ -72,6 +72,10 @@ replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.0.0-
 
 replace k8s.io/code-generator => k8s.io/code-generator v0.0.0-20191004115455-8e001e5d1894
 
+replace sigs.k8s.io/addon-operators/nodelocaldns => ../../sigs.k8s.io/addon-operators/nodelocaldns
+
+replace sigs.k8s.io/kubebuilder-declarative-pattern => ../../sigs.k8s.io/kubebuilder-declarative-pattern
+
 require (
 	cloud.google.com/go v0.38.0
 	github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd
@@ -111,7 +115,7 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/pkg/sftp v0.0.0-20160930220758-4d0e916071f6
 	github.com/prometheus/client_golang v1.0.0
-	github.com/sergi/go-diff v0.0.0-20161102184045-552b4e9bbdca
+	github.com/sergi/go-diff v1.0.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.3.2
@@ -122,7 +126,7 @@ require (
 	github.com/weaveworks/mesh v0.0.0-20170419100114-1f158d31de55
 	go.uber.org/zap v1.9.1
 	golang.org/x/crypto v0.0.0-20191202143827-86a70503ff7e
-	golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933
+	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/tools v0.0.0-20191203134012-c197fd4bf371
 	google.golang.org/api v0.6.1-0.20190607001116-5213b8090861
@@ -140,6 +144,7 @@ require (
 	k8s.io/kubectl v0.0.0
 	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20191114200735-6ca3b61696b6
+	sigs.k8s.io/addon-operators/nodelocaldns v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/controller-runtime v0.4.0
 	sigs.k8s.io/controller-tools v0.2.2-0.20190919191502-76a25b63325a
 	sigs.k8s.io/yaml v1.1.0

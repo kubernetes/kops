@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["dynamic.go"],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/kubebuilder-declarative-pattern/pkg/patterns/declarative/pkg/watch",
+    importpath = "sigs.k8s.io/kubebuilder-declarative-pattern/pkg/patterns/declarative/pkg/watch",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/k8s.io/apimachinery/pkg/api/meta:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//vendor/k8s.io/client-go/dynamic:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/client/apiutil:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/event:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/log:go_default_library",
+    ],
+)

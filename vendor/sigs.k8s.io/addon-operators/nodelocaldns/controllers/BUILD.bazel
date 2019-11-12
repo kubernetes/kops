@@ -1,0 +1,25 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["nodelocaldns_controller.go"],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/addon-operators/nodelocaldns/controllers",
+    importpath = "sigs.k8s.io/addon-operators/nodelocaldns/controllers",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+        "//vendor/sigs.k8s.io/addon-operators/nodelocaldns/api/v1alpha1:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/client:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/controller:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/handler:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/reconcile:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/source:go_default_library",
+        "//vendor/sigs.k8s.io/kubebuilder-declarative-pattern/pkg/patterns/addon:go_default_library",
+        "//vendor/sigs.k8s.io/kubebuilder-declarative-pattern/pkg/patterns/addon/pkg/status:go_default_library",
+        "//vendor/sigs.k8s.io/kubebuilder-declarative-pattern/pkg/patterns/declarative:go_default_library",
+    ],
+)

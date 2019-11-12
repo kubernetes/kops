@@ -34,6 +34,8 @@ import (
 	nodeidentitydo "k8s.io/kops/pkg/nodeidentity/do"
 	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	nodeidentityos "k8s.io/kops/pkg/nodeidentity/openstack"
+	nodelocaldnsv1 "sigs.k8s.io/addon-operators/nodelocaldns/api/v1alpha1"
+	nodelocaldns "sigs.k8s.io/addon-operators/nodelocaldns/controllers"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
@@ -104,6 +106,11 @@ func main() {
 	}
 	// +kubebuilder:scaffold:builder
 
+	if err := addAddonOperators(mgr, &opt); err != nil {
+		setupLog.Error(err, "unable to create addon operators")
+		os.Exit(1)
+	}
+
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
@@ -115,6 +122,11 @@ func buildScheme() error {
 	if err := corev1.AddToScheme(scheme); err != nil {
 		return fmt.Errorf("error registering corev1: %v", err)
 	}
+
+	if err := nodelocaldnsv1.AddToScheme(scheme); err != nil {
+		return fmt.Errorf("error registering nodelocaldnsv1: %v", err)
+	}
+
 	return nil
 }
 
@@ -162,6 +174,17 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 	}
 	if err := nodeController.SetupWithManager(mgr); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func addAddonOperators(mgr manager.Manager, opt *config.Options) error {
+	if err := (&nodelocaldns.NodeLocalDNSReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		return fmt.Errorf("error creating nodelocaldns controller: %v", err)
 	}
 
 	return nil

@@ -389,7 +389,7 @@ github.com/prometheus/procfs/internal/fs
 github.com/russross/blackfriday
 # github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529
 github.com/sean-/seed
-# github.com/sergi/go-diff v0.0.0-20161102184045-552b4e9bbdca
+# github.com/sergi/go-diff v1.0.0
 github.com/sergi/go-diff/diffmatchpatch
 # github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
@@ -489,7 +489,7 @@ golang.org/x/crypto/salsa20/salsa
 golang.org/x/crypto/scrypt
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933
+# golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
 golang.org/x/net/bpf
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
@@ -704,7 +704,7 @@ k8s.io/api/settings/v1alpha1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apiextensions-apiserver v0.0.0-20190918161926-8f644eb6e783 => k8s.io/apiextensions-apiserver v0.0.0-20191114105449-027877536833
+# k8s.io/apiextensions-apiserver v0.0.0-20190918201827-3de75813f604 => k8s.io/apiextensions-apiserver v0.0.0-20191114105449-027877536833
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1
 # k8s.io/apimachinery v0.0.0 => k8s.io/apimachinery v0.0.0-20191028221656-72ed19daf4bb
@@ -1046,6 +1046,9 @@ k8s.io/utils/nsenter
 k8s.io/utils/path
 k8s.io/utils/pointer
 k8s.io/utils/trace
+# sigs.k8s.io/addon-operators/nodelocaldns v0.0.0-00010101000000-000000000000 => ../../sigs.k8s.io/addon-operators/nodelocaldns
+sigs.k8s.io/addon-operators/nodelocaldns/api/v1alpha1
+sigs.k8s.io/addon-operators/nodelocaldns/controllers
 # sigs.k8s.io/controller-runtime v0.4.0
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/controller-runtime/pkg/builder
@@ -1095,6 +1098,15 @@ sigs.k8s.io/controller-tools/pkg/rbac
 sigs.k8s.io/controller-tools/pkg/schemapatcher
 sigs.k8s.io/controller-tools/pkg/schemapatcher/internal/yaml
 sigs.k8s.io/controller-tools/pkg/webhook
+# sigs.k8s.io/kubebuilder-declarative-pattern v0.0.0 => ../../sigs.k8s.io/kubebuilder-declarative-pattern
+sigs.k8s.io/kubebuilder-declarative-pattern/pkg/patterns/addon
+sigs.k8s.io/kubebuilder-declarative-pattern/pkg/patterns/addon/pkg/apis/v1alpha1
+sigs.k8s.io/kubebuilder-declarative-pattern/pkg/patterns/addon/pkg/loaders
+sigs.k8s.io/kubebuilder-declarative-pattern/pkg/patterns/addon/pkg/status
+sigs.k8s.io/kubebuilder-declarative-pattern/pkg/patterns/declarative
+sigs.k8s.io/kubebuilder-declarative-pattern/pkg/patterns/declarative/pkg/kubectlcmd
+sigs.k8s.io/kubebuilder-declarative-pattern/pkg/patterns/declarative/pkg/manifest
+sigs.k8s.io/kubebuilder-declarative-pattern/pkg/patterns/declarative/pkg/watch
 # sigs.k8s.io/kustomize v2.0.3+incompatible
 sigs.k8s.io/kustomize/pkg/commands/build
 sigs.k8s.io/kustomize/pkg/constants
