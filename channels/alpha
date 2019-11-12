@@ -39,7 +39,11 @@ spec:
       providerID: aws
       kubernetesVersion: ">=1.15.0"
     - providerID: gce
+      kubernetesVersion: "<1.16.0-alpha.1"
       name: "cos-cloud/cos-stable-65-10323-99-0"
+    - providerID: gce
+      kubernetesVersion: ">=1.16.0-alpha.1"
+      name: "cos-cloud/cos-stable-77-12371-114-0"
   cluster:
     kubernetesVersion: v1.5.8
     networking:
