@@ -17,6 +17,8 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
+  labels:
+    k8s-app: spotinst-kubernetes-cluster-controller
   name: spotinst-kubernetes-cluster-controller-certs
   namespace: kube-system
 type: Opaque
@@ -27,6 +29,8 @@ type: Opaque
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  labels:
+    k8s-app: spotinst-kubernetes-cluster-controller
   name: spotinst-kubernetes-cluster-controller
   namespace: kube-system
 ---
@@ -41,13 +45,16 @@ metadata:
 rules:
 - apiGroups: [""]
   resources: ["pods", "nodes", "replicationcontrollers", "events", "limitranges", "services", "persistentvolumes", "persistentvolumeclaims", "namespaces"]
-  verbs: ["get", "delete", "list", "patch", "update"]
+  verbs: ["get", "delete", "list", "patch", "update", "create"]
+- apiGroups: [""]
+  resources: ["pods/eviction"]
+  verbs: ["create"]
 - apiGroups: ["apps"]
-  resources: ["deployments"]
-  verbs: ["get","list","patch"]
+  resources: ["deployments", "daemonsets", "statefulsets"]
+  verbs: ["get","list","patch","create","delete"]
 - apiGroups: ["extensions"]
-  resources: ["replicasets"]
-  verbs: ["get","list"]
+  resources: ["replicasets", "daemonsets"]
+  verbs: ["get","list","create","patch","delete"]
 - apiGroups: ["rbac.authorization.k8s.io"]
   resources: ["clusterroles"]
   verbs: ["patch", "update", "escalate"]
@@ -56,6 +63,12 @@ rules:
   verbs: ["list"]
 - apiGroups: ["metrics.k8s.io"]
   resources: ["pods"]
+  verbs: ["list"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["storageclasses"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["batch"]
+  resources: ["jobs"]
   verbs: ["list"]
 - nonResourceURLs: ["/version/", "/version"]
   verbs: ["get"]
@@ -84,7 +97,7 @@ apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   labels:
-    k8s-addon: spotinst-kubernetes-cluster-controller.addons.k8s.io
+    k8s-app: spotinst-kubernetes-cluster-controller
   name: spotinst-kubernetes-cluster-controller
   namespace: kube-system
 spec:
@@ -92,12 +105,21 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      k8s-addon: spotinst-kubernetes-cluster-controller.addons.k8s.io
+      k8s-app: spotinst-kubernetes-cluster-controller
   template:
     metadata:
       labels:
-        k8s-addon: spotinst-kubernetes-cluster-controller.addons.k8s.io
+        k8s-app: spotinst-kubernetes-cluster-controller
     spec:
+      priorityClassName: system-cluster-critical
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       containers:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
@@ -105,12 +127,17 @@ spec:
         volumeMounts:
         - name: spotinst-kubernetes-cluster-controller-certs
           mountPath: /certs
+        - name: tmp-volume
+          mountPath: /tmp
         livenessProbe:
           httpGet:
             path: /healthcheck
             port: 4401
           initialDelaySeconds: 300
-          periodSeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 2
+          successThreshold: 1
+          failureThreshold: 3
         env:
         - name: SPOTINST_TOKEN
           valueFrom:
@@ -127,12 +154,40 @@ spec:
             configMapKeyRef:
               name: spotinst-kubernetes-cluster-controller-config
               key: spotinst.cluster-identifier
+        - name: PROXY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: spotinst-kubernetes-cluster-controller-config
+              key: proxy-url
+              optional: true
+        - name: POD_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.uid
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
       volumes:
       - name: spotinst-kubernetes-cluster-controller-certs
         secret:
           secretName: spotinst-kubernetes-cluster-controller-certs
+      - name: tmp-volume
+        emptyDir: {}
       serviceAccountName: spotinst-kubernetes-cluster-controller
       tolerations:
+      - key: node.kubernetes.io/not-ready
+        effect: NoExecute
+        operator: Exists
+        tolerationSeconds: 150
+      - key: node.kubernetes.io/unreachable
+        effect: NoExecute
+        operator: Exists
+        tolerationSeconds: 150
       - key: node-role.kubernetes.io/master
-        effect: NoSchedule
+        operator: Exists
 ---
