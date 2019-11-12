@@ -101,7 +101,7 @@ spec:
       containers:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
-        image: spotinst/kubernetes-cluster-controller:1.0.39
+        image: spotinst/kubernetes-cluster-controller:1.0.47
         volumeMounts:
         - name: spotinst-kubernetes-cluster-controller-certs
           mountPath: /certs
