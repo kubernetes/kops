@@ -19,12 +19,12 @@ spec:
       k8s-addon: core.addons.k8s.io
     version: 1.4.0
   - id: k8s-1.12
-    manifest: kube-dns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: db49c98447b9d59dec4fa413461a6614bc6e43e9
-    name: kube-dns.addons.k8s.io
+    manifest: coredns.addons.k8s.io/k8s-1.12.yaml
+    manifestHash: 0af83c370d13df45c6a2db67fa8f28e41502b6e1
+    name: coredns.addons.k8s.io
     selector:
-      k8s-addon: kube-dns.addons.k8s.io
-    version: 1.15.13-kops.3
+      k8s-addon: coredns.addons.k8s.io
+    version: 1.7.0-kops.2
   - id: k8s-1.9
     manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
     manifestHash: e1508d77cb4e527d7a2939babe36dc350dd83745
