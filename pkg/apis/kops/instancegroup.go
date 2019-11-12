@@ -159,6 +159,8 @@ type InstanceGroupSpec struct {
 	// specified, each parameter must follow the form variable=value, the way
 	// it would appear in sysctl.conf.
 	SysctlParameters []string `json:"sysctlParameters,omitempty"`
+	// RollingUpdate defines the rolling-update behavior
+	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
 }
 
 const (
