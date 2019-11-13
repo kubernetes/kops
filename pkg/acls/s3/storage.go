@@ -79,9 +79,8 @@ func (s *s3PublicAclStrategy) GetACL(p vfs.Path, cluster *kops.Cluster) (vfs.ACL
 		return &vfs.S3Acl{
 			RequestACL: values.String("public-read"),
 		}, nil
-	} else {
-		klog.V(8).Infof("path %q is not inside the file registry %q, not setting public-read acl", u.Path, config.Path)
 	}
+	klog.V(8).Infof("path %q is not inside the file registry %q, not setting public-read acl", u.Path, config.Path)
 
 	return nil, nil
 }

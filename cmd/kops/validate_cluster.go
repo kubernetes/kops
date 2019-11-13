@@ -134,16 +134,20 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	timeout := time.Now().Add(options.wait)
 	pollInterval := 10 * time.Second
 
+	validator, err := validation.NewClusterValidator(cluster, list, k8sClient)
+	if err != nil {
+		return nil, fmt.Errorf("unexpected error creating validatior: %v", err)
+	}
+
 	for {
-		result, err := validation.ValidateCluster(cluster, list, k8sClient)
+		result, err := validator.Validate()
 		if err != nil {
 			if time.Now().After(timeout) {
 				return nil, fmt.Errorf("unexpected error during validation: %v", err)
-			} else {
-				klog.Warningf("(will retry): unexpected error during validation: %v", err)
-				time.Sleep(pollInterval)
-				continue
 			}
+			klog.Warningf("(will retry): unexpected error during validation: %v", err)
+			time.Sleep(pollInterval)
+			continue
 		}
 
 		switch options.output {

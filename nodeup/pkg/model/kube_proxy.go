@@ -44,7 +44,7 @@ var _ fi.ModelBuilder = &KubeAPIServerBuilder{}
 // @TODO we should probably change this to a daemonset in the future and follow the kubeadm path
 func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 
-	if b.Cluster.Spec.KubeProxy.Enabled != nil && *b.Cluster.Spec.KubeProxy.Enabled == false {
+	if b.Cluster.Spec.KubeProxy.Enabled != nil && !*b.Cluster.Spec.KubeProxy.Enabled {
 		klog.V(2).Infof("Kube-proxy is disabled, will not create configuration for it.")
 		return nil
 	}

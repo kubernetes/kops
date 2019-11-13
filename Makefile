@@ -21,7 +21,7 @@ GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
 GOPATH_1ST:=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
-GOVERSION=1.12.9
+GOVERSION=1.12.11
 BUILD=$(GOPATH_1ST)/src/k8s.io/kops/.build
 LOCAL=$(BUILD)/local
 BINDATA_TARGETS=upup/models/bindata.go
@@ -47,7 +47,7 @@ GCFLAGS?=
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
-UPLOAD=$(MAKEDIR)/hack/upload
+UPLOAD_CMD=$(MAKEDIR)/hack/upload
 
 
 # Unexport environment variables that can affect tests and are not used in builds
@@ -56,7 +56,7 @@ unexport KOPS_BASE_URL KOPS_CLUSTER_NAME KOPS_RUN_OBSOLETE_VERSION KOPS_STATE_ST
 unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCESS_KEY VSPHERE_USERNAME VSPHERE_PASSWORD
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.15.0-alpha.1
+DNS_CONTROLLER_TAG=1.16.0-alpha.1
 # Keep in sync with upup/models/cloudup/resources/addons/kops-controller.addons.k8s.io/
 KOPS_CONTROLLER_TAG=1.15.0-alpha.1
 
@@ -98,20 +98,7 @@ PROTOKUBE_TAG := $(subst +,-,${VERSION})
 KOPS_SERVER_TAG := $(subst +,-,${VERSION})
 
 # Go exports:
-
-GO15VENDOREXPERIMENT=1
-export GO15VENDOREXPERIMENT
-
-COMPILERVERSION := $(shell go version | cut -d' ' -f3 | sed 's/go//g' | tr -d '\n')
-COMPILER_VER_MAJOR := $(shell echo $(COMPILERVERSION) | cut -f1 -d.)
-COMPILER_VER_MINOR := $(shell echo $(COMPILERVERSION) | cut -f2 -d.)
-COMPILER_GT_1_10 := $(shell [ $(COMPILER_VER_MAJOR) -gt 1 -o \( $(COMPILER_VER_MAJOR) -eq 1 -a $(COMPILER_VER_MINOR) -ge 10 \) ] && echo true)
-
-ifeq ($(COMPILER_GT_1_10), true)
 LDFLAGS := -ldflags=all=
-else
-LDFLAGS := -ldflags=
-endif
 
 ifdef STATIC_BUILD
   CGO_ENABLED=0
@@ -197,23 +184,17 @@ upup/models/bindata.go: ${GOBINDATA} ${UPUP_MODELS_BINDATA_SOURCES}
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
-# 1.10 is the default for k8s 1.11.  Others are best-effort
-.PHONY: check-builds-in-go18
-check-builds-in-go18:
-	# Note we only check that kops builds; we know the tests don't compile because of type aliasing in uber zap
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.8 make -C /go/src/k8s.io/kops kops
-
-.PHONY: check-builds-in-go19
-check-builds-in-go19:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.9 make -C /go/src/k8s.io/kops ci
-
-.PHONY: check-builds-in-go110
-check-builds-in-go110:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.10 make -C /go/src/k8s.io/kops ci
-
 .PHONY: check-builds-in-go111
 check-builds-in-go111:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.11 make -C /go/src/k8s.io/kops ci
+	docker run -e GO111MODULE=on -e EXTRA_BUILDFLAGS=-mod=vendor -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.11 make -C /go/src/k8s.io/kops all
+
+.PHONY: check-builds-in-go112
+check-builds-in-go112:
+	docker run -e GO111MODULE=on -e EXTRA_BUILDFLAGS=-mod=vendor -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.12 make -C /go/src/k8s.io/kops all
+
+.PHONY: check-builds-in-go113
+check-builds-in-go113:
+	docker run -e EXTRA_BUILDFLAGS=-mod=vendor -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.13 make -C /go/src/k8s.io/kops all
 
 .PHONY: codegen
 codegen: kops-gobindata
@@ -345,6 +326,12 @@ vsphere-version-dist: nodeup-dist protokube-export
 upload: version-dist # Upload kops to S3
 	aws s3 sync --acl public-read ${UPLOAD}/ ${S3_BUCKET}
 
+# oss-upload builds kops and uploads to OSS
+.PHONY: oss-upload
+oss-upload: version-dist
+	@echo "== Uploading kops =="
+	aliyun oss cp --acl public-read -r -f --include "*" ${UPLOAD}/ ${OSS_BUCKET}
+
 # gcs-upload builds kops and uploads to GCS
 .PHONY: gcs-upload
 gcs-upload: bazel-version-dist
@@ -402,7 +389,7 @@ push-aws-run: push
 
 .PHONY: ${PROTOKUBE}
 ${PROTOKUBE}:
-	go build ${GCFLAGS} -o $@ -tags 'peer_name_alternative peer_name_hash' k8s.io/kops/protokube/cmd/protokube
+	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} -o $@ -tags 'peer_name_alternative peer_name_hash' k8s.io/kops/protokube/cmd/protokube
 
 .PHONY: protokube
 protokube: ${PROTOKUBE}
@@ -488,35 +475,17 @@ bazel-utils-dist:
 # --------------------------------------------------
 # development targets
 
-.PHONY: dep-prereqs
-dep-prereqs:
-	(which hg > /dev/null) || (echo "dep requires that mercurial is installed"; exit 1)
-	(which dep > /dev/null) || (echo "dep-ensure requires that dep is installed"; exit 1)
-	(which bazel > /dev/null) || (echo "dep-ensure requires that bazel is installed"; exit 1)
+.PHONY: gomod-prereqs
+gomod-prereqs:
+	(which bazel > /dev/null) || (echo "gomod requires that bazel is installed"; exit 1)
 
 .PHONY: dep-ensure
-dep-ensure: dep-prereqs
+dep-ensure:
 	echo "`make dep-ensure` has been replaced by `make gomod`"
 	exit 1
-	dep ensure -v
-	# Switch weavemesh to use peer_name_hash - bazel rule-go doesn't support build tags yet
-	rm vendor/github.com/weaveworks/mesh/peer_name_mac.go
-	sed -i -e 's/peer_name_hash/!peer_name_mac/g' vendor/github.com/weaveworks/mesh/peer_name_hash.go
-	# Remove all bazel build files that were vendored and regenerate (we assume they are go-gettable)
-	find vendor/ -name "BUILD" -delete
-	find vendor/ -name "BUILD.bazel" -delete
-	# Remove recursive symlinks that really confuse bazel
-	rm -rf vendor/github.com/coreos/etcd/cmd/
-	rm -rf vendor/github.com/jteeuwen/go-bindata/testdata/
-	# Remove dependencies that dep just can't figure out
-	rm -rf vendor/k8s.io/code-generator/cmd/set-gen/
-	rm -rf vendor/k8s.io/code-generator/cmd/go-to-protobuf/
-	rm -rf vendor/k8s.io/code-generator/cmd/import-boss/
-	rm -rf vendor/github.com/docker/docker/contrib/
-	make gazelle
 
 .PHONY: gomod
-gomod:
+gomod: gomod-prereqs
 	GO111MODULE=on go mod vendor
 	# Switch weavemesh to use peer_name_hash - bazel rule-go doesn't support build tags yet
 	rm vendor/github.com/weaveworks/mesh/peer_name_mac.go
@@ -858,20 +827,25 @@ bazel-upload: bazel-version-dist # Upload kops to S3
 # It uploads a build to a staging directory, which in theory we can publish as a release
 .PHONY: prow-postsubmit
 prow-postsubmit: bazel-version-dist
-	${UPLOAD} ${BAZELUPLOAD}/kops/${VERSION}/ ${UPLOAD_DEST}/${KOPS_RELEASE_VERSION}-${GITSHA}/
+	${UPLOAD_CMD} ${BAZELUPLOAD}/kops/${VERSION}/ ${UPLOAD_DEST}/${KOPS_RELEASE_VERSION}-${GITSHA}/
 
 #-----------------------------------------------------------
 # static html documentation
 
 .PHONY: live-docs
 live-docs:
-	@docker build --pull -t kops/mkdocs images/mkdocs
+	@docker build -t kops/mkdocs images/mkdocs
 	@docker run --rm -it -p 3000:3000 -v ${PWD}:/docs kops/mkdocs
 
 .PHONY: build-docs
 build-docs:
 	@docker build --pull -t kops/mkdocs images/mkdocs
 	@docker run --rm -v ${PWD}:/docs kops/mkdocs build
+
+.PHONY: build-docs-netlify
+build-docs-netlify:
+	@pip install -r ${MAKEDIR}/images/mkdocs/requirements.txt
+	@mkdocs build
 
 # Update machine_types.go
 .PHONY: update-machine-types
@@ -890,7 +864,7 @@ dev-upload-nodeup: bazel-crossbuild-nodeup
 	cp -fp bazel-bin/cmd/nodeup/linux_amd64_pure_stripped/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
 	tools/sha1 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha1
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
-	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload-protokube uploads protokube to GCS
 .PHONY: dev-upload-protokube
@@ -899,7 +873,7 @@ dev-upload-protokube: bazel-protokube-export # Upload kops to GCS
 	cp -fp ${BAZELIMAGES}/protokube.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz
 	cp -fp ${BAZELIMAGES}/protokube.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha1
 	cp -fp ${BAZELIMAGES}/protokube.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha256
-	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload-kops-controller uploads kops-controller to GCS
 .PHONY: dev-upload-kops-controller
@@ -908,7 +882,7 @@ dev-upload-kops-controller: bazel-kops-controller-export # Upload kops to GCS
 	cp -fp ${BAZELIMAGES}/kops-controller.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz
 	cp -fp ${BAZELIMAGES}/kops-controller.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz.sha1
 	cp -fp ${BAZELIMAGES}/kops-controller.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz.sha256
-	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload-dns-controller uploads dns-controller to GCS
 .PHONY: dev-upload-dns-controller
@@ -917,7 +891,7 @@ dev-upload-dns-controller: bazel-dns-controller-export # Upload kops to GCS
 	cp -fp ${BAZELIMAGES}/dns-controller.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz
 	cp -fp ${BAZELIMAGES}/dns-controller.tar.gz.sha1 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz.sha1
 	cp -fp ${BAZELIMAGES}/dns-controller.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz.sha256
-	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-copy-utils copies utils from a recent release
 # We don't currently have a bazel build for them, and the build is pretty slow, but they change rarely.
@@ -927,7 +901,7 @@ dev-copy-utils:
 	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.15.0-alpha.1/linux/amd64/utils.tar.gz
 	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.15.0-alpha.1/linux/amd64/utils.tar.gz.sha1
 	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.15.0-alpha.1/linux/amd64/utils.tar.gz.sha256
-	${UPLOAD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload does a faster build and uploads to GCS / S3
 # It copies utils instead of building it

@@ -209,6 +209,7 @@ func (_ *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
 	// This is a new EIP
 	if a == nil {
 		// No logic for EIPs - they are just created
+		return nil
 	}
 
 	// This is an existing EIP

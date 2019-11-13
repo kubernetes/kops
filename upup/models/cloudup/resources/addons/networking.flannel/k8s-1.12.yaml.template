@@ -106,6 +106,7 @@ spec:
         app: flannel
         role.kubernetes.io/networking: "1"
     spec:
+      priorityClassName: system-node-critical
       hostNetwork: true
       nodeSelector:
         beta.kubernetes.io/arch: amd64

@@ -155,7 +155,7 @@ func actionServerCommand(ctx *cli.Context) error {
 
 // waitForCertificates is responsible for waiting for the certificates to appear
 func waitForCertificates(files []string, timeout time.Duration) error {
-	doneCh := make(chan struct{}, 0)
+	doneCh := make(chan struct{})
 
 	go func() {
 		expires := time.Now().Add(timeout)

@@ -54,15 +54,14 @@ func (s *StringOrSlice) UnmarshalJSON(value []byte) error {
 			return nil
 		}
 		return nil
-	} else {
-		s.forceEncodeAsArray = false
-		var stringValue string
-		if err := json.Unmarshal(value, &stringValue); err != nil {
-			return err
-		}
-		s.values = []string{stringValue}
-		return nil
 	}
+	s.forceEncodeAsArray = false
+	var stringValue string
+	if err := json.Unmarshal(value, &stringValue); err != nil {
+		return err
+	}
+	s.values = []string{stringValue}
+	return nil
 }
 
 // String returns the string value, or the Itoa of the int value.

@@ -63,6 +63,10 @@ const (
 	TagNameRolePrefix        = "k8s.io/role/"
 	TagClusterName           = "KubernetesCluster"
 	TagRoleMaster            = "master"
+	TagKopsNetwork           = "KopsNetwork"
+	ResourceTypePort         = "ports"
+	ResourceTypeNetwork      = "networks"
+	ResourceTypeSubnet       = "subnets"
 )
 
 // ErrNotFound is used to inform that the object is not found
@@ -93,6 +97,7 @@ type OpenstackCloud interface {
 	LoadBalancerClient() *gophercloud.ServiceClient
 	DNSClient() *gophercloud.ServiceClient
 	UseOctavia() bool
+	UseZones([]string)
 
 	// Region returns the region which cloud will run on
 	Region() string
@@ -147,6 +152,12 @@ type OpenstackCloud interface {
 	//GetNetwork will return the Neutron network which match the id
 	GetNetwork(networkID string) (*networks.Network, error)
 
+	//FindNetworkBySubnetID will return network
+	FindNetworkBySubnetID(subnetID string) (*networks.Network, error)
+
+	//GetSubnet returns subnet using subnet id
+	GetSubnet(subnetID string) (*subnets.Subnet, error)
+
 	//ListNetworks will return the Neutron networks which match the options
 	ListNetworks(opt networks.ListOptsBuilder) ([]networks.Network, error)
 
@@ -164,6 +175,12 @@ type OpenstackCloud interface {
 
 	//DeleteNetwork will delete neutron network
 	DeleteNetwork(networkID string) error
+
+	//AppendTag appends tag to resource
+	AppendTag(resource string, id string, tag string) error
+
+	//DeleteTag removes tag from resource
+	DeleteTag(resource string, id string, tag string) error
 
 	//ListRouters will return the Neutron routers which match the options
 	ListRouters(opt routers.ListOpts) ([]routers.Router, error)
@@ -295,13 +312,14 @@ type openstackCloud struct {
 	dnsClient       *gophercloud.ServiceClient
 	lbClient        *gophercloud.ServiceClient
 	glanceClient    *gophercloud.ServiceClient
-	floatingEnabled bool
 	extNetworkName  *string
 	extSubnetName   *string
 	floatingSubnet  *string
 	tags            map[string]string
 	region          string
 	useOctavia      bool
+	zones           []string
+	floatingEnabled bool
 }
 
 var _ fi.Cloud = &openstackCloud{}
@@ -313,12 +331,6 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 	if err != nil {
 		return nil, err
 	}
-
-	/*
-		provider, err := os.AuthenticatedClient(authOption)
-		if err != nil {
-			return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
-		}*/
 
 	provider, err := os.NewClient(authOption.IdentityEndpoint)
 	if err != nil {
@@ -466,6 +478,11 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 	return c, nil
 }
 
+// UseZones add unique zone names to openstackcloud
+func (c *openstackCloud) UseZones(zones []string) {
+	c.zones = zones
+}
+
 func (c *openstackCloud) UseOctavia() bool {
 	return c.useOctavia
 }
@@ -506,8 +523,34 @@ func (c *openstackCloud) DNS() (dnsprovider.Interface, error) {
 	return provider, nil
 }
 
+// FindVPCInfo list subnets in network
 func (c *openstackCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
-	return nil, fmt.Errorf("openstackCloud::FindVPCInfo not implemented")
+	vpcInfo := &fi.VPCInfo{}
+	// Find subnets in the network
+	{
+		if len(c.zones) == 0 {
+			return nil, fmt.Errorf("Could not initialize zones")
+		}
+		klog.V(2).Infof("Calling ListSubnets for subnets in Network %q", id)
+		opt := subnets.ListOpts{
+			NetworkID: id,
+		}
+		subnets, err := c.ListSubnets(opt)
+		if err != nil {
+			return nil, fmt.Errorf("error listing subnets in network %q: %v", id, err)
+		}
+
+		for index, subnet := range subnets {
+			zone := c.zones[int(index)%len(c.zones)]
+			subnetInfo := &fi.SubnetInfo{
+				ID:   subnet.ID,
+				CIDR: subnet.CIDR,
+				Zone: zone,
+			}
+			vpcInfo.Subnets = append(vpcInfo.Subnets, subnetInfo)
+		}
+	}
+	return vpcInfo, nil
 }
 
 // DeleteGroup in openstack will delete servergroup, instances and ports

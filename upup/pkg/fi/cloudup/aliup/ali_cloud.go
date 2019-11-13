@@ -328,7 +328,7 @@ func ZoneToVSwitchID(VPCID string, zones []string, vswitchIDs []string) (map[str
 		return res, fmt.Errorf("error describing VPC: %v", err)
 	}
 
-	if vpc == nil || len(vpc) == 0 {
+	if len(vpc) == 0 {
 		return res, fmt.Errorf("VPC %q not found", VPCID)
 	}
 

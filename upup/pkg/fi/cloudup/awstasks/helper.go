@@ -42,7 +42,7 @@ func buildEphemeralDevices(cloud awsup.AWSCloud, machineType string) (map[string
 
 // buildAdditionalDevices is responsible for creating additional volumes in this lc
 func buildAdditionalDevices(volumes []*BlockDeviceMapping) (map[string]*BlockDeviceMapping, error) {
-	devices := make(map[string]*BlockDeviceMapping, 0)
+	devices := make(map[string]*BlockDeviceMapping)
 
 	// @step: iterate the volumes and create devices from them
 	for _, x := range volumes {

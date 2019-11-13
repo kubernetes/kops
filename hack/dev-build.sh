@@ -35,7 +35,7 @@
 # NODEUP_BUCKET="s3-devel-bucket-name-store-nodeup" \
 # IMAGE="kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02" \
 # ./dev-build.sh
-# 
+#
 # # TLDR;
 # 1. setup dns in route53
 # 2. create s3 buckets - state store and nodeup bucket
@@ -45,10 +45,10 @@
 # 6. use ssh-agent and ssh -A
 # 7. your pem will be the access token
 # 8. user is admin, and the default is debian
-# 
+#
 # # For more details see:
 #
-# https://github.com/kubernetes/kops/blob/master/docs/aws.md
+# https://github.com/kubernetes/kops/blob/master/docs/getting_started/aws.md
 #
 ###############################################################################
 
@@ -124,11 +124,11 @@ if [[ $TOPOLOGY == "private" ]]; then
   kops_command+=" --bastion='true'"
 fi
 
-if [ -n "${KOPS_FEATURE_FLAGS+x}" ]; then 
+if [ -n "${KOPS_FEATURE_FLAGS+x}" ]; then
   kops_command=KOPS_FEATURE_FLAGS="${KOPS_FEATURE_FLAGS}" $kops_command
 fi
 
-if [[ $KOPS_CREATE == "yes" ]]; then 
+if [[ $KOPS_CREATE == "yes" ]]; then
   kops_command="$kops_command --yes"
 fi
 

@@ -102,6 +102,7 @@ kops create cluster [flags]
       --os-ext-subnet string             The name of the external floating subnet to use with the openstack router
       --os-kubelet-ignore-az             If true kubernetes may attach volumes across availability zones
       --os-lb-floating-subnet string     The name of the external subnet to use with the kubernetes api
+      --os-network string                The ID of the existing OpenStack network to use
       --os-octavia                       If true octavia loadbalancer api will be used
       --out string                       Path to write any local output
   -o, --output string                    Output format. One of json|yaml. Used with the --dry-run flag.

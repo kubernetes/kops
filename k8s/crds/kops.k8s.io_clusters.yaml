@@ -1320,6 +1320,10 @@ spec:
                 cacheMaxSize:
                   description: CacheMaxSize is the maximum entries to keep in dnsmasq
                   type: integer
+                coreDNSImage:
+                  description: CoreDNSImage is used to override the default image
+                    used for CoreDNS
+                  type: string
                 cpuRequest:
                   description: CPURequest specifies the cpu requests of each dns container
                     in the cluster. Default 100m.
@@ -2217,7 +2221,7 @@ spec:
                   properties:
                     imageName:
                       description: 'The container image name to use, which by default
-                        is: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.5.4'
+                        is: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:1.0.0'
                       type: string
                   type: object
                 calico:
