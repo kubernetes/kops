@@ -33,7 +33,7 @@ func YamlUnmarshal(yamlBytes []byte, dest interface{}) error {
 	return yaml.Unmarshal(yamlBytes, dest)
 }
 
-// YamlMarshal trys to marshal the input struct into yaml content
+// YamlMarshal tries to marshal the input struct into yaml content
 func YamlMarshal(o interface{}) ([]byte, error) {
 	return yaml.Marshal(o)
 }

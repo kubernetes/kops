@@ -182,7 +182,7 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	actual.SecurityGroups = securityGroups
 
 	// @step: get the image is order to find out the root device name as using the index
-	// is not vaiable, under conditions they move
+	// is not variable, under conditions they move
 	image, err := cloud.ResolveImage(fi.StringValue(e.ImageID))
 	if err != nil {
 		return nil, err
