@@ -33,7 +33,7 @@ Using Kops HA
 -------------
 
 We can create HA clusters using kops, but only it's important to note that migrating from a single-master
-cluster to a multi-master cluster is a complicated operation (described [here](./single-to-multi-master.md)).
+cluster to a multi-master cluster is a complicated operation (described [here](../single-to-multi-master.md)).
 If possible, try to plan this at time of cluster creation.
 
 When you first call `kops create cluster`, you specify the `--master-zones` flag listing the zones you want your masters
@@ -66,7 +66,7 @@ As a result there are a few considerations that need to be taken into account wh
 Advanced Example
 ----------------
 
-Another example `create cluster` invocation for HA with [a private network topology](topology.md):
+Another example `create cluster` invocation for HA with [a private network topology](../topology.md):
 
 ```
 kops create cluster \

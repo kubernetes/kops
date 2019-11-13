@@ -1,3 +1,3 @@
 ## Addons
 
-Read on [addons](../docs/addons.md)
+Read on [addons](../docs/operations/addons.md)

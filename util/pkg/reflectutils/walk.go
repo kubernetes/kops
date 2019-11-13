@@ -137,7 +137,6 @@ func reflectRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 				}
 			}
 		}
-		break
 
 	case reflect.Map:
 		keys := v.MapKeys()
@@ -156,7 +155,6 @@ func reflectRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 				}
 			}
 		}
-		break
 
 	case reflect.Array, reflect.Slice:
 		len := v.Len()
@@ -175,7 +173,6 @@ func reflectRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 				}
 			}
 		}
-		break
 
 	case reflect.Ptr, reflect.Interface:
 		if !v.IsNil() {
@@ -185,7 +182,6 @@ func reflectRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 				return err
 			}
 		}
-		break
 	}
 
 	return nil

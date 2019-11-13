@@ -247,7 +247,7 @@ type ProtokubeFlags struct {
 
 	GossipProtocolSecondary *string `json:"gossip-protocol-secondary" flag:"gossip-protocol-secondary"`
 	GossipListenSecondary   *string `json:"gossip-listen-secondary" flag:"gossip-listen-secondary"`
-	GossipSecretSecondary   *string `json:"gossip-secret-secondary" json:"gossip-secret-secondary"`
+	GossipSecretSecondary   *string `json:"gossip-secret-secondary" flag:"gossip-secret-secondary"`
 }
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
@@ -380,7 +380,6 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 				f.DNSProvider = fi.String("aws-route53")
 			case kops.CloudProviderDO:
 				f.DNSProvider = fi.String("digitalocean")
-				f.ClusterID = fi.String(t.Cluster.Name)
 			case kops.CloudProviderGCE:
 				f.DNSProvider = fi.String("google-clouddns")
 			case kops.CloudProviderVSphere:

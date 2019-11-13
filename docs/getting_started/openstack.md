@@ -115,7 +115,7 @@ If you want use [External CCM](https://github.com/kubernetes/cloud-provider-open
 Enable featureflag:
 
 ```
-export KOPS_FEATURE_FLAGS=+EnableExternalCloudController
+export KOPS_FEATURE_FLAGS=EnableExternalCloudController
 ```
 
 Create cluster without `--yes` flag (or modify existing cluster):
@@ -127,9 +127,7 @@ kops edit cluster <cluster>
 Add following to clusterspec:
 
 ```
-  cloudControllerManager:
-    image: jesseh/occm:latest <- you can use this or compile your own
-    logLevel: 2
+  cloudControllerManager: {}
 ```
 
 Finally
@@ -149,6 +147,56 @@ kops create cluster \
 ```
 
 The biggest problem currently when installing without loadbalancer is that kubectl requests outside cluster is always going to first master. External loadbalancer is one option which can solve this issue.
+
+# Using existing OpenStack network
+**Warning!** This feature is **experimental** use only if you know what you are doing.
+
+By default KOPS will always create new network to your OpenStack project which name matches to your clustername. However, there is experimental feature to use existing network in OpenStack project. When you create new cluster you can specify flag `--os-network <network id>` and it will then use existing network.
+
+Using yaml this can be specified to yaml:
+
+```yaml
+spec:
+  ...
+  networkID: <network id>
+  ...
+```
+
+**Warning!** when deleting cluster, you need to be really careful that you do not break another dependencies under same network. Run `kops delete cluster` without `--yes` flag and go through the list. Otherwise you might see situation that you broke something else.
+
+# Using existing OpenStack subnets
+**Warning!** This feature is **experimental** use only if you know what you are doing.
+
+By default KOPS will always create new network and subnet to your OpenStack project. However, there is experimental feature to use existing network and subnets in OpenStack project. When you create new cluster you can specify flag `--subnets <commaseparated list of subnetids>` and it will then use existing subnet. There is similar flag for utility subnets `--utility-subnets <commaseparated list of subnetids>`.
+
+Example:
+
+```
+kops create cluster \
+  --cloud openstack \
+  --name sharedsub2.k8s.local \
+  --state ${KOPS_STATE_STORE} \
+  --zones zone-1 \
+  --network-cidr 10.1.0.0/16 \
+  --image debian-10-160819-devops \
+  --master-count=3 \
+  --node-count=2 \
+  --node-size m1.small \
+  --master-size m1.small \
+  --etcd-storage-type default \
+  --topology private \
+  --bastion \
+  --networking calico \
+  --api-loadbalancer-type public \
+  --os-kubelet-ignore-az=true \
+  --os-ext-net ext-net \
+  --subnets c7d20c0f-df3a-4e5b-842f-f633c182961f \
+  --utility-subnets 90871d21-b546-4c4a-a7c9-2337ddf5375f \
+  --os-octavia=true --yes
+```
+
+**Warning!** when deleting cluster, you need to be really careful that you do not break another dependencies under same network & subnet. Run `kops delete cluster` without `--yes` flag and go through the list. Otherwise you might see situation that you broke something else.
+
 
 # Using with self-signed certificates in OpenStack
 

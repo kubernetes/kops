@@ -805,11 +805,7 @@ func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro 
 			foundArch = true
 		}
 	}
-	if !foundArch {
-		return false
-	}
-
-	return true
+	return foundArch
 }
 
 func (b *DockerBuilder) dockerVersion() string {

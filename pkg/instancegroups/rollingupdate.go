@@ -18,6 +18,7 @@ package instancegroups
 
 import (
 	"fmt"
+	"k8s.io/kops/pkg/validation"
 	"sync"
 	"time"
 
@@ -45,6 +46,9 @@ type RollingUpdateCluster struct {
 
 	// K8sClient is the kubernetes client, used for draining etc
 	K8sClient kubernetes.Interface
+
+	// ClusterValidator is used for validating the cluster. Unused if DrainAndValidateRollingUpdate disabled or CloudOnly
+	ClusterValidator validation.ClusterValidator
 
 	FailOnDrainError bool
 	FailOnValidate   bool
@@ -99,7 +103,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
 				if err == nil {
-					err = g.RollingUpdate(c, cluster, instanceGroups, true, c.BastionInterval, c.ValidationTimeout)
+					err = g.RollingUpdate(c, cluster, true, c.BastionInterval, c.ValidationTimeout)
 				}
 
 				resultsMutex.Lock()
@@ -127,7 +131,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 		for _, group := range masterGroups {
 			g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
 			if err == nil {
-				err = g.RollingUpdate(c, cluster, instanceGroups, false, c.MasterInterval, c.ValidationTimeout)
+				err = g.RollingUpdate(c, cluster, false, c.MasterInterval, c.ValidationTimeout)
 			}
 
 			// Do not continue update if master(s) failed, cluster is potentially in an unhealthy state
@@ -161,7 +165,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 			for k, group := range nodeGroups {
 				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
 				if err == nil {
-					err = g.RollingUpdate(c, cluster, instanceGroups, false, c.NodeInterval, c.ValidationTimeout)
+					err = g.RollingUpdate(c, cluster, false, c.NodeInterval, c.ValidationTimeout)
 				}
 
 				resultsMutex.Lock()

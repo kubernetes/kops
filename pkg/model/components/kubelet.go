@@ -213,6 +213,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if cloudProvider == kops.CloudProviderALI {
 		clusterSpec.Kubelet.CloudProvider = "alicloud"
+		clusterSpec.Kubelet.HostnameOverride = "@alicloud"
 	}
 
 	if clusterSpec.ExternalCloudControllerManager != nil {

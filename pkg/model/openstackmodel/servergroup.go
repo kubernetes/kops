@@ -59,6 +59,11 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		igMeta[openstack.TagClusterName] = b.ClusterName()
 	}
 	igMeta["k8s"] = b.ClusterName()
+	netName, err := b.GetNetworkName()
+	if err != nil {
+		return err
+	}
+	igMeta[openstack.TagKopsNetwork] = netName
 	igMeta["KopsInstanceGroup"] = ig.Name
 	igMeta["KopsRole"] = string(ig.Spec.Role)
 	igMeta[openstack.INSTANCE_GROUP_GENERATION] = fmt.Sprintf("%d", ig.GetGeneration())
@@ -111,7 +116,12 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			} else {
 				az = fi.String(subnet)
 			}
-			subnets = append(subnets, b.LinkToSubnet(s(fmt.Sprintf("%s.%s", subnet, b.ClusterName()))))
+
+			subnetName, err := b.findSubnetClusterSpec(subnet)
+			if err != nil {
+				return err
+			}
+			subnets = append(subnets, b.LinkToSubnet(s(subnetName)))
 		}
 		if len(ig.Spec.Zones) > 0 {
 			zone := ig.Spec.Zones[int(i)%len(ig.Spec.Zones)]
@@ -121,6 +131,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		portTask := &openstacktasks.Port{
 			Name:                     fi.String(fmt.Sprintf("%s-%s", "port", *instanceName)),
 			Network:                  b.LinkToNetwork(),
+			Tag:                      s(b.ClusterName()),
 			SecurityGroups:           securityGroups,
 			AdditionalSecurityGroups: ig.Spec.AdditionalSecurityGroups,
 			Subnets:                  subnets,
@@ -248,10 +259,23 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer != nil {
-		lbSubnetName := b.MasterInstanceGroups()[0].Spec.Subnets[0]
+		var lbSubnetName string
+		var err error
+		for _, sp := range b.Cluster.Spec.Subnets {
+			if sp.Type == kops.SubnetTypePrivate {
+				lbSubnetName, err = b.findSubnetNameByID(sp.ProviderID, sp.Name)
+				if err != nil {
+					return err
+				}
+				break
+			}
+		}
+		if lbSubnetName == "" {
+			return fmt.Errorf("could not find subnet for master loadbalancer")
+		}
 		lbTask := &openstacktasks.LB{
 			Name:          fi.String(b.Cluster.Spec.MasterPublicName),
-			Subnet:        fi.String(lbSubnetName + "." + b.ClusterName()),
+			Subnet:        fi.String(lbSubnetName),
 			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(b.Cluster.Spec.MasterPublicName),
 		}
@@ -282,12 +306,16 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(listenerTask)
 
+		ifName, err := b.GetNetworkName()
+		if err != nil {
+			return err
+		}
 		for _, mastersg := range masters {
 			associateTask := &openstacktasks.PoolAssociation{
 				Name:          mastersg.Name,
 				Pool:          poolTask,
 				ServerGroup:   mastersg,
-				InterfaceName: fi.String(clusterName),
+				InterfaceName: fi.String(ifName),
 				ProtocolPort:  fi.Int(443),
 				Lifecycle:     b.Lifecycle,
 			}

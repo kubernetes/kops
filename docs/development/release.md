@@ -93,8 +93,12 @@ make release-github
 e.g.
 
 ```
-git log 1.14.0-beta.1..1.14.0 --oneline | grep Merge.pull | cut -f 5 -d ' ' | tac  > /tmp/prs
-relnotes  -config .shipbot.yaml  < /tmp/prs  >> docs/releases/1.14-NOTES.md
+FROM=1.14.0
+TO=1.14.1
+DOC=1.14
+git log ${FROM}..${TO} --oneline | grep Merge.pull | cut -f 5 -d ' ' | tac  > /tmp/prs
+echo -e "\n## ${FROM} to ${TO}\n"  >> docs/releases/${DOC}-NOTES.md
+relnotes  -config .shipbot.yaml  < /tmp/prs  >> docs/releases/${DOC}-NOTES.md
 ```
 
 ## On github

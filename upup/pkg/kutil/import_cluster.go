@@ -635,9 +635,7 @@ func findInstances(c awsup.AWSCloud) ([]*ec2.Instance, error) {
 
 	err := c.EC2().DescribeInstancesPages(request, func(p *ec2.DescribeInstancesOutput, lastPage bool) bool {
 		for _, reservation := range p.Reservations {
-			for _, instance := range reservation.Instances {
-				instances = append(instances, instance)
-			}
+			instances = append(instances, reservation.Instances...)
 		}
 		return true
 	})

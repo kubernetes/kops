@@ -50,7 +50,12 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 		for _, server := range s {
 			if clusterName, ok := server.Metadata[openstack.TagClusterName]; ok {
 				var err error
-				addr, err := openstack.GetServerFixedIP(&server, clusterName)
+				// find kopsNetwork from metadata, fallback to clustername
+				ifName := clusterName
+				if val, ok := server.Metadata[openstack.TagKopsNetwork]; ok {
+					ifName = val
+				}
+				addr, err := openstack.GetServerFixedIP(&server, ifName)
 				if err != nil {
 					klog.Warningf("Failed to list seeds: %v", err)
 					continue
