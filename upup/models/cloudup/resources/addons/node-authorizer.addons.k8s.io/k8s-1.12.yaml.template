@@ -1,7 +1,7 @@
-{{- $proxy := .EgressProxy }}
-{{- $na := .NodeAuthorization.NodeAuthorizer }}
-{{- $name := "node-authorizer" }}
-{{- $namespace := "kube-system" }}
+{{- $proxy := .EgressProxy -}}
+{{- $na := .NodeAuthorization.NodeAuthorizer -}}
+{{- $name := "node-authorizer" -}}
+{{- $namespace := "kube-system" -}}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -97,7 +97,7 @@ subjects:
   name: {{ $name }}
   namespace: {{ $namespace }}
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: kops:{{ $name }}:nodes-viewer
