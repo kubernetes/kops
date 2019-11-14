@@ -5,12 +5,16 @@ metadata:
   name: cloud-controller-manager
   namespace: kube-system
   labels:
+    k8s-app: openstack-cloud-provider
     k8s-addon: openstack.addons.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: system:cloud-node-controller
+  labels:
+    k8s-app: openstack-cloud-provider
+    k8s-addon: openstack.addons.k8s.io
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -23,20 +27,10 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: system:pvl-controller
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:pvl-controller
-subjects:
-- kind: ServiceAccount
-  name: pvl-controller
-  namespace: kube-system
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
   name: system:cloud-controller-manager
+  labels:
+    k8s-app: openstack-cloud-provider
+    k8s-addon: openstack.addons.k8s.io
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -50,6 +44,9 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: system:cloud-controller-manager
+  labels:
+    k8s-app: openstack-cloud-provider
+    k8s-addon: openstack.addons.k8s.io
 rules:
 - apiGroups:
   - ""
@@ -123,6 +120,9 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: system:cloud-node-controller
+  labels:
+    k8s-app: openstack-cloud-provider
+    k8s-addon: openstack.addons.k8s.io
 rules:
 - apiGroups:
   - ""
@@ -136,26 +136,6 @@ rules:
   - nodes/status
   verbs:
   - patch
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - create
-  - patch
-  - update
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: system:pvl-controller
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - persistentvolumes
-  verbs:
-  - '*'
 - apiGroups:
   - ""
   resources:
@@ -201,7 +181,7 @@ spec:
         operator: Exists
       containers:
       - name: openstack-cloud-controller-manager
-        image: "{{- .ExternalCloudControllerManager.Image }}"
+        image: "{{- if .ExternalCloudControllerManager.Image -}} {{ .ExternalCloudControllerManager.Image }} {{- else -}} {{OpenStackCCM}} {{- end -}}"
         args:
           - /bin/openstack-cloud-controller-manager
 {{- range $arg := CloudControllerConfigArgv }}
@@ -209,11 +189,25 @@ spec:
 {{- end }}
           - --cloud-config=/etc/kubernetes/cloud.config
           - --address=127.0.0.1
+        resources:
+          requests:
+            cpu: 200m
         volumeMounts:
         - mountPath: /etc/kubernetes/cloud.config
           name: cloudconfig
           readOnly: true
+{{ if .UseHostCertificates }}
+        - mountPath: /etc/ssl/certs
+          name: etc-ssl-certs
+          readOnly: true
+{{ end }}
       volumes:
       - hostPath:
           path: /etc/kubernetes/cloud.config
         name: cloudconfig
+{{ if .UseHostCertificates }}
+      - hostPath:
+          path: /etc/ssl/certs
+          type: DirectoryOrCreate
+        name: etc-ssl-certs
+{{ end }}
