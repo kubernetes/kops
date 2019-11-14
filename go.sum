@@ -654,6 +654,7 @@ k8s.io/kubernetes v1.15.3 h1:PqAKiWeebLJQT2/sqTmeezrd2ApvznBVscDt1rBkcV4=
 k8s.io/kubernetes v1.15.3/go.mod h1:4Ggyo4AFgjbIzULOminzUJAvgbzY3j5ysXlW/a0PdcQ=
 k8s.io/legacy-cloud-providers v0.0.0-20190819145509-592c9a46fd00 h1:WW+7ZNYYPL6Mf1WJx+kjo6wowXt7Ztt8eZT8NkFUsqE=
 k8s.io/legacy-cloud-providers v0.0.0-20190819145509-592c9a46fd00/go.mod h1:CQf+5lDQk/abK+N/fTW2zb/QEQBI3x8YluF4sFSHSf4=
+k8s.io/metrics v0.0.0-20190819143841-305e1cef1ab1 h1:vNxfr8VBLdY4B4AkyKUHhFV4X9Vec3QLrb6xFzZ25h4=
 k8s.io/metrics v0.0.0-20190819143841-305e1cef1ab1/go.mod h1:oSHDT3CDT9BmVggrIzzU1nfZArYBO5saiR4MvpmZ+3w=
 k8s.io/repo-infra v0.0.0-20181204233714-00fe14e3d1a3/go.mod h1:+G1xBfZDfVFsm1Tj/HNCvg4QqWx8rJ2Fxpqr1rqp/gQ=
 k8s.io/sample-apiserver v0.0.0-20190819143045-c84c31c165c4/go.mod h1:HGcsHPVwD0ZBoHXB0xh6zdyQnDcFhglCNgM2HK/WVgg=
