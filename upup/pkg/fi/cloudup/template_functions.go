@@ -189,6 +189,35 @@ func (tf *TemplateFunctions) GetInstanceGroup(name string) (*kops.InstanceGroup,
 	return nil, fmt.Errorf("InstanceGroup %q not found", name)
 }
 
+// CloudControllerConfigArgv returns the args to external cloud controller
+func (tf *TemplateFunctions) CloudControllerConfigArgv() ([]string, error) {
+	if tf.cluster.Spec.ExternalCloudControllerManager == nil {
+		return nil, fmt.Errorf("ExternalCloudControllerManager is nil")
+	}
+	var argv []string
+
+	if tf.cluster.Spec.ExternalCloudControllerManager.LogLevel != 0 {
+		argv = append(argv, fmt.Sprintf("--v=%d", tf.cluster.Spec.ExternalCloudControllerManager.LogLevel))
+	} else {
+		argv = append(argv, "--v=2")
+	}
+	// if tf.cluster.Spec.ExternalCloudControllerManager.LogLevel != "" {
+	// 	argv = append(argv, fmt.Sprintf("--watch-namespace=%s", tf.cluster.Spec.ExternalCloudControllerManager.LogLevel))
+	// }
+	if tf.cluster.Spec.ExternalCloudControllerManager.CloudProvider !=""{
+		argv = append(argv, fmt.Sprintf("--cloud-provider=%s",  tf.cluster.Spec.ExternalCloudControllerManager.CloudProvider))
+	}else if tf.cluster.Spec.CloudProvider != "" {
+		argv = append(argv, fmt.Sprintf("--cloud-provider=%s", tf.cluster.Spec.CloudProvider))
+	}else {
+		return nil, fmt.Errorf("Cloud Provider is not set")
+	}
+
+	if tf.cluster.Spec.ExternalCloudControllerManager.ClusterName != "" {
+		argv = append(argv, fmt.Sprintf("--cluster-name=%s", tf.cluster.Spec.ExternalCloudControllerManager.ClusterName))
+	}
+	return argv, nil
+}
+
 // DnsControllerArgv returns the args to the DNS controller
 func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	var argv []string
