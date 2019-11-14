@@ -193,10 +193,10 @@ spec:
         image: "{{- if .ExternalCloudControllerManager.Image -}} {{ .ExternalCloudControllerManager.Image }} {{- else -}} {{OpenStackCCM}} {{- end -}}"
         args:
           - /bin/openstack-cloud-controller-manager
-          - --v={{ if .ExternalCloudControllerManager.LogLevel -}} {{ .ExternalCloudControllerManager.LogLevel }} {{- else }}2{{ end }}
+{{- range $arg := CloudControllerConfigArgv }}
+          - {{ $arg }}
+{{- end }}
           - --cloud-config=/etc/kubernetes/cloud.config
-          - --cloud-provider=openstack
-          - --use-service-account-credentials=true
           - --address=127.0.0.1
         resources:
           requests:
