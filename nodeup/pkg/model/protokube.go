@@ -45,6 +45,8 @@ type ProtokubeBuilder struct {
 
 var _ fi.ModelBuilder = &ProtokubeBuilder{}
 
+const dockerCmd = "/usr/bin/docker"
+
 // Build is responsible for generating the options for protokube
 func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 	useGossip := dns.IsGossipHostname(t.Cluster.Spec.MasterInternalName)
@@ -109,7 +111,7 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 	}
 
 	dockerArgs := []string{
-		"/usr/bin/docker", "run",
+		dockerCmd, "run",
 		"-v", "/:/rootfs/",
 		"-v", "/var/run/dbus:/var/run/dbus",
 		"-v", "/run/systemd:/run/systemd",
@@ -130,10 +132,12 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		}...)
 	}
 
+	containerName := "protokube"
 	dockerArgs = append(dockerArgs, []string{
 		"--net=host",
 		"--pid=host",   // Needed for mounting in a container (when using systemd mounting?)
 		"--privileged", // We execute in the host namespace
+		"--name=" + containerName,
 		"--env", "KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
 		t.ProtokubeEnvironmentVariables(),
 		t.ProtokubeImageName(),
@@ -148,6 +152,8 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 
 	// @step: let need a dependency for any volumes to be mounted first
 	manifest.Set("Service", "ExecStartPre", t.ProtokubeImagePullCommand())
+	manifest.Set("Service", "ExecStartPre", "-"+dockerCmd+" stop "+containerName) // Ensure that any container is currently running
+	manifest.Set("Service", "ExecStartPre", "-"+dockerCmd+" rm "+containerName)
 	manifest.Set("Service", "ExecStart", protokubeCommand)
 	manifest.Set("Service", "Restart", "always")
 	manifest.Set("Service", "RestartSec", "2s")
@@ -195,7 +201,7 @@ func (t *ProtokubeBuilder) ProtokubeImagePullCommand() string {
 		return "/bin/true"
 	}
 
-	return "/usr/bin/docker pull " + sources[0]
+	return dockerCmd + " pull " + sources[0]
 }
 
 // ProtokubeFlags are the flags for protokube
