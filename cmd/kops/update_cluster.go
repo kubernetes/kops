@@ -140,10 +140,10 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 			isDryrun = true
 			targetName = cloudup.TargetDryRun
 		} else if c.Target == cloudup.TargetTerraform {
-			fmt.Fprintf(out, "Must specify --yes to apply changes and generate terraform output \n")
+			fmt.Fprintf(out, "Must specify --yes to apply changes and generate terraform output\n")
 			return results, nil
 		} else if c.Target == cloudup.TargetCloudformation {
-			fmt.Fprintf(out, "Must specify --yes to apply changes and generate cloudformation output \n")
+			fmt.Fprintf(out, "Must specify --yes to apply changes and generate cloudformation output\n")
 			return results, nil
 		}
 	}
