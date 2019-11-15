@@ -135,14 +135,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	isDryrun := false
 	targetName := c.Target
 
-	// direct requires --yes (others do not, because they don't do anything!)
-	if c.Target == cloudup.TargetDirect {
-		if !c.Yes {
-			isDryrun = true
-			targetName = cloudup.TargetDryRun
-		}
-	}
-	if c.Target == cloudup.TargetDryRun {
+	if c.Target == cloudup.TargetDryRun || !c.Yes {
 		isDryrun = true
 		targetName = cloudup.TargetDryRun
 	}
