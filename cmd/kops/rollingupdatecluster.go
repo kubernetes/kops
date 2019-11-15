@@ -60,7 +60,7 @@ var (
 	validation.
 
 	Note: terraform users will need to run all of the following commands from the same directory
-	` + pretty.Bash("kops update cluster --target=terraform") + ` then ` + pretty.Bash("terraform plan") + ` then
+	` + pretty.Bash("kops update cluster --target=terraform --yes") + ` then ` + pretty.Bash("terraform plan") + ` then
 	` + pretty.Bash("terraform apply") + ` prior to running ` + pretty.Bash("kops rolling-update cluster") + `.`))
 
 	rollingupdateExample = templates.Examples(i18n.T(`
