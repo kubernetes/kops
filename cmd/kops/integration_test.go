@@ -267,6 +267,7 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 	{
 		options := &UpdateClusterOptions{}
 		options.InitDefaults()
+		options.Yes = true
 		options.Target = "terraform"
 		options.OutDir = path.Join(h.TempDir, "out")
 		options.RunTasksOptions.MaxTaskDuration = 30 * time.Second
@@ -544,6 +545,7 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 	{
 		options := &UpdateClusterOptions{}
 		options.InitDefaults()
+		options.Yes = true
 		options.Target = "cloudformation"
 		options.OutDir = path.Join(h.TempDir, "out")
 		options.RunTasksOptions.MaxTaskDuration = 30 * time.Second
