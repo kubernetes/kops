@@ -21,7 +21,7 @@ to wait for 3 minutes after a master is rolled, and another 3 minutes for the cl
 validation.
 
 Note: terraform users will need to run all of the following commands from the same directory
-`kops update cluster --target=terraform` then `terraform plan` then
+`kops update cluster --target=terraform --yes` then `terraform plan` then
 `terraform apply` prior to running `kops rolling-update cluster`.
 
 ### Examples

@@ -69,14 +69,15 @@ $ kops edit cluster \
 # editor opens, make your changes ...
 ```
 
-Then output your changes/edits to kops cluster state into the Terraform files. Run `kops update` with `--target` and `--out` parameters:
+Then output your changes/edits to kops cluster state into the Terraform files. Run `kops update` with `--target`, `--out` and `--yes` parameters:
 
 ```
 $ kops update cluster \
   --name=kubernetes.mydomain.com \
   --state=s3://mycompany.kubernetes \
   --out=. \
-  --target=terraform
+  --target=terraform \
+  --yes
 ```
 
 Then apply your changes after previewing what changes will be applied:
@@ -148,7 +149,8 @@ $ kops update cluster \
   --state=s3://mycompany.kubernetes \
   --model=cloudup \
   --out=. \
-  --target=terraform
+  --target=terraform \
+  --yes
 ```
 
 Then, to apply using terraform:
