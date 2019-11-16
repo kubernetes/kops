@@ -13,15 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package repo
+package golang
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"sync"
 
 	"github.com/bazelbuild/bazel-gazelle/label"
+	"github.com/bazelbuild/bazel-gazelle/language"
+	"github.com/bazelbuild/bazel-gazelle/rule"
+	"golang.org/x/sync/errgroup"
 )
 
 type goDepLockFile struct {
@@ -37,60 +39,50 @@ type goDepProject struct {
 	Rev        string
 }
 
-func importRepoRulesGoDep(filename string, cache *RemoteCache) ([]Repo, error) {
-	data, err := ioutil.ReadFile(filename)
+func importReposFromGodep(args language.ImportReposArgs) language.ImportReposResult {
+	data, err := ioutil.ReadFile(args.Path)
 	if err != nil {
-		return nil, err
+		return language.ImportReposResult{Error: err}
 	}
 
 	file := goDepLockFile{}
-
 	if err := json.Unmarshal(data, &file); err != nil {
-		return nil, err
+		return language.ImportReposResult{Error: err}
 	}
 
-	var wg sync.WaitGroup
-
+	var eg errgroup.Group
 	roots := make([]string, len(file.Deps))
-	errs := make([]error, len(file.Deps))
-
-	wg.Add(len(file.Deps))
-	for i, p := range file.Deps {
-		go func(i int, p goDepProject) {
-			defer wg.Done()
-			rootRepo, _, err := cache.Root(p.ImportPath)
+	for i := range file.Deps {
+		i := i
+		eg.Go(func() error {
+			p := file.Deps[i]
+			repoRoot, _, err := args.Cache.Root(p.ImportPath)
 			if err != nil {
-				errs[i] = err
-			} else {
-				roots[i] = rootRepo
+				return err
 			}
-		}(i, p)
+			roots[i] = repoRoot
+			return nil
+		})
 	}
-	wg.Wait()
-
-	var repos []Repo
-	for _, err := range errs {
-		if err != nil {
-			return nil, err
-		}
+	if err := eg.Wait(); err != nil {
+		return language.ImportReposResult{Error: err}
 	}
 
+	gen := make([]*rule.Rule, 0, len(file.Deps))
 	repoToRev := make(map[string]string)
-
 	for i, p := range file.Deps {
 		repoRoot := roots[i]
 		if rev, ok := repoToRev[repoRoot]; !ok {
-			repos = append(repos, Repo{
-				Name:     label.ImportPathToBazelRepoName(repoRoot),
-				GoPrefix: repoRoot,
-				Commit:   p.Rev,
-			})
+			r := rule.NewRule("go_repository", label.ImportPathToBazelRepoName(repoRoot))
+			r.SetAttr("importpath", repoRoot)
+			r.SetAttr("commit", p.Rev)
 			repoToRev[repoRoot] = p.Rev
+			gen = append(gen, r)
 		} else {
 			if p.Rev != rev {
-				return nil, fmt.Errorf("Repo %s imported at multiple revisions: %s, %s", repoRoot, p.Rev, rev)
+				return language.ImportReposResult{Error: fmt.Errorf("repo %s imported at multiple revisions: %s, %s", repoRoot, p.Rev, rev)}
 			}
 		}
 	}
-	return repos, nil
+	return language.ImportReposResult{Gen: gen}
 }
