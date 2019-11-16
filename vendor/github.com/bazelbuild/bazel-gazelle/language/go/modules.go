@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package repo
+package golang
 
 import (
 	"bytes"
@@ -30,14 +30,16 @@ import (
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/label"
+	"github.com/bazelbuild/bazel-gazelle/language"
+	"github.com/bazelbuild/bazel-gazelle/rule"
 )
 
-func importRepoRulesModules(filename string, _ *RemoteCache) (repos []Repo, err error) {
+func importReposFromModules(args language.ImportReposArgs) language.ImportReposResult {
 	// Copy go.mod to temporary directory. We may run commands that modify it,
 	// and we want to leave the original alone.
-	tempDir, err := copyGoModToTemp(filename)
+	tempDir, err := copyGoModToTemp(args.Path)
 	if err != nil {
-		return nil, err
+		return language.ImportReposResult{Error: err}
 	}
 	defer os.RemoveAll(tempDir)
 
@@ -54,13 +56,13 @@ func importRepoRulesModules(filename string, _ *RemoteCache) (repos []Repo, err 
 	pathToModule := map[string]*module{}
 	data, err := goListModules(tempDir)
 	if err != nil {
-		return nil, err
+		return language.ImportReposResult{Error: err}
 	}
 	dec := json.NewDecoder(bytes.NewReader(data))
 	for dec.More() {
 		mod := new(module)
 		if err := dec.Decode(mod); err != nil {
-			return nil, err
+			return language.ImportReposResult{Error: err}
 		}
 		if mod.Main {
 			continue
@@ -71,13 +73,13 @@ func importRepoRulesModules(filename string, _ *RemoteCache) (repos []Repo, err 
 					mod.Replace.Path)
 				continue
 			}
-			pathToModule[mod.Replace.Path + "@" + mod.Replace.Version] = mod
+			pathToModule[mod.Replace.Path+"@"+mod.Replace.Version] = mod
 		} else {
-			pathToModule[mod.Path + "@" + mod.Version] = mod
+			pathToModule[mod.Path+"@"+mod.Version] = mod
 		}
 	}
 	// Load sums from go.sum. Ideally, they're all there.
-	goSumPath := filepath.Join(filepath.Dir(filename), "go.sum")
+	goSumPath := filepath.Join(filepath.Dir(args.Path), "go.sum")
 	data, _ = ioutil.ReadFile(goSumPath)
 	lines := bytes.Split(data, []byte("\n"))
 	for _, line := range lines {
@@ -90,7 +92,7 @@ func importRepoRulesModules(filename string, _ *RemoteCache) (repos []Repo, err 
 		if strings.HasSuffix(version, "/go.mod") {
 			continue
 		}
-		if mod, ok := pathToModule[path + "@" + version]; ok {
+		if mod, ok := pathToModule[path+"@"+version]; ok {
 			mod.Sum = sum
 		}
 	}
@@ -104,40 +106,42 @@ func importRepoRulesModules(filename string, _ *RemoteCache) (repos []Repo, err 
 	if len(missingSumArgs) > 0 {
 		data, err := goModDownload(tempDir, missingSumArgs)
 		if err != nil {
-			return nil, err
+			return language.ImportReposResult{Error: err}
 		}
 		dec = json.NewDecoder(bytes.NewReader(data))
 		for dec.More() {
 			var dl module
 			if err := dec.Decode(&dl); err != nil {
-				return nil, err
+				return language.ImportReposResult{Error: err}
 			}
-			if mod, ok := pathToModule[dl.Path + "@" + dl.Version]; ok {
+			if mod, ok := pathToModule[dl.Path+"@"+dl.Version]; ok {
 				mod.Sum = dl.Sum
 			}
 		}
 	}
-	// Translate to repo metadata.
-	repos = make([]Repo, 0, len(pathToModule))
+
+	// Translate to repository rules.
+	gen := make([]*rule.Rule, 0, len(pathToModule))
 	for pathVer, mod := range pathToModule {
 		if mod.Sum == "" {
 			log.Printf("could not determine sum for module %s", pathVer)
 			continue
 		}
-		repo := Repo{
-			Name:     label.ImportPathToBazelRepoName(mod.Path),
-			GoPrefix: mod.Path,
-			Version:  mod.Version,
-			Sum:      mod.Sum,
+		r := rule.NewRule("go_repository", label.ImportPathToBazelRepoName(mod.Path))
+		r.SetAttr("importpath", mod.Path)
+		r.SetAttr("sum", mod.Sum)
+		if mod.Replace == nil {
+			r.SetAttr("version", mod.Version)
+		} else {
+			r.SetAttr("replace", mod.Replace.Path)
+			r.SetAttr("version", mod.Replace.Version)
 		}
-		if mod.Replace != nil {
-			repo.Replace = mod.Replace.Path
-			repo.Version = mod.Replace.Version
-		}
-		repos = append(repos, repo)
+		gen = append(gen, r)
 	}
-	sort.Slice(repos, func(i, j int) bool { return repos[i].Name < repos[j].Name })
-	return repos, nil
+	sort.Slice(gen, func(i, j int) bool {
+		return gen[i].Name() < gen[j].Name()
+	})
+	return language.ImportReposResult{Gen: gen}
 }
 
 // goListModules invokes "go list" in a directory containing a go.mod file.

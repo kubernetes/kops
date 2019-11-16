@@ -67,12 +67,12 @@ func (gl *goLang) Resolve(c *config.Config, ix *resolve.RuleIndex, rc *repo.Remo
 	}
 	imports := importsRaw.(rule.PlatformStrings)
 	r.DelAttr("deps")
-	resolve := resolveGo
+	resolve := ResolveGo
 	if r.Kind() == "go_proto_library" {
 		resolve = resolveProto
 	}
 	deps, errs := imports.Map(func(imp string) (string, error) {
-		l, err := resolve(c, ix, rc, r, imp, from)
+		l, err := resolve(c, ix, rc, imp, from)
 		if err == skipImportError {
 			return "", nil
 		} else if err != nil {
@@ -106,7 +106,13 @@ var (
 	notFoundError   = errors.New("rule not found")
 )
 
-func resolveGo(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, r *rule.Rule, imp string, from label.Label) (label.Label, error) {
+// ResolveGo resolves a Go import path to a Bazel label, possibly using the
+// given rule index and remote cache. Some special cases may be applied to
+// known proto import paths, depending on the current proto mode.
+//
+// This may be used directly by other language extensions related to Go
+// (gomock). Gazelle calls Language.Resolve instead.
+func ResolveGo(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, imp string, from label.Label) (label.Label, error) {
 	gc := getGoConfig(c)
 	pcMode := getProtoMode(c)
 	if build.IsLocalImport(imp) {
@@ -117,7 +123,7 @@ func resolveGo(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, r 
 		imp = path.Join(gc.prefix, cleanRel)
 	}
 
-	if isStandard(imp) {
+	if IsStandard(imp) {
 		return label.NoLabel, skipImportError
 	}
 
@@ -185,8 +191,8 @@ func resolveGo(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, r 
 	}
 }
 
-// isStandard returns whether a package is in the standard library.
-func isStandard(imp string) bool {
+// IsStandard returns whether a package is in the standard library.
+func IsStandard(imp string) bool {
 	return stdPackages[imp]
 }
 
@@ -286,7 +292,7 @@ func resolveVendored(rc *repo.RemoteCache, imp string) (label.Label, error) {
 	return label.New("", path.Join("vendor", imp), defaultLibName), nil
 }
 
-func resolveProto(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, r *rule.Rule, imp string, from label.Label) (label.Label, error) {
+func resolveProto(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, imp string, from label.Label) (label.Label, error) {
 	pcMode := getProtoMode(c)
 
 	if wellKnownProtos[imp] {

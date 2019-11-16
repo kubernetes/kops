@@ -139,12 +139,6 @@ func newLoadIndex(f *rule.File, after []string) int {
 	return index
 }
 
-// FixWorkspace updates rules in the WORKSPACE file f that were used with an
-// older version of rules_go or gazelle.
-func FixWorkspace(f *rule.File) {
-	removeLegacyGoRepository(f)
-}
-
 // CheckGazelleLoaded searches the given WORKSPACE file for a repository named
 // "bazel_gazelle". If no such repository is found *and* the repo is not
 // declared with a directive *and* at least one load statement mentions
@@ -182,18 +176,4 @@ If the bazel_gazelle is declared inside a macro, you can suppress this error
 by adding a comment like this to WORKSPACE:
     # gazelle:repo bazel_gazelle
 `, f.Path)
-}
-
-// removeLegacyGoRepository removes loads of go_repository from
-// @io_bazel_rules_go. FixLoads should be called after this; it will load from
-// @bazel_gazelle.
-func removeLegacyGoRepository(f *rule.File) {
-	for _, l := range f.Loads {
-		if l.Name() == "@io_bazel_rules_go//go:def.bzl" {
-			l.Remove("go_repository")
-			if l.IsEmpty() {
-				l.Delete()
-			}
-		}
-	}
 }
