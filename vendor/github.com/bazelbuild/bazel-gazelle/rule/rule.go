@@ -56,6 +56,10 @@ type File struct {
 	// Path is the file system path to the build file (same as File.Path).
 	Path string
 
+	// DefName is the name of the function definition this File refers to
+	// if loaded with LoadMacroFile or a similar function. Normally empty.
+	DefName string
+
 	// Directives is a list of configuration directives found in top-level
 	// comments in the file. This should not be modified after the file is read.
 	Directives []Directive
@@ -177,9 +181,10 @@ type function struct {
 // the next time Sync is called.
 func ScanASTBody(pkg, defName string, bzlFile *bzl.File) *File {
 	f := &File{
-		File: bzlFile,
-		Pkg:  pkg,
-		Path: bzlFile.Path,
+		File:    bzlFile,
+		Pkg:     pkg,
+		Path:    bzlFile.Path,
+		DefName: defName,
 	}
 	var defStmt *bzl.DefStmt
 	f.Rules, f.Loads, defStmt = scanExprs(defName, bzlFile.Stmt)
@@ -200,7 +205,11 @@ func ScanASTBody(pkg, defName string, bzlFile *bzl.File) *File {
 			inserted: false,
 		}
 	}
-	f.Directives = ParseDirectives(bzlFile)
+	if f.function != nil {
+		f.Directives = ParseDirectivesFromMacro(f.function.stmt)
+	} else {
+		f.Directives = ParseDirectives(bzlFile)
+	}
 	return f
 }
 

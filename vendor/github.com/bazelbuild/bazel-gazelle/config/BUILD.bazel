@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -6,11 +6,29 @@ go_library(
         "config.go",
         "constants.go",
     ],
-    importmap = "k8s.io/kops/vendor/github.com/bazelbuild/bazel-gazelle/config",
     importpath = "github.com/bazelbuild/bazel-gazelle/config",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/wspace:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/rule:go_default_library",
+        "//internal/wspace:go_default_library",
+        "//rule:go_default_library",
     ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["config_test.go"],
+    embed = [":go_default_library"],
+    deps = ["//rule:go_default_library"],
+)
+
+filegroup(
+    name = "all_files",
+    testonly = True,
+    srcs = [
+        "BUILD.bazel",
+        "config.go",
+        "config_test.go",
+        "constants.go",
+    ],
+    visibility = ["//visibility:public"],
 )

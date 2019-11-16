@@ -6,13 +6,23 @@ go_library(
         "config.go",
         "index.go",
     ],
-    importmap = "k8s.io/kops/vendor/github.com/bazelbuild/bazel-gazelle/resolve",
     importpath = "github.com/bazelbuild/bazel-gazelle/resolve",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/github.com/bazelbuild/bazel-gazelle/config:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/label:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/repo:go_default_library",
-        "//vendor/github.com/bazelbuild/bazel-gazelle/rule:go_default_library",
+        "//config:go_default_library",
+        "//label:go_default_library",
+        "//repo:go_default_library",
+        "//rule:go_default_library",
     ],
+)
+
+filegroup(
+    name = "all_files",
+    testonly = True,
+    srcs = [
+        "BUILD.bazel",
+        "config.go",
+        "index.go",
+    ],
+    visibility = ["//visibility:public"],
 )
