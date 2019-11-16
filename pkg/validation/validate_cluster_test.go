@@ -17,7 +17,6 @@ limitations under the License.
 package validation
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -156,9 +155,8 @@ func Test_ValidateNodesNotEnough(t *testing.T) {
 		groups["node-1"].MinSize = 3
 		v, err := testValidate(t, groups, nil)
 		require.NoError(t, err)
-		if len(v.Failures) != 2 {
+		if !assert.Len(t, v.Failures, 2) {
 			printDebug(t, v)
-			t.Fatal("Too few nodes not caught")
 		}
 	})
 
@@ -166,9 +164,8 @@ func Test_ValidateNodesNotEnough(t *testing.T) {
 		groups["node-1"].MinSize = 2
 		v, err := testValidate(t, groups, nil)
 		require.NoError(t, err)
-		if len(v.Failures) != 1 {
+		if !assert.Len(t, v.Failures, 1) {
 			printDebug(t, v)
-			t.Fatal("Not ready node not caught")
 		}
 	})
 
@@ -176,9 +173,8 @@ func Test_ValidateNodesNotEnough(t *testing.T) {
 		groups["node-1"].NeedUpdate[0].Node.Status.Conditions[0].Status = v1.ConditionTrue
 		v, err := testValidate(t, groups, nil)
 		require.NoError(t, err)
-		if len(v.Failures) != 0 {
+		if !assert.Empty(t, v.Failures) {
 			printDebug(t, v)
-			t.Fatal("unexpected errors")
 		}
 	})
 }
@@ -200,11 +196,7 @@ func Test_ValidateNoPodFailures(t *testing.T) {
 	))
 
 	require.NoError(t, err)
-
-	if len(v.Failures) != 0 {
-		fmt.Printf("failures: %+v\n", v.Failures)
-		t.Fatal("no failures expected")
-	}
+	assert.Empty(t, v.Failures)
 }
 
 func Test_ValidatePodFailure(t *testing.T) {
@@ -220,9 +212,8 @@ func Test_ValidatePodFailure(t *testing.T) {
 
 	require.NoError(t, err)
 
-	if len(v.Failures) != 1 || v.Failures[0].Name != "kube-system/pod1" {
+	if !assert.Len(t, v.Failures, 1) || !assert.Equal(t, "kube-system/pod1", v.Failures[0].Name) {
 		printDebug(t, v)
-		t.Fatal("pod1 failure expected")
 	}
 }
 
@@ -282,12 +273,10 @@ func Test_ValidateBastionNodes(t *testing.T) {
 		groups["ig1"].InstanceGroup.Spec.Role = kopsapi.InstanceGroupRoleNode
 		v, err := testValidate(t, groups, nil)
 		require.NoError(t, err)
-		if len(v.Failures) != 1 {
+		if !assert.Len(t, v.Failures, 1) {
 			printDebug(t, v)
-			t.Fatal("Nodes are expected to join cluster")
-		} else if v.Failures[0].Message != "machine \"i-00001\" has not yet joined cluster" {
+		} else if !assert.Equal(t, "machine \"i-00001\" has not yet joined cluster", v.Failures[0].Message) {
 			printDebug(t, v)
-			t.Fatalf("unexpected validation failure: %+v", v.Failures[0])
 		}
 	})
 
@@ -296,9 +285,8 @@ func Test_ValidateBastionNodes(t *testing.T) {
 		groups["ig1"].InstanceGroup.Spec.Role = kopsapi.InstanceGroupRoleBastion
 		v, err := testValidate(t, groups, nil)
 		require.NoError(t, err)
-		if len(v.Failures) != 0 {
+		if !assert.Empty(t, v.Failures, "Bastion nodes are not expected to join cluster") {
 			printDebug(t, v)
-			t.Fatal("Bastion nodes are not expected to join cluster")
 		}
 	})
 
