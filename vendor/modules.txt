@@ -424,6 +424,7 @@ github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates
 github.com/spotinst/spotinst-sdk-go/service/ocean/providers/gcp
 # github.com/stretchr/testify v1.4.0
 github.com/stretchr/testify/assert
+github.com/stretchr/testify/require
 # github.com/urfave/cli v1.20.0
 github.com/urfave/cli
 # github.com/vmware/govmomi v0.20.1
