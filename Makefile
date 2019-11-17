@@ -481,7 +481,7 @@ gomod-prereqs:
 
 .PHONY: dep-ensure
 dep-ensure:
-	echo "`make dep-ensure` has been replaced by `make gomod`"
+	echo "'make dep-ensure' has been replaced by 'make gomod'"
 	exit 1
 
 .PHONY: gomod
