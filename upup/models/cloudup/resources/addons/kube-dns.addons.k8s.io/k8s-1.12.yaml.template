@@ -327,6 +327,7 @@ apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   name: kube-dns
+  namespace: kube-system
 spec:
   selector:
     matchLabels:
