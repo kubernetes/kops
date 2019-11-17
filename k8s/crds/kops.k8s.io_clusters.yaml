@@ -2221,7 +2221,7 @@ spec:
                   properties:
                     imageName:
                       description: 'The container image name to use, which by default
-                        is: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:1.0.0'
+                        is: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.5.5'
                       type: string
                   type: object
                 calico:
