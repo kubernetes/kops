@@ -834,18 +834,18 @@ prow-postsubmit: bazel-version-dist
 
 .PHONY: live-docs
 live-docs:
-	@docker build -t kops/mkdocs images/mkdocs
-	@docker run --rm -it -p 3000:3000 -v ${PWD}:/docs kops/mkdocs
+	docker build -t kops/mkdocs images/mkdocs
+	docker run --rm -it -p 3000:3000 -v ${PWD}:/docs kops/mkdocs
 
 .PHONY: build-docs
 build-docs:
-	@docker build --pull -t kops/mkdocs images/mkdocs
-	@docker run --rm -v ${PWD}:/docs kops/mkdocs build
+	docker build --pull -t kops/mkdocs images/mkdocs
+	docker run --rm -v ${PWD}:/docs kops/mkdocs build
 
 .PHONY: build-docs-netlify
 build-docs-netlify:
-	@pip install -r ${MAKEDIR}/images/mkdocs/requirements.txt
-	@mkdocs build
+	pip install -r ${MAKEDIR}/images/mkdocs/requirements.txt
+	mkdocs build
 
 # Update machine_types.go
 .PHONY: update-machine-types
