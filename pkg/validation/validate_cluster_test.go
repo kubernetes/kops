@@ -179,6 +179,56 @@ func Test_ValidateNodesNotEnough(t *testing.T) {
 	})
 }
 
+func Test_ValidateNoComponentFailures(t *testing.T) {
+	v, err := testValidate(t, nil, []runtime.Object{
+		&v1.ComponentStatus{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "testcomponent",
+			},
+			Conditions: []v1.ComponentCondition{
+				{
+					Status: v1.ConditionTrue,
+				},
+			},
+		},
+	})
+
+	require.NoError(t, err)
+	assert.Empty(t, v.Failures)
+}
+
+func Test_ValidateComponentFailure(t *testing.T) {
+	for _, status := range []v1.ConditionStatus{
+		v1.ConditionFalse,
+		v1.ConditionUnknown,
+	} {
+		t.Run(string(status), func(t *testing.T) {
+			v, err := testValidate(t, nil, []runtime.Object{
+				&v1.ComponentStatus{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "testcomponent",
+					},
+					Conditions: []v1.ComponentCondition{
+						{
+							Status: status,
+						},
+					},
+				},
+			})
+
+			require.NoError(t, err)
+			if !assert.Len(t, v.Failures, 1) ||
+				!assert.Equal(t, &ValidationError{
+					Kind:    "ComponentStatus",
+					Name:    "testcomponent",
+					Message: "component \"testcomponent\" is unhealthy",
+				}, v.Failures[0]) {
+				printDebug(t, v)
+			}
+		})
+	}
+}
+
 func Test_ValidateNoPodFailures(t *testing.T) {
 	v, err := testValidate(t, nil, makePodList(
 		[]map[string]string{
@@ -200,20 +250,47 @@ func Test_ValidateNoPodFailures(t *testing.T) {
 }
 
 func Test_ValidatePodFailure(t *testing.T) {
-	v, err := testValidate(t, nil, makePodList(
-		[]map[string]string{
-			{
-				"name":  "pod1",
-				"ready": "false",
-				"phase": string(v1.PodRunning),
+	for _, tc := range []struct {
+		name     string
+		phase    v1.PodPhase
+		expected ValidationError
+	}{
+		{
+			name:  "pending",
+			phase: v1.PodPending,
+			expected: ValidationError{
+				Kind:    "Pod",
+				Name:    "kube-system/pod1",
+				Message: "kube-system pod \"pod1\" is pending",
 			},
 		},
-	))
+		{
+			name:  "notready",
+			phase: v1.PodRunning,
+			expected: ValidationError{
+				Kind:    "Pod",
+				Name:    "kube-system/pod1",
+				Message: "kube-system pod \"pod1\" is not ready (container1,container2)",
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			v, err := testValidate(t, nil, makePodList(
+				[]map[string]string{
+					{
+						"name":  "pod1",
+						"ready": "false",
+						"phase": string(tc.phase),
+					},
+				},
+			))
 
-	require.NoError(t, err)
-
-	if !assert.Len(t, v.Failures, 1) || !assert.Equal(t, "kube-system/pod1", v.Failures[0].Name) {
-		printDebug(t, v)
+			require.NoError(t, err)
+			if !assert.Len(t, v.Failures, 1) ||
+				!assert.Equal(t, &tc.expected, v.Failures[0]) {
+				printDebug(t, v)
+			}
+		})
 	}
 }
 
@@ -235,6 +312,11 @@ func dummyPod(podMap map[string]string) v1.Pod {
 			Phase: v1.PodPhase(podMap["phase"]),
 			ContainerStatuses: []v1.ContainerStatus{
 				{
+					Name:  "container1",
+					Ready: podMap["ready"] == "true",
+				},
+				{
+					Name:  "container2",
 					Ready: podMap["ready"] == "true",
 				},
 			},
