@@ -24,7 +24,7 @@ import (
 
 func TestFileDependencies(t *testing.T) {
 	parentFileName := "/dependedon"
-	childFileName := "/dependant"
+	childFileName := "/dependent"
 
 	grid := []struct {
 		parent fi.Task

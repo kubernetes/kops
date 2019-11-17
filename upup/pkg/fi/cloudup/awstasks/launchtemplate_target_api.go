@@ -213,7 +213,7 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 	}
 
 	// @step: get the image is order to find out the root device name as using the index
-	// is not vaiable, under conditions they move
+	// is not variable, under conditions they move
 	image, err := cloud.ResolveImage(fi.StringValue(t.ImageID))
 	if err != nil {
 		return nil, err
