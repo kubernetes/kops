@@ -19,14 +19,17 @@ package instancegroups
 import (
 	"errors"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	testingclient "k8s.io/client-go/testing"
@@ -42,7 +45,7 @@ const (
 	taintPatch  = "{\"spec\":{\"taints\":[{\"effect\":\"PreferNoSchedule\",\"key\":\"kops.k8s.io/scheduled-for-update\"}]}}"
 )
 
-func getTestSetup() (*RollingUpdateCluster, awsup.AWSCloud, *kopsapi.Cluster) {
+func getTestSetup() (*RollingUpdateCluster, *awsup.MockAWSCloud, *kopsapi.Cluster) {
 	k8sClient := fake.NewSimpleClientset()
 
 	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
@@ -600,6 +603,262 @@ func TestRollingUpdateTaintAllButOneNeedUpdate(t *testing.T) {
 	}
 
 	assertGroupInstanceCount(t, cloud, "node-1", 1)
+}
+
+func TestRollingUpdateSettingsIgnoredForMaster(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	two := intstr.FromInt(2)
+	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
+		MaxUnavailable: &two,
+	}
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 3, 2)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	cordoned := ""
+	tainted := map[string]bool{}
+	deleted := map[string]bool{}
+	for _, action := range c.K8sClient.(*fake.Clientset).Actions() {
+		switch a := action.(type) {
+		case testingclient.PatchAction:
+			if string(a.GetPatch()) == cordonPatch {
+				assertCordon(t, a)
+				assert.Equal(t, "", cordoned, "at most one node cordoned at a time")
+				assert.True(t, tainted[a.GetName()], "node", a.GetName(), "tainted")
+				cordoned = a.GetName()
+			} else {
+				assertTaint(t, a)
+				assert.Equal(t, "", cordoned, "not tainting while node cordoned")
+				assert.False(t, tainted[a.GetName()], "node", a.GetName(), "already tainted")
+				tainted[a.GetName()] = true
+			}
+		case testingclient.DeleteAction:
+			assert.Equal(t, "nodes", a.GetResource().Resource)
+			assert.Equal(t, cordoned, a.GetName(), "node was cordoned before delete")
+			assert.False(t, deleted[a.GetName()], "node", a.GetName(), "already deleted")
+			deleted[a.GetName()] = true
+			cordoned = ""
+		case testingclient.ListAction:
+			// Don't care
+		default:
+			t.Errorf("unexpected action %v", a)
+		}
+	}
+
+	assertGroupInstanceCount(t, cloud, "master-1", 1)
+}
+
+func TestRollingUpdateDisabled(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	zero := intstr.FromInt(0)
+	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
+		MaxUnavailable: &zero,
+	}
+
+	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 3)
+	assertGroupInstanceCount(t, cloud, "node-2", 3)
+	assertGroupInstanceCount(t, cloud, "master-1", 0)
+	assertGroupInstanceCount(t, cloud, "bastion-1", 0)
+}
+
+func TestRollingUpdateDisabledCloudonly(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+	c.CloudOnly = true
+
+	zero := intstr.FromInt(0)
+	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
+		MaxUnavailable: &zero,
+	}
+
+	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 3)
+	assertGroupInstanceCount(t, cloud, "node-2", 3)
+	assertGroupInstanceCount(t, cloud, "master-1", 0)
+	assertGroupInstanceCount(t, cloud, "bastion-1", 0)
+}
+
+// The concurrent update tests attempt to induce the following expected update sequence:
+//
+// (Only for "all need update" tests, to verify the toe-dipping behavior)
+// Request validate (7)            -->
+//                                 <-- validated
+// Request terminate 1 node (7)    -->
+//                                 <-- 1 node terminated, 6 left
+// (end only for "all need update" tests)
+// Request validate (6)            -->
+//                                 <-- validated
+// Request terminate 2 nodes (6,5) -->
+//                                 <-- 1 node terminated (5), 5 left
+// Request validate (4)            -->
+//                                 <-- 1 node terminated (6), 4 left
+//                                 <-- validated
+// Request terminate 2 nodes (4,3) -->
+//                                 <-- 1 node terminated (3), 3 left
+// Request validate (2)            -->
+//                                 <-- validated
+// Request terminate 1 node (2)    -->
+//                                 <-- 1 node terminated (2), 2 left
+// Request validate (1)            -->
+//                                 <-- 1 node terminated (4), 1 left
+//                                 <-- validated
+// Request terminate 1 node (1)    -->
+//                                 <-- 1 node terminated, 0 left
+// Request validate (0)            -->
+//                                 <-- validated
+
+type concurrentTest struct {
+	autoscalingiface.AutoScalingAPI
+	t                       *testing.T
+	mutex                   sync.Mutex
+	terminationRequestsLeft int
+	previousValidation      int
+	validationChan          chan bool
+	terminationChan         chan bool
+}
+
+func (c *concurrentTest) Validate() (*validation.ValidationCluster, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	terminationRequestsLeft := c.terminationRequestsLeft
+	switch terminationRequestsLeft {
+	case 7, 6, 0:
+		assert.Equal(c.t, terminationRequestsLeft+1, c.previousValidation, "previous validation")
+	case 5, 3:
+		c.t.Errorf("unexpected call to Validate with %d termination requests left", terminationRequestsLeft)
+	case 4:
+		assert.Equal(c.t, 6, c.previousValidation, "previous validation")
+		c.terminationChan <- true
+		c.mutex.Unlock()
+		select {
+		case <-c.validationChan:
+		case <-time.After(1 * time.Second):
+			c.t.Error("timed out reading from validationChan")
+		}
+		c.mutex.Lock()
+	case 2:
+		assert.Equal(c.t, 4, c.previousValidation, "previous validation")
+	case 1:
+		assert.Equal(c.t, 2, c.previousValidation, "previous validation")
+		c.terminationChan <- true
+		c.mutex.Unlock()
+		select {
+		case <-c.validationChan:
+		case <-time.After(1 * time.Second):
+			c.t.Error("timed out reading from validationChan")
+		}
+		c.mutex.Lock()
+	}
+	c.previousValidation = terminationRequestsLeft
+
+	return &validation.ValidationCluster{}, nil
+}
+
+func (c *concurrentTest) TerminateInstanceInAutoScalingGroup(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	terminationRequestsLeft := c.terminationRequestsLeft
+	c.terminationRequestsLeft--
+	switch terminationRequestsLeft {
+	case 7, 2, 1:
+		assert.Equal(c.t, terminationRequestsLeft, c.previousValidation, "previous validation")
+	case 6, 4:
+		assert.Equal(c.t, terminationRequestsLeft, c.previousValidation, "previous validation")
+		c.mutex.Unlock()
+		select {
+		case <-c.terminationChan:
+		case <-time.After(1 * time.Second):
+			c.t.Error("timed out reading from terminationChan")
+		}
+		c.mutex.Lock()
+		go c.delayThenWakeValidation()
+	case 5, 3:
+		assert.Equal(c.t, terminationRequestsLeft+1, c.previousValidation, "previous validation")
+	}
+	return c.AutoScalingAPI.TerminateInstanceInAutoScalingGroup(input)
+}
+
+func (c *concurrentTest) delayThenWakeValidation() {
+	time.Sleep(2 * time.Millisecond) // NodeInterval plus some
+	c.validationChan <- true
+}
+
+func (c *concurrentTest) AssertComplete() {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	assert.Equal(c.t, 0, c.previousValidation, "last validation")
+}
+
+func newConcurrentTest(t *testing.T, cloud *awsup.MockAWSCloud, allNeedUpdate bool) *concurrentTest {
+	test := concurrentTest{
+		AutoScalingAPI:          cloud.MockAutoscaling,
+		t:                       t,
+		terminationRequestsLeft: 6,
+		validationChan:          make(chan bool),
+		terminationChan:         make(chan bool),
+	}
+	if allNeedUpdate {
+		test.terminationRequestsLeft = 7
+	}
+	test.previousValidation = test.terminationRequestsLeft + 1
+	return &test
+}
+
+func TestRollingUpdateMaxUnavailableAllNeedUpdate(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	concurrentTest := newConcurrentTest(t, cloud, true)
+	c.ValidateSuccessDuration = 0
+	c.ClusterValidator = concurrentTest
+	cloud.MockAutoscaling = concurrentTest
+
+	two := intstr.FromInt(2)
+	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
+		MaxUnavailable: &two,
+	}
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 7, 7)
+
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 0)
+	concurrentTest.AssertComplete()
+}
+
+func TestRollingUpdateMaxUnavailableAllButOneNeedUpdate(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	concurrentTest := newConcurrentTest(t, cloud, false)
+	c.ValidateSuccessDuration = 0
+	c.ClusterValidator = concurrentTest
+	cloud.MockAutoscaling = concurrentTest
+
+	two := intstr.FromInt(2)
+	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
+		MaxUnavailable: &two,
+	}
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 7, 6)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 1)
+	concurrentTest.AssertComplete()
 }
 
 func assertCordon(t *testing.T, action testingclient.PatchAction) {
