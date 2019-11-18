@@ -2348,6 +2348,8 @@ func autoConvert_v1alpha2_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.MTU = in.MTU
 	out.RegistryMirrors = in.RegistryMirrors
 	out.SkipInstall = in.SkipInstall
+	out.StaticBinaryUrl = in.StaticBinaryUrl
+	out.StaticBinaryHash = in.StaticBinaryHash
 	out.Storage = in.Storage
 	out.StorageOpts = in.StorageOpts
 	out.UserNamespaceRemap = in.UserNamespaceRemap
@@ -2382,6 +2384,8 @@ func autoConvert_kops_DockerConfig_To_v1alpha2_DockerConfig(in *kops.DockerConfi
 	out.MTU = in.MTU
 	out.RegistryMirrors = in.RegistryMirrors
 	out.SkipInstall = in.SkipInstall
+	out.StaticBinaryUrl = in.StaticBinaryUrl
+	out.StaticBinaryHash = in.StaticBinaryHash
 	out.Storage = in.Storage
 	out.StorageOpts = in.StorageOpts
 	out.UserNamespaceRemap = in.UserNamespaceRemap

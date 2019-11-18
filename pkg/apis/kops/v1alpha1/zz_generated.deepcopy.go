@@ -1008,6 +1008,16 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.StaticBinaryUrl != nil {
+		in, out := &in.StaticBinaryUrl, &out.StaticBinaryUrl
+		*out = new(string)
+		**out = **in
+	}
+	if in.StaticBinaryHash != nil {
+		in, out := &in.StaticBinaryHash, &out.StaticBinaryHash
+		*out = new(string)
+		**out = **in
+	}
 	if in.Storage != nil {
 		in, out := &in.Storage, &out.Storage
 		*out = new(string)
