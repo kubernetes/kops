@@ -169,13 +169,13 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 	klog.V(3).Infof("found existing LaunchTemplate: %s", fi.StringValue(lt.LaunchTemplateName))
 
 	actual := &LaunchTemplate{
-		AssociatePublicIP:  fi.Bool(false),
-		ID:                 lt.LaunchTemplateName,
-		ImageID:            lt.LaunchTemplateData.ImageId,
-		InstanceMonitoring: fi.Bool(false),
-		InstanceType:       lt.LaunchTemplateData.InstanceType,
-		Lifecycle:          t.Lifecycle,
-		Name:               t.Name,
+		AssociatePublicIP:      fi.Bool(false),
+		ID:                     lt.LaunchTemplateName,
+		ImageID:                lt.LaunchTemplateData.ImageId,
+		InstanceMonitoring:     fi.Bool(false),
+		InstanceType:           lt.LaunchTemplateData.InstanceType,
+		Lifecycle:              t.Lifecycle,
+		Name:                   t.Name,
 		RootVolumeOptimization: lt.LaunchTemplateData.EbsOptimized,
 	}
 
