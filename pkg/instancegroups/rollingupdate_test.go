@@ -19,6 +19,7 @@ package instancegroups
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -28,11 +29,17 @@ import (
 	v1 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
+	testingclient "k8s.io/client-go/testing"
 	"k8s.io/kops/cloudmock/aws/mockautoscaling"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+)
+
+const (
+	cordonPatch = "{\"spec\":{\"unschedulable\":true}}"
+	taintPatch  = "{\"spec\":{\"taints\":[{\"effect\":\"PreferNoSchedule\",\"key\":\"kops.k8s.io/rolling-update\"}]}}"
 )
 
 func getTestSetup() (*RollingUpdateCluster, awsup.AWSCloud, *kopsapi.Cluster, map[string]*cloudinstances.CloudInstanceGroup) {
@@ -216,18 +223,17 @@ func getGroups(k8sClient *fake.Clientset) map[string]*cloudinstances.CloudInstan
 
 func markNeedUpdate(group *cloudinstances.CloudInstanceGroup, nodeIds ...string) {
 	for _, nodeId := range nodeIds {
+		var newReady []*cloudinstances.CloudInstanceGroupMember
 		found := false
 		for _, member := range group.Ready {
 			if member.ID == nodeId {
-				group.NeedUpdate = append(group.NeedUpdate, &cloudinstances.CloudInstanceGroupMember{
-					ID:                 member.ID,
-					Node:               member.Node,
-					CloudInstanceGroup: member.CloudInstanceGroup,
-				})
+				group.NeedUpdate = append(group.NeedUpdate, member)
 				found = true
-				break
+			} else {
+				newReady = append(newReady, member)
 			}
 		}
+		group.Ready = newReady
 		if !found {
 			panic(fmt.Sprintf("didn't find nodeId %s in ready list", nodeId))
 		}
@@ -248,6 +254,40 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
 
+	cordoned := ""
+	tainted := map[string]bool{}
+	deleted := map[string]bool{}
+	for _, action := range c.K8sClient.(*fake.Clientset).Actions() {
+		switch a := action.(type) {
+		case testingclient.PatchAction:
+			if string(a.GetPatch()) == cordonPatch {
+				assertCordon(t, a)
+				assert.Equal(t, "", cordoned, "at most one node cordoned at a time")
+				assert.True(t, tainted[a.GetName()], "node", a.GetName(), "tainted")
+				cordoned = a.GetName()
+			} else {
+				assertTaint(t, a)
+				assert.Equal(t, "", cordoned, "not tainting while node cordoned")
+				assert.False(t, tainted[a.GetName()], "node", a.GetName(), "already tainted")
+				tainted[a.GetName()] = true
+			}
+		case testingclient.DeleteAction:
+			assert.Equal(t, "nodes", a.GetResource().Resource)
+			assert.Equal(t, cordoned, a.GetName(), "node was cordoned before delete")
+			assert.False(t, deleted[a.GetName()], "node", a.GetName(), "already deleted")
+			if !strings.HasPrefix(a.GetName(), "master-") {
+				assert.True(t, deleted["master-1a.local"], "master-1a was deleted before node", a.GetName())
+				assert.True(t, deleted["master-1b.local"], "master-1b was deleted before node", a.GetName())
+			}
+			deleted[a.GetName()] = true
+			cordoned = ""
+		case testingclient.ListAction:
+			// Don't care
+		default:
+			t.Errorf("unexpected action %v", a)
+		}
+	}
+
 	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
 	for _, group := range asgGroups.AutoScalingGroups {
 		assert.Emptyf(t, group.Instances, "Not all instances terminated in group %s", group.AutoScalingGroupName)
@@ -263,6 +303,8 @@ func TestRollingUpdateAllNeedUpdateCloudonly(t *testing.T) {
 	markAllNeedUpdate(groups)
 	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
+
+	assert.Empty(t, c.K8sClient.(*fake.Clientset).Actions())
 
 	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
 	for _, group := range asgGroups.AutoScalingGroups {
@@ -291,6 +333,8 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 
 	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
+
+	assert.Empty(t, c.K8sClient.(*fake.Clientset).Actions())
 
 	assertGroupInstanceCount(t, cloud, "node-1", 3)
 	assertGroupInstanceCount(t, cloud, "node-2", 3)
@@ -589,6 +633,55 @@ func TestRollingUpdateValidatesAfterBastion(t *testing.T) {
 	assertGroupInstanceCount(t, cloud, "node-2", 0)
 	assertGroupInstanceCount(t, cloud, "master-1", 0)
 	assertGroupInstanceCount(t, cloud, "bastion-1", 0)
+}
+
+func TestRollingUpdateTaintAllButOneNeedUpdate(t *testing.T) {
+	c, cloud, cluster, groups := getTestSetup()
+
+	markNeedUpdate(groups["node-1"], "node-1a", "node-1b")
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	cordoned := ""
+	tainted := map[string]bool{}
+	deleted := map[string]bool{}
+	for _, action := range c.K8sClient.(*fake.Clientset).Actions() {
+		switch a := action.(type) {
+		case testingclient.PatchAction:
+			if string(a.GetPatch()) == cordonPatch {
+				assertCordon(t, a)
+				assert.Equal(t, "", cordoned, "at most one node cordoned at a time")
+				cordoned = a.GetName()
+			} else {
+				assertTaint(t, a)
+				assert.False(t, tainted[a.GetName()], "node", a.GetName(), "already tainted")
+				tainted[a.GetName()] = true
+			}
+		case testingclient.DeleteAction:
+			assert.Equal(t, "nodes", a.GetResource().Resource)
+			assert.Equal(t, cordoned, a.GetName(), "node was cordoned before delete")
+			assert.Len(t, tainted, 2, "all nodes tainted before any delete")
+			assert.False(t, deleted[a.GetName()], "node", a.GetName(), "already deleted")
+			deleted[a.GetName()] = true
+			cordoned = ""
+		case testingclient.ListAction:
+			// Don't care
+		default:
+			t.Errorf("unexpected action %v", a)
+		}
+	}
+
+	assertGroupInstanceCount(t, cloud, "node-1", 1)
+}
+
+func assertCordon(t *testing.T, action testingclient.PatchAction) {
+	assert.Equal(t, "nodes", action.GetResource().Resource)
+	assert.Equal(t, cordonPatch, string(action.GetPatch()))
+}
+
+func assertTaint(t *testing.T, action testingclient.PatchAction) {
+	assert.Equal(t, "nodes", action.GetResource().Resource)
+	assert.Equal(t, taintPatch, string(action.GetPatch()))
 }
 
 func assertGroupInstanceCount(t *testing.T, cloud awsup.AWSCloud, groupName string, expected int) {
