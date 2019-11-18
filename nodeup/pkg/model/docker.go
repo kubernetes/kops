@@ -1117,7 +1117,7 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	dockerVersion := b.dockerVersion()
 
-	if b.Cluster.Spec.Docker.StaticBinaryUrl != nil {
+	if b.staticBinary() {
 		klog.Info("StaticBinaryUrl was provided; will attempt to install docker from the static binary")
 
 		n := &nodetasks.Archive{
@@ -1467,4 +1467,15 @@ func (b *DockerBuilder) skipInstall() bool {
 	}
 
 	return d.SkipInstall
+}
+
+// staticBinary determines if a static binary is defined
+func (b *DockerBuilder) staticBinary() bool {
+	d := b.Cluster.Spec.Docker
+
+	if d == nil {
+		return false
+	}
+
+	return d.StaticBinaryUrl != nil
 }
