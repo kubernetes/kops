@@ -1117,73 +1117,87 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	dockerVersion := b.dockerVersion()
 
-	// Add packages
-	{
-		count := 0
-		for i := range dockerVersions {
-			dv := &dockerVersions[i]
-			if !dv.matches(b.Architecture, dockerVersion, b.Distribution) {
-				continue
-			}
+	if b.Cluster.Spec.Docker.StaticBinaryUrl != nil {
+		klog.Info("StaticBinaryUrl was provided; will attempt to install docker from the static binary")
 
-			count++
-
-			var packageTask fi.Task
-			if dv.PlainBinary {
-				packageTask = &nodetasks.Archive{
-					Name:            "docker",
-					Source:          dv.Source,
-					Hash:            dv.Hash,
-					TargetDir:       "/usr/bin/",
-					StripComponents: 1,
-				}
-				c.AddTask(packageTask)
-
-				c.AddTask(b.buildDockerGroup())
-				c.AddTask(b.buildSystemdSocket())
-			} else {
-				var extraPkgs []*nodetasks.Package
-				for name, pkg := range dv.ExtraPackages {
-					dep := &nodetasks.Package{
-						Name:         name,
-						Version:      s(pkg.Version),
-						Source:       s(pkg.Source),
-						Hash:         s(pkg.Hash),
-						PreventStart: fi.Bool(true),
-					}
-					extraPkgs = append(extraPkgs, dep)
-				}
-				packageTask = &nodetasks.Package{
-					Name:    dv.Name,
-					Version: s(dv.Version),
-					Source:  s(dv.Source),
-					Hash:    s(dv.Hash),
-					Deps:    extraPkgs,
-
-					// TODO: PreventStart is now unused?
-					PreventStart: fi.Bool(true),
-				}
-				c.AddTask(packageTask)
-			}
-
-			// As a mitigation for CVE-2019-5736 (possibly a fix, definitely defense-in-depth) we chattr docker-runc to be immutable
-			for _, f := range dv.MarkImmutable {
-				c.AddTask(&nodetasks.Chattr{
-					File: f,
-					Mode: "+i",
-					Deps: []fi.Task{packageTask},
-				})
-			}
-
-			for _, dep := range dv.Dependencies {
-				c.AddTask(&nodetasks.Package{Name: dep})
-			}
-
-			// Note we do _not_ stop looping... centos/rhel comprises multiple packages
+		n := &nodetasks.Archive{
+			Name:            "docker",
+			Source:          *b.Cluster.Spec.Docker.StaticBinaryUrl,
+			Hash:            *b.Cluster.Spec.Docker.StaticBinaryHash,
+			TargetDir:       "/usr/bin/",
+			StripComponents: 1,
 		}
 
-		if count == 0 {
-			klog.Warningf("Did not find docker package for %s %s %s", b.Distribution, b.Architecture, dockerVersion)
+		c.AddTask(n)
+	} else {
+		// Add packages
+		{
+			count := 0
+			for i := range dockerVersions {
+				dv := &dockerVersions[i]
+				if !dv.matches(b.Architecture, dockerVersion, b.Distribution) {
+					continue
+				}
+
+				count++
+
+				var packageTask fi.Task
+				if dv.PlainBinary {
+					packageTask = &nodetasks.Archive{
+						Name:            "docker",
+						Source:          dv.Source,
+						Hash:            dv.Hash,
+						TargetDir:       "/usr/bin/",
+						StripComponents: 1,
+					}
+					c.AddTask(packageTask)
+
+					c.AddTask(b.buildDockerGroup())
+					c.AddTask(b.buildSystemdSocket())
+				} else {
+					var extraPkgs []*nodetasks.Package
+					for name, pkg := range dv.ExtraPackages {
+						dep := &nodetasks.Package{
+							Name:         name,
+							Version:      s(pkg.Version),
+							Source:       s(pkg.Source),
+							Hash:         s(pkg.Hash),
+							PreventStart: fi.Bool(true),
+						}
+						extraPkgs = append(extraPkgs, dep)
+					}
+					packageTask = &nodetasks.Package{
+						Name:    dv.Name,
+						Version: s(dv.Version),
+						Source:  s(dv.Source),
+						Hash:    s(dv.Hash),
+						Deps:    extraPkgs,
+
+						// TODO: PreventStart is now unused?
+						PreventStart: fi.Bool(true),
+					}
+					c.AddTask(packageTask)
+				}
+
+				// As a mitigation for CVE-2019-5736 (possibly a fix, definitely defense-in-depth) we chattr docker-runc to be immutable
+				for _, f := range dv.MarkImmutable {
+					c.AddTask(&nodetasks.Chattr{
+						File: f,
+						Mode: "+i",
+						Deps: []fi.Task{packageTask},
+					})
+				}
+
+				for _, dep := range dv.Dependencies {
+					c.AddTask(&nodetasks.Package{Name: dep})
+				}
+
+				// Note we do _not_ stop looping... centos/rhel comprises multiple packages
+			}
+
+			if count == 0 {
+				klog.Warningf("Did not find docker package for %s %s %s", b.Distribution, b.Architecture, dockerVersion)
+			}
 		}
 	}
 
