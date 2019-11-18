@@ -249,7 +249,7 @@ This has been solved in kops 1.9.0, when creating a new cluster no action is nee
 
 ### Canal Example for CNI and Network Policy
 
-Canal is a project that combines [Flannel](https://github.com/coreos/flannel) and [Calico](http://docs.projectcalico.org/latest/getting-started/kubernetes/installation/hosted/) for CNI Networking.  It uses Flannel for networking pod traffic between hosts via VXLAN and Calico for network policy enforcement and pod to pod traffic.
+Canal is a project that combines [Flannel](https://github.com/coreos/flannel) and [Calico](http://docs.projectcalico.org/latest/getting-started/kubernetes/installation/) for CNI Networking.  It uses Flannel for networking pod traffic between hosts via VXLAN and Calico for network policy enforcement and pod to pod traffic.
 
 #### Installing Canal on a new Cluster
 
