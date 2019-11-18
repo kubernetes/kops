@@ -125,7 +125,7 @@ flags. Using these flags, you can do:
 export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Performance\]"
 ```
 
-and follow the instructions above. [Here are some other examples from the `e2e.go` documentation.](https://github.com/kubernetes/community/blob/master/contributors/devel/e2e-tests.md#building-and-running-the-tests).
+and follow the instructions above. [Here are some other examples from the `e2e.go` documentation.](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-testing/e2e-tests.md).
 
 If you want to test against an existing cluster, you can do:
 
