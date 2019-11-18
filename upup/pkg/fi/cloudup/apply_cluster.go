@@ -413,16 +413,16 @@ func (c *ApplyClusterCmd) Run() error {
 				"iamRolePolicy":          &awstasks.IAMRolePolicy{},
 
 				// VPC / Networking
-				"dhcpOptions":                &awstasks.DHCPOptions{},
-				"internetGateway":            &awstasks.InternetGateway{},
-				"route":                      &awstasks.Route{},
-				"routeTable":                 &awstasks.RouteTable{},
-				"routeTableAssociation":      &awstasks.RouteTableAssociation{},
-				"securityGroup":              &awstasks.SecurityGroup{},
-				"securityGroupRule":          &awstasks.SecurityGroupRule{},
-				"subnet":                     &awstasks.Subnet{},
-				"vpc":                        &awstasks.VPC{},
-				"ngw":                        &awstasks.NatGateway{},
+				"dhcpOptions":           &awstasks.DHCPOptions{},
+				"internetGateway":       &awstasks.InternetGateway{},
+				"route":                 &awstasks.Route{},
+				"routeTable":            &awstasks.RouteTable{},
+				"routeTableAssociation": &awstasks.RouteTableAssociation{},
+				"securityGroup":         &awstasks.SecurityGroup{},
+				"securityGroupRule":     &awstasks.SecurityGroupRule{},
+				"subnet":                &awstasks.Subnet{},
+				"vpc":                   &awstasks.VPC{},
+				"ngw":                   &awstasks.NatGateway{},
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
 
 				// ELB

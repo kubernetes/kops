@@ -201,8 +201,8 @@ func (tf *TemplateFunctions) CloudControllerConfigArgv() ([]string, error) {
 	} else {
 		argv = append(argv, "--v=2")
 	}
-	if tf.cluster.Spec.ExternalCloudControllerManager.CloudProvider !=""{
-		argv = append(argv, fmt.Sprintf("--cloud-provider=%s",  tf.cluster.Spec.ExternalCloudControllerManager.CloudProvider))
+	if tf.cluster.Spec.ExternalCloudControllerManager.CloudProvider != "" {
+		argv = append(argv, fmt.Sprintf("--cloud-provider=%s", tf.cluster.Spec.ExternalCloudControllerManager.CloudProvider))
 	} else if tf.cluster.Spec.CloudProvider != "" {
 		argv = append(argv, fmt.Sprintf("--cloud-provider=%s", tf.cluster.Spec.CloudProvider))
 	} else {
