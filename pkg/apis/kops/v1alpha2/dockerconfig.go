@@ -60,6 +60,10 @@ type DockerConfig struct {
 	RegistryMirrors []string `json:"registryMirrors,omitempty" flag:"registry-mirror,repeat"`
 	// SkipInstall when set to true will prevent kops from installing and modifying Docker in any way
 	SkipInstall bool `json:"skipInstall,omitempty"`
+	// StaticBinaryUrl is a url pointing to a static binary of docker to download and install
+	StaticBinaryUrl *string `json:"staticBinaryUrl,omitempty"`
+	// StaticBinaryHash sha1 hash of the static binary
+	StaticBinaryHash *string `json:"staticBinaryHash,omitempty"`
 	// Storage is the docker storage driver to use
 	Storage *string `json:"storage,omitempty" flag:"storage-driver"`
 	// StorageOpts is a series of options passed to the storage driver
