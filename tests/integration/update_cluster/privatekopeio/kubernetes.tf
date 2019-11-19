@@ -468,19 +468,19 @@ resource "aws_launch_configuration" "nodes-privatekopeio-example-com" {
   enable_monitoring = false
 }
 
-resource "aws_route" "0-0-0-0--0" {
+resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = "${aws_route_table.privatekopeio-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "${aws_internet_gateway.privatekopeio-example-com.id}"
 }
 
-resource "aws_route" "private-us-test-1a-0-0-0-0--0" {
+resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
   route_table_id         = "${aws_route_table.private-us-test-1a-privatekopeio-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = "nat-a2345678"
 }
 
-resource "aws_route" "private-us-test-1b-0-0-0-0--0" {
+resource "aws_route" "route-private-us-test-1b-0-0-0-0--0" {
   route_table_id         = "${aws_route_table.private-us-test-1b-privatekopeio-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = "nat-b2345678"
