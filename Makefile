@@ -571,7 +571,7 @@ ci: govet verify-gofmt verify-gomod verify-goimports verify-boilerplate verify-b
 #  govet: covered by pull-kops-verify-govet
 #  verify-boilerplate: covered by pull-kops-verify-boilerplate
 .PHONY: travis-ci
-travis-ci: verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+travis-ci: verify-misspelling verify-gomod verify-goimports nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
