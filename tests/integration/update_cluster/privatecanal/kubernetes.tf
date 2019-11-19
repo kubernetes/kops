@@ -474,13 +474,13 @@ resource "aws_nat_gateway" "us-test-1a-privatecanal-example-com" {
   }
 }
 
-resource "aws_route" "0-0-0-0--0" {
+resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = "${aws_route_table.privatecanal-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "${aws_internet_gateway.privatecanal-example-com.id}"
 }
 
-resource "aws_route" "private-us-test-1a-0-0-0-0--0" {
+resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
   route_table_id         = "${aws_route_table.private-us-test-1a-privatecanal-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = "${aws_nat_gateway.us-test-1a-privatecanal-example-com.id}"
