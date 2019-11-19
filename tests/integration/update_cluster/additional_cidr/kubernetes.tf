@@ -474,7 +474,7 @@ resource "aws_launch_configuration" "nodes-additionalcidr-example-com" {
   enable_monitoring = false
 }
 
-resource "aws_route" "0-0-0-0--0" {
+resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = "${aws_route_table.additionalcidr-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "${aws_internet_gateway.additionalcidr-example-com.id}"
@@ -708,7 +708,7 @@ resource "aws_vpc_dhcp_options_association" "additionalcidr-example-com" {
   dhcp_options_id = "${aws_vpc_dhcp_options.additionalcidr-example-com.id}"
 }
 
-resource "aws_vpc_ipv4_cidr_block_association" "10-1-0-0--16" {
+resource "aws_vpc_ipv4_cidr_block_association" "cidr-10-1-0-0--16" {
   vpc_id     = "${aws_vpc.additionalcidr-example-com.id}"
   cidr_block = "10.1.0.0/16"
 }
