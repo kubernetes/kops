@@ -18,9 +18,10 @@ package instancegroups
 
 import (
 	"errors"
-	"k8s.io/kops/pkg/validation"
 	"testing"
 	"time"
+
+	"k8s.io/kops/pkg/validation"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
