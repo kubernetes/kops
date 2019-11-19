@@ -18,9 +18,10 @@ package instancegroups
 
 import (
 	"fmt"
-	"k8s.io/kops/pkg/validation"
 	"sync"
 	"time"
+
+	"k8s.io/kops/pkg/validation"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog"
