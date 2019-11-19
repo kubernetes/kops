@@ -187,8 +187,8 @@ spec:
           - --v=2
           - --cloud-provider=openstack
           - --cluster-name=k8s
-          - --cloud-config=/etc/kubernetes/cloud.config
           - --use-service-account-credentials=true
+          - --cloud-config=/etc/kubernetes/cloud.config
           - --address=127.0.0.1
         resources:
           requests:

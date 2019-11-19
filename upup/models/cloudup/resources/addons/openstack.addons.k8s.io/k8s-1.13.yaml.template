@@ -188,7 +188,6 @@ spec:
           - {{ $arg }}
 {{- end }}
           - --cloud-config=/etc/kubernetes/cloud.config
-          - --use-service-account-credentials=true
           - --address=127.0.0.1
         resources:
           requests:

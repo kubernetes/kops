@@ -27,6 +27,7 @@ import (
 	"strings"
 	"testing"
 	"text/template"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
@@ -45,6 +46,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 			expectedArgv: []string{
 				"--v=2",
 				"--cloud-provider=openstack",
+				"--use-service-account-credentials=true",
 			},
 		},
 		{
@@ -60,6 +62,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 			expectedArgv: []string{
 				"--v=3",
 				"--cloud-provider=openstack",
+				"--use-service-account-credentials=true",
 			},
 		},
 		{
@@ -75,6 +78,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 			expectedArgv: []string{
 				"--v=3",
 				"--cloud-provider=openstack",
+				"--use-service-account-credentials=true",
 			},
 		},
 		{
@@ -89,7 +93,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 			expectedError: fmt.Errorf("Cloud Provider is not set"),
 		},
 		{
-			desc: "Default Configuration",
+			desc: "k8s cluster name",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
 				CloudProvider: string(kops.CloudProviderOpenstack),
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
@@ -100,6 +104,53 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 				"--v=2",
 				"--cloud-provider=openstack",
 				"--cluster-name=k8s",
+				"--use-service-account-credentials=true",
+			},
+		},
+		{
+			desc: "Default Configuration",
+			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
+				CloudProvider:                  string(kops.CloudProviderOpenstack),
+				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
+					Master: "127.0.0.1",
+				},
+			}},
+			expectedArgv: []string{
+				"--master=127.0.0.1",
+				"--v=2",
+				"--cloud-provider=openstack",
+				"--use-service-account-credentials=true",
+			},
+		},
+		{
+			desc: "Cluster-cidr Configuration",
+			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
+				CloudProvider:                  string(kops.CloudProviderOpenstack),
+				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
+					ClusterCIDR: "10.0.0.0/24",
+				},
+			}},
+			expectedArgv: []string{
+				"--v=2",
+				"--cloud-provider=openstack",
+				"--cluster-cidr=10.0.0.0/24",
+				"--use-service-account-credentials=true",
+			},
+		},
+		{
+			desc: "AllocateNodeCIDRs Configuration",
+			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
+				CloudProvider:                  string(kops.CloudProviderOpenstack),
+				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
+					AllocateNodeCIDRs: fi.Bool(true),
+				},
+			}},
+			expectedArgv: []string{
+				"--v=2",
+				"--cloud-provider=openstack",
+				"--allocate-node-cidrs=true",
+				"--use-service-account-credentials=true",
+
 			},
 		},
 	}
@@ -157,9 +208,6 @@ func Test_executeTemplate(t *testing.T) {
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
 			featureflag.EnableExternalCloudController = featureflag.New("TotalyNotEnableExternalCloudController", featureflag.Bool(true))
-
-			fmt.Println("EnableExternalCloudController:", featureflag.EnableExternalCloudController.Enabled())
-
 			templateFileAbsolutePath, filePathError := filepath.Abs(testCase.templateFilename)
 			if filePathError != nil {
 				t.Fatalf("error getting path to template: %v", filePathError)
@@ -170,19 +218,7 @@ func Test_executeTemplate(t *testing.T) {
 			funcMap := make(template.FuncMap)
 			templateFunctions := TemplateFunctions{cluster: testCase.cluster}
 			templateFunctions.AddTo(funcMap, nil)
-			//funcMap["Args"] = func() []string {
-			//	return args
-			//}
-			//funcMap["RenderResource"] = func(resourceName string, args []string) (string, error) {
-			//	return l.renderResource(resourceName, args)
-			//}
-			// for k, fn := range l.TemplateFunctions {
-			// 	funcMap[k] = fn
-			// }
-			// templateFunctions :=  TemplateFunctions{cluster: testCase.cluster}
 
-			fmt.Println("funcMap", funcMap)
-			fmt.Println("tpl:", tpl)
 			tpl.Funcs(funcMap)
 
 			tpl.Option("missingkey=zero")

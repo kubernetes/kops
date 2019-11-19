@@ -196,6 +196,9 @@ func (tf *TemplateFunctions) CloudControllerConfigArgv() ([]string, error) {
 	}
 	var argv []string
 
+	if tf.cluster.Spec.ExternalCloudControllerManager.Master != "" {
+		argv = append(argv, fmt.Sprintf("--master=%s", tf.cluster.Spec.ExternalCloudControllerManager.Master))
+	}
 	if tf.cluster.Spec.ExternalCloudControllerManager.LogLevel != 0 {
 		argv = append(argv, fmt.Sprintf("--v=%d", tf.cluster.Spec.ExternalCloudControllerManager.LogLevel))
 	} else {
@@ -208,10 +211,27 @@ func (tf *TemplateFunctions) CloudControllerConfigArgv() ([]string, error) {
 	} else {
 		return nil, fmt.Errorf("Cloud Provider is not set")
 	}
-
 	if tf.cluster.Spec.ExternalCloudControllerManager.ClusterName != "" {
 		argv = append(argv, fmt.Sprintf("--cluster-name=%s", tf.cluster.Spec.ExternalCloudControllerManager.ClusterName))
 	}
+	if tf.cluster.Spec.ExternalCloudControllerManager.ClusterCIDR != "" {
+		argv = append(argv, fmt.Sprintf("--cluster-cidr=%s", tf.cluster.Spec.ExternalCloudControllerManager.ClusterCIDR))
+	}
+	if tf.cluster.Spec.ExternalCloudControllerManager.AllocateNodeCIDRs != nil {
+		argv = append(argv, fmt.Sprintf("--allocate-node-cidrs=%t", *tf.cluster.Spec.ExternalCloudControllerManager.AllocateNodeCIDRs))
+	}
+	if tf.cluster.Spec.ExternalCloudControllerManager.ConfigureCloudRoutes != nil {
+		argv = append(argv, fmt.Sprintf("--configure-cloud-routes=%t", *tf.cluster.Spec.ExternalCloudControllerManager.ConfigureCloudRoutes))
+	}
+	if tf.cluster.Spec.ExternalCloudControllerManager.CIDRAllocatorType != nil && *tf.cluster.Spec.ExternalCloudControllerManager.CIDRAllocatorType != ""{
+		argv = append(argv, fmt.Sprintf("--cidr-allocator-type=%s", *tf.cluster.Spec.ExternalCloudControllerManager.CIDRAllocatorType))
+	}
+	if tf.cluster.Spec.ExternalCloudControllerManager.UseServiceAccountCredentials != nil {
+		argv = append(argv, fmt.Sprintf("--use-service-account-credentials=%t", *tf.cluster.Spec.ExternalCloudControllerManager.UseServiceAccountCredentials ))
+	} else {
+		argv = append(argv, fmt.Sprintf("--use-service-account-credentials=%t", true ))
+	}
+
 	return argv, nil
 }
 
