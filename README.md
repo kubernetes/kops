@@ -10,7 +10,6 @@
 
 The easiest way to get a production grade Kubernetes cluster up and running.
 
-
 ## What is kops?
 
 We like to think of it as `kubectl` for clusters.
@@ -61,7 +60,7 @@ To install a Kubernetes cluster on OpenStack, follow this [guide](/docs/getting_
 
 ## Documentation
 
-Documentation is in the `/docs` directory, [and the index is here.](docs/README.md)
+Documentation is in the `/docs` directory, and can be seen at [kops.sigs.k8s.io](https://kops.sigs.k8s.io/).
 
 
 ## Kubernetes Release Compatibility
