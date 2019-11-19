@@ -19,11 +19,12 @@ package main
 import (
 	"fmt"
 	"io"
-	"k8s.io/kops/pkg/validation"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"k8s.io/kops/pkg/validation"
 
 	"github.com/spf13/cobra"
 	v1 "k8s.io/api/core/v1"
