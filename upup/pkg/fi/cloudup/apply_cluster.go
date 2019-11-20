@@ -385,6 +385,10 @@ func (c *ApplyClusterCmd) Run() error {
 				return fmt.Errorf("DigitalOcean support is currently (very) alpha and is feature-gated. export KOPS_FEATURE_FLAGS=AlphaAllowDO to enable it")
 			}
 
+			if len(sshPublicKeys) == 0 && c.Cluster.Spec.SSHKeyName == "" {
+				return fmt.Errorf("SSH public key must be specified when running with DigitalOcean (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+			}
+
 			modelContext.SSHPublicKeys = sshPublicKeys
 
 			l.AddTypes(map[string]interface{}{
