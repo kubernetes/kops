@@ -59,27 +59,27 @@ spec:
   - id: pre-k8s-1.6
     kubernetesVersion: <1.6.0
     manifest: dns-controller.addons.k8s.io/pre-k8s-1.6.yaml
-    manifestHash: 8d5cf4cd984a9b7bdcd655f1f897699deb8747ff
+    manifestHash: bd97c950ee44eb2d1dce42fd404c6db15bd5b1b1
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.15.0-beta.1
+    version: 1.15.0
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0 <1.12.0'
     manifest: dns-controller.addons.k8s.io/k8s-1.6.yaml
-    manifestHash: ef58cd874e85e8b2b752bac96f3acb2d71a69bcf
+    manifestHash: fb4412a7f0de17431b856b2291e72d29fa91bcd1
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.15.0-beta.1
+    version: 1.15.0
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: fe56c3ac2a0bc1709289488b7bd972f852acfb97
+    manifestHash: e1493110ca6127662cbf50a1506e0f3e45504691
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.15.0-beta.1
+    version: 1.15.0
   - id: v1.15.0
     kubernetesVersion: '>=1.15.0'
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
