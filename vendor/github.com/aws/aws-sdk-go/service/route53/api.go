@@ -3983,10 +3983,12 @@ func (c *Route53) ListHealthChecksPagesWithContext(ctx aws.Context, input *ListH
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*ListHealthChecksOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*ListHealthChecksOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -4130,10 +4132,12 @@ func (c *Route53) ListHostedZonesPagesWithContext(ctx aws.Context, input *ListHo
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*ListHostedZonesOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*ListHostedZonesOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -4555,10 +4559,12 @@ func (c *Route53) ListResourceRecordSetsPagesWithContext(ctx aws.Context, input 
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*ListResourceRecordSetsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*ListResourceRecordSetsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -7916,7 +7922,7 @@ func (s *DelegationSet) SetNameServers(v []*string) *DelegationSet {
 
 // This action deletes a health check.
 type DeleteHealthCheckInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"DeleteHealthCheckRequest" type:"structure"`
 
 	// The ID of the health check that you want to delete.
 	//
@@ -7973,7 +7979,7 @@ func (s DeleteHealthCheckOutput) GoString() string {
 
 // A request to delete a hosted zone.
 type DeleteHostedZoneInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"DeleteHostedZoneRequest" type:"structure"`
 
 	// The ID of the hosted zone you want to delete.
 	//
@@ -8041,7 +8047,7 @@ func (s *DeleteHostedZoneOutput) SetChangeInfo(v *ChangeInfo) *DeleteHostedZoneO
 }
 
 type DeleteQueryLoggingConfigInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"DeleteQueryLoggingConfigRequest" type:"structure"`
 
 	// The ID of the configuration that you want to delete.
 	//
@@ -8097,7 +8103,7 @@ func (s DeleteQueryLoggingConfigOutput) GoString() string {
 
 // A request to delete a reusable delegation set.
 type DeleteReusableDelegationSetInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"DeleteReusableDelegationSetRequest" type:"structure"`
 
 	// The ID of the reusable delegation set that you want to delete.
 	//
@@ -8154,7 +8160,7 @@ func (s DeleteReusableDelegationSetOutput) GoString() string {
 
 // A request to delete a specified traffic policy version.
 type DeleteTrafficPolicyInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"DeleteTrafficPolicyRequest" type:"structure"`
 
 	// The ID of the traffic policy that you want to delete.
 	//
@@ -8213,7 +8219,7 @@ func (s *DeleteTrafficPolicyInput) SetVersion(v int64) *DeleteTrafficPolicyInput
 
 // A request to delete a specified traffic policy instance.
 type DeleteTrafficPolicyInstanceInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"DeleteTrafficPolicyInstanceRequest" type:"structure"`
 
 	// The ID of the traffic policy instance that you want to delete.
 	//
@@ -8651,7 +8657,7 @@ func (s *GeoLocationDetails) SetSubdivisionName(v string) *GeoLocationDetails {
 // A complex type that contains information about the request to create a hosted
 // zone.
 type GetAccountLimitInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetAccountLimitRequest" type:"structure"`
 
 	// The limit that you want to get. Valid values include the following:
 	//
@@ -8753,7 +8759,7 @@ func (s *GetAccountLimitOutput) SetLimit(v *AccountLimit) *GetAccountLimitOutput
 
 // The input for a GetChange request.
 type GetChangeInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetChangeRequest" type:"structure"`
 
 	// The ID of the change batch request. The value that you specify here is the
 	// value that ChangeResourceRecordSets returned in the Id element when you submitted
@@ -8823,7 +8829,7 @@ func (s *GetChangeOutput) SetChangeInfo(v *ChangeInfo) *GetChangeOutput {
 
 // Empty request.
 type GetCheckerIpRangesInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetCheckerIpRangesRequest" type:"structure"`
 }
 
 // String returns the string representation
@@ -8866,7 +8872,7 @@ func (s *GetCheckerIpRangesOutput) SetCheckerIpRanges(v []*string) *GetCheckerIp
 // A request for information about whether a specified geographic location is
 // supported for Amazon Route 53 geolocation resource record sets.
 type GetGeoLocationInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetGeoLocationRequest" type:"structure"`
 
 	// Amazon Route 53 supports the following continent codes:
 	//
@@ -8974,7 +8980,7 @@ func (s *GetGeoLocationOutput) SetGeoLocationDetails(v *GeoLocationDetails) *Get
 // A request for the number of health checks that are associated with the current
 // AWS account.
 type GetHealthCheckCountInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetHealthCheckCountRequest" type:"structure"`
 }
 
 // String returns the string representation
@@ -9015,7 +9021,7 @@ func (s *GetHealthCheckCountOutput) SetHealthCheckCount(v int64) *GetHealthCheck
 
 // A request to get information about a specified health check.
 type GetHealthCheckInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetHealthCheckRequest" type:"structure"`
 
 	// The identifier that Amazon Route 53 assigned to the health check when you
 	// created it. When you add or update a resource record set, you use this value
@@ -9060,7 +9066,7 @@ func (s *GetHealthCheckInput) SetHealthCheckId(v string) *GetHealthCheckInput {
 
 // A request for the reason that a health check failed most recently.
 type GetHealthCheckLastFailureReasonInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetHealthCheckLastFailureReasonRequest" type:"structure"`
 
 	// The ID for the health check for which you want the last failure reason. When
 	// you created the health check, CreateHealthCheck returned the ID in the response,
@@ -9163,7 +9169,7 @@ func (s *GetHealthCheckOutput) SetHealthCheck(v *HealthCheck) *GetHealthCheckOut
 
 // A request to get the status for a health check.
 type GetHealthCheckStatusInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetHealthCheckStatusRequest" type:"structure"`
 
 	// The ID for the health check that you want the current status for. When you
 	// created the health check, CreateHealthCheck returned the ID in the response,
@@ -9239,7 +9245,7 @@ func (s *GetHealthCheckStatusOutput) SetHealthCheckObservations(v []*HealthCheck
 // A request to retrieve a count of all the hosted zones that are associated
 // with the current AWS account.
 type GetHostedZoneCountInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetHostedZoneCountRequest" type:"structure"`
 }
 
 // String returns the string representation
@@ -9281,7 +9287,7 @@ func (s *GetHostedZoneCountOutput) SetHostedZoneCount(v int64) *GetHostedZoneCou
 
 // A request to get information about a specified hosted zone.
 type GetHostedZoneInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetHostedZoneRequest" type:"structure"`
 
 	// The ID of the hosted zone that you want to get information about.
 	//
@@ -9324,7 +9330,7 @@ func (s *GetHostedZoneInput) SetId(v string) *GetHostedZoneInput {
 // A complex type that contains information about the request to create a hosted
 // zone.
 type GetHostedZoneLimitInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetHostedZoneLimitRequest" type:"structure"`
 
 	// The ID of the hosted zone that you want to get a limit for.
 	//
@@ -9478,7 +9484,7 @@ func (s *GetHostedZoneOutput) SetVPCs(v []*VPC) *GetHostedZoneOutput {
 }
 
 type GetQueryLoggingConfigInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetQueryLoggingConfigRequest" type:"structure"`
 
 	// The ID of the configuration for DNS query logging that you want to get information
 	// about.
@@ -9548,7 +9554,7 @@ func (s *GetQueryLoggingConfigOutput) SetQueryLoggingConfig(v *QueryLoggingConfi
 
 // A request to get information about a specified reusable delegation set.
 type GetReusableDelegationSetInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetReusableDelegationSetRequest" type:"structure"`
 
 	// The ID of the reusable delegation set that you want to get a list of name
 	// servers for.
@@ -9592,7 +9598,7 @@ func (s *GetReusableDelegationSetInput) SetId(v string) *GetReusableDelegationSe
 // A complex type that contains information about the request to create a hosted
 // zone.
 type GetReusableDelegationSetLimitInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetReusableDelegationSetLimitRequest" type:"structure"`
 
 	// The ID of the delegation set that you want to get the limit for.
 	//
@@ -9719,7 +9725,7 @@ func (s *GetReusableDelegationSetOutput) SetDelegationSet(v *DelegationSet) *Get
 
 // Gets information about a specific traffic policy version.
 type GetTrafficPolicyInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetTrafficPolicyRequest" type:"structure"`
 
 	// The ID of the traffic policy that you want to get information about.
 	//
@@ -9780,7 +9786,7 @@ func (s *GetTrafficPolicyInput) SetVersion(v int64) *GetTrafficPolicyInput {
 // Request to get the number of traffic policy instances that are associated
 // with the current AWS account.
 type GetTrafficPolicyInstanceCountInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetTrafficPolicyInstanceCountRequest" type:"structure"`
 }
 
 // String returns the string representation
@@ -9823,7 +9829,7 @@ func (s *GetTrafficPolicyInstanceCountOutput) SetTrafficPolicyInstanceCount(v in
 
 // Gets information about a specified traffic policy instance.
 type GetTrafficPolicyInstanceInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"GetTrafficPolicyInstanceRequest" type:"structure"`
 
 	// The ID of the traffic policy instance that you want to get information about.
 	//
@@ -10690,7 +10696,7 @@ func (s *LinkedService) SetServicePrincipal(v string) *LinkedService {
 // A request to get a list of geographic locations that Amazon Route 53 supports
 // for geolocation resource record sets.
 type ListGeoLocationsInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"ListGeoLocationsRequest" type:"structure"`
 
 	// (Optional) The maximum number of geolocations to be included in the response
 	// body for this request. If more than maxitems geolocations remain to be listed,
@@ -10871,7 +10877,7 @@ func (s *ListGeoLocationsOutput) SetNextSubdivisionCode(v string) *ListGeoLocati
 // A request to retrieve a list of the health checks that are associated with
 // the current AWS account.
 type ListHealthChecksInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"ListHealthChecksRequest" type:"structure"`
 
 	// If the value of IsTruncated in the previous response was true, you have more
 	// health checks. To get another group, submit another ListHealthChecks request.
@@ -10992,7 +10998,7 @@ func (s *ListHealthChecksOutput) SetNextMarker(v string) *ListHealthChecksOutput
 // Retrieves a list of the public and private hosted zones that are associated
 // with the current AWS account in ASCII order by domain name.
 type ListHostedZonesByNameInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"ListHostedZonesByNameRequest" type:"structure"`
 
 	// (Optional) For your first request to ListHostedZonesByName, include the dnsname
 	// parameter only if you want to specify the name of the first hosted zone in
@@ -11154,7 +11160,7 @@ func (s *ListHostedZonesByNameOutput) SetNextHostedZoneId(v string) *ListHostedZ
 // A request to retrieve a list of the public and private hosted zones that
 // are associated with the current AWS account.
 type ListHostedZonesInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"ListHostedZonesRequest" type:"structure"`
 
 	// If you're using reusable delegation sets and you want to list all of the
 	// hosted zones that are associated with a reusable delegation set, specify
@@ -11286,7 +11292,7 @@ func (s *ListHostedZonesOutput) SetNextMarker(v string) *ListHostedZonesOutput {
 }
 
 type ListQueryLoggingConfigsInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"ListQueryLoggingConfigsRequest" type:"structure"`
 
 	// (Optional) If you want to list the query logging configuration that is associated
 	// with a hosted zone, specify the ID in HostedZoneId.
@@ -11388,7 +11394,7 @@ func (s *ListQueryLoggingConfigsOutput) SetQueryLoggingConfigs(v []*QueryLogging
 // A request for the resource record sets that are associated with a specified
 // hosted zone.
 type ListResourceRecordSetsInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"ListResourceRecordSetsRequest" type:"structure"`
 
 	// The ID of the hosted zone that contains the resource record sets that you
 	// want to list.
@@ -11592,7 +11598,7 @@ func (s *ListResourceRecordSetsOutput) SetResourceRecordSets(v []*ResourceRecord
 // A request to get a list of the reusable delegation sets that are associated
 // with the current AWS account.
 type ListReusableDelegationSetsInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"ListReusableDelegationSetsRequest" type:"structure"`
 
 	// If the value of IsTruncated in the previous response was true, you have more
 	// reusable delegation sets. To get another group, submit another ListReusableDelegationSets
@@ -11713,7 +11719,7 @@ func (s *ListReusableDelegationSetsOutput) SetNextMarker(v string) *ListReusable
 // A complex type containing information about a request for a list of the tags
 // that are associated with an individual resource.
 type ListTagsForResourceInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"ListTagsForResourceRequest" type:"structure"`
 
 	// The ID of the resource for which you want to retrieve tags.
 	//
@@ -11895,7 +11901,7 @@ func (s *ListTagsForResourcesOutput) SetResourceTagSets(v []*ResourceTagSet) *Li
 // A complex type that contains the information about the request to list the
 // traffic policies that are associated with the current AWS account.
 type ListTrafficPoliciesInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"ListTrafficPoliciesRequest" type:"structure"`
 
 	// (Optional) The maximum number of traffic policies that you want Amazon Route
 	// 53 to return in response to this request. If you have more than MaxItems
@@ -12018,7 +12024,7 @@ func (s *ListTrafficPoliciesOutput) SetTrafficPolicySummaries(v []*TrafficPolicy
 // A request for the traffic policy instances that you created in a specified
 // hosted zone.
 type ListTrafficPolicyInstancesByHostedZoneInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"ListTrafficPolicyInstancesByHostedZoneRequest" type:"structure"`
 
 	// The ID of the hosted zone that you want to list traffic policy instances
 	// for.
@@ -12182,7 +12188,7 @@ func (s *ListTrafficPolicyInstancesByHostedZoneOutput) SetTrafficPolicyInstances
 // A complex type that contains the information about the request to list your
 // traffic policy instances.
 type ListTrafficPolicyInstancesByPolicyInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"ListTrafficPolicyInstancesByPolicyRequest" type:"structure"`
 
 	// If the value of IsTruncated in the previous response was true, you have more
 	// traffic policy instances. To get more traffic policy instances, submit another
@@ -12399,7 +12405,7 @@ func (s *ListTrafficPolicyInstancesByPolicyOutput) SetTrafficPolicyInstances(v [
 // A request to get information about the traffic policy instances that you
 // created by using the current AWS account.
 type ListTrafficPolicyInstancesInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"ListTrafficPolicyInstancesRequest" type:"structure"`
 
 	// If the value of IsTruncated in the previous response was true, you have more
 	// traffic policy instances. To get more traffic policy instances, submit another
@@ -12568,7 +12574,7 @@ func (s *ListTrafficPolicyInstancesOutput) SetTrafficPolicyInstances(v []*Traffi
 // A complex type that contains the information about the request to list your
 // traffic policies.
 type ListTrafficPolicyVersionsInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"ListTrafficPolicyVersionsRequest" type:"structure"`
 
 	// Specify the value of Id of the traffic policy for which you want to list
 	// all versions.
@@ -12710,7 +12716,7 @@ func (s *ListTrafficPolicyVersionsOutput) SetTrafficPolicyVersionMarker(v string
 // A complex type that contains information about that can be associated with
 // your hosted zone.
 type ListVPCAssociationAuthorizationsInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"ListVPCAssociationAuthorizationsRequest" type:"structure"`
 
 	// The ID of the hosted zone for which you want a list of VPCs that can be associated
 	// with the hosted zone.
@@ -13672,7 +13678,7 @@ func (s *Tag) SetValue(v string) *Tag {
 // for a specified record name and type. You can optionally specify the IP address
 // of a DNS resolver, an EDNS0 client subnet IP address, and a subnet mask.
 type TestDNSAnswerInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `locationName:"TestDNSAnswerRequest" type:"structure"`
 
 	// If the resolver that you specified for resolverip supports EDNS0, specify
 	// the IPv4 or IPv6 address of a client in the applicable location, for example,
