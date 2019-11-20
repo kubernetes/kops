@@ -130,6 +130,10 @@ func TestDockerBuilder_SkipInstall(t *testing.T) {
 	runDockerBuilderTest(t, "skipinstall")
 }
 
+func TestDockerBuilder_StaticBinary(t *testing.T) {
+	runDockerBuilderTest(t, "staticbinary")
+}
+
 func TestDockerBuilder_BuildFlags(t *testing.T) {
 	logDriver := "json-file"
 	grid := []struct {
