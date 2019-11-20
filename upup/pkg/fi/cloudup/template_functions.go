@@ -223,13 +223,13 @@ func (tf *TemplateFunctions) CloudControllerConfigArgv() ([]string, error) {
 	if tf.cluster.Spec.ExternalCloudControllerManager.ConfigureCloudRoutes != nil {
 		argv = append(argv, fmt.Sprintf("--configure-cloud-routes=%t", *tf.cluster.Spec.ExternalCloudControllerManager.ConfigureCloudRoutes))
 	}
-	if tf.cluster.Spec.ExternalCloudControllerManager.CIDRAllocatorType != nil && *tf.cluster.Spec.ExternalCloudControllerManager.CIDRAllocatorType != ""{
+	if tf.cluster.Spec.ExternalCloudControllerManager.CIDRAllocatorType != nil && *tf.cluster.Spec.ExternalCloudControllerManager.CIDRAllocatorType != "" {
 		argv = append(argv, fmt.Sprintf("--cidr-allocator-type=%s", *tf.cluster.Spec.ExternalCloudControllerManager.CIDRAllocatorType))
 	}
 	if tf.cluster.Spec.ExternalCloudControllerManager.UseServiceAccountCredentials != nil {
-		argv = append(argv, fmt.Sprintf("--use-service-account-credentials=%t", *tf.cluster.Spec.ExternalCloudControllerManager.UseServiceAccountCredentials ))
+		argv = append(argv, fmt.Sprintf("--use-service-account-credentials=%t", *tf.cluster.Spec.ExternalCloudControllerManager.UseServiceAccountCredentials))
 	} else {
-		argv = append(argv, fmt.Sprintf("--use-service-account-credentials=%t", true ))
+		argv = append(argv, fmt.Sprintf("--use-service-account-credentials=%t", true))
 	}
 
 	return argv, nil

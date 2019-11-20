@@ -22,13 +22,13 @@ import (
 	"io/ioutil"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kubernetes/pkg/controller/nodeipam/ipam"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
 	"text/template"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/controller/nodeipam/ipam"
 )
 
 func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
@@ -37,7 +37,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		cluster       *kops.Cluster
 		expectedArgv  []string
 		expectedError error
-		helperString string
+		helperString  string
 	}{
 		{
 			desc: "Default Configuration",
@@ -112,7 +112,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "Default Configuration",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider:                  string(kops.CloudProviderOpenstack),
+				CloudProvider: string(kops.CloudProviderOpenstack),
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					Master: "127.0.0.1",
 				},
@@ -127,7 +127,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "Cluster-cidr Configuration",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider:                  string(kops.CloudProviderOpenstack),
+				CloudProvider: string(kops.CloudProviderOpenstack),
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					ClusterCIDR: "10.0.0.0/24",
 				},
@@ -142,7 +142,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "AllocateNodeCIDRs Configuration",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider:                  string(kops.CloudProviderOpenstack),
+				CloudProvider: string(kops.CloudProviderOpenstack),
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					AllocateNodeCIDRs: fi.Bool(true),
 				},
@@ -152,13 +152,12 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 				"--cloud-provider=openstack",
 				"--allocate-node-cidrs=true",
 				"--use-service-account-credentials=true",
-
 			},
 		},
 		{
 			desc: "ConfigureCloudRoutes Configuration",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider:                  string(kops.CloudProviderOpenstack),
+				CloudProvider: string(kops.CloudProviderOpenstack),
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					ConfigureCloudRoutes: fi.Bool(true),
 				},
@@ -173,7 +172,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "CIDRAllocatorType Configuration",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider:                  string(kops.CloudProviderOpenstack),
+				CloudProvider: string(kops.CloudProviderOpenstack),
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					CIDRAllocatorType: fi.String(string(ipam.RangeAllocatorType)),
 				},
@@ -188,7 +187,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "CIDRAllocatorType Configuration",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider:                  string(kops.CloudProviderOpenstack),
+				CloudProvider: string(kops.CloudProviderOpenstack),
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					UseServiceAccountCredentials: fi.Bool(false),
 				},
@@ -199,7 +198,6 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 				"--use-service-account-credentials=false",
 			},
 		},
-
 	}
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
@@ -254,6 +252,7 @@ func Test_executeTemplate(t *testing.T) {
 
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
+			t.Errorf(filepath.Abs("."))
 			featureflag.EnableExternalCloudController = featureflag.New("TotalyNotEnableExternalCloudController", featureflag.Bool(true))
 			templateFileAbsolutePath, filePathError := filepath.Abs(testCase.templateFilename)
 			if filePathError != nil {
