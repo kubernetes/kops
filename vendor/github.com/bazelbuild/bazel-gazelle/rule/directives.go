@@ -39,6 +39,17 @@ type Directive struct {
 // is returned. Errors are reported for unrecognized directives and directives
 // out of place (after the first statement).
 func ParseDirectives(f *bzl.File) []Directive {
+	return parseDirectives(f.Stmt)
+}
+
+// ParseDirectivesFromMacro scans a macro body for Gazelle directives. The
+// full list of directives is returned. Errors are reported for unrecognized
+// directives and directives out of place (after the first statement).
+func ParseDirectivesFromMacro(f *bzl.DefStmt) []Directive {
+	return parseDirectives(f.Body)
+}
+
+func parseDirectives(stmt []bzl.Expr) []Directive {
 	var directives []Directive
 	parseComment := func(com bzl.Comment) {
 		match := directiveRe.FindStringSubmatch(com.Token)
@@ -49,7 +60,7 @@ func ParseDirectives(f *bzl.File) []Directive {
 		directives = append(directives, Directive{key, value})
 	}
 
-	for _, s := range f.Stmt {
+	for _, s := range stmt {
 		coms := s.Comment()
 		for _, com := range coms.Before {
 			parseComment(com)

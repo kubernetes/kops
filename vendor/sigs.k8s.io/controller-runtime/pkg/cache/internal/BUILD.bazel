@@ -9,7 +9,7 @@ go_library(
     ],
     importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-runtime/pkg/cache/internal",
     importpath = "sigs.k8s.io/controller-runtime/pkg/cache/internal",
-    visibility = ["//visibility:public"],
+    visibility = ["//vendor/sigs.k8s.io/controller-runtime/pkg/cache:__subpackages__"],
     deps = [
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/meta:go_default_library",
