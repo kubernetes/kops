@@ -107,14 +107,22 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error extracting server page: %v", err)
 	}
-	if len(serverList) == 0 {
+	filteredList := []servers.Server{}
+	for _, server := range serverList {
+		_, ok := server.Metadata[openstack.TagNameDetach]
+		if !ok {
+			filteredList = append(filteredList, server)
+		}
+	}
+
+	if len(filteredList) == 0 {
 		return nil, nil
 	}
-	if len(serverList) > 1 {
+	if len(filteredList) > 1 {
 		return nil, fmt.Errorf("Multiple servers found with name %s", fi.StringValue(e.Name))
 	}
 
-	server := serverList[0]
+	server := filteredList[0]
 	actual := &Instance{
 		ID:               fi.String(server.ID),
 		Name:             fi.String(server.Name),

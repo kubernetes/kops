@@ -67,6 +67,7 @@ const (
 	ResourceTypePort         = "ports"
 	ResourceTypeNetwork      = "networks"
 	ResourceTypeSubnet       = "subnets"
+	TagNameDetach            = "KopsDetach"
 )
 
 // ErrNotFound is used to inform that the object is not found

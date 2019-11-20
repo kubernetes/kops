@@ -126,12 +126,21 @@ func (s *Port) Find(context *fi.Context) (*Port, error) {
 	if err != nil {
 		return nil, err
 	}
-	if rs == nil {
+
+	filteredList := []ports.Port{}
+	for _, port := range rs {
+		if fi.ArrayContains(port.Tags, openstack.TagNameDetach) {
+			continue
+		}
+		filteredList = append(filteredList, port)
+	}
+
+	if len(filteredList) == 0 {
 		return nil, nil
-	} else if len(rs) != 1 {
+	} else if len(filteredList) > 1 {
 		return nil, fmt.Errorf("found multiple ports with name: %s", fi.StringValue(s.Name))
 	}
-	return NewPortTaskFromCloud(cloud, s.Lifecycle, &rs[0], s)
+	return NewPortTaskFromCloud(cloud, s.Lifecycle, &filteredList[0], s)
 }
 
 func (s *Port) Run(context *fi.Context) error {
