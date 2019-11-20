@@ -18,6 +18,8 @@ package rule
 import (
 	"sort"
 	"strings"
+
+	bzl "github.com/bazelbuild/buildtools/build"
 )
 
 // PlatformStrings contains a set of strings associated with a buildable
@@ -30,6 +32,9 @@ import (
 // in more than one list within a set (e.g., in "linux" and "windows" within
 // the OS set). Strings within each list should be sorted, though this may
 // not be relied upon.
+//
+// DEPRECATED: do not use outside language/go. This type is Go-specific and
+// should be moved to the Go extension.
 type PlatformStrings struct {
 	// Generic is a list of strings not specific to any platform.
 	Generic []string
@@ -189,4 +194,52 @@ func (ps *PlatformStrings) MapSlice(f func([]string) ([]string, error)) (Platfor
 		Platform: mapPlatformMap(ps.Platform),
 	}
 	return result, errors
+}
+
+func (ps PlatformStrings) BzlExpr() bzl.Expr {
+	var pieces []bzl.Expr
+	if len(ps.Generic) > 0 {
+		pieces = append(pieces, ExprFromValue(ps.Generic))
+	}
+	if len(ps.OS) > 0 {
+		pieces = append(pieces, platformStringsOSArchDictExpr(ps.OS))
+	}
+	if len(ps.Arch) > 0 {
+		pieces = append(pieces, platformStringsOSArchDictExpr(ps.Arch))
+	}
+	if len(ps.Platform) > 0 {
+		pieces = append(pieces, platformStringsPlatformDictExpr(ps.Platform))
+	}
+	if len(pieces) == 0 {
+		return &bzl.ListExpr{}
+	} else if len(pieces) == 1 {
+		return pieces[0]
+	} else {
+		e := pieces[0]
+		if list, ok := e.(*bzl.ListExpr); ok {
+			list.ForceMultiLine = true
+		}
+		for _, piece := range pieces[1:] {
+			e = &bzl.BinaryExpr{X: e, Y: piece, Op: "+"}
+		}
+		return e
+	}
+}
+
+func platformStringsOSArchDictExpr(m map[string][]string) bzl.Expr {
+	s := make(SelectStringListValue)
+	for key, value := range m {
+		s["@io_bazel_rules_go//go/platform:"+key] = value
+	}
+	s["//conditions:default"] = nil
+	return s.BzlExpr()
+}
+
+func platformStringsPlatformDictExpr(m map[Platform][]string) bzl.Expr {
+	s := make(SelectStringListValue)
+	for key, value := range m {
+		s["@io_bazel_rules_go//go/platform:"+key.String()] = value
+	}
+	s["//conditions:default"] = nil
+	return s.BzlExpr()
 }

@@ -127,39 +127,36 @@ func (ucr *updateConfigurer) CheckFlags(fs *flag.FlagSet, c *config.Config) erro
 	// Load the repo configuration file (WORKSPACE by default) to find out
 	// names and prefixes of other go_repositories. This affects external
 	// dependency resolution for Go.
-	// TODO(jayconrod): this should be moved to language/go.
-	var repoFileMap map[*rule.File][]string
+	// TODO(jayconrod): Go-specific code should be moved to language/go.
 	if ucr.repoConfigPath == "" {
 		ucr.repoConfigPath = filepath.Join(c.RepoRoot, "WORKSPACE")
 	}
 	repoConfigFile, err := rule.LoadWorkspaceFile(ucr.repoConfigPath, "")
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return err
-		}
-	} else {
-		uc.repos, repoFileMap, err = repo.ListRepositories(repoConfigFile)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	} else if err == nil {
+		c.Repos, _, err = repo.ListRepositories(repoConfigFile)
 		if err != nil {
 			return err
 		}
 	}
-	repoPrefixes := make(map[string]bool)
-	for _, r := range uc.repos {
-		repoPrefixes[r.GoPrefix] = true
-	}
 	for _, imp := range ucr.knownImports {
-		if repoPrefixes[imp] {
-			continue
-		}
-		repo := repo.Repo{
+		uc.repos = append(uc.repos, repo.Repo{
 			Name:     label.ImportPathToBazelRepoName(imp),
 			GoPrefix: imp,
+		})
+	}
+	for _, r := range c.Repos {
+		if r.Kind() == "go_repository" {
+			uc.repos = append(uc.repos, repo.Repo{
+				Name:     r.Name(),
+				GoPrefix: r.AttrString("importpath"),
+			})
 		}
-		uc.repos = append(uc.repos, repo)
 	}
 
 	// If the repo configuration file is not WORKSPACE, also load WORKSPACE
-	// so we can apply any necessary fixes.
+	// and any declared macro files so we can apply fixes.
 	workspacePath := filepath.Join(c.RepoRoot, "WORKSPACE")
 	var workspace *rule.File
 	if ucr.repoConfigPath == workspacePath {
@@ -169,21 +166,18 @@ func (ucr *updateConfigurer) CheckFlags(fs *flag.FlagSet, c *config.Config) erro
 		if err != nil && !os.IsNotExist(err) {
 			return err
 		}
-		if workspace != nil {
-			_, repoFileMap, err = repo.ListRepositories(workspace)
-			if err != nil {
-				return err
-			}
-		}
 	}
 	if workspace != nil {
 		c.RepoName = findWorkspaceName(workspace)
-		uc.workspaceFiles = make([]*rule.File, 0, len(repoFileMap))
-		seen := make(map[string]bool)
-		for f := range repoFileMap {
-			if !seen[f.Path] {
+		_, repoFileMap, err := repo.ListRepositories(workspace)
+		if err != nil {
+			return err
+		}
+		seen := make(map[*rule.File]bool)
+		for _, f := range repoFileMap {
+			if !seen[f] {
 				uc.workspaceFiles = append(uc.workspaceFiles, f)
-				seen[f.Path] = true
+				seen[f] = true
 			}
 		}
 		sort.Slice(uc.workspaceFiles, func(i, j int) bool {
@@ -238,7 +232,7 @@ var genericLoads = []rule.LoadInfo{
 	},
 }
 
-func runFixUpdate(cmd command, args []string) error {
+func runFixUpdate(cmd command, args []string) (err error) {
 	cexts := make([]config.Configurer, 0, len(languages)+3)
 	cexts = append(cexts,
 		&config.CommonConfigurer{},
@@ -258,8 +252,12 @@ func runFixUpdate(cmd command, args []string) error {
 	}
 	ruleIndex := resolve.NewRuleIndex(mrslv.Resolver)
 
-	c, err := newFixUpdateConfiguration(cmd, args, cexts, loads)
+	c, err := newFixUpdateConfiguration(cmd, args, cexts)
 	if err != nil {
+		return err
+	}
+
+	if err := fixRepoFiles(c, loads); err != nil {
 		return err
 	}
 
@@ -365,7 +363,11 @@ func runFixUpdate(cmd command, args []string) error {
 
 	// Resolve dependencies.
 	rc, cleanupRc := repo.NewRemoteCache(uc.repos)
-	defer cleanupRc()
+	defer func() {
+		if cerr := cleanupRc(); err == nil && cerr != nil {
+			err = cerr
+		}
+	}()
 	for _, v := range visits {
 		for i, r := range v.rules {
 			from := label.New(c.RepoName, v.pkgRel, r.Name())
@@ -396,7 +398,7 @@ func runFixUpdate(cmd command, args []string) error {
 	return exit
 }
 
-func newFixUpdateConfiguration(cmd command, args []string, cexts []config.Configurer, loads []rule.LoadInfo) (*config.Config, error) {
+func newFixUpdateConfiguration(cmd command, args []string, cexts []config.Configurer) (*config.Config, error) {
 	c := config.New()
 
 	fs := flag.NewFlagSet("gazelle", flag.ContinueOnError)
@@ -421,11 +423,6 @@ func newFixUpdateConfiguration(cmd command, args []string, cexts []config.Config
 		if err := cext.CheckFlags(fs, c); err != nil {
 			return nil, err
 		}
-	}
-
-	uc := getUpdateConfig(c)
-	if err := fixRepoFiles(c, uc.workspaceFiles, loads); err != nil {
-		return nil, err
 	}
 
 	return c, nil
@@ -460,7 +457,7 @@ FLAGS:
 	fs.PrintDefaults()
 }
 
-func fixRepoFiles(c *config.Config, files []*rule.File, loads []rule.LoadInfo) error {
+func fixRepoFiles(c *config.Config, loads []rule.LoadInfo) error {
 	uc := getUpdateConfig(c)
 	if !c.ShouldFix {
 		return nil
@@ -475,10 +472,10 @@ func fixRepoFiles(c *config.Config, files []*rule.File, loads []rule.LoadInfo) e
 		return nil
 	}
 
-	for _, f := range files {
+	for _, f := range uc.workspaceFiles {
 		merger.FixLoads(f, loads)
 		if f.Path == filepath.Join(c.RepoRoot, "WORKSPACE") {
-			merger.FixWorkspace(f)
+			removeLegacyGoRepository(f)
 			if err := merger.CheckGazelleLoaded(f); err != nil {
 				return err
 			}
@@ -488,6 +485,20 @@ func fixRepoFiles(c *config.Config, files []*rule.File, loads []rule.LoadInfo) e
 		}
 	}
 	return nil
+}
+
+// removeLegacyGoRepository removes loads of go_repository from
+// @io_bazel_rules_go. FixLoads should be called after this; it will load from
+// @bazel_gazelle.
+func removeLegacyGoRepository(f *rule.File) {
+	for _, l := range f.Loads {
+		if l.Name() == "@io_bazel_rules_go//go:def.bzl" {
+			l.Remove("go_repository")
+			if l.IsEmpty() {
+				l.Delete()
+			}
+		}
+	}
 }
 
 func findWorkspaceName(f *rule.File) string {
