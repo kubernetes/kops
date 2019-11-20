@@ -28,6 +28,7 @@ import (
 	"testing"
 	"text/template"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kubernetes/pkg/controller/nodeipam/ipam"
 )
 
 func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
@@ -36,6 +37,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		cluster       *kops.Cluster
 		expectedArgv  []string
 		expectedError error
+		helperString string
 	}{
 		{
 			desc: "Default Configuration",
@@ -153,6 +155,51 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 
 			},
 		},
+		{
+			desc: "ConfigureCloudRoutes Configuration",
+			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
+				CloudProvider:                  string(kops.CloudProviderOpenstack),
+				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
+					ConfigureCloudRoutes: fi.Bool(true),
+				},
+			}},
+			expectedArgv: []string{
+				"--v=2",
+				"--cloud-provider=openstack",
+				"--configure-cloud-routes=true",
+				"--use-service-account-credentials=true",
+			},
+		},
+		{
+			desc: "CIDRAllocatorType Configuration",
+			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
+				CloudProvider:                  string(kops.CloudProviderOpenstack),
+				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
+					CIDRAllocatorType: fi.String(string(ipam.RangeAllocatorType)),
+				},
+			}},
+			expectedArgv: []string{
+				"--v=2",
+				"--cloud-provider=openstack",
+				"--cidr-allocator-type=RangeAllocator",
+				"--use-service-account-credentials=true",
+			},
+		},
+		{
+			desc: "CIDRAllocatorType Configuration",
+			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
+				CloudProvider:                  string(kops.CloudProviderOpenstack),
+				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
+					UseServiceAccountCredentials: fi.Bool(false),
+				},
+			}},
+			expectedArgv: []string{
+				"--v=2",
+				"--cloud-provider=openstack",
+				"--use-service-account-credentials=false",
+			},
+		},
+
 	}
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
