@@ -756,6 +756,19 @@ spec:
 
 **NOTE:** When this field is set to `true`, it is entirely up to the user to install and configure Docker.
 
+#### Static Binary Archive
+
+Kops also has the option to install from a static binary archive. This can be useful if you cannot download the Docker
+binaries from download.docker.com, and have a heterogeneous cluster.
+
+```yaml
+spec:
+  docker:
+    dockerVersion: "18.06.3"
+    staticBinaryUrl: https://dockermirror.example.com/linux/static/stable/x86_64/docker-18.06.3-ce.tgz
+    staticBinaryHash: 79a983a41275bd7a660a42935504f5c1ff7a5858
+```
+
 #### storage
 
 The Docker [Storage Driver](https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-storage-driver) can be specified in order to override the default. Be sure the driver you choose is supported by your operating system and docker version.
