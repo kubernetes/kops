@@ -1582,7 +1582,8 @@ spec:
                     for containers in a pod.
                   type: boolean
                 enableCustomMetrics:
-                  description: Enable gathering custom metrics.
+                  description: Deprecated as of k8s 1.11 - enable gathering custom
+                    metrics.
                   type: boolean
                 enableDebuggingHandlers:
                   description: EnableDebuggingHandlers enables server endpoints for
@@ -1937,7 +1938,8 @@ spec:
                     for containers in a pod.
                   type: boolean
                 enableCustomMetrics:
-                  description: Enable gathering custom metrics.
+                  description: Deprecated as of k8s 1.11 - enable gathering custom
+                    metrics.
                   type: boolean
                 enableDebuggingHandlers:
                   description: EnableDebuggingHandlers enables server endpoints for

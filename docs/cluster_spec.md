@@ -382,16 +382,6 @@ spec:
     cpuCFSQuotaPeriod: "100ms"
 ```
 
-#### Enable Custom metrics support
-To use custom metrics in kubernetes as per [custom metrics doc](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-custom-metrics)
-we have to set the flag `--enable-custom-metrics` to `true` on all the kubelets. We can specify that in the `kubelet` spec in our cluster.yml.
-
-```
-spec:
-  kubelet:
-    enableCustomMetrics: true
-```
-
 #### Setting kubelet CPU management policies
 Kops 1.12.0 added support for enabling cpu management policies in kubernetes as per [cpu management doc](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#cpu-management-policies)
 we have to set the flag `--cpu-manager-policy` to the appropriate value on all the kubelets. This must be specified in the `kubelet` spec in our cluster.yml.
@@ -408,7 +398,6 @@ Setting kubelet configurations together with the networking Amazon VPC backend r
 ```yaml
 spec:
   kubelet:
-    enableCustomMetrics: true
     cloudProvider: aws
 ...
 ...

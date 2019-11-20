@@ -74,16 +74,6 @@ Metrics Server | Metrics API group/version | Supported Kubernetes version
 
 ### Support For Custom Metrics
 
-Enable gathering custom metrics:
-
-```yaml
-spec:
-  kubelet:
-    enableCustomMetrics: true
-```
-
-Note that the deprecated and inactive option '--enable-custom-metrics' has been removed in Kubernetes 1.11 [#60699](https://github.com/kubernetes/kubernetes/pull/60699)
-
 Enable the horizontal pod autoscaler REST client:
 
 ```yaml
