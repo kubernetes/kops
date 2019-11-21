@@ -80,6 +80,7 @@ go_library(
         "//util/pkg/hashing:go_default_library",
         "//util/pkg/reflectutils:go_default_library",
         "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/Masterminds/sprig:go_default_library",
         "//vendor/github.com/blang/semver:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
