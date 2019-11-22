@@ -3,8 +3,7 @@ os:
   - linux
   - osx
 go:
-  # 1.11 & 1.12 are now best-effort; we recommend 1.13
-  - "1.11"
+  # 1.12 is now best-effort; we recommend 1.13
   - "1.12"
   - "1.13"
 
