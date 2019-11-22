@@ -119,7 +119,7 @@ data:
 
 ### Creating a new cluster with IAM Authenticator on.
 
-* Create a cluster following the [AWS getting started guide](https://github.com/kubernetes/kops/blob/master/docs/getting_started/aws.md)
+* Create a cluster following the [AWS getting started guide](getting_started/aws.md)
 * When you reach the "Customize Cluster Configuration" section of the guide modify the cluster spec and add the Authentication and Authorization configs to the YAML config.
 * Continue following the cluster creation guide to build the cluster.
     * :warning: When the cluster first comes up the aws-iam-authenticator PODs will be in a bad state.

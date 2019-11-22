@@ -66,7 +66,7 @@ export DNSCONTROLLER_IMAGE=cnastorage/dns-controller
 
 ## Setting up cluster state storage
 Kops requires the state of clusters to be stored inside certain storage service. AWS S3 is the default option.
-More about using AWS S3 for cluster state store can be found at "Cluster State storage" on this [page](https://github.com/kubernetes/kops/blob/master/docs/getting_started/aws.md).
+More about using AWS S3 for cluster state store can be found at "Cluster State storage" on this [page](getting_started/aws.md).
 
 Users can also setup their own S3 server and use the following instructions to use user-defined S3-compatible applications for cluster state storage.
 This is recommended if you don't have AWS account or you don't want to store the status of your clusters on public cloud storage.

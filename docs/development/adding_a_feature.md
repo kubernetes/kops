@@ -164,7 +164,7 @@ Values:
 * unset means to use the default policy, which is currently to apply OS security updates unless they require a reboot
 ```
 
-Additionally, consider adding documentation of your new feature to the docs in [/docs](/). If your feature touches configuration options in `config` or `cluster.spec`, document them in [cluster_spec.md](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md).
+Additionally, consider adding documentation of your new feature to the docs in [/docs](/). If your feature touches configuration options in `config` or `cluster.spec`, document them in [cluster_spec.md](../cluster_spec.md).
 
 ## Testing
 

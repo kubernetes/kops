@@ -30,7 +30,7 @@ Please follow all the backup steps before attempting it. Please read the
 [etcd admin guide](https://github.com/coreos/etcd/blob/v2.2.1/Documentation/admin_guide.md)
 before attempting it.
 
-We can migrate from a single-master cluster to a multi-master cluster, but this is a complicated operation. It is easier to create a multi-master cluster using Kops (described [here](https://github.com/kubernetes/kops/blob/master/docs/high_availability.md)). If possible, try to plan this at time of cluster creation.
+We can migrate from a single-master cluster to a multi-master cluster, but this is a complicated operation. It is easier to create a multi-master cluster using Kops (described [here](operations/high_availability.md)). If possible, try to plan this at time of cluster creation.
 
 During this procedure, you will experience **downtime** on the API server, but
 not on the end user services. During this downtime, existing pods will continue
