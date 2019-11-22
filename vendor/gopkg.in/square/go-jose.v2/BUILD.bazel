@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "asymmetric.go",
+        "crypter.go",
+        "doc.go",
+        "encoding.go",
+        "jwe.go",
+        "jwk.go",
+        "jws.go",
+        "opaque.go",
+        "shared.go",
+        "signing.go",
+        "symmetric.go",
+    ],
+    importmap = "k8s.io/kops/vendor/gopkg.in/square/go-jose.v2",
+    importpath = "gopkg.in/square/go-jose.v2",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/golang.org/x/crypto/ed25519:go_default_library",
+        "//vendor/gopkg.in/square/go-jose.v2/cipher:go_default_library",
+        "//vendor/gopkg.in/square/go-jose.v2/json:go_default_library",
+    ],
+)
