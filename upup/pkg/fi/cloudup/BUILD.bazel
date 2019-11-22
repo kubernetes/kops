@@ -105,6 +105,7 @@ go_test(
         "populateinstancegroup_test.go",
         "subnets_test.go",
         "tagbuilder_test.go",
+        "template_functions_test.go",
         "validation_test.go",
     ],
     data = [
@@ -116,6 +117,7 @@ go_test(
         "//pkg/apis/kops/validation:go_default_library",
         "//pkg/assets:go_default_library",
         "//pkg/client/simple/vfsclientset:go_default_library",
+        "//pkg/featureflag:go_default_library",
         "//pkg/kopscodecs:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/templates:go_default_library",
@@ -127,5 +129,6 @@ go_test(
         "//util/pkg/vfs:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/controller/nodeipam/ipam:go_default_library",
     ],
 )
