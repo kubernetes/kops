@@ -32,7 +32,6 @@ import (
 	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
-	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -44,8 +43,6 @@ type ClusterVFS struct {
 func newClusterVFS(basePath vfs.Path) *ClusterVFS {
 	c := &ClusterVFS{}
 	c.init("Cluster", basePath, StoreVersion)
-	defaultReadVersion := v1alpha1.SchemeGroupVersion.WithKind("Cluster")
-	c.defaultReadVersion = &defaultReadVersion
 	return c
 }
 

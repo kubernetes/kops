@@ -23,11 +23,9 @@ import (
 
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -137,11 +135,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 		// TODO: this does not support a JSON array
 		sections := text.SplitContentToSections(contents)
 		for _, section := range sections {
-			defaults := &schema.GroupVersionKind{
-				Group:   v1alpha1.SchemeGroupVersion.Group,
-				Version: v1alpha1.SchemeGroupVersion.Version,
-			}
-			o, gvk, err := kopscodecs.Decode(section, defaults)
+			o, gvk, err := kopscodecs.Decode(section, nil)
 			if err != nil {
 				return fmt.Errorf("error parsing file %q: %v", f, err)
 			}

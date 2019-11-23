@@ -25,7 +25,6 @@ import (
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	kopsinternalversion "k8s.io/kops/pkg/apis/kops"
-	kopsv1alpha1 "k8s.io/kops/pkg/apis/kops/v1alpha1"
 	kopsv1alpha2 "k8s.io/kops/pkg/apis/kops/v1alpha2"
 )
 
@@ -34,7 +33,6 @@ var codecs = serializer.NewCodecFactory(scheme)
 var parameterCodec = runtime.NewParameterCodec(scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
 	kopsinternalversion.AddToScheme,
-	kopsv1alpha1.AddToScheme,
 	kopsv1alpha2.AddToScheme,
 }
 

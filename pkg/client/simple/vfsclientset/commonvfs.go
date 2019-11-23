@@ -27,7 +27,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
@@ -41,11 +40,10 @@ var StoreVersion = v1alpha2.SchemeGroupVersion
 type ValidationFunction func(o runtime.Object) error
 
 type commonVFS struct {
-	kind               string
-	basePath           vfs.Path
-	encoder            runtime.Encoder
-	defaultReadVersion *schema.GroupVersionKind
-	validate           ValidationFunction
+	kind     string
+	basePath vfs.Path
+	encoder  runtime.Encoder
+	validate ValidationFunction
 }
 
 func (c *commonVFS) init(kind string, basePath vfs.Path, storeVersion runtime.GroupVersioner) {
@@ -123,7 +121,7 @@ func (c *commonVFS) readConfig(configPath vfs.Path) (runtime.Object, error) {
 		return nil, fmt.Errorf("error reading %s: %v", configPath, err)
 	}
 
-	object, _, err := kopscodecs.Decode(data, c.defaultReadVersion)
+	object, _, err := kopscodecs.Decode(data, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing %s: %v", configPath, err)
 	}

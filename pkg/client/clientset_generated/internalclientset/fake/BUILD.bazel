@@ -11,13 +11,10 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/apis/kops:go_default_library",
-        "//pkg/apis/kops/v1alpha1:go_default_library",
         "//pkg/apis/kops/v1alpha2:go_default_library",
         "//pkg/client/clientset_generated/internalclientset:go_default_library",
         "//pkg/client/clientset_generated/internalclientset/typed/kops/internalversion:go_default_library",
         "//pkg/client/clientset_generated/internalclientset/typed/kops/internalversion/fake:go_default_library",
-        "//pkg/client/clientset_generated/internalclientset/typed/kops/v1alpha1:go_default_library",
-        "//pkg/client/clientset_generated/internalclientset/typed/kops/v1alpha1/fake:go_default_library",
         "//pkg/client/clientset_generated/internalclientset/typed/kops/v1alpha2:go_default_library",
         "//pkg/client/clientset_generated/internalclientset/typed/kops/v1alpha2/fake:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
