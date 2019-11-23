@@ -52,8 +52,6 @@ const updateClusterTestBase = "../../tests/integration/update_cluster/"
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimal(t *testing.T) {
-	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha0", false, 1, true, false, nil, true, false)
-	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha1", false, 1, true, false, nil, true, false)
 	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha2", false, 1, true, false, nil, true, false)
 }
 
@@ -69,7 +67,6 @@ func TestRestrictAccess(t *testing.T) {
 
 // TestHA runs the test on a simple HA configuration, similar to kops create cluster minimal.example.com --zones us-west-1a,us-west-1b,us-west-1c --master-count=3
 func TestHA(t *testing.T) {
-	runTestAWS(t, "ha.example.com", "ha", "v1alpha1", false, 3, true, false, nil, true, false)
 	runTestAWS(t, "ha.example.com", "ha", "v1alpha2", false, 3, true, false, nil, true, false)
 }
 
@@ -141,33 +138,24 @@ func TestMinimal_json(t *testing.T) {
 	runTestAWS(t, "minimal-json.example.com", "minimal-json", "v1alpha2", false, 1, true, false, nil, true, true)
 }
 
-// TestMinimal_141 runs the test on a configuration from 1.4.1 release
-func TestMinimal_141(t *testing.T) {
-	runTestAWS(t, "minimal-141.example.com", "minimal-141", "v1alpha0", false, 1, true, false, nil, true, false)
-}
-
 // TestPrivateWeave runs the test on a configuration with private topology, weave networking
 func TestPrivateWeave(t *testing.T) {
-	runTestAWS(t, "privateweave.example.com", "privateweave", "v1alpha1", true, 1, true, false, nil, true, false)
 	runTestAWS(t, "privateweave.example.com", "privateweave", "v1alpha2", true, 1, true, false, nil, true, false)
 }
 
 // TestPrivateFlannel runs the test on a configuration with private topology, flannel networking
 func TestPrivateFlannel(t *testing.T) {
-	runTestAWS(t, "privateflannel.example.com", "privateflannel", "v1alpha1", true, 1, true, false, nil, true, false)
 	runTestAWS(t, "privateflannel.example.com", "privateflannel", "v1alpha2", true, 1, true, false, nil, true, false)
 }
 
 // TestPrivateCalico runs the test on a configuration with private topology, calico networking
 func TestPrivateCalico(t *testing.T) {
-	runTestAWS(t, "privatecalico.example.com", "privatecalico", "v1alpha1", true, 1, true, false, nil, true, false)
 	runTestAWS(t, "privatecalico.example.com", "privatecalico", "v1alpha2", true, 1, true, false, nil, true, false)
 	runTestCloudformation(t, "privatecalico.example.com", "privatecalico", "v1alpha2", true, nil, true)
 }
 
 // TestPrivateCanal runs the test on a configuration with private topology, canal networking
 func TestPrivateCanal(t *testing.T) {
-	runTestAWS(t, "privatecanal.example.com", "privatecanal", "v1alpha1", true, 1, true, false, nil, true, false)
 	runTestAWS(t, "privatecanal.example.com", "privatecanal", "v1alpha2", true, 1, true, false, nil, true, false)
 }
 
