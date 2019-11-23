@@ -60,7 +60,7 @@ metadata:
 data:
   Corefile: |
   {{- if KubeDNS.ExternalCoreFile }}
-    {{ KubeDNS.ExternalCoreFile }}
+{{ KubeDNS.ExternalCoreFile | indent 4 }}
   {{- else }}
     .:53 {
         errors
