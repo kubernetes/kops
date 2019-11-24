@@ -169,9 +169,8 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 	if err != nil {
 		if acl != "" {
 			return fmt.Errorf("error writing %s (with ACL=%q): %v", p, acl, err)
-		} else {
-			return fmt.Errorf("error writing %s: %v", p, err)
 		}
+		return fmt.Errorf("error writing %s: %v", p, err)
 	}
 
 	return nil

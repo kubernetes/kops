@@ -330,14 +330,12 @@ func isRunningOnEC2() bool {
 		if strings.HasPrefix(s, "ec2") {
 			klog.V(2).Infof("product_uuid is %q, assuming running on EC2", s)
 			return true
-		} else {
-			klog.V(2).Infof("product_uuid is %q, assuming not running on EC2", s)
-			return false
 		}
-	} else {
-		klog.V(2).Infof("GOOS=%q, assuming not running on EC2", runtime.GOOS)
+		klog.V(2).Infof("product_uuid is %q, assuming not running on EC2", s)
 		return false
 	}
+	klog.V(2).Infof("GOOS=%q, assuming not running on EC2", runtime.GOOS)
+	return false
 }
 
 // getRegionFromMetadata queries the metadata service for the current region, if running in EC2
