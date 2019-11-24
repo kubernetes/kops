@@ -33,7 +33,7 @@ import (
 	"k8s.io/kops/pkg/nodeidentity"
 )
 
-// nodeIdentifier identifies a node from EC2
+// nodeIdentifier identifies a node from DO
 type nodeIdentifier struct {
 	doClient *godo.Client
 }
@@ -56,7 +56,7 @@ func (t *TokenSource) Token() (*oauth2.Token, error) {
 	return token, nil
 }
 
-// New creates and returns a nodeidentity.Identifier for Nodes running on OpenStack
+// New creates and returns a nodeidentity.Identifier for Nodes running on DO
 func New() (nodeidentity.Identifier, error) {
 	region, err := getMetadataRegion()
 	if err != nil {
@@ -98,7 +98,7 @@ func NewCloud(region string) (*godo.Client, error) {
 func getMetadata(url string) (string, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get metadata URL %s: %v", url, err)
 	}
 
 	defer resp.Body.Close()
@@ -109,28 +109,37 @@ func getMetadata(url string) (string, error) {
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to read metadata information %s: %v", url, err)
 	}
 
 	return string(bodyBytes), nil
 }
 
-// IdentifyNode queries OpenStack for the node identity information
+// IdentifyNode queries DO for the node identity information
 func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*nodeidentity.Info, error) {
 	providerID := node.Spec.ProviderID
+
 	if providerID == "" {
-		return nil, fmt.Errorf("providerID was not set for node %s", node.Name)
-	}
-	if !strings.HasPrefix(providerID, "digitalocean://") {
-		return nil, fmt.Errorf("providerID %q not recognized for node %s", providerID, node.Name)
+		return nil, errors.New("provider ID cannot be empty")
 	}
 
-	instanceID := strings.TrimPrefix(providerID, "digitalocean://")
-	if strings.HasPrefix(instanceID, "/") {
-		instanceID = strings.TrimPrefix(instanceID, "/")
+	const prefix = "digitalocean://"
+
+	if !strings.HasPrefix(providerID, prefix) {
+		return nil, fmt.Errorf("provider ID %q is missing prefix %q", providerID, prefix)
 	}
 
-	kopsGroup, err := i.getInstanceGroup(instanceID)
+	provIDNum := strings.TrimPrefix(providerID, prefix)
+	if provIDNum == "" {
+		return nil, errors.New("provider ID number cannot be empty")
+	}
+
+	dropletID, err := strconv.Atoi(provIDNum)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert provider ID number %q: %s", dropletID, err)
+	}
+
+	kopsGroup, err := i.getInstanceGroup(dropletID)
 	if err != nil {
 		return nil, err
 	}
@@ -141,26 +150,24 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	return info, nil
 }
 
-func (i *nodeIdentifier) getInstanceGroup(instanceID string) (string, error) {
+func (i *nodeIdentifier) getInstanceGroup(instanceID int) (string, error) {
 
-	dropletID, err := strconv.Atoi(instanceID)
 	ctx := context.TODO()
-	droplet, _, err := i.doClient.Droplets.Get(ctx, dropletID)
-
+	droplet, _, err := i.doClient.Droplets.Get(ctx, instanceID)
 	if err != nil {
-		return "", fmt.Errorf("failed to retrieve droplet via api for dropletid = %d. Error = %v", dropletID, err)
+		return "", fmt.Errorf("failed to retrieve droplet via api for dropletid = %d. Error = %v", instanceID, err)
 	}
 
 	for _, dropletTag := range droplet.Tags {
 		if strings.Contains(dropletTag, dropletTagInstanceGroupName) {
 			instancegrouptag := strings.SplitN(dropletTag, ":", 2)
 			if len(instancegrouptag) < 2 {
-				return "", fmt.Errorf("failed to retrieve droplet instance group tag = %s properly", dropletTag)
+				return "", fmt.Errorf("failed to parse droplet tag %q: expected colon-separated key/value pair", dropletTag)
 			}
 			instancegroupvalue := instancegrouptag[1]
 			return instancegroupvalue, nil
 		}
 	}
 
-	return "", fmt.Errorf("Could not find tag 'kops-instancegroup' from instance metadata")
+	return "", errors.New("Could not find tag 'kops-instancegroup' from instance metadata")
 }
