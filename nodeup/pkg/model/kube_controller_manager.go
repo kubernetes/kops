@@ -167,7 +167,7 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 			volumePluginDir = "/var/lib/kubelet/volumeplugins/"
 
 		case distros.DistributionFlatcar:
-			// The /usr directory is read-only for CoreOS
+			// The /usr directory is read-only for Flatcar
 			volumePluginDir = "/var/lib/kubelet/volumeplugins/"
 
 		default:

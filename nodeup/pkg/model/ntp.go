@@ -42,7 +42,7 @@ func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 		klog.Infof("Detected CoreOS; won't install ntp")
 		return nil
 	case distros.DistributionFlatcar:
-		klog.Infof("Detected CoreOS; won't install ntp")
+		klog.Infof("Detected Flatcar; won't install ntp")
 		return nil
 	}
 
