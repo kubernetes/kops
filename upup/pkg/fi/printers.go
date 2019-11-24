@@ -60,16 +60,12 @@ func PrintCompareWithID(o interface{}) (string, bool) {
 		// Uninformative, but we can often print the name instead
 		if name != "" {
 			return fmt.Sprintf("name:%s", name), true
-		} else {
-			return "id:<nil>", true
 		}
-	} else {
-		// Uninformative, but we can often print the name instead
-		if name != "" {
-			return fmt.Sprintf("name:%s id:%s", name, *id), true
-		} else {
-			return fmt.Sprintf("id:%s", *id), true
-		}
-
+		return "id:<nil>", true
 	}
+	// Uninformative, but we can often print the name instead
+	if name != "" {
+		return fmt.Sprintf("name:%s id:%s", name, *id), true
+	}
+	return fmt.Sprintf("id:%s", *id), true
 }

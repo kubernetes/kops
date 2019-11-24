@@ -505,9 +505,8 @@ func DeleteKeysetItem(client kopsinternalversion.KeysetInterface, name string, k
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil
-		} else {
-			return fmt.Errorf("error reading Keyset %q: %v", name, err)
 		}
+		return fmt.Errorf("error reading Keyset %q: %v", name, err)
 	}
 
 	if keyset.Spec.Type != keysetType {

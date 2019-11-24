@@ -244,9 +244,8 @@ func (c *VFSCAStore) loadKeysetBundle(p vfs.Path) (*keyset, error) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
-		} else {
-			return nil, fmt.Errorf("unable to read bundle %q: %v", p, err)
 		}
+		return nil, fmt.Errorf("unable to read bundle %q: %v", p, err)
 	}
 
 	o, format, err := c.parseKeysetYaml(data)
