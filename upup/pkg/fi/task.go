@@ -74,13 +74,12 @@ func (c *ModelBuilderContext) EnsureTask(task Task) error {
 		if reflect.DeepEqual(task, existing) {
 			klog.V(8).Infof("EnsureTask ignoring identical ")
 			return nil
-		} else {
-			klog.Warningf("EnsureTask found task mismatch for %q", key)
-			klog.Warningf("\tExisting: %v", existing)
-			klog.Warningf("\tNew: %v", task)
-
-			return fmt.Errorf("cannot add different task with same key %q", key)
 		}
+		klog.Warningf("EnsureTask found task mismatch for %q", key)
+		klog.Warningf("\tExisting: %v", existing)
+		klog.Warningf("\tNew: %v", task)
+
+		return fmt.Errorf("cannot add different task with same key %q", key)
 	}
 	c.Tasks[key] = task
 	return nil

@@ -37,20 +37,19 @@ type ManagedZonesListCall struct {
 func (call *ManagedZonesListCall) Do(opts ...googleapi.CallOption) (interfaces.ManagedZonesListResponse, error) {
 	if call.Response != nil {
 		return *call.Response, *call.Error
-	} else {
-		proj, projectFound := call.Service.Impl[call.Project]
-		if !projectFound {
-			return nil, fmt.Errorf("Project %s not found.", call.Project)
-		}
-		if call.DnsName_ != "" {
-			return &ManagedZonesListResponse{[]interfaces.ManagedZone{proj[call.DnsName_]}}, nil
-		}
-		list := []interfaces.ManagedZone{}
-		for _, zone := range proj {
-			list = append(list, zone)
-		}
-		return &ManagedZonesListResponse{list}, nil
 	}
+	proj, projectFound := call.Service.Impl[call.Project]
+	if !projectFound {
+		return nil, fmt.Errorf("Project %s not found.", call.Project)
+	}
+	if call.DnsName_ != "" {
+		return &ManagedZonesListResponse{[]interfaces.ManagedZone{proj[call.DnsName_]}}, nil
+	}
+	list := []interfaces.ManagedZone{}
+	for _, zone := range proj {
+		list = append(list, zone)
+	}
+	return &ManagedZonesListResponse{list}, nil
 }
 
 func (call *ManagedZonesListCall) DnsName(dnsName string) interfaces.ManagedZonesListCall {
