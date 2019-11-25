@@ -1,4 +1,4 @@
-// Copyright 2016 Unknwon
+// Copyright 2019 Unknwon
 //
 // Licensed under the Apache License, Version 2.0 (the "License"): you may
 // not use this file except in compliance with the License. You may obtain
@@ -14,21 +14,12 @@
 
 package ini
 
-import (
-	"fmt"
+const (
+	// Deprecated: Use "DefaultSection" instead.
+	DEFAULT_SECTION = DefaultSection
 )
 
-// ErrDelimiterNotFound indicates the error type of no delimiter is found which there should be one.
-type ErrDelimiterNotFound struct {
-	Line string
-}
-
-// IsErrDelimiterNotFound returns true if the given error is an instance of ErrDelimiterNotFound.
-func IsErrDelimiterNotFound(err error) bool {
-	_, ok := err.(ErrDelimiterNotFound)
-	return ok
-}
-
-func (err ErrDelimiterNotFound) Error() string {
-	return fmt.Sprintf("key-value delimiter not found: %s", err.Line)
-}
+var (
+	// Deprecated: AllCapsUnderscore converts to format ALL_CAPS_UNDERSCORE.
+	AllCapsUnderscore = SnackCase
+)

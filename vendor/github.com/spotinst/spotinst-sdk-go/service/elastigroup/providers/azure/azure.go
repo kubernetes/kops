@@ -227,7 +227,7 @@ type LoadBalancer struct {
 	Type        *string `json:"type,omitempty"`
 	BalancerID  *string `json:"balancerId,omitempty"`
 	TargetSetID *string `json:"targetSetId,omitempty"`
-	AutoWeight  *bool   `json:"autoWeight"`
+	AutoWeight  *bool   `json:"autoWeight,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
