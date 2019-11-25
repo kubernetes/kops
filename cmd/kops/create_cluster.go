@@ -734,8 +734,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				if int(masterCount) > len(masterZones) {
 					name += "-" + strconv.Itoa(1+(i/len(masterZones)))
 				}
-			} 
-			
+			}
+
 			g := &api.InstanceGroup{}
 			g.Spec.Role = api.InstanceGroupRoleMaster
 			g.Spec.MinSize = fi.Int32(1)
