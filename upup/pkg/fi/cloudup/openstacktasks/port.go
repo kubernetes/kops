@@ -161,7 +161,7 @@ func (*Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Por
 	if a == nil {
 		klog.V(2).Infof("Creating Port with name: %q", fi.StringValue(e.Name))
 
-		opt, err := portCreateOptsFromPortTask(a, e, changes)
+		opt, err := portCreateOptsFromPortTask(t, a, e, changes)
 		if err != nil {
 			return fmt.Errorf("Error creating port cloud opts: %v", err)
 		}
@@ -191,13 +191,23 @@ func (*Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Por
 	return nil
 }
 
-func portCreateOptsFromPortTask(a, e, changes *Port) (ports.CreateOptsBuilder, error) {
+func portCreateOptsFromPortTask(t *openstack.OpenstackAPITarget, a, e, changes *Port) (ports.CreateOptsBuilder, error) {
 	sgs := make([]string, len(e.SecurityGroups)+len(e.AdditionalSecurityGroups))
 	for i, sg := range e.SecurityGroups {
 		sgs[i] = fi.StringValue(sg.ID)
 	}
 	for i, sg := range e.AdditionalSecurityGroups {
-		sgs[i+len(e.SecurityGroups)] = sg
+		opt := secgroup.ListOpts{
+			Name: sg,
+		}
+		gs, err := t.Cloud.ListSecurityGroups(opt)
+		if err != nil {
+			continue
+		}
+		if len(gs) == 0 {
+			return nil, fmt.Errorf("Additional SecurityGroup not found for name %s", sg)
+		}
+		sgs[i+len(e.SecurityGroups)] = gs[0].ID
 	}
 	fixedIPs := make([]ports.IP, len(e.Subnets))
 	for i, subn := range e.Subnets {
