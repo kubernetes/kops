@@ -26,28 +26,24 @@ var ErrEnvCredentialsTokenNotFound = fmt.Errorf("spotinst: %s not found in envir
 // running process.
 //
 // Environment variables used:
-// * Token: SPOTINST_TOKEN
-type EnvProvider struct {
-	retrieved bool
-}
+// * Token   : SPOTINST_TOKEN
+// * Account : SPOTINST_ACCOUNT
+type EnvProvider struct{}
 
-// NewEnvCredentials returns a pointer to a new Credentials object
-// wrapping the environment variable provider.
+// NewEnvCredentials returns a pointer to a new Credentials object wrapping the
+// environment variable provider.
 func NewEnvCredentials() *Credentials {
 	return NewCredentials(&EnvProvider{})
 }
 
 // Retrieve retrieves the keys from the environment.
 func (e *EnvProvider) Retrieve() (Value, error) {
-	e.retrieved = false
-
 	token := os.Getenv(EnvCredentialsVarToken)
 	if token == "" {
 		return Value{ProviderName: EnvCredentialsProviderName},
 			ErrEnvCredentialsTokenNotFound
 	}
 
-	e.retrieved = true
 	value := Value{
 		Token:        token,
 		Account:      os.Getenv(EnvCredentialsVarAccount),
