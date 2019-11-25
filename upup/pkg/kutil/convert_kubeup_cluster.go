@@ -266,9 +266,8 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 						continue
 					}
 					return fmt.Errorf("error detaching volume %q from master instance %q: %v", volumeID, masterInstanceID, err)
-				} else {
-					break
 				}
+				break
 			}
 		}
 	}

@@ -99,10 +99,9 @@ func fileHasHash(f string, expected *hashing.Hash) (bool, error) {
 	if actual.Equal(expected) {
 		klog.V(2).Infof("Hash matched for %q: %v", f, expected)
 		return true, nil
-	} else {
-		klog.V(2).Infof("Hash did not match for %q: actual=%v vs expected=%v", f, actual, expected)
-		return false, nil
 	}
+	klog.V(2).Infof("Hash did not match for %q: actual=%v vs expected=%v", f, actual, expected)
+	return false, nil
 }
 
 func ParseFileMode(s string, defaultMode os.FileMode) (os.FileMode, error) {

@@ -36,7 +36,6 @@ type ManagedZonesGetCall struct {
 func (call ManagedZonesGetCall) Do(opts ...googleapi.CallOption) (interfaces.ManagedZone, error) {
 	if call.Response != nil {
 		return call.Response, *call.Error
-	} else {
-		return call.Service.Impl[call.Project][call.ZoneName], nil
 	}
+	return call.Service.Impl[call.Project][call.ZoneName], nil
 }
