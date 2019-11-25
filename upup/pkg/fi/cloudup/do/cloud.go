@@ -28,6 +28,7 @@ const TagNameEtcdClusterPrefix = "etcdCluster-"
 const TagNameRolePrefix = "k8s.io/role/"
 const TagKubernetesClusterNamePrefix = "KubernetesCluster"
 const TagKubernetesClusterMasterPrefix = "KubernetesCluster-Master"
+const TagKubernetesClusterInstanceGroupPrefix = "kops-instancegroup"
 
 func SafeClusterName(clusterName string) string {
 	// DO does not support . in tags / names
