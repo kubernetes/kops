@@ -3,7 +3,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "data_source.go",
+        "deprecated.go",
         "error.go",
+        "file.go",
+        "helper.go",
         "ini.go",
         "key.go",
         "parser.go",

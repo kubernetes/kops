@@ -5,7 +5,9 @@ go_library(
     srcs = [
         "instance.go",
         "launch_spec.go",
+        "launch_spec_ecs.go",
         "ocean.go",
+        "ocean_ecs.go",
         "service.go",
         "tag.go",
     ],

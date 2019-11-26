@@ -5,7 +5,7 @@ import (
 )
 
 // StaticCredentialsProviderName provides a name of Static provider.
-const StaticCredentialsProviderName = "StaticProvider"
+const StaticCredentialsProviderName = "StaticCredentialsProvider"
 
 // ErrStaticCredentialsEmpty is emitted when static credentials are empty.
 var ErrStaticCredentialsEmpty = errors.New("spotinst: static credentials are empty")
@@ -15,8 +15,8 @@ type StaticProvider struct {
 	Value
 }
 
-// NewStaticCredentials returns a pointer to a new Credentials object
-// wrapping a static credentials value provider.
+// NewStaticCredentials returns a pointer to a new Credentials object wrapping
+// a static credentials value provider.
 func NewStaticCredentials(token, account string) *Credentials {
 	return NewCredentials(&StaticProvider{Value: Value{
 		Token:   token,
@@ -30,9 +30,11 @@ func (s *StaticProvider) Retrieve() (Value, error) {
 		return Value{ProviderName: StaticCredentialsProviderName},
 			ErrStaticCredentialsEmpty
 	}
+
 	if len(s.Value.ProviderName) == 0 {
 		s.Value.ProviderName = StaticCredentialsProviderName
 	}
+
 	return s.Value, nil
 }
 

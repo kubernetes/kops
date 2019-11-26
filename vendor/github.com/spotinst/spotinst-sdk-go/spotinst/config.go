@@ -16,31 +16,35 @@ const (
 	// It is used e.g. when initializing a new Client without a specific address.
 	defaultBaseURL = "https://api.spotinst.io"
 
-	// defaultContentType is the default content type to use when making HTTP
-	// calls.
+	// defaultContentType is the default content type to use when making HTTP calls.
 	defaultContentType = "application/json"
 
-	// defaultUserAgent is the default user agent to use when making HTTP
-	// calls.
+	// defaultUserAgent is the default user agent to use when making HTTP calls.
 	defaultUserAgent = SDKName + "/" + SDKVersion
-
-	// defaultMaxRetries is the number of retries for a single request after
-	// the client will give up and return an error. It is zero by default, so
-	// retry is disabled by default.
-	defaultMaxRetries = 0
-
-	// defaultGzipEnabled specifies if gzip compression is enabled by default.
-	defaultGzipEnabled = false
 )
 
 // A Config provides Configuration to a service client instance.
 type Config struct {
-	BaseURL     *url.URL
-	HTTPClient  *http.Client
+	// The base URL the SDK's HTTP client will use when invoking HTTP requests.
+	BaseURL *url.URL
+
+	// The HTTP Client the SDK's API clients will use to invoke HTTP requests.
+	// The SDK defaults to a DefaultHTTPClient allowing API clients to create
+	// copies of the HTTP client for service specific customizations.
+	HTTPClient *http.Client
+
+	// The credentials object to use when signing requests. Defaults to a
+	// chain of credential providers to search for credentials in environment
+	// variables and shared credential file.
 	Credentials *credentials.Credentials
-	Logger      log.Logger
-	UserAgent   string
-	ContentType string
+
+	// The logger writer interface to write logging messages to. Defaults to
+	// standard out.
+	Logger log.Logger
+
+	// The User-Agent and Content-Type HTTP headers to set when invoking
+	// HTTP requests.
+	UserAgent, ContentType string
 }
 
 func DefaultBaseURL() *url.URL {

@@ -48,6 +48,7 @@ type Strategy struct {
 	SpotPercentage           *float64 `json:"spotPercentage,omitempty"`
 	UtilizeReservedInstances *bool    `json:"utilizeReservedInstances,omitempty"`
 	FallbackToOnDemand       *bool    `json:"fallbackToOd,omitempty"`
+	DrainingTimeout          *int     `json:"drainingTimeout,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -505,6 +506,13 @@ func (o *Strategy) SetUtilizeReservedInstances(v *bool) *Strategy {
 func (o *Strategy) SetFallbackToOnDemand(v *bool) *Strategy {
 	if o.FallbackToOnDemand = v; o.FallbackToOnDemand == nil {
 		o.nullFields = append(o.nullFields, "FallbackToOnDemand")
+	}
+	return o
+}
+
+func (o *Strategy) SetDrainingTimeout(v *int) *Strategy {
+	if o.DrainingTimeout = v; o.DrainingTimeout == nil {
+		o.nullFields = append(o.nullFields, "DrainingTimeout")
 	}
 	return o
 }
