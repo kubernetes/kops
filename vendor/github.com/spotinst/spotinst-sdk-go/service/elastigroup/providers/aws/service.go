@@ -8,9 +8,9 @@ import (
 	"github.com/spotinst/spotinst-sdk-go/spotinst/session"
 )
 
-// Service provides the API operation methods for making requests to
-// endpoints of the Spotinst API. See this package's package overview docs
-// for details on the service.
+// Service provides the API operation methods for making requests to endpoints
+// of the Spotinst API. See this package's package overview docs for details on
+// the service.
 type Service interface {
 	List(context.Context, *ListGroupsInput) (*ListGroupsOutput, error)
 	Create(context.Context, *CreateGroupInput) (*CreateGroupOutput, error)
@@ -19,8 +19,10 @@ type Service interface {
 	Delete(context.Context, *DeleteGroupInput) (*DeleteGroupOutput, error)
 	Status(context.Context, *StatusGroupInput) (*StatusGroupOutput, error)
 	DeploymentStatus(context.Context, *DeploymentStatusInput) (*RollGroupOutput, error)
+	StopDeployment(context.Context, *StopDeploymentInput) (*StopDeploymentOutput, error)
 	Detach(context.Context, *DetachGroupInput) (*DetachGroupOutput, error)
 	Roll(context.Context, *RollGroupInput) (*RollGroupOutput, error)
+	RollECS(context.Context, *RollECSGroupInput) (*RollGroupOutput, error)
 	Scale(context.Context, *ScaleGroupInput) (*ScaleGroupOutput, error)
 	GetInstanceHealthiness(context.Context, *GetInstanceHealthinessInput) (*GetInstanceHealthinessOutput, error)
 	GetGroupEvents(context.Context, *GetGroupEventsInput) (*GetGroupEventsOutput, error)

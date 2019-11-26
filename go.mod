@@ -88,7 +88,7 @@ require (
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20180422025557-ae226422660e
 	github.com/ghodss/yaml v0.0.0-20180820084758-c7ce16629ff4
-	github.com/go-ini/ini v1.25.4
+	github.com/go-ini/ini v1.51.0
 	github.com/go-logr/logr v0.1.0
 	github.com/gogo/protobuf v1.1.1
 	github.com/golang/protobuf v1.3.2
@@ -111,8 +111,8 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.3.2
-	github.com/spotinst/spotinst-sdk-go v0.0.0-20190505130751-eb52d7ac273c
-	github.com/stretchr/testify v1.3.0
+	github.com/spotinst/spotinst-sdk-go v1.36.1
+	github.com/stretchr/testify v1.4.0
 	github.com/urfave/cli v1.20.0
 	github.com/vmware/govmomi v0.20.1
 	github.com/weaveworks/mesh v0.0.0-20170419100114-1f158d31de55

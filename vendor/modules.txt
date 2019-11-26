@@ -191,7 +191,7 @@ github.com/fsnotify/fsnotify
 github.com/fullsailor/pkcs7
 # github.com/ghodss/yaml v0.0.0-20180820084758-c7ce16629ff4
 github.com/ghodss/yaml
-# github.com/go-ini/ini v1.25.4
+# github.com/go-ini/ini v1.51.0
 github.com/go-ini/ini
 # github.com/go-logr/logr v0.1.0
 github.com/go-logr/logr
@@ -406,7 +406,7 @@ github.com/spf13/jwalterweatherman
 github.com/spf13/pflag
 # github.com/spf13/viper v1.3.2
 github.com/spf13/viper
-# github.com/spotinst/spotinst-sdk-go v0.0.0-20190505130751-eb52d7ac273c
+# github.com/spotinst/spotinst-sdk-go v1.36.1
 github.com/spotinst/spotinst-sdk-go/service/elastigroup
 github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws
 github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/azure
@@ -422,7 +422,7 @@ github.com/spotinst/spotinst-sdk-go/spotinst/session
 github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil
 github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil
 github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates
-# github.com/stretchr/testify v1.3.0
+# github.com/stretchr/testify v1.4.0
 github.com/stretchr/testify/assert
 # github.com/urfave/cli v1.20.0
 github.com/urfave/cli
