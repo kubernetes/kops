@@ -35,10 +35,9 @@ Note: this is one of many examples on how to do scheduled snapshots.
 ## Restore using etcd-manager
 
 In case of a disaster situation with etcd (lost data, cluster issues etc.) it's
-possible to do a restore of the etcd cluster using `etcd-manager-ctl`.
-Currently the `etcd-manager-ctl` binary is not shipped, so you will have to build it yourself.
-Please check the documentation at the [etcd-manager repository](https://github.com/kopeio/etcd-manager).
-It is not necessary to run `etcd-manager-ctl` in your cluster, as long as you have access to cluster storage (like S3).
+possible to do a restore of the etcd cluster using `etcd-manager-ctl`. 
+You can download the `etcd-manager-ctl` binary from the [etcd-manager repository](https://github.com/kopeio/etcd-manager/releases).
+It is not necessary to run `etcd-manager-ctl` in your cluster, as long as you have access to cluster state storage (like S3).
 
 Please note that this process involves downtime for your masters (and so the api server).
 A restore cannot be undone (unless by restoring again), and you might lose pods, events
@@ -60,10 +59,13 @@ etcd-manager-ctl --backup-store=s3://my.clusters/test.my.clusters/backups/etcd/m
 etcd-manager-ctl --backup-store=s3://my.clusters/test.my.clusters/backups/etcd/events restore-backup [events backup file]
 ```
 
-Note that this does not start the restore immediately; you need to restart etcd on all masters
-(or roll your masters quickly). A new etcd cluster will be created and the backup will be
-restored onto this new cluster. Please note that this process might take a short while,
-depending on the size of your cluster.
+Note that this does not start the restore immediately; you need to restart etcd on all masters.
+You can do this with a `docker stop` or `kill` on the etcd-manager containers on the masters (the container names start with `k8s_etcd-manager_etcd-manager`).
+The etcd-manager containers should restart automatically, and pick up the restore command. You also have the option to roll your masters quickly, but restarting the containers is preferred.
+ 
+A new etcd cluster will be created and the backup will be 
+restored onto this new cluster. Please note that this process might take a short while, 
+depending on the size of your cluster. 
 
 You can follow the progress by reading the etcd logs (`/var/log/etcd(-events).log`)
 on the master that is the leader of the cluster (you can find this out by checking the etcd logs on all masters).
