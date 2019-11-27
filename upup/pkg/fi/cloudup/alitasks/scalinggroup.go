@@ -139,6 +139,7 @@ func (_ *ScalingGroup) RenderALI(t *aliup.ALIAPITarget, a, e, changes *ScalingGr
 			RegionId:         common.Region(t.Cloud.Region()),
 			MinSize:          e.MinSize,
 			MaxSize:          e.MaxSize,
+			MultiAZPolicy:    ess.MultiAZPolicyBalance,
 			VSwitchIds:       vswitchs,
 		}
 
