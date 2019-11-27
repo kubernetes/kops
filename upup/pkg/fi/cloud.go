@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -162,8 +162,13 @@ var zonesToCloud = map[string]kops.CloudProviderID{
 	"cn-northwest-1b": kops.CloudProviderAWS,
 	"cn-northwest-1c": kops.CloudProviderAWS,
 
+	"us-gov-east-1a": kops.CloudProviderAWS,
+	"us-gov-east-1b": kops.CloudProviderAWS,
+	"us-gov-east-1c": kops.CloudProviderAWS,
+
 	"us-gov-west-1a": kops.CloudProviderAWS,
 	"us-gov-west-1b": kops.CloudProviderAWS,
+	"us-gov-west-1c": kops.CloudProviderAWS,
 
 	// GCE
 	"asia-east1-a": kops.CloudProviderGCE,

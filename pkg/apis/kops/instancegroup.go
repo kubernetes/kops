@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -154,10 +154,10 @@ type InstanceGroupSpec struct {
 }
 
 const (
-	// SpotAllocationStrategyLowestPrices indicates a lowest price strategy
-	SpotAllocationStrategyLowestPrices = "LowestPrice"
+	// SpotAllocationStrategyLowestPrices indicates a lowest-price strategy
+	SpotAllocationStrategyLowestPrices = "lowest-price"
 	// SpotAllocationStrategyDiversified indicates a diversified strategy
-	SpotAllocationStrategyDiversified = "Diversified"
+	SpotAllocationStrategyDiversified = "diversified"
 )
 
 // SpotAllocationStrategies is a collection of supported strategies
@@ -291,12 +291,9 @@ func (g *InstanceGroup) IsBastion() bool {
 
 func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
 	if g.Spec.NodeLabels == nil {
-		nodeLabels := make(map[string]string)
-		nodeLabels[NodeLabelInstanceGroup] = g.Name
-		g.Spec.NodeLabels = nodeLabels
-	} else {
-		g.Spec.NodeLabels[NodeLabelInstanceGroup] = g.Name
+		g.Spec.NodeLabels = make(map[string]string)
 	}
+	g.Spec.NodeLabels[NodeLabelInstanceGroup] = g.Name
 }
 
 // LoadBalancers defines a load balancer

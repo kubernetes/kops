@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -328,7 +328,7 @@ func ZoneToVSwitchID(VPCID string, zones []string, vswitchIDs []string) (map[str
 		return res, fmt.Errorf("error describing VPC: %v", err)
 	}
 
-	if vpc == nil || len(vpc) == 0 {
+	if len(vpc) == 0 {
 		return res, fmt.Errorf("VPC %q not found", VPCID)
 	}
 

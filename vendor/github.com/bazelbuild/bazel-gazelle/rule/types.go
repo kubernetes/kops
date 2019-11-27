@@ -23,7 +23,7 @@ type LoadInfo struct {
 	After   []string
 }
 
-// KindInfo stores metadata for a kind or fule, for example, "go_library".
+// KindInfo stores metadata for a kind of rule, for example, "go_library".
 type KindInfo struct {
 	// MatchAny is true if a rule of this kind may be matched with any rule
 	// of the same kind, regardless of attributes, if exactly one rule is

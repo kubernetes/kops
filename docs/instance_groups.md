@@ -118,7 +118,7 @@ As of Kops 1.12.0 you can add additional storage _(note, presently confined to A
 
 ```YAML
 ---
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -145,7 +145,7 @@ You can add additional storage via the above `volumes` collection though this on
 
 ```
 ---
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -172,7 +172,7 @@ The above will provision the additional storage, format and mount the device int
 
 ```YAML
 ---
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -233,7 +233,7 @@ Support for mixed instance groups was added in Kops 1.12.0
 
 ```YAML
 ---
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
@@ -549,3 +549,28 @@ spec:
   minSize: 2
   role: Node
 ```
+
+## Booting from a volume in OpenStack
+
+If you want to boot from a volume when you are running in openstack you can set annotations on the instance groups.
+
+```yaml
+# Example for nodes
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: k8s.dev.local
+  name: nodes
+  annotations:
+    openstack.kops.io/osVolumeBoot: enabled
+    openstack.kops.io/osVolumeSize: "15" # In gigabytes
+spec:
+  detailedInstanceMonitoring: true
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+```
+
+If `openstack.kops.io/osVolumeSize` is not set it will default to the minimum disk specified by the image.

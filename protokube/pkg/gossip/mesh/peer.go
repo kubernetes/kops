@@ -114,10 +114,9 @@ func (p *peer) OnGossip(buf []byte) (delta mesh.GossipData, err error) {
 		// per OnGossip requirements
 		klog.V(4).Infof("OnGossip %v => delta empty", message)
 		return nil, nil
-	} else {
-		klog.V(4).Infof("OnGossip %v => delta %v", message, deltas)
-		return deltas, nil
 	}
+	klog.V(4).Infof("OnGossip %v => delta %v", message, deltas)
+	return deltas, nil
 }
 
 // Merge the gossiped data represented by buf into our state.

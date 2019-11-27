@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -468,6 +468,9 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 		result, err := svc.DescribeInstances(&ec2.DescribeInstancesInput{
 			InstanceIds: []*string{&instanceID},
 		})
+		if err != nil {
+			return "", fmt.Errorf("error describing instances: %v", err)
+		}
 
 		if len(result.Reservations) != 1 {
 			return "", fmt.Errorf("Too many reservations returned for the single instance-id")
@@ -492,6 +495,23 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 		}
 
 		return hostname, nil
+	}
+
+	if k == "@alicloud" {
+		// @alicloud means to use the "{az}.{instance-id}" of a instance as the hostname override
+		azBytes, err := vfs.Context.ReadFile("metadata://alicloud/zone-id")
+		if err != nil {
+			return "", fmt.Errorf("error reading zone-id from Alicloud metadata: %v", err)
+		}
+		az := string(azBytes)
+
+		instanceIDBytes, err := vfs.Context.ReadFile("metadata://alicloud/instance-id")
+		if err != nil {
+			return "", fmt.Errorf("error reading instance-id from Alicloud metadata: %v", err)
+		}
+		instanceID := string(instanceIDBytes)
+
+		return fmt.Sprintf("%s.%s", az, instanceID), nil
 	}
 
 	return hostnameOverride, nil

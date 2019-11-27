@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,12 +17,24 @@ limitations under the License.
 package do
 
 import (
+	"strings"
+
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+const TagKubernetesClusterIndex = "k8s-index"
+const TagNameEtcdClusterPrefix = "etcdCluster-"
 const TagNameRolePrefix = "k8s.io/role/"
+const TagKubernetesClusterNamePrefix = "KubernetesCluster"
+const TagKubernetesClusterMasterPrefix = "KubernetesCluster-Master"
+const TagKubernetesClusterInstanceGroupPrefix = "kops-instancegroup"
+
+func SafeClusterName(clusterName string) string {
+	// DO does not support . in tags / names
+	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
+	return safeClusterName
+}
 
 func NewDOCloud(region string) (fi.Cloud, error) {
 	return digitalocean.NewCloud(region)

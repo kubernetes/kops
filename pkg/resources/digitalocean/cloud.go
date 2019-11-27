@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ limitations under the License.
 package digitalocean
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -70,7 +71,7 @@ func NewCloud(region string) (*Cloud, error) {
 		AccessToken: accessToken,
 	}
 
-	oauthClient := oauth2.NewClient(oauth2.NoContext, tokenSource)
+	oauthClient := oauth2.NewClient(context.TODO(), tokenSource)
 	client := godo.NewClient(oauthClient)
 
 	return &Cloud{

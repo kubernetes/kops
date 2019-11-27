@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -99,10 +99,9 @@ func fileHasHash(f string, expected *hashing.Hash) (bool, error) {
 	if actual.Equal(expected) {
 		klog.V(2).Infof("Hash matched for %q: %v", f, expected)
 		return true, nil
-	} else {
-		klog.V(2).Infof("Hash did not match for %q: actual=%v vs expected=%v", f, actual, expected)
-		return false, nil
 	}
+	klog.V(2).Infof("Hash did not match for %q: actual=%v vs expected=%v", f, actual, expected)
+	return false, nil
 }
 
 func ParseFileMode(s string, defaultMode os.FileMode) (os.FileMode, error) {

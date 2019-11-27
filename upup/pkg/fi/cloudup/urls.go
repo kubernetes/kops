@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ type mirror struct {
 // defaultKopsMirrors is a list of our well-known mirrors
 // Note that we download in order
 var defaultKopsMirrors = []mirror{
+	{URL: "https://artifacts.k8s.io/binaries/kops/%s/"},
 	{URL: "https://github.com/kubernetes/kops/releases/download/%s/", Replace: map[string]string{"/": "-"}},
 	// We do need to include defaultKopsMirrorBase - the list replaces the base url
 	{URL: "https://kubeupv2.s3.amazonaws.com/kops/%s/"},

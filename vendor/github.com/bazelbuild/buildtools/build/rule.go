@@ -184,10 +184,15 @@ func (r *Rule) SetKind(kind string) {
 	r.Call.X = expr
 }
 
+// ExplicitName returns the rule's target name if it's explicitly provided as a string value, "" otherwise.
+func (r *Rule) ExplicitName() string {
+	return r.AttrString("name")
+}
+
 // Name returns the rule's target name.
 // If the rule has no explicit target name, Name returns the implicit name if there is one, else the empty string.
 func (r *Rule) Name() string {
-	explicitName := r.AttrString("name")
+	explicitName := r.ExplicitName()
 	if explicitName == "" && r.Kind() != "package" {
 		return r.ImplicitName
 	}
@@ -198,8 +203,8 @@ func (r *Rule) Name() string {
 func (r *Rule) AttrKeys() []string {
 	var keys []string
 	for _, expr := range r.Call.List {
-		if binExpr, ok := expr.(*BinaryExpr); ok && binExpr.Op == "=" {
-			if keyExpr, ok := binExpr.X.(*Ident); ok {
+		if as, ok := expr.(*AssignExpr); ok {
+			if keyExpr, ok := as.LHS.(*Ident); ok {
 				keys = append(keys, keyExpr.Name)
 			}
 		}
@@ -207,16 +212,15 @@ func (r *Rule) AttrKeys() []string {
 	return keys
 }
 
-// AttrDefn returns the BinaryExpr defining the rule's attribute with the given key.
-// That is, the result is a *BinaryExpr with Op == "=".
+// AttrDefn returns the AssignExpr defining the rule's attribute with the given key.
 // If the rule has no such attribute, AttrDefn returns nil.
-func (r *Rule) AttrDefn(key string) *BinaryExpr {
+func (r *Rule) AttrDefn(key string) *AssignExpr {
 	for _, kv := range r.Call.List {
-		as, ok := kv.(*BinaryExpr)
-		if !ok || as.Op != "=" {
+		as, ok := kv.(*AssignExpr)
+		if !ok {
 			continue
 		}
-		k, ok := as.X.(*Ident)
+		k, ok := as.LHS.(*Ident)
 		if !ok || k.Name != key {
 			continue
 		}
@@ -233,7 +237,7 @@ func (r *Rule) Attr(key string) Expr {
 	if as == nil {
 		return nil
 	}
-	return as.Y
+	return as.RHS
 }
 
 // DelAttr deletes the rule's attribute with the named key.
@@ -241,17 +245,17 @@ func (r *Rule) Attr(key string) Expr {
 func (r *Rule) DelAttr(key string) Expr {
 	list := r.Call.List
 	for i, kv := range list {
-		as, ok := kv.(*BinaryExpr)
-		if !ok || as.Op != "=" {
+		as, ok := kv.(*AssignExpr)
+		if !ok {
 			continue
 		}
-		k, ok := as.X.(*Ident)
+		k, ok := as.LHS.(*Ident)
 		if !ok || k.Name != key {
 			continue
 		}
 		copy(list[i:], list[i+1:])
 		r.Call.List = list[:len(list)-1]
-		return as.Y
+		return as.RHS
 	}
 	return nil
 }
@@ -262,15 +266,15 @@ func (r *Rule) DelAttr(key string) Expr {
 func (r *Rule) SetAttr(key string, val Expr) {
 	as := r.AttrDefn(key)
 	if as != nil {
-		as.Y = val
+		as.RHS = val
 		return
 	}
 
 	r.Call.List = append(r.Call.List,
-		&BinaryExpr{
-			X:  &Ident{Name: key},
-			Op: "=",
-			Y:  val,
+		&AssignExpr{
+			LHS: &Ident{Name: key},
+			Op:  "=",
+			RHS: val,
 		},
 	)
 }

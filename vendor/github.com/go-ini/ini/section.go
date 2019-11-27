@@ -54,6 +54,14 @@ func (s *Section) Body() string {
 	return strings.TrimSpace(s.rawBody)
 }
 
+// SetBody updates body content only if section is raw.
+func (s *Section) SetBody(body string) {
+	if !s.isRawSection {
+		return
+	}
+	s.rawBody = body
+}
+
 // NewKey creates a new key to given section.
 func (s *Section) NewKey(name, val string) (*Key, error) {
 	if len(name) == 0 {
@@ -74,6 +82,7 @@ func (s *Section) NewKey(name, val string) (*Key, error) {
 			}
 		} else {
 			s.keys[name].value = val
+			s.keysHash[name] = val
 		}
 		return s.keys[name], nil
 	}
@@ -97,7 +106,6 @@ func (s *Section) NewBooleanKey(name string) (*Key, error) {
 
 // GetKey returns key in section by given name.
 func (s *Section) GetKey(name string) (*Key, error) {
-	// FIXME: change to section level lock?
 	if s.f.BlockMode {
 		s.f.lock.RLock()
 	}
@@ -120,9 +128,8 @@ func (s *Section) GetKey(name string) (*Key, error) {
 					continue
 				}
 				return sec.GetKey(name)
-			} else {
-				break
 			}
+			break
 		}
 		return nil, fmt.Errorf("error when getting key of section '%s': key '%s' not exists", s.name, name)
 	}
@@ -135,7 +142,7 @@ func (s *Section) HasKey(name string) bool {
 	return key != nil
 }
 
-// Haskey is a backwards-compatible name for HasKey.
+// Deprecated: Use "HasKey" instead.
 func (s *Section) Haskey(name string) bool {
 	return s.HasKey(name)
 }
@@ -228,7 +235,22 @@ func (s *Section) DeleteKey(name string) {
 		if k == name {
 			s.keyList = append(s.keyList[:i], s.keyList[i+1:]...)
 			delete(s.keys, name)
+			delete(s.keysHash, name)
 			return
 		}
 	}
+}
+
+// ChildSections returns a list of child sections of current section.
+// For example, "[parent.child1]" and "[parent.child12]" are child sections
+// of section "[parent]".
+func (s *Section) ChildSections() []*Section {
+	prefix := s.name + "."
+	children := make([]*Section, 0, 3)
+	for _, name := range s.f.sectionList {
+		if strings.HasPrefix(name, prefix) {
+			children = append(children, s.f.sections[name])
+		}
+	}
+	return children
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -63,7 +63,11 @@ func newRoute53(config io.Reader) (*Interface, error) {
 	// e.g. https://github.com/kubernetes/kops/issues/605
 	awsConfig = awsConfig.WithCredentialsChainVerboseErrors(true)
 
-	svc := route53.New(session.New(), awsConfig)
+	sess, err := session.NewSession()
+	if err != nil {
+		return nil, err
+	}
+	svc := route53.New(sess, awsConfig)
 
 	// Add our handler that will log requests
 	svc.Handlers.Sign.PushFrontNamed(request.NamedHandler{

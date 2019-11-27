@@ -4,6 +4,14 @@ metadata:
   name: bootstrap
 spec:
   addons:
+  - id: k8s-1.16
+    kubernetesVersion: '>=1.16.0-alpha.0'
+    manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
+    manifestHash: 24cf09054ddfdcb490b878b04ff321026daa10c7
+    name: kops-controller.addons.k8s.io
+    selector:
+      k8s-addon: kops-controller.addons.k8s.io
+    version: 1.17.0-alpha.1
   - manifest: core.addons.k8s.io/v1.4.0.yaml
     manifestHash: 3ffe9ac576f9eec72e2bdfbd2ea17d56d9b17b90
     name: core.addons.k8s.io
@@ -13,7 +21,7 @@ spec:
   - id: pre-k8s-1.6
     kubernetesVersion: <1.6.0
     manifest: kube-dns.addons.k8s.io/pre-k8s-1.6.yaml
-    manifestHash: bda4d8eb6a2f2470ab1ddd8b3e7cb29029348804
+    manifestHash: 90f1e4bedea6da183eb4c6788879f7297119ff3e
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -21,7 +29,7 @@ spec:
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0 <1.12.0'
     manifest: kube-dns.addons.k8s.io/k8s-1.6.yaml
-    manifestHash: 430dbc54269c26f0226835ff501457fa38d2cec8
+    manifestHash: 14ae2e8c90c7641ea15e871c77516db1d3aed6da
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -29,7 +37,7 @@ spec:
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: kube-dns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 3b31109025d81ac10fbfcc6acf1d1b32170cd2c8
+    manifestHash: 4da6501bd5ad16fab9e05fbfe7c6d587441a8ec4
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -59,27 +67,27 @@ spec:
   - id: pre-k8s-1.6
     kubernetesVersion: <1.6.0
     manifest: dns-controller.addons.k8s.io/pre-k8s-1.6.yaml
-    manifestHash: 2673104015e7ff47f0058c3bb1e152eeac54d220
+    manifestHash: e19c5456a31381c08dd166ce1faf85ce7acc15e3
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.14.0-alpha.1
+    version: 1.17.0-alpha.1
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0 <1.12.0'
     manifest: dns-controller.addons.k8s.io/k8s-1.6.yaml
-    manifestHash: 1e6ad361396158a93c3f59e939265f74bb003586
+    manifestHash: 2d6fa6910077fecdf1c98da4303631588cfc9c01
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.14.0-alpha.1
+    version: 1.17.0-alpha.1
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: aaf42d7dcff21f7e32177e933fde10cff8b03bc3
+    manifestHash: 4ba4be235e96068511965bf296375b45e152369a
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.14.0-alpha.1
+    version: 1.17.0-alpha.1
   - id: v1.15.0
     kubernetesVersion: '>=1.15.0'
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
@@ -107,16 +115,16 @@ spec:
   - id: k8s-1.7
     kubernetesVersion: '>=1.7.0 <1.12.0'
     manifest: networking.cilium.io/k8s-1.7.yaml
-    manifestHash: 26096db7dfad3f26c8b2fc92cd619d7dbc8c8ecd
+    manifestHash: cc7937066cb472dce20e13fe9a76faefd74dee19
     name: networking.cilium.io
     selector:
       role.kubernetes.io/networking: "1"
-    version: v1.0-kops.2
+    version: 1.6.1-kops.1
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: networking.cilium.io/k8s-1.12.yaml
-    manifestHash: e4886cb88b110e5509929088f83b6d23cf1bbaa0
+    manifestHash: cc7937066cb472dce20e13fe9a76faefd74dee19
     name: networking.cilium.io
     selector:
       role.kubernetes.io/networking: "1"
-    version: v1.0-kops.2
+    version: 1.6.1-kops.1

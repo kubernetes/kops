@@ -18,7 +18,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
+  NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
   export AWS_REGION=us-test-1
@@ -45,35 +45,30 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
     urls=( $* )
     while true; do
       for url in "${urls[@]}"; do
-        if [[ -e "${file}" ]]; then
-          echo "== File exists for ${url} =="
-
-        # CoreOS runs this script in a container without which (but has curl)
-        # Note also that busybox wget doesn't support wget --version, but busybox doesn't normally have curl
-        # So we default to wget unless we see curl
-        elif [[ $(curl --version) ]]; then
-          if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
-            echo "== Failed to curl ${url}. Retrying. =="
+        commands=(
+          "curl -f --ipv4 --compressed -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
+          "wget --inet4-only --compression=auto -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+          "curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
+          "wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+        )
+        for cmd in "${commands[@]}"; do
+          echo "Attempting download with: ${cmd} {url}"
+          if ! (${cmd} "${url}"); then
+            echo "== Download failed with ${cmd} =="
             continue
           fi
-        else
-          if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
-            echo "== Failed to wget ${url}. Retrying. =="
-            continue
-          fi
-        fi
-
-        if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
-          echo "== Hash validation of ${url} failed. Retrying. =="
-          rm -f "${file}"
-        else
-          if [[ -n "${hash}" ]]; then
-            echo "== Downloaded ${url} (SHA1 = ${hash}) =="
+          if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
+            echo "== Hash validation of ${url} failed. Retrying. =="
+            rm -f "${file}"
           else
-            echo "== Downloaded ${url} =="
+            if [[ -n "${hash}" ]]; then
+              echo "== Downloaded ${url} (SHA1 = ${hash}) =="
+            else
+              echo "== Downloaded ${url} =="
+            fi
+            return
           fi
-          return
-        fi
+        done
       done
 
       echo "All downloads failed; sleeping before retrying"
@@ -141,40 +136,60 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
   docker:
     ipMasq: false
     ipTables: false
+    logDriver: json-file
     logLevel: warn
-    storage: overlay,aufs
-    version: 1.11.2
+    logOpt:
+    - max-size=10m
+    - max-file=5
+    storage: overlay2,overlay,aufs
+    version: 18.06.3
   encryptionConfig: null
   etcdClusters:
     events:
-      image: gcr.io/google_containers/etcd:2.2.1
-      version: 2.2.1
+      version: 3.3.10
     main:
-      image: gcr.io/google_containers/etcd:2.2.1
-      version: 2.2.1
+      version: 3.3.10
   kubeAPIServer:
-    address: 127.0.0.1
-    admissionControl:
+    allowPrivileged: true
+    anonymousAuth: false
+    apiServerCount: 1
+    authorizationMode: AlwaysAllow
+    bindAddress: 0.0.0.0
+    cloudProvider: aws
+    enableAdmissionPlugins:
     - NamespaceLifecycle
     - LimitRanger
     - ServiceAccount
     - PersistentVolumeLabel
     - DefaultStorageClass
+    - DefaultTolerationSeconds
+    - MutatingAdmissionWebhook
+    - ValidatingAdmissionWebhook
+    - NodeRestriction
     - ResourceQuota
-    allowPrivileged: true
-    apiServerCount: 1
-    authorizationMode: AlwaysAllow
-    cloudProvider: aws
     etcdServers:
     - http://127.0.0.1:4001
     etcdServersOverrides:
     - /events#http://127.0.0.1:4002
-    image: gcr.io/google_containers/kube-apiserver:v1.4.12
+    image: k8s.gcr.io/kube-apiserver:v1.14.0
+    insecureBindAddress: 127.0.0.1
     insecurePort: 8080
+    kubeletPreferredAddressTypes:
+    - InternalIP
+    - Hostname
+    - ExternalIP
     logLevel: 2
+    requestheaderAllowedNames:
+    - aggregator
+    requestheaderExtraHeaderPrefixes:
+    - X-Remote-Extra-
+    requestheaderGroupHeaders:
+    - X-Remote-Group
+    requestheaderUsernameHeaders:
+    - X-Remote-User
     securePort: 443
     serviceClusterIPRange: 100.64.0.0/13
-    storageBackend: etcd2
+    storageBackend: etcd3
   kubeControllerManager:
     allocateNodeCIDRs: true
     attachDetachReconcileSyncPeriod: 1m0s
@@ -182,60 +197,56 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
     clusterCIDR: 100.96.0.0/11
     clusterName: additionalcidr.example.com
     configureCloudRoutes: true
-    image: gcr.io/google_containers/kube-controller-manager:v1.4.12
+    image: k8s.gcr.io/kube-controller-manager:v1.14.0
     leaderElection:
       leaderElect: true
     logLevel: 2
-    master: 127.0.0.1:8080
+    useServiceAccountCredentials: true
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
     hostnameOverride: '@aws'
-    image: gcr.io/google_containers/kube-proxy:v1.4.12
+    image: k8s.gcr.io/kube-proxy:v1.14.0
     logLevel: 2
   kubeScheduler:
-    image: gcr.io/google_containers/kube-scheduler:v1.4.12
+    image: k8s.gcr.io/kube-scheduler:v1.14.0
     leaderElection:
       leaderElect: true
     logLevel: 2
-    master: http://127.0.0.1:8080
   kubelet:
-    allowPrivileged: true
-    apiServers: https://api.internal.additionalcidr.example.com
-    babysitDaemons: true
-    cgroupRoot: docker
+    cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      ExperimentalCriticalPodAnnotation: "true"
     hostnameOverride: '@aws'
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginMTU: 9001
     networkPluginName: kubenet
     nonMasqueradeCIDR: 100.64.0.0/10
-    podInfraContainerImage: gcr.io/google_containers/pause-amd64:3.0
+    podInfraContainerImage: k8s.gcr.io/pause-amd64:3.0
     podManifestPath: /etc/kubernetes/manifests
-    reconcileCIDR: true
   masterKubelet:
-    allowPrivileged: true
-    apiServers: http://127.0.0.1:8080
-    babysitDaemons: true
-    cgroupRoot: docker
+    cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      ExperimentalCriticalPodAnnotation: "true"
     hostnameOverride: '@aws'
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginMTU: 9001
     networkPluginName: kubenet
     nonMasqueradeCIDR: 100.64.0.0/10
-    podCIDR: 10.123.45.0/28
-    podInfraContainerImage: gcr.io/google_containers/pause-amd64:3.0
+    podInfraContainerImage: k8s.gcr.io/pause-amd64:3.0
     podManifestPath: /etc/kubernetes/manifests
-    reconcileCIDR: true
     registerSchedulable: false
 
   __EOF_CLUSTER_SPEC
@@ -249,10 +260,10 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
 
   cat > kube_env.yaml << '__EOF_KUBE_ENV'
   Assets:
-  - c4871c7315817ee114f5c554a58da8ebc54f08c3@https://storage.googleapis.com/kubernetes-release/release/v1.4.12/bin/linux/amd64/kubelet
-  - d9fdb6b37597d371ef853cde76170f38a553aa78@https://storage.googleapis.com/kubernetes-release/release/v1.4.12/bin/linux/amd64/kubectl
-  - 19d49f7b2b99cd2493d5ae0ace896c64e289ccbb@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz
-  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
+  - c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
+  - 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
+  - 52e9d2de8a5f927307d9397308735658ee44ab8d@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
+  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/utils.tar.gz,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
   ClusterName: additionalcidr.example.com
   ConfigBase: memfs://clusters.example.com/additionalcidr.example.com
   InstanceGroupName: master-us-test-1b
@@ -261,10 +272,14 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
   - _aws
   channels:
   - memfs://clusters.example.com/additionalcidr.example.com/addons/bootstrap-channel.yaml
+  etcdManifests:
+  - memfs://clusters.example.com/additionalcidr.example.com/manifests/etcd/main.yaml
+  - memfs://clusters.example.com/additionalcidr.example.com/manifests/etcd/events.yaml
   protokubeImage:
     hash: 0b1f26208f8f6cc02468368706d0236670fec8a2
     name: protokube:1.8.1
     sources:
+    - https://artifacts.k8s.io/binaries/kops/1.8.1/images/protokube.tar.gz
     - https://github.com/kubernetes/kops/releases/download/1.8.1/images-protokube.tar.gz
     - https://kubeupv2.s3.amazonaws.com/kops/1.8.1/images/protokube.tar.gz
 
@@ -292,7 +307,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionalcidrexamplecom.Propert
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
+  NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
   export AWS_REGION=us-test-1
@@ -319,35 +334,30 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionalcidrexamplecom.Propert
     urls=( $* )
     while true; do
       for url in "${urls[@]}"; do
-        if [[ -e "${file}" ]]; then
-          echo "== File exists for ${url} =="
-
-        # CoreOS runs this script in a container without which (but has curl)
-        # Note also that busybox wget doesn't support wget --version, but busybox doesn't normally have curl
-        # So we default to wget unless we see curl
-        elif [[ $(curl --version) ]]; then
-          if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
-            echo "== Failed to curl ${url}. Retrying. =="
+        commands=(
+          "curl -f --ipv4 --compressed -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
+          "wget --inet4-only --compression=auto -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+          "curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
+          "wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+        )
+        for cmd in "${commands[@]}"; do
+          echo "Attempting download with: ${cmd} {url}"
+          if ! (${cmd} "${url}"); then
+            echo "== Download failed with ${cmd} =="
             continue
           fi
-        else
-          if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
-            echo "== Failed to wget ${url}. Retrying. =="
-            continue
-          fi
-        fi
-
-        if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
-          echo "== Hash validation of ${url} failed. Retrying. =="
-          rm -f "${file}"
-        else
-          if [[ -n "${hash}" ]]; then
-            echo "== Downloaded ${url} (SHA1 = ${hash}) =="
+          if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
+            echo "== Hash validation of ${url} failed. Retrying. =="
+            rm -f "${file}"
           else
-            echo "== Downloaded ${url} =="
+            if [[ -n "${hash}" ]]; then
+              echo "== Downloaded ${url} (SHA1 = ${hash}) =="
+            else
+              echo "== Downloaded ${url} =="
+            fi
+            return
           fi
-          return
-        fi
+        done
       done
 
       echo "All downloads failed; sleeping before retrying"
@@ -415,33 +425,36 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionalcidrexamplecom.Propert
   docker:
     ipMasq: false
     ipTables: false
+    logDriver: json-file
     logLevel: warn
-    storage: overlay,aufs
-    version: 1.11.2
+    logOpt:
+    - max-size=10m
+    - max-file=5
+    storage: overlay2,overlay,aufs
+    version: 18.06.3
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
     hostnameOverride: '@aws'
-    image: gcr.io/google_containers/kube-proxy:v1.4.12
+    image: k8s.gcr.io/kube-proxy:v1.14.0
     logLevel: 2
   kubelet:
-    allowPrivileged: true
-    apiServers: https://api.internal.additionalcidr.example.com
-    babysitDaemons: true
-    cgroupRoot: docker
+    cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      ExperimentalCriticalPodAnnotation: "true"
     hostnameOverride: '@aws'
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginMTU: 9001
     networkPluginName: kubenet
     nonMasqueradeCIDR: 100.64.0.0/10
-    podInfraContainerImage: gcr.io/google_containers/pause-amd64:3.0
+    podInfraContainerImage: k8s.gcr.io/pause-amd64:3.0
     podManifestPath: /etc/kubernetes/manifests
-    reconcileCIDR: true
 
   __EOF_CLUSTER_SPEC
 
@@ -454,10 +467,10 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionalcidrexamplecom.Propert
 
   cat > kube_env.yaml << '__EOF_KUBE_ENV'
   Assets:
-  - c4871c7315817ee114f5c554a58da8ebc54f08c3@https://storage.googleapis.com/kubernetes-release/release/v1.4.12/bin/linux/amd64/kubelet
-  - d9fdb6b37597d371ef853cde76170f38a553aa78@https://storage.googleapis.com/kubernetes-release/release/v1.4.12/bin/linux/amd64/kubectl
-  - 19d49f7b2b99cd2493d5ae0ace896c64e289ccbb@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz
-  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
+  - c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
+  - 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
+  - 52e9d2de8a5f927307d9397308735658ee44ab8d@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
+  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/utils.tar.gz,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
   ClusterName: additionalcidr.example.com
   ConfigBase: memfs://clusters.example.com/additionalcidr.example.com
   InstanceGroupName: nodes
@@ -470,6 +483,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionalcidrexamplecom.Propert
     hash: 0b1f26208f8f6cc02468368706d0236670fec8a2
     name: protokube:1.8.1
     sources:
+    - https://artifacts.k8s.io/binaries/kops/1.8.1/images/protokube.tar.gz
     - https://github.com/kubernetes/kops/releases/download/1.8.1/images-protokube.tar.gz
     - https://kubeupv2.s3.amazonaws.com/kops/1.8.1/images/protokube.tar.gz
 

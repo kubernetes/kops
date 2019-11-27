@@ -1,4 +1,4 @@
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install --yes --reinstall lsb-base \
   && rm -rf /var/lib/apt/lists/*
 
 # Install golang
-RUN curl -L https://storage.googleapis.com/golang/go1.12.5.linux-amd64.tar.gz | tar zx -C /usr/local
+RUN curl -L https://storage.googleapis.com/golang/go1.13.4.linux-amd64.tar.gz | tar zx -C /usr/local
 ENV PATH $PATH:/usr/local/go/bin
 
 COPY onbuild.sh /onbuild.sh

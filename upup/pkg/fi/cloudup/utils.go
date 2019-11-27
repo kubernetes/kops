@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -139,6 +139,13 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			if err != nil {
 				return nil, err
 			}
+			var zoneNames []string
+			for _, subnet := range cluster.Spec.Subnets {
+				if !fi.ArrayContains(zoneNames, subnet.Zone) {
+					zoneNames = append(zoneNames, subnet.Zone)
+				}
+			}
+			osc.UseZones(zoneNames)
 			cloud = osc
 		}
 

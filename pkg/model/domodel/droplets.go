@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@ limitations under the License.
 package domodel
 
 import (
+	"strconv"
 	"strings"
 
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
 )
 
@@ -44,8 +46,10 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 	sshKeyFingerPrint := splitSSHKeyName[len(splitSSHKeyName)-1]
 
 	// replace "." with "-" since DO API does not accept "."
-	clusterTag := "KubernetesCluster:" + strings.Replace(d.ClusterName(), ".", "-", -1)
+	clusterTag := do.TagKubernetesClusterNamePrefix + ":" + strings.Replace(d.ClusterName(), ".", "-", -1)
+	clusterMasterTag := do.TagKubernetesClusterMasterPrefix + ":" + strings.Replace(d.ClusterName(), ".", "-", -1)
 
+	masterIndexCount := 0
 	// In the future, DigitalOcean will use Machine API to manage groups,
 	// for now create d.InstanceGroups.Spec.MinSize amount of droplets
 	for _, ig := range d.InstanceGroups {
@@ -61,7 +65,18 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 		droplet.Size = fi.String(ig.Spec.MachineType)
 		droplet.Image = fi.String(ig.Spec.Image)
 		droplet.SSHKey = fi.String(sshKeyFingerPrint)
+
 		droplet.Tags = []string{clusterTag}
+
+		if ig.IsMaster() {
+			masterIndexCount++
+			clusterTagIndex := do.TagKubernetesClusterIndex + ":" + strconv.Itoa(masterIndexCount)
+			droplet.Tags = append(droplet.Tags, clusterTagIndex)
+			droplet.Tags = append(droplet.Tags, clusterMasterTag)
+			droplet.Tags = append(droplet.Tags, do.TagKubernetesClusterInstanceGroupPrefix+":"+"master-"+d.Cluster.Spec.Subnets[0].Region)
+		} else {
+			droplet.Tags = append(droplet.Tags, do.TagKubernetesClusterInstanceGroupPrefix+":"+"nodes")
+		}
 
 		userData, err := d.BootstrapScript.ResourceNodeUp(ig, d.Cluster)
 		if err != nil {

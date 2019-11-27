@@ -119,13 +119,19 @@ func NewLBTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle,
 		return nil, err
 	}
 
+	sg, err := getSecurityGroupByName(&SecurityGroup{Name: fi.String(lb.Name)}, osCloud)
+	if err != nil {
+		return nil, err
+	}
+
 	actual := &LB{
-		ID:        fi.String(lb.ID),
-		Name:      fi.String(lb.Name),
-		Lifecycle: lifecycle,
-		PortID:    fi.String(lb.VipPortID),
-		Subnet:    fi.String(sub.Name),
-		VipSubnet: fi.String(lb.VipSubnetID),
+		ID:            fi.String(lb.ID),
+		Name:          fi.String(lb.Name),
+		Lifecycle:     lifecycle,
+		PortID:        fi.String(lb.VipPortID),
+		Subnet:        fi.String(sub.Name),
+		VipSubnet:     fi.String(lb.VipSubnetID),
+		SecurityGroup: sg,
 	}
 
 	if find != nil {

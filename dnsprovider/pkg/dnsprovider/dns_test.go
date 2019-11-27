@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -47,8 +47,6 @@ func (r record) Rrdatas() []string {
 func (r record) Type() rrstype.RrsType {
 	return rrstype.RrsType(r.type_)
 }
-
-const testDNSZone string = "foo.com"
 
 var testData = []struct {
 	inputs         [2]record

@@ -20,7 +20,9 @@ import (
 	"fmt"
 	"go/build"
 	"log"
+	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/config"
@@ -71,6 +73,31 @@ type goConfig struct {
 
 	// goGrpcCompilersSet indicates whether goGrpcCompiler was set explicitly.
 	goGrpcCompilersSet bool
+
+	// goRepositoryMode is true if Gazelle was invoked by a go_repository rule.
+	// In this mode, we won't go out to the network to resolve external deps.
+	goRepositoryMode bool
+
+	// By default, internal packages are only visible to its siblings.
+	// goVisibility adds a list of packages the internal packages should be
+	// visible to
+	goVisibility []string
+
+	// moduleMode is true if the current directory is intended to be built
+	// as part of a module. Minimal module compatibility won't be supported
+	// if this is true in the root directory. External dependencies may be
+	// resolved differently (also depending on goRepositoryMode).
+	moduleMode bool
+
+	// submodules is a list of modules which have the current module's path
+	// as a prefix of their own path. This affects visibility attributes
+	// in internal packages.
+	submodules []moduleRepo
+
+	// buildExternalAttr, buildFileNamesAttr, buildFileGenerationAttr,
+	// buildTagsAttr, buildFileProtoModeAttr, and buildExtraArgsAttr are
+	// attributes for go_repository rules, set on the command line.
+	buildExternalAttr, buildFileNamesAttr, buildFileGenerationAttr, buildTagsAttr, buildFileProtoModeAttr, buildExtraArgsAttr string
 }
 
 var (
@@ -97,6 +124,9 @@ func (gc *goConfig) clone() *goConfig {
 	for k, v := range gc.genericTags {
 		gcCopy.genericTags[k] = v
 	}
+	gcCopy.goProtoCompilers = gc.goProtoCompilers[:len(gc.goProtoCompilers):len(gc.goProtoCompilers)]
+	gcCopy.goGrpcCompilers = gc.goGrpcCompilers[:len(gc.goGrpcCompilers):len(gc.goGrpcCompilers)]
+	gcCopy.submodules = gc.submodules[:len(gc.submodules):len(gc.submodules)]
 	return &gcCopy
 }
 
@@ -188,17 +218,26 @@ func (f tagsFlag) String() string {
 	return ""
 }
 
-func (_ *goLang) KnownDirectives() []string {
+type moduleRepo struct {
+	repoName, modulePath string
+}
+
+var validBuildExternalAttr = []string{"external", "vendored"}
+var validBuildFileGenerationAttr = []string{"auto", "on", "off"}
+var validBuildFileProtoModeAttr = []string{"default", "legacy", "disable", "disable_global", "package"}
+
+func (*goLang) KnownDirectives() []string {
 	return []string{
 		"build_tags",
 		"go_grpc_compilers",
 		"go_proto_compilers",
+		"go_visibility",
 		"importmap_prefix",
 		"prefix",
 	}
 }
 
-func (_ *goLang) RegisterFlags(fs *flag.FlagSet, cmd string, c *config.Config) {
+func (*goLang) RegisterFlags(fs *flag.FlagSet, cmd string, c *config.Config) {
 	gc := newGoConfig()
 	switch cmd {
 	case "fix", "update":
@@ -222,11 +261,44 @@ func (_ *goLang) RegisterFlags(fs *flag.FlagSet, cmd string, c *config.Config) {
 			&gzflag.MultiFlag{Values: &gc.goGrpcCompilers, IsSet: &gc.goGrpcCompilersSet},
 			"go_grpc_compiler",
 			"go_proto_library compiler to use for gRPC (may be repeated)")
+		fs.BoolVar(
+			&gc.goRepositoryMode,
+			"go_repository_mode",
+			false,
+			"set when gazelle is invoked by go_repository")
+		fs.BoolVar(
+			&gc.moduleMode,
+			"go_repository_module_mode",
+			false,
+			"set when gazelle is invoked by go_repository in module mode")
+
+	case "update-repos":
+		fs.Var(&gzflag.AllowedStringFlag{Value: &gc.buildExternalAttr, Allowed: validBuildExternalAttr},
+			"build_external",
+			"Sets the build_external attribute for the generated go_repository rule(s).")
+		fs.StringVar(&gc.buildExtraArgsAttr,
+			"build_extra_args",
+			"",
+			"Sets the build_extra_args attribute for the generated go_repository rule(s).")
+		fs.Var(&gzflag.AllowedStringFlag{Value: &gc.buildFileGenerationAttr, Allowed: validBuildFileGenerationAttr},
+			"build_file_generation",
+			"Sets the build_file_generation attribute for the generated go_repository rule(s).")
+		fs.StringVar(&gc.buildFileNamesAttr,
+			"build_file_names",
+			"",
+			"Sets the build_file_name attribute for the generated go_repository rule(s).")
+		fs.Var(&gzflag.AllowedStringFlag{Value: &gc.buildFileProtoModeAttr, Allowed: validBuildFileProtoModeAttr},
+			"build_file_proto_mode",
+			"Sets the build_file_proto_mode attribute for the generated go_repository rule(s).")
+		fs.StringVar(&gc.buildTagsAttr,
+			"build_tags",
+			"",
+			"Sets the build_tags attribute for the generated go_repository rule(s).")
 	}
 	c.Exts[goName] = gc
 }
 
-func (_ *goLang) CheckFlags(fs *flag.FlagSet, c *config.Config) error {
+func (*goLang) CheckFlags(fs *flag.FlagSet, c *config.Config) error {
 	// The base of the -go_prefix flag may be used to generate proto_library
 	// rule names when there are no .proto sources (empty rules to be deleted)
 	// or when the package name can't be determined.
@@ -235,10 +307,27 @@ func (_ *goLang) CheckFlags(fs *flag.FlagSet, c *config.Config) error {
 	if pc := proto.GetProtoConfig(c); pc != nil {
 		pc.GoPrefix = gc.prefix
 	}
+
+	// List modules that may refer to internal packages in this module.
+	for _, r := range c.Repos {
+		if r.Kind() != "go_repository" {
+			continue
+		}
+		modulePath := r.AttrString("importpath")
+		if !strings.HasPrefix(modulePath, gc.prefix+"/") {
+			continue
+		}
+		m := moduleRepo{
+			repoName:   r.Name(),
+			modulePath: modulePath,
+		}
+		gc.submodules = append(gc.submodules, m)
+	}
+
 	return nil
 }
 
-func (_ *goLang) Configure(c *config.Config, rel string, f *rule.File) {
+func (*goLang) Configure(c *config.Config, rel string, f *rule.File) {
 	var gc *goConfig
 	if raw, ok := c.Exts[goName]; !ok {
 		gc = newGoConfig()
@@ -246,6 +335,13 @@ func (_ *goLang) Configure(c *config.Config, rel string, f *rule.File) {
 		gc = raw.(*goConfig).clone()
 	}
 	c.Exts[goName] = gc
+
+	if !gc.moduleMode {
+		st, err := os.Stat(filepath.Join(c.RepoRoot, filepath.FromSlash(rel), "go.mod"))
+		if err == nil && !st.IsDir() {
+			gc.moduleMode = true
+		}
+	}
 
 	if path.Base(rel) == "vendor" {
 		gc.importMapPrefix = inferImportPath(gc, rel)
@@ -273,6 +369,7 @@ func (_ *goLang) Configure(c *config.Config, rel string, f *rule.File) {
 				}
 				gc.preprocessTags()
 				gc.setBuildTags(d.Value)
+
 			case "go_grpc_compilers":
 				// Special syntax (empty value) to reset directive.
 				if d.Value == "" {
@@ -282,6 +379,7 @@ func (_ *goLang) Configure(c *config.Config, rel string, f *rule.File) {
 					gc.goGrpcCompilersSet = true
 					gc.goGrpcCompilers = splitValue(d.Value)
 				}
+
 			case "go_proto_compilers":
 				// Special syntax (empty value) to reset directive.
 				if d.Value == "" {
@@ -291,9 +389,14 @@ func (_ *goLang) Configure(c *config.Config, rel string, f *rule.File) {
 					gc.goProtoCompilersSet = true
 					gc.goProtoCompilers = splitValue(d.Value)
 				}
+
+			case "go_visibility":
+				gc.goVisibility = append(gc.goVisibility, strings.TrimSpace(d.Value))
+
 			case "importmap_prefix":
 				gc.importMapPrefix = d.Value
 				gc.importMapPrefixRel = rel
+
 			case "prefix":
 				setPrefix(d.Value)
 			}

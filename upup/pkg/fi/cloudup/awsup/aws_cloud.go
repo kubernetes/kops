@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package awsup
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -570,7 +571,7 @@ func matchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription
 }
 
 // findAutoscalingGroupLaunchConfiguration is responsible for finding the launch - which could be a launchconfiguration, a template or a mixed instance policy template
-func findAutoscalingGroupLaunchConfiguration(g *autoscaling.Group) (string, error) {
+func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (string, error) {
 	name := aws.StringValue(g.LaunchConfigurationName)
 	if name != "" {
 		return name, nil
@@ -592,7 +593,23 @@ func findAutoscalingGroupLaunchConfiguration(g *autoscaling.Group) (string, erro
 			if g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification != nil {
 				// honestly!!
 				name = aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.LaunchTemplateName)
-				version := aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.Version)
+				request := &ec2.DescribeLaunchTemplateVersionsInput{
+					LaunchTemplateName: &name,
+				}
+
+				versions, err := c.EC2().DescribeLaunchTemplateVersions(request)
+				if err != nil {
+					return "", fmt.Errorf("error finding versions for launch template: %v", err)
+				}
+
+				var version string
+				for _, v := range versions.LaunchTemplateVersions {
+					if *v.DefaultVersion {
+						version = strconv.FormatInt(*v.VersionNumber, 10)
+						break
+					}
+				}
+
 				if name != "" {
 					launchTemplate := name + ":" + version
 					return launchTemplate, nil
@@ -625,7 +642,7 @@ func findInstanceLaunchConfiguration(i *autoscaling.Instance) string {
 }
 
 func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
-	newConfigName, err := findAutoscalingGroupLaunchConfiguration(g)
+	newConfigName, err := findAutoscalingGroupLaunchConfiguration(c, g)
 	if err != nil {
 		return nil, err
 	}
@@ -646,7 +663,7 @@ func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscali
 		}
 		// @step: check if the instance is terminating
 		if aws.StringValue(i.LifecycleState) == autoscaling.LifecycleStateTerminating {
-			klog.Warningf("ignoring instance  as it is terminating: %s in autoscaling group: %s", id, cg.HumanName)
+			klog.Warningf("ignoring instance as it is terminating: %s in autoscaling group: %s", id, cg.HumanName)
 			continue
 		}
 		currentConfigName := findInstanceLaunchConfiguration(i)

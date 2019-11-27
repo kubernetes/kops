@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ func waitForOp(op *compute.Operation, getOperation func(operationName string) (*
 	return wait.Poll(operationPollInterval, operationPollTimeoutDuration, func() (bool, error) {
 		start := time.Now()
 		//gce.operationPollRateLimiter.Accept()
-		duration := time.Now().Sub(start)
+		duration := time.Since(start)
 		if duration > 5*time.Second {
 			klog.Infof("pollOperation: throttled %v for %v", duration, opName)
 		}
@@ -112,7 +112,7 @@ func waitForOp(op *compute.Operation, getOperation func(operationName string) (*
 		}
 		done := opIsDone(pollOp)
 		if done {
-			duration := time.Now().Sub(opStart)
+			duration := time.Since(opStart)
 			if duration > 1*time.Minute {
 				// Log the JSON. It's cleaner than the %v structure.
 				enc, err := pollOp.MarshalJSON()

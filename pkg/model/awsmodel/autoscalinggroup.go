@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
 		name := b.AutoscalingGroupName(ig)
 
-		// @check if his instancegroup is backed by a fleet and overide with a launch template
+		// @check if his instancegroup is backed by a fleet and override with a launch template
 		task, err := func() (fi.Task, error) {
 			switch UseLaunchTemplate(ig) {
 			case true:
@@ -310,9 +310,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	t.Tags = tags
 
 	processes := []string{}
-	for _, p := range ig.Spec.SuspendProcesses {
-		processes = append(processes, p)
-	}
+	processes = append(processes, ig.Spec.SuspendProcesses...)
 	t.SuspendProcesses = &processes
 
 	t.InstanceProtection = ig.Spec.InstanceProtection

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		if clusterSpec.Kubelet.AllowPrivileged != nil {
 			// If it is explicitly set to false, return an error, because this
 			// behavior is no longer supported in v1.14 (the default was true, prior).
-			if *clusterSpec.Kubelet.AllowPrivileged == false {
+			if !*clusterSpec.Kubelet.AllowPrivileged {
 				klog.Warningf("Kubelet's --allow-privileged flag is no longer supported in v1.14.")
 			}
 			// Explicitly set it to nil, so it won't be passed on the command line.
@@ -213,6 +213,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if cloudProvider == kops.CloudProviderALI {
 		clusterSpec.Kubelet.CloudProvider = "alicloud"
+		clusterSpec.Kubelet.HostnameOverride = "@alicloud"
 	}
 
 	if clusterSpec.ExternalCloudControllerManager != nil {

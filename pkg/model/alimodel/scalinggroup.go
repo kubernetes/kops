@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -127,9 +127,8 @@ func (b *ScalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			if err != nil {
 				return err
-			} else {
-				launchConfiguration.SSHKey = b.LinkToSSHKey()
 			}
+			launchConfiguration.SSHKey = b.LinkToSSHKey()
 			if launchConfiguration.UserData, err = b.BootstrapScript.ResourceNodeUp(ig, b.Cluster); err != nil {
 				return err
 			}

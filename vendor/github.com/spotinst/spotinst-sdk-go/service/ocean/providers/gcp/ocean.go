@@ -16,6 +16,7 @@ type Cluster struct {
 	AutoScaler          *AutoScaler `json:"autoScaler,omitempty"`
 	Capacity            *Capacity   `json:"capacity,omitempty"`
 	Compute             *Compute    `json:"compute,omitempty"`
+	Strategy            *Strategy   `json:"strategy,omitempty"`
 	ControllerClusterID *string     `json:"controllerClusterId,omitempty"`
 	GKE                 *GKE        `json:"gke,omitempty"`
 	ID                  *string     `json:"id,omitempty"`
@@ -40,6 +41,13 @@ type Cluster struct {
 	// null. It is an error if a field in this list has a non-empty value.
 	// This may be used to include null fields in Patch requests.
 	nullFields []string
+}
+
+type Strategy struct {
+	DrainingTimeout *int `json:"drainingTimeout,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
 }
 
 type AutoScaler struct {
@@ -103,6 +111,7 @@ type Compute struct {
 	AvailabilityZones   []string             `json:"availabilityZones,omitempty"`
 	InstanceTypes       *InstanceTypes       `json:"instanceTypes,omitempty"`
 	LaunchSpecification *LaunchSpecification `json:"launchSpecification,omitempty"`
+	BackendServices     []*BackendService    `json:"backendServices,omitempty"`
 	NetworkInterfaces   []*NetworkInterface  `json:"networkInterfaces,omitempty"`
 	SubnetName          *string              `json:"subnetName,omitempty"`
 
@@ -126,14 +135,13 @@ type InstanceTypes struct {
 }
 
 type LaunchSpecification struct {
-	BackendServices    []*BackendService `json:"backendServices,omitempty"`
-	Labels             []*Label          `json:"labels,omitempty"`
-	IPForwarding       *bool             `json:"ipForwarding,omitempty"`
-	Metadata           []*Metadata       `json:"metadata,omitempty"`
-	RootVolumeSizeInGB *int              `json:"rootVolumeSizeInGb,omitempty"`
-	ServiceAccount     *string           `json:"serviceAccount,omitempty"`
-	SourceImage        *string           `json:"sourceImage,omitempty"`
-	Tags               []string          `json:"tags,omitempty"`
+	Labels             []*Label    `json:"labels,omitempty"`
+	IPForwarding       *bool       `json:"ipForwarding,omitempty"`
+	Metadata           []*Metadata `json:"metadata,omitempty"`
+	RootVolumeSizeInGB *int        `json:"rootVolumeSizeInGb,omitempty"`
+	ServiceAccount     *string     `json:"serviceAccount,omitempty"`
+	SourceImage        *string     `json:"sourceImage,omitempty"`
+	Tags               []string    `json:"tags,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -249,6 +257,41 @@ func clustersFromHttpResponse(resp *http.Response) ([]*Cluster, error) {
 		return nil, err
 	}
 	return clustersFromJSON(body)
+}
+
+func clusterImportFromJSON(in []byte) (*ImportOceanGKEClusterOutput, error) {
+	b := new(ImportOceanGKEClusterOutput)
+	if err := json.Unmarshal(in, b); err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+func clustersImportFromJSON(in []byte) ([]*ImportOceanGKEClusterOutput, error) {
+	var rw client.Response
+	if err := json.Unmarshal(in, &rw); err != nil {
+		return nil, err
+	}
+	out := make([]*ImportOceanGKEClusterOutput, len(rw.Response.Items))
+	if len(out) == 0 {
+		return out, nil
+	}
+	for i, rb := range rw.Response.Items {
+		b, err := clusterImportFromJSON(rb)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = b
+	}
+	return out, nil
+}
+
+func clustersImportFromHttpResponse(resp *http.Response) ([]*ImportOceanGKEClusterOutput, error) {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return clustersImportFromJSON(body)
 }
 
 func (s *ServiceOp) ListClusters(ctx context.Context, input *ListClustersInput) (*ListClustersOutput, error) {
@@ -370,6 +413,35 @@ func (s *ServiceOp) DeleteCluster(ctx context.Context, input *DeleteClusterInput
 	return &DeleteClusterOutput{}, nil
 }
 
+// ImportOceanGKECluster imports an existing Ocean GKE cluster into Elastigroup.
+func (s *ServiceOp) ImportOceanGKECluster(ctx context.Context, input *ImportOceanGKEClusterInput) (*ImportOceanGKEClusterOutput, error) {
+	r := client.NewRequest(http.MethodPost, "/ocean/gcp/k8s/cluster/gke/import")
+
+	r.Params["location"] = []string{spotinst.StringValue(input.Location)}
+	r.Params["clusterName"] = []string{spotinst.StringValue(input.ClusterName)}
+
+	body := &ImportOceanGKEClusterInput{Cluster: input.Cluster}
+	r.Obj = body
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	gs, err := clustersImportFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(ImportOceanGKEClusterOutput)
+	if len(gs) > 0 {
+		output = gs[0]
+	}
+
+	return output, nil
+}
+
 // region Cluster
 
 func (o Cluster) MarshalJSON() ([]byte, error) {
@@ -402,6 +474,13 @@ func (o *Cluster) SetName(v *string) *Cluster {
 func (o *Cluster) SetCapacity(v *Capacity) *Cluster {
 	if o.Capacity = v; o.Capacity == nil {
 		o.nullFields = append(o.nullFields, "Capacity")
+	}
+	return o
+}
+
+func (o *Cluster) SetStrategy(v *Strategy) *Cluster {
+	if o.Strategy = v; o.Strategy == nil {
+		o.nullFields = append(o.nullFields, "Strategy")
 	}
 	return o
 }
@@ -453,6 +532,30 @@ func (o *GKE) SetMasterLocation(v *string) *GKE {
 
 // endregion
 
+// region Import
+
+type ImportOceanGKECluster struct {
+	InstanceTypes   *InstanceTypes    `json:"instanceTypes,omitempty"`
+	BackendServices []*BackendService `json:"backendServices,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ImportOceanGKEClusterInput struct {
+	ClusterName        *string                `json:"clusterName,omitempty"`
+	Location           *string                `json:"location,omitempty"`
+	NodePoolName       *string                `json:"nodePoolName,omitempty"`
+	IncludeLaunchSpecs *string                `json:"includeLaunchSpecs,omitempty"`
+	Cluster            *ImportOceanGKECluster `json:"cluster,omitempty"`
+}
+
+type ImportOceanGKEClusterOutput struct {
+	Cluster *Cluster `json:"cluster,omitempty"`
+}
+
+// endregion
+
 // region Capacity
 
 func (o Capacity) MarshalJSON() ([]byte, error) {
@@ -478,6 +581,23 @@ func (o *Capacity) SetMaximum(v *int) *Capacity {
 func (o *Capacity) SetTarget(v *int) *Capacity {
 	if o.Target = v; o.Target == nil {
 		o.nullFields = append(o.nullFields, "Target")
+	}
+	return o
+}
+
+// endregion
+
+// region Strategy
+
+func (o Strategy) MarshalJSON() ([]byte, error) {
+	type noMethod Strategy
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Strategy) SetDrainingTimeout(v *int) *Strategy {
+	if o.DrainingTimeout = v; o.DrainingTimeout == nil {
+		o.nullFields = append(o.nullFields, "DrainingTimeout")
 	}
 	return o
 }
@@ -554,11 +674,11 @@ func (o LaunchSpecification) MarshalJSON() ([]byte, error) {
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
-func (o *LaunchSpecification) SetBackendServices(v []*BackendService) *LaunchSpecification {
-	if o.BackendServices = v; o.BackendServices == nil {
-		o.nullFields = append(o.nullFields, "BackendServices")
+func (c *Compute) SetBackendServices(v []*BackendService) *Compute {
+	if c.BackendServices = v; c.BackendServices == nil {
+		c.nullFields = append(c.nullFields, "BackendServices")
 	}
-	return o
+	return c
 }
 
 func (o *LaunchSpecification) SetLabels(v []*Label) *LaunchSpecification {

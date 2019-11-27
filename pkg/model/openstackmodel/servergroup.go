@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -59,10 +59,23 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		igMeta[openstack.TagClusterName] = b.ClusterName()
 	}
 	igMeta["k8s"] = b.ClusterName()
+	netName, err := b.GetNetworkName()
+	if err != nil {
+		return err
+	}
+	igMeta[openstack.TagKopsNetwork] = netName
 	igMeta["KopsInstanceGroup"] = ig.Name
-	igMeta["KopsRole"] = fmt.Sprintf("%s", ig.Spec.Role)
+	igMeta["KopsRole"] = string(ig.Spec.Role)
 	igMeta[openstack.INSTANCE_GROUP_GENERATION] = fmt.Sprintf("%d", ig.GetGeneration())
 	igMeta[openstack.CLUSTER_GENERATION] = fmt.Sprintf("%d", b.Cluster.GetGeneration())
+
+	if e, ok := ig.ObjectMeta.Annotations[openstack.OS_ANNOTATION+openstack.BOOT_FROM_VOLUME]; ok {
+		igMeta[openstack.BOOT_FROM_VOLUME] = e
+	}
+
+	if v, ok := ig.ObjectMeta.Annotations[openstack.OS_ANNOTATION+openstack.BOOT_VOLUME_SIZE]; ok {
+		igMeta[openstack.BOOT_VOLUME_SIZE] = v
+	}
 
 	startupScript, err := b.BootstrapScript.ResourceNodeUp(ig, b.Cluster)
 	if err != nil {
@@ -88,29 +101,41 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 	// In the future, OpenStack will use Machine API to manage groups,
 	// for now create d.InstanceGroups.Spec.MinSize amount of servers
 	for i := int32(0); i < *ig.Spec.MinSize; i++ {
-		if err != nil {
-			return fmt.Errorf("Failed to create UUID for instance: %v", err)
-		}
 		// FIXME: Must ensure 63 or less characters
-		// replace all dots with -, this is needed to get external cloudprovider working
-		iName := strings.ToLower(fmt.Sprintf("%s-%d.%s", ig.Name, i+1, b.ClusterName()))
+		// replace all dots and _ with -, this is needed to get external cloudprovider working
+		iName := strings.Replace(strings.ToLower(fmt.Sprintf("%s-%d.%s", ig.Name, i+1, b.ClusterName())), "_", "-", -1)
 		instanceName := fi.String(strings.Replace(iName, ".", "-", -1))
 
 		var az *string
+		var subnets []*openstacktasks.Subnet
 		if len(ig.Spec.Subnets) > 0 {
+			subnet := ig.Spec.Subnets[int(i)%len(ig.Spec.Subnets)]
 			// bastion subnet name is not actual zone name, it contains "utility-" prefix
 			if ig.Spec.Role == kops.InstanceGroupRoleBastion {
-				az = fi.String(strings.Replace(ig.Spec.Subnets[int(i)%len(ig.Spec.Subnets)], "utility-", "", 1))
+				az = fi.String(strings.Replace(subnet, "utility-", "", 1))
 			} else {
-				az = fi.String(ig.Spec.Subnets[int(i)%len(ig.Spec.Subnets)])
+				az = fi.String(subnet)
 			}
+
+			subnetName, err := b.findSubnetClusterSpec(subnet)
+			if err != nil {
+				return err
+			}
+			subnets = append(subnets, b.LinkToSubnet(s(subnetName)))
+		}
+		if len(ig.Spec.Zones) > 0 {
+			zone := ig.Spec.Zones[int(i)%len(ig.Spec.Zones)]
+			az = fi.String(zone)
 		}
 		// Create instance port task
 		portTask := &openstacktasks.Port{
-			Name:           fi.String(fmt.Sprintf("%s-%s", "port", *instanceName)),
-			Network:        b.LinkToNetwork(),
-			SecurityGroups: securityGroups,
-			Lifecycle:      b.Lifecycle,
+			Name:                     fi.String(fmt.Sprintf("%s-%s", "port", *instanceName)),
+			Network:                  b.LinkToNetwork(),
+			Tag:                      s(b.ClusterName()),
+			SecurityGroups:           securityGroups,
+			AdditionalSecurityGroups: ig.Spec.AdditionalSecurityGroups,
+			Subnets:                  subnets,
+			Lifecycle:                b.Lifecycle,
 		}
 		c.AddTask(portTask)
 
@@ -125,6 +150,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			Role:             fi.String(string(ig.Spec.Role)),
 			Port:             portTask,
 			Metadata:         igMeta,
+			SecurityGroups:   ig.Spec.AdditionalSecurityGroups,
 			AvailabilityZone: az,
 		}
 		if igUserData != nil {
@@ -132,37 +158,64 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		}
 		c.AddTask(instanceTask)
 
-		// Associate a floating IP to the master and bastion always, associate it to a node if bastion is not used
-		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleBastion:
-			t := &openstacktasks.FloatingIP{
-				Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
-				Server:    instanceTask,
-				Lifecycle: b.Lifecycle,
+		// Associate a floating IP to the master and bastion always if we have external network in router
+		// associate it to a node if bastion is not used
+		if b.Cluster.Spec.CloudConfig.Openstack != nil && b.Cluster.Spec.CloudConfig.Openstack.Router != nil {
+			if ig.Spec.AssociatePublicIP != nil && !fi.BoolValue(ig.Spec.AssociatePublicIP) {
+				if ig.Spec.Role == kops.InstanceGroupRoleMaster {
+					b.associateFixedIPToKeypair(c, instanceTask)
+				}
+				continue
 			}
-			c.AddTask(t)
-		case kops.InstanceGroupRoleMaster:
-			if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer == nil {
+			switch ig.Spec.Role {
+			case kops.InstanceGroupRoleBastion:
 				t := &openstacktasks.FloatingIP{
 					Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
 					Server:    instanceTask,
 					Lifecycle: b.Lifecycle,
 				}
 				c.AddTask(t)
-				b.associateFIPToKeypair(c, t)
-			}
-		default:
-			if !b.UsesSSHBastion() {
-				t := &openstacktasks.FloatingIP{
-					Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
-					Server:    instanceTask,
-					Lifecycle: b.Lifecycle,
+			case kops.InstanceGroupRoleMaster:
+				if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer == nil {
+					t := &openstacktasks.FloatingIP{
+						Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
+						Server:    instanceTask,
+						Lifecycle: b.Lifecycle,
+					}
+					c.AddTask(t)
+					b.associateFIPToKeypair(c, t)
 				}
-				c.AddTask(t)
+			default:
+				if !b.UsesSSHBastion() {
+					t := &openstacktasks.FloatingIP{
+						Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
+						Server:    instanceTask,
+						Lifecycle: b.Lifecycle,
+					}
+					c.AddTask(t)
+				}
+			}
+		} else if b.Cluster.Spec.CloudConfig.Openstack != nil && b.Cluster.Spec.CloudConfig.Openstack.Router == nil {
+			// No external router, but we need to add master fixed ips to certificates
+			if ig.Spec.Role == kops.InstanceGroupRoleMaster {
+				b.associateFixedIPToKeypair(c, instanceTask)
 			}
 		}
 	}
 
+	return nil
+}
+
+func (b *ServerGroupModelBuilder) associateFixedIPToKeypair(c *fi.ModelBuilderContext, fipTask *openstacktasks.Instance) error {
+	// Ensure the floating IP is included in the TLS certificate,
+	// if we're not going to use an alias for it
+	// TODO: I don't love this technique for finding the task by name & modifying it
+	masterKeypairTask, found := c.Tasks["Keypair/master"]
+	if !found {
+		return fmt.Errorf("keypair/master task not found")
+	}
+	masterKeypair := masterKeypairTask.(*fitasks.Keypair)
+	masterKeypair.AlternateNameTasks = append(masterKeypair.AlternateNameTasks, fipTask)
 	return nil
 }
 
@@ -206,10 +259,23 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer != nil {
-		lbSubnetName := b.MasterInstanceGroups()[0].Spec.Subnets[0]
+		var lbSubnetName string
+		var err error
+		for _, sp := range b.Cluster.Spec.Subnets {
+			if sp.Type == kops.SubnetTypePrivate {
+				lbSubnetName, err = b.findSubnetNameByID(sp.ProviderID, sp.Name)
+				if err != nil {
+					return err
+				}
+				break
+			}
+		}
+		if lbSubnetName == "" {
+			return fmt.Errorf("could not find subnet for master loadbalancer")
+		}
 		lbTask := &openstacktasks.LB{
 			Name:          fi.String(b.Cluster.Spec.MasterPublicName),
-			Subnet:        fi.String(lbSubnetName + "." + b.ClusterName()),
+			Subnet:        fi.String(lbSubnetName),
 			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(b.Cluster.Spec.MasterPublicName),
 		}
@@ -240,12 +306,16 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(listenerTask)
 
+		ifName, err := b.GetNetworkName()
+		if err != nil {
+			return err
+		}
 		for _, mastersg := range masters {
 			associateTask := &openstacktasks.PoolAssociation{
 				Name:          mastersg.Name,
 				Pool:          poolTask,
 				ServerGroup:   mastersg,
-				InterfaceName: fi.String(clusterName),
+				InterfaceName: fi.String(ifName),
 				ProtocolPort:  fi.Int(443),
 				Lifecycle:     b.Lifecycle,
 			}

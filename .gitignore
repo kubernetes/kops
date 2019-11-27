@@ -24,6 +24,7 @@
 
 # Vscode files
 .vscode
+.devcontainer
 
 # Emacs save files
 *~
@@ -89,3 +90,9 @@ ab-results-*.json
 site
 
 addons/prometheus-operator/tmp # cloned git repo
+
+# Ignore google oauth2 configs
+.config
+
+# Used by some of the verify scripts in the hack directory
+_output

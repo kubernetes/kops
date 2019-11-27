@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -68,6 +68,8 @@ func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
 	b.addLogRotate(c, "kube-proxy", "/var/log/kube-proxy.log", logRotateOptions{})
 	b.addLogRotate(c, "kube-scheduler", "/var/log/kube-scheduler.log", logRotateOptions{})
 	b.addLogRotate(c, "kubelet", "/var/log/kubelet.log", logRotateOptions{})
+	b.addLogRotate(c, "etcd", "/var/log/etcd.log", logRotateOptions{})
+	b.addLogRotate(c, "etcd-events", "/var/log/etcd-events.log", logRotateOptions{})
 
 	if err := b.addLogrotateService(c); err != nil {
 		return err

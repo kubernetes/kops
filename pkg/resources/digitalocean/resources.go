@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import (
 
 	"github.com/digitalocean/godo"
 
+	"k8s.io/klog"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
@@ -195,12 +196,17 @@ func listDNS(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) 
 	}
 
 	if domainName == "" {
+		if strings.HasSuffix(clusterName, ".k8s.local") {
+			klog.Info("Domain Name is empty. Ok to have an empty domain name since cluster is configured as gossip cluster.")
+			return nil, nil
+		}
+
 		return nil, fmt.Errorf("failed to find domain for cluster: %s", clusterName)
 	}
 
 	records, err := getAllRecordsByDomain(c, domainName)
 	if err != nil {
-		return nil, fmt.Errorf("faile to list records for domain %s: %s", domainName, err)
+		return nil, fmt.Errorf("failed to list records for domain %s: %s", domainName, err)
 	}
 
 	var resourceTrackers []*resources.Resource

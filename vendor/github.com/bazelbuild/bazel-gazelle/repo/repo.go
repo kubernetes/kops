@@ -13,118 +13,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package repo provides functionality for managing Go repository rules.
+//
+// UNSTABLE: The exported APIs in this package may change. In the future,
+// language extensions should implement an interface for repository
+// rule management. The update-repos command will call interface methods,
+// and most if this package's functionality will move to language/go.
+// Moving this package to an internal directory would break existing
+// extensions, since RemoteCache is referenced through the resolve.Resolver
+// interface, which extensions are required to implement.
 package repo
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/rule"
 )
 
-// Repo describes an external repository rule declared in a Bazel
-// WORKSPACE file.
-type Repo struct {
-	// Name is the value of the "name" attribute of the repository rule.
-	Name string
+type byRuleName []*rule.Rule
 
-	// GoPrefix is the portion of the Go import path for the root of this
-	// repository. Usually the same as Remote.
-	GoPrefix string
-
-	// Commit is the revision at which a repository is checked out (for example,
-	// a Git commit id).
-	Commit string
-
-	// Tag is the name of the version at which a repository is checked out.
-	Tag string
-
-	// Remote is the URL the repository can be cloned or checked out from.
-	Remote string
-
-	// VCS is the version control system used to check out the repository.
-	// May also be "http" for HTTP archives.
-	VCS string
-}
-
-type byName []Repo
-
-func (s byName) Len() int           { return len(s) }
-func (s byName) Less(i, j int) bool { return s[i].Name < s[j].Name }
-func (s byName) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
-
-type lockFileFormat int
-
-const (
-	unknownFormat lockFileFormat = iota
-	depFormat
-	moduleFormat
-	godepFormat
-)
-
-var lockFileParsers = map[lockFileFormat]func(string, *RemoteCache) ([]Repo, error){
-	depFormat:    importRepoRulesDep,
-	moduleFormat: importRepoRulesModules,
-	godepFormat:  importRepoRulesGoDep,
-}
-
-// ImportRepoRules reads the lock file of a vendoring tool and returns
-// a list of equivalent repository rules that can be merged into a WORKSPACE
-// file. The format of the file is inferred from its basename.
-func ImportRepoRules(filename string, repoCache *RemoteCache) ([]*rule.Rule, error) {
-	format := getLockFileFormat(filename)
-	if format == unknownFormat {
-		return nil, fmt.Errorf(`%s: unrecognized lock file format. Expected "Gopkg.lock", "go.mod", or "Godeps.json"`, filename)
-	}
-	parser := lockFileParsers[format]
-	repos, err := parser(filename, repoCache)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing %q: %v", filename, err)
-	}
-	sort.Stable(byName(repos))
-
-	rules := make([]*rule.Rule, 0, len(repos))
-	for _, repo := range repos {
-		rules = append(rules, GenerateRule(repo))
-	}
-	return rules, nil
-}
-
-func getLockFileFormat(filename string) lockFileFormat {
-	switch filepath.Base(filename) {
-	case "Gopkg.lock":
-		return depFormat
-	case "go.mod":
-		return moduleFormat
-	case "Godeps.json":
-		return godepFormat
-	default:
-		return unknownFormat
-	}
-}
-
-// GenerateRule returns a repository rule for the given repository that can
-// be written in a WORKSPACE file.
-func GenerateRule(repo Repo) *rule.Rule {
-	r := rule.NewRule("go_repository", repo.Name)
-	if repo.Commit != "" {
-		r.SetAttr("commit", repo.Commit)
-	}
-	if repo.Tag != "" {
-		r.SetAttr("tag", repo.Tag)
-	}
-	r.SetAttr("importpath", repo.GoPrefix)
-	if repo.Remote != "" {
-		r.SetAttr("remote", repo.Remote)
-	}
-	if repo.VCS != "" {
-		r.SetAttr("vcs", repo.VCS)
-	}
-	return r
-}
+func (s byRuleName) Len() int           { return len(s) }
+func (s byRuleName) Less(i, j int) bool { return s[i].Name() < s[j].Name() }
+func (s byRuleName) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
 // FindExternalRepo attempts to locate the directory where Bazel has fetched
 // the external repository with the given name. An error is returned if the
@@ -154,49 +67,100 @@ func FindExternalRepo(repoRoot, name string) (string, error) {
 }
 
 // ListRepositories extracts metadata about repositories declared in a
-// WORKSPACE file.
-//
-// The set of repositories returned is necessarily incomplete, since we don't
-// evaluate the file, and repositories may be declared in macros in other files.
-func ListRepositories(workspace *rule.File) []Repo {
-	var repos []Repo
-	for _, r := range workspace.Rules {
-		name := r.Name()
-		if name == "" {
-			continue
+// file.
+func ListRepositories(workspace *rule.File) (repos []*rule.Rule, repoFileMap map[string]*rule.File, err error) {
+	repoIndexMap := make(map[string]int)
+	repoFileMap = make(map[string]*rule.File)
+	for _, repo := range workspace.Rules {
+		if name := repo.Name(); name != "" {
+				repos = append(repos, repo)
+				repoFileMap[name] = workspace
+				repoIndexMap[name] = len(repos) - 1
 		}
-		var repo Repo
-		switch r.Kind() {
-		case "go_repository":
-			// TODO(jayconrod): extract other fields needed by go_repository.
-			// Currently, we don't use the result of this function to produce new
-			// go_repository rules, so it doesn't matter.
-			goPrefix := r.AttrString("importpath")
-			revision := r.AttrString("commit")
-			remote := r.AttrString("remote")
-			vcs := r.AttrString("vcs")
-			if goPrefix == "" {
-				continue
-			}
-			repo = Repo{
-				Name:     name,
-				GoPrefix: goPrefix,
-				Commit:   revision,
-				Remote:   remote,
-				VCS:      vcs,
-			}
-
-			// TODO(jayconrod): infer from {new_,}git_repository, {new_,}http_archive,
-			// local_repository.
-
-		default:
-			continue
+	}
+	extraRepos, err := parseRepositoryDirectives(workspace.Directives)
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, repo := range extraRepos {
+		if i, ok := repoIndexMap[repo.Name()]; ok {
+			repos[i] = repo
+		} else {
+			repos = append(repos, repo)
 		}
-		repos = append(repos, repo)
+		repoFileMap[repo.Name()] = workspace
 	}
 
-	// TODO(jayconrod): look for directives that describe repositories that
-	// aren't declared in the top-level of WORKSPACE (e.g., behind a macro).
+	for _, d := range workspace.Directives {
+		switch d.Key {
+		case "repository_macro":
+			f, defName, err := parseRepositoryMacroDirective(d.Value)
+			if err != nil {
+				return nil, nil, err
+			}
+			f = filepath.Join(filepath.Dir(workspace.Path), filepath.Clean(f))
+			macroFile, err := rule.LoadMacroFile(f, "", defName)
+			if err != nil {
+				return nil, nil, err
+			}
+			for _, repo := range macroFile.Rules {
+				if name := repo.Name(); name != "" {
+					repos = append(repos, repo)
+					repoFileMap[name] = macroFile
+					repoIndexMap[name] = len(repos) - 1
+				}
+			}
+			extraRepos, err = parseRepositoryDirectives(macroFile.Directives)
+			if err != nil {
+				return nil, nil, err
+			}
+			for _, repo := range extraRepos {
+				if i, ok := repoIndexMap[repo.Name()]; ok {
+					repos[i] = repo
+				} else {
+					repos = append(repos, repo)
+				}
+				repoFileMap[repo.Name()] = macroFile
+			}
+		}
+	}
+	return repos, repoFileMap, nil
+}
 
-	return repos
+func parseRepositoryDirectives(directives []rule.Directive) (repos []*rule.Rule, err error) {
+	for _, d := range directives {
+		switch d.Key {
+		case "repository":
+			vals := strings.Fields(d.Value)
+			if len(vals) < 2 {
+				return nil, fmt.Errorf("failure parsing repository: %s, expected repository kind and attributes", d.Value)
+			}
+			kind := vals[0]
+			r := rule.NewRule(kind, "")
+			for _, val := range vals[1:] {
+				kv := strings.SplitN(val, "=", 2)
+				if len(kv) != 2 {
+					return nil, fmt.Errorf("failure parsing repository: %s, expected format for attributes is attr1_name=attr1_value", d.Value)
+				}
+				r.SetAttr(kv[0], kv[1])
+			}
+			if r.Name() == "" {
+				return nil, fmt.Errorf("failure parsing repository: %s, expected a name attribute for the given repository", d.Value)
+			}
+			repos = append(repos, r)
+		}
+	}
+	return repos, nil
+}
+
+func parseRepositoryMacroDirective(directive string) (string, string, error) {
+	vals := strings.Split(directive, "%")
+	if len(vals) != 2 {
+		return "", "", fmt.Errorf("Failure parsing repository_macro: %s, expected format is macroFile%%defName", directive)
+	}
+	f := vals[0]
+	if strings.HasPrefix(f, "..") {
+		return "", "", fmt.Errorf("Failure parsing repository_macro: %s, macro file path %s should not start with \"..\"", directive, f)
+	}
+	return f, vals[1], nil
 }

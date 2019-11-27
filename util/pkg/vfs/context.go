@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -107,7 +107,9 @@ func (c *VFSContext) ReadFile(location string, options ...VFSOption) ([]byte, er
 			case "digitalocean":
 				httpURL := "http://169.254.169.254/metadata/v1" + u.Path
 				return c.readHttpLocation(httpURL, nil, opts)
-
+			case "alicloud":
+				httpURL := "http://100.100.100.200/latest/meta-data/" + u.Path
+				return c.readHttpLocation(httpURL, nil, opts)
 			default:
 				return nil, fmt.Errorf("unknown metadata type: %q in %q", u.Host, location)
 			}

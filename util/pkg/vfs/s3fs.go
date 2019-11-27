@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -169,9 +169,8 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 	if err != nil {
 		if acl != "" {
 			return fmt.Errorf("error writing %s (with ACL=%q): %v", p, acl, err)
-		} else {
-			return fmt.Errorf("error writing %s: %v", p, err)
 		}
+		return fmt.Errorf("error writing %s: %v", p, err)
 	}
 
 	return nil

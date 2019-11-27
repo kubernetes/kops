@@ -106,7 +106,7 @@ func MergeFile(oldFile *rule.File, emptyRules, genRules []*rule.Rule, phase Phas
 
 	// Merge empty rules into the file and delete any rules which become empty.
 	for _, emptyRule := range emptyRules {
-		if oldRule, _ := match(oldFile.Rules, emptyRule, kinds[emptyRule.Kind()]); oldRule != nil {
+		if oldRule, _ := Match(oldFile.Rules, emptyRule, kinds[emptyRule.Kind()]); oldRule != nil {
 			if oldRule.ShouldKeep() {
 				continue
 			}
@@ -124,7 +124,7 @@ func MergeFile(oldFile *rule.File, emptyRules, genRules []*rule.Rule, phase Phas
 	matchErrors := make([]error, len(genRules))
 	substitutions := make(map[string]string)
 	for i, genRule := range genRules {
-		oldRule, err := match(oldFile.Rules, genRule, kinds[genRule.Kind()])
+		oldRule, err := Match(oldFile.Rules, genRule, kinds[genRule.Kind()])
 		if err != nil {
 			// TODO(jayconrod): add a verbose mode and log errors. They are too chatty
 			// to print by default.
@@ -179,7 +179,7 @@ func substituteRule(r *rule.Rule, substitutions map[string]string, info rule.Kin
 	}
 }
 
-// match searches for a rule that can be merged with x in rules.
+// Match searches for a rule that can be merged with x in rules.
 //
 // A rule is considered a match if its kind is equal to x's kind AND either its
 // name is equal OR at least one of the attributes in matchAttrs is equal.
@@ -195,7 +195,7 @@ func substituteRule(r *rule.Rule, substitutions map[string]string, info rule.Kin
 // the quality of the match (name match is best, then attribute match in the
 // order that attributes are listed). If disambiguation is successful,
 // the rule and nil are returned. Otherwise, nil and an error are returned.
-func match(rules []*rule.Rule, x *rule.Rule, info rule.KindInfo) (*rule.Rule, error) {
+func Match(rules []*rule.Rule, x *rule.Rule, info rule.KindInfo) (*rule.Rule, error) {
 	xname := x.Name()
 	xkind := x.Kind()
 	var nameMatches []*rule.Rule

@@ -23,5 +23,9 @@ cd ${KOPS_ROOT}
 # Update gobindata to reflect any yaml changes
 make kops-gobindata
 
+# Don't override variables that are commonly used in dev, but shouldn't be in our tests
+export KOPS_BASE_URL=
+export DNSCONTROLLER_IMAGE=
+
 # Run the tests in "autofix mode"
 HACK_UPDATE_EXPECTED_IN_PLACE=1 go test ./... -count=1

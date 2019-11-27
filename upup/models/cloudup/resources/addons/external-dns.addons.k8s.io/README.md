@@ -12,7 +12,7 @@ In a broader sense, ExternalDNS allows you to control DNS records dynamically vi
 
 The following tutorials are provided:
 
-* [AWS](https://github.com/kubernetes-incubator/external-dns/blob/master/docs/tutorials/aws.md)
+* [AWS](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/aws.md)
 * [Azure](https://github.com/kubernetes-incubator/external-dns/blob/master/docs/tutorials/azure.md)
 * [Cloudflare](https://github.com/kubernetes-incubator/external-dns/blob/master/docs/tutorials/cloudflare.md)
 * [DigitalOcean](https://github.com/kubernetes-incubator/external-dns/blob/master/docs/tutorials/digitalocean.md)

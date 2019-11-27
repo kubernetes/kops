@@ -43,6 +43,7 @@ Several different CNI providers are currently built into kops:
 * [weave](https://github.com/weaveworks/weave)
 * [amazon-vpc-routed-eni](./networking.md#amazon-vpc-backend)
 * [Cilium](http://docs.cilium.io)
+* [Lyft cni-ipvlan-vpc-k8s](https://github.com/lyft/cni-ipvlan-vpc-k8s)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
 Replace the provider name with the names listed above with you `kops cluster create`.  For instance
@@ -113,7 +114,7 @@ spec:
 ### Configuring Weave Net EXTRA_ARGS
 
 Weave allows you to pass command line arguments to weave by adding those arguments to the EXTRA_ARGS environmental variable.
-This can be used for debugging or for customizing the logging level of weave net. 
+This can be used for debugging or for customizing the logging level of weave net.
 
 ```
 spec:
@@ -220,9 +221,21 @@ For help with Calico or to report any issues:
 
 #### Calico Backend
 
-In kops 1.12.0 and later Calico uses the k8s APIServer as its datastore. The current setup does not make use of [Typha](https://github.com/projectcalico/typha) - a component intended to lower the impact of Calico on the k8s APIServer which is recommended in [clusters over 50 nodes](https://docs.projectcalico.org/latest/getting-started/kubernetes/installation/calico#installing-with-the-kubernetes-api-datastoremore-than-50-nodes) and is strongly recommended in clusters of 100+ nodes.
+In kops 1.12.0 and later Calico uses the k8s APIServer as its datastore.
 
 In versions <1.12.0 of kops Calico uses etcd as a backend for storing information about workloads and policies. Calico does not interfere with normal etcd operations and does not require special handling when upgrading etcd.  For more information please visit the [etcd Docs](https://coreos.com/etcd/docs/latest/)
+
+#### Configuraing Calico to use Typha
+
+As of Kops 1.12 Calico uses the kube-apiserver as its datastore. The default setup does not make use of [Typha](https://github.com/projectcalico/typha) - a component intended to lower the impact of Calico on the k8s APIServer which is recommended in [clusters over 50 nodes](https://docs.projectcalico.org/latest/getting-started/kubernetes/installation/calico#installing-with-the-kubernetes-api-datastoremore-than-50-nodes) and is strongly recommended in clusters of 100+ nodes.
+It is possible to configure Calico to use Typha by editing a cluster and adding a
+`typhaReplicas` option to the Calico spec:
+
+```
+  networking:
+    calico:
+      typhaReplicas: 3
+```
 
 #### Calico troubleshooting
 
@@ -237,7 +250,7 @@ This has been solved in kops 1.9.0, when creating a new cluster no action is nee
 
 ### Canal Example for CNI and Network Policy
 
-Canal is a project that combines [Flannel](https://github.com/coreos/flannel) and [Calico](http://docs.projectcalico.org/latest/getting-started/kubernetes/installation/hosted/) for CNI Networking.  It uses Flannel for networking pod traffic between hosts via VXLAN and Calico for network policy enforcement and pod to pod traffic.
+Canal is a project that combines [Flannel](https://github.com/coreos/flannel) and [Calico](http://docs.projectcalico.org/latest/getting-started/kubernetes/installation/) for CNI Networking.  It uses Flannel for networking pod traffic between hosts via VXLAN and Calico for network policy enforcement and pod to pod traffic.
 
 #### Installing Canal on a new Cluster
 
@@ -410,7 +423,7 @@ $ kops create cluster \
   --name cilium.example.com
 ```
 
-The above will deploy a daemonset installation which requires K8s 1.7.x or above.
+The above will deploy a Cilium daemonset installation which requires K8s 1.10.x or above.
 
 #### Configuring Cilium
 
@@ -486,6 +499,75 @@ Here are some steps items that will confirm a good CNI install:
 
 The sig-networking and sig-cluster-lifecycle channels on K8s slack are always good starting places
 for Kubernetes specific CNI challenges.
+
+#### Lyft CNI
+
+The [lyft cni-ipvlan-vpc-k8s](https://github.com/lyft/cni-ipvlan-vpc-k8s) plugin uses Amazon Elastic Network Interfaces (ENI) to assign AWS-managed IPs to Pods using the Linux kernel's IPvlan driver in L2 mode.
+
+Read the [prerequisites](https://github.com/lyft/cni-ipvlan-vpc-k8s#prerequisites) before starting. In addition to that, you need to specify the VPC ID as `spec.networkID` in the cluster spec file.
+
+To use the Lyft CNI plugin you specify
+
+```
+  networking:
+    lyftvpc: {}
+```
+
+in the cluster spec file or pass the `--networking lyftvpc` option on the command line to kops:
+
+```console
+$ export ZONES=mylistofzones
+$ kops create cluster \
+  --zones $ZONES \
+  --master-zones $ZONES \
+  --master-size m4.large \
+  --node-size m4.large \
+  --networking lyftvpc \
+  --yes \
+  --name myclustername.mydns.io
+```
+
+You can specify which subnets to use for allocating Pod IPs by specifying
+
+```
+  networking:
+    lyftvpc:
+      subnetTags:
+        kubernetes_kubelet: true
+```
+
+In this example, new interfaces will be attached to subnets tagged with `kubernetes_kubelet = true`.
+
+**Note:** The following permissions are added to all nodes by kops to run the provider:
+
+```json
+  {
+    "Sid": "kopsK8sEC2NodeAmazonVPCPerms",
+    "Effect": "Allow",
+    "Action": [
+      "ec2:CreateNetworkInterface",
+      "ec2:AttachNetworkInterface",
+      "ec2:DeleteNetworkInterface",
+      "ec2:DetachNetworkInterface",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DescribeInstances",
+      "ec2:ModifyNetworkInterfaceAttribute",
+      "ec2:AssignPrivateIpAddresses",
+      "ec2:UnassignPrivateIpAddresses",
+      "tag:TagResources"
+    ],
+    "Resource": [
+      "*"
+    ]
+  },
+  {
+    "Effect": "Allow",
+    "Action": "ec2:CreateTags",
+    "Resource": "arn:aws:ec2:*:*:network-interface/*"
+  }
+```
+
+In case of any issues the directory `/var/log/aws-routed-eni` contains the log files of the CNI plugin. This directory is located in all the nodes in the cluster.
 
 ## Switching between networking providers
 

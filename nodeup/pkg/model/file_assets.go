@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ var templateFuncs = template.FuncMap{
 // Build is responsible for writing out the file assets from cluster and instanceGroup
 func (f *FileAssetsBuilder) Build(c *fi.ModelBuilderContext) error {
 	// used to keep track of previous file, so a instanceGroup can override a cluster wide one
-	tracker := make(map[string]bool, 0)
+	tracker := make(map[string]bool)
 
 	// ensure the default path exists
 	c.EnsureTask(&nodetasks.File{
@@ -70,7 +70,7 @@ func (f *FileAssetsBuilder) Build(c *fi.ModelBuilderContext) error {
 // buildFileAssets is responsible for rendering the file assets to disk
 func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []kops.FileAssetSpec, tracker map[string]bool) error {
 	for _, asset := range assets {
-		// @check if the file asset applys to us. If no roles applied we assume its applied to all roles
+		// @check if the file asset applies to us. If no roles applied we assume its applied to all roles
 		if len(asset.Roles) > 0 && !containsRole(f.InstanceGroup.Spec.Role, asset.Roles) {
 			continue
 		}

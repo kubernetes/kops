@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -40,13 +40,13 @@ func TestBootstrapChannelBuilder_BuildTasks(t *testing.T) {
 
 	h.SetupMockAWS()
 
-	runChannelBuilderTest(t, "simple")
-	runChannelBuilderTest(t, "kopeio-vxlan")
-	runChannelBuilderTest(t, "weave")
-	runChannelBuilderTest(t, "cilium")
+	runChannelBuilderTest(t, "simple", []string{"dns-controller.addons.k8s.io-k8s-1.12", "kops-controller.addons.k8s.io-k8s-1.16"})
+	// Use cilium networking, proxy
+	runChannelBuilderTest(t, "cilium", []string{"dns-controller.addons.k8s.io-k8s-1.12", "kops-controller.addons.k8s.io-k8s-1.16"})
+	runChannelBuilderTest(t, "weave", []string{})
 }
 
-func runChannelBuilderTest(t *testing.T, key string) {
+func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	basedir := path.Join("tests/bootstrapchannelbuilder/", key)
 
 	clusterYamlPath := path.Join(basedir, "cluster.yaml")
@@ -122,7 +122,7 @@ func runChannelBuilderTest(t *testing.T, key string) {
 		testutils.AssertMatchesFile(t, actualManifest, expectedManifestPath)
 	}
 
-	for _, k := range []string{"dns-controller.addons.k8s.io-k8s-1.12" /*, "kops-controller.addons.k8s.io-k8s-1.16"*/} {
+	for _, k := range addonManifests {
 		name := cluster.ObjectMeta.Name + "-addons-" + k
 		manifestTask := context.Tasks[name]
 		if manifestTask == nil {

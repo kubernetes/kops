@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -40,9 +40,7 @@ func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource)
 			depMap[block] = append(depMap[block], k)
 		}
 
-		for _, blocked := range t.Blocked {
-			depMap[k] = append(depMap[k], blocked)
-		}
+		depMap[k] = append(depMap[k], t.Blocked...)
 
 		if t.Done {
 			done[k] = t

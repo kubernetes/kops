@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -142,7 +142,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		return nil
 	}
 
-	image, err := Image("kube-apiserver", clusterSpec, b.AssetBuilder)
+	image, err := Image("kube-apiserver", b.Architecture(), clusterSpec, b.AssetBuilder)
 	if err != nil {
 		return err
 	}

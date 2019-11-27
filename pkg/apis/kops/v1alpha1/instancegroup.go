@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -141,10 +141,10 @@ type InstanceGroupSpec struct {
 }
 
 const (
-	// SpotAllocationStrategyLowestPrices indicates a lowest price strategy
-	SpotAllocationStrategyLowestPrices = "LowestPrice"
+	// SpotAllocationStrategyLowestPrices indicates a lowest-price strategy
+	SpotAllocationStrategyLowestPrices = "lowest-price"
 	// SpotAllocationStrategyDiversified indicates a diversified strategy
-	SpotAllocationStrategyDiversified = "Diversified"
+	SpotAllocationStrategyDiversified = "diversified"
 )
 
 // SpotAllocationStrategies is a collection of supported strategies

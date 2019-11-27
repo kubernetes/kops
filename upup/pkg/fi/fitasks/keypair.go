@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -200,7 +200,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	if createCertificate {
 		klog.V(2).Infof("Creating PKI keypair %q", name)
 
-		cert, privateKey, _, err := c.Keystore.FindKeypair(name)
+		_, privateKey, _, err := c.Keystore.FindKeypair(name)
 		if err != nil {
 			return err
 		}
@@ -222,7 +222,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			signer = fi.StringValue(e.Signer.Name)
 		}
 
-		cert, err = c.Keystore.CreateKeypair(signer, name, template, privateKey)
+		cert, err := c.Keystore.CreateKeypair(signer, name, template, privateKey)
 		if err != nil {
 			return err
 		}

@@ -21,6 +21,7 @@ import (
 	"go/build"
 	"log"
 	"path"
+	"regexp"
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/config"
@@ -66,12 +67,12 @@ func (gl *goLang) Resolve(c *config.Config, ix *resolve.RuleIndex, rc *repo.Remo
 	}
 	imports := importsRaw.(rule.PlatformStrings)
 	r.DelAttr("deps")
-	resolve := resolveGo
+	resolve := ResolveGo
 	if r.Kind() == "go_proto_library" {
 		resolve = resolveProto
 	}
 	deps, errs := imports.Map(func(imp string) (string, error) {
-		l, err := resolve(c, ix, rc, r, imp, from)
+		l, err := resolve(c, ix, rc, imp, from)
 		if err == skipImportError {
 			return "", nil
 		} else if err != nil {
@@ -105,7 +106,13 @@ var (
 	notFoundError   = errors.New("rule not found")
 )
 
-func resolveGo(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, r *rule.Rule, imp string, from label.Label) (label.Label, error) {
+// ResolveGo resolves a Go import path to a Bazel label, possibly using the
+// given rule index and remote cache. Some special cases may be applied to
+// known proto import paths, depending on the current proto mode.
+//
+// This may be used directly by other language extensions related to Go
+// (gomock). Gazelle calls Language.Resolve instead.
+func ResolveGo(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, imp string, from label.Label) (label.Label, error) {
 	gc := getGoConfig(c)
 	pcMode := getProtoMode(c)
 	if build.IsLocalImport(imp) {
@@ -116,7 +123,7 @@ func resolveGo(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, r 
 		imp = path.Join(gc.prefix, cleanRel)
 	}
 
-	if isStandard(imp) {
+	if IsStandard(imp) {
 		return label.NoLabel, skipImportError
 	}
 
@@ -178,14 +185,14 @@ func resolveGo(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, r 
 	}
 
 	if gc.depMode == externalMode {
-		return resolveExternal(rc, imp)
+		return resolveExternal(gc.moduleMode, rc, imp)
 	} else {
 		return resolveVendored(rc, imp)
 	}
 }
 
-// isStandard returns whether a package is in the standard library.
-func isStandard(imp string) bool {
+// IsStandard returns whether a package is in the standard library.
+func IsStandard(imp string) bool {
 	return stdPackages[imp]
 }
 
@@ -227,7 +234,8 @@ func resolveWithIndexGo(ix *resolve.RuleIndex, imp string, from label.Label) (la
 			// Current match is worse
 		} else {
 			// Match is ambiguous
-			matchError = fmt.Errorf("multiple rules (%s and %s) may be imported with %q from %s", bestMatch.Label, m.Label, imp, from)
+			// TODO: consider listing all the ambiguous rules here.
+			matchError = fmt.Errorf("rule %s imports %q which matches multiple rules: %s and %s. # gazelle:resolve may be used to disambiguate", from, imp, bestMatch.Label, m.Label)
 		}
 	}
 	if matchError != nil {
@@ -242,15 +250,39 @@ func resolveWithIndexGo(ix *resolve.RuleIndex, imp string, from label.Label) (la
 	return bestMatch.Label, nil
 }
 
-func resolveExternal(rc *repo.RemoteCache, imp string) (label.Label, error) {
-	prefix, repo, err := rc.Root(imp)
+var modMajorRex = regexp.MustCompile(`/v\d+(?:/|$)`)
+
+func resolveExternal(moduleMode bool, rc *repo.RemoteCache, imp string) (label.Label, error) {
+	// If we're in module mode, use "go list" to find the module path and
+	// repository name. Otherwise, use special cases (for github.com, golang.org)
+	// or send a GET with ?go-get=1 to find the root. If the path contains
+	// a major version suffix (e.g., /v2), treat it as a module anyway though.
+	//
+	// Eventually module mode will be the only mode. But for now, it's expensive
+	// and not the common case, especially when known repositories aren't
+	// listed in WORKSPACE (which is currently the case within go_repository).
+	if !moduleMode {
+		moduleMode = pathWithoutSemver(imp) != ""
+	}
+
+	var prefix, repo string
+	var err error
+	if moduleMode {
+		prefix, repo, err = rc.Mod(imp)
+	} else {
+		prefix, repo, err = rc.Root(imp)
+	}
 	if err != nil {
 		return label.NoLabel, err
 	}
 
 	var pkg string
-	if imp != prefix {
+	if pathtools.HasPrefix(imp, prefix) {
 		pkg = pathtools.TrimPrefix(imp, prefix)
+	} else if impWithoutSemver := pathWithoutSemver(imp); pathtools.HasPrefix(impWithoutSemver, prefix) {
+		// We may have used minimal module compatibility to resolve a path
+		// without a semantic import version suffix to a repository that has one.
+		pkg = pathtools.TrimPrefix(impWithoutSemver, prefix)
 	}
 
 	return label.New(repo, pkg, defaultLibName), nil
@@ -260,7 +292,7 @@ func resolveVendored(rc *repo.RemoteCache, imp string) (label.Label, error) {
 	return label.New("", path.Join("vendor", imp), defaultLibName), nil
 }
 
-func resolveProto(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, r *rule.Rule, imp string, from label.Label) (label.Label, error) {
+func resolveProto(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, imp string, from label.Label) (label.Label, error) {
 	pcMode := getProtoMode(c)
 
 	if wellKnownProtos[imp] {
@@ -306,7 +338,7 @@ func resolveProto(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache,
 var wellKnownProtos = map[string]bool{
 	"google/protobuf/any.proto":             true,
 	"google/protobuf/api.proto":             true,
-	"google/protobuf/compiler_plugin.proto": true,
+	"google/protobuf/compiler/plugin.proto": true,
 	"google/protobuf/descriptor.proto":      true,
 	"google/protobuf/duration.proto":        true,
 	"google/protobuf/empty.proto":           true,

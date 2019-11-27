@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -422,7 +422,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 				return field.Invalid(path.Child("tokenTTL"), c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL, "must be greater than or equal to zero")
 			}
 
-			// @question: we could probably just default theses settings in the model when the node-authorizer is enabled??
+			// @question: we could probably just default these settings in the model when the node-authorizer is enabled??
 			if c.Spec.KubeAPIServer == nil {
 				return field.Invalid(field.NewPath("kubeAPIServer"), c.Spec.KubeAPIServer, "bootstrap token authentication is not enabled in the kube-apiserver")
 			}
@@ -720,7 +720,7 @@ func validateEtcdStorage(specs []*kops.EtcdClusterSpec, fieldPath *field.Path) *
 // validateEtcdVersion is responsible for validating the storage version of etcd
 // @TODO semvar package doesn't appear to ignore a 'v' in v1.1.1 should could be a problem later down the line
 func validateEtcdVersion(spec *kops.EtcdClusterSpec, fieldPath *field.Path, minimalVersion *semver.Version) *field.Error {
-	// @check if the storage is specified, thats is valid
+	// @check if the storage is specified, that's is valid
 
 	if minimalVersion == nil {
 		v := semver.MustParse("0.0.0")
@@ -769,12 +769,6 @@ func validateCilium(c *kops.Cluster) *field.Error {
 		kubeVersion := semver.MustParse(c.Spec.KubernetesVersion)
 		if kubeVersion.LT(minimalKubeVersion) {
 			return field.Invalid(specPath.Child("KubernetesVersion"), c.Spec.KubernetesVersion, "Cilium needs at least Kubernetes 1.7")
-		}
-
-		minimalVersion := semver.MustParse("3.1.0")
-		path := specPath.Child("EtcdClusters").Index(0)
-		if err := validateEtcdVersion(c.Spec.EtcdClusters[0], path, &minimalVersion); err != nil {
-			return err
 		}
 	}
 	return nil

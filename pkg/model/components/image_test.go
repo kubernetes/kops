@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -86,6 +86,27 @@ func TestImage(t *testing.T) {
 			},
 			Expected: "k8s.gcr.io/kube-apiserver:1-10-0dockertag",
 		},
+		{
+			Component: "kube-apiserver",
+			Cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "memfs://v1.16.0-download/",
+				},
+			},
+			VFS: map[string]string{
+				"memfs://v1.16.0-download/bin/linux/amd64/kube-apiserver.docker_tag": "1-16-0dockertag",
+			},
+			Expected: "k8s.gcr.io/kube-apiserver-amd64:1-16-0dockertag",
+		},
+		{
+			Component: "kube-apiserver",
+			Cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "1.16.0",
+				},
+			},
+			Expected: "k8s.gcr.io/kube-apiserver:v1.16.0",
+		},
 	}
 
 	for _, g := range grid {
@@ -104,8 +125,10 @@ func TestImage(t *testing.T) {
 			}
 		}
 
+		architecture := "amd64"
+
 		assetBuilder := assets.NewAssetBuilder(g.Cluster, "")
-		actual, err := Image(g.Component, &g.Cluster.Spec, assetBuilder)
+		actual, err := Image(g.Component, architecture, &g.Cluster.Spec, assetBuilder)
 		if err != nil {
 			t.Errorf("unexpected error from image %q %v: %v",
 				g.Component, g.Cluster.Spec.KubernetesVersion, err)

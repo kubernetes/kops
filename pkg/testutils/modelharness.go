@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -149,5 +149,5 @@ func AssertMatchesFile(t *testing.T, actual string, p string) {
 
 	t.Logf("to update golden output automatically, run hack/update-expected.sh")
 
-	t.Fatalf("output did not match expected for %q", p)
+	t.Errorf("output did not match expected for %q", p)
 }

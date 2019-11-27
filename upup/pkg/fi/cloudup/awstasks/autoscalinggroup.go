@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import (
 	"k8s.io/klog"
 )
 
-// CloudTagInstanceGroupRolePrefix is a cloud tag that defined the instance role
+// CloudTagInstanceGroupRolePrefix is a cloud tag that defines the instance role
 const CloudTagInstanceGroupRolePrefix = "k8s.io/role/"
 
 // AutoscalingGroup provdes the definition for a autoscaling group in aws
@@ -325,7 +325,6 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		if e.InstanceProtection != nil {
 			request.NewInstancesProtectedFromScaleIn = e.InstanceProtection
 		}
-
 	} else {
 		// @logic: else we have found a autoscaling group and we need to evaluate the difference
 		request := &autoscaling.UpdateAutoScalingGroupInput{

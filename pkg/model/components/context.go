@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -49,6 +49,13 @@ func (c *OptionsContext) IsKubernetesGTE(version string) bool {
 
 func (c *OptionsContext) IsKubernetesLT(version string) bool {
 	return !c.IsKubernetesGTE(version)
+}
+
+// Architecture returns the architecture we are using
+// We currently only support amd64, and we probably need to pass the InstanceGroup in
+// But we can start collecting the architectural dependencies
+func (c *OptionsContext) Architecture() string {
+	return "amd64"
 }
 
 // KubernetesVersion parses the semver version of kubernetes, from the cluster spec
@@ -128,7 +135,7 @@ func IsBaseURL(kubernetesVersion string) bool {
 }
 
 // Image returns the docker image name for the specified component
-func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *assets.AssetBuilder) (string, error) {
+func Image(component string, architecture string, clusterSpec *kops.ClusterSpec, assetsBuilder *assets.AssetBuilder) (string, error) {
 	if assetsBuilder == nil {
 		return "", fmt.Errorf("unable to parse assets as assetBuilder is not defined")
 	}
@@ -143,8 +150,10 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 		return "", err
 	}
 
+	imageName := component
+
 	if !IsBaseURL(clusterSpec.KubernetesVersion) {
-		image := "k8s.gcr.io/" + component + ":" + "v" + kubernetesVersion.String()
+		image := "k8s.gcr.io/" + imageName + ":" + "v" + kubernetesVersion.String()
 
 		image, err := assetsBuilder.RemapImage(image)
 		if err != nil {
@@ -153,11 +162,28 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 		return image, nil
 	}
 
+	// The simple name is valid when pulling (before 1.16 it was
+	// only amd64, as of 1.16 it is a manifest list).  But if we
+	// are loading from a tarfile then the image is tagged with
+	// the architecture suffix.
+	//
+	// i.e. k8s.gcr.io/kube-apiserver:v1.16.0 is a manifest list
+	// and we _can_ also pull
+	// k8s.gcr.io/kube-apiserver-amd64:v1.16.0 directly.  But if
+	// we load https://.../v1.16.0/amd64/kube-apiserver.tar then
+	// the image inside that tar file is named
+	// "k8s.gcr.io/kube-apiserver-amd64:v1.16.0"
+	//
+	// But ... this is only the case from 1.16 on...
+	if kubernetesVersion.IsGTE("1.16") {
+		imageName += "-" + architecture
+	}
+
 	baseURL := clusterSpec.KubernetesVersion
 	baseURL = strings.TrimSuffix(baseURL, "/")
 
 	// TODO path.Join here?
-	tagURL := baseURL + "/bin/linux/amd64/" + component + ".docker_tag"
+	tagURL := baseURL + "/bin/linux/" + architecture + "/" + component + ".docker_tag"
 	klog.V(2).Infof("Downloading docker tag for %s from: %s", component, tagURL)
 
 	b, err := vfs.Context.ReadFile(tagURL)
@@ -167,7 +193,7 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 	tag := strings.TrimSpace(string(b))
 	klog.V(2).Infof("Found tag %q for %q", tag, component)
 
-	image := "k8s.gcr.io/" + component + ":" + tag
+	image := "k8s.gcr.io/" + imageName + ":" + tag
 
 	// When we're using a docker load-ed image, we are likely a CI build.
 	// But the k8s.gcr.io prefix is an alias, and we only double-tagged from 1.10 onwards.

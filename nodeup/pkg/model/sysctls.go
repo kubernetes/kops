@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"net.core.rmem_max = 16777216",
 			"",
 
-			"# Default Socket Send Buffer",
+			"# Maximum Socket Send Buffer",
 			"net.core.wmem_max = 16777216",
 			"",
 
@@ -87,7 +87,8 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"net.ipv4.tcp_slow_start_after_idle = 0",
 			"",
 
-			"# Increase the tcp-time-wait buckets pool size to prevent simple DOS attacks",
+			"# Allow to reuse TIME_WAIT sockets for new connections",
+			"# when it is safe from protocol viewpoint",
 			"net.ipv4.tcp_tw_reuse = 1",
 			"",
 

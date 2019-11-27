@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -49,10 +49,10 @@ var (
 	deleteExample = templates.Examples(i18n.T(`
 		# Delete a cluster using a manifest file
 		kops delete -f my-cluster.yaml
-		
+
 		# Delete a cluster using a pasted manifest file from stdin.
 		pbpaste | kops delete -f -
-		
+
 		# Delete a cluster in AWS.
 		kops delete cluster --name=k8s.example.com --state=s3://kops-state-1234
 

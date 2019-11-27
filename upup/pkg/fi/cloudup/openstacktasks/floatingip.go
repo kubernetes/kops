@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -130,7 +130,7 @@ func (e *FloatingIP) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		if _, ok := task.(*LB); ok {
 			deps = append(deps, task)
 		}
-		// We cant create a floating IP until the router with access to the external network
+		// We can't create a floating IP until the router with access to the external network
 		//  Has created an interface to our subnet
 		if _, ok := task.(*RouterInterface); ok {
 			deps = append(deps, task)

@@ -65,3 +65,47 @@ func RelBaseName(rel, prefix, root string) string {
 	}
 	return base
 }
+
+// Index returns the starting index of the string sub within the non-absolute
+// slash-separated path p. sub must start and end at component boundaries
+// within p.
+func Index(p, sub string) int {
+	if sub == "" {
+		return 0
+	}
+	p = path.Clean(p)
+	sub = path.Clean(sub)
+	if path.IsAbs(sub) {
+		if HasPrefix(p, sub) {
+			return 0
+		} else {
+			return -1
+		}
+	}
+	if p == "" || p == "/" {
+		return -1
+	}
+
+	i := 0 // i is the index of the first byte of a path element
+	if len(p) > 0 && p[0] == '/' {
+		i++
+	}
+	for {
+		suffix := p[i:]
+		if len(suffix) < len(sub) {
+			return -1
+		}
+		if suffix[:len(sub)] == sub && (len(suffix) == len(sub) || suffix[len(sub)] == '/') {
+			return i
+		}
+		j := strings.IndexByte(suffix, '/')
+		if j < 0 {
+			return -1
+		}
+		i += j + 1
+		if i >= len(p) {
+			return -1
+		}
+	}
+	return -1
+}

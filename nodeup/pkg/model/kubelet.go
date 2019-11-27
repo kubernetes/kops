@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/systemd"
@@ -471,16 +472,6 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.ModelBuilderContext) erro
 	return nil
 }
 
-const (
-	RoleLabelName15        = "kubernetes.io/role"
-	RoleLabelName16        = "kubernetes.io/role"
-	RoleMasterLabelValue15 = "master"
-	RoleNodeLabelValue15   = "node"
-
-	RoleLabelMaster16 = "node-role.kubernetes.io/master"
-	RoleLabelNode16   = "node-role.kubernetes.io/node"
-)
-
 // NodeLabels are defined in the InstanceGroup, but set flags on the kubelet config.
 // We have a conflict here: on the one hand we want an easy to use abstract specification
 // for the cluster, on the other hand we don't want two fields that do the same thing.
@@ -493,28 +484,40 @@ const (
 
 // buildKubeletConfigSpec returns the kubeletconfig for the specified instanceGroup
 func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, error) {
+	isMaster := b.IsMaster
+
 	// Merge KubeletConfig for NodeLabels
 	c := &kops.KubeletConfigSpec{}
-	if b.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {
+	if isMaster {
 		reflectutils.JsonMergeStruct(c, b.Cluster.Spec.MasterKubelet)
 	} else {
 		reflectutils.JsonMergeStruct(c, b.Cluster.Spec.Kubelet)
 	}
 
-	// @check if we are using secure kubelet <-> api settings
+	// check if we are using secure kubelet <-> api settings
 	if b.UseSecureKubelet() {
-		// @TODO these filenames need to be a constant somewhere
 		c.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 	}
 
-	if b.IsMaster {
+	if isMaster {
 		c.BootstrapKubeconfig = ""
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		instanceType, err := awsup.GetMachineTypeInfo(strings.Split(b.InstanceGroup.Spec.MachineType, ",")[0])
+		sess := session.Must(session.NewSession())
+		metadata := ec2metadata.New(sess)
+
+		// Get the actual instance type by querying the EC2 instance metadata service.
+		instanceTypeName, err := metadata.GetMetadata("instance-type")
 		if err != nil {
-			return c, err
+			// Otherwise, fall back to the Instance Group spec.
+			instanceTypeName = strings.Split(b.InstanceGroup.Spec.MachineType, ",")[0]
+		}
+
+		// Get the instance type's detailed information.
+		instanceType, err := awsup.GetMachineTypeInfo(instanceTypeName)
+		if err != nil {
+			return nil, err
 		}
 
 		// Default maximum pods per node defined by KubeletConfiguration, but
@@ -551,36 +554,13 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		reflectutils.JsonMergeStruct(c, b.InstanceGroup.Spec.Kubelet)
 	}
 
-	if b.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {
-		if c.NodeLabels == nil {
-			c.NodeLabels = make(map[string]string)
-		}
-		c.NodeLabels[RoleLabelMaster16] = ""
-		c.NodeLabels[RoleLabelName15] = RoleMasterLabelValue15
-	} else {
-		if c.NodeLabels == nil {
-			c.NodeLabels = make(map[string]string)
-		}
-		c.NodeLabels[RoleLabelNode16] = ""
-		c.NodeLabels[RoleLabelName15] = RoleNodeLabelValue15
-	}
-
-	for k, v := range b.InstanceGroup.Spec.NodeLabels {
-		if c.NodeLabels == nil {
-			c.NodeLabels = make(map[string]string)
-		}
-		c.NodeLabels[k] = v
-	}
-
 	// Use --register-with-taints for k8s 1.6 and on
-	if b.IsKubernetesGTE("1.6") {
-		for _, t := range b.InstanceGroup.Spec.Taints {
-			c.Taints = append(c.Taints, t)
-		}
+	if b.Cluster.IsKubernetesGTE("1.6") {
+		c.Taints = append(c.Taints, b.InstanceGroup.Spec.Taints...)
 
-		if len(c.Taints) == 0 && b.IsMaster {
+		if len(c.Taints) == 0 && isMaster {
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
-			c.Taints = append(c.Taints, RoleLabelMaster16+"=:"+string(v1.TaintEffectNoSchedule))
+			c.Taints = append(c.Taints, nodelabels.RoleLabelMaster16+"=:"+string(v1.TaintEffectNoSchedule))
 		}
 
 		// Enable scheduling since it can be controlled via taints.
@@ -603,6 +583,19 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		default:
 			c.VolumePluginDirectory = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/"
 		}
+	}
+
+	// As of 1.16 we can no longer set critical labels.
+	// kops-controller will set these labels.
+	// For bootstrapping reasons, protokube sets the critical labels for kops-controller to run.
+	if b.Cluster.IsKubernetesGTE("1.16") {
+		c.NodeLabels = nil
+	} else {
+		nodeLabels, err := nodelabels.BuildNodeLabels(b.Cluster, b.InstanceGroup)
+		if err != nil {
+			return nil, err
+		}
+		c.NodeLabels = nodeLabels
 	}
 
 	return c, nil

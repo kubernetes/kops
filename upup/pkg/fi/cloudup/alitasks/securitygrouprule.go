@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ func (s *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 	cloud := c.Cloud.(aliup.ALICloud)
 	var direction ecs.Direction
 
-	if fi.BoolValue(s.In) == true {
+	if fi.BoolValue(s.In) {
 		direction = ecs.DirectionIngress
 	} else {
 		direction = ecs.DirectionEgress
@@ -140,7 +140,7 @@ func (_ *SecurityGroupRule) CheckChanges(a, e, changes *SecurityGroupRule) error
 func (_ *SecurityGroupRule) RenderALI(t *aliup.ALIAPITarget, a, e, changes *SecurityGroupRule) error {
 
 	if a == nil {
-		if fi.BoolValue(e.In) == true {
+		if fi.BoolValue(e.In) {
 			klog.V(2).Infof("Creating SecurityGroupRule of SecurityGroup:%q", fi.StringValue(e.SecurityGroup.SecurityGroupId))
 
 			authorizeSecurityGroupArgs := &ecs.AuthorizeSecurityGroupArgs{

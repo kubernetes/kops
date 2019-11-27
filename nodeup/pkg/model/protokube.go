@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -115,6 +115,11 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		"-v", "/run/systemd:/run/systemd",
 	}
 
+	if fi.BoolValue(t.Cluster.Spec.UseHostCertificates) {
+		dockerArgs = append(dockerArgs, "-v")
+		dockerArgs = append(dockerArgs, "/etc/ssl/certs:/etc/ssl/certs")
+	}
+
 	// add kubectl only if a master
 	// path changes depending on distro, and always mount it on /opt/kops/bin
 	// kubectl is downloaded and installed by other tasks
@@ -227,6 +232,22 @@ type ProtokubeFlags struct {
 	// RemoveDNSNames allows us to remove dns records, so that they can be managed elsewhere
 	// We use it e.g. for the switch to etcd-manager
 	RemoveDNSNames string `json:"removeDNSNames,omitempty" flag:"remove-dns-names"`
+
+	// BootstrapMasterNodeLabels applies the critical node-role labels to our node,
+	// which lets us bring up the controllers that can only run on masters, which are then
+	// responsible for node labels.  The node is specified by NodeName
+	BootstrapMasterNodeLabels bool `json:"bootstrapMasterNodeLabels,omitempty" flag:"bootstrap-master-node-labels"`
+
+	// NodeName is the name of the node as will be created in kubernetes.  Primarily used by BootstrapMasterNodeLabels.
+	NodeName string `json:"nodeName,omitempty" flag:"node-name"`
+
+	GossipProtocol *string `json:"gossip-protocol" flag:"gossip-protocol"`
+	GossipListen   *string `json:"gossip-listen" flag:"gossip-listen"`
+	GossipSecret   *string `json:"gossip-secret" flag:"gossip-secret"`
+
+	GossipProtocolSecondary *string `json:"gossip-protocol-secondary" flag:"gossip-protocol-secondary"`
+	GossipListenSecondary   *string `json:"gossip-listen-secondary" flag:"gossip-listen-secondary"`
+	GossipSecretSecondary   *string `json:"gossip-secret-secondary" flag:"gossip-secret-secondary"`
 }
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
@@ -332,6 +353,17 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 	if dns.IsGossipHostname(t.Cluster.Spec.MasterInternalName) {
 		klog.Warningf("MasterInternalName %q implies gossip DNS", t.Cluster.Spec.MasterInternalName)
 		f.DNSProvider = fi.String("gossip")
+		if t.Cluster.Spec.GossipConfig != nil {
+			f.GossipProtocol = t.Cluster.Spec.GossipConfig.Protocol
+			f.GossipListen = t.Cluster.Spec.GossipConfig.Listen
+			f.GossipSecret = t.Cluster.Spec.GossipConfig.Secret
+
+			if t.Cluster.Spec.GossipConfig.Secondary != nil {
+				f.GossipProtocolSecondary = t.Cluster.Spec.GossipConfig.Secondary.Protocol
+				f.GossipListenSecondary = t.Cluster.Spec.GossipConfig.Secondary.Listen
+				f.GossipSecretSecondary = t.Cluster.Spec.GossipConfig.Secondary.Secret
+			}
+		}
 
 		// @TODO: This is hacky, but we want it so that we can have a different internal & external name
 		internalSuffix := t.Cluster.Spec.MasterInternalName
@@ -348,7 +380,6 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 				f.DNSProvider = fi.String("aws-route53")
 			case kops.CloudProviderDO:
 				f.DNSProvider = fi.String("digitalocean")
-				f.ClusterID = fi.String(t.Cluster.Name)
 			case kops.CloudProviderGCE:
 				f.DNSProvider = fi.String("google-clouddns")
 			case kops.CloudProviderVSphere:
@@ -367,6 +398,16 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 
 	if k8sVersion.Major == 1 && k8sVersion.Minor <= 5 {
 		f.ApplyTaints = fi.Bool(true)
+	}
+
+	if k8sVersion.Major == 1 && k8sVersion.Minor >= 16 {
+		f.BootstrapMasterNodeLabels = true
+
+		nodeName, err := t.NodeName()
+		if err != nil {
+			return nil, fmt.Errorf("error getting NodeName: %v", err)
+		}
+		f.NodeName = nodeName
 	}
 
 	// Remove DNS names if we're using etcd-manager
@@ -402,7 +443,7 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 
 	// TODO write out an environments file for this.  This is getting a tad long.
 
-	// Passin gossip dns connection limit
+	// Pass in gossip dns connection limit
 	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
 		buffer.WriteString(" ")
 		buffer.WriteString("-e 'GOSSIP_DNS_CONN_LIMIT=")

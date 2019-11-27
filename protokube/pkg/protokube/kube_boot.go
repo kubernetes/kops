@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ type KubeBoot struct {
 	DNS DNSProvider
 	// ModelDir is the model directory
 	ModelDir string
-	// Kubernetes is the context methods for kubernetes
+	// Kubernetes holds a kubernetes client
 	Kubernetes *KubernetesContext
 	// Master indicates we are a master node
 	Master bool
@@ -81,6 +81,14 @@ type KubeBoot struct {
 	PeerCert string
 	// PeerKey is the path to a peer private key for etcd
 	PeerKey string
+
+	// BootstrapMasterNodeLabels controls the initial application of node labels to our node
+	// The node is found by matching NodeName
+	BootstrapMasterNodeLabels bool
+
+	// NodeName is the name of our node as it will be registered in k8s.
+	// Used by BootstrapMasterNodeLabels
+	NodeName string
 
 	volumeMounter   *VolumeMountController
 	etcdControllers map[string]*EtcdController
@@ -142,6 +150,11 @@ func (k *KubeBoot) syncOnce() error {
 	}
 
 	if k.Master {
+		if k.BootstrapMasterNodeLabels {
+			if err := bootstrapMasterNodeLabels(k.Kubernetes, k.NodeName); err != nil {
+				klog.Warningf("error bootstrapping master node labels: %v", err)
+			}
+		}
 		if k.ApplyTaints {
 			if err := applyMasterTaints(k.Kubernetes); err != nil {
 				klog.Warningf("error updating master taints: %v", err)

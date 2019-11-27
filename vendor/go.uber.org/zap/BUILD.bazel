@@ -15,6 +15,7 @@ go_library(
         "level.go",
         "logger.go",
         "options.go",
+        "sink.go",
         "stacktrace.go",
         "sugar.go",
         "time.go",
