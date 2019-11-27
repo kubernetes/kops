@@ -78,12 +78,15 @@ func (d *Disk) Find(c *fi.Context) (*Disk, error) {
 
 	klog.V(2).Infof("found matching Disk with name: %q", *d.Name)
 
-	actual := &Disk{}
-	actual.Name = fi.String(responseDisks[0].DiskName)
-	actual.DiskCategory = fi.String(string(responseDisks[0].Category))
-	actual.ZoneId = fi.String(responseDisks[0].ZoneId)
-	actual.SizeGB = fi.Int(responseDisks[0].Size)
-	actual.DiskId = fi.String(responseDisks[0].DiskId)
+	disk := responseDisks[0]
+	actual := &Disk{
+		Name:         fi.String(disk.DiskName),
+		DiskCategory: fi.String(string(disk.Category)),
+		ZoneId:       fi.String(disk.ZoneId),
+		SizeGB:       fi.Int(disk.Size),
+		DiskId:       fi.String(disk.DiskId),
+		Encrypted:    fi.Bool(disk.Encrypted),
+	}
 
 	tags, err := cloud.GetTags(fi.StringValue(actual.DiskId), DiskResource)
 
