@@ -76,6 +76,17 @@ func (c *ALIModelContext) GetNameForVSwitchSNAT(subnetName string) string {
 	return subnetName + "." + c.ClusterName()
 }
 
+func (c *ALIModelContext) GetUtilitySubnets() []*kops.ClusterSubnetSpec {
+	var subnets []*kops.ClusterSubnetSpec
+	for i := range c.Cluster.Spec.Subnets {
+		subnet := &c.Cluster.Spec.Subnets[i]
+		if subnet.Type == kops.SubnetTypeUtility {
+			subnets = append(subnets, subnet)
+		}
+	}
+	return subnets
+}
+
 // LinkLoadBalancer returns the LoadBalancer object the cluster is located in
 func (c *ALIModelContext) LinkLoadBalancer() *alitasks.LoadBalancer {
 	return &alitasks.LoadBalancer{Name: s(c.GetNameForLoadBalancer())}
