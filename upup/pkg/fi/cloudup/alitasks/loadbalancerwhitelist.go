@@ -60,14 +60,18 @@ func (l *LoadBalancerWhiteList) Find(c *fi.Context) (*LoadBalancerWhiteList, err
 	if err != nil {
 		return nil, fmt.Errorf("error finding LoadBalancerWhiteList: %v", err)
 	}
+
 	if response.SourceItems == "" {
+		klog.V(2).Infof("can't find matching LoadBalancerWhiteList of ListenerPort: %v", listenertPort)
 		return nil, nil
 	}
-	klog.V(2).Infof("found matching LoadBalancerWhiteList of ListenerPort: %q", *l.LoadBalancerListener.ListenerPort)
 
+	klog.V(2).Infof("found matching LoadBalancerWhiteList of ListenerPort: %v", listenertPort)
 	actual := &LoadBalancerWhiteList{}
 	actual.SourceItems = fi.String(response.SourceItems)
+
 	// Ignore "system" fields
+	actual.Name = l.Name
 	actual.LoadBalancer = l.LoadBalancer
 	actual.LoadBalancerListener = l.LoadBalancerListener
 	actual.Lifecycle = l.Lifecycle
