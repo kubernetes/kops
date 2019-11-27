@@ -18,11 +18,13 @@ package alitasks
 
 import (
 	"fmt"
+	"strings"
 
 	common "github.com/denverdino/aliyungo/common"
 	ecs "github.com/denverdino/aliyungo/ecs"
 
 	"k8s.io/klog"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -50,7 +52,6 @@ func (s *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 		KeyPairName: fi.StringValue(s.Name),
 	}
 	keypairs, _, err := cloud.EcsClient().DescribeKeyPairs(describeKeyPairsArgs)
-
 	if err != nil {
 		return nil, fmt.Errorf("error listing SSHKeys: %v", err)
 	}
@@ -58,6 +59,7 @@ func (s *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 	if len(keypairs) == 0 {
 		return nil, nil
 	}
+
 	if len(keypairs) != 1 {
 		return nil, fmt.Errorf("Found multiple SSHKeys with Name %q", *s.Name)
 	}
@@ -68,13 +70,40 @@ func (s *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 		Name:               fi.String(k.KeyPairName),
 		KeyPairFingerPrint: fi.String(k.KeyPairFingerPrint),
 	}
+
+	// Avoid spurious changes
+	if fi.StringValue(actual.KeyPairFingerPrint) == compactKeyFingerprint(fi.StringValue(s.KeyPairFingerPrint)) {
+		klog.V(2).Infof("SSH key fingerprints match; assuming public keys match")
+		actual.PublicKey = s.PublicKey
+		actual.KeyPairFingerPrint = s.KeyPairFingerPrint
+	} else {
+		klog.V(2).Infof("Computed SSH key fingerprint mismatch: %q %q", fi.StringValue(s.KeyPairFingerPrint), fi.StringValue(actual.KeyPairFingerPrint))
+	}
+
 	// Ignore "system" fields
 	actual.Lifecycle = s.Lifecycle
 
 	return actual, nil
 }
 
+func compactKeyFingerprint(k string) string {
+	return strings.Replace(k, ":", "", -1)
+}
+
 func (s *SSHKey) Run(c *fi.Context) error {
+	if s.KeyPairFingerPrint == nil && s.PublicKey != nil {
+		publicKey, err := s.PublicKey.AsString()
+		if err != nil {
+			return fmt.Errorf("error reading SSH public key: %v", err)
+		}
+
+		keyPairFingerPrint, err := pki.ComputeOpenSSHKeyFingerprint(publicKey)
+		if err != nil {
+			return fmt.Errorf("error computing key fingerprint for SSH key: %v", err)
+		}
+		klog.V(2).Infof("Computed SSH key fingerprint as %q", keyPairFingerPrint)
+		s.KeyPairFingerPrint = &keyPairFingerPrint
+	}
 	return fi.DefaultDeltaRunMethod(s, c)
 }
 
@@ -111,7 +140,6 @@ func (_ *SSHKey) RenderALI(t *aliup.ALIAPITarget, a, e, changes *SSHKey) error {
 		e.KeyPairFingerPrint = fi.String(importKeyPairResponse.KeyPairFingerPrint)
 		return nil
 	}
-
 	return nil
 }
 
