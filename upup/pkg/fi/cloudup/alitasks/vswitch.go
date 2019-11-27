@@ -70,35 +70,30 @@ func (v *VSwitch) Find(c *fi.Context) (*VSwitch, error) {
 		return nil, fmt.Errorf("error listing VSwitchs: %v", err)
 	}
 
-	if fi.BoolValue(v.Shared) {
-		if len(vswitchList) != 1 {
-			return nil, fmt.Errorf("found multiple VSwitchs for %q", fi.StringValue(v.VSwitchId))
-		} else {
-			klog.V(2).Infof("found matching VSwitch with name: %q", *v.Name)
-
-			actual := &VSwitch{
-				Name:      fi.String(vswitchList[0].VSwitchName),
-				VSwitchId: fi.String(vswitchList[0].VSwitchId),
-				VPC: &VPC{
-					ID: fi.String(vswitchList[0].VpcId),
-				},
-
-				ZoneId:    fi.String(vswitchList[0].ZoneId),
-				CidrBlock: fi.String(vswitchList[0].CidrBlock),
-				// Ignore "system" fields
-				Lifecycle: v.Lifecycle,
-			}
-			return actual, nil
-		}
-	}
-
 	if len(vswitchList) == 0 {
 		return nil, nil
 	}
 
-	for _, vswitch := range vswitchList {
-		if vswitch.CidrBlock == fi.StringValue(v.CidrBlock) && !fi.BoolValue(v.Shared) {
+	var actual *VSwitch
 
+	for _, vswitch := range vswitchList {
+		if actual != nil {
+			return nil, fmt.Errorf("found multiple matching VSwitchs")
+		}
+		if vswitch.VSwitchId == fi.StringValue(v.VSwitchId) {
+			actual = &VSwitch{
+				Name:      fi.String(vswitch.VSwitchName),
+				VSwitchId: fi.String(vswitch.VSwitchId),
+				VPC: &VPC{
+					ID: fi.String(vswitch.VpcId),
+				},
+
+				ZoneId:    fi.String(vswitch.ZoneId),
+				CidrBlock: fi.String(vswitch.CidrBlock),
+			}
+			continue
+		}
+		if vswitch.CidrBlock == fi.StringValue(v.CidrBlock) && !fi.BoolValue(v.Shared) {
 			klog.V(2).Infof("found matching VSwitch with name: %q", *v.Name)
 			actual := &VSwitch{
 				Name:      fi.String(vswitch.VSwitchName),
@@ -109,12 +104,22 @@ func (v *VSwitch) Find(c *fi.Context) (*VSwitch, error) {
 
 				ZoneId:    fi.String(vswitch.ZoneId),
 				CidrBlock: fi.String(vswitch.CidrBlock),
-				// Ignore "system" fields
-				Lifecycle: v.Lifecycle,
 			}
 			v.VSwitchId = actual.VSwitchId
-			return actual, nil
 		}
+	}
+
+	if actual != nil {
+		klog.V(2).Infof("found matching subnet %q", *actual.VSwitchId)
+		if v.VSwitchId == nil {
+			v.VSwitchId = actual.VSwitchId
+		}
+
+		// Prevent spurious changes
+		actual.Lifecycle = v.Lifecycle
+		actual.Name = v.Name
+		actual.Shared = v.Shared
+		return actual, nil
 	}
 
 	return nil, nil
