@@ -73,19 +73,22 @@ func (s *ScalingGroup) Find(c *fi.Context) (*ScalingGroup, error) {
 
 	klog.V(2).Infof("found matching ScalingGroup with Name: %q", *s.Name)
 
-	actual := &ScalingGroup{}
-	actual.Name = fi.String(groupList[0].ScalingGroupName)
-	actual.MinSize = fi.Int(groupList[0].MinSize)
-	actual.MaxSize = fi.Int(groupList[0].MaxSize)
-	actual.ScalingGroupId = fi.String(groupList[0].ScalingGroupId)
-	actual.Active = fi.Bool(groupList[0].LifecycleState == ess.Active)
+	sg := groupList[0]
 
-	actual.LoadBalancer = &LoadBalancer{
-		LoadbalancerId: fi.String(groupList[0].LoadBalancerId),
+	actual := &ScalingGroup{
+		Name:           fi.String(sg.ScalingGroupName),
+		MinSize:        fi.Int(sg.MinSize),
+		MaxSize:        fi.Int(sg.MaxSize),
+		ScalingGroupId: fi.String(sg.ScalingGroupId),
+		Active:         fi.Bool(sg.LifecycleState == ess.Active),
 	}
 
-	if len(groupList[0].VSwitchIds.VSwitchId) != 0 {
-		for _, vswitch := range groupList[0].VSwitchIds.VSwitchId {
+	if s.LoadBalancer != nil {
+		actual.LoadBalancer = &LoadBalancer{LoadbalancerId: s.LoadBalancer.LoadbalancerId}
+	}
+
+	if len(sg.VSwitchIds.VSwitchId) != 0 {
+		for _, vswitch := range sg.VSwitchIds.VSwitchId {
 			v := &VSwitch{
 				VSwitchId: fi.String(vswitch),
 			}
@@ -98,7 +101,6 @@ func (s *ScalingGroup) Find(c *fi.Context) (*ScalingGroup, error) {
 	s.Active = actual.Active
 	actual.Lifecycle = s.Lifecycle
 	return actual, nil
-
 }
 
 func (a *ScalingGroup) Run(c *fi.Context) error {
