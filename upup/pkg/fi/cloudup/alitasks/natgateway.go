@@ -67,13 +67,16 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 	if len(natGateways) != 1 {
 		return nil, fmt.Errorf("found multiple NatGateways for %q", fi.StringValue(e.ID))
 	}
+	natGateway := natGateways[0]
+
 	actual := &NatGateway{}
-	actual.ID = fi.String(natGateways[0].NatGatewayId)
+	actual.ID = fi.String(natGateway.NatGatewayId)
 
 	// Ignore "system" fields
 	actual.Lifecycle = e.Lifecycle
 	actual.Name = e.Name
 	actual.Region = e.Region
+	actual.VPC = &VPC{ID: &natGateway.VpcId}
 
 	e.ID = actual.ID
 	klog.V(4).Infof("found matching NatGateway %v", actual)
