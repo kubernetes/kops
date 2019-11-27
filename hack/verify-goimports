@@ -34,6 +34,16 @@ for package in packages:
     continue
   paths.append(package)
 
+# Install goimports from vendor
+print('installing goimports from vendor')
+
+process = subprocess.Popen(['go', 'install', 'k8s.io/kops/vendor/golang.org/x/tools/cmd/goimports'], stdout=subprocess.PIPE, cwd=path.join(gopath, 'src'))
+stdout, stderr = process.communicate()
+if process.returncode != 0:
+  print("FAIL: installing goimports from vendor failed")
+  print(stderr)
+  sys.exit(1)
+
 print("packages %s" % paths)
 
 env = os.environ
