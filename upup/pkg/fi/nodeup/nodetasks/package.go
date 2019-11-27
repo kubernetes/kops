@@ -273,10 +273,18 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 				return fmt.Errorf("error creating directories %q: %v", localPackageDir, err)
 			}
 
+			// Append file extension for local files
+			var ext string
+			if t.HasTag(tags.TagOSFamilyDebian) {
+				ext = ".deb"
+			} else {
+				ext = ".rpm"
+			}
+
 			// Download all the debs/rpms.
 			localPkgs := make([]string, 1+len(e.Deps))
 			for i, pkg := range append([]*Package{e}, e.Deps...) {
-				local := path.Join(localPackageDir, pkg.Name)
+				local := path.Join(localPackageDir, pkg.Name+ext)
 				localPkgs[i] = local
 				var hash *hashing.Hash
 				if fi.StringValue(pkg.Hash) != "" {
@@ -293,16 +301,26 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			}
 
 			var args []string
+			env := os.Environ()
 			if t.HasTag(tags.TagOSFamilyDebian) {
-				args = []string{"dpkg", "-i"}
+				// Only Debian releases newer than Jessie can install .deb via apt-get
+				// TODO: Refactor this function when Jessie support is dropped (duplicated code)
+				if t.HasTag("_jessie") {
+					args = []string{"dpkg", "-i"}
+				} else {
+					args = []string{"apt-get", "install", "--yes"}
+					env = append(env, "DEBIAN_FRONTEND=noninteractive")
+				}
 			} else if t.HasTag(tags.TagOSFamilyRHEL) {
-				args = []string{"/usr/bin/rpm", "-i"}
+				args = []string{"/usr/bin/yum", "install", "-y"}
 			} else {
 				return fmt.Errorf("unsupported package system")
 			}
 			args = append(args, localPkgs...)
+
 			klog.Infof("running command %s", args)
 			cmd := exec.Command(args[0], args[1:]...)
+			cmd.Env = env
 			output, err := cmd.CombinedOutput()
 			if err != nil {
 				return fmt.Errorf("error installing package %q: %v: %s", e.Name, err, string(output))
