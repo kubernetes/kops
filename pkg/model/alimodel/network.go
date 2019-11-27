@@ -17,6 +17,7 @@ limitations under the License.
 package alimodel
 
 import (
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/alitasks"
 )
@@ -84,20 +85,21 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		c.AddTask(vswitch)
 
-		vswitchSNAT := &alitasks.VSwitchSNAT{
-			Name:       s(b.GetNameForVSwitchSNAT(subnetSpec.Name)),
-			Lifecycle:  b.Lifecycle,
-			NatGateway: b.LinkToNatGateway(),
-			VSwitch:    b.LinkToVSwitch(subnetSpec.Name),
-			EIP:        b.LinkToEIP(),
+		if subnetSpec.Type == kops.SubnetTypePrivate {
+			vswitchSNAT := &alitasks.VSwitchSNAT{
+				Name:       s(b.GetNameForVSwitchSNAT(subnetSpec.Name)),
+				Lifecycle:  b.Lifecycle,
+				NatGateway: b.LinkToNatGateway(),
+				VSwitch:    b.LinkToVSwitch(subnetSpec.Name),
+				EIP:        b.LinkToEIP(),
+			}
+
+			if subnetSpec.ProviderID != "" {
+				vswitchSNAT.Shared = fi.Bool(true)
+			}
+
+			c.AddTask(vswitchSNAT)
 		}
-
-		if subnetSpec.ProviderID != "" {
-			vswitchSNAT.Shared = fi.Bool(true)
-		}
-
-		c.AddTask(vswitchSNAT)
-
 	}
 
 	return nil
